@@ -219,15 +219,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
             if (!p->isLib()) {
                 UserProc *u = (UserProc*)p;
                 u->getCFG()->compressCfg();
-                u->getCFG()->resolveGotos();
-                char s[1024];
-                sprintf(s, "ast-%s.dot", u->getName());
-                std::ofstream of(s);
-                Statement *a = u->getAST();
-                of << "digraph " << u->getName() << " {" << std::endl;
-                a->printAST(of);
-                of << "}" << std::endl;
-                of.close();
+                u->printAST();
             }
     }
 

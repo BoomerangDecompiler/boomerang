@@ -256,6 +256,7 @@ BBTYPE BasicBlock::getType() {
 void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
     m_nodeType = bbType;
     m_iNumOutEdges = iNumOutEdges;
+    m_OutEdges.resize(iNumOutEdges);
 }
 
 /*==============================================================================

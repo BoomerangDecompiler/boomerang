@@ -224,6 +224,8 @@ public:
      */
     std::vector<PBB>& getInEdges();
 
+    int getNumInEdges() { return m_iNumInEdges; }
+
     /*
      * Get the set of out edges.
      */
@@ -243,6 +245,8 @@ public:
      * Get the n-th out edge or 0 if it does not exist
      */
     PBB getOutEdge(unsigned int i);
+
+    int getNumOutEdges() { return m_iNumOutEdges; }
 
     /*
      * Get the index of my in-edges is BB pred

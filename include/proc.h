@@ -32,6 +32,7 @@
 #include "coverage.h"           // For Coverage class
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
+#include "hllcode.h"
 
 class Prog;
 class UserProc;
@@ -434,7 +435,9 @@ public:
      * internal representation.  This function actually _calculates_
      * this value and is expected to do so expensively.
      */ 
-    Statement *getAST();
+    SyntaxNode *getAST();
+    // print it to a file
+    void printAST(SyntaxNode *a = NULL);
 
     /*
      * Returns whether or not this procedure can be decoded (i.e. has

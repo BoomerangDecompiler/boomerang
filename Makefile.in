@@ -71,7 +71,7 @@ clean:
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
 	cd analysis && ${MAKE} clean
-	rm -f driver.o codegen/chllcode.o boomerang testAll.o c/*.o
+	rm -f driver.o codegen/chllcode.o codegen/syntax.o boomerang testAll.o c/*.o
 
 #20 Aug 02 icer
 #added config.h config.log config.status and analysis/Makefile
@@ -99,7 +99,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o frontend/switch.o
 AN_OBJS = analysis/analysis.o
-CODEGEN = codegen/chllcode.o
+CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
     ${TYPEOBJS}
@@ -234,6 +234,9 @@ analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
 codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h \
     include/cfg.h include/exp.h include/proc.h include/prog.h \
     include/signature.h
+
+codegen/syntax.o: include/hllcode.h include/statement.h \
+    include/cfg.h include/exp.h include/proc.h
 
 type/constraint.o: include/constraint.h include/exp.h include/type.h
 type/type.o: include/type.h

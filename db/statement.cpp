@@ -449,7 +449,7 @@ bool Statement::isFpop() {
  * RETURNS:         N/a
  *============================================================================*/
 GotoStatement::GotoStatement()
-  : pDest(NULL), m_isComputed(false), sDest(NULL) {
+  : pDest(NULL), m_isComputed(false) {
     kind = STMT_GOTO;
 }
 
@@ -462,7 +462,6 @@ GotoStatement::GotoStatement()
 GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
     kind = STMT_GOTO;
     pDest = new Const(uDest);
-    sDest = NULL;
 }
 
 /*==============================================================================
@@ -598,14 +597,6 @@ void GotoStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         os << "0x" << std::hex << getFixedDest();
 }
 
-void GotoStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"" << number << " goto\"];" << std::endl;
-    os << std::setw(4) << std::dec << number << " -> " 
-       << sDest->getNumber() << " [style=dotted];" << std::endl;
-}
-
 /*==============================================================================
  * FUNCTION:      GotoStatement::setIsComputed
  * OVERVIEW:      Sets the fact that this call is computed.
@@ -640,6 +631,10 @@ Statement* GotoStatement::clone() {
     GotoStatement* ret = new GotoStatement();
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
 }
 
@@ -956,14 +951,6 @@ void BranchStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     }
 }
 
-void BranchStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"" << number << " branch\"];" << std::endl;
-    os << std::setw(4) << std::dec << number << " -> " 
-       << sDest->getNumber() << " [style=dotted];" << std::endl;
-}
-
 /*==============================================================================
  * FUNCTION:        BranchStatement::clone
  * OVERVIEW:        Deep copy clone
@@ -1264,6 +1251,10 @@ Statement* CaseStatement::clone() {
     ret->pSwitchInfo = new SWITCH_INFO;
     *ret->pSwitchInfo = *pSwitchInfo;
     ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
 }
 
@@ -1609,12 +1600,6 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         }
         os << " }";
     }
-}
-
-void CallStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"" << number << " call\"];" << std::endl;
 }
 
 /*==============================================================================
@@ -2056,6 +2041,10 @@ Statement* ReturnStatement::clone() {
     ReturnStatement* ret = new ReturnStatement();
     ret->pDest = NULL;                      // pDest should be null
     ret->m_isComputed = m_isComputed;
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
 }
 
@@ -2127,12 +2116,6 @@ void ReturnStatement::print(std::ostream& os /*= cout*/, bool withDF) {
             os << ", ";
         os << returns[i];
     }
-}
-
-void ReturnStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"" << number << " ret\"];" << std::endl;
 }
 
 bool ReturnStatement::search(Exp* search, Exp*& result) {
@@ -2544,12 +2527,6 @@ void Assign::print(std::ostream& os, bool withUses) {
     if (rhs) rhs->print(os, withUses);
 }
 
-void Assign::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"" << number << " assign\"];" << std::endl;
-}
-
 void Assign::getDefinitions(LocationSet &defs) {
     defs.insert(lhs);
 }
@@ -2810,435 +2787,4 @@ void CallStatement::genConstraints(LocationSet& cons) {
     }
 }
 
-BlockStatement::~BlockStatement()
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        delete statements[i];
-}
-
-Statement* BlockStatement::clone()
-{
-    BlockStatement *b = new BlockStatement();
-    for (unsigned i = 0; i < statements.size(); i++)
-        b->addStatement(statements[i]->clone());
-    return b;
-}
-
-bool BlockStatement::accept(StmtVisitor *visitor)
-{
-    for (unsigned i = 0; i < statements.size(); i++) {
-        bool b = statements[i]->accept(visitor);
-        if (!b) return false;
-    }
-    return true;
-}
-
-bool BlockStatement::usesExp(Exp *e)
-{
-    for (unsigned i = 0; i < statements.size(); i++) {
-        bool b = statements[i]->usesExp(e);
-        if (b) return true;
-    }
-    return false;
-}
-
-void BlockStatement::addUsedLocs(LocationSet &locs)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->addUsedLocs(locs);
-}
-
-void BlockStatement::fixCallRefs()
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->fixCallRefs();
-}
-
-void BlockStatement::subscriptVar(Exp *e, Statement *s)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->subscriptVar(e, s);
-}
-
-void BlockStatement::print(std::ostream &os, bool withUses)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->print(os, withUses);
-}
-
-void BlockStatement::processConstants(Prog *p)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->processConstants(p);
-}
-
-bool BlockStatement::search(Exp *s, Exp *&result)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        if (statements[i]->search(s, result)) 
-            return true;
-    return false;
-}
-
-bool BlockStatement::searchAndReplace(Exp *e, Exp *r)
-{
-    bool b = false;
-    for (unsigned i = 0; i < statements.size(); i++)
-        b |= statements[i]->searchAndReplace(e, r); 
-    return b;
-}
-
-Type* BlockStatement::updateType(Exp *e, Type *ty)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        ty = statements[i]->updateType(e, ty);
-    return ty;
-}
-
-void BlockStatement::fromSSAform(igraph &g)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->fromSSAform(g);
-}
-
-void BlockStatement::generateCode(HLLCode *h, BasicBlock *b, int n)
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->generateCode(h, b, n);
-}
-
-void BlockStatement::simplify()
-{
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->simplify();
-}
-
-void BlockStatement::doReplaceRef(Exp *e, Exp *r)
-{
-    assert(false);
-    //for (unsigned i = 0; i < statements.size(); i++)
-    //    statements[i]->doReplaceRef(e, r);
-}
-
-void BlockStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"block\"];" << std::endl;
-    for (unsigned i = 0; i < statements.size(); i++)
-        statements[i]->printAST(os);
-    for (unsigned i = 0; i < statements.size(); i++) {
-        os << std::setw(4) << std::dec << number << " ";
-        os << " -> " << statements[i]->getNumber() << ";" << std::endl;
-    }
-    if (statements.size() > 1)
-    for (unsigned i = 0; i < statements.size() - 1; i++)
-        if (!statements[i]->isBlock() && !statements[i+1]->isBlock()) {
-            os << std::setw(4) << std::dec << statements[i]->getNumber() 
-               << " ";
-            os << " -> " << statements[i+1]->getNumber() << " [style=dotted];" 
-               << std::endl;
-        } else if (statements[i]->isBlock() && statements[i+1]->isBlock()) {
-            BlockStatement *b1 = (BlockStatement*)statements[i];
-            BlockStatement *b2 = (BlockStatement*)statements[i+1];
-            if (b1->getNumStatements() > 0 && b2->getNumStatements() > 0) {
-                Statement *bl1 = b1->getStatement(b1->getNumStatements()-1);
-                Statement *bl2 = b2->getStatement(0);
-                if (!bl1->isBlock() && !bl1->isGoto() && !bl2->isBlock()) {
-                    os << bl1->getNumber() << " -> " << bl2->getNumber()
-                       << " [style=dotted];" << std::endl;
-                }
-            }
-        }
-}
-
-IfStatement::~IfStatement()
-{
-    if (pThen)
-        delete pThen;
-    if (pElse)
-        delete pElse;
-    if (cond)
-        delete cond;
-}
-
-Statement* IfStatement::clone()
-{
-    IfStatement *i = new IfStatement(pThen, pElse, cond);
-    return i;
-}
-
-bool IfStatement::accept(StmtVisitor *visitor)
-{
-    bool b = pThen->accept(visitor);
-    if (b && pElse)
-        b = pElse->accept(visitor);
-    return b;
-}
-
-bool IfStatement::usesExp(Exp *e)
-{
-    return (pThen && pThen->usesExp(e)) || (pElse && pElse->usesExp(e));
-}
-
-void IfStatement::addUsedLocs(LocationSet &locs)
-{
-    if (pThen)
-        pThen->addUsedLocs(locs);
-    if (pElse)
-        pElse->addUsedLocs(locs);
-}
-
-void IfStatement::fixCallRefs()
-{
-    if (pThen)
-        pThen->fixCallRefs();
-    if (pElse)
-        pElse->fixCallRefs();
-}
-
-void IfStatement::subscriptVar(Exp *e, Statement *s)
-{
-    if (pThen)
-        pThen->subscriptVar(e, s);
-    if (pElse)
-        pElse->subscriptVar(e, s);
-}
-
-void IfStatement::print(std::ostream &os, bool withUses)
-{
-    os << "if (" << cond << ")" << std::endl;
-    pThen->print(os, withUses);
-    if (pElse) {
-        os << "else" << std::endl;
-        pElse->print(os, withUses);
-    }
-}
-
-void IfStatement::processConstants(Prog *p)
-{
-    if (pThen)
-        pThen->processConstants(p);
-    if (pElse)
-        pElse->processConstants(p);
-}
-
-bool IfStatement::search(Exp *s, Exp *&result)
-{
-    if (cond && cond->search(s, result))
-        return true;
-    if (pThen && pThen->search(s, result))
-        return true;
-    if (pElse && pElse->search(s, result))
-        return true;
-    return false;
-}
-
-bool IfStatement::searchAndReplace(Exp *e, Exp *r)
-{
-    bool b = false;
-    if (cond)
-        cond = cond->searchReplaceAll(e, r, b);
-    if (pThen)
-        b |= pThen->searchAndReplace(e, r);
-    if (pElse)
-        b |= pElse->searchAndReplace(e, r);
-    return b;
-}
-
-Type* IfStatement::updateType(Exp *e, Type *ty)
-{
-    if (pThen)
-        ty = pThen->updateType(e, ty);
-    if (pElse)
-        ty = pElse->updateType(e, ty);
-    return ty;
-}
-
-void IfStatement::fromSSAform(igraph &g)
-{
-    if (cond)
-        cond = cond->fromSSA(g);
-    if (pThen)
-        pThen->fromSSAform(g);
-    if (pElse)
-        pElse->fromSSAform(g);
-}
-
-void IfStatement::generateCode(HLLCode *h, BasicBlock *b, int n)
-{
-    assert(false);
-}
-
-void IfStatement::simplify()
-{
-    if (cond)
-        cond = cond->simplify();
-    if (pThen)
-        pThen->simplify();
-    if (pElse)
-        pElse->simplify();
-}
-
-void IfStatement::doReplaceRef(Exp *e, Exp *r)
-{
-    assert(false);
-    //for (unsigned i = 0; i < statements.size(); i++)
-    //    statements[i]->doReplaceRef(e, r);
-}
-
-void IfStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"if " << cond << " \"];" << std::endl;
-    if (pThen)
-        pThen->printAST(os);
-    if (pElse)
-        pElse->printAST(os);
-    if (pThen) {
-        os << std::setw(4) << std::dec << number << " ";
-        os << " -> " << pThen->getNumber() << ";" << std::endl;
-    }
-    if (pElse) {
-        os << std::setw(4) << std::dec << number << " ";
-        os << " -> " << pElse->getNumber() << ";" << std::endl;
-    }
-}
-
-LoopStatement::~LoopStatement()
-{
-    if (pBody)
-        delete pBody;
-    if (cond)
-        delete cond;
-}
-
-Statement* LoopStatement::clone()
-{
-    LoopStatement *i = new LoopStatement(loop_type, pBody, cond);
-    return i;
-}
-
-bool LoopStatement::accept(StmtVisitor *visitor)
-{
-    bool b = pBody->accept(visitor);
-    return b;
-}
-
-bool LoopStatement::usesExp(Exp *e)
-{
-    return pBody && pBody->usesExp(e);
-}
-
-void LoopStatement::addUsedLocs(LocationSet &locs)
-{
-    if (pBody)
-        pBody->addUsedLocs(locs);
-}
-
-void LoopStatement::fixCallRefs()
-{
-    if (pBody)
-        pBody->fixCallRefs();
-}
-
-void LoopStatement::subscriptVar(Exp *e, Statement *s)
-{
-    if (pBody)
-        pBody->subscriptVar(e, s);
-}
-
-void LoopStatement::print(std::ostream &os, bool withUses)
-{
-    if (loop_type == infinite)
-        os << "while (1) {" << std::endl;
-    else if (loop_type == pretested)
-        os << "while (" << cond << ") {" << std::endl;
-    else
-        os << "do {" << std::endl;
-    if (pBody)
-        pBody->print(os, withUses);
-    if (loop_type == posttested)
-        os << "} while (" << cond << ");" << std::endl;
-    else
-        os << "}" << std::endl;
-}
-
-void LoopStatement::processConstants(Prog *p)
-{
-    if (pBody)
-        pBody->processConstants(p);
-}
-
-bool LoopStatement::search(Exp *s, Exp *&result)
-{
-    if (cond && cond->search(s, result))
-        return true;
-    if (pBody && pBody->search(s, result))
-        return true;
-    return false;
-}
-
-bool LoopStatement::searchAndReplace(Exp *e, Exp *r)
-{
-    bool b = false;
-    if (cond)
-        cond = cond->searchReplaceAll(e, r, b);
-    if (pBody)
-        b |= pBody->searchAndReplace(e, r);
-    return b;
-}
-
-Type* LoopStatement::updateType(Exp *e, Type *ty)
-{
-    if (pBody)
-        ty = pBody->updateType(e, ty);
-    return ty;
-}
-
-void LoopStatement::fromSSAform(igraph &g)
-{
-    if (cond)
-        cond = cond->fromSSA(g);
-    if (pBody)
-        pBody->fromSSAform(g);
-}
-
-void LoopStatement::generateCode(HLLCode *h, BasicBlock *b, int n)
-{
-    assert(false);
-}
-
-void LoopStatement::simplify()
-{
-    if (cond)
-        cond = cond->simplify();
-    if (pBody)
-        pBody->simplify();
-}
-
-void LoopStatement::doReplaceRef(Exp *e, Exp *r)
-{
-    assert(false);
-    //for (unsigned i = 0; i < statements.size(); i++)
-    //    statements[i]->doReplaceRef(e, r);
-}
-
-void LoopStatement::printAST(std::ostream &os)
-{
-    os << std::setw(4) << std::dec << number << " ";
-    os << "[label=\"loop ";
-    if (loop_type == infinite)
-        os << "infinite ";
-    else if (loop_type == pretested)
-        os << "pretested ";
-    else if (loop_type == posttested)
-        os << "posttested ";
-    os  << cond << " \"];" << std::endl;
-    if (pBody)
-        pBody->printAST(os);
-    if (pBody) {
-        os << std::setw(4) << std::dec << number << " ";
-        os << " -> " << pBody->getNumber() << ";" << std::endl;
-    }
-}
 

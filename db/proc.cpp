@@ -645,28 +645,96 @@ void UserProc::deleteCFG() {
     cfg = NULL;
 }
 
-Statement *UserProc::getAST()
+class lessEvaluate : public std::binary_function<SyntaxNode*, SyntaxNode*, bool> {
+public:
+    bool operator()(const SyntaxNode* x, const SyntaxNode* y) const
+    {
+        return ((SyntaxNode*)x)->getScore() > 
+               ((SyntaxNode*)y)->getScore();
+    }
+};
+
+SyntaxNode *UserProc::getAST()
 {
-    int num = 1000;
-    BlockStatement *init = new BlockStatement();
-    init->setNumber(num++);
+    int numBBs = 0;
+    BlockSyntaxNode *init = new BlockSyntaxNode();
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        BlockStatement *b = new BlockStatement();
-        b->setNumber(num++);
-        std::list<RTL*> *rtls = bb->getRTLs();
-        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-          rit++) {
-            RTL *rtl = *rit;
-            for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
-              it != rtl->getList().end(); it++) {
-                b->addStatement(*it);
-            }
-        }
-        if (b->getNumStatements() > 0)
-            init->addStatement(b);
+        BlockSyntaxNode *b = new BlockSyntaxNode();
+        b->setBB(bb);
+        init->addStatement(b);
+        numBBs++;
     }
-    return init;
+    
+    // perform a best firs search for the nicest AST
+    std::priority_queue<SyntaxNode*,  std::vector<SyntaxNode*>,
+                        lessEvaluate > ASTs;
+    ASTs.push(init);
+
+    SyntaxNode *best = init;
+    int best_score = init->getScore();
+    int count = 0;
+    while (ASTs.size()) {
+        if (best_score < numBBs * 2)  {
+            std::cerr << "exit early: " << best_score << std::endl;
+            break;
+        }
+
+        SyntaxNode *top = ASTs.top();
+        ASTs.pop();
+        int score = top->evaluate(top);
+
+        printAST(top); // debug
+
+        if (score < best_score) {
+            if (best && top != best)
+                delete best;
+            best = top;
+            best_score = score;
+        }
+
+        count++;
+        if (count > 100)
+            break;
+
+        // add successors
+        std::vector<SyntaxNode*> successors;
+        top->addSuccessors(top, successors);
+        for (unsigned i = 0; i < successors.size(); i++) {
+            //successors[i]->addToScore(top->getScore());   // uncomment for A*
+            successors[i]->addToScore(successors[i]->getDepth()); // or this
+            ASTs.push(successors[i]);
+        }
+
+        if (top != best)
+            delete top;
+    }
+
+    // clean up memory
+    while(ASTs.size()) {
+        SyntaxNode *top = ASTs.top();
+        ASTs.pop();
+        if (top != best)
+            delete top;
+    }
+    
+    return best;
+}
+
+int count = 1;
+
+void UserProc::printAST(SyntaxNode *a)
+{
+    char s[1024];
+    if (a == NULL)
+        a = getAST();
+    sprintf(s, "ast%i-%s.dot", count++, getName());
+    std::ofstream of(s);
+    of << "digraph " << getName() << " {" << std::endl;
+    of << "  label=\"score: " << a->evaluate(a) << "\";" << std::endl;
+    a->printAST(a, of);
+    of << "}" << std::endl;
+    of.close();
 }
 
 /*==============================================================================
