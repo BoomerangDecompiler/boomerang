@@ -44,6 +44,8 @@
 
 #define VERBOSE Boomerang::get()->vFlag
 
+static char debug_buffer[200];      // For prints functions
+
 // replace a use in this statement
 void Statement::replaceRef(Statement *def) {
     Exp* lhs = def->getLeft();
@@ -417,12 +419,16 @@ bool StatementSet::removeIfDefines(StatementSet& given) {
     return found;
 }
 
-// Print to cerr, for debugging
-void StatementSet::prints() {
+// Print to a string, for debugging
+char* StatementSet::prints() {
+    std::ostringstream ost;
     StmtSetIter it;
     for (it = sset.begin(); it != sset.end(); it++)
-        std::cerr << *it << ",\t";
-    std::cerr << "\n";
+        ost << *it << ",\t";
+    ost << "\n";
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
 }
 
 // Print just the numbers to stream os
@@ -477,11 +483,15 @@ LocationSet::LocationSet(const LocationSet& o) {
         sset.insert((*it)->clone());
 }
 
-void LocationSet::prints() {
+char* LocationSet::prints() {
+    std::ostringstream ost;
     LocSetIter it;
     for (it = sset.begin(); it != sset.end(); it++)
-        std::cerr << *it << ",\t";
-    std::cerr << "\n";
+        ost << *it << ",\t";
+    ost << "\n";
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
 }
 
 void LocationSet::remove(Exp* given) {
@@ -556,6 +566,31 @@ bool LocationSet::operator==(const LocationSet& o) const {
 
 bool LocationSet::find(Exp* e) {
     return sset.find(e) != sset.end();
+}
+
+bool LocationSet::findDifferentRef(RefExp* e) {
+    RefExp search(e->getSubExp1()->clone(), (Statement*)-1);
+    LocSetIter pos = sset.find(&search);
+    if (pos == sset.end()) return false;
+    while (pos != sset.end()) {
+        // Exit if we've gone to a new base expression
+        // E.g. searching for r13{10} and **pos is r14{0}
+        if (!(**pos *= *e)) break;      // *= is ref-insensitive compare
+        // Bases are the same; return true if only different ref
+        if (!(**pos == *e)) return true;
+        ++pos;
+    }
+    return false;
+}
+
+// Add a subscript (to definition d) to each element
+void LocationSet::addSubscript(Statement* d) {
+    LocSetIter it;
+    std::set<Exp*, lessExpStar> newSet;
+    for (it = sset.begin(); it != sset.end(); it++)
+        newSet.insert((*it)->expSubscriptVar(*it, d));
+    sset = newSet;          // Replace the old set!
+    // Note: don't delete the old exps; they are copied in the new set
 }
 
 // Substitute s into all members of the set
@@ -680,20 +715,23 @@ Statement* StatementList::getPrev(StmtListRevIter& it) {
     return *it;         // Else return the previous element
 }
 
-void StatementList::prints() {
+char* StatementList::prints() {
+    std::ostringstream ost;
     StmtListIter it;
     for (it = slist.begin(); it != slist.end(); it++) {
-        std::cerr << *it << ",\t";
+        ost << *it << ",\t";
     }
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
 }
 
-static char debug_buffer[200];
 char* Statement::prints() {
-      std::ostringstream ost;
-      print(ost, true);
-      strncpy(debug_buffer, ost.str().c_str(), 199);
-      debug_buffer[199] = '\0';
-      return debug_buffer;
+    std::ostringstream ost;
+    print(ost, true);
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
 }
 
 // exclude: a set of statements not to propagate from
@@ -1838,7 +1876,7 @@ void CallStatement::setArguments(std::vector<Exp*>& arguments) {
 
 /*==============================================================================
  * FUNCTION:      CallStatement::setSigArguments
- * OVERVIEW:      Set the arguments of this call based in signature info
+ * OVERVIEW:      Set the arguments of this call based on signature info
  * PARAMETERS:    None
  * RETURNS:       <nothing>
  *============================================================================*/
@@ -2238,7 +2276,6 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
 #endif
 }
 
-// MVE: is this needed after the merge?
 void CallStatement::setNumArguments(int n) {
     int oldSize = arguments.size();
     arguments.resize(n);

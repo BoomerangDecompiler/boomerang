@@ -39,6 +39,7 @@ class StatementTest : public CppUnit::TestCase {
     void testUseKill();
     void testEndlessLoop();
     void testLocationSet();
+    void testWildLocationSet();
     void testRecursion();
     void testExpand();
     void testClone();

@@ -40,6 +40,7 @@ suite->addTest(new CppUnit::TestCaller<StatementTest> ("Statements", \
 void StatementTest::registerTests(CppUnit::TestSuite* suite) {
 
     MYTEST(testLocationSet);
+    MYTEST(testWildLocationSet);
 #if 0               // Needs to be updated for global dataflow
     MYTEST(testEmpty);
     MYTEST(testFlow);
@@ -530,6 +531,53 @@ void StatementTest::testLocationSet () {
     CPPUNIT_ASSERT(mof == *ls2.getFirst(ii));
     theReg.setInt(8);
     e = ls2.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+}
+
+/*==============================================================================
+ * FUNCTION:        StatementTest::testWildLocationSet
+ * OVERVIEW:        
+ *============================================================================*/
+void StatementTest::testWildLocationSet () {
+    Unary rof12(opRegOf, new Const(12));
+    Unary rof13(opRegOf, new Const(13));
+    Assign a10, a20;
+    a10.setNumber(10);
+    a20.setNumber(20);
+    RefExp r12_10(rof12.clone(), &a10);
+    RefExp r12_20(rof12.clone(), &a20);
+    RefExp r12_0 (rof12.clone(), NULL);
+    RefExp r13_10(rof13.clone(), &a10);
+    RefExp r13_20(rof13.clone(), &a20);
+    RefExp r13_0 (rof13.clone(), NULL);
+    RefExp r11_10(Unary::regOf(11), &a10);
+    RefExp r22_10(Unary::regOf(22), &a10);
+    LocationSet ls;
+    ls.insert(&r12_10);
+    ls.insert(&r12_20);
+    ls.insert(&r12_0);
+    ls.insert(&r13_10);
+    ls.insert(&r13_20);
+    ls.insert(&r13_0);
+    RefExp wildr12(rof12.clone(), (Statement*)-1);
+    CPPUNIT_ASSERT(ls.find(&wildr12));
+    RefExp wildr13(rof13.clone(), (Statement*)-1);
+    CPPUNIT_ASSERT(ls.find(&wildr13));
+    RefExp wildr10(Unary::regOf(10), (Statement*)-1);
+    CPPUNIT_ASSERT(!ls.find(&wildr10));
+    // Test findDifferentRef
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_10));
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_20));
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_0));
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_10));
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_20));
+    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_0));
+    // Next 4 should fail
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10));
+    ls.insert(&r11_10);
+    ls.insert(&r22_10);
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10));
 }
 
 /*==============================================================================

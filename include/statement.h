@@ -50,6 +50,7 @@ class Prog;
 class Proc;
 class UserProc;
 class Exp;
+class RefExp;
 class Cfg;
 class Type;
 class Statement;
@@ -86,12 +87,11 @@ public:
     bool operator==(const StatementSet& o) const    // Compare if equal
         { return sset == o.sset;}
     bool operator<(const StatementSet& o) const;    // Compare if less
-    void prints();                          // Print to std::cerr (for debug)
+    char* prints();                         // Print to std::cerr (for debug)
     void printNums(std::ostream& os);       // Print statements as numbers
     bool isLast(StmtSetIter& it);           // returns true if it is at end
-};
+};  // class StatementSet
 
-// Ugh - we also need lists of Statements for the internal statements
 typedef std::list<Statement*>::iterator StmtListIter;
 typedef std::list<Statement*>::reverse_iterator StmtListRevIter;
 class StatementList {
@@ -111,9 +111,9 @@ public:
     // Use like this: s = mystatementlist.remove(it);
     Statement* StatementList::remove(StmtListIter& it);
     bool exists(Statement* s);  // Find; returns false if not found
-    void prints();                          // Print to cerr (for debugging)
+    char*  prints();                        // Print to string (for debugging)
     void clear() { slist.clear(); }
-};
+};  // class StatementList
 
 // For liveness, we need sets of locations (registers or memory)
 typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
@@ -129,8 +129,8 @@ public:
     LocationSet() {}                        // Default constructor
     LocationSet(const LocationSet& o);      // Copy constructor
     LocationSet& operator=(const LocationSet& o); // Assignment
-    void makeUnion(LocationSet& other);    // Set union
-    void makeDiff (LocationSet& other);    // Set difference
+    void makeUnion(LocationSet& other);     // Set union
+    void makeDiff (LocationSet& other);     // Set difference
     void clear() {sset.clear();}            // Clear the set
     Exp* getFirst(LocSetIter& it);          // Get the first Statement
     Exp* getNext (LocSetIter& it);          // Get next
@@ -138,13 +138,17 @@ public:
     void remove(Exp* loc);                  // Remove the given location
     void remove(LocSetIter ll);             // Remove location, given iterator
     void removeIfDefines(StatementSet& given);// Remove locs defined in given
-    int  size() const {return sset.size();}  // Number of elements
+    int  size() const {return sset.size();} // Number of elements
     bool operator==(const LocationSet& o) const; // Compare
     void substitute(Statement& s);          // Substitute the statement to all
-    void prints();                          // Print to cerr for debugging
+    char* prints();                         // Print to cerr for debugging
     // Return true if the location exists in the set
     bool find(Exp* e);
-};
+    // Find a location with a different def, but same expression
+    // For example, pass r28{10}, return true if r28{20} in the set
+    bool findDifferentRef(RefExp* e);
+    void addSubscript(Statement* def);      // Add a subscript to all elements
+};  // class LocationSet
 
 /*==============================================================================
  * Kinds of Statements, or high-level register transfer lists.
@@ -336,31 +340,6 @@ protected:
 
 // Print the Statement poited to by p
 std::ostream& operator<<(std::ostream& os, Statement* s);
-
-/**
- * An experimental class to expand statements with memofs with more than
- * one ref. Example: 119 *32* r29 := m[r29{85 119}]
- * The individual memofs are expanded, e.g.
- * 119a *32* r29 := m[r29{85}]
- * 119b *32* r29 := m[r29{119}]
- * These can be further expanded to provide definitions and uses.
- * Uses can be attached to the original statement (with no letters).
- * Not sure what to do with the definitions yet.
- */
-class Expand {
-    StatementList   stmts;          // The expanded statements
-    std::string     parentString;   // The ID string after the statement number,
-                                    // e.g. "" in the above 
-    StatementSet    seen;           // Set of statements already seen
-    Statement*      orig;           // Original statement
-public:
-            //Expand(Statement* orig);        // Constructor
-            ~Expand();                      // Destructor
-    void    process(Statement* orig, std::string s, StatementSet& seen);
-    void    print(std::ostream& ost);       // Print function
-    void    prints() {print(std::cerr);}    // Debug print
-};
-
 
 
 

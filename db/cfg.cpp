@@ -2390,3 +2390,45 @@ void Cfg::renameBlockVars(int n, int memDepth) {
         }
     }
 }
+
+////////////////////////////////////
+//          Liveness             //
+////////////////////////////////////
+
+void updateWorkListRev(PBB currBB, std::list<PBB>&workList,
+  std::set<PBB>& workSet) {
+    // Insert inedges of currBB into the worklist, unless already there
+    std::vector<PBB>& ins = currBB->getInEdges();
+    int n = ins.size();
+    for (int i=0; i < n; i++) {
+        PBB currIn = ins[i];
+        if (workSet.find(currIn) == workSet.end()) {
+            workList.push_front(currIn);
+            workSet.insert(currIn);
+        }
+    }
+}
+
+void Cfg::findInterferences(igraph& ig) {
+    if (m_listBB.size() == 0) return;
+
+    std::list<PBB> workList;            // List of BBs still to be processed
+    // Set of the same; used for quick membership test
+    std::set<PBB> workSet; 
+    // This will work faster starting from the last BB, since this is
+    // a backwards flow problem
+    PBB last = m_listBB.back();
+    workList.push_back(last);
+    workSet.insert(last);
+
+    bool change;
+    int tempNum = 0;
+    while (workList.size()) {
+        PBB currBB = workList.back();
+        workList.erase(--workList.end());
+        workSet.erase(currBB);
+        // Calculate live locations and interferences
+        change = currBB->calcLiveness(ig, tempNum);
+        if (change) updateWorkListRev(currBB, workList, workSet);
+    }
+}

@@ -390,6 +390,9 @@ protected:
 /* for traversal */
     bool            m_iTraversed;   // traversal marker
 
+/* Liveness */
+    LocationSet     liveIn;         // Set of locations live at BB start
+
 public:
 
 	/* stuff for data flow analysis */
@@ -422,11 +425,6 @@ public:
      * a unique string (e.g. bb8048c10)
      */
     char* getStmtNumber();
-
-    /**
-     * Transform the CFG from SSA form.
-     */
-    void fromSSAform();
 
     /* set the return value */
     void setReturnVal(Exp *e);
@@ -526,7 +524,13 @@ public:
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
     // For prepending phi functions
     void prependStmt(Statement* s, UserProc* proc);
+
+    // Liveness
+    bool calcLiveness(igraph& ig, int& tempNum);
+    void getLiveOut(LocationSet& live);
+
 };  // class BasicBlock
+
 
     // A type for the ADDRESS to BB map
 typedef std::map<ADDRESS, PBB, std::less<ADDRESS> >   MAPBB;
@@ -989,6 +993,7 @@ public:
     void renameBlockVars(int n, int memDepth);
     bool doesDominate(int n, int w);
 
+
     // For testing:
     int pbbToNode(PBB bb) {return indices[bb];}
     std::set<int>& getDF(int node) {return DF[node];}
@@ -997,6 +1002,7 @@ public:
     int getSemi(int node) {return semi[node];}
     std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
 
+    void findInterferences(igraph& ig);
 };              /* Cfg */
 
 #endif

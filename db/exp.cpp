@@ -520,6 +520,9 @@ bool RefExp::operator< (const Exp& o) const {
     if (opSubscript > o.getOper()) return false;
     if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
     if (*((Unary&)o).getSubExp1() < *subExp1) return false;
+    // Allow a wildcard def to match any
+    if (def == (Statement*)-1) return false;    // Not less (equal)
+    if (((RefExp&)o).def == (Statement*)-1) return false;
     return def < ((RefExp&)o).def;
 }
 
@@ -912,7 +915,8 @@ void RefExp::print(std::ostream& os, bool withUses) {
     subExp1->print(os, withUses);
     if (withUses) {
         os << "{";
-        if (def) def->printNum(os);
+        if (def == (Statement*)-1) os << "WILD";
+        else if (def) def->printNum(os);
         else os << "0";
         os << "}";
     }

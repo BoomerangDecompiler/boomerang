@@ -1510,3 +1510,70 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
     RTL* rtl = new RTL(0, &listStmt);
     m_pRtls->push_front(rtl);
 }
+
+////////////////////////////////////////////////////
+
+
+bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
+    // Start with the liveness at the bottom of the BB
+    LocationSet liveLocs;
+    getLiveOut(liveLocs);
+    // For each RTL in this BB
+    std::list<RTL*>::reverse_iterator rit;
+    for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
+        std::list<Statement*>& stmts = (*rit)->getList();
+        std::list<Statement*>::reverse_iterator sit;
+        // For each statement this RTL
+        for (sit = stmts.rbegin(); sit != stmts.rend(); sit++) {
+            Statement* s = *sit;
+            LocationSet uses, defs;
+            s->addUsedLocs(uses);
+            s->getDefinitions(defs);
+            // The definitions don't have refs yet
+            defs.addSubscript(s);
+            // Definitions kill uses
+            liveLocs.makeDiff(defs);
+            // Check for livenesses that overlap
+            // For each new use
+            LocSetIter uu;  
+            for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
+                // Only interested in subscripted vars
+                if (!u->isSubscript()) continue;
+                // Interference if we can find a live variable which differs
+                // only in the reference
+                if (liveLocs.findDifferentRef((RefExp*)u)) {
+                    // We have an interference. Record it, but only if new
+                    igraph::iterator gg = ig.find(u);
+                    if (gg == ig.end()) {
+                        (*gg).second = ++tempNum;
+                        if (VERBOSE)
+                            std::cerr << "Interference with " << u <<
+                            ", assigned temp" << std::dec << tempNum << "\n";
+                    }
+                }
+                // Add the uses one at a time. Note: don't use makeUnion,
+                // because then we don't discover interferences from the
+                // same statement, e.g.
+                // blah := r24{2} + r24{3}
+                liveLocs.insert(u);
+            }
+        }
+    }
+    // liveIn is what we calculated last time
+    if (!(liveLocs == liveIn)) {
+        liveIn = liveLocs;
+        return true;        // A change
+    } else
+        // No change
+        return false;
+}
+
+// Locations that are live at the end of this BB are the union of the
+// locations that are live at the start of its successors
+void BasicBlock::getLiveOut(LocationSet &liveout) {
+    liveout.clear();
+    for (unsigned i = 0; i < m_OutEdges.size(); i++) {
+        LocationSet &out = m_OutEdges[i]->liveIn;
+        liveout.makeUnion(out);
+    }
+}

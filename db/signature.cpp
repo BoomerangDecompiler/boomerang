@@ -785,7 +785,7 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/,
             os << "param" << n << std::ends;
             s = os.str();
             ok = true;
-            for (int i = 0; i < params.size(); i++)
+            for (unsigned i = 0; i < params.size(); i++)
                 if (!strcmp(s.c_str(), params[i]->getName()))
                     ok = false;
             n++;
