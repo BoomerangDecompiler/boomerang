@@ -874,15 +874,15 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 }
 
 void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
-    const char *name, std::vector<Exp*> &args, LocationSet &defs)
+    const char *name, std::vector<Exp*> &args, std::vector<Exp*>& rets)
 {
     std::ostringstream s;
     indent(s, indLevel);
-    if (defs.size() >= 1) {
-        LocationSet::iterator it = defs.begin();
-        appendExp(s, (Exp*)*it, PREC_ASSIGN);
+    std::vector<Exp*>::iterator it;
+    if (rets.size() >= 1) {
+        it = rets.begin();
+        appendExp(s, rets.front(), PREC_ASSIGN);
         s << " = ";
-        defs.remove((Exp*)*it);
     }
     s << name << "(";
     for (unsigned int i = 0; i < args.size(); i++) {
@@ -901,13 +901,17 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
         if (i < args.size() - 1) s << ", ";
     }
     s << ");";
-    LocationSet::iterator it = defs.begin();
-    if (it != defs.end()) {
-        s << " // OUT: ";
-    }
-    for (; it != defs.end(); it++) {
+    it = rets.begin();
+    if (it != rets.end())
+        it++;   // Skip first
+    bool first = true;
+    for (; it != rets.end(); it++) {
+        if (first)
+            s << " // OUT: ";
+        else
+            s << ", ";
         appendExp(s, *it, PREC_COMMA);
-        s << ", ";
+        first = false;
     }
     std::string str = s.str();  // Copy the whole string
     int n = str.length();
