@@ -111,6 +111,10 @@ CompoundType::CompoundType() : Type(eCompound)
 {
 }
 
+UnionType::UnionType() : Type(eUnion)
+{
+}
+
 /*==============================================================================
  * FUNCTION:		Type::~Type
  * OVERVIEW:		Virtual destructor
@@ -160,6 +164,10 @@ NamedType::~NamedType()
 }
 
 CompoundType::~CompoundType()
+{
+}
+
+UnionType::~UnionType()
 {
 }
 
@@ -231,6 +239,14 @@ Type *CompoundType::clone() const
 	return t;
 }
 
+Type *UnionType::clone() const
+{
+	UnionType *t = new UnionType();
+	for (unsigned i = 0; i < types.size(); i++)
+		t->addType(types[i]->clone(), names[i].c_str());
+	return t;
+}
+
 Type *SizeType::clone() const
 {
 	SizeType *t = new SizeType(size);
@@ -270,11 +286,27 @@ int CompoundType::getSize() const {
 		n += types[i]->getSize();
 	return n;
 }
+int UnionType::getSize() const {
+	int max = 0;
+	for (unsigned i = 0; i < types.size(); i++) {
+		int sz = types[i]->getSize();
+		if (sz > max) max = sz;
+	}
+	return max;
+}
 int SizeType::getSize() const { return size; }
 
 
 
 Type *CompoundType::getType(const char *nam)
+{
+	for (unsigned i = 0; i < types.size(); i++)
+		if (names[i] == nam)
+			return types[i];
+	return NULL;
+}
+
+Type *UnionType::getType(const char *nam)
 {
 	for (unsigned i = 0; i < types.size(); i++)
 		if (names[i] == nam)
@@ -413,6 +445,17 @@ bool CompoundType::operator==(const Type& other) const {
 	return false;
 }
 
+bool UnionType::operator==(const Type& other) const {
+	const UnionType &uother = (UnionType&)other;
+	if (other.isUnion() && uother.types.size() == types.size()) {
+		for (unsigned i = 0; i < types.size(); i++)
+			if (!(*types[i] == *uother.types[i]))
+				return false;
+		return true;
+	}
+	return false;
+}
+
 bool SizeType::operator==(const Type& other) const {
 	return other.isSize() && (size == ((SizeType&)other).size);
 }
@@ -514,7 +557,13 @@ bool NamedType::operator<(const Type& other) const {
 bool CompoundType::operator<(const Type& other) const {
 	if (id < other.getId()) return true;
 	if (id > other.getId()) return false;
-	return getSize() < other.getSize();
+	return getSize() < other.getSize();		// This won't separate structs of the same size!! MVE
+}
+
+bool UnionType::operator<(const Type& other) const {
+	if (id < other.getId()) return true;
+	if (id > other.getId()) return false;
+	return getNumTypes() < ((const UnionType&)other).getNumTypes();
 }
 
 bool SizeType::operator<(const Type& other) const {
@@ -597,6 +646,11 @@ Exp *NamedType::match(Type *pattern)
 }
 
 Exp *CompoundType::match(Type *pattern)
+{
+	return Type::match(pattern);
+}
+
+Exp *UnionType::match(Type *pattern)
 {
 	return Type::match(pattern);
 }
@@ -707,6 +761,20 @@ const char *NamedType::getCtype(bool final) const { return name.c_str(); }
 
 const char *CompoundType::getCtype(bool final) const {
 	std::string &tmp = *(new std::string("struct { "));
+	for (unsigned i = 0; i < types.size(); i++) {
+		tmp += types[i]->getCtype(final);
+		if (names[i] != "") {
+			tmp += " ";
+			tmp += names[i];
+		}
+		tmp += "; ";
+	}
+	tmp += "}";
+	return strdup(tmp.c_str());
+}
+
+const char *UnionType::getCtype(bool final) const {
+	std::string &tmp = *(new std::string("union { "));
 	for (unsigned i = 0; i < types.size(); i++) {
 		tmp += types[i]->getCtype(final);
 		if (names[i] != "") {
@@ -952,6 +1020,16 @@ CompoundType *Type::asCompound()
 	if (ty->isNamed())
 		ty = ((NamedType*)ty)->resolvesTo();
 	CompoundType *res = dynamic_cast<CompoundType*>(ty);
+	assert(res);
+	return res;
+}
+
+UnionType *Type::asUnion()
+{
+	Type *ty = this;
+	if (ty->isNamed())
+		ty = ((NamedType*)ty)->resolvesTo();
+	UnionType *res = dynamic_cast<UnionType*>(ty);
 	assert(res);
 	return res;
 }
@@ -1241,4 +1319,44 @@ void CompoundType::readMemo(Memo *mm, bool dec)
 
 	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
 		(*it)->restoreMemo(m->mId, dec);
+}
+
+class UnionTypeMemo : public Memo {
+public:
+	UnionTypeMemo(int m) : Memo(m) { }
+	std::vector<Type*> types;
+	std::vector<std::string> names;
+};
+
+Memo *UnionType::makeMemo(int mId)
+{
+	UnionTypeMemo *m = new UnionTypeMemo(mId);
+	m->types = types;
+	m->names = names;
+
+	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
+		(*it)->takeMemo(mId);
+	return m;
+}
+
+void UnionType::readMemo(Memo *mm, bool dec)
+{
+	UnionTypeMemo *m = dynamic_cast<UnionTypeMemo*>(mm);
+	types = m->types;
+	names = m->names;
+
+	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+}
+
+void UnionType::addType(Type *n, const char *str) {
+	if (n->isUnion()) {
+		UnionType* utp = (UnionType*)n;
+		// Note: need to check for name clashes eventually
+		types.insert(types.end(), utp->types.begin(), utp->types.end());
+		names.insert(names.end(), utp->names.begin(), utp->names.end());
+	} else {
+		types.push_back(n); 
+		names.push_back(str);
+	}
 }

@@ -47,12 +47,13 @@ class NamedType;
 class PointerType;
 class ArrayType;
 class CompoundType;
+class UnionType;
 class SizeType;
 class Exp;
 class XMLProgParser;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
-	eArray, eNamed, eCompound, eSize};	  // For operator< mostly
+	eArray, eNamed, eCompound, eUnion, eSize};	  // For operator< mostly
 
 class Type : public Memoisable {
 protected:
@@ -74,32 +75,34 @@ virtual		~Type();
 	static Type* parseType(const char *str); // parse a C type
 
 	// runtime type information
-virtual bool isVoid() const { return false; }
-virtual bool isFunc() const { return false; }
-virtual bool isBoolean() const { return false; }
-virtual bool isChar() const { return false; }
-virtual bool isInteger() const { return false; }
-virtual bool isFloat() const { return false; }
-virtual bool isPointer() const { return false; }
-virtual bool isArray() const { return false; }
-virtual bool isNamed() const { return false; }
-virtual bool isCompound() const { return false; }
-virtual bool isSize() const { return false; }
+virtual bool isVoid()		const { return false; }
+virtual bool isFunc()		const { return false; }
+virtual bool isBoolean()	const { return false; }
+virtual bool isChar()		const { return false; }
+virtual bool isInteger() 	const { return false; }
+virtual bool isFloat()		const { return false; }
+virtual bool isPointer()	const { return false; }
+virtual bool isArray()		const { return false; }
+virtual bool isNamed()		const { return false; }
+virtual bool isCompound()	const { return false; }
+virtual bool isUnion()		const { return false; }
+virtual bool isSize()		const { return false; }
 
 // Return false if some info is missing, e.g. unknown sign, size or basic type
 virtual bool isComplete() {return true;}
 
 	// These replace type casts
-	VoidType *asVoid();
-	FuncType *asFunc();
-	BooleanType *asBoolean();
-	CharType *asChar();
-	IntegerType *asInteger();
-	FloatType *asFloat();
-	NamedType *asNamed();
-	PointerType *asPointer();
-	ArrayType *asArray();
+	VoidType	*asVoid();
+	FuncType	*asFunc();
+	BooleanType	*asBoolean();
+	CharType	*asChar();
+	IntegerType	*asInteger();
+	FloatType	*asFloat();
+	NamedType	*asNamed();
+	PointerType	*asPointer();
+	ArrayType	*asArray();
 	CompoundType *asCompound();
+	UnionType	*asUnion();
 
 	// These replace calls to isNamed() and resolvesTo()
 	bool resolvesToVoid();
@@ -111,6 +114,7 @@ virtual bool isComplete() {return true;}
 	bool resolvesToPointer();
 	bool resolvesToArray();
 	bool resolvesToCompound();
+	bool resolvesToUnion();
 
 	// cloning
 virtual Type* clone() const = 0;
@@ -149,6 +153,10 @@ static	void	clearNamedTypes() { namedTypes.clear(); }
 		virtual Memo *makeMemo(int mId) { return new Memo(mId); }
 		virtual void readMemo(Memo *m, bool dec) { }
 
+				// For data-flow-based type analysis only: implement the meet operator
+virtual Type*	meetWith(Type* other) = 0;
+		Type*	createUnion(Type* other);		// Create a union of this Type and other
+
 protected:
 	friend class XMLProgParser;
 };
@@ -169,6 +177,8 @@ virtual Exp *match(Type *pattern);
 virtual int		getSize() const;
 
 virtual const char *getCtype(bool full = true) const;
+
+virtual Type*	meetWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
@@ -200,6 +210,8 @@ virtual const char *getCtype(bool full = true) const;
 
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
+
+virtual Type*	meetWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
@@ -245,6 +257,8 @@ virtual std::string getTempName() const;
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
 };
@@ -275,6 +289,8 @@ virtual std::string getTempName() const;
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
 };
@@ -296,6 +312,8 @@ virtual int		getSize() const;
 
 virtual const char *getCtype(bool full = true) const;
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
 };
@@ -316,6 +334,8 @@ virtual Exp *match(Type *pattern);
 virtual int		getSize() const;
 
 virtual const char *getCtype(bool full = true) const;
+
+virtual Type*	meetWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
@@ -348,6 +368,8 @@ virtual const char *getCtype(bool full = true) const;
 
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
+
+virtual Type*	meetWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
@@ -384,6 +406,8 @@ virtual const char *getCtype(bool full = true) const;
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
 	ArrayType() : Type(eArray), base_type(NULL), length(0) { }
@@ -417,10 +441,13 @@ virtual const char *getCtype(bool full = true) const;
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
 };
 
+// The compound type represents structures, not unions
 class CompoundType : public Type {
 private:
 	std::vector<Type*> types;
@@ -459,9 +486,48 @@ virtual const char *getCtype(bool full = true) const;
 		virtual Memo *makeMemo(int mId);
 		virtual void readMemo(Memo *m, bool dec);
 
+virtual Type*	meetWith(Type* other);
+
 protected:
 	friend class XMLProgParser;
-};
+};	// class CompoundType
+
+// The union type represents the union of any number of any other types
+class UnionType : public Type {
+private:
+	std::vector<Type*> types;
+	std::vector<std::string> names;
+
+public:
+			UnionType();
+virtual ~UnionType();
+virtual bool isUnion() const { return true; }
+
+	void	addType(Type *n, const char *str);
+	int		getNumTypes() const { return types.size(); }
+	Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
+	Type	*getType(const char *nam);
+	const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
+
+virtual Type* clone() const;
+
+virtual bool	operator==(const Type& other) const;
+//virtual bool	  operator-=(const Type& other) const;
+virtual bool	operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
+
+virtual int		getSize() const;
+
+virtual const char *getCtype(bool full = true) const;
+
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
+
+virtual Type*	meetWith(Type* other);
+
+protected:
+	friend class XMLProgParser;
+};	// class UnionType
 
 // This class is for before type analysis. Typically, you have no info at
 // all, or only know the size (e.g. width of a register or memory transfer)
@@ -483,7 +549,9 @@ virtual void	setSize(int sz) {size = sz;}
 virtual bool	isSize() const { return true; }
 virtual bool	isComplete() {return false;}	// Basic type is unknown
 virtual const char* getCtype(bool full = true) const;
-};
+virtual Type*	meetWith(Type* other);
+
+};	// class SizeType
 
 // Not part of the Type class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Type* t);  // Print the Type

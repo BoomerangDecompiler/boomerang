@@ -34,7 +34,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
-	noProve(false), noChangeSignatures(false), noTypeAnalysis(true)
+	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -104,7 +104,6 @@ void Boomerang::help() {
 	std::cerr << "-nr: no removal of unnedded labels\n";
 	std::cerr << "-nP: no promotion of signatures (at all!)\n";
 	std::cerr << "-nR: no removal of unused returns\n";
-	std::cerr << "-nt: no type analysis\n";
 	std::cerr << "-o <output path>: where to generate output (defaults to "
 		"./output/)\n";
 	std::cerr << "-O: handle Overlapped registers (for X86 only)\n";
@@ -114,6 +113,8 @@ void Boomerang::help() {
 	std::cerr << "-s <addr> <name>: define a symbol\n";
 	std::cerr << "-sf <filename>: read a symbol/signature file\n";
 	std::cerr << "-t: trace every instruction decoded\n";
+	std::cerr << "-Tc: use old constraint-based Type analysis\n";
+	std::cerr << "-Td: use data-flow-based Type analysis\n";
 	std::cerr << "-x: dump xml files\n";
 	std::cerr << "-LD: load before decompile (<program> becomes xml input file)\n";
 	std::cerr << "-SD: save before decompile\n";
@@ -571,6 +572,12 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'x': dumpXML = true; break;
 			case 'r': printRtl = true; break;
 			case 't': traceDecoder = true; break;
+			case 'T':
+				if (argv[i][2] == 'c')
+					conTypeAnalysis = true;		// -Tc: use old constraint-based type analysis
+				else if (argv[i][2] == 'd')
+					dfaTypeAnalysis = true;		// -Td: use data-flow-based type analysis
+				break;
 			case 'g': 
 				dotFile = argv[++i];
 				break;
@@ -619,9 +626,6 @@ int Boomerang::commandLine(int argc, const char **argv)
 						break;
 					case 'R':
 						noRemoveReturns = true;
-						break;
-					case 't':
-						noTypeAnalysis = true;
 						break;
 					default:
 						help();

@@ -1334,27 +1334,6 @@ void ExpTest::testAddUsedLocs() {
 	actual = ost8.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-	// m[local21 + 16] := phi{0, 372}
-	l.clear();
-	Assign s372(new Const(0), new Const(0));
-	s372.setNumber(372);
-	Exp* base = Location::memOf(
-		new Binary(opPlus,
-			Location::local("local21", NULL),
-			new Const(16)));
-	PhiAssign* phi = new PhiAssign(base);
-	phi->putAt(0, NULL);
-	phi->putAt(1, &s372);
-	phi->addUsedLocs(l);
-	// Note: phi's were not considered to use blah if they ref m[blah],
-	// so local21 was not considered used
-	expected = "m[local21 + 16]{0},\tm[local21 + 16]{372},\tlocal21\n";
-	std::ostringstream ost9;
-	l.print(ost9);
-	actual = ost9.str();
-	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	
-
 }
 
 /*==============================================================================

@@ -3411,7 +3411,7 @@ void UserProc::addCallees(std::set<UserProc*>& callees) {
 	}
 }
 
-void UserProc::typeAnalysis(Prog* prog) {
+void UserProc::conTypeAnalysis(Prog* prog) {
 	if (DEBUG_TA)
 		LOG << "Type Analysis for Procedure " << getName() << "\n";
 	Constraints consObj;
@@ -3506,6 +3506,15 @@ if (!cc->first->isTypeOf()) continue;
 		(*ss)->clearConscripts();
 	}
 }
+
+void UserProc::dfaTypeAnalysis(Prog* prog) {
+
+
+
+}
+
+
+
 
 bool UserProc::searchAndReplace(Exp *search, Exp *replace)
 {

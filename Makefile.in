@@ -111,7 +111,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/pentiumfrontend.o
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
-TYPEOBJS = type/constraint.o type/type.o
+TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
     ${TYPEOBJS}
 
@@ -270,6 +270,7 @@ codegen/syntax.o: include/hllcode.h include/statement.h \
 
 type/constraint.o: include/constraint.h include/exp.h include/type.h
 type/type.o: include/type.h
+type/dfa.o: include/type.h
 type/TypeTest.o: type/TypeTest.h include/util.h include/type.h \
     include/constraint.h
 

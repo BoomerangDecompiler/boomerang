@@ -169,7 +169,8 @@ public:
 	void fromSSAform();
 
 	// Type analysis
-	void typeAnalysis();
+	void conTypeAnalysis();
+	void dfaTypeAnalysis();
 
 	// Generate dotty file
 	void generateDotFile();

@@ -927,8 +927,16 @@ void Prog::decompile() {
 		}
 	}
 
-	// Type analysis is now on by default
-	typeAnalysis();
+	// Type analysis, if requested
+	if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
+		std::cerr << "Can't use two types of type analysis at once!\n";
+		Boomerang::get()->conTypeAnalysis = false;
+	}
+	if (Boomerang::get()->conTypeAnalysis)
+		conTypeAnalysis();
+	if (Boomerang::get()->dfaTypeAnalysis)
+		dfaTypeAnalysis();
+
 
 	if (VERBOSE)
 		LOG << "transforming from SSA\n";
@@ -1082,24 +1090,36 @@ void Prog::fromSSAform() {
 	}
 }
 
-void Prog::typeAnalysis() {
-	if (Boomerang::get()->noTypeAnalysis) {
-		LOG << "\nNote: no type analysis\n\n";
-		return;
-	}
+void Prog::conTypeAnalysis() {
 	if (VERBOSE || DEBUG_TA)
-		LOG << "=== Start Type Analysis ===\n";
+		LOG << "=== Start Constraint-based Type Analysis ===\n";
 	// FIXME: This needs to be done bottom of the call-tree first, with repeat
 	// until no change for cycles in the call graph
 	std::list<Proc*>::iterator pp;
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
-		proc->typeAnalysis(this);
+		proc->conTypeAnalysis(this);
 	}
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== End Type Analysis ===\n";
 }
+
+void Prog::dfaTypeAnalysis() {
+	if (VERBOSE || DEBUG_TA)
+		LOG << "=== Start Data-flow-based Type Analysis ===\n";
+	// FIXME: Does this need to be done bottom of the call-tree first, with repeat
+	// until no change for cycles in the call graph?
+	std::list<Proc*>::iterator pp;
+	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+		UserProc* proc = (UserProc*)(*pp);
+		if (proc->isLib()) continue;
+		proc->dfaTypeAnalysis(this);
+	}
+	if (VERBOSE || DEBUG_TA)
+		LOG << "=== End Type Analysis ===\n";
+}
+
 
 void Prog::printCallGraph() {
 	std::string fname = Boomerang::get()->getOutputPath() 

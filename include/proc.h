@@ -489,7 +489,8 @@ public:
 	void insertAssignAfter(Statement* s, int tempNum, Exp* right);
 	// Insert statement a after statement s
 	void insertStatementAfter(Statement* s, Statement* a);
-	void typeAnalysis(Prog* prog);
+	void conTypeAnalysis(Prog* prog);
+	void dfaTypeAnalysis(Prog* prog);
 
 	// For the final pass of removing returns that are never used
 	typedef std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
