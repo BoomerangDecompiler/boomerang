@@ -1,0 +1,123 @@
+About this file
+  This file is a very loose plan for designing boomerang, as seen by
+  Mike Van Emmerik.
+
+Module Loader
+  Interface as per UQBT's BinaryFile.h. Only change is to add
+  the "construct" call to the derived classes, so that they can be
+  called by name. It would be nice to make it work with BFD one day.
+
+Module Frontend
+  Calls Loader to load the file; Decoder to decode each instruction
+  Don't think this module should deal with finding entry point(s)
+  Methods:
+    initDecode(Native entryPoint)
+      At this stage, assume it is only called once, to start the whole
+      decoding process off. No information to be saved. Recursively
+      analyses callees. May need to pass callbacks or send messages or
+      something so the GIU can know of its progress.
+    extraDecode(Native address)
+      Used when an additional code address is found. For example, the
+      target of a register jump (as found by expert, or analysis other
+      than the standard switch analysis). Is aware of exising code; just
+      decodes all code reachable from this newly established code address.
+
+Module Decoder
+  Decode one instruction to IR. Direct access to database? Probably not; just
+  return a list of expressions.
+  It would be nice to have something like this:
+    Method:
+      decodeOneInstr(Native address)
+  but in reality it looks like it will just be the decodeInstruction function
+  in the machine/<arch>/decoder.m file.
+
+Module RegJump
+  Switch table analysis. Does NOT modify database.
+  Method:
+    analyseRegJump(Native address)
+      Returns some sort of struct with all the information about the switch:
+      number of entries, their addresses, some sort of information that will
+      allow the "switch variable" to be identified
+
+Module RegCall
+  Similar to the above, except looks for vtable patterns, and tries to find
+  definitions for the object. Maybe better to just replace dispatch code with
+  some kind of HLCall, and do a *separate* search for vtables in the data
+  section, but that won't find which object is associated with which vtable
+  dispatcher. Also try to find candidate targets for general function pointer
+  calls (in some cases will just flag as a problem for human analysis).
+
+Module DB (database)
+  Various requirements. Main one is semantics; we want to associate a list of
+  expressions (class Exp, a tree version of SemStr with assignments and
+  perhaps something for flags).
+  I'd like to use less IR classes, e.g. eliminate class RT; assignments
+  can be just Exp's with idAssign as the top level operator. The equivalent
+  of UQBT's RTlist (later replaced with HRTL) might be ExpList, a list of
+  pointers to expressions (pointers to avoid copying objects). ExpList would
+  be the base class for all the High Level RTL classes, such as HLJump etc.
+  I see no reason to change those.
+  The equivalent of FLAGCALL RTs could be put into Exp's themselves; it seems
+  to me that flags are part of the semantics of an expression. E.g. this Exp
+  adds its operands, and it sets the flags. A lot of temporary variable copying
+  can be avoided if we assume that the inputs and outputs of the expression
+  are also the inputs to the flag function. The decompiler itself won't be
+  using the details of flag behaviour, but I think it's important that the
+  IR be detailed enough to be used for things other than the decompiler.
+  After all, we can save the IR to a GXL (or other file) and use that file
+  for all sorts of purposes, perhaps emulation which will require flag details.
+  The flag information could be as simple as an optional parameter for the
+  idAssign operator, which somehow indicated the name of a flag function, e.g.
+  SUBFLAGS32. I'm not sure where the definition of these functions should be
+  stored; in a sense, these are constants for a given target (input architect-
+  ure), and so may not need to be in the database at all. In the rare cases
+  when the operands to the flag function don't correspond to the operands of
+  any Exp, then we have to copy operands to temps (as before) and engineer an
+  Exp with the required operands.
+
+  The other main requirement of the database is for what might be called
+  decompilation state. These keep information about each source address, e.g.
+  whether code or data, operands are pointers or not, decimal/hex/other
+  representation, etc. These come from two main sources: analysis, and from
+  user commands (may even override the result of analysis).
+
+Module DataFlow
+  Purpose: perform a complete data flow for the whole program. Separate
+  method to perform forward substitution.
+
+Module Backend
+  Purpose: output language dependent module to emit high level code.
+
+Module Xform
+  Purpose: Manage all the transformations between the decoder and the back
+  end. Has the ability to disable, move, add, and undo transformations,
+  such as inlining one RTL into another.
+
+=====
+File organisation
+
+Each module, apart from the main executable, will have all associated
+files in its own subdirectory. This will be flat, e.g. don't put decoder
+inside frontend, because in the end it gets too hard to decide where to
+put any one module (and where someone else has already put a module).
+Each module directory will have a makefile which will make the module
+and a test program for that module. The output of the test program should
+be obvious; at least it must return non zero if any test fails, and
+error messages should go to stderr. Most of the time, stdout can be
+ignored for the test programs. (I'd like to do something with CppUnit
+for unit (individual class) testing).
+
+The interface to other modules should be via a file in ../interface. Other
+internal header files are not in a special directory (so no /include as in
+UQBT). Most compiles will therefore need "-I../interface". Note: it appears
+that the Unix convention is to put all .h files into /include, as with UQBT. If
+we do this, it may be worth distinguishing interface classes with a naming
+convention.
+
+All dynamic libraries will be files ending in ".so" in their own directory
+(so they can do things like "rm -f *.so" in their "make clean" entries.
+Each Makefile will have a "make install" entry, which makes soft links
+from the /bin directory (/bin relative to the top level boomerang directory).
+To run the programs, users may need to add "/path/to/boomerang/bin" to
+their LD_LIBRARY_PATH. Maybe a future installer will do this automatically.
+
