@@ -73,7 +73,7 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 	result.numBytes = size; \
 	jump->setDest(relocd-delta); \
 	jump->setCondType(cond); \
-	SHOW_ASM(name<<" "<<BIcr<<", "<<std::hex<<relocd-delta)
+	SHOW_ASM(name<<" "<<BIcr<<", 0x"<<std::hex<<relocd-delta)
 
 /*==============================================================================
  * FUNCTION:	   unused
@@ -134,18 +134,50 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     "lbzu", "stw", "stwu", "stb", "stbu", "lhz", "lhzu", "lha", "lhau", 
     "sth", "sthu", "lmw", "stmw", 
   };
-  char *MATCH_name_BIcc_3[] = {"bge", "ble", "bne", "bns", };
-  char *MATCH_name_BIcc_4[] = {"bgel", "blel", "bnel", "bnsl", };
-  char *MATCH_name_BIcc_5[] = {"blt", "bgt", "beq", "bso", };
-  char *MATCH_name_BIcc_6[] = {"bltl", "bgtl", "beql", "bsol", };
-  char *MATCH_name_LK_7[] = {"ballr", "ball", };
-  char *MATCH_name_LK_8[] = {"crnor", "bl", };
-  char *MATCH_name_BIcc_9[] = {"bgelr", "blelr", "bnelr", "bnslr", };
-  char *MATCH_name_BIcc_10[] = {"bltlr", "bgtlr", "beqlr", "bsolr", };
-  char *MATCH_name_LK_11[] = {"crandc", "ballrl", };
-  char *MATCH_name_BIcc_18[] = {"bgectr", "blectr", "bnectr", "bnsctr", };
-  char *MATCH_name_BIcc_19[] = {"bltctr", "bgtctr", "beqctr", "bsoctr", };
-  char *MATCH_name_Xo1_22[] = {
+  char *MATCH_name_BO4_3[] = {
+    (char *)0, (char *)0, "bge", (char *)0, (char *)0, (char *)0, "blt", 
+  };
+  char *MATCH_name_BO4_4[] = {
+    (char *)0, (char *)0, "ble", (char *)0, (char *)0, (char *)0, "bgt", 
+  };
+  char *MATCH_name_BO4_5[] = {
+    (char *)0, (char *)0, "bne", (char *)0, (char *)0, (char *)0, "beq", 
+  };
+  char *MATCH_name_BO4_6[] = {
+    (char *)0, (char *)0, "bns", (char *)0, (char *)0, (char *)0, "bso", 
+  };
+  char *MATCH_name_BIcc_7[] = {"bgel", "blel", "bnel", "bnsl", };
+  char *MATCH_name_BIcc_8[] = {"bltl", "bgtl", "beql", "bsol", };
+  char *MATCH_name_LK_10[] = {"crnor", "bl", };
+  char *MATCH_name_BO4_12[] = {
+    (char *)0, (char *)0, "bgelr", (char *)0, (char *)0, (char *)0, "bltlr", 
+  };
+  char *MATCH_name_BO4_13[] = {
+    (char *)0, (char *)0, "blelr", (char *)0, (char *)0, (char *)0, "bgtlr", 
+  };
+  char *MATCH_name_BO4_14[] = {
+    (char *)0, (char *)0, "bnelr", (char *)0, (char *)0, (char *)0, "beqlr", 
+  };
+  char *MATCH_name_BO4_15[] = {
+    (char *)0, (char *)0, "bnslr", (char *)0, (char *)0, (char *)0, "bsolr", 
+  };
+  char *MATCH_name_BO4_25[] = {
+    (char *)0, (char *)0, "bgectr", (char *)0, (char *)0, (char *)0, 
+    "bltctr", 
+  };
+  char *MATCH_name_BO4_26[] = {
+    (char *)0, (char *)0, "blectr", (char *)0, (char *)0, (char *)0, 
+    "bgtctr", 
+  };
+  char *MATCH_name_BO4_27[] = {
+    (char *)0, (char *)0, "bnectr", (char *)0, (char *)0, (char *)0, 
+    "beqctr", 
+  };
+  char *MATCH_name_BO4_28[] = {
+    (char *)0, (char *)0, "bnsctr", (char *)0, (char *)0, (char *)0, 
+    "bsoctr", 
+  };
+  char *MATCH_name_Xo1_30[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -282,7 +314,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, "srawi", 
   };
-  char *MATCH_name_Xo9_24[] = {
+  char *MATCH_name_Xo9_32[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, "subfc", (char *)0, "addc", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -364,6 +396,144 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, "divd", (char *)0, "divw", 
+  };
+  char *MATCH_name_Xo1_38[] = {
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "slwq", 
+    (char *)0, (char *)0, "sldq", "andq", (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "andcq", (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, "norq", (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "eqvq", (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "xorq", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "orcq", (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "orq", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "nandq", (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "srwq", (char *)0, (char *)0, "srdq", (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "srawq", (char *)0, "sradq", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srawiq", 
   };
   unsigned MATCH_w_32_0;
   { 
@@ -470,129 +640,310 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           
           break;
         case 16: 
-          
-            switch((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */) {
-              case 0: case 1: case 2: case 3: case 5: case 6: case 7: case 8: 
-              case 9: case 10: case 11: case 13: case 14: case 15: case 16: 
-              case 17: case 18: case 19: case 21: case 22: case 23: case 24: 
-              case 25: case 26: case 27: case 28: case 29: case 30: case 31: 
-                goto MATCH_label_a0; break;
-              case 4: 
-                if ((MATCH_w_32_0 >> 1 & 0x1) /* AA at 0 */ == 1) 
-                  goto MATCH_label_a0;  /*opt-block+*/
-                else 
-                  if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                    
-                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
-                        case 0: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_4[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
+          if ((MATCH_w_32_0 >> 1 & 0x1) /* AA at 0 */ == 1) 
+            goto MATCH_label_a0;  /*opt-block+*/
+          else 
+            if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
+              if ((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */ == 20) { 
+                MATCH_name = "ball"; 
+                { 
+                  char *name = MATCH_name;
+                  unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                  unsigned reladdr = 
+                    4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + 
+                    addressToPC(MATCH_p);
+                  nextPC = 4 + MATCH_p; 
+                  
+#line 189 "frontend/machine/ppc/decoder.m"
+                  		// Always "conditional" branch with link, test/OSX/hello has this
+
+                  		if (reladdr - delta - pc == 4) {	// Branch to next instr?
+
+                  			// Effectively %LR = %pc+4, but give the actual value for %pc
+
+                  			Assign* as = new Assign(
+
+                  				new IntegerType,
+
+                  				new Unary(opMachFtr, new Const("%LR")),
+
+                  				new Const(pc+4));
+
+                  			stmts = new std::list<Statement*>;
+
+                  			stmts->push_back(as);
+
+                  			SHOW_ASM(name<<" "<<BIcr<<", .+4"<<" %LR = %pc+4")
+
+                  		} else {
+
+                  			Exp* dest = DIS_RELADDR;
+
+                  			stmts = instantiate(pc, name, dest);
+
+                  			CallStatement* newCall = new CallStatement;
+
+                  			// Record the fact that this is not a computed call
+
+                  			newCall->setIsComputed(false);
+
+                  			// Set the destination expression
+
+                  			newCall->setDest(dest);
+
+                  			result.rtl = new RTL(pc, stmts);
+
+                  			result.rtl->appendStmt(newCall);
+
+                  		}
+
+                  		unused(BIcr);
+
+                  
+
+                  
+                  
+                  
+                }
+                
+              } /*opt-block*/
+              else 
+                
+                  switch((MATCH_w_32_0 >> 22 & 0xf) /* BO4 at 0 */) {
+                    case 0: case 1: case 3: case 4: case 5: case 7: case 8: 
+                    case 9: case 10: case 11: case 12: case 13: case 14: 
+                    case 15: 
+                      goto MATCH_label_a0; break;
+                    case 2: 
+                      
+                        switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
+                          case 0: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_7[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
 #line 337 "frontend/machine/ppc/decoder.m"
-                            
+                              
 
-                            		std::cerr << "HACK " << name << "\n";
+                              		std::cerr << "HACK " << name << "\n";
 
+                              
+                              
+                              
+                            }
                             
-                            
-                            
-                          }
-                          
-                          break;
-                        case 1: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_4[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
+                            break;
+                          case 1: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_7[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
 #line 333 "frontend/machine/ppc/decoder.m"
-                            
+                              
 
-                            		std::cerr << "HACK " << name << "\n";
+                              		std::cerr << "HACK " << name << "\n";
 
+                              
+                              
+                              
+                            }
                             
+                            break;
+                          case 2: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_7[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 341 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+                              
+                              
+                            }
                             
+                            break;
+                          case 3: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_7[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 346 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+
+                              	// Shift right arithmetic
+
+                              
+                              
+                              
+                            }
                             
-                          }
+                            break;
+                          default: assert(0);
+                        } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/ 
+                      break;
+                    case 6: 
+                      
+                        switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
+                          case 0: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_8[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 331 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+                              
+                              
+                            }
+                            
+                            break;
+                          case 1: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_8[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 339 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+                              
+                              
+                            }
+                            
+                            break;
+                          case 2: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_8[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 335 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+                              
+                              
+                            }
+                            
+                            break;
+                          case 3: 
+                            MATCH_name = 
+                              MATCH_name_BIcc_8[(MATCH_w_32_0 >> 16 & 0x3) 
+                                  /* BIcc at 0 */]; 
+                            { 
+                              char *name = MATCH_name;
+                              unsigned BIcr = 
+                                (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                              unsigned reladdr = 
+                                4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                      /* BD at 0 */ + addressToPC(MATCH_p);
+                              nextPC = 4 + MATCH_p; 
+                              
+#line 343 "frontend/machine/ppc/decoder.m"
+                              
+
+                              		std::cerr << "HACK " << name << "\n";
+
+                              
+                              
+                              
+                            }
+                            
+                            break;
+                          default: assert(0);
+                        } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/ 
+                      break;
+                    default: assert(0);
+                  } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/   
+            else 
+              
+                switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
+                  case 0: 
+                    
+                      switch((MATCH_w_32_0 >> 22 & 0xf) /* BO4 at 0 */) {
+                        case 0: case 1: case 3: case 4: case 5: case 7: 
+                        case 8: case 9: case 10: case 11: case 12: case 13: 
+                        case 14: case 15: 
+                          if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                  /* BO at 0 */ == 20) 
+                            goto MATCH_label_a1;  /*opt-block+*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
                           
                           break;
                         case 2: 
                           MATCH_name = 
-                            MATCH_name_BIcc_4[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 341 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 3: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_4[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 346 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-
-                            	// Shift right arithmetic
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        default: assert(0);
-                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/  
-                  else 
-                    
-                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
-                        case 0: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_3[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
+                            MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
                           { 
                             char *name = MATCH_name;
                             unsigned BIcr = 
@@ -613,10 +964,50 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           }
                           
                           break;
-                        case 1: 
+                        case 6: 
                           MATCH_name = 
-                            MATCH_name_BIcc_3[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
+                            MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
+                          { 
+                            char *name = MATCH_name;
+                            unsigned BIcr = 
+                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                            unsigned reladdr = 
+                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                    /* BD at 0 */ + addressToPC(MATCH_p);
+                            nextPC = 4 + MATCH_p; 
+                            
+#line 223 "frontend/machine/ppc/decoder.m"
+                            
+
+                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
+
+                            
+                            
+                            
+                          }
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                    break;
+                  case 1: 
+                    
+                      switch((MATCH_w_32_0 >> 22 & 0xf) /* BO4 at 0 */) {
+                        case 0: case 1: case 3: case 4: case 5: case 7: 
+                        case 8: case 9: case 10: case 11: case 12: case 13: 
+                        case 14: case 15: 
+                          if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                  /* BO at 0 */ == 20) 
+                            goto MATCH_label_a1;  /*opt-block+*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 2: 
+                          MATCH_name = 
+                            MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
                           { 
                             char *name = MATCH_name;
                             unsigned BIcr = 
@@ -637,10 +1028,54 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           }
                           
                           break;
+                        case 6: 
+                          MATCH_name = 
+                            MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
+                          { 
+                            char *name = MATCH_name;
+                            unsigned BIcr = 
+                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                            unsigned reladdr = 
+                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                    /* BD at 0 */ + addressToPC(MATCH_p);
+                            nextPC = 4 + MATCH_p; 
+                            
+#line 232 "frontend/machine/ppc/decoder.m"
+                            
+
+                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
+
+                            //	| bnl(BIcr, reladdr) [name] =>								// bnl same as bge
+
+                            //		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+
+                            
+                            
+                            
+                          }
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                    break;
+                  case 2: 
+                    
+                      switch((MATCH_w_32_0 >> 22 & 0xf) /* BO4 at 0 */) {
+                        case 0: case 1: case 3: case 4: case 5: case 7: 
+                        case 8: case 9: case 10: case 11: case 12: case 13: 
+                        case 14: case 15: 
+                          if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                  /* BO at 0 */ == 20) 
+                            goto MATCH_label_a1;  /*opt-block+*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
                         case 2: 
                           MATCH_name = 
-                            MATCH_name_BIcc_3[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
+                            MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
                           { 
                             char *name = MATCH_name;
                             unsigned BIcr = 
@@ -665,10 +1100,50 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           }
                           
                           break;
-                        case 3: 
+                        case 6: 
                           MATCH_name = 
-                            MATCH_name_BIcc_3[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
+                            MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
+                          { 
+                            char *name = MATCH_name;
+                            unsigned BIcr = 
+                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                            unsigned reladdr = 
+                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
+                                    /* BD at 0 */ + addressToPC(MATCH_p);
+                            nextPC = 4 + MATCH_p; 
+                            
+#line 227 "frontend/machine/ppc/decoder.m"
+                            
+
+                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JE, BIcr);
+
+                            
+                            
+                            
+                          }
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                    break;
+                  case 3: 
+                    
+                      switch((MATCH_w_32_0 >> 22 & 0xf) /* BO4 at 0 */) {
+                        case 0: case 1: case 3: case 4: case 5: case 7: 
+                        case 8: case 9: case 10: case 11: case 12: case 13: 
+                        case 14: case 15: 
+                          if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                  /* BO at 0 */ == 20) 
+                            goto MATCH_label_a1;  /*opt-block+*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 2: 
+                          MATCH_name = 
+                            MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
                           { 
                             char *name = MATCH_name;
                             unsigned BIcr = 
@@ -697,197 +1172,10 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           }
                           
                           break;
-                        default: assert(0);
-                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/   
-                break;
-              case 12: 
-                if ((MATCH_w_32_0 >> 1 & 0x1) /* AA at 0 */ == 1) 
-                  goto MATCH_label_a0;  /*opt-block+*/
-                else 
-                  if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                    
-                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
-                        case 0: 
+                        case 6: 
                           MATCH_name = 
-                            MATCH_name_BIcc_6[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 331 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 1: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_6[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 339 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 2: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_6[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 335 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 3: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_6[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 343 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        default: assert(0);
-                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/  
-                  else 
-                    
-                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
-                        case 0: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_5[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 223 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 1: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_5[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 232 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
-
-                            //	| bnl(BIcr, reladdr) [name] =>								// bnl same as bge
-
-                            //		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 2: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_5[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            unsigned reladdr = 
-                              4 * (MATCH_w_32_0 >> 2 & 0x3fff) 
-                                    /* BD at 0 */ + addressToPC(MATCH_p);
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 227 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JE, BIcr);
-
-                            
-                            
-                            
-                          }
-                          
-                          break;
-                        case 3: 
-                          MATCH_name = 
-                            MATCH_name_BIcc_5[(MATCH_w_32_0 >> 16 & 0x3) 
-                                /* BIcc at 0 */]; 
+                            MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf) 
+                                /* BO4 at 0 */]; 
                           { 
                             char *name = MATCH_name;
                             unsigned BIcr = 
@@ -909,101 +1197,10 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           
                           break;
                         default: assert(0);
-                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/   
-                break;
-              case 20: 
-                if ((MATCH_w_32_0 >> 1 & 0x1) /* AA at 0 */ == 1) 
-                  goto MATCH_label_a0;  /*opt-block+*/
-                else 
-                  if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) { 
-                    MATCH_name = 
-                      MATCH_name_LK_7[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
-                    { 
-                      char *name = MATCH_name;
-                      unsigned BIcr = 
-                        (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                      unsigned reladdr = 
-                        4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + 
-                        addressToPC(MATCH_p);
-                      nextPC = 4 + MATCH_p; 
-                      
-#line 189 "frontend/machine/ppc/decoder.m"
-                      		// Always "conditional" branch with link, test/OSX/hello has this
-
-                      		if (reladdr - delta - pc == 4) {	// Branch to next instr?
-
-                      			// Effectively %LR = %pc+4, but give the actual value for %pc
-
-                      			Assign* as = new Assign(
-
-                      				new IntegerType,
-
-                      				new Unary(opMachFtr, new Const("%LR")),
-
-                      				new Const(pc+4));
-
-                      			stmts = new std::list<Statement*>;
-
-                      			stmts->push_back(as);
-
-                      			SHOW_ASM(name<<" "<<BIcr<<", .+4"<<" %LR = %pc+4")
-
-                      		} else {
-
-                      			Exp* dest = DIS_RELADDR;
-
-                      			stmts = instantiate(pc, name, dest);
-
-                      			CallStatement* newCall = new CallStatement;
-
-                      			// Record the fact that this is not a computed call
-
-                      			newCall->setIsComputed(false);
-
-                      			// Set the destination expression
-
-                      			newCall->setDest(dest);
-
-                      			result.rtl = new RTL(pc, stmts);
-
-                      			result.rtl->appendStmt(newCall);
-
-                      		}
-
-                      		unused(BIcr);
-
-                      
-
-                      
-                      
-                      
-                    }
-                    
-                  } /*opt-block*/
-                  else { 
-                    unsigned BIcr = 
-                      (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                    unsigned reladdr = 
-                      4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + 
-                      addressToPC(MATCH_p);
-                    nextPC = 4 + MATCH_p; 
-                    
-#line 248 "frontend/machine/ppc/decoder.m"
-                    
-
-                    		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
-
-                    
-
-                    	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
-
-                    
-                    
-                    
-                  } /*opt-block*//*opt-block+*/ /*opt-block+*/
-                break;
-              default: assert(0);
-            } /* (MATCH_w_32_0 >> 21 & 0x1f) -- BO at 0 --*/ 
+                      } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                    break;
+                  default: assert(0);
+                } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/   
           break;
         case 18: 
           if ((MATCH_w_32_0 >> 1 & 0x1) /* AA at 0 */ == 1) 
@@ -1011,7 +1208,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           else 
             if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) { 
               MATCH_name = 
-                MATCH_name_LK_8[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
+                MATCH_name_LK_10[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
               { 
                 char *name = MATCH_name;
                 unsigned reladdr = 
@@ -1108,26 +1305,59 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 448: 
                 goto MATCH_label_a0; break;
               case 16: 
-                
-                  switch((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */) {
-                    case 0: case 1: case 2: case 3: case 5: case 6: case 7: 
-                    case 8: case 9: case 10: case 11: case 13: case 14: 
-                    case 15: case 16: case 17: case 18: case 19: case 21: 
-                    case 22: case 23: case 24: case 25: case 26: case 27: 
-                    case 28: case 29: case 30: case 31: 
-                      goto MATCH_label_a0; break;
-                    case 4: 
-                      if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      else 
-                        if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
+                if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
+                  if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
+                    if ((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */ == 20) { 
+                      MATCH_name = "ballrl"; 
+                      { 
+                        char *name = MATCH_name;
+                        unsigned BIcr = 
+                          (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+                        nextPC = 4 + MATCH_p; 
+                        
+#line 327 "frontend/machine/ppc/decoder.m"
+                        
+
+                        		std::cerr << "HACK " << name << "\n";
+
+                        
+
+                        	// Conditional calls (bcl)
+
+                        	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul | ball
+
+                        
+                        
+                        
+                      }
+                      
+                    } /*opt-block*/
+                    else 
+                      goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                  else 
+                    
+                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
+                        case 0: 
                           
-                            switch((MATCH_w_32_0 >> 16 & 0x3) 
-                                  /* BIcc at 0 */) {
-                              case 0: 
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "ballr"; 
+                                  goto MATCH_label_a2; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_9[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1150,102 +1380,10 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 1: 
+                              case 6: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_9[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 293 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
-
-                                  		result.rtl->appendStmt(new ReturnStatement);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              case 2: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_9[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 309 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JE, BIcr);
-
-                                  		result.rtl->appendStmt(new ReturnStatement);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              case 3: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_9[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 317 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
-
-                                  		result.rtl->appendStmt(new ReturnStatement);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              default: assert(0);
-                            } /* (MATCH_w_32_0 >> 16 & 0x3) 
-                                  -- BIcc at 0 --*/  
-                        else 
-                          goto MATCH_label_a0;  /*opt-block+*/ 
-                      break;
-                    case 12: 
-                      if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      else 
-                        if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
-                          
-                            switch((MATCH_w_32_0 >> 16 & 0x3) 
-                                  /* BIcc at 0 */) {
-                              case 0: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_10[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1268,10 +1406,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 1: 
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 1: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "ballr"; 
+                                  goto MATCH_label_a2; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_10[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 293 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
+
+                                  		result.rtl->appendStmt(new ReturnStatement);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1294,10 +1478,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 2: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "ballr"; 
+                                  goto MATCH_label_a2; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
                               case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_10[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_14[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 309 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JE, BIcr);
+
+                                  		result.rtl->appendStmt(new ReturnStatement);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_14[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1320,10 +1550,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 3: 
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 3: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "ballr"; 
+                                  goto MATCH_label_a2; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_10[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_15[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 317 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
+
+                                  		result.rtl->appendStmt(new ReturnStatement);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_15[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1347,78 +1623,18 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 
                                 break;
                               default: assert(0);
-                            } /* (MATCH_w_32_0 >> 16 & 0x3) 
-                                  -- BIcc at 0 --*/  
-                        else 
-                          goto MATCH_label_a0;  /*opt-block+*/ 
-                      break;
-                    case 20: 
-                      if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
-                        if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) { 
-                          MATCH_name = MATCH_name_LK_11[(MATCH_w_32_0 & 0x1) 
-                                /* LK at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 327 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		std::cerr << "HACK " << name << "\n";
-
-                            
-
-                            	// Conditional calls (bcl)
-
-                            	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul | ball
-
-                            
-                            
-                            
-                          }
-                          
-                        } /*opt-block*/
-                        else { 
-                          MATCH_name = MATCH_name_LK_7[(MATCH_w_32_0 & 0x1) 
-                                /* LK at 0 */]; 
-                          { 
-                            char *name = MATCH_name;
-                            unsigned BIcr = 
-                              (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                            nextPC = 4 + MATCH_p; 
-                            
-#line 321 "frontend/machine/ppc/decoder.m"
-                            
-
-                            		result.rtl = new RTL(pc, stmts);
-
-                            		result.rtl->appendStmt(new ReturnStatement);
-
-                            		SHOW_ASM(name<<"\n");
-
-                            
-
-                            	// Link versions of the above. For now, only handle unconditional case
-
-                            
-                            
-                            
-                          }
-                          
-                        } /*opt-block*/ /*opt-block+*/
-                      else 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      break;
-                    default: assert(0);
-                  } /* (MATCH_w_32_0 >> 21 & 0x1f) -- BO at 0 --*/ 
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/   
+                else 
+                  goto MATCH_label_a0;  /*opt-block+*/
                 break;
               case 33: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = 
-                    MATCH_name_LK_8[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
-                  goto MATCH_label_a1; 
+                    MATCH_name_LK_10[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1427,9 +1643,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 break;
               case 129: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
-                  MATCH_name = 
-                    MATCH_name_LK_11[(MATCH_w_32_0 & 0x1) /* LK at 0 */]; 
-                  goto MATCH_label_a1; 
+                  MATCH_name = "crandc"; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1439,7 +1654,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 193: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "crxor"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1449,7 +1664,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 225: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "crnand"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1459,7 +1674,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 257: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "crand"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1469,7 +1684,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 289: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "creqv"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1479,7 +1694,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 417: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "crorc"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1489,7 +1704,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               case 449: 
                 if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0) { 
                   MATCH_name = "cror"; 
-                  goto MATCH_label_a1; 
+                  goto MATCH_label_a3; 
                   
                 } /*opt-block*/
                 else 
@@ -1497,26 +1712,33 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 
                 break;
               case 528: 
-                
-                  switch((MATCH_w_32_0 >> 21 & 0x1f) /* BO at 0 */) {
-                    case 0: case 1: case 2: case 3: case 5: case 6: case 7: 
-                    case 8: case 9: case 10: case 11: case 13: case 14: 
-                    case 15: case 16: case 17: case 18: case 19: case 21: 
-                    case 22: case 23: case 24: case 25: case 26: case 27: 
-                    case 28: case 29: case 30: case 31: 
-                      goto MATCH_label_a0; break;
-                    case 4: 
-                      if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      else 
-                        if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
+                if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
+                  goto MATCH_label_a0;  /*opt-block+*/
+                else 
+                  if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
+                    
+                      switch((MATCH_w_32_0 >> 16 & 0x3) /* BIcc at 0 */) {
+                        case 0: 
                           
-                            switch((MATCH_w_32_0 >> 16 & 0x3) 
-                                  /* BIcc at 0 */) {
-                              case 0: 
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "balctr"; 
+                                  goto MATCH_label_a4; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_18[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_25[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1539,102 +1761,10 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 1: 
+                              case 6: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_18[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 256 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		std::cerr << "HACK " << name << "\n";
-
-                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              case 2: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_18[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 272 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		std::cerr << "HACK " << name << "\n";
-
-                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JNE, BIcr);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              case 3: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_18[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
-                                { 
-                                  char *name = MATCH_name;
-                                  unsigned BIcr = 
-                                    (MATCH_w_32_0 >> 18 & 0x7) 
-                                          /* BIcr at 0 */;
-                                  nextPC = 4 + MATCH_p; 
-                                  
-#line 280 "frontend/machine/ppc/decoder.m"
-                                  
-
-                                  		std::cerr << "HACK " << name << "\n";
-
-                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
-
-                                  
-
-                                  
-                                  
-                                  
-                                }
-                                
-                                break;
-                              default: assert(0);
-                            } /* (MATCH_w_32_0 >> 16 & 0x3) 
-                                  -- BIcc at 0 --*/  
-                        else 
-                          goto MATCH_label_a0;  /*opt-block+*/ 
-                      break;
-                    case 12: 
-                      if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 1) 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      else 
-                        if ((MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) 
-                          
-                            switch((MATCH_w_32_0 >> 16 & 0x3) 
-                                  /* BIcc at 0 */) {
-                              case 0: 
-                                MATCH_name = 
-                                  MATCH_name_BIcc_19[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_25[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1657,10 +1787,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 1: 
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 1: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "balctr"; 
+                                  goto MATCH_label_a4; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_19[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_26[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 256 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		std::cerr << "HACK " << name << "\n";
+
+                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_26[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1683,10 +1859,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 2: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "balctr"; 
+                                  goto MATCH_label_a4; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
                               case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_19[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_27[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 272 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		std::cerr << "HACK " << name << "\n";
+
+                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JNE, BIcr);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_27[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1709,10 +1931,56 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 }
                                 
                                 break;
-                              case 3: 
+                              default: assert(0);
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        case 3: 
+                          
+                            switch((MATCH_w_32_0 >> 22 & 0xf) 
+                                  /* BO4 at 0 */) {
+                              case 0: case 1: case 3: case 4: case 5: case 7: 
+                              case 8: case 9: case 10: case 11: case 12: 
+                              case 13: case 14: case 15: 
+                                if ((MATCH_w_32_0 >> 21 & 0x1f) 
+                                        /* BO at 0 */ == 20) { 
+                                  MATCH_name = "balctr"; 
+                                  goto MATCH_label_a4; 
+                                  
+                                } /*opt-block*/
+                                else 
+                                  goto MATCH_label_a0;  /*opt-block+*/
+                                
+                                break;
+                              case 2: 
                                 MATCH_name = 
-                                  MATCH_name_BIcc_19[(MATCH_w_32_0 >> 16 & 0x3) 
-                                      /* BIcc at 0 */]; 
+                                  MATCH_name_BO4_28[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
+                                { 
+                                  char *name = MATCH_name;
+                                  unsigned BIcr = 
+                                    (MATCH_w_32_0 >> 18 & 0x7) 
+                                          /* BIcr at 0 */;
+                                  nextPC = 4 + MATCH_p; 
+                                  
+#line 280 "frontend/machine/ppc/decoder.m"
+                                  
+
+                                  		std::cerr << "HACK " << name << "\n";
+
+                                  //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
+
+                                  
+
+                                  
+                                  
+                                  
+                                }
+                                
+                                break;
+                              case 6: 
+                                MATCH_name = 
+                                  MATCH_name_BO4_28[(MATCH_w_32_0 >> 22 & 0xf) 
+                                      /* BO4 at 0 */]; 
                                 { 
                                   char *name = MATCH_name;
                                   unsigned BIcr = 
@@ -1736,44 +2004,12 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                 
                                 break;
                               default: assert(0);
-                            } /* (MATCH_w_32_0 >> 16 & 0x3) 
-                                  -- BIcc at 0 --*/  
-                        else 
-                          goto MATCH_label_a0;  /*opt-block+*/ 
-                      break;
-                    case 20: 
-                      if ((MATCH_w_32_0 & 0x1) /* LK at 0 */ == 0 && 
-                        (MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */ == 0) { 
-                        MATCH_name = "balctr"; 
-                        { 
-                          char *name = MATCH_name;
-                          unsigned BIcr = 
-                            (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
-                          nextPC = 4 + MATCH_p; 
-                          
-#line 284 "frontend/machine/ppc/decoder.m"
-                          
-
-                          		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
-
-                          		
-
-                          	// b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
-
-                          	// statement.
-
-                          
-                          
-                          
-                        }
-                        
-                      } /*opt-block*/
-                      else 
-                        goto MATCH_label_a0;  /*opt-block+*/
-                      
-                      break;
-                    default: assert(0);
-                  } /* (MATCH_w_32_0 >> 21 & 0x1f) -- BO at 0 --*/ 
+                            } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/ 
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/  
+                  else 
+                    goto MATCH_label_a0;  /*opt-block+*/ 
                 break;
               default: assert(0);
             } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/ 
@@ -1801,30 +2037,85 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           break;
         case 31: 
           if ((MATCH_w_32_0 & 0x1) /* Rc at 0 */ == 1) 
-            if ((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ == 824) { 
-              MATCH_name = "srawiq"; 
-              { 
-                char *name = MATCH_name;
-                unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
-                unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
-                unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
-                nextPC = 4 + MATCH_p; 
-                
-#line 352 "frontend/machine/ppc/decoder.m"
-                
-
-                		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
-
-                		
-
-                
-                
-                
-              }
-              
-            } /*opt-block*/
+            if (61 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 124 || 
+              125 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 284 || 
+              317 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
+              477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 536 || 
+              540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 792 || 
+              825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+              (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
+              goto MATCH_label_a0;  /*opt-block+*/
             else 
-              goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+              switch((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */) {
+                case 0: case 1: case 2: case 3: case 4: case 5: case 6: 
+                case 7: case 8: case 9: case 10: case 11: case 12: case 13: 
+                case 14: case 15: case 16: case 17: case 18: case 19: 
+                case 20: case 21: case 22: case 23: case 25: case 26: 
+                case 29: case 30: case 31: case 32: case 33: case 34: 
+                case 35: case 36: case 37: case 38: case 39: case 40: 
+                case 41: case 42: case 43: case 44: case 45: case 46: 
+                case 47: case 48: case 49: case 50: case 51: case 52: 
+                case 53: case 54: case 55: case 56: case 57: case 58: 
+                case 59: case 285: case 286: case 287: case 288: case 289: 
+                case 290: case 291: case 292: case 293: case 294: case 295: 
+                case 296: case 297: case 298: case 299: case 300: case 301: 
+                case 302: case 303: case 304: case 305: case 306: case 307: 
+                case 308: case 309: case 310: case 311: case 312: case 313: 
+                case 314: case 315: case 413: case 414: case 415: case 416: 
+                case 417: case 418: case 419: case 420: case 421: case 422: 
+                case 423: case 424: case 425: case 426: case 427: case 428: 
+                case 429: case 430: case 431: case 432: case 433: case 434: 
+                case 435: case 436: case 437: case 438: case 439: case 440: 
+                case 441: case 442: case 443: case 445: case 446: case 447: 
+                case 448: case 449: case 450: case 451: case 452: case 453: 
+                case 454: case 455: case 456: case 457: case 458: case 459: 
+                case 460: case 461: case 462: case 463: case 464: case 465: 
+                case 466: case 467: case 468: case 469: case 470: case 471: 
+                case 472: case 473: case 474: case 475: case 537: case 538: 
+                case 793: case 795: case 796: case 797: case 798: case 799: 
+                case 800: case 801: case 802: case 803: case 804: case 805: 
+                case 806: case 807: case 808: case 809: case 810: case 811: 
+                case 812: case 813: case 814: case 815: case 816: case 817: 
+                case 818: case 819: case 820: case 821: case 822: case 823: 
+                  goto MATCH_label_a0; break;
+                case 24: case 27: case 28: case 60: case 124: case 284: 
+                case 316: case 412: case 444: case 476: case 536: case 539: 
+                case 792: case 794: 
+                  MATCH_name = MATCH_name_Xo1_38[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        /* Xo1 at 0 */]; 
+                  goto MATCH_label_a7; 
+                  
+                  break;
+                case 824: 
+                  MATCH_name = MATCH_name_Xo1_38[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        /* Xo1 at 0 */]; 
+                  { 
+                    char *name = MATCH_name;
+                    unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
+                    unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
+                    unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
+                    nextPC = 4 + MATCH_p; 
+                    
+#line 352 "frontend/machine/ppc/decoder.m"
+                    
+
+                    		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
+
+                    		
+
+                    
+                    
+                    
+                  }
+                  
+                  break;
+                default: assert(0);
+              } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/  
           else 
             if ((MATCH_w_32_0 >> 10 & 0x1) /* OE at 0 */ == 1) 
               if (125 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
@@ -1843,7 +2134,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 0: 
                     if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
                       MATCH_name = "cmp"; 
-                      goto MATCH_label_a2; 
+                      goto MATCH_label_a5; 
                       
                     } /*opt-block*/
                     else 
@@ -1904,24 +2195,24 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 87: case 119: case 279: case 310: case 311: case 341: 
                   case 343: case 373: case 375: case 533: case 534: case 790: 
                     MATCH_name = 
-                      MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                      MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
-                    goto MATCH_label_a3; 
+                    goto MATCH_label_a6; 
                     
                     break;
                   case 24: case 27: case 28: case 60: case 124: case 284: 
                   case 316: case 412: case 444: case 476: case 536: case 539: 
                   case 792: case 794: 
                     MATCH_name = 
-                      MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                      MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
-                    goto MATCH_label_a4; 
+                    goto MATCH_label_a7; 
                     
                     break;
                   case 32: 
                     if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
                       MATCH_name = "cmpl"; 
-                      goto MATCH_label_a2; 
+                      goto MATCH_label_a5; 
                       
                     } /*opt-block*/
                     else 
@@ -1930,23 +2221,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     break;
                   case 339: 
                     MATCH_name = 
-                      MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                      MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
-                    goto MATCH_label_a5; 
+                    goto MATCH_label_a8; 
                     
                     break;
                   case 467: 
                     MATCH_name = 
-                      MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                      MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
-                    goto MATCH_label_a6; 
+                    goto MATCH_label_a9; 
                     
                     break;
                   case 824: 
                     MATCH_name = 
-                      MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                      MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
-                    goto MATCH_label_a7; 
+                    goto MATCH_label_a10; 
                     
                     break;
                   default: assert(0);
@@ -1974,7 +2265,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     case 0: 
                       if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
                         MATCH_name = "cmp"; 
-                        goto MATCH_label_a2; 
+                        goto MATCH_label_a5; 
                         
                       } /*opt-block*/
                       else 
@@ -2043,24 +2334,24 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     case 341: case 343: case 373: case 375: case 533: 
                     case 534: case 790: 
                       MATCH_name = 
-                        MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
-                      goto MATCH_label_a3; 
+                      goto MATCH_label_a6; 
                       
                       break;
                     case 24: case 27: case 28: case 60: case 124: case 284: 
                     case 316: case 412: case 444: case 476: case 536: 
                     case 539: case 792: case 794: 
                       MATCH_name = 
-                        MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
-                      goto MATCH_label_a4; 
+                      goto MATCH_label_a7; 
                       
                       break;
                     case 32: 
                       if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 0) { 
                         MATCH_name = "cmpl"; 
-                        goto MATCH_label_a2; 
+                        goto MATCH_label_a5; 
                         
                       } /*opt-block*/
                       else 
@@ -2069,23 +2360,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       break;
                     case 339: 
                       MATCH_name = 
-                        MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
-                      goto MATCH_label_a5; 
+                      goto MATCH_label_a8; 
                       
                       break;
                     case 467: 
                       MATCH_name = 
-                        MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
-                      goto MATCH_label_a6; 
+                      goto MATCH_label_a9; 
                       
                       break;
                     case 824: 
                       MATCH_name = 
-                        MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                        MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
-                      goto MATCH_label_a7; 
+                      goto MATCH_label_a10; 
                       
                       break;
                     default: assert(0);
@@ -2139,7 +2430,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           if ((MATCH_w_32_0 >> 22 & 0x1) 
                                   /* Lz at 0 */ == 0) { 
                             MATCH_name = "cmp"; 
-                            goto MATCH_label_a2; 
+                            goto MATCH_label_a5; 
                             
                           } /*opt-block*/
                           else 
@@ -2208,25 +2499,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         case 341: case 343: case 373: case 375: case 533: 
                         case 534: case 790: 
                           MATCH_name = 
-                            MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
-                          goto MATCH_label_a3; 
+                          goto MATCH_label_a6; 
                           
                           break;
                         case 24: case 27: case 28: case 60: case 124: 
                         case 284: case 316: case 412: case 444: case 476: 
                         case 536: case 539: case 792: case 794: 
                           MATCH_name = 
-                            MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
-                          goto MATCH_label_a4; 
+                          goto MATCH_label_a7; 
                           
                           break;
                         case 32: 
                           if ((MATCH_w_32_0 >> 22 & 0x1) 
                                   /* Lz at 0 */ == 0) { 
                             MATCH_name = "cmpl"; 
-                            goto MATCH_label_a2; 
+                            goto MATCH_label_a5; 
                             
                           } /*opt-block*/
                           else 
@@ -2235,23 +2526,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           break;
                         case 339: 
                           MATCH_name = 
-                            MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
-                          goto MATCH_label_a5; 
+                          goto MATCH_label_a8; 
                           
                           break;
                         case 467: 
                           MATCH_name = 
-                            MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
-                          goto MATCH_label_a6; 
+                          goto MATCH_label_a9; 
                           
                           break;
                         case 824: 
                           MATCH_name = 
-                            MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
-                          goto MATCH_label_a7; 
+                          goto MATCH_label_a10; 
                           
                           break;
                         default: assert(0);
@@ -2260,7 +2551,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 8: case 10: case 40: case 136: case 138: case 233: 
                   case 235: case 266: case 457: case 459: case 489: case 491: 
                     MATCH_name = 
-                      MATCH_name_Xo9_24[(MATCH_w_32_0 >> 1 & 0x1ff) 
+                      MATCH_name_Xo9_32[(MATCH_w_32_0 >> 1 & 0x1ff) 
                           /* Xo9 at 0 */]; 
                     { 
                       char *name = MATCH_name;
@@ -2283,7 +2574,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 104: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "neg"; 
-                      goto MATCH_label_a8; 
+                      goto MATCH_label_a11; 
                       
                     } /*opt-block*/
                     else 
@@ -2305,7 +2596,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmp"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2376,25 +2667,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 311: case 341: case 343: case 373: case 375: 
                           case 533: case 534: case 790: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a3; 
+                            goto MATCH_label_a6; 
                             
                             break;
                           case 24: case 27: case 28: case 60: case 124: 
                           case 284: case 316: case 412: case 444: case 476: 
                           case 536: case 539: case 792: case 794: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a4; 
+                            goto MATCH_label_a7; 
                             
                             break;
                           case 32: 
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmpl"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2403,23 +2694,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             break;
                           case 339: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a5; 
+                            goto MATCH_label_a8; 
                             
                             break;
                           case 467: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a6; 
+                            goto MATCH_label_a9; 
                             
                             break;
                           case 824: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a7; 
+                            goto MATCH_label_a10; 
                             
                             break;
                           default: assert(0);
@@ -2428,7 +2719,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 200: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "subfze"; 
-                      goto MATCH_label_a8; 
+                      goto MATCH_label_a11; 
                       
                     } /*opt-block*/
                     else 
@@ -2450,7 +2741,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmp"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2521,25 +2812,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 311: case 341: case 343: case 373: case 375: 
                           case 533: case 534: case 790: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a3; 
+                            goto MATCH_label_a6; 
                             
                             break;
                           case 24: case 27: case 28: case 60: case 124: 
                           case 284: case 316: case 412: case 444: case 476: 
                           case 536: case 539: case 792: case 794: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a4; 
+                            goto MATCH_label_a7; 
                             
                             break;
                           case 32: 
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmpl"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2548,23 +2839,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             break;
                           case 339: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a5; 
+                            goto MATCH_label_a8; 
                             
                             break;
                           case 467: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a6; 
+                            goto MATCH_label_a9; 
                             
                             break;
                           case 824: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a7; 
+                            goto MATCH_label_a10; 
                             
                             break;
                           default: assert(0);
@@ -2573,7 +2864,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 202: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "addze"; 
-                      goto MATCH_label_a8; 
+                      goto MATCH_label_a11; 
                       
                     } /*opt-block*/
                     else 
@@ -2595,7 +2886,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmp"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2666,25 +2957,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 311: case 341: case 343: case 373: case 375: 
                           case 533: case 534: case 790: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a3; 
+                            goto MATCH_label_a6; 
                             
                             break;
                           case 24: case 27: case 28: case 60: case 124: 
                           case 284: case 316: case 412: case 444: case 476: 
                           case 536: case 539: case 792: case 794: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a4; 
+                            goto MATCH_label_a7; 
                             
                             break;
                           case 32: 
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmpl"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2693,23 +2984,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             break;
                           case 339: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a5; 
+                            goto MATCH_label_a8; 
                             
                             break;
                           case 467: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a6; 
+                            goto MATCH_label_a9; 
                             
                             break;
                           case 824: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a7; 
+                            goto MATCH_label_a10; 
                             
                             break;
                           default: assert(0);
@@ -2718,7 +3009,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 232: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "subfme"; 
-                      goto MATCH_label_a8; 
+                      goto MATCH_label_a11; 
                       
                     } /*opt-block*/
                     else 
@@ -2740,7 +3031,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmp"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2811,25 +3102,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 311: case 341: case 343: case 373: case 375: 
                           case 533: case 534: case 790: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a3; 
+                            goto MATCH_label_a6; 
                             
                             break;
                           case 24: case 27: case 28: case 60: case 124: 
                           case 284: case 316: case 412: case 444: case 476: 
                           case 536: case 539: case 792: case 794: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a4; 
+                            goto MATCH_label_a7; 
                             
                             break;
                           case 32: 
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmpl"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2838,23 +3129,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             break;
                           case 339: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a5; 
+                            goto MATCH_label_a8; 
                             
                             break;
                           case 467: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a6; 
+                            goto MATCH_label_a9; 
                             
                             break;
                           case 824: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a7; 
+                            goto MATCH_label_a10; 
                             
                             break;
                           default: assert(0);
@@ -2863,7 +3154,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 234: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "addme"; 
-                      goto MATCH_label_a8; 
+                      goto MATCH_label_a11; 
                       
                     } /*opt-block*/
                     else 
@@ -2885,7 +3176,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmp"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2956,25 +3247,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 311: case 341: case 343: case 373: case 375: 
                           case 533: case 534: case 790: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a3; 
+                            goto MATCH_label_a6; 
                             
                             break;
                           case 24: case 27: case 28: case 60: case 124: 
                           case 284: case 316: case 412: case 444: case 476: 
                           case 536: case 539: case 792: case 794: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a4; 
+                            goto MATCH_label_a7; 
                             
                             break;
                           case 32: 
                             if ((MATCH_w_32_0 >> 22 & 0x1) 
                                     /* Lz at 0 */ == 0) { 
                               MATCH_name = "cmpl"; 
-                              goto MATCH_label_a2; 
+                              goto MATCH_label_a5; 
                               
                             } /*opt-block*/
                             else 
@@ -2983,23 +3274,23 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             break;
                           case 339: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a5; 
+                            goto MATCH_label_a8; 
                             
                             break;
                           case 467: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a6; 
+                            goto MATCH_label_a9; 
                             
                             break;
                           case 824: 
                             MATCH_name = 
-                              MATCH_name_Xo1_22[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                              MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
-                            goto MATCH_label_a7; 
+                            goto MATCH_label_a10; 
                             
                             break;
                           default: assert(0);
@@ -3116,6 +3407,53 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
   MATCH_label_a1: (void)0; /*placeholder for label*/ 
     { 
+      unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+      unsigned reladdr = 
+        4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + addressToPC(MATCH_p);
+      nextPC = 4 + MATCH_p; 
+      
+#line 248 "frontend/machine/ppc/decoder.m"
+      
+
+      		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
+
+      
+
+      	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a2: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 321 "frontend/machine/ppc/decoder.m"
+      
+
+      		result.rtl = new RTL(pc, stmts);
+
+      		result.rtl->appendStmt(new ReturnStatement);
+
+      		SHOW_ASM(name<<"\n");
+
+      
+
+      	// Link versions of the above. For now, only handle unconditional case
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a3: (void)0; /*placeholder for label*/ 
+    { 
       char *name = MATCH_name;
       unsigned crbA = (MATCH_w_32_0 >> 16 & 0x1f) /* crbA at 0 */;
       unsigned crbB = (MATCH_w_32_0 >> 11 & 0x1f) /* crbB at 0 */;
@@ -3135,7 +3473,30 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a2: (void)0; /*placeholder for label*/ 
+  MATCH_label_a4: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 284 "frontend/machine/ppc/decoder.m"
+      
+
+      		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
+
+      		
+
+      	// b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
+
+      	// statement.
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a5: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
@@ -3157,7 +3518,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a3: (void)0; /*placeholder for label*/ 
+  MATCH_label_a6: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -3178,7 +3539,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a4: (void)0; /*placeholder for label*/ 
+  MATCH_label_a7: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
@@ -3197,7 +3558,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a5: (void)0; /*placeholder for label*/ 
+  MATCH_label_a8: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
@@ -3217,7 +3578,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a6: (void)0; /*placeholder for label*/ 
+  MATCH_label_a9: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
@@ -3257,7 +3618,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a7: (void)0; /*placeholder for label*/ 
+  MATCH_label_a10: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
@@ -3276,7 +3637,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
-  MATCH_label_a8: (void)0; /*placeholder for label*/ 
+  MATCH_label_a11: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;

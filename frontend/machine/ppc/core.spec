@@ -34,6 +34,7 @@ fields of instruction (32)
  LK    0:0
  BD    2:15
  BO   21:25
+ BO4  22:25		# Upper 4 bits of BO
  Bo   21:25
  S    21:25
  fS   21:25
@@ -651,19 +652,24 @@ patterns
 # bun is BO = t & BIcc = un
 # bnu is BO = f & BIcc = un
 
- blt is BO = 12 & BIcc = 0		# t, lt
- ble is BO = 4  & BIcc = 1		# f, gt
- beq is BO = 12 & BIcc = 2		# t, eq
- bge is BO = 4  & BIcc = 0		# f, lt
- bgt is BO = 12 & BIcc = 1		# t, gt
- bnl is BO = 4  & BIcc = 0		# f, lt
- bne is BO = 4  & BIcc = 2		# f, eq
- bng is BO = 4  & BIcc = 1		# f, gt
- bso is BO = 12 & BIcc = 3		# t, so
- bns is BO = 4  & BIcc = 3		# f, so
- bun is BO = 12 & BIcc = 3		# t, un		Note: branch if UNordered (not unconditional)
- bnu is BO = 4  & BIcc = 3		# f, un		Note: branch if not unordered
- bal is BO = 20     			# always, any
+# Note that the LSB of BO is the y bit, which is the + or - branch prediction hint.
+# We want to ignore that, hence the use of BO4 (upper 4 bits of BO)
+ifcctrue  is BO4 = 6
+ifccfalse is BO4 = 2
+
+ blt is ifcctrue  & BIcc = 0		# t, lt
+ ble is ifccfalse & BIcc = 1		# f, gt
+ beq is ifcctrue  & BIcc = 2		# t, eq
+ bge is ifccfalse & BIcc = 0		# f, lt
+ bgt is ifcctrue  & BIcc = 1		# t, gt
+ bnl is ifccfalse & BIcc = 0		# f, lt
+ bne is ifccfalse & BIcc = 2		# f, eq
+ bng is ifccfalse & BIcc = 1		# f, gt
+ bso is ifcctrue  & BIcc = 3		# t, so
+ bns is ifccfalse & BIcc = 3		# f, so
+ bun is ifcctrue  & BIcc = 3		# t, un		Note: branch if UNordered (not unconditional)
+ bnu is ifcctrue  & BIcc = 3		# f, un		Note: branch if not unordered
+ bal is BO = 20     				# always, any (no branch prediction bit here)
 
 bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
 
@@ -686,10 +692,8 @@ constructors
 # void bXX(unsigned BIcr, RAddr reloc) { bc( t/f, ( BIcr * 4 + XX ), reloc ); }
 # but it doesn't work, and this makes way too much code...
 
-bcc_^LK     BIcr, reloc { reloc = L + BD * 4 }
-                        is L: bc & LK & BIcr & bcc_ & BD & AA = 0
-bcc_^LK^"a" BIcr, reloc { reloc =     BD * 4 }
-                        is    bc & LK & BIcr & bcc_ & BD & AA = 1
+bcc_^LK     BIcr, reloc { reloc = L + BD * 4 } is L: bc & LK & BIcr & bcc_ & BD & AA = 0
+bcc_^LK^"a" BIcr, reloc { reloc =     BD * 4 } is    bc & LK & BIcr & bcc_ & BD & AA = 1
 
 #bcc_^"lr"^LK  BIcr     is bclr    & LK & BIcr & bcc_
 #bcc_^"ctr"^LK BIcr     is bcctr   & LK & BIcr & bcc_
