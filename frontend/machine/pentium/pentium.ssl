@@ -1508,7 +1508,7 @@ FIADD.i64   modrm
             *80* %st := %st +f itof(64,80,modrm);
 
 FCHS    
-            *80* %st := 0.0 -f %st;
+            *80* %st := ~f %st;
 
 FCLEX    
             *8* %fsw@[0:7] := 0
