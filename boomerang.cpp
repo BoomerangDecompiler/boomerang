@@ -37,6 +37,7 @@ void Boomerang::help() {
                     "\n";
     std::cerr << "-rb: attempt Mike's \"recursion buster\" hack\n";
     std::cerr << "-t: trace every instruction decoded\n";
+    std::cerr << "-m num: max memory depth\n";
     std::cerr << "-nb: no simplications for branches\n";
     std::cerr << "-nn: no removal of null and dead statements\n";
     std::cerr << "-nl: no creation of local variables\n";
@@ -171,8 +172,12 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     impSSA = true;
                     break;
                 }
+                break;
             case 'P':
                 prove = true;
+                break;
+            case 'm':
+                sscanf(argv[++i], "%i", &maxMemDepth);
                 break;
             default:
                 help();
@@ -211,17 +216,25 @@ int Boomerang::commandLine(int argc, const char **argv) {
         for (int i = 0; i < prog->getNumProcs(); i++) {
             UserProc *u = dynamic_cast<UserProc*>(prog->getProc(i));
             if (u) {
-                std::cerr << "proving esp = esp + 4 for " << u->getName() 
+                std::cerr << "proving esp = esp + 4 for " << u->getName()
                           << ": ";
-                if (u->prove(new Binary(opEquals, 
-                                 new Unary(opRegOf, new Const(28)), 
-                                 new Binary(opPlus, 
+                if (u->prove(new Binary(opEquals,
+                                 new Unary(opRegOf, new Const(28)),
+                                 new Binary(opPlus,
                                      new Unary(opRegOf, new Const(28)),
                                      new Const(4)))))
                     std::cerr << "proven" << std::endl;
                 else
                     std::cerr << "not proven" << std::endl;
-            }
+                std::cerr << "proving ebp = ebp for " << u->getName()
+                          << ": ";
+                if (u->prove(new Binary(opEquals,
+                                 new Unary(opRegOf, new Const(29)),
+                                 new Unary(opRegOf, new Const(29)))))
+                    std::cerr << "proven" << std::endl;
+                else
+                    std::cerr << "not proven" << std::endl;
+             }
         }
     }
 

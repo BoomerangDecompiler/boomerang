@@ -218,6 +218,10 @@ frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 frontend/switch.o: include/exp.h include/operator.h
+frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
+    include/exp.h include/proc.h include/statement.h
+frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
+    include/exp.h include/proc.h include/statement.h include/BinaryFile.h
 
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h

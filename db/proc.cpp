@@ -492,6 +492,15 @@ bool Proc::deserialize_fid(std::istream &inf, int fid) {
     return true;
 }
 
+Exp *Proc::getProven(Exp *left)
+{
+    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
+         it != proven.end(); it++) 
+        if (*(*it)->getSubExp1() == *left)
+            return (*it)->getSubExp2();
+    return NULL;
+}
+
 /**********************
  * LibProc methods.
  *********************/
@@ -1594,6 +1603,9 @@ void UserProc::fromSSAform(igraph& ig) {
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        // FIXME: This is QUICK and DIRTY
+        if (s->isPhi())
+            removeStatement(s);
         s->fromSSAform(ig);
     }
 }
@@ -1641,6 +1653,11 @@ void UserProc::recoverReturnLocs() {
 
 bool UserProc::prove(Exp *query)
 {
+    if (proven.find(query) != proven.end())
+        return true;
+
+    Exp *original = query->clone();
+
     assert(query->getOper() == opEquals);
     
     // subscript locs on the right with {0}
@@ -1665,11 +1682,20 @@ bool UserProc::prove(Exp *query)
         query->refSubExp1() = query->getSubExp1()->expSubscriptVar(x, def);
     }
 
-    return prover(query);
+    proven.insert(original);
+    if (!prover(query)) {
+        proven.erase(original);
+        delete original;
+        return false;
+    }
+    delete query;
+   
+    return true;
 }
 
 bool UserProc::prover(Exp *query)
 {
+    query = query->clone();
     bool change = true;
     while (change) {
         query->print(std::cerr, true);
@@ -1699,7 +1725,36 @@ bool UserProc::prover(Exp *query)
             if (!change && query->getSubExp1()->getOper() == opSubscript) {
                 RefExp *r = (RefExp*)query->getSubExp1();
                 Statement *s = r->getRef();
-                if (s && s->getRight()) {
+                CallStatement *call = dynamic_cast<CallStatement*>(s);
+                if (call) {
+                    Proc *dest = call->getDestProc();
+                    if (dest) {
+                        Exp *right = dest->getProven(r->getSubExp1());
+                        if (right) {
+                            right = right->clone();
+                            std::cerr << "using proven (or induction) for " 
+                                      << dest->getName() << " " << r->getSubExp1() 
+                                      << " = " << right << std::endl;
+                            LocationSet locs;
+                            right->addUsedLocs(locs);
+                            LocSetIter xx;
+                            for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+                                for (unsigned int i = 0;
+                                     i != call->getArguments().size(); i++) {
+                                    assert(call->getArguments()[i]->getOper() == 
+                                                opSubscript);
+                                    if (*call->getArguments()[i]->getSubExp1() == *x) {
+                                        right = right->expSubscriptVar(x, 
+                                            ((RefExp*)call->getArguments()[i])->getRef());
+                                        break;
+                                    }
+                                }
+                            }
+                            query->setSubExp1(right);
+                            change = true;
+                        }
+                    }
+                } else if (s && s->getRight()) {
                     if (s->getRight()->getOper() == opPhi) {
                         // for a phi, we have to prove the query for every 
                         // statement
@@ -1711,10 +1766,16 @@ bool UserProc::prover(Exp *query)
                         for (Statement *s1 = p->getFirstRef(it); 
                                         !p->isLastRef(it);
                                         s1 = p->getNextRef(it)) {
-                            if (s1 != NULL) { // note: this is a hack, remove
-                                r->setDef(s1);
-                                if (!prover(query)) { ok = false; break; }
+                            Exp *e = query->clone();
+                            RefExp *r1 = (RefExp*)e->getSubExp1();
+                            r1->setDef(s1);
+                            std::cerr << "proving for " << e << std::endl;
+                            if (!prover(e)) { 
+                                ok = false; 
+                                delete e; 
+                                break; 
                             }
+                            delete e;
                         }
                         if (ok) query = new Terminal(opTrue);
                         else query = new Terminal(opFalse);
@@ -1724,6 +1785,29 @@ bool UserProc::prover(Exp *query)
                         change = true;
                     }
                 }
+            }
+
+            // remove memofs from both sides if possible
+            if (!change && query->getSubExp1()->getOper() == opMemOf &&
+                query->getSubExp2()->getOper() == opMemOf) {
+                query->refSubExp1() = ((Unary*)query->getSubExp1())->becomeSubExp1();
+                query->refSubExp2() = ((Unary*)query->getSubExp2())->becomeSubExp1();
+                change = true;
+            }
+
+            // find a memory def for the right if there is a memof on the left
+            if (!change && query->getSubExp1()->getOper() == opMemOf) {
+                StatementList stmts;
+                getStatements(stmts);
+                StmtListIter it;
+                for (Statement *s = stmts.getFirst(it); s; s = stmts.getNext(it))
+                    if (s->getLeft() && s->getRight() && 
+                        *s->getRight() == *query->getSubExp2() &&
+                        s->getLeft()->getOper() == opMemOf) {
+                        query->refSubExp2() = s->getLeft()->clone();
+                        change = true;
+                        break;
+                    }
             }
         }
 

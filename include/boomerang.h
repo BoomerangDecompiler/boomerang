@@ -68,6 +68,7 @@ public:
     bool debugPrintSSA;
     bool noPropMult;
     bool impSSA;
+    int maxMemDepth;
 };
 
 #define VERBOSE Boomerang::get()->vFlag
