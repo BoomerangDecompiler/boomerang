@@ -2173,7 +2173,7 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass) {
 			// early results in aliases to this local not being recognised 
 			e = newLocal(ty->clone());
 			symbolMap[le->clone()] = e;
-			e->clone();
+			e->clone();				// ? Suppsed to be e = e->clone()?
 		}
 	} else {
 		e = symbolMap[le]->clone();

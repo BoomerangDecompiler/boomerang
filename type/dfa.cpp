@@ -871,7 +871,10 @@ Exp* DfaLocalConverter::preVisit(Location* e, bool& recur) {
 		if (sig->isStackLocal(proc->getProg(), e)) {
 			recur = false;
 			mod = true;			// We've made a modification
-			// Don't change parentType; e is a Location now so postVisit won't expect parentTypt changed
+			// e is now *usually* a local so postVisit won't expect parentType changed
+			// Note: at least one of Trent's hacks can cause a m[...] to be returned
+			if (e->isMemOf())
+				parentType = new PointerType(parentType);
 			return proc->getLocalExp(e, parentType, true);
 		}
 		// When we recurse into the m[...], the type will be changed
