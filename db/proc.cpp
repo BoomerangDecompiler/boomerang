@@ -2367,16 +2367,29 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
     // We have a reference to a return of the call statement
     UserProc* proc = (UserProc*) call->getDestProc();
     //if (proc->isLib()) return;
-    if (Boomerang::get()->debugUnusedRets)
-        std::cerr << " @@ Counted use of return location " << loc <<
-          " for call to " << proc->getName() << " at " << def->getNumber() <<
-          " in " << getName() << "\n";
+    if (Boomerang::get()->debugUnusedRets) {
+        std::cerr << " @@ Counted use of return location " << loc 
+                  << " for call to ";
+        if (proc) 
+            std::cerr << proc->getName();
+        else
+            std::cerr << "(null)";
+        std::cerr << " at " << def->getNumber() << " in " << getName() << "\n";
+    }
     // we want to count the return that corresponds to this loc
     // this can be a different expression to loc because replacements
     // are done in the call's return list as part of decompilation
     int n = call->findReturn(loc);
     if (n != -1) {
-        Exp *ret = proc->getSignature()->getReturnExp(n);
+        Exp *ret = NULL;
+        if (proc)
+            ret = proc->getSignature()->getReturnExp(n);
+        else {
+            assert(call->isComputed());
+            std::vector<Exp*> &returns = getProg()->getDefaultReturns();
+            assert(n < (int)returns.size());
+            ret = returns[n];
+        }
         rc[proc].insert(ret);
     }
 }
