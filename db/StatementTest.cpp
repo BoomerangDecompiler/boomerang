@@ -31,7 +31,7 @@
 class NullLogger : public Log {
 public:
     virtual Log &operator<<(const char *str) {
-        //std::cerr << str;
+     //std::cerr << str;
         return *this;
     }
     virtual ~NullLogger() {};
@@ -99,6 +99,10 @@ void StatementTest::tearDown () {
  * OVERVIEW:        
  *============================================================================*/
 void StatementTest::testEmpty () {
+    // Force "verbose" flag (-v)
+    Boomerang* boo = Boomerang::get();
+    boo->vFlag = true;
+
     // create Prog
     BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
     FrontEnd *pFE = new PentiumFrontEnd(pBF);
@@ -756,9 +760,6 @@ void StatementTest::testRecursion () {
     ret->addInEdge(callbb);
     cfg->setEntryBB(first);
 
-// Force "verbose" flag (-v)
-    Boomerang* boo = Boomerang::get();
-    boo->vFlag = true;
     // decompile the "proc"
     prog->decompile();
     // print cfg to a string
