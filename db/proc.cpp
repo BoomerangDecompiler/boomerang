@@ -1429,3 +1429,11 @@ void UserProc::promoteSignature()
 {
     signature = signature->promote(this);
 }
+
+Exp* UserProc::newLocal(Type* ty) {
+    std::ostringstream os;
+    os << "local" << locals.size();
+    std::string name = os.str();
+    locals[name] = ty;
+    return new Unary(opLocal, new Const(strdup(name.c_str())));
+}
