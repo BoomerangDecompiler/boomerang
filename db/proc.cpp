@@ -136,7 +136,6 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
 
 void Proc::printCallGraphXML(std::ostream &os, int depth)
 {
-    printDetailsXML();
     for (int i = 0; i < depth; i++)
         os << "   ";
     os << "<proc name=\"" << getName() << "\"/>\n";
@@ -144,7 +143,6 @@ void Proc::printCallGraphXML(std::ostream &os, int depth)
 
 void UserProc::printCallGraphXML(std::ostream &os, int depth)
 {
-    printDetailsXML();
     visited = true;
     for (int i = 0; i < depth; i++)
         os << "   ";
@@ -173,6 +171,45 @@ void Proc::printDetailsXML()
             << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
     out << "</proc>\n";
     out.close();
+}
+
+void UserProc::printDecodedXML()
+{
+    std::ofstream out((Boomerang::get()->getOutputPath() + 
+                      getName() + "-decoded.xml").c_str());
+    out << "<proc name=\"" << getName() << "\">\n";
+    out << "    <decoded>\n";
+    std::ostringstream os;
+    print(os, false);
+    std::string s = os.str();
+    escapeXMLChars(s);
+    out << s;
+    out << "    </decoded>\n";
+    out << "</proc>\n";
+    out.close();
+}
+
+void UserProc::printSSAXML()
+{
+    std::ofstream out((Boomerang::get()->getOutputPath() + 
+                      getName() + "-ssa.xml").c_str());
+    out << "<proc name=\"" << getName() << "\">\n";
+    out << "    <ssa>\n";
+    std::ostringstream os;
+    print(os, true);
+    std::string s = os.str();
+    escapeXMLChars(s);
+    out << s;
+    out << "    </ssa>\n";
+    out << "</proc>\n";
+    out.close();
+}
+
+
+void UserProc::printXML()
+{
+    printDetailsXML();
+    printSSAXML();
 }
 
 /*==============================================================================
@@ -686,6 +723,7 @@ void UserProc::printAST(SyntaxNode *a)
  *============================================================================*/
 void UserProc::setDecoded() {
     decoded = true;
+    printDecodedXML();
 }
 
 /*==============================================================================
@@ -925,10 +963,9 @@ std::set<UserProc*>* UserProc::decompile() {
     // Remove self from the cycle list
     cycleSet->erase(this);
 
-    if (VERBOSE||1) {
+    if (VERBOSE) {
         LOG << "decompiling: " << getName() << "\n";
     }
-
 
     // Sort by address, so printouts make sense
     cfg->sortByAddress();
@@ -958,6 +995,8 @@ std::set<UserProc*>* UserProc::decompile() {
         // Rename variables
         cfg->renameBlockVars(0, depth);
 
+        printXML();
+
         // Print if requested
         if (Boomerang::get()->debugPrintSSA) {
             LOG << "=== Debug Print SSA for " << getName()
@@ -984,6 +1023,7 @@ std::set<UserProc*>* UserProc::decompile() {
         replaceExpressionsWithLocals();
         addNewReturns(depth);
         cfg->renameBlockVars(0, depth, true);
+        printXML();
         if (VERBOSE) {
             LOG << "=== Debug Print SSA for " << getName()
               << " at memory depth " << depth
@@ -994,6 +1034,7 @@ std::set<UserProc*>* UserProc::decompile() {
         }
         trimReturns();
 
+        printXML();
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
             LOG << "=== Debug Print SSA for " << getName() <<
@@ -1013,6 +1054,7 @@ std::set<UserProc*>* UserProc::decompile() {
             for (int i = 0; i <= depth; i++)
                 cfg->renameBlockVars(0, i, true);
         }
+        printXML();
         if (VERBOSE) {
             LOG << "=== After propagate for " << getName() <<
               " at memory depth " << depth << " ===\n";
@@ -1033,6 +1075,7 @@ std::set<UserProc*>* UserProc::decompile() {
         if (!Boomerang::get()->noRemoveNull)
             removeNullStatements();
 
+        printXML();
         if (VERBOSE && !Boomerang::get()->noRemoveNull) {
             LOG << "===== After removing null and unused statements "
               "=====\n";
@@ -1058,6 +1101,8 @@ std::set<UserProc*>* UserProc::decompile() {
             LOG << "===== End after replacing params =====\n\n";
         }
     }
+
+    printXML();
 
     decompiled = true;          // Now fully decompiled (apart from one final
                                 // pass, and transforming out of SSA form)

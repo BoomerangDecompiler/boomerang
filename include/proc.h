@@ -661,6 +661,9 @@ public:
     virtual bool isAggregateUsed() {return aggregateUsed;}
 
     virtual void printCallGraphXML(std::ostream &os, int depth);
+    void printDecodedXML();
+    void printSSAXML();
+    void printXML();
 
 private:
     

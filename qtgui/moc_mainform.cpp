@@ -1,7 +1,7 @@
 /****************************************************************************
 ** MainForm meta object code from reading C++ file 'mainform.h'
 **
-** Created: Fri Sep 12 22:21:43 2003
+** Created: Mon Sep 15 13:22:49 2003
 **      by: The Qt MOC ($Id$)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -69,6 +69,8 @@ QMetaObject* MainForm::staticMetaObject()
     static const QUMethod slot_5 = {"updateLog", 0, 0 };
     static const QUMethod slot_6 = {"updateCallGraph", 0, 0 };
     static const QUMethod slot_7 = {"updateDetails", 0, 0 };
+    static const QUMethod slot_8 = {"updateDecoded", 0, 0 };
+    static const QUMethod slot_9 = {"updateSSA", 0, 0 };
     static const QMetaData slot_tbl[] = {
 	{ "languageChange()", &slot_0, QMetaData::Protected },
 	{ "closeEvent(QCloseEvent*)", &slot_1, QMetaData::Protected },
@@ -77,11 +79,13 @@ QMetaObject* MainForm::staticMetaObject()
 	{ "showLogToggled(bool)", &slot_4, QMetaData::Protected },
 	{ "updateLog()", &slot_5, QMetaData::Protected },
 	{ "updateCallGraph()", &slot_6, QMetaData::Protected },
-	{ "updateDetails()", &slot_7, QMetaData::Protected }
+	{ "updateDetails()", &slot_7, QMetaData::Protected },
+	{ "updateDecoded()", &slot_8, QMetaData::Protected },
+	{ "updateSSA()", &slot_9, QMetaData::Protected }
     };
     metaObj = QMetaObject::new_metaobject(
 	"MainForm", parentObject,
-	slot_tbl, 8,
+	slot_tbl, 10,
 	0, 0,
 #ifndef QT_NO_PROPERTIES
 	0, 0,
@@ -110,6 +114,8 @@ bool MainForm::qt_invoke( int _id, QUObject* _o )
     case 5: updateLog(); break;
     case 6: updateCallGraph(); break;
     case 7: updateDetails(); break;
+    case 8: updateDecoded(); break;
+    case 9: updateSSA(); break;
     default:
 	return QMainWindow::qt_invoke( _id, _o );
     }

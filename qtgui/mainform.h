@@ -49,7 +49,8 @@ protected:
     QAction* fileExitAction;
     QPushButton* showLog;
     QHBoxLayout* MainFormLayout;
-    FileMonitor *logMonitor, *cgMonitor;
+    FileMonitor *logMonitor, *cgMonitor, 
+                *detailsMonitor, *decodedMonitor, *ssaMonitor;
 
 protected slots:
     virtual void languageChange();
@@ -60,6 +61,8 @@ protected slots:
     virtual void updateLog();
     virtual void updateCallGraph();
     virtual void updateDetails();
+    virtual void updateDecoded();
+    virtual void updateSSA();
 };
 
 #endif // MAINFORM_H

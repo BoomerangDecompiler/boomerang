@@ -34,7 +34,8 @@
  *
  */
 MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
-    : QMainWindow( parent, name, fl )
+    : QMainWindow( parent, name, fl ), detailsMonitor(NULL),
+      decodedMonitor(NULL), ssaMonitor(NULL)
 {
     statusBar()->message("Ready");
 
@@ -87,17 +88,17 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
 
     decoded = new QTextBrowser( tabWidget2, "decoded" );
     tabWidget2->insertTab( decoded, "Display the semantics as decoded" );
-    decoded->mimeSourceFactory()->setFilePath(".");
+    //decoded->mimeSourceFactory()->setFilePath(".");
     //decoded->setTextFormat(Qt::RichText);
 
     ssa = new QTextBrowser( tabWidget2, "ssa" );
     tabWidget2->insertTab( ssa, "Display the semantics in SSA form" );
-    ssa->mimeSourceFactory()->setFilePath(".");
-    ssa->setTextFormat(Qt::RichText);
+    //ssa->mimeSourceFactory()->setFilePath(".");
+    //ssa->setTextFormat(Qt::RichText);
 
     code = new QTextBrowser( tabWidget2, "code" );
     tabWidget2->insertTab( code, "Display the generated code" );
-    code->mimeSourceFactory()->setFilePath(".");
+    //code->mimeSourceFactory()->setFilePath(".");
 
     MainFormLayout->addWidget( widgetStack );
 
@@ -165,7 +166,7 @@ void MainForm::languageChange()
     MenuBarEditor->findItem( 2 )->setText( tr( "Edit" ) );
 }
 
-void MainForm::closeEvent( QCloseEvent *e )
+void MainForm::closeEvent( QCloseEvent * )
 {
     fileExit();
 }
@@ -179,32 +180,8 @@ void MainForm::fileExit()
 void MainForm::listSelectionChanged(QListViewItem *item)
 {
     updateDetails();
-    return;
-
-    if (item->text(0) == "main") {
-        decoded->setSource("test-main-decoded.txt");
-//        ssa->setSource("test-main-ssa.html");
-        code->setSource("test-main-code.txt");
-//        ssa->setText("ssa for main");
-//        code->setText("code for main");
-        details->clear();
-        details->setName("main");
-        details->addParam("argc", "int", "m[r28 + 4]");
-        details->addParam("argv", "char **", "m[r28 + 8]");
-        details->addReturn("int", "r24");
-    }
-
-    if (item->text(0) == "fib") {
-        decoded->setSource("test-fib-decoded.txt");
-        //ssa->setSource("test-fib-ssa.html");
-        code->setSource("test-fib-code.txt");
-//        ssa->setText("ssa for fib");
-//        code->setText("code for fib");
-        details->clear();
-        details->setName("fib");
-        details->addParam("param1", "int", "m[r28 + 4]");
-        details->addReturn("int", "r24");
-    }
+    updateDecoded();
+    updateSSA();
 }
 
 void MainForm::showLogToggled(bool on)
@@ -340,6 +317,11 @@ void MainForm::updateDetails()
     q.setContentHandler(&h);
     q.parse(i);
     unlockFile(fd);
+
+    if (detailsMonitor)
+        detailsMonitor->setFileName(fname);
+    else
+        detailsMonitor = new FileMonitor(fname);
 }
 
 bool DetailsHandler::startDocument()
@@ -369,6 +351,166 @@ bool DetailsHandler::startElement( const QString&, const QString&,
 
 bool DetailsHandler::endElement( const QString&, const QString&, const QString& qName )
 {
+    return TRUE;
+}
+
+class DecodedHandler : public QXmlDefaultHandler
+{
+public:
+    bool startDocument();
+    bool startElement( const QString&, const QString&, const QString& , 
+                       const QXmlAttributes& );
+    bool characters( const QString& ch );
+    bool endElement( const QString&, const QString&, const QString& );
+
+    QTextBrowser *decoded;
+    
+protected:
+    bool startDecoded;
+};                   
+
+void MainForm::updateDecoded()
+{
+    QString fname = QString("../output/") + 
+                    listView2->selectedItem()->text(0) + 
+                    "-decoded.xml";
+    int fd = lockFileRead(fname);
+    QFile f(fname);
+    if (f.open(IO_ReadOnly) == FALSE) {
+        std::cerr << "cannot open " << fname << std::endl;
+        return;
+    }
+    QXmlSimpleReader q;
+    QXmlInputSource i(f);
+    DecodedHandler h;
+    h.decoded = decoded;
+    q.setContentHandler(&h);
+    q.parse(i);
+    unlockFile(fd);
+
+    if (decodedMonitor)
+        decodedMonitor->setFileName(fname);
+    else
+        decodedMonitor = new FileMonitor(fname);
+}
+
+bool DecodedHandler::startDocument()
+{
+    decoded->clear();
+    startDecoded = false;
+    return TRUE;
+}
+
+bool DecodedHandler::startElement( const QString&, const QString&, 
+                                    const QString& qName, 
+                                    const QXmlAttributes &a )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "decoded") {
+        startDecoded = true;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool DecodedHandler::endElement( const QString&, const QString&, const QString& qName )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "decoded") {
+        startDecoded = false;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool DecodedHandler::characters( const QString& ch )
+{
+    if (!startDecoded) return TRUE;
+    decoded->setText(ch);
+    return TRUE;
+}
+
+class SSAHandler : public QXmlDefaultHandler
+{
+public:
+    bool startDocument();
+    bool startElement( const QString&, const QString&, const QString& , 
+                       const QXmlAttributes& );
+    bool characters( const QString& ch );
+    bool endElement( const QString&, const QString&, const QString& );
+
+    QTextBrowser *ssa;
+    
+protected:
+    bool startSSA;
+};                   
+
+void MainForm::updateSSA()
+{
+    QString fname = QString("../output/") + 
+                    listView2->selectedItem()->text(0) + 
+                    "-ssa.xml";
+    int fd = lockFileRead(fname);
+    QFile f(fname);
+    if (f.open(IO_ReadOnly) == FALSE) {
+        std::cerr << "cannot open " << fname << std::endl;
+        return;
+    }
+    QXmlSimpleReader q;
+    QXmlInputSource i(f);
+    SSAHandler h;
+    h.ssa = ssa;
+    q.setContentHandler(&h);
+    q.parse(i);
+    unlockFile(fd);
+
+    if (ssaMonitor)
+        ssaMonitor->setFileName(fname);
+    else
+        ssaMonitor = new FileMonitor(fname);
+}
+
+bool SSAHandler::startDocument()
+{
+    ssa->clear();
+    startSSA = false;
+    return TRUE;
+}
+
+bool SSAHandler::startElement( const QString&, const QString&, 
+                                    const QString& qName, 
+                                    const QXmlAttributes &a )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "ssa") {
+        startSSA = true;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool SSAHandler::endElement( const QString&, const QString&, const QString& qName )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "ssa") {
+        startSSA = false;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool SSAHandler::characters( const QString& ch )
+{
+    if (!startSSA) return TRUE;
+    ssa->setText(ch);
     return TRUE;
 }
 

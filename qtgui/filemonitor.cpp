@@ -7,7 +7,7 @@ FileMonitor::FileMonitor(const char *fname) : filename(fname)
 { 
     t = new QTimer(this);
     connect( t, SIGNAL(timeout()), SLOT(poll()) );
-    t->start(1000, FALSE);
+    t->start(100, FALSE);
 }
 
 void FileMonitor::poll()

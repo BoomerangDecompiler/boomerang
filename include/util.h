@@ -22,6 +22,8 @@ void upperStr(const char* s, char* d);
 // Add string and integer
 std::string operator+(const std::string& s, int i);
 
+void escapeXMLChars(std::string &s);
+
 int lockFileRead(const char *fname);
 int lockFileWrite(const char *fname);
 void unlockFile(int n);

@@ -126,6 +126,7 @@ void Prog::analyse() {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
+        pProc->printDetailsXML();
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
@@ -677,6 +678,14 @@ void Prog::decompile() {
 
     // A final pass to remove return locations not used by any caller
     removeUnusedReturns();
+
+    // print XML after removing returns
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        UserProc* proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->printXML();
+    }
+
 
 if (DEBUG_TA)
     typeAnalysis();
