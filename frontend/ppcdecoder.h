@@ -52,8 +52,7 @@ private:
 	 */
 	Exp*	dis_Eaddr(ADDRESS pc, int size = 0);
 	Exp*	dis_RegImm(ADDRESS pc);
-	Exp*	dis_RegLhs(unsigned r);
-	Exp*	dis_RegRhs(unsigned r);
+	Exp*	dis_Reg(unsigned r);
 
 	void	unused(int x);
 	RTL*	createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,

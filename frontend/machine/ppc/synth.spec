@@ -13,9 +13,9 @@ constructors
    lis   D, v     is addis( D, 0, v )
    la    D, d!, A is addi( D, A, d )
    mr    A, S     is ori( A, S, 0 )  # PPC 604 has better performance with ori than or
-   mr.   A, S     is or.( A, S, S )
+   mrq   A, S     is orq( A, S, S )
    not   A, S     is nor( A, S, S )
-   not.  A, S     is nor.( A, S, S )
+   notq  A, S     is norq( A, S, S )
    mtcr  S        is mtcrf( 0xff, S ) 
 
 # e additions

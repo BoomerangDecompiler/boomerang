@@ -197,4 +197,15 @@ CRLOG[IDX]	d, a, b			*1* d :=   a CR_OP[IDX]  b;
 CRNLOG[IDX]	d, a, b			*1* d := ~(a CR_OP[IDX]  b);
 CRLOGC[IDX]	d, a, b			*1* d :=   a CR_OP[IDX] (~b);
 
+# conditional branch
+
+
+CONDBR := { "%CR0@[0,0]"};
+#, "~%CR0", "%CR0", "~%CR0", "%CR0",
+#           "%CR0", "%CR0 | %CR0", "%CR0 | %CR0", "%CR0", "~%CR0", "%CR0",
+#           "%CR0"};
+BRCONDS := { "blt", "ble", "beq", "bge", "bgt", "bnl", "bne", "bng", "bso", "bns", "bun", "bnu"};
+
+BRCONDS[IDX]   BIcr, reloc 
+            *32* %pc := [(CONDBR[IDX] = 1)?%pc + reloc:%pc];
 

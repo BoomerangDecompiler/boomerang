@@ -40,29 +40,25 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 
 #define DIS_UIMM    (new Const(uimm))
 #define DIS_SIMM    (new Const(simm))
-#define DIS_RS		(dis_RegLhs(rs))
-#define DIS_RD		(dis_RegLhs(rd))
-#define DIS_CRFD	(dis_RegLhs(64/* condition registers start*/ + crfd))
-#define DIS_CRFA	(dis_RegLhs(64/* condition registers start*/ + crfa))
-#define DIS_CRFB	(dis_RegLhs(64/* condition registers start*/ + crfb))
-#define DIS_RDR		(dis_RegRhs(rd))
-#define DIS_RA		(dis_RegRhs(ra))
-#define DIS_RB		(dis_RegRhs(rb))
+#define DIS_RS		(dis_Reg(rs))
+#define DIS_RD		(dis_Reg(rd))
+#define DIS_CRFD	(dis_Reg(64/* condition registers start*/ + crfd))
+#define DIS_CRFA	(dis_Reg(64/* condition registers start*/ + crfa))
+#define DIS_CRFB	(dis_Reg(64/* condition registers start*/ + crfb))
+#define DIS_RDR		(dis_Reg(rd))
+#define DIS_RA		(dis_Reg(ra))
+#define DIS_RB		(dis_Reg(rb))
 #define DIS_D		(new Const(d))
-#define DIS_NZRA	(dis_RegLhs(ra))
-#define DIS_NZRB	(dis_RegLhs(rb))
+#define DIS_NZRA	(dis_Reg(ra))
+#define DIS_NZRB	(dis_Reg(rb))
 #define DIS_ADDR	(new Const(addr))
 #define DIS_RELADDR (new Const(reladdr - delta))
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-
-// MVE: Used any more?
-#define DIS_INDEX   (new Binary(opPlus, \
-					dis_Reg(ra), \
-					  new Const(d)))
-
+#define DIS_INDEX   (new Binary(opPlus, dis_Reg(ra), new Const(d)))
 #define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
+#define DIS_BICR	(new Const(BIcr))
 
 /*==============================================================================
  * FUNCTION:	   unused
@@ -165,6 +161,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
 		unused(l);
 
+//	| bcc_(BIcr, reladdr) [name] =>
+//		stmts = instantiate(pc, name, DIS_BICR, DIS_RELADDR);
+
 	else
 		stmts = NULL;
 		result.valid = false;
@@ -185,31 +184,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
  **********************************************************************/
 
 /*==============================================================================
- * FUNCTION:		PPCDecoder::dis_RegLhs
- * OVERVIEW:		Decode the register on the LHS
+ * FUNCTION:		PPCDecoder::dis_Reg
+ * OVERVIEW:		Decode the register
  * PARAMETERS:		r - register (0-31)
  * RETURNS:			the expression representing the register
  *============================================================================*/
-Exp* PPCDecoder::dis_RegLhs(unsigned r)
+Exp* PPCDecoder::dis_Reg(unsigned r)
 {
 	return Location::regOf(r);
 }
-
-/*==============================================================================
- * FUNCTION:		PPCDecoder::dis_RegRhs
- * OVERVIEW:		Decode the register on the RHS
- * NOTE:			Replaces r[0] with const 0
- * NOTE:			Not used by DIS_RD since don't want 0 on LHS
- * PARAMETERS:		r - register (0-31)
- * RETURNS:			the expression representing the register
- *============================================================================*/
-Exp* PPCDecoder::dis_RegRhs(unsigned r)
-{
-	if (r == 0)
-		return new Const(0);
-	return Location::regOf(r);
-}
-
 
 
 /*==============================================================================
