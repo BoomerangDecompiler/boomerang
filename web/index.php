@@ -304,7 +304,7 @@ analyses, etc.</font><br>
  width="769" height="812"> <a href="http://sourceforge.net"><img
  src="sflogo.png" width="125" height="37" border="0"
  alt="SourceForge.net Logo"> </a><br>
-<div align="left"><small>Last modified: 5/Aug/03: News</small><br>
+<div align="left"><small>Last modified: 12/Aug/03: News</small><br>
 </div>
 </div>
 <br>
