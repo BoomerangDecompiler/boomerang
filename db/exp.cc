@@ -5,6 +5,7 @@
 /*
  * $Revision$
  * 05 Apr 02 - Mike: Created
+ * 05 Apr 02 - Mike: Added copy constructors; was crashing under Linux
  */
 
 
@@ -24,6 +25,10 @@ Const::Const(double d)     : Exp(idFltConst)   {u.d = d;}
 Const::Const(const char* p): Exp(idStrConst)   {u.p = p;}
 Const::Const(ADDRESS a)    : Exp(idCodeAddr)   {u.a = a;}
 
+// Copy constructor
+
+Const::Const(Const& o) : Exp(o.id) {u = o.u;}
+
 Unary::Unary(INDEX id)
     : Exp(id)
 {
@@ -34,6 +39,12 @@ Unary::Unary(INDEX id, Exp* e)
 {
     subExp1 = e;        // Initialise the pointer
 }
+Unary::Unary(Unary& o)
+    : Exp(o.id)
+{
+    subExp1 = o.subExp1->clone();
+}
+
 Binary::Binary(INDEX id)
     : Unary(id)
 {
@@ -45,6 +56,13 @@ Binary::Binary(INDEX id, Exp* e1, Exp* e2)
 {
     subExp2 = e2;       // Initialise the 2nd pointer
 }
+Binary::Binary(Binary& o)
+	: Unary(id)
+{
+    setSubExp1(o.getSubExp1()->clone());
+    subExp2 = o.subExp2->clone();
+}
+
 Ternary::Ternary(INDEX id)
     : Binary(id)
 {
@@ -54,6 +72,13 @@ Ternary::Ternary(INDEX id, Exp* e1, Exp* e2, Exp* e3)
     : Binary(id, e1, e2)
 {
     subExp3 = e3;
+}
+Ternary::Ternary(Ternary& o)
+    : Binary(o.id)
+{
+    setSubExp1(o.getSubExp1()->clone());
+    setSubExp2(o.getSubExp2()->clone());
+    subExp3 = o.subExp3->clone();
 }
 
 /*==============================================================================
@@ -116,6 +141,40 @@ Exp* Binary::getSubExp2()
 Exp* Ternary::getSubExp3()
 {
     return subExp3;
+}
+
+/*==============================================================================
+ * FUNCTION:        Const::clone etc
+ * OVERVIEW:        Virtual function to make a clone of myself. Pointers to
+ *                   subexpressions are not copied, but also cloned
+ * PARAMETERS:      <none>
+ * RETURNS:         Pointer to cloned object
+ *============================================================================*/
+Exp* Const::clone()
+{
+    return new Const(*this);
+}
+Exp* Unary::clone()
+{
+    Unary* c = new Unary(id);
+    c->subExp1 = subExp1->clone();
+    return c;
+}
+Exp* Binary::clone()
+{
+    Binary* c = new Binary(id);
+    c->setSubExp1(getSubExp1()->clone());
+    c->subExp2 = subExp2->clone();
+    return c;
+}
+
+Exp* Ternary::clone()
+{
+    Ternary* c = new Ternary(id);
+    c->setSubExp1(getSubExp1()->clone());
+    c->setSubExp2(getSubExp2()->clone());
+    c->subExp3 = subExp3->clone();
+    return c;
 }
 
 /*==============================================================================

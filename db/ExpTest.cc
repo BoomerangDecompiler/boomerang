@@ -3,6 +3,11 @@
  * OVERVIEW:   Provides the implementation for the ExpTest class, which
  *              tests the Exp and derived classes
  *============================================================================*/
+/*
+ * $Revision$
+ *
+ * 05 Apr 02 - Mike: Fixed problems caused by lack of clone() calls
+ */
 
 #include "ExpTest.h"
 
@@ -82,7 +87,7 @@ void ExpTest::testRegOf2 () {
  *============================================================================*/
 void ExpTest::testPlus () {
     ostrstream ost;
-    Binary* b = new Binary(idPlus, m_99, m_rof2);
+    Binary* b = new Binary(idPlus, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 + r[2]"), string(ost.str()));
     delete b;
@@ -94,7 +99,7 @@ void ExpTest::testPlus () {
  *============================================================================*/
 void ExpTest::ExpTest::testMinus () {
     ostrstream ost;
-    Binary* b = new Binary(idMinus, m_99, m_rof2);
+    Binary* b = new Binary(idMinus, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 - r[2]"), string(ost.str()));
     delete b;
@@ -106,7 +111,7 @@ void ExpTest::ExpTest::testMinus () {
  *============================================================================*/
 void ExpTest::testMult () {
     ostrstream ost;
-    Binary* b = new Binary(idMult, m_99, m_rof2);
+    Binary* b = new Binary(idMult, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 * r[2]"), string(ost.str()));
     delete b;
@@ -118,7 +123,7 @@ void ExpTest::testMult () {
  *============================================================================*/
 void ExpTest::testDiv () {
     ostrstream ost;
-    Binary* b = new Binary(idDiv, m_99, m_rof2);
+    Binary* b = new Binary(idDiv, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 / r[2]"), string(ost.str()));
     delete b;
@@ -130,7 +135,7 @@ void ExpTest::testDiv () {
  *============================================================================*/
 void ExpTest::testMults () {
     ostrstream ost;
-    Binary* b = new Binary(idMults, m_99, m_rof2);
+    Binary* b = new Binary(idMults, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 *! r[2]"), string(ost.str()));
     delete b;
@@ -142,7 +147,7 @@ void ExpTest::testMults () {
  *============================================================================*/
 void ExpTest::testDivs () {
     ostrstream ost;
-    Binary* b = new Binary(idDivs, m_99, m_rof2);
+    Binary* b = new Binary(idDivs, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 /! r[2]"), string(ost.str()));
     delete b;
@@ -154,7 +159,7 @@ void ExpTest::testDivs () {
  *============================================================================*/
 void ExpTest::testMod () {
     ostrstream ost;
-    Binary* b = new Binary(idMod, m_99, m_rof2);
+    Binary* b = new Binary(idMod, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 % r[2]"), string(ost.str()));
     delete b;
@@ -166,7 +171,7 @@ void ExpTest::testMod () {
  *============================================================================*/
 void ExpTest::testMods () {
     ostrstream ost;
-    Binary* b = new Binary(idMods, m_99, m_rof2);
+    Binary* b = new Binary(idMods, m_99->clone(), m_rof2->clone());
     b->print(ost);
     CPPUNIT_ASSERT_EQUAL (string("99 %! r[2]"), string(ost.str()));
     delete b;

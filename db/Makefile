@@ -13,8 +13,9 @@ CXX = $(CC)
 
 all: testExp
 
-testExp: testExp.o exp.o ExpTest.o ../bin/libcppunit.so
-	$(CC) -o $@ -Wl,-R../bin $^
+#testExp: testExp.o exp.o ExpTest.o ../bin/libcppunit.so
+testExp: testExp.o exp.o ExpTest.o 
+	$(CC) -o $@ -Wl,-R../bin $^ -lcppunit
 # The -Wl, above passes -R../bin to the linker. This finds the
 # libraries without having to set LD_LIBRARY_PATH
 
