@@ -763,13 +763,13 @@ bool Boomerang::setOutputDirectory(const char *path)
 
 Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 {
-	Prog *prog;
 	std::cerr << "loading...\n";
 	FrontEnd *fe = FrontEnd::Load(fname);
 	if (fe == NULL) {
 		std::cerr << "failed.\n";
 		return NULL;
 	}
+	Prog *prog = new Prog(fe->getBinaryFile(), fe);
 
 	// Add symbols from -s switch(es)
 	for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
@@ -777,18 +777,19 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 		fe->AddSymbol((*it).first, (*it).second.c_str());
 	}
 
-	if (decodeMain)
-		std::cerr << "decoding...\n";
-	prog = fe->decode(decodeMain, pname);
+	fe->readLibraryCatalog();		// Needed before readSymbolFile()
 
-	// Delay symbol files to now, since need Prog* prog
-	// Also, decode() reads the library catalog
-	// symbolFiles from -sf switch(es)
 	for (unsigned i = 0; i < symbolFiles.size(); i++) {
 		std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
 		prog->readSymbolFile(symbolFiles[i].c_str());
 	}
+
+	prog->setNextIsEntry();			// The next proc created will be designated the "entry point"
 	
+	if (decodeMain)
+		std::cerr << "decoding...\n";
+	fe->decode(prog, decodeMain, pname);
+
 	if (!noDecodeChildren) {   // MVE: Not sure if this is right...
 		// this causes any undecoded userprocs to be decoded
 		std::cerr << "decoding anything undecoded...\n";

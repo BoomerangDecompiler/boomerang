@@ -60,8 +60,7 @@
  * PARAMETERS:	  prog: program being decoded
  * RETURNS:		  <N/a>
  *============================================================================*/
-FrontEnd::FrontEnd(BinaryFile *pBF)
- : pBF(pBF)
+FrontEnd::FrontEnd(BinaryFile *pBF) : pBF(pBF)
 {}
 
 FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
@@ -149,15 +148,12 @@ void FrontEnd::readLibraryCatalog() {
 	}
 }
 
-Prog *FrontEnd::decode(bool decodeMain, const char *pname) 
-{
-	Prog *prog = new Prog(pBF, this);
+void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 	if (pname)
 		prog->setName(pname);
-	readLibraryCatalog();
 
 	if (!decodeMain)
-		return prog;
+		return;
 	
 	Boomerang::get()->alert_start_decode(pBF->getLimitTextLow(), pBF->getLimitTextHigh() - pBF->getLimitTextLow());
 
@@ -165,7 +161,7 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 	ADDRESS a = getMainEntryPoint(gotMain);
 	if (VERBOSE)
 		LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
-	if (a == NO_ADDRESS) return false;
+	if (a == NO_ADDRESS) return;
 
 	decode(prog, a);
 
@@ -190,7 +186,7 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 			}
 		}
 	}
-	return prog;
+	return;
 }
 
 void FrontEnd::decode(Prog *prog, ADDRESS a) {

@@ -104,7 +104,7 @@ public:
 	// The procs will appear in order of native address
 	Proc*	getFirstProc(PROGMAP::const_iterator& it);
 	Proc*	getNextProc(PROGMAP::const_iterator& it);
-	Proc*	getEntryProc() { return m_procs.front(); }
+	Proc*	getEntryProc() { return entryProc; }
 
 	// This pair of functions allows the user to iterate through all the
 	// UserProcs
@@ -261,18 +261,20 @@ public:
 
 	// Public booleans that are set if and when a register jump or call is
 	// found, respectively
-	bool		bRegisterJump;
-	bool		bRegisterCall;
+	bool	bRegisterJump;
+	bool	bRegisterCall;
 
-	void printCallGraph();
-	void printCallGraphXML();
+	void	setNextIsEntry() {nextIsEntry = true;}
+
+	void 	printCallGraph();
+	void	printCallGraphXML();
 
 	Cluster *getRootCluster() { return m_rootCluster; }
 	Cluster *findCluster(const char *name) { return m_rootCluster->find(name); }
-	bool clusterUsed(Cluster *c);
+	bool 	clusterUsed(Cluster *c);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo *makeMemo(int mId);
+virtual void readMemo(Memo *m, bool dec);
 
 protected:
 	BinaryFile* pBF;					// Pointer to the BinaryFile object for the program
@@ -281,11 +283,13 @@ protected:
 	/* Persistent state */
 	std::string		 m_name, m_path;	// name of the program and its full path
 	std::list<Proc*> m_procs;			// list of procedures
-	PROGMAP		m_procLabels;			// map from address to Proc*
+	PROGMAP			 m_procLabels;		// map from address to Proc*
 	std::vector<Global*> globals;		// globals to print at code generation time
 	std::map<ADDRESS, const char*> *globalMap; // Map of addresses to global symbols
-	int m_iNumberedProc;				// Next numbered proc will use this
-	Cluster *m_rootCluster;		// Root of the cluster tree
+	int		m_iNumberedProc;			// Next numbered proc will use this
+	Cluster *m_rootCluster;				// Root of the cluster tree
+	bool	nextIsEntry;				// True if the next Proc created will be the "entry" proc
+	Proc*	entryProc;					// The entry procedure
 
 	friend class XMLProgParser;
 	void setFrontEnd(FrontEnd *p) { pFE = p; }

@@ -180,10 +180,9 @@ virtual std::vector<Exp*> &getDefaultParams() = 0;
 virtual std::vector<Exp*> &getDefaultReturns() = 0;
 
 		/*
-		 * Decode all undecoded procedures and return a new program containing
-		 * them.
+		 * Decode all undecoded procedures and return a new program containing them.
 		 */
-		Prog		*decode(bool decodeMain = true, const char *pname = NULL);
+		void		decode(Prog* prog, bool decodeMain = true, const char *pname = NULL);
 
 		/* Decode all procs starting at a given address in a given program. */
 		void		decode(Prog *prog, ADDRESS a);
@@ -191,8 +190,7 @@ virtual std::vector<Exp*> &getDefaultReturns() = 0;
 		/* Decode one proc starting at a given address in a given program. */
 		void		decodeOnly(Prog *prog, ADDRESS a);
 
-		/* Decode a fragment of a procedure, e.g. for each destination of a
-		  switch statement */
+		/* Decode a fragment of a procedure, e.g. for each destination of a switch statement */
 		void		decodeFragment(UserProc* proc, ADDRESS a);
 
 		/*
