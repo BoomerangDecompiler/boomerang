@@ -463,6 +463,14 @@ bool UnionType::operator==(const Type& other) const {
 bool SizeType::operator==(const Type& other) const {
 	return other.isSize() && (size == ((SizeType&)other).size);
 }
+bool UpperType::operator==(const Type& other) const {
+	return other.isUpper() && *base_type == *((UpperType&)other).base_type;
+}
+
+bool LowerType::operator==(const Type& other) const {
+	return other.isLower() && *base_type == *((LowerType&)other).base_type;
+}
+
 
 /*==============================================================================
  * FUNCTION:		Type::operator!=
@@ -574,6 +582,18 @@ bool SizeType::operator<(const Type& other) const {
 	if (id < other.getId()) return true;
 	if (id > other.getId()) return false;
 	return (size < ((SizeType&)other).size);
+}
+
+bool UpperType::operator<(const Type& other) const {
+	if (id < other.getId()) return true;
+	if (id > other.getId()) return false;
+	return (*base_type < *((UpperType&)other).base_type);
+}
+
+bool LowerType::operator<(const Type& other) const {
+	if (id < other.getId()) return true;
+	if (id > other.getId()) return false;
+	return (*base_type < *((LowerType&)other).base_type);
 }
 
 /*==============================================================================
@@ -808,6 +828,17 @@ const char* SizeType::getCtype(bool final) const {
 	return strdup(ost.str().c_str());
 }
 
+const char* UpperType::getCtype(bool final) const {
+	std::ostringstream ost;
+	ost << "/*upper*/(" << base_type << ")";
+	return strdup(ost.str().c_str());
+}
+const char* LowerType::getCtype(bool final) const {
+	std::ostringstream ost;
+	ost << "/*lower*/(" << base_type << ")";
+	return strdup(ost.str().c_str());
+}
+	
 const char* Type::prints() {
 	return getCtype(false);			// For debugging
 }
@@ -1206,6 +1237,16 @@ Type* SizeType::mergeWith(Type* other) {
 	return ret;
 }
 
+Type* UpperType::mergeWith(Type* other) {
+	// FIXME: TBC
+}
+
+Type* LowerType::mergeWith(Type* other) {
+	// FIXME: TBC
+}
+
+
+
 class FuncTypeMemo : public Memo {
 public:
 	FuncTypeMemo(int m) : Memo(m) { }
@@ -1445,3 +1486,14 @@ bool UnionType::findType(Type* ty) {
 	}
 	return false;
 }
+
+void UpperType::setSize(int size) {
+	// Does this make sense?
+	assert(0);
+}
+
+void LowerType::setSize(int size) {
+	// Does this make sense?
+	assert(0);
+}
+

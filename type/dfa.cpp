@@ -185,7 +185,7 @@ void UserProc::dfaTypeAnalysis() {
 		std::list<Exp*> result;
 		s->searchAll(arrayPat, result);
 		for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
-			Type* ty = s->getTypeFor(*rr);
+			//Type* ty = s->getTypeFor(*rr);
 			// FIXME: should check that we use with array type...
 			// Find e and K2
 			Exp* t = ((Unary*)(*rr)->getSubExp1());
@@ -448,6 +448,36 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 LOG << "Warning: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
 return other->clone();
 	}
+	return createUnion(other, ch);
+}
+
+Type* UpperType::meetWith(Type* other, bool& ch) {
+	if (other->isVoid()) return this;
+	if (other->isUpper()) {
+		UpperType* otherUpp = other->asUpper();
+		Type* newBase = base_type->clone()->meetWith(otherUpp->base_type, ch);
+		if (*newBase != *base_type) {
+			ch = true;
+			base_type = newBase;
+		}
+		return this;
+	}
+	// Needs work?
+	return createUnion(other, ch);
+}
+
+Type* LowerType::meetWith(Type* other, bool& ch) {
+	if (other->isVoid()) return this;
+	if (other->isUpper()) {
+		LowerType* otherLow = other->asLower();
+		Type* newBase = base_type->clone()->meetWith(otherLow->base_type, ch);
+		if (*newBase != *base_type) {
+			ch = true;
+			base_type = newBase;
+		}
+		return this;
+	}
+	// Needs work?
 	return createUnion(other, ch);
 }
 
@@ -1186,3 +1216,18 @@ bool CompoundType::isCompatibleWith(Type* other) {
 		if (!types[i]->isCompatibleWith(otherComp->types[i])) return false;
 	return true;
 }
+
+bool UpperType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isUpper() && base_type->isCompatibleWith(other->asUpper()->base_type)) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool LowerType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
