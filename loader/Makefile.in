@@ -79,7 +79,7 @@ HOST_GNU_LD = @HOST_GNU_LD@
 
 
 testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o
-	$(CC) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) -L../lib
+	$(CC) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L../lib
 
 testLoader.o: testLoader.cpp
 	$(CC) -c -o $@ -I../include $<
