@@ -77,7 +77,8 @@ void ProcTest::testName () {
     FrontEnd *pFE = new PentiumFrontEnd(pBF);
     Prog* prog = new Prog(pBF, pFE);
     CPPUNIT_ASSERT(prog);
-    m_proc = new UserProc(prog, nm, 20000);   // They will print in decimal if error
+    pFE->readLibraryCatalog();              // Since we are not decoding
+    m_proc = new UserProc(prog, nm, 20000); // Will print in decimal if error
     std::string actual(m_proc->getName());
     CPPUNIT_ASSERT_EQUAL(std::string("default name"), actual);
 
