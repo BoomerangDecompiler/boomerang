@@ -23,6 +23,7 @@
 # 26 Nov 02 - Mike: Added RETURN (V9) instruction
 # 04 Dec 02 - Mike: r[rs1] -> rs1 (so we can make r[0] -> 0)
 # 09 Dec 02 - Mike: Use succ(rd) and succ(rs1) for LDD and STD
+# 23 Nov 04 - Mike: Use ~(regimm) for ANDN, ORN, XORN etc
 
 NWINDOWS    := 8;            # Number of windows (register windows)-
                              # implementation dependent
@@ -284,7 +285,7 @@ LOG_CC  := { "ANDCC","ANDNCC","ORCC","ORNCC","XORCC","XNORCC" };
 LOG_N[IDX]      rs1, reg_or_imm, rd
                     *32* rd := rs1 OP1[IDX] reg_or_imm;
 LOG_NOT[IDX]    rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] (0-reg_or_imm - 1 );
+                    *32* rd := rs1 OP1[IDX] (~reg_or_imm);	# ~ has weird precedence
 LOG_CC[IDX]     rs1, reg_or_imm, rd
                     LOGICALFLAGS(rd);
 
