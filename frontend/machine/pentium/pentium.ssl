@@ -1879,9 +1879,11 @@ FXCH        i
 
 FYL2X    
             *80* %st1 := %st1 *f log2(%st);
+            FPOP
 
 FYL2XP1    
             *80* %st1 := %st1 *f log2(%st +f 1.0);
+            FPOP
 
 #####################################################################
 # These are the semantics for certain prologues and epilogues that we
