@@ -1620,6 +1620,8 @@ void UserProc::propagateStatements() {
                 if (e->getNumUses() == 1) {
                     // Can propagate TO this statement
                     Statement* def = ((UsesExp*)e)->getFirstUses();
+if (s->getNumber() == 5)
+    std::cerr << "Propagate to 5\n";
                     s->replaceUse(def);
                     numProp++;
                     if (VERBOSE) {

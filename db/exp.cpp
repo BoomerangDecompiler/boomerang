@@ -1195,7 +1195,6 @@ Exp* Exp::getGuard() {
  * NOTE:            Caller must free the list li after use, but not the
  *                    Exp objects that they point to
  * NOTE:            If the top level expression matches, li will contain search
- * NOTE:            Static function
  * PARAMETERS:      search: ptr to Exp we are searching for 
  *                  pSrc: ref to ptr to Exp to search. Reason is that we can
  *                    then overwrite that pointer to effect a replacement
@@ -1206,15 +1205,16 @@ Exp* Exp::getGuard() {
 void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
   bool once) {
     bool compare;
-    compare = (*search == *pSrc);           // Consider type
+    compare = (*search *= *pSrc);           // Note: subscript insensitive
     if (compare) {
         li.push_back(&pSrc);                // Success
         if (once)
             return;                         // No more to do
     }
     // Either want to find all occurrences, or did not match at this level
-    // Recurse into children
-    pSrc->doSearchChildren(search, li, once);
+    // Recurse into children, unless a matching opSubscript
+    if (op != opSubscript || !compare)
+        pSrc->doSearchChildren(search, li, once);
 }
 
 /*==============================================================================
@@ -1239,22 +1239,14 @@ void Binary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     if (once && li.size()) return;
     subExp2->doSearch(search, subExp2, li, once);
 }
-void Ternary::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once) {
+void Ternary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     getSubExp1()->doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     getSubExp2()->doSearch(search, subExp2, li, once);
     if (once && li.size()) return;
     subExp3->doSearch(search, subExp3, li, once);
 }
-void TypedExp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
-    subExp1->doSearch(search, subExp1, li, once);
-}
-void AssignExp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
-    subExp1->doSearch(search, subExp1, li, once);
-    if (once && li.size()) return;
-    subExp2->doSearch(search, subExp2, li, once);
-}
+
 
 /*==============================================================================
  * FUNCTION:        Exp::searchReplace
@@ -2584,8 +2576,6 @@ void AssignExp::doReplaceUse(Statement *use) {
     Exp *right = use->getRight();
     assert(left);
     assert(right);
-    Exp* lpar = getParent(left);
-    if (lpar) left = lpar;    // Want to replace the subscript, if present
     bool changeright = false;
     subExp2 = subExp2->searchReplaceAll(left, right, changeright);
     bool changeleft = false;
@@ -2596,11 +2586,7 @@ void AssignExp::doReplaceUse(Statement *use) {
         e = e->searchReplaceAll(left, right, changeleft);
         baseSub1->setSubExp1(e);
     }
-    // The below assertion can fail when dataflow caching is used. For example,
-    // the pentium stuff with ebp and esp causes a substitution into r29 = r29
-    // This doesn't hurt as far as I can tell. So for now, the assertion has
-    // to be commented out
-    //assert(changeright || changeleft);
+//    assert(changeright || changeleft);
     // simplify the expression
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
@@ -2809,8 +2795,6 @@ Exp* AssignExp::updateUses(StatementSet& defs) {
         // expression (old expression is always needed)
         ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
           updateUses(defs));
-if (subExp2->isPC())
-  std::cerr << "HISS!\n";
     subExp2 = subExp2->updateUses(defs);
     return this;
 }
@@ -2890,30 +2874,4 @@ void Exp::check() {
             }
         }
     }
-}
-
-// Getparent
-
-Exp* Unary::getParent(Exp* sub) {
-    if (*sub == *subExp1) return this;
-    return subExp1->getParent(sub);
-}
-
-Exp* Binary::getParent(Exp* sub) {
-    if (*sub == *subExp1) return this;
-    if (*sub == *subExp2) return this;
-    Exp* res = subExp1->getParent(sub);
-    if (res) return res;
-    return subExp2->getParent(sub);
-}
-
-Exp* Ternary::getParent(Exp* sub) {
-    if (*sub == *subExp1) return this;
-    if (*sub == *subExp2) return this;
-    if (*sub == *subExp3) return this;
-    Exp* res = subExp1->getParent(sub);
-    if (res) return res;
-    res = subExp2->getParent(sub);
-    if (res) return res;
-    return subExp3->getParent(sub);
 }

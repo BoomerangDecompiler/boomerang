@@ -183,8 +183,7 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
         bool once = false);
 
     // Not for public use. Search for subexpression matches.
-static void doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
-        bool once);
+        void doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 
     // As above.
 virtual void doSearchChildren(Exp* search, std::list<Exp**>& li,
@@ -208,11 +207,6 @@ virtual Exp*& refSubExp3();
 virtual void  setSubExp1(Exp* e) {};
 virtual void  setSubExp2(Exp* e) {};
 virtual void  setSubExp4(Exp* e) {};
-
-    //  //  //  //
-    //  Parent  //
-    //  //  //  //
-virtual Exp*    getParent(Exp* sub) {return NULL;}
 
     //  //  //  //  //  //  //
     //  Guarded assignment  //
@@ -384,12 +378,8 @@ virtual     ~Unary();
     Exp*&   refSubExp1();
 virtual Exp* fixSuccessor();
 
-    // Parent
-    Exp*    getParent(Exp* sub);
-
     // Search children
-    void doSearchChildren(Exp* search,
-      std::list<Exp**>& li, bool once);
+    void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
@@ -450,12 +440,8 @@ virtual     ~Binary();
     // Get a reference to subexpression 2
     Exp*&   refSubExp2();
 
-    // Parent
-    Exp*    getParent(Exp* sub);
-
     // Search children
-    void doSearchChildren(Exp* search, 
-      std::list<Exp**>& li, bool once);
+    void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
@@ -513,12 +499,8 @@ virtual     ~Ternary();
     // Get a reference to subexpression 3
     Exp*&   refSubExp3();
 
-    // Parent
-    Exp*    getParent(Exp* sub);
-
     // Search children
-    void doSearchChildren(Exp* search, 
-      std::list<Exp**>& li, bool once);
+    void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
     Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
@@ -571,10 +553,6 @@ public:
     Type*   getType();
     void    setType(Type* ty);
 
-    // Search children
-    void doSearchChildren(Exp* search, 
-      std::list<Exp**>& li, bool once);
-
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
     Exp* simplifyAddr();
@@ -612,10 +590,6 @@ public:
     // Get and set the size
     int	    getSize();
     void    setSize(int sz);
-
-    // Search children
-    void doSearchChildren(Exp* search, 
-      std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
