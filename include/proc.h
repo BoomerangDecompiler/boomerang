@@ -193,13 +193,6 @@ public:
      */
     std::list<int> regParams;
 
-    // serialize this procedure
-    virtual bool serialize(std::ostream &ouf, int &len) = 0;
-
-    // deserialize a procedure
-    static Proc *deserialize(Prog *prog, std::istream &inf);
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     //virtual void getInternalStatements(StatementList &internal) = 0;
 
     Exp *getProven(Exp *left);
@@ -301,11 +294,6 @@ public:
      */
     std::ostream& put(std::ostream& os);
 
-    // serialize this procedure
-    virtual bool serialize(std::ostream &ouf, int &len);
-    // deserialize the subclass specific portion of this procedure
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     void getInternalStatements(StatementList &internal);
 };
 
@@ -369,7 +357,6 @@ class UserProc : public Proc {
      * call graph, among other things
      */
     std::set<Proc*> calleeSet;
-    std::set<ADDRESS> calleeAddrSet;  // used in serialization
  
      /*
      * Set if visited on the way down the call tree during decompile()
@@ -460,11 +447,6 @@ public:
      * Set the size of the given var
      */
 //    void setVarSize(int idx, int size);
-
-    // serialize this procedure
-    virtual bool serialize(std::ostream &ouf, int &len);
-    // deserialize the subclass specific portion of this procedure
-    virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
     void generateCode(HLLCode *hll);

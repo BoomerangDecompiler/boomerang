@@ -73,11 +73,6 @@ public:
     // clone this signature
     virtual Signature *clone();
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int len);
-    static Signature *deserialize(std::istream &inf);
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     // get the return location
     virtual void addReturn(Type *type, Exp *e = NULL);
     virtual void addReturn(Exp *e);

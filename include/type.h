@@ -84,10 +84,6 @@ virtual const char *getCtype() const = 0;   // Get the C type, e.g. "unsigned in
 
 virtual std::string getTempName() const; // Get a temporary name for the type
 
-	// serialization
-virtual	bool serialize(std::ostream &ouf, int &len) = 0;
-virtual	bool deserialize_fid(std::istream &inf, int fid) = 0;
-	static Type *deserialize(std::istream &inf);
 };
 
 class VoidType : public Type {
@@ -106,8 +102,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class FuncType : public Type {
@@ -128,8 +122,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class IntegerType : public Type {
@@ -156,8 +148,6 @@ virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class FloatType : public Type {
@@ -181,8 +171,6 @@ virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class BooleanType : public Type {
@@ -201,8 +189,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class CharType : public Type {
@@ -221,8 +207,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 
@@ -247,8 +231,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class ArrayType : public Type {
@@ -273,8 +255,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 class NamedType : public Type {
@@ -300,8 +280,6 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
-virtual	bool serialize(std::ostream &ouf, int &len);
-virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
 
 

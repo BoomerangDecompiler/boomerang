@@ -4,9 +4,6 @@ std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return NULL;}
 Signature::Signature(const char *nam) {}
 bool Signature::operator==(const Signature& other) const {return false;}
 Signature *Signature::clone() {return 0;}
-bool Signature::serialize(std::ostream &ouf, int len) {return false;}
-Signature *Signature::deserialize(std::istream &inf) {return 0;}
-bool Signature::deserialize_fid(std::istream &inf, int fid) {return false;}
 Exp *Signature::getReturnExp() {return 0;}
 Exp *Signature::getReturnExp2(BinaryFile *pBF) {return NULL;}
 Type *Signature::getReturnType() {return 0;}

@@ -147,14 +147,6 @@ public:
     // reverse nesting order. The search is optionally type sensitive.
     virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
-    // serialize this rtl
-    bool serialize(std::ostream &ouf, int &len);
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    static RTL *deserialize(std::istream &inf);
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 

@@ -112,11 +112,6 @@ public:
     void        load();
     void        save();
 
-    // serialize the program
-    bool serialize(std::ostream &ouf, int &len);
-    // deserialize the program
-    void deserialize(std::istream &inf);
-
     // clear the prog object NOTE: deletes everything!
     void        clear();
 

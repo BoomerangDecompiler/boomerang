@@ -414,11 +414,6 @@ bool Statement::isNullStatement() {
         return *((Assign*)this)->getLeft() == *right;
 }
 
-bool Statement::deserialize_fid(std::istream&, int) {
-    // TODO: complete!
-    return false;
-}
-
 bool Statement::isFpush() {
     if (kind != STMT_ASSIGN) return false;
     return ((Assign*)this)->getRight()->getOper() == opFpush;
@@ -643,46 +638,6 @@ Statement* GotoStatement::clone() {
 // visit this Statement in the RTL
 bool GotoStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
-}
-
-// serialize this rtl
-bool GotoStatement::serialize_rest(std::ostream &ouf) {
-    if (pDest && pDest->getOper() == opIntConst) {
-        saveFID(ouf, FID_RTL_FIXDEST);
-        saveValue(ouf, ((Const *)pDest)->getAddr());
-    } else if (pDest) {
-        saveFID(ouf, FID_RTL_JDEST);
-        int l;
-        pDest->serialize(ouf, l);
-    }
-
-    return true;
-}
-
-// deserialize an rtl
-bool GotoStatement::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        case FID_RTL_FIXDEST:
-            {
-                ADDRESS a;
-                loadValue(inf, a);
-                pDest = new Const(a);
-            }
-            break;
-        case FID_RTL_JDEST:
-            {
-                pDest = Exp::deserialize(inf);
-                if (pDest->getOper() != opIntConst)
-                    m_isComputed = true;
-                else
-                    m_isComputed = false;
-            }
-            break;
-        default:
-            return Statement::deserialize_fid(inf, fid);
-    }
-
-    return true;
 }
 
 void GotoStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
@@ -980,47 +935,6 @@ bool BranchStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-// serialize this rtl
-bool BranchStatement::serialize_rest(std::ostream &ouf) {
-    GotoStatement::serialize_rest(ouf);
-
-    saveFID(ouf, FID_RTL_JCONDTYPE);
-    saveValue(ouf, (char)jtCond);
-
-    saveFID(ouf, FID_RTL_USESFLOATCC);
-    saveValue(ouf, bFloat);
-
-    if (pCond) {
-        saveFID(ouf, FID_RTL_JCOND);
-        int l;
-        pCond->serialize(ouf, l);
-    }
-
-    return true;
-}
-
-// deserialize an rtl
-bool BranchStatement::deserialize_fid(std::istream &inf, int fid) {
-    char ch;
-
-    switch (fid) {
-        case FID_RTL_JCONDTYPE:             
-            loadValue(inf, ch);
-            jtCond = (BRANCH_TYPE)ch;
-            break;
-        case FID_RTL_USESFLOATCC:
-            loadValue(inf, bFloat);
-            break;
-        case FID_RTL_JCOND:
-            pCond = Exp::deserialize(inf);
-            break;
-        default:
-            return GotoStatement::deserialize_fid(inf, fid);
-    }
-
-    return true;
-}
-
 void BranchStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // dont generate any code for jconds, they will be handled by the bb
 }
@@ -1263,21 +1177,6 @@ Statement* CaseStatement::clone() {
 // visit this rtl
 bool CaseStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
-}
-
-// serialize this rtl
-bool CaseStatement::serialize_rest(std::ostream &ouf) {
-    return true;
-}
-
-// deserialize an rtl
-bool CaseStatement::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        default:
-            return Statement::deserialize_fid(inf, fid);
-    }
-
-    return true;
 }
 
 void CaseStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
@@ -1653,31 +1552,6 @@ bool CallStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-// serialize this rtl
-bool CallStatement::serialize_rest(std::ostream &ouf) {
-    GotoStatement::serialize_rest(ouf);
-
-    if (procDest) {
-        saveFID(ouf, FID_RTL_CALLDESTSTR);
-        saveString(ouf, std::string(procDest->getName()));
-    }
-
-    return true;
-}
-
-// deserialize an rtl
-bool CallStatement::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        case FID_RTL_CALLDESTSTR:
-            loadString(inf, destStr);           
-            break;
-        default:
-            return GotoStatement::deserialize_fid(inf, fid);
-    }
-
-    return true;
-}
-
 Proc* CallStatement::getDestProc() {
     return procDest; 
 }
@@ -1686,7 +1560,6 @@ void CallStatement::setDestProc(Proc* dest) {
     assert(dest);
     assert(procDest == NULL);
     procDest = dest;
-    destStr = procDest->getName();
 }
 
 void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
@@ -2055,23 +1928,6 @@ bool ReturnStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-// serialize this rtl
-bool ReturnStatement::serialize_rest(std::ostream &ouf) {
-    GotoStatement::serialize_rest(ouf);
-
-    return true;
-}
-
-// deserialize an rtl
-bool ReturnStatement::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        default:
-            return GotoStatement::deserialize_fid(inf, fid);
-    }
-
-    return true;
-}
-
 void ReturnStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) 
 {
     hll->AddReturnStatement(indLevel, returns);
@@ -2332,21 +2188,6 @@ bool BoolStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
-// serialize this rtl
-bool BoolStatement::serialize_rest(std::ostream &ouf) {
-    return true;
-}
-
-// deserialize an rtl
-bool BoolStatement::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        default:
-            return Statement::deserialize_fid(inf, fid);
-    }
-
-    return true;
-}
-
 void BoolStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     assert(pDest);
     assert(pCond);
@@ -2570,24 +2411,6 @@ void Assign::fromSSAform(igraph& ig) {
 void Assign::setRight(Exp* e) {
     if (rhs) delete rhs;
     rhs = e;
-}
-
-bool Assign::serialize(std::ostream &ouf, int &len) {
-    std::streampos st = ouf.tellp();
-
-    char ch = 'A';
-    saveValue(ouf, ch, false);  // ???
-
-    int l;
-    lhs->serialize(ouf, l);
-    rhs->serialize(ouf, l);
-    saveValue(ouf, size, false);
-
-    saveFID(ouf, FID_EXP_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;
 }
 
 // update type for expression

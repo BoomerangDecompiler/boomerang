@@ -50,9 +50,6 @@ namespace CallingConvention {
         virtual bool operator==(const Signature& other) const;
         static bool qualified(UserProc *p, Signature &candidate);
 
-        virtual bool serialize(std::ostream &ouf, int len);
-        virtual bool deserialize_fid(std::istream &inf, int fid);
-
         virtual void addReturn(Type *type, Exp *e = NULL);
         virtual void addParameter(Type *type, const char *nam = NULL, 
                                   Exp *e = NULL);
@@ -75,9 +72,6 @@ namespace CallingConvention {
             virtual bool operator==(const Signature& other) const;
             static bool qualified(UserProc *p, Signature &candidate);
 
-            virtual bool serialize(std::ostream &ouf, int len);
-            virtual bool deserialize_fid(std::istream &inf, int fid);
-
             virtual void addReturn(Type *type, Exp *e = NULL);
             virtual void addParameter(Type *type, const char *nam = NULL, 
                                       Exp *e = NULL);
@@ -98,9 +92,6 @@ namespace CallingConvention {
             virtual Signature *clone();
             virtual bool operator==(const Signature& other) const;
             static bool qualified(UserProc *p, Signature &candidate);
-
-            virtual bool serialize(std::ostream &ouf, int len);
-            virtual bool deserialize_fid(std::istream &inf, int fid);
 
             virtual void addReturn(Type *type, Exp *e = NULL);
             virtual void addParameter(Type *type, const char *nam = NULL, 
@@ -191,60 +182,6 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p,
         }
     }
     return gotcorrectret1 && gotcorrectret2;
-}
-
-bool CallingConvention::Win32Signature::serialize(std::ostream &ouf, int len)
-{
-    std::streampos st = ouf.tellp();
-
-    char type = 0;
-    saveValue(ouf, type, false);
-    saveString(ouf, name);
-
-    for (unsigned i = 0; i < params.size(); i++) {
-        saveFID(ouf, FID_SIGNATURE_PARAM);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, params[i]->getName());
-        int l;
-        params[i]->getType()->serialize(ouf, l);
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    saveFID(ouf, FID_SIGNATURE_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;    
-}
-
-bool CallingConvention::Win32Signature::deserialize_fid(std::istream &inf, int fid)
-{
-    switch(fid) {
-        case FID_SIGNATURE_PARAM:
-            {
-                std::streampos pos = inf.tellg();
-                int len = loadLen(inf);
-                std::string nam;
-                loadString(inf, nam);
-                Type *t = Type::deserialize(inf);
-                params.push_back(new Parameter(t, nam.c_str()));
-                std::streampos now = inf.tellg();
-                assert(len == (now - pos));
-            }
-            break;
-        default:
-            return Signature::deserialize_fid(inf, fid);
-    }
-    return true;
 }
 
 void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
@@ -399,60 +336,6 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
 #endif
 }
 
-bool CallingConvention::StdC::PentiumSignature::serialize(std::ostream &ouf, int len)
-{
-    std::streampos st = ouf.tellp();
-
-    char type = 0;
-    saveValue(ouf, type, false);
-    saveString(ouf, name);
-
-    for (unsigned i = 0; i < params.size(); i++) {
-        saveFID(ouf, FID_SIGNATURE_PARAM);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, params[i]->getName());
-        int l;
-        params[i]->getType()->serialize(ouf, l);
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    saveFID(ouf, FID_SIGNATURE_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;    
-}
-
-bool CallingConvention::StdC::PentiumSignature::deserialize_fid(std::istream &inf, int fid)
-{
-    switch(fid) {
-        case FID_SIGNATURE_PARAM:
-            {
-                std::streampos pos = inf.tellg();
-                int len = loadLen(inf);
-                std::string nam;
-                loadString(inf, nam);
-                Type *t = Type::deserialize(inf);
-                params.push_back(new Parameter(t, nam.c_str()));
-                std::streampos now = inf.tellg();
-                assert(len == (now - pos));
-            }
-            break;
-        default:
-            return Signature::deserialize_fid(inf, fid);
-    }
-    return true;
-}
-
 void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 {
     if (e == NULL) {
@@ -553,60 +436,6 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
     return true;
 }
 
-bool CallingConvention::StdC::SparcSignature::serialize(std::ostream &ouf,
-  int len) {
-    std::streampos st = ouf.tellp();
-
-    char type = 0;
-    saveValue(ouf, type, false);
-    saveString(ouf, name);
-
-    for (unsigned i = 0; i < params.size(); i++) {
-        saveFID(ouf, FID_SIGNATURE_PARAM);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, params[i]->getName());
-        int l;
-        params[i]->getType()->serialize(ouf, l);
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    saveFID(ouf, FID_SIGNATURE_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;    
-}
-
-bool CallingConvention::StdC::SparcSignature::deserialize_fid(std::istream &inf, int fid)
-{
-    switch(fid) {
-        case FID_SIGNATURE_PARAM:
-            {
-                std::streampos pos = inf.tellg();
-                int len = loadLen(inf);
-                std::string nam;
-                loadString(inf, nam);
-                Type *t = Type::deserialize(inf);
-                params.push_back(new Parameter(t, nam.c_str()));
-                std::streampos now = inf.tellg();
-                assert(len == (now - pos));
-            }
-            break;
-        default:
-            return Signature::deserialize_fid(inf, fid);
-    }
-    return true;
-}
-
 void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 {
     if (e == NULL) {
@@ -674,95 +503,6 @@ bool Signature::operator==(const Signature& other) const
 {
     // TODO
     return false;
-}
-
-bool Signature::serialize(std::ostream &ouf, int len)
-{
-    std::streampos st = ouf.tellp();
-
-    char type = 0;
-    saveValue(ouf, type, false);
-    saveString(ouf, name);
-
-    for (unsigned i = 0; i < params.size(); i++) {
-        saveFID(ouf, FID_SIGNATURE_PARAM);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, params[i]->getName());
-        int l;
-        params[i]->getType()->serialize(ouf, l);
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    saveFID(ouf, FID_SIGNATURE_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;
-}
-
-Signature *Signature::deserialize(std::istream &inf)
-{
-    Signature *sig = NULL;
-
-    char type;
-    loadValue(inf, type, false);
-    assert(type == 0 || type == 1 || type == 2 || type == 3);
-
-    std::string nam;
-    loadString(inf, nam);
-
-    switch(type) {
-        case 0:
-            sig = new Signature(nam.c_str());
-            break;
-        case 1:
-            sig = new CallingConvention::Win32Signature(nam.c_str());
-            break;
-        case 2:
-            sig = new CallingConvention::StdC::PentiumSignature(nam.c_str());
-            break;
-        case 3:
-            sig = new CallingConvention::StdC::SparcSignature(nam.c_str());
-            break;
-    }
-    assert(sig);
-    
-    int fid;
-    while ((fid = loadFID(inf)) != -1 && fid != FID_SIGNATURE_END)
-        sig->deserialize_fid(inf, fid);
-    assert(loadLen(inf) == 0);
-
-    return sig;
-}
-
-bool Signature::deserialize_fid(std::istream &inf, int fid)
-{
-    switch(fid) {
-        case FID_SIGNATURE_PARAM:
-            {
-                std::streampos pos = inf.tellg();
-                int len = loadLen(inf);
-                std::string nam;
-                loadString(inf, nam);
-                Type *t = Type::deserialize(inf);
-                params.push_back(new Parameter(t, nam.c_str()));
-                std::streampos now = inf.tellg();
-                assert(len == (now - pos));
-            }
-            break;
-        default:
-            return Signature::deserialize_fid(inf, fid);
-    }
-    return true;
 }
 
 const char *Signature::getName()

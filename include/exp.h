@@ -288,10 +288,6 @@ virtual Exp* simplifyAddr() {return this;}
     //   sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
     virtual Exp*  genConstraints(Exp* result);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len) = 0;
-    static Exp *deserialize(std::istream &inf);
-
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -347,9 +343,6 @@ public:
     void    appendDotFile(std::ofstream& of);
     virtual Exp*  genConstraints(Exp* restrictTo);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
     // Nothing to destruct: Don't deallocate the string passed to constructor
 };
 
@@ -378,9 +371,6 @@ public:
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
 
     virtual bool isTerminal() { return true; }
 };
@@ -451,9 +441,6 @@ virtual int getMemDepth();
     // Type analysis
     virtual Exp*  genConstraints(Exp* restrictTo);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
 };  // class Unary
 
 /*==============================================================================
@@ -522,9 +509,6 @@ virtual int getMemDepth();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
@@ -592,9 +576,6 @@ virtual int getMemDepth();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
 };  // class Ternary
 
 /*==============================================================================
@@ -635,9 +616,6 @@ public:
     // polySimplify
     Exp* polySimplify(bool& bMod);
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
 };  // class TypedExp
 
 /*==============================================================================
@@ -653,8 +631,6 @@ virtual     ~FlagDef();                         // Destructor
     RTL*    getRtl() { return rtl; }
     void    setRtl(RTL* r) { rtl = r; }
 
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
 };
 
 /*==============================================================================

@@ -435,61 +435,6 @@ Proc *Proc::getFirstCaller() {
     return m_firstCaller; 
 }
 
-// deserialize a procedure
-Proc *Proc::deserialize(Prog *prog, std::istream &inf) {
-    /*
-     * These values are ordered in the save file because I think they are
-     * concrete and necessary to create the specific subclass of Proc.
-     * This is the only time that values should be ordered (instead of named)
-     * in the save file (I hope).  
-     * - trent 17/6/2002
-     */
-    char type;
-    loadValue(inf, type, false);
-    assert(type == 0 || type == 1);
-
-    std::string nam;    
-    loadString(inf, nam);
-    ADDRESS uAddr;
-    loadValue(inf, uAddr, false);
-
-    Proc *p = NULL;
-    if (type == 0)
-        p = new LibProc(prog, nam, uAddr);
-    else
-        p = new UserProc(prog, nam, uAddr);
-    assert(p);
-
-    int fid;
-    while ((fid = loadFID(inf)) != -1 && fid != FID_PROC_END)
-        p->deserialize_fid(inf, fid);
-    assert(loadLen(inf) == 0);
-
-    return p;
-}
-
-bool Proc::deserialize_fid(std::istream &inf, int fid) {
-    switch(fid) {
-        case FID_PROC_SIGNATURE:
-            {
-                int len = loadLen(inf);
-                std::streampos pos = inf.tellg();
-                signature = Signature::deserialize(inf);
-                assert(signature);
-                assert((int)(inf.tellg() - pos) == len);
-            }
-            break;
-        case FID_PROC_FIRSTCALLER:
-            loadValue(inf, m_firstCallerAddr);
-            break;
-        default:
-            skipFID(inf, fid);
-            return false;
-    }
-
-    return true;
-}
-
 Exp *Proc::getProven(Exp *left)
 {
     for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
@@ -518,51 +463,6 @@ LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) :
 
 LibProc::~LibProc()
 {}
-
-// serialize this procedure
-bool LibProc::serialize(std::ostream &ouf, int &len) {
-    std::streampos st = ouf.tellp();
-
-    char type = 0;
-    saveValue(ouf, type, false);
-    saveValue(ouf, address, false);
-
-    if (signature) {
-        saveFID(ouf, FID_PROC_SIGNATURE);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        assert(signature->serialize(ouf, len));
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    if (m_firstCaller) {
-        saveFID(ouf, FID_PROC_FIRSTCALLER);
-        saveValue(ouf, m_firstCaller->getNativeAddress());
-    }
-    saveFID(ouf, FID_PROC_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;
-}
-
-// deserialize the rest of this procedure
-bool LibProc::deserialize_fid(std::istream &inf, int fid) {
-    switch (fid) {
-        default:
-            return Proc::deserialize_fid(inf, fid);
-    }
-
-    return true;
-}
 
 void LibProc::getInternalStatements(StatementList &internal) {
      signature->getInternalStatements(internal);
@@ -786,25 +686,6 @@ void UserProc::setEntryBB() {
 }
 
 /*==============================================================================
- * FUNCTION:        UserProc::getCallees
- * OVERVIEW:        Get the set of callees (procedures called by this proc)
- * PARAMETERS:      <none>
- * RETURNS:         Constant reference to the set
- *============================================================================*/
-std::set<Proc*>& UserProc::getCallees() {
-    if (calleeAddrSet.begin() != calleeAddrSet.end()) {
-        for (std::set<ADDRESS>::iterator it = calleeAddrSet.begin();
-          it != calleeAddrSet.end(); it++) {
-            Proc *p = prog->findProc(*it);
-            if (p)
-                calleeSet.insert(p);
-        }
-        calleeAddrSet.clear();
-    }
-    return calleeSet;
-}
-
-/*==============================================================================
  * FUNCTION:        UserProc::setCallee
  * OVERVIEW:        Add this callee to the set of callees for this proc
  * PARAMETERS:      A pointer to the Proc object for the callee
@@ -812,94 +693,6 @@ std::set<Proc*>& UserProc::getCallees() {
  *============================================================================*/
 void UserProc::setCallee(Proc* callee) {
     calleeSet.insert(callee);
-}
-
-// serialize this procedure
-bool UserProc::serialize(std::ostream &ouf, int &len) {
-    std::streampos st = ouf.tellp();
-
-    char type = 1;
-    saveValue(ouf, type, false);
-    saveValue(ouf, address, false);
-
-    if (signature) {
-        saveFID(ouf, FID_PROC_SIGNATURE);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        assert(signature->serialize(ouf, len));
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    saveFID(ouf, FID_PROC_DECODED);
-    saveValue(ouf, decoded);
-
-    if (cfg) {
-        saveFID(ouf, FID_CFG);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        assert(cfg->serialize(ouf, len));
-
-        std::streampos now = ouf.tellp();
-        assert((int)(now - posa) == len);
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
-    if (m_firstCaller) {
-        saveFID(ouf, FID_PROC_FIRSTCALLER);
-        saveValue(ouf, m_firstCaller->getNativeAddress());
-    }
-
-    for (std::set<Proc *>::iterator it = calleeSet.begin();
-      it != calleeSet.end(); it++) {
-        saveFID(ouf, FID_PROC_CALLEE);
-        saveValue(ouf, (*it)->getNativeAddress());
-    }
-
-    saveFID(ouf, FID_PROC_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;
-}
-
-bool UserProc::deserialize_fid(std::istream &inf, int fid) {
-    ADDRESS a;
-
-    switch (fid) {
-        case FID_PROC_DECODED:
-            loadValue(inf, decoded);
-            break;
-        case FID_CFG:
-            {
-                int len = loadLen(inf);
-                std::streampos pos = inf.tellg();
-                assert(cfg);
-                assert(cfg->deserialize(inf));
-                assert((int)(inf.tellg() - pos) == len);
-            }
-            break;
-        case FID_PROC_CALLEE:
-            loadValue(inf, a);
-            calleeAddrSet.insert(a);
-            break;
-        default:
-            return Proc::deserialize_fid(inf, fid);
-    }
-
-    return true;
 }
 
 void UserProc::generateCode(HLLCode *hll) {

@@ -236,9 +236,6 @@ public:
     // Propagate to this statement
     void propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
-    // Deserialise
-    bool deserialize_fid(std::istream&, int);
-
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
 
@@ -309,9 +306,6 @@ public:
     void setGuard(Exp* g) {guard = g;}
     Exp* getGuard() {return guard;}
     bool isGuarded() {return guard != NULL;}
-
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
 
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
@@ -435,12 +429,6 @@ public:
     // expression and adds them to a given list in reverse nesting order.    
     virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
-    // serialize this Statement
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize a Statement
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
@@ -537,12 +525,6 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif
 
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
@@ -635,12 +617,6 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif     
 
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
     
@@ -670,8 +646,6 @@ class CallStatement: public GotoStatement {
 
     // Destination of call
     Proc* procDest;
-    // Destination name of call (used in serialization)
-    std::string destStr;
 
 public:
     CallStatement(int returnTypeSize = 0);
@@ -739,12 +713,6 @@ public:
 
     // Generate constraints
     virtual void genConstraints(LocationSet& cons);
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
@@ -817,12 +785,6 @@ public:
 
     // From SSA form
     virtual void fromSSAform(igraph& igm);
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
@@ -916,12 +878,6 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);       
 #endif
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
