@@ -88,7 +88,7 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
    sslFile(sslFile), bFloat(false)
 
 %define CONSTRUCTOR_CODE \
-    std::fstream *fin = new std::fstream(sslFile.c_str()); \
+    std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
     if (!*fin) { \
         std::cerr << "can't open `" << sslFile << "' for reading\n"; \
     } \
