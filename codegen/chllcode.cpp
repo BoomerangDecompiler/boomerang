@@ -123,8 +123,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 					else
 						str << "'" << (char)c->getInt() << "'";
 				} else {
-					// Just a plain vanilla int
-					str << std::dec << c->getInt();
+					// More heuristics
+					int K = c->getInt();
+					if (-2048 <= K && K <= 2048)
+						str << std::dec << K; 			// Just a plain vanilla int
+					else
+						str << "0x" << std::hex << K;	// 0x2000 style
 				}
 			}
 			break;
