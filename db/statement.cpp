@@ -2293,7 +2293,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 		}
 		case opMemberAccess: {
 			Type *tsubexp1 = getTypeFor(e->getSubExp1(), prog);
-			if (tsubexp1->resolvesToCompound()) {
+			if (tsubexp1 && tsubexp1->resolvesToCompound()) {
 				CompoundType *compound = tsubexp1->asCompound();
 				const char *nam = ((Const*)e->getSubExp2())->getStr();
 				ty = compound->getType((char*)nam);
