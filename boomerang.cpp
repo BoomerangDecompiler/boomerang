@@ -345,7 +345,7 @@ int Boomerang::decompile(const char *fname)
     time(&end);
     int hours = (end-start) / 60 / 60;
     int mins = (end-start) / 60 - hours * 60;
-    int secs = (end-start) - hours * 60 * 60 - mins * 60 * 60;
+    int secs = (end-start) - hours * 60 * 60 - mins * 60;
     std::cerr << "completed in " << std::dec;
     if (hours)
         std::cerr << hours << " hours ";
