@@ -51,7 +51,6 @@
 #include "hllcode.h"
 #include "boomerang.h"
 #include "constraint.h"
-#include "analysis.h"
 #include "visitor.h"
 
 typedef std::map<Statement*, int> RefCounter;
@@ -135,8 +134,11 @@ void UserProc::renameParam(const char *oldName, const char *newName)
 	cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
 }
 
-void UserProc::renameLocal(const char *oldName, const char *newName)
-{
+void UserProc::setParamType(const char* nam, Type* ty) {
+	signature->setParamType(nam, ty);
+}
+
+void UserProc::renameLocal(const char *oldName, const char *newName) {
 	Type *t = locals[oldName];
 	Exp *e = getLocalExp(oldName);
 	locals.erase(oldName);
@@ -830,7 +832,11 @@ void UserProc::fastx86decompile()
             if (!call->getDestProc()->isLib() && call->getProven(Location::regOf(28)) == NULL) {
                 // assume that all calls to non-lib procs are standard-c calling convention (eg, esp = esp + 4)
                 UserProc *u = (UserProc*)call->getDestProc();
-                u->proven.insert(new Binary(opEquals, Location::regOf(28), new Binary(opPlus, Location::regOf(28), new Const(4))));
+                u->proven.insert(new Binary(opEquals,
+					Location::regOf(28),
+					new Binary(opPlus,
+						Location::regOf(28),
+						new Const(4))));
             }
         }
     }
@@ -842,7 +848,10 @@ void UserProc::fastx86decompile()
     // 3) recognise parameters
     if (signature->getNumParams() == 0) {
         for (int i = 0; i < 8; i++)
-            addParameter(Location::memOf(new Binary(opPlus, Location::regOf(28), new Const(4*(i+1)))));
+            addParameter(Location::memOf(
+				new Binary(opPlus,
+					Location::regOf(28),
+					new Const(4*(i+1)))));
     }
     replaceExpressionsWithParameters(-1);
     //trimParameters();
@@ -851,8 +860,7 @@ void UserProc::fastx86decompile()
     propagateStatements(0, -1);
 
     // 5) ok, now we should be able to remove all assignments to r28
-    //    whilst we're here we'll remove any statements assigning %pc or to %pc
-    //           and any statements assigning to flags
+    //    whilst we're here we'll remove any statements assigning %pc or to %pc and any statements assigning to flags
 
     // let's just do a little check to make sure I'm right.
     for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -882,7 +890,8 @@ void UserProc::fastx86decompile()
             removeStatement(s);
         else if (s->getLeft() && s->getLeft()->getOper() == opPC)
             removeStatement(s);
-        else if (s->getLeft() && s->getRight()->getOper() == opSubscript && s->getRight()->getSubExp1()->getOper() == opPC)
+        else if (s->getLeft() && s->getRight()->getOper() == opSubscript &&
+				s->getRight()->getSubExp1()->getOper() == opPC)
             removeStatement(s);
         else if (s->getLeft() && s->getLeft()->isFlags())
             removeStatement(s);
@@ -895,8 +904,7 @@ void UserProc::fastx86decompile()
 }
 
 // Decompile this UserProc
-std::set<UserProc*>* UserProc::decompile() 
-{
+std::set<UserProc*>* UserProc::decompile() {
 	// Prevent infinite loops when there are cycles in the call graph
 	if (decompiled) return NULL;
 
@@ -1014,8 +1022,7 @@ std::set<UserProc*>* UserProc::decompile()
 			//trimParameters(depth);
 		}
 
-		// if we've added new parameters, need to do propagations up to this
-		// depth.  it's a recursive function thing.
+		// if we've added new parameters, need to do propagations up to this depth.  it's a recursive function thing.
 		if (nparams != signature->getNumParams()) {
 			for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
 				// Propagate at this memory depth
@@ -1110,8 +1117,7 @@ std::set<UserProc*>* UserProc::decompile()
 
 	}
 
-	// Check for indirect jumps or calls not already removed by propagation of
-	// constants
+	// Check for indirect jumps or calls not already removed by propagation of constants
 	if (cfg->decodeIndirectJmp(this)) {
 		// There was at least one indirect jump or call found and decoded. That means that most of what has been
 		// done to this function so far is invalid. So redo everything. Very expensive!!
@@ -1121,8 +1127,7 @@ std::set<UserProc*>* UserProc::decompile()
 		return decompile();	 // Restart decompiling this proc
 	}
 
-	// Only remove unused statements after decompiling as much as possible of
-	// the proc
+	// Only remove unused statements after decompiling as much as possible of the proc
 	for (depth = 0; depth <= maxDepth; depth++) {
 		// Remove unused statements
 		RefCounter refCounts;			// The map
