@@ -76,6 +76,7 @@ BEGIN
         POPUP "&Loader"
         BEGIN
             MENUITEM "&Symbol table",               ID_LOADER_SYMBOLTABLE
+            MENUITEM "&Memory Dump",                ID_LOADER_MEMORYDUMP
         END
         POPUP "De&coder"
         BEGIN
@@ -404,6 +405,15 @@ BEGIN
                     WS_BORDER | WS_TABSTOP,7,7,173,122
 END
 
+IDD_MEMORYDUMP DIALOGEX 0, 0, 358, 186
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Memory Dump"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    SCROLLBAR       IDC_SCROLLBAR1,341,7,10,172,SBS_VERT
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -475,6 +485,14 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 129
+    END
+
+    IDD_MEMORYDUMP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 351
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
     END
 END
 #endif    // APSTUDIO_INVOKED

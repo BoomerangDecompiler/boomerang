@@ -30,6 +30,7 @@
 #define IDI_SUSPEND                     144
 #define IDI_RESUME1                     145
 #define IDD_SYMBOLTABLE                 145
+#define IDD_MEMORYDUMP                  146
 #define IDC_NAME                        1000
 #define IDC_TARGET                      1001
 #define IDC_BROWSEBUTTON                1002
@@ -76,6 +77,7 @@
 #define IDC_REREADSIGS                  1045
 #define IDC_MSDN                        1046
 #define IDC_LIST1                       1047
+#define IDC_SCROLLBAR1                  1048
 #define ID_FILE_NEW                     32771
 #define ID_FILE_OPEN                    32773
 #define ID_FILE_CLOSE                   32775
@@ -116,8 +118,9 @@
 #define ID_TOOLS_LOADER                 32815
 #define ID_PROP_REGS                    32816
 #define ID_FROM_SSA                     32817
-#define ID_STMT_PROPAGATE_TO            32818
-#define ID_LOADER_SYMBOLTABLE           32819
+#define ID_LOADER_MEMORYDUMP            32818
+#define ID_STMT_PROPAGATE_TO            32819
+#define ID_LOADER_SYMBOLTABLE           32820
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -125,9 +128,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32817
-#define _APS_NEXT_CONTROL_VALUE         1048
+#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_COMMAND_VALUE         32818
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

@@ -21,6 +21,12 @@ struct UNICODE_STRING {
   PWSTR	 Buffer;
 };
 
+void 
+RtlInitUnicodeString(
+    PUNICODE_STRING DestinationString,
+    PCWSTR SourceString
+    );
+
 struct RTL_OSVERSIONINFOEXW {
   ULONG	 dwOSVersionInfoSize;
   ULONG	 dwMajorVersion;
@@ -34,6 +40,91 @@ struct RTL_OSVERSIONINFOEXW {
   UCHAR	 wProductType;
   UCHAR	 wReserved;
 };
+
+struct IO_SECURITY_CONTEXT {
+    PSECURITY_QUALITY_OF_SERVICE SecurityQos;
+    PACCESS_STATE AccessState;
+    ACCESS_MASK DesiredAccess;
+    ULONG FullCreateOptions;
+};
+typedef IO_SECURITY_CONTEXT *PIO_SECURITY_CONTEXT;
+
+struct WAIT_CONTEXT_BLOCK {
+    KDEVICE_QUEUE_ENTRY WaitQueueEntry;
+    PDRIVER_CONTROL DeviceRoutine;
+    PVOID DeviceContext;
+    ULONG NumberOfMapRegisters;
+    PVOID DeviceObject;
+    PVOID CurrentIrp;
+    PKDPC BufferChainingDpc;
+};
+typedef WAIT_CONTEXT_BLOCK *PWAIT_CONTEXT_BLOCK;
+
+struct DEVICE_OBJECT {
+    CSHORT Type;
+    USHORT Size;
+    LONG ReferenceCount;
+    DRIVER_OBJECT *DriverObject;
+    DEVICE_OBJECT *NextDevice;
+    DEVICE_OBJECT *AttachedDevice;
+    IRP *CurrentIrp;
+    PIO_TIMER Timer;
+    ULONG Flags; 
+    ULONG Characteristics;
+    PVOID DoNotUse1;
+    PVOID DeviceExtension;
+    DEVICE_TYPE DeviceType;
+    CCHAR StackSize;
+    LIST_ENTRY ListEntry;
+    ULONG AlignmentRequirement;
+    KDEVICE_QUEUE DeviceQueue;
+    KDPC Dpc;
+    ULONG ActiveThreadCount;
+    PSECURITY_DESCRIPTOR SecurityDescriptor;
+    KEVENT DeviceLock;
+    USHORT SectorSize;
+    USHORT Spare1;
+    DEVOBJ_EXTENSION  *DeviceObjectExtension;
+    PVOID  Reserved;
+};
+typedef DEVICE_OBJECT *PDEVICE_OBJECT; 
+
+struct DEVOBJ_EXTENSION {
+
+    CSHORT          Type;
+    USHORT          Size;
+    PDEVICE_OBJECT  DeviceObject;
+};
+typedef DEVOBJ_EXTENSION *PDEVOBJ_EXTENSION;
+
+struct DRIVER_EXTENSION {
+
+    DRIVER_OBJECT *DriverObject;
+    PDRIVER_ADD_DEVICE AddDevice;
+    ULONG Count;
+    UNICODE_STRING ServiceKeyName;
+};
+typedef DRIVER_EXTENSION *PDRIVER_EXTENSION;
+
+struct DRIVER_OBJECT {
+    CSHORT Type;
+    CSHORT Size;
+    PDEVICE_OBJECT DeviceObject;
+    ULONG Flags;
+    PVOID DriverStart;
+    ULONG DriverSize;
+    PVOID DriverSection;
+    PDRIVER_EXTENSION DriverExtension;
+    UNICODE_STRING DriverName;
+    PUNICODE_STRING HardwareDatabase;
+    PFAST_IO_DISPATCH FastIoDispatch;
+    PDRIVER_INITIALIZE DriverInit;
+    PDRIVER_STARTIO DriverStartIo;
+    PDRIVER_UNLOAD DriverUnload;
+    PDRIVER_DISPATCH MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
+};
+typedef DRIVER_OBJECT *PDRIVER_OBJECT; 
+
 
 typedef RTL_OSVERSIONINFOEXW *PRTL_OSVERSIONINFOEXW;
 
@@ -307,3 +398,9 @@ PIRP
 	PKEVENT	 Event,
 	PIO_STATUS_BLOCK  IoStatusBlock
 	);
+
+NTSTATUS 
+	DriverEntry (
+		PDRIVER_OBJECT DriverObject,
+		PUNICODE_STRING RegistryPath
+		);

@@ -164,6 +164,7 @@ public:
 //virtual ADDRESS GetFirstHeaderAddress();      // Get ADDRESS of main header
 //    ADDRESS     GetNextHeaderAddress();       // Get any other headers
 
+	int         readNative1(ADDRESS a);         // Read 1 bytes from native addr
     int         readNative2(ADDRESS a);         // Read 2 bytes from native addr
     int         readNative4(ADDRESS a);         // Read 4 bytes from native addr
     QWord       readNative8(ADDRESS a);         // Read 8 bytes from native addr

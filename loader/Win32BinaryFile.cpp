@@ -87,6 +87,9 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	unsigned addr, lastOrdCall;
 	int gap;			// Number of instructions from the last ordinary call
 
+	if (m_pPEHeader->Subsystem == 1)   // native
+		return LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase);
+
 	gap = 0xF0000000;	// Large positive number (in case no ordinary calls)
 	while (p < lim) {
 		op1 = *(unsigned char*)(p + base);
@@ -304,6 +307,10 @@ bool Win32BinaryFile::PostLoad(void* handle)
 
 char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
+	if (m_pPEHeader->Subsystem == 1 &&				// native
+		LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
+		return "DriverEntry";
+
 	std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
 	if (it == dlprocptrs.end())
 		return 0;
@@ -347,6 +354,15 @@ int Win32BinaryFile::win32Read4(int* pi) const{
 	int n2 = win32Read2(p+1);
 	int n = (int) (n1 | (n2 << 16));
 	return n;
+}
+
+// Read 2 bytes from given native address
+int Win32BinaryFile::readNative1(ADDRESS nat) {
+	PSectionInfo si = GetSectionInfoByAddr(nat);
+	if (si == 0) 
+		si = GetSectionInfo(0);
+	ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+	return *(char*)host;
 }
 
 // Read 2 bytes from given native address

@@ -20,7 +20,7 @@ TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HWND hTopWnd, hStatusBar, hTreeView, hLogView;
 HBRUSH yellowBrush, buttonBrush;
-HFONT hTabBarFont;
+HFONT hTabBarFont, hMemoryDumpFont;
 static Prog *prog = NULL;
 std::map<Proc*,HTREEITEM> procItems;
 HTREEITEM treeDragging = NULL;
@@ -192,6 +192,7 @@ LRESULT CALLBACK	DecompileOptions(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	Decoding(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	ProcProperties(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	SymbolTable(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	MemoryDump(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY WinMain(HINSTANCE hInstance,
 					 HINSTANCE hPrevInstance,
@@ -257,13 +258,13 @@ public:
 		*p2 = 0;
 
 		if (strlen(str) + plog - log < LOG_SIZE) {
-			strcat(plog, str);
+			strcpy(plog, str);
 			plog += strlen(str);
 		} else {
-			memmove(log, log + 1024, 1024);
+			memmove(log, log + 1024, LOG_SIZE - 1024);
 			plog -= 1024;
 			if (strlen(str) + plog - log < LOG_SIZE) {
-				strcat(plog, str);
+				strcpy(plog, str);
 				plog += strlen(str);
 			}
 		}
@@ -417,6 +418,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	unsigned char lf_bits[] = { 0xF3, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x02, 0x01, 0x22, 0x41, 0x72, 0x69, 0x61, 0x6C, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, };
 	hTabBarFont = CreateFontIndirect((LOGFONT*)lf_bits);
+	LOGFONT mmfont;
+	memcpy(&mmfont, lf_bits, sizeof(mmfont));
+	strcpy(mmfont.lfFaceName, "OEM fixed font");
+	mmfont.lfPitchAndFamily &= ~3;
+	mmfont.lfPitchAndFamily |= FIXED_PITCH;
+	hMemoryDumpFont = CreateFontIndirect(&mmfont);
 
 	hLogView = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL	| WS_DLGFRAME
 		| ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY, 
@@ -752,10 +759,9 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			UserProc *u = dynamic_cast<UserProc*>(lp->p);
 			if (procMenu != NULL) {
 				DestroyMenu(procMenu);
-			} else {
-				callersMenu = CreatePopupMenu();
-				callsMenu = CreatePopupMenu();
 			}
+			callersMenu = CreatePopupMenu();
+			callsMenu = CreatePopupMenu();
 			procMenu = CreatePopupMenu();
 			AppendMenu(procMenu, MF_STRING, ID_VIEW_RENAME, "&Rename");
 			if (u) {
@@ -944,6 +950,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_LOADER_SYMBOLTABLE:
 			DialogBox(hInst, (LPCTSTR)IDD_SYMBOLTABLE, hWnd, (DLGPROC)SymbolTable);
+			break;
+		case ID_LOADER_MEMORYDUMP:
+			DialogBox(hInst, (LPCTSTR)IDD_MEMORYDUMP, hWnd, (DLGPROC)MemoryDump);
 			break;
 		case ID_DECOMPILER_START:
 			if (hDecompilerThread == NULL) {
@@ -2026,6 +2035,92 @@ LRESULT CALLBACK SymbolTable(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
 			return TRUE;
 		}
 		break;
+	}
+	return FALSE;
+}
+
+LRESULT CALLBACK MemoryDump(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static RECT r;
+	TEXTMETRIC tm;
+	HDC hdc;
+	PAINTSTRUCT ps;
+	static ADDRESS top;
+	static HWND hSB;
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+			if (prog == NULL)
+				return FALSE;
+			top = 0;
+			hSB = GetDlgItem(hDlg, IDC_SCROLLBAR1);
+			SCROLLINFO si;
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_RANGE | SIF_POS;
+			si.nPos = 0;
+			si.nMin = 0;
+			si.nMax = prog->getImageSize() / 16;
+			SetScrollInfo(hSB, SB_CTL, &si, TRUE);
+		}
+		return TRUE;
+
+	case WM_VSCROLL:
+		if (LOWORD(wParam) != SB_THUMBTRACK) {
+			SCROLLINFO si;
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_RANGE | SIF_POS;
+			GetScrollInfo(hSB, SB_CTL, &si);
+			si.fMask = SIF_POS;
+			if (LOWORD(wParam) == SB_LINEDOWN && si.nPos < si.nMax)
+				si.nPos++;
+			if (LOWORD(wParam) == SB_LINEUP && si.nPos > si.nMin)
+				si.nPos--;
+			if (LOWORD(wParam) == SB_PAGEDOWN && si.nPos + 20 < si.nMax)
+				si.nPos += 20;
+			if (LOWORD(wParam) == SB_PAGEUP && si.nPos - 20 > si.nMin)
+				si.nPos -= 20;
+			if (LOWORD(wParam) == SB_THUMBPOSITION) {
+				si.nPos = HIWORD(wParam);
+			}
+			SetScrollInfo(hSB, SB_CTL, &si, TRUE);
+			top = si.nPos * 16;
+			InvalidateRect(hDlg, &r, TRUE);
+		}		
+		return TRUE;
+
+	case WM_COMMAND:
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDOK) && LOWORD(wParam) == IDOK) {
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDCANCEL) && LOWORD(wParam) == IDCANCEL) 
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hDlg, &ps);
+		SelectObject(hdc, hMemoryDumpFont);
+		GetClientRect(hDlg, &r);
+		GetTextMetrics(hdc, &tm);
+		for (int j = 0; r.top + j * tm.tmHeight < r.bottom; j ++) {
+			char line[1024];
+			
+			sprintf(line, "%08X ", prog->getImageBase() + top + j * 16);
+			for (int i = 0; i < 16; i++)
+				sprintf(line + 9 + i * 3, "%02X%c", (unsigned char)prog->readNative1(prog->getImageBase() + top + j * 16 + i), i == 7 ? '-' : ' ');
+			for (int i = 0; i < 16; i++) {
+				char ch = prog->readNative1(prog->getImageBase() + top + j * 16 + i);
+				sprintf(line + 9 + 16 * 3 + i, "%c", ch ? ch : '.');
+			}
+
+			TextOut(hdc, 0, r.top + j * tm.tmHeight, line, strlen(line));
+		}
+		EndPaint(hDlg, &ps);
+		return TRUE;
 	}
 	return FALSE;
 }

@@ -239,6 +239,7 @@ public:
 		{ return pBF->GetSectionInfoByAddr(a);}
 	ADDRESS getLimitTextHigh() {return pBF->getLimitTextHigh();}
 	// Read 2, 4, or 8 bytes given a native address
+	int		readNative1(ADDRESS a) {return pBF->readNative1(a);}
 	int		readNative2(ADDRESS a) {return pBF->readNative2(a);}
 	int		readNative4(ADDRESS a) {return pBF->readNative4(a);}
 	float	readNativeFloat4(ADDRESS a) {return pBF->readNativeFloat4(a);}
@@ -250,6 +251,8 @@ public:
 		  return pFE->processProc((unsigned)addr, proc, os);}
 
 	void readSymbolFile(const char *fname);
+	unsigned int getImageSize() { return pBF->getImageSize(); }
+	ADDRESS getImageBase() { return pBF->getImageBase(); }
 
 	// Public booleans that are set if and when a register jump or call is
 	// found, respectively

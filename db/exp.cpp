@@ -1073,7 +1073,10 @@ void RefExp::print(std::ostream& os) {
 // TypeVal	//
 //	//	//	//
 void TypeVal::print(std::ostream& os) {
-	os << "<" << val->getCtype() << ">";
+	if (val)
+		os << "<" << val->getCtype() << ">";
+	else 
+		os << "<NULL>";
 }
 
 /*==============================================================================

@@ -1429,6 +1429,15 @@ int ElfBinaryFile::elfRead4(int* pi) const{
 		return (int) (elfRead2(p) + (elfRead2(p+1) << 16));
 }
 
+int ElfBinaryFile::readNative1(ADDRESS nat) {
+	PSectionInfo si = GetSectionInfoByAddr(nat);
+	if (si == 0) {
+		si = GetSectionInfo(0);
+	}
+	ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+	return *(char *)host;
+}
+
 // Read 2 bytes from given native address
 int ElfBinaryFile::readNative2(ADDRESS nat) {
 	PSectionInfo si = GetSectionInfoByAddr(nat);

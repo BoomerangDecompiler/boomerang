@@ -1,3 +1,6 @@
+
+typedef unsigned int size_t;
+
 int printf(char *fmt, ...);
 int scanf(char *fmt, ...);
 char *getenv(char *name);
@@ -27,3 +30,5 @@ char *fgets_unlocked(char *s, int n, FILE *stream);
 int fputs_unlocked(const char *s, FILE *stream);
 
 
+size_t read(int fd, void *buf, size_t count);
+size_t write(int fd, const void *buf, size_t count);
