@@ -233,7 +233,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
 	GotoStatement* jump = new GotoStatement();
 	jump->setDest(relocd-delta);
 	result.rtl->appendStmt(jump);
-	SHOW_ASM(name<<" "<<relocd)
+	SHOW_ASM(name<<" 0x"<<std::hex<<relocd-delta)
 }
 
 /*==============================================================================
