@@ -444,6 +444,9 @@ public:
 	// simplify the statements in this proc
 	void	simplify() { cfg->simplify(); }
 
+    // do a fast x86 decompile
+    void    fastx86decompile();
+
 	// decompile this proc
 	std::set<UserProc*>* decompile();
 	void	propagateAtDepth(int depth);
