@@ -952,6 +952,12 @@ std::set<UserProc*>* UserProc::decompile() {
 	// Initialise statements
 	initStatements();
 
+	if (VERBOSE) {
+		LOG << "=== Debug Print Before SSA for " << getName() << " ===\n";
+		printToLog();
+		LOG << "=== End Debug Print Before SSA for " << getName() << " ===\n\n";
+	}
+
 	// Compute dominance frontier
 	cfg->dominators();
 
@@ -1480,7 +1486,7 @@ void UserProc::trimReturns() {
 
 void UserProc::updateReturnTypes()
 {
-	if (theReturnStatement == NULL)
+	if (theReturnStatement == NULL | !ADHOC_TYPE_ANALYSIS)
 		return;
 	for (int n = 0; n < theReturnStatement->getNumReturns(); n++) {
 		Exp *e = theReturnStatement->getReturnExp(n);
