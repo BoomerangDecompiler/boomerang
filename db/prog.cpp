@@ -43,6 +43,7 @@
 #include <vector>
 #include <math.h>
 
+#include "cluster.h"
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -60,32 +61,39 @@
 #include "ansi-c-parser.h"
 #include "config.h"
 
-Prog::Prog()
-    : pBF(NULL),
+#include <sys/stat.h>
+#include <sys/types.h>
+
+Prog::Prog() :
+      pBF(NULL),
       pFE(NULL),
-      globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
-      m_iNumberedProc(1) {
+      globalMap(NULL),
+      m_iNumberedProc(1),
+      m_rootCluster(new Cluster("prog")) {
     // Default constructor
 }
 
-Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
-    : pBF(pBF),
+Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) :
+      pBF(pBF),
       pFE(pFE),
-      globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
+      globalMap(NULL),
       m_iNumberedProc(1) {
-    if (pBF && pBF->getFilename()) 
+    if (pBF && pBF->getFilename()) {
         m_name = pBF->getFilename();
+        m_rootCluster = new Cluster(getNameNoPath().c_str());
+    }
 }
 
-Prog::Prog(const char* name)
-    : pBF(NULL),
+Prog::Prog(const char* name) :
+      pBF(NULL),
       pFE(NULL),
-      globalMap(NULL),
-      m_name(name),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
-      m_iNumberedProc(1) {
+      m_name(name),
+      globalMap(NULL),
+      m_iNumberedProc(1),
+      m_rootCluster(new Cluster(getNameNoPath().c_str())) {
     // Constructor taking a name. Technically, the allocation of the
     // space for the name could fail, but this is unlikely
 }
@@ -166,6 +174,54 @@ void Prog::generateDotFile() {
 
 }
 
+void Prog::generateCode() {
+    std::string basedir = m_rootCluster->makeDirs();
+    std::ofstream os((basedir + "/" + getNameNoPath() + ".c").c_str());
+    HLLCode *code = Boomerang::get()->getHLLCode();
+    for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+        // Check for an initial value
+        Exp *e = NULL;
+        e = (*it1)->getInitialValue(this);
+        if (e)
+            code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+    }
+    code->print(os);
+    delete code;
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+        p->getCFG()->compressCfg();
+        code = Boomerang::get()->getHLLCode(p);
+        p->generateCode(code);
+	if (p->getCluster() == getRootCluster())
+	    code->print(os);
+	else {
+	    std::string path = p->getCluster()->makeDirs();
+	    std::ofstream out((path + "/" + p->getCluster()->getName() + ".c").c_str());
+	    code->print(out);
+	    out.close();
+	}
+        delete code;
+    }
+    os.close();
+}
+
+const char *Cluster::makeDirs()
+{
+    std::string path;
+    if (parent)
+	path = parent->makeDirs();
+    else
+	path = Boomerang::get()->getOutputPath();	
+    if (getNumChildren() > 0) {
+	path = path + "/" + name;
+	mkdir(path.c_str(), 0777);
+    }
+    return path.c_str();
+}
+
 void Prog::generateCode(std::ostream &os) {
     HLLCode *code = Boomerang::get()->getHLLCode();
     for (std::vector<Global*>::iterator it1 = globals.begin(); 
@@ -178,8 +234,7 @@ void Prog::generateCode(std::ostream &os) {
     }
     code->print(os);
     delete code;
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-      it++) {
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
@@ -440,10 +495,9 @@ void Prog::globalUsed(ADDRESS uaddr)
                     globals[i]->getType()->getSize() / 8 > uaddr)
             return;
     if (uaddr < 0x10000) {
-        // This happens in windows code because you can pass a low value
-        // integer instead of a string to some functions.
-        LOG << "warning: ignoring stupid request for global at address " <<
-          uaddr << "\n";
+        // This happens in windows code because you can pass a low value integer instead 
+        // of a string to some functions.
+        LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
         return;
     }
     const char *nam = newGlobal(uaddr); 
@@ -1093,4 +1147,5 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
     }
     return e;
 }
+
 

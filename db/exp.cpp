@@ -84,7 +84,7 @@ Terminal::Terminal(Terminal& o) : Exp(o.op) {}      // Copy constructor
 Unary::Unary(OPER op)
     : Exp(op) {
     subExp1 = 0;        // Initialise the pointer
-    assert(op != opRegOf);
+    //assert(op != opRegOf);
 }
 Unary::Unary(OPER op, Exp* e)
     : Exp(op) {

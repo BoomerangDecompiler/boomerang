@@ -45,6 +45,7 @@ class PointerType;
 class ArrayType;
 class CompoundType;
 class Exp;
+class XMLProgParser;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed, eCompound};    // For operator< only
@@ -128,6 +129,9 @@ virtual std::string getTempName() const; // Get a temporary name for the type
 static  void    clearNamedTypes() { namedTypes.clear(); }
 
         bool    isPointerToAlpha();
+
+protected:
+	friend class XMLProgParser;
 };
 
 class VoidType : public Type {
@@ -147,6 +151,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class FuncType : public Type {
@@ -173,6 +179,8 @@ virtual const char *getCtype() const;
 // Split the C type into return and parameter parts
         void    getReturnAndParam(const char*& ret, const char*& param);
 
+protected:
+	friend class XMLProgParser;
 };
 
 class IntegerType : public Type {
@@ -200,6 +208,8 @@ virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class FloatType : public Type {
@@ -224,6 +234,8 @@ virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class BooleanType : public Type {
@@ -243,6 +255,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class CharType : public Type {
@@ -262,6 +276,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 
@@ -273,6 +289,7 @@ public:
 	PointerType(Type *p);
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
+	void setPointsTo(Type *p) { points_to = p; }
         Type *getPointsTo() { return points_to; }
 static  PointerType* newPtrAlpha();
         bool pointsToAlpha();
@@ -288,6 +305,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class ArrayType : public Type {
@@ -318,6 +337,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class NamedType : public Type {
@@ -345,6 +366,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 class CompoundType : public Type {
@@ -382,6 +405,8 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+protected:
+	friend class XMLProgParser;
 };
 
 // Not part of the Type class, but logically belongs with it:

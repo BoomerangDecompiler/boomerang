@@ -141,6 +141,10 @@ void Cfg::setEntryBB(PBB bb) {
     // It is possible that there is no exit BB
 }
 
+void Cfg::setExitBB(PBB bb) {
+    exitBB = bb;
+}
+
 /*==============================================================================
  * FUNCTION:        checkEntryBB
  * OVERVIEW:        Check the entry BB pointer; if zero, emit error message

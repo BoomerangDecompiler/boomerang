@@ -49,6 +49,7 @@ class UseSet;
 class Type;
 class Register;
 class Proc;
+class XMLProgParser;
 
 
 /*==============================================================================
@@ -166,7 +167,9 @@ public:
 
     // Set all the "constant subscripts" (conscripts) in this RTL
     int     setConscripts(int n);
+protected:
 
+    friend class XMLProgParser;
 };
 
 

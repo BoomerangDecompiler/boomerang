@@ -52,6 +52,7 @@ class HLLCode;
 class CallStatement;
 class RTL;
 struct DOM;
+class XMLProgParser;
 
 #define BTHEN 0
 #define BELSE 1
@@ -530,6 +531,14 @@ public:
      */
     bool undoComputedBB(Statement* stmt);
 
+protected:
+    friend class XMLProgParser;
+    void addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
+    void addRTL(RTL *rtl) { if (m_pRtls == NULL) 
+				m_pRtls = new std::list<RTL*>;
+			    m_pRtls->push_back(rtl);
+			  }
+    void addLiveIn(Location *e) { liveIn.insert(e); }
 
 };  // class BasicBlock
 
@@ -990,6 +999,7 @@ public:
      * Set the entry-point BB (and exit BB as well)
      */
     void setEntryBB(PBB bb);
+    void setExitBB(PBB bb);
 
     PBB findRetNode();
 
@@ -1034,6 +1044,10 @@ public:
 
     void findInterferences(igraph& ig, int& tempNum);
     void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
+
+protected:
+    friend class XMLProgParser;
+    void addBB(PBB bb) { m_listBB.push_back(bb); }
 };              /* Cfg */
 
 #endif

@@ -32,6 +32,8 @@ class UserProc;
 class LibProc;
 class Signature;
 class StatementSet;
+class Cluster;
+class XMLProgParser;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
@@ -68,6 +70,8 @@ public:
     const char *getName() { return nam.c_str(); }
     Exp* getInitialValue(Prog* prog); // Get the initial value as an expression
                                       // (or NULL if not initialised)
+protected:
+    friend class XMLProgParser;
 };  // class Global
 
 class Prog {
@@ -107,10 +111,6 @@ public:
     // The procs will appear in topdown order
     UserProc*   getFirstUserProc(std::list<Proc*>::iterator& it);
     UserProc*   getNextUserProc (std::list<Proc*>::iterator& it);
-
-    // load/save the current program, project/location must be set.
-    void        load();
-    void        save();
 
     // clear the prog object NOTE: deletes everything!
     void        clear();
@@ -184,6 +184,7 @@ public:
 
     // Generate code
     void generateCode(std::ostream &os);
+    void generateCode();
 
     // Print this program (primarily for debugging)
     void print(std::ostream &out, bool withDF = false);
@@ -260,21 +261,27 @@ public:
     void printCallGraph();
     void printCallGraphXML();
 
+    Cluster *getRootCluster() { return m_rootCluster; }
+
 protected:
-    // Pointer to the BinaryFile object for the program
-    BinaryFile* pBF;
-    // Pointer to the FrontEnd object for the project
-    FrontEnd *pFE;
-    // globals to print at code generation time
-    std::vector<Global*> globals;
-    // Map of addresses to global symbols
-    std::map<ADDRESS, const char*> *globalMap;
+    BinaryFile* pBF;                    // Pointer to the BinaryFile object for the program
+    FrontEnd *pFE;                      // Pointer to the FrontEnd object for the project
+    ProgWatcher *m_watcher;             // used for status updates
+
+    /* Persistent state */
     std::string      m_name;            // name of the program
     std::list<Proc*> m_procs;           // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*
-    ProgWatcher *m_watcher;             // used for status updates
-    // Next numbered proc will use this
-    int m_iNumberedProc;
+    std::vector<Global*> globals;       // globals to print at code generation time
+    std::map<ADDRESS, const char*> *globalMap; // Map of addresses to global symbols
+    int m_iNumberedProc;                // Next numbered proc will use this
+    Cluster *m_rootCluster;		// Root of the cluster tree
+
+    friend class XMLProgParser;
+    void addProc(Proc *p) { m_procs.push_back(p); }
+    void setFrontEnd(FrontEnd *p) { pFE = p; }
+    void setBinaryFile(BinaryFile *p) { pBF = p; }
+ 
 };  // class Prog
 
 #endif

@@ -20,6 +20,7 @@
 
 class Statement;
 class BinaryFile;
+class XMLProgParser;
 
 class Parameter { 
 private:
@@ -36,8 +37,12 @@ public:
     Type *getType() { return type; }
     void setType(Type *ty) { type = ty; }
     const char *getName() { return name.c_str(); }
+    void setName(const char *nam) { name = nam; }
     Exp *getExp()       { return exp; }
     void setExp(Exp *e) { exp = e; }
+protected:
+    friend class XMLProgParser;
+    Parameter() : type(NULL), name(""), exp(NULL) { }
 };
 
 class ImplicitParameter : public Parameter {
@@ -49,7 +54,11 @@ public:
                             Parameter(type, name, exp), parent(parent) { }
     ~ImplicitParameter() { }
 
+    void setParent(Parameter *p) { parent = p; }
     Parameter *getParent() { return parent; }
+protected:
+    friend class XMLProgParser;
+    ImplicitParameter() : Parameter(), parent(NULL) { }
 };
 
 class Return {
@@ -67,6 +76,9 @@ public:
     Exp *getExp() { return exp; }
     Exp*& getRefExp() {return exp;}
     void setExp(Exp* e) { exp = e; }
+protected:
+    friend class XMLProgParser;
+    Return() : type(NULL), exp(NULL) { }
 };
 
 class Signature {
@@ -111,6 +123,7 @@ public:
     virtual void setReturnType(int n, Type *ty);
     virtual int findReturn(Exp *e);
     void fixReturnsWithParameters();
+    void setRetType(Type *t) { rettype = t; }
 
     // get/set the name
     virtual const char *getName();
@@ -202,6 +215,8 @@ static StatementList& getStdRetStmt(Prog* prog);
     // ascii versions of platform, calling convention name
 static char*   platformName(platform plat);
 static char*   conventionName(callconv cc);
+virtual platform getPlatform() { return PLAT_GENERIC; }
+virtual callconv getConvention() { return CONV_NONE; }
 
     // prefered format
     void setPreferedReturn(Type *ty) { preferedReturn = ty; }
@@ -211,6 +226,12 @@ static char*   conventionName(callconv cc);
     const char *getPreferedName() { return preferedName.c_str(); }
     unsigned int getNumPreferedParams() { return preferedParams.size(); }
     int getPreferedParam(int n) { return preferedParams[n]; }
+protected:
+    friend class XMLProgParser;
+    Signature() : name(""), rettype(NULL), ellipsis(false), preferedReturn(NULL), preferedName("") { }
+    void appendParameter(Parameter *p) { params.push_back(p); }
+    void appendImplicitParameter(ImplicitParameter *p) { implicitParams.push_back(p); }
+    void appendReturn(Return *r) { returns.push_back(r); }
 };
 
 class CustomSignature : public Signature {

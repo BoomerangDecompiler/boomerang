@@ -35,6 +35,7 @@
 #include <types.h>
 #include <sstream>
 #include <algorithm>        // For find()
+#include "cluster.h"
 #include "statement.h"
 #include "exp.h"
 #include "cfg.h"
@@ -72,9 +73,8 @@ Proc::~Proc()
  * RETURNS:         <nothing>
  *============================================================================*/
 Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
-     : prog(prog), address(uNative), signature(sig), m_firstCaller(NULL), 
-       bytesPopped(0)
-{}
+     : prog(prog), signature(sig), address(uNative), m_firstCaller(NULL) 
+{cluster = prog->getRootCluster();}
 
 /*==============================================================================
  * FUNCTION:        Proc::getName
@@ -111,13 +111,6 @@ ADDRESS Proc::getNativeAddress() {
 
 void Proc::setNativeAddress(ADDRESS a) {
     address = a;
-}
-
-void Proc::setBytesPopped(int n) {
-    if (bytesPopped == 0) {
-        bytesPopped = n;
-    }
-    assert(bytesPopped == n);
 }
 
 /*==============================================================================
@@ -639,7 +632,7 @@ std::ostream& LibProc::put(std::ostream& os) {
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
-    cfg(new Cfg()), decoded(false), analysed(false), isSymbolic(false), uniqueID(0),
+    cfg(new Cfg()), decoded(false), analysed(false),
     decompileSeen(false), decompiled(false), isRecursive(false),
     theReturnStatement(NULL) {
     cfg->setProc(this);              // Initialise cfg.myProc

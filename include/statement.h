@@ -61,6 +61,7 @@ class StmtModifier;
 class HLLCode;
 class Assign;
 class RTL;
+class XMLProgParser;
 typedef std::map<Exp*, int, lessExpStar> igraph;
 
 /*==============================================================================
@@ -250,6 +251,8 @@ protected:
     bool mayAlias(Exp *e1, Exp *e2, int size);
     Exp *processConstant(Exp *e, Type *ty, Prog *prog);
     Type *getTypeFor(Exp *e, Prog *prog);
+
+    friend class XMLProgParser;
 };          // class Statement
 
 // Print the Statement (etc) poited to by p
@@ -314,8 +317,11 @@ public:
     // get how to replace this statement in a use
     virtual Exp* getRight() { return rhs; }
 
+    // set the lhs to something new
+    void         setLeft(Exp* e)  { lhs = e; }
+
     // set the rhs to something new
-    void         setRight(Exp* e);
+    void         setRight(Exp* e) { rhs = e; }
 
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
@@ -354,6 +360,7 @@ public:
 protected:
     virtual bool doReplaceRef(Exp* from, Exp* to);
 
+    friend class XMLProgParser;
 };      // class Assign
 
 
@@ -434,6 +441,8 @@ public:
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
     virtual void fromSSAform(igraph&) {}
     virtual bool doReplaceRef(Exp*, Exp*) {return false;}
+
+    friend class XMLProgParser;
 };      // class GotoStatement
 
 /*==============================================================================
@@ -556,6 +565,7 @@ private:
                                 // condition: e.g., r[8] == 5
     bool bFloat;                // True if uses floating point CC
 
+    friend class XMLProgParser;
 };      // class BranchStatement
 
 /*==============================================================================
@@ -621,6 +631,7 @@ public:
 
     virtual void fromSSAform(igraph& ig);
 
+    friend class XMLProgParser;
 };          // class CaseStatement
 
 /*==============================================================================
@@ -760,6 +771,9 @@ public:
 protected:
     virtual bool doReplaceRef(Exp* from, Exp* to);
 
+    friend class XMLProgParser;
+    void appendArgument(Exp *e) { arguments.push_back(e); }
+    void appendImplicitArgument(Exp *e) { implicitArguments.push_back(e); }
 };      // class CallStatement
 
 
@@ -829,6 +843,7 @@ public:
     ADDRESS getRetAddr() {return retAddr;}
     void    setRetAddr(ADDRESS r) {retAddr = r;}
 
+    friend class XMLProgParser;
 };  // class ReturnStatement
 
 
@@ -907,6 +922,7 @@ public:
     // from SSA form
     virtual void fromSSAform(igraph& ig);
 
+    friend class XMLProgParser;
 };  // class BoolStatement
 
 #endif // __STATEMENT_H__

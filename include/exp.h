@@ -54,6 +54,7 @@ class StatementSet;
 class TypeVal;
 class ExpVisitor;
 class ExpModifier;
+class XMLProgParser;
 typedef BasicBlock* PBB;
 typedef std::map<Exp*, int, lessExpStar> igraph;
 
@@ -327,6 +328,8 @@ virtual Exp* simplifyConstraint() {return this;}
     Exp*         stripRefs();           // Strip all references
     // Subscript all e in this Exp with statement def:
     Exp*         expSubscriptVar(Exp* e, Statement* def);
+protected:
+    friend class XMLProgParser;
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -400,6 +403,8 @@ virtual Exp*    genConstraints(Exp* restrictTo);
 
     void    setConscript(int cs) {conscript = cs;}
 
+protected:
+    friend class XMLProgParser;
 };  // class Const
 
 /*==============================================================================
@@ -429,6 +434,8 @@ virtual bool    isTerminal() { return true; }
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+protected:
+    friend class XMLProgParser;
 };  // class Terminal
 
 /*==============================================================================
@@ -498,6 +505,8 @@ virtual Exp* simplifyConstraint();
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };  // class Unary
 
 /*==============================================================================
@@ -572,6 +581,8 @@ virtual Exp* simplifyConstraint();
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
+protected:
+    friend class XMLProgParser;
 };  // class Binary
 
 /*==============================================================================
@@ -636,6 +647,8 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };  // class Ternary
 
 /*==============================================================================
@@ -682,6 +695,8 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };  // class TypedExp
 
 /*==============================================================================
@@ -701,6 +716,8 @@ virtual void    appendDotFile(std::ofstream& of);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };
 
 /*==============================================================================
@@ -740,6 +757,8 @@ virtual Exp* polySimplify(bool& bMod);
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+protected:
+    friend class XMLProgParser;
 };  // Class RefExp
 
 /*==============================================================================
@@ -797,6 +816,8 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };  // class PhiExp
 
 /*==============================================================================
@@ -825,6 +846,8 @@ virtual void    printx(int ind);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
 };  // class TypeVal
 
 class Location : public Unary {
@@ -867,6 +890,9 @@ virtual int getMemDepth();
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+protected:
+    friend class XMLProgParser;
+    Location(OPER op) : Unary(op), proc(NULL), ty(NULL) { }
 };  // Class Location
     
 #endif // __EXP_H__

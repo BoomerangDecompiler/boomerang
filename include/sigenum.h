@@ -8,13 +8,15 @@ enum platform {
     PLAT_M68K,
     PLAT_PARISC,
     PLAT_PPC,
-    PLAT_MIPS
+    PLAT_MIPS,
+    PLAT_GENERIC
 };
 
 enum callconv {
     CONV_C,         // Standard C, no callee pop
     CONV_PASCAL,    // callee pop
-    CONV_THISCALL   // MSVC "thiscall": one parameter in register ecx
+    CONV_THISCALL,  // MSVC "thiscall": one parameter in register ecx
+    CONV_NONE
 };
 
 #endif  // __SIGENUM__

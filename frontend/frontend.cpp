@@ -777,7 +777,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         if (popped != 0)
                             // This also gives us information about the calling
                             // convention
-                            pProc->setBytesPopped(popped);
+                            ; //pProc->setBytesPopped(popped);
                     } else {
                         ADDRESS retAddr = pProc->getTheReturnAddr();
                         std::list<Statement*> *stmt_list =

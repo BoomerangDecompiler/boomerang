@@ -108,6 +108,8 @@ public:
 
     bool    isWin32();                  // Is this a win32 frontend?
 
+    BinaryFile *getBinaryFile() { return pBF; }
+
     /*
      * Function to fetch the smallest machine instruction
      */

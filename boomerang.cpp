@@ -9,6 +9,7 @@
 #include "codegen/chllcode.h"
 #include "transformer.h"
 #include "boomerang.h"
+#include "xmlprogparser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"		// For MSVC 5.00
@@ -26,7 +27,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
-    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false)
+    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
+    loadBeforeDecompile(false)
 {
 }
 
@@ -91,6 +93,7 @@ void Boomerang::help() {
     std::cerr << "-sf <filename>: read a symbol/signature file\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-x: dump xml files\n";
+    std::cerr << "-lD: load before decompile (<program> becomes xml input file)\n";
     std::cerr << "-v: verbose\n";
     exit(1);
 }
@@ -290,6 +293,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 if (argv[i][2] == 'c')
                     decodeThruIndCall = true;       // -ic;
                 break;
+	    case 'l':
+		if (argv[i][2] == 'D')
+		    loadBeforeDecompile = true;
+		break;
             default:
                 help();
         }
@@ -301,56 +308,67 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
 int Boomerang::decompile(const char *fname)
 {
+    Prog *prog;
     time_t start;
     time(&start);
     std::cerr << "setting up transformers...\n";
     ExpTransformer::loadAll();
 
-    std::cerr << "loading...\n";
-    FrontEnd *fe = FrontEnd::Load(fname);
-    if (fe == NULL) {
-        std::cerr << "failed.\n";
-        return 1;
+    if (!loadBeforeDecompile) {
+	std::cerr << "loading...\n";
+	FrontEnd *fe = FrontEnd::Load(fname);
+	if (fe == NULL) {
+	    std::cerr << "failed.\n";
+	    return 1;
+	}
+
+	// Add symbols from -s switch(es)
+	for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
+	     it != symbols.end(); it++) {
+	    fe->AddSymbol((*it).first, (*it).second.c_str());
+	}
+
+	if (decodeMain)
+	    std::cerr << "decoding...\n";
+	prog = fe->decode(decodeMain);
+
+	// Delay symbol files to now, since need Prog* prog
+	// Also, decode() reads the library catalog
+	// symbolFiles from -sf switch(es)
+	for (unsigned i = 0; i < symbolFiles.size(); i++) {
+	    std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
+	    prog->readSymbolFile(symbolFiles[i].c_str());
+	}
+	
+	if (!noDecodeChildren) {   // MVE: Not sure if this is right...
+	    // this causes any undecoded userprocs to be decoded
+	    std::cerr << "decoding anything undecoded...\n";
+	    fe->decode(prog, NO_ADDRESS);
+	}
+
+	// Entry points from -e (and -E) switch(es)
+	for (unsigned i = 0; i < entrypoints.size(); i++) {
+	    std::cerr<< "decoding extra entrypoint " << std::hex <<
+	      entrypoints[i] << "\n";
+	    prog->decodeExtraEntrypoint(entrypoints[i]);
+	}
+
+	std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
+
+	std::cerr << "analysing...\n";
+	prog->analyse();
+
+	prog->printCallGraph();
+	prog->printCallGraphXML();
+
+	std::cerr << "persisting...\n";
+	XMLProgParser *p = new XMLProgParser();
+	p->persistToXML(prog);
+    } else {
+	std::cerr << "loading persisted state...\n";
+	XMLProgParser *p = new XMLProgParser();
+	prog = p->parse(fname);
     }
-
-    // Add symbols from -s switch(es)
-    for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
-         it != symbols.end(); it++) {
-        fe->AddSymbol((*it).first, (*it).second.c_str());
-    }
-
-    if (decodeMain)
-        std::cerr << "decoding...\n";
-    Prog *prog = fe->decode(decodeMain);
-
-    // Delay symbol files to now, since need Prog* prog
-    // Also, decode() reads the library catalog
-    // symbolFiles from -sf switch(es)
-    for (unsigned i = 0; i < symbolFiles.size(); i++) {
-        std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
-        prog->readSymbolFile(symbolFiles[i].c_str());
-    }
-    
-    if (!noDecodeChildren) {   // MVE: Not sure if this is right...
-        // this causes any undecoded userprocs to be decoded
-        std::cerr << "decoding anything undecoded...\n";
-        fe->decode(prog, NO_ADDRESS);
-    }
-
-    // Entry points from -e (and -E) switch(es)
-    for (unsigned i = 0; i < entrypoints.size(); i++) {
-        std::cerr<< "decoding extra entrypoint " << std::hex <<
-          entrypoints[i] << "\n";
-        prog->decodeExtraEntrypoint(entrypoints[i]);
-    }
-
-    std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
-
-    std::cerr << "analysing...\n";
-    prog->analyse();
-
-    prog->printCallGraph();
-    prog->printCallGraphXML();
 
     std::cerr << "decompiling...\n";
     prog->decompile();
@@ -370,9 +388,7 @@ int Boomerang::decompile(const char *fname)
     }
 
     std::cerr << "generating code...\n";
-    std::ofstream out((getOutputPath() + "code").c_str());
-    prog->generateCode(out);
-    out.close();
+    prog->generateCode();
 
     time_t end;
     time(&end);

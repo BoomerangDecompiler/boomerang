@@ -92,6 +92,7 @@ public:
     bool noDecodeChildren;
     bool debugProof;
     bool debugUnusedStmt;
+    bool loadBeforeDecompile;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

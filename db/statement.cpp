@@ -2951,11 +2951,6 @@ void Assign::fromSSAform(igraph& ig) {
     rhs = rhs->fromSSA(ig);
 }
 
-void Assign::setRight(Exp* e) {
-    if (rhs) ;//delete rhs;
-    rhs = e;
-}
-
 // update type for expression
 Type *Assign::updateType(Exp *e, Type *curType) {
     return curType;

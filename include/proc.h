@@ -50,6 +50,8 @@ class HLCall;
 class Parameter;
 class Argument;
 class Signature;
+class Cluster;
+class XMLProgParser;
 
 /*==============================================================================
  * Procedure class.
@@ -88,7 +90,8 @@ public:
      * Get the program this procedure belongs to.
      */
     Prog *getProg();
-
+    void setProg(Prog *p) { prog = p; }
+ 
     /*
      * Get/Set the first procedure that calls this procedure (or null for main/start).
      */
@@ -161,12 +164,6 @@ public:
     std::list<Type>* Proc::getParamTypeList(const std::list<Exp*>& actuals);
 
     /*
-     * Set the number of bytes popped off the caller stack by this procedure
-     */
-    void setBytesPopped(int n);
-    int getBytesPopped() { return bytesPopped; }
-
-    /*
      * Return true if this is a library proc
      */
     virtual bool isLib() {return false;}
@@ -182,14 +179,6 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, Proc& proc);
     
-    /*
-     * Stores a list of reg to the procedure used for 
-     * type propagation
-     */
-    std::list<int> regParams;
-
-    //virtual void getInternalStatements(StatementList &internal) = 0;
-
     Exp *getProven(Exp *left);
 
     // Set an equation as proven. Useful for some sorts of testing
@@ -223,17 +212,14 @@ public:
     void clearVisited() { visited = false; }
     bool isVisited() { return visited; }
 
+    Cluster *getCluster() { return cluster; }
+    void setCluster(Cluster *c) { cluster = c; }
+
 protected:
 
-    /*
-     * Program containing this procedure.
-     */
-    Prog *prog;
+    bool visited;
 
-    /*
-     * Procedure's address.
-     */
-    ADDRESS address;
+    Prog *prog;                             // Program containing this procedure.
 
     /*
      * The formal signature of this procedure. This information is determined
@@ -241,27 +227,17 @@ protected:
      */
     Signature *signature;
 
-    /*
-     * The first procedure to call this procedure
-     */
-    Proc *m_firstCaller;
-    ADDRESS m_firstCallerAddr;  // can only be used once.
+    /* Persistent state */
+    ADDRESS address;                        // Procedure's address.
+    Proc *m_firstCaller;                    // first procedure to call this procedure.
+    ADDRESS m_firstCallerAddr;              // can only be used once.
+    std::set<Exp*, lessExpStar> proven;     // all the expressions that have been proven
+    std::set<CallStatement*> callerSet;     // Set of callers (CallStatements that call this procedure).
+    Cluster *cluster;			    // Cluster this procedure is contained within.
 
-    /*
-     * Number of bytes this procedure will cause any call to it to pop off
-     * the stack (of the caller).
-     */
-    int bytesPopped;
+    friend class XMLProgParser;
+    Proc() : visited(false), prog(NULL), signature(NULL), address(0), m_firstCaller(NULL), m_firstCallerAddr(0), cluster(NULL) { }
 
-    // all the expressions that have been proven about this proc
-    std::set<Exp*, lessExpStar> proven;
-
-    /*
-     * Set of callers (CallStatements that call this procedure).
-     */
-    std::set<CallStatement*> callerSet;
-
-    bool visited;
 }; 
 
 /*==============================================================================
@@ -298,6 +274,11 @@ public:
     std::ostream& put(std::ostream& os);
 
     void getInternalStatements(StatementList &internal);
+protected:
+
+    friend class XMLProgParser;
+    LibProc() : Proc() { }
+
 };
 
 /*==============================================================================
@@ -317,21 +298,6 @@ class UserProc : public Proc {
     
     // true if the procedure has been analysed.
     bool analysed;
-
-    /*
-     * Indicate that the procedure has had its variables converted to
-     * symbolic form, e.g. r[8]->v2. This is only done once, by a call to
-     * propagateSymbolics(). We need to know that this has happened if we
-     * later determine a different return location, and it happens not to
-     * have been converted to symbolic as yet 
-     */
-    bool isSymbolic;
-
-    /*
-     * Used to generate unique IDs for the parameters and locals to
-     * calls that are recovered and given a symbolic name.
-     */
-    unsigned uniqueID;
 
     /*
      * Indicate that the aggregate location pointer "hidden" parameter is used,
@@ -712,5 +678,10 @@ public:
         assert(theReturnStatement == NULL);
         theReturnStatement = s;
         theReturnStatement->setRetAddr(r);}
+protected:
+    friend class XMLProgParser;
+    UserProc() : Proc(), cfg(NULL), decoded(false), analysed(false), decompileSeen(false), decompiled(false), isRecursive(false) { }
+    void setCFG(Cfg *c) { cfg = c; }
+    void addDef(Exp *e) { definesSet.insert(e); }
 };      /* UserProc */
 #endif
