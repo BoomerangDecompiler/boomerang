@@ -2197,6 +2197,8 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
             if (S->isPhi()) {
+                // The below, plus a similar hack a page down,  seems to
+                // indicate the need for a PhiStatement:
                 if (S->getLeft()->getOper() == opMemOf)
                     S->getLeft()->getSubExp1()->addUsedLocs(locs);
             } else S->addUsedLocs(locs);
@@ -2228,7 +2230,11 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
             Exp *a = *dd;
             if (a->getMemDepth() == memDepth) {
                 // Push i onto Stack[a]
-                Stack[a].push(S);
+                // Note: we clone a because otherwise it could be an expression
+                // that gets deleted through various modifications
+                // This is necessary because we do several passes of this alg
+                // with various memory depths
+                Stack[a->clone()].push(S);
                 // Replace definition of a with definition of a_i in S
                 // (we don't do this)
             }
@@ -2242,7 +2248,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
                 // and so d becomes NULL. This is not an error.
                 // Stack already has a definition for d (as just the bare local)
                 if (a && a->getMemDepth() == memDepth)
-                    Stack[a].push(S);
+                    Stack[a->clone()].push(S);
             }
         }
     }
