@@ -45,7 +45,7 @@ char* ConstraintMap::prints() {
 }
 
 void ConstraintMap::makeUnion(ConstraintMap& o) {
-			  std::map<Exp*, Exp*, lessExpStar>::iterator it;
+	std::map<Exp*, Exp*, lessExpStar>::iterator it;
 	std::pair<std::map<Exp*, Exp*, lessExpStar>::iterator, bool> ret;
 	for (it = o.cmap.begin(); it != o.cmap.end(); it++) {
 		// Note: *it is a std::pair<Exp*, Exp*>
@@ -53,16 +53,15 @@ void ConstraintMap::makeUnion(ConstraintMap& o) {
 		// If an insertion occured, ret will be std::pair<where, true>
 		// If no insertion occured, ret will be std::pair<where, false>
 		if (ret.second == false) {
-std::cerr << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
- << " -> " << ret.first->second << " with " << it->first << " -> " << it->second
- << "\n";
+//std::cerr << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
+// << " -> " << ret.first->second << " with " << it->first << " -> " << it->second << "\n";
 			TypeVal* Tret = (TypeVal*)ret.first->second;
 			Type* ty1 = Tret->getType();
 			TypeVal* Toth = (TypeVal*)it->second;
 			Type* ty2 = Toth->getType();
 			if (*ty1 != *ty2) {
 				Tret->setType(ty1->mergeWith(ty2));
-std::cerr << "Now " << ret.first->first << " -> " << ret.first->second << "\n"; 
+//std::cerr << "Now " << ret.first->first << " -> " << ret.first->second << "\n"; 
 			}
 		}
 	}
@@ -98,8 +97,7 @@ void ConstraintMap::substitute(ConstraintMap& other) {
 	for (oo = other.cmap.begin(); oo != other.cmap.end(); oo++) {
 		bool ch;
 		for (cc = cmap.begin(); cc != cmap.end(); cc++) {
-			Exp* newVal =
-			  cc->second->searchReplaceAll(oo->first, oo->second, ch);
+			Exp* newVal = cc->second->searchReplaceAll(oo->first, oo->second, ch);
 			if (ch) {
 				if (*cc->first == *newVal)
 					// e.g. was <char*> = <alpha6> now <char*> = <char*>
@@ -109,8 +107,7 @@ void ConstraintMap::substitute(ConstraintMap& other) {
 			} else
 				// The existing value
 				newVal = cc->second;
-			Exp* newKey =
-			  cc->first-> searchReplaceAll(oo->first, oo->second, ch);
+			Exp* newKey = cc->first-> searchReplaceAll(oo->first, oo->second, ch);
 			if (ch) {
 				cmap.erase(cc->first);
 				// Often end up with <char*> = <char*>
@@ -187,8 +184,7 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
 		ConstraintMap::iterator kk;
 		for (kk = cur.begin(); kk != cur.end(); kk++) {
 			Exp* lhs = kk->first;
-			std::map<Exp*, LocationSet, lessExpStar>::iterator it =
-			  equates.find(lhs);
+			std::map<Exp*, LocationSet, lessExpStar>::iterator it = equates.find(lhs);
 			if (it != equates.end()) {
 				// Possibly new constraints that
 				// typeof(elements in it->second) == val
@@ -201,12 +197,9 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
 					if (ff != fixed.end()) {
 						if (!unify(val, ff->second, extra)) {
 							if (VERBOSE || DEBUG_TA)
-								LOG << "Constraint failure: " <<
-								  *ll << " constrained to be " <<
-								  ((TypeVal*)val)->getType()->getCtype() <<
-								  " and " <<
-								  ((TypeVal*)ff->second)->getType()->getCtype()
-								  << "\n";
+								LOG << "Constraint failure: " << *ll << " constrained to be " <<
+									((TypeVal*)val)->getType()->getCtype() << " and " <<
+									((TypeVal*)ff->second)->getType()->getCtype() << "\n";
 							return;
 						}
 					} else
@@ -281,7 +274,7 @@ std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 	for (cc = conSet.begin(); cc != conSet.end(); cc++) {
 		Exp* c = *cc;
 		if (!c->isEquality()) continue;
-		Exp* left  = ((Binary*)c)->getSubExp1();
+		Exp* left = ((Binary*)c)->getSubExp1();
 		if (!left->isTypeOf()) continue;
 		Exp* leftSub = ((Unary*)left)->getSubExp1();
 		if (!leftSub->isAddrOf()) continue;
@@ -292,7 +285,7 @@ std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 		// Don't modify a key in a map
 		Exp* clone = c->clone();
 		// left is typeof(addressof(something)) -> typeof(something)
-		left  = ((Binary*)clone)->getSubExp1();
+		left = ((Binary*)clone)->getSubExp1();
 		leftSub = ((Unary*)left)->getSubExp1();
 		Exp* something = ((Unary*)leftSub)->getSubExp1();
 		((Unary*)left)->setSubExp1ND(something);
@@ -386,8 +379,7 @@ static int level = 0;
 // Constraints up to but not including iterator it have been unified.
 // The current solution is soln
 // The set of all solutions is in solns
-bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln,
-  std::list<ConstraintMap>& solns) {
+bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln, std::list<ConstraintMap>& solns) {
 LOG << "Begin doSolve at level " << ++level << "\n";
 LOG << "Soln now: " << soln.prints() << "\n";
 	if (it == disjunctions.end()) {
