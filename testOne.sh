@@ -11,10 +11,10 @@ if [[ ret -ge 128 ]]; then
     echo Result for $1 $2: Boomerang failed with signal $((ret-128))
       >> functest.res
 else
-    if [[ ! -f functest/$2.c ]]; then
+    if [[ ! -f functest/$2/$2.c ]]; then
         echo Result for $1 $2: No boomerang output! >> functest.res
     else
-        cp functest/$2.c functest.c
+        cp functest/$2/$2.c functest.c
         # if test/$1/$2.sed exists, use it to make "known error" corrections
         # to the source code
         if [[ -f test/$1/$2.sed ]]; then
