@@ -1962,7 +1962,7 @@ void BasicBlock::calcLiveOut(std::set<AssignExp*> &live)
 
 void BasicBlock::getLiveIn(std::set<AssignExp*> &livein)
 {
-	for (int i = 0; i < m_InEdges.size(); i++) {
+	for (unsigned i = 0; i < m_InEdges.size(); i++) {
 		std::set<AssignExp*> in;
 		m_InEdges[i]->getLiveIn(in);
 		m_InEdges[i]->calcLiveOut(in);
