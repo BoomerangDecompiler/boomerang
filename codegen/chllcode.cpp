@@ -1062,7 +1062,8 @@ void CHLLCode::AddLocal(const char *name, Type *type)
 			s << "; // ";
 			e->print(s);
 		}
-	}
+	} else
+		s << ";";
 	lines.push_back(strdup(s.str().c_str()));
 	locals[name] = type->clone();
 }
