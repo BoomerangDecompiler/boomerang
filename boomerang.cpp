@@ -22,7 +22,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false)
+    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
+    noDecodeChildren(false)
 {
 }
 
@@ -61,6 +62,7 @@ void Boomerang::help() {
     std::cerr << "-dt: debug - debug type analysis\n";
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
+    std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-ic: decode through type 0 indirect calls\n";
     std::cerr << "-o <output path>: where to generate output (defaults to .)\n";
@@ -172,6 +174,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         help();
                 }
                 break;
+            case 'E':
+                noDecodeChildren = true;
+                decodeMain = false;
+                // Fall through
             case 'e':
                 {
                     ADDRESS addr;
@@ -267,7 +273,8 @@ int Boomerang::decompile(const char *fname)
         fe->AddSymbol((*it).first, (*it).second.c_str());
     }
 
-    std::cerr << "decoding...\n";
+    if (decodeMain)
+        std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);
 
     for (unsigned i = 0; i < symbolFiles.size(); i++) {
