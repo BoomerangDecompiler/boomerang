@@ -423,9 +423,9 @@ class Assign : public Assignment {
 
 public:
 	// Constructor, subexpressions
-				Assign(Exp* lhs, Exp* rhs);
+				Assign(Exp* lhs, Exp* rhs, Exp* guard = NULL);
 	// Constructor, type and subexpressions
-				Assign(Type* ty, Exp* lhs, Exp* rhs);
+				Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard = NULL);
 	// Default constructor, for XML parser
 				Assign() : Assignment(NULL), rhs(NULL), guard(NULL) {}
 	// Copy constructor
