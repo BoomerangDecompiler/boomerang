@@ -882,32 +882,35 @@ void Statement::propagateTo(int memDepth) {
         LocSetIter ll;
         change = false;
         for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-#if 1   // Experimental: get rid of defs caught up in recursion
-            if (e->getNumRefs() == 2) {
-                // Check for two special cases induced by recursion
-                // Get the two definitions we reference
-                StmtSetIter dummy;
-                Statement* d1 = ((RefsExp*)e)->getFirstRef(dummy);
-                Statement* d2 = ((RefsExp*)e)->getNextRef(dummy);
-                if (d1 == this || d2 == this) {
-                    // This is the special case where we have something like
-                    // 119 *32* r[29] := m[r[29]{85 119}]
-                    // I believe we can ignore the 119 part!
-                    if (!(*getLeft() == *((RefsExp*)e)->getSubExp1()))
+
+            // Warning! This also tries to propagate into loops!
+            // Not safe in general! (This is "Mike's hack")
+            if (Boomerang::get()->recursionBust) {
+                // Experimental: get rid of defs caught up in recursion
+                if (e->getNumRefs() == 2) {
+                    // Check for two special cases induced by recursion
+                    // Get the two definitions we reference
+                    StmtSetIter dummy;
+                    Statement* d1 = ((RefsExp*)e)->getFirstRef(dummy);
+                    Statement* d2 = ((RefsExp*)e)->getNextRef(dummy);
+                    if (d1 == this || d2 == this) {
+                        // This is the special case where we have something like
+                        // 119 *32* r[29] := m[r[29]{85 119}]
+                        // Mike believes we can ignore the 119 part!
+                        if (!(*getLeft() == *((RefsExp*)e)->getSubExp1()))
+                            continue;
+                        if (d1 == this)
+                            change = doPropagateTo(memDepth, d2, true);
+                        else
+                            change = doPropagateTo(memDepth, d1, true);
                         continue;
-                    if (d1 == this)
-                        change = doPropagateTo(memDepth, d2, true);
-                    else
+                    } else if (*d1 == *d2) {
+                        // Different definitions, but they are the same
                         change = doPropagateTo(memDepth, d1, true);
-                    continue;
-                } else if (*d1 == *d2) {
-                    // Different definitions, but they are the same
-                    change = doPropagateTo(memDepth, d1, true);
-                    continue;
-                } else continue;
-            }
-            else
-#endif
+                        continue;
+                    } else continue;
+                }
+            } 
             if (e->getNumRefs() != 1) continue;
             // Can propagate TO this (if memory depths are suitable)
             StmtSetIter dummy;
@@ -952,6 +955,12 @@ if (memDepth == 1) {
           return false; }}   // HACK!!! 
 #endif
   
+    // Respect the -p N switch
+    if (Boomerang::get()->numToPropagate >= 0) {
+        if (Boomerang::get()->numToPropagate == 0) return false;
+            Boomerang::get()->numToPropagate--;
+    }
+
     if (twoRefs)
         // A special version of replaceRef is needed, which wraps the LHS
         // with two refs
