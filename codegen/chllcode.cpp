@@ -313,8 +313,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             }
             break;
         case opTemp:
-            str << "tmp";
-// Doesn't this need a name as well?
+            str << "tmp";       // Should never see this
             break;
         case opItof:
             str << "(float)";
@@ -425,6 +424,11 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
+        case opFtoi:
+            // Should check size!
+            str << "(int)";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
@@ -444,7 +448,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
         case opSize:
         case opCastIntStar:
         case opPostVar:
-        case opFtoi:
         case opForceInt:
         case opForceFlt:
         case opFpush:
