@@ -170,8 +170,10 @@ enum OPER
     opAGP,                  // abstract global pointer
     // This is a "nil list" terminal (e.g. no parameters)
     opNil,                  // Nil list
-    // This is the abstracted flags register terminal
+    // This is the abstracted integer flags register terminal
     opFlags,                // Flags
+    // This is the abstracted floating point flags terminal
+    opFflags,
 
     // This is an abstract boolean that if true causes the following instruction
     // to be anulled

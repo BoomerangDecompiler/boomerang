@@ -785,6 +785,7 @@ void Terminal::print(std::ostream& os, bool withUses) {
     switch (op) {
         case opPC:      os << "%pc";   break;
         case opFlags:   os << "%flags"; break;
+        case opFflags:  os << "%fflags"; break;
         case opCF:      os << "%CF";   break;
         case opZF:      os << "%ZF";   break;
         case opOF:      os << "%OF";   break;
@@ -2848,6 +2849,7 @@ void Terminal::addUsedLocs(LocationSet& used) {
     switch (op) {
         case opPC:
         case opFlags:
+        case opFflags:
         // Fall through
         // The carry flag can be used in some SPARC idioms, etc
         case opDF: case opCF: case opZF: case opNF: case opOF:  // these flags too

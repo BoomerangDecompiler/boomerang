@@ -141,7 +141,8 @@ char* operStrings[] = {
     "opAFP",                  // abstract frame pointer
     "opAGP",                  // abstract global pointer
     "opNil",                  // Nil list
-	"opFlags",				  // Flags
+	"opFlags",				  // Integer flags
+    "opFflags",               // Floating point flags
 
     "opAnull",                // Anull "variable"
 
