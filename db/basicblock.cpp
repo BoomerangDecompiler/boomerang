@@ -923,7 +923,7 @@ Statement* BasicBlock::getFirstStmt(rtlit& rit, elit& it, elit& cit) {
         if (k == CALL_RTL || k == JCOND_RTL || k == SCOND_RTL)
             // These are statements too, and may need special processing
             return dynamic_cast<Statement*>(rtl);
-        rtl++;
+        rit++;
     }
     return NULL;
 }
