@@ -1385,7 +1385,7 @@ void SparcFrontEnd::emitNop(std::list<RTL*>* pRtls, ADDRESS uAddr)
 void SparcFrontEnd::emitCopyPC(std::list<RTL*>* pRtls, ADDRESS uAddr)
 {
     // Emit %o7 = %pc
-    Assign* a = new Assign(32,
+    Assign* a = new Assign(
         Location::regOf(15),      // %o7 == r[15]
         new Terminal(opPC));
     // Add the Exp to an RTL
@@ -1407,9 +1407,9 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL*>* pRtls, ADDRESS uAddr)
  *                      otherwise
  *============================================================================*/
 // Append one assignment to a list of RTLs
-void SparcFrontEnd::appendAssignment(Exp* lhs, Exp* rhs, int size, ADDRESS addr,
-  std::list<RTL*>* lrtl) {
-    Assign* a = new Assign(size, lhs, rhs);
+void SparcFrontEnd::appendAssignment(Exp* lhs, Exp* rhs, Type* type,
+  ADDRESS addr, std::list<RTL*>* lrtl) {
+    Assign* a = new Assign(type, lhs, rhs);
     // Create an RTL with this one Statement
     std::list<Statement*>* lrt = new std::list<Statement*>;
     lrt->push_back(a);
@@ -1428,7 +1428,7 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
     Exp* rhs = new Binary(op,
         Location::memOf(Location::regOf(8)),
         Location::memOf(Location::regOf(9)));
-    appendAssignment(lhs, rhs, 128, addr, lrtl);
+    appendAssignment(lhs, rhs, new FloatType(128), addr, lrtl);
 }
 
 // Determine if this is a helper function, e.g. .mul. If so, append the
@@ -1500,7 +1500,7 @@ if (0)  // SETTINGS!
     }
     // Need to make an RTAssgn with %o0 = rhs
     Exp* lhs = Location::regOf(8);
-    Assign* a = new Assign(32, lhs, rhs);
+    Assign* a = new Assign(lhs, rhs);
     // Create an RTL with this one Exp
     std::list<Statement*>* lrt = new std::list<Statement*>;
     lrt->push_back(a);
@@ -1553,21 +1553,21 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
     //      32 high-order bits of the 64 bit r[rd].
 
     // r[tmp] = r8 op r9
-    Assign* a = new Assign(32,
+    Assign* a = new Assign(
         new Unary(opTemp, new Const("tmp")),
         new Binary(op,          // opMult or opMults
             Location::regOf(8),
             Location::regOf(9)));
     ls->push_back(a);
     // r8 = r[tmp];  /* low-order bits */
-    a = new Assign(32,
+    a = new Assign(
             Location::regOf(8),
-        new Unary(opTemp, new Const("tmp")));
+            new Unary(opTemp, new Const("tmp")));
     ls->push_back(a);
     // r9 = %Y;      /* high-order bits */
-    a = new Assign(32,
+    a = new Assign(
             Location::regOf(8),
-        new Unary(opMachFtr, new Const("%Y")));
+            new Unary(opMachFtr, new Const("%Y")));
     ls->push_back(a);
 #endif /* V9_ONLY */
     RTL* rtl = new RTL(addr, ls);
@@ -1630,7 +1630,7 @@ bool SparcFrontEnd::helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL*>* 
     }
     // Need to make an RTAssgn with %o0 = rhs
     lhs = Location::regOf(8);
-    appendAssignment(lhs, rhs, 32, addr, lrtl);
+    appendAssignment(lhs, rhs, new IntegerType(32), addr, lrtl);
     return true;
 }
 

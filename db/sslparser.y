@@ -286,7 +286,8 @@ operand:
     |   param list_parameter func_parameter ASSIGNSIZE exp {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[$1];
-            Statement* asgn = new Assign($4, new Terminal(opNil), $5);
+            Type* ty = new IntegerType($4);
+            Statement* asgn = new Assign(ty, new Terminal(opNil), $5);
             // Note: The below 2 copy lists of strings (to be deleted below!)
             param.params = *$2;
             param.funcParams = *$3;
@@ -822,7 +823,8 @@ assign_rt:
         // Size   guard =>   lhs    :=    rhs
         //  $1     $2         $4          $6
         ASSIGNSIZE exp THEN var_op EQUATE exp {
-            Assign* a = new Assign($1, $4, $6);
+            Type* ty = new IntegerType($1);
+            Assign* a = new Assign(ty, $4, $6);
             a->setGuard($2);
             $$ = a;
         }
@@ -830,7 +832,8 @@ assign_rt:
         // $1       $2      $3   $4
     |   ASSIGNSIZE var_op EQUATE exp {
             // update the size of any generated RT's
-            $$ = new Assign($1, $2, $4);
+            Type* ty = new IntegerType($1);
+            $$ = new Assign(ty, $2, $4);
         }
 
         // FPUSH and FPOP are special "transfers" with just a Terminal
@@ -846,7 +849,9 @@ assign_rt:
         }
         // ? Just a RHS?
     |   ASSIGNSIZE exp {
-            $$ = new Assign($1, 0, $2);
+        //  $1      $2
+            Type* ty = new IntegerType($1);
+            $$ = new Assign(ty, NULL, $2);
         }
     ;
 

@@ -149,6 +149,8 @@ void Constraints::substIntoDisjuncts(ConstraintMap& in) {
             *dd = (*dd)->simplifyConstraint();
         }
     }
+    // Now do alpha substitution
+    alphaSubst();
 }
 
 void Constraints::substIntoEquates(ConstraintMap& in) {
@@ -327,7 +329,7 @@ std::cerr << equates.size() << " equates: " << equates.prints();
     // (since there may be more fixed types from the above)
     substIntoDisjuncts(fixed);
 
-std::cerr << "\nAfter second substitute fixed into equates:\n";
+std::cerr << "\nAfter second substitute fixed into disjunctions:\n";
 {std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
 std::cerr << fixed.size() << " fixed: " << fixed.prints();
 std::cerr << equates.size() << " equates: " << equates.prints();
@@ -447,4 +449,53 @@ std::cerr << (*xPointsTo == *yPointsTo) << "\n";
     }
 std::cerr << (*xtype == *ytype) << "\n";
     return *xtype == *ytype;
+}
+
+void Constraints::alphaSubst() {
+    std::list<Exp*>::iterator it;
+    for (it = disjunctions.begin(); it != disjunctions.end(); it++) {
+        // This should be a conjuction of terms
+        if (!(*it)->isConjunction())
+            // A single term will do no good...
+            continue;
+        // Look for a term like alphaX* == fixedType*
+        Exp* temp = (*it)->clone();
+        Exp* term;
+        bool found = false;
+        Exp* trm1, *trm2;
+        Type* t1, *t2;
+        while ((term = nextConjunct(temp)) != NULL) {
+            if (!term->isEquality())
+                continue;
+            trm1 = ((Binary*)term)->getSubExp1();
+            if (!trm1->isTypeVal()) continue;
+            trm2 = ((Binary*)term)->getSubExp2();
+            if (!trm2->isTypeVal()) continue;
+            // One of them has to be a pointer to an alpha
+            t1 = ((TypeVal*)trm1)->getType();
+            if (t1->isPointerToAlpha()) {
+                found = true;
+                break;
+            }
+            t2 = ((TypeVal*)trm2)->getType();
+            if (t2->isPointerToAlpha()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) continue;
+        // We have a alpha value; get the value
+        Exp* val, *alpha;
+        if (t1->isPointerToAlpha()) {
+            alpha = trm1;
+            val = trm2;
+        } else {
+            val = trm1;
+            alpha = trm2;
+        }
+        // Now substitute
+        bool change;
+        *it = (*it)->searchReplaceAll(alpha, val, change);
+        *it = (*it)->simplifyConstraint();
+    }
 }

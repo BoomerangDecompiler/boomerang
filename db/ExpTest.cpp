@@ -759,9 +759,12 @@ void ExpTest::testSimplifyAddr() {
  * OVERVIEW:        Test the simplifyConstraint functions
  *============================================================================*/
 void ExpTest::testSimpConstr() {
-    // (Tlocal1{16} = <int>) or (Tlocal1{16} = <alpha2*>)
-    // gets substituted into
-    // (<char*> = <int>) or (<char*> = <alpha2*>)
+    // After
+    //   (T[local1{16}] = <int>) or (Tlocal1{16} = <alpha2*>)
+    // gets substituted to
+    //   (<char*> = <int>) or (<char*> = <alpha2*>)
+    // it should simplify to
+    //  <char*> = <alpha2*>
     Exp* e = new Binary(opOr,
         new Binary(opEquals,
             new TypeVal(new PointerType(new CharType())),
@@ -776,6 +779,26 @@ void ExpTest::testSimpConstr() {
     std::string actual = ost.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     delete e;
+
+    // Similarly,
+    //   <char*> = <alpha0*>) and (T[134517848\1\] = <alpha0*>
+    // becomes after alpha substitution
+    //   (<char*> = <char*>) and (T[134517848\1\] = <char*>)
+    // which should simplify to
+    //   T[134517848\1\] = <char*>
+    e = new Binary(opAnd,
+        new Binary(opEquals,
+            new TypeVal(new PointerType(new CharType())),
+            new TypeVal(new PointerType(new CharType()))),
+        new Binary(opEquals,
+            new Unary(opTypeOf, new Const(123456)),
+            new TypeVal(new PointerType(new CharType()))));
+    e = e->simplifyConstraint();
+    expected = "T[123456] = <char*>";
+    std::ostringstream ost2;
+    e->print(ost2);
+    actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
 /*==============================================================================
@@ -948,7 +971,7 @@ void ExpTest::testList () {
  * OVERVIEW:        Test the printing of parentheses in complex expressions
  *============================================================================*/
 void ExpTest::testParen () {
-    Assign a(32,
+    Assign a(
         Location::regOf(
             new Unary(opParam, new Const("rd"))),
         new Binary(opBitAnd,

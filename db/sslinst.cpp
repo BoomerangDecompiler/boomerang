@@ -517,7 +517,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
                     // Add a record in the map for this postvar
                     transPost& el = vars[lhs];
                     el.used = false;
-                    el.type = new IntegerType(((Assign*)*rt)->getSize());
+                    el.type = ((Assign*)*rt)->getType();
                     
                     // Constuct a temporary. We should probably be smarter
                     // and actually check that it's not otherwise used here.
@@ -610,7 +610,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
     for( std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin();
       sr != vars.end(); sr++ ) {
         if( sr->second.used ) {
-            Assign* te = new Assign(sr->second.type->getSize(),
+            Assign* te = new Assign(sr->second.type,
                     sr->second.base->clone(),
                     sr->second.tmp);
             rts->push_back( te );

@@ -429,17 +429,13 @@ void RTL::clear() {
  * PARAMETERS:      pLhs: ptr to Exp to place on LHS
  *                  pRhs: ptr to Exp to place on the RHS
  *                  prep: true if prepend (else append)
- *                  size: size of the transfer, or -1 to be the same as the
- *                    first assign this RTL
+ *                  type: type of the transfer, or NULL
  * RETURNS:         <nothing>
  *============================================================================*/
 void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
-                        int size /*= -1*/) {
-    if (size == -1)
-        size = 32;      // Ugh
-
+                        Type* type /*= NULL */) {
     // Generate the assignment expression
-    Assign* asgn = new Assign(size, pLhs, pRhs);
+    Assign* asgn = new Assign(type, pLhs, pRhs);
     if (prep)
         prependStmt(asgn);
     else
@@ -455,8 +451,8 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  * ASSUMES:         Assumes that ssLhs and ssRhs are "new" Exp's that are
  *                  not part of other Exps. (Otherwise, there will be problems
  *                  when deleting this Exp)
- *                  If size == -1, assumes there is already at least one assign-
- *                    ment in this RTL
+ *                  If type == NULL, assumes there is already at least one
+ *                    assignment in this RTL (?)
  * NOTE:            Hopefully this is only a temporary measure
  * PARAMETERS:      pLhs: ptr to Exp to place on LHS
  *                  pRhs: ptr to Exp to place on the RHS
@@ -464,7 +460,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  *                    first assign this RTL
  * RETURNS:         <nothing>
  *============================================================================*/
-void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, int size /* = -1 */) {
+void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type  /* NULL */) {
     std::list<Statement*>::iterator it;
     // First skip all assignments with temps on LHS
     for (it = stmtList.begin(); it != stmtList.end(); it++) {
@@ -484,33 +480,33 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, int size /* = -1 */) {
             it--;
     }
 
-    if (size == -1)
-        size = getSize();
+    if (type == NULL)
+        type = getType();
 
     // Generate the assignment expression
-    Assign* asgn = new Assign(32, pLhs, pRhs);
+    Assign* asgn = new Assign(type, pLhs, pRhs);
 
     // Insert before "it"
     stmtList.insert(it, asgn);
 }
 
 /*==============================================================================
- * FUNCTION:        RTL::getSize
- * OVERVIEW:        Get the "size" for this RTL. Just gets the size in bits of
+ * FUNCTION:        RTL::getType
+ * OVERVIEW:        Get the "type" for this RTL. Just gets the type of
  *                    the first assignment Exp
- * NOTE:            The size of the first assign may not be the size that you
+ * NOTE:            The type of the first assign may not be the type that you
  *                    want!
  * PARAMETERS:      None
- * RETURNS:         The size
+ * RETURNS:         A pointer to the type
  *============================================================================*/
-int RTL::getSize() {
+Type* RTL::getType() {
     std::list<Statement*>::iterator it;
     for (it = stmtList.begin(); it != stmtList.end(); it++) {
         Statement *e = *it;
         if (e->isAssign())
-            return ((Assign*)e)->getSize();
+            return ((Assign*)e)->getType();
     }
-    return 32;              // Default to 32 bits if no assignments
+    return new IntegerType();   //  Default to 32 bit integer if no assignments
 }
 
 /*==============================================================================

@@ -75,7 +75,7 @@ void RtlTest::tearDown () {
  * OVERVIEW:        Test appendExp and printing of RTLs
  *============================================================================*/
 void RtlTest::testAppend () {
-    Assign* a = new Assign(32,
+    Assign* a = new Assign(
             Location::regOf(8),
             new Binary(opPlus,
                 Location::regOf(9),
@@ -98,12 +98,12 @@ void RtlTest::testAppend () {
  * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
  *============================================================================*/
 void RtlTest::testClone () {
-    Assign* a1 = new Assign(32,
+    Assign* a1 = new Assign(
             Location::regOf(8),
             new Binary(opPlus,
                 Location::regOf(9),
                 new Const(99)));
-    Assign* a2 = new Assign(16,
+    Assign* a2 = new Assign(new IntegerType(16),
             new Unary(opParam, new Const("x")),
             new Unary(opParam, new Const("y")));
     std::list<Statement*> ls;

@@ -111,6 +111,10 @@ public:
     void    substIntoDisjuncts(ConstraintMap& in);
     // Substitute the given constraintMap into the equates
     void    substIntoEquates(ConstraintMap& in);
+    // Perform "alpha substitution". Example:
+    //   <fixedtype*> = alphaX* and T[Y] = alphaX*  ->
+    //   T[Y] = <fixedtype*>
+    void    alphaSubst();
 
     // Solve the constraints. If they can be solved, return true and put
     // a copy of the solution (in the form of a set of T<location> = <type>)

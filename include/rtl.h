@@ -76,7 +76,7 @@ public:
 
     // Common enquiry methods
     ADDRESS getAddress();               // Return RTL's native address
-    int getSize();                      // Return size in bits of first Assign.
+    Type* getType();                    // Return type of first Assign.
     bool    areFlagsAffected();         // True if flags are affected
 
     // Expression list enquiry methods
@@ -127,16 +127,14 @@ public:
     //   ssLhs: ptr to Exp to place on LHS
     //   ssRhs: ptr to Exp to place on RHS
     //   prep:  true if prepend (else append)
-    //   size:  size of the transfer, or -1 to be the same as the
-    //          assign this RTL
-    void insertAssign(Exp* ssLhs, Exp* ssRhs, bool prep, int size = -1);
+    //   type:  type of the transfer, or NULL
+    void insertAssign(Exp* ssLhs, Exp* ssRhs, bool prep, Type* type = NULL);
 
     // Insert an assignment into this RTL, after temps have been defined
     //   ssLhs: ptr to Exp to place on LHS
     //   ssRhs: ptr to Exp to place on RHS
-    //   size:  size of the transfer, or -1 to be the same as the
-    //          first assign this RTL
-    void insertAfterTemps(Exp* ssLhs, Exp* ssRhs, int size = -1);
+    //   type:  type of the transfer, or NULL
+    void insertAfterTemps(Exp* ssLhs, Exp* ssRhs, Type* type = NULL);
 
     // Replace all instances of "search" with "replace".
     virtual bool searchAndReplace(Exp* search, Exp* replace);

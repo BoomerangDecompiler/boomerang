@@ -1911,7 +1911,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                     } else {
                         Type *ty = prog->getGlobalType((char*)gloName);
                         if (s->isAssign()) {
-                            int bits = ((Assign*)s)->getSize();
+                            int bits = ((Assign*)s)->getType()->getSize();
                             if (ty == NULL || ty->getSize() == 0)
                                 prog->setGlobalType((char*)gloName,
                                     new IntegerType(bits));
@@ -2085,13 +2085,15 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                     pe->setProc(this);
                     Exp *ne = new Unary(opAddrOf, pe);
                     if (VERBOSE)
-                        LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
+                        LOG << "replacing argument " << e << " with " << ne <<
+                          " in " << call << "\n";
                     call->setArgumentExp(i, ne);
                     found = true;
                 }
             }
         }
     if (found)
+        // Must redo all the subscripting!
         cfg->renameBlockVars(0, 1, true);
 
     // replace expressions in regular statements with parameters
@@ -2730,7 +2732,7 @@ void UserProc::fromSSAform() {
             }
         }
         if (same) {
-            // Is the left of the phi assignment the same base variabe as all
+            // Is the left of the phi assignment the same base variable as all
             // the operands?
             if (*s->getLeft() *= *first)
                 // Just removing the refs will work

@@ -2704,43 +2704,44 @@ void BoolStatement::setDest(std::list<Statement*>* stmts) {
 // Assign //
 //  //  //  //
 
-Assign::Assign() : size(32) {
+Assign::Assign() {
     setKind(STMT_ASSIGN);
 }
-Assign::Assign(Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), size(32), guard(NULL)
+Assign::Assign(Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), type(NULL), guard(NULL)
 {
     setKind(STMT_ASSIGN);
     if (lhs->getOper() == opTypedExp) { 
-        size = ((TypedExp*)lhs)->getType()->getSize(); 
+        type = ((TypedExp*)lhs)->getType(); 
     } 
     if (rhs->getOper() == opPhi)
         ((PhiExp*)rhs)->setStatement(this);
 }
-Assign::Assign(int sz, Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), size(sz), guard(NULL) 
+
+Assign::Assign(Type* ty, Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), type(ty),
+  guard(NULL) 
 {
     setKind(STMT_ASSIGN);
     if (rhs->getOper() == opPhi)
         ((PhiExp*)rhs)->setStatement(this);
 }
-Assign::Assign(Assign& o) : size(o.size) {
+Assign::Assign(Assign& o) {
     setKind(STMT_ASSIGN);
     lhs = o.lhs->clone();
     rhs = o.rhs->clone();
-    if (o.guard)
-        guard = o.guard->clone();
-    else
-        guard = NULL;
+    if (o.type)  type  = o.type->clone();  else type  = NULL;
+    if (o.guard) guard = o.guard->clone(); else guard = NULL;
 }
 
-int Assign::getSize() {
-    return size;
+Type* Assign::getType() {
+    return type;
 }
-void Assign::setSize(int sz) {
-    size = sz;
+void Assign::setType(Type* ty) {
+    type = ty;
 }
 
 Statement* Assign::clone() {
-    Assign* a = new Assign(size, lhs->clone(), rhs->clone());
+    Assign* a = new Assign(type == NULL ? NULL : type->clone(),
+        lhs->clone(), rhs->clone());
     // Statement members
     a->pbb = pbb;
     a->proc = proc;
@@ -2921,7 +2922,7 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace) {
 
 void Assign::print(std::ostream& os, bool withUses) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "*" << std::dec << size << "* ";
+    os << "*" << std::dec << type << "* ";
     if (lhs) lhs->print(os, withUses);
     os << " := ";
     if (rhs) rhs->print(os, withUses);

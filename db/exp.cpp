@@ -3035,6 +3035,9 @@ Exp *Exp::removeSubscripts(bool& allZero)
 
 Exp *Unary::fixCallRefs()
 {
+    if (op == opAddrOf)
+        // Don't ruin the a[m[blah]] that is required for generating &localn
+        return this;
     subExp1 = subExp1->fixCallRefs();
     Exp *res = this->simplify();
     return res;

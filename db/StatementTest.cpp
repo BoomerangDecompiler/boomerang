@@ -728,12 +728,12 @@ void StatementTest::testRecursion () {
  * OVERVIEW:        Test cloning of Assigns (and exps)
  *============================================================================*/
 void StatementTest::testClone () {
-    Assign* a1 = new Assign(32,
+    Assign* a1 = new Assign(
             Location::regOf(8),
             new Binary(opPlus,
                 Location::regOf(9),
                 new Const(99)));
-    Assign* a2 = new Assign(16,
+    Assign* a2 = new Assign(new IntegerType(16),
             new Unary(opParam, new Const("x")),
             new Unary(opParam, new Const("y")));
     Statement* c1 = a1->clone();
@@ -761,7 +761,7 @@ void StatementTest::testClone () {
 void StatementTest::testIsAssign () {
     std::ostringstream ost;
     // r2 := 99
-    Assign a(32,
+    Assign a(
         Location::regOf(2),
         new Const(99));
     a.print(ost);

@@ -263,58 +263,71 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                 // Get the current Exp
                 st = (*rit)->elementAt(i);
                 if (st->isFpush()) {
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(
-                                                        new Unary(opTemp, 
-                                                          new Const("tmpD9"))), 
-                                                      Location::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(39), 
-                                                      Location::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(38), 
-                                                      Location::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(37), 
-                                                      Location::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(36), 
-                                                      Location::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(35), 
-                                                      Location::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(34), 
-                                                      Location::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(33), 
-                                                      Location::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(32), 
-                                                      Location::regOf(
-                                                        new Unary(opTemp, 
-                                                         new Const("tmpD9")))), 
-                                                      i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(
+                            new Unary(
+                                opTemp, new Const("tmpD9"))), 
+                        Location::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(39), 
+                        Location::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(38), 
+                        Location::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(37), 
+                        Location::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(36), 
+                        Location::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(35), 
+                        Location::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(34), 
+                        Location::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(33), 
+                        Location::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(32), 
+                        Location::regOf(
+                            new Unary(opTemp, new Const("tmpD9")))), i++);
                     // Remove the FPUSH
                     (*rit)->deleteStmt(i);
                     i--;
                     continue;
                 }
                 else if (st->isFpop()) {
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(
-                                                        new Unary(opTemp, 
-                                                          new Const("tmpD9"))), 
-                                                      Location::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(32), 
-                                                      Location::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(33), 
-                                                      Location::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(34), 
-                                                      Location::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(35), 
-                                                      Location::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(36), 
-                                                      Location::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(37), 
-                                                      Location::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(38), 
-                                                      Location::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(80, Location::regOf(39), 
-                                                      Location::regOf(
-                                                        new Unary(opTemp, 
-                                                         new Const("tmpD9")))), 
-                                                      i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(
+                            new Unary(opTemp, new Const("tmpD9"))), 
+                        Location::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(32), 
+                        Location::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(33), 
+                        Location::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(34), 
+                        Location::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(35), 
+                        Location::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(36), 
+                        Location::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(37), 
+                        Location::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(38), 
+                        Location::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(new FloatType(80),
+                        Location::regOf(39), 
+                        Location::regOf(
+                           new Unary(opTemp, new Const("tmpD9")))), i++);
                     // Remove the FPOP
                     (*rit)->deleteStmt(i);
                     i--;
@@ -929,7 +942,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit,
   ADDRESS uAddr, Exp* lhs, Exp* cond) {
 
-    Statement* asgn = new Assign(32,
+    Statement* asgn = new Assign(
         lhs,
         new Ternary(opTern,
             cond,
@@ -1008,18 +1021,18 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         // r[tmpl] = ftoi(80, 64, r[32])
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
-        Statement* a = new Assign(64,
+        Statement* a = new Assign(new IntegerType(64),
             new Unary(opTemp, new Const("tmpl")),
             new Ternary(opFtoi, new Const(64), new Const(32),
                 Location::regOf(32)));
         RTL* pRtl = new RTL(addr);
         pRtl->appendStmt(a);
-        a = new Assign(32,
+        a = new Assign(
             Location::regOf(24),
             new Ternary(opTruncs, new Const(64), new Const(32),
                 new Unary(opTemp, new Const("tmpl"))));
         pRtl->appendStmt(a);
-        a = new Assign(32,
+        a = new Assign(
             Location::regOf(26),
             new Binary(opShiftR,
                 new Unary(opTemp, new Const("tmpl")),

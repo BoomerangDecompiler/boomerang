@@ -931,4 +931,7 @@ public:
     virtual bool visit(Location* e);
     // All other virtual functions inherit from ExpVisitor: just recurse
 };
+
+// This class visits subexpressions, and performs alpha substitution
+
 #endif // __EXP_H__

@@ -88,7 +88,7 @@ private:
 	void 	emitNop(std::list<RTL*>* pRtls, ADDRESS uAddr);
 	void 	emitCopyPC(std::list<RTL*>* pRtls, ADDRESS uAddr);
 	unsigned fetch4(unsigned char* ptr);
-	void 	appendAssignment(Exp* lhs, Exp* rhs, int size, ADDRESS addr,
+	void 	appendAssignment(Exp* lhs, Exp* rhs, Type* type, ADDRESS addr,
               std::list<RTL*>* lrtl);
 	void 	quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op);
 
