@@ -2202,8 +2202,15 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
                 // (we don't do this)
             }
             if (d->getOper() == opLocal) {
-                d = S->getProc()->getLocalExp(((Const*)d->getSubExp1())->getStr());
-                assert(d);
+                d = S->getProc()->getLocalExp(((Const*)d->getSubExp1())->
+                  getStr());
+                if (d == 0) {
+                    std::cerr << "For definition " << *dd <<
+                      " in " << S << ", can't getLocalExp() (proc is " <<
+                      S->getProc()->getName() << ")\n";
+                    std::cerr << std::flush;
+                    assert(d);
+                }
                 if (d->getMemDepth() == memDepth)
                     Stack[d].push(S);
             }
