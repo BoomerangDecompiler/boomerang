@@ -5,8 +5,8 @@
 #include <direct.h>       // mkdir under Windows
 #else
 #include <sys/stat.h>     // For mkdir
-#endif
 #include <unistd.h>   // For unlink
+#endif
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
@@ -164,10 +164,12 @@ void Cluster::printTree(std::ostream &out)
 	children[i]->printTree(out);
 }
 
+typedef char *crazy_vc_bug;
+
 int Boomerang::splitLine(char *line, char ***pargv)
 {
     int argc = 0;
-    *pargv = new (char*)[100];
+    *pargv = new crazy_vc_bug[100];
     const char *p = strtok(line, " \r\n");
     while(p) {
 	(*pargv)[argc++] = (char*)p;
