@@ -876,7 +876,8 @@ void Statement::getDefinitions(LocationSet &def) {
     assert(false);
 }
 
-void Statement::propagateTo(int memDepth) {
+// exclude: a set of statements not to propagate from
+void Statement::propagateTo(int memDepth, StatementSet& exclude) {
     bool change;
     int changes = 0;
     // Repeat substituting into s while there is a single reference
@@ -891,6 +892,9 @@ void Statement::propagateTo(int memDepth) {
                 StmtSetIter dummy;
                 Statement* d1 = ((RefsExp*)e)->getFirstRef(dummy);
                 Statement* d2 = ((RefsExp*)e)->getNextRef(dummy);
+                // Don't propagate if one of the defs is on the exclude list
+                if (exclude.exists(d1)) continue;
+                if (exclude.exists(d2)) continue;
                 // Warning! This also tries to propagate into loops!
                 // Not safe in general! (This is "Mike's hack")
                 if (Boomerang::get()->recursionBust &&
@@ -925,6 +929,8 @@ void Statement::propagateTo(int memDepth) {
                 // Don't propagate a null statement! Can happen with %pc's
                 // (this would have no effect, and would infinitely loop)
                 continue;
+            // Don't propagate from statements in the exclude list
+            if (exclude.exists(def)) continue;
             change = doPropagateTo(memDepth, def, false);
         }
     } while (change && ++changes < 20);
@@ -939,25 +945,6 @@ bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
     if (depth > memDepth)
         return false;
 
-// The following is a special hack to prevent propagating memof's involving
-// statement 119 (hard wired!). Might be useful for experimentation.
-// Might be more useful to prevent only propagating 119 into 103...
-#if 0
-if (memDepth == 1) {
-  LocationSet ls;
-  def->addUsedLocs(ls);
-  LocSetIter cc;
-  for (Exp* com = ls.getFirst(cc); com; com = ls.getNext(cc))
-    if (com->isSubscript()) {
-      StmtSetIter dd;
-      RefsExp* re = (RefsExp*)com;
-      for (Statement* d = re->getFirstRef(dd); d; d = re->getNextRef(dd))
-        if (d->getNumber() == 119)
-          std::cerr << "SPECIAL HACK: Not propagating " << def->getNumber() <<
-            " to " << number << ", def is " << def << "\n";
-          return false; }}   // HACK!!! 
-#endif
-  
     // Respect the -p N switch
     if (Boomerang::get()->numToPropagate >= 0) {
         if (Boomerang::get()->numToPropagate == 0) return false;
@@ -997,11 +984,81 @@ bool Statement::isNullStatement() {
             // Can't be null
             return false;
         StmtSetIter dummy;
-        // Has only 1 reference; has to be to self to be a null statement
-        // Not even necessary to do the compare
-        return re->getFirstRef(dummy) == this;
+        // Has only 1 reference; has to be equal to self to be a null statement
+        // Not even necessary to compare the statements; just the statement
+        // numbers
+        return re->getFirstRef(dummy)->number == number;
     }
     else
         // Null if left == right
         return *e->getSubExp1() == *sub2;
+}
+
+/*
+ *  *   *   *   *   *
+ *   Class Expand   *
+ *  *   *   *   *   *
+ */
+void Expand::process(Statement* orig, std::string parentString,
+  StatementSet& seenSet)  {
+    this->orig = orig;
+    this->parentString = parentString;
+    seen = seenSet;
+    seen.insert(orig);         // We've seen self
+    LocationSet defs;
+    orig->addUsedLocs(defs);
+    // Need to find those coponents that are memofs
+    LocSetIter ll;
+    // First find all the memory components
+    bool found = false;
+    RefsExp* re;
+    Exp* d;
+    for (d = defs.getFirst(ll); d; d = defs.getNext(ll)) {
+        if (d->isSubscript())
+            d = ((RefsExp*)d)->getSubExp1();
+        if (d->isMemOf()) {
+            Exp* sub = ((Unary*)d)->getSubExp1();
+            LocationSet mrefs;
+            sub->addUsedLocs(mrefs);
+            LocSetIter mri;
+            for (Exp* mr = mrefs.getFirst(mri); mr; mr = mrefs.getNext(mri)) {
+                if (mr->getNumRefs() > 1) {
+                    found = true;
+                    re = (RefsExp*)mr;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    if (!found) return;
+    StmtSetIter rr;
+    for (Statement* s = re->getFirstRef(rr); s; s = re->getNextRef(rr)) {
+        // Replace the multiple ref with just one
+        Statement* c = orig->cloneStmt();
+        RefsExp* to = new RefsExp(re->getSubExp1(), s);
+        c->searchAndReplace(re, to);
+        stmts.append(c);
+    }
+    // Now substitute where possible
+    StmtListIter ss;
+    for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
+        s->propagateTo(0, seen);
+    }
+    
+}
+
+Expand::~Expand() {
+    StmtListIter ll;
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+        delete s;
+    }
+}
+
+void Expand::print(std::ostream& ost) {
+    char c = 'a';
+    StmtListIter ll;
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll), c++) {
+        ost << orig->getNumber() << parentString << c << " " << s << "\n";
+    }
 }

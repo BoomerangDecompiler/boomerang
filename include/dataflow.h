@@ -27,6 +27,7 @@
 #include <list>
 #include <map>
 #include <ostream>
+#include <iostream>     // For std::cerr
 #include "exphelp.h"    // For lessExpStar
 
 
@@ -148,6 +149,8 @@ public:
 
     bool        operator==(Statement& o);
     void        setProc(UserProc *p) { proc = p; }
+
+    virtual Statement*  cloneStmt() = 0;            // Make copy of self
 
     // calculates the reaching definitions set after this statement
     virtual void calcReachOut(StatementSet &reachout);
@@ -294,7 +297,7 @@ public:
     virtual void fromSSAform(igraph& igm) = 0;
 
     // Propagate to this statement
-    void propagateTo(int memDepth);
+    void propagateTo(int memDepth, StatementSet& exclude);
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
@@ -306,5 +309,28 @@ protected:
 // Print the Statement poited to by p
 std::ostream& operator<<(std::ostream& os, Statement* s);
 
+/**
+ * An experimental class to expand statements with memofs with more than
+ * one ref. Example: 119 *32* r29 := m[r29{85 119}]
+ * The individual memofs are expanded, e.g.
+ * 119a *32* r29 := m[r29{85}]
+ * 119b *32* r29 := m[r29{119}]
+ * These can be further expanded to provide definitions and uses.
+ * Uses can be attached to the original statement (with no letters).
+ * Not sure what to do with the definitions yet.
+ */
+class Expand {
+    StatementList   stmts;          // The expanded statements
+    std::string     parentString;   // The ID string after the statement number,
+                                    // e.g. "" in the above 
+    StatementSet    seen;           // Set of statements already seen
+    Statement*      orig;           // Original statement
+public:
+            //Expand(Statement* orig);        // Constructor
+            ~Expand();                      // Destructor
+    void    process(Statement* orig, std::string s, StatementSet& seen);
+    void    print(std::ostream& ost);       // Print function
+    void    prints() {print(std::cerr);}    // Debug print
+};
 
 #endif // DATAFLOW
