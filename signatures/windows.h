@@ -11,6 +11,7 @@ typedef const short LPCWSTR[];
 typedef short LPWSTR[];
 typedef int DWORD;
 typedef int HWND;
+typedef int HFONT;
 typedef int HLOCAL;
 typedef int HINSTANCE;
 typedef int HICON;
@@ -23,6 +24,7 @@ typedef int LRESULT;
 typedef int ATOM;
 typedef int BOOL;
 typedef unsigned char BYTE;
+typedef char CHAR;
 typedef LRESULT WndProc(      
     HWND hwnd,
     UINT uMsg,
@@ -78,6 +80,7 @@ typedef struct {
     LPCWSTR lpszClassName;
     HICON hIconSm;
 } WNDCLASSEXw;
+
 
 ATOM RegisterClassExW(WNDCLASSEXw *lpwcx);
 ATOM RegisterClassExA(WNDCLASSEX *lpwcx);
@@ -395,3 +398,8 @@ int wsprintfA(
 
 char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
 int MulDiv(int number, int numerator, int denominator);
+void ?OnCreate@CView@@IAEHPAUtagCREATESTRUCTA@@@Z(void* lpCreateStruct);
+HFONT CreateFontIndirectA(void* lf);
+HFONT      MFC42_DLL_4464(void* lf);    /* Hack */
+void ?Attach@CGdiObject@@QAEHPAX@Z(void* obj);
+void                MFC42_DLL_1641(void* obj);     /* Hack */

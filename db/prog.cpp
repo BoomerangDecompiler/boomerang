@@ -422,7 +422,7 @@ Signature* Prog::getLibSignature(const char *nam) {
     return pFE->getLibSignature(nam);
 }
 
-const char *Prog::getFrontEndId() {
+platform Prog::getFrontEndId() {
     return pFE->getFrontEndId();
 }
 
@@ -976,17 +976,18 @@ void Prog::readSymbolFile(const char *fname)
         exit(1);
     }
 
-    AnsiCParser *p = new AnsiCParser(ifs, false);
-    std::string s = "-stdc-";
-    if (isWin32()) s = "-win32-";
-    s += getFrontEndId();
-    p->yyparse(s.c_str());
+    AnsiCParser *par = new AnsiCParser(ifs, false);
+    platform plat = getFrontEndId();
+    callconv cc = CONV_C;
+    if (isWin32()) cc = CONV_PASCAL;
+    par->yyparse(plat, cc);
 
-    for (std::list<Symbol*>::iterator it = p->symbols.begin();
-         it != p->symbols.end(); it++) {
+    for (std::list<Symbol*>::iterator it = par->symbols.begin();
+         it != par->symbols.end(); it++) {
         if ((*it)->sig) {
             // probably wanna do something with this
-            Proc *p = newProc((*it)->sig->getName(), (*it)->addr, (*it)->mods->noDecode);
+            Proc *p = newProc((*it)->sig->getName(), (*it)->addr,
+              (*it)->mods->noDecode);
             if (!(*it)->mods->incomplete)
                 p->setSignature((*it)->sig->clone());
         } else {
@@ -1002,12 +1003,12 @@ void Prog::readSymbolFile(const char *fname)
         }
     }
 
-    for (std::list<SymbolRef*>::iterator it = p->refs.begin();
-         it != p->refs.end(); it++) {
+    for (std::list<SymbolRef*>::iterator it = par->refs.begin();
+         it != par->refs.end(); it++) {
         pFE->addRefHint((*it)->addr, (*it)->nam.c_str());
     }
 
-    delete p;
+    delete par;
     ifs.close();
 }
 

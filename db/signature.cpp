@@ -39,6 +39,26 @@
 #include "proc.h"
 #include "boomerang.h"
 
+char* Signature::platformName(platform plat) {
+    switch (plat) {
+        case PLAT_PENTIUM:  return "pentium";
+        case PLAT_SPARC:    return "sparc";
+        case PLAT_M68K:     return "m68k";
+        case PLAT_PARISC:   return "parisc";
+        case PLAT_PPC:      return "ppc";
+        case PLAT_MIPS:     return "mips";
+        default:            return "???";
+    }
+}
+
+char* Signature::conventionName(callconv cc) {
+    switch (cc) {
+        case CONV_C:        return "stdc";
+        case CONV_PASCAL:   return "pascal";
+        default:            return "??";
+    }
+}
+
 namespace CallingConvention {
 
     class Win32Signature : public Signature {
@@ -139,8 +159,8 @@ bool CallingConvention::Win32Signature::operator==(const Signature& other) const
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p,
   Signature &candidate) {
-    std::string feid(p->getProg()->getFrontEndId());
-    if (feid != "pentium" || !p->getProg()->isWin32()) return false;
+    platform plat = p->getProg()->getFrontEndId();
+    if (plat != PLAT_PENTIUM || !p->getProg()->isWin32()) return false;
 
     if (VERBOSE) {
         std::cerr << "consider promotion to stdc win32 signature for " <<
@@ -308,8 +328,8 @@ bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& othe
 // (or maybe sp=sp+4) for qualifying procs. Need work to get there
 bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
   Signature &candidate) {
-    std::string feid(p->getProg()->getFrontEndId());
-    if (feid != "pentium") return false;
+    platform plat = p->getProg()->getFrontEndId();
+    if (plat != PLAT_PENTIUM) return false;
 
     if (VERBOSE)
         std::cerr << "consider promotion to stdc pentium signature for " <<
@@ -455,8 +475,8 @@ bool CallingConvention::StdC::SparcSignature::operator==(const Signature&
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
   Signature &candidate) {
-    std::string feid(p->getProg()->getFrontEndId());
-    if (feid != "sparc") return false;
+    platform plat = p->getProg()->getFrontEndId();
+    if (plat != PLAT_SPARC) return false;
 
     // is there other constraints?
     
@@ -816,24 +836,24 @@ Signature *Signature::promote(UserProc *p) {
     return this;
 }
 
-Signature *Signature::instantiate(const char *str, const char *nam) {
-    std::string s = str;
-    if (s == "-win32-pentium") {
-        return new CallingConvention::Win32Signature(nam);
+Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
+    switch (plat) {
+        case PLAT_PENTIUM:
+            if (cc == CONV_PASCAL)
+                // For now, assume the only pascal calling convention pentium
+                // signatures will be Windows
+                return new CallingConvention::Win32Signature(nam);
+            else
+                return new CallingConvention::StdC::PentiumSignature(nam);
+        case PLAT_SPARC:
+            assert(cc == CONV_C);
+            return new CallingConvention::StdC::SparcSignature(nam);
+        // insert other conventions here
+        default:
+            std::cerr << "unknown signature: " << conventionName(cc) << " " <<
+                platformName(plat) << "\n";
+            assert(false);
     }
-    if (s == "-stdc") {
-        // need platform too
-        assert(false);
-    }
-    if (s == "-stdc-pentium") {
-        return new CallingConvention::StdC::PentiumSignature(nam);
-    }
-    if (s == "-stdc-sparc") {
-        return new CallingConvention::StdC::SparcSignature(nam);
-    }
-    std::cerr << "unknown signature: " << s << std::endl;
-    // insert other conventions here
-    assert(false);
     return NULL;
 }
 

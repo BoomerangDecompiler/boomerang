@@ -33,6 +33,7 @@
 #include <queue>
 #include <fstream>
 #include "types.h"
+#include "sigenum.h"   // For enums platform and cc
 
 class UserProc;
 class Proc;
@@ -99,8 +100,8 @@ public:
     // returns a symbolic name for a register index
     const char *getRegName(int idx);
 
-    // returns a string identifer for this frontend
-    virtual const char *getFrontEndId() = 0;
+    // returns an enum identifer for this frontend's platform
+    virtual platform getFrontEndId() = 0;
 
     // returns a frontend given a string
     static FrontEnd *createById(std::string &str, BinaryFile *pBF);

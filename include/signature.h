@@ -16,6 +16,7 @@
 
 #include "exp.h"
 #include "type.h"
+#include "sigenum.h"   // For enums platform and cc
 
 class Statement;
 class BinaryFile;
@@ -82,7 +83,9 @@ protected:
 
 public:
     Signature(const char *nam);
-    static Signature *instantiate(const char *str, const char *nam);
+    // Platform plat, calling convention cc (both enums)
+    // nam is name of the procedure (no longer stored in the Proc)
+    static Signature *instantiate(platform plat, callconv cc, const char *nam);
     virtual ~Signature() { }
 
     virtual bool operator==(const Signature& other) const;
@@ -178,6 +181,10 @@ static StatementList& getStdRetStmt(Prog* prog);
     virtual Exp *getProven(Exp *left) { return NULL; }
 
     virtual bool isPromoted() { return false; }
+
+    // ascii versions of platform, calling convention name
+static char*   platformName(platform plat);
+static char*   conventionName(callconv cc);
 };
 
 class CustomSignature : public Signature {

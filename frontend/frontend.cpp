@@ -143,8 +143,8 @@ void FrontEnd::readLibraryCatalog() {
     std::string sList = Boomerang::get()->getProgPath() +
       "signatures/common.hs";
     readLibraryCatalog(sList.c_str());
-    sList = Boomerang::get()->getProgPath() + "signatures/" + getFrontEndId()
-      + ".hs";
+    sList = Boomerang::get()->getProgPath() + "signatures/" + 
+        Signature::platformName(getFrontEndId()) + ".hs";
     readLibraryCatalog(sList.c_str());
     if (isWin32()) {
         sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
@@ -243,10 +243,11 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     }
 
     AnsiCParser *p = new AnsiCParser(ifs, false);
-    std::string s = "-stdc-";
-    if (win32) s = "-win32-";
-    s += getFrontEndId();
-    p->yyparse(s.c_str());
+    
+    callconv cc = CONV_C;
+    if (win32) cc = CONV_PASCAL;
+    platform plat = getFrontEndId();
+    p->yyparse(plat, cc);
 
     for (std::list<Signature*>::iterator it = p->signatures.begin();
          it != p->signatures.end(); it++)
@@ -261,11 +262,9 @@ Signature *FrontEnd::getDefaultSignature(const char *name)
     Signature *signature = NULL;
     // Get a default library signature
     if (isWin32())
-        signature = Signature::instantiate("-win32-pentium", name);
+        signature = Signature::instantiate(PLAT_PENTIUM, CONV_PASCAL, name);
     else {
-        std::string s = "-stdc-";
-        s += getFrontEndId();
-        signature = Signature::instantiate(s.c_str(), name);
+        signature = Signature::instantiate(getFrontEndId(), CONV_C, name);
     } 
     return signature;
 }
@@ -281,6 +280,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
         signature = getDefaultSignature(name);
     }
     else {
+std::cerr << "Library signature match: " << name << "\n";
         signature = (*it).second->clone();
     }
     return signature;

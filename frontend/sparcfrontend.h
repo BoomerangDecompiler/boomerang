@@ -28,7 +28,7 @@ public:
      */
 virtual ~SparcFrontEnd();
 
-virtual const char *getFrontEndId() { return "sparc"; }
+virtual platform getFrontEndId() { return PLAT_SPARC; }
 
     /*
      * processProc. This is the main function for decoding a procedure.

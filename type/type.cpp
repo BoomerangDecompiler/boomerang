@@ -317,7 +317,7 @@ const char *CompoundType::getNameAtOffset(int n)
 int CompoundType::getOffsetTo(int n)
 {
     int offset = 0;
-    for (unsigned i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         offset += types[i]->getSize();
     }
     return offset;
@@ -625,7 +625,11 @@ std::map<std::string, Type*> Type::namedTypes;
 void Type::addNamedType(const char *name, Type *type)
 {
     if (namedTypes.find(name) != namedTypes.end()) {
-        assert(*type == *namedTypes[name]);
+        if (*type != *namedTypes[name]) {
+            std::cerr << "addNamedType: type " << type->getCtype() << " != " <<
+                namedTypes[name]->getCtype() << "\n" << std::flush;
+            assert(false);
+        }
     } else
         namedTypes[name] = type->clone();
 }

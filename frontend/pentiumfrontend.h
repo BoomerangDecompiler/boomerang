@@ -20,7 +20,7 @@ public:
 
 virtual ~PentiumFrontEnd();
 
-virtual const char *getFrontEndId() { return "pentium"; }
+virtual platform getFrontEndId() { return PLAT_PENTIUM; }
 
     /*
      * processProc. This is the main function for decoding a procedure.

@@ -198,7 +198,7 @@ public:
     Signature *getLibSignature(const char *name);
 
     // Get the front end id used to make this prog
-    const char *getFrontEndId();
+    platform getFrontEndId();
 
     Signature *getDefaultSignature(const char *name);
 
