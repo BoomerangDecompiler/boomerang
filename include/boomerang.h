@@ -71,6 +71,7 @@ public:
     bool debugSwitch;
     bool prove;
     bool noParameterNames;
+    bool debugLiveness;
 };
 
 #define VERBOSE Boomerang::get()->vFlag
