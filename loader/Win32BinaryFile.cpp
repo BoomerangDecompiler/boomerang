@@ -123,6 +123,46 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 		p += size;
 		gap++;
 	}
+
+	// For VS.NET, need an o,d favourite: find a call with three pushes in the first 100 instuctions
+	int count = 100;
+	int pushes = 0;
+	p = LMMH(m_pPEHeader->EntrypointRVA);
+	while (count > 0) {
+		op1 = *(unsigned char*)(p + base);
+		if (op1 == 0xE8) {			// CALL opcode
+			if (pushes == 3) {
+				// Get the offset
+				int off = LMMH(*(p + base + 1));
+				unsigned dest = (unsigned)p + 5 + off;
+				// Check for a jump there
+				op1 = *(unsigned char*)(dest + base);
+				if (op1 == 0xE9) {
+					// Follow that jump
+					off = LMMH(*(dest + base + 1));
+					dest = dest + 5 + off;
+				}
+				return dest + LMMH(m_pPEHeader->Imagebase);
+			} else
+				pushes = 0;			// Assume pushes don't accumulate over calls
+		} else if (op1 >= 0x50 && op1 <= 0x57)	// PUSH opcode
+			pushes++;
+		else if (op1 == 0xE9) {
+			// Follow the jump
+			int off = LMMH(*(p + base + 1));
+			p += off+5;
+		}
+
+
+		int size = microX86Dis(p + base);
+		if (size == 0x40) {
+			fprintf(stderr, "Warning! Microdisassembler out of step at offset 0x%x\n", p);
+			size = 1;
+		}
+		p += size;
+	}
+	
+
 	return NO_ADDRESS;
 }
 
@@ -241,7 +281,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 	if (entry != NO_ADDRESS) {
 		std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(entry);
 		if (it == dlprocptrs.end())
-			dlprocptrs[entry] = "_init";
+			dlprocptrs[entry] = "main";
 	}
 
 	// Give a name to any jumps you find to these import entries
