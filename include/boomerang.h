@@ -71,6 +71,7 @@ public:
     int maxMemDepth;
     bool debugSwitch;
     bool prove;
+    bool noParameterNames;
 };
 
 #define VERBOSE Boomerang::get()->vFlag

@@ -16,7 +16,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
     debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
     noPropMult(false), impSSA(false), maxMemDepth(99), debugSwitch(false), 
-    prove(false)
+    prove(false), noParameterNames(false)
 {
 }
 
@@ -43,6 +43,7 @@ void Boomerang::help() {
     std::cerr << "-nb: no simplications for branches\n";
     std::cerr << "-nn: no removal of null and unused statements\n";
     std::cerr << "-nl: no creation of local variables\n";
+    std::cerr << "-np: no replacement of expressions with parameter names\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
@@ -133,7 +134,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
                             noPropMult = true;
                             break;
                         }
-                        help();
+                        noParameterNames = true;
+                        break;
                     default:
                         help();
                 }

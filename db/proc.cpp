@@ -1074,6 +1074,9 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
           "statements =====\n\n";
     }
 
+    if (!Boomerang::get()->noParameterNames)
+        replaceExpressionsWithParameters();
+
     igraph ig;      // FIXME: need to make an attempt to calculate this!
     fromSSAform(ig);
 
@@ -1207,6 +1210,33 @@ void UserProc::replaceExpressionsWithSymbols() {
               std::endl;
             std::cerr << "  after: " << e << std::endl;
         }
+        if (change) cfg->setReturnVal(e->clone());
+    }
+}
+
+void UserProc::replaceExpressionsWithParameters() {
+    StatementList stmts;
+    getStatements(stmts);
+
+    // replace expressions in regular statements with parameters
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        for (int i = 0; i < signature->getNumParams(); i++) {
+            RefExp *r = new RefExp(signature->getParamExp(i), NULL);
+            bool ch = s->searchAndReplace(r, new Unary(opParam, 
+                         new Const((char*)signature->getParamName(i))));
+        }
+    }
+
+    // replace expressions with parameters in the return value
+    for (int i = 0; i < signature->getNumParams(); i++) { 
+        Exp *e = cfg->getReturnVal();
+        if (e == NULL) break;
+        e = e->clone();
+        bool change = false;
+        RefExp *r = new RefExp(signature->getParamExp(i), NULL);
+        e = e->searchReplaceAll(r, new Unary(opParam, 
+                         new Const((char*)signature->getParamName(i))), change);
         if (change) cfg->setReturnVal(e->clone());
     }
 }

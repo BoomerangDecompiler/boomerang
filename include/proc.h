@@ -450,6 +450,7 @@ public:
     bool nameRegisters();
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
+    void replaceExpressionsWithParameters();   // must be in SSA form
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Statement*, int> RefCounter;
