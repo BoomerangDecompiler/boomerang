@@ -89,8 +89,7 @@ FrontEnd::~FrontEnd() {
 
 const char *FrontEnd::getRegName(int idx) { 
 	std::map<std::string, int, std::less<std::string> >::iterator it;
-	for (it = decoder->getRTLDict().RegMap.begin();	 
-		 it != decoder->getRTLDict().RegMap.end(); it++)
+	for (it = decoder->getRTLDict().RegMap.begin();	 it != decoder->getRTLDict().RegMap.end(); it++)
 		if ((*it).second == idx) 
 			return (*it).first.c_str();
 	return NULL;
@@ -113,7 +112,7 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF) {
 void FrontEnd::readLibraryCatalog(const char *sPath) {
 	std::ifstream inf(sPath);
 	if (!inf.good()) {
-		LOG << "can't open `" << sPath << "'\n";
+		std::cerr << "can't open `" << sPath << "'\n";
 		exit(1);
 	}
 
@@ -138,9 +137,9 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
 void FrontEnd::readLibraryCatalog() {
 	librarySignatures.clear();
 	std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
+
 	readLibraryCatalog(sList.c_str());
-	sList = Boomerang::get()->getProgPath() + "signatures/" + 
-		Signature::platformName(getFrontEndId()) + ".hs";
+	sList = Boomerang::get()->getProgPath() + "signatures/" + Signature::platformName(getFrontEndId()) + ".hs";
 	readLibraryCatalog(sList.c_str());
 	if (isWin32()) {
 		sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
@@ -256,7 +255,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 	ifs.open(sPath);
 
 	if (!ifs.good()) {
-		LOG << "can't open `" << sPath << "'\n";
+		std::cerr << "can't open `" << sPath << "'\n";
 		exit(1);
 	}
 
