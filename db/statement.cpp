@@ -1998,7 +1998,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 // 1) replace the current return set with the return set
                 //    of the new procDest
                 // 2) call fixCallRefs on the enclosing procedure
-                // 3) fix the arguments (this will only effect the implicit 
+                // 3) fix the arguments (this will only affect the implicit 
                 //    arguments, the regular arguments should be empty at
                 //    this point)
                 // 4) change this to a non-indirect call
