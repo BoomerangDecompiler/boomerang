@@ -1113,9 +1113,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				if (usType == Structured)
 					followSet.push_back(condFollow);
 		
-				// Otherwise, for a jump into/outof a loop body, the follow is 
-				// added to the goto set.  The temporary follow is set for any 
-				// unstructured conditional header branch that is within the 
+				// Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
+				// The temporary follow is set for any unstructured conditional header branch that is within the 
 				// same loop and case.
 				else {
 					if (usType == JumpInOutLoop) {
@@ -1124,15 +1123,13 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 						gotoSet.push_back(condFollow);
 						gotoTotal++;
 		
-						// also add the current latch node, and the loop header
-						// of the follow if they exist
+						// also add the current latch node, and the loop header of the follow if they exist
 						if (latch) {
 							gotoSet.push_back(latch);
 							gotoTotal++;
 						}
 						
-						if (condFollow->loopHead && 
-							condFollow->loopHead != myLoopHead) {
+						if (condFollow->loopHead && condFollow->loopHead != myLoopHead) {
 							gotoSet.push_back(condFollow->loopHead);
 							gotoTotal++;
 						}
@@ -1143,8 +1140,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					else
 						tmpCondFollow = m_OutEdges[BTHEN];
 
-					// for a jump into a case, the temp follow is added to the 
-					// follow set
+					// for a jump into a case, the temp follow is added to the follow set
 					if (usType == JumpIntoCase)
 						followSet.push_back(tmpCondFollow);
 				}
@@ -1176,17 +1172,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
 			// write code for the body of the conditional
 			if (cType != Case) {
-				PBB succ = (cType == IfElse ? m_OutEdges[BELSE] : 
-					m_OutEdges[BTHEN]);
+				PBB succ = (cType == IfElse ? m_OutEdges[BELSE] : m_OutEdges[BTHEN]);
 
 				// emit a goto statement if the first clause has already been 
 				// generated or it is the follow of this node's enclosing loop
-				if (succ->traversed == DFS_CODEGEN || 
-					(loopHead && succ == loopHead->loopFollow))
+				if (succ->traversed == DFS_CODEGEN || (loopHead && succ == loopHead->loopFollow))
 					emitGotoAndLabel(hll, indLevel + 1, succ);
 				else		
-					succ->generateCode(hll, indLevel + 1, latch, followSet, 
-									gotoSet);
+					succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet);
 
 				// generate the else clause if necessary
 				if (cType == IfThenElse) {
@@ -1200,8 +1193,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					if (succ->traversed == DFS_CODEGEN)
 						emitGotoAndLabel(hll, indLevel + 1, succ);
 					else
-						succ->generateCode(hll, indLevel + 1, latch, 
-										followSet, gotoSet);
+						succ->generateCode(hll, indLevel + 1, latch, followSet, gotoSet);
 
 					// generate the closing bracket
 					hll->AddIfElseCondEnd(indLevel);
@@ -1214,7 +1206,12 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
 					// emit a case label
 					// FIXME: Not valid for all switch types
-					Const caseVal((int)(psi->iLower+i));
+					Const caseVal(0);
+					if (psi->chForm == 'F')							// "Fortran" style?
+						caseVal.setInt(((int*)psi->uTable)[i]);		// Yes, use the table value itself
+																	// Note that uTable has the address of an int array
+					else
+						caseVal.setInt((int)(psi->iLower+i));
 					hll->AddCaseCondOption(indLevel, &caseVal);
 
 					// generate code for the current outedge
@@ -1875,8 +1872,22 @@ int BasicBlock::findNumCases() {
 	return 3;		 // Bald faced guess if all else fails
 }
 
-// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse,
-// and if possible decode extra code and return true
+// Find all the possible constant values that the location defined by s could be assigned with
+void findConstantValues(Statement* s, std::list<int>& dests) {
+	if (s->isPhi()) {
+		// For each definition, recurse
+		PhiAssign::Definitions::iterator it;
+		for (it = ((PhiAssign*)s)->begin(); it != ((PhiAssign*)s)->end(); it++)
+			findConstantValues(it->def, dests);
+	}
+	else if (s->isAssign()) {
+		Exp* rhs = ((Assign*)s)->getRight();
+		if (rhs->isIntConst())
+			dests.push_back(((Const*)rhs)->getInt());
+	}
+}
+
+// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
 bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 	if (m_nodeType == COMPJUMP) {
 		assert(m_pRtls->size());
@@ -1894,6 +1905,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;
+		bool matched = false;
 		for (int i=0; i < n; i++) {
 			if (*e *= *hlForms[i]) {		// *= compare ignores subscripts
 				form = chForms[i];
@@ -1902,31 +1914,62 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				break;
 			}
 		}
-		SWITCH_INFO* swi = new SWITCH_INFO;
-		swi->chForm = form;
-		ADDRESS T;
-		Exp* expr;
-		findSwParams(form, e, expr, T);
-		if (expr) {
-			swi->uTable = T;
-			swi->iNumTable = findNumCases();
-			swi->iUpper = swi->iNumTable-1;
-			if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
-				swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
-				swi->iUpper += swi->iLower;
-				expr = ((Binary*)expr)->getSubExp1();
-			} else
-				swi->iLower = 0;
-			swi->pSwitchVar = expr;
-			processSwitch(proc, swi);
-			return swi->iNumTable != 0;
+		if (matched) {
+			SWITCH_INFO* swi = new SWITCH_INFO;
+			swi->chForm = form;
+			ADDRESS T;
+			Exp* expr;
+			findSwParams(form, e, expr, T);
+			if (expr) {
+				swi->uTable = T;
+				swi->iNumTable = findNumCases();
+				swi->iUpper = swi->iNumTable-1;
+				if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
+					swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
+					swi->iUpper += swi->iLower;
+					expr = ((Binary*)expr)->getSubExp1();
+				} else
+					swi->iLower = 0;
+				swi->pSwitchVar = expr;
+				processSwitch(proc, swi);
+				return swi->iNumTable != 0;
+			}
+		} else {
+			// Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at the leaves of the
+			// phi tree. Basically, a location with a reference, e.g. m[r28{-} - 16]{87}
+			if (e->isSubscript()) {
+				Exp* sub = ((RefExp*)e)->getSubExp1();
+				if (sub->isLocation()) {
+					// Yes, we have <location>{ref}. Follow the tree and store the constant values that <location>
+					// could be assigned to in dests
+					std::list<int> dests;
+					findConstantValues(((RefExp*)e)->getDef(), dests);
+					// The switch info wants an array of native addresses
+					int n = dests.size();
+					if (n) {
+						int* destArray = new int[n];
+						std::list<int>::iterator ii = dests.begin();
+						for (int i=0; i < n; i++)
+							destArray[i] = *ii++;
+						SWITCH_INFO* swi = new SWITCH_INFO;
+						swi->chForm = 'F';					// The "Fortran" form
+						swi->pSwitchVar = e;
+						swi->uTable = (ADDRESS)destArray;	// Abuse the uTable member as a pointer
+						swi->iNumTable = n;
+						swi->iLower = 1;					// Not used, except to compute
+						swi->iUpper = n;					// the number of options
+						processSwitch(proc, swi);
+						return true;
+					}
+				}
+			}
 		}
 		return false;
 	} else if (m_nodeType == COMPCALL) {
-		std::cerr << "decodeIndirectJmp: COMPCALL:";
+		LOG << "decodeIndirectJmp: COMPCALL:";
 		assert(m_pRtls->size());
 		RTL* lastRtl = m_pRtls->back();
-		std::cerr << lastRtl->prints() << "\n";
+		LOG << lastRtl->prints() << "\n";
 
 		assert(lastRtl->getNumStmt() >= 1);
 		CallStatement* lastStmt = (CallStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
@@ -1942,36 +1985,52 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				break;
 			}
 		}
-		if (recognised && i == 0) {
-			// This is basically an indirection on a global function pointer
-			// If it is initialised, we have a decodable entry point
-			// Note: it could also be a library function (e.g. Windows)
-			// Pattern 0: global<name>{0}[0]{0}
-			if (e->isSubscript()) e = e->getSubExp1();
-			e = ((Binary*)e)->getSubExp1();				// e is global<name>{0}
-			if (e->isSubscript()) e = e->getSubExp1();	// e is global<name>
-			Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
-			Prog* prog = proc->getProg();
-			Global* glo = prog->getGlobal(con->getStr());
-			assert(glo);
-			// Set the type to pointer to function, if not already
-			Type* ty = glo->getType();
-			if (!ty->isPointer() && !((PointerType*)ty)->getPointsTo()->isFunc())
-				glo->setType(new PointerType(new FuncType()));
-			Exp* init = glo->getInitialValue(prog);
-			// Danger. For now, only do if -ic given
-			bool decodeThru = Boomerang::get()->decodeThruIndCall;
-			if (init && decodeThru) {
-				ADDRESS aglo = glo->getAddress();
-				ADDRESS pfunc = prog->readNative4(aglo);
-				bool newFunc =	prog->findProc(pfunc) == NULL;
-				if (Boomerang::get()->noDecodeChildren)
-					return false;
-				prog->decodeExtraEntrypoint(pfunc);
-				// If this was not decoded, then this is a significant
-				// change, and we want to redecode the present function once
-				// that callee has been decoded
-				return newFunc;
+		if (!recognised) return false;
+		switch (i) {
+			case 0: {
+				// This is basically an indirection on a global function pointer.  If it is initialised, we have a
+				// decodable entry point.  Note: it could also be a library function (e.g. Windows)
+				// Pattern 0: global<name>{0}[0]{0}
+				if (e->isSubscript()) e = e->getSubExp1();
+				e = ((Binary*)e)->getSubExp1();				// e is global<name>{0}
+				if (e->isSubscript()) e = e->getSubExp1();	// e is global<name>
+				Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
+				Prog* prog = proc->getProg();
+				Global* glo = prog->getGlobal(con->getStr());
+				assert(glo);
+				// Set the type to pointer to function, if not already
+				Type* ty = glo->getType();
+				if (!ty->isPointer() && !((PointerType*)ty)->getPointsTo()->isFunc())
+					glo->setType(new PointerType(new FuncType()));
+				Exp* init = glo->getInitialValue(prog);
+				// Danger. For now, only do if -ic given
+				bool decodeThru = Boomerang::get()->decodeThruIndCall;
+				if (init && decodeThru) {
+					ADDRESS aglo = glo->getAddress();
+					ADDRESS pfunc = prog->readNative4(aglo);
+					bool newFunc =	prog->findProc(pfunc) == NULL;
+					if (Boomerang::get()->noDecodeChildren)
+						return false;
+					prog->decodeExtraEntrypoint(pfunc);
+					// If this was not decoded, then this is a significant change, and we want to redecode the present
+					// function once that callee has been decoded
+					return newFunc;
+				}
+			}
+			case 1: {
+				// Typical pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();
+				Exp* rhs = ((Binary*)e)->getSubExp2();	// rhs = 8
+				int K2 = ((Const*)rhs)->getInt();
+				Exp* lhs = ((Binary*)e)->getSubExp1();	// lhs = m[r27{25} + 8]{-}
+				if (lhs->isSubscript())
+					lhs = ((RefExp*)lhs)->getSubExp1();	// lhs = m[r27{25} + 8]
+				lhs = ((Unary*)lhs)->getSubExp1();		// lhs =   r27{25} + 8
+				Exp* e = ((Binary*)lhs)->getSubExp1();
+				Exp* CK1 = ((Binary*)lhs)->getSubExp2();
+				int K1 = ((Const*)CK1)->getInt();
+std::cerr << "From expression " << e << " get e = " << e << ", K1 = " << K1 << ", K2 = " << K2 << "\n";
 			}
 		}			 
 			
@@ -2021,8 +2080,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 		iNumOut = si->iUpper-si->iLower+1;
 		iNum = iNumOut;
 	}
-	// Emit an NWAY BB instead of the COMPJUMP
-	// Also update the number of out edges.
+	// Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
 	updateType(NWAY, iNumOut);
 	
 	Prog* prog = proc->getProg();
@@ -2035,6 +2093,8 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 			if (iValue == -1) continue;
 			uSwitch =prog->readNative4(si->uTable + i*8 + 4);
 		}
+		else if (si->chForm == 'F')
+			uSwitch = ((int*)si->uTable)[i];
 		else
 			uSwitch = prog->readNative4(si->uTable + i*4);
 		if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
@@ -2047,8 +2107,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 			cfg->addOutEdge(this, uSwitch, true);
 			prog->decodeFragment(proc, uSwitch);
 		} else {
-			LOG << "switch table entry branches to past end of text section " 
-				<< uSwitch << "\n";
+			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
 			iNumOut--;
 		}
 	}

@@ -250,8 +250,8 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
 		// simpify internal expressions
 virtual void		simplify() = 0;
 
-		// simplify internal address expressions (a[m[x]] -> x)
-		// Only Assigns override at present
+		// simplify internal address expressions (a[m[x]] -> x) etc
+		// Only Assignments override at present
 virtual void		simplifyAddr() {}
 
 		// fixSuccessor
@@ -399,6 +399,9 @@ virtual bool	searchAndReplace(Exp *search, Exp *replace) = 0;
 
 		// simpify internal expressions
 virtual void	simplify() = 0;
+
+	// simplify address expressions
+virtual void	simplifyAddr();
 
 		// generate Constraints
 virtual void	genConstraints(LocationSet& cons);
@@ -892,10 +895,10 @@ virtual bool	doReplaceRef(Exp* from, Exp* to);
  *============================================================================*/
 typedef struct {
 	Exp*		pSwitchVar;		// Ptr to Exp repres switch var, e.g. v[7]
-	char		chForm;			// Switch form: 'A', 'O', 'R', or 'H'
+	char		chForm;			// Switch form: 'A', 'O', 'R', 'H', or 'F' etc
 	int			iLower;			// Lower bound of the switch variable
 	int			iUpper;			// Upper bound for the switch variable
-	ADDRESS		uTable;			// Native address of the table
+	ADDRESS		uTable;			// Native address of the table, or ptr to array of values for form F
 	int			iNumTable;		// Number of entries in the table (form H only)
 	int			iOffset;		// Distance from jump to table (form R only)
 //	int			delta;			// Host address - Native address
