@@ -366,7 +366,7 @@ public:
     virtual void killDef(StatementSet &reach) { }
     virtual void killLive (LocationSet &kill ) { }
     virtual void killDead (LocationSet &dead );
-    virtual void getDeadStatements(StatementSet &dead) { }
+    //virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
 
@@ -553,7 +553,7 @@ public:
     virtual void killDef(StatementSet &reach);
     virtual void killLive (LocationSet  &live );
     virtual void killDead (LocationSet  &live );
-    virtual void getDeadStatements(StatementSet &dead);
+    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
             void setPhase1();       // Set up for phase 1 of SW93
@@ -748,7 +748,7 @@ public:
     virtual void killLive (LocationSet &kill );
     virtual void killDead (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
-    virtual void getDeadStatements(StatementSet &dead);
+    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &def);
     virtual Exp* getLeft() { return getDest(); }

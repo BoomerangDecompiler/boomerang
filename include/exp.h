@@ -634,7 +634,7 @@ public:
     virtual void killDef(StatementSet &reach);
     virtual void killLive(LocationSet &live);
     virtual void killDead(LocationSet &dead);
-    virtual void getDeadStatements(StatementSet &dead);
+    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions

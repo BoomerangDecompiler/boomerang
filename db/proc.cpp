@@ -1328,6 +1328,7 @@ bool UserProc::removeNullStatements() {
     return change;
 }
 
+#if 0
 bool UserProc::removeDeadStatements() {
     bool change = false;
     StatementList stmts;
@@ -1415,6 +1416,7 @@ bool UserProc::removeDeadStatements() {
         print(std::cerr, true);
     return change;
 }
+#endif
 
 void UserProc::processConstants() {
     if (VERBOSE)

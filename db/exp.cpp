@@ -2538,9 +2538,9 @@ void AssignExp::killDead(LocationSet &dead) {
     dead.makeDiff(uses);
 }
 
+#if 0
 // MVE: I don't think that this will be needed any more
-void AssignExp::getDeadStatements(StatementSet &dead)
-{
+void AssignExp::getDeadStatements(StatementSet &dead) {
     StatementSet reach;
     getReachIn(reach, 2);
     StmtSetIter it;
@@ -2555,6 +2555,7 @@ void AssignExp::getDeadStatements(StatementSet &dead)
         dead.insert(s);
     }
 }
+#endif
 
 // update type for expression
 Type *AssignExp::updateType(Exp *e, Type *curType) {

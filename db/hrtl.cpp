@@ -1469,6 +1469,7 @@ void HLCall::killDead(LocationSet &dead) {
         dead.remove(arguments[i]);
 }
 
+#if 0
 // MVE: Probably not needed, and probably not correct
 void HLCall::getDeadStatements(StatementSet &dead) {
     StatementSet reach;
@@ -1493,6 +1494,7 @@ void HLCall::getDeadStatements(StatementSet &dead) {
         }
     }
 }
+#endif
 
 // update type for expression
 Type *HLCall::updateType(Exp *e, Type *curType) {
@@ -2031,9 +2033,9 @@ void HLScond::killDead(LocationSet &dead) {
 }
 
 
+#if 0
 // Probably not needed, and probably not right
-void HLScond::getDeadStatements(StatementSet &dead)
-{
+void HLScond::getDeadStatements(StatementSet &dead) {
     assert(pDest);
     StatementSet reach;
     getReachIn(reach, 2);
@@ -2044,6 +2046,7 @@ void HLScond::getDeadStatements(StatementSet &dead)
             dead.insert(s);
     }
 }
+#endif
 
 void HLScond::getDefinitions(LocationSet &defs) 
 {
