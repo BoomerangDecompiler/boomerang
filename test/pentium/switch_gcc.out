@@ -1,0 +1,33 @@
+
+int main(int argc, char** argv, int param4)
+{
+int local2;
+int local5;
+    if (argc - 2 > 5) {
+        local2 = 134517890;
+    } else {
+        switch(local0) {
+        case 2:
+            local2 = 134517848;
+        break;
+        case 3:
+            local2 = 134517854;
+        break;
+        case 4:
+            local2 = 134517862;
+        break;
+        case 5:
+            local2 = 134517869;
+        break;
+        case 6:
+            local2 = 134517876;
+        break;
+        case 7:
+            local2 = 134517882;
+        break;
+        }
+    }
+    printf(local2, local5, param4, argc, argv);
+    return 0;
+}
+

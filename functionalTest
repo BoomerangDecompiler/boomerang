@@ -13,4 +13,9 @@
 #./testSparc global2
 ./testPent global3
 ./testSparc global3
+./testPent switch_gcc
+./testPent switch_cc
+# ga - what happened to these?
+#./testSparc switch_gcc
+#./testSparc switch_cc
 echo === Done ===
