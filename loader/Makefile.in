@@ -63,7 +63,7 @@ RUNPATH=-R"lib"
 endif
 endif
 
-LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile
+LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile MachOBinaryFile
 LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
 BASEDLL=../lib/libBinaryFile$(DLLEXT)
 ALLDLLS=$(LOADERDLLS) $(BASEDLL)
