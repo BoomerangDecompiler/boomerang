@@ -1,5 +1,13 @@
-// Test program for class Exp
-// 03 Apr 02 - Mike: Modified to use CppUnit 1.6.2.
+/*==============================================================================
+ * FILE:       testExp.cc
+ * OVERVIEW:   Command line test of the Exp and related classes.
+ *============================================================================*/
+/*
+ * $Revision$
+ *    Apr 02 - Mike: Created
+ * 03 Apr 02 - Mike: Modified to use CppUnit 1.6.2.
+ */
+
 
 #include "cppunit/TextTestResult.h"
 #include "cppunit/TestSuite.h"
