@@ -185,6 +185,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
                                  op == opGtrEqUns || op == opLessEqUns; }
     // True if this is a TypeVal
     bool isTypeVal() { return op == opTypeVal;}
+    // True if this is a machine feature
+    bool isMachFtr() {return op == opMachFtr;}
            
                  
 
