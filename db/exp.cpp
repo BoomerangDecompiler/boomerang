@@ -978,7 +978,7 @@ void TypeVal::print(std::ostream& os, bool withUses) {
  * PARAMETERS:      <none>
  * RETURNS:         Address of the static buffer
  *============================================================================*/
-static char debug_buffer[200];
+extern char debug_buffer[];
 char* Exp::prints() {
       std::ostringstream ost;
       print(ost, true);
@@ -2688,11 +2688,16 @@ Exp* Const::genConstraints(Exp* result) {
     Type* t;
     switch (op) {
         case opIntConst:
-            // FIXME: Can also be a pointer to anything
-            t = new IntegerType(32);
+            // Can be integer, but a pointer to anything
+            return new Binary(opOr,
+                new Binary(opEquals,
+                    result,
+                    new TypeVal(new IntegerType(32))),
+                new Binary(opEquals,
+                    result,
+                    new TypeVal(PointerType::newPtrAlpha())));
             break;
         case opLongConst:
-            // FIXME: Can also be a pointer to anything
             t = new IntegerType(64);
             break;
         case opStrConst:
@@ -2777,7 +2782,7 @@ Exp* Binary::genConstraints(Exp* result) {
 
         case opPlus: {
             // A pointer to anything
-            Type* ptrType = PointerType::getPtrAlpha();
+            Type* ptrType = PointerType::newPtrAlpha();
             TypeVal ptrVal(ptrType);    // Type value of ptr to anything
             if (!restrictTo || restrictTo && restrictTo->isInteger()) {
                 // int + int -> int
@@ -2856,8 +2861,30 @@ Exp* Binary::genConstraints(Exp* result) {
 }
 
 Exp* PhiExp::genConstraints(Exp* result) {
-    return new Terminal(opTrue);
+    // Generate a constraint that all the phi's have to be the same type as
+    // result
+    assert(result->isTypeOf());
+    Exp* base = ((Unary*)result)->getSubExp1();
+    assert(base->isSubscript());
+    base = ((RefExp*)base)->getSubExp1();
+    StatementVec::iterator uu;
+    Exp* ret = new Terminal(opTrue);
+    bool first = true;
+    for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+        Exp* conjunct = new Binary(opEquals,
+            result,
+            new Unary(opTypeOf,
+                new RefExp(base, *uu)));
+        if (first) {
+            ret = conjunct;
+            first = false;
+        }
+        else
+            ret = new Binary(opAnd, ret, conjunct);
+    }
+    return ret->simplify();
 }
+
 Exp* Ternary::genConstraints(Exp* result) {
     return new Terminal(opTrue);
 }

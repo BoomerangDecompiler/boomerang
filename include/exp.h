@@ -176,7 +176,7 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     // True if this is a boolean constant
     bool isBoolConst() {return op == opTrue || op == opFalse;}
     // True if this is an equality (== or !=)
-    bool isEquality() {return op == opEquals || op == opNotEqual;}
+    bool isEquality() {return op == opEquals /*|| op == opNotEqual*/;}
     // True if this is a comparison
     bool isComparison() { return op == opEquals || op == opNotEqual ||
                                  op == opGtr || op == opLess ||

@@ -256,7 +256,7 @@ BBTYPE BasicBlock::getType() {
 void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
     m_nodeType = bbType;
     m_iNumOutEdges = iNumOutEdges;
-    m_OutEdges.resize(iNumOutEdges);
+    //m_OutEdges.resize(iNumOutEdges);
 }
 
 /*==============================================================================
@@ -287,7 +287,7 @@ bool BasicBlock::isJumpReqd() {
  * PARAMETERS:      <none>
  * RETURNS:         Address of the static buffer
  *============================================================================*/
-static char debug_buffer[1000];
+char debug_buffer[1000];
 char* BasicBlock::prints() {   
     std::ostringstream ost; 
     print(ost);       

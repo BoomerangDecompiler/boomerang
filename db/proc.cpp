@@ -2475,10 +2475,10 @@ void UserProc::typeAnalysis(Prog* prog) {
             std::cerr << (*ss) << "\n" << &cons << "\n";
     }
 
-    std::list<LocationSet> solns;
-    consObj.solve(solns);
+    std::list<ConstraintMap> solns;
+    bool ret = consObj.solve(solns);
     if (VERBOSE || DEBUG_TA) {
-        if (solns.size() == 0)
+        if (!ret)
             std::cerr << "** Could not solve type constraints for proc " <<
               getName() << "!\n";
         else if (solns.size() > 1)
@@ -2486,26 +2486,28 @@ void UserProc::typeAnalysis(Prog* prog) {
               "constraints for proc " << getName() << "!\n";
     }
         
-    std::list<LocationSet>::iterator it;
+    std::list<ConstraintMap>::iterator it;
     int solnNum = 0;
-    for (it = solns.begin(); it != solns.end(); it++) {
-        if (DEBUG_TA) {
+    ConstraintMap::iterator cc;
+    if (DEBUG_TA) {
+        for (it = solns.begin(); it != solns.end(); it++) {
             std::cerr << "Solution " << ++solnNum << " for proc " << getName()
               << "\n";
+            ConstraintMap& cm = *it;
+            for (cc = cm.begin(); cc != cm.end(); cc++)
+                std::cerr << cc->first << " = " << cc->second << "\n";
+            std::cerr << "\n";
         }
-        LocationSet::iterator cc;
-        LocationSet ls = *it;
-        for (cc = ls.begin(); cc != ls.end(); cc++) {
-            if (DEBUG_TA)
-                std::cerr << *cc << "\n";
-            //assert(con->isEquality());
-if (!(*cc)->isEquality()) continue;
-            Exp* t = ((Binary*)*cc)->getSubExp1();
-            if (t->isSubscript())
-                t = ((RefExp*)t)->getSubExp1();
-            assert(t->getOper() == opTypeOf);
-            Exp* loc = ((Unary*)t)->getSubExp1();
-            Type* ty = ((TypeVal*)((Binary*)*cc)->getSubExp2())->getType();
+    }
+
+    // Just use the first solution, if there is one
+    if (solns.size()) {
+        ConstraintMap& cm = *solns.begin();
+        for (cc = cm.begin(); cc != cm.end(); cc++) {
+            assert(cc->first->isTypeOf());
+            Exp* loc = ((Unary*)cc->first)->getSubExp1();
+            assert(cc->second->isTypeVal());
+            Type* ty = ((TypeVal*)cc->second)->getType();
             if (loc->isSubscript() && (loc = ((RefExp*)loc)->getSubExp1(),
                   loc->isGlobal())) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
@@ -2514,5 +2516,4 @@ if (!(*cc)->isEquality()) continue;
         }
     }
 
-    if (DEBUG_TA) std::cerr << "\n";
 }

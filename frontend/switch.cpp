@@ -1154,8 +1154,8 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
           " with table at 0x" << std::hex << si->uTable << ", ";
         if (si->iNumTable)
             std::cerr << std::dec << si->iNumTable << " entries, ";
-        std::cerr << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper <<
-          "\n";
+        std::cerr << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper
+          << "\n";
     }
     ADDRESS uSwitch;
     int iNumOut, iNum;

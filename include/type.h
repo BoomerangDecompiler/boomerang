@@ -220,7 +220,8 @@ public:
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
         Type *getPointsTo() { return points_to; }
-static  PointerType* getPtrAlpha();
+static  PointerType* newPtrAlpha();
+        bool pointsToAlpha();
 
 virtual Type* clone() const;
 

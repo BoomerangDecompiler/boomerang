@@ -130,7 +130,7 @@ bool StatementSet::removeIfDefines(StatementSet& given) {
     return found;
 }
 
-static char debug_buffer[200];      // For prints functions
+extern char debug_buffer[];      // For prints functions
 // Print to a string, for debugging
 char* StatementSet::prints() {
     std::ostringstream ost;

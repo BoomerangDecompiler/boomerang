@@ -636,7 +636,13 @@ NamedType* NamedType::getAlpha() {
     return new NamedType(strdup(ost.str().c_str()));
 }
 
-PointerType* PointerType::getPtrAlpha() {
+PointerType* PointerType::newPtrAlpha() {
     return new PointerType(NamedType::getAlpha());
+}
+
+// Note: alpha is therefore a "reserved name" for types
+bool PointerType::pointsToAlpha() {
+    if (!points_to->isNamed()) return false;
+    return strncmp(((NamedType*)points_to)->getName(), "alpha", 5) == 0;
 }
 #endif  // #ifndef __TYPE_H__

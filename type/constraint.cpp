@@ -22,6 +22,53 @@
 #include "managed.h"
 #include "exp.h"
 #include "boomerang.h"
+#include <sstream>
+
+void ConstraintMap::print(std::ostream& os) {
+    iterator kk;
+    bool first = true;
+    for (kk = cmap.begin(); kk != cmap.end(); kk++) {
+        if (first) first = false;
+        else os << ", ";
+        os << kk->first << " = " << kk->second;
+    }
+    os << "\n";
+}
+
+extern char debug_buffer[];
+char* ConstraintMap::prints() {
+    std::ostringstream ost;
+    print(ost);
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
+}
+
+void ConstraintMap::insert(Exp* term) {
+    assert(term->isEquality());
+    Exp* lhs = ((Binary*)term)->getSubExp1();
+    Exp* rhs = ((Binary*)term)->getSubExp2();
+    cmap[lhs] = rhs;
+}
+
+
+void EquateMap::print(std::ostream& os) {
+    iterator ee;
+    for (ee = emap.begin(); ee != emap.end(); ee++) {
+        os << "  " << ee->first << " = " << ee->second.prints();
+    }
+    os << "\n";
+}
+
+char* EquateMap::prints() {
+    std::ostringstream ost;
+    print(ost);
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
+}
+
+
 
 Constraints::~Constraints() {
     LocationSet::iterator cc;
@@ -71,7 +118,7 @@ Exp* nextConjunct(Exp*& remainder) {
     return ret;
 }
 
-void Constraints::solve(std::list<LocationSet>& solns) {
+bool Constraints::solve(std::list<ConstraintMap>& solns) {
 std::cerr << conSet.size() << " constraints:";
 conSet.print(std::cerr);
     // Replace Ta[loc] = ptr(alpha) with
@@ -107,116 +154,118 @@ conSet.print(std::cerr);
         delete c;
     }
 
-    // Sort constraints into a few categories. Disjuncts go to a special
+    // Sort constraints into a few categories. Disjunctions go to a special
     // list, always true is just ignored, and constraints of the form
-    // typeof(x) = y (where y is a type value) go to a set called constants.
-    // Where y is a another typeof, the constraint goes into a set called
-    // equates1 (as typeof(x) = y) and equates2 (as y = typeof(x)),
-    // for fast lookup
+    // typeof(x) = y (where y is a type value) go to a map called fixed.
+    // Constraint terms of the form Tx = Ty go into a map of LocationSets
+    // called equates for fast lookup
     for (cc = conSet.begin(); cc != conSet.end(); cc++) {
         Exp* c = *cc;
         if (c->isTrue()) continue;
         if (c->isFalse()) {
             if (VERBOSE || DEBUG_TA)
                 std::cerr << "Constraint failure: always false constraint\n";
-            return;
+            return false;
         }
         if (c->isDisjunction()) {
             disjunctions.push_back(c);
             continue;
         }
-        assert(c->isEquality());
-        Exp* rhs = ((Binary*)c)->getSubExp2();
-        if (rhs->isTypeOf()) {
-            // Of the form typeof(x) = typeof(z)
-            // Insert into equates1 typeof(x) == typeof(z)
-            // Insert into equates2 typeof(z) == typeof(x)
-            Exp* lhs = ((Binary*)c)->getSubExp1();
-            equates1[lhs] = rhs;
-            equates2[rhs] = lhs;
-        } else {
-            assert(rhs->isTypeVal());
-            constants.insert(c);
+        // Break up conjunctions into terms
+        Exp* rem = c, *term;
+        while ((term = nextConjunct(rem)) != NULL) {
+            assert(term->isEquality());
+            Exp* lhs = ((Binary*)term)->getSubExp1();
+            Exp* rhs = ((Binary*)term)->getSubExp2();
+            if (rhs->isTypeOf()) {
+                // Of the form typeof(x) = typeof(z)
+                // Insert into equates 
+                equates.addEquate(lhs, rhs);
+            } else {
+                assert(rhs->isTypeVal());
+                fixed[lhs] = rhs;
+            }
         }
     }
 
-{std::cerr << "\ndisjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ", "; std::cerr << "\n";}
-{std::cerr << "constants: "; LocationSet::iterator kk; for (kk = constants.begin(); kk != constants.end(); kk++) std::cerr << *kk << ", "; std::cerr << "\n";}
-{std::cerr << "equates1: "; std::map<Exp*, Exp*, lessExpStar>::iterator ee; for (ee = equates1.begin(); ee != equates1.end(); ee++) std::cerr << ee->first << " = " << ee->second << ", "; std::cerr << "\n";
-std::cerr << "equates2: "; for (ee = equates2.begin(); ee != equates2.end(); ee++) std::cerr << ee->first << " = " << ee->second << ", "; std::cerr << "\n";}
+{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ", "; std::cerr << "\n";}
+std::cerr << fixed.size() << " fixed: " << fixed.prints();
+std::cerr << equates.size() << " equates: " << equates.prints();
 
-    // Substitute the constants into the disjunctions
-    LocationSet::iterator kk;
-    for (kk = constants.begin(); kk != constants.end(); kk++) {
-        Binary* k = (Binary*)*kk;
-        Exp* from = k->getSubExp1();
-        Exp* to = k->getSubExp2();
+    // Substitute the fixed types into the disjunctions
+    ConstraintMap::iterator kk;
+    for (kk = fixed.begin(); kk != fixed.end(); kk++) {
+        Exp* from = kk->first;
+        Exp* to = kk->second;
         bool ch;
         std::list<Exp*>::iterator dd;
         for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
             (*dd)->searchReplaceAll(from, to, ch);
     }
 
-    // Substitute the constants into the equates. This may generate more
-    // constants
-    LocationSet extra;
-    LocationSet in = constants;
+    // Substitute the fixed types into the equates. This may generate more
+    // fixed types
+    ConstraintMap extra;
+    ConstraintMap in = fixed;
     while (in.size()) {
         extra.clear();
         for (kk = in.begin(); kk != in.end(); kk++) {
-            Binary* k = (Binary*)*kk;
-            Exp* lhs = k->getSubExp1();
-            std::map<Exp*, Exp*, lessExpStar>::iterator it = equates1.find(lhs);
-            if (it != equates1.end()) {
-                // A possibly new constraint that it->second == val
-                Exp* rhs = k->getSubExp2();
-                Binary* c = new Binary(opEquals,
-                    it->second,
-                    rhs);
-                if (!constants.find(c))
-                    extra.insert(c);            // A new constant constraint
-                // Remove the equate, and its inverse in equate2
-                equates1.erase(it);
-                equates2.erase(rhs);
-            }
-            it = equates2.find(lhs);
-            if (it != equates2.end()) {
-                // A possibly new constraint that it->second == val
-                Exp* rhs = k->getSubExp2();
-                Binary* c = new Binary(opEquals,
-                    it->second,
-                    rhs);
-                if (!constants.find(c))
-                    extra.insert(c);            // A new constant constraint
-                // Remove the equate, and its inverse in equate1
-                equates2.erase(it);
-                equates1.erase(rhs);
+            Exp* lhs = kk->first;
+            std::map<Exp*, LocationSet, lessExpStar>::iterator it =
+              equates.find(lhs);
+            if (it != equates.end()) {
+                // Possibly new constraints that 
+                // typeof(elements in it->second) == val
+                Exp* val = kk->second;
+                LocationSet& ls = it->second;
+                LocationSet::iterator ll;
+                for (ll = ls.begin(); ll != ls.end(); ll++) {
+                    ConstraintMap::iterator ff;
+                    ff = fixed.find(*ll);
+                    if (ff != fixed.end()) {
+                        if (!unify(val, ff->second, extra)) {
+                            if (VERBOSE || DEBUG_TA)
+                                std::cerr << "Constraint failure: " <<
+                                  *ll << " constrained to be " <<
+                                  ((TypeVal*)val)->getType()->getCtype() <<
+                                  " and " <<
+                                  ((TypeVal*)ff->second)->getType()->getCtype()
+                                  << "\n";
+                            return false;
+                        }
+                    } else
+                        extra[*ll] = val;   // A new constant constraint
+                }
+                // Remove the equate
+                equates.erase(it);
             }
         }
-        constants.makeUnion(in);
+        fixed.makeUnion(extra);
         in = extra;
     }
-{std::cerr << "constants: "; LocationSet::iterator kk; for (kk = constants.begin(); kk != constants.end(); kk++) std::cerr << *kk << ", "; std::cerr << "\n";}
-{std::cerr << "equates1: "; std::map<Exp*, Exp*, lessExpStar>::iterator ee; for (ee = equates1.begin(); ee != equates1.end(); ee++) std::cerr << ee->first << " = " << ee->second << ", "; std::cerr << "\n";
-std::cerr << "equates2: "; for (ee = equates2.begin(); ee != equates2.end(); ee++) std::cerr << ee->first << " = " << ee->second << ", "; std::cerr << "\n";
-}
 
-    LocationSet soln;
-    doSolve(disjunctions.begin(), soln, solns);
+std::cerr << "\n" << fixed.size() << " fixed: " << fixed.prints();
+std::cerr << equates.size() << " equates: " << equates.prints();
+
+    ConstraintMap soln;
+    return doSolve(disjunctions.begin(), soln, solns);
 }
 
 static int level = 0;
 // Constraints up to but not including it have been unified.
-bool Constraints::doSolve(std::list<Exp*>::iterator it, LocationSet& soln,
-  std::list<LocationSet>& solns) {
+bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln,
+  std::list<ConstraintMap>& solns) {
 std::cerr << "Begin doSolve at level " << ++level << "\n";
+std::cerr << "Soln now: " << soln.prints() << "\n";
     if (it == disjunctions.end()) {
         // We have gotten to the end with no unification failures
         // Copy the current set of constraints as a solution
-        if (soln.size() == 0)
+        //if (soln.size() == 0)
             // Awkward. There is a trivial solution, but we have no constraints
             // So make a constraint of always-true
-            soln.insert(new Terminal(opTrue));
+            //soln.insert(new Terminal(opTrue));\
+        // Copy the fixed constraints
+        soln.makeUnion(fixed);
         solns.push_back(soln);
 std::cerr << "Exiting doSolve at level " << level-- << " returning true\n";
         return true;
@@ -224,40 +273,45 @@ std::cerr << "Exiting doSolve at level " << level-- << " returning true\n";
 
     Exp* dj = *it;
     // Iterate through each disjunction d of dj
-    Exp* rem = dj;       // Remainder
+    Exp* rem1 = dj;       // Remainder
     bool anyUnified = false;
     Exp* d;
-    while ((d = nextDisjunct(rem)) != NULL) {
-std::cerr << " $$ d is " << d << ", rem is " << ((rem==0)?"NULL":rem->prints()) << " $$\n";
-        // Match disjunct d with every constant; it could be compatible,
+    while ((d = nextDisjunct(rem1)) != NULL) {
+std::cerr << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
+        // Match disjunct d the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
-        LocationSet extra;      // Just for this disjunct
-        extra.insert(d);
-        bool unified;
-        
-        LocationSet::iterator kk;
-        for (kk = constants.begin(); kk != constants.end(); kk++) {
-std::cerr << "Unifying ``" << *kk << "'' with ``" << d << "''\n";
-            unified = unify(*kk, d, extra);
-std::cerr << "Unification returned " << unified << "; extra now " << extra.prints() << "\n";
-            if (unified)
-                anyUnified = true;
-            else
-                // This disjunct is not usable
-                break;
+        ConstraintMap extra;      // Just for this disjunct
+        Exp* c;
+        Exp* rem2 = d;
+        bool unified = true;
+        while ((c = nextConjunct(rem2)) != NULL) {
+std::cerr << "   $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints()) << " $$\n";
+            assert(c->isEquality());
+            Exp* lhs = ((Binary*)c)->getSubExp1();
+            Exp* rhs = ((Binary*)c)->getSubExp2();
+            extra.insert(lhs, rhs);
+            ConstraintMap::iterator kk;
+            kk = fixed.find(lhs);
+            if (kk != fixed.end()) {
+                unified &= unify(rhs, kk->second, extra);
+std::cerr << "Unified now " << unified << "; extra now " << extra.prints() << "\n";
+                if (!unified) break;
+            }
         }
+        if (unified)
+            anyUnified = true;
         if (!unified) continue;
         // Use this disjunct
         // We can't just difference out extra if this fails; it may remove
         // elements from soln that should not be removed
         // So need a copy of the old set in oldSoln
-        LocationSet oldSoln = soln;
+        ConstraintMap oldSoln = soln;
         soln.makeUnion(extra);
-        if (!doSolve(++it, soln, solns)) {
-            // This disjunct did not work out. Revert to the previous soln
-            soln = oldSoln;
-        }
+        doSolve(++it, soln, solns);
+        // Revert to the previous soln (whether doSolve returned true or not)
+        soln = oldSoln;
+std::cerr << "After doSolve returned: soln back to: " << soln.prints() << "\n";
         // Back to the current disjunction
         it--;
         // Continue for more disjuncts this disjunction
@@ -268,60 +322,29 @@ std::cerr << "Exiting doSolve at level " << level-- << " returning " << anyUnifi
     return anyUnified;
 }
 
-bool Constraints::unify(Exp* x, Exp* y, LocationSet& extra) {
-    // Y could be a conjunction. If so, unify all conjunts
-    Exp* rem = y;
-    Exp* term;
-    LocationSet extras;
-    while ((term = nextConjunct(rem)) != NULL) {
-        if (!unifyTerm(x, term, extras))
-            return false;
-    }
-    extra.makeUnion(extras);
-    return true;
-}
-
-bool Constraints::unifyTerm(Exp* x, Exp* y, LocationSet& extra) {
-std::cerr << "Unifying ``" << x << "'' with term ``" << y << "''\n";
-    assert(x->getOper() == opEquals);
-    assert(y->getOper() == opEquals);
-    Exp* xleft = ((Binary*)x)->getSubExp1();
-    Exp* yleft = ((Binary*)y)->getSubExp1();
-    if (*xleft == *yleft) {
-        Exp* xright = ((Binary*)x)->getSubExp2();
-        Exp* yright = ((Binary*)y)->getSubExp2();
-        assert(xright->isTypeVal());
-        assert(yright->isTypeVal());
-        Type* xtype = ((TypeVal*)xright)->getType();
-        Type* ytype = ((TypeVal*)yright)->getType();
-        if (xtype->isPointer() && ytype->isPointer()) {
-            Type* xPointsTo = ((PointerType*)xtype)->getPointsTo();
-            Type* yPointsTo = ((PointerType*)ytype)->getPointsTo();
-            if (xPointsTo->isNamed()) {
-                if (yPointsTo->isNamed()) {
-                    extra.insert(new Binary(opEquals,
-                        new Unary(opTypeOf,
-                            new TypeVal(xPointsTo)),
-                        new Unary(opTypeOf,
-                            new TypeVal(xPointsTo))));
-                    return true;
-                }
-                extra.insert(new Binary(opEquals,
-                    new Unary(opTypeOf,
-                        new TypeVal(xPointsTo)),
-                    new TypeVal(yPointsTo)));
-                return true;
-            }
-            if (yPointsTo->isNamed()) {
-                extra.insert(new Binary(opEquals,
-                    new Unary(opTypeOf,
-                        new TypeVal(yPointsTo)),
-                    new TypeVal(xPointsTo)));
-                return true;
-            }
-            return *xPointsTo == *yPointsTo;
+bool Constraints::unify(Exp* x, Exp* y, ConstraintMap& extra) {
+std::cerr << "Unifying " << x << " with " << y << " result ";
+    assert(x->isTypeVal());
+    assert(y->isTypeVal());
+    Type* xtype = ((TypeVal*)x)->getType();
+    Type* ytype = ((TypeVal*)y)->getType();
+    if (xtype->isPointer() && ytype->isPointer()) {
+        Type* xPointsTo = ((PointerType*)xtype)->getPointsTo();
+        Type* yPointsTo = ((PointerType*)ytype)->getPointsTo();
+        if (((PointerType*)xtype)->pointsToAlpha() ||
+            ((PointerType*)ytype)->pointsToAlpha()) {
+            // A new constraint: xtype must be equal to ytype; at least
+            // one of these is a variable type
+            if (((PointerType*)xtype)->pointsToAlpha())
+                extra.constrain(xPointsTo, yPointsTo);
+            else
+                extra.constrain(yPointsTo, xPointsTo);
+std::cerr << "true\n";
+            return true;
         }
-        return *xtype == *ytype;
+std::cerr << (*xPointsTo == *yPointsTo) << "\n";
+        return *xPointsTo == *yPointsTo;
     }
-    return true;
+std::cerr << (*xtype == *ytype) << "\n";
+    return *xtype == *ytype;
 }
