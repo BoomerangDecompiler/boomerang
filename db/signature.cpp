@@ -64,6 +64,7 @@ namespace CallingConvention {
         virtual void getInternalStatements(StatementList &stmts);
         virtual Exp *getStackWildcard();
         virtual int  getStackRegister() {return 28; }
+        virtual Exp *getProven(Exp *left);
     };
 
     namespace StdC {
@@ -117,12 +118,12 @@ namespace CallingConvention {
 
 CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam)
 {
-
+    Signature::addReturn(Unary::regOf(28));
+    Signature::addParameter(Unary::regOf(28));
 }
 
 CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old)
 {
-
 }
 
 Signature *CallingConvention::Win32Signature::clone()
@@ -268,6 +269,8 @@ Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
     Exp *esp = new Unary(opRegOf, new Const(28));
+    if (params.size() != 0 && *params[0]->getExp() == *esp)
+        n--;
     Exp *e = new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
     return e;
 }
@@ -283,6 +286,26 @@ Exp *CallingConvention::Win32Signature::getStackWildcard() {
     // Note: m[esp + -8] is simnplified to m[esp - 8] now
     return new Unary(opMemOf, new Binary(opMinus, new Unary(opRegOf, 
                new Const(28)), new Terminal(opWild)));
+}
+
+Exp *CallingConvention::Win32Signature::getProven(Exp *left)
+{
+    int nparams = params.size();
+    if (nparams > 0 && *params[0]->getExp() == *Unary::regOf(28)) {
+        nparams--;
+    }
+    if (left->getOper() == opRegOf && 
+        left->getSubExp1()->getOper() == opIntConst) {
+        switch (((Const*)left->getSubExp1())->getInt()) {
+            case 28:
+                return new Binary(opPlus, Unary::regOf(28), 
+                                          new Const(4 + nparams*4));
+            case 29:
+                return Unary::regOf(29);
+            // there are other things that must be preserved here, look at calling convention
+        }
+    }
+    return NULL;
 }
 
 void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
@@ -1226,3 +1249,13 @@ int Signature::getStackRegister(Prog* prog) {
             return 0;
     }
 }
+
+bool Signature::isStackLocal(Prog* prog, Exp *e)
+{
+    static Exp *sp = Unary::regOf(getStackRegister(prog));
+    return e->getOper() == opMemOf && 
+           e->getSubExp1()->getOper() == opMinus &&
+           *e->getSubExp1()->getSubExp1() == *sp &&
+           e->getSubExp1()->getSubExp2()->getOper() == opIntConst;
+}
+

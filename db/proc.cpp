@@ -1049,6 +1049,19 @@ std::set<UserProc*>* UserProc::decompile() {
         cfg->renameBlockVars(0, depth);
         trimParameters(depth);
 
+        // recognising locals early prevents them from becoming returns
+        replaceExpressionsWithLocals();
+        addNewReturns(depth);
+        cfg->renameBlockVars(0, depth);
+        if (VERBOSE) {
+            std::cerr << "=== Debug Print SSA for " << getName()
+              << " at memory depth " << depth << " (after adding new returns) ===\n";
+            print(std::cerr, true);
+            std::cerr << "=== End Debug Print SSA for " <<
+              getName() << " at depth " << depth << " ===\n\n";
+        }
+        trimReturns();
+
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
             std::cerr << "=== Debug Print SSA for " << getName()
@@ -1239,6 +1252,7 @@ void UserProc::removeRedundantPhis()
 void UserProc::trimReturns() {
     std::set<Exp*> preserved;
     bool stdsp = false;
+    bool stdret = false;
 
     if (VERBOSE)
         std::cerr << "Trimming return set for " << getName() << std::endl;
@@ -1249,15 +1263,23 @@ void UserProc::trimReturns() {
         // Special case for 32-bit stack-based machines (e.g. Pentium).
         // RISC machines generally preserve the stack pointer (so special
         // case required)
-        if (VERBOSE)
-            std::cerr << "attempting to prove sp = sp + 4 for " << getName() <<
-              std::endl;
         int sp = signature->getStackRegister(prog);
-        stdsp = prove(new Binary(opEquals,
-                      Unary::regOf(sp),
-                      new Binary(opPlus,
+        for (int p = 0; !stdsp && p < 5; p++) {
+            if (VERBOSE)
+                std::cerr << "attempting to prove sp = sp + " << 4 + p*4 << 
+                             " for " << getName() << std::endl;
+            stdsp = prove(new Binary(opEquals,
                           Unary::regOf(sp),
-                          new Const(4))));
+                          new Binary(opPlus,
+                              Unary::regOf(sp),
+                              new Const(4 + p * 4))));
+        }
+
+        // Prove that pc is set to the return value
+        if (VERBOSE)
+            std::cerr << "attempting to prove %pc = m[sp]" << std::endl;
+        stdret = prove(new Binary(opEquals, new Terminal(opPC), 
+                       new Unary(opMemOf, Unary::regOf(sp))));
 
         // prove preservation for each parameter
         for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -1273,6 +1295,8 @@ void UserProc::trimReturns() {
     }
     if (stdsp)
         removeReturn(new Unary(opRegOf, new Const(28)));
+    if (stdret)
+        removeReturn(new Terminal(opPC));
     for (std::set<Exp*>::iterator it = preserved.begin(); 
          it != preserved.end(); it++)
         removeReturn(*it);
@@ -1282,6 +1306,54 @@ void UserProc::trimReturns() {
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->fixCallRefs();
+}
+
+void UserProc::addNewReturns(int depth) {
+
+    if (VERBOSE)
+        std::cerr << "Adding new returns for " << getName() << std::endl;
+
+    StatementList stmts;
+    getStatements(stmts);
+
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        Exp *left = s->getLeft();
+        if (left) {
+            bool allZero = true;
+            Exp *e = left->clone()->removeSubscripts(allZero);
+            if (allZero && signature->findReturn(e) == -1 &&
+                getProven(e) == NULL) {
+                if (e->getOper() == opLocal) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring local " << e << std::endl;
+                    continue;
+                }
+                if (e->getOper() == opGlobal) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring global " << e << std::endl;
+                    continue;
+                }
+                if (e->getOper() == opRegOf && 
+                    e->getSubExp1()->getOper() == opTemp) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring temp " << e << std::endl;
+                    continue;
+                }
+                if (e->getOper() == opFlags) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring flags " << e << std::endl;
+                    continue;
+                }
+                if (e->getMemDepth() != depth) {
+                    continue;
+                }
+                if (VERBOSE)
+                    std::cerr << "Found new return " << e << std::endl;
+                addReturn(e);
+            }
+        }
+    }
 }
 
 void UserProc::addNewParameters() {
@@ -1301,9 +1373,8 @@ void UserProc::addNewParameters() {
             Exp *e = result->clone()->removeSubscripts(allZero);
             if (allZero && signature->findParam(e) == -1) {
                 int sp = signature->getStackRegister(prog);
-                if (e->isMemOf() && e->getSubExp1()->getOper() == opMinus &&
-                    *e->getSubExp1()->getSubExp1() == *Unary::regOf(sp) &&
-                    e->getSubExp1()->getSubExp2()->isIntConst()) {
+                if (signature->isStackLocal(prog, e) ||
+                    e->getOper() == opLocal)  {
                     if (VERBOSE)
                         std::cerr << "ignoring local " << e << std::endl;
                     continue;
@@ -1405,6 +1476,27 @@ void Proc::removeParameter(Exp *e)
     }
 }
 
+void Proc::addReturn(Exp *e)
+{
+    for (std::set<CallStatement*>::iterator it = callerSet.begin();
+         it != callerSet.end(); it++)
+            (*it)->addReturn(e);
+    signature->addReturn(e);
+}
+
+void UserProc::addReturn(Exp *e)
+{
+    Exp *e1 = e->clone();
+    if (e1->getOper() == opMemOf) {
+        e1->refSubExp1() = e1->getSubExp1()->expSubscriptVar(
+                                                new Terminal(opWild), NULL);
+    }
+    for (std::vector<ReturnStatement*>::iterator it = returnStatements.begin();
+         it != returnStatements.end(); it++)
+            (*it)->addReturn(e1);
+    Proc::addReturn(e);
+}
+
 void Proc::addParameter(Exp *e)
 {
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
@@ -1479,9 +1571,13 @@ void UserProc::replaceExpressionsWithLocals() {
     StatementList stmts;
     getStatements(stmts);
 
+
     // replace expressions in regular statements with locals
     StmtListIter it;
     int sp = signature->getStackRegister(prog);
+    if (getProven(Unary::regOf(sp)) == NULL)
+        return;    // can't replace if nothing proven about sp
+
     Exp *l = new Unary(opMemOf, new Binary(opMinus, 
                 new RefExp(Unary::regOf(sp), NULL),
                 new Terminal(opWild)));
@@ -2019,24 +2115,24 @@ bool UserProc::prove(Exp *query)
         query->refSubExp2() = query->getSubExp2()->expSubscriptVar(x, NULL);
     }
 
-    // subscript locs on the left with the last statement that defined them
-    locs.clear();
-    query->getSubExp1()->addUsedLocs(locs);
-    StatementList stmts;
-    getStatements(stmts);
-    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-        Statement *def = NULL;
+    if (query->getSubExp1()->getOper() != opSubscript) {
+        bool gotdef = false;
+        // replace expression from return set with expression in return 
         for (unsigned j = 0; j < returnStatements.size(); j++)
-            for (int i = 0; i < returnStatements[j]->getNumReturns(); i++) {
-                Exp *e = returnStatements[j]->getReturnExp(i); 
-                RefExp *r = dynamic_cast<RefExp*>(e);
-                assert(r);
-                if (*r->getSubExp1() == *x) {
-                    def = r->getRef();
+            for (int i = 0; i < signature->getNumReturns(); i++) {
+                Exp *e = signature->getReturnExp(i); 
+                if (*e == *query->getSubExp1()) {
+                    query->refSubExp1() = 
+                        returnStatements[j]->getReturnExp(i)->clone();
+                    gotdef = true;
                     break;
                 }
             }
-        query->refSubExp1() = query->getSubExp1()->expSubscriptVar(x, def);
+        if (!gotdef) {
+            std::cerr << "not in return set: " << query->getSubExp1()
+                      << std::endl;
+            return false;
+        }
     }
 
     proven.insert(original);
@@ -2158,6 +2254,18 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                 query->getSubExp2()->getOper() == opMemOf) {
                 query->refSubExp1() = ((Unary*)query->getSubExp1())->becomeSubExp1();
                 query->refSubExp2() = ((Unary*)query->getSubExp2())->becomeSubExp1();
+                change = true;
+            }
+
+            // is ok if both of the memofs is subscripted with NULL
+            if (!change && query->getSubExp1()->getOper() == opSubscript &&
+                query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
+                ((RefExp*)query->getSubExp1())->getRef() == NULL &&
+                query->getSubExp2()->getOper() == opSubscript &&
+                query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
+                ((RefExp*)query->getSubExp2())->getRef() == NULL) {
+                query->refSubExp1() = ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
+                query->refSubExp2() = ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
                 change = true;
             }
 

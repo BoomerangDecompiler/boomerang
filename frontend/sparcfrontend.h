@@ -48,7 +48,7 @@ private:
 	void 	warnDCTcouple(ADDRESS uAt, ADDRESS uDest);
 	bool 	optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta,
               ADDRESS uUpper);
-	BasicBlock* optimise_CallReturn(CallStatement* call, RTL* delay, Cfg* cfg);
+	BasicBlock* optimise_CallReturn(CallStatement* call, RTL* rtl, RTL* delay, Cfg* cfg);
 
 	void 	handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& newBB,
               Cfg* cfg, TargetQueue& tq);

@@ -215,6 +215,7 @@ public:
     virtual void removeReturn(Exp *e);
     void removeParameter(Exp *e);
     void addParameter(Exp *e);
+    virtual void addReturn(Exp *e);
 
 protected:
 
@@ -474,6 +475,7 @@ public:
     void removeRedundantPhis();
     void trimReturns();
     void addNewParameters();
+    void addNewReturns(int depth);
     void trimParameters(int depth = -1);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
@@ -510,6 +512,7 @@ public:
     void getStatements(StatementList &stmts);
 
     virtual void removeReturn(Exp *e);
+    virtual void addReturn(Exp *e);
 
     // remove a statement
     void removeStatement(Statement *stmt);

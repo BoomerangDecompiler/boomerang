@@ -2679,10 +2679,11 @@ Exp *PhiExp::fixCallRefs() {
                     std::cerr << "cant update phi ref to " << e << std::endl;
                 }
             } else {
-                std::cerr << "nothing proven about " << subExp1 << 
-                    " and yet it is referenced, and not in returns of " << 
-                    std::endl << "   " << call << std::endl;
-                assert(call->findReturn(subExp1) != -1);
+                if (call->findReturn(subExp1) == -1) {
+                    std::cerr << "nothing proven about " << subExp1 << 
+                        " and yet it is referenced, and not in returns of " << 
+                        std::endl << "   " << call << std::endl;
+                }
             }
         }
     }

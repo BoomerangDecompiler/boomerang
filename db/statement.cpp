@@ -1901,6 +1901,11 @@ void CallStatement::removeReturn(Exp *e)
     }
 }
 
+void CallStatement::addReturn(Exp *e)
+{
+    returns.push_back(e);
+}
+
 Exp *CallStatement::getProven(Exp *e) {
     assert(procDest);
     return procDest->getProven(e);
@@ -2536,6 +2541,11 @@ void ReturnStatement::removeReturn(int n)
             returns[j-1] = returns[j];
         returns.resize(returns.size()-1);
     }
+}
+
+void ReturnStatement::addReturn(Exp *e)
+{
+    returns.push_back(e);
 }
 
 // Convert from SSA form

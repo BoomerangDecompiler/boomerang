@@ -794,6 +794,7 @@ public:
     Exp *getReturnExp(int i);
     int findReturn(Exp *e);
     void removeReturn(Exp *e);
+    void addReturn(Exp *e);
     Exp *getProven(Exp *e);
     Exp *substituteParams(Exp *e);
     Exp *findArgument(Exp *e);
@@ -950,6 +951,7 @@ public:
     Exp *getReturnExp(int n) { return returns[n]; }
     void setSigArguments();   // Set returns based on signature
     void removeReturn(int n);
+    void addReturn(Exp *e);
 
 protected:
     // number of bytes that this return pops
