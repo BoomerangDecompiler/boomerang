@@ -76,20 +76,22 @@ AC_CHECK_LIB(stdc++, main)
 dnl Checks for cppunit library
 AC_LANG_PUSH(C++)
 CPPFLAGS="-Iinclude ${CPPFLAGS}"
-AC_CHECK_HEADER(cppunit/TestSuite.h,, 
-  [AC_MSG_WARN(library 'cppunit' not found: will not be able to run)]
-  [AC_MSG_WARN('make test'. Remember to create a soft link from )]
-  [AC_MSG_WARN(include/cppunit to the cppunit include/cppunit directory.)])
+AC_CHECK_HEADER(cppunit/TestSuite.h,,
+  [AC_CHECK_FILE(include/cppunit/TestSuite.h,,
+    [AC_MSG_WARN()]
+    [AC_MSG_WARN(library 'cppunit' not installed... or you need to link)]
+    [AC_MSG_WARN(include/cppunit to the cppunit include/cppunit directory.)]
+    [AC_MSG_WARN()])])
 AC_LANG_POP(C++)
 
 dnl Check for eXpat includes
 dnl Want to check default-includes PLUS the boomerang include/ directory
 AC_CHECK_HEADER(expat.h,,
-    [AC_CHECK_HEADER(expat.h,,
+    [AC_CHECK_FILE(include/expat.h,,
         [AC_MSG_WARN()]
         [AC_MSG_WARN(Header file expat.h not found: eXpat not installed...)]
         [AC_MSG_WARN(or you need to copy expat.h to boomerang's include/ dir)]
-        [AC_MSG_WARN()], ./include)])
+        [AC_MSG_WARN()])])
 
 dnl Check for eXpat library
 AC_CHECK_LIB(expat, XML_ExpatVersion, ,
