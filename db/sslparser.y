@@ -871,14 +871,15 @@ exp_term:
 			$$ = new Ternary(opTern, $2, $4, $6);
 		}
 
-	|	'[' exp '?' exp COLON exp ']' cast {
-			Ternary* t = new Ternary(opTern, $2, $4, $6);
-			Exp* e = t;
-			if ($8 != STD_SIZE) {
-			e = new TypedExp(new IntegerType($8), t);				 
-			}
-			$$ = e;
-		}
+// ? Why have a special case for this? Size cast can follow any expression
+//	|	'[' exp '?' exp COLON exp ']' cast {
+//			Ternary* t = new Ternary(opTern, $2, $4, $6);
+//			Exp* e = t;
+//			if ($8 != STD_SIZE) {
+//				e = new Binary(opSize, new Const($8), t);				 
+//			}
+//			$$ = e;
+//		}
 
 	// Address-of, for LEA type instructions
 	|	ADDR exp ')' {

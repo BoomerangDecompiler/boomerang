@@ -3563,6 +3563,8 @@ void UserProc::dfaTypeAnalysis() {
 					LOG << s << " allocated type " << (t ? t->getCtype() : "NULL") << "\n";
 				}
 				LOG << "\n *** End results for Data flow based Type Analysis ***\n";
+				printToLog();
+				LOG << " *** End print IR after Type Analysis ***\n\n";
 			}
 			// Now use the type information gathered
 			Prog* prog = getProg();
@@ -3597,6 +3599,10 @@ void UserProc::dfaTypeAnalysis() {
 		}
 	}
 	LOG << "**** Iteration limit " << DFA_ITER_LIMIT << " exceeded for dfaTypeAnalysis of procedure " << getName() << " ****\n";
+	if (VERBOSE) {
+		printToLog();
+		LOG << " *** End print IR after Type Analysis ***\n\n";
+	}
 }
 
 

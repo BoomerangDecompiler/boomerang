@@ -64,7 +64,7 @@ typedef std::map<Exp*, int, lessExpStar> igraph;
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
  * other things (e.g. perhaps transformations). It is a standard tree
- * representation. Exp itself is abstract. A special subclass Const is used
+ * representation. Exp itself is abstract. A special class Const is used
  * for constants. Unary, Binary, and Ternary hold 1, 2, and 3 subexpressions
  * respectively. For efficiency of representation, these have to be separate
  * classes, derived from Exp.
@@ -260,92 +260,97 @@ virtual void doSearchChildren(Exp* search, std::list<Exp**>& li,
 	// directly call getSubExp2.
 	// However, you can still choose to cast from Exp* to Binary* etc.
 	// and avoid the virtual call
-virtual Exp*  getSubExp1() {return 0;}
-virtual Exp*  getSubExp2() {return 0;}
-virtual Exp*  getSubExp3() {return 0;}
-virtual Exp*& refSubExp1();
-virtual Exp*& refSubExp2();
-virtual Exp*& refSubExp3();
-virtual void  setSubExp1(Exp* e) {};
-virtual void  setSubExp2(Exp* e) {};
-virtual void  setSubExp3(Exp* e) {};
+virtual Exp*	getSubExp1() {return 0;}
+virtual Exp*	getSubExp2() {return 0;}
+virtual Exp*	getSubExp3() {return 0;}
+virtual Exp*&	refSubExp1();
+virtual Exp*&	refSubExp2();
+virtual Exp*&	refSubExp3();
+virtual void	setSubExp1(Exp* e) {};
+virtual void	setSubExp2(Exp* e) {};
+virtual void	setSubExp3(Exp* e) {};
 
 	// Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
 virtual int getMemDepth() {return 0;}
 
-	//	//	//	//	//	//	//
-	//	Guarded assignment	//
-	//	//	//	//	//	//	//
-	Exp*	getGuard();			// Get the guard expression, or 0 if not
+		//	//	//	//	//	//	//
+		//	Guarded assignment	//
+		//	//	//	//	//	//	//
+		Exp*	getGuard();			// Get the guard expression, or 0 if not
 	
-	//	//	//	//	//	//	//	//	//
-	//	Expression Simplification	//
-	//	//	//	//	//	//	//	//	//
+		//	//	//	//	//	//	//	//	//
+		//	Expression Simplification	//
+		//	//	//	//	//	//	//	//	//
 	
-	void	partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
-		std::vector<int>& integers, bool negate);
+		void	partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives, std::vector<int>& integers, bool negate);
 virtual Exp*	simplifyArith() {return this;}
-static Exp* Accumulate(std::list<Exp*> exprs);
-	// Simplify the expression
-	Exp*	simplify();
+static	Exp*	Accumulate(std::list<Exp*> exprs);
+		// Simplify the expression
+		Exp*	simplify();
 virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
-	// Just the address simplification a[ m[ any ]]
-virtual Exp* simplifyAddr() {return this;}
-virtual Exp* simplifyConstraint() {return this;}
-		Exp* fixSuccessor();		// succ(r2) -> r3
+		// Just the address simplification a[ m[ any ]]
+virtual Exp*	simplifyAddr() {return this;}
+virtual Exp*	simplifyConstraint() {return this;}
+		Exp*	fixSuccessor();		// succ(r2) -> r3
 		// Kill any zero fill, sign extend, or truncates
-		Exp* killFill();
+		Exp*	killFill();
 
-	// Do the work of finding used locations
-			void addUsedLocs(LocationSet& used);
+		// Do the work of finding used locations
+		void	addUsedLocs(LocationSet& used);
 
-	Exp *removeSubscripts(bool& allZero);
+		Exp 	*removeSubscripts(bool& allZero);
 
-	// Get number of definitions (statements this expression depends on)
-virtual int getNumRefs() {return 0;}
+		// Get number of definitions (statements this expression depends on)
+virtual int		getNumRefs() {return 0;}
 
-	// Convert from SSA form
-virtual Exp* fromSSA(igraph& ig) {return this;}
+		// Convert from SSA form
+virtual Exp*	fromSSA(igraph& ig) {return this;}
 
-	// Convert from SSA form, where this is not subscripted (but defined at
-	// statement d)
-	Exp* fromSSAleft(igraph& ig, Statement* d);
+		// Convert from SSA form, where this is not subscripted (but defined at
+		// statement d)
+		Exp* fromSSAleft(igraph& ig, Statement* d);
 
-	// Generate constraints for this Exp. NOTE: The behaviour is a bit different
-	// depending on whether or not parameter result is a type constant or a
-	// type variable.
-	// If the constraint is always satisfied, return true
-	// If the constraint can never be satisfied, return false
-	// Example: this is opMinus and result is <int>, constraints are:
-	//	 sub1 = <int> and sub2 = <int> or
-	//	 sub1 = <ptr> and sub2 = <ptr>
-	// Example: this is opMinus and result is Tr (typeOf r), constraints are:
-	//	 sub1 = <int> and sub2 = <int> and Tr = <int> or
-	//	 sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
-	//	 sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
+		// Generate constraints for this Exp. NOTE: The behaviour is a bit different
+		// depending on whether or not parameter result is a type constant or a
+		// type variable.
+		// If the constraint is always satisfied, return true
+		// If the constraint can never be satisfied, return false
+		// Example: this is opMinus and result is <int>, constraints are:
+		//	 sub1 = <int> and sub2 = <int> or
+		//	 sub1 = <ptr> and sub2 = <ptr>
+		// Example: this is opMinus and result is Tr (typeOf r), constraints are:
+		//	 sub1 = <int> and sub2 = <int> and Tr = <int> or
+		//	 sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
+		//	 sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
 virtual Exp*	genConstraints(Exp* result);
 
 virtual Type	*getType() { return NULL; }
 
-	// Visitation
-	// Note: best to have accept() as pure virtual, so you don't forget to
-	// implement it for new subclasses of Exp
+		// Visitation
+		// Note: best to have accept() as pure virtual, so you don't forget to
+		// implement it for new subclasses of Exp
 virtual bool	accept(ExpVisitor* v) = 0;
 virtual Exp*	accept(ExpModifier* v) = 0;
-	void		fixLocationProc(UserProc* p);
-	UserProc*	findProc();
-	// Set or clear the constant subscripts
-	void		setConscripts(int n, bool bClear);
-	Exp*		stripRefs();			// Strip all references
-	Exp*		stripSizes();			// Strip all size casts
-	// Subscript all e in this Exp with statement def:
-	Exp*		expSubscriptVar(Exp* e, Statement* def);
+		void	fixLocationProc(UserProc* p);
+		UserProc* findProc();
+		// Set or clear the constant subscripts
+		void	setConscripts(int n, bool bClear);
+		Exp*	stripRefs();			// Strip all references
+		Exp*	stripSizes();			// Strip all size casts
+		// Subscript all e in this Exp with statement def:
+		Exp*	expSubscriptVar(Exp* e, Statement* def);
 virtual Memo	*makeMemo(int mId) = 0;
 virtual void	readMemo(Memo *m, bool dec) = 0;
 
+		// Data flow based type analysis (implemented in type/dfa.cpp)
+		// Pull type information up the expression tree
+virtual	Type*	ascendType() {assert(0);}
+		// Push type information down the expression tree
+virtual	void	descendType(Type* parentType, bool& ch) {assert(0);}
+
 protected:
-	friend class XMLProgParser;
-};	// Class Exp
+		friend class XMLProgParser;
+};		// Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Exp* p);	 // Print the Exp poited to by p
@@ -408,28 +413,31 @@ virtual bool	operator*=(Exp& o);
 		Type*	getType() { return type; }
 		void	setType(Type* ty) { type = ty; }
 
-virtual void print(std::ostream& os);
-	// Print "recursive" (extra parens not wanted at outer levels)
-		void printNoQuotes(std::ostream& os);
-virtual void printx(int ind);
+virtual void	print(std::ostream& os);
+		// Print "recursive" (extra parens not wanted at outer levels)
+		void	printNoQuotes(std::ostream& os);
+virtual void	printx(int ind);
  
 
-virtual void appendDotFile(std::ofstream& of);
-virtual Exp* genConstraints(Exp* restrictTo);
+virtual void	appendDotFile(std::ofstream& of);
+virtual Exp*	genConstraints(Exp* restrictTo);
 
-	// Visitation
-virtual bool accept(ExpVisitor* v);
-virtual Exp* accept(ExpModifier* v);
+		// Visitation
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	int		getConscript() {return conscript;}
-	void	setConscript(int cs) {conscript = cs;}
+		int		getConscript() {return conscript;}
+		void	setConscript(int cs) {conscript = cs;}
 
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
+
 protected:
-	friend class XMLProgParser;
-};	// class Const
+		friend class XMLProgParser;
+};		// class Const
 
 /*==============================================================================
  * Terminal is a subclass of Exp, and holds special zero arity items such
@@ -437,14 +445,14 @@ protected:
  *============================================================================*/
 class Terminal : public Exp {
 public:
-	// Constructors
+		// Constructors
 		Terminal(OPER op);
 		Terminal(Terminal& o);		// Copy constructor
 
-	// Clone
+		// Clone
 virtual Exp*	clone();
 
-	// Compare
+		// Compare
 virtual bool	operator==(const Exp& o) const;
 virtual bool	operator< (const Exp& o) const;
 virtual bool	operator*=(Exp& o);
@@ -455,16 +463,19 @@ virtual void	printx(int ind);
 
 virtual bool	isTerminal() { return true; }
 
-	// Visitation
+		// Visitation
 virtual bool 	accept(ExpVisitor* v);
 virtual Exp*	accept(ExpModifier* v);
 
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
+
 protected:
-	friend class XMLProgParser;
-};	// class Terminal
+		friend class XMLProgParser;
+};		// class Terminal
 
 /*==============================================================================
  * Unary is a subclass of Exp, holding one subexpression
@@ -535,6 +546,9 @@ virtual Exp*	accept(ExpModifier* v);
 
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
+
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
 
 protected:
 	friend class XMLProgParser;
@@ -612,6 +626,9 @@ virtual Exp* accept(ExpModifier* v);
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
+
 private:
 	Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
@@ -684,6 +701,9 @@ virtual Exp*	accept(ExpModifier* v);
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
+
 protected:
 	friend class XMLProgParser;
 };	// class Ternary
@@ -734,6 +754,9 @@ virtual Exp*	accept(ExpModifier* v);
 
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
+
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
 
 protected:
 	friend class XMLProgParser;
@@ -803,6 +826,9 @@ virtual Exp* accept(ExpModifier* v);
 
 virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
+
+virtual	Type*	ascendType();
+virtual void	descendType(Type* parentType, bool& ch);
 
 protected:
 	RefExp() : Unary(opSubscript), def(NULL) { }
@@ -906,8 +932,8 @@ protected:
 
 class Location : public Unary {
 protected:
-	UserProc *proc;
-	Type *ty;
+	UserProc	*proc;
+	Type		*ty;		// The type for this location? Deprecated. Now in class Assignment
 
 public:
 	// Constructor with ID, subexpression, and UserProc*
