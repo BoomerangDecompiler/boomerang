@@ -691,41 +691,39 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                                 // Add the fall through edge if the block didn't
                                 // already exist
                                 if (pBB != NULL)
-                                    pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                                    pCfg->addOutEdge(pBB, uAddr+inst.numBytes);
                             }
                         }
                     }
 
-                    // Create the list of RTLs for the next basic block and continue
-                    // with the next instruction.
+                    // Create the list of RTLs for the next basic block and
+                    // continue with the next instruction.
                     BB_rtls = NULL;
                     break;  
                 }
 
-                case STMT_RET:
-                    {
-                        // Stop decoding sequentially
-                        sequentialDecode = false;
+                case STMT_RET: {
+                    // Stop decoding sequentially
+                    sequentialDecode = false;
 
-                        // Add the RTL to the list
-                        BB_rtls->push_back(pRtl);
-                        // Create the basic block
-                        pBB = pCfg->newBB(BB_rtls, RET, 0);
+                    // Add the RTL to the list
+                    BB_rtls->push_back(pRtl);
+                    // Create the basic block
+                    pBB = pCfg->newBB(BB_rtls, RET, 0);
 
-                        // If this ret pops anything other than the return address,
-                        // this information can be useful in the proc
-                        int popped = ((ReturnStatement*)pRtl)->getNumBytesPopped(); 
-                        if (popped != 0) {
-                            // this also gives us information about the calling
-                            // convention
-                            pProc->setBytesPopped(popped);
-                        }
+                    // If this ret pops anything other than the return
+                    // address, this information can be useful in the proc
+                    int popped = ((ReturnStatement*)s)->getNumBytesPopped(); 
+                    if (popped != 0)
+                        // This also gives us information about the calling
+                        // convention
+                        pProc->setBytesPopped(popped);
 
-                        // Create the list of RTLs for the next basic block and
-                        // continue with the next instruction.
-                        BB_rtls = NULL;    // New RTLList for next BB
-                    }
-                    break;
+                    // Create the list of RTLs for the next basic block and
+                    // continue with the next instruction.
+                    BB_rtls = NULL;    // New RTLList for next BB
+                }
+                break;
 
                 case STMT_BOOL:
                     // This is just an ordinary instruction; no control transfer
@@ -734,7 +732,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     // Do nothing
                     break;
         
-                } // switch (pRtl->getKind())
+                } // switch (s->getKind())
             }
             if (BB_rtls)
                 // If non null, we haven't put this RTL into a the current BB
@@ -777,39 +775,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
         sequentialDecode = true;
 
     }   // while nextAddress() != NO_ADDRESS
-
-#if 0
-    // This pass is to remove up to 7 nops in a row between ranges.
-    // These will be assumed to be padding for alignments of BBs
-    // Just removes a lot of ranges that could otherwise be combined
-    ADDRESS a1, a2;
-    COV_CIT ii;
-    Coverage temp;
-    if (pProc->getFirstGap(a1, a2, ii)) {
-        do {
-            int gap = a2 - a1;
-            if (gap < 8) {
-                bool allNops = true;
-                for (int i=0; i < gap; i+= NOP_SIZE) {
-                    if (getInst(a1+i+pBF->getTextDelta()) != NOP_INST) {
-                        allNops = false;
-                        break;
-                    }
-                }
-                if (allNops)
-                    // Remove this gap, by adding a range equal to the gap
-                    // Note: it's not safe to add the range now, so we put
-                    // the range into a temp Coverage object to be added later
-                    temp.addRange(a1, a2);
-            }
-        } while (pProc->getNextGap(a1, a2, ii));
-    }
-#endif
-    // Now add the ranges in temp
-//    pProc->addRanges(temp);
-
-    // Add the resultant coverage to the program's coverage
-//    pProc->addProcCoverage();
 
     //ProgWatcher *w = prog->getWatcher();
     //if (w)
