@@ -70,7 +70,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
     std::string opcode = sig.first;
     unsigned numOperands = sig.second;
 
-    // Put the operands into an vector
+    // Put the operands into a vector
     std::vector<Exp*> actuals(numOperands);
     va_list args;
     va_start(args,name);
@@ -78,7 +78,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
         actuals[i] = va_arg(args,Exp*);
     va_end(args);
 
-    if (Boomerang::get()->debugDecoder) {
+    if (DEBUG_DECODER) {
         // Display a disassembly of this instruction if requested
         std::cout << std::hex << pc << std::dec << ": " << name << " ";
         for (std::vector<Exp*>::iterator itd = actuals.begin();
@@ -90,12 +90,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
         std::cout << std::endl;
     }
 
-    std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode,actuals);
-
-    // Delete the memory used for the actuals
-    for (std::vector<Exp*>::iterator it = actuals.begin();
-        it != actuals.end(); it++)
-        delete *it;
+    std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode, actuals);
 
     return instance;
 }
