@@ -1,0 +1,1 @@
+s/\&global/global/g;
