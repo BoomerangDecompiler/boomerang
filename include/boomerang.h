@@ -73,7 +73,6 @@ public:
     int numToPropagate;
     bool noPromote;
     bool propOnlyToAll;
-    bool debugDataflow;
     bool debugPrintReach;
     bool debugPrintSSA;
     int maxMemDepth;

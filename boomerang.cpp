@@ -14,7 +14,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
-    noPromote(false), propOnlyToAll(false), debugDataflow(false),
+    noPromote(false), propOnlyToAll(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
@@ -49,7 +49,6 @@ void Boomerang::usage() {
 
 void Boomerang::help() {
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
-    std::cerr << "-dd: debug - debug global dataflow\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dr: debug - debug unused Returns\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
@@ -208,9 +207,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 switch(argv[i][2]) {
                     case 'c':
                         debugSwitch = true;
-                        break;
-                    case 'd':
-                        debugDataflow = true;
                         break;
                     case 'l':
                         debugLiveness = true;
