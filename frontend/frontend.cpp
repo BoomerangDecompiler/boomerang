@@ -525,9 +525,9 @@ if (0) {
                 pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
                 // FIXME: This needs to call a new register branch processing
                 // function
-                if (isSwitch(pBB, rtl_jump->getDest(), pProc)) {
+                if (isSwitch(pBB, rtl_jump->getDest(), pProc, pBF)) {
                     processSwitch(pBB, pBF->getTextDelta(), pCfg, targetQueue,
-                      pProc);
+                      pBF);
                 }
                 else { // Computed jump
                     // Not a switch statement
@@ -1044,10 +1044,9 @@ bool is286Push(const HRTL* pRTL)
 }
 #endif
 
-// Dummy for now
-bool isSwitch(PBB pbb, Exp* e, UserProc* p) {return false;}
-void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq, UserProc* p)
-{};
+bool isSwitch(PBB pbb, Exp* e, UserProc* p);
+void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq,
+  BinaryFile* pBF);
 
 /*==============================================================================
  * FUNCTION:    getInstanceFor

@@ -550,10 +550,10 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
 
         // Attempt to process this jmpl as a switch statement.
         // NOTE: the isSwitch and processSwitch methods should
-        // really be merged into one
+        // arguably be merged into one
         HLNwayJump*   rtl_jump   = static_cast<HLNwayJump*>(inst.rtl);
-        if (isSwitch(newBB, rtl_jump->getDest(), proc))
-            processSwitch(newBB, delta, cfg, tq, proc);
+        if (isSwitch(newBB, rtl_jump->getDest(), proc, pBF))
+            processSwitch(newBB, delta, cfg, tq, pBF);
         else {
             std::cerr << "Warning: COMPUTED JUMP at " << std::hex << address-8 << std::endl;
         }
@@ -1395,19 +1395,6 @@ void SparcFrontEnd::emitCopyPC(std::list<RTL*>* pRtls, ADDRESS uAddr)
     pRtl->appendExp(a);
     // Add the RTL to the list of RTLs, but to the second last position
     pRtls->insert(--pRtls->end(), pRtl);
-}
-
-/*==============================================================================
- * FUNCTION:      fetch4
- * OVERVIEW:      Needed by the switch logic. Here because it's source machine
- *                specific
- * PARAMETERS:    ptr - pointer to the 4 bytes to be fetched
- * RETURNS:       the four byte value at the given location
- *============================================================================*/
-unsigned SparcFrontEnd::fetch4(unsigned char* ptr)
-{
-    // We need to read the bytes in big endian format
-    return ptr[3] + (ptr[2] << 8) + (ptr[1] << 16) + (ptr[0] << 24);
 }
 
 /*==============================================================================

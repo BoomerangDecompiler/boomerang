@@ -581,8 +581,8 @@ bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
         // NOTE: the isSwitch and processSwitch methods should
         // really be merged into one
         HLNwayJump*   rtl_jump   = static_cast<HLNwayJump*>(inst.rtl);
-        if (isSwitch(newBB, rtl_jump->getDest(), proc))
-            processSwitch(newBB, delta, cfg, targets, proc);
+        if (isSwitch(newBB, rtl_jump->getDest(), proc, pBF))
+            processSwitch(newBB, delta, cfg, targets, pBF);
         else {
             ostrstream os;
             os << "COMPUTED JUMP at " << hex << address-8;
@@ -1397,19 +1397,6 @@ void emitCopyPC(HRTLList* pRtls, ADDRESS uAddr)
     pRtl->appendRT(pRt);
     // Add the RTL to the list of RTLs, but to the second last position
     pRtls->insert(--pRtls->end(), pRtl);
-}
-
-/*==============================================================================
- * FUNCTION:      fetch4
- * OVERVIEW:      Needed by the switch logic. Here because it's source machine
- *                specific
- * PARAMETERS:    ptr - pointer to the 4 bytes to be fetched
- * RETURNS:       the four byte value at the given location
- *============================================================================*/
-unsigned fetch4(unsigned char* ptr)
-{
-    // We need to read the bytes in big endian format
-    return ptr[3] + (ptr[2] << 8) + (ptr[1] << 16) + (ptr[0] << 24);
 }
 
 /*==============================================================================

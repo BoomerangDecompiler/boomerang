@@ -258,8 +258,8 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
                 // We create the BB as a COMPJUMP type, then change
                 // to an NWAY if it turns out to be a switch stmt
                 pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
-                if (isSwitch(pBB, rtl_jump->getDest(), pProc)) {
-                    processSwitch(pBB, delta, pCfg, targets, pProc);
+                if (isSwitch(pBB, rtl_jump->getDest(), pProc, pBF)) {
+                    processSwitch(pBB, delta, pCfg, targets, pBF);
                 }
                 else { // Computed jump
                     // Not a switch statement
@@ -495,19 +495,5 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
 
 }
 #endif
-
-/*==============================================================================
- * FUNCTION:      fetch4
- * OVERVIEW:      Needed by the switch logic. Here because it's source machine
- *                  specific (or at least, specific to the endianness of the
- *                  source machine)
- * PARAMETERS:    ptr - pointer to the 4 bytes to be fetched
- * RETURNS:       the four byte value at the given location
- *============================================================================*/
-unsigned fetch4(unsigned char* ptr)
-{
-    // We need to read the bytes in big endian format
-    return ptr[3] + (ptr[2] << 8) + (ptr[1] << 16) + (ptr[0] << 24);
-}
 
 

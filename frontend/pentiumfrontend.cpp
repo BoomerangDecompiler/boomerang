@@ -875,19 +875,6 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 }
 
 /*==============================================================================
- * FUNCTION:      fetch4
- * OVERVIEW:      Fetch 4 bytes in little endian format. Needed by the switch
- *                logic. Here because it's source machine specific
- * PARAMETERS:    ptr -
- * RETURNS:       the four byte value at the given location
- *============================================================================*/
-unsigned PentiumFrontEnd::fetch4(unsigned char* ptr)
-{
-    // We need to read the bytes in little endian format
-    return ptr[0] + (ptr[1] << 8) + (ptr[2] << 16) + (ptr[3] << 24);
-}
-
-/*==============================================================================
  * FUNCTION:      construct
  * OVERVIEW:      Construct a new instance of PentiumFrontEnd
  * PARAMETERS:    Same as the FrontEnd constructor, except decoder is **
