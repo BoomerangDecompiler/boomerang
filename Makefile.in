@@ -6,6 +6,7 @@
 ######################################################
 
 # $Revision$
+# 03 Feb 05 - Mike: Removed analysis/ related files
 # 23 Nov 04 - Mike: Added PPC files
 # 20 Jul 04 - Mike: Removed BOOMDIR
 # 21 Aug 02 - Icer: added codegen/chllcode.cpp to the build process
@@ -110,24 +111,21 @@ clean:
 	cd loader   && ${MAKE} clean
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
-	cd analysis && ${MAKE} clean
 	cd transform && ${MAKE} clean
 	rm -f *.o codegen/*.o log.o boomerang.o driver.o boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o c/*.o type/*.o
 
 #20 Aug 02 icer
 #added config.h config.log config.status and analysis/Makefile
 distclean: clean
-	rm -f Makefile util/Makefile loader/Makefile db/Makefile \
-		frontend/Makefile include/config.h config.log \
-		config.status analysis/Makefile
+	rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile include/config.h config.log \
+		config.status 
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTest.o db/RtlTest.o \
-	db/StatementTest.o db/CfgTest.o db/DfaTest.o \
-	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
-	analysis/AnalysisTest.o loader/BinaryFileStub.o c/CTest.o type/TypeTest.o 
+	db/StatementTest.o db/CfgTest.o db/DfaTest.o frontend/FrontSparcTest.o frontend/FrontPentTest.o \
+	loader/BinaryFileStub.o c/CTest.o type/TypeTest.o 
 
 # Needed because the test header files are in all these different directories
-INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic -Itype
+INCLUDEALL = -Idb -Ifrontend -Ic -Itype
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
@@ -189,7 +187,6 @@ $(MACH_SRC): frontend/%decoder.cpp : frontend/machine/%/core.spec \
 #
 db/prog.o:					EXTRA = -Icodegen -Ic
 frontend/frontend.o:		EXTRA = -Ic
-analysis/AnalysisTest.o:	EXTRA = -Ifrontend
 db/ProgTest.o:				EXTRA = -Ifrontend
 db/ProcTest.o:				EXTRA = -Ifrontend
 db/RtlTest.o:               EXTRA = -Ifrontend
@@ -272,7 +269,7 @@ frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h include/BinaryFile.h include/frontend.h include/proc.h \
 	include/prog.h include/cfg.h include/BinaryFile.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h include/BinaryFile.h include/rtl.h include/prog.h \
-	include\frontend.h include/BinaryFile.h include/types.h
+	include/frontend.h include/BinaryFile.h include/types.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h
