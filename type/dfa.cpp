@@ -144,6 +144,15 @@ void UserProc::dfaTypeAnalysis() {
 						s->searchAndReplace(memof->clone(), ne);
 					}
 				}
+			} else if (t->isFloat()) {
+				if (t->getSize() == 32) {
+					// Reinterpret as a float (and convert to double)
+					//con->setFlt(reinterpret_cast<float>(con->getInt()));
+					int tmp = con->getInt();
+					con->setFlt(*(float*)&tmp);		// Reinterpret to float, then cast to double
+				}
+				// MVE: more work if double?
+				con->setOper(opFltConst);
 			}
 		}
 	}
@@ -380,12 +389,14 @@ Type* Type::createUnion(Type* other, bool& ch) {
 
 void CallStatement::dfaTypeAnalysis(bool& ch) {
 	Signature* sig = procDest->getSignature();
-	Prog* prog = procDest->getProg();
+	//Prog* prog = procDest->getProg();
 	// Iterate through the arguments
 	int n = sig->getNumParams();
 	for (int i=0; i < n; i++) {
 		Exp* e = getArgumentExp(i);
 		Type* t = sig->getParamType(i);
+		e->descendType(t, ch);
+#if 0
 		Const* c;
 		if (e->isSubscript()) {
 			// A subscripted location. Find the definition
@@ -417,6 +428,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 					LOG << "Changed argument " << i << " was " << old << ", result is " << this << "\n";
 			}
 		}
+#endif
 	}
 	// The destination is a pointer to a function with this function's signature (if any)
 	if (pDest) {

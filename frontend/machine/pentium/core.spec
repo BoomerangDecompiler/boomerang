@@ -12,6 +12,7 @@
 # 18 Nov 02 - Mike: Fixed MOV.Ew.Iv^ow and MOV.Ed.Iv^od (was Eb)
 # 01 Oct 03 - Mike: Changed rows 3 & 4 of esc2 map to rows 2 & 3
 # 20 Jul 04 - Mike: Swapped Fint .I16 and .I32
+# 19 Oct 04 - Mike: d now signed in Base8 addressing mode (NOTE: still comes out unsigned!)
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -207,7 +208,7 @@ constructors
                         mod = 0 & r_m = 4; index = 4 & base
   Index8 i8![base][index * ss]: Mem { index != 4 } is 
                         mod = 1 & r_m = 4; index & base     & ss; i8
-  Base8   d[base]             : Mem  is
+  Base8   d![base]           : Mem  is
                         mod = 1 & r_m = 4; index = 4 & base;      i8  = d
   Index32 d[base][index * ss] : Mem { index != 4 } is 
                         mod = 2 & r_m = 4; index & base     & ss; i32 = d

@@ -2432,12 +2432,14 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 	if ((name == "printf" || name == "scanf")) format = 0;
 	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") format = 1;
 	else return false;
+	if (VERBOSE)
+		LOG << "Ellipsis processing for " << name << "\n";
 	char* formatStr = NULL;
 	Exp* formatExp = getArgumentExp(format);
 	if (formatExp->isSubscript()) {
 		// Maybe it's defined to be a Const string
 		Statement* def = ((RefExp*)formatExp)->getRef();
-if (def == NULL) return false;	// Waiting for ImplicitAssigns
+		if (def == NULL) return false;		// Not all NULL refs get converted to implicits
 		if (def->isAssign()) {
 			// This would be unusual; propagation would normally take care of this
 			Exp* rhs = ((Assign*)def)->getRight();
@@ -2449,7 +2451,7 @@ if (def == NULL) return false;	// Waiting for ImplicitAssigns
 			int n = pa->getNumRefs();
 			for (int i=0; i < n; i++) {
 				def = pa->getAt(i);
-if (def == NULL) continue;
+				if (def == NULL) continue;
 				Exp* rhs = ((Assign*)def)->getRight();
 				if (rhs == NULL || !rhs->isStrConst()) continue;
 				formatStr = ((Const*)rhs)->getStr();
@@ -2481,7 +2483,10 @@ if (def == NULL) continue;
 					setSigParam(sig, new IntegerType(), false);
 					continue;
 				case '-': case '+': case '#': case ' ':
-					// flag. Ignore
+					// Flag. Ignore
+					continue;
+				case '.':
+					// Separates width and precision. Ignore.
 					continue;
 				case 'h': case 'l':
 					// size of half or long. Argument is usually still one word. Ignore.
