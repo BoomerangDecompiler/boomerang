@@ -34,7 +34,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
-	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false)
+	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
+	noLimitPropagations(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -98,11 +99,12 @@ void Boomerang::help() {
 	std::cout << "-nd: No (reduced) Dataflow analysis\n";
 	std::cout << "-nD: No Decompilation (at all!)\n";
 	std::cout << "-nl: No creation of Local variables\n";
+	std::cout << "-nL: No Limiting of propagations using the self-referencing heuristic\n";
 	std::cout << "-nm: don't decode the 'main' procedure\n";
 	std::cout << "-nn: No removal of Null and unused statements\n";
 	std::cout << "-np: No replacement of expressions with Parameter names\n";
-	std::cout << "-nr: No Removal of unnedded labels\n";
 	std::cout << "-nP: No Promotion of signatures (other than main/WinMain/DriverMain)\n";
+	std::cout << "-nr: No Removal of unnedded labels\n";
 	std::cout << "-nR: No removal of unused Returns\n";
 	std::cout << "-o <Output path>: where to generate output (defaults to ./output/)\n";
 	std::cout << "-O: handle Overlapped registers (for X86 only)\n";
@@ -607,6 +609,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 						break;
 					case 'l':
 						noLocals = true;
+						break;
+					case 'L':
+						noLimitPropagations = true;
 						break;
 					case 'n':
 						noRemoveNull = true;
