@@ -159,6 +159,9 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+// Split the C type into return and parameter parts
+        void    getReturnAndParam(const char*& ret, const char*& param);
+
 };
 
 class IntegerType : public Type {

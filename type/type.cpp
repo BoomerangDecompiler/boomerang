@@ -541,6 +541,27 @@ const char *FuncType::getCtype() const
     return s.c_str();
 }
 
+// As above, but split into the return and parameter parts
+void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
+    if (signature == NULL) {
+        ret = "void";
+        param = "(void)";
+        return;
+    }
+    if (signature->getNumReturns() == 0)
+        ret = "void";
+    else 
+        ret = signature->getReturnType(0)->getCtype();
+    std::string s; 
+    s += " (";
+    for (int i = 0; i < signature->getNumParams(); i++) {
+       if (i != 0) s += ", ";
+       s += signature->getParamType(i)->getCtype(); 
+    }
+    s += ")";
+    param = s.c_str();
+}
+
 const char *IntegerType::getCtype() const
 {
     if (signd) {

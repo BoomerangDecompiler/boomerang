@@ -68,7 +68,8 @@ Const::Const(int i)     : Exp(opIntConst)   {u.i = i;}
 Const::Const(long long ll): Exp(opLongConst){u.ll= ll;}
 Const::Const(double d)  : Exp(opFltConst)   {u.d = d;}
 Const::Const(char* p)   : Exp(opStrConst)   {u.p = p;}
-// Note: need something special for opCodeAddr
+Const::Const(Proc* p)   : Exp(opFuncConst)  {u.pp = p;}
+// Note: this is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)     : Exp(opIntConst)   {u.a = a;}
 
 // Copy constructor
@@ -384,6 +385,7 @@ bool Const::operator==(const Exp& o) const {
     // Note: the casts of o to Const& are needed, else op is protected! Duh.
     if (((Const&)o).op == opWild) return true;
     if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
+    if (((Const&)o).op == opWildStrConst && op == opStrConst) return true;
     if (op != ((Const&)o).op) return false;
     switch (op) {
         case opIntConst: return u.i == ((Const&)o).u.i;
@@ -419,6 +421,7 @@ bool Ternary::operator==(const Exp& o) const {
 }
 bool Terminal::operator==(const Exp& o) const {
     if (op == opWildIntConst) return ((Terminal&)o).op == opIntConst;
+    if (op == opWildStrConst) return ((Terminal&)o).op == opStrConst;
     if (op == opWildMemOf)    return ((Terminal&)o).op == opMemOf;
     if (op == opWildRegOf)    return ((Terminal&)o).op == opRegOf;
     if (op == opWildAddrOf)   return ((Terminal&)o).op == opAddrOf;
@@ -857,6 +860,7 @@ void Terminal::print(std::ostream& os, bool withUses) {
         case opWildRegOf:os<< "r[WILD]"; break;
         case opWildAddrOf:os<< "a[WILD]"; break;
         case opWildIntConst:os<<"WILDINT"; break;
+        case opWildStrConst:os<<"WILDSTR"; break;
         case opNil:     break;
         case opTrue:    os << "true"; break;
         case opFalse:   os << "false"; break;
@@ -1157,7 +1161,8 @@ void Const::appendDotFile(std::ofstream& of) {
         case opIntConst:  of << std::dec << u.i; break;
         case opFltConst:  of << u.d; break;
         case opStrConst:  of << "\\\"" << u.p << "\\\""; break;
-        case opCodeAddr:  of << "0x" << std::hex << u.a; break;
+        // Might want to distinguish this better, e.g. "(func*)myProc"
+        case opFuncConst: of << u.pp->getName(); break;
         default:
             break;
     }
@@ -3456,7 +3461,7 @@ Exp* Binary::genConstraints(Exp* result) {
         }
             
         case opMinus: {
-            Type* ptrType = 0;      // FIXME!
+            Type* ptrType = PointerType::newPtrAlpha();
             TypeVal ptrVal(ptrType);
             if (!restrictTo || restrictTo && restrictTo->isInteger()) {
                 // int - int -> int
@@ -3724,6 +3729,8 @@ Type *Location::getType()
     }
     return NULL;
 }
+
+const char* Const::getFuncName() {return u.pp->getName();}
 
 //  //  //  //  //  //  //  //
 //                          //

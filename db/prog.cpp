@@ -175,43 +175,9 @@ void Prog::generateCode(std::ostream &os) {
          it1 != globals.end(); it1++) {
         // Check for an initial value
         Exp *e = NULL;
-        ADDRESS uaddr = (*it1)->getAddress();
-        Type *ty = (*it1)->getType();
-        PSectionInfo si = pBF->GetSectionInfoByAddr(uaddr);
-        if (si && !si->bBss) {
-            if (ty->isPointer() &&
-              ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
-                char* str = getStringConstant((*it1)->getAddress(), true);
-                if (str) {
-                    // Make a global string
-                    e = new Const(escapeStr(str));
-                }
-            }
-            if (e == NULL) switch(ty->getSize()) {
-            case 8:
-                e = new Const(
-                    (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
-                break;
-            case 16:
-                // Note: must respect endianness
-                e = new Const(pBF->readNative2(uaddr));
-                break;
-            case 32:
-            default:
-                // Note: must respect endianness and type
-                if ((*it1)->getType()->isFloat())
-                    e = new Const(pBF->readNativeFloat4(uaddr));
-                else
-                    e = new Const(pBF->readNative4(uaddr));
-                break;
-            case 64:
-                if ((*it1)->getType()->isFloat())
-                    e = new Const(pBF->readNativeFloat8(uaddr));
-                else
-                    e = new Const(pBF->readNative8(uaddr));
-            }
-        } 
-        code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+        e = (*it1)->getInitialValue(this);
+        if (e)
+            code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
     }
     code->print(os);
     delete code;
@@ -433,7 +399,7 @@ bool Prog::isWin32() {
     return pFE->isWin32();
 }
 
-const char *Prog::getGlobal(ADDRESS uaddr)
+const char *Prog::getGlobalName(ADDRESS uaddr)
 {
     for (unsigned i = 0; i < globals.size(); i++)
         if (globals[i]->getAddress() == uaddr)
@@ -445,12 +411,19 @@ const char *Prog::getGlobal(ADDRESS uaddr)
     return pBF->SymbolByAddress(uaddr);
 }
 
-ADDRESS Prog::getGlobal(char *nam)
+ADDRESS Prog::getGlobalAddr(char *nam)
 {
     for (unsigned i = 0; i < globals.size(); i++)
         if (!strcmp(globals[i]->getName(), nam))
             return globals[i]->getAddress();
     return pBF->GetAddressByName(nam);
+}
+
+Global* Prog::getGlobal(char *nam) {
+    for (unsigned i = 0; i < globals.size(); i++)
+        if (!strcmp(globals[i]->getName(), nam))
+            return globals[i];
+    return NULL;
 }
 
 void Prog::globalUsed(ADDRESS uaddr)
@@ -499,7 +472,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u)
 
 const char *Prog::newGlobal(ADDRESS uaddr)
 {
-    const char *nam = getGlobal(uaddr);
+    const char *nam = getGlobalName(uaddr);
     if (nam == NULL) {
         std::ostringstream os;
         os << "global" << globals.size();
@@ -769,8 +742,8 @@ void Prog::decompile() {
         }
     }
 
-if (DEBUG_TA)
-    typeAnalysis();
+    if (Boomerang::get()->debugTA)
+        typeAnalysis();
 
     if (VERBOSE)
         LOG << "transforming from SSA\n";
@@ -1031,3 +1004,51 @@ void Prog::readSymbolFile(const char *fname)
     ifs.close();
 }
 
+
+Exp* Global::getInitialValue(Prog* prog) {
+    Exp* e = NULL;
+    PSectionInfo si = prog->getSectionInfoByAddr(uaddr);
+    if (si && si->bBss)
+        // This global is in the BSS, so it can't be initialised
+        return NULL;
+    if (type->isPointer() &&
+      ((PointerType*)type)->getPointsTo()->resolvesToChar()) {
+        char* str = prog->getStringConstant(uaddr, true);
+        if (str) {
+            // Make a global string
+            return new Const(escapeStr(str));
+        }
+    } else if (type->isPointer() &&
+      ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
+        ADDRESS init = prog->readNative4(uaddr);    
+        Proc* dest = prog->findProc(init);
+        if (dest)
+            // Make a function constant. Back end should know how to emit
+            // the correct language-dependent code
+            return new Const(dest);
+    }
+    if (e == NULL) switch(type->getSize()) {
+    case 8:
+        e = new Const(
+            (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
+        break;
+    case 16:
+        // Note: must respect endianness
+        e = new Const(prog->readNative2(uaddr));
+        break;
+    case 32:
+    default:
+        // Note: must respect endianness and type
+        if (type->isFloat())
+            e = new Const(prog->readNativeFloat4(uaddr));
+        else
+            e = new Const(prog->readNative4(uaddr));
+        break;
+    case 64:
+        if (type->isFloat())
+            e = new Const(prog->readNativeFloat8(uaddr));
+        else
+            e = new Const(prog->readNative8(uaddr));
+    }
+    return e;
+}

@@ -66,7 +66,9 @@ public:
     void  setType(Type* ty) { type = ty; }
     ADDRESS getAddress() { return uaddr; }
     const char *getName() { return nam.c_str(); }
-};
+    Exp* getInitialValue(Prog* prog); // Get the initial value as an expression
+                                      // (or NULL if not initialised)
+};  // class Global
 
 class Prog {
     // Phase of the interprocedural DFA (0=none, 1=phase 1, 2 = phase 2)
@@ -129,7 +131,7 @@ public:
 
     const char *getRegName(int idx) { return pFE->getRegName(idx); }
 
-    void decode(ADDRESS a) { 
+    void decodeFunction(ADDRESS a) { 
         if (findProc(a) == NULL) {
             pFE->decode(this, a);
             analyse();
@@ -212,8 +214,9 @@ public:
     bool isWin32();
 
     // Get a global variable if possible
-    const char *getGlobal(ADDRESS uaddr);
-    ADDRESS getGlobal(char *nam);
+    const char *getGlobalName(ADDRESS uaddr);
+    ADDRESS getGlobalAddr(char *nam);
+    Global* getGlobal(char *nam);
 
     // Make up a name for a new global at address uaddr
     // (or return an existing name if address already used)
@@ -243,9 +246,12 @@ public:
     PSectionInfo getSectionInfoByAddr(ADDRESS a)
         { return pBF->GetSectionInfoByAddr(a);}
     ADDRESS getLimitTextHigh() {return pBF->getLimitTextHigh();}
-    // Read 2 or 4 bytes given a native address
-    int readNative2(ADDRESS a) {return pBF->readNative2(a);}
-    int readNative4(ADDRESS a) {return pBF->readNative4(a);}
+    // Read 2, 4, or 8 bytes given a native address
+    int     readNative2(ADDRESS a) {return pBF->readNative2(a);}
+    int     readNative4(ADDRESS a) {return pBF->readNative4(a);}
+    float   readNativeFloat4(ADDRESS a) {return pBF->readNativeFloat4(a);}
+    double  readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
+    long long readNative8(ADDRESS a) {return pBF->readNative8(a);}
     bool processProc(int addr, UserProc* proc)  // Decode a proc
         { std::ofstream os;
           return pFE->processProc((unsigned)addr, proc, os);}
@@ -275,6 +281,6 @@ protected:
     ProgWatcher *m_watcher;             // used for status updates
     // Next numbered proc will use this
     int m_iNumberedProc;
-}; 
+};  // class Prog
 
 #endif

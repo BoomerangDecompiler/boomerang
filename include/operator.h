@@ -157,8 +157,9 @@ enum OPER
     opLongConst,            // long integer constant
     opFltConst,             // floating point constant
     opStrConst,             // string constant
-    opCodeAddr,             // opAddrConst for addresses in code segment
+    opFuncConst,            // a function constant (address of named function)
     opWildIntConst,         // Terminal integer constant whose value is wild
+    opWildStrConst,         // Terminal string constant whose value is wild
 
 
     // Terminals (zero parameter special locations)

@@ -327,10 +327,14 @@ std::ostream& operator<<(std::ostream& os, Exp* p);  // Print the Exp poited to 
 class Const : public Exp {
     union {
         int i;          // Integer
+        // Note: although we have i and a as unions, both often use the same
+        // operator (opIntConst). There is no opCodeAddr any more.
+        ADDRESS a;      // void* conflated with unsigned int: needs fixing
         long long ll;   // 64 bit integer
         double d;       // Double precision float
         char* p;        // Pointer to string
-        ADDRESS a;      // Code address
+                        // Don't store string: function could be renamed
+        Proc* pp;       // Pointer to function
     } u;
 public:
     // Special constructors overloaded for the various constants
@@ -339,6 +343,7 @@ public:
             Const(ADDRESS a);
             Const(double d);
             Const(char* p);
+            Const(Proc* p);
     // Copy constructor
             Const(Const& o);
             
@@ -355,7 +360,8 @@ virtual bool operator*=(Exp& o);
   long long getLong(){return u.ll;}
     double  getFlt() {return u.d;}
     char*   getStr() {return u.p;}
-    ADDRESS getAddr(){return u.a;}
+    ADDRESS getAddr() {return u.a;}
+const char* getFuncName();
 
     // Set the constant
     void setInt(int i)      {u.i = i;}

@@ -29,27 +29,46 @@ class ConstraintMap {
 public:
 typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
 
+    // Return true if the given expression is in the map
     bool isFound(Exp* e)  {return cmap.find(e) != cmap.end();}
+    // Return an iterator to the given left hand side Exp
     iterator find(Exp* e) {return cmap.find(e);}
+    // Lookup a given left hand side Exp (e.g. given Tlocal1, return <char*>)
     Exp*& operator[](Exp* e) {return cmap[e];}
+    // Return the number of constraints in the map
     int   size() {return cmap.size();}
+    // Empty the map
     void  clear() {cmap.clear();}
+    // Return iterators for the begin() and end() of the map
     iterator begin() {return cmap.begin();}
     iterator end()   {return cmap.end();}
+    // Insert a constraint given two locations (i.e. Tloc1 = Tloc2)
     void constrain(Exp* loc1, Exp* loc2) {
         cmap[new Unary(opTypeOf, loc1)] = new Unary(opTypeOf, loc2);}
+    // Insert a constraint given an equality expression
+    // e.g. Tlocal1 = <char*>
     void insert(Exp* term);
+    // Insert a constraint given left and right hand sides (as type Exps)
     void insert(Exp* lhs, Exp* rhs) {cmap[lhs] = rhs;}
+    // Insert a constraint given a location and a Type
     void constrain(Exp* loc, Type* t) {
         cmap[new Unary(opTypeOf, loc)] = new TypeVal(t);}
+    // Insert a constraint given two Types (at least one variable)
     void constrain(Type* t1, Type* t2) { // Example: alpha1 = alpha2
         cmap[new TypeVal(t1)] = new TypeVal(t2);}
+    // Union with another constraint map
     void makeUnion(ConstraintMap& o) {
         cmap.insert(o.begin(), o.end());}
+    // Print to the given stream
     void print(std::ostream& os);
+    // Print to the debug buffer, and return that buffer
     char* prints();
 };
 
+// A class used for fast location of a constraint
+// An equation like Ta = Tb is inserted into this class twice (i.e. as
+// Ta = Tb and also as Tb = Ta. So to find out if Ta is involved in an
+// equate, only have to look up Ta in the map (on the LHS, which is fast)
 class EquateMap {
     std::map<Exp*, LocationSet, lessExpStar> emap;
 public:
@@ -58,6 +77,7 @@ typedef std::map<Exp*, LocationSet, lessExpStar>::iterator iterator;
     iterator end()   {return emap.end();}
     void erase(iterator it) {emap.erase(it);}
     int  size() {return emap.size();}
+    // Add an equate (both ways)
     void addEquate(Exp* a, Exp* b) {
         emap[a].insert(b); emap[b].insert(a);}
     iterator find(Exp* e) {return emap.find(e);}
@@ -82,7 +102,7 @@ public:
     void    addConstraints(LocationSet& con) {conSet.makeUnion(con);}
     // Solve the constraints. If they can be solved, return true and put
     // a copy of the solution (in the form of a set of T<location> = <type>)
-    // into soln
+    // into solns
     bool    solve(std::list<ConstraintMap>& solns);
 private:
     bool    doSolve(std::list<Exp*>::iterator it, ConstraintMap& extra,

@@ -129,8 +129,8 @@ void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
         size_t j = sFile.find('#');
         if (j != (size_t)-1)
             sFile = sFile.substr(0, j);
-	if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
-	    sFile = sFile.substr(0, sFile.size()-1);
+	    if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
+	        sFile = sFile.substr(0, sFile.size()-1);
         if (sFile == "") continue;
         std::string sPath = Boomerang::get()->getProgPath() + "signatures/"
           + sFile;
@@ -254,8 +254,13 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     p->yyparse(plat, cc);
 
     for (std::list<Signature*>::iterator it = p->signatures.begin();
-         it != p->signatures.end(); it++)
+           it != p->signatures.end(); it++) {
+#if 1
+        std::cerr << "readLibrarySignatures from " << sPath << ": " <<
+          (*it)->getName() << "\n";
+#endif
         librarySignatures[(*it)->getName()] = *it;
+    }
 
     delete p;
     ifs.close();
@@ -471,7 +476,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 s->setProc(pProc); // let's do this really early!
                 if (refHints.find(pRtl->getAddress()) != refHints.end()) {
                     const char *nam = refHints[pRtl->getAddress()].c_str();
-                    ADDRESS gu = pProc->getProg()->getGlobal((char*)nam);
+                    ADDRESS gu = pProc->getProg()->getGlobalAddr((char*)nam);
                     if (gu != NO_ADDRESS) {
                         s->searchAndReplace(new Const((int)gu), 
                             new Unary(opAddrOf, Location::global(nam, pProc)));

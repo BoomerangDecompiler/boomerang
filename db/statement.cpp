@@ -2137,12 +2137,12 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     // Check if we may have guessed this global incorrectly
                     // (usually as an array of char)
                     Prog* prog = proc->getProg();
-                    const char* nam = prog->getGlobal(u);
+                    const char* nam = prog->getGlobalName(u);
                     if (nam) prog->setGlobalType(nam,
                         new PointerType(new CharType()));
                 } else {
                     proc->getProg()->globalUsed(u);
-                    const char *nam = proc->getProg()->getGlobal(u);
+                    const char *nam = proc->getProg()->getGlobalName(u);
                     if (nam)
                         e = Location::global(nam, proc);
                 }
@@ -2153,7 +2153,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     LOG << "found function pointer with constant value "
                         << "of type " << pt->getCtype() 
                         << ".  Decoding address " << a << "\n";
-                prog->decode(a);
+                prog->decodeFunction(a);
                 Proc *p = prog->findProc(a);
                 if (p) {
                     Signature *sig = points_to->asFunc()->getSignature()->clone();
@@ -3106,12 +3106,22 @@ void CallStatement::genConstraints(LocationSet& cons) {
     // calculated correctly; if not, we need repeat till no change)
     int nPar = destSig->getNumParams();
     int min = 0;
+#if 0
     if (dest->isLib())
         // Note: formals for a library signature start with the stack pointer
         min = 1;
+#endif
     int a=0;        // Argument index
     for (int p=min; p < nPar; p++) {
         Exp* arg = arguments[a++];
+        // Handle a[m[x]]
+        if (arg->isAddrOf()) {
+            Exp* sub = arg->getSubExp1();
+            if (sub->isSubscript())
+                sub = ((RefExp*)sub)->getSubExp1();
+            if (sub->isMemOf())
+                arg = ((Location*)sub)->getSubExp1();
+        }
         if (arg->isRegOf() || arg->isMemOf() || arg->isSubscript() ||
               arg->isLocal() || arg->isGlobal()) {
             Exp* con = new Binary(opEquals,

@@ -9,7 +9,7 @@
  */
 
 /*==============================================================================
- * FILE:       machine/pentium/frontendsrc.cc
+ * FILE:       frontend/pentiumfrontend.cpp
  * OVERVIEW:   This file contains routines to manage the decoding of pentium
  *             instructions and the instantiation to RTLs. These functions
  *             replace frontend.cc for decoding pentium instructions.

@@ -133,8 +133,9 @@ char* operStrings[] = {
     "opLongConst",            // long integer constant
     "opFltConst",             // floating point constant
     "opStrConst",             // string constant
-    "opCodeAddr",             // opAddrConst for addresses in code segment
+    "opFuncConst",            // function constant (pointer to function)
     "opWildIntConst",         // an integer constant whose value is wild
+    "opWildStrConst",         // a string constant whose value is wild
 
 
     "opPC",                   // program counter

@@ -44,6 +44,7 @@
 #include "prog.h"
 #include "util.h"
 #include "boomerang.h"
+#include "type.h"
 
 /**********************************
  * BasicBlock methods
@@ -1180,7 +1181,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
                     // emit a case label
                     // FIXME: Not valid for all switch types
-                    Const caseVal(psi->iLower+i);
+                    Const caseVal((int)(psi->iLower+i));
                     hll->AddCaseCondOption(indLevel, &caseVal);
 
                     // generate code for the current outedge
@@ -1621,9 +1622,15 @@ int BasicBlock::whichPred(PBB pred) {
     return -1;
 }
 
+//  //  //  //  //  //  //  //  //  //  //  //  //
+//                                              //
+//       Indirect jump and call analyses        //
+//                                              //
+//  //  //  //  //  //  //  //  //  //  //  //  //
+
 #define DEBUG_SWITCH Boomerang::get()->debugSwitch
-// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible
-// decode extra code and return true
+
+// Switch High Level patterns
 
 // Pattern: m[<expr> * 4 + T ]
 static Location* formA  = Location::memOf(
@@ -1669,6 +1676,45 @@ static Binary* formr = new Binary(opPlus,
 
 static Exp* hlForms[] = {formA, formO, formR, formr};
 static char chForms[] = {   'A',   'O',   'R',   'r'};
+
+
+// Vcall high level patterns
+// Pattern 0: global<wild>[0]
+static Binary* vfc_funcptr = new Binary(opArraySubscript,
+    new Location(opGlobal,
+        new Terminal(opWildStrConst), NULL),
+    new Const(0));
+
+// Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
+// K1 is vtable offset, K2 is virtual function offset
+static Location* vfc_both = Location::memOf(
+    new Binary(opPlus,
+        Location::memOf(
+            new Binary(opPlus,
+                new Terminal(opWild),
+                new Terminal(opWildIntConst))),
+            new Terminal(opWildIntConst)));
+ 
+// Pattern 2: m[ m[ <expr> ] + K2]
+static Location* vfc_vto = Location::memOf(
+    new Binary(opPlus,
+        Location::memOf(
+            new Terminal(opWild)),
+            new Terminal(opWildIntConst)));
+
+// Pattern 3: m[ m[ <expr> + K1] ]
+Location* vfc_vfo = Location::memOf(
+    Location::memOf(
+        new Binary(opPlus,
+            new Terminal(opWild),
+            new Terminal(opWildIntConst))));
+
+// Pattern 4: m[ m[ <expr> ] ]
+Location* vfc_none = Location::memOf(
+    Location::memOf(
+        new Terminal(opWild)));
+
+static Exp* hlVfc[] = {vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none};
 
 void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
     switch (form) {
@@ -1767,6 +1813,8 @@ int BasicBlock::findNumCases() {
     return 3;        // Bald faced guess if all else fails
 }
 
+// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse,
+// and if possible decode extra code and return true
 bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
     if (m_nodeType == COMPJUMP) {
         assert(m_pRtls->size());
@@ -1788,7 +1836,7 @@ if (m_InEdges.size())
             if (*e *= *hlForms[i]) {        // *= compare ignores subscripts
                 form = chForms[i];
                 if (DEBUG_SWITCH)
-                    LOG << "Matches form " << form << "\n";
+                    LOG << "Indirect jump matches form " << form << "\n";
                 break;
             }
         }
@@ -1818,6 +1866,52 @@ if (m_InEdges.size())
         assert(m_pRtls->size());
         RTL* lastRtl = m_pRtls->back();
         std::cerr << lastRtl->prints() << "\n";
+
+        assert(lastRtl->getNumStmt() >= 1);
+        CallStatement* lastStmt = (CallStatement*)lastRtl->elementAt(
+            lastRtl->getNumStmt()-1);
+        Exp* e = lastStmt->getDest();
+        int n = sizeof(hlVfc) / sizeof(Exp*);
+        bool recognised = false;
+        int i;
+        for (i=0; i < n; i++) {
+            if (*e *= *hlVfc[i]) {        // *= compare ignores subscripts
+                recognised = true;
+                if (DEBUG_SWITCH)
+                    LOG << "Indirect call matches form " << i << "\n";
+std::cerr << "Indirect call matches form " << i << "\n";
+                break;
+            }
+        }
+        if (recognised && i == 0) {
+            // This is basically an indirection on a global function pointer
+            // If it is initialised, we have a decdable entry point
+            // Pattern 0: global<name>{0}[0]{0}
+            if (e->isSubscript()) e = e->getSubExp1();
+            e = ((Binary*)e)->getSubExp1();             // e is global<name>{0}
+            if (e->isSubscript()) e = e->getSubExp1();  // e is global<name>
+            Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
+            Prog* prog = proc->getProg();
+            Global* glo = prog->getGlobal(con->getStr());
+assert(glo);
+            // Set the type to pointer to function, if not already
+            Type* ty = glo->getType();
+            if (!ty->isPointer() &&
+              !((PointerType*)ty)->getPointsTo()->isFunc())
+                glo->setType(new PointerType(new FuncType()));
+            Exp* init = glo->getInitialValue(prog);
+            if (init) {
+                ADDRESS aglo = glo->getAddress();
+                ADDRESS pfunc = prog->readNative4(aglo);  
+                bool newFunc =  prog->findProc(pfunc) == NULL;
+                prog->decodeFunction(pfunc);
+                // If this was not decoded, then this is a significant
+                // change, and we want to redecode the present function once
+                // that callee has been decoded
+                return newFunc;
+            }
+        }            
+            
         return false;
     }
     return false;

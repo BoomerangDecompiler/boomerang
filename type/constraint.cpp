@@ -39,8 +39,8 @@ extern char debug_buffer[];
 char* ConstraintMap::prints() {
     std::ostringstream ost;
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), 199);
-    debug_buffer[199] = '\0';
+    strncpy(debug_buffer, ost.str().c_str(), 999);
+    debug_buffer[999] = '\0';
     return debug_buffer;
 }
 
@@ -63,8 +63,8 @@ void EquateMap::print(std::ostream& os) {
 char* EquateMap::prints() {
     std::ostringstream ost;
     print(ost);
-    strncpy(debug_buffer, ost.str().c_str(), 199);
-    debug_buffer[199] = '\0';
+    strncpy(debug_buffer, ost.str().c_str(), 999);
+    debug_buffer[999] = '\0';
     return debug_buffer;
 }
 
@@ -182,6 +182,8 @@ conSet.print(std::cerr);
                 // Insert into equates 
                 equates.addEquate(lhs, rhs);
             } else {
+                // Of the form typeof(x) = <typeval>
+                // Insert into fixed
                 assert(rhs->isTypeVal());
                 fixed[lhs] = rhs;
             }
@@ -241,8 +243,8 @@ std::cerr << equates.size() << " equates: " << equates.prints();
             }
         }
         fixed.makeUnion(extra);
-        in = extra;
-    }
+        in = extra;     // Take care of any "ripple effect"
+    }                   // Repeat until no ripples
 
 std::cerr << "\n" << fixed.size() << " fixed: " << fixed.prints();
 std::cerr << equates.size() << " equates: " << equates.prints();
@@ -252,7 +254,9 @@ std::cerr << equates.size() << " equates: " << equates.prints();
 }
 
 static int level = 0;
-// Constraints up to but not including it have been unified.
+// Constraints up to but not including iterator it have been unified.
+// The current solution is soln
+// The set of all solutions is in solns
 bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln,
   std::list<ConstraintMap>& solns) {
 std::cerr << "Begin doSolve at level " << ++level << "\n";
@@ -278,7 +282,7 @@ std::cerr << "Exiting doSolve at level " << level-- << " returning true\n";
     Exp* d;
     while ((d = nextDisjunct(rem1)) != NULL) {
 std::cerr << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
-        // Match disjunct d the fixed types; it could be compatible,
+        // Match disjunct d against the fixed types; it could be compatible,
         // compatible and generate an additional constraint, or be
         // incompatible
         ConstraintMap extra;      // Just for this disjunct
@@ -300,6 +304,7 @@ std::cerr << "Unified now " << unified << "; extra now " << extra.prints() << "\
             }
         }
         if (unified)
+            // True if any disjuncts had all the conjuncts satisfied
             anyUnified = true;
         if (!unified) continue;
         // Use this disjunct

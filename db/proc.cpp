@@ -1861,16 +1861,18 @@ void UserProc::replaceExpressionsWithGlobals() {
                     }
                     ADDRESS u = ((Const*)e)->getInt();
                     prog->globalUsed(u);
-                    const char *global = prog->getGlobal(u);
-                    if (global) {
-                        int r = u - prog->getGlobal((char*)global);
+                    const char *gloName = prog->getGlobalName(u);
+                    if (gloName) {
+                        ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
                         Exp *ne;
                         if (r) {
-                            Location *g = Location::global(strdup(global), this);
-                            ne = new Binary(opPlus, new Unary(opAddrOf, g), new Const(r));
+                            Location *g = Location::global(strdup(gloName), this);
+                            ne = new Binary(opPlus,
+                                new Unary(opAddrOf, g),
+                                new Const(r));
                         } else {
-                            prog->setGlobalType((char*)global, pty);
-                            Location *g = Location::global(strdup(global), this);
+                            prog->setGlobalType((char*)gloName, pty);
+                            Location *g = Location::global(strdup(gloName), this);
                             ne = new Unary(opAddrOf, g);
                         }
                         call->setArgumentExp(i, ne);
@@ -1895,26 +1897,26 @@ void UserProc::replaceExpressionsWithGlobals() {
                 Exp *memof = *rr;
                 ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
                 prog->globalUsed(u);
-                const char *global = prog->getGlobal(u);
-                if (global) {
-                    int r = u - prog->getGlobal((char*)global);
+                const char *gloName = prog->getGlobalName(u);
+                if (gloName) {
+                    ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
                     Exp *ne;
                     if (r) {
-                        Location *g = Location::global(strdup(global), this);
+                        Location *g = Location::global(strdup(gloName), this);
                         ne = Location::memOf(
                             new Binary(opPlus,
                                 new Unary(opAddrOf, g),
                                 new Const(r)), this);
                     } else {
-                        Type *ty = prog->getGlobalType((char*)global);
+                        Type *ty = prog->getGlobalType((char*)gloName);
                         if (s->isAssign()) {
                             int bits = ((Assign*)s)->getSize();
                             if (ty == NULL || ty->getSize() == 0)
-                                prog->setGlobalType((char*)global,
+                                prog->setGlobalType((char*)gloName,
                                     new IntegerType(bits));
                         }
-                        ty = prog->getGlobalType((char*)global);
-                        Location *g = Location::global(strdup(global), this);
+                        ty = prog->getGlobalType((char*)gloName);
+                        Location *g = Location::global(strdup(gloName), this);
                         if (ty && ty->isArray()) 
                             ne = new Binary(opArraySubscript, g, new Const(0));
                         else 
@@ -1936,21 +1938,23 @@ void UserProc::replaceExpressionsWithGlobals() {
                     Exp *memof = (*rr)->getSubExp1();
                     ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
                     prog->globalUsed(u);
-                    const char *global = prog->getGlobal(u);
-                    if (global) {
-                        int r = u - prog->getGlobal((char*)global);
+                    const char *gloName = prog->getGlobalName(u);
+                    if (gloName) {
+                        ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
                         Exp *ne;
                         if (r) {
-                            Unary *g = Location::global(strdup(global), this);
+                            Unary *g = Location::global(strdup(gloName), this);
                             ne = Location::memOf(
                                 new Binary(opPlus,
                                     new Unary(opAddrOf, g),
                                     new Const(r)), this);
                         } else {
-                            Type *ty = prog->getGlobalType((char*)global);
-                            Unary *g = Location::global(strdup(global), this);
+                            Type *ty = prog->getGlobalType((char*)gloName);
+                            Unary *g = Location::global(strdup(gloName), this);
                             if (ty && ty->isArray()) 
-                                ne = new Binary(opArraySubscript, g, new Const(0));
+                                ne = new Binary(opArraySubscript,
+                                    g,
+                                    new Const(0));
                             else 
                                 ne = g;
                         }

@@ -28,8 +28,8 @@ int main() {
 		printf("Error before opFpop\n"); return 1;}
 	if ((strcmp(operStrings[opExecute],	"opExecute") != 0)) {
 		printf("Error before opExecute\n"); return 1;}
-	if ((strcmp(operStrings[opCodeAddr],	"opCodeAddr") != 0)) {
-		printf("Error before opCodeAddr\n"); return 1;}
+	if ((strcmp(operStrings[opWildStrConst],	"opWildStrConst") != 0)) {
+		printf("Error before opWildStrConst\n"); return 1;}
 	if ((strcmp(operStrings[opAnull],	"opAnull") != 0)) {
 		printf("Error before opAnull\n"); return 1;}
 	printf("Error near the end\n");
