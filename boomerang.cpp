@@ -23,18 +23,6 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-class FileLogger : public Log {
-public:
-	FileLogger() : Log(), out((Boomerang::get()->getOutputPath() + "log").c_str()) { }
-	virtual Log &operator<<(const char *str) { 
-		out << str << std::flush;  
-		return *this; 
-	}
-	virtual ~FileLogger() {};
-protected:
-	std::ofstream out;
-};
-
 Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
@@ -55,6 +43,9 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 
 Log &Boomerang::log() {
 	return *logger;
+}
+
+FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {
 }
 
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
