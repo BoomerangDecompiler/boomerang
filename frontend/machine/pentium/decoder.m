@@ -1849,7 +1849,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         stmts = instantiate(pc,  "FILD.lsI32", DIS_MEM32);
 
     | FILD64(Mem64) =>
-        stmts = instantiate(pc,  "FILD64", DIS_MEM64);
+        stmts = instantiate(pc,  "FILD.lsI64", DIS_MEM64);
 
     | FINIT() =>
         stmts = instantiate(pc,  "FINIT");

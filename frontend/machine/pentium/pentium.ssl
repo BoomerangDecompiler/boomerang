@@ -1740,10 +1740,10 @@ FMULP.STi.ST   i
             *80* i := %st *f i
             FPOP;
 
-FIMUL.r32   modrm 
+FIMUL.i32   modrm 
             *80* %st := %st *f itof(32,80,modrm);
 
-FIMUL.r64   modrm 
+FIMUL.i64   modrm 
             *80* %st := %st *f itof(64,80,modrm);
 
 FNOP    _ ;
