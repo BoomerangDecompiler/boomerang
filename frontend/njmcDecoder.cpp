@@ -55,11 +55,12 @@ NJMCDecoder::NJMCDecoder()
 
 /*==============================================================================
  * FUNCTION:       NJMCDecoder::instantiate
- * OVERVIEW:       Given an instruction name and a variable list of SemStr's
+ * OVERVIEW:       Given an instruction name and a variable list of expressions
  *                 representing the actual operands of the instruction, use the
  *                 RTL template dictionary to return the instantiated RTL
  *                 representing the semantics of the instruction.
- * PARAMETERS:     name - instruction name
+ * PARAMETERS:     pc: native PC
+ *                 name - instruction name
  *                 ... - Semantic String ptrs representing actual operands
  * RETURNS:        an instantiated list of Exps
  *============================================================================*/
@@ -90,7 +91,8 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
         std::cout << std::endl;
     }
 
-    std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode, actuals);
+    std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode, pc,
+      actuals);
 
     return instance;
 }
