@@ -57,7 +57,6 @@ typedef union {
 } yy_SSLParser_stype;
 #define YY_SSLParser_STYPE yy_SSLParser_stype
 #define YY_SSLParser_DEBUG  1 
-#define YY_SSLParser_INHERIT  : public gc
 #define YY_SSLParser_PARSE_PARAM  \
     RTLInstDict& Dict
 #define YY_SSLParser_CONSTRUCTOR_PARAM  \
@@ -174,21 +173,21 @@ protected: \
 #ifndef YY_SSLParser_PURE
 
 /* #line 63 "/usr/local/lib/bison.h" */
-#line 178 "sslparser.h"
+#line 177 "sslparser.h"
 
 #line 63 "/usr/local/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
 /* #line 65 "/usr/local/lib/bison.h" */
-#line 185 "sslparser.h"
+#line 184 "sslparser.h"
 
 #line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
 /* #line 67 "/usr/local/lib/bison.h" */
-#line 192 "sslparser.h"
+#line 191 "sslparser.h"
 
 #line 67 "/usr/local/lib/bison.h"
 /* YY_SSLParser_DEBUG */
@@ -196,7 +195,7 @@ protected: \
 #ifndef YY_SSLParser_LSP_NEEDED
 
 /* #line 70 "/usr/local/lib/bison.h" */
-#line 200 "sslparser.h"
+#line 199 "sslparser.h"
 
 #line 70 "/usr/local/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
@@ -274,7 +273,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 
 /* #line 143 "/usr/local/lib/bison.h" */
-#line 278 "sslparser.h"
+#line 277 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -366,7 +365,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/usr/local/lib/bison.h" */
-#line 370 "sslparser.h"
+#line 369 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -422,7 +421,7 @@ static const int FLOATNUM;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-#line 426 "sslparser.h"
+#line 425 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -526,5 +525,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-#line 530 "sslparser.h"
+#line 529 "sslparser.h"
 #endif

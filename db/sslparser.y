@@ -85,7 +85,8 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
 
 %define DEBUG 1 
 
-%define INHERIT : public gc
+// %define INHERIT : public gc  // This is how to force the parser class to
+                                // be declared as derived from class gc
 
 %define PARSE_PARAM \
     RTLInstDict& Dict
