@@ -882,7 +882,7 @@ std::set<UserProc*>* UserProc::decompile() {
 		Boomerang::get()->alert_decompile_SSADepth(this, depth);
 
 		if (depth == 0) {
-			trimReturns();
+			trimReturns();		// ? Needed for recursion...
 		}
 		if (depth == maxDepth) {
 			fixCallRefs();
@@ -1283,6 +1283,7 @@ void UserProc::trimReturns() {
 	if (VERBOSE)
 		LOG << "Trimming return set for " << getName() << "\n";
 
+	// Note: need this non-virtual version most of the time, since nothing proved yet
 	int sp = signature->getStackRegister(prog);
 
 	for (int n = 0; n < 2; n++) {
@@ -2095,7 +2096,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 
 Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass) {
 	// Expression r[sp] (build just once per call)
-	Exp* regSP = Location::regOf(signature->getStackRegister(prog));
+	Exp* regSP = Location::regOf(signature->getStackRegister());
 	// The implicit definition for r[sp], if any
 	Statement* defSP = cfg->findTheImplicitAssign(regSP);
 	// The expression r[sp]{0}
@@ -2193,7 +2194,7 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
 		LOG << "\n";
 	}
 
-	int sp = signature->getStackRegister(prog);
+	int sp = signature->getStackRegister();
 	if (getProven(Location::regOf(sp)) == NULL) {
 		if (VERBOSE)
 			LOG << "Can't replace locals since sp unproven\n";
@@ -3256,9 +3257,9 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
 		}
 	}
 	std::set<Exp*, lessExpStar>::iterator it;
-	Exp* stackExp = NULL;
+	// Exp* stackExp = NULL;
 	// if (signature->isPromoted())
-		stackExp = Location::regOf(signature->getStackRegister(prog));
+		// stackExp = Location::regOf(signature->getStackRegister());
 	bool removedOne = false;
 	for (it = removes.begin(); it != removes.end(); it++) {
 		// The logic here was doubly screwed. For one thing, there should not have been a not on isPromoted.
