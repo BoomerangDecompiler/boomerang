@@ -194,7 +194,8 @@ db/insnameelem.o: db/insnameelem.h
 db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/proc.h include/prog.h include/type.h \
     include/statement.h
-db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h
+db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h \
+    include/prog.h
 db/managed.o: include/managed.h include/statement.h include/exp.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
 db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
