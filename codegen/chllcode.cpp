@@ -230,13 +230,21 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, t->getSubExp3());
             break;
         case opMult:
+        case opMults:       // FIXME: check types
             appendExp(str, b->getSubExp1());
             strcat(str, " * ");
             appendExp(str, b->getSubExp2());
             break;
         case opDiv:
+        case opDivs:        // FIXME: check types
             appendExp(str, b->getSubExp1());
             strcat(str, " / ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opMod:
+        case opMods:        // Fixme: check types
+            appendExp(str, b->getSubExp1());
+            strcat(str, " % ");
             appendExp(str, b->getSubExp2());
             break;
         case opShiftL:
@@ -290,10 +298,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opSQRTs:
         case opSQRTd:
         case opSQRTq:
-        case opMults:
-        case opDivs:
-        case opMod:
-        case opMods:
         case opSignExt:
         case opRotateL:
         case opRotateR:
@@ -308,8 +312,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opSize:
         case opCastIntStar:
         case opPostVar:
-        case opTruncu:
-        case opTruncs:
         case opFtoi:
         case opFround:
         case opForceInt:
@@ -370,6 +372,24 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, "/* opSgnEx */ (int) ");
             Exp* s = t->getSubExp3();
             appendExp(str, s);
+            break;
+        }
+        case opTruncu:
+        case opTruncs: {
+            strcat(str, "/* opTruncs/u */ (int) ");
+            Exp* s = t->getSubExp3();
+            appendExp(str, s);
+            break;
+        }
+        case opMachFtr: {
+            strcat(str, "/* machine specific */ (int) ");
+            Exp* sub = u->getSubExp1();
+            assert(sub->isStrConst());
+            char* s = ((Const*)sub)->getStr();
+            if (s[0] == '%')        // e.g. %Y
+                strcat(str, s+1);   // Just use Y
+            else
+                strcat(str, s);
             break;
         }
         case opSubscript:
