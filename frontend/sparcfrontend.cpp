@@ -21,6 +21,7 @@
 
 /*
  * 17 May 02 - Mike: Mods for boomerang
+ * 22 Nov 02 - Mike: Added check for invalid instructions; prints opcode
  */
 
 /*==============================================================================
@@ -28,6 +29,8 @@
  *============================================================================*/
 
 #include <assert.h>
+#include <iomanip>          // For setfill etc
+#include <sstream>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
 #endif
@@ -860,6 +863,19 @@ if (0)          // SETTINGS!
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid)
                 return false;
+
+            // Check for invalid instructions
+            if (!inst.valid) {
+                std::cerr << "Invalid instruction at " << std::hex << address
+                  << ": ";
+                std::cerr << std::setfill('0') << std::setw(2);
+				int delta = pBF->getTextDelta();
+                for (int j=0; j<inst.numBytes; j++)
+                    std::cerr << std::setfill('0') << std::setw(2) <<
+                      (unsigned)*(unsigned char*)(address+delta + j) << " ";
+                std::cerr << std::setfill(' ') << std::setw(0) << "\n";
+                return false;
+            }
 
             // Don't display the RTL here; do it after the switch statement
             // in case the delay slot instruction is moved before this one
