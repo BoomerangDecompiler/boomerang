@@ -738,8 +738,12 @@ rt:
     |   NAME_CALL list_actualparameter ')' {
             std::ostringstream o;
             if (Dict.FlagFuncs.find($1) != Dict.FlagFuncs.end()) {
+                // Note: SETFFLAGS assigns to the floating point flags
+                // All others to the integer flags
+                bool bFloat = strcmp($1, "SETFFLAGS") == 0;
+                OPER op = bFloat ? opFflags : opFlags;
                 $$ = new Assign(
-                    new Terminal(opFlags),
+                    new Terminal(op),
                     new Binary(opFlagCall,
                         new Const($1),
                         listExpToExp($2)));
@@ -1059,12 +1063,13 @@ var_op:
         // or opMachFtr (machine specific feature) representing that
         // register.
         REG_ID {
+            bool isFlag = strstr($1, "flags") != 0;
             std::map<std::string, int>::const_iterator it = Dict.RegMap.find($1);
-            if (it == Dict.RegMap.end()) {
+            if (it == Dict.RegMap.end() && !isFlag) {
                 std::ostringstream ost;
                 ost << "register `" << $1 << "' is undefined";
                 yyerror(STR(ost));
-            } else if (it->second == -1) {
+            } else if (isFlag || it->second == -1) {
                 // A special register, e.g. %npc or %CF
                 // Return a Terminal for it
                 OPER op = strToTerm($1);
@@ -1399,7 +1404,7 @@ OPER SSLParser::strToOper(const char* s) {
 }
 
 OPER strToTerm(char* s) {
-    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF, %DF
+    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF, %DF, %flags, %fflags
     if (s[2] == 'F') {
         if (s[1] <= 'N') {
             if (s[1] == 'C') return opCF;
@@ -1411,8 +1416,13 @@ OPER strToTerm(char* s) {
         }
     }
     if (s[1] == 'p') return opPC;
-    if (s[2] == 'f') return opAFP;
-    if (s[2] == 'g') return opAGP;
+    if (s[1] == 'a') {
+        if (s[2] == 'f') return opAFP;
+        if (s[2] == 'g') return opAGP;
+    } else if (s[1] == 'f') {
+        if (s[2] == 'l') return opFlags;
+        if (s[2] == 'f') return opFflags;
+    }
     return (OPER) 0;
 }
 
