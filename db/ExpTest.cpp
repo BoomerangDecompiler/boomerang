@@ -1119,8 +1119,7 @@ void ExpTest::testSubscriptVar() {
 	Statement* s = dynamic_cast<Statement*>(ae);
 	// Subtest 1: should do nothing
 	Exp* r28 = Location::regOf(28);
-	Statement* def1 = dynamic_cast<Statement*>(new Assign(r28->clone(),
-	  r28->clone()));
+	Statement* def1 = dynamic_cast<Statement*>(new Assign(r28->clone(), r28->clone()));
 	def1->setNumber(12);
 	def1->subscriptVar(left, def1);			  // Should do nothing
 	std::string expected1;
