@@ -132,6 +132,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isIntConst() {return op == opIntConst;}
     // True if is addr const
     bool isAddrConst() {return op == opAddrConst;}
+    // True if is string const
+    bool isStrConst() {return op == opStrConst;}
     // True if is flt point const
     bool isFltConst() {return op == opFltConst;}
     // True if is a post-var expression (var_op' in SSL file)
@@ -561,7 +563,6 @@ public:
         virtual Exp* getRight() { return subExp2; }
 
 	// dataflow print functions
-        virtual void printWithLives(std::ostream& os);
         virtual void printWithUses(std::ostream& os);
 
 	// special print functions

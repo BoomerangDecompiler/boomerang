@@ -29,14 +29,41 @@
 #include "dataflow.h"
 #include "exp.h"
 #include "cfg.h"
+#include "proc.h"
 
 // finds a use for a given expression
 Statement *Statement::findUse(Exp *e) {
+    std::set<Statement*> uses;
+    calcUses(uses);
     for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end();
             it++)
         if (*(*it)->getLeft() == *e)
 	    return *it;
     return NULL;
+}
+
+void Statement::calcUses(std::set<Statement*> &uses) {
+    std::set<Statement*> live;
+    getLiveIn(live);
+    for (std::set<Statement*>::iterator it = live.begin(); it != live.end();
+		    it++) {
+        assert(*it);
+        Exp *left = (*it)->getLeft();
+        assert(left);
+        if (usesExp(left)) {
+	    uses.insert(*it);
+	}
+    }
+}
+
+void Statement::calcUseBy(std::set<Statement*> &useBy) {
+    if (getLeft() == NULL) return;
+    std::set<Statement*> stmts;
+    proc->getStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) 
+        if ((*it)->findUse(getLeft()) == this)
+		useBy.insert(*it);
 }
 
 /* Goes through the definitions live at this expression and creates a
@@ -45,19 +72,8 @@ Statement *Statement::findUse(Exp *e) {
  */
 void Statement::calcUseLinks()
 {
-    uses.clear();
-    std::set<Statement*> live;
-    getLiveIn(live);
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
-	    it++) {
-        assert(*it);
-        Exp *left = (*it)->getLeft();
-        assert(left);
-        if (usesExp(left)) {
-	    uses.insert(*it);
-            (*it)->addUseBy(this);
-	}
-    }
+    std::set<Statement*> uses;
+    calcUses(uses);
 }
 
 // replace a use in this statement
@@ -74,25 +90,6 @@ void Statement::replaceUse(Statement *use)
     std::cerr << "   after: ";
     printAsUse(std::cerr);
     std::cerr << std::endl;
-    // update statements that use this statement
-    std::set<Statement*> tmp_useBy;
-    for (std::set<Statement*>::iterator it = useBy.begin(); 
-	     it != useBy.end(); it++) {
-	    tmp_useBy.insert(*it);
-    }
-    useBy.clear();
-    for (std::set<Statement*>::iterator it = tmp_useBy.begin(); 
-	     it != tmp_useBy.end(); it++) {
-	    (*it)->calcUseLinks();
-	    if (use->useBy.find(*it) != use->useBy.end())
-                useBy.insert(*it);
-    }
-    // update statements used by this statement
-    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end();
-		    it++)
-	    (*it)->getUseBy().erase(this);
-    use->getUseBy().erase(this);
-    calcUseLinks();
 }
 
 /* get everything that is live before this assignment.
@@ -104,73 +101,66 @@ void Statement::getLiveIn(std::set<Statement*> &livein)
 	pbb->getLiveInAt(this, livein);
 }
 
+bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
+    if (*e1 == *e2) return true;
+
+    bool b = (calcAlias(e1, e2, size) && calcAlias(e2, e1, size)); 
+    if (b && 0) {
+        std::cerr << "mayAlias: *" << size << "* ";
+        e1->print(std::cerr);
+        std::cerr << " ";
+        e2->print(std::cerr);
+        std::cerr << " : yes" << std::endl;
+    }
+    return b;
+}
+
 // returns true if e1 may alias e2
-bool Statement::mayAlias(Exp *e1, Exp *e2, int size)
+bool Statement::calcAlias(Exp *e1, Exp *e2, int size)
 {
-//    std::cerr << "mayAlias: ";
-//    e1->print(std::cerr);
-//    std::cerr << " ";
-//    e2->print(std::cerr);
-//    std::cerr << " : ";
     // currently only considers memory aliasing..
     if (!e1->isMemOf() || !e2->isMemOf()) {
-//	    std::cerr << "no" << std::endl;
 	    return false;
     }
+    Exp *e1a = e1->getSubExp1();
+    Exp *e2a = e2->getSubExp1();
     // constant memory accesses
-    if (e1->getSubExp1()->isAddrConst() && 
-        e2->getSubExp1()->isAddrConst()) {
-        ADDRESS a1 = ((Const*)e1->getSubExp1())->getAddr();
-        ADDRESS a2 = ((Const*)e2->getSubExp1())->getAddr();
+    if (e1a->isAddrConst() && 
+        e2a->isAddrConst()) {
+        ADDRESS a1 = ((Const*)e1a)->getAddr();
+        ADDRESS a2 = ((Const*)e2a)->getAddr();
 	int diff = a1 - a2;
 	if (diff < 0) diff = -diff;
 	if (diff*8 >= size) {
-//	        std::cerr << "no" << std::endl;
 		return false;
 	}
     }
-    // same register op constant memory accesses
-    if (e1->getSubExp1()->getArity() == 2 &&
-        e2->getSubExp1()->getArity() == 2 &&
-	e1->getSubExp1()->getSubExp1()->isRegOf() &&
-        e2->getSubExp1()->getSubExp1()->isRegOf() &&
-	*e1->getSubExp1()->getSubExp1() == *e2->getSubExp1()->getSubExp1() &&
-	e1->getSubExp1()->getSubExp2()->isIntConst() &&
-	e2->getSubExp1()->getSubExp2()->isIntConst()) {
-        int i1 = ((Const*)e1->getSubExp1())->getInt();
-        int i2 = ((Const*)e2->getSubExp1())->getInt();
+    // same left op constant memory accesses
+    if (e1a->getArity() == 2 &&
+        e1a->getOper() == e2a->getOper() &&
+	e1a->getSubExp2()->isIntConst() &&
+	e2a->getSubExp2()->isIntConst() &&
+	*e1a->getSubExp1() == *e2a->getSubExp1()) {
+        int i1 = ((Const*)e1a->getSubExp2())->getInt();
+        int i2 = ((Const*)e2a->getSubExp2())->getInt();
 	int diff = i1 - i2;
 	if (diff < 0) diff = -diff;
 	if (diff*8 >= size) {
-//	        std::cerr << "no" << std::endl;
 		return false;
 	}
     }
-    // same register op constant / same register memory accesses
-    if (e1->getSubExp1()->getArity() == 2 &&
-        e2->getSubExp1()->isRegOf() &&
-	e1->getSubExp1()->getSubExp1()->isRegOf() &&
-	*e1->getSubExp1()->getSubExp1() == *e2->getSubExp1() &&
-	e1->getSubExp1()->getSubExp2()->isIntConst()) {
-        int i1 = ((Const*)e1->getSubExp1())->getInt();
-	if (i1*8 >= size) {
-//	        std::cerr << "no" << std::endl;
+    // [left] vs [left +/- constant] memory accesses
+    if ((e2a->getOper() == opPlus || e2a->getOper() == opMinus) &&
+        *e1a == *e2a->getSubExp1() &&
+	e2a->getSubExp2()->isIntConst()) {
+        int i1 = 0;
+        int i2 = ((Const*)e2a->getSubExp2())->getInt();
+	int diff = i1 - i2;
+	if (diff < 0) diff = -diff;
+	if (diff*8 >= size) {
 		return false;
 	}
     }
-    // same register / same register op constant memory accesses
-    if (e2->getSubExp1()->getArity() == 2 &&
-        e1->getSubExp1()->isRegOf() &&
-	e2->getSubExp1()->getSubExp1()->isRegOf() &&
-	*e2->getSubExp1()->getSubExp1() == *e1->getSubExp1() &&
-	e2->getSubExp1()->getSubExp2()->isIntConst()) {
-        int i2 = ((Const*)e2->getSubExp1())->getInt();
-	if (i2*8 >= size) {
-//	        std::cerr << "no" << std::endl;
-		return false;
-	}
-    }
-//    std::cerr << "yes" << std::endl;
     return true;
 }
 
@@ -210,15 +200,16 @@ void Statement::calcLiveOut(std::set<Statement*> &live)
 bool Statement::canPropogateToAll()
 {
     std::set<Statement*> tmp_uses;
-    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end(); 
-		    it++)
-        tmp_uses.insert(*it);
+    calcUses(tmp_uses);
     int nold = tmp_uses.size();
     killLive(tmp_uses);
     if (nold - tmp_uses.size() > 1) {
         // see comment.
 	return false;
     }
+
+    std::set<Statement*> useBy;
+    calcUseBy(useBy);
 
     if (useBy.size() == 0) return false;
 
@@ -246,15 +237,13 @@ bool Statement::canPropogateToAll()
 // assumes this statement will be removed by the caller
 void Statement::propogateToAll()
 {
-    std::set<Statement*> stmts = useBy;
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+    std::set<Statement*> useBy;
+    calcUseBy(useBy);
+    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); 
 	 it++) {
 	Statement *e = *it;
         e->replaceUse(this);
-	assert(useBy.begin() == useBy.end() || e != *useBy.begin());
     }
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end();
-         it++) (*it)->calcUseLinks();
 }
 
 

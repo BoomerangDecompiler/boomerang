@@ -477,7 +477,6 @@ public:
 	void getLiveIn(std::set<Statement*> &livein);
 	void calcLiveOut(std::set<Statement*> &live);
         std::set<Statement*> &getLiveOut() { return liveout; }
-        void calcUses();
 
 	/* set the return value */
 	void setReturnVal(Exp *e);

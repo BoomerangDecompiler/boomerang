@@ -1143,152 +1143,6 @@ unsigned Cfg::getCoverage()
     return uTotal;
 }
 
-#if 0
-/*==============================================================================
- * FUNCTION:        Cfg::resetDFASets
- * OVERVIEW:        Resets the DFA sets of all the BBs.
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::resetDFASets()
-{
-    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++)
-        (*it)->resetDFASets();
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::buildUseDefSets
- * OVERVIEW:        Build the set of locations that are used and
- *                  defined in each BB of this CFG.
- * PARAMETERS:      filter - a filter to restrict which locations are
- *                    considered
- *                  proc - Proc object associated with this Cfg
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::buildUseDefSets(LocationMap& locMap, LocationFilter* filter, Proc*
-    proc)
-{
-    // Build the use and def sets for each BB
-    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++)
-        (*it)->buildUseDefSets(locMap,filter,proc);
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::buildLiveInSets
- * OVERVIEW:        Build the sets of definitions that are live into 
- *                  each basic block. This method is only called when
- *                  analysing this procedure as a callee. The purpose
- *                  of the parameter is to prevent uses of a return
- *                  location as a use-without-definition.
- * PARAMETERS:      callDefines - this is the set of locations that will
- *                    be considered as defined by a call.
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::buildLiveInSets(const BITSET& callDefines)
-{
-    buildLiveInOutSets(BITSET(), &callDefines);
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::buildLiveOutSets
- * OVERVIEW:        Build the sets of definitions that are live out of
- *                  each basic block. This method is only called when
- *                  analysing this procedure as a caller.
- * PARAMETERS:      params: bitset representing the parameters of this proc
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::buildLiveOutSets(const BITSET& params)
-{
-    buildLiveInOutSets(params, NULL);
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::buildLiveInOutSets
- * OVERVIEW:        Build the sets of definitions that are live into and out of
- *                  each basic block.
- *                  This implements Algorithm 10.3 given on
- *                  page 631 of "Compilers: Principles, Techniques and Tools"
- *                  (i.e the 'dragon book').
- * PARAMETERS:      params - set of parameter locations
- *                  defines - this is the set of locations that will
- *                    be considered as defined by a call. If it is
- *                    NULL, we assume that this procedure is being
- *                    analysed as a caller and as such calls kill all
- *                    definitions
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::buildLiveInOutSets(const BITSET& params, const BITSET* defines
-    /*= NULL*/)
-{
-    // For efficiency, we require the BBs to be sorted by the last DFS number.
-    this->sortByLastDFS();
-
-    // Initialise the liveOut set of each BB to equal its defined set. The
-    // liveIn sets are initialised to the universal set.
-    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        (*it)->liveOut.set();
-        (*it)->liveIn.set();
-    }
-
-    // The first basic block is set to have no live ins, apart from parameters
-    if (checkEntryBB()) return;
-    entryBB->liveIn = params;
-    entryBB->liveOut = entryBB->defSet;
-
-    bool change = true;
-
-    while (change) {
-        change = false;
-
-        // Process the BBs in reverse order (i.e. coming down the graph,
-        // visiting parents before children)
-        for (std::list<PBB>::reverse_iterator it = m_listBB.rbegin();
-            it != m_listBB.rend(); it++) {
-
-            PBB currBB = (*it);
-
-            // Set the liveIn set to be the intersection of all the
-            // predecessor's liveOut sets and add any new members of
-            // liveIn to liveOut.
-            change = currBB->buildLiveInOutSets(defines);
-        }
-    }
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::buildRecursiveUseUndefSets
- * OVERVIEW:        For each BB, b, in this procedure, build the set of
- *                  locations used before definition in the subgraph
- *                  headed by b.
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::buildRecursiveUseUndefSets()
-{
-    unTraverse();
-    if (checkEntryBB()) return;
-    entryBB->buildRecursiveUseUndefSet();
-}
-
-/*==============================================================================
- * FUNCTION:        Cfg::getLiveIns
- * OVERVIEW:        Get the locations that are live into this procedure.
- * PARAMETERS:      liveIn - set to the locations that are live into this proc
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::getLiveIns(BITSET& liveIn)
-{
-    for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) {
-
-        PBB bb = (*it);
-
-        // Add all the locations used without definition in the current BB
-        // to the set of proc live ins
-        liveIn |= bb->useUndefSet & ~(bb->liveIn);
-    }
-}
-#endif
-
 /*==============================================================================
  * FUNCTION:        Cfg::addCall
  * OVERVIEW:        Add a call to the set of calls within this procedure.
@@ -1329,7 +1183,11 @@ void Cfg::searchAndReplace(Exp* search, Exp* replace)
             RTL& rtl = **rtl_it;
             rtl.searchAndReplace(search,replace);
         }
-
+	if ((*bb_it)->getType() == RET && (*bb_it)->m_returnVal) {
+            bool change;
+	    (*bb_it)->m_returnVal = (*bb_it)->m_returnVal->searchReplaceAll(
+                search, replace, change);
+	}
     }
 }
 
@@ -1476,10 +1334,6 @@ void Cfg::computeDataflow()
         it != m_listBB.end(); it++)
 	    (*it)->liveout.clear();
     updateLiveness();
-
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-        it != m_listBB.end(); it++)
-        (*it)->calcUses();
 }
 
 void Cfg::updateLiveness()

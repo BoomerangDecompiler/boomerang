@@ -872,27 +872,27 @@ void AssignExp::print(std::ostream& os) {
     p2->print(os);
 }
 
-void AssignExp::printWithLives(std::ostream& os) {
-    print(os);
-    os << "   live: ";
-    std::set<Statement*> livein;
-    getLiveIn(livein);
-    for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
-        (*it)->print(os);
-        os << ", ";
-    }
-}
-
 void AssignExp::printWithUses(std::ostream& os) {
     print(os);
     os << "   uses: ";
+    std::set<Statement*> uses;
+    calcUses(uses);
     for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end(); it++) {
         (*it)->printAsUse(os);
         os << ", ";
     }
     os << "   used by: ";
+    std::set<Statement*> useBy;
+    calcUseBy(useBy);
     for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); it++) {
         (*it)->printAsUseBy(os);
+        os << ", ";
+    }
+    os << "   live: ";
+    std::set<Statement*> livein;
+    getLiveIn(livein);
+    for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
+        (*it)->print(os);
         os << ", ";
     }
 }
@@ -2336,7 +2336,7 @@ void AssignExp::killLive(std::set<Statement*> &live)
 {
     std::set<Statement*> kills;
     for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
-	 it++) {
+		    it++) {
 	if ((*it)->getLeft() == NULL) continue;
         bool isKilled = false;
         if (*(*it)->getLeft() == *subExp1)
@@ -2362,7 +2362,7 @@ void AssignExp::getDeadStatements(std::set<Statement*> &dead)
             isKilled = true;
         if ((*it)->getLeft()->isMemOf() && subExp1->isMemOf())
             isKilled = true; // might alias, very conservative
-        if (isKilled && (*it)->getUseBy().size() == 0)
+        if (isKilled && (*it)->getNumUseBy() == 0)
 	    dead.insert(*it);
     }
 }

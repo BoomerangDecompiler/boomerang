@@ -63,7 +63,6 @@ protected:
     Type *rettype;
     bool ellipsis;
 
-    bool updateReturnValue(UserProc *p, Statement *stmt);
     void updateParams(UserProc *p, Statement *stmt, bool checklive = true);
     bool usesNewParam(UserProc *p, Statement *stmt, bool checklive, int &n);
 
@@ -97,15 +96,15 @@ public:
     virtual void addParameter(Parameter *param) { params.push_back(param); }
     virtual void addEllipsis() { ellipsis = true; }
     // set the number of parameters using defaults
-    virtual void setNumParams(unsigned int n);
+    virtual void setNumParams(int n);
 
     // accessors for parameters
-    virtual unsigned int getNumParams();
-    virtual const char *getParamName(unsigned int n);
-    virtual Exp *getParamExp(unsigned int n);
-    virtual Type *getParamType(unsigned int n);
+    virtual int getNumParams();
+    virtual const char *getParamName(int n);
+    virtual Exp *getParamExp(int n);
+    virtual Type *getParamType(int n);
     // accessor for argument expressions
-    virtual Exp *getArgumentExp(unsigned int n);
+    virtual Exp *getArgumentExp(int n);
     virtual bool hasEllipsis() { return ellipsis; }
 
     // analysis determines parameters / return type

@@ -415,8 +415,8 @@ if (0) {
  *                   actuals - the actual parameter values
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
-std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl, std::list<std::string>& params,
-  std::vector<Exp*>& actuals)
+std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl, 
+		std::list<std::string>& params, std::vector<Exp*>& actuals)
 {
     assert(params.size() == actuals.size());
 
@@ -424,64 +424,56 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl, std::list<std::string>& p
     std::list<Exp*>* newList = new std::list<Exp*>();
     rtl.deepCopyList(*newList);
 
+    if (newList->back()->isFlagCall()) {
+	// remove the flag call
+        Exp *f = newList->back();
+        newList->erase(--newList->end());
+	// look up the flagdef
+	std::string name((const char*)((Const*)f->getSubExp1())->getStr());
+	assert(FlagFuncs.find(name) != FlagFuncs.end());
+	FlagDef *def = (FlagDef*)FlagFuncs[name];
+	// convert the opList to a std::list for both params and actuals
+	std::list<std::string> def_params;
+	std::vector<Exp*> args;
+	for (Exp *l = def->getSubExp1(); 
+		  l->getOper() == opList &&
+	          l->getSubExp1()->getOper() == opParam;
+                  l = l->getSubExp2()) {
+	     std::string param((const char *)
+			((Const*)l->getSubExp1()->getSubExp1())->getStr());
+	     def_params.push_back(param);
+	}
+	for (Exp *l = f->getSubExp2(); 
+	     l && l->getOper() == opList;
+             l = l->getSubExp2())
+		args.push_back(l->getSubExp1());
+	// instantiate the flag rtl
+	std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
+			def_params, args);
+	// append this list onto the list of exps for this rtl
+	for (std::list<Exp*>::iterator it = def_list->begin(); 
+			it != def_list->end(); it++)
+	    newList->push_back(*it);
+	delete def_list;
+    }
+
     // Iterate through each Exp of the new list of Exps
     for (std::list<Exp*>::iterator rt = newList->begin();
-      rt != newList->end(); rt++) {
+         rt != newList->end(); rt++) {
+	assert(!(*rt)->isFlagCall());
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
-#if 0   // The below only applies to SSL files with complex OPERAND sections
-            if( DetParamMap[*param].funcParams.size() != 0 ) {
-                // I assume that Nathan is talking here about "function-like"
-                // operand forms, not ordinary function calls.
-                /* It's a function, so a little more complicated */
-                Exp* match = new Unary(opParam,
-                  new Const((char*)param->c_str()));
-                //Exp* match(1, *param);
-                ParamEntry& ent = DetParamMap[*param];
-                // I have no idea what all these wildcards is about: (MVE)
-                //for( unsigned i=0; i<ent.funcParams.size(); i++ ) {
-                //    match.push(WILD);
-                //}
-                std::list<Exp*> result;
-                if( (*rt)->searchAll(match, result) ) {
-                    /*
-                     * Two stage substitution - extract the args from the call
-                     * and sub them into the parameter body, and then substitute
-                     * that back in place of the call
-                     */
-                    for( std::list<Exp*>::iterator it = result.begin();
-                      it != result.end(); it++ ) {
-                        Exp* replace = *actual;
-                        std::list<std::string>::iterator pit = ent.funcParams.begin();
-                        for( int i = 0; pit != ent.funcParams.end();
-                          pit++, i++ ) {
-                            Exp* formal = new Unary(opParam,
-                              new Const((char*)pit->c_str()));
-// HERE!
-                            Exp* *actual = (*it)->getSubExpr(i);
-                            replace = replace->searchReplaceAll(formal, *actual);
-                            delete actual;
-                        }
-                        (*rt)->searchAndReplace(**it, replace);
-                        delete *it;
-                    }
-                }
-            } else {
-#else
-            {
-#endif
-                /* Simple parameter - just construct the formal to search for */
-                Exp* formal = new Unary(opParam,
-                  new Const((char*)(param->c_str())));
+            /* Simple parameter - just construct the formal to search for */
+            Exp* formal = new Unary(opParam, 
+			    new Const((char*)(param->c_str())));
                 
-                bool ch;        // Result of search: unused
-                *rt = (*rt)->searchReplaceAll(formal, *actual, ch);
-                delete formal;
-            }
+            bool ch;        // Result of search: unused
+            *rt = (*rt)->searchReplaceAll(formal, *actual, ch);
+            delete formal;
         }
-   }
+    }
 
     transformPostVars( newList, true );
     return newList;

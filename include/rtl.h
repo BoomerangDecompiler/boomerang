@@ -305,7 +305,7 @@ protected:
 /*==============================================================================
  * HLJcond has a condition Exp in addition to the destination of the jump.
  *============================================================================*/
-class HLJcond: public HLJump {
+class HLJcond: public HLJump, public Statement {
 public:
     HLJcond(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
     virtual ~HLJcond();
@@ -332,6 +332,7 @@ public:
     void makeSigned();
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
+    virtual void print(std::ostream& os) { print(os, true); }
 
     // Replace all instances of "search" with "replace".
     void searchAndReplace(Exp* search, Exp* replace);
@@ -356,8 +357,37 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
+	// new dataflow analysis
+        virtual void killLive(std::set<Statement*> &live) { }
+        virtual void getDeadStatements(std::set<Statement*> &dead) { }
+	virtual bool usesExp(Exp *e);
+
+	// dataflow related functions
+	virtual bool canPropogateToAll() { return false; }
+	virtual void propogateToAll() { assert(false); }
+
+        // get how to access this value
+        virtual Exp* getLeft() { return NULL; }
+	virtual Type* getLeftType() { return NULL; }
+
+        // get how to replace this statement in a use
+        virtual Exp* getRight() { return pCond; }
+
+	// custom printing functions
+        virtual void printWithUses(std::ostream& os);
+
+	// special print functions
+        virtual void printAsUse(std::ostream &os);
+        virtual void printAsUseBy(std::ostream &os);
+
+	// inline any constants in the statement
+	virtual void inlineConstants(Prog *prog);
+
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
+
+protected:
+    	virtual void doReplaceUse(Statement *use);
 
 private:
     JCOND_TYPE jtCond;          // The condition for jumping
@@ -516,7 +546,6 @@ public:
         virtual Exp* getRight() { return NULL; }
 
 	// custom printing functions
-        virtual void printWithLives(std::ostream& os);
         virtual void printWithUses(std::ostream& os);
 
 	// special print functions

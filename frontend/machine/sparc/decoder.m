@@ -32,11 +32,11 @@
 #pragma warning(disable:4786)
 #endif
 
+#include "exp.h"
 #include "proc.h"
 #include "prog.h"
 #include "decoder.h"
 #include "sparcdecoder.h"
-#include "exp.h"
 #include "rtl.h"
 #include "BinaryFile.h"		// For SymbolByAddress()
 #include "boomerang.h"

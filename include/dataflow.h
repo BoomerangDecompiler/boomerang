@@ -28,6 +28,7 @@ class Exp;
 class BasicBlock;
 typedef BasicBlock *PBB;
 class Prog;
+class UserProc;
 class Type;
 
 /* Statements define values that are used in expressions.
@@ -36,12 +37,13 @@ class Type;
 class Statement {
 protected:
     PBB pbb;  // contains a pointer to the enclosing BB
-    std::set<Statement*> uses;
-    std::set<Statement*> useBy;
+    UserProc *proc; // procedure containing this statement
 public:
 
-    Statement() : pbb(NULL) { }
+    Statement() : pbb(NULL), proc(NULL) { }
     virtual ~Statement() { }
+
+    void setProc(UserProc *p) { proc = p; }
 
     // calculates the live set after this statement
     virtual void calcLiveOut(std::set<Statement*> &liveout);
@@ -79,11 +81,18 @@ public:
     virtual Statement *findUse(Exp *e);
 
     // get the uses
-    std::set<Statement*> &getUses() { return uses; }
-    std::set<Statement*> &getUseBy() { return useBy; }
-
-    // adds a new statement to the useBy set
-    void addUseBy(Statement *stmt) { useBy.insert(stmt); }
+    void calcUses(std::set<Statement*> &uses);
+    int getNumUses() { 
+	std::set<Statement*> uses; 
+	calcUses(uses); 
+	return uses.size(); 
+    }
+    void calcUseBy(std::set<Statement*> &useBy);
+    int getNumUseBy() {
+        std::set<Statement*> useBy; 
+        calcUseBy(useBy); 
+        return useBy.size(); 
+    }
 
     // get/set the enclosing BB
     PBB getBB() { return pbb; }
@@ -101,7 +110,6 @@ public:
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os) = 0;
-    virtual void printWithLives(std::ostream& os) = 0;
     virtual void printWithUses(std::ostream& os) = 0;
     virtual void printAsUse(std::ostream &os) = 0;
     virtual void printAsUseBy(std::ostream &os) = 0;
@@ -114,6 +122,7 @@ public:
 
 protected:
     virtual void doReplaceUse(Statement *use) = 0;
+    bool calcAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };
 

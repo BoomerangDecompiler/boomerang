@@ -402,7 +402,7 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
     jtCond = cond;
     bFloat = usesFloat;
 
-/*    if (bFloat) return;
+    if (bFloat) return;
 
     // set pCond to a high level representation of this type
     Exp* p = NULL;
@@ -458,7 +458,7 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
             break;
     }
     assert(p);
-    setCondExpr(p);*/
+    setCondExpr(p);
 }
 
 /*==============================================================================
@@ -658,6 +658,47 @@ bool HLJcond::deserialize_fid(std::istream &inf, int fid)
 void HLJcond::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
     // dont generate any code for jconds, they will be handled by the bb
+}
+
+bool HLJcond::usesExp(Exp *e)
+{
+    Exp *tmp;
+    return pCond && pCond->search(e, tmp);
+}
+
+// custom printing functions
+void HLJcond::printWithUses(std::ostream& os)
+{
+}
+
+// special print functions
+void HLJcond::printAsUse(std::ostream &os)
+{
+    if (pCond)
+        pCond->print(os);
+    else
+	os << "<empty cond>";
+}
+
+void HLJcond::printAsUseBy(std::ostream &os)
+{
+    if (pCond)
+        pCond->print(os);
+    else
+	os << "<empty cond>";
+}
+
+// inline any constants in the statement
+void HLJcond::inlineConstants(Prog *prog)
+{
+}
+
+void HLJcond::doReplaceUse(Statement *use)
+{
+    bool change;
+    assert(pCond);
+    pCond = pCond->searchReplaceAll(use->getLeft(), use->getRight(), change);
+    simplify();
 }
 
 void HLJcond::simplify()
@@ -1277,12 +1318,13 @@ void HLCall::decompile()
         for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
             arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
         if (procDest->getSignature()->hasEllipsis()) {
-	    // TODO
-	    arguments.push_back(procDest->getSignature()->
+	    for (int i = 0; i < 10; i++)
+	        arguments.push_back(procDest->getSignature()->
 				getArgumentExp(arguments.size())->clone());
         }
 	// init return location
-	returnLoc = procDest->getSignature()->getReturnExp()->clone();
+	returnLoc = procDest->getSignature()->getReturnExp();
+	if (returnLoc) returnLoc = returnLoc->clone();
     } else {
 	// TODO
     }
@@ -1356,13 +1398,13 @@ void HLCall::getDeadStatements(std::set<Statement*> &dead)
             if ((*it)->getLeft() && getReturnLoc() && 
                 (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
                 isKilled = true; // might alias, very conservative
-            if (isKilled && (*it)->getUseBy().size() == 0)
+            if (isKilled && (*it)->getNumUseBy() == 0)
 	        dead.insert(*it);
         }
     } else  {
         for (std::set<Statement*>::iterator it = live.begin(); 
 	     it != live.end(); it++) 
-		if ((*it)->getUseBy().size() == 0)
+		if ((*it)->getNumUseBy() == 0)
 			dead.insert(*it);
     }
 }
@@ -1400,12 +1442,6 @@ void HLCall::doReplaceUse(Statement *use)
 	    arguments[i] = arguments[i]->simplifyArith();
 	    arguments[i] = arguments[i]->simplify();
     }
-}
-
-void HLCall::printWithLives(std::ostream& os)
-{
-    // TODO
-    assert(false);
 }
 
 void HLCall::printWithUses(std::ostream& os)

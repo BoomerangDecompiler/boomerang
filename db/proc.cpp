@@ -636,385 +636,6 @@ std::ostream& UserProc::put(std::ostream& os)
     return os << std::hex << address << std::endl;
 }
 
-#if 0       // Need toSymbolic
-/*==============================================================================
- * FUNCTION:      UserProc::setParams
- * OVERVIEW:      Sets the parameters that have been recovered for this
- *                  procedure through CSR analysis.
- * PARAMETERS:    params - the list of locations used for the parameters
- *                aggUsed - true if the aggregate pointer location is used
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::setParams(std::list<TypedExp*>& params, bool aggUsed /* = false */)
-{
-    parameters.clear();         // Could be called many times
-    for (std::list<TypedExp*>::iterator it = params.begin(); it != params.end();it++)
-    {
-        TypedExp* symbolic;
-        toSymbolic(*it, symbolic, false);
-        parameters.push_back(symbolic);
-        // Under some conditions, parameters are discovered after locals have
-        // been created for the same location. That causes a local variable to
-        // be delcared in the .c file, shadowing the parameter. So we check for
-        // the parameter already being a local variable; if so, the local is
-        // deleted
-        // Note: can't use find() because we need a special equality for Exp*s
-        std::vector<TypedExp*>::iterator ll;
-        for (ll = locals.begin(); ll != locals.end(); ll++) {
-            if (**ll == *symbolic) {
-                delete *ll;
-                locals.erase(ll);
-                break;
-            }
-        }
-    }
-    aggregateUsed = aggUsed;
-}
-#endif
-
-#if 0       // Was used for some weird CSR purpose
-/*==============================================================================
- * FUNCTION:      UserProc::getParamSet
- * OVERVIEW:      Gets the parameters that have been recovered for this
- *                  procedure through CSR analysis, to a set of Semantic Strings
- *                  (not symbolic)
- * PARAMETERS:    <none>
- * RETURNS:       Type insensitive set of Exp*
- *============================================================================*/
-setTiExp*& UserProc::getParamSet()
-{
-    setTiExp*& ret = *new setTiExp*;
-    map<Exp*, Exp*>::iterator it;
-    for (it = symbolMap.begin(); it != symbolMap.end(); it++) {
-        ret.insert(it->first);
-    }
-    return ret;
-}
-#endif
-
-#if 0
-/*==============================================================================
- * FUNCTION:      UserProc::setPrologue
- * OVERVIEW:      Set the prologue of this procedure.
- * PARAMETERS:    prologue - a caller prologue
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::setPrologue(CalleePrologue* prologue)
-{
-    if (this->prologue != NULL) {
-        std::ostringstream ost;
-        ost << "attempt to set prologue `" << prologue->getName()
-          << "' for proc " << name << "' which already has one: `"
-          << this->prologue->getName() << "'";
-        if (prologue->getName() == this->prologue->getName()) {
-            // This is a warning, not an error, because of the common case of
-            // Sparc's same_reg_win, where the epilogue is the same as the
-            // prologue, except for the sign of the operand, e.g.
-            // add          %sp, -104, %sp      // Prologue
-            // ...
-            // add          %sp, +104, %sp      // Epilogue
-            warning(str(ost));
-        } else {
-            // Assume that different logue names is always bad
-            error(str(ost));
-        }
-    }
-    else
-        // Note: don't overwrite prologues. For example, the same_reg_win
-        // case as above. If a prologue comes part way through a proc, it is
-        // set then (there is no "default" prologue)
-        this->prologue = prologue;
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::setEpilogue
- * OVERVIEW:      Set the epilogue of this procedure.
- * PARAMETERS:    epilogue - a caller epilogue
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::setEpilogue(CalleeEpilogue* epilogue)
-{
-    // Only set the given epilogue to be the epilogue of this procedure if it
-    // doesn't currently have one of the one it does have comes after the given
-    // epilogue in an oredring between epilogues.
-    if (this->epilogue == NULL ||
-        this->epilogue->getOrder() > epilogue->getOrder())
-        this->epilogue = epilogue;
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::getPrologue
- * OVERVIEW:      Get the prologue (if any) of this procedure.
- * PARAMETERS:    <none>
- * RETURNS:       a callee prologue
- *============================================================================*/
-CalleePrologue* UserProc::getPrologue()
-{
-    return this->prologue;
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::getEpilogue
- * OVERVIEW:      Get the epilogue (if any) of this procedure.
- * PARAMETERS:    <none>
- * RETURNS:       a callee epilogue
- *============================================================================*/
-CalleeEpilogue* UserProc::getEpilogue()
-{
-    return this->epilogue;
-}
-#endif
-
-#if 0           // Needs getLocalsSize
-/*==============================================================================
- * FUNCTION:      UserProc::printLocalsAsC
- * OVERVIEW:      Print the locals declaration in C style. This
- *                includes declarations for the block of memory set
- *                aside for local varaiables and the abstract frame
- *                pointer used to index into this block.
- *                Also delcares the symbolic locations (v[0]..v[n-1])
- * NOTE:          FIXME: C specific
- * PARAMETERS:    os - the output stream to use
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::printLocalsAsC(std::ostream& os)
-{
-    // the block of memory for locals
-    if (getLocalsSize() != 0) {
-
-        os << "char _locals[" << dec << getLocalsSize() << "];\n";
-    }
-
-    // If this is main, and the analysis decided that there were more than
-    // two parameters, declare them here so that at least the output will
-    // compile
-    if ((name == "main") && (parameters.size() > 2)) {
-        std::list<TypedExp*>::iterator it = parameters.begin();
-        for (it++, it++; it != parameters.end(); it++) {
-            os << (*it)->getType().getCtype();      // Type, e.g. int32
-            os << " ";
-            (*it)->printAsHL(os);                    // Name, e.g. v2 or r8
-            os << ";";
-        }
-        os << "\t/* Dummy parameters */\n";
-    }
-
-    // Declare the symbolic locations (v[0] etc)
-    for (std::vector<TypedExp*>::iterator it = locals.begin();
-      it != locals.end(); it++) {
-        os << "\t" << (*it)->getType().getCtype();  // Type, e.g. int32
-        os << " ";
-        (*it)->printAsHL(os);                        // Name, e.g. v2 or r8
-        os << ";\n";
-    }
-}
-#endif
-
-/*==============================================================================
- * FUNCTION:       UserProc::toSymbolic
- * OVERVIEW:       Given a machine dependent location, return a generated
- *                 symbolic representation for it.
- * NOTE:           loc will occasionally be of the forms
- *                  trunc(m[%afp - 20] >> 16, 32, 16) or
- *                  trunc(m[%afp - 20] & 0xFFFF, 16, 32)
- *                  must now cope with these
- * NOTE ALSO:      The fixComplex logic (overlapping parameters) should be
- *                  done in matchParameters, as one case already has
- * PARAMETERS:     loc - a machine dependent location
- *                 result - the symbolic representation for loc
- *                 local: if true, add this symbol to the vector of locals
- *                  result a copy of loc if the mapping isn't there)
- * RETURNS:        <nothing> (but parameter result is set)
- *============================================================================*/
-// Simple procedure to effectively substitute result into loc if a complex
-// location
-// Example: loc = trunc(m[%afp - 20] & 0xFFFF, 32, 16), result = v3; then
-// result changed to be trunc(v3 & 0xFFFF, 32, 16)
-// Assumes 4 tokens at start, and 2 at end, to be transferred
-// FIXME: This is really the most awful hack. Perhaps substitution using
-// searchReplace() would be better?
-#if 0
-void fixComplex(Exp* loc, Exp* result)
-{
-    for (int i=4-1; i >= 0; i--)
-        result.prep(loc.getIndex(i));
-    for (int i1=0; i1 < 2; i1++)
-        result.push(loc.getIndex(i1));
-    // Now a different size; same size as the location we started with
-    // Example: passed m[%afp-8]>>16 as 16 bits; result (v1) wass 32 bits;
-    // now result (v1>>16) is back to 16 bits again
-    result.setTypes(loc);
-}
-
-void UserProc::toSymbolic(TypedExp* loc, TypedExp* result,
-    bool local /*= true*/)
-{
-    int idx = loc.getFirstIdx();
-    if (idx == idIntConst) {
-        // Occasionally pass constants now
-        result = loc;      // Symbolic representation is itself
-        return;
-    }
-
-    // loc2 is the expression to be converted to symbolic form. For simple
-    // cases, loc2 == loc. For complex cases, loc2 is the first subexpression
-    // of loc, and is converted to symbolic form. The result is effectively
-    // substituted into loc
-    bool complex = false;
-    Exp* loc2 = loc;
-    if (!loc.isRegOf() &&
-        !loc.isMemOf() &&
-        !loc.isVar()) {
-            complex = true;
-            Exp* tmp = ((Unary*)loc2)->getSubExp1();
-            loc2 = tmp->getSubExpr(0, loc2);
-            delete tmp;
-            // Set the size of the subexpression to double what we are passed.
-            // E.g. v1 is twice the size of (v1 >> 16)
-            loc2.getType().setSize(loc.getType().getSize() * 2);
-    }
-            
-    
-    idx = loc2.getFirstIdx();
-    assert(idx == idRegOf || idx == idMemOf || idx == idVar);
-
-    if (idx == idVar) {
-        if (find(locals.begin(), locals.end(), loc2) == locals.end()) {
-            std::ostringstream ost;
-            ost << "`" << loc << "' should already be in the set of locals";
-            error(str(ost));
-        }
-        result = loc2;        // Symbolic representation is itself
-        return;
-    }
-
-    map<Exp*,Exp*>::iterator it = symbolMap.find(loc2);
-    if (it != symbolMap.end()) {
-        result = it->second;
-        if (complex) fixComplex(loc, result);
-//        if (loc.getFirstIdx() == idRegOf) result = loc;   // HACK
-        return;
-    }
-    // Else does not exist in the map
-    if (isSymbolic) {
-        // Not allowed to add a new (because we have already called
-        // propagateSymbolics), and no existing. Return with result = loc
-        result = loc;
-        return;
-    }
-
-    // Don't convert r[] to symbolic (v[]); this would interfere with the
-    // overlapping code logic
-    if (loc.getFirstIdx() == idRegOf) {
-        result = loc;
-        return;           // Never add to locals
-    }
-    else {
-        result.clear();
-        result.push(idVar);
-        result.push(uniqueID);
-        if (complex)
-            // Overlapping parameters. The var is twice the size of the location
-            // that we are passed. E.g. v1 is twice the size of (v1 >> 16)
-            result.getType().setSize(loc.getType().getSize() * 2);
-        else
-            result.setTypes(loc);  // Same size as location it represents
-        uniqueID++;
-        // Add a new entry
-        symbolMap[loc2] = result;
-    }
-
-    // Add this to the locals if necessary.
-    if (local)
-        locals.push_back(result);
-
-    if (complex) fixComplex(loc, result);
-    return;
-}
-#endif
-
-#if 0       // We will need this or something like it soon
-/*==============================================================================
- * FUNCTION:       UserProc::newLocal
- * OVERVIEW:       Return the next available local variable.
- * NOTE:           Caller is responsible for deleting this new Exp*
- * PARAMETERS:     ty: a Type for the local variable
- * RETURNS:        Pointer to the Exp representing the local
- *============================================================================*/
-TypedExp* UserProc::newLocal(Type* ty)
-{
-    TypedExp* result = new TypedExp(ty, new Unary(opVar, new Const(uniqueID)));
-    uniqueID++;
-
-    locals.push_back(result);
-
-    return result;
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::propagateSymbolics
- * OVERVIEW:      Replace each instance of a location in this procedure with its
- *                  symbolic representation if it has one.
- *                  Also handle expressions taking the addresses of these
- * PARAMETERS:    <none>
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::propagateSymbolics()
-{
-    // First, do a pass that checks the sizes of memory references
-    checkMemSizes();
-    for (map<Exp*,Exp*>::iterator it = symbolMap.begin();
-      it != symbolMap.end(); it++) {
-
-        Exp*& search = (Exp*&)it->first;
-        Exp*& replace = it->second;
-
-        // Go through the RTLs. For now, we clear the "type sensitive" flag,
-        // so that when floating point parameters are passed through memory,
-        // they get substituted properly. NOTE: this will break Palm programs,
-        // which have stack locations of different sizes needing different
-        // symbolic variables! (But casting the parameters may fix this)
-// Don't convert expressions with r[] to v[]
-//if (search.getFirstIdx() != idRegOf)      // HACK
-            cfg->searchAndReplace(search, replace, false);
-
-        // Also remember to fix code taking addresses of these parameters
-        // Example: addressparam test. Knock the memOf off the front of the
-        // search, and prepend an idAddrOf to the replacement
-        if (search.getFirstIdx() == idMemOf) {
-            Exp** srch2 = search.getSubExpr(0);
-            Exp* repl2(replace);
-            repl2.prep(idAddrOf);
-            cfg->searchAndReplace(*srch2, repl2, false);
-            // Also check if sizeof(search) > sizeof(int).
-            // The size of an int varies with the source machine. We use
-            // the OFFSET value from the PAL file
-            int intSize = prog.csrSrc.getIntSize();
-            int size = getVarType(it->second.getSecondIdx()).getSize();
-            if (size > intSize*8) {
-                //  If so, also do a replacement of m[original+4] by
-                // *((int*)&replace+1)
-                // i.e. m[ + original int 4   by   m[ + (int*) & replace int 1
-                // repl2 is already &replace
-//cout << "Search " << search << " and replace " << replace << std::endl;  // HACK
-                repl2.push(idIntConst); repl2.push(1);
-                repl2.prep(idCastIntStar);
-                repl2.prep(idPlus); repl2.prep(idMemOf);
-                // *srch2 already has replace without the m[
-                srch2->prep(idPlus); srch2->prep(idMemOf);
-                srch2->push(idIntConst); srch2->push(4);
-                srch2->simplify();
-//cout << "Replacing " << *srch2 << " with " << repl2 << std::endl;    // HACK
-                cfg->searchAndReplace(*srch2, repl2, false);
-            }
-            delete srch2;
-        }
-    }
-    // Remember that this has been done
-    isSymbolic = true;
-}
-#endif
-
 /*==============================================================================
  * FUNCTION:        UserProc::getCFG
  * OVERVIEW:        Returns a pointer to the CFG.
@@ -1303,275 +924,7 @@ bool UserProc::deserialize_fid(std::istream &inf, int fid)
 	return true;
 }
 
-#if 0
-/*==============================================================================
- * FUNCTION:        UserProc::addProcCoverage
- * OVERVIEW:        Add this proc's coverage to the program's coverage
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void UserProc::addProcCoverage()
-{
-    prog.cover.addRanges(cover);
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::findVarEntry
- * OVERVIEW:      Return a pointer to the given var, i.e. if 2 is passed,
- *                  then on exit, points to the Exp* for v2
- * NOTE:          Private function; only used by get/setVarType
- * PARAMETERS:    idx - index of the variable, e.g. 2 for v2
- * RETURNS:       A pointer to the entry, as above, or NULL if not found
- *============================================================================*/
-Exp** UserProc::findVarEntry(int idx)
-{
-    // The locals are sorted, so we can do a binary search of them
-    int min = 0; int max = locals.size()-1;
-    int i;
-    if (max >= 0) {                  // Do nothing if no locals
-        while (min <= max) {
-            i = (min + max) >> 1;
-            // We are only interested in vars (v[]). Some locals can now be
-            // registers (e.g. Pentium function returning in r24)
-            if (locals[i].getFirstIdx() != idVar) {
-                // Assume that there are only r[] and v[], and that
-                // idRegOf < idVar, so we need to move up the map
-                min = i+1;
-                continue;
-            }
-            int c = locals[i].getSecondIdx();
-            if (c == idx) {
-                return &locals[i];
-            }
-            else if (c > idx)
-                max = i-1;
-            else /* if (c < idx) */
-                min = i+1;
-        }
-    }
-
-    // Also search the parameters. Assume a linear search is quicker, for
-    // the likely very small number of parameters
-    std::list<Exp*>::iterator pp;
-    for (pp = parameters.begin(); pp != parameters.end(); pp++) {
-        if (pp->getFirstIdx() != idVar)
-            // Could be a r[] now
-            continue;
-        if (pp->getSecondIdx() == idx) {
-            return &(*pp);
-        }
-    }
-
-    // Not found in locals or parameters
-    std::ostringstream ost;
-    ost << "Could not find v" << idx <<
-        " in locals or prarameters for procedure " << name;
-    error(str(ost));
-    return NULL;
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::getVarType
- * OVERVIEW:      Return the type of the given variable
- * PARAMETERS:    idx - index of the variable, e.g. 2 for v2
- * RETURNS:       The Type
- *============================================================================*/
-Type UserProc::getVarType(int idx)
-{
-    Exp* pss = findVarEntry(idx);
-    if (pss == NULL)
-        return Type();
-    return pss->getType();
-}
-
-/*==============================================================================
- * FUNCTION:      UserProc::setVarSize
- * OVERVIEW:      Change the size of the given var (i.e. the size it will be
- *                  declared as)
- * PARAMETERS:    idx - the var number (e.g. 2 for v2)
- *                size - the new size
- * RETURNS:       Nothing
- *============================================================================*/
-void UserProc::setVarSize(int idx, int size)
-{
-    Exp** pss = findVarEntry(idx);
-    if (pss == NULL) return;
-    Type ty = pss->getType();
-    ty.setSize(size);
-    pss->setType(ty);
-}
-#endif
-
-
-#if 0
-/*==============================================================================
- * FUNCTION:        UserProc:checkReturnPass
- * OVERVIEW:        Check if this return location is "passed through" this
- *                    function to one of its callees. For example in the
- *                    returncallee test, main uses the return value from add4,
- *                    and this use is "passed on" to add2, since add4 doesn't
- *                    define the return location after the call to add2
- * PARAMETERS:      returnLocBit - the bit for the location used by my caller
- *                  returnLoc - the Location used (as a Exp*)
- *                  retLocations - information about where types are returned
- * RETURNS:         <nothing>
- *============================================================================*/
-void UserProc::checkReturnPass(int returnLocBit, TypedExp* returnLoc)
-{
-    // We are looking for a path from a call BB to a return BB where no
-    // BB (after the call) defines the return location
-    std::set<HLCall*>& calls = cfg->getCalls();
-    std::set<PBB> seen;          // Set of out edges already checked
-    for (std::set<HLCall*>::iterator it = calls.begin(); it != calls.end(); it++) {
-        if ((*it)->getReturnLoc() != 0)
-            // This call already has a return location - no need to check it
-            // or its callee
-            continue;
-        const PBB pBB = (*it)->getBB();
-        checkReturnPassBB(pBB, *it, returnLocBit, returnLoc, seen);
-    }
-}
-
-/*==============================================================================
- * FUNCTION:        UserProc:checkReturnPassBB
- * OVERVIEW:        Do the main work of checking for return locations being
- *                    "passed through" (see above)
- * PARAMETERS:      pBB - pointer to the current BB which is being checked
- *                  pCall - pointer to the HLCall RTL containing the call
- *                  seen - set of out edges already checked
- *                  others as above
- * RETURNS:         <nothing>
- *============================================================================*/
-void UserProc::checkReturnPassBB(const PBB pBB, HLCall* pCall, int returnLocBit,
-    TypedExp* returnLoc, std::set<PBB>& seen)
-{
-    // We have a call BB. Check all possible out edges (beware of
-    // loops!) till a return location is found.
-    std::vector<PBB>::const_iterator ito;
-    const std::vector<PBB>& outs = pBB->getOutEdges();
-    for (ito = outs.begin(); ito != outs.end(); ito++) {
-        if (seen.find(*ito) != seen.end())
-            // Already checked this edge
-            continue;
-        seen.insert(*ito);
-        if ((*ito)->isDefined(returnLocBit))
-            // The return location is defined, killing the path from
-            // the call to the return location
-            continue;
-        if ((*ito)->getType() == RET) {
-            // This is what we are looking for! This callee also
-            // returns to this location
-            ADDRESS uDest = pCall->getFixedDest();
-            UserProc* callee = (UserProc*)prog.findProc(uDest);
-            if (callee && (int)callee != -1 && !callee->isLib())
-                callee->setReturnType(returnLoc, retLocations);
-            // We must also set the return location for the call (so that the
-            // back end assigns the result of the call).
-            if (isSymbolic) {
-                // Use the symbolic version if the proc has already called
-                // propagateSymbolic()
-                Exp* symbolic;
-                toSymbolic(returnLoc, symbolic);
-                pCall->setReturnLoc(symbolic);
-            }
-            else pCall->setReturnLoc(returnLoc);
-            // No further paths need be investigated
-            return;
-        }
-        else {
-            // Recurse through this BB's out edges
-            const std::vector<PBB>& grandChildren = (*ito)->getOutEdges();
-            std::vector<PBB>::const_iterator itg;
-            for (itg = grandChildren.begin(); itg != grandChildren.end();
-              itg++) {
-                checkReturnPassBB(*itg, pCall, returnLocBit, returnLoc,
-                    retLocations, seen);
-            }
-            
-        }
-    }
-}
-#endif
-
-#if 0
-/*==============================================================================
- * FUNCTION:        checkMemSize
- * OVERVIEW:        Search this ss, checking for sizes of vars, ensuring
- *                    that the largest size used in the proc is used
- * PARAMETERS:      ss - pointer to Exp* to be checked
- * RETURNS:         <nothing>
- *============================================================================*/
-void UserProc::checkMemSize(Exp** ss)
-{
-    Exp* memX;            // Wildcard memory
-    memX.push(idMemOf); memX.push(-1);
-    std::list<Exp**> result;
-    if (ss->searchAll(memX, result)) {
-        // We have at least one mem; go through the list
-        std::list<Exp**>::iterator it;
-        for (it=result.begin(); it != result.end(); it++) {
-            // Find out what var this would be converted to, if any
-            std::map<Exp*, Exp*>::iterator mm;
-            mm = symbolMap.find(**it);
-            if (mm == symbolMap.end()) continue;
-            int vNum = (*mm).second.getSecondIdx();
-            // Find out what size this memory is used as
-            int size = (*it)->getType().getSize();
-            if (size > getVarType(vNum).getSize()) {
-                // Change to the larger size
-                setVarSize(vNum, size);
-                // If there is a mapping for the "other half", then delete it
-                // so it will only be satisfied by special logic in
-                // propagateSymbolics()
-                Exp* memOf(**it);
-                // Assume m[ + something int  K ]
-                //        0  1               last
-                if (memOf.getSecondIdx() == idPlus) {
-                    int last = memOf.len() - 1;
-                    int K = memOf.getIndex(last);
-                    int intSize = prog.csrSrc.getIntSize();
-                    memOf.substIndex(last, K + intSize);
-                    mm = symbolMap.find(memOf);
-                    if (mm != symbolMap.end())
-                        symbolMap.erase(mm);
-                }
-            }
-        }
-    }
-}
-
-/*==============================================================================
- * FUNCTION:        checkMemSizes
- * OVERVIEW:        Loop through all BBs, checking for sizes of memory that
- *                    will soon be converted to vars, ensuring
- *                    that the largest size used in the proc is used for all
- * PARAMETERS:      None
- * RETURNS:         <nothing>
- *============================================================================*/
-void UserProc::checkMemSizes()
-{
-    std::list<PBB>::iterator it;
-    PBB pBB = cfg->getFirstBB(it);
-    while (pBB) {
-        RTLList* pRtls = pBB->getRTLs();
-        if (pRtls) {
-            RTLList_IT rit;
-            for (rit = pRtls->begin(); rit != pRtls->end(); rit++) {
-                int n = (*rit)->getNumRT();
-                for (int i=0; i<n; i++) {
-                    RTAssgn* rt = (RTAssgn*)(*rit)->elementAt(i);
-                    if (rt->getKind() != RTASSGN) continue;
-                    checkMemSize(rt->getLHS());
-                    checkMemSize(rt->getRHS());
-                }
-            }
-        }
-        pBB = cfg->getNextBB(it);
-    }
-
-}
-#endif
-
+// this can probably go
 bool UserProc::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
 {
 	Exp *e1 = e;
@@ -1633,7 +986,7 @@ void UserProc::print(std::ostream &out, bool withDF) {
 }
 
 // get all statements
-void UserProc::getAllStatements(std::set<Statement*> &stmts) {
+void UserProc::getStatements(std::set<Statement*> &stmts) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         std::list<RTL*> *rtls = bb->getRTLs();
@@ -1645,15 +998,24 @@ void UserProc::getAllStatements(std::set<Statement*> &stmts) {
 		Statement *e = dynamic_cast<Statement*>(*it);
 		if (e == NULL) continue;
 		stmts.insert(e);
+		e->setProc(this);
 	    }
 	    if (rtl->getKind() == CALL_RTL) {
 		HLCall *call = (HLCall*)rtl;
 	        stmts.insert(call);
+		call->setProc(this);
 		std::list<Statement*> &internal = call->getInternalStatements();
 		for (std::list<Statement*>::iterator it1 = internal.begin();
-		     it1 != internal.end(); it1++)
+		     it1 != internal.end(); it1++) {
 		    stmts.insert(*it1);
+		    (*it1)->setProc(this);
+		}
             }
+	    if (rtl->getKind() == JCOND_RTL) {
+		HLJcond *jcond = (HLJcond*)rtl;
+	        stmts.insert(jcond);
+		jcond->setProc(this);
+	    }
 	}
     }
 }
@@ -1702,7 +1064,7 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 void UserProc::decompile() {
     if (decompiled) return;
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
         HLCall *call = dynamic_cast<HLCall*>(*it);
@@ -1711,6 +1073,8 @@ void UserProc::decompile() {
     }
 
     cfg->computeDataflow();
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end();
+		    it++) (*it)->calcUseLinks();
 
     print(std::cout, true);
     bool change = true;
@@ -1722,8 +1086,8 @@ void UserProc::decompile() {
     }
     removeInternalStatements();
     inlineConstants();
+    fixCalls();
     promoteSignature();
-    //fixCalls();
     renameLocalVariables();
     print(std::cout, true);
     decompiled = true;
@@ -1732,27 +1096,34 @@ void UserProc::decompile() {
 void UserProc::fixCalls()
 {
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
 	    HLCall *call = dynamic_cast<HLCall*>(*it);
+	    if (call == NULL) continue;
 	    if (call->getDestProc() && 
 		call->getDestProc()->getSignature()->hasEllipsis()) {
 	        // functions like printf almost always have too many args
-		for (int i = 0; i < call->getNumArguments(); i++)
-		    if (call->findUse(call->getArgumentExp(i)) == NULL &&
-			call->getArgumentExp(i)->getOper() != opParam &&
-			call->getArgumentExp(i)->getOper() != opStrConst &&
-			call->getArgumentExp(i)->getOper() != opIntConst &&
-			call->getArgumentExp(i)->getOper() != opAddrConst &&
-			call->getArgumentExp(i)->getOper() != opFltConst) {
-			int n = call->getDestProc()->getSignature()->getNumParams();
-		        if (i < n) 
-				call->setNumArguments(n);
-			else 
-				call->setNumArguments(i);
-			break;
+		std::string name(call->getDestProc()->getName());
+		if ((name == "printf" || name == "scanf") &&
+		    call->getArgumentExp(0)->isStrConst()) {
+		    char *str = ((Const*)call->getArgumentExp(0))->getStr();
+		    // actually have to parse it
+		    int n = 1;
+		    char *p = str;
+		    while (p = strchr(p, '%')) {
+		        p++;
+			switch(*p) {
+			    case '%':
+			        break;
+			    // TODO: there's type information here
+		            default: 
+				n++;
+			}
+			p++;
 		    }
+		    call->setNumArguments(n);
+		}
 	    }
     }
 }
@@ -1760,17 +1131,23 @@ void UserProc::fixCalls()
 void UserProc::renameLocalVariables()
 {
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++)
 	    if ((*it)->getLeft() && 
 	        symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
+		std::cerr << "new local: ";
+		(*it)->getLeft()->print(std::cerr);
+		std::cerr << std::endl;
 		std::ostringstream os;
 		os << "local" << locals.size();
 		std::string name = os.str();
 		symbolMap[(*it)->getLeft()->clone()] = 
 		    new Unary(opLocal, new Const(strdup(name.c_str())));
-		locals[name] = (*it)->getLeftType();
+		if ((*it)->getLeftType())
+		    locals[name] = (*it)->getLeftType();
+		else
+		    locals[name] = new IntegerType();
 	    }
 
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
@@ -1804,23 +1181,18 @@ bool UserProc::removeNullStatements()
 {
     bool change = false;
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     // remove null code
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
 	if (e == NULL) continue;
 	if (*e->getSubExp1() == *e->getSubExp2() && 
-	    e->getUseBy().size() == 0) {
+	    e->getNumUseBy() == 0) {
 	    //std::cerr << "removing null code: ";
 	    //e->print(std::cerr);
 	    //std::cerr << std::endl;
             removeStatement(e);
-	    // remove from uses
-            std::set<Statement*> uses = (*it)->getUses();
-	    for (std::set<Statement*>::iterator it1 = uses.begin();
-		         it1 != uses.end(); it1++)
-		        (*it1)->getUseBy().erase(*it);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
             if (liveout.find(*it) != liveout.end()) {
@@ -1837,7 +1209,7 @@ bool UserProc::removeDeadStatements()
 {
     bool change = false;
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     // remove dead code
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
@@ -1848,7 +1220,8 @@ bool UserProc::removeDeadStatements()
 	    if (!(*it1)->getLeft()->isMemOf()) {
 		// hack: if the dead statement has a use which would make
 		// this statement useless if propogated, leave it
-		std::set<Statement*> uses = (*it1)->getUses();
+		std::set<Statement*> uses;
+	       	(*it1)->calcUses(uses);
 		bool matchingUse = false;
 		for (std::set<Statement*>::iterator it2 = uses.begin();
 		     it2 != uses.end(); it2++) {
@@ -1866,11 +1239,6 @@ bool UserProc::removeDeadStatements()
 		HLCall *call = dynamic_cast<HLCall*>(*it1);
 		if (call == NULL) {
                     removeStatement(*it1);
-		    // remove from uses
-                    std::set<Statement*> uses1 = (*it1)->getUses();
-		    for (std::set<Statement*>::iterator it2 = uses1.begin();
-		         it2 != uses1.end(); it2++)
-		        (*it2)->getUseBy().erase(*it1);
 		} else {
 		    call->setIgnoreReturnLoc(true);
 		}
@@ -1878,8 +1246,8 @@ bool UserProc::removeDeadStatements()
                 std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
                 if (liveout.find(*it1) != liveout.end()) {
                     liveout.erase(*it1);
-        	    cfg->updateLiveness();
                 }
+        	cfg->updateLiveness();
 		change = true;
 	    }
     }
@@ -1889,14 +1257,14 @@ bool UserProc::removeDeadStatements()
 void UserProc::removeInternalStatements()
 {
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     // remove any statements that have no uses and are live out of this proc
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
 	    AssignExp *e = dynamic_cast<AssignExp *>(*it);
 	    if (e == NULL) continue;
-	    if ((*it)->getUseBy().size() == 0 && 
-	        (*it)->getUses().size() == 0 &&
+	    if ((*it)->getNumUseBy() == 0 && 
+	        (*it)->getNumUses() == 0 &&
                 cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
                 // new internal statement
 		std::cerr << "new internal statement: ";
@@ -1918,7 +1286,7 @@ void UserProc::eraseInternalStatement(Statement *stmt)
 void UserProc::inlineConstants()
 {
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     // inline any constants in the statement
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++)
@@ -1929,13 +1297,13 @@ bool UserProc::propogateAndRemoveStatements()
 {
     bool change = false;
     std::set<Statement*> stmts;
-    getAllStatements(stmts);
+    getStatements(stmts);
     // propogate any statements that can be removed
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
         if ((*it)->canPropogateToAll()) {
 	    if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
-		if ((*it)->getUses().size() != 0) {
+		if ((*it)->getNumUses() != 0) {
 		    // tempories that store the results of calls are ok
 	            if ((*it)->getRight() && 
 		        (*it)->findUse((*it)->getRight()) &&
@@ -1953,6 +1321,7 @@ bool UserProc::propogateAndRemoveStatements()
 		    internal.push_back(*it);
 		}
 	    }
+	    (*it)->propogateToAll();
 	    removeStatement(*it);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
@@ -1960,12 +1329,6 @@ bool UserProc::propogateAndRemoveStatements()
                 liveout.erase(*it);
         	cfg->updateLiveness();
             }
-	    // remove from useBy set of uses
-	    std::set<Statement*> &uses = (*it)->getUses();
-	    for (std::set<Statement*>::iterator it1 = uses.begin();
-                 it1 != uses.end(); it1++) 
-	        (*it1)->getUseBy().erase(*it);
-	    (*it)->propogateToAll();
 	    // debug: print
 	    print(std::cout, true);
 	    change = true;

@@ -148,7 +148,8 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
         m_bJumpReqd(false),
         m_iNumInEdges(0),
         m_iNumOutEdges(iNumOutEdges),
-        m_iTraversed(false)
+        m_iTraversed(false),
+	m_returnVal(NULL)
 {
     m_OutEdges.reserve(iNumOutEdges);               // Reserve the space;
                                                     // values added with
@@ -1347,6 +1348,12 @@ void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein)
 	        (*it1)->calcLiveOut(livein);
 	    } 
 	}
+	if (rtl->getKind() == JCOND_RTL) {
+	    HLJcond *jcond = (HLJcond*)rtl;
+	    if (jcond == stmt) return;
+	    jcond->setBB(this);
+	    jcond->calcLiveOut(livein);
+	}
     }
 }
 
@@ -1367,31 +1374,5 @@ void BasicBlock::getLiveIn(std::set<Statement*> &livein)
             assert(*it);
 	    livein.insert(*it);
         }
-    }
-}
-
-void BasicBlock::calcUses()
-{
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-		    rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-	for (std::list<Exp*>::iterator it = rtl->getList().begin();
-	     it != rtl->getList().end(); it++) {
-	    Statement *e = dynamic_cast<Statement*>(*it);
-	    if (e == NULL) continue;
-	    e->setBB(this);
-	    e->calcUseLinks();
-        }
-	if (rtl->getKind() == CALL_RTL) {
-	    HLCall *call = (HLCall*)rtl;
-	    call->setBB(this);
-            call->calcUseLinks();
-	    std::list<Statement*> &stmts = call->getInternalStatements();
-	    for (std::list<Statement*>::iterator it1 = stmts.begin();
-	         it1 != stmts.end(); it1++) {
-	        (*it1)->setBB(this);
-	        (*it1)->calcUseLinks();
-	    } 
-	}
     }
 }

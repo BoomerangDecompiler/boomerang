@@ -730,9 +730,8 @@ rt:
     |   NAME_CALL list_actualparameter ')' {
             std::ostringstream o;
             if (Dict.FlagFuncs.find($1) != Dict.FlagFuncs.end()) {
-                $$ = new AssignExp(new Terminal(opFlags), 
-                    new Binary(opFlagCall, new Const($1),
-                    listExpToExp($2)));
+                $$ = new Binary(opFlagCall, new Const($1),
+                    listExpToExp($2));
             } else {
                 o << $1 << " is not declared as a flag function.\n";
                 yyerror(STR(o));
