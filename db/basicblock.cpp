@@ -381,6 +381,22 @@ bool BasicBlock::isJumpReqd() {
 }
 
 /*==============================================================================
+ * FUNCTION:        BasicBlock::prints
+ * OVERVIEW:        Print to a static string (for debugging) 
+ * PARAMETERS:      <none>
+ * RETURNS:         Address of the static buffer
+ *============================================================================*/
+static char debug_buffer[1000];
+char* BasicBlock::prints() {   
+    std::ostringstream ost; 
+    print(ost);       
+    // Static buffer may overflow; that's OK, we just print the first 999 bytes
+    strncpy(debug_buffer, ost.str().c_str(), 999);
+    debug_buffer[999] = '\0';
+    return debug_buffer; 
+}
+
+/*==============================================================================
  * FUNCTION:        BasicBlock::print()
  * OVERVIEW:        Display the whole BB to the given stream
  *                  Used for "-R" option, and handy for debugging
