@@ -121,6 +121,7 @@ char* operStrings[] = {
     "opLog2",                 // logarithm to base 2
     "opLog10",                // logarithm to base 10
     "opLoge",                 // logarithm to base e
+    "opPow",                  // raise to a power
     "opSqrt",                 // square root
     "opExecute",              // Execute instruction at(addr)
 

@@ -685,6 +685,8 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opFMinus:  os << " -f "; break;
         case opFMult:   os << " *f "; break;
         case opFDiv:    os << " /f "; break;
+        case opPow:     os << " pow "; break;   // Raising to power
+ 
         case opAnd:     os << " and ";break;
         case opOr:      os << " or "; break;
         case opBitAnd:  os << " & ";  break;
@@ -815,8 +817,8 @@ void Unary::print(std::ostream& os, bool withUses) {
         case opSQRTs: case opSQRTd: case opSQRTq:
         case opSqrt: case opSin: case opCos:
         case opTan: case opArcTan: case opLog2:
-        case opLog10: case opLoge: case opMachFtr:
-        case opSuccessor:
+        case opLog10: case opLoge: case opPow:
+        case opMachFtr: case opSuccessor:
             switch (op) {
                 case opSQRTs: os << "SQRTs("; break;
                 case opSQRTd: os << "SQRTd("; break;
