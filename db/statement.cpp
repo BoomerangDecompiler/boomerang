@@ -91,9 +91,11 @@ void Statement::replaceRef(Statement *def) {
 static int nextVarNum = 0;
 void insertInterference(igraph& ig, Exp* e) {
     igraph::iterator it = ig.find(e);
-    if (it == ig.end())
+    if (it == ig.end()) {
         // We will be inserting a new element
-        ig.insert(std::pair<Exp*, int>(e, ++nextVarNum));
+		const std::pair<Exp*, int> temp(e, ++nextVarNum);
+        ig.insert(temp);
+	}
     // else it is already in the map: no need to do anything
 }
 
@@ -1328,9 +1330,10 @@ CallStatement::CallStatement(int returnTypeSize /*= 0*/):
  * RETURNS:       <nothing>
  *============================================================================*/
 CallStatement::~CallStatement() {
-    for (unsigned i = 0; i < arguments.size(); i++)
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++)
         ;//delete arguments[i];
-    for (unsigned i = 0; i < returns.size(); i++)
+    for (i = 0; i < returns.size(); i++)
         ;//delete returns[i];
 }
 
@@ -1479,13 +1482,14 @@ void CallStatement::setSigArguments() {
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
         implicitArguments.resize(params.size());
-        for (unsigned i = 0; i < params.size(); i++) {
+		unsigned i;
+        for (i = 0; i < params.size(); i++) {
             implicitArguments[i] = params[i]->clone();
             implicitArguments[i]->fixLocationProc(proc);
         }
         std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
         returns.resize(0);
-        for (unsigned i = 0; i < rets.size(); i++)
+        for (i = 0; i < rets.size(); i++)
             if (!(*rets[i] == *pDest))
                 returns.push_back(rets[i]->clone());
         return;
@@ -1494,7 +1498,8 @@ void CallStatement::setSigArguments() {
     
     int n = sig->getNumParams();
     arguments.resize(n);
-    for (int i = 0; i < n; i++) {
+	int i;
+    for (i = 0; i < n; i++) {
         Exp *e = sig->getArgumentExp(i);
         assert(e);
         arguments[i] = e->clone();
@@ -1514,7 +1519,7 @@ void CallStatement::setSigArguments() {
 
     n = sig->getNumImplicitParams();
     implicitArguments.resize(n);
-    for (int i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
         Exp *e = sig->getImplicitParamExp(i);
         assert(e);
         implicitArguments[i] = e->clone();
@@ -1523,7 +1528,7 @@ void CallStatement::setSigArguments() {
  
     // initialize returns
     returns.clear();
-    for (int i = 0; i < sig->getNumReturns(); i++)
+    for (i = 0; i < sig->getNumReturns(); i++)
         returns.push_back(sig->getReturnExp(i)->clone());
 
     if (procDest == NULL)
@@ -1565,21 +1570,22 @@ bool CallStatement::returnsStruct() {
 
 bool CallStatement::search(Exp* search, Exp*& result) {
     result = NULL;
-    for (unsigned i = 0; i < returns.size(); i++) {
+	unsigned int i;
+    for (i = 0; i < returns.size(); i++) {
         if (*returns[i] == *search) {
             result = returns[i];
             return true;
         }
         if (returns[i]->search(search, result)) return true;
     }
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    for (i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *search) {
             result = arguments[i];
             return true;
         }
         if (arguments[i]->search(search, result)) return true;
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         if (*implicitArguments[i] == *search) {
             result = implicitArguments[i];
             return true;
@@ -1598,17 +1604,18 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-    for (unsigned i = 0; i < returns.size(); i++) {
+	unsigned int i;
+    for (i = 0; i < returns.size(); i++) {
         bool ch;
         returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
         change |= ch;
     }
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    for (i = 0; i < arguments.size(); i++) {
         bool ch;
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, ch);
         change |= ch;
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         bool ch;
         implicitArguments[i] = implicitArguments[i]->searchReplaceAll(
             search, replace, ch);
@@ -1627,13 +1634,14 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
  *============================================================================*/
 bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
     bool found = false;
-    for (unsigned i = 0; i < arguments.size(); i++)
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++)
         if (arguments[i]->searchAll(search, result))
             found = true;
-    for (unsigned i = 0; i < implicitArguments.size(); i++)
+    for (i = 0; i < implicitArguments.size(); i++)
         if (implicitArguments[i]->searchAll(search, result))
             found = true;
-     for (unsigned i = 0; i < returns.size(); i++)
+     for (i = 0; i < returns.size(); i++)
         if (returns[i]->searchAll(search, result))
             found = true;
     return found;
@@ -1661,14 +1669,15 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     }
 
     // Print the actual arguments of the call
-    os << "(";    
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    os << "(";
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++) {
         if (i != 0)
             os << ", ";
         os << arguments[i];
     }
     os << " implicit: ";
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         if (i != 0)
             os << ", ";
         os << implicitArguments[i];
@@ -1722,10 +1731,11 @@ Statement* CallStatement::clone() {
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
     int n = arguments.size();
-    for (int i=0; i < n; i++)
+	int i;
+    for (i=0; i < n; i++)
         ret->arguments.push_back(arguments[i]->clone());
     n = implicitArguments.size();
-    for (int i=0; i < n; i++)
+    for (i=0; i < n; i++)
         ret->implicitArguments.push_back(implicitArguments[i]->clone());
     // Statement members
     ret->pbb = pbb;
@@ -1779,13 +1789,14 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 
 void CallStatement::simplify() {
     GotoStatement::simplify();
-    for (unsigned i = 0; i < arguments.size(); i++) {
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
     }
-    for (unsigned i = 0; i < returns.size(); i++) {
+    for (i = 0; i < returns.size(); i++) {
         returns[i] = returns[i]->simplifyArith()->simplify();
     }
 }
@@ -1813,17 +1824,18 @@ Type *CallStatement::updateType(Exp *e, Type *curType) {
 
 bool CallStatement::usesExp(Exp *e) {
     Exp *where;
-    for (unsigned i = 0; i < arguments.size(); i++) {
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++) {
         if (arguments[i]->search(e, where)) {
             return true;
         }
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         if (implicitArguments[i]->search(e, where)) {
             return true;
         }
     }
-    for (unsigned int i = 0; i < returns.size(); i++) {
+    for (i = 0; i < returns.size(); i++) {
         if (returns[i]->isMemOf() && 
                 returns[i]->getSubExp1()->search(e, where))
             return true;
@@ -1846,15 +1858,16 @@ void CallStatement::addUsedLocs(LocationSet& used) {
     if (procDest == NULL && pDest)
         pDest->addUsedLocs(used);
 
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    unsigned int i;
+    for (i = 0; i < arguments.size(); i++) {
         arguments[i]->addUsedLocs(used);
     }
 
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         implicitArguments[i]->addUsedLocs(used);
     }
      
-    for (unsigned i = 0; i < returns.size(); i++)
+    for (i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
             returns[i]->getSubExp1()->addUsedLocs(used);
 }
@@ -1863,12 +1876,13 @@ void CallStatement::fixCallRefs() {
     LOG << "fixing call refs for " << this << "\n";
     if (pDest)
         pDest = pDest->fixCallRefs();
-    for (unsigned i = 0; i < arguments.size(); i++)
+	unsigned int i;
+    for (i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->fixCallRefs();
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         implicitArguments[i] = implicitArguments[i]->fixCallRefs();
     }
-    for (unsigned i = 0; i < returns.size(); i++)
+    for (i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
             returns[i]->refSubExp1() = 
                     returns[i]->getSubExp1()->fixCallRefs();
@@ -1897,15 +1911,16 @@ void CallStatement::subscriptVar(Exp* e, Statement* def) {
 #endif
     if (procDest == NULL && pDest)
         pDest = pDest->expSubscriptVar(e, def);
-    for (unsigned i = 0; i < returns.size(); i++) 
+	unsigned int i;
+    for (i = 0; i < returns.size(); i++) 
         if (returns[i]->getOper() == opMemOf) {
             returns[i]->refSubExp1() = 
                 returns[i]->getSubExp1()->expSubscriptVar(e, def);
         }
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    for (i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->expSubscriptVar(e, def);
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+    for (i = 0; i < implicitArguments.size(); i++) {
         implicitArguments[i] = implicitArguments[i]->expSubscriptVar(e, def);
     }
 }
@@ -1944,7 +1959,8 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 // 1
                 //LOG << "1\n";
                 returns.resize(sig->getNumReturns());
-                for (int i = 0; i < sig->getNumReturns(); i++)
+				int i;
+                for (i = 0; i < sig->getNumReturns(); i++)
                     returns[i] = sig->getReturnExp(i)->clone();
                 // 2
                 //LOG << "2\n";
@@ -1955,7 +1971,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 std::vector<Exp*> oldargs = implicitArguments;
                 std::vector<Exp*> newimpargs;
                 newimpargs.resize(sig->getNumImplicitParams());
-                for (int i = 0; i < sig->getNumImplicitParams(); i++) {
+                for (i = 0; i < sig->getNumImplicitParams(); i++) {
                     bool gotsup = false;
                     for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getImplicitParamExp(i)) {
@@ -1975,7 +1991,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 assert(arguments.size() == 0);
                 std::vector<Exp*> newargs;
                 newargs.resize(sig->getNumParams());
-                for (int i = 0; i < sig->getNumParams(); i++) {
+                for (i = 0; i < sig->getNumParams(); i++) {
                     bool gotsup = false;
                     for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getParamExp(i)) {
@@ -1984,7 +2000,8 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                             break;
                         }
                     if (!gotsup) {
-                        newargs[i] = sig->getParamExp(i)->clone();
+						Exp* parami = sig->getParamExp(i);
+                        newargs[i] = parami->clone();
                         if (newargs[i]->getOper() == opMemOf) {
                             newargs[i]->refSubExp1() = 
                                 substituteParams(newargs[i]->getSubExp1());
@@ -2005,7 +2022,8 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
             }
         }
     }
-    for (unsigned i = 0; i < returns.size(); i++)
+	unsigned int i;
+    for (i = 0; i < returns.size(); i++)
         if (returns[i]->getOper() == opMemOf) {
             Exp *e = findArgument(returns[i]->getSubExp1());
             if (e)
@@ -2014,11 +2032,11 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 returns[i]->getSubExp1()->searchReplaceAll(from, to, change);
             returns[i] = returns[i]->simplifyArith()->simplify();
         }    
-    for (unsigned i = 0; i < arguments.size(); i++) {
+    for (i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to, change);
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
-    for (unsigned i = 0; i < implicitArguments.size(); i++) 
+    for (i = 0; i < implicitArguments.size(); i++) 
         if (!(*implicitArguments[i] == *from)) {
             implicitArguments[i] = implicitArguments[i]->searchReplaceAll(from, to, change);
             implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
@@ -2076,15 +2094,16 @@ void CallStatement::fromSSAform(igraph& ig) {
     if (pDest)
         pDest = pDest->fromSSA(ig);
     int n = arguments.size();
-    for (int i=0; i < n; i++) {
+	int i;
+    for (i=0; i < n; i++) {
         arguments[i] = arguments[i]->fromSSA(ig);
     }
     n = implicitArguments.size();
-    for (int i=0; i < n; i++) {
+    for (i=0; i < n; i++) {
         implicitArguments[i] = implicitArguments[i]->fromSSA(ig);
     }
     n = returns.size();
-    for (int i=0; i < n; i++) {
+    for (i=0; i < n; i++) {
         returns[i] = returns[i]->fromSSAleft(ig, this);
     }
 }
@@ -2221,12 +2240,13 @@ void CallStatement::processConstants(Prog *prog) {
     if (getDestProc() && getDestProc()->isLib()) {
         int sp = proc->getSignature()->getStackRegister(prog);
         removeReturn(Location::regOf(sp));
-        for (unsigned i = 0; i < implicitArguments.size(); i++)
+		unsigned int i;
+        for (i = 0; i < implicitArguments.size(); i++)
             if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) {
                 implicitArguments[i] = new Const(0);
                 break;
             }
-        for (unsigned i = 0; i < implicitArguments.size(); i++)
+        for (i = 0; i < implicitArguments.size(); i++)
             if (*getDestProc()->getSignature()->getImplicitParamExp(i) ==
                   *Location::memOf(Location::regOf(sp))) {
                 implicitArguments[i] = new Const(0);
@@ -2936,7 +2956,8 @@ void Assign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 int Assign::getMemDepth() {
     int d1 = lhs->getMemDepth();
     int d2 = rhs->getMemDepth();
-    return std::max(d1, d2);
+	if (d1 >= d2) return d1;
+	return d2;
 }
 
 void Assign::fromSSAform(igraph& ig) {
