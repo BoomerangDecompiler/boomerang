@@ -15,11 +15,11 @@ Module Frontend
       At this stage, assume it is only called once, to start the whole
       decoding process off. No information to be saved. Recursively
       analyses callees. May need to pass callbacks or send messages or
-      something so the GIU can know of its progress.
+      something so the GUI can know of its progress.
     extraDecode(Native address)
       Used when an additional code address is found. For example, the
       target of a register jump (as found by expert, or analysis other
-      than the standard switch analysis). Is aware of exising code; just
+      than the standard switch analysis). Is aware of existing code; just
       decodes all code reachable from this newly established code address.
 
 Module Decoder

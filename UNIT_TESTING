@@ -1,4 +1,4 @@
-Unit testing is used throughout boomerang. You shoudl be able to cd to any
+Unit testing is used throughout boomerang. You should be able to cd to any
 directory below the top one, type "make test", and it should make the
 objects in that directory and run the test. (In some cases, before dynamic
 libraries are installed, you may have to "make ; make install" first).
