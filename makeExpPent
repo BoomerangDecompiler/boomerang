@@ -1,0 +1,2 @@
+./boomerang test/pentium/$1 2>/dev/null > test/pentium/$1.out
+cat test/pentium/$1.out

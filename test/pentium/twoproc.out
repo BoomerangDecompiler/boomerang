@@ -1,0 +1,14 @@
+
+int main(int param1)
+{
+int local4;
+    local4 = proc1(4, 3);
+    local4 = printf("%i\n", local4);
+    return local4;
+}
+
+int proc1(int param4, int param7)
+{
+    return param4 + param7;
+}
+

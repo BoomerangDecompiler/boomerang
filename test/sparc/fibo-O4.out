@@ -1,0 +1,35 @@
+
+int main()
+{
+int local0;
+int local1;
+int local33;
+int local34;
+    printf("Input number: ");
+    scanf("%d", &local0);
+    local33 = local0;
+    if (local0 > 1) {
+        local34 = fib(local0 - 1);
+        local1 = fib(local0 - 2);
+        local33 = local34 + local1;
+    }
+    printf("fibonacci(%d) = %d\n", local0, local33);
+    return local0 - 1;
+}
+
+int fib()
+{
+int local0;
+int local1;
+int local2;
+int local3;
+    local1 = local2;
+    if (local2 > 1) {
+        local2 = fib(local2 - 1);
+        local3 = fib(local2 - 2);
+        local1 = local2 + local3;
+    }
+    local0 = local1;
+    return local0;
+}
+

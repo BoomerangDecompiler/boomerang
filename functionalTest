@@ -1,0 +1,8 @@
+./testPent hello
+./testSparc hello
+./testPent twoproc
+./testSparc twoproc
+./testPent fib
+#./testSparc fib
+./testPent fibo-O4
+./testSparc fibo-O4 

@@ -1,0 +1,2 @@
+./boomerang test/sparc/$1 2>/dev/null > test/sparc/$1.out
+cat test/sparc/$1.out

@@ -1,0 +1,3 @@
+echo sparc $1
+./boomerang test/sparc/$1 2>/dev/null > output
+diff -c test/sparc/$1.out output

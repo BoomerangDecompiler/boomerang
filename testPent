@@ -1,0 +1,3 @@
+echo pentium $1
+./boomerang test/pentium/$1 2>/dev/null > output
+diff -c test/pentium/$1.out output

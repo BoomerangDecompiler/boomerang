@@ -1,0 +1,16 @@
+
+int main()
+{
+int local0;
+    local0 = proc1();
+    local0 = printf("%i\n", local0);
+    return local0;
+}
+
+int proc1()
+{
+int local0;
+int local1;
+    return local0 + local1;
+}
+
