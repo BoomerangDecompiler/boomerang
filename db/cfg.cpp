@@ -2634,3 +2634,16 @@ Statement* Cfg::findImplicitParamAssign(Parameter* param) {
 	return it->second;
 }
 
+void Cfg::removeImplicitAssign(Exp* x) {
+	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+if (it == implicitMap.end()) {
+  bool eq = *x == *(implicitMap.begin()->first);
+  std::cerr << "removeImplicitAssign of " << x << " failed; in the implicit map:\n";
+  for (it = implicitMap.begin(); it != implicitMap.end(); it++)
+    std::cerr << it->first << ", \t";
+  std::cerr << "\n" << std::flush;
+  assert(0);
+}
+	// assert(it != implicitMap.end());
+	implicitMap.erase(it);
+}

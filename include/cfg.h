@@ -1040,6 +1040,7 @@ public:
 		Statement* findImplicitAssign(Exp* x);			// Find or create an implicit assign for x
 		Statement* findTheImplicitAssign(Exp* x);		// Find the existing implicit assign for x (if any)
 		Statement* findImplicitParamAssign(Parameter* p);// Find exiting implicit assign for parameter p
+		void	removeImplicitAssign(Exp* x);			// Remove an existing implicit assignment for x
 
 		/*
 	 	 * Dominance frontier and SSA code
