@@ -630,24 +630,26 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							// Yes, it is. Create a Statement from it.
 							RTL *rtl = decoded.rtl;
 							Statement* first_statement = *rtl->getList().begin();
-							first_statement->setProc(pProc);
-							first_statement->simplify();
-							GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
-							// In fact it's a computed (looked up) jump, so the jump seems to be a case statement.
-							if ( first_statement->getKind() == STMT_CASE &&
-								stmt_jump->getDest()->getOper() == opMemOf &&
-								stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
-								pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
-									getAddr())) // Is it an "DynamicLinkedProcPointer"?
-							{
-								LOG << "Lib function found in thunk\n";
-								// Yes, it's a library function. Look up it's name.
-								const char *nam = pBF->GetDynamicProcName(((Const*)stmt_jump->getDest()->getSubExp1())->
-									getAddr());
-								// Assign the proc to the call
-								Proc *p = pProc->getProg()->getLibraryProc(nam);
-								call->setDestProc(p);
-								call->setIsComputed(false);
+							if (first_statement) {
+								first_statement->setProc(pProc);
+								first_statement->simplify();
+								GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
+								// In fact it's a computed (looked up) jump, so the jump seems to be a case statement.
+								if ( first_statement->getKind() == STMT_CASE &&
+									stmt_jump->getDest()->getOper() == opMemOf &&
+									stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
+									pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
+										getAddr())) // Is it an "DynamicLinkedProcPointer"?
+								{
+									LOG << "Lib function found in thunk\n";
+									// Yes, it's a library function. Look up it's name.
+									const char *nam = pBF->GetDynamicProcName(((Const*)stmt_jump->getDest()->
+										getSubExp1())->getAddr());
+									// Assign the proc to the call
+									Proc *p = pProc->getProg()->getLibraryProc(nam);
+									call->setDestProc(p);
+									call->setIsComputed(false);
+								}
 							}
 						}
 					}
