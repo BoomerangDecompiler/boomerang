@@ -3288,9 +3288,12 @@ fi
 if test $ac_cv_header_cppunit_TestSuite_h = yes; then
   :
 else
-  { { echo "$as_me:$LINENO: error: \"library 'cppunit' not found\"" >&5
-echo "$as_me: error: \"library 'cppunit' not found\"" >&2;}
-   { (exit 1); exit 1; }; }
+  { echo "$as_me:$LINENO: WARNING: \"library 'cppunit' not found: will not be able to run\"" >&5
+echo "$as_me: WARNING: \"library 'cppunit' not found: will not be able to run\"" >&2;}
+  { echo "$as_me:$LINENO: WARNING: \"'make test'. Remember to create a soft link from \"" >&5
+echo "$as_me: WARNING: \"'make test'. Remember to create a soft link from \"" >&2;}
+  { echo "$as_me:$LINENO: WARNING: \"include/cppunit to the cppunit include/cppunit directory\"" >&5
+echo "$as_me: WARNING: \"include/cppunit to the cppunit include/cppunit directory\"" >&2;}
 fi
 
 
