@@ -2321,6 +2321,12 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
  */
 PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
   BranchStatement* br2) {
+
+#if 0
+std::cerr << "splitForBranch before:\n";
+std::cerr << pBB->prints() << "\n";
+#endif
+
     std::list<RTL*>::iterator ri;
     // First find which RTL has the split address
     for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
@@ -2329,44 +2335,77 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
     }
     assert(ri != pBB->m_pRtls->end());
 
+    bool haveA = (ri != pBB->m_pRtls->begin());
+
+    ADDRESS addr = rtl->getAddress();
+ 
     // Make a BB for the br1 instruction
     std::list<RTL*>* pRtls = new std::list<RTL*>;
     std::list<Statement*>* ls = new std::list<Statement*>;
     ls->push_back(br1);
     // Don't give this "instruction" the same address as the rest of the
     // string instruction (causes problems when creating the rptBB)
-    RTL* skipRtl = new RTL(rtl->getAddress(), ls);
+    // Or if there is no A, temporarily use 0
+    ADDRESS a = (haveA) ? addr : 0;
+    RTL* skipRtl = new RTL(a, ls);
     pRtls->push_back(skipRtl);
     PBB skipBB = newBB(pRtls, TWOWAY, 2);
-    rtl->updateAddress(rtl->getAddress()+1);
+    rtl->updateAddress(addr+1);
+    if (!haveA) {
+        skipRtl->updateAddress(addr);
+        // Address addr now refers to the splitBB
+        m_mapBB[addr] = skipBB;
+        // Fix all predecessors of pBB to point to splitBB instead
+        for (unsigned i=0; i < pBB->m_InEdges.size(); i++) {
+            PBB pred = pBB->m_InEdges[i];
+            for (unsigned j=0; j < pred->m_OutEdges.size(); j++) {
+                PBB succ = pred->m_OutEdges[j];
+                if (succ == pBB) {
+                    pred->m_OutEdges[j] = skipBB;
+                    skipBB->addInEdge(pred);
+                    break;
+                }
+            }
+        }
+    }
 
     // Remove the SKIP from the start of the string instruction RTL
     std::list<Statement*>& li = rtl->getList();
-    assert(li.size() == 6);
+    assert(li.size() >= 4);
     li.erase(li.begin());
     // Replace the last statement with br2
     std::list<Statement*>::iterator ll = --li.end();
     li.erase(ll);
     li.push_back(br2);
     
-    // Move the string RTL into a new BB
+    // Move the remainder of the string RTL into a new BB
     pRtls = new std::list<RTL*>;
     pRtls->push_back(*ri);
     PBB rptBB = newBB(pRtls, TWOWAY, 2);
     ri = pBB->m_pRtls->erase(ri);
 
-    // Move the remaining RTLs to a new list of RTLs
-    pRtls = new std::list<RTL*>;
-    while (ri != pBB->m_pRtls->end()) {
-        pRtls->push_back(*ri);
-        ri = pBB->m_pRtls->erase(ri);
+    // Move the remaining RTLs (if any) to a new list of RTLs
+    PBB newBb;
+    int oldOutEdges = 0;
+    bool haveB = true;
+    if (ri != pBB->m_pRtls->end()) {
+        pRtls = new std::list<RTL*>;
+        while (ri != pBB->m_pRtls->end()) {
+            pRtls->push_back(*ri);
+            ri = pBB->m_pRtls->erase(ri);
+        }
+        oldOutEdges = pBB->getNumOutEdges();
+        newBb = newBB(pRtls, pBB->getType(), oldOutEdges);
+        // Transfer the out edges from A to B (pBB to newBb)
+        for (int i=0; i < oldOutEdges; i++)
+            addOutEdge(newBb, pBB->getOutEdge(i));
+    } else {
+        // The "B" part of the above diagram is empty.
+        // Don't create a new BB; just point newBB to the successor of pBB
+        haveB = false;
+        newBb = pBB->getOutEdge(0);
     }
-    int oldOutEdges = pBB->getNumOutEdges();
-    PBB newBb = newBB(pRtls, pBB->getType(), oldOutEdges);
 
-    // Transfer the out edges from A to B (pBB to newBb)
-    for (int i=0; i < oldOutEdges; i++)
-        addOutEdge(newBb, pBB->getOutEdge(i));
     // Change pBB to a FALL bb
     pBB->updateType(FALL, 1);
     // Set the first out-edge to be skipBB
@@ -2381,16 +2420,44 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
 
     // For each out edge of newBb, change any in-edges to pBB to instead point
     // to newBb
-    for (int i=0; i < oldOutEdges; i++) {
-        PBB succ = newBb->m_OutEdges[i];
-        for (unsigned j=0; j < succ->m_InEdges.size(); j++) {
-            PBB pred = succ->m_InEdges[j];
+    if (haveB) {
+        for (int i=0; i < oldOutEdges; i++) {
+            PBB succ = newBb->m_OutEdges[i];
+            for (unsigned j=0; j < succ->m_InEdges.size(); j++) {
+                PBB pred = succ->m_InEdges[j];
+                if (pred == pBB) {
+                    succ->m_InEdges[j] = newBb;
+                    break;
+                }
+            }
+        }
+    } else {
+        // There is no "B" bb (newBb is just the successor of pBB)
+        // Fix that one out-edge to point to rptBB
+        for (unsigned j=0; j < newBb->m_InEdges.size(); j++) {
+            PBB pred = newBb->m_InEdges[j];
             if (pred == pBB) {
-                succ->m_InEdges[j] = newBb;
+                newBb->m_InEdges[j] = rptBB;
                 break;
             }
         }
     }
+    if (!haveA) {
+        // Must delete pBB
+        BB_IT it;
+        for (it = m_listBB.begin(); it != m_listBB.end(); it++)
+            if (*it == pBB) break;
+        assert(it != m_listBB.end());
+        m_listBB.erase(it);
+        pBB = NULL;
+    }
 
+#if 0
+std::cerr << "splitForBranch after:\n";
+if (pBB) std::cerr << pBB->prints(); else std::cerr << "<null>\n";
+std::cerr << skipBB->prints();
+std::cerr << rptBB->prints();
+std::cerr << newBb->prints() << "\n";
+#endif
     return newBb;
 }
