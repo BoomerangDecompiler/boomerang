@@ -94,7 +94,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	}
 	
 // Load the specific loader library
-#ifndef _MSC_VER
+#ifndef _WIN32		// Cygwin, Unix/Linux
 	libName = std::string("lib/lib") + libName;
 #ifdef	__CYGWIN__
 	libName += ".dll";		// Cygwin wants .dll, but is otherwise like Unix
@@ -110,8 +110,11 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	}
 	// Use the handle to find the "construct" function
 	constructFcn pFcn = (constructFcn) dlsym(dlHandle, "construct");
-#else
+#else						// Else MSVC, MinGW
 	libName += ".dll";		// Example: ElfBinaryFile.dll (same dir as boomerang.exe)
+#ifdef __MINGW32__
+	libName = "lib/lib" + libName;
+#endif
 	HMODULE hModule = LoadLibrary(libName.c_str());
 	if(hModule == NULL) {
 		int err = GetLastError();
