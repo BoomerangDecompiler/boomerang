@@ -15,6 +15,7 @@
  * 12 Sep 01 - Mike: Replaced SymTab object with map from ADDRESS to string
  * 09 Mar 02 - Mike: Changes for stand alone compilation
  * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
+ * 02 Oct 02 - Mike: elfRead2 and elfRead4 are const now
 */
 
 #ifndef __ELFBINARYFILE_H__
@@ -59,8 +60,10 @@ typedef struct {
         short e_shstrndx;
 } Elf32_Ehdr;
 
-#define EM_SPARC         2              // Sun SPARC
-#define EM_386           3              // Intel 80386 or higher
+#define EM_SPARC        2			// Sun SPARC
+#define EM_386          3			// Intel 80386 or higher
+#define EM_68K			4			// Motorola 68000
+#define EM_PA_RISC		15			// HP PA-RISC
 
 #define ET_DYN  3       // Elf type (dynamic library)
 
@@ -226,8 +229,10 @@ virtual ADDRESS* GetImportStubs(int& numImports);
     bool        PostLoad(void* handle); // Called after archive member loaded
 
     // Internal elf reading methods
-    int         elfRead2(short* ps);    // Read a short with endianness care
-    int         elfRead4(int*   pi);    // Read an int with endianness care
+    // Read a short with endianness care
+    int         elfRead2(short* ps) const;
+    // Read an int with endianness care
+    int         elfRead4(int*   pi) const;
 
     FILE*       m_fd;                   // File stream
 	long		m_lImageSize;			// Size of image in bytes
