@@ -108,7 +108,7 @@ public:
 										std::vector<Exp*> &returns) = 0;
 	virtual void AddProcStart(Signature *signature) = 0;
 	virtual void AddProcEnd() = 0;
-	virtual void AddLocal(const char *name, Type *type) = 0;
+	virtual void AddLocal(const char *name, Type *type, bool last = false) = 0;
 
 		virtual void AddGlobal(const char *name, Type *type, 
 								Exp *init = NULL) = 0;

@@ -963,6 +963,8 @@ virtual bool	accept(StmtModifier* visitor);
 	Exp			*getReturnExp(int i);
 	int			findReturn(Exp *e);
 	void		removeReturn(Exp *e);
+	void		ignoreReturn(Exp *e);
+	void		ignoreReturn(int n);
 	void		addReturn(Exp *e);
 	std::vector<Exp*>& getReturns() {return returns;}
 	Exp			*getProven(Exp *e);
@@ -1056,6 +1058,8 @@ protected:
 virtual bool	doReplaceRef(Exp* from, Exp* to);
 		bool	convertToDirect();
 
+		void	updateArgumentWithType(int n);
+		void	updateReturnWithType(int n);
 		void	appendArgument(Exp *e) { arguments.push_back(e); }
 		void	appendImplicitArgument(Exp *e) { implicitArguments.push_back(e); }
 	friend class XMLProgParser;

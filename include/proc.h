@@ -205,6 +205,7 @@ public:
 	void removeParameter(Exp *e);
 	void addParameter(Exp *e);
 	virtual void addReturn(Exp *e);
+	void sortParameters();
 
 	virtual void printCallGraphXML(std::ostream &os, int depth, 
 								   bool recurse = true);
@@ -456,6 +457,7 @@ public:
     bool nameRegisters();
     void removeRedundantPhis();
     void trimReturns();
+	void updateReturnTypes();
     void fixCallRefs();
     void addNewParameters();
     void addNewReturns(int depth);

@@ -344,7 +344,7 @@ virtual void	readMemo(Memo *m, bool dec) = 0;
 
 		// Data flow based type analysis (implemented in type/dfa.cpp)
 		// Pull type information up the expression tree
-virtual	Type*	ascendType() {assert(0);}
+virtual	Type*	ascendType() {assert(0); return 0;}
 		// Push type information down the expression tree
 virtual	void	descendType(Type* parentType, bool& ch) {assert(0);}
 
@@ -960,7 +960,7 @@ virtual Exp*	polySimplify(bool& bMod);
 virtual void	getDefinitions(LocationSet& defs);
 
 virtual Type	*getType();
-virtual void	setType(Type *t) { ty = t; }
+virtual void	setType(Type *t);
 virtual int		getMemDepth();
 
 	// Visitation

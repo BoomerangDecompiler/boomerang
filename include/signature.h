@@ -165,6 +165,7 @@ public:
 	virtual Type *getParamType(int n);
 	virtual void setParamType(int n, Type *ty);
 	virtual void setParamName(int n, const char *name);
+	virtual void setParamExp(int n, Exp *e);
 	virtual int findParam(Exp *e);
 	virtual int findParam(const char *nam);
 	// accessor for argument expressions

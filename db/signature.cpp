@@ -892,6 +892,11 @@ void Signature::setParamName(int n, const char *name)
 	params[n]->setName(name);
 }
 
+void Signature::setParamExp(int n, Exp *e)
+{
+	params[n]->setExp(e);
+}
+
 int Signature::findParam(Exp *e) {
 	for (int i = 0; i < getNumParams(); i++)
 		if (*getParamExp(i) == *e)
@@ -957,7 +962,7 @@ void Signature::addReturn(Type *type, Exp *exp) {
 }
 
 void Signature::addReturn(Exp *exp) {
-	addReturn(new IntegerType(), exp);
+	addReturn(exp->getType() ? exp->getType() : new IntegerType(), exp);
 }
 
 void Signature::removeReturn(Exp *e)

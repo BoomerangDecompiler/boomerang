@@ -446,9 +446,11 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 	int n = s->getNumReturns();
 	if (final) {
 		if (n != 0) {
-			Exp* r = s->getReturnExp(0);
+			Exp* r = NULL;
+			for (int i = 0; r == NULL && i < n; i++)
+				r = s->getReturnExp(i);			
 			// If of form m[x] then x is used
-			if (r->isMemOf()) {
+			if (r && r->isMemOf()) {
 				Exp* x = ((Location*)r)->getSubExp1();
 				x->accept(ev);
 			}
@@ -457,7 +459,7 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 		// Otherwise, consider all returns. If of form m[x] then x is used
 		for (int i=0; i < n; i++) {
 			Exp* r = s->getReturnExp(i);
-			if (r->isMemOf()) {
+			if (r && r->isMemOf()) {
 				Exp* x = ((Location*)r)->getSubExp1();
 				x->accept(ev);
 			}
@@ -562,7 +564,7 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	n = s->getNumReturns();
 	for (int i=0; i < n; i++) {
 		Exp* r = s->getReturnExp(i);
-		if (r->isMemOf()) {
+		if (r && r->isMemOf()) {
 			Exp*& x = ((Location*)r)->refSubExp1();
 			x = x->accept(mod);
 		}

@@ -16,5 +16,5 @@ wchar_t *lstrcpyW(wchar_t *dst, wchar_t *src);
 char *_strrev( char *string );
 wchar_t *_wcsrev( wchar_t *string );
 unsigned char *_mbsrev( unsigned char *string );
-char *strchr(const char *s, int c);
-char *strrchr(const char *s, int c);
+char *strchr(const char[] *s, char c);
+char *strrchr(const char *s, char c);

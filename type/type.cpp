@@ -98,7 +98,7 @@ ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p),
 {
 }
 
-bool ArrayType::isUnbounded()
+bool ArrayType::isUnbounded() const
 {
 	return length == NO_BOUND;
 }
@@ -745,14 +745,20 @@ const char *CharType::getCtype(bool final) const { return "char"; }
 
 const char *PointerType::getCtype(bool final) const {
 	 std::string s = points_to->getCtype(final);
-	 s += "*";
+	 if (points_to->isPointer())
+		s += "*";
+	 else
+		s += " *";
 	 return strdup(s.c_str()); // memory..
 }
 
 const char *ArrayType::getCtype(bool final) const {
 	std::string s = base_type->getCtype(final);
 	std::ostringstream ost;
-	ost << "[" << length << "]";
+	if (isUnbounded())
+		ost << "[]";
+	else
+		ost << "[" << length << "]";
 	s += ost.str().c_str();
 	return strdup(s.c_str()); // memory..
 }

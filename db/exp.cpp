@@ -272,6 +272,22 @@ void TypedExp::setType(Type* ty)
 	type = ty;
 }
 
+void Location::setType(Type *t)
+{
+	ty = t;
+
+	if (proc == NULL)
+		return;
+
+	if (op == opParam) {
+		int n = proc->getSignature()->findParam(((Const*)subExp1)->getStr());
+		if (n != -1)
+			proc->getSignature()->setParamType(n, ty);
+	} else if (op == opLocal) {
+		proc->setLocalType(((Const*)subExp1)->getStr(), ty);
+	}
+}
+
 /*==============================================================================
  * FUNCTION:		Binary::commute
  * OVERVIEW:		Swap the two subexpressions
@@ -1919,6 +1935,20 @@ Exp* Unary::polySimplify(bool& bMod) {
 		default:
 			break;
 	}
+
+	// Replace m[x + k] where x has type pointer and k is a constant with x[k/sizeof(*x)]
+	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->isIntConst()) {
+		int n = ((Const*)subExp1->getSubExp2())->getInt();
+		Type *ty = subExp1->getSubExp1()->getType();
+		if (ty && ty->isPointer()) {
+			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
+			if ((basesz % 8) == 0 && (n % (basesz / 8)) == 0) {
+				bMod = true;
+				return new Binary(opArraySubscript, subExp1->getSubExp1()->clone(), new Const(n / (basesz / 8)));
+			}
+		}
+	}
+
 	return res;
 }
 
@@ -2978,7 +3008,11 @@ Exp* RefExp::fromSSA(igraph& ig) {
 		}
 		if (p == NULL) std::cerr << "Error: no proc for " << this << "\n";
 		assert(p);
-		return Location::local(strdup(name.c_str()), p);
+		Location *loc = Location::local(strdup(name.c_str()), p);
+		Type *ty = subExp1->getType();
+		if (ty)
+			loc->setType(ty);
+		return loc;
 	}
 }
 
@@ -3498,6 +3532,13 @@ Type *RefExp::getType()
 		return subExp1->getType();
 	if (def && def->getRight() && def->getRight()->getType())
 		return def->getRight()->getType();
+	if (def && def->isCall()) {
+		CallStatement *call = (CallStatement*)def;
+		int n = call->findReturn(subExp1);
+		if (n != -1 && call->getDestProc()) {
+			return call->getDestProc()->getSignature()->getReturnType(n);
+		}
+	}
 	if (def && def->isPhi()) {
 		PhiAssign *phi = (PhiAssign*)def;
 #if 1

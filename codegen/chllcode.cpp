@@ -62,8 +62,8 @@ CHLLCode::~CHLLCode()
 void CHLLCode::indent(std::ostringstream& str, int indLevel)
 {
 	// Can probably do more efficiently
-	for (int i=0; i < indLevel*4; i++)
-		str << ' ';
+	for (int i=0; i < indLevel; i++)
+		str << "    ";
 }
 
 // Append code for the given expression exp to stream str
@@ -103,9 +103,37 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 					// Output it in 0xF0000000 style
 					str << "0x" << std::hex << K;
 				}
-			} else
-				// Just a plain vanilla int
-				str << std::dec << c->getInt();
+			} else {
+				if (c->getType() && c->getType()->isChar()) {
+					if (c->getInt() == '\a')
+						str << "'\\a'";
+					else if (c->getInt() == '\b')
+						str << "'\\b'";
+					else if (c->getInt() == '\f')
+						str << "'\\f'";
+					else if (c->getInt() == '\n')
+						str << "'\\n'";
+					else if (c->getInt() == '\r')
+						str << "'\\r'";
+					else if (c->getInt() == '\t')
+						str << "'\\t'";
+					else if (c->getInt() == '\v')
+						str << "'\\v'";
+					else if (c->getInt() == '\\')
+						str << "'\\\\'";
+					else if (c->getInt() == '\?')
+						str << "'\\?'";
+					else if (c->getInt() == '\'')
+						str << "'\\''";
+					else if (c->getInt() == '\"')
+						str << "'\\\"'";
+					else
+						str << "'" << (char)c->getInt() << "'";
+				} else {
+					// Just a plain vanilla int
+					str << std::dec << c->getInt();
+				}
+			}
 			break;
 		}
 		case opLongConst:
@@ -121,6 +149,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			str << c->getFuncName(); break;
 		case opAddrOf: {
 			Exp* sub = u->getSubExp1();
+			if (sub->getType() && sub->getType()->isArray()) {
+				appendExp(str, sub, curPrec);
+				break;
+			}
 			if (sub->isGlobal()) {
 				Prog* prog = m_proc->getProg();
 				Const* con = (Const*)((Unary*)sub)->getSubExp1();
@@ -147,18 +179,30 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			str << c->getStr();
 			break;
 		case opEquals:
-			openParen(str, curPrec, PREC_EQUAL);
-			appendExp(str, b->getSubExp1(), PREC_EQUAL);
-			str << " == ";
-			appendExp(str, b->getSubExp2(), PREC_EQUAL);
-			closeParen(str, curPrec, PREC_EQUAL);
+			{
+				openParen(str, curPrec, PREC_EQUAL);
+				appendExp(str, b->getSubExp1(), PREC_EQUAL);
+				str << " == ";
+				Type *ty = b->getSubExp1()->getType();
+				if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
+					str << "NULL";
+				else
+					appendExp(str, b->getSubExp2(), PREC_EQUAL);				
+				closeParen(str, curPrec, PREC_EQUAL);
+			}
 			break;
 		case opNotEqual:
-			openParen(str, curPrec, PREC_EQUAL);
-			appendExp(str, b->getSubExp1(), PREC_EQUAL);
-			str << " != ";
-			appendExp(str, b->getSubExp2(), PREC_EQUAL);
-			closeParen(str, curPrec, PREC_EQUAL);
+			{
+				openParen(str, curPrec, PREC_EQUAL);
+				appendExp(str, b->getSubExp1(), PREC_EQUAL);
+				str << " != ";
+				Type *ty = b->getSubExp1()->getType();
+				if (ty && ty->isPointer() && b->getSubExp2()->isIntConst() && ((Const*)b->getSubExp2())->getInt() == 0)
+					str << "NULL";
+				else
+					appendExp(str, b->getSubExp2(), PREC_EQUAL);
+				closeParen(str, curPrec, PREC_EQUAL);
+			}
 			break;
 		case opLess:
 		case opLessUns:
@@ -556,11 +600,18 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 				*((TypedExp*)u->getSubExp1())->getType()) {
 				appendExp(str, u->getSubExp1(), curPrec);
 			} else if (u->getSubExp1()->getOper() == opMemOf) {
-				str << "*(";
-				appendType(str, ((TypedExp*)u)->getType());
-				str << "*)(";
-				appendExp(str, u->getSubExp1()->getSubExp1(), PREC_NONE);
-				str << ")";
+				PointerType *pty = dynamic_cast<PointerType*>(u->getSubExp1()->getSubExp1()->getType());
+				Type *tt = ((TypedExp*)u)->getType();
+				if (pty != NULL && (*pty->getPointsTo() == *tt || (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
+					str << "*";
+				else {
+					str << "*(";
+					appendType(str, tt);
+					str << "*)";
+				}
+				openParen(str, curPrec, PREC_UNARY);
+				appendExp(str, u->getSubExp1()->getSubExp1(), PREC_UNARY);
+				closeParen(str, curPrec, PREC_UNARY);
 			} else {
 				str << "(";
 				appendType(str, ((TypedExp*)u)->getType());
@@ -690,6 +741,28 @@ void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 	if (typ == NULL) return;
 	// TODO: decode types
 	str << typ->getCtype(true);
+}
+
+void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident)
+{
+	if (typ == NULL) return;
+	if (typ->isPointer() && typ->asPointer()->getPointsTo()->isArray()) {
+		appendType(str, typ->asPointer()->getPointsTo()->asArray()->getBaseType());
+		str << " *" << ident;
+	} else if (typ->isPointer()) {
+		appendType(str, typ);
+		str << ident;
+	} else if (typ->isArray()) {
+		ArrayType *a = typ->asArray();
+		appendTypeIdent(str, a->getBaseType(), ident);
+		str << "[";
+		if (!a->isUnbounded())
+			str << a->getLength();
+		str << "]";
+	} else {
+		appendType(str, typ);
+		str << " " << ident;
+	}		
 }
 
 void CHLLCode::reset()
@@ -942,11 +1015,14 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 {
 	std::ostringstream s;
 	indent(s, indLevel);
-	std::vector<Exp*>::iterator it;
+	unsigned n;
 	if (rets.size() >= 1) {
-		it = rets.begin();
-		appendExp(s, rets.front(), PREC_ASSIGN);
-		s << " = ";
+		for (n = 0; n < rets.size(); n++)
+			if (rets[n]) {
+				appendExp(s, rets[n], PREC_ASSIGN);
+				s << " = ";
+				break;
+			}
 	}
 	s << name << "(";
 	for (unsigned int i = 0; i < args.size(); i++) {
@@ -965,20 +1041,18 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 		if (i < args.size() - 1) s << ", ";
 	}
 	s << ");";
-	it = rets.begin();
-	if (it != rets.end())
-		it++;	// Skip first
 	bool first = true;
-	for (; it != rets.end(); it++) {
-		if (first)
-			s << " // OUT: ";
-		else
-			s << ", ";
-		appendExp(s, *it, PREC_COMMA);
-		first = false;
-	}
+	for (n++; n < rets.size(); n++) 
+		if (rets[n]) {
+			if (first)
+				s << " // OUT: ";
+			else
+				s << ", ";
+			appendExp(s, rets[n], PREC_COMMA);
+			first = false;
+		}
 	std::string str = s.str();	// Copy the whole string
-	int n = str.length();
+	n = str.length();
 	if (str.substr(n-2, 2) == ", ")
 		str = str.substr(0, n-2);
 	lines.push_back(strdup(str.c_str()));
@@ -1052,8 +1126,7 @@ void CHLLCode::AddProcStart(Signature *signature)
 									 Location::param(
 									   signature->getParamName(i)));
 		}
-		appendType(s, ty);
-		s << " " <<	 signature->getParamName(i);
+		appendTypeIdent(s, ty, signature->getParamName(i));
 		if (i != signature->getNumParams() - 1)
 			s << ", ";
 	}
@@ -1068,11 +1141,11 @@ void CHLLCode::AddProcEnd()
 	lines.push_back("");
 }
 
-void CHLLCode::AddLocal(const char *name, Type *type)
+void CHLLCode::AddLocal(const char *name, Type *type, bool last)
 {
 	std::ostringstream s;
-	appendType(s, type);
-	s << " " <<	 name;
+	indent(s, 1);
+	appendTypeIdent(s, type, name);
 	Exp *e = m_proc->getLocalExp(name);
 	if (e) {
 		if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
@@ -1089,6 +1162,8 @@ void CHLLCode::AddLocal(const char *name, Type *type)
 		s << ";";
 	lines.push_back(strdup(s.str().c_str()));
 	locals[name] = type->clone();
+	if (last)
+		lines.push_back(strdup(""));
 }
 
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)

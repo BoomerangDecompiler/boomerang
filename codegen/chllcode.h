@@ -86,6 +86,7 @@ private:
 		void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			bool uns = false);
 		void appendType(std::ostringstream& str, Type *typ);
+		void appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident);
 		void openParen(std::ostringstream& str, PREC outer, PREC inner) {
 			if (inner < outer) str << "("; }
 		void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
@@ -159,7 +160,7 @@ public:
 										std::vector<Exp*> &returns);
 	virtual void AddProcStart(Signature *signature);
 	virtual void AddProcEnd();
-	virtual void AddLocal(const char *name, Type *type);
+	virtual void AddLocal(const char *name, Type *type, bool last = false);
 
 	virtual void AddGlobal(const char *name, Type *type,
 								Exp *init = NULL);

@@ -764,11 +764,6 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			callsMenu = CreatePopupMenu();
 			procMenu = CreatePopupMenu();
 			AppendMenu(procMenu, MF_STRING, ID_VIEW_RENAME, "&Rename");
-			if (u) {
-				AppendMenu(procMenu, MF_STRING, ID_TO_SSA, "Convert to &SSA");
-				AppendMenu(procMenu, MF_STRING, ID_PROP_REGS, "Propagate &registers");
-				AppendMenu(procMenu, MF_STRING, ID_FROM_SSA, "Convert &from SSA");
-			}
 			AppendMenu(procMenu, MF_SEPARATOR, 0, 0);
 			AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callersMenu, "&Callers");
 			AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callsMenu, "C&alls");				

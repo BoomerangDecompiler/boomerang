@@ -870,8 +870,10 @@ void UserProc::generateCode(HLLCode *hll) {
 
 	hll->AddProcStart(signature);
 	
+	std::map<std::string, Type*>::iterator last = locals.end();
+	last--;
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-		hll->AddLocal((*it).first.c_str(), (*it).second);
+		hll->AddLocal((*it).first.c_str(), (*it).second, it == last);
 
 	std::list<PBB> followSet, gotoSet;
 	getEntryBB()->generateCode(hll, 1, NULL, followSet, gotoSet);
@@ -1218,6 +1220,7 @@ std::set<UserProc*>* UserProc::decompile() {
 				LOG << "=== End Debug Print SSA for " << getName() << " at depth " << depth << " ===\n\n";
 			}
 			trimReturns();
+			updateReturnTypes();
 			fixCallRefs();
 		}
 
@@ -1347,6 +1350,7 @@ std::set<UserProc*>* UserProc::decompile() {
 	}
 
 	processConstants();
+	sortParameters();
 
 	printXML();
 
@@ -1636,6 +1640,19 @@ void UserProc::trimReturns() {
 			removeReturn(*it);
 	}
 	removeRedundantPhis();
+}
+
+void UserProc::updateReturnTypes()
+{
+	if (theReturnStatement == NULL)
+		return;
+	for (int n = 0; n < theReturnStatement->getNumReturns(); n++) {
+		Exp *e = theReturnStatement->getReturnExp(n);
+		Type *ty = e->getType();
+		if (ty && !ty->isVoid()) {
+			signature->setReturnType(n, ty->clone());
+		}
+	}
 }
 
 void UserProc::fixCallRefs()
@@ -1964,10 +1981,47 @@ void Proc::addParameter(Exp *e)
 	// In case it's already an implicit argument:
 	removeParameter(e);
 
-	for (std::set<CallStatement*>::iterator it = callerSet.begin();
-		 it != callerSet.end(); it++)
-			(*it)->addArgument(e);
+	for (std::set<CallStatement*>::iterator it = callerSet.begin(); it != callerSet.end(); it++)
+		(*it)->addArgument(e);
 	signature->addParameter(e);
+}
+
+void Proc::sortParameters()
+{
+	// yes, this is a bubble sort
+	for (int i = 0; i < signature->getNumParams() - 1; i++)
+		for (int j = 0; j < signature->getNumParams() - 1; j++)
+			for (int n = 0; n < signature->getNumParams() - 1; n++)
+			{
+				bool swapem = false;
+				Exp *e = signature->getParamExp(n);
+				Exp *f = signature->getParamExp(n + 1);
+				if (e == NULL || f == NULL)
+					break;
+				if (e->getOper() == opMemOf && f->getOper() != opMemOf)
+					swapem = true;
+				else if (e->getOper() == opMemOf && f->getOper() == opMemOf) {
+					if (e->getSubExp1()->getOper() == opPlus && f->getSubExp1()->getOper() == opPlus)
+						if (e->getSubExp1()->getSubExp2()->isIntConst() && f->getSubExp1()->getSubExp2()->isIntConst())
+                            if (((Const*)e->getSubExp1()->getSubExp2())->getInt() > ((Const*)f->getSubExp1()->getSubExp2())->getInt())
+								swapem = true;
+				}
+				if (swapem) {
+					const char *tmpname = strdup(signature->getParamName(n));
+					Type *tmpty = signature->getParamType(n);
+					signature->setParamName(n, signature->getParamName(n + 1));
+					signature->setParamType(n, signature->getParamType(n + 1));
+					signature->setParamExp(n, f);
+					signature->setParamName(n + 1, tmpname);
+					signature->setParamType(n + 1, tmpty);
+					signature->setParamExp(n + 1, e);
+					for (std::set<CallStatement*>::iterator it = callerSet.begin(); it != callerSet.end(); it++) {
+						e = (*it)->getArgumentExp(n);
+						(*it)->setArgumentExp(n, (*it)->getArgumentExp(n + 1));
+						(*it)->setArgumentExp(n + 1, e);
+					}
+				}
+			}
 }
 
 void UserProc::processFloatConstants()
@@ -2413,12 +2467,14 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
 		if ((*it)->isCall()) {
 			CallStatement *call = (CallStatement*)*it;
 			for (int i = 0; i < call->getNumArguments(); i++) {
+				std::ofstream f("c:\\mydebug.txt");
+				call->getDestProc()->getSignature()->print(f);
+				f.close();
+
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
 				// If a pointer type and e is of the form m[sp{0} - K]:
-				if (ty && ty->resolvesToPointer() && e->getOper() == opMinus && 
-						*e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
-						e->getSubExp2()->getOper() == opIntConst) {
+				if (ty && ty->resolvesToPointer() && signature->isAddrOfStackLocal(prog, e)) {
 					Exp *olde = e->clone();
 					Type *pty = ty->asPointer()->getPointsTo();
 					if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
@@ -2882,14 +2938,9 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				if (VERBOSE)
 					LOG << "clearing return set of unused call " << s << "\n";
 				CallStatement *call = (CallStatement*)s;
-				std::vector<Exp*> returns;
-				int i;
-				for (i = 0; i < call->getNumReturns(); i++)
-					returns.push_back(call->getReturnExp(i));
-				for (i = 0; i < (int)returns.size(); i++)
-					if (depth < 0 || returns[i]->getMemDepth() <= depth)
-					//			 if (returns[i]->getMemDepth() <= depth)
-						call->removeReturn(returns[i]);
+				for (int i = 0; i < call->getNumReturns(); i++)
+					if (call->getReturnExp(i) && (depth < 0 || call->getReturnExp(i)->getMemDepth() <= depth))
+						call->ignoreReturn(i);
 				ll++;
 				continue;
 			}

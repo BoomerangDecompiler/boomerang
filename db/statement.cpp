@@ -326,7 +326,8 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 					LocationSet used;
 					def->addUsedLocs(used);
 					RefExp left(def->getLeft(), (Statement*)-1);
-					if (used.find(&left))
+					RefExp *right = dynamic_cast<RefExp*>(def->getRight());
+					if (used.find(&left) && !(right && *right->getSubExp1() == *left.getSubExp1()))
 						// We have something like eax = eax + 1
 						continue;
 				}
@@ -1348,7 +1349,7 @@ Exp *CallStatement::getReturnExp(int i) {
 
 int CallStatement::findReturn(Exp *e) {
 	for (unsigned i = 0; i < returns.size(); i++)
-		if (*returns[i] == *e)
+		if (returns[i] && *returns[i] == *e)
 			return i;
 	return -1;
 }
@@ -1361,6 +1362,19 @@ void CallStatement::removeReturn(Exp *e)
 			returns[j-1] = returns[j];
 		returns.resize(returns.size()-1);
 	}
+}
+
+void CallStatement::ignoreReturn(Exp *e)
+{
+	int i = findReturn(e);
+	if (i != -1) {
+		returns[i] = NULL;
+	}
+}
+
+void CallStatement::ignoreReturn(int n)
+{
+	returns[n] = NULL;
 }
 
 void CallStatement::addReturn(Exp *e)
@@ -1573,11 +1587,12 @@ bool CallStatement::search(Exp* search, Exp*& result) {
 	result = NULL;
 	unsigned int i;
 	for (i = 0; i < returns.size(); i++) {
-		if (*returns[i] == *search) {
+		if (returns[i] && *returns[i] == *search) {
 			result = returns[i];
 			return true;
 		}
-		if (returns[i]->search(search, result)) return true;
+		if (returns[i] && returns[i]->search(search, result)) 
+			return true;
 	}
 	for (i = 0; i < arguments.size(); i++) {
 		if (*arguments[i] == *search) {
@@ -1606,14 +1621,19 @@ bool CallStatement::search(Exp* search, Exp*& result) {
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
 	bool change = GotoStatement::searchAndReplace(search, replace);
 	unsigned int i;
-	for (i = 0; i < returns.size(); i++) {
-		bool ch;
-		returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
-		change |= ch;
-	}
+	for (i = 0; i < returns.size(); i++) 
+		if (returns[i]) {
+			bool ch;
+			returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
+			if (ch)
+				updateReturnWithType(i);
+			change |= ch;
+		}
 	for (i = 0; i < arguments.size(); i++) {
 		bool ch;
 		arguments[i] = arguments[i]->searchReplaceAll(search, replace, ch);
+		if (ch) 
+			updateArgumentWithType(i);
 		change |= ch;
 	}
 	for (i = 0; i < implicitArguments.size(); i++) {
@@ -1642,7 +1662,7 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
 		if (implicitArguments[i]->searchAll(search, result))
 			found = true;
 	 for (i = 0; i < returns.size(); i++)
-		if (returns[i]->searchAll(search, result))
+		if (returns[i] && returns[i]->searchAll(search, result))
 			found = true;
 	return found;
 }
@@ -1690,7 +1710,10 @@ void CallStatement::print(std::ostream& os /*= cout*/) {
 		for (int i = 0; i < getNumReturns(); i++) {
 			if (i != 0)
 				os << ", ";
-			os << getReturnExp(i);
+			if (getReturnExp(i) == NULL)
+				os << "NULL";
+			else
+				os << getReturnExp(i);
 		}
 		os << " }";
 	}
@@ -1795,17 +1818,11 @@ void CallStatement::simplify() {
 		implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
 	}
 	for (i = 0; i < returns.size(); i++) {
-		returns[i] = returns[i]->simplifyArith()->simplify();
+		
+		if (returns[i] == NULL)
+			continue;
 
-		// let's gather some more accurate type information
-		if (procDest && returns[i]->isLocation()) {
-			Location *loc = dynamic_cast<Location*>(returns[i]);
-			assert(loc);
-			Type *ty = procDest->getSignature()->getReturnType(i);
-			loc->setType(ty);
-			if (VERBOSE)
-				LOG << "setting type of " << loc << " to " << ty->getCtype() << " based on return type of call\n";
-		}
+		returns[i] = returns[i]->simplifyArith()->simplify();
 	}
 }
 
@@ -1839,8 +1856,7 @@ bool CallStatement::usesExp(Exp *e) {
 		}
 	}
 	for (i = 0; i < returns.size(); i++) {
-		if (returns[i]->isMemOf() && 
-				returns[i]->getSubExp1()->search(e, where))
+		if (returns[i] && returns[i]->isMemOf() && returns[i]->getSubExp1()->search(e, where))
 			return true;
 	}
 	if (procDest == NULL)
@@ -1864,9 +1880,9 @@ bool CallStatement::isDefinition()
 }
 
 void CallStatement::getDefinitions(LocationSet &defs) {
-	for (int i = 0; i < getNumReturns(); i++) {
-		defs.insert(getReturnExp(i));
-	}
+	for (unsigned i = 0; i < returns.size(); i++) 
+		if (returns[i])
+			defs.insert(returns[i]);
 }
 
 bool CallStatement::convertToDirect()
@@ -1984,6 +2000,46 @@ bool CallStatement::convertToDirect()
 	return convertIndirect;
 }
 
+void CallStatement::updateArgumentWithType(int n)
+{
+	// let's set the type of arguments to the signature of the called proc
+	// both locations and constants can have a type set
+	if (procDest) {
+		Type *ty = procDest->getSignature()->getParamType(n);
+		if (ty) {
+			Exp *e = arguments[n];
+			if (e->isSubscript())
+				e = e->getSubExp1();
+			if (e->isLocation())
+				((Location*)e)->setType(ty->clone());
+			else {
+				Const *c = dynamic_cast<Const*>(e);
+				if (c)
+					c->setType(ty->clone());
+			}					
+		}
+	}
+}
+
+void CallStatement::updateReturnWithType(int n)
+{
+	if (procDest) {
+		Type *ty = procDest->getSignature()->getReturnType(n);
+		if (ty) {
+			Exp *e = returns[n];
+			if (e->isSubscript())
+				e = e->getSubExp1();
+			if (e->isLocation())
+				((Location*)e)->setType(ty->clone());
+			else {
+				Const *c = dynamic_cast<Const*>(e);
+				if (c)
+					c->setType(ty->clone());
+			}
+		}
+	}
+}
+
 bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 	bool change = false;
 	bool convertIndirect = false;
@@ -2010,6 +2066,8 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 				if (0 & VERBOSE)
 					LOG << "doReplaceRef: updated return[" << i << "] with " <<
 					  returns[i] << "\n";
+
+				updateReturnWithType(i);
 			}
 		}	 
 	for (i = 0; i < arguments.size(); i++) {
@@ -2019,6 +2077,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 			if (1 & VERBOSE)
 				LOG << "doReplaceRef: updated argument[" << i << "] with " <<
 				  arguments[i] << "\n";
+			updateArgumentWithType(i);
 		}
 	}
 	for (i = 0; i < implicitArguments.size(); i++) {
@@ -2058,6 +2117,7 @@ void CallStatement::setArgumentExp(int i, Exp *e)
 {
 	assert(i < (int)arguments.size());
 	arguments[i] = e->clone();
+	updateArgumentWithType(i);
 }
 
 int CallStatement::getNumArguments()
@@ -2102,9 +2162,9 @@ void CallStatement::fromSSAform(igraph& ig) {
 		implicitArguments[i] = implicitArguments[i]->fromSSA(ig);
 	}
 	n = returns.size();
-	for (i=0; i < n; i++) {
-		returns[i] = returns[i]->fromSSAleft(ig, this);
-	}
+	for (i=0; i < n; i++) 
+		if (returns[i])
+			returns[i] = returns[i]->fromSSAleft(ig, this);
 }
 
 
@@ -2319,7 +2379,7 @@ void CallStatement::processConstants(Prog *prog) {
 	// hack
 	if (getDestProc() && getDestProc()->isLib()) {
 		int sp = proc->getSignature()->getStackRegister(prog);
-		removeReturn(Location::regOf(sp));
+		ignoreReturn(Location::regOf(sp));
 		unsigned int i;
 		for (i = 0; i < implicitArguments.size(); i++) {
 			if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) {
@@ -2986,6 +3046,16 @@ void Assign::simplify() {
 			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
 	}
 
+	if (lhs->isLocation() && rhs->isIntConst() && (lhs->getType() == NULL || lhs->getType()->isVoid())) {
+		Location *llhs = dynamic_cast<Location*>(lhs);
+		assert(llhs);
+		Type *ty = new IntegerType(type->getSize());
+		llhs->setType(ty);
+		if (VERBOSE)
+			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
+
+	}
+
 	if (lhs->getType() && lhs->getType()->isFloat() && rhs->getOper() == opIntConst) {
 		if (lhs->getType()->getSize() == 32) {
 			unsigned n = ((Const*)rhs)->getInt();
@@ -3645,7 +3715,8 @@ bool CallStatement::accept(StmtModifier* v) {
 	  it++)
 		*it = (*it)->accept(v->mod);
 	for (it = returns.begin(); recur && it != returns.end(); it++)
-		*it = (*it)->accept(v->mod);
+		if (*it)
+			*it = (*it)->accept(v->mod);
 	return true;
 }
 

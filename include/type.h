@@ -390,7 +390,7 @@ virtual bool	isArray() const { return true; }
 		void	fixBaseType(Type *b);
 		unsigned getLength() { return length; }
 		void	setLength(unsigned n) { length = n; }
-		bool	isUnbounded();
+		bool	isUnbounded() const;
 
 virtual Type*	clone() const;
 
