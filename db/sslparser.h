@@ -30,7 +30,7 @@
 #include "rtl.h"
 #include "table.h"
 #include "insnameelem.h"
-#include "util.h"           // E.g. str()
+#include "util.h"			// E.g. str()
 
 #ifdef WIN32
 #include <malloc.h>
@@ -40,87 +40,86 @@ class SSLScanner;
 
 #line 62 "sslparser.y"
 typedef union {
-    Exp*            exp;
-    char*           str;
-    int             num;
-    double          dbl;
-    Statement*      regtransfer;
-    Type*           typ;
-    
-    Table*          tab;
-    InsNameElem*    insel;
-    std::list<std::string>*   parmlist;
-    std::list<std::string>*   strlist;
-    std::deque<Exp*>*    exprlist;
-    std::deque<std::string>*  namelist;
-    std::list<Exp*>*     explist;
-    RTL*            rtlist;
+	Exp*			exp;
+	char*			str;
+	int				num;
+	double			dbl;
+	Statement*		regtransfer;
+	Type*			typ;
+	
+	Table*			tab;
+	InsNameElem*	insel;
+	std::list<std::string>*	  parmlist;
+	std::list<std::string>*	  strlist;
+	std::deque<Exp*>*	 exprlist;
+	std::deque<std::string>*  namelist;
+	std::list<Exp*>*	 explist;
+	RTL*			rtlist;
 } yy_SSLParser_stype;
 #define YY_SSLParser_STYPE yy_SSLParser_stype
 #define YY_SSLParser_DEBUG  1 
 #define YY_SSLParser_PARSE_PARAM  \
-    RTLInstDict& Dict
+	RTLInstDict& Dict
 #define YY_SSLParser_CONSTRUCTOR_PARAM  \
-    const std::string& sslFile, \
-    bool trace
+	const std::string& sslFile, \
+	bool trace
 #define YY_SSLParser_CONSTRUCTOR_INIT  : \
    sslFile(sslFile), bFloat(false)
 #define YY_SSLParser_CONSTRUCTOR_CODE  \
-    std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
-    theScanner = NULL; \
-    if (!*fin) { \
-        std::cerr << "can't open `" << sslFile << "' for reading\n"; \
+	std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
+	theScanner = NULL; \
+	if (!*fin) { \
+		std::cerr << "can't open `" << sslFile << "' for reading\n"; \
 	return; \
-    } \
-    theScanner = new SSLScanner(*fin, trace); \
-    if (trace) yydebug = 1;
+	} \
+	theScanner = new SSLScanner(*fin, trace); \
+	if (trace) yydebug = 1;
 #define YY_SSLParser_MEMBERS  \
 public: \
-        SSLParser(std::istream &in, bool trace); \
-        virtual ~SSLParser(); \
-OPER    strToOper(const char*s); /* Convert string to an operator */ \
-static  Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
+		SSLParser(std::istream &in, bool trace); \
+		virtual ~SSLParser(); \
+OPER	strToOper(const char*s); /* Convert string to an operator */ \
+static	Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
 /* The code for expanding tables and saving to the dictionary */ \
-void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
-  RTLInstDict& Dict); \
+void	expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict); \
 Exp*	makeSuccessor(Exp* e);	/* Get successor (of register expression) */ \
 \
-    /* \
-     * The scanner. \
-     */ \
-    SSLScanner* theScanner; \
+	/* \
+	 * The scanner. \
+	 */ \
+	SSLScanner* theScanner; \
 protected: \
 \
-    /* \
-     * The file from which the SSL spec is read. \
-     */ \
-    std::string sslFile; \
+	/* \
+	 * The file from which the SSL spec is read. \
+	 */ \
+	std::string sslFile; \
 \
-    /* \
-     * Result for parsing an assignment. \
-     */ \
-    Statement *the_asgn; \
+	/* \
+	 * Result for parsing an assignment. \
+	 */ \
+	Statement *the_asgn; \
 \
-    /* \
-     * Maps SSL constants to their values. \
-     */ \
-    std::map<std::string,int> ConstTable; \
+	/* \
+	 * Maps SSL constants to their values. \
+	 */ \
+	std::map<std::string,int> ConstTable; \
 \
-    /* \
-     * maps index names to instruction name-elements \
-     */ \
-    std::map<std::string, InsNameElem*> indexrefmap; \
+	/* \
+	 * maps index names to instruction name-elements \
+	 */ \
+	std::map<std::string, InsNameElem*> indexrefmap; \
 \
-    /* \
-     * Maps table names to Table's.\
-     */ \
-    std::map<std::string, Table*> TableDict; \
+	/* \
+	 * Maps table names to Table's.\
+	 */ \
+	std::map<std::string, Table*> TableDict; \
 \
-    /* \
-     * True when FLOAT keyword seen; false when INTEGER keyword seen \
-     * (in @REGISTER section) \
-     */ \
-    bool bFloat;
+	/* \
+	 * True when FLOAT keyword seen; false when INTEGER keyword seen \
+	 * (in @REGISTER section) \
+	 */ \
+	bool bFloat;
 
 #line 14 "/usr/local/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
@@ -174,21 +173,21 @@ protected: \
 #ifndef YY_SSLParser_PURE
 
 /* #line 63 "/usr/local/lib/bison.h" */
-#line 178 "sslparser.h"
+#line 177 "sslparser.h"
 
 #line 63 "/usr/local/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
 /* #line 65 "/usr/local/lib/bison.h" */
-#line 185 "sslparser.h"
+#line 184 "sslparser.h"
 
 #line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
 /* #line 67 "/usr/local/lib/bison.h" */
-#line 192 "sslparser.h"
+#line 191 "sslparser.h"
 
 #line 67 "/usr/local/lib/bison.h"
 /* YY_SSLParser_DEBUG */
@@ -196,7 +195,7 @@ protected: \
 #ifndef YY_SSLParser_LSP_NEEDED
 
 /* #line 70 "/usr/local/lib/bison.h" */
-#line 200 "sslparser.h"
+#line 199 "sslparser.h"
 
 #line 70 "/usr/local/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
@@ -274,7 +273,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 
 /* #line 143 "/usr/local/lib/bison.h" */
-#line 278 "sslparser.h"
+#line 277 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -371,7 +370,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/usr/local/lib/bison.h" */
-#line 375 "sslparser.h"
+#line 374 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -432,7 +431,7 @@ static const int FCHS;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-#line 436 "sslparser.h"
+#line 435 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -541,5 +540,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-#line 545 "sslparser.h"
+#line 544 "sslparser.h"
 #endif

@@ -296,7 +296,7 @@ bool BasicBlock::isJumpReqd() {
 char debug_buffer[5000];
 char* BasicBlock::prints() {   
 	std::ostringstream ost; 
-	print(ost, true);		
+	print(ost);		  
 	// Static buffer might have overflowed if we used it directly, hence we
 	// just copy and print the first 4999 bytes
 	strncpy(debug_buffer, ost.str().c_str(), 4999);
@@ -311,7 +311,7 @@ char* BasicBlock::prints() {
  * PARAMETERS:		os - stream to output to
  * RETURNS:			<nothing>
  *============================================================================*/
-void BasicBlock::print(std::ostream& os, bool withDF) {
+void BasicBlock::print(std::ostream& os) {
 	if (m_iLabelNum) os << "L" << std::dec << m_iLabelNum << ": ";
 	switch(m_nodeType) {
 		case ONEWAY:	os << "Oneway BB"; break;
@@ -328,7 +328,7 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
 	if (m_pRtls) {					// Can be zero if e.g. INVALID
 		std::list<RTL*>::iterator rit;
 		for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-			(*rit)->print(os, withDF);
+			(*rit)->print(os);
 		}
 	}
 	if (m_bJumpReqd) {
@@ -342,9 +342,9 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
 	}
 }
 
-void BasicBlock::printToLog(bool withDF) {
+void BasicBlock::printToLog() {
 	std::ostringstream st;
-	print(st, withDF);
+	print(st);
 	LOG << st.str().c_str();
 }
 
@@ -1281,7 +1281,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			// return if this doesn't have any out edges (emit a warning)
 			if (m_OutEdges.size() == 0) {
 				std::cerr << "WARNING: no out edge for BB: " << std::endl;
-				this->print(std::cerr, false);
+				this->print(std::cerr);
 				std::cerr << std::endl;
 				if (m_nodeType == COMPJUMP) {
 					std::ostringstream ost;
@@ -1634,11 +1634,10 @@ void BasicBlock::getLiveOut(LocationSet &liveout) {
 			// that some phi assignments have been converted to ordinary
 			// assignments. So the below is a continue, not a break.
 			if (!(*it)->isPhi()) continue;
-			PhiExp* phi = (PhiExp*)((Assign*)(*it))->getRight();
+			PhiAssign* pa = (PhiAssign*)*it;
 			// Get the jth operand to the phi function; it has a use
 			// from BB *this
-			Statement* def = phi->getAt(j);
-			// This will leak
+			Statement* def = pa->getAt(j);
 			RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
 			liveout.insert(r);
 			if (Boomerang::get()->debugLiveness)

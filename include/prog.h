@@ -180,7 +180,7 @@ public:
 	void generateRTL(Cluster *cluster = NULL, UserProc *proc = NULL);
 
 	// Print this program (primarily for debugging)
-	void print(std::ostream &out, bool withDF = false);
+	void print(std::ostream &out);
 
 	// lookup a library procedure by name
 	LibProc *getLibraryProc(const char *nam);

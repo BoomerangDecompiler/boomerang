@@ -8,20 +8,20 @@ class RtlTest : public CppUnit::TestCase {
   protected:
 
   public:
-    RtlTest(std::string name) : CppUnit::TestCase (name)
-    {}
+	RtlTest(std::string name) : CppUnit::TestCase (name)
+	{}
 
-    virtual void registerTests(CppUnit::TestSuite* suite);
+	virtual void registerTests(CppUnit::TestSuite* suite);
 
-    int countTestCases () const;
+	int countTestCases () const;
 
-    void setUp ();
-    void tearDown ();
+	void setUp ();
+	void tearDown ();
 
-    void testAppend ();
-    void testClone ();
-    void testVisitor();
-    void testIsCompare();
-    void testSetConscripts();
+	void testAppend ();
+	void testClone ();
+	void testVisitor();
+	void testIsCompare();
+	void testSetConscripts();
 };
 

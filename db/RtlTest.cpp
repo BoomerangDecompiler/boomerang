@@ -81,7 +81,7 @@ void RtlTest::testAppend () {
 	std::ostringstream ost;
 	r.print(ost);
 	std::string actual(ost.str());
-	std::string expected("00000000	  0 ** r8 := r9 + 99\n");
+	std::string expected("00000000    0 ** r8 := r9 + 99\n");
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	// No! appendExp does not copy the expression, so deleting the RTL will
 	// delete the expression(s) in it.
@@ -112,8 +112,8 @@ void RtlTest::testClone () {
 	delete r;			// And r2 should still stand!
 	r2->print(o2);
 	delete r2;
-	std::string expected("00001234	  0 ** r8 := r9 + 99\n"
-						 "			  0 *i16* x := y\n");
+	std::string expected("00001234    0 ** r8 := r9 + 99\n"
+						 "            0 *j16* x := y\n");
 
 	std::string act1(o1.str());
 	std::string act2(o2.str());
@@ -140,7 +140,7 @@ public:
 	virtual bool visit(	 CaseStatement *s) { d = true; return false; }
 	virtual bool visit(	 CallStatement *s) { e = true; return false; }
 	virtual bool visit(ReturnStatement *s) { f = true; return false; }
-	virtual bool visit(	  BoolStatement *s) { g = true; return false; }
+	virtual bool visit(	  BoolAssign *s) { g = true; return false; }
 	virtual bool visit(			Assign *s) { h = true; return false; }
 };
 
@@ -184,8 +184,8 @@ void RtlTest::testVisitor()
 	CPPUNIT_ASSERT(visitor->f);
 	delete ret;
 
-	/* "bool" stmt */
-	BoolStatement *scond = new BoolStatement(0);
+	/* "bool" assgn */
+	BoolAssign *scond = new BoolAssign(0);
 	scond->accept(visitor);
 	CPPUNIT_ASSERT(visitor->g);
 	delete scond;
@@ -216,14 +216,14 @@ void RtlTest::testIsCompare () {
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF);
 
-	// Decode second instruction: "sub			%i0, 2, %o1"
+	// Decode second instruction: "sub		%i0, 2, %o1"
 	int iReg;
 	Exp* eOperand = NULL;
 	DecodeResult inst = pFE->decodeInstruction(0x10910);
 	CPPUNIT_ASSERT(inst.rtl != NULL);
 	CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
 	
-	// Decode fifth instruction: "cmp		   %o1, 5"
+	// Decode fifth instruction: "cmp		%o1, 5"
 	inst = pFE->decodeInstruction(0x1091c);
 	CPPUNIT_ASSERT(inst.rtl != NULL);
 	CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == true);
@@ -242,7 +242,7 @@ void RtlTest::testIsCompare () {
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	pFE = new PentiumFrontEnd(pBF);
 
-	// Decode fifth instruction: "cmp	 $0x5,%eax"
+	// Decode fifth instruction: "cmp	$0x5,%eax"
 	inst = pFE->decodeInstruction(0x80488fb);
 	CPPUNIT_ASSERT(inst.rtl != NULL);
 	CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == true);
@@ -252,7 +252,7 @@ void RtlTest::testIsCompare () {
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	
-	// Decode instruction: "add	   $0x4,%esp"
+	// Decode instruction: "add		$0x4,%esp"
 	inst = pFE->decodeInstruction(0x804890c);
 	CPPUNIT_ASSERT(inst.rtl != NULL);
 	CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
@@ -290,10 +290,10 @@ void RtlTest::testSetConscripts() {
 	list.push_back(s1);
 	list.push_back(s2);
 	RTL* rtl = new RTL(0x1000, &list);
-	rtl->setConscripts(0);
+	rtl->setConscripts(0, false);
 	std::string expected(
-		"00001000	 0 ** m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
-"			 0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");
+		"00001000    0 ** m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+		"            0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");
 	std::ostringstream ost;
 	rtl->print(ost);
 	std::string actual = ost.str();

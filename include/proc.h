@@ -243,7 +243,7 @@ protected:
 	friend class XMLProgParser;
 	Proc() : visited(false), prog(NULL), signature(NULL), address(0), m_firstCaller(NULL), m_firstCallerAddr(0), cluster(NULL) { }
 
-}; 
+};	// class Proc
 
 /*==============================================================================
  * LibProc class.
@@ -432,8 +432,8 @@ public:
     void generateCode(HLLCode *hll);
 
     // print this proc, mainly for debugging
-    void print(std::ostream &out, bool withDF = false);
-    void printToLog(bool withDF = false);
+    void print(std::ostream &out);
+    void printToLog();
 
     // simplify the statements in this proc
     void simplify() { cfg->simplify(); }
@@ -505,7 +505,8 @@ public:
 	// prove any arbitary property of this procedure
 	bool prove(Exp *query);
 	// helper function, should be private
-	bool prover(Exp *query, std::set<PhiExp*> &lastPhis, std::map<PhiExp*, Exp*> &cache, PhiExp *lastPhi = NULL);	 
+	bool prover(Exp *query, std::set<PhiAssign*> &lastPhis,
+		std::map<PhiAssign*, Exp*> &cache, PhiAssign *lastPhi = NULL);	  
 
 	// promote the signature if possible
 	void promoteSignature();
@@ -699,7 +700,12 @@ public:
 
 	bool searchAndReplace(Exp *search, Exp *replace);
 
+	// Visitation
+
+	// Strip the refs from each expression
 	void stripRefs();
+	// Cast the constant whose conscript is num to be type ty
+	void castConst(int num, Type* ty);
  
 private:
 	// We ensure that there is only one return statement now. See code in
@@ -714,6 +720,7 @@ public:
 		assert(theReturnStatement == NULL);
 		theReturnStatement = s;
 		theReturnStatement->setRetAddr(r);}
+	ReturnStatement* getTheReturnStatement() {return theReturnStatement;}
 protected:
 	friend class XMLProgParser;
 	UserProc() : Proc(), cfg(NULL), decoded(false), analysed(false), decompileSeen(false), decompiled(false), isRecursive(false) { }

@@ -319,6 +319,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			break;
 		case opRegOf:
 			{
+				// MVE: this can likely go
 				if (u->getSubExp1()->getOper() == opTemp) {
 					// The great debate: r[tmpb] vs tmpb
 					str << "tmp";
@@ -341,13 +342,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			str << "tmp";		// Should never see this
 			break;
 		case opItof:
+			// MVE: needs work: float/double/long double.
 			str << "(float)";
 			openParen(str, curPrec, PREC_UNARY);
 			appendExp(str, t->getSubExp3(), PREC_UNARY);
 			closeParen(str, curPrec, PREC_UNARY);
 			break;
 		case opFsize:
-   // needs work!
+   // MVE: needs work!
 			appendExp(str, t->getSubExp3(), curPrec);
 			break;
 		case opMult:
@@ -562,6 +564,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			}
 			break;
 		case opSgnEx: {
+			// MVE: Needs work
 			str << "/* opSgnEx */ (int) ";
 			Exp* s = t->getSubExp3();
 			appendExp(str, s, curPrec);
@@ -679,7 +682,7 @@ void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 {
 	if (typ == NULL) return;
 	// TODO: decode types
-	str << typ->getCtype();
+	str << typ->getCtype(true);
 }
 
 void CHLLCode::reset()
@@ -1057,7 +1060,7 @@ void CHLLCode::AddLocal(const char *name, Type *type)
 			s << ";";
 		} else {
 			s << "; // ";
-			e->print(s, true);
+			e->print(s);
 		}
 	}
 	lines.push_back(strdup(s.str().c_str()));

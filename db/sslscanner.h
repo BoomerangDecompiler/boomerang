@@ -55,7 +55,7 @@
 /* % here is the declaration from section1 %header{  */ 
 #line 29 "sslscanner.l"
 #include "sslparser.h"
-#define MAX_LINE 1024      // the longest SSL spec line
+#define MAX_LINE 1024	   // the longest SSL spec line
 #line 43 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_PARAM  std::istream &ins, bool trace
 #line 44 "sslscanner.l"
@@ -63,20 +63,20 @@
 #line 45 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_CODE 
 #line 46 "sslscanner.l"
-#define YY_SSLScanner_INPUT_CODE  if (in.eof()) {  \
-    result = 0; \
+#define YY_SSLScanner_INPUT_CODE  if (in.eof()) {	\
+	result = 0; \
 } else { \
-    in.read(buffer, max_size); \
-    result=in.gcount(); \
+	in.read(buffer, max_size); \
+	result=in.gcount(); \
 } \
 return result;
 #line 53 "sslscanner.l"
 #define YY_SSLScanner_MEMBERS  \
 public: \
-    int theLine;        /* the current line number */\
-    char lineBuf[MAX_LINE]; /* the current line */ \
-    bool traceLines;    /* echo each lines as it is scanned */ \
-    std::istream &in;
+	int theLine;		/* the current line number */\
+	char lineBuf[MAX_LINE]; /* the current line */ \
+	bool traceLines;	/* echo each lines as it is scanned */ \
+	std::istream &in;
 #line 60 "sslscanner.l"
 #define YY_SSLScanner_LEX_PARAM  YY_SSLParser_STYPE &yylval 
 #line 62 "sslscanner.l"

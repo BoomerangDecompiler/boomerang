@@ -38,8 +38,12 @@ bool GetProcVisitor::visit(Location* l, bool& override) {
 // SetConscripts class
 
 bool SetConscripts::visit(Const* c) {
-	if (!bInLocalGlobal)
-		c->setConscript(++curConscript);
+	if (!bInLocalGlobal) {
+		if (bClear)
+			c->setConscript(0);
+		else
+			c->setConscript(++curConscript);
+	}
 	bInLocalGlobal = false;
 	return true;	   // Continue recursion
 }
@@ -52,27 +56,50 @@ bool SetConscripts::visit(Location* l, bool& override) {
 	return true;	   // Continue recursion
 }
 
+bool SetConscripts::visit(Binary* b, bool& override) {
+	OPER op = b->getOper();
+	if (op == opSize)
+		bInLocalGlobal = true;
+	override = false;
+	return true;	   // Continue recursion
+}
+
 
 bool StmtVisitor::visit(RTL* rtl) {
 	// Mostly, don't do anything at the RTL level
 	return true;
 } 
 
-bool StmtSetConscripts::visit(Assign* stmt) {
-	SetConscripts sc(curConscript);
+bool StmtConscriptSetter::visit(Assign* stmt) {
+	SetConscripts sc(curConscript, bClear);
 	stmt->getLeft()->accept(&sc);
 	stmt->getRight()->accept(&sc);
 	curConscript = sc.getLast();
 	return true;
 }
+bool StmtConscriptSetter::visit(PhiAssign* stmt) {
+	SetConscripts sc(curConscript, bClear);
+	stmt->getLeft()->accept(&sc);
+	curConscript = sc.getLast();
+	return true;
+}
+bool StmtConscriptSetter::visit(ImplicitAssign* stmt) {
+	SetConscripts sc(curConscript, bClear);
+	stmt->getLeft()->accept(&sc);
+	curConscript = sc.getLast();
+	return true;
+}
 
-bool StmtSetConscripts::visit(CallStatement* stmt) {
-	SetConscripts sc(curConscript);
-	std::vector<Exp*> args;
-	args = stmt->getArguments();
+bool StmtConscriptSetter::visit(CallStatement* stmt) {
+	SetConscripts sc(curConscript, bClear);
+	std::vector<Exp*>& args = stmt->getArguments();
 	int i, n = args.size();
 	for (i=0; i < n; i++)
 		args[i]->accept(&sc);
+	std::vector<Exp*>& impargs = stmt->getImplicitArguments();
+	n = impargs.size();
+	for (i=0; i < n; i++)
+		impargs[i]->accept(&sc);
 	n = stmt->getNumReturns();
 	for (i=0; i < n; i++) {
 		Exp* r = stmt->getReturnExp(i);
@@ -82,8 +109,8 @@ bool StmtSetConscripts::visit(CallStatement* stmt) {
 	return true;
 }
 
-bool StmtSetConscripts::visit(CaseStatement* stmt) {
-	SetConscripts sc(curConscript);
+bool StmtConscriptSetter::visit(CaseStatement* stmt) {
+	SetConscripts sc(curConscript, bClear);
 	SWITCH_INFO* si = stmt->getSwitchInfo();
 	if (si) {
 		si->pSwitchVar->accept(&sc);
@@ -92,8 +119,8 @@ bool StmtSetConscripts::visit(CaseStatement* stmt) {
 	return true;
 }
 
-bool StmtSetConscripts::visit(ReturnStatement* stmt) {
-	SetConscripts sc(curConscript);
+bool StmtConscriptSetter::visit(ReturnStatement* stmt) {
+	SetConscripts sc(curConscript, bClear);
 	int n = stmt->getNumReturns();
 	for (int i=0; i < n; i++) {
 		Exp* r = stmt->getReturnExp(i);
@@ -103,20 +130,27 @@ bool StmtSetConscripts::visit(ReturnStatement* stmt) {
 	return true;
 }
 
-bool StmtSetConscripts::visit(BoolStatement* stmt) {
-	SetConscripts sc(curConscript);
+bool StmtConscriptSetter::visit(BoolAssign* stmt) {
+	SetConscripts sc(curConscript, bClear);
 	stmt->getCondExpr()->accept(&sc);
-	stmt->getDest()->accept(&sc);
+	stmt->getLeft()->accept(&sc);
 	curConscript = sc.getLast();
 	return true;
 }
 
-void StripPhis::visit(Assign* s, bool& recur) {
-	del = s->isPhi();
+bool StmtConscriptSetter::visit(BranchStatement* stmt) {
+	SetConscripts sc(curConscript, bClear);
+	stmt->getCondExpr()->accept(&sc);
+	curConscript = sc.getLast();
+	return true;
+}
+
+void PhiStripper::visit(PhiAssign* s, bool& recur) {
+	del = true;
 	recur = true;
 }
 
-Exp* StripRefs::preVisit(RefExp* e, bool& recur) {
+Exp* RefStripper::preVisit(RefExp* e, bool& recur) {
 	recur = false;
 	return e->getSubExp1();		// Do the actual stripping of references!
 }
@@ -156,6 +190,7 @@ Exp* CallRefsFixer::postVisit(RefExp* r) {
 	return ret;
 }
 
+#if 0
 Exp* CallRefsFixer::postVisit(PhiExp* p) {
 	Exp* ret = p;
 	// If child was modified, simplify now
@@ -189,8 +224,7 @@ Exp* CallRefsFixer::postVisit(PhiExp* p) {
 			if (call->isComputed() && oneIsGlobalFunc) {
 				e = subExp1->clone();
 				if (VERBOSE)
-					LOG << "ignoring ref in phi to computed call with "
-						<< "function pointer param " << e << "\n";
+					LOG << "ignoring ref in phi to computed call with function pointer param " << e << "\n";
 			}
 			if (e) {
 				e = call->substituteParams(e->clone());
@@ -203,8 +237,7 @@ Exp* CallRefsFixer::postVisit(PhiExp* p) {
 					mod = true;
 				} else {
 					if (VERBOSE)
-						LOG << "cant update phi ref to " << e
-								  << "\n";
+						LOG << "cant update phi ref to " << e << "\n";
 				}
 			} else {
 				if (call->findReturn(subExp1) == -1) {
@@ -220,6 +253,7 @@ Exp* CallRefsFixer::postVisit(PhiExp* p) {
 	}
 	return ret;
 }
+#endif
 
 Exp* CallRefsFixer::postVisit(Unary *e)	   {
 	bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
@@ -312,6 +346,7 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 	return true;
 }
 
+#if 0
 bool UsedLocsFinder::visit(PhiExp* e, bool& override) {
 	StatementVec& stmtVec = e->getRefs();
 	Exp* subExp1 = e->getSubExp1();
@@ -328,11 +363,39 @@ bool UsedLocsFinder::visit(PhiExp* e, bool& override) {
 	override = true;
 	return true;
 }
+#endif
 
 bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	Exp* rhs = s->getRight();
 	if (rhs) rhs->accept(ev);
+	// Special logic for the LHS
+	if (lhs->isMemOf()) {
+		Exp* child = ((Location*)lhs)->getSubExp1();
+		child->accept(ev);
+	}
+	override = true;				// Don't do the usual accept logic
+	return true;					// Continue the recursion
+}
+bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
+	Exp* lhs = s->getLeft();
+	// Special logic for the LHS
+	if (lhs->isMemOf()) {
+		Exp* child = ((Location*)lhs)->getSubExp1();
+		child->accept(ev);
+	}
+	StatementVec& stmtVec = s->getRefs();
+	StatementVec::iterator uu;
+	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+		Exp* temp = new RefExp(lhs, *uu);
+		temp->accept(ev);
+	}
+
+	override = true;				// Don't do the usual accept logic
+	return true;					// Continue the recursion
+}
+bool UsedLocsVisitor::visit(ImplicitAssign* s, bool& override) {
+	Exp* lhs = s->getLeft();
 	// Special logic for the LHS
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
@@ -381,13 +444,13 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 	return true;				// Continue the recursion
 }
 
-bool UsedLocsVisitor::visit(BoolStatement* s, bool& override) {
+bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	Exp* pCond = s->getCondExpr();
 	if (pCond)
 		pCond->accept(ev);				// Condition is used
-	Exp* pDest = s->getDest();
-	if (pDest && pDest->isMemOf()) {	// If dest is of form m[x]...
-		Exp* x = ((Location*)pDest)->getSubExp1();
+	Exp* lhs = s->getLeft();
+	if (lhs && lhs->isMemOf()) {	// If dest is of form m[x]...
+		Exp* x = ((Location*)lhs)->getSubExp1();
 		x->accept(ev);					// ... then x is used
 	}
 	override = true;			// Don't do the normal accept logic
@@ -399,7 +462,7 @@ bool UsedLocsVisitor::visit(BoolStatement* s, bool& override) {
 //
 Exp* ExpSubscripter::preVisit(Location* e, bool& recur) {
 	if (*e == *search) {
-		recur = e->isMemOf();	  // Don't double subscript unless m[...]
+		recur = e->isMemOf();	// Don't double subscript unless m[...]
 		return new RefExp(e, def);
 	}
 	recur = true;
@@ -415,7 +478,7 @@ Exp* ExpSubscripter::preVisit(Terminal* e) {
 Exp* ExpSubscripter::preVisit(RefExp* e, bool& recur) {
 	Exp* base = e->getSubExp1();
 	if (*base == *search) {
-		recur = false;	   // Don't recurse; would double subscript
+		recur = false;		// Don't recurse; would double subscript
 		e->setDef(def);
 		return e;
 	}
@@ -431,7 +494,23 @@ void StmtSubscripter::visit(Assign* s, bool& recur) {
 	Exp* lhs = s->getLeft();
 	if (lhs->isMemOf()) {
 		Exp*& child = ((Location*)lhs)->refSubExp1();
-		child = child->accept(mod);	  
+		child = child->accept(mod);
+	}
+	recur = false;
+}
+void StmtSubscripter::visit(PhiAssign* s, bool& recur) {
+	Exp* lhs = s->getLeft();
+	if (lhs->isMemOf()) {
+		Exp*& child = ((Location*)lhs)->refSubExp1();
+		child = child->accept(mod);
+	}
+	recur = false;
+}
+void StmtSubscripter::visit(ImplicitAssign* s, bool& recur) {
+	Exp* lhs = s->getLeft();
+	if (lhs->isMemOf()) {
+		Exp*& child = ((Location*)lhs)->refSubExp1();
+		child = child->accept(mod);
 	}
 	recur = false;
 }
@@ -462,3 +541,100 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	}
 	recur = false;			// Don't do the usual accept logic
 }
+
+
+// Size stripper
+Exp* SizeStripper::preVisit(Binary* b, bool& recur) {
+	recur = true;			// Visit the binary's children
+	if (b->isSizeCast())
+		// Could be a size cast of a size cast
+		return b->getSubExp2()->stripSizes();
+	return b;
+}
+
+Exp* ExpConstCaster::preVisit(Const* c) {
+	if (c->getConscript() == num) {
+		changed = true;
+		return new TypedExp(ty, c);
+	}
+	return c;
+}
+
+bool StmtConstCaster::visit(Assign *stmt) {
+	Exp* e = stmt->getLeft();
+	stmt->setLeft(e->accept(ecc));
+	if (ecc->isChanged()) return false;
+	e = stmt->getRight();
+	stmt->setRight(e->accept(ecc));
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(PhiAssign *stmt) {
+	Exp* e = stmt->getLeft();
+	stmt->setLeft(e->accept(ecc));
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(ImplicitAssign *stmt) {
+	Exp* e = stmt->getLeft();
+	stmt->setLeft(e->accept(ecc));
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(GotoStatement *stmt) {
+	Exp* e = stmt->getDest();
+	stmt->setDest(e->accept(ecc));
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(BranchStatement *stmt) {
+	Exp* e = stmt->getDest();
+	stmt->setDest(e->accept(ecc));
+	if (ecc->isChanged()) return false;
+	e = stmt->getCondExpr();
+	stmt->setCondExpr(e->accept(ecc));
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(CaseStatement *stmt) {
+	SWITCH_INFO* si = stmt->getSwitchInfo();
+	if (si) {
+		si->pSwitchVar = si->pSwitchVar->accept(ecc);
+	}
+	return !ecc->isChanged();
+}
+bool StmtConstCaster::visit(CallStatement *stmt) {
+	std::vector<Exp*> args;
+	args = stmt->getArguments();
+	int i, n = args.size();
+	for (i=0; i < n; i++) {
+		args[i] = args[i]->accept(ecc);
+		if (ecc->isChanged()) return true;
+	}
+	std::vector<Exp*>& impargs = stmt->getImplicitArguments();
+	n = impargs.size();
+	for (i=0; i < n; i++) {
+		impargs[i] = impargs[i]->accept(ecc);
+		if (ecc->isChanged()) return true;
+	}
+	std::vector<Exp*>& returns = stmt->getReturns();
+	n = returns.size();
+	for (i=0; i < n; i++) {
+		returns[i] = returns[i]->accept(ecc);
+		if (ecc->isChanged()) return true;
+	}
+	return true;
+}
+bool StmtConstCaster::visit(ReturnStatement *stmt) {
+	std::vector<Exp*>& returns = stmt->getReturns();
+	int i, n = returns.size();
+	for (i=0; i < n; i++) {
+		returns[i] = returns[i]->accept(ecc);
+		if (ecc->isChanged()) return true;
+	}
+	return true;
+}
+bool StmtConstCaster::visit(BoolAssign *stmt) {
+	Exp* e = stmt->getLeft();
+	stmt->setLeft(e->accept(ecc));
+	if (ecc->isChanged()) return false;
+	e = stmt->getCondExpr();
+	stmt->setCondExpr(e->accept(ecc));
+	return !ecc->isChanged();
+}
+

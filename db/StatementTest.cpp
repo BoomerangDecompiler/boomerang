@@ -62,6 +62,7 @@ void StatementTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(testAddUsedLocs);
 	MYTEST(testSubscriptVars);
 	MYTEST(testCallRefsFixer);
+	MYTEST(testStripSizes);
 }
 
 int StatementTest::countTestCases () const
@@ -121,7 +122,7 @@ void StatementTest::testEmpty () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected = "Ret BB:\n00000123\n\n";
@@ -169,7 +170,7 @@ void StatementTest::testFlow () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -179,7 +180,7 @@ void StatementTest::testFlow () {
 	  "Fall BB:\n"
 	  "00000000\n"
 	  "Ret BB:\n"
-	  "00000123	   2 RET 5\n\n";
+	  "00000123    2 RET 5\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -229,7 +230,7 @@ void StatementTest::testKill () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -237,7 +238,7 @@ void StatementTest::testKill () {
 	  "Fall BB:\n"
 	  "00000000\n"
 	  "Ret BB:\n"
-	  "00000123	   3 RET 6\n\n";
+	  "00000123    3 RET 6\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -287,7 +288,7 @@ void StatementTest::testUse () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -295,7 +296,7 @@ void StatementTest::testUse () {
 	  "Fall BB:\n"
 	  "00000000\n"
 	  "Ret BB:\n"
-	  "00000123	   3 RET 5\n\n";
+	  "00000123    3 RET 5\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -350,7 +351,7 @@ void StatementTest::testUseOverKill () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -358,7 +359,7 @@ void StatementTest::testUseOverKill () {
 	  "Fall BB:\n"
 	  "00000000\n"
 	  "Ret BB:\n"
-	  "00000123	   4 RET 6\n\n";
+	  "00000123    4 RET 6\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -415,7 +416,7 @@ void StatementTest::testUseOverBB () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -424,7 +425,7 @@ void StatementTest::testUseOverBB () {
 	  "00000000\n"
 	  "Ret BB:\n"
 	  "00000000\n"
-	  "00000123	   4 RET 6\n\n";
+	  "00000123    4 RET 6\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -475,7 +476,7 @@ void StatementTest::testUseKill () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
@@ -483,7 +484,7 @@ void StatementTest::testUseKill () {
 	  "Fall BB:\n"
 	  "00000000\n"
 	  "Ret BB:\n"
-	  "00000123	   3 RET 6\n\n";
+	  "00000123    3 RET 6\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -532,16 +533,16 @@ void StatementTest::testEndlessLoop () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
 	expected =
 	  "Fall BB: reach in: \n"
-	  "00000000 ** r[24] := 5	uses:	 used by: ** r[24] := r[24] + 1, \n"
+	  "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
 	  "Oneway BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
-	  "00000000 ** r[24] := r[24] + 1	uses: ** r[24] := 5, "
-	  "** r[24] := r[24] + 1,	 used by: ** r[24] := r[24] + 1, \n"
+	  "00000000 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
+	  "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
 	  "cfg reachExit: \n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
@@ -762,17 +763,17 @@ void StatementTest::testRecursion () {
 	prog->decompile();
 	// print cfg to a string
 	std::ostringstream st;
-	cfg->print(st, true);
+	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
 	std::string expected;
 	expected =
 	  "Fall BB: reach in: \n"
-	  "00000000 ** r[24] := 5	uses:	 used by: ** r[24] := r[24] + 1, \n"
-	  "00000000 ** r[24] := 5	uses:	 used by: ** r[24] := r[24] + 1, \n"
+	  "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
+	  "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
 	  "Call BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
-	  "00000001 ** r[24] := r[24] + 1	uses: ** r[24] := 5, "
-	  "** r[24] := r[24] + 1,	 used by: ** r[24] := r[24] + 1, \n"
+	  "00000001 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
+	  "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
 	  "cfg reachExit: \n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
@@ -789,25 +790,29 @@ void StatementTest::testClone () {
 			new Binary(opPlus,
 				Location::regOf(9),
 				new Const(99)));
-	Assign* a2 = new Assign(new IntegerType(16),
+	Assign* a2 = new Assign(new IntegerType(16, 1),
 			new Location(opParam, new Const("x"), NULL),
 			new Location(opParam, new Const("y"), NULL));
+	Assign* a3 = new Assign(new IntegerType(16, -1),
+			new Location(opParam, new Const("z"), NULL),
+			new Location(opParam, new Const("q"), NULL));
 	Statement* c1 = a1->clone();
 	Statement* c2 = a2->clone();
+	Statement* c3 = a3->clone();
 	std::ostringstream o1, o2;
 	a1->print(o1);
 	delete a1;			 // And c1 should still stand!
 	c1->print(o2);
 	a2->print(o1);
 	c2->print(o2);
-	delete a2;
-	std::string expected("	 0 ** r8 := r9 + 99	  0 *i16* x := y");
+	a3->print(o1);
+	c3->print(o2);
+	std::string expected("   0 ** r8 := r9 + 99   0 *i16* x := y"
+		"   0 *u16* z := q");
 	std::string act1(o1.str());
 	std::string act2(o2.str());
 	CPPUNIT_ASSERT_EQUAL(expected, act1); // Originals
 	CPPUNIT_ASSERT_EQUAL(expected, act2); // Clones
-	delete c1;
-	delete c2;
 }
  
 /*==============================================================================
@@ -821,7 +826,7 @@ void StatementTest::testIsAssign () {
 		Location::regOf(2),
 		new Const(99));
 	a.print(ost);
-	std::string expected("	 0 ** r2 := 99");
+	std::string expected("   0 ** r2 := 99");
 	std::string actual (ost.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 //	  CPPUNIT_ASSERT_EQUAL (std::string("** r2 := 99"), std::string(ost.str()));
@@ -853,7 +858,7 @@ void StatementTest::testIsFlagAssgn () {
 			Location::regOf(10),
 			new Const(4)));
 	fc.print(ost);
-	std::string expected("	 0 ** %flags := addFlags( r2, 99 )");
+	std::string expected("   0 ** %flags := addFlags( r2, 99 )");
 	std::string actual(ost.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	CPPUNIT_ASSERT (	fc.isFlagAssgn());
@@ -987,14 +992,14 @@ void StatementTest::testAddUsedLocs () {
 
 	// Boolstatement with condition m[r24] = r25, dest m[r26]
 	l.clear();
-	BoolStatement* bs = new BoolStatement(8);
+	BoolAssign* bs = new BoolAssign(8);
 	bs->setCondExpr(new Binary(opEquals,
 		Location::memOf(Location::regOf(24)),
 		Location::regOf(25)));
 	std::list<Statement*> stmts;
 	a = new Assign(Location::memOf(Location::regOf(26)), new Terminal(opNil));
 	stmts.push_back(a);
-	bs->setDest(&stmts);
+	bs->setLeftFromList(&stmts);
 	bs->addUsedLocs(l);
 	std::ostringstream ost7;
 	l.print(ost7);
@@ -1105,7 +1110,7 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5 << ca;
 	expected =
-	"	0 CALL m[r26](m[r27], r28{9} implicit: m[r29], r30) { r28, m[r28{9}] }";
+	"   0 CALL m[r26](m[r27], r28{9} implicit: m[r29], r30) { r28, m[r28{9}] }";
 	actual = ost5.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1127,7 +1132,7 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5a << ca;
 	expected =
-	"	0 CALL r28{9}(m[r27], r29 implicit: m[r29], r28{9}) { r31, m[r31] }";
+	"   0 CALL r28{9}(m[r27], r29 implicit: m[r29], r28{9}) { r31, m[r31] }";
 	actual = ost5a.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1146,23 +1151,20 @@ void StatementTest::testSubscriptVars () {
 	std::ostringstream ost6;
 	r->subscriptVar(srch, &s9);
 	ost6 << r;
-	expected="	 0 RET r28{9}, m[r28{9}], m[r28{9} + r26{99}]";
+	expected="   0 RET r28{9}, m[r28{9}], m[r28{9} + r26{99}]";
 	actual = ost6.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 	// Boolstatement with condition m[r28] = r28, dest m[r28]
-	BoolStatement* bs = new BoolStatement(8);
+	BoolAssign* bs = new BoolAssign(8);
 	bs->setCondExpr(new Binary(opEquals,
 		Location::memOf(Location::regOf(28)),
 		Location::regOf(28)));
-	std::list<Statement*> stmts;
-	a = new Assign(Location::memOf(Location::regOf(28)), new Terminal(opNil));
-	stmts.push_back(a);
-	bs->setDest(&stmts);
+	bs->setLeft(Location::memOf(Location::regOf(28)));
 	std::ostringstream ost7;
 	bs->subscriptVar(srch, &s9);
 	ost7 << bs;
-	expected="	 0 BOOL m[r28{9}] := CC(equals)\n"
+	expected="   0 BOOL m[r28{9}] := CC(equals)\n"
 		"High level: m[r28{9}] = r28{9}\n";
 	actual = ost7.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -1207,7 +1209,7 @@ void StatementTest::testCallRefsFixer () {
 	advance(it, 2);
 	Statement* s22 = *it;						// Statement 22
 	// Make sure it's what we expect!
-	std::string expected("	22 *i32* r24 := m[r29{20} + 8]{0}");
+	std::string expected("  22 *32* r24 := m[r29{20} + 8]{0}");
 	std::string actual;
 	std::ostringstream ost1;
 	ost1 << s22;
@@ -1218,9 +1220,41 @@ void StatementTest::testCallRefsFixer () {
 	proc->setProven(new Binary(opEquals, r29, r29->clone()));
 	(*it)->fixCallRefs();
 	// Now expect r29{30} to be r29{3}
-	expected = "  22 *i32* r24 := m[r29{3} + 8]{0}";
+	expected = "  22 *32* r24 := m[r29{3} + 8]{0}";
 	std::ostringstream ost2;
 	ost2 << *it;
 	actual = ost2.str();
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+
+/*==============================================================================
+ * FUNCTION:		StatementTest::testStripSizes
+ * OVERVIEW:		Test the visitor code that strips out size casts
+ *============================================================================*/
+void StatementTest::testStripSizes () {
+	// ** r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
+	// The double size casting happens as a result of substitution
+	Exp* lhs = Location::regOf(24);
+	Exp* rhs = new Binary(opDiv,
+		new Binary(opSize,
+			new Const(8),
+			new Binary(opSize,
+				new Const(8),
+				Location::memOf(
+					new Binary(opPlus,
+						new Ternary(opZfill,
+							new Const(8),
+							new Const(32),
+							Location::local("local5", NULL)),
+						Location::local("param6", NULL))))),
+		new Const(16));
+	Statement* s = new Assign(lhs, rhs);
+	s->stripSizes();
+	std::string expected(
+	  "   0 ** r24 := m[zfill(8,32,local5) + param6] / 16");
+	std::string actual;
+	std::ostringstream ost;
+	ost << s;
+	actual = ost.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 }

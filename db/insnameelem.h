@@ -25,49 +25,49 @@
 class InsNameElem {
 
 public:
-    InsNameElem(const char *name);
-    virtual ~InsNameElem(void);
-    virtual int ntokens(void);
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
-    virtual void getrefmap(std::map<std::string, InsNameElem*> &m);
+	InsNameElem(const char *name);
+	virtual ~InsNameElem(void);
+	virtual int ntokens(void);
+	virtual std::string getinstruction(void);
+	virtual std::string getinspattern(void);
+	virtual void getrefmap(std::map<std::string, InsNameElem*> &m);
  
-    int ninstructions(void);
-    void append(InsNameElem* next);
-    bool increment(void);
-    void reset(void);
-    int getvalue(void);
-    
+	int ninstructions(void);
+	void append(InsNameElem* next);
+	bool increment(void);
+	void reset(void);
+	int getvalue(void);
+	
 protected:
-    InsNameElem* nextelem;
-    std::string elemname;
-    int value;
+	InsNameElem* nextelem;
+	std::string elemname;
+	int value;
 };
 
 class InsOptionElem : public InsNameElem {
 
 public:
-    InsOptionElem(const char *name);
-    virtual int ntokens(void);
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
+	InsOptionElem(const char *name);
+	virtual int ntokens(void);
+	virtual std::string getinstruction(void);
+	virtual std::string getinspattern(void);
  
 };
 
 class InsListElem : public InsNameElem {
 
 public:
-    InsListElem(const char *name, Table* t, const char *idx);
-    virtual int ntokens(void);
-    virtual std::string getinstruction(void);
-    virtual std::string getinspattern(void);
-    virtual void getrefmap(std::map<std::string, InsNameElem*> &m);
+	InsListElem(const char *name, Table* t, const char *idx);
+	virtual int ntokens(void);
+	virtual std::string getinstruction(void);
+	virtual std::string getinspattern(void);
+	virtual void getrefmap(std::map<std::string, InsNameElem*> &m);
 
-    std::string getindex(void);
+	std::string getindex(void);
 
 protected:
-    std::string indexname;
-    Table* thetable;
+	std::string indexname;
+	Table* thetable;
 };
 
 #endif

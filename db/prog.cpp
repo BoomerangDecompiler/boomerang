@@ -79,7 +79,6 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) :
 	  m_iNumberedProc(1) {
 	if (pBF && pBF->getFilename()) {
 		m_name = pBF->getFilename();
-		m_path = m_name;
 		m_rootCluster = new Cluster(getNameNoPath().c_str());
 	}
 }
@@ -99,8 +98,7 @@ Prog::Prog(const char* name) :
 Prog::~Prog() {
 	if (pBF) delete pBF;
 	if (pFE) delete pFE;
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++) {
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if (*it)
 			delete *it;
 	}
@@ -120,8 +118,7 @@ char* Prog::getName() {
 bool Prog::wellForm() {
 	bool wellformed = true;
 
-	for (std::list<Proc *>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++)
+	for (std::list<Proc *>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
 		if (!(*it)->isLib()) {
 			UserProc *u = (UserProc*)*it;
 			wellformed &= u->getCFG()->wellFormCfg();
@@ -132,8 +129,7 @@ bool Prog::wellForm() {
 // Analyse any procedures that are decoded
 void Prog::analyse() {
 	Analysis *analysis = new Analysis();
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++) {
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		Proc *pProc = *it;
 		pProc->printDetailsXML();
 		if (pProc->isLib()) continue;
@@ -156,8 +152,7 @@ void Prog::generateDotFile() {
 	std::ofstream of(Boomerang::get()->dotFile);
 	of << "digraph Cfg {" << std::endl;
 
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++) {
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		Proc *pProc = *it;
 		if (pProc->isLib()) continue;
 		UserProc *p = (UserProc*)pProc;
@@ -232,7 +227,7 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
 			continue;
 
 		p->getCluster()->openStream("rtl");
-		p->print(p->getCluster()->getStream(), true);
+		p->print(p->getCluster()->getStream());
     }
     m_rootCluster->closeStreams();
 }
@@ -339,7 +334,7 @@ void Prog::generateCode(std::ostream &os) {
 }
 
 // Print this program, mainly for debugging
-void Prog::print(std::ostream &out, bool withDF) {
+void Prog::print(std::ostream &out) {
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
 	  it++) {
 		Proc *pProc = *it;
@@ -348,7 +343,7 @@ void Prog::print(std::ostream &out, bool withDF) {
 		if (!p->isDecoded()) continue;
 
 		// decoded userproc.. print it
-		p->print(out, withDF);
+		p->print(out);
 	}
 }
 
@@ -568,9 +563,7 @@ const char *Prog::getGlobalName(ADDRESS uaddr)
 	for (unsigned i = 0; i < globals.size(); i++)
 		if (globals[i]->getAddress() == uaddr)
 			return globals[i]->getName();
-		else if (globals[i]->getAddress() < uaddr &&
-				 globals[i]->getAddress() + 
-					globals[i]->getType()->getSize() / 8 > uaddr)
+		else if (globals[i]->getAddress() < uaddr && globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr)
 			return globals[i]->getName();
 	if (pBF)
 		return pBF->SymbolByAddress(uaddr);
@@ -597,9 +590,7 @@ void Prog::globalUsed(ADDRESS uaddr)
     for (unsigned i = 0; i < globals.size(); i++)
         if (globals[i]->getAddress() == uaddr)
             return;
-        else if (globals[i]->getAddress() < uaddr &&
-                 globals[i]->getAddress() + 
-                    globals[i]->getType()->getSize() / 8 > uaddr)
+        else if (globals[i]->getAddress() < uaddr && globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr)
             return;
 #if 0
     if (uaddr < 0x10000) {
@@ -936,8 +927,8 @@ void Prog::decompile() {
 		}
 	}
 
-	if (Boomerang::get()->debugTA)
-		typeAnalysis();
+	// Type analysis is now on by default
+	typeAnalysis();
 
 	if (VERBOSE)
 		LOG << "transforming from SSA\n";
@@ -1084,7 +1075,7 @@ void Prog::fromSSAform() {
 		if (Boomerang::get()->vFlag) {
 			LOG << "===== After transformation from SSA form for " 
 				<< proc->getName() << " =====\n";
-			proc->printToLog(true);
+			proc->printToLog();
 			LOG << "===== End after transformation from SSA for " <<
 			  proc->getName() << " =====\n\n";
 		}
@@ -1092,6 +1083,10 @@ void Prog::fromSSAform() {
 }
 
 void Prog::typeAnalysis() {
+	if (Boomerang::get()->noTypeAnalysis) {
+		LOG << "\nNote: no type analysis\n\n";
+		return;
+	}
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== Start Type Analysis ===\n";
 	// FIXME: This needs to be done bottom of the call-tree first, with repeat

@@ -195,7 +195,8 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 void FrontEnd::decode(Prog *prog, ADDRESS a) {
 	if (a != NO_ADDRESS) {
 		prog->setNewProc(a);
-		LOG << "starting decode at address " << a << "\n";
+		if (VERBOSE)
+			LOG << "starting decode at address " << a << "\n";
 	}
 
 	bool change = true;
@@ -799,6 +800,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 					// This is just an ordinary instruction; no control transfer
 					// Fall through
 				case STMT_ASSIGN:
+                case STMT_PHIASSIGN:
+                case STMT_IMPASSIGN:
 					// Do nothing
 					break;
 		

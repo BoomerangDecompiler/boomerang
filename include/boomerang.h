@@ -164,7 +164,6 @@ public:
 	bool noDataflow;
 	bool noDecompile;
 	bool stopBeforeDecompile;
-    bool noDecompileUp;
     bool traceDecoder;
     const char *dotFile;
     int numToPropagate;
@@ -194,6 +193,7 @@ public:
     bool overlapped;
 	bool noProve;
 	bool noChangeSignatures;
+    bool noTypeAnalysis;
 };
 
 #define VERBOSE	 (Boomerang::get()->vFlag)

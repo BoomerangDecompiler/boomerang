@@ -43,12 +43,14 @@
 #include "exp.h"
 
 class Statement;
+class Assignment;
 class Assign;
+class ImplicitAssign;
+class BoolAssign;
 class CaseStatement;
 class CallStatement;
 class ReturnStatement;
 class GotoStatement;
-class BoolStatement;
 class BranchStatement;
 
 class RTL;
@@ -73,7 +75,6 @@ virtual bool visit(Ternary *e,	bool& override) {override = false; return true;}
 virtual bool visit(TypedExp *e, bool& override) {override = false; return true;}
 virtual bool visit(FlagDef *e,	bool& override) {override = false; return true;}
 virtual bool visit(RefExp *e,	bool& override) {override = false; return true;}
-virtual bool visit(PhiExp *e,	bool& override) {override = false; return true;}
 virtual bool visit(Location *e, bool& override) {override = false; return true;}
 // These three have zero arity, so there is nothing to override
 virtual bool visit(Const *e	  ) {return true;}
@@ -105,16 +106,20 @@ public:
 	// All others inherit and visit their children
 };
 
-// This class visits subexpressions, and if a Const, sets a new conscript
+// This class visits subexpressions, and if a Const, sets or clears a new
+// conscript
 class SetConscripts : public ExpVisitor {
 	int		curConscript;
 	bool	bInLocalGlobal;		// True when inside a local or global
+	bool	bClear;				// True when clearing, not setting
 public:
-			SetConscripts(int n) : bInLocalGlobal(false)
+			SetConscripts(int n, bool bClear)
+			  : bInLocalGlobal(false), bClear(bClear)
 				{curConscript = n;}
 	int		getLast() {return curConscript;}
 	virtual bool visit(Const* e);
 	virtual bool visit(Location* e, bool& override);
+	virtual bool visit(Binary* b,	bool& override);
 	// All other virtual functions inherit from ExpVisitor: return true
 };
 
@@ -144,7 +149,6 @@ virtual Exp* preVisit(Ternary *e,  bool& recur) {recur = true; return e;}
 virtual Exp* preVisit(TypedExp *e, bool& recur) {recur = true; return e;}
 virtual Exp* preVisit(FlagDef *e,  bool& recur) {recur = true; return e;}
 virtual Exp* preVisit(RefExp *e,   bool& recur) {recur = true; return e;}
-virtual Exp* preVisit(PhiExp *e,   bool& recur) {recur = true; return e;}
 virtual Exp* preVisit(Location *e, bool& recur) {recur = true; return e;}
 virtual Exp* preVisit(Const *e				  ) {			   return e;}
 virtual Exp* preVisit(Terminal *e			  ) {			   return e;}
@@ -157,7 +161,6 @@ virtual Exp* postVisit(Ternary *e)	{return e;}
 virtual Exp* postVisit(TypedExp *e) {return e;}
 virtual Exp* postVisit(FlagDef *e)	{return e;}
 virtual Exp* postVisit(RefExp *e)	{return e;}
-virtual Exp* postVisit(PhiExp *e)	{return e;}
 virtual Exp* postVisit(Location *e) {return e;}
 virtual Exp* postVisit(Const *e)	{return e;}
 virtual Exp* postVisit(Terminal *e) {return e;}
@@ -187,25 +190,32 @@ public:
 	// returns true to continue iterating the container
 	virtual bool visit(RTL *rtl);	// By default, visits all statements
 	virtual bool visit(Assign *stmt)		 { return true;}
+	virtual bool visit(PhiAssign *stmt)		 { return true;}
+	virtual bool visit(ImplicitAssign *stmt) { return true;}
+	virtual bool visit(BoolAssign *stmt)  { return true;}
 	virtual bool visit(GotoStatement *stmt)	 { return true;}
 	virtual bool visit(BranchStatement *stmt){ return true;}
 	virtual bool visit(CaseStatement *stmt)	 { return true;}
 	virtual bool visit(CallStatement *stmt)	 { return true;}
 	virtual bool visit(ReturnStatement *stmt){ return true;}
-	virtual bool visit(BoolStatement *stmt)	 { return true;}
 };
 
-class StmtSetConscripts : public StmtVisitor {
+class StmtConscriptSetter : public StmtVisitor {
 	int		curConscript;
+	bool	bClear;
 public:
-				 StmtSetConscripts(int n) {curConscript = n;}
+				 StmtConscriptSetter(int n, bool bClear)
+				   : curConscript(n), bClear(bClear) {}
 	int			 getLast() {return curConscript;}
 
 	virtual bool visit(Assign *stmt);
+	virtual bool visit(PhiAssign *stmt);
+	virtual bool visit(ImplicitAssign *stmt);
+	virtual bool visit(BoolAssign *stmt);
 	virtual bool visit(CaseStatement *stmt);
 	virtual bool visit(CallStatement *stmt);
 	virtual bool visit(ReturnStatement *stmt);
-	virtual bool visit(BoolStatement *stmt);
+	virtual bool visit(BranchStatement *stmt);
 };
 
 // StmtExpVisitor is a visitor of statements, and of expressions within
@@ -218,6 +228,12 @@ public:
 	virtual		 ~StmtExpVisitor() {}
 	virtual bool visit(Assign *stmt, bool& override)
 		{override = false; return true;}
+	virtual bool visit(PhiAssign *stmt, bool& override)
+		{override = false; return true;}
+	virtual bool visit(ImplicitAssign *stmt, bool& override)
+		{override = false; return true;}
+	virtual bool visit(BoolAssign *stmt, bool& override)
+		{override = false; return true;}
 	virtual bool visit(GotoStatement *stmt, bool& override)
 		{override = false; return true;}
 	virtual bool visit(BranchStatement *stmt, bool& override)
@@ -227,8 +243,6 @@ public:
 	virtual bool visit(CallStatement *stmt, bool& override)
 		{override = false; return true;}
 	virtual bool visit(ReturnStatement *stmt, bool& override)
-		{override = false; return true;}
-	virtual bool visit(BoolStatement *stmt, bool& override)
 		{override = false; return true;}
 };
 
@@ -248,26 +262,28 @@ public:
 	// This class' visitor functions don't return anything. Maybe we'll need
 	// return values at a later stage.
 virtual void visit(Assign *s,		  bool& recur) {recur = true;}
+virtual void visit(PhiAssign *s,	  bool& recur) {recur = true;}
+virtual void visit(ImplicitAssign *s, bool& recur) {recur = true;}
+virtual void visit(BoolAssign *s,  bool& recur) {recur = true;}
 virtual void visit(GotoStatement *s,  bool& recur) {recur = true;}
 virtual void visit(BranchStatement *s,bool& recur) {recur = true;}
 virtual void visit(CaseStatement *s,  bool& recur) {recur = true;}
 virtual void visit(CallStatement *s,  bool& recur) {recur = true;}
 virtual void visit(ReturnStatement *s,bool& recur) {recur = true;}
-virtual void visit(BoolStatement *s,  bool& recur) {recur = true;}
 };
 
-class StripPhis : public StmtModifier {
+class PhiStripper : public StmtModifier {
 	bool	del;			// Set true if this statment is to be deleted
 public:
-				 StripPhis(ExpModifier* em) : StmtModifier(em) {del = false;} 
-	virtual void visit(Assign* stmt, bool& recur);
+				 PhiStripper(ExpModifier* em) : StmtModifier(em) {del = false;} 
+	virtual void visit(PhiAssign* stmt, bool& recur);
 	bool	getDelete() {return del;}
 };
 
 // This class visits subexpressions, strips references
-class StripRefs : public ExpModifier {
+class RefStripper : public ExpModifier {
 public:
-			StripRefs() {}
+			RefStripper() {}
 	virtual Exp* preVisit(RefExp* ei, bool& recur);
 	// All other virtual functions inherit and do nothing
 };
@@ -294,8 +310,6 @@ virtual Exp* preVisit(FlagDef *e,  bool& recur) {
 	recur = true; mask <<= 1; return e;}
 virtual Exp* preVisit(RefExp *e,   bool& recur) {
 	recur = true; mask <<= 1; return e;}
-virtual Exp* preVisit(PhiExp *e,   bool& recur) {
-	recur = true; mask <<= 1; return e;}
 virtual Exp* preVisit(Location *e, bool& recur) {
 	recur = true; mask <<= 1; return e;}
 virtual Exp* preVisit(Const *e)		{ mask <<= 1; return e;}
@@ -308,7 +322,6 @@ virtual Exp* postVisit(Ternary *e);
 virtual Exp* postVisit(TypedExp *e);
 virtual Exp* postVisit(FlagDef *e);
 virtual Exp* postVisit(RefExp *e);
-virtual Exp* postVisit(PhiExp *e);
 virtual Exp* postVisit(Location *e);
 virtual Exp* postVisit(Const *e);
 virtual Exp* postVisit(Terminal *e);
@@ -325,7 +338,6 @@ public:
 	virtual bool visit(RefExp *e,	bool& override);
 	virtual bool visit(Location *e, bool& override);
 	virtual bool visit(Terminal* e);
-	virtual bool visit(PhiExp* e,	bool& override);
 };
 
 class UsedLocsVisitor : public StmtExpVisitor {
@@ -340,13 +352,15 @@ public:
 	virtual ~UsedLocsVisitor() {}
 	// Needs special attention because the lhs of an assignment isn't used
 	// (except where it's m[blah], when blah is used)
-	virtual bool visit(Assign *stmt, bool& override);
+	virtual bool visit(		   Assign *stmt, bool& override);
+	virtual bool visit(		PhiAssign *stmt, bool& override);
+	virtual bool visit(ImplicitAssign *stmt, bool& override);
+	// A BoolAssign uses its condition expression, but not its destination
+	// (unless it's an m[x], in which case x is used and not m[x])
+	virtual bool visit(BoolAssign *stmt, bool& override);
 	// Returns aren't used (again, except where m[blah] where blah is used),
 	// and there is special logic for when the pass is final
 	virtual bool visit(CallStatement *stmt, bool& override);
-	// A BoolStatement uses its condition expression, but not its destination
-	// (unless it's an m[x], in which case x is used and not m[x])
-	virtual bool visit(BoolStatement *stmt, bool& override);
 };
 
 class ExpSubscripter : public ExpModifier {
@@ -365,8 +379,48 @@ public:
 				StmtSubscripter(ExpModifier* em) : StmtModifier(em) {}
 	virtual		~StmtSubscripter() {}
 
-	virtual void visit(Assign *s,		 bool& recur);
-	virtual void visit(CallStatement *s, bool& recur);
+	virtual void visit(		   Assign *s, bool& recur);
+	virtual void visit(		PhiAssign *s, bool& recur);
+	virtual void visit(ImplicitAssign *s, bool& recur);
+	virtual void visit( CallStatement *s, bool& recur);
+};
+
+class SizeStripper : public ExpModifier {
+public:
+				SizeStripper() {}
+	virtual		~SizeStripper() {}
+
+	virtual Exp* preVisit(Binary *b,   bool& recur);
+};
+
+class ExpConstCaster: public ExpModifier {
+	int		num;
+	Type*	ty;
+	bool	changed;
+public:
+				ExpConstCaster(int num, Type* ty)
+				  : num(num), ty(ty), changed(false) {}
+	virtual		~ExpConstCaster() {}
+	bool		isChanged() {return changed;}
+
+	virtual Exp* preVisit(Const *c);
+};
+
+class StmtConstCaster : public StmtVisitor {
+	ExpConstCaster* ecc;
+public:
+				StmtConstCaster(ExpConstCaster* ecc) : ecc(ecc) {}
+	virtual		~StmtConstCaster() {};
+
+	virtual bool visit(Assign *stmt);
+	virtual bool visit(PhiAssign *stmt);
+	virtual bool visit(ImplicitAssign *stmt);
+	virtual bool visit(BoolAssign *stmt);
+	virtual bool visit(GotoStatement *stmt);
+	virtual bool visit(BranchStatement *stmt);
+	virtual bool visit(CaseStatement *stmt);
+	virtual bool visit(CallStatement *stmt);
+	virtual bool visit(ReturnStatement *stmt);
 };
 
 #endif	// #ifndef __VISITOR_H__

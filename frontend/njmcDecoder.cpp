@@ -64,8 +64,7 @@ NJMCDecoder::NJMCDecoder()
  *				   ... - Semantic String ptrs representing actual operands
  * RETURNS:		   an instantiated list of Exps
  *============================================================================*/
-std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
-  ...) {
+std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...) {
 	// Get the signature of the instruction and extract its parts
 	std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
 	std::string opcode = sig.first;

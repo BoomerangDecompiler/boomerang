@@ -84,21 +84,21 @@ void *alloca ();
 #line 85 "ansi-c-parser.cpp"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
-    platform plat, callconv cc
+	platform plat, callconv cc
 #define YY_AnsiCParser_CONSTRUCTOR_PARAM  \
-    std::istream &in, bool trace
+	std::istream &in, bool trace
 #define YY_AnsiCParser_CONSTRUCTOR_INIT 
 #define YY_AnsiCParser_CONSTRUCTOR_CODE  \
-    theScanner = new AnsiCScanner(in, trace); \
-    if (trace) yydebug = 1; else yydebug = 0;
+	theScanner = new AnsiCScanner(in, trace); \
+	if (trace) yydebug = 1; else yydebug = 0;
 #define YY_AnsiCParser_MEMBERS  \
-private:        \
-    AnsiCScanner *theScanner; \
+private:		\
+	AnsiCScanner *theScanner; \
 public: \
-    std::list<Signature*> signatures; \
-    std::list<Symbol*> symbols; \
-    std::list<SymbolRef*> refs;\
-    virtual ~AnsiCParser();
+	std::list<Signature*> signatures; \
+	std::list<Symbol*> symbols; \
+	std::list<SymbolRef*> refs;\
+	virtual ~AnsiCParser();
 #line 37 "ansi-c.y"
 
   #include <list>
@@ -117,46 +117,46 @@ public: \
 
   class TypeIdent {
   public:
-      Type *ty;
-      std::string nam;
+	  Type *ty;
+	  std::string nam;
   };
 
   class SymbolMods;
 
   class Symbol {
   public:
-      ADDRESS addr;
-      std::string nam;
-      Type *ty;
-      Signature *sig;
-      SymbolMods *mods;
+	  ADDRESS addr;
+	  std::string nam;
+	  Type *ty;
+	  Signature *sig;
+	  SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
-                          mods(NULL) { }
+	  Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
+						  mods(NULL) { }
   };
-    
+	
   class SymbolMods {
   public:
-      bool noDecode;
-      bool incomplete;
+	  bool noDecode;
+	  bool incomplete;
 
-      SymbolMods() : noDecode(false), incomplete(false) { }
+	  SymbolMods() : noDecode(false), incomplete(false) { }
   };
 
   class CustomOptions {
   public:
-      Exp *exp;
-      int sp;
+	  Exp *exp;
+	  int sp;
 
-      CustomOptions() : exp(NULL), sp(0) { }
+	  CustomOptions() : exp(NULL), sp(0) { }
   };
 
   class SymbolRef {
   public:
-      ADDRESS addr;
-      std::string nam;
+	  ADDRESS addr;
+	  std::string nam;
 
-      SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
+	  SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
 
 
@@ -1559,31 +1559,31 @@ case 10:
 case 11:
 #line 187 "ansi-c.y"
 { yyval.num_list = yyvsp[0].num_list;
-          yyval.num_list->push_front(yyvsp[-2].ival);
-        ;
+		  yyval.num_list->push_front(yyvsp[-2].ival);
+		;
     break;}
 case 12:
 #line 191 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
-          yyval.num_list->push_back(yyvsp[0].ival);
-        ;
+		  yyval.num_list->push_back(yyvsp[0].ival);
+		;
     break;}
 case 13:
 #line 195 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
-        ;
+		;
     break;}
 case 14:
 #line 200 "ansi-c.y"
 { yyval.param_list = yyvsp[0].param_list;
-            yyval.param_list->push_front(yyvsp[-2].param);
-          ;
+			yyval.param_list->push_front(yyvsp[-2].param);
+		  ;
     break;}
 case 15:
 #line 204 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>(); 
-            yyval.param_list->push_back(yyvsp[0].param);
-          ;
+			yyval.param_list->push_back(yyvsp[0].param);
+		  ;
     break;}
 case 16:
 #line 208 "ansi-c.y"
@@ -1596,72 +1596,72 @@ case 17:
 case 18:
 #line 214 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
-      yyval.param->setExp(yyvsp[-2].exp);
-    ;
+	  yyval.param->setExp(yyvsp[-2].exp);
+	;
     break;}
 case 19:
 #line 218 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
-    ;
+	;
     break;}
 case 20:
 #line 223 "ansi-c.y"
 { yyval.exp = Location::regOf(yyvsp[-1].ival);
-    ;
+	;
     break;}
 case 21:
 #line 226 "ansi-c.y"
 { yyval.exp = Location::memOf(yyvsp[-1].exp);
-    ;
+	;
     break;}
 case 22:
 #line 229 "ansi-c.y"
 { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
-    ;
+	;
     break;}
 case 23:
 #line 232 "ansi-c.y"
 { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
-    ;
+	;
     break;}
 case 24:
 #line 235 "ansi-c.y"
 { yyval.exp = new Const(yyvsp[0].ival);
-    ;
+	;
     break;}
 case 25:
 #line 240 "ansi-c.y"
-{  if (yyvsp[0].type_ident->ty->isArray() || 
-            (yyvsp[0].type_ident->ty->isNamed() && 
-             ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo() &&
-             ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo()->isArray())) {
-            /* C has complex semantics for passing arrays.. seeing as 
-             * we're supposedly parsing C, then we should deal with this.
-             * When you pass an array in C it is understood that you are
-             * passing that array "by reference".  As all parameters in
-             * our internal representation are passed "by value", we alter
-             * the type here to be a pointer to an array.
-             */
-            yyvsp[0].type_ident->ty = new PointerType(yyvsp[0].type_ident->ty);
-        }
-        yyval.param = new Parameter(yyvsp[0].type_ident->ty, yyvsp[0].type_ident->nam.c_str()); 
-     ;
+{	if (yyvsp[0].type_ident->ty->isArray() || 
+			(yyvsp[0].type_ident->ty->isNamed() && 
+			 ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo() &&
+			 ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo()->isArray())) {
+			/* C has complex semantics for passing arrays.. seeing as 
+			 * we're supposedly parsing C, then we should deal with this.
+			 * When you pass an array in C it is understood that you are
+			 * passing that array "by reference".  As all parameters in
+			 * our internal representation are passed "by value", we alter
+			 * the type here to be a pointer to an array.
+			 */
+			yyvsp[0].type_ident->ty = new PointerType(yyvsp[0].type_ident->ty);
+		}
+		yyval.param = new Parameter(yyvsp[0].type_ident->ty, yyvsp[0].type_ident->nam.c_str()); 
+	 ;
     break;}
 case 26:
 #line 256 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
-       sig->addReturn(yyvsp[-7].type);
-       for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-            it != yyvsp[-1].param_list->end(); it++)
-           if (std::string((*it)->getName()) != "...")
-               sig->addParameter(*it);
-           else {
-               sig->addEllipsis();
-               delete *it;
-           }
-       delete yyvsp[-1].param_list;
-       yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str); 
-     ;
+	   sig->addReturn(yyvsp[-7].type);
+	   for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
+			it != yyvsp[-1].param_list->end(); it++)
+		   if (std::string((*it)->getName()) != "...")
+			   sig->addParameter(*it);
+		   else {
+			   sig->addEllipsis();
+			   delete *it;
+		   }
+	   delete yyvsp[-1].param_list;
+	   yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str); 
+	 ;
     break;}
 case 27:
 #line 270 "ansi-c.y"
@@ -1674,152 +1674,152 @@ case 28:
 case 29:
 #line 276 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
-           sig->addReturn(yyvsp[-8].type);
-           for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
-                it != yyvsp[-2].param_list->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete yyvsp[-2].param_list;
-           Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig))); 
-         ;
+		   sig->addReturn(yyvsp[-8].type);
+		   for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
+				it != yyvsp[-2].param_list->end(); it++)
+			   if (std::string((*it)->getName()) != "...")
+				   sig->addParameter(*it);
+			   else {
+				   sig->addEllipsis();
+				   delete *it;
+			   }
+		   delete yyvsp[-2].param_list;
+		   Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig))); 
+		 ;
     break;}
 case 30:
 #line 290 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
-           sig->addReturn(yyvsp[-4].type_ident->ty);
-           for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
-                it != yyvsp[-2].param_list->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete yyvsp[-2].param_list;
-           Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig)); 
-         ;
+		   sig->addReturn(yyvsp[-4].type_ident->ty);
+		   for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
+				it != yyvsp[-2].param_list->end(); it++)
+			   if (std::string((*it)->getName()) != "...")
+				   sig->addParameter(*it);
+			   else {
+				   sig->addEllipsis();
+				   delete *it;
+			   }
+		   delete yyvsp[-2].param_list;
+		   Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig)); 
+		 ;
     break;}
 case 31:
 #line 304 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
-           for (std::list<TypeIdent*>::iterator it = yyvsp[-2].type_ident_list->begin();
-                   it != yyvsp[-2].type_ident_list->end(); it++) {
-              t->addType((*it)->ty, (*it)->nam.c_str());
-           }
-           char tmp[1024];
-           sprintf(tmp, "struct %s", yyvsp[-4].str);
-           Type::addNamedType(tmp, t); 
-         ;
+		   for (std::list<TypeIdent*>::iterator it = yyvsp[-2].type_ident_list->begin();
+				   it != yyvsp[-2].type_ident_list->end(); it++) {
+			  t->addType((*it)->ty, (*it)->nam.c_str());
+		   }
+		   char tmp[1024];
+		   sprintf(tmp, "struct %s", yyvsp[-4].str);
+		   Type::addNamedType(tmp, t); 
+		 ;
     break;}
 case 32:
 #line 316 "ansi-c.y"
 {
-           signatures.push_back(yyvsp[-1].sig);
-         ;
+		   signatures.push_back(yyvsp[-1].sig);
+		 ;
     break;}
 case 33:
 #line 320 "ansi-c.y"
 {
-           yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
-           yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam.c_str());
-           for (std::list<int>::iterator it = yyvsp[-2].num_list->begin();
-                it != yyvsp[-2].num_list->end(); it++)
-               yyvsp[-6].sig->addPreferedParameter(*it - 1);
-           delete yyvsp[-2].num_list;
-           signatures.push_back(yyvsp[-6].sig);
-         ;
+		   yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
+		   yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam.c_str());
+		   for (std::list<int>::iterator it = yyvsp[-2].num_list->begin();
+				it != yyvsp[-2].num_list->end(); it++)
+			   yyvsp[-6].sig->addPreferedParameter(*it - 1);
+		   delete yyvsp[-2].num_list;
+		   signatures.push_back(yyvsp[-6].sig);
+		 ;
     break;}
 case 34:
 #line 332 "ansi-c.y"
 { 
-           /* Use the passed calling convention (cc) */
-           Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
-           sig->addReturn(yyvsp[-3].type_ident->ty);
-           for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                it != yyvsp[-1].param_list->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete yyvsp[-1].param_list;
-           yyval.sig = sig;
-         ;
+		   /* Use the passed calling convention (cc) */
+		   Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
+		   sig->addReturn(yyvsp[-3].type_ident->ty);
+		   for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
+				it != yyvsp[-1].param_list->end(); it++)
+			   if (std::string((*it)->getName()) != "...")
+				   sig->addParameter(*it);
+			   else {
+				   sig->addEllipsis();
+				   delete *it;
+			   }
+		   delete yyvsp[-1].param_list;
+		   yyval.sig = sig;
+		 ;
     break;}
 case 35:
 #line 348 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc,
-              yyvsp[-3].type_ident->nam.c_str()); 
-           sig->addReturn(yyvsp[-3].type_ident->ty);
-           for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                it != yyvsp[-1].param_list->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete yyvsp[-1].param_list;
-           yyval.sig = sig;
-         ;
+			  yyvsp[-3].type_ident->nam.c_str()); 
+		   sig->addReturn(yyvsp[-3].type_ident->ty);
+		   for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
+				it != yyvsp[-1].param_list->end(); it++)
+			   if (std::string((*it)->getName()) != "...")
+				   sig->addParameter(*it);
+			   else {
+				   sig->addEllipsis();
+				   delete *it;
+			   }
+		   delete yyvsp[-1].param_list;
+		   yyval.sig = sig;
+		 ;
     break;}
 case 36:
 #line 363 "ansi-c.y"
 { CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam.c_str()); 
-           if (yyvsp[-4].custom_options->exp)
-               sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
-           if (yyvsp[-4].custom_options->sp)
-               sig->setSP(yyvsp[-4].custom_options->sp);
-           for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
-                it != yyvsp[-1].param_list->end(); it++)
-               if (std::string((*it)->getName()) != "...") {
-                   sig->addParameter(*it);
-               } else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete yyvsp[-1].param_list;
-           yyval.sig = sig;
-         ;
+		   if (yyvsp[-4].custom_options->exp)
+			   sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
+		   if (yyvsp[-4].custom_options->sp)
+			   sig->setSP(yyvsp[-4].custom_options->sp);
+		   for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
+				it != yyvsp[-1].param_list->end(); it++)
+			   if (std::string((*it)->getName()) != "...") {
+				   sig->addParameter(*it);
+			   } else {
+				   sig->addEllipsis();
+				   delete *it;
+			   }
+		   delete yyvsp[-1].param_list;
+		   yyval.sig = sig;
+		 ;
     break;}
 case 37:
 #line 382 "ansi-c.y"
 { SymbolRef *ref = new SymbolRef(yyvsp[-2].ival, yyvsp[-1].str);
-              refs.push_back(ref);
-            ;
+			  refs.push_back(ref);
+			;
     break;}
 case 38:
 #line 388 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-2].ival);
-             sym->nam = yyvsp[-1].type_ident->nam;
-             sym->ty = yyvsp[-1].type_ident->ty;
-             symbols.push_back(sym);
-           ;
+			 sym->nam = yyvsp[-1].type_ident->nam;
+			 sym->ty = yyvsp[-1].type_ident->ty;
+			 symbols.push_back(sym);
+		   ;
     break;}
 case 39:
 #line 399 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-3].ival);
-             sym->sig = yyvsp[-1].sig;
-             sym->mods = yyvsp[-2].mods;
-             symbols.push_back(sym);
-           ;
+			 sym->sig = yyvsp[-1].sig;
+			 sym->mods = yyvsp[-2].mods;
+			 symbols.push_back(sym);
+		   ;
     break;}
 case 40:
 #line 407 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
-             yyval.mods->noDecode = true;
-           ;
+			 yyval.mods->noDecode = true;
+		   ;
     break;}
 case 41:
 #line 411 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
-             yyval.mods->incomplete = true;
-           ;
+			 yyval.mods->incomplete = true;
+		   ;
     break;}
 case 42:
 #line 415 "ansi-c.y"
@@ -1828,12 +1828,12 @@ case 42:
 case 43:
 #line 419 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->exp = yyvsp[-1].exp;
-           ;
+		   ;
     break;}
 case 44:
 #line 422 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->sp = yyvsp[-1].ival;
-           ;
+		   ;
     break;}
 case 45:
 #line 425 "ansi-c.y"
@@ -1842,49 +1842,49 @@ case 45:
 case 46:
 #line 429 "ansi-c.y"
 { yyval.type = new ArrayType(NULL, yyvsp[-1].ival);
-          ;
+		  ;
     break;}
 case 47:
 #line 432 "ansi-c.y"
 { yyval.type = new ArrayType(NULL);
-          ;
+		  ;
     break;}
 case 48:
 #line 435 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
-          ;
+		  ;
     break;}
 case 49:
 #line 438 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-2].type);
-          ;
+		  ;
     break;}
 case 50:
 #line 443 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
-            yyval.type_ident->ty = yyvsp[-1].type;
-            yyval.type_ident->nam = yyvsp[0].str;
-          ;
+			yyval.type_ident->ty = yyvsp[-1].type;
+			yyval.type_ident->nam = yyvsp[0].str;
+		  ;
     break;}
 case 51:
 #line 448 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
-            ((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
-            yyval.type_ident->ty = yyvsp[0].type;
-            yyval.type_ident->nam = yyvsp[-1].str;
-          ;
+			((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
+			yyval.type_ident->ty = yyvsp[0].type;
+			yyval.type_ident->nam = yyvsp[-1].str;
+		  ;
     break;}
 case 52:
 #line 456 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
-            yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
-          ;
+			yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
+		  ;
     break;}
 case 53:
 #line 460 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
-            yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
-          ;
+			yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
+		  ;
     break;}
 case 54:
 #line 466 "ansi-c.y"
@@ -1892,35 +1892,35 @@ case 54:
     break;}
 case 55:
 #line 468 "ansi-c.y"
-{ yyval.type = new IntegerType(16); ;
+{ yyval.type = new IntegerType(16, 1); ;
     break;}
 case 56:
 #line 470 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
+{ yyval.type = new IntegerType(32, 1); ;
     break;}
 case 57:
 #line 472 "ansi-c.y"
-{ yyval.type = new IntegerType(8, false); ;
+{ yyval.type = new IntegerType(8, 0); ;
     break;}
 case 58:
 #line 474 "ansi-c.y"
-{ yyval.type = new IntegerType(16, false); ;
+{ yyval.type = new IntegerType(16, 0); ;
     break;}
 case 59:
 #line 476 "ansi-c.y"
-{ yyval.type = new IntegerType(32, false); ;
+{ yyval.type = new IntegerType(32, 0); ;
     break;}
 case 60:
 #line 478 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
+{ yyval.type = new IntegerType(32, 1); ;
     break;}
 case 61:
 #line 480 "ansi-c.y"
-{ yyval.type = new IntegerType(64); ;
+{ yyval.type = new IntegerType(64, 1); ;
     break;}
 case 62:
 #line 482 "ansi-c.y"
-{ yyval.type = new IntegerType(64, false); ;
+{ yyval.type = new IntegerType(64, 0); ;
     break;}
 case 63:
 #line 484 "ansi-c.y"
@@ -1941,21 +1941,21 @@ case 66:
 case 67:
 #line 492 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
-      yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival); 
-    ;
+	  yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival); 
+	;
     break;}
 case 68:
 #line 496 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
-      yyval.type = new ArrayType(yyvsp[-2].type); 
-    ;
+	  yyval.type = new ArrayType(yyvsp[-2].type); 
+	;
     break;}
 case 69:
 #line 500 "ansi-c.y"
 { //$$ = Type::getNamedType($1); 
-      //if ($$ == NULL)
-      yyval.type = new NamedType(yyvsp[0].str);
-    ;
+	  //if ($$ == NULL)
+	  yyval.type = new NamedType(yyvsp[0].str);
+	;
     break;}
 case 70:
 #line 505 "ansi-c.y"
@@ -1964,20 +1964,20 @@ case 70:
 case 71:
 #line 507 "ansi-c.y"
 {
-      char tmp[1024];
-      sprintf(tmp, "struct %s", yyvsp[0].str);
-      yyval.type = new NamedType(tmp);
-    ;
+	  char tmp[1024];
+	  sprintf(tmp, "struct %s", yyvsp[0].str);
+	  yyval.type = new NamedType(tmp);
+	;
     break;}
 case 72:
 #line 513 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
-      for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
-           it != yyvsp[-1].type_ident_list->end(); it++) {
-          t->addType((*it)->ty, (*it)->nam.c_str());
-      }
-      yyval.type = t;
-    ;
+	  for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
+		   it != yyvsp[-1].type_ident_list->end(); it++) {
+		  t->addType((*it)->ty, (*it)->nam.c_str());
+	  }
+	  yyval.type = t;
+	;
     break;}
 }
 
@@ -2190,20 +2190,20 @@ YYLABEL(yyerrhandle)
 
 int AnsiCParser::yylex()
 {
-    int token = theScanner->yylex(yylval);
-    return token;
+	int token = theScanner->yylex(yylval);
+	return token;
 }
 
 void AnsiCParser::yyerror(char *s)
 {
 	fflush(stdout);
-        printf("\n%s", theScanner->lineBuf);
+		printf("\n%s", theScanner->lineBuf);
 	printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
 AnsiCParser::~AnsiCParser()
 {
-    // Suppress warnings from gcc about lack of virtual destructor
+	// Suppress warnings from gcc about lack of virtual destructor
 }
 
 

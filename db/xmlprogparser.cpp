@@ -1,3 +1,16 @@
+/*
+ * Copyright (C) 2004, Trent Waddington
+ */
+/*==============================================================================
+ * FILE:	   xmlprogparser.cpp
+ * OVERVIEW:   Implementation of the XMLProgParser and related classes.
+ *============================================================================*/
+/*
+ * $Revision$
+ *
+ * June 2004 - Trent: created
+ */
+
 #include <stdio.h>
 extern "C" {
 #include "expat.h"
@@ -23,10 +36,10 @@ typedef enum { e_prog, e_procs, e_global, e_cluster, e_libproc, e_userproc, e_lo
 		   e_returnstmt,
 		   e_gotostmt, e_branchstmt, e_cond,
 		   e_casestmt,
-		   e_boolstmt,
+		   e_boolasgn,
 		   e_type, e_exp, 
 		   e_voidtype, e_integertype, e_pointertype, e_chartype, e_namedtype, e_arraytype, e_basetype,
-		   e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp, e_phiexp, e_def,
+		   e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp, e_def,
 		   e_subexp1, e_subexp2, e_subexp3, e_unknown = -1 } xmlElement;
 
 #define TAG(x) &XMLProgParser::start_ ## x, &XMLProgParser::addToContext_ ## x
@@ -74,7 +87,7 @@ _tag XMLProgParser::tags[] = {
 	{ "branchstmt", TAG(branchstmt) },
 	{ "cond", TAG(cond) },
 	{ "casestmt", TAG(casestmt) },
-	{ "boolstmt", TAG(boolstmt) },
+	{ "boolasgn", TAG(boolasgn) },
 	{ "type", TAG(type) },
 	{ "exp", TAG(exp) },
 	{ "voidtype", TAG(voidtype) },
@@ -92,7 +105,6 @@ _tag XMLProgParser::tags[] = {
 	{ "terminal", TAG(terminal) },
 	{ "typedexp", TAG(typedexp) },
 	{ "refexp", TAG(refexp) },
-	{ "phiexp", TAG(phiexp) },
 	{ "def", TAG(def) },
 	{ "subexp1", TAG(subexp1) },
 	{ "subexp2", TAG(subexp2) },
@@ -1490,7 +1502,7 @@ void XMLProgParser::addToContext_casestmt(Context *c, int e)
 	}
 }
 
-void XMLProgParser::start_boolstmt(const char **attr)
+void XMLProgParser::start_boolasgn(const char **attr)
 {
 	if (phase == 1) {
 	stack.front()->stmt = (Statement*)findId(getAttr(attr, "id"));
@@ -1504,7 +1516,7 @@ void XMLProgParser::start_boolstmt(const char **attr)
 	}
 	const char *n = getAttr(attr, "size");
 	assert(n);
-	BoolStatement *boo = new BoolStatement(atoi(n));
+	BoolAssign *boo = new BoolAssign(atoi(n));
 	stack.front()->stmt = boo;
 	addId(attr, boo);
 	n = getAttr(attr, "number");
@@ -1518,9 +1530,9 @@ void XMLProgParser::start_boolstmt(const char **attr)
 	boo->bFloat = atoi(n) > 0;
 }
 
-void XMLProgParser::addToContext_boolstmt(Context *c, int e)
+void XMLProgParser::addToContext_boolasgn(Context *c, int e)
 {
-	BoolStatement *boo = dynamic_cast<BoolStatement*>(c->stmt);
+	BoolAssign *boo = dynamic_cast<BoolAssign*>(c->stmt);
 	assert(boo);
 	if (phase == 1) {
 	return;
@@ -1529,14 +1541,14 @@ void XMLProgParser::addToContext_boolstmt(Context *c, int e)
 	case e_cond:
 		boo->pCond = stack.front()->exp;
 		break;
-	case e_dest:
-		boo->pDest = stack.front()->exp;
+	case e_lhs:
+		boo->lhs = stack.front()->exp;
 		break;
 	default:
 		if (e == e_unknown)
-		std::cerr << "unknown tag " << e << " in context boolstmt\n";
+		std::cerr << "unknown tag " << e << " in context boolasgn\n";
 		else 
-		std::cerr << "need to handle tag " << tags[e].tag << " in context boolstmt\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context boolasgn\n";
 	break;
 	}
 }
@@ -1701,9 +1713,9 @@ void XMLProgParser::start_integertype(const char **attr)
 	const char *n = getAttr(attr, "size");
 	if (n)
 	ty->size = atoi(n);
-	n = getAttr(attr, "signd");
+	n = getAttr(attr, "signedness");
 	if (n)
-	ty->signd = atoi(n) > 0;
+	ty->signedness = atoi(n);
 }
 
 void XMLProgParser::addToContext_integertype(Context *c, int e)
@@ -2079,41 +2091,6 @@ void XMLProgParser::addToContext_refexp(Context *c, int e)
 	}
 }
 
-void XMLProgParser::start_phiexp(const char **attr)
-{
-	if (phase == 1) {
-	stack.front()->exp = (Exp*)findId(getAttr(attr, "id"));
-	return;
-	}
-	stack.front()->exp = new PhiExp();
-	addId(attr, stack.front()->exp);
-}
-
-void XMLProgParser::addToContext_phiexp(Context *c, int e)
-{
-	if (phase == 1) {
-	switch(e) {
-		case e_def:
-		PhiExp *phi = dynamic_cast<PhiExp*>(c->exp);
-		assert(phi);
-		phi->stmtVec.putAt(phi->stmtVec.size(), stack.front()->stmt);
-		break;
-	}
-	return;
-	}
-	switch(e) {
-	case e_subexp1:
-		c->exp->setSubExp1(stack.front()->exp);
-		break;
-	default:
-		if (e == e_unknown)
-		std::cerr << "unknown tag " << e << " in context phiexp\n";
-		else 
-		std::cerr << "need to handle tag " << tags[e].tag << " in context phiexp\n";
-		break;
-	}
-}
-
 void XMLProgParser::start_def(const char **attr)
 {
 	if (phase == 1) {
@@ -2269,8 +2246,7 @@ void Cluster::openStreams(const char *ext)
 void Cluster::closeStreams()
 {
 	if (out.is_open()) {
-	if (parent != NULL && stream_ext == "xml")
-		out << "</procs>\n";
+
 	out.close();
 	}
 	for (unsigned i = 0; i < children.size(); i++)
@@ -2460,7 +2436,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Type *ty)
 	}
 	IntegerType *i = dynamic_cast<IntegerType*>(ty);
 	if (i) {
-	out << "<integertype id=\"" << (int)ty << "\" size=\"" << i->size << "\" signd=\"" << i->signd << "\"/>\n";
+	out << "<integertype id=\"" << (int)ty << "\" size=\"" << i->size << "\" signedness=\"" << i->signedness << "\"/>\n";
 	return;
 	}
 	FloatType *fl = dynamic_cast<FloatType*>(ty);
@@ -2568,21 +2544,6 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e)
 	out << "</location>\n";
 	return;
 	} 
-	PhiExp *p = dynamic_cast<PhiExp*>(e);
-	if (p) {
-	out << "<phiexp id=\"" << (int)e << "\"";
-	if (p->stmt)
-		out << " stmt=\"" << (int)p->stmt << "\"";
-	out << " op=\"" << operStrings[p->op] << "\">\n";
-	out << "<subexp1>\n";
-	persistToXML(out, p->subExp1);
-	out << "</subexp1>\n";
-	StatementVec::iterator it;
-	for (it = p->stmtVec.begin(); it != p->stmtVec.end(); it++)
-		out << "<def stmt=\"" << (int)(*it) << "\" />\n";
-	out << "</phiexp>\n";
-	return;
-	}
 	RefExp *r = dynamic_cast<RefExp*>(e);
 	if (r) {
 	out << "<refexp id=\"" << (int)e << "\"";
@@ -2767,9 +2728,9 @@ void XMLProgParser::persistToXML(std::ostream &out, RTL *rtl)
 
 void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 {
-	BoolStatement *b = dynamic_cast<BoolStatement*>(stmt);
+	BoolAssign *b = dynamic_cast<BoolAssign*>(stmt);
 	if (b) {
-	out << "<boolstmt id=\"" << (int)stmt << "\" number=\"" << b->number << "\"";
+	out << "<boolasgn id=\"" << (int)stmt << "\" number=\"" << b->number << "\"";
 	if (b->parent)
 		out << " parent=\"" << (int)b->parent << "\"";
 	if (b->proc)
@@ -2783,12 +2744,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 		persistToXML(out, b->pCond);
 		out << "</cond>\n";
 	}
-	if (b->pDest) {
-		out << "<dest>\n";
-		persistToXML(out, b->pDest);
-		out << "</dest>\n";
-	}
-	out << "</boolstmt>\n";
+	out << "</boolasgn>\n";
 	return;
 	}
 	ReturnStatement *r = dynamic_cast<ReturnStatement*>(stmt);

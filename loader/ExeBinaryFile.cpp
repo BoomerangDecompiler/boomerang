@@ -35,7 +35,7 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 	Byte	buf[4];
 	int		fCOM;
 
-		m_pFileName = sName;
+        m_pFileName = sName;
 
 	// Always just 3 sections
 	m_pSections = new SectionInfo[3];
@@ -156,7 +156,7 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 
 	/* Allocate a block of memory for the image. */
 	m_cbImage  = cb;
-	m_pImage	= new Byte[m_cbImage];
+	m_pImage    = new Byte[m_cbImage];
 
 	if (cb != (int)fread(m_pImage, 1, (size_t)cb, fp))
 	{
@@ -171,8 +171,8 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 		{
 			Byte *p = &m_pImage[m_pRelocTable[i]];
 			SWord  w = (SWord)LH(p);
-			*p++	= (Byte)(w & 0x00FF);
-			*p		= (Byte)((w & 0xFF00) >> 8);
+			*p++    = (Byte)(w & 0x00FF);
+			*p      = (Byte)((w & 0xFF00) >> 8);
 		}
 	}
 
@@ -214,8 +214,8 @@ void ExeBinaryFile::UnLoad()
 
 char* ExeBinaryFile::SymbolByAddr(ADDRESS dwAddr)
 {
-	if (dwAddr == GetMainEntryPoint())
-		return "main";
+    if (dwAddr == GetMainEntryPoint())
+        return "main";
 
 	// No symbol table handled at present
 	return 0;
@@ -229,73 +229,73 @@ bool ExeBinaryFile::DisplayDetails(const char* fileName, FILE* f
 
 LOAD_FMT ExeBinaryFile::GetFormat() const
 {
-	return LOADFMT_EXE;
+    return LOADFMT_EXE;
 }
 
 MACHINE ExeBinaryFile::GetMachine() const
 {
-	return MACHINE_PENTIUM;
+    return MACHINE_PENTIUM;
 }
 
 bool ExeBinaryFile::Open(const char* sName)
 {
-	// Not implemented yet
-	return false;
+    // Not implemented yet
+    return false;
 }
 void ExeBinaryFile::Close()
 {
-	// Not implemented yet
-	return; 
+    // Not implemented yet
+    return; 
 }
 bool ExeBinaryFile::PostLoad(void* handle)
 {
-	// Not needed: for archives only
-	return false;
+    // Not needed: for archives only
+    return false;
 }
 
 bool ExeBinaryFile::isLibrary() const
 {
-	return false;
+    return false;
 }
 
 std::list<const char *> ExeBinaryFile::getDependencyList()
 {
-	return std::list<const char *>(); /* for now */
+    return std::list<const char *>(); /* for now */
 }
 
 ADDRESS ExeBinaryFile::getImageBase()
 {
-	return 0; /* FIXME */
+    return 0; /* FIXME */
 }
 
 size_t ExeBinaryFile::getImageSize()
 {
-	return 0; /* FIXME */
+    return 0; /* FIXME */
 }
 
 // Should be doing a search for this
 ADDRESS ExeBinaryFile::GetMainEntryPoint()
 {
-	return NO_ADDRESS;
+    return NO_ADDRESS;
 }
 
 ADDRESS ExeBinaryFile::GetEntryPoint()
 {
-	// Check this...
-	return (ADDRESS)((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
+    // Check this...
+    return (ADDRESS)((LH(&m_pHeader->initCS) << 4) + LH(&m_pHeader->initIP));
 }
 
 // This is provided for completeness only...
 std::list<SectionInfo*>& ExeBinaryFile::GetEntryPoints(const char* pEntry
   /* = "main"*/) {
-	std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
-#if 0			// Copied from PalmBinaryFile.cc
-	SectionInfo* pSect = GetSectionInfoByName("code1");
-	if (pSect == 0)
-		return *ret;			   // Failed
-	ret->push_back(pSect);
+    std::list<SectionInfo*>* ret = new std::list<SectionInfo*>;
+#if 0           // Copied from PalmBinaryFile.cc
+    SectionInfo* pSect = GetSectionInfoByName("code1");
+    if (pSect == 0)
+        return *ret;               // Failed
+    ret->push_back(pSect);
 #endif
-	return *ret;
+    return *ret;
 }
 
 #ifndef WIN32
@@ -304,10 +304,10 @@ std::list<SectionInfo*>& ExeBinaryFile::GetEntryPoints(const char* pEntry
 // call mechanism will call the rest of the code in this library
 // It needs to be C linkage so that it its name is not mangled
 extern "C" {
-	BinaryFile* construct()
-	{
-		return new ExeBinaryFile;
-	}	 
+    BinaryFile* construct()
+    {
+        return new ExeBinaryFile;
+    }    
 }
 #endif
 

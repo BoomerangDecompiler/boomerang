@@ -100,7 +100,7 @@ public:
 	std::list<Statement*> &getList() { return stmtList; }
 
 	 // Print RTL to a stream.
-	virtual void print(std::ostream& os = std::cout, bool withDF = false);
+	virtual void print(std::ostream& os = std::cout);
 
 	// Set the RTL's source address
 	void updateAddress(ADDRESS addr);
@@ -165,8 +165,8 @@ public:
 	// Print to std::cerr (mainly for debugging)
 	char* prints();
 
-	// Set all the "constant subscripts" (conscripts) in this RTL
-	int		setConscripts(int n);
+	// Set or clear all the "constant subscripts" (conscripts) in this RTL
+	int		setConscripts(int n, bool bClear);
 protected:
 
 	friend class XMLProgParser;

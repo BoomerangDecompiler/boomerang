@@ -57,8 +57,7 @@ typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
 	void constrain(Type* t1, Type* t2) { // Example: alpha1 = alpha2
 		cmap[new TypeVal(t1)] = new TypeVal(t2);}
 	// Union with another constraint map
-	void makeUnion(ConstraintMap& o) {
-		cmap.insert(o.begin(), o.end());}
+	void makeUnion(ConstraintMap& o);
 	// Print to the given stream
 	void print(std::ostream& os);
 	// Print to the debug buffer, and return that buffer
@@ -70,7 +69,7 @@ typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
 	// <type>	= <alphaN>
 	// and substitute these into each part of the solution
 	void	substAlpha();
-};
+};	// class ConstraintMap
 
 // A class used for fast location of a constraint
 // An equation like Ta = Tb is inserted into this class twice (i.e. as
@@ -90,7 +89,7 @@ typedef std::map<Exp*, LocationSet, lessExpStar>::iterator iterator;
 	iterator find(Exp* e) {return emap.find(e);}
 	void print(std::ostream& os);
 	char* prints();
-};
+};	// class EquateMap
 
 class Constraints {
 	LocationSet		conSet;
@@ -104,6 +103,9 @@ class Constraints {
 public:
 	Constraints() {}
 	~Constraints();
+
+	void	print(std::ostream& os);
+	char*	prints();
 
 	LocationSet& getConstraints() {return conSet;}
 	void	addConstraints(LocationSet& con) {conSet.makeUnion(con);}
@@ -123,5 +125,8 @@ public:
 private:
 	bool	doSolve(std::list<Exp*>::iterator it, ConstraintMap& extra,
 			  std::list<ConstraintMap>& solns);
+	// Test for compatibility of these types. Sometimes, they are compatible
+	// with an extra constraint (e.g. alpha3* is compatible with alpha4* with
+	// the extra constraint that alpha3 == alpha4)
 	bool	unify(Exp* x, Exp* y, ConstraintMap& extra);
-};
+};	// class Constraints

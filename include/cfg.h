@@ -40,6 +40,8 @@
 //#include "bitset.h"	  // Saves time. Otherwise, any implementation file that 
 						// defines say a BB, will need to #include this file
 
+#define DEBUG_LIVENESS	(Boomerang::get()->debugLiveness)
+
 class Proc;
 class UserProc;
 class UseSet;
@@ -186,8 +188,8 @@ public:
 	 * Print the BB. For -R and for debugging
 	 * Don't use = std::cout, because gdb doesn't know about std::
 	 */
-	void print(std::ostream& os, bool withDF = false);
-	void printToLog(bool withDF = false);
+	void print(std::ostream& os);
+	void printToLog();
 	char* prints();						// For debugging
 
 	/*
@@ -366,7 +368,7 @@ public:
 
 /* high level structuring */
 	SBBTYPE		m_structType;	// structured type of this node
-	SBBTYPE		m_loopCondType;	// type of conditional to treat this loop
+	SBBTYPE		m_loopCondType; // type of conditional to treat this loop
 								// header as (if any)
 	PBB			m_loopHead;		// head of the most nested enclosing loop
 	PBB			m_caseHead;		// head of the most nested enclosing case
@@ -431,10 +433,10 @@ protected:
 	 */
 	int ord;	 // node's position within the ordering structure
 	int revOrd;	 // position within ordering structure for the reverse graph
-	int inEdgesVisited;	// counts the number of in edges visited during a DFS
+	int inEdgesVisited; // counts the number of in edges visited during a DFS
 	int numForwardInEdges; // inedges to this node that aren't back edges
 	int loopStamps[2], revLoopStamps[2]; // used for structuring analysis
-	travType traversed;	// traversal flag for the numerous DFS's
+	travType traversed; // traversal flag for the numerous DFS's
 	bool hllLabel; // emit a label for this node when generating HL code?
 	char* labelStr; // the high level label for this node (if needed)
 	int indentLevel; // the indentation level of this node in the final code
@@ -627,6 +629,9 @@ class Cfg {
 	std::map<Exp*, std::set<int>, lessExpStar > defsites;
 	// Array of sets of BBs needing phis
 	std::map<Exp*, std::set<int>, lessExpStar> A_phi;
+	// A Boomerang requirement: Statements defining particular subscripted
+	// locations
+	std::map<Exp*, Statement*, lessExpStar> defStmts;
 
 	/*
 	 * Renaming variables
@@ -1013,8 +1018,8 @@ public:
 	/*
 	 * print this cfg, mainly for debugging
 	 */
-	void print(std::ostream &out, bool withDF = false);
-	void printToLog(bool withDF = false);
+	void print(std::ostream &out);
+	void printToLog();
 
 	/*
 	 * Check for indirect jumps and calls

@@ -1,5 +1,5 @@
 /*==============================================================================
- * FILE:       testAnalysis.cc
+ * FILE:	   testAnalysis.cc
  * OVERVIEW:   Command line test of the analysis functions
  *============================================================================*/
 /*
@@ -17,17 +17,17 @@
 
 int main(int argc, char** argv)
 {
-    CppUnit::TestSuite suite;
+	CppUnit::TestSuite suite;
 
-    AnalysisTest at("AnalysisTest");
+	AnalysisTest at("AnalysisTest");
 
-    at.registerTests(&suite);
+	at.registerTests(&suite);
 
-    CppUnit::TextTestResult res;
+	CppUnit::TextTestResult res;
 
-    suite.run( &res );
-    std::cout << res << std::endl;
+	suite.run( &res );
+	std::cout << res << std::endl;
 
-    return 0;
+	return 0;
 }
 

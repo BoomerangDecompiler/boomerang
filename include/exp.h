@@ -16,6 +16,8 @@
  * 29 Apr 02 - Mike: TypedExp takes Type& and Exp* in opposite order; consistent
  * 10 May 02 - Mike: Added refSubExp1 etc
  * 21 May 02 - Mike: Mods for gcc 3.1
+ * 02 Aug 04 - Mike: Removed PhiExp (PhiAssign replaces it) 
+ * 05 Aug 04 - Mike: Removed the withUses/withDF parameter from print() funcs
  */
 
 #ifndef __EXP_H_
@@ -28,7 +30,7 @@
 	 TypedExp____/	|	\		  \
 	  FlagDef___/ Binary Location  TypeVal
 	   RefExp__/	|
-	   PhiExp_/	 Ternary
+				 Ternary
 */
 
 #include <iostream>
@@ -77,8 +79,8 @@ protected:
 
 	unsigned int lexBegin, lexEnd;
 
-    // Constructor, with ID
-            Exp(OPER op) : op(op) {}
+	// Constructor, with ID
+			Exp(OPER op) : op(op) {}
 
 public:
 	// Virtual destructor
@@ -94,18 +96,15 @@ virtual		~Exp() {}
 	unsigned int getLexBegin() { return lexBegin; }
 	unsigned int getLexEnd() { return lexEnd; }
 
-    // Print the expression to the given stream
-
-virtual void print(std::ostream& os, bool withUses = false) = 0;
+	// Print the expression to the given stream
+virtual void print(std::ostream& os) = 0;
 			 // Print with <type>
-	void	 printt(std::ostream& os = std::cout, bool withUses = false);
-	void	 printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
-	char*	 prints();		// Print to string (for debugging)
-			 // Recursive print: don't want parens at the top level
-virtual void printr(std::ostream& os, bool withUses = false) {
-				print(os, withUses);}		// But most classes want standard
-			 // Print with the "{1 2 3}" uses info
-		void printWithUses(std::ostream& os) {print(os, true);}
+	void	printt(std::ostream& os = std::cout);
+	void	printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
+	char*	prints();	   // Print to string (for debugging)
+			// Recursive print: don't want parens at the top level
+virtual void printr(std::ostream& os) {
+				 print(os);}	   // But most classes want standard
 			 // For debugging: print in indented hex. In gdb: "p x->printx(0)"
 virtual void printx(int ind) = 0;
 
@@ -303,10 +302,10 @@ virtual Exp* simplifyConstraint() {return this;}
 	Exp *removeSubscripts(bool& allZero);
 
 	// Get number of definitions (statements this expression depends on)
-	virtual int getNumRefs() {return 0;}
+virtual int getNumRefs() {return 0;}
 
 	// Convert from SSA form
-	virtual Exp* fromSSA(igraph& ig) {return this;}
+virtual Exp* fromSSA(igraph& ig) {return this;}
 
 	// Convert from SSA form, where this is not subscripted (but defined at
 	// statement d)
@@ -324,24 +323,25 @@ virtual Exp* simplifyConstraint() {return this;}
 	//	 sub1 = <int> and sub2 = <int> and Tr = <int> or
 	//	 sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
 	//	 sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
-	virtual Exp*  genConstraints(Exp* result);
+virtual Exp*	genConstraints(Exp* result);
 
-	virtual Type *getType() { return NULL; }
+virtual Type	*getType() { return NULL; }
 
 	// Visitation
 	// Note: best to have accept() as pure virtual, so you don't forget to
 	// implement it for new subclasses of Exp
-	virtual bool accept(ExpVisitor* v) = 0;
-	virtual Exp* accept(ExpModifier* v) = 0;
-	void		 fixLocationProc(UserProc* p);
-	UserProc*	 findProc();
-	void		 setConscripts(int n);	// Set the constant subscripts
-	Exp*		 stripRefs();			// Strip all references
+virtual bool	accept(ExpVisitor* v) = 0;
+virtual Exp*	accept(ExpModifier* v) = 0;
+	void		fixLocationProc(UserProc* p);
+	UserProc*	findProc();
+	// Set or clear the constant subscripts
+	void		setConscripts(int n, bool bClear);
+	Exp*		stripRefs();			// Strip all references
+	Exp*		stripSizes();			// Strip all size casts
 	// Subscript all e in this Exp with statement def:
-	Exp*		 expSubscriptVar(Exp* e, Statement* def);
-
-	virtual Memo *makeMemo(int mId) = 0;
-	virtual void readMemo(Memo *m, bool dec) = 0;
+	Exp*		expSubscriptVar(Exp* e, Statement* def);
+virtual Memo	*makeMemo(int mId) = 0;
+virtual void	readMemo(Memo *m, bool dec) = 0;
 
 protected:
 	friend class XMLProgParser;
@@ -394,32 +394,33 @@ virtual bool operator*=(Exp& o);
 	double	getFlt() {return u.d;}
 	char*	getStr() {return u.p;}
 	ADDRESS getAddr() {return u.a;}
-const char* getFuncName();
+const char*	getFuncName();
 
 	// Set the constant
-	void setInt(int i)		{u.i = i;}
-	void setLong(QWord ll) {u.ll = ll;}
-	void setFlt(double d)	{u.d = d;}
-	void setStr(char* p)	{u.p = p;}
-	void setAddr(ADDRESS a) {u.a = a;}
+	void	setInt(int i)		{u.i = i;}
+	void	setLong(QWord ll) {u.ll = ll;}
+	void	setFlt(double d)	{u.d = d;}
+	void	setStr(char* p)	{u.p = p;}
+	void	setAddr(ADDRESS a) {u.a = a;}
 
-virtual void	print(std::ostream& os, bool withUses = false);
+virtual void print(std::ostream& os);
 	// Print "recursive" (extra parens not wanted at outer levels)
-		void	printNoQuotes(std::ostream& os, bool withUses = false);
-virtual void	printx(int ind);
+		void printNoQuotes(std::ostream& os);
+virtual void printx(int ind);
  
 
-virtual void	appendDotFile(std::ofstream& of);
-virtual Exp*	genConstraints(Exp* restrictTo);
+virtual void appendDotFile(std::ofstream& of);
+virtual Exp* genConstraints(Exp* restrictTo);
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool accept(ExpVisitor* v);
+virtual Exp* accept(ExpModifier* v);
 
+	int		getConscript() {return conscript;}
 	void	setConscript(int cs) {conscript = cs;}
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -436,25 +437,25 @@ public:
 		Terminal(Terminal& o);		// Copy constructor
 
 	// Clone
-	virtual Exp* clone();
+virtual Exp*	clone();
 
 	// Compare
 virtual bool	operator==(const Exp& o) const;
 virtual bool	operator< (const Exp& o) const;
 virtual bool	operator*=(Exp& o);
 
-virtual void	print(std::ostream& os, bool withUses = false);
+virtual void	print(std::ostream& os);
 virtual void	appendDotFile(std::ofstream& of);
 virtual void	printx(int ind);
 
 virtual bool	isTerminal() { return true; }
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool 	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -475,60 +476,60 @@ public:
 			Unary(Unary& o);
 
 	// Clone
-	virtual Exp* clone();
+virtual Exp*	clone();
 
 	// Compare
-virtual bool operator==(const Exp& o) const;
-virtual bool operator< (const Exp& o) const;
-virtual bool operator*=(Exp& o);
+virtual bool	operator==(const Exp& o) const;
+virtual bool	operator< (const Exp& o) const;
+virtual bool	operator*=(Exp& o);
 
 	// Destructor
-virtual		~Unary();
+virtual			~Unary();
 
 	// Arity
-virtual int getArity() {return 1;}
+virtual int		getArity() {return 1;}
 
 	// Print
-virtual void	print(std::ostream& os, bool withUses = false);
+virtual void	print(std::ostream& os);
 virtual void	appendDotFile(std::ofstream& of);
 virtual void	printx(int ind);
 
 	// Set first subexpression
-	void	setSubExp1(Exp* e);
-	void	setSubExp1ND(Exp* e) {subExp1 = e;}
+	void		setSubExp1(Exp* e);
+	void		setSubExp1ND(Exp* e) {subExp1 = e;}
 	// Get first subexpression
-	Exp*	getSubExp1();
+	Exp*		getSubExp1();
 	// "Become" subexpression 1 (delete all but that subexpression)
-	Exp*	becomeSubExp1();
+	Exp*		becomeSubExp1();
 	// Get a reference to subexpression 1
-	Exp*&	refSubExp1();
-virtual int getMemDepth();
+	Exp*&		refSubExp1();
+virtual int		getMemDepth();
 
-	virtual Exp* match(Exp *pattern); 
+virtual Exp*	match(Exp *pattern); 
 		
 	// Search children
-	void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+	void 		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
 	// Do the work of simplifying this expression
-virtual Exp* polySimplify(bool& bMod);
-		Exp* simplifyArith();
-		Exp* simplifyAddr();
-virtual Exp* simplifyConstraint();
+virtual Exp*	polySimplify(bool& bMod);
+		Exp*	simplifyArith();
+		Exp*	simplifyAddr();
+virtual Exp*	simplifyConstraint();
 
 	// Convert from SSA form
-	virtual Exp* fromSSA(igraph& ig);
+virtual Exp*	fromSSA(igraph& ig);
 
 	// Type analysis
-	virtual Exp*  genConstraints(Exp* restrictTo);
+virtual Exp*	genConstraints(Exp* restrictTo);
 
-	virtual Type*	getType();
+virtual Type*	getType();
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -549,7 +550,7 @@ public:
 			Binary(Binary& o);
 
 	// Clone
-	virtual Exp* clone();
+virtual Exp* clone();
 
 	// Compare
 virtual bool operator==(const Exp& o) const ;
@@ -563,10 +564,10 @@ virtual		~Binary();
 	int getArity() {return 2;}
 
 	// Print
-virtual void	print(std::ostream& os, bool withUses = false);
-virtual void	printr(std::ostream& os, bool withUses = false);
-virtual void	appendDotFile(std::ofstream& of);
-virtual void	printx(int ind);
+virtual void print(std::ostream& os);
+virtual void printr(std::ostream& os);
+virtual void appendDotFile(std::ofstream& of);
+virtual void printx(int ind);
 
 	// Set second subexpression
 	void	setSubExp2(Exp* e);
@@ -580,31 +581,31 @@ virtual void	printx(int ind);
 	Exp*&	refSubExp2();
 virtual int getMemDepth();
 
-	virtual Exp* match(Exp *pattern); 
+virtual Exp* match(Exp *pattern); 
 
 	// Search children
 	void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
 	// Do the work of simplifying this expression
 virtual Exp* polySimplify(bool& bMod);
-	Exp* simplifyArith();
-	Exp* simplifyAddr();
+	Exp*	simplifyArith();
+	Exp*	simplifyAddr();
 virtual Exp* simplifyConstraint();
 
 	// Type analysis
-	virtual Exp*  genConstraints(Exp* restrictTo);
+virtual Exp* genConstraints(Exp* restrictTo);
 
 	// Convert from SSA form
-	virtual Exp* fromSSA(igraph& ig);
+virtual Exp* fromSSA(igraph& ig);
 
-	virtual Type*	getType();
+virtual Type* getType();
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool accept(ExpVisitor* v);
+virtual Exp* accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 private:
 	Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
@@ -627,7 +628,7 @@ public:
 			Ternary(Ternary& o);
 
 	// Clone
-	virtual Exp* clone();
+virtual Exp* clone();
 
 	// Compare
 virtual bool operator==(const Exp& o) const ;
@@ -638,13 +639,13 @@ virtual bool operator*=(Exp& o);
 virtual		~Ternary();
 
 	// Arity
-	int getArity() {return 3;}
+	int		getArity() {return 3;}
 
 	// Print
-virtual void	print(std::ostream& os, bool withUses = false);
-virtual void	printr(std::ostream& os, bool withUses = false);
-virtual void	appendDotFile(std::ofstream& of);
-virtual void	printx(int ind);
+virtual void print(std::ostream& os);
+virtual void printr(std::ostream& os);
+virtual void appendDotFile(std::ofstream& of);
+virtual void printx(int ind);
 
 	// Set third subexpression
 	void	setSubExp3(Exp* e);
@@ -654,29 +655,29 @@ virtual void	printx(int ind);
 	Exp*	becomeSubExp3();
 	// Get a reference to subexpression 3
 	Exp*&	refSubExp3();
-virtual int getMemDepth();
+virtual int	getMemDepth();
 
 	// Search children
-	void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
+	void	doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
 virtual Exp* polySimplify(bool& bMod);
-	Exp* simplifyArith();
-	Exp* simplifyAddr();
+	Exp*	simplifyArith();
+	Exp*	simplifyAddr();
 
 	// Type analysis
-	virtual Exp*  genConstraints(Exp* restrictTo);
+virtual Exp* genConstraints(Exp* restrictTo);
 
 	// Convert from SSA form
-	virtual Exp* fromSSA(igraph& ig);
+virtual Exp* fromSSA(igraph& ig);
 
-	virtual Type*	getType();
+virtual Type* getType();
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -686,48 +687,48 @@ protected:
  * TypedExp is a subclass of Unary, holding one subexpression and a Type
  *============================================================================*/
 class TypedExp : public Unary {
-	Type   *type;
+	Type		*type;
 public:
 	// Constructor
-			TypedExp();
+				TypedExp();
 	// Constructor, subexpression
-			TypedExp(Exp* e1);
+				TypedExp(Exp* e1);
 	// Constructor, type, and subexpression.
 	// A rare const parameter allows the common case of providing a temporary,
 	// e.g. foo = new TypedExp(Type(INTEGER), ...);
-			TypedExp(Type* ty, Exp* e1);
+				TypedExp(Type* ty, Exp* e1);
 	// Copy constructor
-			TypedExp(TypedExp& o);
+				TypedExp(TypedExp& o);
 
 	// Clone
-	virtual Exp* clone();
+virtual Exp* clone();
 
 	// Compare
-virtual bool operator==(const Exp& o) const;
-virtual bool operator%=(const Exp& o) const;		// Type insensitive compare
-virtual bool operator-=(const Exp& o) const;		// Sign insensitive compare
-virtual bool operator< (const Exp& o) const;
-virtual bool operator<<(const Exp& o) const;
-virtual bool operator*=(Exp& o);
+virtual bool	operator==(const Exp& o) const;
+virtual bool	operator%=(const Exp& o) const;		// Type insensitive compare
+virtual bool	operator-=(const Exp& o) const;		// Sign insensitive compare
+virtual bool	operator< (const Exp& o) const;
+virtual bool	operator<<(const Exp& o) const;
+virtual bool	operator*=(Exp& o);
 
 
-virtual void	print(std::ostream& os, bool withUses = false);
+virtual void	print(std::ostream& os);
 virtual void	appendDotFile(std::ofstream& of);
 virtual void	printx(int ind);
 
 	// Get and set the type
-	virtual Type*	getType();
-	virtual void	setType(Type* ty);
+virtual Type*	getType();
+virtual void	setType(Type* ty);
 
 	// polySimplify
-virtual Exp* polySimplify(bool& bMod);
+virtual Exp*	polySimplify(bool& bMod);
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -738,24 +739,24 @@ protected:
  *	subexpression), and a pointer to an RTL
  *============================================================================*/
 class FlagDef : public Unary {
-	RTL*	rtl;
+	RTL*		rtl;
 public:
-			FlagDef(Exp* params, RTL* rtl);		// Constructor
-virtual		~FlagDef();							// Destructor
+				FlagDef(Exp* params, RTL* rtl);		// Constructor
+virtual			~FlagDef();							// Destructor
 virtual void	appendDotFile(std::ofstream& of);
-	RTL*	getRtl() { return rtl; }
-	void	setRtl(RTL* r) { rtl = r; }
+	RTL*		getRtl() { return rtl; }
+	void		setRtl(RTL* r) { rtl = r; }
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
-};
+};	// class FlagDef
 
 /*==============================================================================
  * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and
@@ -769,40 +770,41 @@ class RefExp : public Unary {
 	Statement* def;				// The defining statement
 
 public:
-			// Constructor with expression (e) and statement defining it (def)
-			RefExp(Exp* e, Statement* def);
-			RefExp(Exp* e);
-			RefExp(RefExp& o);
-virtual Exp* clone();
-virtual bool operator==(const Exp& o) const;
-virtual bool operator< (const Exp& o) const;
-virtual bool operator*=(Exp& o);
+				// Constructor with expression (e) and statement defining it (def)
+				RefExp(Exp* e, Statement* def);
+				//RefExp(Exp* e);
+				//RefExp(RefExp& o);
+virtual Exp* 	clone();
+virtual bool 	operator==(const Exp& o) const;
+virtual bool 	operator< (const Exp& o) const;
+virtual bool	operator*=(Exp& o);
 
-virtual void print(std::ostream& os, bool withUses = false);
-virtual void printx(int ind);
-virtual int getNumRefs() {return 1;}
-	Statement* getRef() {return def;}
-	Exp*	addSubscript(Statement* def) {this->def = def; return this;}
-	void	setDef(Statement* def) {this->def = def;}
-	virtual Exp*  genConstraints(Exp* restrictTo);
-	virtual Exp* fromSSA(igraph& ig);
-	bool	references(Statement* s) {return def == s;}
-virtual Exp* polySimplify(bool& bMod);
-	virtual Type*	getType();
-	virtual Exp *match(Exp *pattern);
+virtual void	print(std::ostream& os);
+virtual void	printx(int ind);
+virtual int		getNumRefs() {return 1;}
+	Statement*	getRef() {return def;}
+	Exp*		addSubscript(Statement* def) {this->def = def; return this;}
+	void		setDef(Statement* def) {this->def = def;}
+virtual Exp*	genConstraints(Exp* restrictTo);
+virtual Exp*	fromSSA(igraph& ig);
+	bool		references(Statement* s) {return def == s;}
+virtual Exp*	polySimplify(bool& bMod);
+virtual Type*	getType();
+virtual Exp		*match(Exp *pattern);
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool accept(ExpVisitor* v);
+virtual Exp* accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	RefExp() : Unary(opSubscript), def(NULL) { }
 	friend class XMLProgParser;
 };	// Class RefExp
 
+#if 0
 /*==============================================================================
  * PhiExp is a subclass of Unary, holding an operator (opPhi), the expression
  * that is being phi'd (in subExp1), and a StatementVec
@@ -844,10 +846,10 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
 	//bool		 isLastRef(StmtVecIter& it) {return stmtVec.isLast(it);}
 	StatementVec::iterator begin() {return stmtVec.begin();}
 	StatementVec::iterator end()   {return stmtVec.end();}
-	virtual Exp* fromSSA(igraph& ig);
+virtual Exp* fromSSA(igraph& ig);
 	//bool	  references(Statement* s) {return stmtVec.exists(s);}
 	StatementVec& getRefs() {return stmtVec;}
-	virtual Exp*  genConstraints(Exp* restrictTo);
+virtual Exp*  genConstraints(Exp* restrictTo);
 	void	setStatement(Assign *a) { stmt = a; }
 
 	// polySimplify
@@ -855,16 +857,14 @@ virtual Exp* polySimplify(bool& bMod);
 	void simplifyRefs();
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
-
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual bool accept(ExpVisitor* v);
+virtual Exp* accept(ExpModifier* v);
 
 protected:
 	PhiExp() : Unary(opPhi) { }
 	friend class XMLProgParser;
 };	// class PhiExp
+#endif
 
 /*==============================================================================
 class TypeVal. Just a Terminal with a Type. Used for type values in constraints
@@ -876,24 +876,24 @@ public:
 	TypeVal(Type* ty);
 	~TypeVal();
 
-	virtual Type*	getType() {return val;}
-	virtual void	setType(Type* t) {val = t;}
-virtual Exp* clone();
-virtual bool operator==(const Exp& o) const;
-virtual bool operator< (const Exp& o) const;
-virtual bool operator*=(Exp& o);
-virtual void	print(std::ostream& os, bool withUses = false);
+virtual Type*	getType() {return val;}
+virtual void	setType(Type* t) {val = t;}
+virtual Exp*	clone();
+virtual bool	operator==(const Exp& o) const;
+virtual bool	operator< (const Exp& o) const;
+virtual bool	operator*=(Exp& o);
+virtual void	print(std::ostream& os);
 virtual void	printx(int ind);
-	virtual Exp*  genConstraints(Exp* restrictTo) {
-		assert(0); return NULL;} // Should not be constraining constraints
-	virtual Exp *match(Exp *pattern);
+virtual Exp* 	genConstraints(Exp* restrictTo) {
+					assert(0); return NULL;} // Should not be constraining constraints
+virtual Exp		*match(Exp *pattern);
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -906,45 +906,43 @@ protected:
 
 public:
 	// Constructor with ID, subexpression, and UserProc*
-			Location(OPER op, Exp* e, UserProc *proc);
+				Location(OPER op, Exp* e, UserProc *proc);
 	// Copy constructor
-			Location(Location& o);
+				Location(Location& o);
 	// Custom constructor
-	static Location* regOf(int r) {return new Location(opRegOf, new Const(r),
-		NULL);}
-	static Location* regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
-	static Location* memOf(Exp *e, UserProc* p = NULL) {
-		return new Location(opMemOf, e, p);}
-	static Location* tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
-	static Location* global(const char *nam, UserProc *p) {
-		return new Location(opGlobal, new Const((char*)nam), p);}
-	static Location* local(const char *nam, UserProc *p) {
-		return new Location(opLocal, new Const((char*)nam), p);}
-	static Location* param(const char *nam, UserProc *p = NULL) {
-		return new Location(opParam, new Const((char*)nam), p);}
+static Location* regOf(int r) {return new Location(opRegOf, new Const(r), NULL);}
+static Location* regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
+static Location* memOf(Exp *e, UserProc* p = NULL) {return new Location(opMemOf, e, p);}
+static Location* tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
+static Location* global(const char *nam, UserProc *p) {
+					return new Location(opGlobal, new Const((char*)nam), p);}
+static Location* local(const char *nam, UserProc *p) {
+					return new Location(opLocal, new Const((char*)nam), p);}
+static Location* param(const char *nam, UserProc *p = NULL) {
+					return new Location(opParam, new Const((char*)nam), p);}
 	// Clone
-	virtual Exp* clone();
+virtual Exp*	clone();
 
-	void setProc(UserProc *p) { proc = p; }
-	UserProc *getProc() { return proc; }
+	void		setProc(UserProc *p) { proc = p; }
+	UserProc	*getProc() { return proc; }
 
-	virtual Exp* polySimplify(bool& bMod);
-	virtual void getDefinitions(LocationSet& defs);
+virtual Exp*	polySimplify(bool& bMod);
+virtual void	getDefinitions(LocationSet& defs);
 
-	virtual Type *getType();
-	virtual void setType(Type *t) { ty = t; }
-virtual int getMemDepth();
+virtual Type	*getType();
+virtual void	setType(Type *t) { ty = t; }
+virtual int		getMemDepth();
 
 	// Visitation
-	virtual bool accept(ExpVisitor* v);
-	virtual Exp* accept(ExpModifier* v);
+virtual bool	accept(ExpVisitor* v);
+virtual Exp*	accept(ExpModifier* v);
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
-	Location(OPER op) : Unary(op), proc(NULL), ty(NULL) { }
+				Location(OPER op) : Unary(op), proc(NULL), ty(NULL) { }
 };	// Class Location
 	
 #endif // __EXP_H__

@@ -1296,22 +1296,18 @@ std::set<CallStatement*>& Cfg::getCalls()
  *					replace - the expression with which to replace it
  * RETURNS:			<nothing>
  *============================================================================*/
-void Cfg::searchAndReplace(Exp* search, Exp* replace)
-{
+void Cfg::searchAndReplace(Exp* search, Exp* replace) {
 	for (BB_IT bb_it = m_listBB.begin(); bb_it != m_listBB.end(); bb_it++) {
-
 		std::list<RTL*>& rtls = *((*bb_it)->getRTLs());
-		for (std::list<RTL*>::iterator rtl_it = rtls.begin(); rtl_it != rtls.end();
-		  rtl_it++) {
-
+		for (std::list<RTL*>::iterator rtl_it = rtls.begin(); rtl_it != rtls.end(); rtl_it++) {
 			RTL& rtl = **rtl_it;
 			rtl.searchAndReplace(search,replace);
 		}
-	if ((*bb_it)->getType() == RET && (*bb_it)->m_returnVal) {
-			bool change;
-		(*bb_it)->m_returnVal = (*bb_it)->m_returnVal->searchReplaceAll(
-				search, replace, change);
-	}
+		if ((*bb_it)->getType() == RET && (*bb_it)->m_returnVal) {
+				bool change;
+			(*bb_it)->m_returnVal = (*bb_it)->m_returnVal->searchReplaceAll(
+					search, replace, change);
+		}
 	}
 }
 
@@ -1409,17 +1405,17 @@ void Cfg::simplify() {
 }
 
 // print this cfg, mainly for debugging
-void Cfg::print(std::ostream &out, bool withDF) {
+void Cfg::print(std::ostream &out) {
 	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
 	  it++) 
-		(*it)->print(out, withDF);
+		(*it)->print(out);
 	out << std::endl;
 }
 
-void Cfg::printToLog(bool withDF) {
+void Cfg::printToLog() {
 	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
 	  it++) 
-		(*it)->printToLog(withDF);
+		(*it)->printToLog();
 	LOG << "\n";
 }
 
@@ -1863,10 +1859,6 @@ void Cfg::checkConds() {
 }
 
 void Cfg::structure() {
-	PBB retNode = findRetNode();
-	if (retNode == NULL)
-		return;
-
 	setTimeStamps();
 	findImmedPDom();
 	structConds();
@@ -2144,8 +2136,9 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 	parent.resize(0);
 	best.resize(0);
 	bucket.resize(0);
-	defsites.clear();			 // Clear defsites map
-	A_orig.clear();				 // and A_orig
+	defsites.clear();			// Clear defsites map,
+	A_orig.clear();				// and A_orig,
+	defStmts.clear();			// and the map from variable to defining Stmt 
 
 	// Set the sizes of needed vectors
 	int numBB = indices.size();
@@ -2162,9 +2155,12 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 			LocationSet ls;
 			LocationSet::iterator it;
 			s->getDefinitions(ls);
-			for (it = ls.begin(); it != ls.end(); it++)
-				if ((*it)->getMemDepth() == memDepth)
+			for (it = ls.begin(); it != ls.end(); it++) {
+				if ((*it)->getMemDepth() == memDepth) {
 					A_orig[n].insert((*it)->clone());
+					defStmts[*it] = s;
+				}
+			}
 		}
 	}
 
@@ -2179,7 +2175,8 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 		}
 	}
 
-	// For each variable a (in defsites, I presume)
+	// For each variable a (in defsites)
+	// Prog* prog = myProc->getProg();		// See def of Ta below MVE
 	std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
 	for (mm = defsites.begin(); mm != defsites.end(); mm++) {
 		Exp* a = (*mm).first;				// *mm is pair<Exp*, set<int>>
@@ -2198,9 +2195,10 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 				std::set<int>& s = A_phi[a];
 				if (s.find(y) == s.end()) {
 					// Insert trivial phi function for a at top of block y
-					// a := phi{}
-					Statement* as = new Assign(a->clone(),
-					  new PhiExp(a->clone()));
+					// a := phi()
+			// MVE: Needs work here!
+					// Type* Ta = defStmts[a]->getTypeFor(a, prog);
+					Statement* as = new PhiAssign(/*Ta*/NULL, a->clone());
 					PBB Ybb = BBs[y];
 					Ybb->prependStmt(as, proc);
 					// A_phi[a] <- A_phi[a] U {y}
@@ -2298,13 +2296,13 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 		Statement* S;
 		for (S = Ybb->getFirstStmt(rit, sit); S;
 			 S = Ybb->getNextStmt(rit, sit)) {
-			Assign* ae = dynamic_cast<Assign*>(S);
+			PhiAssign* pa = dynamic_cast<PhiAssign*>(S);
 			// if S is not a phi function, then quit the loop (no more phi's)
 			// wrong: do not quit the loop, there's an optimisation that 
 			// turns phis with a single param into refs.
-			if (!ae || !ae->isPhi()) continue;
+			if (!pa) continue;
 			// Suppose the jth operand of the phi is a; we just get the LHS
-			Exp* a = ae->getLeft();
+			Exp* a = pa->getLeft();
 			// Only consider variables of the current memory depth
 			// (since we only have reaching defs for these)
 			if (a->getMemDepth() != memDepth) continue;
@@ -2315,7 +2313,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 			else
 				def = Stack[a].top();
 			// "Replace jth operand with a_i"
-			((PhiExp*)ae->getRight())->putAt(j, def);
+			pa->putAt(j, def);
 		}
 	}
 	// For each child X of n
@@ -2372,7 +2370,23 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
 		workSet.erase(currBB);
 		// Calculate live locations and interferences
 		change = currBB->calcLiveness(ig, tempNum);
-		if (change) updateWorkListRev(currBB, workList, workSet);
+		if (change) {
+			if (DEBUG_LIVENESS) {
+				LOG << "Revisiting BB ending with stmt ";
+				Statement* last = NULL;
+				if (currBB->m_pRtls->size()) {
+					RTL* lastRtl = currBB->m_pRtls->back();
+					std::list<Statement*>& lst = lastRtl->getList();
+					if (lst.size()) last = lst.back();
+				}
+				if (last)
+					LOG << last->getNumber();
+				else
+					LOG << "<none>";
+				LOG << " due to change (tempNum now " << tempNum << ")\n";
+			}
+			updateWorkListRev(currBB, workList, workSet);
+		}
 	}
 }
 

@@ -6,23 +6,23 @@
 
 class CfgTest : public CppUnit::TestCase {
   protected:
-    Cfg*  m_prog;
+	Cfg*  m_prog;
 
   public:
-    CfgTest(std::string name) : CppUnit::TestCase (name)
-    {}
+	CfgTest(std::string name) : CppUnit::TestCase (name)
+	{}
 
-    virtual void registerTests(CppUnit::TestSuite* suite);
+	virtual void registerTests(CppUnit::TestSuite* suite);
 
-    int countTestCases () const;
+	int countTestCases () const;
 
-    void setUp ();
-    void tearDown ();
+	void setUp ();
+	void tearDown ();
 
-    void testDominators ();
-    void testSemiDominators ();
-    void testPlacePhi ();
-    void testPlacePhi2();
-    void testRenameVars();
+	void testDominators ();
+	void testSemiDominators ();
+	void testPlacePhi ();
+	void testPlacePhi2();
+	void testRenameVars();
 };
 

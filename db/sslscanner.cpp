@@ -208,9 +208,9 @@ int read();
  *
  */
 /*==============================================================================
- * FILE:          sslscanner.l
- * OVERVIEW:      Defines a scanner to parse the tokens of a Semantic
- *                Specification Language specification.
+ * FILE:		  sslscanner.l
+ * OVERVIEW:	  Defines a scanner to parse the tokens of a Semantic
+ *				  Specification Language specification.
  *============================================================================*/
 /* 
  * Shane Sendall (original C version) Dec 1997
@@ -1110,27 +1110,27 @@ case 6:
 case 7:
 #line 70 "sslscanner.l"
 {
-               yylval.str = strdup(yytext);
-               return SSLParser::ENDIANNESS;
-             }
+			   yylval.str = strdup(yytext);
+			   return SSLParser::ENDIANNESS;
+			 }
 	YY_BREAK
 case 8:
 #line 75 "sslscanner.l"
 case 9:
 #line 75 "sslscanner.l"
 {
-               yylval.str = strdup(yytext);
-               return SSLParser::BIG;
-             }
+			   yylval.str = strdup(yytext);
+			   return SSLParser::BIG;
+			 }
 	YY_BREAK
 case 10:
 #line 80 "sslscanner.l"
 case 11:
 #line 80 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                return SSLParser::LITTLE;
-             }
+				yylval.str = strdup(yytext);
+				return SSLParser::LITTLE;
+			 }
 	YY_BREAK
 case 12:
 #line 84 "sslscanner.l"
@@ -1151,18 +1151,18 @@ case 15:
 case 16:
 #line 89 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                return SSLParser::ASSIGNTYPE;
-             }
+				yylval.str = strdup(yytext);
+				return SSLParser::ASSIGNTYPE;
+			 }
 	YY_BREAK
 case 17:
 #line 95 "sslscanner.l"
 case 18:
 #line 95 "sslscanner.l"
 {
-               yylval.str = strdup(yytext);
-               return SSLParser::LOG_OP;
-             }
+			   yylval.str = strdup(yytext);
+			   return SSLParser::LOG_OP;
+			 }
 	YY_BREAK
 case 19:
 #line 100 "sslscanner.l"
@@ -1185,9 +1185,9 @@ case 27:
 case 28:
 #line 108 "sslscanner.l"
 {
-               yylval.str = strdup(yytext);
-               return SSLParser::COND_OP;
-             }
+			   yylval.str = strdup(yytext);
+			   return SSLParser::COND_OP;
+			 }
 	YY_BREAK
 case 29:
 #line 114 "sslscanner.l"
@@ -1210,10 +1210,10 @@ case 37:
 case 38:
 #line 122 "sslscanner.l"
 {
-        yylval.str = strdup(yytext);
-        return SSLParser::BIT_OP;
+		yylval.str = strdup(yytext);
+		return SSLParser::BIT_OP;
 
-      }
+	  }
 	YY_BREAK
 case 39:
 #line 128 "sslscanner.l"
@@ -1232,9 +1232,9 @@ case 45:
 case 46:
 #line 134 "sslscanner.l"
 {
-        yylval.str = strdup(yytext);
-        return SSLParser::ARITH_OP;
-      }
+		yylval.str = strdup(yytext);
+		return SSLParser::ARITH_OP;
+	  }
 	YY_BREAK
 case 47:
 #line 139 "sslscanner.l"
@@ -1267,82 +1267,82 @@ case 60:
 case 61:
 #line 152 "sslscanner.l"
 {
-        yylval.str = strdup(yytext);
-        return SSLParser::FARITH_OP;
-      }
+		yylval.str = strdup(yytext);
+		return SSLParser::FARITH_OP;
+	  }
 	YY_BREAK
 case 62:
 #line 156 "sslscanner.l"
 {
-        return SSLParser::NOT;
-      }
+		return SSLParser::NOT;
+	  }
 	YY_BREAK
 case 63:
 #line 159 "sslscanner.l"
 {
-        return SSLParser::LNOT;
-      }
+		return SSLParser::LNOT;
+	  }
 	YY_BREAK
 case 64:
 #line 162 "sslscanner.l"
 {
-        return SSLParser::FNEG;
-      }
+		return SSLParser::FNEG;
+	  }
 	YY_BREAK
 case 65:
 #line 165 "sslscanner.l"
 {
-        return SSLParser::THEN;
-      }
+		return SSLParser::THEN;
+	  }
 	YY_BREAK
 case 66:
 #line 168 "sslscanner.l"
 {
-        return SSLParser::INDEX;
-       }
+		return SSLParser::INDEX;
+	   }
 	YY_BREAK
 case 67:
 #line 171 "sslscanner.l"
 {
-        return SSLParser::EQUATE;
-      }
+		return SSLParser::EQUATE;
+	  }
 	YY_BREAK
 case 68:
 #line 174 "sslscanner.l"
 {
-        yylval.str = strdup(yytext);
-        return SSLParser::ASSIGN;
-      }
+		yylval.str = strdup(yytext);
+		return SSLParser::ASSIGN;
+	  }
 	YY_BREAK
 case 69:
 #line 178 "sslscanner.l"
 {
-        return SSLParser::TO;
-      }
+		return SSLParser::TO;
+	  }
 	YY_BREAK
 case 70:
 #line 181 "sslscanner.l"
 {
-        return SSLParser::COLON;
-      }
+		return SSLParser::COLON;
+	  }
 	YY_BREAK
 case 71:
 #line 184 "sslscanner.l"
 {
-        return SSLParser::S_E;
-      }
+		return SSLParser::S_E;
+	  }
 	YY_BREAK
 case 72:
 #line 187 "sslscanner.l"
 {
-        return SSLParser::AT;
-      }
+		return SSLParser::AT;
+	  }
 	YY_BREAK
 case 73:
 #line 190 "sslscanner.l"
 {
-                return SSLParser::ADDR;
-            }
+				return SSLParser::ADDR;
+			}
 	YY_BREAK
 case 74:
 #line 194 "sslscanner.l"
@@ -1361,42 +1361,42 @@ case 80:
 case 81:
 #line 200 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::CONV_FUNC;
-            }
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::CONV_FUNC;
+			}
 	YY_BREAK
 case 82:
 #line 205 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::TRUNC_FUNC;
-            }
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::TRUNC_FUNC;
+			}
 	YY_BREAK
 case 83:
 #line 210 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::FABS_FUNC;
-            }
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::FABS_FUNC;
+			}
 	YY_BREAK
 case 84:
 #line 216 "sslscanner.l"
 case 85:
 #line 216 "sslscanner.l"
 {
-                return SSLParser::FLAGMACRO;
-                }
+				return SSLParser::FLAGMACRO;
+				}
 	YY_BREAK
 case 86:
 #line 219 "sslscanner.l"
-{   return SSLParser::FPOP; }
+{	return SSLParser::FPOP; }
 	YY_BREAK
 case 87:
 #line 220 "sslscanner.l"
-{   return SSLParser::FPUSH; }
+{	return SSLParser::FPUSH; }
 	YY_BREAK
 case 88:
 #line 222 "sslscanner.l"
@@ -1417,134 +1417,134 @@ case 95:
 case 96:
 #line 229 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::TRANSCEND;
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::TRANSCEND;
 			}
 	YY_BREAK
 case 97:
 #line 235 "sslscanner.l"
 {
 				return SSLParser::SUCCESSOR;
-            }
+			}
 	YY_BREAK
 case 98:
 #line 239 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                return SSLParser::TEMP;
-            }
+				yylval.str = strdup(yytext);
+				return SSLParser::TEMP;
+			}
 	YY_BREAK
 case 99:
 #line 244 "sslscanner.l"
-{   return SSLParser::REG_IDX; }
+{	return SSLParser::REG_IDX; }
 	YY_BREAK
 case 100:
 #line 245 "sslscanner.l"
-{   yylval.str = strdup(yytext);
-                return SSLParser::REG_NUM; }
+{	yylval.str = strdup(yytext);
+				return SSLParser::REG_NUM; }
 	YY_BREAK
 case 101:
 #line 247 "sslscanner.l"
-{   return SSLParser::MEM_IDX; }
+{	return SSLParser::MEM_IDX; }
 	YY_BREAK
 case 102:
 #line 248 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 103:
 #line 249 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                return SSLParser::REG_ID;
-            }
+				yylval.str = strdup(yytext);
+				return SSLParser::REG_ID;
+			}
 	YY_BREAK
 case 104:
 #line 253 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::NAME_CALL;
-            }
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::NAME_CALL;
+			}
 	YY_BREAK
 case 105:
 #line 258 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                yylval.str[strlen(yylval.str)-1] = '\0';
-                return SSLParser::NAME_LOOKUP;
-            }
+				yylval.str = strdup(yytext);
+				yylval.str[strlen(yylval.str)-1] = '\0';
+				return SSLParser::NAME_LOOKUP;
+			}
 	YY_BREAK
 case 106:
 #line 263 "sslscanner.l"
 {
-                yylval.str = strdup(yytext);
-                return SSLParser::NAME;
-            }
+				yylval.str = strdup(yytext);
+				return SSLParser::NAME;
+			}
 	YY_BREAK
 case 107:
 #line 268 "sslscanner.l"
 case 108:
 #line 268 "sslscanner.l"
 {
-                    yylval.str = strdup(yytext);
-                    return SSLParser::DECOR;
-            }
+					yylval.str = strdup(yytext);
+					return SSLParser::DECOR;
+			}
 	YY_BREAK
 case 109:
 #line 272 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 110:
 #line 273 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 111:
 #line 274 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 112:
 #line 275 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 113:
 #line 276 "sslscanner.l"
-{   return yytext[0];   }
+{	return yytext[0];	}
 	YY_BREAK
 case 114:
 #line 277 "sslscanner.l"
 {
-        yylval.dbl = atof(yytext);
-        return SSLParser::FLOATNUM;
-     }
+		yylval.dbl = atof(yytext);
+		return SSLParser::FLOATNUM;
+	 }
 	YY_BREAK
 case 115:
 #line 281 "sslscanner.l"
 {
-        yylval.num = strtol(yytext,0,10);
-        return SSLParser::NUM;
-     }
+		yylval.num = strtol(yytext,0,10);
+		return SSLParser::NUM;
+	 }
 	YY_BREAK
 case 116:
 #line 286 "sslscanner.l"
 {
-        yylval.num = strtol(yytext,0,16);
-        return SSLParser::NUM;
-     }
+		yylval.num = strtol(yytext,0,16);
+		return SSLParser::NUM;
+	 }
 	YY_BREAK
 case 117:
 #line 291 "sslscanner.l"
 {
-                    // a power of two
-                    int sign = (yytext[0] == '-' ? -1 : 1);
-                    char* start = yytext + (sign == -1 ? 4:3);
+					// a power of two
+					int sign = (yytext[0] == '-' ? -1 : 1);
+					char* start = yytext + (sign == -1 ? 4:3);
 
-                        // David - changed to << for more efficient and 
-                        // not depend on the <cmath> anymore.
-                    yylval.num = 1 << (strtol(start,0,10) * sign);
-                        // yylval.num = (int)pow(2,strtol(start,0,10)) * sign;
-                    return SSLParser::NUM;
-                }
+						// David - changed to << for more efficient and 
+						// not depend on the <cmath> anymore.
+					yylval.num = 1 << (strtol(start,0,10) * sign);
+						// yylval.num = (int)pow(2,strtol(start,0,10)) * sign;
+					return SSLParser::NUM;
+				}
 	YY_BREAK
 case 118:
 #line 303 "sslscanner.l"
@@ -1552,7 +1552,7 @@ case 118:
 	YY_BREAK
 case 119:
 #line 304 "sslscanner.l"
-;   /* comment */
+;	/* comment */
 	YY_BREAK
 case 120:
 #line 305 "sslscanner.l"
@@ -1560,27 +1560,27 @@ case 120:
 	YY_BREAK
 case 121:
 #line 306 "sslscanner.l"
-{   // funky print-next-line-for-debug token
-                    if (yyleng > MAX_LINE)
-                    {
-                        std::cerr << theLine + 1 << ": line too long.\n";
-                        exit(1);
-                    }
-                    // saves the next line
-                    strcpy(lineBuf, yytext+1);
-                    theLine++;
-                    // reparse from char 1
-                    // give back all but the \n to rescan
-                    yyless(1);
+{	// funky print-next-line-for-debug token
+					if (yyleng > MAX_LINE)
+					{
+						std::cerr << theLine + 1 << ": line too long.\n";
+						exit(1);
+					}
+					// saves the next line
+					strcpy(lineBuf, yytext+1);
+					theLine++;
+					// reparse from char 1
+					// give back all but the \n to rescan
+					yyless(1);
 
-                    // echo the line if line tracing is turned on
-                    if (traceLines)
-                    std::cerr << lineBuf << std::endl;
+					// echo the line if line tracing is turned on
+					if (traceLines)
+					std::cerr << lineBuf << std::endl;
 
-                    // Quell a warning
-                    yy_last_accepting_state = 0;
-                    yy_last_accepting_cpos = 0;
-                }
+					// Quell a warning
+					yy_last_accepting_state = 0;
+					yy_last_accepting_cpos = 0;
+				}
 	YY_BREAK
 case 122:
 #line 327 "sslscanner.l"

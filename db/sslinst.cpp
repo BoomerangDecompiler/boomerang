@@ -375,8 +375,7 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
 
 	// Look up the dictionary
 	std::map<std::string,TableEntry>::iterator it = idict.find(opcode);
-	if (it == idict.end())
-	{
+	if (it == idict.end()) {
 		std::cerr << "Error: no entry for `" << name << "' in RTL dictionary\n";
 		it = idict.find("NOP");		// At least, don't cause segfault
 	} 

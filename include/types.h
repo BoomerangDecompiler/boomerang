@@ -7,6 +7,7 @@ typedef unsigned int		Word;	   /* 32 bits */
 typedef unsigned int		ADDRESS;   /* 32-bit unsigned */
 
 
+#define STD_SIZE	32			// Standard size
 #define NO_ADDRESS ((ADDRESS)-1)  // For invalid ADDRESSes
 
 #ifndef _MSC_VER

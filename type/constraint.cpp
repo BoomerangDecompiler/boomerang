@@ -44,6 +44,30 @@ char* ConstraintMap::prints() {
 	return debug_buffer;
 }
 
+void ConstraintMap::makeUnion(ConstraintMap& o) {
+			  std::map<Exp*, Exp*, lessExpStar>::iterator it;
+	std::pair<std::map<Exp*, Exp*, lessExpStar>::iterator, bool> ret;
+	for (it = o.cmap.begin(); it != o.cmap.end(); it++) {
+		// Note: *it is a std::pair<Exp*, Exp*>
+		ret = cmap.insert(*it);
+		// If an insertion occured, ret will be std::pair<where, true>
+		// If no insertion occured, ret will be std::pair<where, false>
+		if (ret.second == false) {
+std::cerr << "ConstraintMap::makeUnion: want to overwrite " << ret.first->first
+ << " -> " << ret.first->second << " with " << it->first << " -> " << it->second
+ << "\n";
+			TypeVal* Tret = (TypeVal*)ret.first->second;
+			Type* ty1 = Tret->getType();
+			TypeVal* Toth = (TypeVal*)it->second;
+			Type* ty2 = Toth->getType();
+			if (*ty1 != *ty2) {
+				Tret->setType(ty1->mergeWith(ty2));
+std::cerr << "Now " << ret.first->first << " -> " << ret.first->second << "\n"; 
+			}
+		}
+	}
+}
+
 void ConstraintMap::insert(Exp* term) {
 	assert(term->isEquality());
 	Exp* lhs = ((Binary*)term)->getSubExp1();
@@ -177,7 +201,7 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
 					if (ff != fixed.end()) {
 						if (!unify(val, ff->second, extra)) {
 							if (VERBOSE || DEBUG_TA)
-								std::cerr << "Constraint failure: " <<
+								LOG << "Constraint failure: " <<
 								  *ll << " constrained to be " <<
 								  ((TypeVal*)val)->getType()->getCtype() <<
 								  " and " <<
@@ -188,8 +212,18 @@ void Constraints::substIntoEquates(ConstraintMap& in) {
 					} else
 						extra[*ll] = val;	// A new constant constraint
 				}
-				// Remove the equate
-				equates.erase(it);
+				if (((TypeVal*)val)->getType()->isComplete()) {
+					// We have a complete type equal to one or more variables
+					// Remove the equate, and generate more fixed
+					// e.g. Ta = Tb,Tc and Ta = K => Tb=K, Tc=K
+					for (ll = ls.begin(); ll != ls.end(); ll++) {
+						Exp* newFixed = new Binary(opEquals,
+							*ll,		// e.g. Tb
+							val);		// e.g. K
+							extra.insert(newFixed);
+					}
+					equates.erase(it);
+				}
 			}
 		}
 		fixed.makeUnion(extra);
@@ -239,8 +273,8 @@ Exp* nextConjunct(Exp*& remainder) {
 }
 
 bool Constraints::solve(std::list<ConstraintMap>& solns) {
-std::cerr << conSet.size() << " constraints:";
-conSet.print(std::cerr);
+LOG << conSet.size() << " constraints:";
+std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 	// Replace Ta[loc] = ptr(alpha) with
 	//		   Tloc = alpha
 	LocationSet::iterator cc;
@@ -284,7 +318,7 @@ conSet.print(std::cerr);
 		if (c->isTrue()) continue;
 		if (c->isFalse()) {
 			if (VERBOSE || DEBUG_TA)
-				std::cerr << "Constraint failure: always false constraint\n";
+				LOG << "Constraint failure: always false constraint\n";
 			return false;
 		}
 		if (c->isDisjunction()) {
@@ -310,9 +344,9 @@ conSet.print(std::cerr);
 		}
 	}
 
-{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
-std::cerr << fixed.size() << " fixed: " << fixed.prints();
-std::cerr << equates.size() << " equates: " << equates.prints();
+{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+LOG << fixed.size() << " fixed: " << fixed.prints();
+LOG << equates.size() << " equates: " << equates.prints();
 
 	// Substitute the fixed types into the disjunctions
 	substIntoDisjuncts(fixed);
@@ -321,18 +355,18 @@ std::cerr << equates.size() << " equates: " << equates.prints();
 	// fixed types
 	substIntoEquates(fixed);
 
-std::cerr << "\nAfter substitute fixed into equates:\n";
-{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
-std::cerr << fixed.size() << " fixed: " << fixed.prints();
-std::cerr << equates.size() << " equates: " << equates.prints();
+LOG << "\nAfter substitute fixed into equates:\n";
+{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+LOG << fixed.size() << " fixed: " << fixed.prints();
+LOG << equates.size() << " equates: " << equates.prints();
 	// Substitute again the fixed types into the disjunctions
 	// (since there may be more fixed types from the above)
 	substIntoDisjuncts(fixed);
 
-std::cerr << "\nAfter second substitute fixed into disjunctions:\n";
-{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
-std::cerr << fixed.size() << " fixed: " << fixed.prints();
-std::cerr << equates.size() << " equates: " << equates.prints();
+LOG << "\nAfter second substitute fixed into disjunctions:\n";
+{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+LOG << fixed.size() << " fixed: " << fixed.prints();
+LOG << equates.size() << " equates: " << equates.prints();
 
 	ConstraintMap soln;
 	bool ret = doSolve(disjunctions.begin(), soln, solns);
@@ -354,8 +388,8 @@ static int level = 0;
 // The set of all solutions is in solns
 bool Constraints::doSolve(std::list<Exp*>::iterator it, ConstraintMap& soln,
   std::list<ConstraintMap>& solns) {
-std::cerr << "Begin doSolve at level " << ++level << "\n";
-std::cerr << "Soln now: " << soln.prints() << "\n";
+LOG << "Begin doSolve at level " << ++level << "\n";
+LOG << "Soln now: " << soln.prints() << "\n";
 	if (it == disjunctions.end()) {
 		// We have gotten to the end with no unification failures
 		// Copy the current set of constraints as a solution
@@ -366,7 +400,7 @@ std::cerr << "Soln now: " << soln.prints() << "\n";
 		// Copy the fixed constraints
 		soln.makeUnion(fixed);
 		solns.push_back(soln);
-std::cerr << "Exiting doSolve at level " << level-- << " returning true\n";
+LOG << "Exiting doSolve at level " << level-- << " returning true\n";
 		return true;
 	}
 
@@ -376,7 +410,7 @@ std::cerr << "Exiting doSolve at level " << level-- << " returning true\n";
 	bool anyUnified = false;
 	Exp* d;
 	while ((d = nextDisjunct(rem1)) != NULL) {
-std::cerr << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
+LOG << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints()) << " $$\n";
 		// Match disjunct d against the fixed types; it could be compatible,
 		// compatible and generate an additional constraint, or be
 		// incompatible
@@ -385,7 +419,11 @@ std::cerr << " $$ d is " << d << ", rem1 is " << ((rem1==0)?"NULL":rem1->prints(
 		Exp* rem2 = d;
 		bool unified = true;
 		while ((c = nextConjunct(rem2)) != NULL) {
-std::cerr << "	 $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints()) << " $$\n";
+LOG << "   $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints()) << " $$\n";
+			if (c->isFalse()) {
+				unified = false;
+				break;
+			}
 			assert(c->isEquality());
 			Exp* lhs = ((Binary*)c)->getSubExp1();
 			Exp* rhs = ((Binary*)c)->getSubExp2();
@@ -394,7 +432,7 @@ std::cerr << "	 $$ c is " << c << ", rem2 is " << ((rem2==0)?"NULL":rem2->prints
 			kk = fixed.find(lhs);
 			if (kk != fixed.end()) {
 				unified &= unify(rhs, kk->second, extra);
-std::cerr << "Unified now " << unified << "; extra now " << extra.prints() << "\n";
+LOG << "Unified now " << unified << "; extra now " << extra.prints() << "\n";
 				if (!unified) break;
 			}
 		}
@@ -413,19 +451,19 @@ std::cerr << "Unified now " << unified << "; extra now " << extra.prints() << "\
 		// If this recursion did any good, it will have gotten to the end and
 		// added the resultant soln to solns
 		soln = oldSoln;
-std::cerr << "After doSolve returned: soln back to: " << soln.prints() << "\n";
+LOG << "After doSolve returned: soln back to: " << soln.prints() << "\n";
 		// Back to the current disjunction
 		it--;
 		// Continue for more disjuncts this disjunction
 	}
 	// We have run out of disjuncts. Return true if any disjuncts had no
 	// unification failures
-std::cerr << "Exiting doSolve at level " << level-- << " returning " << anyUnified << "\n";
+LOG << "Exiting doSolve at level " << level-- << " returning " << anyUnified << "\n";
 	return anyUnified;
 }
 
 bool Constraints::unify(Exp* x, Exp* y, ConstraintMap& extra) {
-std::cerr << "Unifying " << x << " with " << y << " result ";
+LOG << "Unifying " << x << " with " << y << " result ";
 	assert(x->isTypeVal());
 	assert(y->isTypeVal());
 	Type* xtype = ((TypeVal*)x)->getType();
@@ -441,13 +479,30 @@ std::cerr << "Unifying " << x << " with " << y << " result ";
 				extra.constrain(xPointsTo, yPointsTo);
 			else
 				extra.constrain(yPointsTo, xPointsTo);
-std::cerr << "true\n";
+LOG << "true\n";
 			return true;
 		}
-std::cerr << (*xPointsTo == *yPointsTo) << "\n";
+LOG << (*xPointsTo == *yPointsTo) << "\n";
 		return *xPointsTo == *yPointsTo;
+	} else if (xtype->isSize()) {
+		if (ytype->getSize() == 0) {   // Assume size=0 means unknown
+LOG << "true\n";
+			return true;
+		} else {
+LOG << (xtype->getSize() == ytype->getSize()) << "\n";
+			return xtype->getSize() == ytype->getSize();
+		}
+	} else if (ytype->isSize()) {
+		if (xtype->getSize() == 0) {   // Assume size=0 means unknown
+LOG << "true\n";
+			return true;
+		} else {
+LOG << (xtype->getSize() == ytype->getSize()) << "\n";
+			return xtype->getSize() == ytype->getSize();
+		}
 	}
-std::cerr << (*xtype == *ytype) << "\n";
+	// Otherwise, just compare the sizes
+LOG << (*xtype == *ytype) << "\n";
 	return *xtype == *ytype;
 }
 
@@ -499,4 +554,24 @@ void Constraints::alphaSubst() {
 		*it = (*it)->searchReplaceAll(alpha, val, change);
 		*it = (*it)->simplifyConstraint();
 	}
+}
+
+void Constraints::print(std::ostream& os) {
+	os << "\n" << std::dec << (int)disjunctions.size() << " disjunctions: ";
+	std::list<Exp*>::iterator dd;
+	for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
+		os << *dd << ",\n";
+	os << "\n";
+	os << (int)fixed.size() << " fixed: ";
+	fixed.print(os);
+	os << (int)equates.size() << " equates: ";
+	equates.print(os);
+}
+
+char* Constraints::prints() {
+	std::ostringstream ost;
+	print(ost);
+	strncpy(debug_buffer, ost.str().c_str(), 999);
+	debug_buffer[999] = '\0';
+	return debug_buffer;
 }

@@ -706,7 +706,7 @@ void ExpTest::testSimplifyBinary() {
 			new Terminal(opTrue)),
 		new Binary(opEquals,
 			new Unary(opTypeOf, Location::regOf(24)),
-			new TypeVal(new IntegerType())));
+			new TypeVal(new IntegerType(32, 1))));
 	e = e->simplify();
 	expected = "T[r24] = <int>";
 	std::ostringstream ost4;
@@ -984,7 +984,7 @@ void ExpTest::testParen () {
 					new Const(0),
 					new Location(opParam, new Const("reg_or_imm"), NULL)),
 				new Const(1))));
-	std::string expected("	 0 ** r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
+	std::string expected("   0 ** r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
 	std::ostringstream o;
 	a.print(o);
 	// a.createDotFile("andn.dot");
@@ -1124,7 +1124,7 @@ void ExpTest::testSubscriptVar() {
 	def1->setNumber(12);
 	def1->subscriptVar(left, def1);			  // Should do nothing
 	std::string expected1;
-	expected1 = "	0 ** m[r28 - 4] := r28 + r29";
+	expected1 = "   0 ** m[r28 - 4] := r28 + r29";
 	std::ostringstream actual1;
 	actual1 << s;
 	CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
@@ -1132,7 +1132,7 @@ void ExpTest::testSubscriptVar() {
 
 	// Subtest 2: Ordinary substitution, on LHS and RHS
 	s->subscriptVar(r28, def1);
-	std::string expected2("	  0 ** m[r28{12} - 4] := r28{12} + r29");
+	std::string expected2("   0 ** m[r28{12} - 4] := r28{12} + r29");
 	std::ostringstream actual2;
 	actual2 << s;
 	CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
@@ -1141,7 +1141,7 @@ void ExpTest::testSubscriptVar() {
 	Statement* def3 = new Assign(Location::regOf(28), new Const(0));
 	def3->setNumber(99);
 	s->subscriptVar(r28, def3);
-	std::string expected3("	  0 ** m[r28{99} - 4] := r28{99} + r29");
+	std::string expected3("   0 ** m[r28{99} - 4] := r28{99} + r29");
 	std::ostringstream actual3;
 	actual3 << s;
 	CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());
@@ -1191,22 +1191,36 @@ void ExpTest::testSetConscripts() {
 		Location::memOf(
 			new Const(1000), NULL),
 		new Const(1000));
-	e->setConscripts(0);
+	e->setConscripts(0, false);
 	std::string expected("m[1000\\1\\] + 1000\\2\\");
 	std::ostringstream actual;
 	actual << e;
 	CPPUNIT_ASSERT_EQUAL(expected, actual.str());
+
+	// Clear them
+	e->setConscripts(0, true);
+	expected = "m[1000] + 1000";
+	std::ostringstream actual1;
+	actual1 << e;
+	CPPUNIT_ASSERT_EQUAL(expected, actual1.str());
 
 	// m[r28 + 1000]
 	e = Location::memOf(
 		new Binary(opPlus,
 			Location::regOf(28),
 			new Const(1000)));
-	e->setConscripts(0);
+	e->setConscripts(0, false);
 	expected = "m[r28 + 1000\\1\\]";
 	std::ostringstream act2;
 	act2 << e;
 	CPPUNIT_ASSERT_EQUAL(expected, act2.str());
+
+	// Clear
+	e->setConscripts(0, true);
+	expected = "m[r28 + 1000]";
+	std::ostringstream act3;
+	act3 << e;
+	CPPUNIT_ASSERT_EQUAL(expected, act3.str());
 }
 
 /*==============================================================================
@@ -1328,12 +1342,13 @@ void ExpTest::testAddUsedLocs() {
 		new Binary(opPlus,
 			Location::local("local21", NULL),
 			new Const(16)));
-	PhiExp* phi = new PhiExp(base, NULL);
+	PhiAssign* phi = new PhiAssign(base);
+	phi->putAt(0, NULL);
 	phi->putAt(1, &s372);
 	phi->addUsedLocs(l);
-	// Note: phi's are not considered to use blah if they ref m[blah],
-	// so local21 is not considered used
-	expected = "m[local21 + 16]{0},\tm[local21 + 16]{372}\n";
+	// Note: phi's were not considered to use blah if they ref m[blah],
+	// so local21 was not considered used
+	expected = "m[local21 + 16]{0},\tm[local21 + 16]{372},\tlocal21\n";
 	std::ostringstream ost9;
 	l.print(ost9);
 	actual = ost9.str();

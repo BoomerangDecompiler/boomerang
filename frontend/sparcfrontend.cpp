@@ -848,8 +848,7 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
   std::ofstream &os, bool fragment /* = false */, bool spec /* = false */) {
 
-	// if (!fragment && !proc->getSignature()->isPromoted()) {
-	if (!fragment) {
+	if (!fragment && !proc->getSignature()->isPromoted()) {
 		if (VERBOSE)
 			LOG << "adding default params and returns for " << proc->getName()
 			  << "\n";

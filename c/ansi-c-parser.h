@@ -20,21 +20,21 @@
 #line 21 "ansi-c-parser.h"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
-    platform plat, callconv cc
+	platform plat, callconv cc
 #define YY_AnsiCParser_CONSTRUCTOR_PARAM  \
-    std::istream &in, bool trace
+	std::istream &in, bool trace
 #define YY_AnsiCParser_CONSTRUCTOR_INIT 
 #define YY_AnsiCParser_CONSTRUCTOR_CODE  \
-    theScanner = new AnsiCScanner(in, trace); \
-    if (trace) yydebug = 1; else yydebug = 0;
+	theScanner = new AnsiCScanner(in, trace); \
+	if (trace) yydebug = 1; else yydebug = 0;
 #define YY_AnsiCParser_MEMBERS  \
-private:        \
-    AnsiCScanner *theScanner; \
+private:		\
+	AnsiCScanner *theScanner; \
 public: \
-    std::list<Signature*> signatures; \
-    std::list<Symbol*> symbols; \
-    std::list<SymbolRef*> refs;\
-    virtual ~AnsiCParser();
+	std::list<Signature*> signatures; \
+	std::list<Symbol*> symbols; \
+	std::list<SymbolRef*> refs;\
+	virtual ~AnsiCParser();
 #line 37 "ansi-c.y"
 
   #include <list>
@@ -53,46 +53,46 @@ public: \
 
   class TypeIdent {
   public:
-      Type *ty;
-      std::string nam;
+	  Type *ty;
+	  std::string nam;
   };
 
   class SymbolMods;
 
   class Symbol {
   public:
-      ADDRESS addr;
-      std::string nam;
-      Type *ty;
-      Signature *sig;
-      SymbolMods *mods;
+	  ADDRESS addr;
+	  std::string nam;
+	  Type *ty;
+	  Signature *sig;
+	  SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
-                          mods(NULL) { }
+	  Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
+						  mods(NULL) { }
   };
-    
+	
   class SymbolMods {
   public:
-      bool noDecode;
-      bool incomplete;
+	  bool noDecode;
+	  bool incomplete;
 
-      SymbolMods() : noDecode(false), incomplete(false) { }
+	  SymbolMods() : noDecode(false), incomplete(false) { }
   };
 
   class CustomOptions {
   public:
-      Exp *exp;
-      int sp;
+	  Exp *exp;
+	  int sp;
 
-      CustomOptions() : exp(NULL), sp(0) { }
+	  CustomOptions() : exp(NULL), sp(0) { }
   };
 
   class SymbolRef {
   public:
-      ADDRESS addr;
-      std::string nam;
+	  ADDRESS addr;
+	  std::string nam;
 
-      SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
+	  SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
 
 
