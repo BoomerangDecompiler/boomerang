@@ -56,12 +56,6 @@
 
 typedef std::map<Statement*, int> RefCounter;
 
-#define DEBUG_PROOF (Boomerang::get()->debugProof)
-#define DEBUG_UNUSED_RETS_PARAMS (Boomerang::get()->debugUnusedRetsAndParams)
-#define DEBUG_UNUSED_STMT (Boomerang::get()->debugUnusedStmt)
-#define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
-#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
-
 /************************
  * Proc methods.
  ***********************/
@@ -160,7 +154,7 @@ bool UserProc::searchAll(Exp* search, std::list<Exp*> &result)
 
 void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	visited = true;
 	for (int i = 0; i < depth; i++)
@@ -170,7 +164,7 @@ void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 
 void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	bool wasVisited = visited;
 	visited = true;
@@ -189,7 +183,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 
 void Proc::printDetailsXML()
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-details.xml").c_str());
 	out << "<proc name=\"" << getName() << "\">\n";
@@ -209,7 +203,7 @@ void Proc::printDetailsXML()
 
 void UserProc::printDecodedXML()
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-decoded.xml").c_str());
 	out << "<proc name=\"" << getName() << "\">\n";
@@ -226,7 +220,7 @@ void UserProc::printDecodedXML()
 
 void UserProc::printAnalysedXML()
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-analysed.xml").c_str());
 	out << "<proc name=\"" << getName() << "\">\n";
@@ -243,7 +237,7 @@ void UserProc::printAnalysedXML()
 
 void UserProc::printSSAXML()
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-ssa.xml").c_str());
 	out << "<proc name=\"" << getName() << "\">\n";
@@ -261,7 +255,7 @@ void UserProc::printSSAXML()
 
 void UserProc::printXML()
 {
-	if (!Boomerang::get()->dumpXML)
+	if (!DUMP_XML)
 		return;
 	printDetailsXML();
 	printSSAXML();
@@ -340,9 +334,11 @@ LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uN
 LibProc::~LibProc()
 {}
 
+#if 0
 void LibProc::getInternalStatements(StatementList &internal) {
 	 signature->getInternalStatements(internal);
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:		LibProc::put
@@ -989,8 +985,7 @@ std::set<UserProc*>* UserProc::decompile() {
 			// succeed, and may be needed to prevent alias problems
 			if (VERBOSE && convert)
 				LOG << "\nAbout to restart propagations and dataflow at depth "
-					<< depth << " due to conversion of indirect to direct "
-					"call(s)\n\n";
+					<< depth << " due to conversion of indirect to direct call(s)\n\n";
 #if RESTART_DATAFLOW
 			if (convert) {
 				depth = 0;		// Start again from depth 0

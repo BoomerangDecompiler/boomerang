@@ -40,8 +40,6 @@
 #include "type.h"
 #include <sstream>
 
-#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
-
 extern char *operStrings[];
 
 CHLLCode::CHLLCode() : HLLCode()

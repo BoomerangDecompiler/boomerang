@@ -58,8 +58,6 @@
 #include "visitor.h"
 #include <iomanip>			// For std::setw etc
 
-#define DEBUG_PROOF (Boomerang::get()->debugProof)
-
 /*==============================================================================
  * FUNCTION:		Const::Const etc
  * OVERVIEW:		Constructors
@@ -1935,6 +1933,9 @@ Exp* Unary::polySimplify(bool& bMod) {
 		default:
 			break;
 	}
+
+	// The following transformations are for ad-hoc type analysis only
+	if (!ADHOC_TYPE_ANALYSIS) return res;
 
 	// Replace m[x + k] where x has type pointer and k is a constant with x[k/sizeof(*x)]
 	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->isIntConst()) {
