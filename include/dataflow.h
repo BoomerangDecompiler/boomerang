@@ -16,7 +16,7 @@
  * $Revision$
  * 25 Nov 02 - Trent: appropriated for use by new dataflow.
  * 3 July 02 - Trent: created.
- *
+ * 03 Feb 03 - Mike: cached dataflow (uses and usedBy)
  */
 
 #ifndef _DATAFLOW_H_
@@ -38,10 +38,17 @@ class Statement {
 protected:
     PBB pbb;  // contains a pointer to the enclosing BB
     UserProc *proc; // procedure containing this statement
+    // The following pointers are initially null, but if non null are
+    // considered valid
+    std::set<Statement*>* uses;          // ud chain: my uses' defs
+    std::set<Statement*>* usedBy;        // du chain: my def's uses
 public:
 
-    Statement() : pbb(NULL), proc(NULL) { }
-    virtual ~Statement() { }
+    Statement() : pbb(NULL), proc(NULL), uses(NULL), usedBy(NULL) { }
+    virtual ~Statement() {
+        if (uses) delete uses;
+        if (usedBy) delete usedBy;
+    }
 
     void setProc(UserProc *p) { proc = p; }
 
@@ -59,7 +66,7 @@ public:
     // and have no uses
     virtual void getDeadStatements(std::set<Statement*> &dead) = 0;
 
-    // calculates the uses/useBy links for this statement
+    // calculates the uses/usedBy links for this statement
     virtual void calcUseLinks();
 
     // returns an expression that would be used to reference the value
@@ -80,33 +87,50 @@ public:
     // left like the given expression
     virtual Statement *findUse(Exp *e);
 
-    // get the uses
+    // 
+    // get my uses' definitions (ud chain)
+    // 
+    void updateUses() {
+        if (uses == NULL) {
+            uses = new std::set<Statement*>; calcUses(*uses); } }
     void calcUses(std::set<Statement*> &uses);
     int getNumUses() { 
-	std::set<Statement*> uses; 
-	calcUses(uses); 
-	return uses.size(); 
+        updateUses();
+	    return uses->size(); 
     }
-    void calcUseBy(std::set<Statement*> &useBy);
+ 
+    // 
+    // usedBy: du chain (my def's uses)
+    //
+    void updateUsedBy() {
+        if (usedBy == NULL) {
+            usedBy = new std::set<Statement*>; calcUsedBy(*usedBy); } }
+    void calcUsedBy(std::set<Statement*> &usedBy);
     int getNumUseBy() {
-        std::set<Statement*> useBy; 
-        calcUseBy(useBy); 
-        return useBy.size(); 
-    }
+        updateUsedBy(); return usedBy->size(); }
+
+    // update my data flow (I'm about to be deleted)
+    void updateDfForErase();
 
     // get/set the enclosing BB
     PBB getBB() { return pbb; }
     void setBB(PBB bb) { pbb = bb; }
 
-    // returns true if this statement can be propogated to all it's
+    // returns true if this statement can be propagated to all it's
     // uses and removed
-    virtual bool canPropogateToAll();
+    virtual bool canPropagateToAll();
 
-    // propogates this statement to all it's uses, caller must remove
-    virtual void propogateToAll();
+    // propagates this statement to all it's uses, caller must remove
+    virtual void propagateToAll();
 
     // replaces a use of the given statement with an expression
     virtual void replaceUse(Statement *use);
+
+    // Flush the cached dataflow
+    void flushDataFlow();
+
+    // flush all cached ud/du chains for the whole procedure
+    void flushProc();
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os) = 0;

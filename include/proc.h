@@ -337,15 +337,16 @@ public:
 	// code generation
 	bool generateCode(HLLCode &hll);
 
-        // print this proc, mainly for debugging
-        void print(std::ostream &out, bool withDF = false);
+    // print this proc, mainly for debugging
+    void print(std::ostream &out, bool withDF = false);
 
 	// decompile this proc
 	void decompile();
 	void renameLocalVariables();
 	bool removeNullStatements();
 	bool removeDeadStatements();
-        bool propogateAndRemoveStatements();
+    bool propagateAndRemoveStatements();
+    void flushProc();       // Flush dataflow
 
 	// promote the signature if possible
 	void promoteSignature();
@@ -369,7 +370,7 @@ public:
 	void inlineConstants();
 
 	// get internal statements
-        virtual void getInternalStatements(std::list<Statement*> &internal);
+    virtual void getInternalStatements(std::list<Statement*> &internal);
 
 private:
     /*
@@ -606,6 +607,9 @@ private:
  
     /*
      * Internal statements for this procedure
+     * Note: internal statements (internal to calls and perhaps other HL RTLs)
+     * removed by the dataflow process all end up here!
+     * See Proc::removeInternalStatements
      */
     std::list<Statement*> internal;
 
