@@ -12,7 +12,7 @@
 #include "xmlprogparser.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
+#include "signature.h"                // For MSVC 5.00
 #include "rtl.h"
 #endif
 
@@ -72,7 +72,7 @@ void Boomerang::helpcmd() {
 void Boomerang::help() {
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
-    std::cerr << "-dd: debug - debug decoder to stderr\n";
+    std::cerr << "-dd: debug - debug decoder to stdout\n";
     std::cerr << "-dg: debug - debug code generation\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dp: debug - debug proof engine\n";
@@ -98,8 +98,7 @@ void Boomerang::help() {
     std::cerr << "-nm: don't decode the 'main' procedure\n";
     std::cerr << "-p <num>: only do num propogations\n";
 //  std::cerr << "-pa: only propagate if can propagate to all\n";
-    std::cerr << "-r: print rtl for each proc to stderr before code generation"
-                    "\n";
+    std::cerr << "-r: print rtl for each proc to log before code generation\n";
     std::cerr << "-s <addr> <name>: define a symbol\n";
     std::cerr << "-sf <filename>: read a symbol/signature file\n";
     std::cerr << "-t: trace every instruction decoded\n";
@@ -141,68 +140,68 @@ int Boomerang::parseCmd(int argc, const char **argv, int n)
 
     Prog *prog;
     if (!strcmp(argv[n], "decode")) {
-	prog = loadAndDecode(fname);
-	if (prog == NULL) {
-	    std::cerr << "failed to load " << fname << "\n";
-	    return 1;
-	}
+        prog = loadAndDecode(fname);
+        if (prog == NULL) {
+            std::cerr << "failed to load " << fname << "\n";
+            return 1;
+        }
     } else {
 
-	XMLProgParser *p = new XMLProgParser();
-	prog = p->parse(fname);
-	if (prog == NULL) {
-	    std::cerr << "failed to read xml " << fname << "\n";
-	    return 1;
-	}
+        XMLProgParser *p = new XMLProgParser();
+        prog = p->parse(fname);
+        if (prog == NULL) {
+            std::cerr << "failed to read xml " << fname << "\n";
+            return 1;
+        }
 
-	if (!strcmp(argv[n], "decompile")) {
-	    if (n < argc-2 && argv[n+1][0] != '-') {
-		Proc *proc = prog->findProc(argv[n+1]);
-		if (proc == NULL) {
-		    std::cerr << "cannot find proc " << argv[n+1] << "\n";
-		    return 1;
-		}
-		if (proc->isLib()) {
-		    std::cerr << "cannot decompile a lib proc\n";
-		    return 1;
-		}
-		((UserProc*)proc)->decompile();
-	    } else {
-		prog->decompile();
-	    }
-	} else if (!strcmp(argv[n], "codegen")) {
-	    if (n < argc-2 && argv[n+1][0] != '-') {
-		Cluster *cluster = prog->findCluster(argv[n+1]);
-		if (cluster == NULL) {
-		    std::cerr << "cannot find cluster " << argv[n+1] << "\n";
-		    return 1;
-		}
-		prog->generateCode(cluster);
-	    } else {
-		prog->generateCode();
-	    }
-	} else if (!strcmp(argv[n], "cluster")) {
-	    assert(n < argc-2 && argv[n+1][0] != '-');
-	    assert(n < argc-3 && argv[n+2][0] != '-');
+        if (!strcmp(argv[n], "decompile")) {
+            if (n < argc-2 && argv[n+1][0] != '-') {
+                Proc *proc = prog->findProc(argv[n+1]);
+                if (proc == NULL) {
+                    std::cerr << "cannot find proc " << argv[n+1] << "\n";
+                    return 1;
+                }
+                if (proc->isLib()) {
+                    std::cerr << "cannot decompile a lib proc\n";
+                    return 1;
+                }
+                ((UserProc*)proc)->decompile();
+            } else {
+                prog->decompile();
+            }
+        } else if (!strcmp(argv[n], "codegen")) {
+            if (n < argc-2 && argv[n+1][0] != '-') {
+                Cluster *cluster = prog->findCluster(argv[n+1]);
+                if (cluster == NULL) {
+                    std::cerr << "cannot find cluster " << argv[n+1] << "\n";
+                    return 1;
+                }
+                prog->generateCode(cluster);
+            } else {
+                prog->generateCode();
+            }
+        } else if (!strcmp(argv[n], "cluster")) {
+            assert(n < argc-2 && argv[n+1][0] != '-');
+            assert(n < argc-3 && argv[n+2][0] != '-');
 
-	    Proc *proc = prog->findProc(argv[n+1]);
-	    if (proc == NULL) {
-		std::cerr << "cannot find proc " << argv[n+1] << "\n";
-		return 1;
-	    }
+            Proc *proc = prog->findProc(argv[n+1]);
+            if (proc == NULL) {
+                std::cerr << "cannot find proc " << argv[n+1] << "\n";
+                return 1;
+            }
 
-	    Cluster *cluster = prog->findCluster(argv[n+2]);
-	    if (cluster == NULL) {
-		std::cerr << "root cluster is " << prog->getRootCluster()->getName() << "\n";
-		cluster = new Cluster(argv[n+2]);
-		prog->getRootCluster()->addChild(cluster);
-	    }
-	    proc->setCluster(cluster);
-	    std::cerr << "proc " << proc->getName() << " has cluster " << proc->getCluster()->getName() << "\n";
-	} else {
-	    std::cerr << "unknown cmd " << argv[n] << ".\n";
-	    return 1;
-	}
+            Cluster *cluster = prog->findCluster(argv[n+2]);
+            if (cluster == NULL) {
+                std::cerr << "root cluster is " << prog->getRootCluster()->getName() << "\n";
+                cluster = new Cluster(argv[n+2]);
+                prog->getRootCluster()->addChild(cluster);
+            }
+            proc->setCluster(cluster);
+            std::cerr << "proc " << proc->getName() << " has cluster " << proc->getCluster()->getName() << "\n";
+        } else {
+            std::cerr << "unknown cmd " << argv[n] << ".\n";
+            return 1;
+        }
     }
 
     XMLProgParser *p = new XMLProgParser();
@@ -235,8 +234,8 @@ int Boomerang::commandLine(int argc, const char **argv)
         return 1;
     }
     if (argc == 3 && !strcmp(argv[1], "-h") && !strcmp(argv[2], "cmd")) {
-	helpcmd();
-	return 1;
+        helpcmd();
+        return 1;
     }
 
     int kmd = 0;
@@ -389,21 +388,21 @@ int Boomerang::commandLine(int argc, const char **argv)
                 if (argv[i][2] == 'c')
                     decodeThruIndCall = true;       // -ic;
                 break;
-	    case 'L':
-		if (argv[i][2] == 'D')
-		    loadBeforeDecompile = true;
-		break;
-	    case 'S':
-		if (argv[i][2] == 'D')
-		    saveBeforeDecompile = true;
-		break;
-	    case 'k':
-		i++;
-		kmd = i;
-		for (; i < argc-1 && argv[i][0] != '-'; i++)
-		    ;
-		i--;
-		break;
+            case 'L':
+                if (argv[i][2] == 'D')
+                    loadBeforeDecompile = true;
+                break;
+            case 'S':
+                if (argv[i][2] == 'D')
+                    saveBeforeDecompile = true;
+                break;
+            case 'k':
+                i++;
+                kmd = i;
+                for (; i < argc-1 && argv[i][0] != '-'; i++)
+                    ;
+                i--;
+                break;
             default:
                 help();
         }
@@ -411,7 +410,7 @@ int Boomerang::commandLine(int argc, const char **argv)
     setLogger(new FileLogger());
     
     if (kmd)
-	return parseCmd(argc, argv, kmd);
+        return parseCmd(argc, argv, kmd);
 
     return decompile(argv[argc-1]);    
 }
@@ -422,39 +421,39 @@ Prog *Boomerang::loadAndDecode(const char *fname)
     std::cerr << "loading...\n";
     FrontEnd *fe = FrontEnd::Load(fname);
     if (fe == NULL) {
-	std::cerr << "failed.\n";
-	return NULL;
+        std::cerr << "failed.\n";
+        return NULL;
     }
 
     // Add symbols from -s switch(es)
     for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
-	 it != symbols.end(); it++) {
-	fe->AddSymbol((*it).first, (*it).second.c_str());
+         it != symbols.end(); it++) {
+        fe->AddSymbol((*it).first, (*it).second.c_str());
     }
 
     if (decodeMain)
-	std::cerr << "decoding...\n";
+        std::cerr << "decoding...\n";
     prog = fe->decode(decodeMain);
 
     // Delay symbol files to now, since need Prog* prog
     // Also, decode() reads the library catalog
     // symbolFiles from -sf switch(es)
     for (unsigned i = 0; i < symbolFiles.size(); i++) {
-	std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
-	prog->readSymbolFile(symbolFiles[i].c_str());
+        std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
+        prog->readSymbolFile(symbolFiles[i].c_str());
     }
     
     if (!noDecodeChildren) {   // MVE: Not sure if this is right...
-	// this causes any undecoded userprocs to be decoded
-	std::cerr << "decoding anything undecoded...\n";
-	fe->decode(prog, NO_ADDRESS);
+        // this causes any undecoded userprocs to be decoded
+        std::cerr << "decoding anything undecoded...\n";
+        fe->decode(prog, NO_ADDRESS);
     }
 
     // Entry points from -e (and -E) switch(es)
     for (unsigned i = 0; i < entrypoints.size(); i++) {
-	std::cerr<< "decoding extra entrypoint " << std::hex <<
-	  entrypoints[i] << "\n";
-	prog->decodeExtraEntrypoint(entrypoints[i]);
+        std::cerr<< "decoding extra entrypoint " << std::hex <<
+          entrypoints[i] << "\n";
+        prog->decodeExtraEntrypoint(entrypoints[i]);
     }
 
     std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
@@ -476,19 +475,19 @@ int Boomerang::decompile(const char *fname)
     ExpTransformer::loadAll();
 
     if (loadBeforeDecompile) {
-	std::cerr << "loading persisted state...\n";
-	XMLProgParser *p = new XMLProgParser();
-	prog = p->parse(fname);
+        std::cerr << "loading persisted state...\n";
+        XMLProgParser *p = new XMLProgParser();
+        prog = p->parse(fname);
     } else {
-	prog = loadAndDecode(fname);
-	if (prog == NULL)
-	    return 1;
+        prog = loadAndDecode(fname);
+        if (prog == NULL)
+            return 1;
     }
 
     if (saveBeforeDecompile) {
-	std::cerr << "saving persistable state...\n";
-	XMLProgParser *p = new XMLProgParser();
-	p->persistToXML(prog);
+        std::cerr << "saving persistable state...\n";
+        XMLProgParser *p = new XMLProgParser();
+        p->persistToXML(prog);
     }
 
     std::cerr << "decompiling...\n";
