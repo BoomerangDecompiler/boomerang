@@ -1054,6 +1054,7 @@ std::set<UserProc*>* UserProc::decompile() {
         for (int i = maxDepth; i >= 0; i--) {
             replaceExpressionsWithParameters(i);
             replaceExpressionsWithLocals();
+            trimReturns();
             trimParameters();
         }
         if (signature->getNumReturns() == 1)
@@ -1164,6 +1165,9 @@ void UserProc::removeRedundantPhis()
 void UserProc::trimReturns() {
     std::set<Exp*> preserved;
     bool stdsp = false;
+
+    if (VERBOSE)
+        std::cerr << "Trimming return set for " << getName() << std::endl;
 
     for (int n = 0; n < 2; n++) {   
         // may need to do multiple times due to dependencies
@@ -1983,7 +1987,12 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                                       << call->getDestProc()->getName() << " " 
                                       << r->getSubExp1() 
                                       << " = " << right << std::endl;
+                        Exp *oldr = right->clone();
                         right = call->substituteParams(right);
+                        if (*oldr == *right) {
+                            right = right->
+                                expSubscriptVar(new Terminal(opWild), NULL);
+                        }
                         query->setSubExp1(right);
                         change = true;
                     }
