@@ -553,8 +553,13 @@ public:
 	void getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein);
 	void getLiveIn(std::set<AssignExp*> &livein);
 	void calcLiveOut(std::set<AssignExp*> &live);
+        void getLiveOut(std::set<AssignExp*> &liveout) {
+            liveout = this->liveout;
+        }
+        void calcUses();
 
 protected:
+        std::set<AssignExp*> liveout;
 
 	void getUses(UseSet &uses);
 	void getUsesOf(UseSet &uses, Exp *e);
@@ -991,6 +996,11 @@ public:
      */
     void computePostDominators();
 
+    /*
+     * Compute liveness/use information
+     */
+    void computeDataflow();
+
     std::vector<PBB> m_vectorBB; // faster access
 
 	// serialize the CFG
@@ -1138,6 +1148,9 @@ public:
      */
     void addNewOutEdge(PBB fromBB, PBB newOutEdge);
 
+    // print this cfg, mainly for debugging
+    void print(std::ostream &out);
+  
 };              /* Cfg */
 
 #endif

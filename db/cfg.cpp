@@ -1481,6 +1481,37 @@ void Cfg::computePostDominators() {
 #endif
 
 /*==============================================================================
+ * FUNCTION:        Cfg::computeDataflow
+ * OVERVIEW:        Computes the liveness/use information for every bb.
+ * PARAMETERS:      <none>
+ * RETURNS:         <nothing>
+ *============================================================================*/
+void Cfg::computeDataflow()
+{
+    bool change = true;
+    while(change) {
+        change = false;
+        for (std::list<PBB>::iterator it = m_listBB.begin(); 
+             it != m_listBB.end(); it++) {
+            std::set<AssignExp*> out;
+            (*it)->calcLiveOut(out);
+            if (out != (*it)->liveout) {
+                (*it)->liveout.clear();
+                for (std::set<AssignExp*>::iterator it1 = out.begin();
+                     it1 != out.end(); it1++) {
+                    (*it)->liveout.insert(*it1);
+                }
+                change = true;
+            }
+        }
+    }
+
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+        it != m_listBB.end(); it++)
+        (*it)->calcUses();
+}
+
+/*==============================================================================
  * FUNCTION:        Cfg::structure
  * OVERVIEW:        Structures the control flow graph into loops and conditionals
  * PARAMETERS:      <none>
@@ -1891,4 +1922,10 @@ void Cfg::simplePropogate(Exp *def)
 		}
 		if (stop) break;
 	}
+}
+
+// print this cfg, mainly for debugging
+void Cfg::print(std::ostream &out) {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+        (*it)->print(out);
 }

@@ -508,7 +508,6 @@ public:
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
     std::vector<Exp*>& getArguments();            // Return call's arguments
 
-    void setReturnLoc(Exp* loc);        // Set location used for return value
     Exp* getReturnLoc();                // Get location used for return value
 
     virtual void print(std::ostream& os = std::cout);
@@ -533,6 +532,9 @@ public:
     // Set and return the destination proc.
     void setDestProc(Proc* dest);
     Proc* getDestProc();
+
+    // initialize the arguments
+    void initArguments();
     
 #if 0
     // Used for type analysis. Stores type information that
@@ -556,6 +558,9 @@ public:
 	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
 	virtual void getUses(UseSet &uses, bool defIsUse = false);
 	virtual void getUsesOf(UseSet &uses, Exp *e);
+ 
+        // new dataflow analysis
+        void killLive(std::set<AssignExp*> &live);
 
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
@@ -567,7 +572,6 @@ private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
                                 // value returned by the called function.
     PBB basicBlock;             // The call's enclosing basic block.
-    Exp* returnLoc;             // Location used to hold value returned by call.
     bool returnAfterCall;       // True if call is effectively followed by
                                 // a return.
     

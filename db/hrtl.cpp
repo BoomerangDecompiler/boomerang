@@ -991,7 +991,6 @@ HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
     basicBlock = NULL;
     postCallExpList = NULL;
     procDest = NULL;
-    returnLoc = 0;
 }
 
 /*==============================================================================
@@ -1011,8 +1010,6 @@ HLCall::~HLCall()
         delete postCallExpList;
         postCallExpList = NULL;
     }
-    if (returnLoc)
-        delete returnLoc;
 }
 
 /*==============================================================================
@@ -1061,18 +1058,6 @@ void HLCall::setArguments(std::vector<Exp*>& arguments)
 }
 
 /*==============================================================================
- * FUNCTION:      HLCall::setReturnLoc
- * OVERVIEW:      Set the location that will be used to hold
- *                the value returned by this call.
- * PARAMETERS:    loc - ptr to Exp that has return location
- * RETURNS:       <nothing>
- *============================================================================*/
-void HLCall::setReturnLoc(Exp* loc)
-{
-    returnLoc = loc;
-}
-
-/*==============================================================================
  * FUNCTION:      HLCall::getReturnLoc
  * OVERVIEW:      Return the location that will be used to hold the value
  *                  returned by this call.
@@ -1081,7 +1066,7 @@ void HLCall::setReturnLoc(Exp* loc)
  *============================================================================*/
 Exp* HLCall::getReturnLoc() 
 {
-    return returnLoc;
+    return procDest->getSignature()->getReturnExp();
 }
 
 #if 0
@@ -1127,10 +1112,6 @@ void HLCall::getUseDefLocations(LocationMap& locMap,
     // Add each parameter to the use and if applicable the uneUndef set
     useSet |= paramSet;
     useUndefSet |= (paramSet & ~defSet);
-
-    // Add the return location to the def set
-    if (returnLoc.len() != 0)
-        defSet.set(locMap.toBit(returnLoc));
 }
 #endif
 
@@ -1158,8 +1139,8 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace)
 {
     bool change;
     HLJump::searchAndReplace(search, replace);
-    if (returnLoc != 0)
-        returnLoc = returnLoc->searchReplaceAll(search, replace, change);    
+    //if (returnLoc != 0)
+    //    returnLoc = returnLoc->searchReplaceAll(search, replace, change);    
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
     // Also replace the postCall rtls, if any
@@ -1180,9 +1161,9 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace)
 bool HLCall::searchAll(Exp* search, std::list<Exp *>& result)
 {
     bool found = false;
-    if( HLJump::searchAll(search, result) ||
-      (returnLoc != 0 && returnLoc->searchAll(search, result)))
-        found = true;
+    //if( HLJump::searchAll(search, result) ||
+    //  (returnLoc != 0 && returnLoc->searchAll(search, result)))
+    //    found = true;
     for (unsigned i = 0; i < arguments.size(); i++)
         if (arguments[i]->searchAll(search, result))
             found = true;
@@ -1211,8 +1192,8 @@ void HLCall::print(std::ostream& os /*= cout*/)
     os << " ";
 
     // Print the return location if there is one
-    if (returnLoc != 0)
-        os << " " << returnLoc << " :=";
+    if (getReturnLoc() != NULL)
+        os << " " << getReturnLoc() << " := ";
  
     os << "CALL ";
     if (procDest)
@@ -1308,7 +1289,6 @@ RTL* HLCall::clone()
     ret->m_isComputed = m_isComputed;
     ret->basicBlock = basicBlock;
     ret->arguments = arguments;
-    ret->returnLoc = returnLoc;         // Copies whole Exp
     ret->numNativeBytes = numNativeBytes;
     return ret;
 }
@@ -1358,6 +1338,14 @@ Proc* HLCall::getDestProc()
 	return procDest; 
 }
 
+void HLCall::initArguments()
+{
+    assert(arguments.size() == 0);
+    arguments.resize(getDestProc()->getSignature()->getNumParams());
+    for (int i = 0; i < getDestProc()->getSignature()->getNumParams(); i++)
+        arguments[i] = getDestProc()->getSignature()->getArgumentExp(i)->clone();
+}
+
 void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
 	Proc *p = getDestProc();
@@ -1369,18 +1357,6 @@ void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
 
     assert(p);
 
-	if (arguments.size() != p->getSignature()->getNumParams()) {
-		int orgsize = arguments.size();
-		arguments.resize(p->getSignature()->getNumParams());
-		for (int i = 0; i < p->getSignature()->getNumParams(); i++) {
-			if (i >= orgsize) {
-				arguments[i] = p->getSignature()->getArgumentExp(i)->clone();
-			}
-		}
-	}
-	if (getReturnLoc() == NULL) {
-		setReturnLoc(p->getSignature()->getReturnExp());
-	}
     hll.AddCallStatement(pbb, getReturnLoc(), p, arguments);
 }
 
@@ -1400,7 +1376,7 @@ void HLCall::SSAsubscript(SSACounts &counts)
             (*uit).subscript(counts);
         }
     }
-    if (returnLoc) {
+/*    if (returnLoc) {
         if (returnLoc->getOper() == opMemOf) {
             UseSet u;
             returnLoc->getUses(u, returnLoc);
@@ -1433,7 +1409,7 @@ void HLCall::SSAsubscript(SSACounts &counts)
             }
             
         }
-    }
+    } */
 }
 
 bool HLCall::isUsedInPhi(Exp *e)
@@ -1468,6 +1444,28 @@ void HLCall::getUsesOf(UseSet &uses, Exp *e)
     HLJump::getUsesOf(uses, e);
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i]->getUsesOf(uses, arguments[i], e);
+}
+
+void HLCall::killLive(std::set<AssignExp*> &live)
+{
+    // conservative solution: if calling a userproc, kill everything.
+    //                        if calling a libproc, kill return address.
+    assert(procDest);
+    if (procDest->isLib()) {
+        std::set<AssignExp*> kills;
+        for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
+            bool isKilled = false;
+            if (*(*it)->getSubExp1() == *getReturnLoc())
+                isKilled = true;
+            if ((*it)->getSubExp1()->isMemOf() && getReturnLoc()->isMemOf())
+                isKilled = true; // might alias, very conservative
+            if (isKilled)
+	        kills.insert(*it);
+        }
+        for (std::set<AssignExp*>::iterator it = kills.begin(); it != kills.end(); it++)
+            live.erase(*it);
+    } else 
+        live.clear();
 }
 
 /**********************************

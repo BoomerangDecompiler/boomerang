@@ -60,6 +60,7 @@ void CHLLCode::appendExp(Exp *exp)
 {
 	static Type *mrt; // most recent type
 	if (exp == NULL) return;
+        AssignExp *a = (AssignExp*)exp;
 	Unary *u = (Unary*)exp;
 	Binary *b = (Binary *)exp;
 	Ternary *t = (Ternary *)exp;
@@ -191,6 +192,7 @@ void CHLLCode::appendExp(Exp *exp)
 			appendExp(b->getSubExp2());
 			break;
 		case opAssignExp:      // Assignment
+                    {
 			// TODO: check size of the assign agrees with type
 			// of the left, otherwise we need a cast (on the left, yuk!)
 			appendExp(b->getSubExp1());
@@ -198,7 +200,18 @@ void CHLLCode::appendExp(Exp *exp)
 			// TODO: check size of the assign agrees with type of 
 			// the right, otherwise we need a cast
 			appendExp(b->getSubExp2());
+                       
+                        // append liveness stuff
+                        std::set<AssignExp*> live;
+                        a->getLiveIn(live);
+                        appendToken(exp, ' ');
+                        for (std::set<AssignExp*>::iterator it = live.begin();
+                             it != live.end(); it++) {
+                            appendExp(*it);
+                            appendToken(*it, ' ');
+                        }
 			break;
+                    }
 		case opTypedExp:    // Typed expression
 			//assert(false); // not implemented
 			appendExp(u->getSubExp1());

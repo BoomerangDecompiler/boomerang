@@ -126,16 +126,15 @@ TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
     type = o.type->clone();
 }
 
-AssignExp::AssignExp() : Binary(opAssignExp), size(32) {}
-AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(32)
+AssignExp::AssignExp() : Binary(opAssignExp), size(32), pbb(NULL) {}
+AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(32), pbb(NULL)
 { 
 	if (lhs->getOper() == opTypedExp) { 
 		size = ((TypedExp*)lhs)->getType()->getSize(); 
 	} 
 }
-AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs),
-    size(sz) {}
-AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size)
+AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(sz), pbb(NULL) {}
+AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size), pbb(o.pbb)
 {
     subExp1 = o.subExp1->clone();
     subExp2 = o.subExp2->clone();
@@ -867,6 +866,17 @@ void AssignExp::print(std::ostream& os) {
     os << " := ";
     Exp* p2 = ((Binary*)this)->getSubExp2();
     p2->print(os);
+}
+
+void AssignExp::printWithLives(std::ostream& os) {
+    print(os);
+    os << "   live: ";
+    std::set<AssignExp*> livein;
+    getLiveIn(livein);
+    for (std::set<AssignExp*>::iterator it = livein.begin(); it != livein.end(); it++) {
+        (*it)->print(os);
+        os << ", ";
+    }
 }
 
 /*==============================================================================
@@ -2438,6 +2448,22 @@ void FlagDef::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
 	assert(false); // flagdefs should never make it to this stage of analysis
 }
 
+void AssignExp::killLive(std::set<AssignExp*> &live)
+{
+    std::set<AssignExp*> kills;
+    for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
+        bool isKilled = false;
+        if (*(*it)->subExp1 == *subExp1)
+            isKilled = true;
+        if ((*it)->subExp1->isMemOf() && subExp1->isMemOf())
+            isKilled = true; // might alias, very conservative
+        if (isKilled)
+	    kills.insert(*it);
+    }
+    for (std::set<AssignExp*>::iterator it = kills.begin(); it != kills.end(); it++)
+        live.erase(*it);
+}
+
 
 /* calculates the definitions that are "live" after this assignment.
    If the live set is empty, it will contain anything this assignment defines.
@@ -2446,20 +2472,10 @@ void FlagDef::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
  */
 void AssignExp::calcLiveOut(std::set<AssignExp*> &live)
 {
-	if (subExp1->isMemOf()) {
-		// could point to anything (VERY conservative here)
-		// kill everything
-		live.clear();
-	} else {
-		// kill anything with same left
-		std::set<AssignExp*> kills;
- 		for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++)
-			if (*(*it)->getSubExp1() == *subExp1)
-				kills.insert(*it);
-		live.erase(kills.begin(), kills.end());
-		// add this def
-		live.insert(this);
-	}
+	// calculate kills
+        killLive(live);
+	// add this def
+	live.insert(this);
 }
 
 /* get everything that is live before this assignment.
@@ -2469,4 +2485,23 @@ void AssignExp::getLiveIn(std::set<AssignExp*> &livein)
 {
 	assert(pbb);
 	pbb->getLiveInAt(this, livein);
+}
+
+/* Goes through the definitions live at this expression and creates a
+   link from any definition that is used by this expression to this 
+   expression.
+ */
+void AssignExp::calcUseLinks()
+{
+    std::set<AssignExp*> live;
+    getLiveIn(live);
+    for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
+        assert(*it);
+        Exp *left = (*it)->getLeft();
+        assert(left);
+        Exp *where = 0;
+        if (subExp2->search(left, where) || (subExp1->isMemOf() && 
+	    subExp1->getSubExp1()->search(left, where)))
+            (*it)->uses.insert(this);
+    }
 }

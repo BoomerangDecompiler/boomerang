@@ -368,6 +368,9 @@ public:
 	// code generation
 	bool generateCode(HLLCode &hll);
 
+        // print this proc, mainly for debugging
+        void print(std::ostream &out);
+
 	// return true if the procedure is in ssa form
 	bool isSSAForm();
 

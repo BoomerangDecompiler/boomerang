@@ -327,6 +327,9 @@ void RTL::print(std::ostream& os /*= cout*/) {
     {
         if (bFirst) os << " ";
         else        os << std::setw(9) << " ";
+        //if ((*p)->isAssign()) 
+        //    ((AssignExp*)(*p))->printWithLives(os);
+        //else
         (*p)->print(os);
         os << "\n";
         bFirst = false;

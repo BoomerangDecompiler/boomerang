@@ -401,7 +401,14 @@ void BasicBlock::print(std::ostream& os)
     // Printing the address is bad for unit testing, since address will
     // be arbitrary
     //os << " (0x" << std::hex << (unsigned int)this << "):\n";
-    os << ":\n";
+    os << ": live in: ";
+    std::set<AssignExp*> livein;
+    getLiveIn(livein);
+    for (std::set<AssignExp*>::iterator it = livein.begin(); it != livein.end(); it++) {
+        (*it)->print(os);
+        os << ", ";
+    }
+    os << std::endl;
     if (m_pRtls)                    // Can be zero if e.g. INVALID
     {
         std::list<RTL*>::iterator rit;
@@ -1934,20 +1941,21 @@ void BasicBlock::getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein)
 		RTL *rtl = *rit;
 		switch(rtl->getKind()) {
 			case HL_NONE:
+                        case RET_RTL:
 				{
 					for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
 						Exp *e = *it;
 						if (e == asgn)
 							return;
 						if (e->isAssign()) {
+							((AssignExp*)e)->setBB(this);
 							((AssignExp*)e)->calcLiveOut(livein);
 						}
 					}
 				}
 				break;
 			case CALL_RTL:
-				// a call kills everything (VERY conservative)
-				livein.clear();		
+				((HLCall*)rtl)->killLive(livein);
 				break;
 		}
 	}
@@ -1967,8 +1975,32 @@ void BasicBlock::getLiveIn(std::set<AssignExp*> &livein)
 		m_InEdges[i]->getLiveIn(in);
 		m_InEdges[i]->calcLiveOut(in);
 		// set union, C++ doesn't have one!
-		for (std::set<AssignExp*>::iterator it = in.begin(); it != in.end(); it++)
+		for (std::set<AssignExp*>::iterator it = in.begin(); it != in.end(); it++) {
+                        assert(*it);
 			livein.insert(*it);
+                }
 	}
 }
 
+void BasicBlock::calcUses()
+{
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+	switch(rtl->getKind()) {
+	    case HL_NONE:
+            case RET_RTL:
+	        {
+		    for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+	                Exp *e = *it;
+		        if (e->isAssign()) {
+			    ((AssignExp*)e)->calcUseLinks();
+		        }
+		    }
+	        }
+	        break;
+	    case CALL_RTL:
+                // TODO: calculate uses for parameters!
+		break;
+	}
+    }
+}

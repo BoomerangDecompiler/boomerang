@@ -124,6 +124,20 @@ void Prog::analyse()
 	}
 }
 
+// Print this program, mainly for debugging
+void Prog::print(std::ostream &out)
+{
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+		Proc *pProc = *it;
+		if (pProc->isLib()) continue;
+		UserProc *p = (UserProc*)pProc;
+		if (!p->isDecoded()) continue;
+
+		// decoded userproc.. print it
+		p->print(out);
+	}
+}
+
 
 bool Prog::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
 {

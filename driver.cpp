@@ -20,7 +20,10 @@ int main(int argc, char* argv[]) {
 	Prog *prog = fe->decode();
 	std::cerr << "analysing..." << std::endl;
 	prog->analyse();
-	std::cerr << "generating code..." << std::endl;
+        std::cerr << "printing..." << std::endl;
+        prog->print(std::cout);
+
+/*	std::cerr << "generating code..." << std::endl;
 	PROGMAP::const_iterator it;
 	for (Proc *pProc = prog->getFirstProc(it); pProc; pProc = prog->getNextProc(it)) {
 		if (pProc->isLib()) continue;
@@ -36,6 +39,6 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-	
+*/	
 	return 0;
 }

@@ -35,6 +35,7 @@ class UseSet;
 class DefSet;
 class RTL;              // For class FlagDef
 class BasicBlock;	// For class AssignExp
+typedef BasicBlock* PBB;
 
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
@@ -525,8 +526,9 @@ public:
  * AssignExp is a subclass of Binary, holding two subexpressions and a size
  *============================================================================*/
 class AssignExp : public Binary {
-    BasicBlock *pbb;  // contains a pointer to the enclosing BB
+    PBB pbb;  // contains a pointer to the enclosing BB
     int size;
+    std::set<AssignExp*> uses;
 public:
     // Constructor
             AssignExp();
@@ -545,6 +547,7 @@ public:
     bool    operator< (const Exp& o) const;
 
     void    print(std::ostream& os);
+    void    printWithLives(std::ostream& os);
     void    printr(std::ostream& os) {print(os);}     // Printr same as print
     void    appendDotFile(std::ofstream& of);
 
@@ -568,8 +571,17 @@ public:
 	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 
 	// new dataflow analysis
-        void calcLiveOut(std::set<AssignExp*> &live);
+        void killLive(std::set<AssignExp*> &live);
+        void calcLiveOut(std::set<AssignExp*> &liveout);
 	void getLiveIn(std::set<AssignExp*> &livein);
+        void calcUseLinks();
+
+        // get/set the enclosing BB
+        PBB getBB() { return pbb; }
+        void setBB(PBB bb) { pbb = bb; }
+
+        // get how to access this value
+        Exp* getLeft() { return subExp1; }
 };
 
 /*==============================================================================

@@ -222,7 +222,7 @@ void FrontEnd::readLibParams(const char *sPath)
             ifs >> s;
 			if (s == "")   // EOF does this
 				break;
-            Type* ty;
+            Type* ty = NULL;
             switch(s[0]) {
                 case 'i':
                     ty = new IntegerType(32, true); break;
@@ -254,9 +254,10 @@ void FrontEnd::readLibParams(const char *sPath)
 		    assert(false);
             }
 	    if (isret) {
+                assert(ty);
 	        sig->setReturnType(ty);
 	        isret = false;
-	    } else {
+	    } else if (ty) {
 	        sig->addParameter(ty);
 	    }
         }
@@ -468,7 +469,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             // Display RTL representation if asked
             // FIXME: Settings
 //            if (progOptions.rtl) {
-if (1) {
+if (0) {
                 pRtl->print(os);
                 os << std::flush;            // Handy when the translator crashes
             }

@@ -103,6 +103,7 @@ virtual void analyse(UserProc *p);
 
 	// any signature can be promoted to a higher level signature, if available
 virtual Signature *promote(UserProc *p);
+        void print(std::ostream &out);
 };
 
 #endif

@@ -121,6 +121,9 @@ public:
 	// Analyse any decoded procedures
 	void analyse();
 
+        // Print this program (primarily for debugging)
+        void print(std::ostream &out);
+
 	// map for global symbols
 	std::map<std::string, TypedExp *> symbols;
 

@@ -1631,6 +1631,12 @@ bool UserProc::generateCode(HLLCode &hll)
 	return true;
 }
 
+// print this userproc, maining for debugging
+void UserProc::print(std::ostream &out) {
+    signature->print(out);
+    cfg->print(out);
+}
+
 bool UserProc::isSSAForm()
 {
 	DefSet defs;
