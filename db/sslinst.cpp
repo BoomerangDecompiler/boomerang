@@ -431,7 +431,7 @@ if (0) {
 	}
 	// Retrieve the dictionary entry for the named instruction
 	if ( idict.find(*lname) == idict.end() ) { /* lname is not in dictionary */
-		std::cerr << "ERROR: unknown instruction " << lname << ", ignoring.\n";
+		std::cerr << "ERROR: unknown instruction " << *lname << " at 0x" << std::hex << natPC << ", ignoring.\n";
 		return NULL;
 	}
 	TableEntry& entry = idict[*lname];
