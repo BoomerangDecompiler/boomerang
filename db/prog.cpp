@@ -58,6 +58,16 @@
 Prog::Prog()
     : pBF(NULL),
       pFE(NULL),
+      globalMap(NULL),
+      m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
+{
+    // Default constructor
+}
+
+Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
+    : pBF(pBF),
+      pFE(pFE),
+      globalMap(NULL),
       m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
 {
     // Default constructor
@@ -77,6 +87,7 @@ Prog::~Prog() {
 Prog::Prog(const char* name)
     : pBF(NULL),
       pFE(NULL),
+      globalMap(NULL),
       m_name(name),
       m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
 {
@@ -421,6 +432,38 @@ LibProc *Prog::getLibraryProc(const char *nam) {
     if (p && p->isLib())
         return (LibProc*)p;
     return (LibProc*)newProc(nam, NO_ADDRESS, true);
+}
+
+Signature* Prog::getLibSignature(const char *nam) {
+    return pFE->getLibSignature(nam);
+}
+
+const char *Prog::getFrontEndId() {
+    return pFE->getFrontEndId();
+}
+
+const char *Prog::getGlobal(ADDRESS uaddr)
+{
+    if (globalMap == NULL) {
+        globalMap = pBF->GetDynamicGlobalMap();
+        assert(globalMap != NULL);
+        for (std::map<ADDRESS, const char*>::iterator it = globalMap->begin();
+             it != globalMap->end(); it++) {
+            std::cerr << "global: " << std::hex << (*it).first << " " <<
+                (*it).second << std::endl;
+        }
+    }
+    assert(globalMap != NULL);
+    if (globalMap->find(uaddr) != globalMap->end())
+        return (*globalMap)[uaddr];
+    return NULL;
+}
+
+void Prog::makeGlobal(ADDRESS uaddr, const char *name)
+{
+    if (globalMap == NULL) globalMap = pBF->GetDynamicGlobalMap();
+    assert(globalMap && globalMap->find(uaddr) == globalMap->end());
+    (*globalMap)[uaddr] = strdup(name);
 }
 
 // get a string constant at a give address if appropriate

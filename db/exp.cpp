@@ -766,6 +766,7 @@ void Unary::print(std::ostream& os) {
             return;
         case opTemp:
             // Temp: just print the string, no quotes
+        case opGlobal:
         case opLocal:
         case opParam:
             // Print a more concise form than param["foo"] (just foo)

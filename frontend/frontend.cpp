@@ -137,9 +137,7 @@ void FrontEnd::readLibraryCatalog() {
 }
 
 Prog *FrontEnd::decode() {
-    Prog *prog = new Prog;
-    prog->pBF = pBF;
-    prog->pFE = this;
+    Prog *prog = new Prog(pBF, this);
     readLibraryCatalog();
 
     bool gotMain;
@@ -1166,9 +1164,7 @@ void FrontEnd::closeInstance(void* dlHandle) {
  * RETURNS:     Pointer to a Prog object (with pFE and pBF filled in)
  *============================================================================*/
 Prog* FrontEnd::getProg() {
-    Prog *prog = new Prog;
-    prog->pBF = pBF;
-    prog->pFE = this;
+    Prog *prog = new Prog(pBF, this);
     return prog;
 }
 

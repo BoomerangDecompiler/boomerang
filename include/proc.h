@@ -344,6 +344,7 @@ public:
 	void decompile();
 	bool nameStackLocations();
 	bool nameRegisters();
+        void replaceExpressionsWithGlobals();
         void replaceExpressionsWithSymbols();
 	bool removeNullStatements();
 	bool removeDeadStatements();

@@ -522,7 +522,7 @@ bool Proc::deserialize_fid(std::istream &inf, int fid)
 LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : 
     Proc(prog, uNative, NULL)
 {
-    signature = prog->pFE->getLibSignature(name.c_str());
+    signature = prog->getLibSignature(name.c_str());
 }
 
 LibProc::~LibProc()
@@ -907,6 +907,9 @@ void UserProc::generateCode(HLLCode *hll)
     assert(cfg);
     assert(getEntryBB());
 
+    if (Boomerang::get()->printRtl)
+        print(std::cerr);
+
     hll->AddProcStart(signature);
     
     for (std::map<std::string, Type*>::iterator it = locals.begin();
@@ -1040,6 +1043,8 @@ void UserProc::decompile() {
     inlineConstants();
     fixCalls();
     promoteSignature();
+    cfg->structure();
+    replaceExpressionsWithGlobals();
     while (nameStackLocations())
         replaceExpressionsWithSymbols();
     while (nameRegisters())
@@ -1047,7 +1052,6 @@ void UserProc::decompile() {
     if (VERBOSE) {
         print(std::cerr /*,true*/);
     }
-    cfg->structure();
 }
 
 // Flush the dataflow for the whole proc. Needed because of aliasing problems.
@@ -1108,6 +1112,62 @@ void UserProc::fixCalls()
     }
 }
 
+void UserProc::replaceExpressionsWithGlobals()
+{
+    Exp *match = new Unary(opMemOf, new Terminal(opWild)); 
+    std::set<Statement*> stmts;
+    getStatements(stmts);
+
+    // replace expressions with symbols
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+      it++) {
+        Exp *memof;
+        const char *global;
+        
+        if ((*it)->search(match, memof)) { 
+            if (memof->getSubExp1()->getOper() == opIntConst &&
+                (global = 
+                    prog->getGlobal(((Const*)memof->getSubExp1())->getInt()))) {
+                (*it)->searchAndReplace(memof, 
+                    new Unary(opGlobal, new Const((char*)global)));
+            }
+        }
+    }
+
+    // replace expressions with symbols in the return value
+    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
+      it1 != symbolMap.end(); it1++) {
+        bool change;
+        Exp *e = cfg->getReturnVal();
+        if (e == NULL) break;
+        if (VERBOSE) {
+            std::cerr << "return value: ";
+            e->print(std::cerr);
+            std::cerr << " replace ";
+            (*it1).first->print(std::cerr);
+            std::cerr << " with ";
+            (*it1).second->print(std::cerr);
+            std::cerr << std::endl;
+        }
+        Exp *memof;
+        const char *global;
+        if (e->search(match, memof) && 
+            memof->getSubExp1()->getOper() == opIntConst &&
+            (global = 
+                prog->getGlobal(((Const*)memof->getSubExp1())->getInt()))) {
+            e->searchReplaceAll(memof, 
+                new Unary(opGlobal, new Const((char*)global)), change);
+        }
+        if (VERBOSE) {
+            std::cerr << "  after: ";
+            e->print(std::cerr);
+            std::cerr << std::endl;
+        }
+        if (change) cfg->setReturnVal(e->clone());
+    }
+    delete match;
+}
+
 void UserProc::replaceExpressionsWithSymbols()
 {
     std::set<Statement*> stmts;
@@ -1148,19 +1208,17 @@ void UserProc::replaceExpressionsWithSymbols()
 
 bool UserProc::nameStackLocations()
 {
+    Exp *match = signature->getStackWildcard();
+    if (match == NULL) return false;
+
     bool found = false;
     std::set<Statement*> stmts;
     getStatements(stmts);
     // create a symbol for every memory reference
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
-        Exp *left = (*it)->getLeft();
-        Exp *right = (*it)->getRight();
-        if (right == NULL) continue;
-        Exp *memref, *match = signature->getStackWildcard();
-        if (match == NULL) break;
-        if ((left && left->search(match, memref)) ||
-            (right && right->search(match, memref))) {
+        Exp *memref; 
+        if ((*it)->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
                 if (VERBOSE) {
                     std::cerr << "stack location found: ";
@@ -1180,25 +1238,24 @@ bool UserProc::nameStackLocations()
             locals[name] = (*it)->updateType(memref, locals[name]);
             found = true;
         }
-        delete match;
     }
+    delete match;
     return found;
 }
 
 bool UserProc::nameRegisters()
 {
+    Exp *match = new Unary(opRegOf, new Terminal(opWild));
+    if (match == NULL) return false;
+
     bool found = false;
     std::set<Statement*> stmts;
     getStatements(stmts);
     // create a symbol for every register
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++) {
-        Exp *left = (*it)->getLeft();
-        Exp *right = (*it)->getRight();
-        Exp *memref, *match = new Unary(opRegOf, new Terminal(opWild));
-        if (match == NULL) break;
-        if ((left && left->search(match, memref)) ||
-            (right && right->search(match, memref))) {
+         it++) {
+        Exp *memref; 
+        if ((*it)->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
                 if (VERBOSE) {
                     std::cerr << "register found: ";
@@ -1218,8 +1275,8 @@ bool UserProc::nameRegisters()
             locals[name] = (*it)->updateType(memref, locals[name]);
             found = true;
         }
-        delete match;
     }
+    delete match;
     return found;
 }
 

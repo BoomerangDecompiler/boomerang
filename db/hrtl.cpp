@@ -531,6 +531,13 @@ void HLJcond::setCondExpr(Exp* e)
     pCond = e;
 }
 
+bool HLJcond::search(Exp* search, Exp*& result)
+{
+    if (pCond) return pCond->search(search, result);
+    result = NULL;
+    return false;
+}
+
 /*==============================================================================
  * FUNCTION:        HLJcond::searchAndReplace
  * OVERVIEW:        Replace all instances of search with replace.
@@ -1135,6 +1142,20 @@ void HLCall::getUseDefLocations(LocationMap& locMap,
 bool HLCall::returnsStruct()
 {
     return (returnTypeSize != 0);
+}
+
+bool HLCall::search(Exp* search, Exp*& result)
+{
+    result = NULL;
+    if (returnLoc && returnLoc->search(search, result)) return true;
+    for (unsigned i = 0; i < arguments.size(); i++)
+        if (arguments[i]->search(search, result)) return true;
+    if (postCallExpList) {
+        for (std::list<Exp*>::iterator it = postCallExpList->begin(); 
+                it != postCallExpList->end(); it++)
+            if ((*it)->search(search, result)) return true;
+    }
+    return false;
 }
 
 /*==============================================================================

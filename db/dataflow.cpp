@@ -51,7 +51,7 @@ Statement *Statement::findUse(Exp *e) {
     updateUses();
     for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
       it++) {
-        if (*(*it)->getLeft() == *e)
+        if ((*it)->getLeft() && *(*it)->getLeft() == *e)
             return *it;
     }
     return NULL;

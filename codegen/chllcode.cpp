@@ -84,6 +84,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, "&");
             appendExp(str, u->getSubExp1());
             break;
+        case opGlobal:
         case opLocal:
             c = dynamic_cast<Const*>(u->getSubExp1());
             assert(c && c->getOper() == opStrConst);
@@ -195,6 +196,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, " = ");
             appendExp(str, b->getSubExp2());
             break;
+        case opMemOf:
+            strcat(str, "*(int*)(");
+            appendExp(str, b->getSubExp1());
+            strcat(str, ")");
+            break;
         case opMult:
         case opDiv:
         case opFPlus:
@@ -231,7 +237,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opNamedExp:
         case opGuard:
         case opTern:
-        case opMemOf:
         case opRegOf:
         case opVar:
         case opParam:

@@ -266,7 +266,7 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace);
+    virtual void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.    
@@ -334,8 +334,11 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
     virtual void print(std::ostream& os) { print(os, true); }
 
+    // general search
+    virtual bool search(Exp *search, Exp *&result);
+
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace);
+    virtual void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
@@ -433,7 +436,7 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace);
+    virtual void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
@@ -496,8 +499,11 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
     virtual void print(std::ostream& os = std::cout) { print(os, false); }
 
+    // general search
+    virtual bool search(Exp *search, Exp *&result);
+
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace);
+    virtual void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.

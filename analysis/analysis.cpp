@@ -44,6 +44,7 @@ int memXinit[] = {opMemOf, -1};
 // A global Exp* representing a wildcard memory expression
 //Exp* memX(memXinit, memXinit+2);
 
+#if 0
 /*==============================================================================
  * FUNCTION:        checkBBflags
  * OVERVIEW:        Check this BB for assignments that may use flags.
@@ -100,6 +101,7 @@ void Analysis::checkBBflags(PBB pBB, UserProc* proc)
         }
     }
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:        finalSimplify
@@ -161,6 +163,7 @@ void Analysis::analyse(UserProc* proc)
 static int findDefsCallDepth = 0;
 #endif
 
+#if 0
 /*==============================================================================
  * FUNCTION:        findDefs
  * OVERVIEW:        Finds a definition for this use (jcond, scond, or assign)
@@ -528,6 +531,7 @@ void Analysis::findDefs(PBB pBB, UserProc* proc, int flagId, bool flt,
     findDefsCallDepth--;
 #endif
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:        matchJScond
@@ -1173,6 +1177,7 @@ void Analysis::checkBBconst(Prog *prog, PBB pBB)
 }
 #endif // USE_PROCESS_CONST
 
+#if 0
 /*==============================================================================
  * FUNCTION:        isFlagFloat
  * OVERVIEW:        Return true if the RTFlagCall parameter refers to the
@@ -1220,6 +1225,7 @@ bool Analysis::isFlagFloat(Exp* rt, UserProc* proc)
     }       
     return false;
 }
+#endif
 
     // analyse calls
 void Analysis::analyseCalls(PBB pBB, UserProc *proc)

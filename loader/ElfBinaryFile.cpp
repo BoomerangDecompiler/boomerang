@@ -1320,28 +1320,28 @@ void ElfBinaryFile::writeObjectFile
  *============================================================================*/
 std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap()
 {
+    std::map<ADDRESS, const char*>* ret = new std::map<ADDRESS, const char*>;
     SectionInfo* pSect = GetSectionInfoByName(".rel.bss");
     if (pSect == 0)
         pSect = GetSectionInfoByName(".rela.bss");
     if (pSect == 0) {
         // This could easily mean that this file has no dynamic globals, and
         // that is fine.
-        return 0;
+        return ret;
     }
     int numEnt = pSect->uSectionSize / pSect->uSectionEntrySize;
     SectionInfo* sym = GetSectionInfoByName(".dynsym");
     if (sym == 0) {
         fprintf(stderr, "Could not find section .dynsym in source binary file");
-        return 0;
+        return ret;
     }
     Elf32_Sym* pSym = (Elf32_Sym*)sym->uHostAddr;
     int idxStr = GetSectionIndexByName(".dynstr");
     if (idxStr == -1) {
         fprintf(stderr, "Could not find section .dynstr in source binary file");
-        return 0;
+        return ret;
     }
 
-    std::map<ADDRESS, const char*>* ret = new std::map<ADDRESS, const char*>;
     unsigned p = pSect->uHostAddr;
     for (int i=0; i < numEnt; i++) {
         // The ugly p[1] below is because it p might point to an

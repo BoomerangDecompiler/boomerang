@@ -69,7 +69,8 @@ public:
 class Prog {
 public:
             Prog();                     // Default constructor
-			~Prog();
+            Prog(BinaryFile *pBF, FrontEnd *pFE);
+            ~Prog();
             Prog(const char* name);     // Constructor with name
     void    setName(const char *name);      // Set the name of this program
     Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
@@ -133,16 +134,21 @@ public:
     // lookup a library procedure by name
     LibProc *getLibraryProc(const char *nam);
 
+    // Get a library signature for a given name (used when creating a new
+    // library proc.
+    Signature *getLibSignature(const char *name);
+
+    // Get the front end id used to make this prog
+    const char *getFrontEndId();
+
+    // Get a global variable if possible
+    const char *getGlobal(ADDRESS uaddr);
+
+    // Make a global variable
+    void makeGlobal(ADDRESS uaddr, const char *name);
+
     // get a string constant at a give address if appropriate
     char *getStringConstant(ADDRESS uaddr);
-
-    // Pointer to the BinaryFile object for the program, which contains the
-    // program image. Created in main()
-    BinaryFile* pBF;
-
-	// Pointer to the FrontEnd object for the project, which is used to decode
-	// procedures.
-	FrontEnd *pFE;
 
     // Public object that keeps track of the coverage of the source program's
     // text segment
@@ -154,6 +160,12 @@ public:
     bool        bRegisterCall;
 
 protected:
+    // Pointer to the BinaryFile object for the program
+    BinaryFile* pBF;
+    // Pointer to the FrontEnd object for the project
+    FrontEnd *pFE;
+    // Map of addresses to global symbols
+    std::map<ADDRESS, const char*> *globalMap;
     std::string      m_name;            // name of the program
     std::list<Proc*> m_procs;           // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*

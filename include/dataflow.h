@@ -143,6 +143,9 @@ public:
     // inline any constants in the statement
     virtual void inlineConstants(Prog *prog) = 0;
 
+    // general search
+    virtual bool search(Exp *search, Exp *&result) = 0;
+
     // general search and replace
     virtual void searchAndReplace(Exp *search, Exp *replace) = 0;
 

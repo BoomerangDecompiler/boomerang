@@ -146,7 +146,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
     //if (prog->pBF->GetFormat() != LOADFMT_PE) return false;
 
     // better be x86 (disabled)
-    //if (std::string(prog->pFE->getFrontEndId()) != "pentium") return false;
+    //if (std::string(prog->getFrontEndId()) != "pentium") return false;
     
     // debug
     std::stringstream os;
@@ -271,7 +271,7 @@ bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& othe
 
 bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature &candidate)
 {
-    std::string feid(p->getProg()->pFE->getFrontEndId());
+    std::string feid(p->getProg()->getFrontEndId());
     if (feid != "pentium") return false;
 
     std::cerr << "consider promotion to stdc pentium signature for " << p->getName() << std::endl;
@@ -434,7 +434,7 @@ bool CallingConvention::StdC::SparcSignature::operator==(const Signature& other)
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature &candidate)
 {
-    std::string feid(p->getProg()->pFE->getFrontEndId());
+    std::string feid(p->getProg()->getFrontEndId());
     if (feid != "sparc") return false;
 
     // is there other constraints?

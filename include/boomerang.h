@@ -48,6 +48,7 @@ public:
 
     // Command line flags
     bool vFlag;
+    bool printRtl;
     bool noBranchSimplify;
 };
 
