@@ -130,10 +130,9 @@ bool PalmBinaryFile::RealLoad(const char* sName)
         }
 
         // Decide if code or data; note that code0 is a special case (not code)
-        if ((name != "code0") && (name.substr(0, 4) == "code"))
-            m_pSections[i].bCode = true;
-        if (name.substr(0, 4) == "data")
-            m_pSections[i].bData = true;
+        m_pSections[i].bCode =
+          (name != "code0") && (name.substr(0, 4) == "code");
+        m_pSections[i].bData = name.substr(0, 4) == "data";
 
     }
         
