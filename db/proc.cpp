@@ -54,6 +54,8 @@
 
 typedef std::map<Statement*, int> RefCounter;
 
+#define DEBUG_PROOF (Boomerang::get()->debugProof)
+
 /************************
  * Proc methods.
  ***********************/
@@ -1408,7 +1410,7 @@ void UserProc::trimReturns() {
         // RISC machines generally preserve the stack pointer (so no special
         // case required)
         for (int p = 0; !stdsp && p < 7; p++) {
-            if (VERBOSE)
+            if (DEBUG_PROOF)
                 LOG << "attempting to prove sp = sp + " << 4 + p*4 << 
                              " for " << getName() << "\n";
             stdsp = prove(new Binary(opEquals,
@@ -1419,7 +1421,7 @@ void UserProc::trimReturns() {
         }
 
         // Prove that pc is set to the return value
-        if (VERBOSE)
+        if (DEBUG_PROOF)
             LOG << "attempting to prove %pc = m[sp]\n";
         stdret = prove(new Binary(opEquals, new Terminal(opPC), 
                        Location::memOf(Location::regOf(sp))));
@@ -1428,7 +1430,7 @@ void UserProc::trimReturns() {
         for (int i = 0; i < signature->getNumReturns(); i++) {
             Exp *p = signature->getReturnExp(i);
             Exp *e = new Binary(opEquals, p->clone(), p->clone());
-            if (VERBOSE)
+            if (DEBUG_PROOF)
                 LOG << "attempting to prove " << p << " is preserved by " 
                           << getName() << "\n";
             if (prove(e)) {
@@ -2808,8 +2810,6 @@ bool UserProc::canProveNow()
     return !inProve;
 }
 
-#define DEBUG_PROOF (Boomerang::get()->debugProof)
-
 // this function is non-reentrant
 bool UserProc::prove(Exp *query)
 {
@@ -2820,6 +2820,7 @@ bool UserProc::prove(Exp *query)
     inProve = true;
     if (proven.find(query) != proven.end()) {
         inProve = false;
+        if (DEBUG_PROOF) LOG << "prove returns true\n";
         return true;
     }
 
@@ -2851,6 +2852,7 @@ bool UserProc::prove(Exp *query)
         }
         if (!gotdef && DEBUG_PROOF) {
             LOG << "not in return set: " << query->getSubExp1() << "\n";
+            LOG << "prove returns false\n";
             inProve = false;
             return false;
         }
@@ -2863,11 +2865,13 @@ bool UserProc::prove(Exp *query)
         proven.erase(original);
         //delete original;
         inProve = false;
+        if (DEBUG_PROOF) LOG << "prove returns false\n";
         return false;
     }
     //delete query;
    
     inProve = false;
+    if (DEBUG_PROOF) LOG << "prove returns true\n";
     return true;
 }
 
@@ -3289,3 +3293,4 @@ bool UserProc::searchAndReplace(Exp *search, Exp *replace)
     }
     return ch; 
 }
+
