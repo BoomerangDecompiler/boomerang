@@ -170,10 +170,16 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
         BasicBlock::rtlit rit; stmtlistIt sit;
         PBB bb = d->BBs[n];
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
-          s = bb->getNextStmt(rit, sit)) {
-            if (s->getKind() == STMT_ASSIGN) {
+                        s = bb->getNextStmt(rit, sit)) {
+            CallStatement *call = dynamic_cast<CallStatement*>(s);
+            if (call) {
+                for (std::vector<Exp*>::iterator it = call->getReturns().begin(); 
+                     it != call->getReturns().end(); it++) 
+                    if (*it && (*it)->getMemDepth() == memDepth)
+                        d->A_orig[n].insert(*it);
+            } else {
                 Exp* lhs = s->getLeft();
-                if (lhs->getMemDepth() == memDepth)
+                if (lhs != NULL && lhs->getMemDepth() == memDepth)
                     d->A_orig[n].insert(lhs);
             }
         }
@@ -231,7 +237,7 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
     BasicBlock::rtlit rit; stmtlistIt sit;
     PBB bb = d->BBs[n];
     for (Statement* S = bb->getFirstStmt(rit, sit); S;
-      S = bb->getNextStmt(rit, sit)) {
+                    S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function
         if (!S->isPhi()) {
             // For each use of some variable x in S (not just assignments)
@@ -254,12 +260,26 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
             }
         }
         // For each definition of some variable a in S
-        Exp* a = S->getLeft();
-        if (a != NULL && a->getMemDepth() == memDepth) {
-            // Push i onto Stack[a]
-            d->Stack[a].push(S);
-            // Replace definition of a with definition of a_i in S
-            // (we don't do this)
+        CallStatement *call = dynamic_cast<CallStatement*>(S);
+        if (call) {
+            for (std::vector<Exp*>::iterator it = call->getReturns().begin();
+                 it != call->getReturns().end(); it++) {
+                Exp* a = *it;
+                if (a != NULL && a->getMemDepth() == memDepth) {
+                    // Push i onto Stack[a]
+                    d->Stack[a].push(S);
+                    // Replace definition of a with definition of a_i in S
+                    // (we don't do this)
+                }
+            }
+        } else {
+            Exp* a = S->getLeft();
+            if (a != NULL && a->getMemDepth() == memDepth) {
+                // Push i onto Stack[a]
+                d->Stack[a].push(S);
+                // Replace definition of a with definition of a_i in S
+                // (we don't do this)
+            }
         }
     }
     // For each successor Y of block n
@@ -268,7 +288,7 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
         PBB Ybb = bb->m_OutEdges[succ];
         // For each phi-function in Y
         for (Statement* S = Ybb->getFirstStmt(rit, sit); S;
-          S = Ybb->getNextStmt(rit, sit)) {
+                        S = Ybb->getNextStmt(rit, sit)) {
             Assign* ae = dynamic_cast<Assign*>(S);
             // if S is not a phi function, then quit the loop (no more phi's)
             if (!ae || !ae->isPhi()) break;
@@ -295,10 +315,20 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
     }
     // For each statement S in block n
     for (Statement* S = bb->getFirstStmt(rit, sit); S;
-      S = bb->getNextStmt(rit, sit)) {
+                    S = bb->getNextStmt(rit, sit)) {
         // For each definition of some variable a in S
-        Exp* a = S->getLeft();
-        if (a == NULL || a->getMemDepth() != memDepth) continue;
-        d->Stack[a].pop();
+        CallStatement *call = dynamic_cast<CallStatement*>(S);
+        if (call) {
+            for (std::vector<Exp*>::iterator it = call->getReturns().begin();
+                 it != call->getReturns().end(); it++) {
+                Exp* a = *it;
+                if (a == NULL || a->getMemDepth() != memDepth) continue;
+                d->Stack[a].pop();
+            }
+        } else {
+            Exp* a = S->getLeft();
+            if (a == NULL || a->getMemDepth() != memDepth) continue;
+            d->Stack[a].pop();
+        }
     }
 }
