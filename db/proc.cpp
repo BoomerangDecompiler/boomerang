@@ -1486,7 +1486,7 @@ void UserProc::trimReturns() {
 
 void UserProc::updateReturnTypes()
 {
-	if (theReturnStatement == NULL | !ADHOC_TYPE_ANALYSIS)
+	if (theReturnStatement == NULL || !ADHOC_TYPE_ANALYSIS)
 		return;
 	for (int n = 0; n < theReturnStatement->getNumReturns(); n++) {
 		Exp *e = theReturnStatement->getReturnExp(n);
