@@ -594,8 +594,9 @@ bool RTL::isCompare(int& iReg, Exp*& expOperand) {
         i++;
     } while (rhs->getOper() != opMinus && i < getNumStmt());
     if (rhs->getOper() != opMinus) return false;
-    Exp* lhs = cur->getLeft();
-    if (!lhs->isRegOf()) return false;
+    // We should be rid of all r[tmp] now...
+      // Exp* lhs = cur->getLeft();
+      // if (!lhs->isRegOf()) return false;
     // We have a subtract assigning to a register.
     // Check if there is a subflags last
     Statement* last = elementAt(getNumStmt()-1);
