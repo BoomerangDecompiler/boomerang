@@ -1787,6 +1787,8 @@ CallStatement::CallStatement(int returnTypeSize /*= 0*/):
 CallStatement::~CallStatement() {
     for (unsigned i = 0; i < arguments.size(); i++)
         delete arguments[i];
+    for (unsigned i = 0; i < returns.size(); i++)
+        delete returns[i];
 }
 
 /*==============================================================================
@@ -1901,7 +1903,7 @@ void CallStatement::setSigArguments() {
 
     // initialize returns
     for (int i = 0; i < procDest->getSignature()->getNumReturns(); i++)
-        returns.push_back(procDest->getSignature()->getReturnExp(i));
+        returns.push_back(procDest->getSignature()->getReturnExp(i)->clone());
 }
 
 /*==============================================================================
@@ -1912,8 +1914,10 @@ void CallStatement::setSigArguments() {
  * RETURNS:       ptr to the location that will be used to hold the return value
  *============================================================================*/
 Exp* CallStatement::getReturnLoc() {
-    if (returnLoc == NULL && returns.size() == 1)
-        returnLoc = returns[0]->clone();
+    if (returnLoc == NULL && returns.size() == 1) {
+        /*returnLoc = returns[0]->clone();*/
+        return returns[0];
+    }
     return returnLoc;
 }
 
@@ -1970,7 +1974,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-    if (getReturnLoc() != NULL)
+    if (returnLoc != NULL)
         returnLoc = returnLoc->searchReplaceAll(search, replace, change);
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
@@ -2297,6 +2301,10 @@ void CallStatement::fromSSAform(igraph& ig) {
     int n = arguments.size();
     for (int i=0; i < n; i++) {
         arguments[i] = arguments[i]->fromSSA(ig);
+    }
+    n = returns.size();
+    for (int i=0; i < n; i++) {
+        returns[i] = returns[i]->fromSSAleft(ig, this);
     }
 }
 
@@ -2697,7 +2705,7 @@ Type* BoolStatement::updateType(Exp *e, Type *curType) {
 // Convert from SSA form
 void BoolStatement::fromSSAform(igraph& ig) {
     pCond = pCond->fromSSA(ig); 
-    pDest = pDest->fromSSA(ig);
+    pDest = pDest->fromSSAleft(ig, this);
 }
 
 void BoolStatement::doReplaceRef(Exp* from, Exp* to) {
@@ -2896,7 +2904,7 @@ int Assign::getMemDepth() {
 }
 
 void Assign::fromSSAform(igraph& ig) {
-    lhs = lhs->fromSSA(ig);
+    lhs = lhs->fromSSAleft(ig, this);
     rhs = rhs->fromSSA(ig);
 }
 

@@ -1838,10 +1838,11 @@ void UserProc::fromSSAform() {
     igraph ig;
     cfg->findInterferences(ig);
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        // FIXME: This is QUICK and DIRTY
-        if (s->isPhi())
+        if (s->isPhi()) {
+std::cerr << "Warning: ignoring " << s << "\n";
             removeStatement(s);
-        s->fromSSAform(ig);
+        } else
+            s->fromSSAform(ig);
     }
 }
 

@@ -1545,7 +1545,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
                     // We have an interference. Record it, but only if new
                     igraph::iterator gg = ig.find(u);
                     if (gg == ig.end()) {
-                        (*gg).second = ++tempNum;
+                        ig[u] = ++tempNum;
                         if (VERBOSE)
                             std::cerr << "Interference with " << u <<
                             ", assigned temp" << std::dec << tempNum << "\n";

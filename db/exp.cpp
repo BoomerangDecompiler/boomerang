@@ -2742,6 +2742,12 @@ Exp* Ternary::fromSSA(igraph& ig) {
     return this;
 }
 
+Exp* Exp::fromSSAleft(igraph& ig, Statement* d) {
+    RefExp* r = new RefExp(this, d);       // "Wrap" in a ref
+    return r->fromSSA(ig);
+    // Note: r will be deleted in fromSSA! Do not delete here!
+}
+
 // Return the memory nesting depth
 // Examples: r[24] returns 0; m[r[24 + m[r[25]] + 4] returns 2
 int Unary::getMemDepth() {
