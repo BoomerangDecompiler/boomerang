@@ -605,6 +605,12 @@ void Prog::makeGlobal(ADDRESS uaddr, const char *name)
     (*globalMap)[uaddr] = strdup(name);*/
 }
 
+void Prog::setGlobalType(char* nam, Type* ty) {
+    for (unsigned i = 0; i < globals.size(); i++)
+        if (!strcmp(globals[i]->getName(), nam))
+            globals[i]->setType(ty);
+}
+
 // get a string constant at a given address if appropriate
 char *Prog::getStringConstant(ADDRESS uaddr) {
     SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
@@ -908,11 +914,13 @@ void Prog::fromSSAform() {
 void Prog::typeAnalysis() {
     if (VERBOSE || DEBUG_TA)
         std::cerr << "=== Start Type Analysis ===\n";
+    // FIXME: This needs to be done bottom of the call-tree first, with repeat
+    // until no change for cycles in the call graph
     std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         UserProc* proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
-        proc->typeAnalysis();
+        proc->typeAnalysis(this);
     }
     if (VERBOSE || DEBUG_TA)
         std::cerr << "=== End Type Analysis ===\n";

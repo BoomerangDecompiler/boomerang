@@ -507,7 +507,7 @@ public:
     void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform();
     void insertAssignAfter(Statement* s, int tempNum, Exp* right);
-    void typeAnalysis();
+    void typeAnalysis(Prog* prog);
 
     // For the final pass of removing returns that are never used
     typedef std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;

@@ -88,7 +88,7 @@ TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
     c/CTest.o type/TypeTest.o 
 
 # Needed because the test header files are in all these different directories
-INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic
+INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic -Itype
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \

@@ -2097,7 +2097,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-    for (int i = 0; i < (int)returns.size(); i++) {
+    for (unsigned i = 0; i < returns.size(); i++) {
         bool ch;
         returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
         change |= ch;
@@ -2444,8 +2444,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
             returns[i] = returns[i]->simplifyArith()->simplify();
         }    
     for (unsigned i = 0; i < arguments.size(); i++) {
-        arguments[i] = arguments[i]->searchReplaceAll(from, to,
-          change);
+        arguments[i] = arguments[i]->searchReplaceAll(from, to, change);
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
 }
@@ -3273,9 +3272,97 @@ void Assign::generateConstraints(std::list<Exp*>& cons) {
 
 void CallStatement::generateConstraints(std::list<Exp*>& cons) {
     Proc* dest = getDestProc();
+    Signature* destSig = dest->getSignature();
+    // Generate a constraint for the type of each actual argument to be equal
+    // to the type of each formal parameter (hopefully, these are already
+    // calculated correctly; if not, we need repeat till no change)
+    int nPar = destSig->getNumParams();
+    int min = 0;
+    if (dest->isLib())
+        // Note: formals for a library signature start with the stack pointer
+        min = 1;
+    int a=0;        // Argument index
+    for (int p=min; p < nPar; p++) {
+        Exp* arg = arguments[a++];
+        if (arg->isRegOf() || arg->isMemOf() || arg->isSubscript() ||
+              arg->isLocal() || arg->isGlobal()) {
+            Exp* con = new Binary(opEquals,
+                new Unary(opTypeOf, arg->clone()),
+                new TypeVal(destSig->getParamType(p)->clone()));
+            cons.push_back(con);
+        }
+    }
+
     if (dest->isLib()) {
         // A library procedure... check for two special cases
-        return;
+        std::string name = dest->getName();
+        // Note: might have to chase back via a phi statement to get a sample
+        // string
+        if ((name == "printf" || name == "scanf") && arguments[0]->isStrConst())
+        {
+            char *str = ((Const*)arguments[0])->getStr();
+            // actually have to parse it
+            int n = 1;      // Number of %s plus 1 = number of args
+            char* p = str;
+            while ((p = strchr(p, '%'))) {
+                p++;
+                Type* t = NULL;
+                int longness = 0;
+                bool sign = true;
+                bool cont;
+                do {
+                    cont = false;
+                    switch(*p) {
+                        case 'u':
+                            sign = false;
+                            cont = true;
+                            break;
+                        case 'x':
+                            sign = false;
+                            // Fall through
+                        case 'i':
+                        case 'd': {
+                            int size = 32;
+                            // Note: the following only works for 32 bit code
+                            // or where sizeof(long) == sizeof(int)
+                            if (longness == 2) size = 64;
+                            t = new IntegerType(size, sign);
+                            break;
+                        }
+                        case 'f':
+                        case 'g':
+                            t = new FloatType(64);
+                            break;
+                        case 's':
+                            t = new PointerType(new CharType());
+                            break;
+                        case 'l':
+                            longness++;
+                            cont = true;
+                            break;
+                        case '.':
+                            cont = true;
+                            break;
+                        case '*':
+                            assert(0);  // Star format not handled yet
+                        default:
+                            if (*p >= '0' && *p <= '9')
+                                cont = true;
+                            break;
+                    }
+                    p++;
+                } while (cont);
+                if (t) {
+                    // Generate a constraint for the parameter
+                    TypeVal* tv = new TypeVal(t);
+                    Exp* con = new Binary(opEquals,
+                        new Unary(opTypeOf, arguments[n]->clone()),
+                        tv);
+                    cons.push_back(con);
+                }
+                n++;
+            }
+        }
     }
 }
 

@@ -2297,7 +2297,11 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
     }
 }
 
-void Cfg::renameBlockVars(int n, int memDepth) {
+void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
+    // Need to clear the Stack of old, renamed locations like m[esp-4]
+    // (these will be deleted, and will cause compare failures in the Stack)
+    if (clearStack) Stack.clear();
+
     // For each statement S in block n
     BasicBlock::rtlit rit; stmtlistIt sit;
     PBB bb = BBs[n];

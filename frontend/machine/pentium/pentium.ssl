@@ -1163,7 +1163,7 @@ SETB.NS   modrm
             *8* modrm := [~%NF?1:0];
 
 SETB.Z   modrm 
-            *8* modrm := [%ZF?1:0];
+            *8*  modrm := [%ZF?1:0];
 
 SETB.NZ   modrm 
             *8* modrm := [~%ZF?1:0];

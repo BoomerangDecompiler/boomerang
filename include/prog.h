@@ -63,6 +63,7 @@ public:
     }
 
     Type *getType() { return type; }
+    void  setType(Type* ty) { type = ty; }
     ADDRESS getAddress() { return uaddr; }
     const char *getName() { return nam.c_str(); }
 };
@@ -220,6 +221,9 @@ public:
 
     // Make a global variable
     void makeGlobal(ADDRESS uaddr, const char *name);
+
+    // Set the type of a global variable
+    void setGlobalType(char* name, Type* ty);
 
     // get a string constant at a give address if appropriate
     char *getStringConstant(ADDRESS uaddr);

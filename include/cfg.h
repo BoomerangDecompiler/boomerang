@@ -1002,7 +1002,7 @@ public:
     void Link(int p, int n);
     void computeDF(int n);
     void placePhiFunctions(int memDepth, UserProc* proc);
-    void renameBlockVars(int n, int memDepth);
+    void renameBlockVars(int n, int memDepth, bool clearStack = false);
     bool doesDominate(int n, int w);
 
 

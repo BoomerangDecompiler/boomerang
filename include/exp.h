@@ -156,6 +156,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isPhi() {return op == opPhi;}
     // True if this is a local variable
     bool isLocal() {return op == opLocal;}
+    // True if this is a global variable
+    bool isGlobal() {return op == opGlobal;}
     // Get the index for this var
     int getVarIndex();
     // True if this is a terminal

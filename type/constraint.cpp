@@ -43,3 +43,9 @@ void Constraints::printSince(handle h) {
     std::cerr << "\n";
 }
 
+bool Constraints::solve(std::list<Exp*>& soln) {
+    // For now:
+    soln = conList;
+    return true;
+}
+

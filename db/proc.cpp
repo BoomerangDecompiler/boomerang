@@ -1068,16 +1068,17 @@ std::set<UserProc*>* UserProc::decompile() {
         // recognising globals early prevents them from becoming parameters
         replaceExpressionsWithGlobals();
         addNewParameters();
-        cfg->renameBlockVars(0, depth);
+        cfg->renameBlockVars(0, depth, true);
         trimParameters(depth);
 
         // recognising locals early prevents them from becoming returns
         replaceExpressionsWithLocals();
         addNewReturns(depth);
-        cfg->renameBlockVars(0, depth);
+        cfg->renameBlockVars(0, depth, true);
         if (VERBOSE) {
             std::cerr << "=== Debug Print SSA for " << getName()
-              << " at memory depth " << depth << " (after adding new returns) ===\n";
+              << " at memory depth " << depth
+              << " (after adding new returns) ===\n";
             print(std::cerr, true);
             std::cerr << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
@@ -1086,8 +1087,9 @@ std::set<UserProc*>* UserProc::decompile() {
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
-            std::cerr << "=== Debug Print SSA for " << getName()
-              << " at memory depth " << depth << " (after trimming return set) ===\n";
+            std::cerr << "=== Debug Print SSA for " << getName() <<
+              " at memory depth " << depth <<
+              " (after trimming return set) ===\n";
             print(std::cerr, true);
             std::cerr << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
@@ -1100,7 +1102,7 @@ std::set<UserProc*>* UserProc::decompile() {
                           << td << std::endl;
             propagateStatements(depth, td);
             for (int i = 0; i <= depth; i++)
-                cfg->renameBlockVars(0, i);
+                cfg->renameBlockVars(0, i, true);
         }
         if (VERBOSE) {
             std::cerr << "=== After propagate for " << getName() <<
@@ -1569,21 +1571,23 @@ void UserProc::replaceExpressionsWithGlobals() {
     StmtListIter it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         Exp *memof;
-        
-        if (s->search(match, memof)) { 
+
+        if (s->search(match, memof)) {
             if (memof->getSubExp1()->getOper() == opIntConst) {
                 ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
                 const char *global = prog->getGlobal(u);
                 if (global) {
-                    Unary *g = new Unary(opGlobal, new Const((char*)global));
-                    bool change = s->searchAndReplace(memof, g);
+                    Unary *g = new Unary(opGlobal,
+                        new Const(strdup((char*)global)));
+                    Exp* memofCopy = memof->clone();
+                    bool change = s->searchAndReplace(memofCopy, g);
+                    delete memofCopy; delete g;
                     if (change)
                         prog->globalUsed(u);
                 }
             }
         }
     }
-
     delete match;
 }
 
@@ -1616,8 +1620,9 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
             if (signature->getParamExp(i)->getMemDepth() == depth) {
             Exp *r = signature->getParamExp(i)->clone();
             r = r->expSubscriptVar(new Terminal(opWild), NULL);
-            s->searchAndReplace(r, new Unary(opParam, 
-                         new Const((char*)signature->getParamName(i))));
+            Exp* replace = new Unary(opParam, 
+                new Const(strdup((char*)signature->getParamName(i))));
+            s->searchAndReplace(r, replace);
         }
     }
 }
@@ -1645,10 +1650,13 @@ void UserProc::replaceExpressionsWithLocals() {
             if (symbolMap.find(result) == symbolMap.end()) {
                 e = newLocal(new IntegerType());
                 symbolMap[result->clone()] = e;
+                // In symbolMap, so don't delete e
             } else {
                 e = symbolMap[result];
             }
-            s->searchAndReplace(result, e);
+            Exp* search = result->clone();
+            s->searchAndReplace(search, e);
+            delete search;
         }
     }
 }
@@ -2530,7 +2538,7 @@ void UserProc::addCallees(std::set<UserProc*>& callees) {
     }
 }
 
-void UserProc::typeAnalysis() {
+void UserProc::typeAnalysis(Prog* prog) {
     if (DEBUG_TA)
         std::cerr << "Procedure " << getName() << "\n";
     Constraints consObj;
@@ -2547,5 +2555,26 @@ void UserProc::typeAnalysis() {
             consObj.printSince(h);
         }
     }
+
+    std::list<Exp*> soln;
+    if (consObj.solve(soln)) {
+        std::list<Exp*>::iterator it;
+        for (it = soln.begin(); it != soln.end(); it++) {
+            Exp* tVar = ((Binary*)*it)->getSubExp1();
+            assert(tVar->getOper() == opTypeOf);
+            Exp* loc = ((Unary*)tVar)->getSubExp1();
+            Type* t = ((TypeVal*)((Binary*)*it)->getSubExp2())->getType();
+            if (loc->isSubscript() && (loc = ((RefExp*)loc)->getSubExp1(),
+                  loc->isGlobal())) {
+                char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
+                prog->setGlobalType(nam, t->clone());
+            }
+        }
+    }
+    else
+        if (VERBOSE || DEBUG_TA)
+            std::cerr << "** Could not solve type constraints for proc " <<
+              getName() << "!\n";
+
     if (DEBUG_TA) std::cerr << "\n";
 }
