@@ -1520,7 +1520,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
 #ifdef V9_ONLY
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
     Statement* a = new Assign(64,
-        new Unary(opTemp, new Const("tmpl")),
+        Location::tempOf(new Const("tmpl")),
         new Binary(op,          // opMult or opMults
             new Ternary(opSgnEx, Const(32), Const(64),
                 Location::regOf(8)),
@@ -1531,12 +1531,12 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
     a = new Assign(32,
         Location::regOf(8),
         new Ternary(opTruncs, new Const(64), new Const(32),
-            new Unary(opTemp, new Const("tmpl"))));
+            Location::tempOf(new Const("tmpl"))));
     ls->push_back(a);
     // r9 = r[tmpl]@32:63;
     a = new Assign(32,
         Location::regOf(9),
-        new Ternary(opAt, new Unary(opTemp, new Const("tmpl")),
+        new Ternary(opAt, Location::tempOf(new Const("tmpl")),
             new Const(32), new Const(63)));
     ls->push_back(a);
 #else
@@ -1550,7 +1550,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
 
     // r[tmp] = r8 op r9
     Assign* a = new Assign(
-        new Unary(opTemp, new Const("tmp")),
+        Location::tempOf(new Const("tmp")),
         new Binary(op,          // opMult or opMults
             Location::regOf(8),
             Location::regOf(9)));
@@ -1558,7 +1558,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, std::list<RTL*>* lrtl, ADDRESS add
     // r8 = r[tmp];  /* low-order bits */
     a = new Assign(
             Location::regOf(8),
-            new Unary(opTemp, new Const("tmp")));
+            Location::tempOf(new Const("tmp")));
     ls->push_back(a);
     // r9 = %Y;      /* high-order bits */
     a = new Assign(

@@ -863,7 +863,7 @@ exp_term:
         }
 
     |   TEMP {
-            $$ = new Unary(opTemp, new Const($1));
+            $$ = Location::tempOf(new Const($1));
         }
     
     |   '(' exp ')' {
