@@ -181,6 +181,9 @@ public:
     // Convert from SSA form
     void fromSSAform();
 
+    // Type analysis
+    void typeAnalysis();
+
     // Generate dotty file
     void generateDotFile();
 

@@ -53,6 +53,7 @@
 #include "signature.h"
 #include "hllcode.h"
 #include "boomerang.h"
+#include "constraint.h"
 
 typedef std::map<Statement*, int> RefCounter;
 
@@ -1968,7 +1969,9 @@ void UserProc::removeUnusedLocals() {
     }
     // Now remove the unused ones
     std::map<std::string, Type*>::iterator it;
+#if 0
     int nextLocal = 0;
+#endif
     for (it = locals.begin(); it != locals.end(); it++) {
         std::string& name = const_cast<std::string&>(it->first);
         // std::cerr << "Considering local " << name << "\n";
@@ -2459,3 +2462,22 @@ void UserProc::addCallees(std::set<UserProc*>& callees) {
     }
 }
 
+void UserProc::typeAnalysis() {
+    if (DEBUG_TA)
+        std::cerr << "Procedure " << getName() << "\n";
+    Constraints consObj;
+    std::list<Exp*>& cons = consObj.getConstraints();
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter ss;
+    // For each statement this proc
+    for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
+        Constraints::handle h = consObj.getPos();
+        s->generateConstraints(cons);
+        if (DEBUG_TA) {
+            std::cerr << s << "\n";
+            consObj.printSince(h);
+        }
+    }
+    if (DEBUG_TA) std::cerr << "\n";
+}

@@ -190,7 +190,11 @@ enum STMT_KIND {
     STMT_CASE,                  // Used to represent switch statements.
 };
 
-
+//  //  //  //  //  //  //  //  //  //  //  //  //  //
+//
+//  A b s t r a c t   C l a s s   S t a t e m e n t //
+//
+//  //  //  //  //  //  //  //  //  //  //  //  //  //
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
@@ -359,6 +363,9 @@ public:
     // Only Assign overrides at present
     virtual void fixSuccessor() {}
 
+    // generateConstraints
+    virtual void generateConstraints(std::list<Exp*>& cons) {}
+
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
     bool doPropagateTo(int memDepth, Statement* def);
@@ -467,6 +474,9 @@ public:
 
     // fixSuccessor (succ(r2) -> r3)
     virtual void fixSuccessor();
+
+    // generateConstraints
+    virtual void generateConstraints(std::list<Exp*>& cons);
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to);
@@ -836,6 +846,9 @@ public:
     // Set and return the destination proc.
     void setDestProc(Proc* dest);
     Proc* getDestProc();
+
+    // generateConstraints
+    virtual void generateConstraints(std::list<Exp*>& cons);
 
     // serialize this rtl
     virtual bool serialize_rest(std::ostream &ouf);

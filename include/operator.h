@@ -177,6 +177,8 @@ enum OPER
     opDEFINE,		        // Define Type of use with lexer
     opTrue,
     opFalse,
+    opTypeOf,               // Unary: takes a location, makes a type variable
+    opTypeVal,              // Wraps a Type into a type value (TypeVal)
 
     //---------------------- "The line" --------------------------//
     // All id's greater or equal to idMachSpec are assumed to be source machine

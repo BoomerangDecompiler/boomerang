@@ -52,6 +52,7 @@
 #include "operstrings.h"// Defines a large array of strings for the
                         // createDotFile functions. Needs -I. to find it
 #include "util.h"
+#include "boomerang.h"
 
 /*==============================================================================
  * FUNCTION:        Const::Const etc
@@ -147,6 +148,9 @@ PhiExp::PhiExp(PhiExp& o) : Unary(opPhi, subExp1)
 {   stmtVec = o.stmtVec;      // No need to clone: statements never move
 }
 
+TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty)
+{ }
+
 /*==============================================================================
  * FUNCTION:        Unary::~Unary etc
  * OVERVIEW:        Destructors.
@@ -166,6 +170,9 @@ Ternary::~Ternary() {
 }
 FlagDef::~FlagDef() {
     delete rtl;
+}
+TypeVal::~TypeVal() {
+    delete val;
 }
 
 /*==============================================================================
@@ -315,6 +322,11 @@ Exp* RefExp::clone() {
     return c;
 }
 
+Exp* TypeVal::clone() {
+    TypeVal* c = new TypeVal(val->clone());
+    return c;
+}
+
 
 /*==============================================================================
  * FUNCTION:        Const::operator==() etc
@@ -398,6 +410,13 @@ bool PhiExp::operator==(const Exp& o) const {
     if (((PhiExp&)o).op != opPhi) return false;
     if (!( *subExp1 == *((PhiExp&)o).subExp1)) return false;
     return stmtVec == ((PhiExp&)o).stmtVec;
+}
+
+bool TypeVal::operator==(const Exp& o) const {
+    if (op == opWild) return true;
+    if (((TypeVal&)o).op == opWild) return true;
+    if (((TypeVal&)o).op != opPhi) return false;
+    return *val == *((TypeVal&)o).val;
 }
 
 // Compare, ignoring subscripts
@@ -535,6 +554,12 @@ bool PhiExp::operator< (const Exp& o) const {
     return stmtVec < ((PhiExp&)o).stmtVec;
 }
 
+bool TypeVal::operator< (const Exp& o) const {
+    if (opTypeVal < o.getOper()) return true;
+    if (opTypeVal > o.getOper()) return false;
+    return *val < *((TypeVal&)o).val;
+}
+
 
 
 
@@ -653,8 +678,8 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opFMinus:  os << " -f "; break;
         case opFMult:   os << " *f "; break;
         case opFDiv:    os << " /f "; break;
-        case opAnd:     os << " and ";break;
-        case opOr:      os << " or "; break;
+        case opAnd:     os << " /\\ ";break;
+        case opOr:      os << " \\/ "; break;
         case opBitAnd:  os << " & ";  break;
         case opBitOr :  os << " | ";  break;
         case opBitXor:  os << " ^ ";  break;
@@ -746,7 +771,7 @@ void Unary::print(std::ostream& os, bool withUses) {
             // Else fall through
         case opMemOf: case opAddrOf:  case opVar:
             switch (op) {
-                case opRegOf: os << "r["; break;
+                case opRegOf: os << "r["; break;    // e.g. r[r2]
                 case opMemOf: os << "m["; break;
                 case opAddrOf:os << "a["; break;
                 case opVar:   os << "v["; break;
@@ -818,10 +843,14 @@ void Unary::print(std::ostream& os, bool withUses) {
             // Print a more concise form than param["foo"] (just foo)
             ((Const*)p1)->printNoQuotes(os, withUses);
             return;
-    case opPhi:
+        case opPhi:
             os << "phi(";
             p1->print(os, withUses);
             os << ")";
+            return;
+        case opTypeOf:
+            os << "T";
+            p1->print(os, withUses);
             return;
         default:
             std::cerr << "Unary::print invalid operator " << operStrings[op] <<
@@ -933,6 +962,13 @@ void PhiExp::print(std::ostream& os, bool withUses) {
         stmtVec.printNums(os);
         os << "}";
     }
+}
+
+//  //  //  //
+// TypeVal  //
+//  //  //  //
+void TypeVal::print(std::ostream& os, bool withUses) {
+    os << "<" << val->getCtype() << ">";
 }
 
 /*==============================================================================
@@ -2791,4 +2827,96 @@ bool lessExpStar::operator()(const Exp* x, const Exp* y) const {
 
 bool lessTI::operator()(const Exp* x, const Exp* y) const {
     return (*x << *y);      // Compare the actual Exps
+}
+
+//  //  //  //  //
+//  constrainTo //
+//  //  //  //  //
+
+
+bool Const::constrainTo(Exp* con, std::list<Exp*>& cons) {
+    if (con->isTypeVal()) {
+        // con is a constant type, or possibly a partial type such as
+        // ptr(alpha)
+        Type* t = ((TypeVal*)con)->getType();
+        bool match = false;
+        switch (op) {
+            case opIntConst:
+            case opLongConst:
+                // What about sizes?
+                match = t->isInteger();
+                // An integer constant can also match a pointer to something
+                match |= t->isPointer();
+                break;
+            case opStrConst:
+                match = (t->isPointer()) &&
+                  ((PointerType*)t)->getPointsTo()->isChar();
+                break;
+            case opFltConst:
+                match = t->isFloat();
+                break;
+            default:
+                break;
+        }
+        return match;
+    }
+    // con is a type variable, which is constrained by this constant
+    Type* t;
+    switch (op) {
+        case opIntConst:
+            t = new IntegerType(32);
+            break;
+        case opLongConst:
+            t = new IntegerType(64);
+            break;
+        case opStrConst:
+            t = new PointerType(new CharType());
+            break;
+        case opFltConst:
+            t = new FloatType();    // size?
+            break;
+        default:
+            return false;
+    }
+    TypeVal* tv = new TypeVal(t);
+    Exp* e = new Binary(opEquals, con, tv);
+    cons.push_back(e);
+    return true;
+}
+
+bool Binary::constrainTo(Exp* con, std::list<Exp*>& cons) {
+    switch (op) {
+        case opFPlus:
+        case opFMinus:
+        case opFMult:
+        case opFDiv: {
+            FloatType* ft = new FloatType();
+            TypeVal* ftv = new TypeVal(ft->clone());
+            if (!subExp1->constrainTo(ftv, cons))
+                if (VERBOSE || DEBUG_TA)
+                    std::cerr << "Floating point operator " << operStrings[op]
+                      << " constraint failure with first operand " << subExp1
+                      << "\n";
+            // Constrain con to be float
+            Exp* e = new Binary(opEquals, con, ftv);
+            cons.push_back(e);
+            break;
+        }
+
+        case opPlus:
+
+        default:
+            break;
+    }
+    return false;
+}
+
+bool PhiExp::constrainTo(Exp* con, std::list<Exp*>& cons) {
+    return false;
+}
+bool Unary::constrainTo(Exp* con, std::list<Exp*>& cons) {
+    return false;
+}
+bool Ternary::constrainTo(Exp* con, std::list<Exp*>& cons) {
+    return false;
 }

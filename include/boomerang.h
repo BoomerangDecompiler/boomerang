@@ -70,9 +70,11 @@ public:
     bool noParameterNames;
     bool debugLiveness;
     bool debugUnusedRets;
+    bool debugTA;
 };
 
-#define VERBOSE Boomerang::get()->vFlag
+#define VERBOSE  (Boomerang::get()->vFlag)
+#define DEBUG_TA (Boomerang::get()->debugTA)
 
 
 #endif

@@ -14,7 +14,8 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugDataflow(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
-    noParameterNames(false), debugLiveness(false), debugUnusedRets(false)
+    noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
+    debugTA(false)
 {
 }
 
@@ -34,6 +35,7 @@ void Boomerang::help() {
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dr: debug - debug unused Returns\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
+    std::cerr << "-dt: debug - debug type analysis\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-h: this help\n";
@@ -164,6 +166,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                     case 's':       // debug print SSA form
                         debugPrintSSA = true;
+                        break;
+                    case 't':       // debug type analysis
+                        debugTA = true;
                         break;
                 }
                 break;

@@ -42,8 +42,6 @@
 #include "signature.h"
 #include <sstream>
 
-#define VERBOSE Boomerang::get()->vFlag
-
 static char debug_buffer[200];      // For prints functions
 
 // replace a use in this statement
@@ -1937,11 +1935,11 @@ Exp *CallStatement::substituteParams(Exp *e)
 Exp *CallStatement::findArgument(Exp *e) {
     int n = -1;
     if (procDest && 
-            arguments.size() == procDest->getSignature()->getNumParams())
+            (int)arguments.size() == procDest->getSignature()->getNumParams())
         n = procDest->getSignature()->findParam(e);
     else {
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-        for (int i = 0; i < params.size(); i++)
+        for (unsigned i = 0; i < params.size(); i++)
             if (*params[i] == *e) {
                 n = i;
                 break;
@@ -3231,4 +3229,17 @@ Exp* Assign::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
 
 // Not sure if anything needed here
 void Assign::processConstants(Prog* prog) {
+}
+
+// generate constraints
+void Assign::generateConstraints(std::list<Exp*>& cons) {
+    rhs->constrainTo(new Unary(opTypeOf, lhs->clone()), cons);
+}
+
+void CallStatement::generateConstraints(std::list<Exp*>& cons) {
+    Proc* dest = getDestProc();
+    if (dest->isLib()) {
+        // A library procedure... check for two special cases
+        return;
+    }
 }

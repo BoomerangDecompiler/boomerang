@@ -64,5 +64,6 @@ class ExpTest : public CppUnit::TestCase {
     void testAssociativity();
 
     void testSubscriptVar();
+    void testTypeOf();
 };
 

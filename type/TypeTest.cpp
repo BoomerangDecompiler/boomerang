@@ -7,6 +7,7 @@
  * $Revision$
  *
  * 09 Apr 02 - Mike: Created
+ * 22 Aug 03 - Mike: Extended for Constraint tests
  */
 
 #include "TypeTest.h"

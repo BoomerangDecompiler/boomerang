@@ -166,6 +166,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
                                  op == opGtrUns || op == opLessUns ||
                                  op == opGtrEq || op == opLessEq ||
                                  op == opGtrEqUns || op == opLessEqUns; }
+    // True if this is a TypeVal
+    bool isTypeVal() { return op == opTypeVal;}
            
                  
 
@@ -258,8 +260,10 @@ virtual Exp* simplifyAddr() {return this;}
     // statement d)
     Exp* fromSSAleft(igraph& ig, Statement* d);
 
-    // Consistency check. Might be useful another day
-    void check();
+    // Constrain this Exp with the type variable given in con
+    // Add any generated constraints to cons
+    // Returns false if a constraint is impossible
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons) {return false;}
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len) = 0;
@@ -318,6 +322,7 @@ public:
     // Print "recursive" (extra parens not wanted at outer levels)
 
     void    appendDotFile(std::ofstream& of);
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -420,6 +425,9 @@ virtual int getMemDepth();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
+    // Type analysis
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -485,6 +493,9 @@ virtual int getMemDepth();
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
+    // Type analysis
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
@@ -548,6 +559,9 @@ virtual int getMemDepth();
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
+
+    // Type analysis
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -688,6 +702,26 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     virtual Exp* fromSSA(igraph& ig);
     //bool    references(Statement* s) {return stmtVec.exists(s);}
     StatementVec& getRefs() {return stmtVec;}
+    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+};
+
+/*==============================================================================
+class TypeVal. Just a Terminal with a Type. Used for type values in constraints
+==============================================================================*/
+class TypeVal : public Terminal {
+    Type*   val;
+
+public:
+    TypeVal(Type* ty);
+    ~TypeVal();
+
+    Type*   getType() {return val;}
+virtual Exp* clone();
+    bool    operator==(const Exp& o) const;
+    bool    operator< (const Exp& o) const;
+    void    print(std::ostream& os, bool withUses = false);
+    bool    constrainTo(Exp* con, std::list<Exp*>& cons) {
+        assert(0);}         // Should not be constraining constraints
 };
     
 #endif // __EXP_H__

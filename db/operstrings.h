@@ -145,6 +145,8 @@ char* operStrings[] = {
 
     "opTrue",                 // Logical true
     "opFalse",                // Logical false
+    "opTypeOf",               // Makes a type variable from a location
+    "opTypeVal",              // Makes a type value
 
     "opZF",                   // zero flag
     "opCF",                   // carry flag

@@ -39,8 +39,6 @@
 #include "proc.h"
 #include "boomerang.h"
 
-#define VERBOSE Boomerang::get()->vFlag
-
 namespace CallingConvention {
 
     class Win32Signature : public Signature {

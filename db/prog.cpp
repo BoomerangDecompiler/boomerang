@@ -791,6 +791,9 @@ void Prog::decompile() {
     // A final pass to remove return locations not used by any caller
     removeUnusedReturns();
 
+if (DEBUG_TA)
+    typeAnalysis();
+
     // Now it is OK to transform out of SSA form
     fromSSAform();
 
@@ -899,4 +902,17 @@ void Prog::fromSSAform() {
               proc->getName() << " =====\n\n";
         }
     }
+}
+
+void Prog::typeAnalysis() {
+    if (VERBOSE || DEBUG_TA)
+        std::cerr << "=== Start Type Analysis ===\n";
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        UserProc* proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->typeAnalysis();
+    }
+    if (VERBOSE || DEBUG_TA)
+        std::cerr << "=== End Type Analysis ===\n";
 }

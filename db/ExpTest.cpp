@@ -65,6 +65,7 @@ MYTEST(testFixSuccessor);
 	MYTEST(testKillFill);
 	MYTEST(testAssociativity);
     MYTEST(testSubscriptVar);
+    MYTEST(testTypeOf);
 }
 
 int ExpTest::countTestCases () const
@@ -649,7 +650,7 @@ void ExpTest::testSimplifyBinary() {
     CPPUNIT_ASSERT(*b == *expb2);
     delete b; delete expb2;
 
-    std::string expected("(((0 + v[a]) - 0) | 0) or 0");
+    std::string expected("(((0 + v[a]) - 0) | 0) \\/ 0");
     std::ostringstream ost;
     Exp* e =
         new Binary(opOr,
@@ -1081,3 +1082,35 @@ void ExpTest::testSubscriptVar() {
     delete ae; delete def1; delete def3; delete r28; delete left;
 }
 
+/*==============================================================================
+ * FUNCTION:        ExpTest::testTypeOf
+ * OVERVIEW:        Test opTypeOf and TypeVal (type values)
+ *============================================================================*/
+void ExpTest::testTypeOf() {
+    // Tr24{5} = Tr25{9}
+    std::string expected1("Tr24{5} = Tr25{9}");
+    Statement* s5 = new Assign;
+    Statement* s9 = new Assign;
+    s5->setNumber(5);
+    s9->setNumber(9);
+    Exp* e = new Binary(opEquals,
+        new Unary(opTypeOf,
+            new RefExp(Unary::regOf(24), s5)),
+        new Unary(opTypeOf,
+            new RefExp(Unary::regOf(25), s9)));
+    std::ostringstream actual1;
+    actual1 << e;
+    CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
+
+    // Tr24{5} = <float>
+    std::string expected2("Tr24{5} = <float>");
+    delete e;
+    Type* t = new FloatType(32);
+    e = new Binary(opEquals,
+        new Unary(opTypeOf,
+            new RefExp(Unary::regOf(24), s5)),
+        new TypeVal(t));
+    std::ostringstream actual2;
+    actual2 << e;
+    CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
+}
