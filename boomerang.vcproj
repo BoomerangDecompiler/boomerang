@@ -316,6 +316,12 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\frontend\ppcdecoder.cpp">
+			</File>
+			<File
+				RelativePath=".\frontend\ppcfrontend.cpp">
+			</File>
+			<File
 				RelativePath=".\db\proc.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -578,6 +584,12 @@
 			</File>
 			<File
 				RelativePath=".\frontend\pentiumfrontend.h">
+			</File>
+			<File
+				RelativePath=".\frontend\ppcdecoder.h">
+			</File>
+			<File
+				RelativePath=".\frontend\ppcfrontend.h">
 			</File>
 			<File
 				RelativePath=".\include\proc.h">
