@@ -955,10 +955,10 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 //        Exps = instantiate(pc,  "UNIMP");
 
     | MOV.Ed.Ivod(Eaddr, i32) =>
-        Exps = instantiate(pc,  "MOV.Eb.Ivod", DIS_EADDR32, DIS_I32);
+        Exps = instantiate(pc,  "MOV.Ed.Ivod", DIS_EADDR32, DIS_I32);
 
     | MOV.Ew.Ivow(Eaddr, i16) =>
-        Exps = instantiate(pc,  "MOV.Eb.Ivow", DIS_EADDR16, DIS_I16);
+        Exps = instantiate(pc,  "MOV.Ew.Ivow", DIS_EADDR16, DIS_I16);
 
     | MOV.Eb.Ib(Eaddr, i8) =>
         Exps = instantiate(pc,  "MOV.Eb.Ib", DIS_EADDR8, DIS_I8);

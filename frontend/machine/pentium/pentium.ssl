@@ -14,6 +14,7 @@
 
 # $Revision$
 # 16 Oct 98 - Mike: lower case register names to be consistent with sparc
+# 20 Nov 02 - Mike: Fixed MOV.ED.IVOD and MOV.EW.IVOW
 
 # Constants defined in hexadecimal (modelling manual) 
 MAX8BITS  := 0xFF;
@@ -874,11 +875,11 @@ LOOPS[IDX]   reloc
 MOV.EB.IB   modrm, i8 
             *8* modrm := i8;
 
-MOV.EB.IVOW   modrm, i8 
-            *16* modrm := sgnex(8, 16, i8);
+MOV.EW.IVOW   modrm, i16 
+            *16* modrm := i16;
 
-MOV.EB.IVOD   modrm, i8 
-            *32* modrm := sgnex(8, 32, i8);
+MOV.ED.IVOD   modrm, i32 
+            *32* modrm := i32;
 
 MOV.IB   reg8, i8 
             *8* r[reg8] := i8;
