@@ -65,6 +65,7 @@ typedef struct {
 #define EM_68K			4			// Motorola 68000
 #define EM_PA_RISC		15			// HP PA-RISC
 #define EM_SPARC32PLUS	18			// Sun SPARC 32+
+#define EM_PPC			20			// PowerPC
 
 #define ET_DYN	3		// Elf type (dynamic library)
 

@@ -3,6 +3,7 @@
 #define LOG_H
 
 #include "types.h"
+#include <fstream>
 
 class Statement;
 class Exp;

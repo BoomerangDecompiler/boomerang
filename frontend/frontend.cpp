@@ -70,9 +70,8 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
 		return new PentiumFrontEnd(pBF);
 	case MACHINE_SPARC:
 		return new SparcFrontEnd(pBF);
-	case MACHINE_HPRISC:
-	case MACHINE_PALM:
-		LOG << "Machine not supported\n";
+	default:
+		LOG << "Machine architecture not supported\n";
 	}
 	return NULL;
 }

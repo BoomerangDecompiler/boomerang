@@ -164,12 +164,14 @@ void updateCodeView()
 
 void saveUndoPoint()
 {
-	prog->takeMemo();
-	if (prog->canRestore())
-		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
-	else
-		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
+	if (prog) {
+		prog->takeMemo();
+		if (prog->canRestore())
+			EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
+		else
+			EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
+		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
+	}
 }
 
 // Forward declarations of functions included in this code module:
@@ -1594,6 +1596,8 @@ void doDecompile(struct decompile_params *params)
 {
 	someUnknown = false;
 	Boomerang::get()->decompile(params->target, params->name);
+	if (decodeDlg)
+		SendMessage(decodeDlg, WM_COMMAND, IDOK, 0);
 	hDecompilerThread = NULL;
 	updateDecompilerMenu();
 	saveUndoPoint();
