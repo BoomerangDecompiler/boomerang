@@ -300,7 +300,7 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\c"
+						AdditionalIncludeDirectories="..\..\c;..\..\include;..\..\win32make\include"
 						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 				<FileConfiguration
