@@ -20,6 +20,17 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
 {
 }
 
+class StdErrLogger : public Log {
+public:
+    StdErrLogger() : Log() { }
+    virtual Log &operator<<(const char *str) { std::cerr << str; return *this; }
+};
+
+Log &Boomerang::log() {
+    static StdErrLogger l;
+    return l;
+}
+
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
     return new CHLLCode(p);
 }

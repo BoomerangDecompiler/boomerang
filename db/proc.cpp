@@ -734,6 +734,13 @@ void UserProc::print(std::ostream &out, bool withDF) {
     out << "\n";
 }
 
+void UserProc::printToLog(bool withDF)
+{
+    std::ostringstream st;
+    print(st, withDF);
+    LOG << st.str().c_str();
+}
+
 // initialise all statements
 void UserProc::initStatements() {
     BB_IT it;

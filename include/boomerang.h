@@ -24,6 +24,9 @@
 #include "cfg.h"
 #include "proc.h"
 #include "hllcode.h"
+#include "log.h"
+
+#define LOG Boomerang::get()->log()
 
 class Boomerang {
 private:
@@ -40,7 +43,9 @@ public:
 	return boomerang;
     }
 
-    static HLLCode *getHLLCode(UserProc *p = NULL);
+    Log &log();
+
+    HLLCode *getHLLCode(UserProc *p = NULL);
 
     // performs command line operation
     int commandLine(int argc, const char **argv);

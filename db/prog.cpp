@@ -179,7 +179,7 @@ void Prog::generateDotFile() {
 }
 
 void Prog::generateCode(std::ostream &os) {
-    HLLCode *code = Boomerang::getHLLCode();
+    HLLCode *code = Boomerang::get()->getHLLCode();
     for (std::vector<Global*>::iterator it1 = globals.begin(); 
          it1 != globals.end(); it1++) {
         // Check for an initial value
@@ -223,7 +223,7 @@ void Prog::generateCode(std::ostream &os) {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
         p->getCFG()->compressCfg();
-        code = Boomerang::getHLLCode(p);
+        code = Boomerang::get()->getHLLCode(p);
         p->generateCode(code);
         code->print(os);
         delete code;
