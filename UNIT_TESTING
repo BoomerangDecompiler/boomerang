@@ -26,13 +26,14 @@ could:
 % cd bin
 % ln -s /home/myhomedir/cppunit-1.6.2/src/cppunit/.libs/libcppunit.so .
 % ln -s /home/myhomedir/cppunit-1.6.2/src/cppunit/.libs/libcppunit-1.6.so.0 .
-% export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/myhome/boomerang/bin
+% cd ../interface
+% ln -sf /home/myhomedir/cppunit-1.6.2/include/cppunit .
+% cd ../db
 % make test
 
 Using the bin directory (relative to the top of the boomerang file tree) makes
 sense because then you only need to do it once, and all directories (which
 have independent test programs) can access the same soft link. You need two
 soft links, because the linker uses one (.so), but at runtime, the system
-uses the versioned name (-1.6.so.0). LD_LIBRARY_PATH is searched by both
-the link editor ld (part of the make, called by g++), and the link editor
-(ld.so, called by the operating system when you run your programs).
+uses the versioned name (-1.6.so.0). LD_LIBRARY_PATH is no longer required
+as I've added -L../bin to all the makefiles.

@@ -8,7 +8,7 @@
 # $Revision$
 # 05 Apr 02 - Mike: Created. Added "test" target
 
-CC = g++ -g -I../interface
+CC = g++ -g -I../interface -L../bin
 CXX = $(CC)
 
 all: testExp
