@@ -156,8 +156,11 @@ public:
 #endif
 
                 // Header functions
-//virtual ADDRESS GetFirstHeaderAddress();        // Get ADDRESS of main header
-//    ADDRESS     GetNextHeaderAddress();         // Get any other headers
+//virtual ADDRESS GetFirstHeaderAddress();      // Get ADDRESS of main header
+//    ADDRESS     GetNextHeaderAddress();       // Get any other headers
+
+    int         readNative2(ADDRESS a);         // Read 2 bytes from native addr
+    int         readNative4(ADDRESS a);         // Read 4 bytes from native addr
 
                 // Symbol functions
     char*       SymbolByAddress(ADDRESS uAddr); // Get name of symbol

@@ -1383,6 +1383,22 @@ int ElfBinaryFile::elfRead4(int* pi) const{
         return (int) (elfRead2(p) + (elfRead2(p+1) << 16));
 }
 
+// Read 2 bytes from given native address
+int ElfBinaryFile::readNative2(ADDRESS nat) {
+    PSectionInfo si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    return elfRead2((short*)host);
+}
+
+// Read 4 bytes from given native address
+int ElfBinaryFile::readNative4(ADDRESS nat) {
+    PSectionInfo si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    return elfRead4((int*)host);
+}
+
 // This function is called via dlopen/dlsym; it returns a new BinaryFile
 // derived concrete object. After this object is returned, the virtual function
 // call mechanism will call the rest of the code in this library

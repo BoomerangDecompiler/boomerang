@@ -164,6 +164,10 @@ virtual ~BinaryFile() {}			// Virtual destructor
     bool isReadOnly(ADDRESS uEntry) { 
         return GetSectionInfoByAddr(uEntry)->bReadOnly;
     }
+    // Read 2 bytes from given native address a; considers endianness
+    virtual int readNative2(ADDRESS a) {return 0;}
+    // Read 4 bytes from given native address a; considers endianness
+    virtual int readNative4(ADDRESS a) {return 0;}
 
 // Symbol table functions
     // Lookup the address, return the name, or 0 if not found
