@@ -482,20 +482,14 @@ public:
     Statement* getFirstStmt(rtlit& rit, elit& it, elit& cit);
     Statement*  getNextStmt(rtlit& rit, elit& it, elit& cit);
 
-//
-//  SSA
-//
-
     /**
      * Transform the CFG to/from SSA form.
      */
     void toSSAform(int memDepth);
     void fromSSAform();
 
-    // FIXME: Some moved to prog.h now
-    /*
-     * Types and functions needed for fromSSA()
-     */
+    // Propagate, but do not remove statements
+    bool        propagateStatements(int memDepth);
 
 protected:
     // This is the set of statements whose definitions reach the end of this BB

@@ -1486,18 +1486,21 @@ void UserProc::propagateStatements(int memDepth) {
     // propagate any statements that can be
     StmtListIter it;
     int oldNumProp, numProp = 0;
-    do {
-        oldNumProp = numProp;
-        numProp = 0;
-        for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    oldNumProp = numProp;
+    numProp = 0; bool change;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        // Repeat substituting into s while there is a single reference
+        // component in this statement
+        do {
             LocationSet exps;
             s->addUsedLocs(exps);
             LocSetIter ll;
+            change = false;
             for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
                 if (e->getNumUses() != 1) continue;
                 // Can propagate TO s (if memory depths are suitable)
                 StmtSetIter dummy;
-                Statement* def = ((UsesExp*)e)->getFirstUses(dummy);
+                Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
                 // Check the depth of the definition (an assignment)
                 // This checks the depth for the left and right sides, and
                 // gives the max for both. Example: can't propagate
@@ -1505,16 +1508,16 @@ void UserProc::propagateStatements(int memDepth) {
                 int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
                 if (depth > memDepth)
                     continue;
-                s->replaceUse(def);
-                numProp++;
+                s->replaceRef(def);
+                numProp++; change = true;
                 if (VERBOSE) {
                     std::cerr << "Propagating " << def->getNumber() <<
                       " into " << s->getNumber() <<
                       ", result is " << s << "\n";
                 }
             }
-        }
-    } while (numProp != oldNumProp);
+        } while (change);
+    }
 }
 
 void UserProc::promoteSignature() {
@@ -1574,7 +1577,7 @@ void UserProc::removeUnusedStatements() {
         LocSetIter uu;
         for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
             if (u->isSubscript()) {
-                UsesExp* ue = (UsesExp*)u;
+                RefsExp* ue = (RefsExp*)u;
                 StmtSetIter xx;
                 for (Statement* def = ue->getFirstUses(xx); def;
                       def = ue->getNextUses(xx)) {

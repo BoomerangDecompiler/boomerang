@@ -662,7 +662,7 @@ public:
     virtual void fromSSAform(igraph& ig);
 
 protected:
-    virtual void doReplaceUse(Statement *def);
+    virtual void doReplaceRef(Exp* from, Exp* to);
 };
 
 /*==============================================================================
@@ -683,7 +683,7 @@ virtual     ~FlagDef();                         // Destructor
 };
 
 /*==============================================================================
- * UsesExp is a subclass of Unary, holding an ordinary Exp pointer, and
+ * RefsExp is a subclass of Unary, holding an ordinary Exp pointer, and
  *  a StatementSet
  * This is used for subscripting SSA variables. Example:
  * m[1000] becomes m[1000]{3} if defined at statement 3
@@ -691,14 +691,14 @@ virtual     ~FlagDef();                         // Destructor
  * the memof is defined at 3. The integers are really pointers to statements,
  * printed as the statement number for compactness
  *============================================================================*/
-class UsesExp : public Unary {
+class RefsExp : public Unary {
     StatementSet    stmtSet;            // A set of pointers to statements
 
 public:
             // Constructor with expression (e) and statement defining it (def)
-            UsesExp(Exp* e, Statement* def);
-            UsesExp(Exp* e);
-            UsesExp(UsesExp& o);
+            RefsExp(Exp* e, Statement* def);
+            RefsExp(Exp* e);
+            RefsExp(RefsExp& o);
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);

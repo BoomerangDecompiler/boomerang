@@ -146,12 +146,12 @@ AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size)
 FlagDef::FlagDef(Exp* params, RTL* rtl)
     : Unary(opFlagDef, params), rtl(rtl) {}
 
-UsesExp::UsesExp(Exp* e, Statement* def) : Unary(opSubscript, e) {
+RefsExp::RefsExp(Exp* e, Statement* def) : Unary(opSubscript, e) {
     stmtSet.insert(def);
 }
-UsesExp::UsesExp(Exp* e) : Unary(opSubscript, e) {
+RefsExp::RefsExp(Exp* e) : Unary(opSubscript, e) {
 }
-UsesExp::UsesExp(UsesExp& o) : Unary(o) {
+RefsExp::RefsExp(RefsExp& o) : Unary(o) {
     stmtSet = o.stmtSet;
 }
 
@@ -326,8 +326,8 @@ Exp* AssignExp::clone() {
     AssignExp* c = new AssignExp(size, subExp1->clone(), subExp2->clone());
     return c;
 }
-Exp* UsesExp::clone() {
-    UsesExp* c = new UsesExp(subExp1->clone());
+Exp* RefsExp::clone() {
+    RefsExp* c = new RefsExp(subExp1->clone());
     c->stmtSet = stmtSet;
     return c;
 }
@@ -406,22 +406,22 @@ bool AssignExp::operator==(const Exp& o) const {
            *((Binary*)this)->getSubExp2() == *((Binary&)o).getSubExp2();
 }
 
-bool UsesExp::operator==(const Exp& o) const {
+bool RefsExp::operator==(const Exp& o) const {
     if (op == opWild) return true;
-    if (((UsesExp&)o).op == opWild) return true;
-    if (((UsesExp&)o).op != opSubscript) return false;
-    if (!( *subExp1 == *((UsesExp&)o).subExp1)) return false;
-    return stmtSet == ((UsesExp&)o).stmtSet;
+    if (((RefsExp&)o).op == opWild) return true;
+    if (((RefsExp&)o).op != opSubscript) return false;
+    if (!( *subExp1 == *((RefsExp&)o).subExp1)) return false;
+    return stmtSet == ((RefsExp&)o).stmtSet;
 }
 
 // Compare, ignoring subscripts
 bool Exp::operator*=(const Exp& o) const {
     const Exp* one = this;
     if (op == opSubscript)
-        one = ((UsesExp*)this)->getSubExp1();
+        one = ((RefsExp*)this)->getSubExp1();
     Exp* two = const_cast<Exp*>(&o);
     if (two->isSubscript())
-        two = ((UsesExp*)two)->getSubExp1();
+        two = ((RefsExp*)two)->getSubExp1();
     return *one == *two;
 }
 
@@ -912,9 +912,9 @@ void AssignExp::getDefinitions(LocationSet &defs) {
 
 
 //  //  //  //
-// UsesExp  //
+// RefsExp  //
 //  //  //  //
-void UsesExp::print(std::ostream& os, bool withUses) {
+void RefsExp::print(std::ostream& os, bool withUses) {
     subExp1->print(os, withUses);
     if (withUses) {
         os << "{";
@@ -1204,7 +1204,7 @@ Exp* Exp::getGuard() {
 void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
   bool once) {
     bool compare;
-    compare = (*search *= *pSrc);           // Note: subscript insensitive
+    compare = (*search == *pSrc);
     if (compare) {
         li.push_back(&pSrc);                // Success
         if (once)
@@ -2584,22 +2584,17 @@ bool AssignExp::usesExp(Exp *e) {
         ((Unary*)subExp1)->getSubExp1()->search(e, where)));
 }
 
-void AssignExp::doReplaceUse(Statement *def) {
-    Exp *defLeft = def->getLeft();
-    Exp *defRight = def->getRight();
-    assert(defLeft);
-    assert(defRight);
+void AssignExp::doReplaceRef(Exp* from, Exp* to) {
     bool changeright = false;
-    subExp2 = subExp2->searchReplaceAll(defLeft, defRight, changeright);
+    subExp2 = subExp2->searchReplaceAll(from, to, changeright);
     bool changeleft = false;
-    Exp* baseSub1 = subExp1;
-    if (subExp1->isSubscript()) baseSub1 = ((UsesExp*)subExp1)->getSubExp1();
-    if (baseSub1->isMemOf()) {
-        Exp *e = baseSub1->getSubExp1()->clone();
-        e = e->searchReplaceAll(defLeft, defRight, changeleft);
-        baseSub1->setSubExp1(e);
+    // If LHS is a memof, substitute it's subexpression as well
+    if (subExp1->isMemOf()) {
+        Exp* subsub1 = ((Unary*)subExp1)->getSubExp1();
+        ((Unary*)subExp1)->setSubExp1ND(
+          subsub1->searchReplaceAll(from, to, changeleft));
     }
-//    assert(changeright || changeleft);
+    assert(changeright || changeleft);
     // simplify the expression
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
@@ -2689,7 +2684,7 @@ void AssignExp::addUsedLocs(LocationSet& used) {
     right->addUsedLocs(used);
     Exp* baseLeft = left;
     if (left->isSubscript())        // Should always be
-        baseLeft = ((UsesExp*)left)->getSubExp1();
+        baseLeft = ((RefsExp*)left)->getSubExp1();
     if (baseLeft->isMemOf()) {
         // We also use any expr like m[exp] on the LHS (but not the outer m[])
         Exp* baseLeftChild = ((Unary*)baseLeft)->getSubExp1();
@@ -2732,7 +2727,7 @@ void Ternary::addUsedLocs(LocationSet& used) {
     subExp3->addUsedLocs(used);
 }
 
-void UsesExp::addUsedLocs(LocationSet& used) {
+void RefsExp::addUsedLocs(LocationSet& used) {
     used.insert(clone());           // We want to see these
     if (subExp1->isMemOf()) {
         Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
@@ -2741,7 +2736,7 @@ void UsesExp::addUsedLocs(LocationSet& used) {
 }
 
 Exp* Exp::addSubscript(Statement* def) {
-        return new UsesExp(this, def);
+        return new RefsExp(this, def);
 }
 
 /*==============================================================================
@@ -2805,10 +2800,10 @@ Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth) {
 }
 
 //  //  //  //
-//  UsesExp //
+//  RefsExp //
 //  //  //  //
-Exp* UsesExp::updateRefs(StatementSet& defs, int memDepth) {
-    // The left of any definition can't be a UsesExp
+Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth) {
+    // The left of any definition can't be a RefsExp
     // (LHS not subscripted any more)
     subExp1 = subExp1->updateRefs(defs, memDepth);
     return this;
@@ -2844,7 +2839,7 @@ Exp* Terminal::updateRefs(StatementSet& defs, int memDepth) {
 // From SSA form
 //
 
-Exp* UsesExp::fromSSA(igraph& ig) {
+Exp* RefsExp::fromSSA(igraph& ig) {
     // FIXME: Need to check if the argument is a memof, and if so
     // deal with that specially (e.g. global)
     // Check to see if it is in the map
@@ -2926,7 +2921,7 @@ void Exp::check() {
             Unary* u = dynamic_cast<Unary*>(this);
             if (u) {
                 if (op == opSubscript) {
-                    UsesExp* u = dynamic_cast<UsesExp*>(this);
+                    RefsExp* u = dynamic_cast<RefsExp*>(this);
                     if (u) std::cerr << ".";
                     else
                         std::cerr << "Here it is!!!\n";

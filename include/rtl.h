@@ -402,7 +402,7 @@ public:
     virtual void fromSSAform(igraph& ig);
 
 protected:
-    virtual void doReplaceUse(Statement *def);
+    virtual void doReplaceRef(Exp* from, Exp* to);
 
 private:
     JCOND_TYPE jtCond;          // The condition for jumping
@@ -595,7 +595,7 @@ public:
     void    insertArguments();
 
 protected:
-    virtual void doReplaceUse(Statement *def);
+    virtual void doReplaceRef(Exp* from, Exp* to);
 
 private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
@@ -753,7 +753,7 @@ public:
     virtual bool search(Exp *search, Exp *&result);
     virtual bool searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
-    virtual void doReplaceUse(Statement *def);
+    virtual void doReplaceRef(Exp* from, Exp* to);
     // to/from SSA form
     virtual void toSSAform(StatementSet& reachin, int memdepth) {
         pCond = pCond->updateRefs(reachin, memdepth);}

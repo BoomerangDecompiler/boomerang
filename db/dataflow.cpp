@@ -96,66 +96,26 @@ void Statement::calcUseLinks() {
 }
 
 // replace a use in this statement
-void Statement::replaceUse(Statement *def) {
-#if 0
-    if (VERBOSE) {
-        std::cerr << "replace ";
-        def->printAsUse(std::cerr);
-        std::cerr << " in ";
-        printAsUse(std::cerr);
-        std::cerr << std::endl;
-    }
-
-    // Fix dataflow. Both directions need fixing
-    //   Before           After
-    //     (1)             (1)
-    //     ^ |usedBy       ^ |
-    // uses| v             | |
-    //     (2) = *use  uses| |usedBy
-    //     ^ |usedBy       | |
-    // uses| v             | v
-    //     (3) = this      (3)
-    // Fix my ud chain; no longer using *use
-    uses.remove(use);
-    // However, we are now using whatever *use was using
-    // Actually, it's possible *use had uses on it's left that will not be
-    // propagated in the replacement, we have to remove these later - trent
-    uses.makeUnion(use->uses);
-    // Fix the du chains that pointed in to the statement that will
-    // be removed; they now point to this 
-    StmtSetIter ii;
-    StatementSet& useUses = use->uses;
-    for (Statement* s = useUses.getFirst(ii); s; s = useUses.getNext(ii)) {
-        s->usedBy.remove(use);
-        // They now point to this
-        s->usedBy.insert(this);
-    }
-#endif
+void Statement::replaceRef(Statement *def) {
+int src=def->getNumber(); int tgt=getNumber();
+if (src==42 && tgt==23)
+  std::cerr << "HACK!\n";
+    Exp* lhs = def->getLeft();
+    Exp* rhs = def->getRight();
+    assert(lhs);
+    assert(rhs);
+    // "Wrap" the LHS in a single ref RefsExp
+    // This is so that it doesn't "short circuit" to unsubscripted variables
+    // Example: 42:r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
+    // The bare r28 on the left "short circuits" to the bare r28 in this LHS
+    RefsExp re(lhs, def);
 
     // do the replacement
-    doReplaceUse(def);
+    doReplaceRef(&re, rhs);
 
-#if 0
-    // remove any uses that are not actually used by this statement
-    bool change = true;
-    while (change) {
-        change = false;
-        for (Statement* s = uses.getFirst(ii); s; s = uses.getNext(ii)) {
-            if (!s->getLeft() || !usesExp(s->getLeft())) {
-                assert(s); 
-                s->usedBy.remove(this);
-                uses.remove(s);
-                change = true; 
-                break;
-            }
-        }
-    }
-    if (VERBOSE) {
-        std::cerr << "   after: ";
-        printAsUse(std::cerr);
-        std::cerr << std::endl;
-    }
-#endif
+    // Careful: don't allow re to destruct while lhs is still a part of it!
+    // Else, will delete lhs, which is still a part of def!
+    re.setSubExp1ND(NULL);
 }
 
 /* Get everything that reaches this assignment.
@@ -451,9 +411,7 @@ bool Statement::canPropagateToAll() {
 void Statement::propagateToAll() {
     StmtSetIter it;
     for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
-if (s == this) std::cerr << "Attempt to propagate " << this << " to self!\n";
-assert(s != this);
-        s->replaceUse(this);
+        s->replaceRef(this);
     }
 }
 

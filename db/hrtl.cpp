@@ -540,7 +540,7 @@ Type *HLJcond::updateType(Exp *e, Type *curType) {
 
 // Convert from SSA form
 void HLJcond::fromSSAform(igraph& ig) {
-
+   pCond = pCond->fromSSA(ig); 
 }
 
 /*==============================================================================
@@ -715,10 +715,10 @@ void HLJcond::printAsUseBy(std::ostream &os) {
 void HLJcond::processConstants(Prog *prog) {
 }
 
-void HLJcond::doReplaceUse(Statement *def) {
+void HLJcond::doReplaceRef(Exp* from, Exp* to) {
     bool change;
     assert(pCond);
-    pCond = pCond->searchReplaceAll(def->getLeft(), def->getRight(), change);
+    pCond = pCond->searchReplaceAll(from, to, change);
     simplify();
 }
 
@@ -1551,15 +1551,10 @@ void HLCall::getDefinitions(LocationSet &defs)
     }
 }
 
-void HLCall::doReplaceUse(Statement *def) {
-    Exp *defLeft = def->getLeft()->clone();        // Note: could be changed!
-    Exp *defRight = def->getRight()->clone();
-    assert(defLeft);
-    assert(defRight);
+void HLCall::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
-
     for (unsigned i = 0; i < arguments.size(); i++) {
-        arguments[i] = arguments[i]->searchReplaceAll(defLeft, defRight,
+        arguments[i] = arguments[i]->searchReplaceAll(from, to,
           change);
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
@@ -1617,7 +1612,10 @@ void HLCall::toSSAform(StatementSet& reachin, int memDepth) {
 
 // Convert from SSA form
 void HLCall::fromSSAform(igraph& ig) {
-    // FIXME: process arguments
+    int n = arguments.size();
+    for (int i=0; i < n; i++) {
+        arguments[i] = arguments[i]->fromSSA(ig);
+    }
 }
 
 // Insert actual arguments to match the formal parameters
@@ -1668,7 +1666,7 @@ void HLCall::processConstants(Prog *prog) {
 #endif
     }
 
-    // This code was in HLCall:doReplaceUse()
+    // This code was in HLCall:doReplaceRef()
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
@@ -2096,11 +2094,12 @@ Type* HLScond::updateType(Exp *e, Type *curType) {
 
 // Convert from SSA form
 void HLScond::fromSSAform(igraph& ig) {
-    // To be completed
+    pCond = pCond->fromSSA(ig); 
+    pDest = pDest->fromSSA(ig);
 }
 
-void HLScond::doReplaceUse(Statement *def) {
-    searchAndReplace(def->getLeft(), def->getRight());
+void HLScond::doReplaceRef(Exp* from, Exp* to) {
+    searchAndReplace(from, to);
     simplify();
 }
 
