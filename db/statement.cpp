@@ -1444,7 +1444,8 @@ Type *BranchStatement::updateType(Exp *e, Type *curType) {
 
 // Convert from SSA form
 void BranchStatement::fromSSAform(igraph& ig) {
-   pCond = pCond->fromSSA(ig); 
+    if (pCond)
+        pCond = pCond->fromSSA(ig); 
 }
 
 /*==============================================================================

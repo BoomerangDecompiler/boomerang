@@ -2040,7 +2040,8 @@ bool UserProc::prove(Exp *query)
     }
 
     proven.insert(original);
-    if (!prover(query)) {
+    std::set<PhiExp*> lastPhis;
+    if (!prover(query, lastPhis)) {
         proven.erase(original);
         delete original;
         return false;
@@ -2050,7 +2051,7 @@ bool UserProc::prove(Exp *query)
     return true;
 }
 
-bool UserProc::prover(Exp *query, PhiExp *lastPhi)
+bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
 {
     Exp *phiInd = query->getSubExp2()->clone();
     query = query->clone();
@@ -2107,10 +2108,11 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                         PhiExp *p = (PhiExp*)s->getRight();
                         StmtVecIter it;
                         bool ok = true;
-                        if (p == lastPhi) {
+                        if (lastPhis.find(p) != lastPhis.end()) {
                             if (VERBOSE)
                                 std::cerr << "phi loop detected ";
-                            ok = (*query->getSubExp2() == *phiInd);
+                            ok = (p == lastPhi && 
+                                  *query->getSubExp2() == *phiInd);
                             if (ok && VERBOSE)
                                 std::cerr << "(set true due to induction)" 
                                           << std::endl;
@@ -2131,11 +2133,13 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                                 if (VERBOSE)
                                     std::cerr << "proving for " << e 
                                               << std::endl;
-                                if (!prover(e, p)) { 
+                                lastPhis.insert(lastPhi);
+                                if (!prover(e, lastPhis, p)) { 
                                     ok = false; 
                                     delete e; 
                                     break; 
                                 }
+                                lastPhis.erase(lastPhi);
                                 delete e;
                             }
                         }

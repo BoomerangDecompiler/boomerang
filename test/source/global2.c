@@ -1,5 +1,5 @@
 
-float a = 5.2f;
+double a = 5.2;
 int b = 7;
 
 void foo2()
