@@ -3334,8 +3334,8 @@ bool BoolStatement::accept(StmtExpVisitor* v) {
 bool Assign::accept(StmtModifier* v) {
     v->visit(this);
     v->mod->clearMod();
-    if (lhs) lhs = lhs->acceptMod(v->mod);
-    if (rhs) rhs = rhs->acceptMod(v->mod);
+    if (lhs) lhs = lhs->accept(v->mod);
+    if (rhs) rhs = rhs->accept(v->mod);
     if (VERBOSE && v->mod->isMod())
         LOG << "Assignment changed: now " << this << "\n";
     return true;
@@ -3344,35 +3344,35 @@ bool Assign::accept(StmtModifier* v) {
 bool GotoStatement::accept(StmtModifier* v) {
     v->visit(this);
     if (pDest)
-        pDest = pDest->acceptMod(v->mod);
+        pDest = pDest->accept(v->mod);
     return true;
 }
 
 bool BranchStatement::accept(StmtModifier* v) {
     v->visit(this);
     if (pDest)
-        pDest = pDest->acceptMod(v->mod);
+        pDest = pDest->accept(v->mod);
     return true;
 }
 
 bool CaseStatement::accept(StmtModifier* v) {
     v->visit(this);
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->acceptMod(v->mod);
+        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->mod);
     return true;
 }
 
 bool CallStatement::accept(StmtModifier* v) {
     v->visit(this);
     if (pDest)
-        pDest = pDest->acceptMod(v->mod);
+        pDest = pDest->accept(v->mod);
     std::vector<Exp*>::iterator it;
     for (it = arguments.begin(); it != arguments.end(); it++)
-        *it = (*it)->acceptMod(v->mod);
+        *it = (*it)->accept(v->mod);
     for (it = implicitArguments.begin(); it != implicitArguments.end(); it++)
-        *it = (*it)->acceptMod(v->mod);
+        *it = (*it)->accept(v->mod);
     for (it = returns.begin(); it != returns.end(); it++)
-        *it = (*it)->acceptMod(v->mod);
+        *it = (*it)->accept(v->mod);
     return true;
 }
 
@@ -3380,14 +3380,14 @@ bool ReturnStatement::accept(StmtModifier* v) {
     v->visit(this);
     std::vector<Exp*>::iterator it;
     for (it = returns.begin(); it != returns.end(); it++)
-        *it = (*it)->acceptMod(v->mod);
+        *it = (*it)->accept(v->mod);
     return true;
 }
 
 bool BoolStatement::accept(StmtModifier* v) {
     v->visit(this);
     if (pCond)
-        pCond = pCond->acceptMod(v->mod);
+        pCond = pCond->accept(v->mod);
     return true;
 }
 
