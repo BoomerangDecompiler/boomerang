@@ -1964,9 +1964,7 @@ void CallStatement::setSigArguments() {
             arguments.push_back(procDest->getSignature()->
                             getArgumentExp(arguments.size())->clone());
     }
-    UserProc *u = dynamic_cast<UserProc*>(procDest);
-    if (u)
-        u->addCaller(this);
+    procDest->addCaller(this);
 
     // initialize returns
     for (int i = 0; i < procDest->getSignature()->getNumReturns(); i++)
@@ -2436,6 +2434,17 @@ void CallStatement::processConstants(Prog *prog) {
                                      new Unary(opMemOf, arguments[i]));
         }
 #endif
+    }
+
+    // hack
+    if (getDestProc() && getDestProc()->isLib()) {
+        Exp *esp = Unary::regOf(28);
+        if (getDestProc()->getSignature()->getNumParams() >= 1 &&
+            *getDestProc()->getSignature()->getParamExp(0) == *esp) {
+            getDestProc()->removeParameter(esp);
+            getDestProc()->removeReturn(esp);
+        }
+        delete esp;
     }
 
     // This code was in CallStatement:doReplaceRef()

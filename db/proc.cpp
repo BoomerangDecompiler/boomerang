@@ -878,6 +878,18 @@ void UserProc::numberStatements(int& stmtNum) {
     }
 }
 
+void UserProc::numberPhiStatements(int& stmtNum) {
+    BB_IT it;
+    BasicBlock::rtlit rit; stmtlistIt sit;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        for (Statement* s = bb->getFirstStmt(rit, sit); s;
+             s = bb->getNextStmt(rit, sit))
+            if (s->isPhi() && s->getNumber() == 0)
+                s->setNumber(++stmtNum);
+    }
+}
+
+
 // get all statements
 // Get to a statement list, so they come out in a reasonable and consistent
 // order
@@ -996,6 +1008,10 @@ std::set<UserProc*>* UserProc::decompile() {
     cfg->dominators();
 
 
+    // Number the statements
+    int stmtNumber = 0;
+    numberStatements(stmtNumber); 
+
     // For each memory depth
     int maxDepth = findMaxDepth() + 1;
     if (Boomerang::get()->maxMemDepth < maxDepth)
@@ -1005,10 +1021,8 @@ std::set<UserProc*>* UserProc::decompile() {
         // Place the phi functions for this memory depth
         cfg->placePhiFunctions(depth, this);
 
-        // Number the statements
-        int stmtNumber = 0;
-        numberStatements(stmtNumber); 
-
+        // Number them
+        numberPhiStatements(stmtNumber);
 
         // Rename variables
         cfg->renameBlockVars(0, depth);
@@ -1249,6 +1263,14 @@ void UserProc::addNewParameters() {
             bool allZero;
             Exp *e = result->clone()->removeSubscripts(allZero);
             if (allZero && signature->findParam(e) == -1) {
+                int sp = signature->getStackRegister(prog);
+                if (e->isMemOf() && e->getSubExp1()->getOper() == opMinus &&
+                    *e->getSubExp1()->getSubExp1() == *Unary::regOf(sp) &&
+                    e->getSubExp1()->getSubExp2()->isIntConst()) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring local " << e << std::endl;
+                    continue;
+                }
                 if (VERBOSE)
                     std::cerr << "Found new parameter " << e << std::endl;
                 addParameter(e);
@@ -1297,7 +1319,7 @@ void UserProc::trimParameters() {
         }
 }
 
-void UserProc::removeReturn(Exp *e)
+void Proc::removeReturn(Exp *e)
 {
     signature->removeReturn(e);
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
@@ -1305,7 +1327,7 @@ void UserProc::removeReturn(Exp *e)
             (*it)->removeReturn(e);
 }
 
-void UserProc::removeParameter(Exp *e)
+void Proc::removeParameter(Exp *e)
 {
     int n = signature->findParam(e);
     if (n != -1) {
@@ -1316,7 +1338,7 @@ void UserProc::removeParameter(Exp *e)
     }
 }
 
-void UserProc::addParameter(Exp *e)
+void Proc::addParameter(Exp *e)
 {
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
          it != callerSet.end(); it++)
@@ -2071,12 +2093,7 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                                       << call->getDestProc()->getName() << " " 
                                       << r->getSubExp1() 
                                       << " = " << right << std::endl;
-                        Exp *oldr = right->clone();
                         right = call->substituteParams(right);
-                        if (*oldr == *right) {
-                            right = right->
-                                expSubscriptVar(new Terminal(opWild), NULL);
-                        }
                         query->setSubExp1(right);
                         change = true;
                     }

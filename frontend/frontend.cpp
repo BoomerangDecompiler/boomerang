@@ -226,7 +226,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     p->yyparse(s.c_str());
 
     for (std::list<Signature*>::iterator it = p->signatures.begin();
-     it != p->signatures.end(); it++)
+         it != p->signatures.end(); it++)
         librarySignatures[(*it)->getName()] = *it;
 
     delete p;

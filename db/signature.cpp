@@ -55,9 +55,9 @@ namespace CallingConvention {
         virtual bool serialize(std::ostream &ouf, int len);
         virtual bool deserialize_fid(std::istream &inf, int fid);
 
-        virtual Exp *getReturnExp();
-
-        virtual Exp *getParamExp(int n);
+        virtual void addReturn(Type *type, Exp *e = NULL);
+        virtual void addParameter(Type *type, const char *nam = NULL, 
+                                  Exp *e = NULL);
         virtual Exp *getArgumentExp(int n);
 
         virtual Signature *promote(UserProc *p);
@@ -79,9 +79,9 @@ namespace CallingConvention {
             virtual bool serialize(std::ostream &ouf, int len);
             virtual bool deserialize_fid(std::istream &inf, int fid);
 
-            virtual Exp *getReturnExp();
-
-            virtual Exp *getParamExp(int n);
+            virtual void addReturn(Type *type, Exp *e = NULL);
+            virtual void addParameter(Type *type, const char *nam = NULL, 
+                                      Exp *e = NULL);
             virtual Exp *getArgumentExp(int n);
 
             virtual Signature *promote(UserProc *p);
@@ -103,9 +103,9 @@ namespace CallingConvention {
             virtual bool serialize(std::ostream &ouf, int len);
             virtual bool deserialize_fid(std::istream &inf, int fid);
 
-            virtual Exp *getReturnExp();
-
-            virtual Exp *getParamExp(int n);
+            virtual void addReturn(Type *type, Exp *e = NULL);
+            virtual void addParameter(Type *type, const char *nam = NULL, 
+                                      Exp *e = NULL);
             virtual Exp *getArgumentExp(int n);
 
             virtual Signature *promote(UserProc *p);
@@ -129,6 +129,7 @@ Signature *CallingConvention::Win32Signature::clone()
 {
     Win32Signature *n = new Win32Signature(name.c_str());
     n->params = params;
+    n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
     return n;
@@ -246,21 +247,29 @@ bool CallingConvention::Win32Signature::deserialize_fid(std::istream &inf, int f
     return true;
 }
 
-Exp *CallingConvention::Win32Signature::getReturnExp()
-{   
-    return new Unary(opRegOf, new Const(24));
+void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
+{
+    if (e == NULL) {
+        e = Unary::regOf(24);
+    }
+    Signature::addReturn(type, e);
+}
+    
+void CallingConvention::Win32Signature::addParameter(Type *type, 
+                             const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+{
+    if (e == NULL) {
+        e = getArgumentExp(params.size());
+    }
+    Signature::addParameter(type, nam, e);
 }
 
-Exp *CallingConvention::Win32Signature::getParamExp(int n)
-{
+Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
+    if (n < (int)params.size())
+        return Signature::getArgumentExp(n);
     Exp *esp = new Unary(opRegOf, new Const(28));
-    return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
-}
-
-Exp *CallingConvention::Win32Signature::getArgumentExp(int n)
-{
-    Exp *esp = new Unary(opRegOf, new Const(28));
-    return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+    Exp *e = new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+    return e;
 }
 
 Signature *CallingConvention::Win32Signature::promote(UserProc *p)
@@ -289,7 +298,8 @@ void CallingConvention::Win32Signature::getInternalStatements(StatementList &stm
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
 {
-    addReturn(Unary::regOf(24));   // actually, what about void?
+    Signature::addReturn(Unary::regOf(28));
+    Signature::addParameter(Unary::regOf(28));
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old)
@@ -301,6 +311,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
 {
     PentiumSignature *n = new PentiumSignature(name.c_str());
     n->params = params;
+    n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
     return n;
@@ -420,24 +431,31 @@ bool CallingConvention::StdC::PentiumSignature::deserialize_fid(std::istream &in
     return true;
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getReturnExp()
+void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 {
-    return new Unary(opRegOf, new Const(24));
+    if (e == NULL) {
+        e = Unary::regOf(24);
+    }
+    Signature::addReturn(type, e);
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getParamExp(int n)
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, 
+                             const char *nam /*= NULL*/, Exp *e /*= NULL*/)
 {
-    Exp *esp = new Unary(opRegOf, new Const(28));
-    return new Unary(opMemOf, new Binary(opPlus, esp, new Const((int)((n+1) * 4))));
+    if (e == NULL) {
+        e = getArgumentExp(params.size());
+    }
+    Signature::addParameter(type, nam, e);
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n)
-{
+Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
+    if (n < (int)params.size())
+        return Signature::getArgumentExp(n);
     Exp *esp = new Unary(opRegOf, new Const(28));
-        //if (n == 0)
-    //    return new Unary(opMemOf, esp);
-    return new Unary(opMemOf, new Binary(opPlus, esp, 
-                new Const((int)((n+1) * 4))));
+    if (params.size() != 0 && *params[0]->getExp() == *esp)
+        n--;
+    Exp *e = new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+    return e;
 }
 
 Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
@@ -491,6 +509,7 @@ CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) :
 Signature *CallingConvention::StdC::SparcSignature::clone() {
     SparcSignature *n = new SparcSignature(name.c_str());
     n->params = params;
+    n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
     return n;
@@ -566,50 +585,39 @@ bool CallingConvention::StdC::SparcSignature::deserialize_fid(std::istream &inf,
     return true;
 }
 
-Exp *CallingConvention::StdC::SparcSignature::getReturnExp()
+void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 {
-    // MVE: Note that doubles are returned in f0:f1
-    // So how do we say that?
-    // When structs are returned, the size appears after the end of the
-    // function
-    // For most things, the return value ends up in %o0, from the caller's
-    // perspective. For most callees (with save/restore), the actual assign-
-    // ment will be to %i0 (register 24), and the restore will copy %i0 to %o0.
-    return new Unary(opRegOf, new Const(8));
+    if (e == NULL) {
+        e = Unary::regOf(8);
+    }
+    Signature::addReturn(type, e);
 }
 
-Exp *CallingConvention::StdC::SparcSignature::getParamExp(int n)
+void CallingConvention::StdC::SparcSignature::addParameter(Type *type, 
+                             const char *nam /*= NULL*/, Exp *e /*= NULL*/)
 {
-    // Note: although it looks like actual parameters are in %i0, %i1 etc in
-    // most SPARC procedures, this is a result of the semantics of the commonly
-    // seen (but not essential) SAVE instruction. So in reality, both formal
-    // and actual parameters are seen in %o0, %o1, ... at the start of the
-    // procedure
-    // return new Unary(opRegOf, new Const((int)(24 + n)));
+    if (e == NULL) {
+        e = getArgumentExp(params.size());
+    }
+    Signature::addParameter(type, nam, e);
+}
+
+Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
+    if (n < (int)params.size())
+        return Signature::getArgumentExp(n);
+    Exp *e;
     if (n >= 6) {
         // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
         // m[%esp+96], etc.
-        return new Unary(opMemOf,
+        e = new Unary(opMemOf,
             new Binary(opPlus,
                 new Unary(opRegOf, new Const(14)),      // %o6 == %sp
                 new Const(92 + (n-6)*4)));
-    }
-    return new Unary(opRegOf, new Const((int)(8 + n)));
+    } else
+        e = new Unary(opRegOf, new Const((int)(8 + n)));
+    return e;
 }
-
-Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n)
-{
-    if (n >= 6) {
-        // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
-        // m[%esp+96], etc.
-        return new Unary(opMemOf,
-            new Binary(opPlus,
-                new Unary(opRegOf, new Const(14)),      // %o6 == %sp
-                new Const(92 + (n-6)*4)));
-    }
-    return new Unary(opRegOf, new Const((int)(8 + n)));
-}
-
+ 
 Signature *CallingConvention::StdC::SparcSignature::promote(UserProc *p)
 {
     // no promotions from here up, obvious example would be name mangling
@@ -634,6 +642,7 @@ Signature *Signature::clone()
 {
     Signature *n = new Signature(name.c_str());
     n->params = params;
+    n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
     return n;
@@ -734,25 +743,6 @@ bool Signature::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-Exp *Signature::getReturnExp()
-{
-    return NULL;
-}
-
-Type *Signature::getReturnType()
-{
-    if ((rettype == NULL || rettype->isVoid()) && returns.size() == 1) {
-        rettype = returns[0]->getType();
-    }
-    return rettype;
-}
-
-void Signature::setReturnType(Type *t)
-{
-    if (rettype) delete rettype;
-    rettype = t;
-}
-
 const char *Signature::getName()
 {
     return name.c_str();
@@ -795,6 +785,21 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/,
     addParameter(new Parameter(type, nam, e));
 }
 
+void Signature::addParameter(Parameter *param)
+{
+    Type *ty = param->getType();
+    const char *nam = param->getName();
+    Exp *e = param->getExp();
+
+    if (strlen(nam) == 0)
+        nam = NULL;
+
+    if (ty == NULL || e == NULL || nam == NULL) {
+        addParameter(ty, nam, e);
+    } else
+        params.push_back(param);
+}
+
 void Signature::removeParameter(Exp *e)
 {
     int i = findParam(e);
@@ -831,9 +836,6 @@ const char *Signature::getParamName(int n) {
 
 Exp *Signature::getParamExp(int n) {
     assert(n < (int)params.size());
-    // FIXME: I think this should return a clone, and callers should not have
-    // to clone the result. Derived class versions of these return new
-    // expressions (e.g. PentiumSignature::getParamExp())
     return params[n]->getExp();
 }
 
@@ -893,6 +895,10 @@ Type *Signature::getReturnType(int n) {
     return returns[n]->getType();
 }
 
+void Signature::setReturnType(int n, Type *ty) {
+    returns[n]->setType(ty);
+}
+
 void Signature::fixReturnsWithParameters() {
     for (unsigned i = 0; i < params.size(); i++) { 
         int n = returns.size();
@@ -907,7 +913,6 @@ void Signature::fixReturnsWithParameters() {
 }
 
 Exp *Signature::getArgumentExp(int n) {
-    // TODO: esp?
     return getParamExp(n);
 }
 
@@ -961,10 +966,15 @@ void Signature::print(std::ostream &out)
 {
     out << rettype->getCtype() << " " << name << "(";
     for (unsigned i = 0; i < params.size(); i++) {
-        out << params[i]->getType()->getCtype() << " " << params[i]->getName();
+        out << params[i]->getType()->getCtype() << " " << params[i]->getExp();
         if (i != params.size()-1) out << ", ";
     }
-    out << ")" << std::endl;
+    out << ") { "; 
+    for (unsigned i = 0; i < returns.size(); i++) {
+        out << returns[i]->getExp();
+        if (i != returns.size()-1) out << ", ";
+    }
+    out << " }" << std::endl;
 }
 
 void Signature::getInternalStatements(StatementList &stmts)
@@ -1105,6 +1115,7 @@ Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
 // A bit of a cludge. Problem is that we can't call the polymorphic
 // getReturnExp() until signature promotion has happened. For the switch
 // logic, that happens way too late. So for now, we have this cludge.
+// This is very very hacky! (trent)
 /*static*/ Exp* Signature::getReturnExp2(BinaryFile* pBF) {
     switch (pBF->GetMachine()) {
         case MACHINE_SPARC: 
@@ -1115,6 +1126,7 @@ Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
             std::cerr << "getReturnExp2: machine not handled\n";
             return NULL;
     }
+    return NULL;
 }
 
 // Not very satisfying to do things this way. Problem is that the polymorphic

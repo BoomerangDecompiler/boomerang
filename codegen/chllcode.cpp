@@ -665,7 +665,10 @@ void CHLLCode::AddProcStart(Signature *signature)
 {
     char s[1024];
     s[0] = 0;
-    appendType(s, signature->getReturnType());
+    if (signature->getNumReturns() == 0) {
+        strcat(s, "void");
+    }  else 
+        appendType(s, signature->getReturnType(0));
     strcat(s, " ");
     strcat(s, signature->getName());
     strcat(s, "(");

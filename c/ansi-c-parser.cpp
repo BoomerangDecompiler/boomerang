@@ -1339,7 +1339,7 @@ case 10:
 case 11:
 #line 115 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, NULL);
-       sig->setReturnType(yyvsp[-7].type);
+       sig->addReturn(yyvsp[-7].type);
        for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
             it != yyvsp[-1].param_list->end(); it++)
            if (std::string((*it)->getName()) != "...")
@@ -1363,7 +1363,7 @@ case 13:
 case 14:
 #line 137 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, yyvsp[-4].str); 
-           sig->setReturnType(yyvsp[-5].type);
+           sig->addReturn(yyvsp[-5].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
                 it != yyvsp[-2].param_list->end(); it++)
                if (std::string((*it)->getName()) != "...")

@@ -201,6 +201,20 @@ public:
 
     Exp *getProven(Exp *left);
 
+    /*
+     * Get the callers
+     */
+    std::set<CallStatement*>& getCallers() { return callerSet; }
+
+    /*
+     * Add to the set of callers
+     */
+    void addCaller(CallStatement* caller) { callerSet.insert(caller); }
+
+    void removeReturn(Exp *e);
+    void removeParameter(Exp *e);
+    void addParameter(Exp *e);
+
 protected:
 
     /*
@@ -233,6 +247,11 @@ protected:
 
     // all the expressions that have been proven about this proc
     std::set<Exp*, lessExpStar> proven;
+
+    /*
+     * Set of callers (CallStatements that call this procedure).
+     */
+    std::set<CallStatement*> callerSet;
 }; 
 
 /*==============================================================================
@@ -343,11 +362,6 @@ class UserProc : public Proc {
     std::set<Proc*> calleeSet;
     std::set<ADDRESS> calleeAddrSet;  // used in serialization
  
-    /*
-     * Set of callers (CallStatements that call this procedure).
-     */
-    std::set<CallStatement*> callerSet;
-
      /*
      * Set if visited on the way down the call tree during decompile()
      * Used for recursion detection
@@ -453,15 +467,13 @@ public:
     // Initialise the statements, e.g. proc, bb pointers
     void initStatements();
     void numberStatements(int& stmtNum);
+    void numberPhiStatements(int& stmtNum);
     bool nameStackLocations();
     bool nameRegisters();
     void removeRedundantPhis();
     void trimReturns();
     void addNewParameters();
     void trimParameters();
-    void removeReturn(Exp *e);
-    void removeParameter(Exp *e);
-    void addParameter(Exp *e);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters(int depth);   // must be in SSA form
@@ -612,16 +624,6 @@ public:
      * Add to the set of callees
      */
     void setCallee(Proc* callee); 
-
-    /*
-     * Get the callers
-     */
-    std::set<CallStatement*>& getCallers() { return callerSet; }
-
-    /*
-     * Add to the set of callers
-     */
-    void addCaller(CallStatement* caller) { callerSet.insert(caller); }
 
     /*
      * return true if this procedure contains the given address

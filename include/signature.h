@@ -46,6 +46,7 @@ public:
     ~Return() { delete type; delete exp; }
 
     Type *getType() { return type; }
+    void setType(Type *ty) { type = ty; }
     Exp *getExp() { return exp; }
     Exp*& getRefExp() {return exp;}
     void setExp(Exp* e) { exp = e; }
@@ -78,10 +79,6 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // get the return location
-    virtual Exp *getReturnExp();
-    static  Exp *getReturnExp2(BinaryFile *pBF);
-    virtual Type *getReturnType();
-    virtual void setReturnType(Type *t);
     virtual void addReturn(Type *type, Exp *e = NULL);
     virtual void addReturn(Exp *e);
     virtual void addReturn(Return *ret) { returns.push_back(ret); }
@@ -90,6 +87,7 @@ public:
     virtual Exp *getReturnExp(int n);
     void         setReturnExp(int n, Exp* e);
     virtual Type *getReturnType(int n);
+    virtual void setReturnType(int n, Type *ty);
     virtual int findReturn(Exp *e);
     void fixReturnsWithParameters();
 
@@ -102,7 +100,7 @@ public:
     virtual void addParameter(Type *type, const char *nam = NULL, 
                               Exp *e = NULL);
     virtual void addParameter(Exp *e);
-    virtual void addParameter(Parameter *param) { params.push_back(param); }
+    virtual void addParameter(Parameter *param);
     virtual void addEllipsis() { ellipsis = true; }
     virtual void removeParameter(Exp *e);
     virtual void removeParameter(int i);
@@ -146,6 +144,7 @@ public:
             int  getStackRegister(Prog* prog);
 
     // Quick and dirty hack
+static Exp* getReturnExp2(BinaryFile* pBF);
 static StatementList& getStdRetStmt(Prog* prog);
 
     // get anything that can be proven as a result of the signature
