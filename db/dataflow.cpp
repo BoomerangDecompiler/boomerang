@@ -32,6 +32,11 @@
 #include "exp.h"
 #include "cfg.h"
 #include "proc.h"
+#include "boomerang.h"
+
+#define VERBOSE Boomerang::get()->vFlag
+
+
 
 // Flush the cached dataflow
 void Statement::flushDataFlow() {
@@ -40,6 +45,7 @@ void Statement::flushDataFlow() {
     if (usedBy) delete usedBy;
     usedBy = NULL;
 }
+
 // Finds a use for a given expression
 Statement *Statement::findUse(Exp *e) {
     updateUses();
@@ -86,11 +92,13 @@ void Statement::calcUseLinks() {
 
 // replace a use in this statement
 void Statement::replaceUse(Statement *use) {
-    std::cerr << "replace ";
-    use->printAsUse(std::cerr);
-    std::cerr << " in ";
-    printAsUse(std::cerr);
-    std::cerr << std::endl;
+    if (VERBOSE) {
+        std::cerr << "replace ";
+        use->printAsUse(std::cerr);
+        std::cerr << " in ";
+        printAsUse(std::cerr);
+        std::cerr << std::endl;
+    }
 
     // Fix dataflow. Both directions need fixing
     //   Before           After
@@ -129,9 +137,11 @@ void Statement::replaceUse(Statement *use) {
 
     // do the replacement
     doReplaceUse(use);
-    std::cerr << "   after: ";
-    printAsUse(std::cerr);
-    std::cerr << std::endl;
+    if (VERBOSE) {
+        std::cerr << "   after: ";
+        printAsUse(std::cerr);
+        std::cerr << std::endl;
+    }
 }
 
 /* Get everything that is live before this assignment.
@@ -146,12 +156,14 @@ bool Statement::mayAlias(Exp *e1, Exp *e2, int size) {
     if (*e1 == *e2) return true;
 
     bool b = (calcAlias(e1, e2, size) && calcAlias(e2, e1, size)); 
-    if (b && 0) {
-        std::cerr << "mayAlias: *" << size << "* ";
-        e1->print(std::cerr);
-        std::cerr << " ";
-        e2->print(std::cerr);
-        std::cerr << " : yes" << std::endl;
+    if (b && 0) {           // ??
+        if (VERBOSE) {
+            std::cerr << "mayAlias: *" << size << "* ";
+            e1->print(std::cerr);
+            std::cerr << " ";
+            e2->print(std::cerr);
+            std::cerr << " : yes" << std::endl;
+        }
     }
     return b;
 }
@@ -270,11 +282,6 @@ bool Statement::canPropagateToAll() {
 // assumes canPropagateToAll has returned true
 // assumes this statement will be removed by the caller
 void Statement::propagateToAll() {
-AssignExp* e = dynamic_cast<AssignExp*>(this);
-if (e) {Exp* rhs = e->getSubExp2(); if (rhs->isIntConst()) {
-  Exp* ee = dynamic_cast<Exp*>(*usedBy->begin());
-  std::cerr << "Propagate to all: usedBy is " << std::hex << (unsigned)(*usedBy->begin()) << " " << (ee?ee->prints():"Null") << "\n";
-}}
     updateUsedBy();
     for (std::set<Statement*>::iterator it = usedBy->begin();
       it != usedBy->end(); it++) {

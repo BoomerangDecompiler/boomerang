@@ -52,6 +52,9 @@
 #include "util.h"
 #include "signature.h"
 #include "hllcode.h"
+#include "boomerang.h"
+
+#define VERBOSE Boomerang::get()->vFlag
 
 /************************
  * Proc methods.
@@ -1087,14 +1090,16 @@ void UserProc::decompile() {
         (*it)->calcUseLinks();
 #endif
 
-    print(std::cout /*,true*/);
+    if (VERBOSE) {
+        print(std::cout /*,true*/);
+    }
     bool change = true;
     while (change) {
         change = false;
         change |= removeNullStatements();
         change |= removeDeadStatements();
         change |= propagateAndRemoveStatements();
-std::cerr << "Flushing whole procedure\n";  // HACK!
+        if (VERBOSE) std::cerr << "Flushing whole procedure\n";
         flushProc();        // Flush the dataflow for the whole proc
     }
     removeInternalStatements();
@@ -1102,7 +1107,9 @@ std::cerr << "Flushing whole procedure\n";  // HACK!
     fixCalls();
     promoteSignature();
     renameLocalVariables();
-    print(std::cout /*,true*/);
+    if (VERBOSE) {
+        print(std::cout /*,true*/);
+    }
 }
 
 // Flush the dataflow for the whole proc. Needed because of aliasing problems.
@@ -1165,9 +1172,11 @@ void UserProc::renameLocalVariables()
       it++)
         if ((*it)->getLeft() && 
             symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
-            std::cerr << "new local: ";
-            (*it)->getLeft()->print(std::cerr);
-            std::cerr << std::endl;
+            if (VERBOSE) {
+                std::cerr << "new local: ";
+                (*it)->getLeft()->print(std::cerr);
+                std::cerr << std::endl;
+            }
             std::ostringstream os;
             os << "local" << locals.size();
             std::string name = os.str();
@@ -1191,17 +1200,21 @@ void UserProc::renameLocalVariables()
         bool change;
         Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
-        std::cerr << "return value: ";
-        e->print(std::cerr);
-        std::cerr << " replace ";
-        (*it1).first->print(std::cerr);
-        std::cerr << " with ";
-        (*it1).second->print(std::cerr);
-        std::cerr << std::endl;
+        if (VERBOSE) {
+            std::cerr << "return value: ";
+            e->print(std::cerr);
+            std::cerr << " replace ";
+            (*it1).first->print(std::cerr);
+            std::cerr << " with ";
+            (*it1).second->print(std::cerr);
+            std::cerr << std::endl;
+        }
         e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-        std::cerr << "  after: ";
-        e->print(std::cerr);
-        std::cerr << std::endl;
+        if (VERBOSE) {
+            std::cerr << "  after: ";
+            e->print(std::cerr);
+            std::cerr << std::endl;
+        }
         if (change) cfg->setReturnVal(e->clone());
     }
 }
@@ -1262,9 +1275,11 @@ bool UserProc::removeDeadStatements()
                     }
                 }
                 if (matchingUse) continue;
-                std::cerr << "removing dead code: ";
-                (*it1)->printAsUse(std::cerr);
-                std::cerr << std::endl;
+                if (VERBOSE) {
+                    std::cerr << "removing dead code: ";
+                    (*it1)->printAsUse(std::cerr);
+                    std::cerr << std::endl;
+                }
                 HLCall *call = dynamic_cast<HLCall*>(*it1);
                 if (call == NULL) {
                     removeStatement(*it1);
@@ -1298,9 +1313,13 @@ void UserProc::removeInternalStatements()
           (*it)->getNumUses() == 0 &&
           cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
             // remove internal statement
-            std::cerr << "remove internal statement: ";
-            (*it)->printAsUse(std::cerr);
-            std::cerr << std::endl;
+            if (VERBOSE) {
+                std::cerr << "remove internal statement: ";
+                (*it)->printAsUse(std::cerr);
+                std::cerr << std::endl;
+            }
+            // This is live at the end of the proc. Save it in case it's for
+            // the return location
             internal.push_back(*it);
             removeStatement(*it);
         }
@@ -1339,16 +1358,20 @@ bool UserProc::propagateAndRemoveStatements()
                     if ((*it)->getRight() && 
                       (*it)->findUse((*it)->getRight()) &&
                       !(*it)->findUse((*it)->getRight())->getRight()) {
-                        std::cerr << "allowing propagation of temporary: ";
-                        (*it)->printAsUse(std::cerr);
-                        std::cerr << std::endl;
+                        if (VERBOSE) {
+                            std::cerr << "allowing propagation of temporary: ";
+                            (*it)->printAsUse(std::cerr);
+                            std::cerr << std::endl;
+                        }
                     } else
                         continue;
                 } else {
                     // new internal statement
-                    std::cerr << "new internal statement: ";
-                    (*it)->printAsUse(std::cerr);
-                    std::cerr << std::endl;
+                    if (VERBOSE) {
+                        std::cerr << "new internal statement: ";
+                        (*it)->printAsUse(std::cerr);
+                        std::cerr << std::endl;
+                    }
                     internal.push_back(*it);
                 }
             }
@@ -1360,8 +1383,10 @@ bool UserProc::propagateAndRemoveStatements()
                 liveout.erase(*it);
                 cfg->updateLiveness();
             }
-            // debug: print
-            print(std::cout,true);
+            if (VERBOSE) {
+                // debug: print
+                print(std::cout,true);
+            }
             change = true;
         }
     }
