@@ -1,3 +1,13 @@
 echo pentium $1
+rm -f functest/code
 ./boomerang -o functest test/pentium/$1 2>/dev/null >/dev/null
-diff -c test/pentium/$1.out functest/code
+if [[ ! -f functest/code ]]; then
+   exit 10
+fi
+cp functest/code functest.c
+gcc -o functest.exe functest.c
+if [[ $? != 0 ]]; then
+   exit 11
+fi
+./functest.exe > functest.out
+diff -c test/pentium/$1.out functest.out
