@@ -1665,12 +1665,15 @@ void Cfg::print(std::ostream &out, bool withDF) {
 void Cfg::setReturnVal(Exp *e)
 {
     bool onlyOneReturnBB = true;
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) {
         if ((*it)->getType() == RET) {
-		assert(onlyOneReturnBB);
-		(*it)->setReturnVal(e);
-		onlyOneReturnBB = false;
-	}
+            // NO! There could easily be several return BBs
+		    //assert(onlyOneReturnBB);
+		    (*it)->setReturnVal(e);
+		    onlyOneReturnBB = false;
+	    }
+    }
 }
 
 Exp *Cfg::getReturnVal()
