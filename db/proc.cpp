@@ -610,6 +610,17 @@ void UserProc::print(std::ostream &out) {
 	out << "\n";
 }
 
+extern char debug_buffer[];		// Defined in basicblock.cpp, size 5000
+char* UserProc::prints() {
+	std::ostringstream ost;
+	signature->print(ost);
+	cfg->print(ost);
+	ost << "\n";
+	strncpy(debug_buffer, ost.str().c_str(), 4999);
+	debug_buffer[4999] = '\0';
+	return debug_buffer;
+}
+
 void UserProc::printToLog() {
 	signature->printToLog();
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
@@ -635,7 +646,6 @@ void UserProc::initStatements() {
 			s->setBB(bb);
 			CallStatement* call = dynamic_cast<CallStatement*>(s);
 			if (call) {
-				// I think this should be done in analysis
 				call->setSigArguments();
 			}
 			ReturnStatement *ret = dynamic_cast<ReturnStatement*>(s);
@@ -875,7 +885,12 @@ std::set<UserProc*>* UserProc::decompile() {
 		}
 		if (depth == maxDepth) {
 			fixCallRefs();
-			processConstants();
+			if (processConstants()) {
+				for (int i = 0; i <= maxDepth; i++) {
+					cfg->renameBlockVars(0, i, true); // Needed if there was an indirect call to an ellipsis function
+					propagateStatements(i, -1);
+				}
+			}
 			removeRedundantPhis();
 		}
 		fixCallRefs();
@@ -945,17 +960,16 @@ std::set<UserProc*>* UserProc::decompile() {
 
 		Boomerang::get()->alert_decompile_beforePropagate(this, depth);
 
-#define RESTART_DATAFLOW 0
 		// Propagate at this memory depth
 		bool convert;			// True when indirect call converted to direct
-#if RESTART_DATAFLOW
 		do {
-#endif
 			convert = false;
 			for (int td = maxDepth; td >= 0; td--) {
 				if (VERBOSE)
 					LOG << "propagating at depth " << depth << " to depth " << td << "\n";
 				convert |= propagateStatements(depth, td);
+				if (convert)
+					break;			// Just calling renameBlockVars now can cause problems
 				for (int i = 0; i <= depth; i++)
 					cfg->renameBlockVars(0, i, true);
 			}
@@ -964,23 +978,15 @@ std::set<UserProc*>* UserProc::decompile() {
 			if (VERBOSE && convert)
 				LOG << "\nAbout to restart propagations and dataflow at depth " << depth <<
 					" due to conversion of indirect to direct call(s)\n\n";
-#if RESTART_DATAFLOW
 			if (convert) {
 				depth = 0;		// Start again from depth 0
-				// No no no! Just stripping references after propagations just yields totally wrong results.
-				// Hence we set RESTART_DATAFLOW to 0 above. Ugh.
-				stripRefs();
-				LOG << "\nAfter strip:\n";
-				printToLog();
-				LOG << "\nDone after strip:\n\n";
+				// FIXME: is this needed?
 				cfg->renameBlockVars(0, 0, true);	 // Initial dataflow level 0
 				LOG << "\nAfter initial rename:\n";
 				printToLog();
 				LOG << "\nDone after initial rename:\n\n";
 			}
-
 		} while (convert);
-#endif
 
 		printXML();
 		if (VERBOSE) {
@@ -1040,9 +1046,13 @@ std::set<UserProc*>* UserProc::decompile() {
 		// of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
 		addImplicitAssigns();
 
-		do
+		bool first = true;
+		do {
+			if (!first)
+				propagateAtDepth(maxDepth);		// HACK: Can sometimes be needed, if call was indirect
+			first = false;
 			dfaTypeAnalysis();
-		while (ellipsisProcessing());
+		} while (ellipsisProcessing());
 		if (VERBOSE || DEBUG_TA)
 			LOG << "=== End Type Analysis for " << getName() << " ===\n";
 
@@ -1095,22 +1105,6 @@ void UserProc::propagateAtDepth(int depth)
 	for (int i = 0; i <= depth; i++)
 		cfg->renameBlockVars(0, i, true);
 }
-
-#if 0 			// Not called any more
-void UserProc::complete() {
-	cfg->compressCfg();
-	processConstants();
-
-	// Convert the signature object to one of a derived class, e.g. SparcSignature.
-	if (!Boomerang::get()->noPromote)
-		promoteSignature();
-	// simplify the procedure (currently just to remove a[m['s)
-	// Not now! I think maybe only pa/risc needs this, and it nobbles
-	// the a[m[xx]] that processConstants() does (just above)
-	// If needed, move this to after m[xxx] are converted to variables
-//	simplify();
-}
-#endif
 
 int UserProc::findMaxDepth() {
 	StatementList stmts;
@@ -1471,8 +1465,7 @@ void UserProc::addNewParameters() {
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		// For now, assume that all parameters will be m[]{0} or r[]{0}
-		// (Seems pretty reasonable)
+		// For now, assume that all parameters will be m[]{0} or r[]{0} (Seems pretty reasonable)
 		std::list<Exp*> results;
 		s->searchAll(memOfWild, results);
 		s->searchAll(regOfWild, results);
@@ -2007,8 +2000,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 	getStatements(stmts);
 
 	if (VERBOSE)
-		LOG << "replacing expressions with parameters at depth " << depth 
-			<< "\n";
+		LOG << "replacing expressions with parameters at depth " << depth << "\n";
 
 	bool found = false;
 	StatementList::iterator it;
@@ -2019,8 +2011,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
 				if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf && e->getMemDepth() == 0) {
-					// Check for an expression representing the address of a
-					// local variable. NOTE: machine dependent
+					// Check for an expression representing the address of a local variable. NOTE: machine dependent
 					if (signature->isAddrOfStackLocal(prog, e)) {
 						// don't do locals here!
 						continue;
@@ -2441,11 +2432,11 @@ bool UserProc::removeNullStatements() {
 	return change;
 }
 
-void UserProc::processConstants() {
+bool UserProc::processConstants() {
 	if (DFA_TYPE_ANALYSIS) {
 		if (VERBOSE)
 			LOG << "Not processing constants since -Td in force\n";
-		return;
+		return false;
 	}
 	if (VERBOSE)
 		LOG << "Process constants for " << getName() << "\n";
@@ -2453,10 +2444,12 @@ void UserProc::processConstants() {
 	getStatements(stmts);
 	// process any constants in the statement
 	StatementList::iterator it;
+	bool paramsAdded = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		s->processConstants(prog);
+		paramsAdded |= s->processConstants(prog);
 	}
+	return paramsAdded;
 }
 
 // Propagate statements, but don't remove

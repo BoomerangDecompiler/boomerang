@@ -529,13 +529,13 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 
 Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
 	if (left->isRegOfK()) {
-		switch (((Const*)left->getSubExp1())->getInt()) {
+		int r = ((Const*)left->getSubExp1())->getInt();
+		switch (r) {
 			case 28:
 				return new Binary(opPlus, Location::regOf(28), new Const(4));
-			case 29:
-				return Location::regOf(29);
-			// there are other things that must be preserved here,
-			// look at calling convention
+			case 29: case 30: case 31: case 27:
+				//Registers ebp, esi, edi, and ebx are callee save
+				return Location::regOf(r);
 		}
 	}
 	return NULL;

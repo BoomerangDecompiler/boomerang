@@ -2064,10 +2064,9 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 	}
 	for (i = 0; i < implicitArguments.size(); i++) {
 		// Don't replace the implicit argument if it matches whole expression.
-		// A large part of the use of these is to allow fixCallRefs to change
-		// a definition of a location (say sp) by what the function does with
-		// it (maybe replaces it with sp+4). If you substitute sp{K} with say
-		// sp{K-3}+4, then it won't do its job with fixCallRefs.
+		// A large part of the use of these is to allow fixCallRefs to change a definition of a location
+		// (say sp) by what the function does with it (maybe replaces it with sp+4). If you substitute sp{K}
+		// with say sp{K-3}+4, then it won't do its job with fixCallRefs.
 		if (!(*implicitArguments[i] == *from)) {
 			implicitArguments[i] = implicitArguments[i]->searchReplaceAll(from, to, change);
 			if (change) {
@@ -2365,7 +2364,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 	return ty;
 }
 
-void CallStatement::processConstants(Prog *prog) {
+bool CallStatement::processConstants(Prog *prog) {
 	for (unsigned i = 0; i < arguments.size(); i++) {
 		Type *t = getArgumentType(i);
 		Exp *e = arguments[i];
@@ -2383,14 +2382,7 @@ void CallStatement::processConstants(Prog *prog) {
 		}
 	}
 
-	ellipsisProcessing(prog);
-}
-
-void setSigParam(Signature* sig, Type* ty, bool isScanf) {
-	if (isScanf) ty = new PointerType(ty);
-	sig->addParameter(ty);
-	if (VERBOSE)
-		LOG << "  ellipsisProcessing: adding parameter of type " << ty->getCtype() << "\n";
+	return ellipsisProcessing(prog);
 }
 
 // This function has two jobs. One is to truncate the list of arguments based on the format string.
@@ -2483,7 +2475,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 					// Example: printf("Val: %*.*f\n", width, precision, val);
 					n++;		// There is an extra parameter for the width or precision
 					// This extra parameter is of type integer, never int* (so pass false as last argument)
-					setSigParam(signature, new IntegerType(), false);
+					setSigParam(new IntegerType(), false);
 					continue;
 				case '-': case '+': case '#': case ' ':
 					// Flag. Ignore
@@ -2517,20 +2509,20 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 			n++;
 		switch (ch) {
 			case 'd': case 'i':							// Signed integer
-				setSigParam(signature, new IntegerType(veryLong ? 64 : 32), isScanf);
+				setSigParam(new IntegerType(veryLong ? 64 : 32), isScanf);
 				break;
 			case 'u': case 'x': case 'X': case 'o':		// Unsigned integer
-				setSigParam(signature, new IntegerType(32, -1), isScanf);
+				setSigParam(new IntegerType(32, -1), isScanf);
 				break;
 			case 'f': case 'g': case 'G': case 'e': case 'E':	// Various floating point formats
-				setSigParam(signature, new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits
+				setSigParam(new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits
 																						// for some archs
 				break;
 			case 's':									// String
-				setSigParam(signature, new PointerType(new CharType), isScanf);
+				setSigParam(new PointerType(new CharType), isScanf);
 				break;
 			case 'c':									// Char
-				setSigParam(signature, new CharType, isScanf);
+				setSigParam(new CharType, isScanf);
 				break;
 			case '%':
 				break;			// Ignore %% (emits 1 percent char)
@@ -2541,6 +2533,17 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 	setNumArguments(format + n);
 	signature->killEllipsis();	// So we don't do this again
 	return true;
+}
+
+// Helper function for the above
+void CallStatement::setSigParam(Type* ty, bool isScanf) {
+	if (isScanf) ty = new PointerType(ty);
+	signature->addParameter(ty);
+	Exp* paramExp = signature->getParamExp(signature->getNumParams()-1);
+	if (VERBOSE)
+		LOG << "  ellipsisProcessing: adding parameter " << paramExp << " of type " << ty->getCtype() << "\n";
+	if (arguments.size() < (unsigned)signature->getNumParams())
+		arguments.push_back(paramExp->clone());			// In case it was previously an indirect call
 }
 
 /**********************************
@@ -2859,8 +2862,8 @@ bool BoolAssign::usesExp(Exp *e)
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
-void BoolAssign::processConstants(Prog *prog)
-{
+bool BoolAssign::processConstants(Prog *prog) {
+	return false;
 }
 
 bool BoolAssign::search(Exp *search, Exp *&result)
@@ -3367,7 +3370,7 @@ bool Assignment::doReplaceRef(Exp* from, Exp* to) {
 
 // Not sure if anything needed here
 // MVE: check if can be deleted
-void Assign::processConstants(Prog* prog) {
+bool Assign::processConstants(Prog* prog) {
 #if 0
 	LOG << "processing constants in assign lhs: " << lhs << " type: ";
 	Type *ty = getTypeFor(lhs, prog);
@@ -3377,11 +3380,14 @@ void Assign::processConstants(Prog* prog) {
 		LOG << "none\n";
 #endif
 	rhs = processConstant(rhs, Statement::getTypeFor(lhs, prog), prog, proc);
+	return false;
 }
 
-void PhiAssign::processConstants(Prog* prog) {
+bool PhiAssign::processConstants(Prog* prog) {
+	return false;
 }
-void ImplicitAssign::processConstants(Prog* prog) {
+bool ImplicitAssign::processConstants(Prog* prog) {
+	return false;
 }
 
 void Assignment::genConstraints(LocationSet& cons) {
