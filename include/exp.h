@@ -94,6 +94,7 @@ virtual void printr(std::ostream& os, bool withUses = false) {
                 print(os, withUses);}       // But most classes want standard
              // Print with the "{1 2 3}" uses info
         void printWithUses(std::ostream& os) {print(os, true);}
+virtual void printx(int ind) = 0;      // For debugging: print in indented hex
 
     // Display as a dotty graph
     void    createDotFile(char* name);
@@ -376,9 +377,11 @@ const char* getFuncName();
     void setStr(char* p)    {u.p = p;}
     void setAddr(ADDRESS a) {u.a = a;}
 
-    void    print(std::ostream& os, bool withUses = false);
-    void    printNoQuotes(std::ostream& os, bool withUses = false);
+virtual void    print(std::ostream& os, bool withUses = false);
     // Print "recursive" (extra parens not wanted at outer levels)
+        void    printNoQuotes(std::ostream& os, bool withUses = false);
+virtual void    printx(int ind);
+ 
 
     void    appendDotFile(std::ofstream& of);
     virtual Exp*  genConstraints(Exp* restrictTo);
@@ -404,23 +407,24 @@ public:
     virtual Exp* clone();
 
     // Compare
-virtual bool operator==(const Exp& o) const;
-virtual bool operator< (const Exp& o) const;
-virtual bool operator*=(Exp& o);
+virtual bool    operator==(const Exp& o) const;
+virtual bool    operator< (const Exp& o) const;
+virtual bool    operator*=(Exp& o);
 
-    void    print(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
+        void    print(std::ostream& os, bool withUses = false);
+        void    appendDotFile(std::ofstream& of);
+virtual void    printx(int ind);
 
     // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used);
+virtual void    addUsedLocs(LocationSet& used);
 
     // Do the work of subscripting variables
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
+virtual Exp*    expSubscriptVar(Exp* e, Statement* def);
 
-    virtual bool isTerminal() { return true; }
+virtual bool    isTerminal() { return true; }
 
     // Visitation
-    bool accept(ExpVisitor* v);
+    bool        accept(ExpVisitor* v);
 };  // class Terminal
 
 /*==============================================================================
@@ -452,8 +456,9 @@ virtual     ~Unary();
     int getArity() {return 1;}
 
     // Print
-    void    print(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
+virtual void    print(std::ostream& os, bool withUses = false);
+        void    appendDotFile(std::ofstream& of);
+virtual void    printx(int ind);
 
     // Set first subexpression
     void    setSubExp1(Exp* e);
@@ -525,9 +530,10 @@ virtual     ~Binary();
     int getArity() {return 2;}
 
     // Print
-    void    print(std::ostream& os, bool withUses = false);
-    void    printr(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
+virtual void    print(std::ostream& os, bool withUses = false);
+        void    printr(std::ostream& os, bool withUses = false);
+        void    appendDotFile(std::ofstream& of);
+virtual void    printx(int ind);
 
     // Set second subexpression
     void    setSubExp2(Exp* e);
@@ -602,9 +608,10 @@ virtual     ~Ternary();
     int getArity() {return 3;}
 
     // Print
-    void    print(std::ostream& os, bool withUses = false);
-    void    printr(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
+virtual void    print(std::ostream& os, bool withUses = false);
+        void    printr(std::ostream& os, bool withUses = false);
+        void    appendDotFile(std::ofstream& of);
+virtual void    printx(int ind);
 
     // Set third subexpression
     void    setSubExp3(Exp* e);
@@ -673,8 +680,9 @@ virtual bool operator<<(const Exp& o) const;
 virtual bool operator*=(Exp& o);
 
 
-    void    print(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
+virtual void    print(std::ostream& os, bool withUses = false);
+        void    appendDotFile(std::ofstream& of);
+virtual void    printx(int ind);
 
     // Get and set the type
     virtual Type*   getType();
@@ -728,6 +736,7 @@ virtual bool operator< (const Exp& o) const;
 virtual bool operator*=(Exp& o);
 
 virtual void print(std::ostream& os, bool withUses = false);
+virtual void printx(int ind);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
     void    addUsedLocs(LocationSet& used);
@@ -820,7 +829,8 @@ virtual Exp* clone();
 virtual bool operator==(const Exp& o) const;
 virtual bool operator< (const Exp& o) const;
 virtual bool operator*=(Exp& o);
-    void    print(std::ostream& os, bool withUses = false);
+virtual void    print(std::ostream& os, bool withUses = false);
+virtual void    printx(int ind);
     virtual Exp*  genConstraints(Exp* restrictTo) {
         assert(0); return NULL;} // Should not be constraining constraints
 

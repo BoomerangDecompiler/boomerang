@@ -54,6 +54,7 @@
                         // createDotFile functions. Needs -I. to find it
 #include "util.h"
 #include "boomerang.h"
+#include <iomanip>          // For std::setw etc
 
 /*==============================================================================
  * FUNCTION:        Const::Const etc
@@ -387,6 +388,9 @@ bool Const::operator==(const Exp& o) const {
     if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
     if (((Const&)o).op == opWildStrConst && op == opStrConst) return true;
     if (op != ((Const&)o).op) return false;
+    if (conscript && conscript != ((Const&)o).conscript ||
+      ((Const&)o).conscript)
+        return false;
     switch (op) {
         case opIntConst: return u.i == ((Const&)o).u.i;
         case opFltConst: return u.d == ((Const&)o).u.d;
@@ -888,7 +892,7 @@ void Unary::print(std::ostream& os, bool withUses) {
                 os << "r" << std::dec << ((Const*)p1)->getInt();
                 break;
             } else if (p1->isTemp()) {
-                // Just print the temp {
+                // Just print the temp {   // balance }s
                 p1->print(os, withUses);
                 break;
             }
@@ -3310,7 +3314,11 @@ Exp* Const::genConstraints(Exp* result) {
                 // What about sizes?
                 match = t->isInteger();
                 // An integer constant can also match a pointer to something
-                match |= t->isPointer();
+                // Assume values less than 0x100 can't be a pointer
+                if ((unsigned)u.i >= 0x100)
+                    match |= t->isPointer();
+                // We can co-erce 32 bit constants to floats
+                match |= t->isFloat();
                 break;
             case opStrConst:
                 match = (t->isPointer()) &&
@@ -3322,29 +3330,45 @@ Exp* Const::genConstraints(Exp* result) {
             default:
                 break;
         }
-        if (match)
-            return new Terminal(opTrue);
-        else {
-            // This constant will require a cast. So we generate a constraint
-            // as a sign to the back end
+        if (match) {
+            // This constant may require a cast or a change of format.
+            // So we generate a constraint
             return new Binary(opEquals,
                 new Unary(opTypeOf, this->clone()),
                 result->clone());
-        }
+        } else
+            // Doesn't match
+            return new Terminal(opFalse);
     }
     // result is a type variable, which is constrained by this constant
     Type* t;
     switch (op) {
-        case opIntConst:
-            // Can be integer, but a pointer to anything
+        case opIntConst: {
+            // We have something like local1 = 1234
+            // Either they are both integer, or both pointer
+            Type* intt = new IntegerType(32);
+            Type* alph = PointerType::newPtrAlpha();
             return new Binary(opOr,
-                new Binary(opEquals,
-                    result,
-                    new TypeVal(new IntegerType(32))),
-                new Binary(opEquals,
-                    result,
-                    new TypeVal(PointerType::newPtrAlpha())));
+                new Binary(opAnd,
+                    new Binary(opEquals,
+                        result->clone(),
+                        new TypeVal(intt)),
+                    new Binary(opEquals,
+                        new Unary(opTypeOf,
+                            // Note: don't clone 'this', so we can change the
+                            // Const after type analysis!
+                            this),
+                        new TypeVal(intt))),
+                new Binary(opAnd,
+                    new Binary(opEquals,
+                        result->clone(),
+                        new TypeVal(alph)),
+                    new Binary(opEquals,
+                        new Unary(opTypeOf,
+                            this),
+                        new TypeVal(alph))));
             break;
+        }
         case opLongConst:
             t = new IntegerType(64);
             break;
@@ -3375,6 +3399,71 @@ Exp* Unary::genConstraints(Exp* result) {
             break;
     }
     return new Terminal(opTrue);
+}
+
+Exp* Ternary::genConstraints(Exp* result) {
+    Type* argHasToBe = NULL;
+    Type* retHasToBe = NULL;
+    switch (op) {
+        case opFsize:
+        case opItof:
+        case opFtoi:
+        case opSgnEx: {
+            assert(subExp1->isIntConst());
+            assert(subExp2->isIntConst());
+            int fromSize = ((Const*)subExp1)->getInt();
+            int   toSize = ((Const*)subExp2)->getInt();
+            // Fall through
+            switch (op) {
+                case opFsize:
+                    argHasToBe = new FloatType(fromSize);
+                    retHasToBe = new FloatType(toSize);
+                    break;
+                case opItof:
+                    argHasToBe = new IntegerType(fromSize);
+                    retHasToBe = new FloatType(toSize);
+                    break;
+                case opFtoi:
+                    argHasToBe = new FloatType(fromSize);
+                    retHasToBe = new IntegerType(toSize);
+                    break;
+                case opSgnEx:
+                    argHasToBe = new IntegerType(fromSize);
+                    retHasToBe = new IntegerType(toSize);
+                    break;
+                default:
+                    break;
+            }
+        }
+        default:
+            break;
+    }
+    Exp* res = NULL;
+    if (retHasToBe) {
+        if (result->isTypeVal()) {
+            // result is a constant type, or possibly a partial type such as
+            // ptr(alpha)
+            Type* t = ((TypeVal*)result)->getType();
+            // Compare broad types
+            if (! (*retHasToBe *= *t))
+                return new Terminal(opFalse);
+            // else just constrain the arg
+        } else {
+            // result is a type variable, constrained by this Ternary
+            res = new Binary(opEquals,
+                result,
+                new TypeVal(retHasToBe));
+        }
+    }
+    if (argHasToBe) {
+        // Constrain the argument
+        Exp* con = subExp3->genConstraints(new TypeVal(argHasToBe));
+        if (res) res = new Binary(opAnd, res, con);
+        else res = con;
+    }
+    if (res == NULL)
+        return new Terminal(opTrue);
+    return res;
 }
 
 Exp* RefExp::genConstraints(Exp* result) {
@@ -3533,10 +3622,6 @@ Exp* PhiExp::genConstraints(Exp* result) {
             ret = new Binary(opAnd, ret, conjunct);
     }
     return ret->simplify();
-}
-
-Exp* Ternary::genConstraints(Exp* result) {
-    return new Terminal(opTrue);
 }
 
 Exp* Location::polySimplify(bool& bMod) {
@@ -3853,7 +3938,8 @@ bool SetConscripts::visit(Const* c) {
 }
 
 bool SetConscripts::visit(Location* l) {
-    if (l->getOper() == opLocal || l->getOper() == opGlobal)
+    OPER op = l->getOper();
+    if (op == opLocal || op == opGlobal || op == opRegOf || op == opParam)
         bInLocalGlobal = true;
     return true;       // Continue recursion
 }
@@ -3864,4 +3950,74 @@ void Exp::setConscripts(int n) {
     accept(&sc);
 }
 
+void child(Exp* e, int ind) {
+    if (e == NULL) {
+        std::cerr << std::setw(ind+4) << " " << "<NULL>\n" << std::flush;
+        return;
+    }
+    void* vt = *(void**)e;
+    if (vt == NULL) {
+        std::cerr << std::setw(ind+4) << " " << "<NULL VT>\n" << std::flush;
+        return;
+    }
+    e->printx(ind+4);
+}
 
+void Unary::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    child(subExp1, ind);
+}
+
+void Binary::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    child(subExp1, ind);
+    child(subExp2, ind);
+}
+
+void Ternary::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+    child(subExp1, ind);
+    child(subExp2, ind);
+    child(subExp3, ind);
+}
+
+void Const::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
+    switch (op) {
+        case opIntConst:
+            std::cerr << std::dec << u.i; break;
+        case opStrConst:
+            std::cerr << "\"" << u.p << "\""; break;
+        case opFltConst:
+            std::cerr << u.d; break;
+        case opFuncConst:
+            std::cerr << u.pp->getName(); break;
+        default:
+            std::cerr << std::hex << "?" << (int)op << "?";
+    }
+    if (conscript)
+        std::cerr << " \\" << std::dec << conscript << "\\";
+    std::cerr << std::flush << "\n";
+}
+
+void TypeVal::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
+    std::cerr << val->getCtype() << std::flush << "\n";
+}
+
+void TypedExp::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
+    std::cerr << type->getCtype() << std::flush << "\n";
+    child(subExp1, ind);
+}
+
+void Terminal::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << "\n" << std::flush;
+}
+
+void RefExp::printx(int ind) {
+    std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
+    std::cerr << "{" << std::dec << ((def == 0) ? 0 : def->getNumber()) <<
+      "}\n" << std::flush;
+    child(subExp1, ind);
+}

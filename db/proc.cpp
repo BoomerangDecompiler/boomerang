@@ -3121,6 +3121,7 @@ void UserProc::typeAnalysis(Prog* prog) {
     // For each statement this proc
     for (ss = stmts.begin(); ss != stmts.end(); ss++) {
         cons.clear();
+        (*ss)->setConscripts();     // So we can co-erce constants
         (*ss)->genConstraints(cons);
         consObj.addConstraints(cons);
         if (DEBUG_TA)
@@ -3162,12 +3163,28 @@ void UserProc::typeAnalysis(Prog* prog) {
             Type* ty = ((TypeVal*)cc->second)->getType();
             if (loc->isSubscript())
                 loc = ((RefExp*)loc)->getSubExp1();
-            if (loc->isGlobal()) {
+            else if (loc->isGlobal()) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
                 prog->setGlobalType(nam, ty->clone());
             } else if (loc->isLocal()) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
                 setLocalType(nam, ty);
+            } else if (loc->isIntConst()) {
+                Const* con = (Const*)loc;
+                int val = con->getInt();
+                if (ty->isFloat()) {
+                    // Need heavy duty cast here
+                    con->setFlt(*(float*)&val);
+                } else if (ty->isPointer() &&
+                  ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
+                    // Convert to a string
+                    char* str = prog->getStringConstant(val, true);
+                    if (str) {
+                        // Make a string
+                        con->setStr(escapeStr(str));
+                        con->setOper(opStrConst);
+                    }
+                }
             }
         }
     }

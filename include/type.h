@@ -107,6 +107,8 @@ virtual bool    operator==(const Type& other) const = 0;// Considers sign
 virtual bool    operator!=(const Type& other) const;    // Considers sign
 //virtual bool    operator-=(const Type& other) const = 0;// Ignores sign
 virtual bool    operator< (const Type& other) const = 0;// Considers sign
+        bool    operator*=(const Type& other) const {   // Consider only
+                    return id == other.id;}              // broad type
 
     // Access functions
 virtual int     getSize() const = 0;

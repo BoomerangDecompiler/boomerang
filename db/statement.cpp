@@ -3268,5 +3268,8 @@ bool StmtSetConscripts::visit(BoolStatement* stmt) {
     return true;
 }
 
-
+void Statement::setConscripts() {
+    StmtSetConscripts ssc;
+    accept(&ssc);
+}
 

@@ -253,6 +253,9 @@ public:
     // Generate constraints
     virtual void genConstraints(LocationSet& cons) {}
 
+    // Set the constant subscripts
+    void    setConscripts();
+
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
     bool doPropagateTo(int memDepth, Statement* def);
