@@ -749,7 +749,7 @@ rt:
 	|	FLAGMACRO flag_list ')' {
 			$$ = 0;
 		}
-		// E.g. undefineflags() (what's the point of that?)
+		// E.g. undefineflags() (but we don't handle this yet... flags are changed, but not in a way we support)
 	|	FLAGMACRO ')' {
 			$$ = 0;
 		}
@@ -793,7 +793,7 @@ list_parameter:
 	;
 
 param:	NAME {
-			Dict.ParamSet.insert($1);		// Not sure if we need this set
+			Dict.ParamSet.insert($1);		// MVE: Likely wrong. Likely supposed to be OPERAND params only
 			$$ = $1;
 		}
 
@@ -813,8 +813,8 @@ list_actualparameter:
 	;
 
 assign_rt:
-		// Size	  guard =>	 lhs	:=	  rhs
-		//	$1	   $2		  $4		  $6
+		// Size	  guard =>	  lhs	  :=    rhs
+		//	$1	   $2		   $4			$6
 		assigntype exp THEN location EQUATE exp {
 			Assign* a = new Assign($1, $4, $6);
 			a->setGuard($2);
@@ -838,7 +838,7 @@ assign_rt:
 				new Terminal(opNil),
 				new Terminal(opFpop));
 		}
-		// ? Just a RHS?
+		// Just a RHS? Is this used? Note: flag calls are handled at the rt: level
 		//	$1		$2
 	|	assigntype exp {
 			$$ = new Assign($1, NULL, $2);
@@ -866,23 +866,12 @@ exp_term:
 			$$ = new Ternary(opTern, $2, $4, $6);
 		}
 
-// ? Why have a special case for this? Size cast can follow any expression
-//	|	'[' exp '?' exp COLON exp ']' cast {
-//			Ternary* t = new Ternary(opTern, $2, $4, $6);
-//			Exp* e = t;
-//			if ($8 != STD_SIZE) {
-//				e = new Binary(opSize, new Const($8), t);				 
-//			}
-//			$$ = e;
-//		}
-
 	// Address-of, for LEA type instructions
 	|	ADDR exp ')' {
 			$$ = new Unary(opAddrOf, $2);
 		}
 
-	// Conversion functions, e.g. fsize(32, 80, modrm)
-	// Args are FROMsize, TOsize, EXPression
+	// Conversion functions, e.g. fsize(32, 80, modrm). Args are FROMsize, TOsize, EXPression
 	|	CONV_FUNC NUM ',' NUM ',' exp ')' {
 			$$ = new Ternary(strToOper($1), new Const($2), new Const($4), $6);
 		}
@@ -933,7 +922,8 @@ exp_term:
 		}
 
 		// This is a "lambda" function-like parameter
-		// $1 is the "function" name, and $2 is a list of Exp* for the actual params
+		// $1 is the "function" name, and $2 is a list of Exp* for the actual params.
+		// I believe only PA/RISC uses these so far.
 	|	NAME_CALL list_actualparameter ')' {
 		std::ostringstream o;
 		if (Dict.ParamSet.find($1) != Dict.ParamSet.end() ) {
@@ -956,8 +946,7 @@ exp_term:
 				yyerror(STR(o));
 			}
 		} else {
-			o << $1 << ": Unrecognized name in call.\n";
-			yyerror(STR(o));
+			o << "Unrecognized name " << $1 << " in lambda call.\n";
 		}
 	}
 
