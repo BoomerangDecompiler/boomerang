@@ -155,7 +155,7 @@ public:
 
     int         readNative2(ADDRESS a);         // Read 2 bytes from native addr
     int         readNative4(ADDRESS a);         // Read 4 bytes from native addr
-    long long   readNative8(ADDRESS a);         // Read 8 bytes from native addr
+    QWord       readNative8(ADDRESS a);         // Read 8 bytes from native addr
     float       readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
     double      readNativeFloat8(ADDRESS a);    // Read 8 bytes as float
 

@@ -251,7 +251,7 @@ public:
     int     readNative4(ADDRESS a) {return pBF->readNative4(a);}
     float   readNativeFloat4(ADDRESS a) {return pBF->readNativeFloat4(a);}
     double  readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
-    long long readNative8(ADDRESS a) {return pBF->readNative8(a);}
+    QWord		readNative8(ADDRESS a) {return pBF->readNative8(a);}
     bool processProc(int addr, UserProc* proc)  // Decode a proc
         { std::ofstream os;
           return pFE->processProc((unsigned)addr, proc, os);}

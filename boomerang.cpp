@@ -6,7 +6,10 @@
 #include "hllcode.h"
 #include "codegen/chllcode.h"
 #include "boomerang.h"
+
+#ifndef _MSC_VER
 #include "gc.h"
+#endif
 
 Boomerang *Boomerang::boomerang = NULL;
 

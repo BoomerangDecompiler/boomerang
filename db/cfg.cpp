@@ -690,7 +690,7 @@ void Cfg::sortByFirstDFT()
       it++)
         m_vectorBB[(*it)->m_DFTfirst-1] = *it;
     m_listBB.clear();
-    for (int i = 0; i < m_vectorBB.size(); i++)
+    for (size_t i = 0; i < m_vectorBB.size(); i++)
         m_listBB.push_back(m_vectorBB[i]);
 #endif
 }
@@ -710,7 +710,7 @@ void Cfg::sortByLastDFT()
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
         m_vectorBB[(*it)->m_DFTlast-1] = *it;
     m_listBB.clear();
-    for (int i = 0; i < m_vectorBB.size(); i++)
+    for (size_t i = 0; i < m_vectorBB.size(); i++)
         m_listBB.push_back(m_vectorBB[i]);
 #endif
 }
@@ -1850,7 +1850,8 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
 void Cfg::generateDotFile(std::ofstream& of) {
     ADDRESS aret = NO_ADDRESS;
     // The nodes
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+    std::list<PBB>::iterator it;
+    for (it = m_listBB.begin(); it != m_listBB.end();
       it++) {
         of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " [";
         of << "label=\"";
@@ -1901,7 +1902,6 @@ void Cfg::generateDotFile(std::ofstream& of) {
     of << "}\n";
 
     // Now the edges
-    std::list<PBB>::iterator it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
         std::vector<PBB>& outEdges = (*it)->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {

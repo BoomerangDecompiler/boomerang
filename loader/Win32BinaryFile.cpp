@@ -50,7 +50,7 @@ Win32BinaryFile::~Win32BinaryFile()
 }
 
 bool Win32BinaryFile::Open(const char* sName) {
-    return Load(sName);
+    return Load(sName) != 0;
 }
 
 void Win32BinaryFile::Close() {
@@ -317,7 +317,7 @@ int Win32BinaryFile::readNative4(ADDRESS nat) {
 }
 
 // Read 8 bytes from given native address
-long long Win32BinaryFile::readNative8(ADDRESS nat) {
+QWord Win32BinaryFile::readNative8(ADDRESS nat) {
     int raw[2];
 #ifdef WORDS_BIGENDIAN      // This tests the  host  machine
     // Source and host are different endianness
@@ -328,7 +328,7 @@ long long Win32BinaryFile::readNative8(ADDRESS nat) {
     raw[0] = readNative4(nat);
     raw[1] = readNative4(nat+4);
 #endif
-    return *(long long*)raw;
+    return *(QWord*)raw;
 }
 
 // Read 4 bytes as a float
@@ -379,7 +379,7 @@ MACHINE Win32BinaryFile::GetMachine() const
 
 bool Win32BinaryFile::isLibrary() const
 {
-    return ( m_pPEHeader->Flags & 0x2000 != 0 );
+    return ( (m_pPEHeader->Flags & 0x2000) != 0 );
 }
 
 ADDRESS Win32BinaryFile::getImageBase()

@@ -1640,7 +1640,8 @@ void UserProc::trimParameters(int depth) {
     // find parameters that are referenced (ignore calls to this)
     int nparams = signature->getNumParams() + signature->getNumImplicitParams();
     std::vector<Exp*> params;
-    bool referenced[nparams];
+    bool referenced[32];
+		assert(nparams < sizeof(referenced)/sizeof(bool));
     for (int i = 0; i < signature->getNumParams(); i++) {
         referenced[i] = false;
         params.push_back(signature->getParamExp(i)->clone()->
@@ -1976,7 +1977,7 @@ void UserProc::replaceExpressionsWithSymbols() {
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
+        for (std::map<Exp*, Exp*,lessExpStar>::iterator it1 = symbolMap.begin();
           it1 != symbolMap.end(); it1++) {
             bool ch = s->searchAndReplace((*it1).first, (*it1).second);
             if (ch && VERBOSE) {

@@ -41,7 +41,6 @@
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
 #include <stdio.h>
-#include <assert.h>
 #ifndef WIN32
 #include <dlfcn.h>
 #endif

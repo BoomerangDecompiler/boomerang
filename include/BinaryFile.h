@@ -170,7 +170,7 @@ virtual ~BinaryFile() {}			// Virtual destructor
     // Read 4 bytes from given native address a; considers endianness
     virtual int readNative4(ADDRESS a) {return 0;}
     // Read 8 bytes from given native address a; considers endianness
-    virtual long long readNative8(ADDRESS a) {return 0;}
+    virtual QWord readNative8(ADDRESS a) {return 0;}
     // Read 4 bytes as a float; consider endianness
     virtual float readNativeFloat4(ADDRESS a) {return 0.;}
     // Read 8 bytes as a float; consider endianness

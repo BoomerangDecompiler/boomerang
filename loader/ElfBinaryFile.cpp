@@ -1373,7 +1373,7 @@ int ElfBinaryFile::readNative4(ADDRESS nat) {
 }
 
 // Read 8 bytes from given native address
-long long ElfBinaryFile::readNative8(ADDRESS nat) {
+QWord ElfBinaryFile::readNative8(ADDRESS nat) {
     int raw[2];
 #ifdef WORDS_BIGENDIAN      // This tests the  host  machine
     if (m_elfEndianness) {  // This tests the source machine
@@ -1389,7 +1389,7 @@ long long ElfBinaryFile::readNative8(ADDRESS nat) {
         raw[0] = readNative4(nat+4);
     }
     //return reinterpret_cast<long long>(*raw);    // Note: cast, not convert!!
-    return *(long long*)raw;
+    return *(QWord*)raw;
 }
 
 // Read 4 bytes as a float

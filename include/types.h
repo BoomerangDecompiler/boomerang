@@ -9,3 +9,8 @@ typedef unsigned int        ADDRESS;   /* 32-bit unsigned */
 
 #define NO_ADDRESS ((ADDRESS)-1)  // For invalid ADDRESSes
 
+#ifndef _MSC_VER
+typedef long unsigned long QWord;	// 64 bits
+#else
+typedef unsigned __int64   QWord;		
+#endif

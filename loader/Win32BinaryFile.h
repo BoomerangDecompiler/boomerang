@@ -181,7 +181,7 @@ public:
 
 virtual int readNative2(ADDRESS a);         // Read 2 bytes from native addr
 virtual int readNative4(ADDRESS a);         // Read 4 bytes from native addr
-virtual long long readNative8(ADDRESS a);   // Read 8 bytes from native addr
+virtual QWord readNative8(ADDRESS a);   // Read 8 bytes from native addr
 virtual float readNativeFloat4(ADDRESS a);  // Read 4 bytes as float
 virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
