@@ -226,10 +226,10 @@ public:
     Type *getGlobalType(char* nam);
     
     // Set the type of a global variable
-    void setGlobalType(char* name, Type* ty);
+    void setGlobalType(const char* name, Type* ty);
 
     // get a string constant at a give address if appropriate
-    char *getStringConstant(ADDRESS uaddr);
+    char *getStringConstant(ADDRESS uaddr, bool knownString = false);
     double getFloatConstant(ADDRESS uaddr, bool &ok, int bits = 64);
 
     // Hacks for Mike

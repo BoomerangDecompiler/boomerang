@@ -201,10 +201,10 @@ void Prog::generateCode(std::ostream &os) {
         if (!si->bBss) {
             if (ty->isPointer() &&
               ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
-                char* str = getStringConstant((*it1)->getAddress());
+                char* str = getStringConstant((*it1)->getAddress(), true);
                 if (str) {
                     // Make a global string
-                    e = new Const(str);
+                    e = new Const(escapeStr(str));
                 }
             }
             if (e == NULL) switch(ty->getSize()) {
@@ -538,14 +538,15 @@ Type *Prog::getGlobalType(char* nam) {
     return NULL;
 }
 
-void Prog::setGlobalType(char* nam, Type* ty) {
+void Prog::setGlobalType(const char* nam, Type* ty) {
     for (unsigned i = 0; i < globals.size(); i++)
         if (!strcmp(globals[i]->getName(), nam))
             globals[i]->setType(ty);
 }
 
 // get a string constant at a given address if appropriate
-char *Prog::getStringConstant(ADDRESS uaddr) {
+// if knownString, it is already known to be a char*
+char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
     SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
     // Too many compilers put constants, including string constants, into
     // read/write sections
@@ -555,13 +556,21 @@ char *Prog::getStringConstant(ADDRESS uaddr) {
         // strings.
         // At least 4 of the first 6 chars should be printable ascii
         char* p = (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+        if (knownString)
+            // No need to guess... this is hopefully a known string
+            return p;
         int printable = 0;
+        char last = 0;
         for (int i=0; i < 6; i++) {
             char c = p[i];
             if (c == 0) break;
             if (c >= ' ' && c < '\x7F') printable++;
+            last = c;
         }
         if (printable >= 4)
+            return p;
+        // Just a hack while type propagations are not yet ready
+        if (last == '\n' && printable >= 2)
             return p;
     }
     return NULL;

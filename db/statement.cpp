@@ -2099,12 +2099,15 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
             if (points_to->resolvesToChar()) {
                 ADDRESS u = ((Const*)e)->getAddr();
                 char *str = 
-                    prog->getStringConstant(u);
+                    prog->getStringConstant(u, true);
                 if (str) {
-                    std::string s(str);
-                    while (s.find('\n') != (unsigned)-1)
-                        s.replace(s.find('\n'), 1, "\\n");
-                    e = new Const(strdup(s.c_str()));
+                    e = new Const(escapeStr(str));
+                    // Check if we may have guessed this global incorrectly
+                    // (usually as an array of char)
+                    Prog* prog = proc->getProg();
+                    const char* nam = prog->getGlobal(u);
+                    if (nam) prog->setGlobalType(nam,
+                        new PointerType(new CharType()));
                 } else {
                     proc->getProg()->globalUsed(u);
                     const char *nam = proc->getProg()->getGlobal(u);
