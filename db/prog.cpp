@@ -61,8 +61,7 @@
 #include "config.h"
 
 Prog::Prog()
-    : interProcDFAphase(0),
-      pBF(NULL),
+    : pBF(NULL),
       pFE(NULL),
       globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
@@ -71,8 +70,7 @@ Prog::Prog()
 }
 
 Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
-    : interProcDFAphase(0),
-      pBF(pBF),
+    : pBF(pBF),
       pFE(pFE),
       globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
@@ -82,8 +80,7 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
 }
 
 Prog::Prog(const char* name)
-    : interProcDFAphase(0),
-      pBF(NULL),
+    : pBF(NULL),
       pFE(NULL),
       globalMap(NULL),
       m_name(name),

@@ -71,9 +71,6 @@ public:
 };  // class Global
 
 class Prog {
-    // Phase of the interprocedural DFA (0=none, 1=phase 1, 2 = phase 2)
-    int     interProcDFAphase;
-
 public:
             Prog();                     // Default constructor
             Prog(BinaryFile *pBF, FrontEnd *pFE);
