@@ -18,7 +18,8 @@
 # a lib%.so file is made for each of these
 # You should be able to add a simple loader without any changes to this
 # Makefile, as long as you follow the naming convention <type>BinaryFile.*
-
+# 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
+#		    testLoader is broken due to missing code.
 # 10 Apr 02 - Mike: interface -> include; use util.so for str()
 # 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
 # 17 Apr 02 - Mike: Use $(shell pwd) to get an absolute path for BOOMDIR
@@ -34,7 +35,10 @@ ALLLIB =  $(patsubst %.cpp,../lib/lib%.so,$(ALLLIBSRC))
 ALLOBJS = $(patsubst %.cpp, %.o, $(ALLLIBSRC))
 ALLOBJS += ElfDetails.o SymTab.o
 
-all:    $(ALLLIB) testLoader
+#testloader was commented out becasue it does not work yet, it
+#relies on $BOOMDIR/cppunit, which isn't there
+#all:    $(ALLLIB) testLoader
+all: $(ALLLIB)
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@

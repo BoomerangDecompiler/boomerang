@@ -19,6 +19,8 @@
  *  This file implements the class ElfBinaryFile, derived from class
  *  BinaryFile. See ElfBinaryFile.h and BinaryFile.h for details
  *  MVE 30/9/97
+ * 20 Aug 01 - Icer: line 373, cast pName in elf_hash() to make
+ * 		     the prototypes happy.
  * 10 Mar 02 - Mike: Mods for stand alone operation; constuct function
  * 21 May 02 - Mike: Slight mod for gcc 3.1
 */
@@ -370,7 +372,8 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal,
     pChains = &pBuckets[numBucket];
 
     // Hash the symbol
-    hash = elf_hash(pName) % numBucket;
+    // cast pNmae to const unsigned char * to make elf_hash happy
+    hash = elf_hash((const unsigned char *)pName) % numBucket;
     /* Now look it up in the bucket list */
     y = pBuckets[hash];
     // Beware of symbol tables with 0 in the buckets, e.g. libstdc++.

@@ -6,6 +6,7 @@
 ######################################################
 
 # $Revision$
+# 20 Aug 02 - Icer: removed test from all, test code is broken
 # 19 Aug 02 - Icer: changed make distclean delete toplevel makefile
 #		    changed all: to read lib static test
 # 20 May 02 - Trent: Created
@@ -42,8 +43,9 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 .PHONY: test clean all static
-#should read lib static test
-all: lib static test
+#19 Aug 02 icer: should read lib static test
+#20 Aug 02 icer: should read lib static , the test code is broken
+all: lib static 
 static: boomerang
 
 # Make the lib directory if needed
