@@ -190,10 +190,15 @@ public: \
 "truncu(" |
 "truncs(" |
 "zfill("  |
-"sgnex("     {
+"sgnex("    {
                 yylval.str = strdup(yytext);
                 yylval.str[strlen(yylval.str)-1] = '\0';
                 return SSLParser::CONV_FUNC;
+            }
+"ftrunc("   {
+                yylval.str = strdup(yytext);
+                yylval.str[strlen(yylval.str)-1] = '\0';
+                return SSLParser::TRUNC_FUNC;
             }
 "defineflags(" |
 "undefineflags(" {

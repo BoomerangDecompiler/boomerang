@@ -331,7 +331,7 @@ class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 310 "sslscanner.l"
+#line 315 "sslscanner.l"
 #endif
 #line 302 "/home/02/binary/u1.luna.tools/flex++/lib/flexskel.h"
 

@@ -165,7 +165,7 @@ protected: \
 %token <str> NAME 
 %token <str> REG_ID REG_NUM COND_TNAME DECOR
 %token <str> FARITH_OP FPUSH FPOP
-%token <str> TEMP SHARES CONV_FUNC TRANSCEND
+%token <str> TEMP SHARES CONV_FUNC TRUNC_FUNC TRANSCEND
 %token <str> BIG LITTLE
 %token <str> NAME_CALL NAME_LOOKUP
 
@@ -891,6 +891,11 @@ exp_term:
             $$ = new Ternary(strToOper($1), new Const($2), new Const($4), $6);
         }
 
+    // Truncation function: ftrunc(3.01) == 3.00
+    |   TRUNC_FUNC exp ')' {
+            $$ = new Unary(opFtrunc, $2);
+        }
+
     // FPUSH and FPOP
     |   FPUSH {
             $$ = new Terminal(opFpush);
@@ -1289,7 +1294,8 @@ OPER SSLParser::strToOper(const char* s) {
             // execute
             return opExecute;
         case 'f':
-            // fsize, ftoi, fround
+            // fsize, ftoi, fround NOTE: ftrunc handled separately
+            // because it is a unary
             if (s[1] == 's') return opFsize;
             if (s[1] == 't') return opFtoi;
             if (s[1] == 'r') return opFround;
