@@ -11,6 +11,8 @@
 
 // The index (and integer representation) of predefined semantic items
 // (expression types)
+//
+// Cant we typedef this? - trent 9/4/2002
 enum INDEX
 {
     // Operators

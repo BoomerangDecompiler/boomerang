@@ -18,7 +18,8 @@
 #include "types.h"      // For ADDRESS, etc
 #include <stdio.h>      // For sprintf
 
-/*============================================================================== * Exp is an expression class, though it will probably be used to hold many
+/*============================================================================== 
+ * Exp is an expression class, though it will probably be used to hold many
  * other things (e.g. perhaps transformations). It is a standard tree
  * representation. Exp itself is abstract. A special subclass Const is used
  * for constants. Unary, Binary, and Ternary hold 1, 2, and 3 subexpressions
