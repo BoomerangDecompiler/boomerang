@@ -2385,6 +2385,7 @@ if (def == NULL) continue;
 		formatStr = ((Const*)formatExp)->getStr();
 	} else return false;
 	// actually have to parse it
+	// Format string is: % [flags] [width] [.precision] [size] type
 	int n = 1;		// Count the format string itself (may also be "format" more arguments)
 	char ch;
 	Signature* sig = getDestProc()->getSignature();
@@ -2394,25 +2395,52 @@ if (def == NULL) continue;
 	while ((p = strchr(p, '%'))) {
 		p++;				// Point past the %
 		do {
-			ch = *p++;		// Skip size and precision
-		} while ('0' <= ch && ch <= '9' || ch == '.');
-		if (*p != '%')		// Don't count %%
+			ch = *p++;		// Skip size and precisionA
+			switch (ch) {
+				case '*':
+					// Example: printf("Val: %*.*f\n", width, precision, val);
+					n++;		// There is an extra parameter for the width or precision
+					// This extra parameter is of type integer, never int* (so pass false as last argument)
+					setSigParam(sig, new IntegerType(), false);
+					continue;
+				case '-': case '+': case '#': case ' ':
+					// flag. Ignore
+					continue;
+				case 'h': case 'l':
+					// size of half or long. Argument is still one word. Ignore.
+					// TODO: handle architectures where l implies two words
+					// TODO: at least h has implications for scanf
+					continue;
+				case 'L':
+					// long. TODO: handle L for long doubles.
+					// n++;		// At least chew up one more parameter so later types are correct
+					continue;
+				default:
+					if ('0' <= ch && ch <= '9') continue;	// width or precision
+					break;									// Else must be format type, handled below
+			}
+			break;
+		} while (1);
+		if (ch != '%')		// Don't count %%
 			n++;
 		switch (ch) {
-			case 'd': case 'n':
+			case 'd': case 'i':							// Signed integer
 				setSigParam(sig, new IntegerType(), isScanf);
 				break;
-			case 'f':
-				setSigParam(sig, new FloatType(64), isScanf);
+			case 'u': case 'x': case 'X': case 'o':		// Unsigned integer
+				setSigParam(sig, new IntegerType(32, -1), isScanf);
 				break;
-			case 's':
+			case 'f': case 'g': case 'G': case 'e': case 'E':	// Various floating point formats
+				setSigParam(sig, new FloatType(64), isScanf);	// Note: may not be 64 bits for some archs
+				break;
+			case 's':									// String
 				setSigParam(sig, new PointerType(new CharType), isScanf);
 				break;
-			case 'c':
+			case 'c':									// Char
 				setSigParam(sig, new CharType, isScanf);
 				break;
 			case '%':
-				break;			// Ignore %%
+				break;			// Ignore %% (emits 1 percent char)
 			default:
 				LOG << "Unhandled format character " << ch << " in format string for call " << this << "\n";
 		}
