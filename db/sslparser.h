@@ -1,7 +1,7 @@
 #ifndef YY_SSLParser_h_included
 #define YY_SSLParser_h_included
 
-#line 1 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 1 "/usr/local/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "sslparser.h"
 #line 35 "sslparser.y"
 
@@ -121,7 +121,7 @@ protected: \
      */ \
     bool bFloat;
 
-#line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 14 "/usr/local/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_SSLParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -172,32 +172,32 @@ protected: \
 
 #ifndef YY_SSLParser_PURE
 
-/* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 63 "/usr/local/lib/bison.h" */
 #line 177 "sslparser.h"
 
-#line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 63 "/usr/local/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
-/* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 65 "/usr/local/lib/bison.h" */
 #line 184 "sslparser.h"
 
-#line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
-/* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 67 "/usr/local/lib/bison.h" */
 #line 191 "sslparser.h"
 
-#line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 67 "/usr/local/lib/bison.h"
 /* YY_SSLParser_DEBUG */
 #endif
 #ifndef YY_SSLParser_LSP_NEEDED
 
-/* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 70 "/usr/local/lib/bison.h" */
 #line 199 "sslparser.h"
 
-#line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 70 "/usr/local/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -272,7 +272,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #endif
 
 
-/* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
+/* #line 143 "/usr/local/lib/bison.h" */
 #line 277 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
@@ -280,49 +280,50 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #define	LOG_OP	261
 #define	NAME	262
 #define	REG_ID	263
-#define	COND_TNAME	264
-#define	DECOR	265
-#define	FARITH_OP	266
-#define	FPUSH	267
-#define	FPOP	268
-#define	TEMP	269
-#define	SHARES	270
-#define	CONV_FUNC	271
-#define	TRANSCEND	272
-#define	BIG	273
-#define	LITTLE	274
-#define	NAME_CALL	275
-#define	NAME_LOOKUP	276
-#define	ENDIANNESS	277
-#define	COVERS	278
-#define	INDEX	279
-#define	NOT	280
-#define	THEN	281
-#define	LOOKUP_RDC	282
-#define	BOGUS	283
-#define	ASSIGN	284
-#define	TO	285
-#define	COLON	286
-#define	S_E	287
-#define	AT	288
-#define	ADDR	289
-#define	REG_IDX	290
-#define	EQUATE	291
-#define	MEM_IDX	292
-#define	TOK_INTEGER	293
-#define	TOK_FLOAT	294
-#define	FAST	295
-#define	OPERAND	296
-#define	FETCHEXEC	297
-#define	CAST_OP	298
-#define	FLAGMACRO	299
-#define	SUCCESSOR	300
-#define	NUM	301
-#define	ASSIGNSIZE	302
-#define	FLOATNUM	303
+#define	REG_NUM	264
+#define	COND_TNAME	265
+#define	DECOR	266
+#define	FARITH_OP	267
+#define	FPUSH	268
+#define	FPOP	269
+#define	TEMP	270
+#define	SHARES	271
+#define	CONV_FUNC	272
+#define	TRANSCEND	273
+#define	BIG	274
+#define	LITTLE	275
+#define	NAME_CALL	276
+#define	NAME_LOOKUP	277
+#define	ENDIANNESS	278
+#define	COVERS	279
+#define	INDEX	280
+#define	NOT	281
+#define	THEN	282
+#define	LOOKUP_RDC	283
+#define	BOGUS	284
+#define	ASSIGN	285
+#define	TO	286
+#define	COLON	287
+#define	S_E	288
+#define	AT	289
+#define	ADDR	290
+#define	REG_IDX	291
+#define	EQUATE	292
+#define	MEM_IDX	293
+#define	TOK_INTEGER	294
+#define	TOK_FLOAT	295
+#define	FAST	296
+#define	OPERAND	297
+#define	FETCHEXEC	298
+#define	CAST_OP	299
+#define	FLAGMACRO	300
+#define	SUCCESSOR	301
+#define	NUM	302
+#define	ASSIGNSIZE	303
+#define	FLOATNUM	304
 
 
-#line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 143 "/usr/local/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -349,7 +350,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #ifndef YY_SSLParser_USE_CONST_TOKEN
 #define YY_SSLParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */
+/* so by default we use it */ 
 #endif
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 #ifndef YY_SSLParser_ENUM_TOKEN
@@ -359,18 +360,19 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 class YY_SSLParser_CLASS YY_SSLParser_INHERIT
 {
-public:
+public: 
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 368 "sslparser.h"
+/* #line 182 "/usr/local/lib/bison.h" */
+#line 369 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
 static const int LOG_OP;
 static const int NAME;
 static const int REG_ID;
+static const int REG_NUM;
 static const int COND_TNAME;
 static const int DECOR;
 static const int FARITH_OP;
@@ -413,62 +415,63 @@ static const int ASSIGNSIZE;
 static const int FLOATNUM;
 
 
-#line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 182 "/usr/local/lib/bison.h"
  /* decl const */
 #else
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
-/* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 423 "sslparser.h"
+/* #line 185 "/usr/local/lib/bison.h" */
+#line 425 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
 	,LOG_OP=261
 	,NAME=262
 	,REG_ID=263
-	,COND_TNAME=264
-	,DECOR=265
-	,FARITH_OP=266
-	,FPUSH=267
-	,FPOP=268
-	,TEMP=269
-	,SHARES=270
-	,CONV_FUNC=271
-	,TRANSCEND=272
-	,BIG=273
-	,LITTLE=274
-	,NAME_CALL=275
-	,NAME_LOOKUP=276
-	,ENDIANNESS=277
-	,COVERS=278
-	,INDEX=279
-	,NOT=280
-	,THEN=281
-	,LOOKUP_RDC=282
-	,BOGUS=283
-	,ASSIGN=284
-	,TO=285
-	,COLON=286
-	,S_E=287
-	,AT=288
-	,ADDR=289
-	,REG_IDX=290
-	,EQUATE=291
-	,MEM_IDX=292
-	,TOK_INTEGER=293
-	,TOK_FLOAT=294
-	,FAST=295
-	,OPERAND=296
-	,FETCHEXEC=297
-	,CAST_OP=298
-	,FLAGMACRO=299
-	,SUCCESSOR=300
-	,NUM=301
-	,ASSIGNSIZE=302
-	,FLOATNUM=303
+	,REG_NUM=264
+	,COND_TNAME=265
+	,DECOR=266
+	,FARITH_OP=267
+	,FPUSH=268
+	,FPOP=269
+	,TEMP=270
+	,SHARES=271
+	,CONV_FUNC=272
+	,TRANSCEND=273
+	,BIG=274
+	,LITTLE=275
+	,NAME_CALL=276
+	,NAME_LOOKUP=277
+	,ENDIANNESS=278
+	,COVERS=279
+	,INDEX=280
+	,NOT=281
+	,THEN=282
+	,LOOKUP_RDC=283
+	,BOGUS=284
+	,ASSIGN=285
+	,TO=286
+	,COLON=287
+	,S_E=288
+	,AT=289
+	,ADDR=290
+	,REG_IDX=291
+	,EQUATE=292
+	,MEM_IDX=293
+	,TOK_INTEGER=294
+	,TOK_FLOAT=295
+	,FAST=296
+	,OPERAND=297
+	,FETCHEXEC=298
+	,CAST_OP=299
+	,FLAGMACRO=300
+	,SUCCESSOR=301
+	,NUM=302
+	,ASSIGNSIZE=303
+	,FLOATNUM=304
 
 
-#line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
+#line 185 "/usr/local/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -521,6 +524,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 526 "sslparser.h"
+/* #line 236 "/usr/local/lib/bison.h" */
+#line 529 "sslparser.h"
 #endif

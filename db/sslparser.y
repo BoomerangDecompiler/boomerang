@@ -159,7 +159,7 @@ protected: \
 
 %token <str> COND_OP BIT_OP ARITH_OP LOG_OP
 %token <str> NAME 
-%token <str> REG_ID COND_TNAME DECOR
+%token <str> REG_ID REG_NUM COND_TNAME DECOR
 %token <str> FARITH_OP FPUSH FPOP
 %token <str> TEMP SHARES CONV_FUNC TRANSCEND
 %token <str> BIG LITTLE
@@ -1060,6 +1060,12 @@ var_op:
 
     |   REG_IDX exp ']' {
             $$ = new Unary(opRegOf, $2);
+        }
+
+    |   REG_NUM {
+            int regNum;
+            sscanf($1, "r%d", &regNum);
+            $$ = new Unary(opRegOf, new Const(regNum));
         }
 
     |   MEM_IDX exp ']' {

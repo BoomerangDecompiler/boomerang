@@ -224,6 +224,8 @@ public: \
             }
 
 "r["        {   return SSLParser::REG_IDX; }
+"r"[0-9]*   {   yylval.str = strdup(yytext);
+                return SSLParser::REG_NUM; }
 "m["        {   return SSLParser::MEM_IDX; }
 "_"         {   return yytext[0];   }
 "%"[A-Za-z][A-Za-z0-9]* {
