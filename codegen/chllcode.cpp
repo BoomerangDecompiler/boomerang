@@ -910,13 +910,27 @@ void CHLLCode::AddLocal(const char *name, Type *type)
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
 {
     char s[BUFSIZE];
-    s[0] = 0;
-    appendType(s, type);
-    strcat(s, " ");
-    strcat(s, name);
-    if (init) {
-        strcat(s, " = ");
-        appendExp(s, init);
+    s[0] = '\0';
+    // Check for array types. These are declared differently in C than
+    // they are printed
+    if (type->isArray()) {
+        // Get the component type
+        Type* base = ((ArrayType*)type)->getBaseType();
+        appendType(s, base);
+        strcat(s, " ");
+        strcat(s, name);
+        strcat(s, "[");
+        sprintf(s + strlen(s), "%d", ((ArrayType*)type)->getLength());
+        strcat(s, "]");
+        // Don't attempt to initialise arrays; complex syntax required
+    } else {
+        appendType(s, type);
+        strcat(s, " ");
+        strcat(s, name);
+        if (init) {
+            strcat(s, " = ");
+            appendExp(s, init);
+        }
     }
     strcat(s, ";");
     lines.push_back(strdup(s));
