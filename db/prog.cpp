@@ -236,15 +236,25 @@ void Prog::decompile() {
     removeRestoreStmts(restoreSet);
     restoreSet.clear();
 
-    // Convert from SSA to non-SSA form. First perform reverse global dataflow
+    // Perform the first reverse global dataflow calculation. This is needed
+    // to recover parameters and return locations
     reverseGlobalDataflow();
     recoverParameters();
     insertArguments(restoreSet);
     recoverReturnLocs();
-    repairDataflow(restoreSet);   // HACK! Do it ALL again, with params and return locs (and the restore set)
+    //repairDataflow(restoreSet);   // Repair the dataflow, to use arguments etc
+    forwardGlobalDataflow();        // Repair the dataflow, to use arguments etc
     if (VERBOSE) {
-        std::cerr << "==After HACK repair, before convert from SSA form===\n";
+        std::cerr << "==== After post argument and return value dataflow repair"
+          "====\n";
+        print(std::cerr, true);
+        std::cerr << "==== End after post argument and return value dataflow "
+            "repair ====\n";
     }
+
+    // Convert from SSA to non-SSA form. First perform another reverse global
+    // dataflow
+    reverseGlobalDataflow();
     fromSSAform();
 
     // Remove interprocedural edges for structuring algorithms
@@ -983,12 +993,13 @@ void Prog::fromSSAform() {
         cfg->calcLiveness(ig);
     }
 
-if (Boomerang::get()->vFlag) {
-std::cerr << "==== Start interference graph ===\n";
-igraph::iterator xx;
-for (xx=ig.begin(); xx != ig.end(); xx++)
-  std::cerr << (*xx).first << " = " << (*xx).second << "\n";
-std::cerr << "==== End interference graph ===\n\n";}
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "==== Start interference graph ===\n";
+        igraph::iterator xx;
+        for (xx=ig.begin(); xx != ig.end(); xx++)
+            std::cerr << (*xx).first << " = " << (*xx).second << "\n";
+        std::cerr << "==== End interference graph ===\n\n";
+    }
 
 
     // Take out of SSA mode
@@ -1011,10 +1022,11 @@ std::cerr << "==== End interference graph ===\n\n";}
     }
 }
 
+// Note: assumes that the last GDFA was a backward flow one
 void Prog::removeInterprocEdges() {
-    PROGMAP::iterator pp;
-    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
-        UserProc* proc = (UserProc*)pp->second;
+    for (std::list<Proc*>::iterator it = m_procs.begin();
+          it != m_procs.end(); it++) {
+        UserProc *proc = (UserProc*)*it;
         if (proc->isLib()) continue;
         Cfg* cfg = proc->getCFG();
         // Clear the return interprocedural edges
