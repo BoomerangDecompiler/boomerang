@@ -1936,6 +1936,7 @@ void UserProc::replaceExpressionsWithGlobals() {
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
 
+        // (a) Definitions
         LocationSet defs;
         s->getDefinitions(defs);
         LocationSet::iterator rr;
@@ -1975,12 +1976,14 @@ void UserProc::replaceExpressionsWithGlobals() {
             }
         }
 
+        // (b) Uses
         LocationSet refs;
         s->addUsedLocs(refs);
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             if (((Exp*)*rr)->isSubscript()) {
                 Statement *ref = ((RefExp*)*rr)->getRef();
                 Exp *r1 = (*rr)->getSubExp1();
+                // Is it m[CONSTANT]{0}
                 if (ref == NULL && 
                     r1->getOper() == opMemOf &&
                     r1->getSubExp1()->getOper() == opIntConst) {
@@ -2009,6 +2012,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                         }
                         s->searchAndReplace(memof->clone(), ne);
                     }
+                // look for m[(blah * K1 + K2)]
                 } else if (ref == NULL && r1->getOper() == opMemOf &&
                        r1->getSubExp1()->getOper() == opPlus &&
                        r1->getSubExp1()->getSubExp1()->getOper() 
@@ -2018,8 +2022,10 @@ void UserProc::replaceExpressionsWithGlobals() {
                        r1->getSubExp1()->getSubExp2()->getOper() 
                                                             == opIntConst) {
                     Exp *memof = r1;
+                    // K1 is the stride
                     int stride = ((Const*)memof->getSubExp1()->getSubExp1()
                                                ->getSubExp2())->getInt();
+                    // u is K2
                     ADDRESS u = ((Const*)memof->getSubExp1()->getSubExp2())
                                                             ->getInt();
                     LOG << "detected array ref with stride " << stride << "\n";
@@ -2615,7 +2621,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
         LocationSet refs;
 #define IGNORE_IMPLICITS 1
 #if IGNORE_IMPLICITS
-        s->addUsedLocsFinal(refs);
+        s->addUsedLocs(refs, true);
 #else
         s->addUsedLocs(refs);
 #endif
