@@ -84,7 +84,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	unsigned p = LMMH(m_pPEHeader->EntrypointRVA);
 	unsigned lim = p + 0x200;
 	unsigned char op1, op2;
-	unsigned addr, lastOrdCall;
+	unsigned addr, lastOrdCall = 0;
 	int gap;			// Number of instructions from the last ordinary call
 
 	if (m_pPEHeader->Subsystem == 1)   // native
@@ -222,8 +222,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 				// Skip the useless hint (2 bytes)
 				std::string name((const char*)(iatEntry+2+base));
 				dlprocptrs[paddr] = name;
-				if ((int)paddr != (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase))
-					dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)]
+				if ((unsigned)paddr != (unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase))
+					dlprocptrs[(unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase)]
 					= std::string("old_") + name; // add both possibilities
 				// printf("Added symbol %s value %x\n", name.c_str(), paddr);
 				// printf("Also added old_%s value %x\n", name.c_str(),
