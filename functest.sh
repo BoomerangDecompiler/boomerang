@@ -30,4 +30,6 @@ rm -rf functests.out
 ./testOne.sh sparc printpi
 ./testOne.sh pentium uns 2 3
 ./testOne.sh sparc uns 2 3
+./testOne.sh pentium fromssa2
+./testOne.sh sparc fromssa2
 echo === Done ===
