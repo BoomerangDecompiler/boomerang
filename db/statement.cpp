@@ -626,8 +626,7 @@ void GotoStatement::simplify() {
  * PARAMETERS:		None
  * RETURNS:			N/a
  *============================================================================*/
-BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(NULL),
-  bFloat(false) {
+BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(NULL), bFloat(false), size(0) {
 	kind = STMT_BRANCH;
 }
 
@@ -916,9 +915,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 	std::string s = os.str();
 
 	OPER condOp = pCond->getOper();
-	if (condOp == opFlagCall &&
-		  !strncmp(((Const*)pCond->getSubExp1())->getStr(),
-		  "SUBFLAGS", 8)) {
+	if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "SUBFLAGS", 8)) {
 		OPER op = opWild;
 		switch (jtCond) {
 			case BRANCH_JE:	   op = opEquals; break;
@@ -933,13 +930,13 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			case BRANCH_JUG:   op = opGtrUns; break;
 			case BRANCH_JMI:
 				pCond = new Binary(opLess,
-					pCond->getSubExp2()->getSubExp2()->getSubExp2()
-						->getSubExp1()->clone(), new Const(0));
+					pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
+					new Const(0));
 				break;
 			case BRANCH_JPOS:
 				pCond = new Binary(opGtrEq,
-					pCond->getSubExp2()->getSubExp2()->getSubExp2()
-						->getSubExp1()->clone(), new Const(0));
+					pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
+					new Const(0));
 				break;
 			case BRANCH_JOF:
 			case BRANCH_JNOF:
@@ -949,13 +946,10 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 		if (op != opWild) {
 			pCond = new Binary(op,
 				pCond->getSubExp2()->getSubExp1()->clone(),
-				pCond->getSubExp2()->getSubExp2()->getSubExp1()
-					->clone());
+				pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());
 		}
 	}
-	else if (condOp == opFlagCall && 
-		  !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-		  "LOGICALFLAGS", 12)) {
+	else if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12)) {
 		// Exp *e = pCond;
 		OPER op = opWild;
 		switch (jtCond) {
@@ -980,9 +974,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 				new Const(0));
 		}
 	}
-	else if (condOp == opFlagCall && 
-		  !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-		  "SETFFLAGS", 9)) {
+	else if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "SETFFLAGS", 9)) {
 		// Exp *e = pCond;
 		OPER op = opWild;
 		switch (jtCond) {
