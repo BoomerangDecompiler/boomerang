@@ -203,7 +203,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 		if (proc == NULL) {
 			HLLCode *code = Boomerang::get()->getHLLCode();
 			bool global = false;
-			for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+			for (std::set<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
 				// Check for an initial value
 				Exp *e = NULL;
 				e = (*it1)->getInitialValue(this);
@@ -354,7 +354,7 @@ bool Prog::clusterUsed(Cluster *c)
 
 void Prog::generateCode(std::ostream &os) {
 	HLLCode *code = Boomerang::get()->getHLLCode();
-	for (std::vector<Global*>::iterator it1 = globals.begin(); 
+	for (std::set<Global*>::iterator it1 = globals.begin();
 		 it1 != globals.end(); it1++) {
 		// Check for an initial value
 		Exp *e = NULL;
@@ -605,12 +605,13 @@ bool Prog::isWin32() {
 
 const char *Prog::getGlobalName(ADDRESS uaddr)
 {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (globals[i]->getAddress() == uaddr)
-			return globals[i]->getName();
-		else if (globals[i]->getAddress() < uaddr &&
-				globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr)
-			return globals[i]->getName();
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		if ((*it)->getAddress() == uaddr)
+			return (*it)->getName();
+		else if ((*it)->getAddress() < uaddr &&
+				(*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr)
+			return (*it)->getName();
+
 	if (pBF)
 		return pBF->SymbolByAddress(uaddr);
 	return NULL;
@@ -618,30 +619,37 @@ const char *Prog::getGlobalName(ADDRESS uaddr)
 
 ADDRESS Prog::getGlobalAddr(char *nam)
 {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (!strcmp(globals[i]->getName(), nam))
-			return globals[i]->getAddress();
+   	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
+        if (!strcmp((*it)->getName(), nam))
+        	return (*it)->getAddress();
+   	}
 	return pBF->GetAddressByName(nam);
 }
 
 Global* Prog::getGlobal(char *nam) {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (!strcmp(globals[i]->getName(), nam))
-			return globals[i];
+   	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
+        if (!strcmp((*it)->getName(), nam))
+        	return *it;
+   	}
 	return NULL;
 }
 
 void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
-    for (unsigned i = 0; i < globals.size(); i++)
-        if (globals[i]->getAddress() == uaddr) {
-			if (knownType) globals[i]->meetType(knownType);
+    Global* global;
+    
+    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+    {
+        if ((*it)->getAddress() == uaddr) {
+			if (knownType) (*it)->meetType(knownType);
             return;
 		}
-        else if (globals[i]->getAddress() < uaddr &&
-				globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr) {
-			if (knownType) globals[i]->meetType(knownType);
+        else if ((*it)->getAddress() < uaddr &&
+				(*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr) {
+			if (knownType) (*it)->meetType(knownType);
             return;
 		}
+	}
+	
 #if 0
     if (uaddr < 0x10000) {
         // This happens in windows code because you can pass a low value integer instead 
@@ -657,7 +665,10 @@ void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
 		ty = knownType;
 	else
 		ty = guessGlobalType(nam, uaddr);
-    globals.push_back(new Global(ty, uaddr, nam));
+		
+	global = new Global(ty, uaddr, nam);
+    globals.insert(global);
+
     if (VERBOSE) {
         LOG << "globalUsed: name " << nam << ", address " << uaddr;
 		if (knownType)
@@ -716,16 +727,16 @@ const char *Prog::newGlobal(ADDRESS uaddr)
 }
 
 Type *Prog::getGlobalType(char* nam) {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (!strcmp(globals[i]->getName(), nam))
-			return globals[i]->getType();
+ 	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		if (!strcmp((*it)->getName(), nam))
+			return (*it)->getType();
 	return NULL;
 }
 
 void Prog::setGlobalType(const char* nam, Type* ty) {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (!strcmp(globals[i]->getName(), nam))
-			globals[i]->setType(ty);
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		if (!strcmp((*it)->getName(), nam))
+			(*it)->setType(ty);
 }
 
 // get a string constant at a given address if appropriate
@@ -1042,6 +1053,38 @@ void Prog::decompile() {
 void Prog::removeUnusedGlobals() {
 	if (VERBOSE)
 		LOG << "Removing unused globals\n";
+
+    // seach for used globals
+	std::list<Exp*> usedGlobals;
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+		if ((*it)->isLib())	continue;
+		UserProc *u = (UserProc*)(*it);
+		u->searchAll(new Location(opGlobal, new Terminal(opWild), u), usedGlobals);
+	}
+
+	// make a map to find a global by its name (could be a global var too)
+	std::map<std::string, Global*> namedGlobals;
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		namedGlobals[(*it)->getName()] = (*it);
+		
+    // rebuild the globals vector
+    char* name;
+    Global* usedGlobal;
+    
+    globals.clear();
+	for (std::list<Exp*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++) {
+     	name = ((Const*)(*it)->getSubExp1())->getStr();
+     	usedGlobal=namedGlobals[name];
+     	if(usedGlobal) {
+     		globals.insert(usedGlobal);
+		} else {
+      		std::cerr << "warning: an expression refers to a nonexistent global";
+    	}
+	}
+
+#if 0
+	if (VERBOSE)
+		LOG << "Removing unused globals\n";
 	std::list<Exp*> result;
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if ((*it)->isLib())
@@ -1065,6 +1108,7 @@ void Prog::removeUnusedGlobals() {
 	for (std::map<std::string, Global*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++) {
 		globals.push_back((*it).second);
 	}
+#endif
 }
 
 void Prog::removeUnusedReturns() {
@@ -1356,7 +1400,7 @@ void Prog::readSymbolFile(const char *fname) {
 			if (ty == NULL) {
 				ty = guessGlobalType(nam, (*it)->addr);
 			}
-			globals.push_back(new Global(ty, (*it)->addr, nam));
+			globals.insert(new Global(ty, (*it)->addr, nam));
 		}
 	}
 
@@ -1511,7 +1555,7 @@ public:
 	std::string m_name, m_path;
 	std::list<Proc*> m_procs;
 	PROGMAP m_procLabels;
-	std::vector<Global*> globals;
+	std::set<Global*> globals;
 	std::map<ADDRESS, const char*> *globalMap;
 	int m_iNumberedProc;
 	Cluster *m_rootCluster;
@@ -1532,7 +1576,7 @@ Memo *Prog::makeMemo(int mId)
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
 		(*it)->takeMemo(m->mId);
 	m_rootCluster->takeMemo(m->mId);
-	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
 		(*it)->takeMemo(m->mId);
 
 	return m;
@@ -1553,7 +1597,7 @@ void Prog::readMemo(Memo *mm, bool dec)
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
 		(*it)->restoreMemo(m->mId, dec);
 	m_rootCluster->restoreMemo(m->mId, dec);
-	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
 		(*it)->restoreMemo(m->mId, dec);
 }
 

@@ -275,7 +275,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 		c->prog->m_rootCluster = stack.front()->cluster;
 		break;
 	case e_global:
-		c->prog->globals.push_back(stack.front()->global);
+		c->prog->globals.insert(stack.front()->global);
 		break;
 	default:
 		if (e == e_unknown)
@@ -2271,7 +2271,7 @@ void XMLProgParser::persistToXML(Prog *prog)
 	prog->m_rootCluster->openStreams("xml");
 	std::ofstream &os = prog->m_rootCluster->getStream();
 	os << "<prog path=\"" << prog->getPath() << "\" name=\"" << prog->getName() << "\" iNumberedProc=\"" << prog->m_iNumberedProc << "\">\n";
-	for (std::vector<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
+	for (std::set<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
 	persistToXML(os, *it1);
 	persistToXML(os, prog->m_rootCluster);
 	for (std::list<Proc*>::iterator it = prog->m_procs.begin(); it != prog->m_procs.end(); it++) {
