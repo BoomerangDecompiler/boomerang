@@ -457,17 +457,19 @@ public:
     bool nameRegisters();
     void removeRedundantPhis();
     void trimReturns();
+    void addNewParameters();
     void trimParameters();
     void removeReturn(Exp *e);
     void removeParameter(Exp *e);
+    void addParameter(Exp *e);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
-    void replaceExpressionsWithParameters();   // must be in SSA form
+    void replaceExpressionsWithParameters(int depth);   // must be in SSA form
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Statement*, int> RefCounter;
     void countRefs(RefCounter& refCounts);
-    void removeUnusedStatements(RefCounter& refCounts);
+    void removeUnusedStatements(RefCounter& refCounts, int depth);
     bool propagateAndRemoveStatements();
     void propagateStatements(int memDepth);
     int  findMaxDepth();                    // Find max memory nesting depth

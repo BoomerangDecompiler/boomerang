@@ -2446,12 +2446,12 @@ bool FlagDef::serialize(std::ostream &ouf, int &len)
 // Replace all e in this Exp with e{def}
 Exp* Unary::expSubscriptVar(Exp* e, Statement* def) {
     subExp1 = subExp1->expSubscriptVar(e, def);
-    if (*e == *this)
+    if (*e == *this || e->getOper() == opWild)
         return new RefExp(this, def);
     return this;
 }
 Exp* Terminal::expSubscriptVar(Exp* e, Statement* def) {
-    if (*e == *this)
+    if (*e == *this || e->getOper() == opWild)
         return new RefExp(this, def);
     return this;
 }
@@ -2467,7 +2467,7 @@ Exp* Ternary::expSubscriptVar(Exp* e, Statement* def) {
     return this;
 }
 Exp* RefExp::expSubscriptVar(Exp* e, Statement* def) {
-    if (*e == *subExp1)
+    if (*e == *subExp1 || e->getOper() == opWild)
         this->def = def;
     else
         // Need the else, otherwise in changing r28{3} to r28{4} will
@@ -2598,6 +2598,27 @@ void PhiExp::addUsedLocs(LocationSet& used) {
     }
 }
 
+Exp *Exp::removeSubscripts(bool& allZero)
+{
+    Exp *e = this;
+    LocationSet locs;
+    e->addUsedLocs(locs);
+    LocSetIter xx; 
+    allZero = true;
+    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+        if (x->getOper() == opSubscript) {
+            RefExp *r1 = (RefExp*)x;
+            if (r1->getRef() != NULL) {
+                allZero = false;
+            }
+            bool change; 
+            e = e->searchReplaceAll(x, r1->getSubExp1()->clone(), change);
+        }
+    }
+    return e;
+}
+
+
 Exp *Unary::fixCallRefs()
 {
     subExp1 = subExp1->fixCallRefs();
@@ -2622,25 +2643,49 @@ Exp *Ternary::fixCallRefs()
 Exp *RefExp::fixCallRefs() {
     CallStatement *call = dynamic_cast<CallStatement*>(def);
     if (call) {
-        if (call->findReturn(subExp1) == -1) { 
-            assert(*call->getProven(subExp1) == *subExp1);
-            Exp *e = call->findArgument(subExp1);
+        Exp *e = call->getProven(subExp1);
+        if (e) {
+            e = call->substituteParams(e);
             assert(e);
             delete this;
-            return e->clone();
+            return e;
         } else {
-            Exp *e = call->getProven(subExp1);
-            if (e) {
-                e = call->substituteParams(e);
-                assert(e);
-                delete this;
-                return e;
-            }
+            assert(call->findReturn(subExp1) != -1);
         }
     }
     return this;
 }
 
+Exp *PhiExp::fixCallRefs() {
+    std::vector<Statement*> remove;
+    std::vector<Statement*> insert;
+    StmtSetIter uu;
+    for (Statement* u = stmtSet.getFirst(uu); u; u = stmtSet.getNext(uu)) {
+        CallStatement *call = dynamic_cast<CallStatement*>(u);
+        if (call) {
+            Exp *e = call->getProven(subExp1);
+            if (e) {
+                e = call->substituteParams(e);
+                if (e && e->getOper() == opSubscript &&
+                    *e->getSubExp1() == *subExp1) {
+                    remove.push_back(u);
+                    insert.push_back(((RefExp*)e)->getRef());
+                } else {
+                    std::cerr << "cant update phi ref to " << e << std::endl;
+                }
+            } else {
+                assert(call->findReturn(subExp1) != -1);
+            }
+        }
+    }
+    for (std::vector<Statement*>::iterator it = remove.begin(); 
+         it != remove.end(); it++)
+        stmtSet.remove(*it);
+    for (std::vector<Statement*>::iterator it = insert.begin(); 
+         it != insert.end(); it++)
+        stmtSet.insert(*it);
+    return this;
+}
 
 //
 // From SSA form

@@ -974,7 +974,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
 
     // For each memory depth
-    int maxDepth = findMaxDepth();
+    int maxDepth = findMaxDepth() + 1;
     if (Boomerang::get()->maxMemDepth < maxDepth)
         maxDepth = Boomerang::get()->maxMemDepth;
     for (int depth = 0; depth <= maxDepth; depth++) {
@@ -1001,8 +1001,9 @@ std::set<UserProc*>* UserProc::decompile() {
         
         if (depth == 0) {
             trimReturns();
-            removeRedundantPhis();
         }
+        addNewParameters();
+        cfg->renameBlockVars(0, depth);
         trimParameters();
 
         // Print if requested
@@ -1023,6 +1024,22 @@ std::set<UserProc*>* UserProc::decompile() {
             std::cerr << "=== End propagate for " << getName() <<
               " at depth " << depth << " ===\n\n";
         }
+
+        // Remove unused statements
+        RefCounter refCounts;           // The map
+        // Count the references first
+        countRefs(refCounts);
+        // Now remove any that have no used
+        if (!Boomerang::get()->noRemoveNull)
+            removeUnusedStatements(refCounts, depth);
+
+        if (VERBOSE && !Boomerang::get()->noRemoveNull) {
+            std::cerr << "===== After removing null and unused statements "
+              "=====\n";
+            print(std::cerr, true);
+            std::cerr << "===== End after removing unused "
+              "statements =====\n\n";
+        }
     }
 
     // Now all the other things that were in UserProc::decompile()
@@ -1032,24 +1049,17 @@ std::set<UserProc*>* UserProc::decompile() {
     if (!Boomerang::get()->noRemoveNull)
         removeNullStatements();
 
-    // Remove unused statements
-    RefCounter refCounts;           // The map
-    // Count the references first
-    countRefs(refCounts);
-    // Now remove any that have no used
-    if (!Boomerang::get()->noRemoveNull)
-        removeUnusedStatements(refCounts);
-
-    if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-        std::cerr << "===== After removing null and unused statements "
-          "=====\n";
-        print(std::cerr, true);
-        std::cerr << "===== End after removing unused "
-          "statements =====\n\n";
+    if (!Boomerang::get()->noParameterNames) {
+        for (int i = maxDepth; i >= 0; i--) {
+            replaceExpressionsWithParameters(i);
+            trimParameters();
+        }
+        if (VERBOSE) {
+            std::cerr << "===== After replacing params =====\n";
+            print(std::cerr, true);
+            std::cerr << "===== End after replacing params =====\n\n";
+        }
     }
-
-    if (!Boomerang::get()->noParameterNames)
-        replaceExpressionsWithParameters();
 
     igraph ig;      // FIXME: need to make an attempt to calculate this!
     fromSSAform(ig);
@@ -1114,6 +1124,9 @@ void UserProc::removeRedundantPhis()
             removeStatement(s);
         }
 
+    stmts.clear();
+    getStatements(stmts);
+
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         if (s->isPhi()) {
             if (VERBOSE)
@@ -1153,7 +1166,7 @@ void UserProc::trimReturns() {
         std::cerr << "attempting to prove sp = sp + 4 for " << getName() <<
           std::endl;
     int sp = signature->getStackRegister(prog);
-    prove(new Binary(opEquals,
+    bool stdsp = prove(new Binary(opEquals,
                   Unary::regOf(sp),
                   new Binary(opPlus,
                       Unary::regOf(sp),
@@ -1169,14 +1182,41 @@ void UserProc::trimReturns() {
             preserved.insert(p);    
         }
     }
+    if (stdsp)
+        removeReturn(new Unary(opRegOf, new Const(28)));
     for (std::set<Exp*>::iterator it = preserved.begin(); 
          it != preserved.end(); it++)
         removeReturn(*it);
+    removeRedundantPhis();
     StatementList stmts;
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->fixCallRefs();
+}
+
+void UserProc::addNewParameters() {
+
+    if (VERBOSE)
+        std::cerr << "Adding new parameters for " << getName() << std::endl;
+
+    StatementList stmts;
+    getStatements(stmts);
+
+    StmtListIter it;
+    RefExp *r = new RefExp(new Unary(opMemOf, new Terminal(opWild)), NULL);
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        Exp *result;
+        if (s->search(r, result)) {
+            bool allZero;
+            Exp *e = result->clone()->removeSubscripts(allZero);
+            if (allZero && signature->findParam(e) == -1) {
+                if (VERBOSE)
+                    std::cerr << "Found new parameter " << e << std::endl;
+                addParameter(e);
+            }
+        }
+    }
 }
 
 void UserProc::trimParameters() {
@@ -1193,28 +1233,29 @@ void UserProc::trimParameters() {
     bool referenced[nparams];
     for (int i = 0; i < nparams; i++) {
         referenced[i] = false;
-        params.push_back(signature->getParamExp(i));
+        params.push_back(signature->getParamExp(i)->clone()->
+                            expSubscriptVar(new Terminal(opWild), NULL));
     }
 
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) 
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
-            for (int i = 0; i < nparams; i++) 
-                if (!referenced[i]) {
-                    RefExp *r = new RefExp(params[i]->clone(), NULL);
-                    Exp *result;
-                    bool ch = s->search(r, result);
-                    if (ch) referenced[i] = true;
-                    delete r;
-                }
+            for (int i = 0; i < nparams; i++) {
+                Exp *p = new Unary(opParam, 
+                             new Const((char*)signature->getParamName(i)));
+                if (!referenced[i] && (s->usesExp(params[i]) || s->usesExp(p)))
+                    referenced[i] = true;
+                delete p;
+            }
         }
 
     for (int i = 0; i < nparams; i++)
         if (!referenced[i]) {
+            bool allZero;
+            Exp *e = params[i]->removeSubscripts(allZero);
             if (VERBOSE) 
-                std::cerr << "removing unused parameter " << params[i] 
-                          << std::endl;
-            removeParameter(params[i]);
+                std::cerr << "removing unused parameter " << e << std::endl;
+            removeParameter(e);
         }
 }
 
@@ -1235,6 +1276,14 @@ void UserProc::removeParameter(Exp *e)
              it != callerSet.end(); it++)
             (*it)->removeArgument(n);
     }
+}
+
+void UserProc::addParameter(Exp *e)
+{
+    for (std::set<CallStatement*>::iterator it = callerSet.begin();
+         it != callerSet.end(); it++)
+            (*it)->addArgument(e);
+    signature->addParameter(e);
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
@@ -1342,15 +1391,17 @@ void UserProc::replaceExpressionsWithSymbols() {
     }
 }
 
-void UserProc::replaceExpressionsWithParameters() {
+void UserProc::replaceExpressionsWithParameters(int depth) {
     StatementList stmts;
     getStatements(stmts);
 
     // replace expressions in regular statements with parameters
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        for (int i = 0; i < signature->getNumParams(); i++) {
-            RefExp *r = new RefExp(signature->getParamExp(i), NULL);
+        for (int i = 0; i < signature->getNumParams(); i++) 
+            if (signature->getParamExp(i)->getMemDepth() == depth) {
+            Exp *r = signature->getParamExp(i)->clone();
+            r = r->expSubscriptVar(new Terminal(opWild), NULL);
             s->searchAndReplace(r, new Unary(opParam, 
                          new Const((char*)signature->getParamName(i))));
         }
@@ -1702,18 +1753,10 @@ void UserProc::countRefs(RefCounter& refCounts) {
         LocSetIter rr;
         for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
             if (r->isSubscript()) {
-                refCounts[((RefExp*)r)->getRef()]++;
+                Statement *ref = ((RefExp*)r)->getRef();
+                refCounts[ref]++;
             }
         }
-        #if 0       // No, phi statements do use their parameters now
-        if (s->isPhi()) {
-            PhiExp *p = (PhiExp*)s->getRight();
-            StmtSetIter it;
-            for (Statement *s1 = p->getFirstRef(it); !p->isLastRef(it);
-                 s1 = p->getNextRef(it))
-                refCounts[s1]++;
-        }
-        #endif
         if (s->getLeft() && signature->findReturn(s->getLeft()) != -1)
             lastDef[s->getLeft()] = s;
     }
@@ -1723,7 +1766,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
         refCounts[(*it).second]++;
 }
 
-void UserProc::removeUnusedStatements(RefCounter& refCounts) {
+void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
     StatementList stmts;
     getStatements(stmts);
     StmtListIter ll;
@@ -1735,6 +1778,10 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
             if (s->getKind() != STMT_ASSIGN && s->getKind() != STMT_BOOL) {
                 // Never delete a statement other than an assignment or setstmt
                 // (e.g. nothing "uses" a Jcond)
+                s = stmts.getNext(ll);
+                continue;
+            }
+            if (s->getLeft() && s->getLeft()->getMemDepth() > depth) {
                 s = stmts.getNext(ll);
                 continue;
             }

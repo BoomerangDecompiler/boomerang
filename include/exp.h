@@ -240,6 +240,7 @@ virtual Exp* simplifyAddr() {return this;}
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used) {}
 
+    Exp *removeSubscripts(bool& allZero);
     virtual Exp *fixCallRefs() { return this; }
 
     // Add a subscript to all e (pointing to def)
@@ -662,6 +663,7 @@ virtual Exp* clone();
     void    print(std::ostream& os, bool withUses = false);
 virtual int getNumRefs() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
+    virtual Exp *fixCallRefs();
 virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
     void removeSubscript(Statement* def) { stmtSet.remove(def); }

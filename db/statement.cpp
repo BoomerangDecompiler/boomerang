@@ -1800,11 +1800,11 @@ Exp *CallStatement::substituteParams(Exp *e)
     LocSetIter xx;
     for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
         Exp *r = findArgument(x);
-        if (r == NULL) continue;    // Can happen for the stack pointer
+        if (r == NULL) continue;
         bool change;
         e = e->searchReplaceAll(x, r->clone(), change);
     }
-    return e;
+    return e->simplify();
 }
 
 Exp *CallStatement::findArgument(Exp *e) {
@@ -1812,6 +1812,12 @@ Exp *CallStatement::findArgument(Exp *e) {
     int n = procDest->getSignature()->findParam(e);
     if (n == -1) return NULL;
     return arguments[n];
+}
+
+void CallStatement::addArgument(Exp *e)
+{
+    e = substituteParams(e);
+    arguments.push_back(e);
 }
 
 Type *CallStatement::getArgumentType(int i) {
@@ -2931,27 +2937,6 @@ void Assign::fixCallRefs() {
     if (lhs->isMemOf()) {
         ((Unary*)lhs)->refSubExp1() =
           ((Unary*)lhs)->getSubExp1()->fixCallRefs();
-    }
-    if (rhs->getOper() == opPhi) {
-        PhiExp *p = (PhiExp*)rhs;
-        StmtSetIter it;
-        std::vector<Statement*> from, to;
-        for (Statement* s = p->getFirstRef(it); !p->isLastRef(it);
-          s = p->getNextRef(it)) {
-            CallStatement *call = dynamic_cast<CallStatement*>(s);
-            if (call && call->findReturn(lhs) == -1) {
-                assert(*call->getProven(lhs) == *lhs);
-                Exp *e = call->findArgument(lhs);
-                assert(e && e->getOper() == opSubscript &&
-                  *e->getSubExp1() == *lhs);
-                from.push_back(call);
-                to.push_back(((RefExp*)e)->getRef());
-            }
-            for (unsigned i = 0; i < from.size(); i++) {
-                p->addSubscript(to[i]);
-                p->removeSubscript(from[i]);
-            }
-        }
     }
 }
 

@@ -775,9 +775,18 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/,
 {
     std::string s;
     if (nam == NULL) {
-        std::stringstream os;
-        os << "param" << params.size()+1 << std::ends;
-        s = os.str();
+        int n = params.size()+1;
+        bool ok = false;
+        while (!ok) {
+            std::stringstream os;
+            os << "param" << n << std::ends;
+            s = os.str();
+            ok = true;
+            for (int i = 0; i < params.size(); i++)
+                if (!strcmp(s.c_str(), params[i]->getName()))
+                    ok = false;
+            n++;
+        }
         nam = s.c_str();
     }
     addParameter(new Parameter(type, nam, e));

@@ -112,6 +112,7 @@ public:
     Statement* StatementList::remove(StmtListIter& it);
     bool exists(Statement* s);  // Find; returns false if not found
     void prints();                          // Print to cerr (for debugging)
+    void clear() { slist.clear(); }
 };
 
 // For liveness, we need sets of locations (registers or memory)
@@ -788,6 +789,7 @@ public:
     Exp *getProven(Exp *e);
     Exp *substituteParams(Exp *e);
     Exp *findArgument(Exp *e);
+    void addArgument(Exp *e);
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int  getNumArguments() { return arguments.size(); }
