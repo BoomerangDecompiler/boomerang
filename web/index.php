@@ -50,6 +50,8 @@ Ethics</a> of decompilation<br>
 <a href="#making">Making Boomerang</a><br>
 <a href="FAQ.html">FAQ</a><br>
 <h2><a name="News"></a>News</h2>
+<b>1 Oct 03: </b>We now require the Boehm garbage collector.
+<br>
 <b>12/Aug/03: </b>Boomerang is working well enough now to correctly
 decompile most of the simple test programs in the test/ directory
 (including the frustrating recursive fibonacci programs). To those that
@@ -237,10 +239,6 @@ some design documents for how we'd like the code to evolve to; email us
 if you are interested.<br>
 <br>
 So the only way to make this code at present is on Solaris or Linux.
-Late note: On my Linux box, the frontend test is failing in malloc.
-This may be a bug in dlopen, or a real fault; I need time to check it
-out. We are working on the Windows problem now (we want it to be able
-to be made with MS Visual Studio).
 <h2><a name="making"></a>Making Boomerang</h2>
 <p>You can make boomerang as a command line tool under Unix (Linux,
 Solaris, others should work), or as a GUI tool under Windows. To make
@@ -255,6 +253,7 @@ attempting to compile it on older versions.</li>
   <li><b>cppunit</b> (from <a href="http://cppunit.sourceforge.net">cppunit.sourceforge.net</a>).
 This is needed for testing. I suppose you could make boomerang without
 it, but it's integral to develoopment.</li>
+  <li>The Boehm garbage collector; see <a href=http://www.hpl.hp.com/personal/Hans_Boehm/gc/>http://www.hpl.hp.com/personal/Hans_Boehm/gc/</a>.
   <li><font color="#999999"><b>wxWindows</b> (from <a
  href="http://wxwindows.org">wxwindows.org</a>). It's not absoluitely
 needed right now, but (at present), this is the toolkit that we will
