@@ -256,14 +256,16 @@ void FrontSparcTest::testBranch() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x10ab0);
     inst.rtl->print(o1);
-    expected = std::string("00010ab0 JCOND 0x10ac8, condition not equals\n");
+    expected = std::string("00010ab0 JCOND 0x10ac8, condition not equals\n"
+	  "High level: ~%ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     // bg
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x10af8);
     inst.rtl->print(o2);
-    expected = std::string("00010af8 JCOND 0x10b10, condition signed greater\n");
+    expected = std::string("00010af8 JCOND 0x10b10, condition signed greater\n"
+	  "High level: %NF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     // bleu
@@ -271,7 +273,8 @@ void FrontSparcTest::testBranch() {
     inst = pFE->decodeInstruction(0x10b44);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010b44 JCOND 0x10b54, condition unsigned less or equals\n");
+        "00010b44 JCOND 0x10b54, condition unsigned less or equals\n"
+		"High level: ~%CF or %ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -360,9 +363,13 @@ void FrontSparcTest::testDelaySlot() {
 	"00010aa8 *32* r[16] := 0 | 5\n"
 	"00010aac *32* r[tmp] := r[16]\n"
 	"         *32* r[0] := r[16] - r[8]\n"
-	"         *32* %flags := SUBFLAGS( r[tmp], r[8], r[0] )\n"
+	"         *1* %NF := r[0]@31:31\n"
+    "         *1* %ZF := (r[0] = 0) ? 1 : 0\n"
+    "         *1* %OF := (((r[tmp]@31:31) & ~(r[8]@31:31)) & ~(r[0]@31:31)) | ((~(r[tmp]@31:31) & (r[8]@31:31)) & (r[0]@31:31))\n"
+    "         *1* %CF := (~(r[tmp]@31:31) & (r[8]@31:31)) | ((r[0]@31:31) & (~(r[tmp]@31:31) | (r[8]@31:31)))\n"
 	"00010ab0 *32* r[8] := 70656\n"
-	"00010ab0 JCOND 0x10ac8, condition not equals\n");
+	"00010ab0 JCOND 0x10ac8, condition not equals\n"
+	"High level: ~%ZF\n");
     actual = std::string(o3.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -372,7 +379,8 @@ void FrontSparcTest::testDelaySlot() {
     bb->print(o4);
     expected = std::string("L1: Twoway BB:\n"
         "00010ac8 *32* r[8] := 70656\n"
-        "00010ac8 JCOND 0x10ad8, condition equals\n");
+        "00010ac8 JCOND 0x10ad8, condition equals\n"
+		"High level: %ZF\n");
     actual = std::string(o4.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
