@@ -36,6 +36,8 @@
 #include "boomerang.h"
 #include <iostream>
 
+Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
+
 #define DIS_UIMM    (new Const(uimm))
 #define DIS_SIMM    (new Const(simm))
 #define DIS_RS		(dis_RegLhs(rs))
@@ -51,9 +53,9 @@
 #define DIS_NZRB	(dis_RegLhs(rb))
 #define DIS_ADDR	(new Const(addr))
 #define DIS_RELADDR (new Const(reladdr - delta))
-#define DIS_CRBD	(new Const(crbD))
-#define DIS_CRBA	(new Const(crbA))
-#define DIS_CRBB	(new Const(crbB))
+#define DIS_CRBD	(crBit(crbD))
+#define DIS_CRBA	(crBit(crbA))
+#define DIS_CRBB	(crBit(crbB))
 
 // MVE: Used any more?
 #define DIS_INDEX   (new Binary(opPlus, \
@@ -257,5 +259,14 @@ PPCDecoder::PPCDecoder() : NJMCDecoder()
 int PPCDecoder::decodeAssemblyInstruction(unsigned, int)
 { return 0; }
 
-
+// Get an expression for a CR bit. For example, if bitNum is 6, return r65@[2:2]
+// (r64 .. r71 are the %cr0 .. %cr7 flag sets)
+Exp* crBit(int bitNum) {
+	int		crNum = bitNum / 4;
+	bitNum = bitNum & 3;
+	return new Ternary(opAt,
+		Location::regOf(64 + crNum),
+		new Const(bitNum),
+		new Const(bitNum));
+}
 
