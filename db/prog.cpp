@@ -74,6 +74,8 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
       globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
       m_iNumberedProc(1) {
+    if (pBF && pBF->getFilename()) 
+        m_name = pBF->getFilename();
 }
 
 Prog::Prog(const char* name)
@@ -865,6 +867,8 @@ void Prog::printCallGraph() {
 }
 
 void Prog::printCallGraphXML() {
+    if (!Boomerang::get()->dumpXML)
+        return;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
          it++)
         (*it)->clearVisited();
@@ -872,9 +876,11 @@ void Prog::printCallGraphXML() {
                          "callgraph.xml").c_str();
     int fd = lockFileWrite(fname);
     std::ofstream f(fname);
-    f << "<callgraph>\n";
-    getEntryProc()->printCallGraphXML(f, 0);
-    f << "</callgraph>\n";
+    f << "<prog name=\"" << getName() << "\">\n";
+    f << "   <callgraph>\n";
+    getEntryProc()->printCallGraphXML(f, 2);
+    f << "   </callgraph>\n";
+    f << "</prog>\n";
     f.close();
     unlockFile(fd);
 }

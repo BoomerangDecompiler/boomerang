@@ -85,6 +85,7 @@ public:
     std::vector<ADDRESS> entrypoints;
     bool decodeMain;
     bool printAST;
+    bool dumpXML;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

@@ -148,6 +148,7 @@ public:
                                                 // LOADFMT_Win32)
   virtual MACHINE GetMachine() const;           // Get machine (i.e.
                                                 // MACHINE_Pentium)
+  virtual const char *getFilename() const { return m_pFileName; }
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();
   virtual ADDRESS getImageBase();
@@ -200,6 +201,7 @@ virtual const char *GetDynamicProcName(ADDRESS uNative);
         DWord*  m_pRelocTable;          // The relocation table
         char *  base;                   // Beginning of the loaded image
         std::map<ADDRESS, std::string> dlprocptrs;  // Address of dynamic pointers to library procedures
+        const char *m_pFileName;
 
 };
 

@@ -37,7 +37,7 @@ extern "C" {
     int microX86Dis(void* p);           // From microX86dis.c
 }
 
-Win32BinaryFile::Win32BinaryFile()
+Win32BinaryFile::Win32BinaryFile() : m_pFileName(0)
 { }
 
 Win32BinaryFile::~Win32BinaryFile()
@@ -124,7 +124,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 
 bool Win32BinaryFile::RealLoad(const char* sName)
 {
-
+    m_pFileName = sName;
     FILE *fp = fopen(sName,"rb");
 
     DWord peoffLE, peoff;
@@ -167,12 +167,15 @@ bool Win32BinaryFile::RealLoad(const char* sName)
         ((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
     m_iNumSections = LH(&m_pPEHeader->numObjects);
     m_pSections = new SectionInfo[m_iNumSections];
+    SectionInfo *reloc = NULL;
     for (int i=0; i<m_iNumSections; i++, o++) {
 //printf("%.8s RVA=%08X Offset=%08X size=%08X\n",
 //  (char*)o->ObjectName, LMMH(o->RVA), LMMH(o->PhysicalOffset),
 //  LMMH(o->VirtualSize));
       m_pSections[i].pSectionName = new char[9];
       strncpy(m_pSections[i].pSectionName, o->ObjectName, 8);
+      if (!strcmp(m_pSections[i].pSectionName, ".reloc"))
+        reloc = &m_pSections[i];
       m_pSections[i].uNativeAddr=(ADDRESS)(LMMH(o->RVA) +
         LMMH(m_pPEHeader->Imagebase));
       m_pSections[i].uHostAddr=(ADDRESS)(LMMH(o->RVA) + base);
@@ -273,7 +276,6 @@ int Win32BinaryFile::win32Read2(short* ps) const {
     unsigned char* p = (unsigned char*)ps;
     // Little endian
     int n = (int)(p[0] + (p[1] << 8));
-    std::cerr << "win32 read2 " << std::hex << n << std::endl;
     return n;
 }
 
@@ -282,8 +284,6 @@ int Win32BinaryFile::win32Read4(int* pi) const{
     int n1 = win32Read2(p);
     int n2 = win32Read2(p+1);
     int n = (int) (n1 | (n2 << 16));
-    std::cerr << "win32 read4 " << std::hex << n1 << ", " << n2 << " " 
-              << n << std::endl;
     return n;
 }
 
@@ -293,7 +293,6 @@ int Win32BinaryFile::readNative2(ADDRESS nat) {
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     int n = win32Read2((short*)host);
-    std::cerr << "read native2 " << std::hex << n << std::endl;
     return n;
 }
 
@@ -303,7 +302,6 @@ int Win32BinaryFile::readNative4(ADDRESS nat) {
     if (si == 0) return 0;
     ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
     int n = win32Read4((int*)host);
-    std::cerr << "read native " << std::hex << n << std::endl;
     return n;
 }
 

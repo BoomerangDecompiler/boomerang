@@ -94,6 +94,7 @@ public:
     virtual bool  PostLoad(void* handle);     // For archive files only
     virtual LOAD_FMT GetFormat() const;       // Get format i.e. LOADFMT_PALM
     virtual MACHINE GetMachine() const;       // Get format i.e. MACHINE_HPRISC
+    virtual const char *getFilename() const { return m_pFileName; }
 
     virtual bool isLibrary() const;
     virtual std::list<const char *> getDependencyList();
@@ -147,6 +148,7 @@ private:
     SymTab          symbols;                    // Symbol table object
 //  ADDRESS         mainExport;                 // Export entry for "main"
     std::set<ADDRESS>    imports;                    // Set of imported proc addr's
+    const char *    m_pFileName;
 };
 
 #endif      // #ifndef __HPSOMBINARYFILE_H__

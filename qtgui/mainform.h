@@ -46,15 +46,18 @@ protected:
     QPopupMenu *FileMenu;
     QPopupMenu *EditMenu;
     QAction* fileNewAction;
+    QAction* fileOpenAction;
     QAction* fileExitAction;
     QPushButton* showLog;
     QHBoxLayout* MainFormLayout;
     FileMonitor *logMonitor, *cgMonitor, 
                 *detailsMonitor, *decodedMonitor, *ssaMonitor;
+    QString projectPath;
 
 protected slots:
     virtual void languageChange();
     virtual void closeEvent(QCloseEvent *e);
+    virtual void fileOpen();
     virtual void fileExit();
     virtual void listSelectionChanged(QListViewItem *item);
     virtual void showLogToggled(bool on);

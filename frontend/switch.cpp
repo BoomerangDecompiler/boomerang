@@ -1192,8 +1192,17 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
             // For type R, the table is relative to the branch, so take iOffset
             // For others, iOffset is 0, so no harm
             uSwitch += si->uTable - si->iOffset;
-        tq.visit(pCfg, uSwitch, pBB);
-        pCfg->addOutEdge(pBB, uSwitch, true);
+        if (uSwitch < pBF->getLimitTextHigh()) {
+            tq.visit(pCfg, uSwitch, pBB);
+            pCfg->addOutEdge(pBB, uSwitch, true);
+        } else {
+            LOG << "switch table entry branches to past end of text section " 
+                << uSwitch << "\n";
+            iNumOut--;
+        }
     }
+
+    // this can change now as a result of bad table entries
+    pBB->updateType(NWAY, iNumOut);
 
 }

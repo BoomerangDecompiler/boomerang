@@ -25,6 +25,7 @@
 #include <qpushbutton.h>
 #include <qfile.h>
 #include <qxml.h>
+#include <qfiledialog.h>
 #include "filemonitor.h"
 #include "util.h"
 
@@ -37,6 +38,8 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
     : QMainWindow( parent, name, fl ), detailsMonitor(NULL),
       decodedMonitor(NULL), ssaMonitor(NULL)
 {
+    projectPath = "../output/";
+
     statusBar()->message("Ready");
 
     showLog = new QPushButton("show log", statusBar());
@@ -72,12 +75,12 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
     logger->setTextFormat(Qt::LogText);
     logger->mimeSourceFactory()->setFilePath("./");
     logger->mimeSourceFactory()->setExtensionType("", "text/plain");
-    logger->setSource("../output/log");
+    logger->setSource(projectPath + "log");
 
     logMonitor = new FileMonitor(logger->source());
     QObject::connect( logMonitor, SIGNAL(changed()),
                       this,  SLOT(updateLog()) );
-    cgMonitor = new FileMonitor("../output/callgraph.xml");
+    cgMonitor = new FileMonitor(projectPath + "callgraph.xml");
     QObject::connect( cgMonitor, SIGNAL(changed()),
                       this,  SLOT(updateCallGraph()) );
 
@@ -104,8 +107,11 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
 
     // actions
     fileNewAction = new QAction( this, "fileNewAction" );
+    fileOpenAction = new QAction( this, "fileOpenAction" );
     fileExitAction = new QAction( this, "fileExitAction" );
     
+    QObject::connect( fileOpenAction, SIGNAL(activated()),
+                      this,  SLOT(fileOpen()) );
     QObject::connect( fileExitAction, SIGNAL(activated()),
                       this,  SLOT(fileExit()) );
 
@@ -118,6 +124,7 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
 
     FileMenu = new QPopupMenu( this );
     fileNewAction->addTo( FileMenu );
+    fileOpenAction->addTo( FileMenu );
     FileMenu->insertSeparator();
     fileExitAction->addTo( FileMenu );
     MenuBarEditor->insertItem( "", FileMenu, 1 );
@@ -161,6 +168,7 @@ void MainForm::languageChange()
     tabWidget2->changeTab( ssa, tr( "SSA" ) );
     tabWidget2->changeTab( code, tr( "Code" ) );
     fileNewAction->setText( tr( "New" ) );
+    fileOpenAction->setText( tr( "Open" ) );
     fileExitAction->setText( tr( "Exit" ) );
     MenuBarEditor->findItem( 1 )->setText( tr( "File" ) );
     MenuBarEditor->findItem( 2 )->setText( tr( "Edit" ) );
@@ -169,6 +177,17 @@ void MainForm::languageChange()
 void MainForm::closeEvent( QCloseEvent * )
 {
     fileExit();
+}
+
+void MainForm::fileOpen()
+{
+    QFileDialog* fd = new QFileDialog( this, "filedialog", TRUE );
+    fd->setMode( QFileDialog::Directory );
+    fd->setCaption("Open project..");
+    if ( fd->exec() == QDialog::Accepted ) {
+        projectPath = fd->selectedFile();
+    }
+    delete fd;
 }
 
 void MainForm::fileExit()
@@ -225,6 +244,7 @@ public:
     bool endElement( const QString&, const QString&, const QString& );
 
     QListView *listView2;
+    MainForm *mainform;
 
 protected:
     std::list<QListViewItem*> itemStack;
@@ -232,7 +252,7 @@ protected:
 
 void MainForm::updateCallGraph()
 {
-    QString fname = "../output/callgraph.xml";
+    QString fname = projectPath + "callgraph.xml";
     int fd = lockFileRead(fname);
     QFile f(fname);
     if (f.open(IO_ReadOnly) == FALSE) {
@@ -243,6 +263,7 @@ void MainForm::updateCallGraph()
     QXmlInputSource i(f);
     CGHandler h;
     h.listView2 = listView2;
+    h.mainform = this;
     q.setContentHandler(&h);
     q.parse(i);
     unlockFile(fd);
@@ -259,6 +280,10 @@ bool CGHandler::startElement( const QString&, const QString&,
                                     const QString& qName, 
                                     const QXmlAttributes &a )
 {
+    if (qName == "prog") {
+        mainform->setCaption(a.value("name") + " - Boomerang");
+        return TRUE;
+    }
     if (qName != "proc")
         return TRUE;
     QListViewItem *item;
@@ -301,7 +326,7 @@ protected:
 
 void MainForm::updateDetails()
 {
-    QString fname = QString("../output/") + 
+    QString fname = projectPath + 
                     listView2->selectedItem()->text(0) + 
                     "-details.xml";
     int fd = lockFileRead(fname);
@@ -371,7 +396,7 @@ protected:
 
 void MainForm::updateDecoded()
 {
-    QString fname = QString("../output/") + 
+    QString fname = projectPath + 
                     listView2->selectedItem()->text(0) + 
                     "-decoded.xml";
     int fd = lockFileRead(fname);
@@ -451,7 +476,7 @@ protected:
 
 void MainForm::updateSSA()
 {
-    QString fname = QString("../output/") + 
+    QString fname = projectPath + 
                     listView2->selectedItem()->text(0) + 
                     "-ssa.xml";
     int fd = lockFileRead(fname);

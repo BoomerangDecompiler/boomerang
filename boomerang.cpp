@@ -17,7 +17,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noPromote(false), propOnlyToAll(false), debugDataflow(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
-    debugTA(false), decodeMain(true), printAST(false)
+    debugTA(false), decodeMain(true), printAST(false), dumpXML(false)
 {
 }
 
@@ -73,6 +73,7 @@ void Boomerang::help() {
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
                     "\n";
     std::cerr << "-t: trace every instruction decoded\n";
+    std::cerr << "-x: dump xml files\n";
     std::cerr << "-v: verbose\n";
     exit(1);
 }
@@ -104,6 +105,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         switch (argv[i][1]) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
+            case 'x': dumpXML = true; break;
             case 'r': printRtl = true; break;
             case 't': traceDecoder = true; break;
             case 'g': 

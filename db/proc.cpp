@@ -136,6 +136,8 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
 
 void Proc::printCallGraphXML(std::ostream &os, int depth)
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     for (int i = 0; i < depth; i++)
         os << "   ";
     os << "<proc name=\"" << getName() << "\"/>\n";
@@ -143,6 +145,8 @@ void Proc::printCallGraphXML(std::ostream &os, int depth)
 
 void UserProc::printCallGraphXML(std::ostream &os, int depth)
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     visited = true;
     for (int i = 0; i < depth; i++)
         os << "   ";
@@ -159,6 +163,8 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth)
 
 void Proc::printDetailsXML()
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-details.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
@@ -175,6 +181,8 @@ void Proc::printDetailsXML()
 
 void UserProc::printDecodedXML()
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-decoded.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
@@ -191,6 +199,8 @@ void UserProc::printDecodedXML()
 
 void UserProc::printSSAXML()
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-ssa.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
@@ -208,6 +218,8 @@ void UserProc::printSSAXML()
 
 void UserProc::printXML()
 {
+    if (!Boomerang::get()->dumpXML)
+        return;
     printDetailsXML();
     printSSAXML();
 }
