@@ -35,13 +35,17 @@ int max(int a, int b) {		// Faster to write than to find the #include for
 
 #define DFA_ITER_LIMIT 20
 
-// m[e*K1 + K2]
-static Exp* arrayPat = Location::memOf(
+// m[idx*K1 + K2]; leave idx wild
+static Exp* scaledArrayPat = Location::memOf(
 	new Binary(opPlus,
 		new Binary(opMult,
 			new Terminal(opWild),
-		new Terminal(opWildIntConst)),
-	new Terminal(opWildIntConst)));
+			new Terminal(opWildIntConst)),
+		new Terminal(opWildIntConst)));
+// idx + K; leave idx wild
+static Exp* unscaledArrayPat = new Binary(opPlus,
+		new Terminal(opWild),
+		new Terminal(opWildIntConst));
 
 void UserProc::dfaTypeAnalysis() {
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
@@ -162,6 +166,37 @@ void UserProc::dfaTypeAnalysis() {
 						Exp* memof = Location::memOf(con);
 						s->searchAndReplace(memof->clone(), ne);
 					}
+				} else if (baseType->resolvesToArray()) {
+					// We have found a constant in s which has type pointer to array of alpha. We can't get the parent
+					// of con, but we can find it with the pattern unscaledArrayPat.
+					std::list<Exp*> result;
+					s->searchAll(unscaledArrayPat, result);
+					for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
+						// idx + K
+						Const* constK = (Const*)((Binary*)*rr)->getSubExp2();
+						// Note: keep searching till we find the pattern with this constant, since other constants may
+						// not be used as pointer to array type.
+						if (constK != con) continue;
+						ADDRESS K = (ADDRESS)constK->getInt();
+						Exp* idx = ((Binary*)*rr)->getSubExp1();
+						Exp* arr = new Unary(opAddrOf,
+							new Binary(opArraySubscript,
+								Location::global(prog->getGlobalName(K), this),
+								idx));
+						// Beware of changing expressions in implicit assignments... map can become invalid
+						bool isImplicit = s->isImplicit();
+						if (isImplicit)
+							cfg->removeImplicitAssign(((ImplicitAssign*)s)->getLeft());
+						s->searchAndReplace(unscaledArrayPat, arr);
+						// s will likely have an m[a[array]], so simplify
+						s->simplifyAddr();
+						if (isImplicit)
+							// Replace the implicit assignment entry. Note that s' lhs has changed
+							cfg->findImplicitAssign(((ImplicitAssign*)s)->getLeft());
+						// Ensure that the global is declared
+						// Ugh... I think that arrays and pointers to arrays are muddled!
+						prog->globalUsed(K, baseType);
+					}
 				}
 			} else if (t->isFloat()) {
 				if (t->getSize() == 32) {
@@ -177,30 +212,30 @@ void UserProc::dfaTypeAnalysis() {
 			}
 		}
 
-		// 2) Search for the array pattern and replace it with an array use
-		// m[e*K1 + K2]
+		// 2) Search for the scaled array pattern and replace it with an array use
+		// m[idx*K1 + K2]
 		std::list<Exp*> result;
-		s->searchAll(arrayPat, result);
+		s->searchAll(scaledArrayPat, result);
 		for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
 			//Type* ty = s->getTypeFor(*rr);
 			// FIXME: should check that we use with array type...
-			// Find e and K2
-			Exp* t = ((Unary*)(*rr)->getSubExp1());
-			Exp* l = ((Binary*)t)->getSubExp1();
-			Exp* r = ((Binary*)t)->getSubExp2();
+			// Find idx and K2
+			Exp* t = ((Unary*)(*rr)->getSubExp1());		// idx*K1 + K2
+			Exp* l = ((Binary*)t)->getSubExp1();		// idx*K1
+			Exp* r = ((Binary*)t)->getSubExp2();		// K2
 			ADDRESS K2 = (ADDRESS)((Const*)r)->getInt();
-			Exp* e = ((Binary*)l)->getSubExp1();
+			Exp* idx = ((Binary*)l)->getSubExp1();
 			// Replace with the array expression
 			Exp* arr = new Binary(opArraySubscript,
 				Location::global(prog->getGlobalName(K2), this),
-				e);
-			s->searchAndReplace(arrayPat, arr);
+				idx);
+			s->searchAndReplace(scaledArrayPat, arr);
 		}
 
 		// 3) Change the type of any parameters. The types for these will be stored in an ImplicitAssign
 		Exp* lhs;
 		if (s->isImplicit() && (lhs = ((ImplicitAssign*)s)->getLeft()), lhs->isParam()) {
-			// setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), ((ImplicitAssign*)s)->getType());
+			setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), ((ImplicitAssign*)s)->getType());
 		}
 
 	}
@@ -362,6 +397,8 @@ Type* ArrayType::meetWith(Type* other, bool& ch) {
 		}
 		return this;
 	}
+	if (*base_type == *other)
+		return this;
 	// Needs work?
 	return createUnion(other, ch);
 }
@@ -505,49 +542,18 @@ Type* Type::createUnion(Type* other, bool& ch) {
 
 void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	// Iterate through the arguments
-	int n = signature->getNumParams();
-	for (int i=0; i < n; i++) {
-		Exp* e = getArgumentExp(i);
-		// Type* t = signature->getParamType(i);
-		Type* t = signature->getParamType(i);
-		e->descendType(t, ch, proc);
-#if 0
-		Const* c;
-		if (e->isSubscript()) {
-			// A subscripted location. Find the definition
-			RefExp* r = (RefExp*)e;
-			Statement* def = r->getRef();
-			assert(def);
-			Type* tParam = def->getTypeFor(r->getSubExp1());
-			assert(tParam);
-			Type* oldTparam = tParam;
-			tParam = tParam->meetWith(t, ch);
-			// Set the type of def, and if r is a memof, handle the memof operand
-			r->descendType(tParam, ch, proc);
-			if (DEBUG_TA && tParam != oldTparam)
-				LOG << "Type of " << r << " changed from " << oldTparam->getCtype() << " to " <<
-					tParam->getCtype() << "\n";
-		} else if ((c = dynamic_cast<Const*>(e)) != NULL) {
-			// A constant.
-			Type* oldConType = c->getType();
-			c->setType(t);
-			ch |= (t != oldConType);
-		} else if (t->isPointer() && signature->isAddrOfStackLocal(prog, e)) {
-			// e is probably the address of some local
-			Exp* localExp = Location::memOf(e);
-			char* name = proc->getSymbolName(localExp);
-			if (name) {
-				Exp* old = arguments[i]->clone();
-				arguments[i] = new Unary(opAddrOf, Location::local(name, proc));
-				if (DEBUG_TA)
-					LOG << "Changed argument " << i << " was " << old << ", result is " << this << "\n";
-			}
+	if (signature) {				// In case an indirect call and VFT analysis failed
+		int n = signature->getNumParams();
+		for (int i=0; i < n; i++) {
+			Exp* e = getArgumentExp(i);
+			// Type* t = signature->getParamType(i);
+			Type* t = signature->getParamType(i);
+			e->descendType(t, ch, proc);
 		}
-#endif
-	}
-	// The destination is a pointer to a function with this function's signature (if any)
-	if (pDest) {
-		pDest->descendType(new FuncType(signature), ch, proc);
+		// The destination is a pointer to a function with this function's signature (if any)
+		if (pDest) {
+			pDest->descendType(new FuncType(signature), ch, proc);
+		}
 	}
 }
 
@@ -556,6 +562,8 @@ void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 // Ex1 := Ex1 meet Ex0
 // Ex2 := Ex1 meet Ex0
 // ...
+// MVE: Actually, I now believe that I need Ex0 := Ex0 join (Ex1 join Ex2 join ...)
+// The others are correct.
 void PhiAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	iterator it;
 	Type* meetOfArgs = defVec[0].def->getTypeFor(lhs);
@@ -726,18 +734,15 @@ Type* Binary::ascendType() {
 	Type* tb = subExp2->ascendType();
 	switch (op) {
 		case opPlus:
-//std::cerr << "HACK: ascend type for `" << this << "', operands have types " << ta << " and " << tb << "\n";
 			return sigmaSum(ta, tb);
 			// Do I need to check here for Array* promotion? I think checking in descendType is enough
 		case opMinus:
 			return deltaDifference(ta, tb);
-		case opMult:
-		case opDiv:
+		case opMult: case opDiv:
 			return new IntegerType(ta->getSize(), -1);
-		case opMults:
-		case opDivs:
+		case opMults: case opDivs: opShiftRA:
 			return new IntegerType(ta->getSize(), +1);
-		case opBitAnd: case opBitOr: case opBitXor:
+		case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
 			return new IntegerType(ta->getSize(), 0);
 		case opLess:	case opGtr:		case opLessEq:		case opGtrEq:
 		case opLessUns:	case opGtrUns:	case opLessEqUns:	case opGtrEqUns:
@@ -858,10 +863,20 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 		case opPlus:
 			if (parentType->isPointer()) {
 				if (ta->isInteger() && !subExp1->isIntConst()) {
-//std::cerr << "ARRAY HACK: parentType is " << parentType << ", tb is " << tb->getCtype() << ", ta is " << ta << ", this is " << this << "\n";
+std::cerr << "ARRAY HACK: parentType is " << parentType << ", tb is " << tb->getCtype() << ", ta is " << ta << ", this is " << this << "\n";
+LOG << "ARRAY HACK for " << this << "\n";
+					assert(subExp2->isIntConst());
+					int val = ((Const*)subExp2)->getInt();
+					tb = new PointerType(
+						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
 				}
 				else if (tb->isInteger() && !subExp2->isIntConst()) {
-//std::cerr << "ARRAY HACK: parentType is " << parentType << ", ta is " << ta << ", this is " << this << "\n";
+std::cerr << "ARRAY HACK: parentType is " << parentType << ", ta is " << ta << ", this is " << this << "\n";
+LOG << "ARRAY HACK for " << this << "\n";
+					assert(subExp1->isIntConst());
+					int val = ((Const*)subExp1)->getInt();
+					ta = new PointerType(
+						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
                 }
 			}
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
@@ -891,11 +906,25 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 			subExp2->descendType(ta, ch, proc);
 			break;
 		}
-		case opBitAnd: case opBitOr: case opBitXor: {
+		case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
+		case opMults: case opDivs: case opShiftRA:
+		case opMult: case opDiv: {
+			int signedness;
+			switch (op) {
+				case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
+					signedness = 0; break;
+				case opMults: case opDivs: case opShiftRA:
+					signedness = -1; break;
+				case opMult: case opDiv:
+					signedness = -1; break;
+				default:
+					break;
+			}
+
 			int parentSize = parentType->getSize();
-			ta = ta->meetWith(new IntegerType(parentSize, 0), ch);
+			ta = ta->meetWith(new IntegerType(parentSize, signedness), ch);
 			subExp1->descendType(ta, ch, proc);
-			tb = tb->meetWith(new IntegerType(parentSize, 0), ch);
+			tb = tb->meetWith(new IntegerType(parentSize, signedness), ch);
 			subExp2->descendType(tb, ch, proc);
 			break;
 		}
@@ -1132,6 +1161,7 @@ bool SizeType::isCompatibleWith(Type* other) {
 	int otherSize = other->getSize();
 	if (otherSize == size || otherSize == 0) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	//return false;
 	// For now, size32 and double will be considered compatible (helps test/pentium/global2)
 return true;
@@ -1142,6 +1172,8 @@ bool IntegerType::isCompatibleWith(Type* other) {
 	if (other->isInteger()) return true;
 	if (other->isChar()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	// I am compatible with an array of myself:
+	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
@@ -1149,6 +1181,7 @@ bool FloatType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isFloat()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
@@ -1158,6 +1191,7 @@ bool CharType::isCompatibleWith(Type* other) {
 	if (other->isInteger()) return true;
 	if (other->isSize() && ((SizeType*)other)->getSize() == 8) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
@@ -1194,6 +1228,7 @@ bool NamedType::isCompatibleWith(Type* other) {
 bool ArrayType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
+	if (base_type->isCompatibleWith(other)) return this;		// An array of x is compatible with x
 	if (other->isUnion()) return other->isCompatibleWith(this);
 	return false;
 }
