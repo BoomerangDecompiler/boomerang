@@ -1633,7 +1633,6 @@ void UserProc::trimParameters(int depth) {
 					pe = signature->getImplicitParamExp(i - nparams);
 				}
 if (!referenced[i] && excluded.find(s) == excluded.end())
-  LOG << " ## Searching " << s << " for " << p << " ( " << params[i] << " )\n";	// HACK!
 				if (!referenced[i] && excluded.find(s) == excluded.end() && 
 						// Search for the named parameter (e.g. param1), and just
 						// in case, also for the expression (e.g. r8{0})
