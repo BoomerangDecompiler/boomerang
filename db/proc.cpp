@@ -884,7 +884,7 @@ std::set<UserProc*>* UserProc::decompile() {
     // Remove self from the cycle list
     cycleSet->erase(this);
 
-    if (VERBOSE) {
+    if (VERBOSE||1) {
         LOG << "decompiling: " << getName() << "\n";
     }
 
@@ -1847,6 +1847,9 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 //
 
 void UserProc::fromSSAform() {
+    if (VERBOSE||1)
+        LOG << "transforming " << getName() << " from SSA\n";
+
     StatementList stmts;
     getStatements(stmts);
     igraph ig;

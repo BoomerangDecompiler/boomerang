@@ -47,6 +47,8 @@
 #include "prog.h"
 #include "util.h"
 #include "type.h"
+#include <unistd.h>
+#include <fcntl.h>
 
 /*==============================================================================
  * FUNCTION:      string::operator+(string, int)
@@ -157,4 +159,47 @@ void upperStr(const char* s, char* d)
        d[i] = toupper(s[i]);
     d[len] = '\0';
 }
+
+int lockFileRead(const char *fname)
+{
+    struct flock fl;
+    int fd;
+
+    fl.l_type   = F_RDLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
+    fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
+    fl.l_start  = 0;        /* Offset from l_whence         */
+    fl.l_len    = 0;        /* length, 0 = to EOF           */
+    fl.l_pid    = getpid(); /* our PID                      */
+
+    fd = open("filename", O_RDONLY);  /* get the file descriptor */
+    fcntl(fd, F_SETLKW, &fl);  /* set the lock, waiting if necessary */
+
+    return fd;
+}
+
+int lockFileWrite(const char *fname)
+{
+    struct flock fl;
+    int fd;
+
+    fl.l_type   = F_WRLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
+    fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
+    fl.l_start  = 0;        /* Offset from l_whence         */
+    fl.l_len    = 0;        /* length, 0 = to EOF           */
+    fl.l_pid    = getpid(); /* our PID                      */
+
+    fd = open("filename", O_WRONLY);  /* get the file descriptor */
+    fcntl(fd, F_SETLKW, &fl);  /* set the lock, waiting if necessary */
+
+    return fd;
+}
+
+void unlockFile(int fd)
+{
+    struct flock fl;
+    fl.l_type   = F_UNLCK;  /* tell it to unlock the region */
+    fcntl(fd, F_SETLK, &fl); /* set the region to unlocked */
+    close(fd);
+}
+
 

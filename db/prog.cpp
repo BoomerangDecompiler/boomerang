@@ -660,6 +660,8 @@ void Prog::decompile() {
 
     UserProc* entryProc = (UserProc*) m_procs.front();
     assert(!entryProc->isLib());
+    if (VERBOSE)
+        LOG << "starting with " << entryProc->getName() << "\n";
     entryProc->decompile();
 
     // Just in case there are any Procs not in the call graph
@@ -670,11 +672,17 @@ void Prog::decompile() {
         proc->decompile();
     }
 
+    if (VERBOSE)
+        LOG << "removing unused returns\n";
+
     // A final pass to remove return locations not used by any caller
     removeUnusedReturns();
 
 if (DEBUG_TA)
     typeAnalysis();
+
+    if (VERBOSE)
+        LOG << "transforming from SSA\n";
 
     // Now it is OK to transform out of SSA form
     fromSSAform();
@@ -805,4 +813,43 @@ void Prog::typeAnalysis() {
     }
     if (VERBOSE || DEBUG_TA)
         LOG << "=== End Type Analysis ===\n";
+}
+
+void Prog::printCallGraph() {
+    const char *fname = "callgraph.out";
+    int fd = lockFileWrite(fname);
+    std::ofstream f(fname);
+    std::set<Proc*> seen;
+    std::map<Proc*, int> spaces;
+    std::map<Proc*, Proc*> parent;
+    std::list<Proc*> queue;
+    queue.push_back(getEntryProc());
+    spaces[queue.front()] = 0;
+    while (queue.size()) {
+        Proc *p = queue.front();
+        queue.erase(queue.begin());
+        if (seen.find(p) == seen.end()) {
+            seen.insert(p);
+            int n = spaces[p];
+            for (int i = 0; i < n; i++)
+                f << "   ";
+            f << p->getName();
+            if (parent.find(p) != parent.end())
+                f << " [parent=" << parent[p]->getName() << "]"; 
+            f << std::endl;
+            if (!p->isLib()) {
+                n++;
+                UserProc *u = (UserProc*)p;
+                std::set<Proc*> &calleeSet = u->getCallees();
+                for (std::set<Proc*>::reverse_iterator it1 = calleeSet.rbegin();
+                     it1 != calleeSet.rend(); it1++) {
+                    queue.push_front(*it1);
+                    spaces[*it1] = n;
+                    parent[*it1] = p;
+                }
+            }
+        }
+    }
+    f.close();
+    unlockFile(fd);
 }

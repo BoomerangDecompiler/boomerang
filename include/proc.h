@@ -630,7 +630,7 @@ public:
     /*
      * Get the callees
      */
-    std::set<Proc*>& getCallees();
+    std::set<Proc*>& getCallees() { return calleeSet; }
 
     /*
      * Add to the set of callees

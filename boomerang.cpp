@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
@@ -20,10 +21,15 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 {
 }
 
-class StdErrLogger : public Log {
+class FileLogger : public Log {
 public:
-    StdErrLogger() : Log() { }
-    virtual Log &operator<<(const char *str) { std::cerr << str; return *this; }
+    FileLogger() : Log(), out((Boomerang::get()->getOutputPath() + "log").c_str()) { }
+    virtual Log &operator<<(const char *str) { 
+        out << str << std::flush;  
+        return *this; 
+    }
+protected:
+    std::ofstream out;
 };
 
 Log &Boomerang::log() {
@@ -50,6 +56,7 @@ void Boomerang::help() {
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
+    std::cerr << "-o <output path>: where to generate output (defaults to .)\n";
     std::cerr << "-h: this help\n";
     std::cerr << "-m <num>: max memory depth\n";
     std::cerr << "-nb: no simplifications for branches\n";
@@ -71,7 +78,6 @@ void Boomerang::help() {
 }
         
 int Boomerang::commandLine(int argc, const char **argv) {
-    setLogger(new StdErrLogger());
     if (argc < 2) usage();
     progPath = argv[0];
     // Chop off after the last slash
@@ -85,6 +91,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         std::cerr << "? No slash in argv[0]!" << std::endl;
         return 1;
     }
+    outputPath = "./";
 
     // Parse switches on command line
     if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
@@ -101,6 +108,11 @@ int Boomerang::commandLine(int argc, const char **argv) {
             case 't': traceDecoder = true; break;
             case 'g': 
                 dotFile = argv[++i];
+                break;
+            case 'o':
+                outputPath = argv[++i];
+                if (outputPath[outputPath.size()-1] != '/')
+                    outputPath += '/';
                 break;
             case 'p':
                 if (argv[i][2] == 'a') {
@@ -192,6 +204,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 help();
         }
     }
+    setLogger(new FileLogger());
     
     return decompile(argv[argc-1]);    
 }
@@ -217,6 +230,8 @@ int Boomerang::decompile(const char *fname)
     std::cerr << "analysing...\n";
     prog->analyse();
 
+    prog->printCallGraph();
+
     if (!noDecompile) {
         std::cerr << "decompiling...\n";
         prog->decompile();
@@ -237,7 +252,9 @@ int Boomerang::decompile(const char *fname)
     }
 
     std::cerr << "generating code...\n";
-    prog->generateCode(std::cout);
+    std::ofstream out((getOutputPath() + "code").c_str());
+    prog->generateCode(out);
+    out.close();
 
     return 0;
 }
