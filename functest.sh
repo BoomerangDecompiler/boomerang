@@ -20,8 +20,8 @@ rm -rf functests.out
 ./testOne.sh pentium  switch_cc 2 3 4
 ./testOne.sh sparc switch_cc 2 3 4
 ./testOne.sh pentium stattest
-./testOne.sh pentium minmax
-./testOne.sh sparc minmax
+./testOne.sh pentium minmax 2 3 4
+./testOne.sh sparc minmax 2 3 4
 ./testOne.sh pentium minmax2 two
 ./testOne.sh sparc minmax2 two
 ./testOne.sh pentium minmax3 two
