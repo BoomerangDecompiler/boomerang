@@ -214,10 +214,12 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
                 p->setDecoded();
             else
                 break;
-            // Break out of the loop if not decoding children
+            // Break out of the loops if not decoding children
             if (Boomerang::get()->noDecodeChildren)
                 break;
         }
+        if (Boomerang::get()->noDecodeChildren)
+            break;
     }
     prog->wellForm();
 }
