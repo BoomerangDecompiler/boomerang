@@ -28,6 +28,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <fstream>
 
 class XMLProgParser;
 
@@ -37,6 +38,7 @@ protected:
     std::string name;
     std::vector<Cluster*> children;
     Cluster *parent;
+    std::ofstream out;
 
 public:
     Cluster() : name(""), parent(NULL) { }
@@ -45,8 +47,16 @@ public:
     void setName(const char *nam) { name = nam; }
     unsigned int getNumChildren() { return children.size(); }
     Cluster *getChild(int n) { return children[n]; }
-    void addChild(Cluster *n) { children.push_back(n); n->parent = this; }
+    void addChild(Cluster *n);
+    void removeChild(Cluster *n);
+    Cluster *getParent() { return parent; }
+    bool hasChildren() { return children.size(); }
+    void openStream(const char *ext);
+    void openStreams(const char *ext);
+    void closeStreams();
+    std::ofstream &getStream() { return out; }
     const char *makeDirs();
+    const char *getOutPath(const char *ext);
     Cluster *find(const char *nam);
 protected:
 

@@ -819,6 +819,7 @@ virtual Exp* polySimplify(bool& bMod);
     virtual Exp* accept(ExpModifier* v);
 
 protected:
+    PhiExp() : Unary(opPhi) { }
     friend class XMLProgParser;
 };  // class PhiExp
 

@@ -456,16 +456,32 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             str << "(int)";
             appendExp(str, u->getSubExp3(), PREC_UNARY);
             break;
+        case opRotateL:
+	    str << "ROTL(";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+	    str << ")";
+	    break;
+        case opRotateR:
+	    str << "ROTR(";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+	    str << ")";
+	    break;
+        case opRotateLC:
+	    str << "ROTLC(";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+	    str << ")";
+	    break;
+        case opRotateRC:
+	    str << "ROTRC(";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+	    str << ")";
+	    break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
         case opSQRTd:
         case opSQRTq:
         case opSignExt:
-        case opRotateL:
-        case opRotateR:
-        case opRotateLC:
-        case opRotateRC:
         case opTargetInst:
         case opNamedExp:
         case opGuard:

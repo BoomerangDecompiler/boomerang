@@ -265,6 +265,7 @@ public:
 
     Cluster *getRootCluster() { return m_rootCluster; }
     Cluster *findCluster(const char *name) { return m_rootCluster->find(name); }
+    bool clusterUsed(Cluster *c);
 
 protected:
     BinaryFile* pBF;                    // Pointer to the BinaryFile object for the program

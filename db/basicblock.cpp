@@ -955,7 +955,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
     // the same as the first node in the loop, then this write out its body 
     // and return otherwise generate a goto
     if (isLatchNode())
-        if (indLevel == latch->loopHead->indentLevel + 
+        if (latch && indLevel == latch->loopHead->indentLevel + 
                         (latch->loopHead->lType == PreTested ? 1 : 0)) {
             WriteBB(hll, indLevel);
             return;

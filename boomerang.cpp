@@ -65,7 +65,12 @@ void Boomerang::helpcmd() {
     std::cerr << "\tdecode: loads and decodes the specified binary.\n";
     std::cerr << "\tdecompile [proc]: decompiles the program or specified proc.\n";
     std::cerr << "\tcodegen [cluster]: generates code for the program or a specified cluster.\n";
-    std::cerr << "\tcluster <proc> <cluster>: moves the specified proc to the specified cluster creating the cluster if it does not exist.\n";
+    std::cerr << "\tmove proc <proc> <cluster>: moves the specified proc to the specified cluster.\n";
+    std::cerr << "\tmove cluster <cluster> <parent>: moves the specified cluster to the specified parent cluster.\n";
+    std::cerr << "\tadd cluster <cluster> [parent]: adds a new cluster to the root/specified cluster.\n";
+    std::cerr << "\tdelete cluster <cluster>: deletes an empty cluster.\n";
+    std::cerr << "\trename proc <proc> <newname>: renames the specified proc.\n";
+    std::cerr << "\trename cluster <cluster> <newname>: renames the specified cluster.\n";
     std::cerr << "\nFor all commands except decode the <program> argument is an XML input file.\n";
     std::cerr << "All commands result in output of XML files to the default/specified output directory.\n";
     exit(1);
@@ -157,62 +162,172 @@ int Boomerang::parseCmd(int argc, const char **argv, int n)
             return 1;
         }
     } else {
+	XMLProgParser *p = new XMLProgParser();
+	prog = p->parse(fname);
+	if (prog == NULL) {
+	    std::cerr << "failed to read xml " << fname << "\n";
+	    return 1;
+	}
 
-        XMLProgParser *p = new XMLProgParser();
-        prog = p->parse(fname);
-        if (prog == NULL) {
-            std::cerr << "failed to read xml " << fname << "\n";
-            return 1;
-        }
+	if (!strcmp(argv[n], "decompile")) {
+	    if (n < argc-2 && argv[n+1][0] != '-') {
+		Proc *proc = prog->findProc(argv[n+1]);
+		if (proc == NULL) {
+		    std::cerr << "cannot find proc " << argv[n+1] << "\n";
+		    return 1;
+		}
+		if (proc->isLib()) {
+		    std::cerr << "cannot decompile a lib proc\n";
+		    return 1;
+		}
+		((UserProc*)proc)->decompile();
+	    } else {
+		prog->decompile();
+	    }
+	} else if (!strcmp(argv[n], "codegen")) {
+	    if (n < argc-2 && argv[n+1][0] != '-') {
+		Cluster *cluster = prog->findCluster(argv[n+1]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+1] << "\n";
+		    return 1;
+		}
+		prog->generateCode(cluster);
+	    } else {
+		prog->generateCode();
+	    }
+	} else if (!strcmp(argv[n], "move")) {
+	    if (!strcmp(argv[n+1], "proc")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+		assert(n < argc-4 && argv[n+3][0] != '-');
 
-        if (!strcmp(argv[n], "decompile")) {
-            if (n < argc-2 && argv[n+1][0] != '-') {
-                Proc *proc = prog->findProc(argv[n+1]);
-                if (proc == NULL) {
-                    std::cerr << "cannot find proc " << argv[n+1] << "\n";
-                    return 1;
-                }
-                if (proc->isLib()) {
-                    std::cerr << "cannot decompile a lib proc\n";
-                    return 1;
-                }
-                ((UserProc*)proc)->decompile();
-            } else {
-                prog->decompile();
-            }
-        } else if (!strcmp(argv[n], "codegen")) {
-            if (n < argc-2 && argv[n+1][0] != '-') {
-                Cluster *cluster = prog->findCluster(argv[n+1]);
-                if (cluster == NULL) {
-                    std::cerr << "cannot find cluster " << argv[n+1] << "\n";
-                    return 1;
-                }
-                prog->generateCode(cluster);
-            } else {
-                prog->generateCode();
-            }
-        } else if (!strcmp(argv[n], "cluster")) {
-            assert(n < argc-2 && argv[n+1][0] != '-');
-            assert(n < argc-3 && argv[n+2][0] != '-');
+		Proc *proc = prog->findProc(argv[n+2]);
+		if (proc == NULL) {
+		    std::cerr << "cannot find proc " << argv[n+2] << "\n";
+		    return 1;
+		}
 
-            Proc *proc = prog->findProc(argv[n+1]);
-            if (proc == NULL) {
-                std::cerr << "cannot find proc " << argv[n+1] << "\n";
-                return 1;
-            }
+		Cluster *cluster = prog->findCluster(argv[n+3]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+3] << "\n";
+		    return 1;
+		}
+		proc->setCluster(cluster);
+	    } else if (!strcmp(argv[n+1], "cluster")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+		assert(n < argc-4 && argv[n+3][0] != '-');
 
-            Cluster *cluster = prog->findCluster(argv[n+2]);
-            if (cluster == NULL) {
-                std::cerr << "root cluster is " << prog->getRootCluster()->getName() << "\n";
-                cluster = new Cluster(argv[n+2]);
-                prog->getRootCluster()->addChild(cluster);
-            }
-            proc->setCluster(cluster);
-            std::cerr << "proc " << proc->getName() << " has cluster " << proc->getCluster()->getName() << "\n";
-        } else {
-            std::cerr << "unknown cmd " << argv[n] << ".\n";
-            return 1;
-        }
+		Cluster *cluster = prog->findCluster(argv[n+2]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+2] << "\n";
+		    return 1;
+		}
+
+		Cluster *parent = prog->findCluster(argv[n+3]);
+		if (parent == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+3] << "\n";
+		    return 1;
+		}
+
+		parent->addChild(cluster);
+	    } else {
+		std::cerr << "don't know how to move a " << argv[n+1] << "\n";
+		return 1;
+	    }
+	} else if (!strcmp(argv[n], "add")) {
+	    if (!strcmp(argv[n+1], "cluster")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+
+		Cluster *cluster = new Cluster(argv[n+2]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot create cluster " << argv[n+2] << "\n";
+		    return 1;
+		}
+
+		Cluster *parent = prog->getRootCluster();
+		if (n < argc-4 && argv[n+3][0] != '-') {
+		    parent = prog->findCluster(argv[n+3]);
+		    if (cluster == NULL) {
+			std::cerr << "cannot find cluster " << argv[n+3] << "\n";
+			return 1;
+		    }
+		}
+
+		parent->addChild(cluster);
+	    } else {
+		std::cerr << "don't know how to add a " << argv[n+1] << "\n";
+		return 1;
+	    }
+	} else if (!strcmp(argv[n], "delete")) {
+	    if (!strcmp(argv[n+1], "cluster")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+
+		Cluster *cluster = prog->findCluster(argv[n+2]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+2] << "\n";
+		    return 1;
+		}
+
+		if (cluster->hasChildren() || cluster == prog->getRootCluster()) {
+		    std::cerr << "cluster " << argv[n+2] << " is not empty\n";
+		    return 1;
+		}
+
+		if (prog->clusterUsed(cluster)) {
+		    std::cerr << "cluster " << argv[n+2] << " is not empty\n";
+		    return 1;
+		}
+
+		unlink(cluster->getOutPath("xml"));
+		unlink(cluster->getOutPath("c"));
+		assert(cluster->getParent());
+		cluster->getParent()->removeChild(cluster);
+	    } else {
+		std::cerr << "don't know how to delete a " << argv[n+1] << "\n";
+		return 1;
+	    }
+	} else if (!strcmp(argv[n], "rename")) {
+	    if (!strcmp(argv[n+1], "proc")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+		assert(n < argc-4 && argv[n+3][0] != '-');
+
+		Proc *proc = prog->findProc(argv[n+2]);
+		if (proc == NULL) {
+		    std::cerr << "cannot find proc " << argv[n+2] << "\n";
+		    return 1;
+		}
+
+		Proc *nproc = prog->findProc(argv[n+3]);
+		if (nproc != NULL) {
+		    std::cerr << "proc " << argv[n+3] << " already exists\n";
+		    return 1;
+		}
+
+		proc->setName(argv[n+3]);
+	    } else if (!strcmp(argv[n+1], "cluster")) {
+		assert(n < argc-3 && argv[n+2][0] != '-');
+		assert(n < argc-4 && argv[n+3][0] != '-');
+
+		Cluster *cluster = prog->findCluster(argv[n+2]);
+		if (cluster == NULL) {
+		    std::cerr << "cannot find cluster " << argv[n+2] << "\n";
+		    return 1;
+		}
+
+		Cluster *ncluster = prog->findCluster(argv[n+3]);
+		if (ncluster == NULL) {
+		    std::cerr << "cluster " << argv[n+3] << " already exists\n";
+		    return 1;
+		}
+
+		cluster->setName(argv[n+3]);
+	    } else {
+		std::cerr << "don't know how to rename a " << argv[n+1] << "\n";
+		return 1;
+	    }
+	} else {
+	    std::cerr << "unknown cmd " << argv[n] << ".\n";
+	    return 1;
+	}
     }
 
     XMLProgParser *p = new XMLProgParser();

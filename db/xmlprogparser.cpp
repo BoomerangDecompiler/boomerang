@@ -25,7 +25,7 @@ typedef enum { e_prog, e_global, e_cluster, e_libproc, e_userproc, e_local, e_sy
 	       e_casestmt,
 	       e_type, e_exp, 
 	       e_voidtype, e_integertype, e_pointertype, e_chartype, e_namedtype, e_arraytype, e_basetype,
-	       e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp,
+	       e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp, e_phiexp, e_def,
 	       e_subexp1, e_subexp2, e_subexp3, e_unknown = -1 } xmlElement;
 
 #define TAG(x) &XMLProgParser::start_ ## x, &XMLProgParser::addToContext_ ## x
@@ -87,6 +87,8 @@ _tag XMLProgParser::tags[] = {
     { "terminal", TAG(terminal) },
     { "typedexp", TAG(typedexp) },
     { "refexp", TAG(refexp) },
+    { "phiexp", TAG(phiexp) },
+    { "def", TAG(def) },
     { "subexp1", TAG(subexp1) },
     { "subexp2", TAG(subexp2) },
     { "subexp3", TAG(subexp3) },    
@@ -1892,7 +1894,7 @@ void XMLProgParser::addToContext_typedexp(Context *c, int e)
 		std::cerr << "unknown tag " << e << " in context typedexp\n";
 	    else 
 		std::cerr << "need to handle tag " << tags[e].tag << " in context typedexp\n";
-	break;
+	    break;
     }
 }
 
@@ -1920,7 +1922,62 @@ void XMLProgParser::addToContext_refexp(Context *c, int e)
 		std::cerr << "unknown tag " << e << " in context refexp\n";
 	    else 
 		std::cerr << "need to handle tag " << tags[e].tag << " in context refexp\n";
-	break;
+	    break;
+    }
+}
+
+void XMLProgParser::start_phiexp(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->exp = (Exp*)findId(getAttr(attr, "id"));
+	return;
+    }
+    stack.front()->exp = new PhiExp();
+    addId(attr, stack.front()->exp);
+}
+
+void XMLProgParser::addToContext_phiexp(Context *c, int e)
+{
+    if (phase == 1) {
+	switch(e) {
+	    case e_def:
+		PhiExp *phi = dynamic_cast<PhiExp*>(c->exp);
+		assert(phi);
+		phi->stmtVec.putAt(phi->stmtVec.size(), stack.front()->stmt);
+		break;
+	}
+	return;
+    }
+    switch(e) {
+	case e_subexp1:
+	    c->exp->setSubExp1(stack.front()->exp);
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context phiexp\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context phiexp\n";
+	    break;
+    }
+}
+
+void XMLProgParser::start_def(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->stmt = (Statement*)findId(getAttr(attr, "stmt"));
+	return;
+    }
+}
+
+void XMLProgParser::addToContext_def(Context *c, int e)
+{
+    switch(e) {
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context def\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context def\n";
+	    break;
     }
 }
 
@@ -1972,19 +2029,20 @@ void XMLProgParser::parseFile(const char *filename)
     len = fread(Buff, 1, sizeof(Buff), f);
     if (ferror(f)) {
       fprintf(stderr, "Read error\n");
+      fclose(f);
       return;
     }
     done = feof(f);
 
     if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
-      fprintf(stderr, "Parse error at line %d:\n%s\n",
-	      XML_GetCurrentLineNumber(p),
-	      XML_ErrorString(XML_GetErrorCode(p)));
-      return;
+	if (XML_GetErrorCode(p) != XML_ERROR_NO_ELEMENTS)
+	    fprintf(stderr, "Parse error at line %d:\n%s\n", XML_GetCurrentLineNumber(p), XML_ErrorString(XML_GetErrorCode(p)));
+	fclose(f);
+	return;
     }
 
     if (done)
-      break;
+	break;
   }
   fclose(f);
 }
@@ -2029,27 +2087,51 @@ void XMLProgParser::persistToXML(std::ostream &out, Global *g)
     out << "</global>\n";
 }
 
+const char *Cluster::getOutPath(const char *ext)
+{
+    std::string basedir = makeDirs();
+    return (basedir + "/" + name + "." + ext).c_str();
+}
+
+void Cluster::openStream(const char *ext)
+{
+    if (out.is_open())
+	return;
+    out.open(getOutPath(ext));
+    if (!strcmp(ext, "xml"))
+	out << "<?xml version=\"1.0\"?>\n";
+}
+
+void Cluster::openStreams(const char *ext)
+{
+    openStream(ext);
+    for (unsigned i = 0; i < children.size(); i++)
+	children[i]->openStreams(ext);
+}
+
+void Cluster::closeStreams()
+{
+    if (out.is_open())
+	out.close();
+    for (unsigned i = 0; i < children.size(); i++)
+	children[i]->closeStreams();
+}
+
 void XMLProgParser::persistToXML(Prog *prog)
 {
-    std::string basedir = prog->m_rootCluster->makeDirs();
-    std::ofstream os((basedir + "/" + prog->getNameNoPath() + ".xml").c_str());
+    prog->m_rootCluster->openStreams("xml");
+    std::ofstream &os = prog->m_rootCluster->getStream();
     os << "<prog name=\"" << prog->getName() << "\" iNumberedProc=\"" << prog->m_iNumberedProc << "\">\n";
     for (std::vector<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
 	persistToXML(os, *it1);
     persistToXML(os, prog->m_rootCluster);
     for (std::list<Proc*>::iterator it = prog->m_procs.begin(); it != prog->m_procs.end(); it++) {
         Proc *p = *it;
-	if (p->getCluster() == prog->getRootCluster())
-	    persistToXML(os, p);
-	else {
-	    std::string path = p->getCluster()->makeDirs();
-	    std::ofstream out((path + "/" + p->getCluster()->getName() + ".xml").c_str());
-	    persistToXML(out, p);
-	    out.close();
-	}
+	persistToXML(p->getCluster()->getStream(), p);
     }
     os << "</prog>\n";
     os.close();
+    prog->m_rootCluster->closeStreams();
 }
 
 void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc)
@@ -2337,7 +2419,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Exp *e)
 	out << "</subexp1>\n";
 	StatementVec::iterator it;
 	for (it = p->stmtVec.begin(); it != p->stmtVec.end(); it++)
-	    out << "<stmt>" << (int)(*it) << "</stmt>\n";
+	    out << "<def stmt=\"" << (int)(*it) << "\" />\n";
 	out << "</phiexp>\n";
 	return;
     }

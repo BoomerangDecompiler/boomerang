@@ -179,7 +179,7 @@ void Prog::generateCode(Cluster *cluster) {
     std::string basedir = m_rootCluster->makeDirs();
     std::ofstream os;
     if (cluster == NULL || cluster == m_rootCluster) {
-    	os.open((basedir + "/" + getNameNoPath() + ".c").c_str());
+    	os.open(m_rootCluster->getOutPath("c"));
 	HLLCode *code = Boomerang::get()->getHLLCode();
 	for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
 	    // Check for an initial value
@@ -204,15 +204,14 @@ void Prog::generateCode(Cluster *cluster) {
 		code->print(os);
 	} else {
 	    if (cluster == NULL || cluster == p->getCluster()) {
-		std::string path = p->getCluster()->makeDirs();
-		std::ofstream out((path + "/" + p->getCluster()->getName() + ".c").c_str());
-		code->print(out);
-		out.close();
+		p->getCluster()->openStream("c");
+		code->print(p->getCluster()->getStream());
 	    }
 	}
         delete code;
     }
     os.close();
+    m_rootCluster->closeStreams();
 }
 
 const char *Cluster::makeDirs()
@@ -233,6 +232,24 @@ const char *Cluster::makeDirs()
     return path.c_str();
 }
 
+void Cluster::removeChild(Cluster *n)
+{
+    std::vector<Cluster*>::iterator it;
+    for (it = children.begin(); it != children.end(); it++)
+	if (*it == n)
+	    break;
+    assert(it != children.end());
+    children.erase(it);
+}
+
+void Cluster::addChild(Cluster *n)
+{ 
+    if (n->parent)
+	n->parent->removeChild(n);
+    children.push_back(n); 
+    n->parent = this; 
+}
+
 Cluster *Cluster::find(const char *nam)
 {
     if (name == nam)
@@ -243,6 +260,14 @@ Cluster *Cluster::find(const char *nam)
 	    return c;
     }
     return NULL;
+}
+
+bool Prog::clusterUsed(Cluster *c)
+{
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+	if ((*it)->getCluster() == c)
+	    return true;
+    return false;
 }
 
 void Prog::generateCode(std::ostream &os) {
