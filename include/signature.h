@@ -84,6 +84,7 @@ public:
 
     // get the return location
     virtual Exp *getReturnExp();
+    static  Exp *getReturnExp2(BinaryFile* pBF);
     virtual Type *getReturnType();
     virtual void setReturnType(Type *t);
 
