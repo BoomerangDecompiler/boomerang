@@ -115,7 +115,8 @@ void StripPhis::visit(Assign* s) {
     del = s->isPhi();
 }
 
-Exp* StripRefs::preVisit(RefExp* e) {
+Exp* StripRefs::preVisit(RefExp* e, bool& norecur) {
+    norecur = false;
     return e->getSubExp1();     // Do the actual stripping of references!
 }
 
@@ -385,5 +386,34 @@ bool UsedLocsVisitor::visit(BoolStatement* s, bool& override) {
     }
     override = true;            // Don't do the normal accept logic
     return true;                // Continue the recursion
+}
+
+//
+// Expression subscripter
+//
+Exp* ExpSubscripter::preVisit(Location* e, bool& norecur) {
+    if (*e == *search) {
+        norecur = !e->isMemOf();     // Don't double subscript unless m[...]
+        return new RefExp(e, def);
+    }
+    norecur = false;
+    return e;
+}
+
+Exp* ExpSubscripter::preVisit(Terminal* e) {
+    if (*e == *search)
+        return new RefExp(e, def);
+    return e;
+}
+
+Exp* ExpSubscripter::preVisit(RefExp* e, bool& norecur) {
+    Exp* base = e->getSubExp1();
+    if (*base == *search) {
+        norecur = true;     // Don't recurse; would double subscript
+        e->setDef(def);
+        return e;
+    }
+    norecur = false;
+    return e;
 }
 

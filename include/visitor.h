@@ -138,30 +138,30 @@ public:
     // Most times these won't be needed
     // Note: you only need to override the ones that make a cange.
     // preVisit comes before modifications to the children (if any)
-    virtual Exp* preVisit(Unary *e)    {return e;}
-    virtual Exp* preVisit(Binary *e)   {return e;}
-    virtual Exp* preVisit(Ternary *e)  {return e;}
-    virtual Exp* preVisit(TypedExp *e) {return e;}
-    virtual Exp* preVisit(FlagDef *e)  {return e;}
-    virtual Exp* preVisit(RefExp *e)   {return e;}
-    virtual Exp* preVisit(PhiExp *e)   {return e;}
-    virtual Exp* preVisit(Location *e) {return e;}
-    virtual Exp* preVisit(Const *e)    {return e;}
-    virtual Exp* preVisit(Terminal *e) {return e;}
-    virtual Exp* preVisit(TypeVal *e)  {return e;}
+virtual Exp* preVisit(Unary *e,    bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(Binary *e,   bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(Ternary *e,  bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(TypedExp *e, bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(FlagDef *e,  bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(RefExp *e,   bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(PhiExp *e,   bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(Location *e, bool& norecur) {norecur = false; return e;}
+virtual Exp* preVisit(Const *e                  ) {                 return e;}
+virtual Exp* preVisit(Terminal *e               ) {                 return e;}
+virtual Exp* preVisit(TypeVal *e                ) {                 return e;}
 
     // postVisit comes after modifications to the children (if any)
-    virtual Exp* postVisit(Unary *e)    {return e;}
-    virtual Exp* postVisit(Binary *e)   {return e;}
-    virtual Exp* postVisit(Ternary *e)  {return e;}
-    virtual Exp* postVisit(TypedExp *e) {return e;}
-    virtual Exp* postVisit(FlagDef *e)  {return e;}
-    virtual Exp* postVisit(RefExp *e)   {return e;}
-    virtual Exp* postVisit(PhiExp *e)   {return e;}
-    virtual Exp* postVisit(Location *e) {return e;}
-    virtual Exp* postVisit(Const *e)    {return e;}
-    virtual Exp* postVisit(Terminal *e) {return e;}
-    virtual Exp* postVisit(TypeVal *e)  {return e;}
+virtual Exp* postVisit(Unary *e)    {return e;}
+virtual Exp* postVisit(Binary *e)   {return e;}
+virtual Exp* postVisit(Ternary *e)  {return e;}
+virtual Exp* postVisit(TypedExp *e) {return e;}
+virtual Exp* postVisit(FlagDef *e)  {return e;}
+virtual Exp* postVisit(RefExp *e)   {return e;}
+virtual Exp* postVisit(PhiExp *e)   {return e;}
+virtual Exp* postVisit(Location *e) {return e;}
+virtual Exp* postVisit(Const *e)    {return e;}
+virtual Exp* postVisit(Terminal *e) {return e;}
+virtual Exp* postVisit(TypeVal *e)  {return e;}
 };
 
 /* 
@@ -270,7 +270,7 @@ public:
 class StripRefs : public ExpModifier {
 public:
             StripRefs() {}
-    virtual Exp* preVisit(RefExp* e);
+    virtual Exp* preVisit(RefExp* ei, bool& norecur);
     // All other virtual functions inherit and do nothing
 };
 
@@ -283,30 +283,38 @@ class CallRefsFixer : public ExpModifier {
     unsigned    mask;
     unsigned    unchanged;
 public:
-            CallRefsFixer() { mask = 1; unchanged = (unsigned)-1;}
-    virtual Exp* preVisit(Unary *e)    {mask <<= 1; return e;}
-    virtual Exp* preVisit(Binary *e)   {mask <<= 1; return e;}
-    virtual Exp* preVisit(Ternary *e)  {mask <<= 1; return e;}
-    virtual Exp* preVisit(TypedExp *e) {mask <<= 1; return e;}
-    virtual Exp* preVisit(FlagDef *e)  {mask <<= 1; return e;}
-    virtual Exp* preVisit(RefExp *e)   {mask <<= 1; return e;}
-    virtual Exp* preVisit(PhiExp *e)   {mask <<= 1; return e;}
-    virtual Exp* preVisit(Location *e) {mask <<= 1; return e;}
-    virtual Exp* preVisit(Const *e)    {mask <<= 1; return e;}
-    virtual Exp* preVisit(Terminal *e) {mask <<= 1; return e;}
-    virtual Exp* preVisit(TypeVal *e)  {mask <<= 1; return e;}
+             CallRefsFixer() { mask = 1; unchanged = (unsigned)-1;}
+virtual Exp* preVisit(Unary *e,    bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(Binary *e,   bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(Ternary *e,  bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(TypedExp *e, bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(FlagDef *e,  bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(RefExp *e,   bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(PhiExp *e,   bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(Location *e, bool& norecur) {
+    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(Const *e)     { mask <<= 1; return e;}
+virtual Exp* preVisit(Terminal *e)  { mask <<= 1; return e;}
+virtual Exp* preVisit(TypeVal *e)   { mask <<= 1; return e;}
 
-    virtual Exp* postVisit(Unary *e);
-    virtual Exp* postVisit(Binary *e);
-    virtual Exp* postVisit(Ternary *e);
-    virtual Exp* postVisit(TypedExp *e);
-    virtual Exp* postVisit(FlagDef *e);
-    virtual Exp* postVisit(RefExp *e);
-    virtual Exp* postVisit(PhiExp *e);
-    virtual Exp* postVisit(Location *e);
-    virtual Exp* postVisit(Const *e);
-    virtual Exp* postVisit(Terminal *e);
-    virtual Exp* postVisit(TypeVal *e);
+virtual Exp* postVisit(Unary *e);
+virtual Exp* postVisit(Binary *e);
+virtual Exp* postVisit(Ternary *e);
+virtual Exp* postVisit(TypedExp *e);
+virtual Exp* postVisit(FlagDef *e);
+virtual Exp* postVisit(RefExp *e);
+virtual Exp* postVisit(PhiExp *e);
+virtual Exp* postVisit(Location *e);
+virtual Exp* postVisit(Const *e);
+virtual Exp* postVisit(Terminal *e);
+virtual Exp* postVisit(TypeVal *e);
 };
 
 class UsedLocsFinder : public ExpVisitor {
@@ -341,6 +349,17 @@ public:
     // A BoolStatement uses its condition expression, but not its destination
     // (unless it's an m[x], in which case x is used and not m[x])
     virtual bool visit(BoolStatement *stmt, bool& override);
+};
+
+class ExpSubscripter : public ExpModifier {
+    Exp*        search;
+    Statement*  def;
+public:
+                ExpSubscripter(Exp* s, Statement* d) {
+                    search = s; def = d; }
+    virtual Exp* preVisit(Location *e, bool& norecur);
+    virtual Exp* preVisit(Terminal *e);
+    virtual Exp* preVisit(RefExp *e,   bool& norecur);
 };
 
 #endif  // #ifndef __VISIOR_H__
