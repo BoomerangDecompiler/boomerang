@@ -1475,8 +1475,9 @@ void CallStatement::setImpArguments(std::vector<Exp*>& arguments) {
  * RETURNS:		  <nothing>
  *============================================================================*/
 void CallStatement::setSigArguments() {
+	if (signature) return;				// Already done
 	if (procDest == NULL) {
-		if (proc == NULL) return; // do it later
+		if (proc == NULL) return; 		// do it later
 		// computed calls must have their arguments initialized to something 
 		std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
 		implicitArguments.resize(params.size(), NULL);
