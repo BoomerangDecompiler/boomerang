@@ -267,8 +267,8 @@ void UserProc::printUseGraph()
             if (((Exp*)*rr)->isSubscript()) {
                 RefExp *r = (RefExp*)*rr;
                 if (r->getRef())
-                    out << s->getNumber() << " -> " 
-                        << r->getRef()->getNumber() << ";\n";
+                    out << r->getRef()->getNumber() << " -> " 
+                        << s->getNumber() << ";\n";
             }
         }
     }

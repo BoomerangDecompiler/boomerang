@@ -2430,12 +2430,22 @@ Exp* PhiExp::polySimplify(bool& bMod) {
         for (uu = stmtVec.begin(); uu != stmtVec.end(); ) {
             if (*uu && (*uu)->getRight() && 
                 (*uu)->getRight()->getOper() == opSubscript &&
-                ((RefExp*)(*uu)->getRight())->getRef() == stmt) {
+                *(*uu)->getRight()->getSubExp1() == *subExp1) {
+                if (((RefExp*)(*uu)->getRight())->getRef() == stmt) {
+                    if (VERBOSE)
+                        LOG << "removing statement " << *uu << " from phi at " 
+                            << stmt->getNumber() << "\n";
+                    uu = stmtVec.remove(uu);
+                    continue;
+                }
                 if (VERBOSE)
-                    LOG << "removing statement " << *uu << " from phi at " 
-                        << stmt->getNumber() << "\n";
-                uu = stmtVec.remove(uu);
-                continue;
+                    LOG << "replacing " << (*uu)->getNumber() << " with ";
+                *uu = ((RefExp*)(*uu)->getRight())->getRef();
+                if (VERBOSE) {
+                    int n = 0;
+                    if (*uu) n = (*uu)->getNumber();
+                    LOG << n << " in phi at " << stmt->getNumber() << "\n";
+                }
             }
             uu++;
         }
