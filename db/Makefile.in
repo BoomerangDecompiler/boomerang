@@ -15,13 +15,16 @@
 # 13 May 02 - Mike: Added RtlTest and ParserTest
 # 04 Jul 02 - Mike: Added type.cpp, TypeType.cpp
 
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
 BISONPP=bison++
 FLEXPP=flex++
 
 DB_LIB=../lib/libdb.so
 TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o \
             CfgTest.o
-LIB_OBJS = exp.o prog.o proc.o rtl.o hrtl.o cfg.o basicblock.o register.o \
+LIB_OBJS = exp.o prog.o proc.o rtl.o cfg.o basicblock.o register.o \
            sslparser.o sslscanner.o insnameelem.o sslinst.o table.o type.o \
            dataflow.o
 
@@ -36,9 +39,35 @@ GENFILES = sslparser.cpp sslparser.h sslscanner.cpp sslscanner.h
 
 all: $(DB_LIB) testDbase
 
+test: testExp testStmt testRtl
 
-# HOST_GNU_LD is true if the linker on this host machine is GNU
-HOST_GNU_LD = @HOST_GNU_LD@
+testExp.o: testExp.cpp
+	$(CC) -c -o $@ -I../include $<
+
+testExp: testExp.o exp.o statement.o rtl.o testExpStubs.o ExpTest.o
+	$(CC) -o $@ exp.o statement.o rtl.o testExpStubs.o ExpTest.o -lcppunit $<
+
+testStmt.o: testStmt.cpp
+	$(CC) -c -o $@ -I../include $<
+
+testStmt: testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o
+	$(CC) -o $@ exp.o statement.o rtl.o testStmtStubs.o StatementTest.o \
+      -lcppunit $<
+
+testRtl.o: testRtl.cpp
+	$(CC) -c -o $@ -I../include $<
+
+# This one tests the whole front end!
+RTL_TEST_OBJS=testRtl.o exp.o statement.o rtl.o proc.o prog.o testRtlStubs.o \
+    RtlTest.o ../loader/BinaryFile.o ../frontend/frontend.o \
+    ../frontend/njmcDecoder.o ../frontend/sparcfrontend.o \
+    ../frontend/pentiumfrontend.o ../frontend/sparcdecoder.o \
+    ../frontend/pentiumdecoder.o sslparser.o sslscanner.o register.o table.o \
+    ../util/util.o cfg.o basicblock.o sslinst.o ../c/ansi-c-parser.o \
+    ../c/ansi-c-scanner.o insnameelem.o
+testRtl: $(RTL_TEST_OBJS)
+	$(CC) -o $@ $(RTL_TEST_OBJS) -lcppunit -ldl 
+
 
 BOOMDIR="$(shell pwd)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
@@ -69,16 +98,19 @@ prog.o: ../include/prog.h
 cfg.o: ../include/cfg.h
 basicblock.o: ../include/cfg.h
 rtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
-hrtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
 register.o: ../include/register.h
 sslparser.o: sslparser.cpp sslparser.h sslscanner.h
 sslscanner.o: sslscanner.cpp sslscanner.h
 insnameelem.o: insnameelem.h
 
-# prog.cpp needs BOOMDIR set
-prog.o: EXTRAS = $(BOOMSET)
-# exp.cpp needs -I.
-exp.o: EXTRAS = -I.
+testRtlStubs.o: typeStubs.cpp signatureStubs.cpp
+testExpStubs.o: utilStubs.cpp typeStubs.cpp
+
+prog.o:             EXTRAS = $(BOOMSET)
+StatementTest.o:    EXTRAS = $(BOOMSET) -I../frontend
+exp.o:              EXTRAS = -I.
+testStmtStubs.o:    EXTRAS = -I../frontend
+RtlTest.o:          EXTRAS = $(BOOMSET) -I../frontend
 
 # Make these objects with -fPIC
 $(LIB_OBJS): %.o : %.cpp
@@ -86,7 +118,7 @@ $(LIB_OBJS): %.o : %.cpp
 
 # Others without -fPIC
 .cpp.o:
-	$(CC) -c -I../include -o $@ $<
+	$(CC) -c -I../include $(EXTRAS) -o $@ $<
 
 sslparser.cpp sslparser.h: sslparser.y sslscanner.l
 	${BISONPP} -d -v -osslparser.cpp -hsslparser.h $<
@@ -107,5 +139,3 @@ cleangen:
 remote:
 	touch $(GENFILES)
 
-test: testDbase
-	./testDbase

@@ -2,6 +2,7 @@
 #define PENTFRONTEND_H
 
 #include "frontend.h"
+class Statement;
 
 
 // Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
@@ -67,11 +68,11 @@ private:
      */
 	bool 	helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl);
 
-	bool 	isStoreFsw(Exp* e);
+	bool 	isStoreFsw(Statement* s);
 	bool 	isDecAh(RTL* r);
-	bool 	isSetX(Exp* e);
-	bool 	isAssignFromTern(Exp* e);
-	Exp* 	bumpRegisterAll(Exp* e, int min, int max, int delta, int mask);
+	bool 	isSetX(Statement* e);
+	bool 	isAssignFromTern(Statement* s);
+	void 	bumpRegisterAll(Exp* e, int min, int max, int delta, int mask);
 	unsigned fetch4(unsigned char* ptr);
 
 

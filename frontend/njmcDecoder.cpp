@@ -58,8 +58,8 @@ NJMCDecoder::NJMCDecoder()
  *                 ... - Semantic String ptrs representing actual operands
  * RETURNS:        an instantiated list of Exps
  *============================================================================*/
-std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
-{
+std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
+  ...) {
 	// Get the signature of the instruction and extract its parts
 	std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
 	std::string opcode = sig.first;
@@ -84,7 +84,7 @@ std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
 	std::cout << std::endl;
 #endif
 
-	std::list<Exp*>* instance = RTLDict.instantiateRTL(opcode,actuals);
+	std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode,actuals);
 
 	// Delete the memory used for the actuals
 	for (std::vector<Exp*>::iterator it = actuals.begin();
@@ -95,7 +95,7 @@ std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
 }
 
 /*==============================================================================
- * FUNCTION:       NJMCDecoder::substituteCallArgs
+ * FUNCTION:       NJMCDecoder::instantiateNamedParam
  * OVERVIEW:       Similarly to the above, given a parameter name
  *                  and a list of Exp*'s representing sub-parameters,
  *                  return a fully substituted Exp for the whole expression
@@ -104,23 +104,21 @@ std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
  *                 ... - Exp* representing actual operands
  * RETURNS:        an instantiated list of Exps
  *============================================================================*/
-Exp* NJMCDecoder::instantiateNamedParam(char* name, ...)
-{
+Exp* NJMCDecoder::instantiateNamedParam(char* name, ...) {
     if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         std::cerr << "No entry for named parameter '" << name << "'\n";
         return 0;
     }
     assert(RTLDict.DetParamMap.find(name) != RTLDict.DetParamMap.end());
     ParamEntry &ent = RTLDict.DetParamMap[name];
-    if (ent.kind != PARAM_EXPR && ent.kind != PARAM_LAMBDA ) {
+    if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA ) {
         std::cerr << "Attempt to instantiate expressionless parameter '" << name
           << "'\n";
         return 0;
     }
     // Start with the RHS
-// It may well be opTypedExp, in which case we need another getSubExp1()
-assert(ent.exp->getOper() == opAssignExp);
-    Exp* result = ent.exp->getSubExp2()->clone();
+    assert(ent.asgn->getKind() == STMT_ASSIGN);
+    Exp* result = ent.asgn->getRight()->clone();
 
     va_list args;
     va_start(args,name);
@@ -155,7 +153,7 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
         return;
     }
     ParamEntry &ent = RTLDict.DetParamMap[name];
-    /*if (ent.kind != PARAM_EXPR && ent.kind != PARAM_LAMBDA) {
+    /*if (ent.kind != PARAM_ASGN && ent.kind != PARAM_LAMBDA) {
         std::cerr << "Attempt to instantiate expressionless parameter '" << name << "'\n";
         return;
     }*/
@@ -224,13 +222,14 @@ Exp* NJMCDecoder::dis_Num(unsigned num)
  * RETURNS:         the reference to the RTLInstDict object
  *============================================================================*/
 void NJMCDecoder::unconditionalJump(const char* name, int size,
-  ADDRESS relocd, /*UserProc* proc,*/ int delta, ADDRESS pc, std::list<Exp*>* Exps,
+  ADDRESS relocd, /*UserProc* proc,*/ int delta, ADDRESS pc, std::list<Statement*>* stmts,
   DecodeResult& result) {
-        HLJump* jump = new HLJump(pc, Exps);
-        result.rtl = jump;
-        result.numBytes = size;
-        jump->setDest(relocd-delta);
-        SHOW_ASM(name<<" "<<relocd)
+    result.rtl = new RTL(pc, stmts);
+    result.numBytes = size;
+    GotoStatement* jump = new GotoStatement();
+    jump->setDest(relocd-delta);
+    result.rtl->appendStmt(jump);
+    SHOW_ASM(name<<" "<<relocd)
 }
 
 #if 0       // HACK!

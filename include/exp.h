@@ -30,13 +30,19 @@
 #include "operator.h"   // Declares the OPER enum
 #include "types.h"      // For ADDRESS, etc
 #include "type.h"       // The Type class for typed expressions
-#include "dataflow.h"   // AssignExp derived from Statement
+#include "statement.h"  // For StmtSet etc
+#include "exphelp.h"
 
 class UseSet;
 class DefSet;
 class RTL;              // For class FlagDef
-class BasicBlock;       // For class AssignExp
+class Statement;
+class BasicBlock;
+class LocationSet;
+class StatementSet;
+class Exp;
 typedef BasicBlock* PBB;
+typedef std::map<Exp*, int, lessExpStar> igraph;
 
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
@@ -114,8 +120,6 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isFlagCall() {return op == opFlagCall;}
     // True if this is an assignment to the "flags" abstract location
     bool isFlagAssgn();
-    // True if this is an ordinary (non flags) assignment
-    bool isAssign();
     // True if this is a register location
     bool isRegOf() {return op == opRegOf;}
     // True if this is a register location with a constant index
@@ -229,7 +233,7 @@ static Exp* Accumulate(std::list<Exp*> exprs);
 virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
     // Just the address simplification a[ m[ any ]]
 virtual Exp* simplifyAddr() {return this;}
-virtual Exp* fixSuccessor() {return this;}
+        Exp* fixSuccessor();        // succ(r2) -> r3
         // Kill any zero fill, sign extend, or truncates
         Exp* killFill();
 
@@ -394,7 +398,6 @@ virtual     ~Unary();
     // Get a reference to subexpression 1
     Exp*&   refSubExp1();
 virtual int getMemDepth();
-virtual Exp* fixSuccessor();
 
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -607,101 +610,6 @@ public:
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
-
-};
-
-/*==============================================================================
- * AssignExp is a subclass of Binary, holding two subexpressions and a size
- *============================================================================*/
-class AssignExp : public Binary, public Statement {
-    int size;
-public:
-    // Constructor
-            AssignExp();
-    // Constructor, subexpression
-            AssignExp(Exp* lhs, Exp* rhs);
-    // Constructor, size, and subexpressions.
-            AssignExp(int sz, Exp* lhs, Exp* rhs);
-    // Copy constructor
-            AssignExp(AssignExp& o);
-
-    // Clone
-    virtual Exp* clone();
-    virtual Statement* cloneStmt();
-
-    // Compare
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
-
-    virtual void print(std::ostream& os, bool withUses = false);
-    void    appendDotFile(std::ofstream& of);
-
-    // Get and set the size
-    int     getSize();
-    void    setSize(int sz);
-
-    // Do the work of simplifying this expression
-    Exp* polySimplify(bool& bMod);
-    Exp* simplifyArith();
-
-    // serialization
-    virtual bool serialize(std::ostream &ouf, int &len);
-
-    // new dataflow analysis
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive(LocationSet &live);
-    virtual void killDead(LocationSet &dead);
-    //virtual void getDeadStatements(StatementSet &dead);
-    virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-    // Do the work of subscripting variables
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-    // Update the "uses" information implicit in expressions
-    // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
-                StatementSet& rs);
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs) {
-        doRemoveRestoreRefs(rs);}
-
-    virtual bool isDefinition() { return true; }
-    virtual void getDefinitions(LocationSet &defs);
-        
-        // get how to access this value
-    virtual Exp* getLeft() { return subExp1; }
-    virtual Type* getLeftType() { return NULL; }
-
-        // get how to replace this statement in a use
-        virtual Exp* getRight() { return subExp2; }
-
-    // inline any constants in the statement
-    virtual void processConstants(Prog *prog);
-
-    // general search
-    virtual bool search(Exp* search, Exp*& result) {
-        return Exp::search(search, result);
-    }
-
-    // general search and replace
-    virtual bool searchAndReplace(Exp *search, Exp *replace);
- 
-    // update type for expression
-    virtual Type *updateType(Exp *e, Type *curType);
-
-    // subscript one variable
-    void subscriptVar(Exp* e, Statement* def);
-
-    // to/from SSA form
-    virtual void   toSSAform(StatementSet& reachin, int memDepth,
-      StatementSet& rs)
-        {updateRefs(reachin, memDepth, rs);}
-    virtual void fromSSAform(igraph& ig);
-
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
-
-protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
 
 };
 

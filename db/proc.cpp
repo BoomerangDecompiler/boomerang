@@ -39,7 +39,7 @@
 
 #include <sstream>
 #include <algorithm>        // For find()
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -902,13 +902,13 @@ void UserProc::print(std::ostream &out, bool withDF) {
 // initialise all statements
 void UserProc::initStatements() {
     BB_IT it;
-    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+    BasicBlock::rtlit rit; stmtlistIt sit;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
-              s = bb->getNextStmt(rit, ii, cii)) {
+        for (Statement* s = bb->getFirstStmt(rit, sit); s;
+              s = bb->getNextStmt(rit, sit)) {
             s->setProc(this);
             s->setBB(bb);
-            HLCall* call = dynamic_cast<HLCall*>(s);
+            CallStatement* call = dynamic_cast<CallStatement*>(s);
             if (call) {
                 // Temporary hack for lib procs!
                 Proc* dest = call->getDestProc();
@@ -916,15 +916,10 @@ void UserProc::initStatements() {
                     call->setSigArguments();    // Get params
                     StatementList sl;
                     ((LibProc*)dest)->getInternalStatements(sl);
-                    std::list<Exp*>* le = new std::list<Exp*>;
-                    // Convert to a list of Exp*; ugh
                     StmtListIter ii;
                     for (Statement* in = sl.getFirst(ii); in;
                       in = sl.getNext(ii))
-                        le->push_back(dynamic_cast<Exp*>(in));
-                        // Note: don't number them here; they will get
-                        // numbered as ordinary statements (above)
-                    call->setPostCallExpList(le);
+                        (*rit)->appendStmt(in);
                 }
             }
         }
@@ -933,10 +928,10 @@ void UserProc::initStatements() {
 
 void UserProc::numberStatements(int& stmtNum) {
     BB_IT it;
-    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+    BasicBlock::rtlit rit; stmtlistIt sit;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
-          s = bb->getNextStmt(rit, ii, cii))
+        for (Statement* s = bb->getFirstStmt(rit, sit); s;
+          s = bb->getNextStmt(rit, sit))
             s->setNumber(++stmtNum);
     }
 }
@@ -949,33 +944,11 @@ void UserProc::getStatements(StatementList &stmts) {
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         std::list<RTL*> *rtls = bb->getRTLs();
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-             rit++) {
+          rit++) {
             RTL *rtl = *rit;
-            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-                 it != rtl->getList().end(); it++) {
-                Statement *e = dynamic_cast<Statement*>(*it);
-                if (e == NULL) continue;
-                stmts.append(e);
-            }
-            if (rtl->getKind() == CALL_RTL) {
-                HLCall *call = (HLCall*)rtl;
-                stmts.append(call);
-                std::list<Exp*>* le = call->getPostCallExpList();
-                if (le) {
-                    std::list<Exp*>::reverse_iterator pp;
-                    for (pp = le->rbegin(); pp != le->rend(); pp++) {
-                        Statement* s = dynamic_cast<Statement*>(*pp);
-                        stmts.append(s);
-                    }
-                }
-            }
-            if (rtl->getKind() == JCOND_RTL) {
-                HLJcond *jcond = (HLJcond*)rtl;
-                stmts.append(jcond);
-            }
-            if (rtl->getKind() == SCOND_RTL) {
-                HLScond *scond = (HLScond*)rtl;
-                stmts.append(scond);
+            for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
+              it != rtl->getList().end(); it++) {
+                stmts.append(*it);
             }
         }
     }
@@ -991,30 +964,13 @@ void UserProc::removeStatement(Statement *stmt) {
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
       rit++) {
         RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
           it != rtl->getList().end(); it++) {
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            if (e == stmt) {
+            if (*it == stmt) {
                 //stmt->updateDfForErase();
                 rtl->getList().erase(it);
                 return;
             }
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            // Check post call semantics
-            std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::iterator pp;
-                for (pp = le->begin(); pp != le->end(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    if (s == stmt) {
-                        le->erase(pp);
-                        return;
-                    }
-                }
-            }
-
         }
     }
 }
@@ -1035,7 +991,7 @@ void UserProc::decompile() {
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         if (bb->getType() == CALL) {
             // The call RTL will be the last in this BB
-            HLCall* call = (HLCall*)bb->getRTLs()->back();
+            CallStatement* call = (CallStatement*)bb->getRTLs()->back();
             call->decompile();
         }
     }
@@ -1109,7 +1065,7 @@ void UserProc::decompile() {
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         if (bb->getType() == CALL) {
             // The call RTL will be the last in this BB
-            HLCall* call = (HLCall*)bb->getRTLs()->back();
+            CallStatement* call = (CallStatement*)bb->getRTLs()->back();
             call->truncateArguments();
         }
     }
@@ -1141,9 +1097,8 @@ int UserProc::findMaxDepth() {
     int maxDepth = 0;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         // Assume only need to check assignments
-        AssignExp* ae = dynamic_cast<AssignExp*>(s);
-        if (ae) {
-            int depth = ae->getMemDepth();
+        if (s->getKind() == STMT_ASSIGN) {
+            int depth = ((Assign*)s)->getMemDepth();
             maxDepth = std::max(maxDepth, depth);
         }
     }
@@ -1351,10 +1306,10 @@ bool UserProc::removeDeadStatements() {
             // another statement, without first being used.  So although
             // having an empty usedBy set is a necessary condition, it is not
             // a sufficient condition.
-        AssignExp* asgn = dynamic_cast<AssignExp*>(s);
+        Assign* asgn = dynamic_cast<Assign*>(s);
         if (asgn == NULL) {
             // Never remove a call or jcond; they have important side effects
-            HLCall *call = dynamic_cast<HLCall*>(s);
+            CallStatement *call = dynamic_cast<CallStatement*>(s);
             if (call != NULL && call->getReturnLoc() != NULL) {
                 if (VERBOSE) 
                     std::cerr << "Ignoring return value of statement " << s 
@@ -1391,14 +1346,14 @@ bool UserProc::removeDeadStatements() {
                 StmtSetIter it2;
                 for (Statement* s2 = uses.getFirst(it2); s2;
                   s2 = uses.getNext(it2)) {
-                    AssignExp *e = dynamic_cast<AssignExp*>(s2);
+                    Assign *e = dynamic_cast<Assign*>(s2);
                     if (e == NULL || s1->getLeft() == NULL) continue;
                     if (*e->getSubExp2() == *s1->getLeft()) {
                         matchingUse = true;
                         break;
                     }
                 }
-                HLCall *call = dynamic_cast<HLCall*>(*it1);
+                CallStatement *call = dynamic_cast<CallStatement*>(*it1);
                 if (matchingUse && call == NULL) continue;
                 if (VERBOSE|1) {
                     std::cerr << "removing dead code: ";
@@ -1447,7 +1402,7 @@ bool UserProc::propagateAndRemoveStatements() {
     // propagate any statements that can be removed
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        AssignExp *assign = dynamic_cast<AssignExp*>(*it);
+        Assign *assign = dynamic_cast<Assign*>(*it);
         if (assign && *assign->getSubExp1() == *assign->getSubExp2())
             continue;
         Exp* rhs = s->getRight();
@@ -1590,10 +1545,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
         change = false;
         Statement* s = stmts.getFirst(ll);
         while (s) {
-            AssignExp* asgn = dynamic_cast<AssignExp*>(s);
-            HLScond*   sc   = dynamic_cast<HLScond*>(s);
-            if (!asgn && !sc) {
-                // Never delete a statement other than an assignment or scond
+            if (s->getKind() != STMT_ASSIGN && s->getKind() != STMT_SET) {
+                // Never delete a statement other than an assignment or setstmt
                 // (e.g. nothing "uses" a Jcond)
                 s = stmts.getNext(ll);
                 continue;

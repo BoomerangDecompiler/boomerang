@@ -37,7 +37,7 @@
 
 #include <algorithm>    // For remove()
 #include "types.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 #include "register.h"
 #include "type.h"
@@ -312,15 +312,14 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
                  << " does not have a fixed number of functional parameters:\n"
                  << "Expected " << funcParams.size() << ", but branch "
                  << *it << " has " << sub.funcParams.size() << ".\n";
-        } else if (funcParams != sub.funcParams && sub.exp != NULL ) {
+        } else if (funcParams != sub.funcParams && sub.asgn != NULL ) {
             /* Rename so all the parameter names match */
             std::list<std::string>::iterator i,j;
             for( i = funcParams.begin(), j = sub.funcParams.begin();
               i != funcParams.end(); i++, j++ ) {
                 Exp* match = new Unary(opParam, new Const((char*)j->c_str()));
                 Exp* replace = new Unary(opParam, new Const((char*)i->c_str()));
-                bool ch;        // Indicates a change; not used
-                sub.exp = sub.exp->searchReplaceAll( match, replace, ch );
+                sub.asgn->searchAndReplace( match, replace );
             }
             sub.funcParams = funcParams;
         }
@@ -392,8 +391,8 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty)
  *                   actuals - the actual values
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
-std::list<Exp*>* RTLInstDict::instantiateRTL(std::string& name,
-  std::vector<Exp*>& actuals) { 
+std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name,
+  std::vector<Exp*>& actuals) {
     // If -f is in force, use the fast (but not as precise) name instead
     const std::string* lname = &name;
     // FIXME: settings
@@ -420,38 +419,17 @@ if (0) {
  *                   actuals - the actual parameter values
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
-std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl, 
-        std::list<std::string>& params, std::vector<Exp*>& actuals)
-{
+std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, 
+        std::list<std::string>& params, std::vector<Exp*>& actuals) {
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL
-    std::list<Exp*>* newList = new std::list<Exp*>();
+    std::list<Statement*>* newList = new std::list<Statement*>();
     rtl.deepCopyList(*newList);
 
-    for (std::list<Exp*>::iterator it = newList->begin();
-         it != newList->end(); it++) 
-        if ((*it)->isFlagCall()) {
-            // remove the flag call
-            *it = new AssignExp(new Terminal(opFlags), *it);
-        }
-
-    // Iterate through each Exp of the new list of Exps
-    for (std::list<Exp*>::iterator rt = newList->begin();
+    // Iterate through each Statement of the new list of stmts
+    for (std::list<Statement*>::iterator rt = newList->begin();
       rt != newList->end(); rt++) {
-        if ((*rt)->isFlagCall()) {
-            std::cerr << "weird, flag call not replaced!" << std::endl;
-            for (std::list<Exp*>::iterator rt1 = newList->begin();
-                 rt1 != newList->end(); rt1++) {
-                if (rt == rt1)
-                    std::cerr << "-> ";
-                else
-                    std::cerr << "   ";
-                (*rt1)->print(std::cerr);
-                std::cerr << std::endl;
-            }
-        }
-        assert(!(*rt)->isFlagCall());
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();
         std::vector<Exp*>::const_iterator actual = actuals.begin();
@@ -460,9 +438,8 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
             Exp* formal = new Unary(opParam, 
             new Const((char*)(param->c_str())));
                 
-            bool ch;        // Result of search: unused
-            *rt = (*rt)->searchReplaceAll(formal, *actual, ch);
-            *rt = (*rt)->fixSuccessor();
+            (*rt)->searchAndReplace(formal, *actual);
+            (*rt)->fixSuccessor();
             delete formal;
         }
     }
@@ -492,12 +469,12 @@ public:
  * first anyway), but may miss some optimizations for the emulator.
  * For the emulaor, if parameters are detected within a postvar,
  * we just force the temporary, which is always safe to do.
- * (The parameter optimize is set to false for the emulator to achieve this).
+ * (The parameter optimise is set to false for the emulator to achieve this).
  */
 
-std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optimize )
-{
-    std::list<Exp*>::iterator rt;
+std::list<Statement*>* RTLInstDict::transformPostVars(
+  std::list<Statement*>* rts, bool optimise ) {
+    std::list<Statement*>::iterator rt;
 
     // Map from var (could be any expression really) to details
     std::map<Exp*,transPost,lessExpStar> vars;
@@ -520,8 +497,8 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
         // or it's the parameters of a flag call
         Binary* ss;
         if( (*rt)->isAssign()) {
-            Exp* lhs = (*rt)->getSubExp1();
-            Exp* rhs = (*rt)->getSubExp2();
+            Exp* lhs = (*rt)->getLeft();
+            Exp* rhs = (*rt)->getRight();
 
             // Look for assignments to post-variables
             if (lhs && lhs->isPostVar()) {
@@ -529,7 +506,7 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
                     // Add a record in the map for this postvar
                     transPost& el = vars[lhs];
                     el.used = false;
-                    el.type = new IntegerType(((AssignExp*)*rt)->getSize());
+                    el.type = new IntegerType(((Assign*)*rt)->getSize());
                     
                     // Constuct a temporary. We should probably be smarter
                     // and actually check that it's not otherwise used here.
@@ -544,9 +521,9 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
                     el.post = lhs;     // The whole post-var, e.g. r[0]'
                     el.isNew = true;
 
-                    // The emulator generator sets optimize false
+                    // The emulator generator sets optimise false
                     // I think this forces always generating the temps (MVE)
-                    if( !optimize ) {
+                    if( !optimise ) {
                         el.used = true;
                         el.isNew = false;
                     }
@@ -558,7 +535,7 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
             // on, I suppose)
             ss = new Binary(opList, lhs->clone(),
                     new Binary(opList, rhs->clone(), new Terminal(opNil)));
-        } else if( (*rt)->isFlagCall()) {
+        } else if( (*rt)->isFlagAssgn()) {
             // An opFlagCall is assumed to be a Binary with a string and an
             // opList of parameters
             ss = (Binary*) ((Binary*)*rt)->getSubExp2();
@@ -604,14 +581,13 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
     }
 
     // Second pass: Replace post-variables with temporaries where needed
-    bool ch;            // Set if changed (not used)
     for ( rt = rts->begin(); rt != rts->end(); rt++ ) {
         for (std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin();
           sr != vars.end(); sr++ ) {
             if( sr->second.used ) {
-                *rt = (*rt)->searchReplaceAll(sr->first, sr->second.tmp, ch);
+                (*rt)->searchAndReplace(sr->first, sr->second.tmp);
             } else {
-                *rt = (*rt)->searchReplaceAll(sr->first, sr->second.base, ch);
+                (*rt)->searchAndReplace(sr->first, sr->second.base);
             }
         }
     }
@@ -623,7 +599,7 @@ std::list<Exp*>* RTLInstDict::transformPostVars(std::list<Exp*>* rts, bool optim
     for( std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin();
       sr != vars.end(); sr++ ) {
         if( sr->second.used ) {
-            AssignExp* te = new AssignExp(sr->second.type->getSize(),
+            Assign* te = new Assign(sr->second.type->getSize(),
                     sr->second.base->clone(),
                     sr->second.tmp);
             rts->push_back( te );

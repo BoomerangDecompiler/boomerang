@@ -54,18 +54,17 @@
 
 /*==============================================================================
  * FUNCTION:      isStoreFsw
- * OVERVIEW:      Return true if the given Exp is an assignment that stores the
- *                  FSW (Floating point Status Word) reg
- * PARAMETERS:    e - Ptr to the given Exp
+ * OVERVIEW:      Return true if the given Statement is an assignment that
+ *                  stores the FSW (Floating point Status Word) reg
+ * PARAMETERS:    s - Ptr to the given Statement
  * RETURNS:       True if it is
  *============================================================================*/
-bool PentiumFrontEnd::isStoreFsw(Exp* e) {
-    if (!e->isAssign()) return false;
-    Exp* rhs = ((AssignExp*)e)->getSubExp2();
-    Exp* srch = new Unary(opRegOf, new Const(FSW));
+static Unary srch(opRegOf, new Const(FSW));
+bool PentiumFrontEnd::isStoreFsw(Statement* s) {
+    if (!s->isAssign()) return false;
+    Exp* rhs = ((Assign*)s)->getRight();
     Exp* result;
-    bool res = rhs->search(srch, result);
-    delete srch;
+    bool res = rhs->search(&srch, result);
     return res;
 }
 /*==============================================================================
@@ -76,11 +75,11 @@ bool PentiumFrontEnd::isStoreFsw(Exp* e) {
  *============================================================================*/
 bool PentiumFrontEnd::isDecAh(RTL* r) {
     // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
-    if (r->getNumExp() != 3) return false;
-    Exp* mid = r->elementAt(1);
+    if (r->getNumStmt() != 3) return false;
+    Statement* mid = r->elementAt(1);
     if (!mid->isAssign()) return false;
-    AssignExp* asgn = (AssignExp*)mid;
-    Exp* rhs = asgn->getSubExp2();
+    Assign* asgn = (Assign*)mid;
+    Exp* rhs = asgn->getRight();
     Binary ahm1(opMinus,
         new Binary(opSize,
             new Const(8),
@@ -90,19 +89,19 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
 }
 /*==============================================================================
  * FUNCTION:      isSetX
- * OVERVIEW:      Return true if the given Exp is a setX instruction
- * PARAMETERS:    e - Ptr to the given Exp
+ * OVERVIEW:      Return true if the given Statement is a setX instruction
+ * PARAMETERS:    s - Ptr to the given Statement
  * RETURNS:       True if it is
  *============================================================================*/
-bool PentiumFrontEnd::isSetX(Exp* e) {
+bool PentiumFrontEnd::isSetX(Statement* s) {
     // Check for SETX, i.e. <exp> ? 1 : 0
     // i.e. ?: <exp> Const 1 Const 0
-    if (!e->isAssign()) return false;
-    AssignExp* asgn = (AssignExp*)e;
-    Exp* lhs = asgn->getSubExp1();
+    if (!s->isAssign()) return false;
+    Assign* asgn = (Assign*)s;
+    Exp* lhs = asgn->getLeft();
     // LHS must be a register
     if (!lhs->isRegOf()) return false;
-    Exp* rhs = asgn->getSubExp2();
+    Exp* rhs = asgn->getRight();
     if (rhs->getOper() != opTern) return false;
     Exp* s2 = ((Ternary*)rhs)->getSubExp2();
     Exp* s3 = ((Ternary*)rhs)->getSubExp3();
@@ -111,15 +110,15 @@ bool PentiumFrontEnd::isSetX(Exp* e) {
 }
 /*==============================================================================
  * FUNCTION:      isAssignFromTern
- * OVERVIEW:      Return true if the given Exp is an expression whose RHS is
+ * OVERVIEW:      Return true if the given Statement is an expression whose RHS is
  *                 a ?: ternary
- * PARAMETERS:    e - Ptr to the given Exp
+ * PARAMETERS:    e - Ptr to the given Statement
  * RETURNS:       True if it is
  *============================================================================*/
-bool PentiumFrontEnd::isAssignFromTern(Exp* e) {
-    if (!e->isAssign()) return false;
-    AssignExp* asgn = (AssignExp*)e;
-    Exp* rhs = asgn->getSubExp2();
+bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
+    if (!s->isAssign()) return false;
+    Assign* asgn = (Assign*)s;
+    Exp* rhs = asgn->getRight();
     return rhs->getOper() == opTern;
 }
 /*==============================================================================
@@ -137,9 +136,9 @@ bool PentiumFrontEnd::isAssignFromTern(Exp* e) {
  *                    If registers are not replaced "all at once" like this,
  *                    there can be subtle errors from re-replacing already
  *                    replaced registers
- * RETURNS:         Pointer to the possibly changed expression
+ * RETURNS:         Nothing
  *============================================================================*/
-Exp* PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
+void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
     Unary search(opRegOf, new Terminal(opWild));
     std::list<Exp**> li;
     std::list<Exp**>::iterator it;
@@ -150,13 +149,12 @@ Exp* PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
     for (it = li.begin(); it != li.end(); it++) {
         int reg = ((Const*)((Unary*)**it)->getSubExp1())->getInt();
         if ((min <= reg) && (reg <= max)) {
-            // Replace the r[ K] with a new subexpression repl
-            if (**it) delete **it;
-            **it = new Unary(opRegOf, new Const(
-                min + (reg - min + delta & mask)));
+            // Replace the K in r[ K] with a new K
+            // **it is a reg[K]
+            Const* K = (Const*)((Unary*)**it)->getSubExp1();
+            K->setInt(min + (reg - min + delta & mask));
         }
     }
-    return exp;
 }
 /*==============================================================================
  * FUNCTION:      PentiumFrontEnd::processProc
@@ -212,7 +210,7 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
 void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 {
     std::list<RTL*>::iterator rit;
-    Exp* exp;
+    Statement* st;
 
     // Loop through each RTL this BB
     std::list<RTL*>* BB_rtls = pBB->getRTLs();
@@ -223,17 +221,17 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
     rit = BB_rtls->begin();
     while (rit != BB_rtls->end()) {
         // Check for call.
-        if ((*rit)->getKind() == CALL_RTL) {
+        if ((*rit)->isCall()) {
             // Reset the "top of stack" index. If this is not done, then after
             // a sequence of calls to functions returning floats, the value will
             // appear to be returned in registers r[32], then r[33], etc.
             tos = 0;
         }
-        if ((*rit)->getNumExp() == 0) { rit++; continue; }
+        if ((*rit)->getNumStmt() == 0) { rit++; continue; }
         // Check for f(n)stsw
         if (isStoreFsw((*rit)->elementAt(0))) {
             // Check the register - at present we only handle AX
-            Exp* lhs = ((AssignExp*)(*rit)->elementAt(0))->getSubExp1();
+            Exp* lhs = ((Assign*)(*rit)->elementAt(0))->getLeft();
             Exp* ax = new Unary(opRegOf, new Const(0));
             assert(*lhs == *ax);
             delete ax;
@@ -247,47 +245,45 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
             // instructions that replace it, so process rest of this BB
             continue;
         }
-        for (int i=0; i < (*rit)->getNumExp(); i++) {
+        for (int i=0; i < (*rit)->getNumStmt(); i++) {
             // Get the current Exp
-            exp = (*rit)->elementAt(i);
-            if (!exp->isFlagAssgn()) {
+            st = (*rit)->elementAt(i);
+            if (!st->isFlagAssgn()) {
                 // We are interested in either FPUSH/FPOP, or r[32..39]
                 // appearing in either the left or right hand sides, or calls
-                Terminal fpush(opFpush);
-                Terminal fpop (opFpop);
-                if (*exp == fpush) {
+                if (st->isFpush()) {
                     tos = (tos - 1) & 7;
                     // Remove the FPUSH
-                    (*rit)->deleteExp(i);
+                    (*rit)->deleteStmt(i);
                     i--;            // Adjust the index
                     continue;
                 }
-                else if (*exp == fpop) {
+                else if (st->isFpop()) {
                     tos = (tos + 1) & 7;
                     // Remove the FPOP
-                    (*rit)->deleteExp(i);
+                    (*rit)->deleteStmt(i);
                     i--;            // Adjust the index
                     continue;
                 }
-                else if (exp->isAssign()) {
-                    AssignExp* asgn = (AssignExp*)exp;
-                    Exp*& lhs = asgn->refSubExp1();
-                    Exp*& rhs = asgn->refSubExp2();
+                else if (st->isAssign()) {
+                    Assign* asgn = (Assign*)st;
+                    Exp* lhs = asgn->getLeft();
+                    Exp* rhs = asgn->getRight();
                     if (tos != 0) {
                         // Substitute all occurrences of r[x] (where
                         // 32 <= x <= 39) with r[y] where
                         // y = 32 + (x + tos) & 7
-                        lhs = bumpRegisterAll(lhs, 32, 39, tos, 7);
-                        rhs = bumpRegisterAll(rhs, 32, 39, tos, 7);
+                        bumpRegisterAll(lhs, 32, 39, tos, 7);
+                        bumpRegisterAll(rhs, 32, 39, tos, 7);
                     }
                 }
             }
             else {
-                // exp is a flagcall
+                // st is a flagcall
                 // We are interested in any register parameters in the range
                 // 32 - 39
                 Binary* cur;
-                for (cur = (Binary*)exp->getSubExp2(); !cur->isNil();
+                for (cur = (Binary*)st->getRight(); !cur->isNil();
                   cur = (Binary*)cur->getSubExp2()) {
 // I dont understand why we want typed exps in the flag calls so much.
 // If we're going to replace opSize with TypedExps then we need to do it
@@ -380,15 +376,15 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
     for (rit2++; rit2 != BB_rtls->end(); rit2++) {
 //std::cout << "State now " << std::dec << state << std::endl;
         // Get the first Exp; only interested in assigns
-        if ((*rit2)->getNumExp() == 0)
+        if ((*rit2)->getNumStmt() == 0)
             continue;
-        TypedExp* exp = (TypedExp*)(*rit2)->elementAt(0);
-        if (!exp->isAssign()) continue;
+        Statement* st = (*rit2)->elementAt(0);
+        if (!st->isAssign()) continue;
         // May need pLHS and uAddr later when reconstructing this SET instr
         ADDRESS uAddr = (*rit2)->getAddress();
-        AssignExp* asgn = (AssignExp*)exp;
-        Exp* lhs = asgn->getSubExp1();
-        Exp* rhs = asgn->getSubExp2();
+        Assign* asgn = (Assign*)st;
+        Exp* lhs = asgn->getLeft();
+        Exp* rhs = asgn->getRight();
         Exp* result;
         // Check if uses register ah, and assigns to either ah or a temp
         if ((lhs->search(&ah, result) || lhs->isTemp()) &&
@@ -477,7 +473,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         }
         // Check for SETX, i.e. <exp> ? 1 : 0
         // i.e. ?: <exp> int 1 int 0
-        else if (isSetX(exp)) {
+        else if (isSetX(st)) {
             if (state == 23) {
                 state = 25;
                 // Don't add the set instruction until after the instrs
@@ -590,7 +586,8 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
     }           // End of for loop (for each remaining RTL this BB)
                             
     // Check the branch
-    HLJcond* pJump = (HLJcond*)(*--rit2);
+    RTL* pJumpRtl = *--rit2;
+    BranchStatement* pJump = (BranchStatement*)(pJumpRtl->getList().back());
     Exp* lhs = 0;
     Exp* rhs = 0;
     ADDRESS uAddr;
@@ -598,16 +595,17 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
     bool bJoin = false;         // Set if need to join BBs
     if (state == 23) {
         RTL* pRtl;
-        Exp* exp;
-        if (pJump->getCond() == HLJCOND_JPAR) {
+        Statement* st;
+        if (pJump->getCond() == BRANCH_JPAR) {
             // Check the 2nd out edge. It should be the false case, and
             // should point to either a BB with just a branch in it (a
             // TWOWAY BB) or one starting with a SET instruction
             const std::vector<PBB>& v = pBB->getOutEdges();
             pBBnext = v[1];
             if ((pBBnext->getType() == TWOWAY) &&
-                (pBBnext->getRTLs()->size() == 1)) {
-                HLJcond* pJ = (HLJcond*)pBBnext->getRTLs()->front();
+              (pBBnext->getRTLs()->size() == 1)) {
+                BranchStatement* pJ = (BranchStatement*)pBBnext->getRTLs()->
+                  front()->getList().back();
                 // Make it a floating branch
                 pJ->setFloat(true);
                 // Make it a signed branch
@@ -618,9 +616,9 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
             }
             else if (
               (pRtl = pBBnext->getRTLs()->front(),
-              exp = (pRtl->elementAt(0)),
-              isAssignFromTern(exp))) {
-                lhs = ((AssignExp*)exp)->getSubExp1();
+              st = (pRtl->elementAt(0)),
+              isAssignFromTern(st))) {
+                lhs = ((Assign*)st)->getLeft();
                 uAddr = pRtl->getAddress();
                 state = 25;
                 // Actually generate the set instruction later, after the
@@ -630,7 +628,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
             }
             else {
                 std::cerr << "Problem with JP at " << std::hex;
-                std::cerr << pJump->getAddress();
+                std::cerr << pJumpRtl->getAddress();
                 std::cerr << ".\nDoes not fall through to branch or set at ";
                 std::cerr << pBBnext->getLowAddr() << std::endl;
                 return true;
@@ -644,7 +642,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
             state = 24;
         }
     }       // if state == 23
-    else if (pJump->getCond() == HLJCOND_JE)
+    else if (pJump->getCond() == BRANCH_JE)
     {
         if (state == 4) state = 5;
         else if (state == 1) state = 26;
@@ -653,7 +651,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
             return true;
         }
     }
-    else if (pJump->getCond() == HLJCOND_JNE) {
+    else if (pJump->getCond() == BRANCH_JNE) {
         if (state == 1) state = 14;
         else if (state == 7) state = 8;
         else if (state == 3) state = 19;
@@ -663,7 +661,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
             return true;
         }
     }
-    else if (pJump->getCond() == HLJCOND_JUGE) {
+    else if (pJump->getCond() == BRANCH_JUGE) {
         if (state == 11) state = 12;
         else {
             std::cerr << "Problem with JAE";
@@ -688,7 +686,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         // loop, it will process any instructions that were interspersed
         // with the ones that will be deleted.
         rit--;
-        uAddr = pJump->getAddress();        // Save addr of branch
+        uAddr = pJumpRtl->getAddress();     // Save addr of branch
         pDest = pJump->getDest();           // Save dest of branch
         if (state == 25)
             // As before, keep a copy of the LHS in a new exp.
@@ -706,44 +704,57 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         return true;
     }
     // Add a new branch, with the appropriate parameters
-    HLJcond* newJump;
+    BranchStatement* newJump;
+    std::list<Statement*>* ls;
     switch (state) {
     case 5:         // Jump if equals
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JE, true);
+        newJump->setCondType(BRANCH_JE, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 14:        // Jump if less or equals
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JSLE, true);
+        newJump->setCondType(BRANCH_JSLE, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 12:        // Jump if greater
     case 26:        // Also jump if greater
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JSG, true);
+        newJump->setCondType(BRANCH_JSG, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 21:        // Jump if greater or equals
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JSGE, true);
+        newJump->setCondType(BRANCH_JSGE, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 8:         // Jump if not equals
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JNE, true);
+        newJump->setCondType(BRANCH_JNE, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 18:        // Jump if less
-        newJump = new HLJcond(uAddr);
+        newJump = new BranchStatement;
         newJump->setDest(pDest);
-        BB_rtls->push_back(newJump);
-        newJump->setCondType(HLJCOND_JSL, true);
+        newJump->setCondType(BRANCH_JSL, true);
+        ls = new std::list<Statement*>;
+        ls->push_back(newJump);
+        BB_rtls->push_back(new RTL(uAddr, ls));
         break;
     case 25:
         State25(lhs, rhs, BB_rtls, rit, uAddr);
@@ -766,17 +777,17 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 
 // Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
 // Insert before rit
-void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit, ADDRESS uAddr,
-  Exp* lhs, Exp* cond) {
+void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit,
+  ADDRESS uAddr, Exp* lhs, Exp* cond) {
 
-    Exp* asgn = new AssignExp(32,
+    Statement* asgn = new Assign(32,
         lhs,
         new Ternary(opTern,
             cond,
             new Const(1),
             new Const(0)));
     RTL* pRtl = new RTL(uAddr);
-    pRtl->appendExp(asgn);
+    pRtl->appendStmt(asgn);
 //std::cout << "Emit "; pRtl->print(); std::cout << std::endl;     // HACK
     // Insert the new RTL before rit
     BB_rtls->insert(rit, pRtl);
@@ -848,23 +859,23 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         // r[tmpl] = ftoi(80, 64, r[32])
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
-        Exp* e = new AssignExp(64,
+        Statement* a = new Assign(64,
             new Unary(opTemp, new Const("tmpl")),
             new Ternary(opFtoi, new Const(64), new Const(32),
                 new Unary(opRegOf, new Const(32))));
         RTL* pRtl = new RTL(addr);
-        pRtl->appendExp(e);
-        e = new AssignExp(32,
+        pRtl->appendStmt(a);
+        a = new Assign(32,
             new Unary(opRegOf, new Const(24)),
             new Ternary(opTruncs, new Const(64), new Const(32),
                 new Unary(opTemp, new Const("tmpl"))));
-        pRtl->appendExp(e);
-        e = new AssignExp(32,
+        pRtl->appendStmt(a);
+        a = new Assign(32,
             new Unary(opRegOf, new Const(26)),
             new Binary(opShiftR,
                 new Unary(opTemp, new Const("tmpl")),
                 new Const(32)));
-        pRtl->appendExp(e);
+        pRtl->appendStmt(a);
         // Append this RTL to the list of RTLs for this BB
         lrtl->push_back(pRtl);
         // Return true, so the caller knows not to create a HLCall
@@ -948,22 +959,23 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     ADDRESS dest;
     do {
         DecodeResult inst = decodeInstruction(addr);
-        if ((inst.rtl->getKind() == CALL_RTL) &&
-          ((dest = ((HLCall*)inst.rtl)->getFixedDest())) != NO_ADDRESS) {
+        CallStatement* cs = (CallStatement*)(inst.rtl->getList().back());
+        if ((cs->getKind() == STMT_CALL) &&
+          ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
             if (++conseq == 3) {
                 // Success. Return the target of the last call
-	gotMain = true;
-                return ((HLCall*)inst.rtl)->getFixedDest();
-}
+	            gotMain = true;
+                return cs->getFixedDest();
+            }
             if (strcmp(pBF->SymbolByAddress(dest), "__libc_start_main") == 0) {
                 // This is a gcc 3 pattern. The first parameter will be
                 // a pointer to main. Assume it's the 5 byte push
                 // immediately preceeding this instruction
                 inst = decodeInstruction(addr-5);
                 assert(inst.valid);
-                assert(inst.rtl->getNumExp() == 2);
-                AssignExp* a = (AssignExp*) inst.rtl->elementAt(1);
-                Exp* rhs = a->getSubExp2();
+                assert(inst.rtl->getNumStmt() == 2);
+                Assign* a = (Assign*) inst.rtl->elementAt(1);
+                Exp* rhs = a->getRight();
                 assert(rhs->isIntConst());
                 gotMain = true;
                 return (ADDRESS)((Const*)rhs)->getInt();

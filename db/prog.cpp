@@ -42,7 +42,7 @@
 #include <sstream>
 #include <vector>
 #include "types.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 #include "cfg.h"
 #include "proc.h"

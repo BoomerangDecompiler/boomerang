@@ -10,6 +10,7 @@
  */
 
 #include "RtlTest.h"
+#include "statement.h"
 #include "exp.h"
 #include <sstream>
 #include "BinaryFile.h"
@@ -71,13 +72,13 @@ void RtlTest::tearDown () {
  * OVERVIEW:        Test appendExp and printing of RTLs
  *============================================================================*/
 void RtlTest::testAppend () {
-    AssignExp* e = new AssignExp(32,
+    Assign* a = new Assign(32,
             new Unary(opRegOf, new Const(8)),
             new Binary(opPlus,
                 new Unary(opRegOf, new Const(9)),
                 new Const(99)));
     RTL r;
-    r.appendExp(e);
+    r.appendStmt(a);
     std::ostringstream ost;
     r.print(ost);
     std::string actual(ost.str());
@@ -86,7 +87,7 @@ void RtlTest::testAppend () {
     // No! appendExp does not copy the expression, so deleting the RTL will
     // delete the expression(s) in it.
     // Not sure if that's what we want...
-    // delete e;
+    // delete a;
 }
 
 /*==============================================================================
@@ -94,18 +95,18 @@ void RtlTest::testAppend () {
  * OVERVIEW:        Test constructor from list of expressions; cloning of RTLs
  *============================================================================*/
 void RtlTest::testClone () {
-    AssignExp* e1 = new AssignExp(32,
+    Assign* a1 = new Assign(32,
             new Unary(opRegOf, new Const(8)),
             new Binary(opPlus,
                 new Unary(opRegOf, new Const(9)),
                 new Const(99)));
-    AssignExp* e2 = new AssignExp(16,
+    Assign* a2 = new Assign(16,
             new Unary(opParam, new Const("x")),
             new Unary(opParam, new Const("y")));
-    std::list<Exp*> le;
-    le.push_back(e1);
-    le.push_back(e2);
-    RTL* r = new RTL(0x1234, &le);
+    std::list<Statement*> ls;
+    ls.push_back(a1);
+    ls.push_back(a2);
+    RTL* r = new RTL(0x1234, &ls);
     RTL* r2 = r->clone();
     std::ostringstream o1, o2;
     r->print(o1);
@@ -115,10 +116,10 @@ void RtlTest::testClone () {
     std::string expected("00001234    0 *32* r8 := r9 + 99\n"
                          "            0 *16* x := y\n");
 
-    std::string a1(o1.str());
-    std::string a2(o2.str());
-    CPPUNIT_ASSERT_EQUAL(expected, a1);
-    CPPUNIT_ASSERT_EQUAL(expected, a2);
+    std::string act1(o1.str());
+    std::string act2(o2.str());
+    CPPUNIT_ASSERT_EQUAL(expected, act1);
+    CPPUNIT_ASSERT_EQUAL(expected, act2);
 }
 
 /*==============================================================================
@@ -127,73 +128,80 @@ void RtlTest::testClone () {
  * NOTES:           Stub class to test.
  *============================================================================*/
 
-class RTLVisitorStub : public RTLVisitor {
+class StmtVisitorStub : public StmtVisitor {
 public:
-    bool a, b, c, d, e, f, g; 
+    bool a, b, c, d, e, f, g, h; 
 
-    void clear() { a = b = c = d = e = f = false; }
-    RTLVisitorStub() { clear(); }
-    virtual ~RTLVisitorStub() { }
-    virtual bool visit(RTL *rtl)        { a = true; return false; }
-    virtual bool visit(HLJump *rtl)     { b = true; return false; }
-    virtual bool visit(HLJcond *rtl)    { c = true; return false; }
-    virtual bool visit(HLNwayJump *rtl) { d = true; return false; }
-    virtual bool visit(HLCall *rtl)     { e = true; return false; }
-    virtual bool visit(HLReturn *rtl)   { f = true; return false; }
-    virtual bool visit(HLScond *rtl)    { g = true; return false; }
+    void clear() { a = b = c = d = e = f = g = h = false; }
+    StmtVisitorStub() { clear(); }
+    virtual ~StmtVisitorStub() { }
+    virtual bool visit(            RTL *s) { a = true; return false; }
+    virtual bool visit(  GotoStatement *s) { b = true; return false; }
+    virtual bool visit(BranchStatement *s) { c = true; return false; }
+    virtual bool visit(  CaseStatement *s) { d = true; return false; }
+    virtual bool visit(  CallStatement *s) { e = true; return false; }
+    virtual bool visit(ReturnStatement *s) { f = true; return false; }
+    virtual bool visit(   SetStatement *s) { g = true; return false; }
+    virtual bool visit(         Assign *s) { h = true; return false; }
 };
 
 void RtlTest::testVisitor()
 {
-    RTLVisitorStub* visitor = new RTLVisitorStub();
+    StmtVisitorStub* visitor = new StmtVisitorStub();
 
-    /* simple rtl */
+    /* rtl */
     RTL *rtl = new RTL();
     rtl->accept(visitor);
     CPPUNIT_ASSERT(visitor->a);
     delete rtl;
 
-    /* jump rtl */
-    HLJump *jump = new HLJump(0);
+    /* jump stmt */
+    GotoStatement *jump = new GotoStatement;
     jump->accept(visitor);
     CPPUNIT_ASSERT(visitor->b);
     delete jump;
 
-    /* jcond rtl */
-    HLJcond *jcond = new HLJcond(0);
+    /* jcond stmt */
+    BranchStatement *jcond = new BranchStatement;
     jcond->accept(visitor);
     CPPUNIT_ASSERT(visitor->c);
     delete jcond;
 
-    /* nway jump rtl */
-    HLNwayJump *nwayjump = new HLNwayJump(0);
+    /* nway jump stmt */
+    CaseStatement *nwayjump = new CaseStatement;
     nwayjump->accept(visitor);
     CPPUNIT_ASSERT(visitor->d);
     delete nwayjump;
 
-    /* call rtl */
-    HLCall *call = new HLCall(0);
+    /* call stmt */
+    CallStatement *call = new CallStatement;
     call->accept(visitor);
     CPPUNIT_ASSERT(visitor->e);
     delete call;
 
-    /* return rtl */
-    HLReturn *ret = new HLReturn(0);
+    /* return stmt */
+    ReturnStatement *ret = new ReturnStatement;
     ret->accept(visitor);
     CPPUNIT_ASSERT(visitor->f);
     delete ret;
 
-    /* scond rtl */
-    HLScond *scond = new HLScond(0);
+    /* scond stmt */
+    SetStatement *scond = new SetStatement(0);
     scond->accept(visitor);
     CPPUNIT_ASSERT(visitor->g);
     delete scond;
 
+    /* assignment stmt */
+    Assign *as = new Assign;
+    as->accept(visitor);
+    CPPUNIT_ASSERT(visitor->h);
+    delete as;
+
     /* polymorphic */
-    rtl = new HLCall(0);
-    rtl->accept(visitor);
+    Statement* s = new CallStatement;
+    s->accept(visitor);
     CPPUNIT_ASSERT(visitor->e);
-    delete rtl;
+    delete s;
 
     /* cleanup */
     delete visitor;

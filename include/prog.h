@@ -15,24 +15,6 @@
  *============================================================================*/
 /*
  * $Revision$
- * Created by Mike
- * 24 Mar 98 - Cristina
- *  Changed m_procs to be a list of procedure objects rather than pointers
- *      to procedure objects.  Similar for AddProc() and GetProc().
- *      added map of labels.
- * 26 Mar 98 - Cristina
- *  Changed AddProc() to NewProc() so that we have a reference to the  
- *      procedure and are able to change it during parsing.
- * 28 Jul 98 - Mike
- *  Now depends on PROC, which depends on CFG and RTL
- * 2 Sep 98 - Mike
- *  Added findProc(); m_procs now list of pointers to procs
- * 08 Apr 99 - Mike: Changes for HEADERS
- * 02 Jun 99 - Mike: Removed leading upper case on function names
- * 06 Jun 00 - Mike: Added members csrSrc, pBF
- * 06 Jul 00 - Mike: Added getFirstProc / getNextProc functions
- * 31 Jul 01 - Brian: Added new file hrtl.h for HRTL-related declarations.
- * 30 Aug 01 - Mike: mapLibParam has list (was vector)
  * 16 Apr 01 - Mike: Mods for boomerang
  */
 
@@ -40,18 +22,15 @@
 #define _PROG_H_
 
 #include <map>
-#include "dataflow.h"
-#include "exp.h"
-#include "cfg.h"
-#include "proc.h"
-#include "rtl.h"
 #include "BinaryFile.h"
 #include "frontend.h"
 
 class RTLInstDict;
 class Proc;
 class UserProc;
+class LibProc;
 class Signature;
+class StatementSet;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 

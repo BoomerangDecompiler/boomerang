@@ -33,7 +33,7 @@
 #include <fstream>
 #include <sstream>
 #include "types.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -972,8 +972,12 @@ bool Cfg::compressCfg()
                 }
                 if (bb->getType() != TWOWAY || bb == *it)
                     continue;
-                HLJcond *jcond = dynamic_cast<HLJcond*>((*it)->m_pRtls->back());
-                HLJcond *prior = dynamic_cast<HLJcond*>(bb->m_pRtls->back());
+                RTL* branchRtl = (*it)->m_pRtls->back();
+                BranchStatement* jcond = dynamic_cast<BranchStatement*>(
+                  branchRtl->getList().back());
+                RTL* priorRtl = bb->m_pRtls->back();
+                BranchStatement* prior = dynamic_cast<BranchStatement*>(
+                  priorRtl->getList().back());
                 assert(jcond && prior);
                 // Check that all statements that prior's condition depends on
                 // reach the current jcond (if any are redefined, then we can't
@@ -1037,8 +1041,8 @@ bool Cfg::compressCfg()
                     std::cerr << std::endl;
                     (*it)->m_nodeType = ONEWAY;
                     (*it)->deleteEdge((*it)->m_OutEdges[1]);
-                    *(--(*it)->m_pRtls->end()) = new HLJump(jcond->getAddress(),
-                        (*it)->m_OutEdges[0]->getLowAddr());
+                    *(--branchRtl->getList().end()) = 
+                      new GotoStatement((*it)->m_OutEdges[0]->getLowAddr());
                     delete jcond;
                     change = true;
                 } else if (alwaysFalse) {
@@ -1047,8 +1051,8 @@ bool Cfg::compressCfg()
                     std::cerr << std::endl;
                     (*it)->m_nodeType = ONEWAY;
                     (*it)->deleteEdge((*it)->m_OutEdges[0]);
-                    *(--(*it)->m_pRtls->end()) = new HLJump(jcond->getAddress(),
-                        (*it)->m_OutEdges[0]->getLowAddr());
+                    *(--branchRtl->getList().end()) = 
+                      new GotoStatement((*it)->m_OutEdges[0]->getLowAddr());
                     delete jcond;
                     change = true;
                 }
@@ -1066,7 +1070,7 @@ bool Cfg::compressCfg()
             PBB bb = (*it);             // Pointer to A
             if (pSucc->m_InEdges.size()==1 && pSucc->m_OutEdges.size()==1 &&
               pSucc->m_pRtls->size()==1 &&
-              pSucc->m_pRtls->front()->getKind()==JUMP_RTL) {
+              pSucc->m_pRtls->front()->isGoto()) {
                 // Found an out-edge to an only-jump BB
                 /* std::cout << "outedge to jump detected at " << std::hex <<
                     bb->getLowAddr() << " to ";
@@ -1261,7 +1265,7 @@ int Cfg::pbbToIndex (PBB pBB) {
  * PARAMETERS:      call - a call instruction
  * RETURNS:         <nothing>
  *============================================================================*/
-void Cfg::addCall(HLCall* call)
+void Cfg::addCall(CallStatement* call)
 {
     callSites.insert(call);
 }
@@ -1272,7 +1276,7 @@ void Cfg::addCall(HLCall* call)
  * PARAMETERS:      <none>
  * RETURNS:         the set of calls within this procedure
  *============================================================================*/
-std::set<HLCall*>& Cfg::getCalls()
+std::set<CallStatement*>& Cfg::getCalls()
 {
     return callSites;
 }
@@ -1546,7 +1550,7 @@ bool Cfg::deserialize(std::istream &inf)
 
     MAPBB m_mapBB;
     unsigned m_uExtraCover;
-    std::set<HLCall*> callSites;
+    std::set<CallStatement*> callSites;
     int lastLabel;
     */
             default:
@@ -1597,28 +1601,6 @@ bool Cfg::deserialize(std::istream &inf)
     return true;
 }
 
-
-void Cfg::makeCallRet(PBB head, Proc *p)
-{
-    head->m_nodeType = CALL;
-    HLCall *call = new HLCall(NO_ADDRESS);
-    call->setDest(p->getNativeAddress());
-    if (head->m_pRtls)
-        delete head->m_pRtls;
-    head->m_pRtls = new std::list<RTL*>();
-    head->m_pRtls->push_back(call);
-    PBB pret = new BasicBlock();
-    pret->m_nodeType = RET;
-    HLReturn *ret = new HLReturn(NO_ADDRESS);
-    pret->m_pRtls = new std::list<RTL*>();
-    pret->m_pRtls->push_back(ret);
-    head->m_OutEdges.clear();
-    head->m_OutEdges.push_back(pret);
-    pret->m_InEdges.push_back(head);
-    m_listBB.push_back(pret);
-
-    // find orphans, delete em
-}
 
 void Cfg::simplify() {
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
@@ -2206,9 +2188,10 @@ void Cfg::insertArguments(StatementSet& rs) {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
         if ((*it)->getType() == CALL) {
-            // The last RTL should be a HLCall
-            HLCall* call = (HLCall*)(*it)->m_pRtls->back();
-            assert(call->getKind() == CALL_RTL);
+            // There should be a CallStatement in the last RTL
+            CallStatement* call = (CallStatement*)
+              (*it)->m_pRtls->back()->getHlStmt();
+            assert(call->getKind() == STMT_CALL);
             call->insertArguments(rs);
         }
     }

@@ -29,6 +29,8 @@ class UserProc;
 class Proc;
 class Type;
 class Signature;
+class Assign;
+class LocationSet;
 
 class HLLCode {
 protected:
@@ -92,7 +94,7 @@ public:
         virtual void RemoveLabel(int ord) = 0;
 
 	// sequential statements
-	virtual void AddAssignmentStatement(int indLevel, AssignExp *exp) = 0;
+	virtual void AddAssignmentStatement(int indLevel, Assign *s) = 0;
 	virtual void AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
             std::vector<Exp*> &args, LocationSet &defs) = 0;
 	virtual void AddIndCallStatement(int indLevel, Exp *retloc, Exp *exp,

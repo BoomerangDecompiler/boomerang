@@ -61,7 +61,8 @@ private:
     Exp*    dis_RegRhs(unsigned r);
 
     void    unused(int x);
-    HLJcond* createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name);
+    RTL*    createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
+              const char* name);
     bool    isFuncPrologue(ADDRESS hostPC);
     DWord   getDword(ADDRESS lc);
 

@@ -24,12 +24,12 @@
 
 #include <list>
 #include "types.h"
+#include "rtl.h"
 
 class Exp;
 class RTL;
 class BinaryFile;
 class Prog;
-class RTLInstDict;
 
 // These are the instruction classes defined in "A Transformational Approach to
 // Binary Translation of Delayed Branches" for SPARC instructions.
@@ -123,12 +123,12 @@ protected:
     /*
      * Given an instruction name and a variable list of Exps
      * representing the actual operands of the instruction, use the
-     * RTL template dictionary to return the instantiated RTL
+     * RTL template dictionary to return the list of Statements
      * representing the semantics of the instruction. This method also
      * displays a disassembly of the instruction if the relevant
      * compilation flag has been set.
      */
-    std::list<Exp*>* instantiate(ADDRESS pc, const char* name, ...);
+    std::list<Statement*>* instantiate(ADDRESS pc, const char* name, ...);
 
     /*
      * Similarly, given a parameter name and a list of Exp*'s
@@ -151,7 +151,8 @@ protected:
      * other procedures
      */
     void unconditionalJump(const char* name, int size, ADDRESS relocd,
-        int delta, ADDRESS pc, std::list<Exp*>* exps, DecodeResult& result);
+        int delta, ADDRESS pc, std::list<Statement*>* stmts,
+        DecodeResult& result);
 
     /*
      * String for the constructor names (displayed with use "-c")
@@ -197,8 +198,9 @@ bool isFuncPrologue(ADDRESS hostPC);
 // the ordering is changed and multiple copies may be made
 
 #define COND_JUMP(name, size, relocd, cond) \
-    HLJcond* jump = new HLJcond(pc, Exps); \
-    result.rtl = jump; \
+    result.rtl = new RTL(pc, stmts); \
+    BranchStatement* jump = new BranchStatement; \
+    result.rtl->appendStmt(jump); \
     result.numBytes = size; \
     jump->setDest(relocd-delta); \
     jump->setCondType(cond); \
@@ -206,10 +208,11 @@ bool isFuncPrologue(ADDRESS hostPC);
 
 // This one is X86 specific
 #define SETS(name, dest, cond) \
-    HLScond* scond = new HLScond(pc, Exps); \
+    result.rtl = new RTL(pc, stmts); \
+    SetStatement* scond = new SetStatement(8); \
+    result.rtl->appendStmt(scond); \
     scond->setCondType(cond); \
     result.numBytes = 3; \
-    result.rtl = scond; \
     SHOW_ASM(name<<" "<<dest)
 
 /*==============================================================================

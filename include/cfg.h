@@ -47,7 +47,7 @@ class BinaryFile;
 class BasicBlock;
 typedef BasicBlock* PBB;
 class HLLCode;
-class HLCall;
+class CallStatement;
 class RTL;
 struct DOM;
 
@@ -453,8 +453,8 @@ public:
      */
     typedef std::list<RTL*>::iterator rtlit;
     typedef std::list<Exp*>::iterator elit;
-    Statement* getFirstStmt(rtlit& rit, elit& it, elit& cit);
-    Statement*  getNextStmt(rtlit& rit, elit& it, elit& cit);
+    Statement* getFirstStmt(rtlit& rit, stmtlistIt& sit);
+    Statement*  getNextStmt(rtlit& rit, stmtlistIt& sit);
 
     /**
      * Get the statement number for the first BB as a character array.
@@ -583,7 +583,7 @@ public:
     void generateCode(HLLCode *hll, int indLevel, PBB latch, 
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
     // For prepending phi functions
-    void prependExp(Exp* e);
+    void prependStmt(Statement* s);
 };  // class BasicBlock
 
     // A type for the ADDRESS to BB map
@@ -851,12 +851,12 @@ public:
     /*
      * Add a call to the set of calls within this procedure.
      */
-    void addCall(HLCall* call);
+    void addCall(CallStatement* call);
 
     /*
      * Get the set of calls within this procedure.
      */
-    std::set<HLCall*>& getCalls();
+    std::set<CallStatement*>& getCalls();
 
     /*
      * Replace all instances of search with replace.
@@ -927,11 +927,6 @@ public:
 
     // deserialize a CFG
     bool deserialize(std::istream &inf);
-
-    /* make the given BB into a call followed by a ret 
-     * and remove all the orphaned nodes.
-     */
-    void makeCallRet(PBB head, Proc *p);
 
     /* return a bb given an address */
     PBB bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
@@ -1035,7 +1030,7 @@ protected:
     /*
      * Set of the call instructions in this procedure.
      */
-    std::set<HLCall*> callSites;
+    std::set<CallStatement*> callSites;
 
     /*
      * Last label (positive integer) used by any BB this Cfg

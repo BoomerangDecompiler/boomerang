@@ -108,7 +108,7 @@ typedef union {
     char*           str;
     int             num;
     double          dbl;
-    Exp*            regtransfer;
+    Statement*      regtransfer;
     
     Table*          tab;
     InsNameElem*    insel;
@@ -149,7 +149,7 @@ public: \
         SSLParser(std::istream &in, bool trace); \
         virtual ~SSLParser(); \
 OPER    strToOper(const char*s); /* Convert string to an operator */ \
-static  Exp* parseExp(const char *str); /* Parse an expression from a string */ \
+static  Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
@@ -167,9 +167,9 @@ protected: \
     std::string sslFile; \
 \
     /* \
-     * Result for parsing an expression. \
+     * Result for parsing an assignment. \
      */ \
-    Exp *the_exp; \
+    Statement *the_asgn; \
 \
     /* \
      * Maps SSL constants to their values. \
@@ -796,20 +796,20 @@ static const short yyrhs[] = {    99,
 
 #if YY_SSLParser_DEBUG != 0
 static const short yyrline[] = { 0,
-   210,   214,   217,   220,   222,   225,   228,   233,   235,   238,
-   243,   246,   250,   253,   257,   259,   262,   280,   297,   298,
-   301,   305,   305,   308,   310,   311,   314,   320,   325,   360,
-   382,   397,   408,   412,   419,   427,   434,   447,   453,   459,
-   463,   469,   480,   485,   494,   497,   502,   506,   511,   517,
-   520,   535,   553,   558,   562,   568,   574,   580,   587,   593,
-   599,   605,   610,   617,   621,   644,   648,   651,   657,   661,
-   674,   683,   694,   703,   708,   718,   725,   732,   742,   746,
-   749,   754,   762,   772,   779,   783,   788,   793,   798,   803,
-   808,   817,   823,   826,   830,   835,   840,   844,   848,   852,
-   856,   860,   870,   876,   881,   884,   889,   895,   923,   950,
-   955,   965,   973,   977,   981,   985,   989,   993,  1000,  1026,
-  1031,  1061,  1065,  1071,  1075,  1093,  1097,  1100,  1105,  1111,
-  1116,  1120,  1127,  1131,  1134,  1138
+   210,   214,   219,   222,   224,   227,   230,   235,   237,   240,
+   245,   248,   252,   255,   259,   261,   264,   282,   299,   300,
+   303,   307,   307,   310,   312,   313,   316,   322,   327,   362,
+   384,   399,   410,   414,   421,   429,   436,   449,   455,   461,
+   465,   471,   482,   487,   496,   499,   504,   508,   513,   519,
+   522,   537,   555,   560,   564,   570,   576,   582,   589,   595,
+   601,   607,   612,   619,   623,   646,   650,   653,   659,   663,
+   676,   685,   696,   705,   710,   720,   727,   734,   747,   751,
+   754,   759,   767,   777,   784,   788,   793,   798,   803,   808,
+   813,   823,   829,   834,   840,   845,   850,   854,   858,   862,
+   866,   870,   880,   886,   891,   894,   899,   905,   933,   960,
+   965,   975,   983,   987,   991,   995,   999,  1003,  1010,  1036,
+  1041,  1071,  1075,  1081,  1085,  1103,  1107,  1110,  1115,  1121,
+  1126,  1130,  1137,  1141,  1144,  1148
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
@@ -819,7 +819,7 @@ static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
 "BOGUS","ASSIGN","TO","COLON","S_E","AT","ADDR","REG_IDX","EQUATE","MEM_IDX",
 "TOK_INTEGER","TOK_FLOAT","FAST","OPERAND","FETCHEXEC","CAST_OP","FLAGMACRO",
 "SUCCESSOR","NUM","ASSIGNSIZE","FLOATNUM","';'","','","'{'","'}'","'['","']'",
-"')'","'\"'","'\\''","'$'","'_'","'('","'?'","specorexp","specification","parts",
+"')'","'\"'","'\\''","'$'","'_'","'('","'?'","specorasgn","specification","parts",
 "operandlist","operand","func_parameter","reglist","@1","@2","a_reglists","a_reglist",
 "reg_table","flag_fnc","constants","table_assign","table_expr","str_expr","str_array",
 "str_term","name_expand","bin_oper","opstr_expr","opstr_array","exprstr_expr",
@@ -1578,27 +1578,29 @@ YYLABEL(yyreduce)
 case 1:
 #line 211 "sslparser.y"
 {
-            the_exp = yyvsp[0].regtransfer;
+            the_asgn = yyvsp[0].regtransfer;
         ;
     break;}
 case 2:
 #line 214 "sslparser.y"
 {
-            the_exp = yyvsp[0].exp;
+            the_asgn = new Assign(
+                new Terminal(opNil),
+                yyvsp[0].exp);
         ;
     break;}
 case 7:
-#line 228 "sslparser.y"
+#line 230 "sslparser.y"
 {
             Dict.fetchExecCycle = yyvsp[0].rtlist;
         ;
     break;}
 case 14:
-#line 253 "sslparser.y"
+#line 255 "sslparser.y"
 { Dict.fixupParams(); ;
     break;}
 case 17:
-#line 266 "sslparser.y"
+#line 268 "sslparser.y"
 {
             // Note: the below copies the list of strings!
             Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
@@ -1607,16 +1609,16 @@ case 17:
         ;
     break;}
 case 18:
-#line 280 "sslparser.y"
+#line 282 "sslparser.y"
 {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
-            Exp* asgn = new AssignExp(yyvsp[-1].num, new Terminal(opNil), yyvsp[0].exp);
+            Statement* asgn = new Assign(yyvsp[-1].num, new Terminal(opNil), yyvsp[0].exp);
             // Note: The below 2 copy lists of strings (to be deleted below!)
             param.params = *yyvsp[-3].parmlist;
             param.funcParams = *yyvsp[-2].parmlist;
-            param.exp = asgn;
-            param.kind = PARAM_EXPR;
+            param.asgn = asgn;
+            param.kind = PARAM_ASGN;
             
             if( param.funcParams.size() != 0 )
                 param.kind = PARAM_LAMBDA;
@@ -1625,27 +1627,27 @@ case 18:
         ;
     break;}
 case 19:
-#line 297 "sslparser.y"
+#line 299 "sslparser.y"
 { yyval.parmlist = yyvsp[-1].parmlist; ;
     break;}
 case 20:
-#line 298 "sslparser.y"
+#line 300 "sslparser.y"
 { yyval.parmlist = new std::list<std::string>(); ;
     break;}
 case 21:
-#line 302 "sslparser.y"
+#line 304 "sslparser.y"
 {
                     bFloat = false;
                 ;
     break;}
 case 23:
-#line 305 "sslparser.y"
+#line 307 "sslparser.y"
 {
                     bFloat = true;
                 ;
     break;}
 case 27:
-#line 315 "sslparser.y"
+#line 317 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
                     yyerror("Name reglist decared twice\n");
@@ -1653,7 +1655,7 @@ case 27:
             ;
     break;}
 case 28:
-#line 320 "sslparser.y"
+#line 322 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1661,7 +1663,7 @@ case 28:
             ;
     break;}
 case 29:
-#line 325 "sslparser.y"
+#line 327 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1699,7 +1701,7 @@ case 29:
             ;
     break;}
 case 30:
-#line 360 "sslparser.y"
+#line 362 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1724,7 +1726,7 @@ case 30:
             ;
     break;}
 case 31:
-#line 382 "sslparser.y"
+#line 384 "sslparser.y"
 {
                 if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
                     std::cerr << "size of register array does not match mapping to r["
@@ -1742,7 +1744,7 @@ case 31:
             ;
     break;}
 case 32:
-#line 397 "sslparser.y"
+#line 399 "sslparser.y"
 {
                 std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
                 for (; loc != yyvsp[-6].strlist->end(); loc++) {
@@ -1754,27 +1756,27 @@ case 32:
             ;
     break;}
 case 33:
-#line 409 "sslparser.y"
+#line 411 "sslparser.y"
 {
                 yyvsp[-2].strlist->push_back(yyvsp[0].str);
             ;
     break;}
 case 34:
-#line 412 "sslparser.y"
+#line 414 "sslparser.y"
 {
                 yyval.strlist = new std::list<std::string>;
                 yyval.strlist->push_back(yyvsp[0].str);
             ;
     break;}
 case 35:
-#line 421 "sslparser.y"
+#line 423 "sslparser.y"
 {
                 // Note: $2 is a list of strings
                 Dict.FlagFuncs[yyvsp[-5].str] = new FlagDef(listStrToExp(yyvsp[-4].parmlist), yyvsp[-1].rtlist);
             ;
     break;}
 case 36:
-#line 428 "sslparser.y"
+#line 430 "sslparser.y"
 {
                 if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
                     yyerror("Constant declared twice");
@@ -1782,7 +1784,7 @@ case 36:
             ;
     break;}
 case 37:
-#line 434 "sslparser.y"
+#line 436 "sslparser.y"
 {
                 if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
                     yyerror("Constant declared twice");
@@ -1795,34 +1797,34 @@ case 37:
             ;
     break;}
 case 38:
-#line 448 "sslparser.y"
+#line 450 "sslparser.y"
 {
             TableDict[yyvsp[-2].str] = yyvsp[0].tab;
         ;
     break;}
 case 39:
-#line 454 "sslparser.y"
+#line 456 "sslparser.y"
 {
             yyval.tab = new Table(*yyvsp[0].namelist);
             delete yyvsp[0].namelist;
         ;
     break;}
 case 40:
-#line 459 "sslparser.y"
+#line 461 "sslparser.y"
 {
             yyval.tab = new OpTable(*yyvsp[0].namelist);
             delete yyvsp[0].namelist;
         ;
     break;}
 case 41:
-#line 463 "sslparser.y"
+#line 465 "sslparser.y"
 {
             yyval.tab = new ExprTable(*yyvsp[0].exprlist);
             delete yyvsp[0].exprlist;
         ;
     break;}
 case 42:
-#line 470 "sslparser.y"
+#line 472 "sslparser.y"
 {
             // cross-product of two str_expr's
             std::deque<std::string>::iterator i, j;
@@ -1835,13 +1837,13 @@ case 42:
         ;
     break;}
 case 43:
-#line 480 "sslparser.y"
+#line 482 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 44:
-#line 486 "sslparser.y"
+#line 488 "sslparser.y"
 {
             // want to append $3 to $1
             // The following causes a massive warning message about mixing
@@ -1852,31 +1854,31 @@ case 44:
         ;
     break;}
 case 45:
-#line 494 "sslparser.y"
+#line 496 "sslparser.y"
 {
             yyvsp[-3].namelist->push_back("");
         ;
     break;}
 case 46:
-#line 497 "sslparser.y"
+#line 499 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 47:
-#line 503 "sslparser.y"
+#line 505 "sslparser.y"
 {
             yyval.namelist = yyvsp[-1].namelist;
         ;
     break;}
 case 48:
-#line 506 "sslparser.y"
+#line 508 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 49:
-#line 512 "sslparser.y"
+#line 514 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>;
             yyval.namelist->push_back("");
@@ -1884,13 +1886,13 @@ case 49:
         ;
     break;}
 case 50:
-#line 517 "sslparser.y"
+#line 519 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>(1, yyvsp[-1].str);
         ;
     break;}
 case 51:
-#line 520 "sslparser.y"
+#line 522 "sslparser.y"
 {
             std::ostringstream o;
             // expand $2 from table of names
@@ -1908,7 +1910,7 @@ case 51:
         ;
     break;}
 case 52:
-#line 535 "sslparser.y"
+#line 537 "sslparser.y"
 {
             // try and expand $1 from table of names
             // if fail, expand using '"' NAME '"' rule
@@ -1927,72 +1929,72 @@ case 52:
         ;
     break;}
 case 53:
-#line 554 "sslparser.y"
+#line 556 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 54:
-#line 558 "sslparser.y"
+#line 560 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 55:
-#line 562 "sslparser.y"
+#line 564 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 56:
-#line 569 "sslparser.y"
+#line 571 "sslparser.y"
 {
             yyval.namelist = yyvsp[-1].namelist;
         ;
     break;}
 case 57:
-#line 576 "sslparser.y"
+#line 578 "sslparser.y"
 {
             yyval.namelist = yyvsp[-4].namelist;
             yyval.namelist->push_back(yyvsp[-1].str);
         ;
     break;}
 case 58:
-#line 580 "sslparser.y"
+#line 582 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>;
             yyval.namelist->push_back(yyvsp[-1].str);
         ;
     break;}
 case 59:
-#line 588 "sslparser.y"
+#line 590 "sslparser.y"
 {
             yyval.exprlist = yyvsp[-1].exprlist;
         ;
     break;}
 case 60:
-#line 595 "sslparser.y"
+#line 597 "sslparser.y"
 {
             yyval.exprlist = yyvsp[-4].exprlist;
             yyval.exprlist->push_back(yyvsp[-1].exp);
         ;
     break;}
 case 61:
-#line 599 "sslparser.y"
+#line 601 "sslparser.y"
 {
             yyval.exprlist = new std::deque<Exp*>;
             yyval.exprlist->push_back(yyvsp[-1].exp);
         ;
     break;}
 case 62:
-#line 607 "sslparser.y"
+#line 609 "sslparser.y"
 {
             yyvsp[0].insel->getrefmap(indexrefmap);
         //     $3           $4
         ;
     break;}
 case 63:
-#line 610 "sslparser.y"
+#line 612 "sslparser.y"
 {
             // This function expands the tables and saves the expanded RTLs
             // to the dictionary
@@ -2000,13 +2002,13 @@ case 63:
         ;
     break;}
 case 64:
-#line 618 "sslparser.y"
+#line 620 "sslparser.y"
 {
             yyval.insel = yyvsp[0].insel;
         ;
     break;}
 case 65:
-#line 621 "sslparser.y"
+#line 623 "sslparser.y"
 {
             unsigned i;
             InsNameElem *temp;
@@ -2030,32 +2032,32 @@ case 65:
         ;
     break;}
 case 66:
-#line 645 "sslparser.y"
+#line 647 "sslparser.y"
 {
             yyval.insel = new InsNameElem(yyvsp[0].str);
         ;
     break;}
 case 67:
-#line 648 "sslparser.y"
+#line 650 "sslparser.y"
 {
             yyval.insel = yyvsp[0].insel;
         ;
     break;}
 case 68:
-#line 651 "sslparser.y"
+#line 653 "sslparser.y"
 {
             yyval.insel = yyvsp[-1].insel;
             yyval.insel->append(yyvsp[0].insel);
         ;
     break;}
 case 69:
-#line 658 "sslparser.y"
+#line 660 "sslparser.y"
 {
             yyval.insel = new InsOptionElem(yyvsp[-1].str);
         ;
     break;}
 case 70:
-#line 661 "sslparser.y"
+#line 663 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2069,7 +2071,7 @@ case 70:
         ;
     break;}
 case 71:
-#line 674 "sslparser.y"
+#line 676 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2080,7 +2082,7 @@ case 71:
         ;
     break;}
 case 72:
-#line 683 "sslparser.y"
+#line 685 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2094,7 +2096,7 @@ case 72:
         ;
     break;}
 case 73:
-#line 694 "sslparser.y"
+#line 696 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2105,43 +2107,46 @@ case 73:
         ;
     break;}
 case 74:
-#line 703 "sslparser.y"
+#line 705 "sslparser.y"
 {
             yyval.insel = new InsNameElem(yyvsp[-1].str);
         ;
     break;}
 case 75:
-#line 709 "sslparser.y"
+#line 711 "sslparser.y"
 {
             // append any automatically generated register transfers and clear
             // the list they were stored in. Do nothing for a NOP (i.e. $2 = 0)
             if (yyvsp[0].regtransfer != NULL) {
-                yyvsp[-1].rtlist->appendExp(yyvsp[0].regtransfer);
+                yyvsp[-1].rtlist->appendStmt(yyvsp[0].regtransfer);
             }
             yyval.rtlist = yyvsp[-1].rtlist;
         ;
     break;}
 case 76:
-#line 718 "sslparser.y"
+#line 720 "sslparser.y"
 {
-            yyval.rtlist = new RTL();
+            yyval.rtlist = new RTL(STMT_ASSIGN);
             if (yyvsp[0].regtransfer != NULL)
-                yyval.rtlist->appendExp(yyvsp[0].regtransfer);
+                yyval.rtlist->appendStmt(yyvsp[0].regtransfer);
         ;
     break;}
 case 77:
-#line 726 "sslparser.y"
+#line 728 "sslparser.y"
 {
             yyval.regtransfer = yyvsp[0].regtransfer;
         ;
     break;}
 case 78:
-#line 732 "sslparser.y"
+#line 734 "sslparser.y"
 {
             std::ostringstream o;
             if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
-                yyval.regtransfer = new Binary(opFlagCall, new Const(yyvsp[-2].str),
-                    listExpToExp(yyvsp[-1].explist));
+                yyval.regtransfer = new Assign(
+                    new Terminal(opFlags),
+                    new Binary(opFlagCall,
+                        new Const(yyvsp[-2].str),
+                        listExpToExp(yyvsp[-1].explist)));
             } else {
                 o << yyvsp[-2].str << " is not declared as a flag function.\n";
                 yyerror(STR(o));
@@ -2149,25 +2154,25 @@ case 78:
         ;
     break;}
 case 79:
-#line 742 "sslparser.y"
+#line 747 "sslparser.y"
 {
             yyval.regtransfer = 0;
         ;
     break;}
 case 80:
-#line 746 "sslparser.y"
+#line 751 "sslparser.y"
 {
             yyval.regtransfer = 0;
         ;
     break;}
 case 81:
-#line 749 "sslparser.y"
+#line 754 "sslparser.y"
 {
         yyval.regtransfer = NULL;
     ;
     break;}
 case 82:
-#line 755 "sslparser.y"
+#line 760 "sslparser.y"
 {
             // Not sure why the below is commented out (MVE)
 /*          Unary* pFlag = new Unary(opRegOf, Dict.RegMap[$3]);
@@ -2177,7 +2182,7 @@ case 82:
         ;
     break;}
 case 83:
-#line 762 "sslparser.y"
+#line 767 "sslparser.y"
 {
 /*          std::list<Exp*>* tmp = new std::list<Exp*>;
             Unary* pFlag = new Unary(opIdRegOf, Dict.RegMap[$1]);
@@ -2187,7 +2192,7 @@ case 83:
         ;
     break;}
 case 84:
-#line 773 "sslparser.y"
+#line 778 "sslparser.y"
 {
             assert(yyvsp[0].str != 0);
             yyvsp[-2].parmlist->push_back(yyvsp[0].str);
@@ -2195,114 +2200,119 @@ case 84:
         ;
     break;}
 case 85:
-#line 779 "sslparser.y"
+#line 784 "sslparser.y"
 {
             yyval.parmlist = new std::list<std::string>;
             yyval.parmlist->push_back(yyvsp[0].str);
         ;
     break;}
 case 86:
-#line 783 "sslparser.y"
+#line 788 "sslparser.y"
 {
             yyval.parmlist = new std::list<std::string>;
         ;
     break;}
 case 87:
-#line 788 "sslparser.y"
+#line 793 "sslparser.y"
 {
             Dict.ParamSet.insert(yyvsp[0].str);       // Not sure if we need this set
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 88:
-#line 794 "sslparser.y"
+#line 799 "sslparser.y"
 {
             yyval.explist->push_back(yyvsp[0].exp);
         ;
     break;}
 case 89:
-#line 798 "sslparser.y"
+#line 803 "sslparser.y"
 {
             yyval.explist = new std::list<Exp*>;
             yyval.explist->push_back(yyvsp[0].exp);
         ;
     break;}
 case 90:
-#line 803 "sslparser.y"
+#line 808 "sslparser.y"
 {
             yyval.explist = new std::list<Exp*>;
         ;
     break;}
 case 91:
-#line 811 "sslparser.y"
+#line 816 "sslparser.y"
 {
-            yyval.regtransfer = new Unary(opGuard,
-		    new AssignExp(yyvsp[-5].num, yyvsp[-2].exp, yyvsp[0].exp));
+            Assign* a = new Assign(yyvsp[-5].num, yyvsp[-2].exp, yyvsp[0].exp);
+            a->setGuard(yyvsp[-4].exp);
+            yyval.regtransfer = a;
         ;
     break;}
 case 92:
-#line 817 "sslparser.y"
+#line 823 "sslparser.y"
 {
             // update the size of any generated RT's
-            yyval.regtransfer = new AssignExp(yyvsp[-3].num, yyvsp[-2].exp, yyvsp[0].exp);
+            yyval.regtransfer = new Assign(yyvsp[-3].num, yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 93:
-#line 823 "sslparser.y"
+#line 829 "sslparser.y"
 {
-            yyval.regtransfer = new Terminal(opFpush);
+            yyval.regtransfer = new Assign(
+                new Terminal(opNil),
+                new Terminal(opFpush));
         ;
     break;}
 case 94:
-#line 826 "sslparser.y"
+#line 834 "sslparser.y"
 {
-            yyval.regtransfer = new Terminal(opFpop);
+            yyval.regtransfer = new Assign(
+                new Terminal(opNil),
+                new Terminal(opFpop));
         ;
     break;}
 case 95:
-#line 830 "sslparser.y"
+#line 840 "sslparser.y"
 {
-            yyval.regtransfer = new AssignExp(yyvsp[-1].num, 0, yyvsp[0].exp);
+            yyval.regtransfer = new Assign(yyvsp[-1].num, 0, yyvsp[0].exp);
         ;
     break;}
 case 96:
-#line 836 "sslparser.y"
+#line 846 "sslparser.y"
 {
             yyval.exp = new Const(yyvsp[0].num);
         ;
     break;}
 case 97:
-#line 840 "sslparser.y"
+#line 850 "sslparser.y"
 {
             yyval.exp = new Const(yyvsp[0].dbl);
         ;
     break;}
 case 98:
-#line 844 "sslparser.y"
+#line 854 "sslparser.y"
 {
             yyval.exp = new Unary(opTemp, new Const(yyvsp[0].str));
         ;
     break;}
 case 99:
-#line 848 "sslparser.y"
+#line 858 "sslparser.y"
 {
             yyval.exp = yyvsp[-1].exp;
         ;
     break;}
 case 100:
-#line 852 "sslparser.y"
+#line 862 "sslparser.y"
 {
             yyval.exp = yyvsp[0].exp;
         ;
     break;}
 case 101:
-#line 856 "sslparser.y"
+#line 866 "sslparser.y"
 {
             yyval.exp = new Ternary(opTern, yyvsp[-5].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
     break;}
 case 102:
-#line 860 "sslparser.y"
+#line 870 "sslparser.y"
 {
             Ternary* t = new Ternary(opTern, yyvsp[-6].exp, yyvsp[-4].exp, yyvsp[-2].exp);
             Exp* e = t;
@@ -2313,37 +2323,37 @@ case 102:
         ;
     break;}
 case 103:
-#line 870 "sslparser.y"
+#line 880 "sslparser.y"
 {
             yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
         ;
     break;}
 case 104:
-#line 876 "sslparser.y"
+#line 886 "sslparser.y"
 {
             yyval.exp = new Ternary(strToOper(yyvsp[-6].str), new Const(yyvsp[-5].num), new Const(yyvsp[-3].num), yyvsp[-1].exp);
         ;
     break;}
 case 105:
-#line 881 "sslparser.y"
+#line 891 "sslparser.y"
 {
             yyval.exp = new Terminal(opFpush);
         ;
     break;}
 case 106:
-#line 884 "sslparser.y"
+#line 894 "sslparser.y"
 {
             yyval.exp = new Terminal(opFpop);
         ;
     break;}
 case 107:
-#line 889 "sslparser.y"
+#line 899 "sslparser.y"
 {
             yyval.exp = new Unary(strToOper(yyvsp[-2].str), yyvsp[-1].exp);
         ;
     break;}
 case 108:
-#line 895 "sslparser.y"
+#line 905 "sslparser.y"
 {
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
@@ -2370,7 +2380,7 @@ case 108:
         ;
     break;}
 case 109:
-#line 923 "sslparser.y"
+#line 933 "sslparser.y"
 {
         std::ostringstream o;
         if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end() ) {
@@ -2383,9 +2393,9 @@ case 109:
                 } else {
                     // Everything checks out. *phew* 
                     // Note: the below may not be right! (MVE)
-                    Binary* e = new Binary(opFlagDef, new Const(yyvsp[-2].str),
-                      listExpToExp(yyvsp[-1].explist));
-                    yyval.exp = e;
+                    yyval.exp = new Binary(opFlagDef,
+                            new Const(yyvsp[-2].str),
+                            listExpToExp(yyvsp[-1].explist));
                     delete yyvsp[-1].explist;          // Delete the list of char*s
                 }
             } else {
@@ -2399,19 +2409,19 @@ case 109:
     ;
     break;}
 case 110:
-#line 950 "sslparser.y"
+#line 960 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 111:
-#line 956 "sslparser.y"
+#line 966 "sslparser.y"
 {
             yyval.exp = new Unary(opSignExt, yyvsp[-1].exp);
         ;
     break;}
 case 112:
-#line 965 "sslparser.y"
+#line 975 "sslparser.y"
 {
             // opSize is deprecated, but for old SSL files we'll make a TypedExp
             if (yyvsp[0].num == STD_SIZE)
@@ -2421,43 +2431,43 @@ case 112:
         ;
     break;}
 case 113:
-#line 973 "sslparser.y"
+#line 983 "sslparser.y"
 {
             yyval.exp = new Unary(opNot, yyvsp[0].exp);
         ;
     break;}
 case 114:
-#line 977 "sslparser.y"
+#line 987 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 115:
-#line 981 "sslparser.y"
+#line 991 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 116:
-#line 985 "sslparser.y"
+#line 995 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 117:
-#line 989 "sslparser.y"
+#line 999 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 118:
-#line 993 "sslparser.y"
+#line 1003 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 119:
-#line 1000 "sslparser.y"
+#line 1010 "sslparser.y"
 {
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
@@ -2485,13 +2495,13 @@ case 119:
         ;
     break;}
 case 120:
-#line 1026 "sslparser.y"
+#line 1036 "sslparser.y"
 {
             yyval.exp = yyvsp[0].exp;
         ;
     break;}
 case 121:
-#line 1037 "sslparser.y"
+#line 1047 "sslparser.y"
 {
             std::map<std::string, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
             if (it == Dict.RegMap.end()) {
@@ -2517,13 +2527,13 @@ case 121:
         ;
     break;}
 case 122:
-#line 1061 "sslparser.y"
+#line 1071 "sslparser.y"
 {
             yyval.exp = new Unary(opRegOf, yyvsp[-1].exp);
         ;
     break;}
 case 123:
-#line 1065 "sslparser.y"
+#line 1075 "sslparser.y"
 {
             int regNum;
             sscanf(yyvsp[0].str, "r%d", &regNum);
@@ -2531,13 +2541,13 @@ case 123:
         ;
     break;}
 case 124:
-#line 1071 "sslparser.y"
+#line 1081 "sslparser.y"
 {
             yyval.exp = new Unary(opMemOf, yyvsp[-1].exp);
         ;
     break;}
 case 125:
-#line 1075 "sslparser.y"
+#line 1085 "sslparser.y"
 {
         // This is a mixture of the param: PARM {} match
         // and the value_op: NAME {} match
@@ -2557,49 +2567,49 @@ case 125:
         ;
     break;}
 case 126:
-#line 1093 "sslparser.y"
+#line 1103 "sslparser.y"
 {
             yyval.exp = new Ternary(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
     break;}
 case 127:
-#line 1097 "sslparser.y"
+#line 1107 "sslparser.y"
 {
             yyval.exp = new Unary(opPostVar, yyvsp[-1].exp);
         ;
     break;}
 case 128:
-#line 1100 "sslparser.y"
+#line 1110 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 129:
-#line 1106 "sslparser.y"
+#line 1116 "sslparser.y"
 {
             yyval.num = yyvsp[-1].num;
         ;
     break;}
 case 130:
-#line 1112 "sslparser.y"
+#line 1122 "sslparser.y"
 {
             Dict.bigEndian = (strcmp(yyvsp[0].str, "BIG") == 0);
         ;
     break;}
 case 131:
-#line 1117 "sslparser.y"
+#line 1127 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 132:
-#line 1120 "sslparser.y"
+#line 1130 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 136:
-#line 1139 "sslparser.y"
+#line 1149 "sslparser.y"
 {
             Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
         ;
@@ -2808,8 +2818,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 1010 "/usr/local/lib/bison.cc" */
-#line 2812 "sslparser.cpp"
-#line 1142 "sslparser.y"
+#line 2822 "sslparser.cpp"
+#line 1152 "sslparser.y"
 
 
 /*==============================================================================
@@ -2826,17 +2836,16 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
 
 /*==============================================================================
  * FUNCTION:        SSLParser::parseExp
- * OVERVIEW:        Parses an expression from a string.
+ * OVERVIEW:        Parses an assignment from a string.
  * PARAMETERS:      the string
- * RETURNS:         an expression or NULL.
+ * RETURNS:         an Assignment or NULL.
  *============================================================================*/
-Exp* SSLParser::parseExp(const char *str)
-{
+Statement* SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
     SSLParser p(ss, false);     // Second arg true for debugging
     RTLInstDict d;
     p.yyparse(d);
-    return p.the_exp;
+    return p.the_asgn;
 }
 
 /*==============================================================================
@@ -3128,16 +3137,17 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
         RTL* rtl = o_rtlist->clone();
-        int n = rtl->getNumExp();
+        int n = rtl->getNumStmt();
         Exp* srchExpr = new Binary(opExpTable, new Terminal(opWild),
             new Terminal(opWild));
         Exp* srchOp = new Ternary(opOpTable, new Terminal(opWild),
             new Terminal(opWild), new Terminal(opWild));
         for (int j=0; j < n; j++) {
-            Exp* e = rtl->elementAt(j);
+            Statement* s = rtl->elementAt(j);
             std::list<Exp*> le;
             // Expression tables
-            if (e->searchAll(srchExpr, le)) {
+            assert(s->getKind() == STMT_ASSIGN);
+            if (((Assign*)s)->searchAll(srchExpr, le)) {
                 std::list<Exp*>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
                     char* tbl = ((Const*)((Binary*)*it)->getSubExp1())
@@ -3146,15 +3156,14 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                       ->getStr();
                     Exp* repl =((ExprTable*)(TableDict[tbl]))
                       ->expressions[indexrefmap[idx]->getvalue()];
-                    bool ch;
-                    e = e->searchReplace(*it, repl, ch);
+                    s->searchAndReplace(*it, repl);
                     // Just in case the top level is changed...
-                    rtl->updateExp(e, j);
+                    rtl->updateStmt(s, j);
                 }
             }
             // Operator tables
 			Exp* res;
-			while (e->search(srchOp, res)) {
+			while (s->search(srchOp, res)) {
 				Ternary* t;
 				if (res->getOper() == opTypedExp)
 				   t = (Ternary *)res->getSubExp1();
@@ -3177,10 +3186,9 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                   ->records[indexrefmap[idx]->getvalue()].c_str();
                 Exp* repl = new Binary(strToOper(ops), e1->clone(),
                 e2->clone());
-                bool ch;
-                e = e->searchReplace(res, repl, ch);
+                s->searchAndReplace(res, repl);
                 // In case the top level is changed (common)
-                rtl->updateExp(e, j);
+                rtl->updateStmt(s, j);
             }
         }
    

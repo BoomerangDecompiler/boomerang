@@ -42,9 +42,9 @@ protected:
                      std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
                      std::list<RTL*>::iterator rit, int flagUsed);
     void processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
-                         UserProc* proc, RTL_KIND kd);
+                         UserProc* proc, STMT_KIND kd);
     void processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
-                         UserProc* proc, RTL_KIND kd);
+                         UserProc* proc, STMT_KIND kd);
     void checkBBflags(PBB pBB, UserProc* proc);
     void checkBBconst(PBB pBB);
     void finalSimplify(PBB pBB);

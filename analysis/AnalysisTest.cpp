@@ -11,6 +11,7 @@
 
 #include "AnalysisTest.h"
 #include "prog.h"
+#include "proc.h"
 #include "sparcfrontend.h"
 #include "BinaryFile.h"
 #include "BinaryFileStub.h"

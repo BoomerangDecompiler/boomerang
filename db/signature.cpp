@@ -28,7 +28,7 @@
 #include <string>
 #include <sstream>
 #include "type.h"
-#include "dataflow.h"
+#include "signature.h"
 #include "exp.h"
 #include "prog.h"
 #include "BinaryFile.h"
@@ -155,7 +155,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p,
     //p->getInternalStatements(internal);
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
-        AssignExp *e = dynamic_cast<AssignExp*>(s);
+        Assign *e = dynamic_cast<Assign*>(s);
         if (e == NULL) continue;
         if (VERBOSE) {
             std::cerr << "internal: ";
@@ -277,13 +277,13 @@ Exp *CallingConvention::Win32Signature::getStackWildcard() {
 
 void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
 {
-    static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
+    static Assign *fixpc = new Assign(new Terminal(opPC),
             new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
-    static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
+    static Assign *fixesp = new Assign(new Unary(opRegOf, new Const(28)),
             new Binary(opPlus, new Unary(opRegOf, new Const(28)),
                 new Const(4 + params.size()*4)));
-    stmts.append((AssignExp*)fixpc->clone());
-    stmts.append((AssignExp*)fixesp->clone());
+    stmts.append((Assign*)fixpc->clone());
+    stmts.append((Assign*)fixesp->clone());
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
@@ -333,7 +333,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
     internal.append(*p->getCFG()->getReachExit());
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
-        AssignExp *e = dynamic_cast<AssignExp*>(s);
+        Assign *e = dynamic_cast<Assign*>(s);
         if (e == NULL) continue;
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && 
@@ -455,14 +455,14 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 void CallingConvention::StdC::PentiumSignature::getInternalStatements(
   StatementList &stmts) {
     // pc := m[r28]
-    static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
+    static Assign *fixpc = new Assign(new Terminal(opPC),
             new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
     // r28 := r28 + 4;
-    static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
+    static Assign *fixesp = new Assign(new Unary(opRegOf, new Const(28)),
             new Binary(opPlus, new Unary(opRegOf, new Const(28)),
                 new Const(4)));
-    stmts.append((AssignExp*)fixpc->clone());
-    stmts.append((AssignExp*)fixesp->clone());
+    stmts.append((Assign*)fixpc->clone());
+    stmts.append((Assign*)fixesp->clone());
 }
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) :
@@ -907,7 +907,7 @@ void Signature::analyse(UserProc *p)
                 std::cerr << std::endl;
             }
             p->getCFG()->setReturnVal(s->getLeft()->clone());
-            HLCall *call = dynamic_cast<HLCall*>(s);
+            CallStatement *call = dynamic_cast<CallStatement*>(s);
             Type *ty = NULL;
             if (call)
                 ty = call->getLeftType();
@@ -1071,12 +1071,12 @@ Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
 
 StatementList& Signature::getStdRetStmt(Prog* prog) {
     // pc := m[r[28]]
-    static AssignExp pent1ret(
+    static Assign pent1ret(
         new Terminal(opPC),
         new Unary(opMemOf,
             new Unary(opRegOf, new Const(28))));
     // r[28] := r[28] + 4
-    static AssignExp pent2ret(
+    static Assign pent2ret(
         new Unary(opRegOf, new Const(28)),
         new Binary(opPlus,
             new Unary(opRegOf, new Const(28)),

@@ -165,15 +165,14 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
 
     // We need to create A_orig for the current memory depth
     for (int n=0; n < numBB; n++) {
-        BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+        BasicBlock::rtlit rit; stmtlistIt sit;
         PBB bb = d->BBs[n];
-        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
-          s = bb->getNextStmt(rit, ii, cii)) {
-            AssignExp* ae = dynamic_cast<AssignExp*>(s);
-            if (ae) {
-                Exp* lhs = ae->getLeft();
+        for (Statement* s = bb->getFirstStmt(rit, sit); s;
+          s = bb->getNextStmt(rit, sit)) {
+            if (s->getKind() == STMT_ASSIGN) {
+                Exp* lhs = s->getLeft();
                 if (lhs->getMemDepth() == memDepth)
-                    d->A_orig[n].insert(ae->getLeft());
+                    d->A_orig[n].insert(lhs);
             }
         }
     }
@@ -209,9 +208,9 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
                 if (s.find(y) == s.end()) {
                     // Insert trivial phi function for a at top of block y
                     // a := phi{}
-                    Exp* e = new AssignExp(a, new PhiExp);
+                    Statement* as = new Assign(a, new PhiExp);
                     PBB Ybb = d->BBs[y];
-                    Ybb->prependExp(e);
+                    Ybb->prependStmt(as);
                     // A_phi[a] <- A_phi[a] U {y}
                     s.insert(y);
                     // if a !elementof A_orig[y]
@@ -226,13 +225,12 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
 
 void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
     // For each statement S in block n
-    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+    BasicBlock::rtlit rit; stmtlistIt sit;
     PBB bb = d->BBs[n];
-    for (Statement* S = bb->getFirstStmt(rit, ii, cii); S;
-      S = bb->getNextStmt(rit, ii, cii)) {
+    for (Statement* S = bb->getFirstStmt(rit, sit); S;
+      S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function
-        AssignExp* ae = dynamic_cast<AssignExp*>(S);
-        if (!ae || !ae->isPhi()) {
+        if (!S->isPhi()) {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
             S->addUsedLocs(locs);
@@ -266,11 +264,11 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
     for (int succ = 0; succ != numSucc; succ++) {
         PBB Ybb = bb->m_OutEdges[succ];
         // For each phi-function in Y
-        for (Statement* S = Ybb->getFirstStmt(rit, ii, cii); S;
-          S = Ybb->getNextStmt(rit, ii, cii)) {
-            AssignExp* ae = dynamic_cast<AssignExp*>(S);
+        for (Statement* S = Ybb->getFirstStmt(rit, sit); S;
+          S = Ybb->getNextStmt(rit, sit)) {
+            Assign* ae = dynamic_cast<Assign*>(S);
             // if S is not a phi function, then quit the loop (no more phi's)
-            if (ae && !ae->isPhi()) break;
+            if (!ae || !ae->isPhi()) break;
             Exp* a = ae->getLeft();
             Statement* def;
             if (d->Stack[a].empty())
@@ -289,8 +287,8 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
             renameBlockVars(d, X, memDepth);
     }
     // For each statement S in block n
-    for (Statement* S = bb->getFirstStmt(rit, ii, cii); S;
-      S = bb->getNextStmt(rit, ii, cii)) {
+    for (Statement* S = bb->getFirstStmt(rit, sit); S;
+      S = bb->getNextStmt(rit, sit)) {
         // For each definition of some variable a in S
         Exp* a = S->getLeft();
         if (a == NULL || a->getMemDepth() != memDepth) continue;

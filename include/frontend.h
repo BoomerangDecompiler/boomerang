@@ -65,8 +65,6 @@ class FrontEnd {
 protected:
 //    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
 //    const int NOP_INST;         // No-op pattern
-    // Map of addresses and the procedure they are mapped to.
-    std::map<ADDRESS, Proc *> processed;
     // decoder
     NJMCDecoder *decoder;
     // The binary file

@@ -9,4 +9,3 @@ typedef unsigned int        ADDRESS;   /* 32-bit unsigned */
 
 #define NO_ADDRESS ((ADDRESS)-1)  // For invalid ADDRESSes
 
-#include "dataflow.h"

@@ -69,16 +69,18 @@ void SparcDecoder::unused(int x)
 {}
 
 /*==============================================================================
- * FUNCTION:       createJcond
+ * FUNCTION:       createBranchRtl
  * OVERVIEW:       Create an RTL for a Bx instruction
  * PARAMETERS:     pc - the location counter
- *                  exps - ptr to list of Exp pointers
- *                  name - instruction name (e.g. "BNE,a")
+ *                 stmts - ptr to list of Statement pointers
+ *                 name - instruction name (e.g. "BNE,a")
  * RETURNS:        Pointer to newly created RTL, or NULL if invalid
  *============================================================================*/
-HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name)
-{
-    HLJcond* res = new HLJcond(pc, exps);
+RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
+  const char* name) {
+    RTL* res = new RTL(pc, stmts);
+    BranchStatement* br = new BranchStatement();
+    res->appendStmt(br);
     if (name[0] == 'F') {
         // fbranch is any of [ FBN FBNE FBLG FBUL FBL   FBUG FBG   FBU
         //                     FBA FBE  FBUE FBGE FBUGE FBLE FBULE FBO ],
@@ -88,25 +90,25 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
             name++;             // Just ignore unordered (for now)
         switch (name[2]) {
         case 'E':                           // FBE
-            res->setCondType(HLJCOND_JE, true);
+            br->setCondType(BRANCH_JE, true);
             break;
         case 'L':
             if (name[3] == 'G')             // FBLG
-                res->setCondType(HLJCOND_JNE, true);
+                br->setCondType(BRANCH_JNE, true);
             else if (name[3] == 'E')        // FBLE
-                res->setCondType(HLJCOND_JSLE, true);
+                br->setCondType(BRANCH_JSLE, true);
             else                            // FBL
-                res->setCondType(HLJCOND_JSL, true);
+                br->setCondType(BRANCH_JSL, true);
             break;
         case 'G':
             if (name[3] == 'E')             // FBGE
-                res->setCondType(HLJCOND_JSGE, true);
+                br->setCondType(BRANCH_JSGE, true);
             else                            // FBG
-                res->setCondType(HLJCOND_JSG, true);
+                br->setCondType(BRANCH_JSG, true);
             break;
         case 'N':
             if (name[3] == 'E')             // FBNE
-                res->setCondType(HLJCOND_JNE, true);
+                br->setCondType(BRANCH_JNE, true);
             // Else it's FBN!
             break;
         default:
@@ -121,31 +123,31 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
     //                     BA BNE BG  BGE BGU  BCC BPOS BVC ],
     switch(name[1]) {
     case 'E':
-        res->setCondType(HLJCOND_JE);           // BE
+        br->setCondType(BRANCH_JE);           // BE
         break;
     case 'L':
         if (name[2] == 'E') {
             if (name[3] == 'U')
-                res->setCondType(HLJCOND_JULE); // BLEU
+                br->setCondType(BRANCH_JULE); // BLEU
             else
-                res->setCondType(HLJCOND_JSLE); // BLE
+                br->setCondType(BRANCH_JSLE); // BLE
         }
         else
-            res->setCondType(HLJCOND_JSL);      // BL
+            br->setCondType(BRANCH_JSL);      // BL
         break;
     case 'N':
         // BNE, BNEG (won't see BN)
         if (name[3] == 'G')
-            res->setCondType(HLJCOND_JMI);      // BNEG
+            br->setCondType(BRANCH_JMI);      // BNEG
         else
-            res->setCondType(HLJCOND_JNE);      // BNE
+            br->setCondType(BRANCH_JNE);      // BNE
         break;
     case 'C':
         // BCC, BCS
         if (name[2] == 'C')
-            res->setCondType(HLJCOND_JUGE);     // BCC
+            br->setCondType(BRANCH_JUGE);     // BCC
         else
-            res->setCondType(HLJCOND_JUL);      // BCS
+            br->setCondType(BRANCH_JUL);      // BCS
         break;
     case 'V':
         // BVC, BVS; should never see these now
@@ -157,15 +159,15 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
     case 'G':   
         // BGE, BG, BGU
         if (name[2] == 'E')
-            res->setCondType(HLJCOND_JSGE);     // BGE
+            br->setCondType(BRANCH_JSGE);     // BGE
         else if (name[2] == 'U')
-            res->setCondType(HLJCOND_JUG);      // BGU
+            br->setCondType(BRANCH_JUG);      // BGU
         else
-            res->setCondType(HLJCOND_JSG);      // BG
+            br->setCondType(BRANCH_JSG);      // BG
         break;
     case 'P':   
 		if (name[2] == 'O') {
-        	res->setCondType(HLJCOND_JPOS);         // BPOS
+        	br->setCondType(BRANCH_JPOS);         // BPOS
         	break;
 		}
 		// Else, it's a BPXX; remove the P (for predicted) and try again
@@ -176,7 +178,7 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
 		temp[0] = 'B';
 		strcpy(temp+1, name+2);
 		delete res;
-		return createJcond(pc, exps, temp);
+		return createBranchRtl(pc, stmts, temp);
     default:
         std::cerr << "unknown non-float branch " << name << std::endl;
     }   
@@ -187,11 +189,11 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
 /*==============================================================================
  * FUNCTION:       SparcDecoder::decodeInstruction
  * OVERVIEW:       Attempt to decode the high level instruction at a given
- *                 address and return the corresponding HL type (e.g. HLCall,
- *                 HLJump etc). If no high level instruction exists at the
+ *                 address and return the corresponding HL type (e.g. CallStatement,
+ *                 GotoStatement etc). If no high level instruction exists at the
  *                 given address, then simply return the RTL for the low level
  *                 instruction at this address. There is an option to also
- *                 include the exps for a HL instruction.
+ *                 include the low level statements for a HL instruction.
  * PARAMETERS:     pc - the native address of the pc
  *                 delta - the difference between the above address and the
  *                   host address of the pc (i.e. the address that the pc is at
@@ -201,16 +203,15 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
  * RETURNS:        a DecodeResult structure containing all the information
  *                   gathered during decoding
  *============================================================================*/
-DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
-{ 
+DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) { 
     static DecodeResult result;
     ADDRESS hostPC = pc+delta;
 
     // Clear the result structure;
     result.reset();
 
-    // The actual list of instantiated exps
-    std::list<Exp*>* exps = NULL;
+    // The actual list of instantiated statements
+    std::list<Statement*>* stmts = NULL;
 
     ADDRESS nextPC;
 
@@ -220,11 +221,12 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         /*
          * A standard call 
          */
-        HLCall* newCall = new HLCall(pc, 0, 0);
+        CallStatement* newCall = new CallStatement;
 
         // Set the destination
         newCall->setDest(addr - delta);
-        result.rtl = newCall;
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(newCall);
         result.type = SD;
         SHOW_ASM("call__ ")
 
@@ -232,14 +234,15 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         /*
          * A JMPL with rd == %o7, i.e. a register call
          */
-        HLCall* newCall = new HLCall(pc, 0, 0);
+        CallStatement* newCall = new CallStatement;
 
         // Record the fact that this is a computed call
         newCall->setIsComputed();
 
         // Set the destination expression
         newCall->setDest(dis_Eaddr(addr));
-        result.rtl = newCall;
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(newCall);
         result.type = DD;
 
         SHOW_ASM("call_ ")
@@ -249,7 +252,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         /*
          * Just a ret (non leaf)
          */
-        result.rtl = new HLReturn(pc, exps);
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(new ReturnStatement);
         result.type = DD;
         SHOW_ASM("ret_")
 
@@ -257,7 +261,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         /*
          * Just a ret (leaf; uses %o7 instead of %i7)
          */
-        result.rtl = new HLReturn(pc, exps);
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(new ReturnStatement);
         result.type = DD;
         SHOW_ASM("retl_")
 
@@ -275,23 +280,25 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
             result.numBytes = 4;
             return result;
         }
-        // Instantiate a HLJump for the unconditional branches,
+        // Instantiate a GotoStatement for the unconditional branches,
         // HLJconds for the rest.
         // NOTE: NJMC toolkit cannot handle embedded else statements!
-        HLJump* jump = 0;
-        if (strcmp(name,"BA,a") == 0 || strcmp(name,"BN,a") == 0)
-            jump = new HLJump(pc, exps);
+        GotoStatement* jump = 0;
+        RTL* rtl;
+        if (strcmp(name,"BA,a") == 0 || strcmp(name,"BN,a") == 0) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
         if ((jump == 0) &&
-          (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0))
-            jump = new HLJump(pc, exps);
-        if (jump == 0)
-            jump = createJcond(pc, exps, name);
-
-        if (jump == NULL) {
-            result.valid = false;
-            result.rtl = new RTL;
-            result.numBytes = 4;
-            return result;
+          (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0)) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
+        if (jump == 0) {
+            rtl = createBranchRtl(pc, stmts, name);
+            jump = (GotoStatement*) rtl->getList().back();
         }
 
         // The class of this instruction depends on whether or not
@@ -303,7 +310,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         if ((strcmp(name,"BN,a") == 0) || (strcmp(name, "BVS,a") == 0))
             result.type = SKIP;
 
-        result.rtl = jump;
+        result.rtl = rtl;
         jump->setDest(tgt - delta);
         SHOW_ASM(name << " " << hex << tgt-delta)
         
@@ -320,17 +327,26 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
             result.numBytes = 4;
             return result;
         }
-        // Instantiate a HLJump for the unconditional branches,
-        // HLJconds for the rest
+        // Instantiate a GotoStatement for the unconditional branches,
+        // BranchStatement for the rest
         // NOTE: NJMC toolkit cannot handle embedded else statements!
-        HLJump* jump = 0;
-        if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0)
-            jump = new HLJump(pc, exps);
+        GotoStatement* jump = 0;
+        RTL* rtl;
+        if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
         if ((jump == 0) &&
-          (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0))
-            jump = new HLJump(pc, exps);
-        if (jump == 0)
-            jump = createJcond(pc, exps, name);
+          (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0)) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
+        if (jump == 0) {
+            rtl = createBranchRtl(pc, stmts, name);
+            jump = (BranchStatement*) rtl->getList().back();
+        }
 
         // The class of this instruction depends on whether or not
         // it is one of the 'unconditional' conditional branches
@@ -341,17 +357,17 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         if ((strcmp(name,"BN") == 0) || (strcmp(name, "BVS") == 0))
             result.type = NCT;
 
-        result.rtl = jump;
+        result.rtl = rtl;
         jump->setDest(tgt - delta);
         SHOW_ASM(name << " " << hex << tgt-delta)
 
 	| BPA (cc01, tgt) =>			/* Can see bpa xcc,tgt in 32 bit code */
 		unused(cc01);				// Does not matter because is unconditional
-        HLJump* jump = 0;
-        jump = new HLJump(pc, exps);
+        GotoStatement* jump = new GotoStatement;
 
         result.type = SD;
-        result.rtl = jump;
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(jump);
         jump->setDest(tgt - delta);
         SHOW_ASM("BPA " << hex << tgt-delta)
 
@@ -362,14 +378,24 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
             result.numBytes = 4;
             return result;
         }
-        HLJump* jump = 0;
-        if (strcmp(name,"BPN") == 0)
-            jump = new HLJump(pc, exps);
+        GotoStatement* jump = 0;
+        RTL* rtl;
+        if (strcmp(name,"BPN") == 0) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
         if ((jump == 0) &&
-          (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0))
-            jump = new HLJump(pc, exps);
-        if (jump == 0)
-            jump = createJcond(pc, exps, name);
+          (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0)) {
+            jump = new GotoStatement;
+            rtl = new RTL(pc, stmts);
+            rtl->appendStmt(jump);
+        }
+        if (jump == 0) {
+            rtl = createBranchRtl(pc, stmts, name);
+            // The BranchStatement will be the last Stmt of the rtl
+            jump = (GotoStatement*)rtl->getList().back();
+        }
 
         // The class of this instruction depends on whether or not
         // it is one of the 'unconditional' conditional branches
@@ -380,7 +406,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         if ((strcmp(name,"BPN") == 0) || (strcmp(name, "BPVS") == 0))
             result.type = NCT;
 
-        result.rtl = jump;
+        result.rtl = rtl;
         jump->setDest(tgt - delta);
         SHOW_ASM(name << " " << hex << tgt-delta)
 
@@ -390,10 +416,11 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
          * JMPL, with rd != %o7, i.e. register jump
 		 * Note: if rd==%o7, then would be handled with the call_ arm
          */
-        HLNwayJump* jump = new HLNwayJump(pc, exps);
+        CaseStatement* jump = new CaseStatement;
         // Record the fact that it is a computed jump
         jump->setIsComputed();
-        result.rtl = jump;
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(jump);
         result.type = DD;
         jump->setDest(dis_Eaddr(addr));
         unused(rd);
@@ -413,179 +440,180 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         // Decided to treat SAVE as an ordinary instruction
         // That is, use the large list of effects from the SSL file, and
         // hope that optimisation will vastly help the common cases
-        exps = instantiate(pc, "SAVE", DIS_RS1, DIS_ROI, DIS_RD);
+        stmts = instantiate(pc, "SAVE", DIS_RS1, DIS_ROI, DIS_RD);
 
     | RESTORE (rs1, roi, rd) =>
         // Decided to treat RESTORE as an ordinary instruction
-        exps = instantiate(pc, "RESTORE", DIS_RS1, DIS_ROI, DIS_RD);
+        stmts = instantiate(pc, "RESTORE", DIS_RS1, DIS_ROI, DIS_RD);
 
 	| NOP [name] =>
 		result.type = NOP;
-		exps = instantiate(pc,  name);
+		stmts = instantiate(pc,  name);
 
 	| sethi(imm22, rd) => 
-		exps = instantiate(pc,  "sethi", dis_Num(imm22), DIS_RD);
+		stmts = instantiate(pc,  "sethi", dis_Num(imm22), DIS_RD);
 
 	| load_greg(addr, rd) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_ADDR, DIS_RD);
 
 	| LDF (addr, fds) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR, DIS_FDS);
+		stmts = instantiate(pc,  name, DIS_ADDR, DIS_FDS);
 
 	| LDDF (addr, fdd) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR, DIS_FDD);
+		stmts = instantiate(pc,  name, DIS_ADDR, DIS_FDD);
 
 	| load_asi (addr, asi, rd) [name] => 
         unused(asi);            // Note: this could be serious!
-		exps = instantiate(pc,  name, DIS_RD, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_RD, DIS_ADDR);
 
 	| sto_greg(rd, addr) [name] => 
         // Note: RD is on the "right hand side" only for stores
-		exps = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
 
 	| STF (fds, addr) [name] => 
-		exps = instantiate(pc,  name, DIS_FDS, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_FDS, DIS_ADDR);
 
 	| STDF (fdd, addr) [name] => 
-		exps = instantiate(pc,  name, DIS_FDD, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_FDD, DIS_ADDR);
 
 	| sto_asi (rd, addr, asi) [name] => 
         unused(asi);            // Note: this could be serious!
-		exps = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
 
 	| LDFSR(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| LDCSR(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| STFSR(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| STCSR(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| STDFQ(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| STDCQ(addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| RDY(rd) [name] => 
-		exps = instantiate(pc,  name, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_RD);
 
 	| RDPSR(rd) [name] => 
-		exps = instantiate(pc,  name, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_RD);
 
 	| RDWIM(rd) [name] => 
-		exps = instantiate(pc,  name, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_RD);
 
 	| RDTBR(rd) [name]	=> 
-		exps = instantiate(pc,  name, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_RD);
 
 	| WRY(rs1,roi) [name]	=> 
-		exps = instantiate(pc,  name, DIS_RS1, DIS_ROI);
+		stmts = instantiate(pc,  name, DIS_RS1, DIS_ROI);
 
 	| WRPSR(rs1, roi) [name] => 
-		exps = instantiate(pc,  name, DIS_RS1, DIS_ROI);
+		stmts = instantiate(pc,  name, DIS_RS1, DIS_ROI);
 
 	| WRWIM(rs1, roi) [name] => 
-		exps = instantiate(pc,  name, DIS_RS1, DIS_ROI);
+		stmts = instantiate(pc,  name, DIS_RS1, DIS_ROI);
 
 	| WRTBR(rs1, roi) [name] => 
-		exps = instantiate(pc,  name, DIS_RS1, DIS_ROI);
+		stmts = instantiate(pc,  name, DIS_RS1, DIS_ROI);
 
 	| alu (rs1, roi, rd) [name] => 
-		exps = instantiate(pc,  name, DIS_RS1, DIS_ROI, DIS_RD);
+		stmts = instantiate(pc,  name, DIS_RS1, DIS_ROI, DIS_RD);
 
 	| float2s (fs2s, fds) [name] => 
-		exps = instantiate(pc,  name, DIS_FS2S, DIS_FDS);
+		stmts = instantiate(pc,  name, DIS_FS2S, DIS_FDS);
 
 	| float3s (fs1s, fs2s, fds) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1S, DIS_FS2S, DIS_FDS);
+		stmts = instantiate(pc,  name, DIS_FS1S, DIS_FS2S, DIS_FDS);
  
 	| float3d (fs1d, fs2d, fdd) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1D, DIS_FS2D, DIS_FDD);
+		stmts = instantiate(pc,  name, DIS_FS1D, DIS_FS2D, DIS_FDD);
  
 	| float3q (fs1q, fs2q, fdq) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1Q, DIS_FS2Q, DIS_FDQ);
+		stmts = instantiate(pc,  name, DIS_FS1Q, DIS_FS2Q, DIS_FDQ);
  
 	| fcompares (fs1s, fs2s) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1S, DIS_FS2S);
+		stmts = instantiate(pc,  name, DIS_FS1S, DIS_FS2S);
 
 	| fcompared (fs1d, fs2d) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1D, DIS_FS2D);
+		stmts = instantiate(pc,  name, DIS_FS1D, DIS_FS2D);
 
 	| fcompareq (fs1q, fs2q) [name] => 
-		exps = instantiate(pc,  name, DIS_FS1Q, DIS_FS2Q);
+		stmts = instantiate(pc,  name, DIS_FS1Q, DIS_FS2Q);
 
     | FTOs (fs2s, fds) [name] =>
-        exps = instantiate(pc, name, DIS_FS2S, DIS_FDS);
+        stmts = instantiate(pc, name, DIS_FS2S, DIS_FDS);
 
     // Note: itod and dtoi have different sized registers
     | FiTOd (fs2s, fdd) [name] =>
-        exps = instantiate(pc, name, DIS_FS2S, DIS_FDD);
+        stmts = instantiate(pc, name, DIS_FS2S, DIS_FDD);
     | FdTOi (fs2d, fds) [name] =>
-        exps = instantiate(pc, name, DIS_FS2D, DIS_FDS);
+        stmts = instantiate(pc, name, DIS_FS2D, DIS_FDS);
 
     | FiTOq (fs2s, fdq) [name] =>
-        exps = instantiate(pc, name, DIS_FS2S, DIS_FDQ);
+        stmts = instantiate(pc, name, DIS_FS2S, DIS_FDQ);
     | FqTOi (fs2q, fds) [name] =>
-        exps = instantiate(pc, name, DIS_FS2Q, DIS_FDS);
+        stmts = instantiate(pc, name, DIS_FS2Q, DIS_FDS);
 
     | FsTOd (fs2s, fdd) [name] =>
-        exps = instantiate(pc, name, DIS_FS2S, DIS_FDD);
+        stmts = instantiate(pc, name, DIS_FS2S, DIS_FDD);
     | FdTOs (fs2d, fds) [name] =>
-        exps = instantiate(pc, name, DIS_FS2D, DIS_FDS);
+        stmts = instantiate(pc, name, DIS_FS2D, DIS_FDS);
 
     | FsTOq (fs2s, fdq) [name] =>
-        exps = instantiate(pc, name, DIS_FS2S, DIS_FDQ);
+        stmts = instantiate(pc, name, DIS_FS2S, DIS_FDQ);
     | FqTOs (fs2q, fds) [name] =>
-        exps = instantiate(pc, name, DIS_FS2Q, DIS_FDS);
+        stmts = instantiate(pc, name, DIS_FS2Q, DIS_FDS);
 
     | FdTOq (fs2d, fdq) [name] =>
-        exps = instantiate(pc, name, DIS_FS2D, DIS_FDQ);
+        stmts = instantiate(pc, name, DIS_FS2D, DIS_FDQ);
     | FqTOd (fs2q, fdd) [name] =>
-        exps = instantiate(pc, name, DIS_FS2Q, DIS_FDD);
+        stmts = instantiate(pc, name, DIS_FS2Q, DIS_FDD);
 
 
     | FSQRTd (fs2d, fdd) [name] =>
-        exps = instantiate(pc, name, DIS_FS2D, DIS_FDD);
+        stmts = instantiate(pc, name, DIS_FS2D, DIS_FDD);
 
     | FSQRTq (fs2q, fdq) [name] =>
-        exps = instantiate(pc, name, DIS_FS2Q, DIS_FDQ);
+        stmts = instantiate(pc, name, DIS_FS2Q, DIS_FDQ);
 
 
 	// In V9, the privileged RETT becomes user-mode RETURN
 	// It has the semantics of "ret restore" without the add part of the restore
 	| RETURN (addr) [name] => 
-		exps = instantiate(pc, name, DIS_ADDR);
-        result.rtl = new HLReturn(pc, exps);
+		stmts = instantiate(pc, name, DIS_ADDR);
+        result.rtl = new RTL(pc, stmts);
+        result.rtl->appendStmt(new ReturnStatement);
         result.type = DD;
 
 	| trap (addr) [name] => 
-		exps = instantiate(pc,  name, DIS_ADDR);
+		stmts = instantiate(pc,  name, DIS_ADDR);
 
 	| UNIMP (n) => 
         unused(n);
-		exps = NULL;
+		stmts = NULL;
         result.valid = false;
 
 	| inst = n => 
         // What does this mean?
         unused(n);
         result.valid = false;
-		exps = NULL;
+		stmts = NULL;
 
     else
-		exps = NULL;
+		stmts = NULL;
         result.valid = false;
         result.numBytes = 4;
     endmatch
 
     result.numBytes = nextPC - hostPC;
     if (result.valid && result.rtl == 0)    // Don't override higher level res
-        result.rtl = new RTL(pc, exps);
+        result.rtl = new RTL(pc, stmts);
 
     return result;
 }

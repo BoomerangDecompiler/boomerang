@@ -26,6 +26,8 @@
 class BasicBlock;
 class Exp;
 class Proc;
+class Assign;
+class LocationSet;
 
 class CHLLCode : public HLLCode {
 private:
@@ -89,7 +91,7 @@ public:
 	virtual void RemoveLabel(int ord);
 
 	// sequential statements
-	virtual void AddAssignmentStatement(int indLevel, AssignExp *exp);
+	virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
 	virtual void AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
             std::vector<Exp*> &args, LocationSet &defs);
 	virtual void AddIndCallStatement(int indLevel, Exp *retloc, Exp *exp,

@@ -75,7 +75,6 @@ enum OPER
     opTargetInst,           // Target specific instruction (Unary)
                             // See frontend.cc for details
 
-    opAssignExp,            // Assignment
     opTypedExp,             // Typed expression
 	opNamedExp,				// Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,                // Guarded expression (should be assignment)

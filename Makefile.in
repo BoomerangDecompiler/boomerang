@@ -82,7 +82,7 @@ distclean: clean
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
-	db/DataflowTest.o db/CfgTest.o \
+	db/StatementTest.o db/CfgTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
 	analysis/AnalysisTest.o loader/BinaryFileStub.o \
         c/CTest.o
@@ -92,8 +92,8 @@ INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
-  db/table.o db/dataflow.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
-  db/type.o db/hrtl.o db/sslinst.o db/insnameelem.o db/signature.o \
+  db/table.o db/statement.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
+  db/type.o db/sslinst.o db/insnameelem.o db/signature.o \
   c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o   db/dom.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
@@ -148,7 +148,7 @@ db/ProcTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ParserTest.o:			EXTRA = $(BOOMSET)
 db/ExpTest.o:				EXTRA = $(BOOMSET)
 db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
-db/DataflowTest.o:			EXTRA = $(BOOMSET) -Ifrontend
+db/StatementTest.o:			EXTRA = $(BOOMSET) -Ifrontend
 db/CfgTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 
 # Compile ordinary files
@@ -168,32 +168,31 @@ testAll.o: testAll.cpp
 # Dependencies
 #
 
-db/exp.o: include/exp.h include/operator.h include/types.h include/dataflow.h \
+db/exp.o: include/exp.h include/operator.h include/types.h include/statement.h \
     include/cfg.h include/rtl.h include/proc.h include/prog.h db/operstrings.h
 db/prog.o: include/prog.h include/exp.h include/cfg.h include/proc.h \
     include/rtl.h include/BinaryFile.h include/frontend.h include/signature.h
-db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
+db/proc.o: include/proc.h include/hllcode.h include/statement.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
-db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
+db/cfg.o: include/cfg.h include/statement.h include/exp.h
 db/dom.o: include/cfg.h include/dom.h include/cfg.h include/exphelp.h \
-    include/exp.h
-db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h \
+    include/exp.h include/statement.h
+db/basicblock.o: include/cfg.h include/hllcode.h include/statement.h \
     include/exp.h include/types.h include/rtl.h include/proc.h include/prog.h \
     include/util.h
-db/rtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
+db/rtl.o: include/rtl.h include/exp.h include/operator.h include/statement.h \
     include/cfg.h include/proc.h include/prog.h include/boomerang.h
-db/hrtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
-    include/cfg.h include/signature.h
 db/register.o: include/register.h
-db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h
+db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h include/rtl.h \
+    db/table.h db/insnameelem.h include/util.h include/statement.h
 db/sslscanner.o: db/sslscanner.cpp db/sslscanner.h
 c/ansi-c-parser.o: c/ansi-c-parser.cpp c/ansi-c-parser.h c/ansi-c-scanner.h
 c/ansi-c-scanner.o: c/ansi-c-scanner.cpp c/ansi-c-scanner.h
 db/insnameelem.o: db/insnameelem.h
 db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/proc.h include/prog.h include/type.h \
-    include/dataflow.h
-db/dataflow.o: include/exp.h include/cfg.h include/dataflow.h include/proc.h
+    include/statement.h
+db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
 db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
 db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h \
@@ -201,7 +200,11 @@ db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h \
 db/ProgTest.o: db/ProgTest.h include/prog.h
 db/ProcTest.o: db/ProcTest.h include/proc.h
 db/TypeTest.o: db/TypeTest.h include/util.h include/type.h
-db/DataflowTest.o: db/DataflowTest.h include/dataflow.h
+db/StaementTest.o: db/StaementTest.h include/statement.h
+db/table.o: include/types.h db/table.h include/statement.h include/exp.h \
+    include/statement.h
+db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h \
+    include/proc.h include/prog.h include/register.h include/type.h
 
 util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
@@ -221,5 +224,7 @@ boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/fro
 analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
 	include/frontend.h include/analysis.h include/exp.h
 
-codegen/chllcode.o: include/hllcode.h codegen/chllcode.h
+codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h \
+    include/cfg.h include/exp.h include/proc.h include/prog.h \
+    include/signature.h
 

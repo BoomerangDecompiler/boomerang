@@ -24,6 +24,7 @@
  * $Revision$
  * 08 Apr 02 - Mike: Mods for boomerang
  * 13 May 02 - Mike: expList is no longer a pointer
+ * 25 Jul 03 - Mike: RTL now a list of Statements
  */
 
 #ifndef __RTL_H__
@@ -36,6 +37,7 @@
 #include <iostream>
 #include "exp.h"
 #include "register.h"
+#include "statement.h"          // At least for STMT_KIND
 
 class BasicBlock;
 class HLLCode;
@@ -49,54 +51,18 @@ class Register;
 class Proc;
 class RTLVisitor;
 
-/*==============================================================================
- * Kinds of RTLs, or high-level register transfer lists.
- * changing the order of these will result in save files not working - trent
- *============================================================================*/
-enum RTL_KIND {
-    HL_NONE = 0,
-    CALL_RTL,
-    RET_RTL,
-    JCOND_RTL,
-    JUMP_RTL,
-    SCOND_RTL,                 // For "setCC" instructions that set destination
-                                // to 1 or 0 depending on the condition codes.
-    NWAYJUMP_RTL,              // Used to represent switch statements.
-};
-
-
-/*==============================================================================
- * JCOND_TYPE: These values indicate what kind of conditional jump is being
- * performed.
- * changing the order of these will result in save files not working - trent
- *============================================================================*/
-enum JCOND_TYPE {
-    HLJCOND_JE = 0,          // Jump if equals
-    HLJCOND_JNE,             // Jump if not equals
-    HLJCOND_JSL,             // Jump if signed less
-    HLJCOND_JSLE,            // Jump if signed less or equal
-    HLJCOND_JSGE,            // Jump if signed greater or equal
-    HLJCOND_JSG,             // Jump if signed greater
-    HLJCOND_JUL,             // Jump if unsigned less
-    HLJCOND_JULE,            // Jump if unsigned less or equal
-    HLJCOND_JUGE,            // Jump if unsigned greater or equal
-    HLJCOND_JUG,             // Jump if unsigned greater
-    HLJCOND_JMI,             // Jump if result is minus
-    HLJCOND_JPOS,            // Jump if result is positive
-    HLJCOND_JOF,             // Jump if overflow
-    HLJCOND_JNOF,            // Jump if no overflow
-    HLJCOND_JPAR             // Jump if parity even (Intel only)
-};
-
 
 /*==============================================================================
  * Class RTL: describes low level register transfer lists (actually lists of
  * expressions)
  *============================================================================*/
 class RTL {
+    ADDRESS nativeAddr;             // RTL's source program instruction address
+    std::list<Statement*> stmtList; // List of expressions in this RTL.
 public:
     RTL();
-    RTL(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
+    RTL(ADDRESS instNativeAddr,
+      std::list<Statement*>* listStmt = NULL);
     RTL(const RTL& other);                  // Makes deep copy of "other"
     virtual ~RTL();
 
@@ -107,50 +73,37 @@ public:
     RTL& operator=(RTL &other);
 
     // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
+    virtual bool accept(StmtVisitor* visitor);
 
     // Common enquiry methods
-    RTL_KIND getKind() { return kind; };
     ADDRESS getAddress();               // Return RTL's native address
-    bool getCommented();                // Return whether to comment in HL C.
-    int getSize();                      // Return size in bits of first Exp.
-    unsigned getNumBytes()              // Return number of bytes in instr
-        {return numNativeBytes;}
-    ADDRESS getOutAddr(int idx);        // Return the specified out edge addr
-    ADDRESS getFallthrough();           // Return the fall through address
+    int getSize();                      // Return size in bits of first Assign.
     bool    areFlagsAffected();         // True if flags are affected
 
     // Expression list enquiry methods
-    int getNumExp();                    // Return the number of Exps in RTL.
-    Exp* elementAt(unsigned i);         // Return the i'th element in RTL.
+    int getNumStmt();                   // Return the number of Stmts in RTL.
+    Statement* elementAt(unsigned i);   // Return the i'th element in RTL.
     
-    // Expression list editing methods
-    void appendExp(Exp *e);             // Add e to end of RTL.
-    void prependExp(Exp *rt);           // Add rt to start of RTL.
-    void insertExp(Exp *rt, unsigned i); // Insert rt before expression at position i
-    void updateExp(Exp *rt, unsigned i); // Change expression at position i.
-    void deleteExp(unsigned int);       // Delete expression at position i.
-    void clear();                       // Remove all expressions from this RTL.
-    void appendListExp(std::list<Exp*>& le); // Append list of exps to end.
+    // Statement list editing methods
+    void appendStmt(Statement *s);      // Add s to end of RTL.
+    void prependStmt(Statement *s);     // Add s to start of RTL.
+    void insertStmt(Statement *s, unsigned i); // Insert s before expression at position i
+    void updateStmt(Statement *s, unsigned i); // Change stmt at position i.
+    void deleteStmt(unsigned int);       // Delete expression at position i.
+    void clear();                       // Remove all statements from this RTL.
+    // Append list of exps to end.
+    void appendListStmt(std::list<Statement*>& le); 
     void appendRTL(RTL& rtl);           // Append Statements from other RTL to end
-    void deepCopyList(std::list<Exp*>& dest);// Make a deep copy of the list of Exp*
-    std::list<Exp*> &getList() { return expList; } // direct access to the list of expressions
+    // Make a deep copy of the list of Exp*
+    void deepCopyList(std::list<Statement*>& dest);
+    // direct access to the list of expressions
+    std::list<Statement*> &getList() { return stmtList; }
 
      // Print RTL to a stream.
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
-    virtual void printFull(std::ostream& os = std::cout, bool withDF = false) {
-        print(os, withDF); }        // Unless overridden, same as short print
 
     // Set the RTL's source address
     void updateAddress(ADDRESS addr);
-
-    // Set whether to emit low level C for this RTL as a comment.
-    // E.g., in a switch, where a register is loaded from the switch table.
-    void setCommented(bool state);
-
-    // Set the number of bytes in the instruction.
-    void updateNumBytes(unsigned uNumBytes)
-        {numNativeBytes = uNumBytes;}
 
     // Is this RTL a compare instruction? If so, the passed register and
     // compared value (a semantic string) are set.
@@ -207,611 +160,18 @@ public:
     // simplify all the uses/defs in this RTL
     virtual void simplify();
 
-protected:
-    RTL_KIND kind;
-    ADDRESS nativeAddr;         // RTL's source program instruction address
-    unsigned numNativeBytes;    // Number of source code bytes from which this
-                                // RTL was constructed. Used in coverage
-                                // analysis.
-    std::list<Exp*> expList;    // List of expressions in this RTL.
-    bool isCommented;           // If true, RTL should be emitted as a comment.
+    // True if this RTL ends in a GotoStatement
+    bool isGoto();
 
+    // Is this RTL a call instruction?
+    bool isCall();
 
-#if 0
-public:
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    virtual void storeUseDefineStruct(BBBlock& inBlock);
-#endif
-};
-
-
-/*=============================================================================
- * HLJump has just one member variable, a semantic string representing the
- * jump's destination (an integer constant for direct jumps; an expression
- * for register jumps). An instance of this class will never represent a
- * return or computed call as these are distinguised by the decoder and are
- * instantiated as HLCalls and HLReturns respecitvely. This class also
- * represents unconditional jumps with a fixed offset (e.g BN, Ba on SPARC).
- *===========================================================================*/
-class HLJump: public RTL {
-public:
-    HLJump(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
-    HLJump(ADDRESS instNativeAddr, ADDRESS jumpDest);
-    virtual ~HLJump();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-    // Set and return the destination of the jump. The destination is either
-    // a Exp, or an ADDRESS that is converted to a Exp.
-    void setDest(Exp* pd);
-    void setDest(ADDRESS addr);
-    virtual Exp* getDest();
-
-    // Return the fixed destination of this CTI. For dynamic CTIs, returns -1.
-    ADDRESS getFixedDest();
-
-    // Adjust the fixed destination by a given amount. Invalid for dynamic CTIs.
-    void adjustFixedDest(int delta);
-    
-    // Set and return whether the destination of this CTI is computed.
-    // NOTE: These should really be removed, once HLNwayJump and HLNwayCall
-    // are implemented properly.
-    void setIsComputed(bool b = true);
-    bool isComputed();
-
-    virtual void print(std::ostream& os = std::cout, bool withDF = false);
-
-    // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(Exp* search, Exp* replace);
-    
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.    
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result);                           
-
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-protected:
-    Exp* pDest;              // Destination of a jump or call. This is the
-                                // absolute destination for both static and
-                                // dynamic CTIs.
-    bool m_isComputed;          // True if this is a CTI with a computed
-                                // destination address. NOTE: This should be
-                                // removed, once HLNwayJump and HLNwayCall
-                                // are implemented properly.
-};
-
-
-/*==============================================================================
- * HLJcond has a condition Exp in addition to the destination of the jump.
- *============================================================================*/
-class HLJcond: public HLJump, public Statement {
-public:
-    HLJcond(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
-    virtual ~HLJcond();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-    virtual Statement* cloneStmt();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-    // Set and return the JCOND_TYPE of this jcond as well as whether the
-    // floating point condition codes are used.
-    void setCondType(JCOND_TYPE cond, bool usesFloat = false);
-    JCOND_TYPE getCond(){ return jtCond; }
-    bool isFloat(){ return bFloat; }
-    void setFloat(bool b)      { bFloat = b; }
-
-    // Set and return the Exp representing the HL condition
-    Exp* getCondExpr();
-    void setCondExpr(Exp* pe);
-    // As above, no delete (for subscripting)
-    void setCondExprND(Exp* e) { pCond = e; }
-    
-    // Probably only used in front386.cc: convert this from an unsigned to a
-    // signed conditional branch
-    void makeSigned();
-
-    virtual void print(std::ostream& os = std::cout, bool withDF = false);
-    virtual void print(std::ostream& os) { print(os, true); }
-
-    // general search
-    virtual bool search(Exp *search, Exp *&result);
-
-    // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(Exp* search, Exp* replace);
-    
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
-
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);   
-#endif
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-    // dataflow analysis
-    virtual void killDef(StatementSet &reach) { }
-    virtual void killLive (LocationSet &kill ) { }
-    virtual void killDead (LocationSet &dead );
-    //virtual void getDeadStatements(StatementSet &dead) { }
-    virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void subscriptVar(Exp* e, Statement* def);
-
-    // dataflow related functions
-    virtual bool canPropagateToAll() { return false; }
-    virtual void propagateToAll() { assert(false); }
-
-    virtual bool isDefinition() { return false; }
-
-    // get how to access this value
-    virtual Exp* getLeft() { return NULL; }
-    virtual Type* getLeftType() { return NULL; }
-
-    // get how to replace this statement in a use
-    virtual Exp* getRight() { return pCond; }
-
-    // special print functions
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
-
-    // inline any constants in the statement
-    virtual void processConstants(Prog *prog);
-
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-    // update type for expression
-    virtual Type *updateType(Exp *e, Type *curType);
-
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs) {
-        pCond->doRemoveRestoreRefs(rs); }
-
-    // to/from SSA form
-    virtual void toSSAform(StatementSet& reachin, int memDepth,
-      StatementSet& rs) {
-        pCond = pCond->updateRefs(reachin, memDepth, rs);}
-    virtual void fromSSAform(igraph& ig);
-
-protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
-
-private:
-    JCOND_TYPE jtCond;          // The condition for jumping
-    Exp* pCond;              // The Exp representation of the high level
-                                // condition: e.g., r[8] == 5
-    bool bFloat;                // True if uses floating point CC
+    // Get the "special" (High Level) Statement this RTL (else NULL)
+    Statement* getHlStmt();
 
 };
 
-/*==============================================================================
- * HLNwayJump is derived from HLJump. In addition to the destination of the
- * jump, it has a switch variable Exp.
- *============================================================================*/
-typedef struct {
-    Exp* pSwitchVar;         // Ptr to Exp repres switch var, e.g. v[7]
-    char    chForm;             // Switch form: 'A', 'O', 'R', or 'H'
-    int     iLower;             // Lower bound of the switch variable
-    int     iUpper;             // Upper bound for the switch variable
-    ADDRESS uTable;             // Native address of the table
-    int     iNumTable;          // Number of entries in the table (form H only)
-    int     iOffset;            // Distance from jump to table (form R only)
-    int     delta;              // Host address - Native address
-} SWITCH_INFO;
 
-class HLNwayJump: public HLJump {
-public:
-    HLNwayJump(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
-    virtual ~HLNwayJump();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-    // Set and return the Exp representing the switch variable
-    SWITCH_INFO* getSwitchInfo(); 
-    void setSwitchInfo(SWITCH_INFO* pss);
-    
-    virtual void print(std::ostream& os = std::cout, bool withDF = false);
-
-    // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(Exp* search, Exp* replace);
-    
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
-    
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);   
-#endif     
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-    
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-private:    
-    SWITCH_INFO* pSwitchInfo;   // Exp representation of the switch variable:
-                                // e.g., r[8]
-};
-
-/*==============================================================================
- * HLCall: represents a high level call. Information about parameters and
- * the like are stored here.
- *============================================================================*/
-class HLCall: public HLJump, public Statement {
-public:
-    HLCall(ADDRESS instNativeAddr, int returnTypeSize = 0,
-           std::list<Exp*>* listExp = NULL);
-    virtual ~HLCall();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-    virtual Statement* cloneStmt();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-    // Return true if the called function returns an aggregate: i.e., a
-    // struct, union or quad floating point value.
-    bool returnsStruct();
-
-    void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
-    void setSigArguments();         // Set arguments based on signature
-    std::vector<Exp*>& getArguments();            // Return call's arguments
-    Exp* getArgumentExp(int i) { return arguments[i]; }
-    void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
-    int  getNumArguments() { return arguments.size(); }
-    void setNumArguments(int i);
-    Type *getArgumentType(int i);
-    void truncateArguments();
-    void clearLiveEntry();
-
-    Exp* getReturnLoc();                // Get location used for return value
-
-    virtual void print(std::ostream& os = std::cout, bool withDF = false);
-    virtual void printFull(std::ostream& os = std::cout, bool withDF = false);
-
-    // general search
-    virtual bool search(Exp *search, Exp *&result);
-
-    // Replace all instances of "search" with "replace".
-    virtual bool searchAndReplace(Exp* search, Exp* replace);
-    
-    // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
-
-    // Set and return whether the call is effectively followed by a return.
-    // E.g. on Sparc, whether there is a restore in the delay slot.
-    void setReturnAfterCall(bool b);
-    bool isReturnAfterCall();
-
-    // Set and return the list of Exps that occur *after* the call (the
-    // list of exps in the RTL occur before the call). Useful for odd patterns.
-    void setPostCallExpList(std::list<Exp*>* le);
-    std::list<Exp*>* getPostCallExpList();
-
-    // Set and return the destination proc.
-    void setDestProc(Proc* dest);
-    Proc* getDestProc();
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-    // dataflow analysis
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive (LocationSet  &live );
-    virtual void killDead (LocationSet  &live );
-    //virtual void getDeadStatements(StatementSet &dead);
-    virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void subscriptVar(Exp* e, Statement* def);
-            void setPhase1();       // Set up for phase 1 of SW93
-
-    // dataflow related functions
-    virtual bool canPropagateToAll() { return false; }
-    virtual void propagateToAll() { assert(false); }
-
-    virtual bool isDefinition();
-    virtual void getDefinitions(LocationSet &defs);
-
-    // get how to access this value
-    virtual Exp* getLeft() { return getReturnLoc(); }
-    virtual Type* getLeftType();
-
-    // get how to replace this statement in a use
-    virtual Exp* getRight() { return NULL; }
-
-    // special print functions
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
-
-    // inline any constants in the statement
-    virtual void processConstants(Prog *prog);
-
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-    // update type for expression
-    virtual Type *updateType(Exp *e, Type *curType);
-
-    // add statements internal to the called procedure
-    // for interprocedural analysis
-    StatementList &getInternalStatements() { return internal; }
-
-    void setIgnoreReturnLoc(bool b);
-
-    void decompile();
-
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs);
-
-    virtual void toSSAform(StatementSet& reachin, int memDepth,
-        StatementSet& rs);
-    virtual void fromSSAform(igraph& ig);
-        
-    // Insert actual arguments to match formal parameters
-    void    insertArguments(StatementSet& rs);
-
-protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
-
-private:
-    int returnTypeSize;         // Size in bytes of the struct, union or quad FP
-                                // value returned by the called function.
-    bool returnAfterCall;       // True if call is effectively followed by
-                                // a return.
-    
-    // The list of locations that reach this call. This list may be
-    // refined at a later stage to match the number of parameters declared
-    // for the called procedure.
-    std::vector<Exp*> arguments;
-
-    // List of reg transfers that occur *after* the call.
-    std::list<Exp*>* postCallExpList;
-
-    // Destination of call
-    Proc* procDest;
-    // Destination name of call (used in serialization)
-    std::string destStr;
-    // The conjugate return block (see SW93)
-    // When this is still nill, we have not started phase 1, or are back
-    // to standard ("phase 0")
-    PBB returnBlock;
-
-    Exp *returnLoc;
-    StatementList internal;
-
-    // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
-    // substitute it as needed
-    LocationSet liveEntry;
-};
-
-
-/*==============================================================================
- * HLReturn: represents a high level return.
- *============================================================================*/
-class HLReturn: public HLJump {
-public:
-    HLReturn(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
-    ~HLReturn();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);                    
-#endif
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-    int getNumBytesPopped() { return nBytesPopped; }
-    void setNumBytesPopped(int n) { nBytesPopped = n; }
-
-    Exp *getReturnValue() { return returnVal; }
-    void setReturnValue(Exp *e) { 
-        if (returnVal) delete returnVal; returnVal = e; 
-    }
-
-protected:
-    // number of bytes that this return pops
-    int nBytesPopped;
-
-    // value returned
-    Exp *returnVal;
-};
-
-
-/*==============================================================================
- * HLScond represents "setCC" type instructions, where some destination is
- * set (to 1 or 0) depending on the condition codes. It has a condition
- * Exp, similar to the HLJcond class.
- * *==========================================================================*/
-class HLScond: public RTL, public Statement {
-public:
-    HLScond(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
-    virtual ~HLScond();
-
-    // Make a deep copy, and make the copy a derived object if needed.
-    virtual RTL* clone();
-    virtual Statement* cloneStmt();
-
-    // Accept a visitor to this RTL
-    virtual bool accept(RTLVisitor* visitor);
-
-    // Set and return the JCOND_TYPE of this scond as well as whether the
-    // floating point condition codes are used.
-    void setCondType(JCOND_TYPE cond, bool usesFloat = false);
-    JCOND_TYPE getCond(){return jtCond;}
-    bool isFloat(){return bFloat;}
-    void setFloat(bool b) { bFloat = b; }
-
-    // Set and return the Exp representing the HL condition
-    Exp* getCondExpr();
-    void setCondExpr(Exp* pss);
-    // As above, no delete (for subscripting)
-    void setCondExprND(Exp* e) { pCond = e; }
-
-    Exp* getDest();                 // Return the destination of the set
-    int getSize();                  // Return the size of the assignment
-
-    void makeSigned();
-
-    virtual void print(std::ostream& os = std::cout, bool withDF = false);
-
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);       
-#endif
-
-    // serialize this rtl
-    virtual bool serialize_rest(std::ostream &ouf);
-
-    // deserialize an rtl
-    virtual bool deserialize_fid(std::istream &inf, int fid);
-
-    // code generation
-    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
-
-    // simplify all the uses/defs in this RTL
-    virtual void simplify();
-
-    // Statement functions
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive (LocationSet &kill );
-    virtual void killDead (LocationSet &kill );
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void subscriptVar(Exp* e, Statement* def);
-    //virtual void getDeadStatements(StatementSet &dead);
-    virtual bool isDefinition() { return true; }
-    virtual void getDefinitions(LocationSet &def);
-    virtual Exp* getLeft() { return getDest(); }
-    virtual Type* getLeftType();
-    virtual Exp* getRight() { return getCondExpr(); }
-    virtual bool usesExp(Exp *e);
-    virtual void print(std::ostream &os) { print(os, false); }
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
-    virtual void processConstants(Prog *prog);
-    virtual bool search(Exp *search, Exp *&result);
-    virtual bool searchAndReplace(Exp *search, Exp *replace);
-    virtual Type* updateType(Exp *e, Type *curType);
-    virtual void doReplaceRef(Exp* from, Exp* to);
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs) {
-        pCond->doRemoveRestoreRefs(rs);
-        pDest->doRemoveRestoreRefs(rs);}
-    // to/from SSA form
-    virtual void toSSAform(StatementSet& reachin, int memdepth,
-      StatementSet& rs) {
-        pCond = pCond->updateRefs(reachin, memdepth, rs);
-        pDest = pDest->updateRefs(reachin, memdepth, rs);}
-    virtual void fromSSAform(igraph& ig);
-
-private:
-    JCOND_TYPE jtCond;             // the condition for setting true
-    Exp* pCond;                    // Exp representation of the high level
-                                   // condition: e.g. r[8] == 5
-    bool bFloat;                   // True if condition uses floating point CC
-    Exp* pDest;                    // The location assigned (with 0 or 1)
-};
-
-/* 
- * The RTLVisitor class is used to iterate over all rtls in a basic 
- * block. It contains methods for each kind of RTL and can be used 
- * to eliminate switch statements.
- */
-class RTLVisitor {
-private:
-    // the enclosing basic block
-    PBB pBB;
-
-public:
-    RTLVisitor() { pBB = NULL; }
-    virtual ~RTLVisitor() { }
-
-    // allows the container being iteratorated over to identify itself
-    PBB getBasicBlock() { return pBB; }
-    void setBasicBlock(PBB bb) { pBB = bb; }
-
-    // visitor functions, 
-    // returns true to continue iteratoring the container
-    virtual bool visit(RTL *rtl) = 0;
-    virtual bool visit(HLJump *rtl) = 0;
-    virtual bool visit(HLJcond *rtl) = 0;
-    virtual bool visit(HLNwayJump *rtl) = 0;
-    virtual bool visit(HLCall *rtl) = 0;
-    virtual bool visit(HLReturn *rtl) = 0;
-    virtual bool visit(HLScond *rtl) = 0;
-};
 
 /*==============================================================================
  * The TableEntry class represents a single instruction - a string/RTL pair.
@@ -845,12 +205,12 @@ public:
 /*==============================================================================
  * The ParamEntry class represents the details of a single parameter.
  *============================================================================*/
-typedef enum {PARAM_SIMPLE, PARAM_EXPR, PARAM_LAMBDA, PARAM_VARIANT} ParamKind;
+typedef enum {PARAM_SIMPLE, PARAM_ASGN, PARAM_LAMBDA, PARAM_VARIANT} ParamKind;
 
 class ParamEntry {
  public:
     ParamEntry() {
-        exp = NULL;
+        asgn = NULL;
         kind = PARAM_SIMPLE;
         type = NULL;
         regType = NULL;
@@ -862,9 +222,9 @@ class ParamEntry {
         if (regType) delete regType;
     }
     
-    std::list<std::string> params;        /* PARAM_VARIANT & PARAM_EXPR only */
+    std::list<std::string> params;        /* PARAM_VARIANT & PARAM_ASGN only */
     std::list<std::string> funcParams;    /* PARAM_LAMBDA - late bound params */
-    Exp* exp;                   /* PARAM_EXPR only */
+    Statement* asgn;                      /* PARAM_ASGN only */
     bool lhs;                   /* True if this param ever appears on the LHS
                                    of an expression */
     ParamKind kind;
@@ -907,11 +267,12 @@ public:
     
     // Given an instruction name and list of actual parameters, return an
     // instantiated RTL for the corresponding instruction entry.
-    std::list<Exp*>* instantiateRTL(std::string& name, std::vector<Exp*>& actuals);
+    std::list<Statement*>* instantiateRTL(std::string& name,
+      std::vector<Exp*>& actuals);
     // As above, but takes an RTL & param list directly rather than doing
     // a table lookup by name.
-    std::list<Exp*>* instantiateRTL(RTL& rtls, std::list<std::string> &params,
-                              std::vector<Exp*>& actuals);
+    std::list<Statement*>* instantiateRTL(RTL& rtls,
+      std::list<std::string> &params, std::vector<Exp*>& actuals);
 
     // Transform the given list into another list which doesn't have
     // post-variables, by either adding temporaries or just removing them
@@ -920,7 +281,8 @@ public:
     // to optimize the resulting output, ie to minimize the number of
     // temporaries. This is recommended for fully expanded expressions (ie
     // within uqbt), but unsafe otherwise.
-    std::list<Exp*>* transformPostVars(std::list <Exp*> *rts, bool optimize);
+    std::list<Statement*>* transformPostVars(std::list <Statement*> *rts,
+      bool optimise);
 
     void print(std::ostream& os = std::cout);
     
@@ -982,27 +344,6 @@ public:
     // An RTL describing the machine's basic fetch-execute cycle
     RTL *fetchExecCycle;
 
-#if 0           // Only used for the type checker?
-protected:
-    int evaluateExp(const Exp &ss, std::map<int,int> &params,
-                       std::map<int,int> &regs) const;
-    int evaluateExp(SSCIT &it, SSCIT &end, std::map<int,int> &params,
-                       std::map<int,int> &regs) const;
-    PartialType computeTypes(Exp &ss, const PartialType &in,
-                             std::vector<PartialType> &types) const;
-    PartialType computeTypes(Exp &ss, SSIT &it, SSIT &end,
-                             const PartialType &in,
-                             std::vector<PartialType> &types) const;
-    void distributeTypes(const Exp &ss, const PartialType &in,
-                         std::vector<PartialType> &types, vector<Type> &out) const;
-    void distributeTypes(const Exp &ss, SSCIT &it, SSCIT &end,
-                         const PartialType &in,
-                         std::vector<PartialType>::iterator &type,
-                         std::vector<Type> &out) const;
-    std::set<int> evaluateExp(const std::list<Exp> &lss,
-                            int (*callback)(std::list<int> &)) const;
-    
-#endif
     void fixupParamsSub(std::string s, std::list<std::string>& funcParams,
       bool& haveCount, int mark);
 };

@@ -68,6 +68,7 @@
 #include "prog.h"                   // For prog.cover
 #include "frontend.h"
 #include "signature.h"
+#include "statement.h"
 
 extern char* operStrings[];
 
@@ -204,21 +205,21 @@ bool isComplete(Exp* e) {
 }
 
 // Insert e after assignment to temps in rtl
-void insertAfterTemps(RTL* rtl, Exp* e) {
-    Exp* cur;
+void insertAfterTemps(RTL* rtl, Statement* s) {
+    Statement* cur;
     Exp* lhs;
-    int n = rtl->getNumExp();
+    int n = rtl->getNumStmt();
     int i = 0;
     while (i < n) {
         cur = rtl->elementAt(i);
-        if (!cur->isAssign()) break;
-        lhs = cur->getSubExp1();
+        if (!cur->getKind() == STMT_ASSIGN) break;
+        lhs = cur->getLeft();
         if (!lhs->isRegOf()) break;
         lhs = ((Unary*)lhs)->getSubExp1();
         if (!lhs->isTemp()) break;
         i++;
     }
-    rtl->insertExp(e, i);
+    rtl->insertStmt(s, i);
 }
 
 /*==============================================================================
@@ -372,7 +373,7 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
  * PARAMETERS:  pSwitchBB - pointer to the BB with the register branch at end
  *              pDest - ref to ptr to the Exp with the dest of the branch
  *              pProc - pointer to the current Proc object
- * SIDE EFFECT: Sets a SWITCH_INFO struct to the HLNwayJump RTL at the end of
+ * SIDE EFFECT: Sets a SWITCH_INFO struct to the CaseStatement RTL at the end of
  *              the BB, with info like table address, upper and lower bound,
  *              etc
  * RETURNS:     True if the given instruction is a switch statement
@@ -427,7 +428,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
 	int n;
     Exp* pRHS;
     Exp* pLHS;
-	Exp* pRT;
+	Statement* currStmt;
     Exp* temp;
 
     // Clear the set used for detecting cycles
@@ -452,7 +453,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
 
     do {
         bool bNegate;
-        if ((++indexRT) >= (*itCurRtl)->getNumExp()) {
+        if ((++indexRT) >= (*itCurRtl)->getNumStmt()) {
             bStopped = getPrevRtl(pCurBB, itCurRtl, bNegate);
             indexRT = 0;            // Start with first RT
         }
@@ -468,6 +469,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
             else return false;
         }
         pRtl = *itCurRtl;
+        Statement* last = pRtl->getList().back();
         if (bNegate) {
             // We have come via a conditional branch. For the purposes
             // of switch detection, this means a logical negation
@@ -495,12 +497,11 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         // Along the way, we check for subtracts that assign to a register
         // of interest.  This is assumed to set the lower bound, and is
         // therefore the ideal place to assign the switch variable.
-        if ((pRtl->getKind() == HL_NONE) && (pRtl->getNumExp() > indexRT)){
-            pRT = pRtl->elementAt(indexRT);
-            if (pRT->isAssign()) {
-                Exp* rhs = pRT->getSubExp2();
-                // - r[ int iReg
-                // 0 1   2    3
+        if ((last->getKind() == STMT_ASSIGN) && (pRtl->getNumStmt() > indexRT)){
+            currStmt = pRtl->elementAt(indexRT);
+            if (currStmt->getKind() == STMT_ASSIGN) {
+                Exp* rhs = currStmt->getRight();
+                // r[ int R] - iReg
                 if (rhs->getOper() == opMinus) {
                     // We have a subtract; is it from a register?
                     Exp* sub1 = rhs->getSubExp1();
@@ -508,7 +509,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                         // We have a subtract from a register. But is the
                         // destination (lhs) a register of interest? That is,
                         // is the LHS register contained in ssJmp?
-                        Exp* lhs = pRT->getSubExp1();
+                        Exp* lhs = currStmt->getLeft();
                         if (lhs->isRegOfK()) {
                             Exp* result;
                             if (ssJmp->search(lhs, result)) {
@@ -530,7 +531,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                     int iconst = ((Const*)sub)->getInt();
                     if (iconst < 0) {
                         // Is the destination a register of interest?
-                        Exp* lhs = pRT->getSubExp1();
+                        Exp* lhs = currStmt->getLeft();
                         sub = lhs->getSubExp1();
                         assert(sub->isIntConst());
                         Exp* result;
@@ -551,7 +552,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         // continue the loop if this is not found
         Unary regOfFuncRet(opRegOf, new Const(iFuncRetReg));
         Exp* result;
-        if ((pRtl->getKind() == CALL_RTL) && 
+        if ((last->getKind() == STMT_CALL) && 
           ssJmp->search(&regOfFuncRet, result)) {
             // We have come across a call, and the function return
             // register is used in ssJmp-> We have to assume that
@@ -564,13 +565,13 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
               changed);
             continue;
         }
-        else if (pRtl->getKind() == JCOND_RTL) {
+        else if (last->getKind() == STMT_BRANCH) {
             // It's a conditional branch
-            JCOND_TYPE jt = ((HLJcond*)pRtl)->getCond();
+            BRANCH_TYPE jt = ((BranchStatement*)pRtl)->getCond();
             OPER operBr = opNil;
             if (ssBound && ssBound->getOper() == opNot) {
                 // Expect branch if unsigned lower or equals
-                if (jt == HLJCOND_JULE) {
+                if (jt == BRANCH_JULE) {
                     // Replace the not with opUpper
                     //ssBound->substIndex(0, opUpper);
 std::cerr << "FIXME: Replace the not with opUpper here: " << ssBound << std::endl;
@@ -588,9 +589,9 @@ std::cerr << "FIXME: Replace the not with opUpper here: " << ssBound << std::end
                 // Some compilers (e.g. epc modula 2) have a signed
                 // greater than comparison
                 // epc also checks for the lower bound with a signed BL instr
-                if ((jt == HLJCOND_JUG) || (jt == HLJCOND_JSG))
+                if ((jt == BRANCH_JUG) || (jt == BRANCH_JSG))
                     operBr = opUpper;           // Defining upper bound
-                else if (jt == HLJCOND_JSL)
+                else if (jt == BRANCH_JSL)
                     operBr = opLower;           // Defining lower bound
                 if (operBr != opNil) {
 #if 0
@@ -672,7 +673,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // have reached here at all) the instruction defining the CCs is
         // not a compare of interest, the branch is also not a branch of
         // interest. So we remove the opNot, if any
-        n = pRtl->getNumExp();
+        n = pRtl->getNumStmt();
         if (n == 0) continue;
         // We assume that the last RTL will define the flags, if at all
         if (pRtl->elementAt(n-1)->isFlagAssgn()) {
@@ -692,12 +693,12 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // We are also interested in any registers in ssBound
         // See if the current RT is an assignment
         if (!pRtl->elementAt(indexRT)->isAssign()) continue;
-        pRT = pRtl->elementAt(indexRT);
+        currStmt = pRtl->elementAt(indexRT);
 
         // Check for an instruction that uses %pc on the right hand side
         // (e.g. sparc call $+8). Assume that the first RT will have this use
-        pRHS = pRT->getSubExp2();
-        pLHS = pRT->getSubExp1();
+        pRHS = currStmt->getRight();
+        pLHS = currStmt->getLeft();
         if (pRHS->getOper() == opPC)
             uCopyPC = pRtl->getAddress();
 
@@ -737,7 +738,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
                 // We don't want to emit code for this RTL, since it is loading
                 // from the original source program's jump table. Better to
                 // leave the RTLs there, in case the interpreter will need them
-                pRtl->setCommented(true);
+                // pRtl->setCommented(true);
             }
             else {
                 // We are loading our switch variable from memory.
@@ -1063,7 +1064,7 @@ forcedCheck:
  * OVERVIEW:    Initialises a new SWITCH_INFO struct with all the appropriate
  *              values, and causes the RTL at the end of this BB to
  *              store a pointer to it
- * PARAMETERS:  pSwitchBB: pointer to the original BB with the HLNwayCond as
+ * PARAMETERS:  pSwitchBB: pointer to the original BB with the CaseStatement as
  *              the last RTL
  *              chForm: Switch form: 'A', 'O', 'R', or 'H'
  *              iLower: Lower bound of the switch variable
@@ -1085,7 +1086,7 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     pSwitchInfo->uTable = uTable;
     pSwitchInfo->iNumTable = iNumTable;
     pSwitchInfo->iOffset = iOffset;
-    HLNwayJump* jump = (HLNwayJump*)pSwitchBB->getRTLs()->back();
+    CaseStatement* jump = (CaseStatement*)pSwitchBB->getRTLs()->back();
     jump->setSwitchInfo(pSwitchInfo);
 
     // Now add an assignment to the RTL defining the switch variable, so we can
@@ -1098,16 +1099,16 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     Exp* pLHS = pProc->newLocal(new IntegerType());
 
     // Want the defining assignment. Assume it's the last RTAssign of the RTL
-    int n = (*itDefinesSw)->getNumExp();
+    int n = (*itDefinesSw)->getNumStmt();
     int i=n-1;
-    Exp* pRT = (*itDefinesSw)->elementAt(i);
-    while (!pRT->isAssign())
-        pRT = (*itDefinesSw)->elementAt(--i);
-    Exp* rhs = ((AssignExp*)pRT)->getSubExp2();
+    Statement* currStmt = (*itDefinesSw)->elementAt(i);
+    while (!currStmt->getKind() == STMT_ASSIGN)
+        currStmt = (*itDefinesSw)->elementAt(--i);
+    Exp* rhs = currStmt->getRight();
     if (rhs->getOper() == opMinus) {
         // We want to insert the var assignment before the defining assignment,
         // and from the first subexpression
-        insertAfterTemps(*itDefinesSw, new AssignExp(
+        insertAfterTemps(*itDefinesSw, new Assign(
           pLHS->clone(), rhs->getSubExp1()->clone()));
     }
     // Check if it's adding a negative constant to a register. If so,
@@ -1115,14 +1116,14 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     else if ((*rhs == expRegPlusNegConst) &&
       (((Binary*)rhs)->getSubExp2()->isIntConst()) &&
       (((Const*)((Binary*)rhs)->getSubExp2())->getInt() < 0)) {
-        insertAfterTemps(*itDefinesSw, new AssignExp(
+        insertAfterTemps(*itDefinesSw, new Assign(
           pLHS->clone(), rhs->getSubExp1()->clone()));
     }
     else {
         // We assume that this assign is a load (or something) that defines the
         // switch variable
-        Exp* lhs = pRT->getSubExp1();
-        (*itDefinesSw)->appendExp(new AssignExp(
+        Exp* lhs = currStmt->getLeft();
+        (*itDefinesSw)->appendStmt(new Assign(
           pLHS->clone(), lhs->clone()));
     }
     pSwitchInfo->pSwitchVar = pLHS;
@@ -1142,7 +1143,7 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
 void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
   BinaryFile* pBF) {
 
-    HLNwayJump* jump = (HLNwayJump*)pBB->getRTLs()->back();
+    CaseStatement* jump = (CaseStatement*)pBB->getRTLs()->back();
     SWITCH_INFO* si = jump->getSwitchInfo();
     // Update the delta field
     si->delta = delta;

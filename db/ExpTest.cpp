@@ -35,9 +35,7 @@ MYTEST(testFixSuccessor);
     MYTEST(testRegOf2);
     MYTEST(testBinaries);
     MYTEST(testUnaries);
-    MYTEST(testIsAssign);
     MYTEST(testIsAfpTerm);
-    MYTEST(testIsFlagCall);
     MYTEST(testCompare1);
     MYTEST(testCompare2);
     MYTEST(testCompare3);
@@ -62,7 +60,6 @@ MYTEST(testFixSuccessor);
     MYTEST(testLess);
     MYTEST(testMapOfExp);
     MYTEST(testList);
-    MYTEST(testClone);
     MYTEST(testParen);
 	MYTEST(testFixSuccessor);
 	MYTEST(testKillFill);
@@ -208,22 +205,6 @@ void ExpTest::testUnaries () {
 
 }
 /*==============================================================================
- * FUNCTION:        ExpTest::testIsAssign
- * OVERVIEW:        Test assignment test
- *============================================================================*/
-void ExpTest::testIsAssign () {
-    std::ostringstream ost;
-    // r2 := 99
-    AssignExp a(32, m_rof2->clone(), m_99->clone());
-    a.print(ost);
-std::string expected("*32* r2 := 99");
-std::string actual (ost.str());
-CPPUNIT_ASSERT_EQUAL(expected, actual);
-//    CPPUNIT_ASSERT_EQUAL (std::string("*32* r2 := 99"), std::string(ost.str()));
-    CPPUNIT_ASSERT(a.isAssign());
-}
-
-/*==============================================================================
  * FUNCTION:        ExpTest::testIsAfpTerm
  * OVERVIEW:        Test [ a[m[ ] %afp [+|- const]
  *============================================================================*/
@@ -244,27 +225,6 @@ void ExpTest::testIsAfpTerm () {
     CPPUNIT_ASSERT(tafp.  isAfpTerm());
     CPPUNIT_ASSERT(tplus. isAfpTerm());
     CPPUNIT_ASSERT(tminus.isAfpTerm());
-}
-
-/*==============================================================================
- * FUNCTION:        ExpTest::testIsFlagCall
- * OVERVIEW:        Test the isFlagCall function, and opFlagCall
- *============================================================================*/
-void ExpTest::testIsFlagCall () {
-    std::ostringstream ost;
-    // FLAG addFlags(r2 , 99)
-    Binary fc(opFlagCall, new Const("addFlags"),
-        new Binary(opList, m_rof2->clone(), m_99->clone()));
-    // Ordinary assign r2 := 99
-    AssignExp as(32, m_rof2->clone(), m_99->clone());
-    fc.print(ost);
-    std::string expected("addFlags( r2, 99 )");
-    std::string actual(ost.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
-    CPPUNIT_ASSERT (fc.isFlagCall());
-    CPPUNIT_ASSERT (! as.isFlagCall());
-    CPPUNIT_ASSERT (!m_99->isFlagCall());
-    CPPUNIT_ASSERT (!m_rof2->isFlagCall());
 }
 
 /*==============================================================================
@@ -720,18 +680,18 @@ void ExpTest::testSimplifyBinary() {
     delete e;
 
     // r27 := m[r29 + -4]
-    e = new AssignExp(
+    Assign* as = new Assign(
         new Unary(opRegOf, new Const(27)),
         new Unary(opMemOf,
             new Binary(opPlus,
                 new Unary(opRegOf, new Const(29)),
                 new Const(-4))));
-    e = e->simplify();
-    expected = "*32* r27 := m[r29 - 4]";
+    as->simplify();
+    expected = "   0 *32* r27 := m[r29 - 4]";
     std::ostringstream ost3;
-    e->print(ost3);
+    as->print(ost3);
     CPPUNIT_ASSERT_EQUAL(expected, ost3.str());
-    delete e;
+    delete as;
 
 }
 
@@ -942,42 +902,11 @@ void ExpTest::testList () {
 }
 
 /*==============================================================================
- * FUNCTION:        ExpTest::testClone
- * OVERVIEW:        Test cloning of Exps
- *============================================================================*/
-void ExpTest::testClone () {
-    AssignExp* e1 = new AssignExp(32,
-            new Unary(opRegOf, new Const(8)),
-            new Binary(opPlus,
-                new Unary(opRegOf, new Const(9)),
-                new Const(99)));
-    AssignExp* e2 = new AssignExp(16,
-            new Unary(opParam, new Const("x")),
-            new Unary(opParam, new Const("y")));
-    Exp* c1 = e1->clone();
-    Exp* c2 = e2->clone();
-    std::ostringstream o1, o2;
-    e1->print(o1);
-    delete e1;           // And c1 should still stand!
-    c1->print(o2);
-    e2->print(o1);
-    c2->print(o2);
-    delete e2;
-    std::string expected("*32* r8 := r9 + 99*16* x := y");
-    std::string a1(o1.str());
-    std::string a2(o2.str());
-    CPPUNIT_ASSERT_EQUAL(expected, a1); // Originals
-    CPPUNIT_ASSERT_EQUAL(expected, a2); // Clones
-    delete c1;
-    delete c2;
-}
- 
-/*==============================================================================
  * FUNCTION:        ExpTest::testParens
  * OVERVIEW:        Test the printing of parentheses in complex expressions
  *============================================================================*/
 void ExpTest::testParen () {
-    AssignExp e(32,
+    Assign a(32,
         new Unary(opRegOf, new Unary(opParam, new Const("rd"))),
         new Binary(opBitAnd,
             new Unary(opRegOf, new Unary(opParam, new Const("rs1"))),
@@ -986,10 +915,10 @@ void ExpTest::testParen () {
                     new Const(0),
                     new Unary(opParam, new Const("reg_or_imm"))),
                 new Const(1))));
-    std::string expected("*32* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
+    std::string expected("   0 *32* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
     std::ostringstream o;
-    e.print(o);
-    // e.createDotFile("andn.dot");
+    a.print(o);
+    // a.createDotFile("andn.dot");
     std::string actual(o.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
@@ -1103,7 +1032,7 @@ void ExpTest::testAssociativity() {
 
 /*==============================================================================
  * FUNCTION:        ExpTest::testSubscriptVar
- * OVERVIEW:        Test AssignExp::subscriptVar and thereby
+ * OVERVIEW:        Test Assign::subscriptVar and thereby
  *                    Exp::expSubscriptVar
  *============================================================================*/
 void ExpTest::testSubscriptVar() {
@@ -1112,7 +1041,7 @@ void ExpTest::testSubscriptVar() {
             new Binary(opMinus,
                 Unary::regOf(28),
                 new Const(4)));
-    AssignExp* ae = new AssignExp(
+    Assign* ae = new Assign(
         left->clone(),
         new Binary(opPlus,
             Unary::regOf(28),
@@ -1121,12 +1050,12 @@ void ExpTest::testSubscriptVar() {
     Statement* s = dynamic_cast<Statement*>(ae);
     // Subtest 1: should do nothing
     Exp* r28 = Unary::regOf(28);
-    Statement* def1 = dynamic_cast<Statement*>(new AssignExp(r28->clone(),
+    Statement* def1 = dynamic_cast<Statement*>(new Assign(r28->clone(),
       r28->clone()));
     def1->setNumber(12);
     def1->subscriptVar(left, def1);           // Should do nothing
     std::string expected1;
-    expected1 = "0:*32* m[r28 - 4] := r28 + r29";
+    expected1 = "   0 *32* m[r28 - 4] := r28 + r29";
     std::ostringstream actual1;
     actual1 << s;
     CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
@@ -1134,17 +1063,17 @@ void ExpTest::testSubscriptVar() {
 
     // Subtest 2: Ordinary substitution, on LHS and RHS
     s->subscriptVar(r28, def1);
-    std::string expected2("0:*32* m[r28{12} - 4] := r28{12} + r29");
+    std::string expected2("   0 *32* m[r28{12} - 4] := r28{12} + r29");
     std::ostringstream actual2;
     actual2 << s;
     CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
 
     // Subtest 3: change to a different definition
-    Statement* def3 = dynamic_cast<Statement*>(new AssignExp(Unary::regOf(29),
+    Statement* def3 = dynamic_cast<Statement*>(new Assign(Unary::regOf(29),
         new Const(0)));
     def3->setNumber(99);
     s->subscriptVar(r28, def3);
-    std::string expected3("0:*32* m[r28{99} - 4] := r28{99} + r29");
+    std::string expected3("   0 *32* m[r28{99} - 4] := r28{99} + r29");
     std::ostringstream actual3;
     actual3 << s;
     CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());

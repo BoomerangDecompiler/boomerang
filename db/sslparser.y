@@ -62,7 +62,7 @@ class SSLScanner;
     char*           str;
     int             num;
     double          dbl;
-    Exp*            regtransfer;
+    Statement*      regtransfer;
     
     Table*          tab;
     InsNameElem*    insel;
@@ -110,7 +110,7 @@ public: \
         SSLParser(std::istream &in, bool trace); \
         virtual ~SSLParser(); \
 OPER    strToOper(const char*s); /* Convert string to an operator */ \
-static  Exp* parseExp(const char *str); /* Parse an expression from a string */ \
+static  Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
@@ -128,9 +128,9 @@ protected: \
     std::string sslFile; \
 \
     /* \
-     * Result for parsing an expression. \
+     * Result for parsing an assignment. \
      */ \
-    Exp *the_exp; \
+    Statement *the_asgn; \
 \
     /* \
      * Maps SSL constants to their values. \
@@ -207,12 +207,14 @@ protected: \
 
 %%
 
-specorexp:
+specorasgn:
         assign_rt {
-            the_exp = $1;
+            the_asgn = $1;
         }
     |   exp {
-            the_exp = $1;
+            the_asgn = new Assign(
+                new Terminal(opNil),
+                $1);
         }
     |   specification
     ;
@@ -280,12 +282,12 @@ operand:
     |   param list_parameter func_parameter ASSIGNSIZE exp {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[$1];
-            Exp* asgn = new AssignExp($4, new Terminal(opNil), $5);
+            Statement* asgn = new Assign($4, new Terminal(opNil), $5);
             // Note: The below 2 copy lists of strings (to be deleted below!)
             param.params = *$2;
             param.funcParams = *$3;
-            param.exp = asgn;
-            param.kind = PARAM_EXPR;
+            param.asgn = asgn;
+            param.kind = PARAM_ASGN;
             
             if( param.funcParams.size() != 0 )
                 param.kind = PARAM_LAMBDA;
@@ -710,15 +712,15 @@ rt_list:
             // append any automatically generated register transfers and clear
             // the list they were stored in. Do nothing for a NOP (i.e. $2 = 0)
             if ($2 != NULL) {
-                $1->appendExp($2);
+                $1->appendStmt($2);
             }
             $$ = $1;
         }
 
     |   rt {
-            $$ = new RTL();
+            $$ = new RTL(STMT_ASSIGN);
             if ($1 != NULL)
-                $$->appendExp($1);
+                $$->appendStmt($1);
         }
     ;
 
@@ -732,8 +734,11 @@ rt:
     |   NAME_CALL list_actualparameter ')' {
             std::ostringstream o;
             if (Dict.FlagFuncs.find($1) != Dict.FlagFuncs.end()) {
-                $$ = new Binary(opFlagCall, new Const($1),
-                    listExpToExp($2));
+                $$ = new Assign(
+                    new Terminal(opFlags),
+                    new Binary(opFlagCall,
+                        new Const($1),
+                        listExpToExp($2)));
             } else {
                 o << $1 << " is not declared as a flag function.\n";
                 yyerror(STR(o));
@@ -809,26 +814,31 @@ assign_rt:
         // Size   guard =>   lhs    :=    rhs
         //  $1     $2         $4          $6
         ASSIGNSIZE exp THEN var_op EQUATE exp {
-            $$ = new Unary(opGuard,
-		    new AssignExp($1, $4, $6));
+            Assign* a = new Assign($1, $4, $6);
+            a->setGuard($2);
+            $$ = a;
         }
         // Size     lhs     :=   rhs
         // $1       $2      $3   $4
     |   ASSIGNSIZE var_op EQUATE exp {
             // update the size of any generated RT's
-            $$ = new AssignExp($1, $2, $4);
+            $$ = new Assign($1, $2, $4);
         }
 
         // FPUSH and FPOP are special "transfers" with just a Terminal
     |   FPUSH {
-            $$ = new Terminal(opFpush);
+            $$ = new Assign(
+                new Terminal(opNil),
+                new Terminal(opFpush));
         }
     |   FPOP {
-            $$ = new Terminal(opFpop);
+            $$ = new Assign(
+                new Terminal(opNil),
+                new Terminal(opFpop));
         }
         // ? Just a RHS?
     |   ASSIGNSIZE exp {
-            $$ = new AssignExp($1, 0, $2);
+            $$ = new Assign($1, 0, $2);
         }
     ;
 
@@ -932,9 +942,9 @@ exp_term:
                 } else {
                     // Everything checks out. *phew* 
                     // Note: the below may not be right! (MVE)
-                    Binary* e = new Binary(opFlagDef, new Const($1),
-                      listExpToExp($2));
-                    $$ = e;
+                    $$ = new Binary(opFlagDef,
+                            new Const($1),
+                            listExpToExp($2));
                     delete $2;          // Delete the list of char*s
                 }
             } else {
@@ -1155,17 +1165,16 @@ SSLParser::SSLParser(std::istream &in, bool trace) : sslFile("input"), bFloat(fa
 
 /*==============================================================================
  * FUNCTION:        SSLParser::parseExp
- * OVERVIEW:        Parses an expression from a string.
+ * OVERVIEW:        Parses an assignment from a string.
  * PARAMETERS:      the string
- * RETURNS:         an expression or NULL.
+ * RETURNS:         an Assignment or NULL.
  *============================================================================*/
-Exp* SSLParser::parseExp(const char *str)
-{
+Statement* SSLParser::parseExp(const char *str) {
     std::istringstream ss(str);
     SSLParser p(ss, false);     // Second arg true for debugging
     RTLInstDict d;
     p.yyparse(d);
-    return p.the_exp;
+    return p.the_asgn;
 }
 
 /*==============================================================================
@@ -1457,16 +1466,17 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
         nam = iname->getinstruction();
         // Need to make substitutions to a copy of the RTL
         RTL* rtl = o_rtlist->clone();
-        int n = rtl->getNumExp();
+        int n = rtl->getNumStmt();
         Exp* srchExpr = new Binary(opExpTable, new Terminal(opWild),
             new Terminal(opWild));
         Exp* srchOp = new Ternary(opOpTable, new Terminal(opWild),
             new Terminal(opWild), new Terminal(opWild));
         for (int j=0; j < n; j++) {
-            Exp* e = rtl->elementAt(j);
+            Statement* s = rtl->elementAt(j);
             std::list<Exp*> le;
             // Expression tables
-            if (e->searchAll(srchExpr, le)) {
+            assert(s->getKind() == STMT_ASSIGN);
+            if (((Assign*)s)->searchAll(srchExpr, le)) {
                 std::list<Exp*>::iterator it;
                 for (it = le.begin(); it != le.end(); it++) {
                     char* tbl = ((Const*)((Binary*)*it)->getSubExp1())
@@ -1475,15 +1485,14 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                       ->getStr();
                     Exp* repl =((ExprTable*)(TableDict[tbl]))
                       ->expressions[indexrefmap[idx]->getvalue()];
-                    bool ch;
-                    e = e->searchReplace(*it, repl, ch);
+                    s->searchAndReplace(*it, repl);
                     // Just in case the top level is changed...
-                    rtl->updateExp(e, j);
+                    rtl->updateStmt(s, j);
                 }
             }
             // Operator tables
 			Exp* res;
-			while (e->search(srchOp, res)) {
+			while (s->search(srchOp, res)) {
 				Ternary* t;
 				if (res->getOper() == opTypedExp)
 				   t = (Ternary *)res->getSubExp1();
@@ -1506,10 +1515,9 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                   ->records[indexrefmap[idx]->getvalue()].c_str();
                 Exp* repl = new Binary(strToOper(ops), e1->clone(),
                 e2->clone());
-                bool ch;
-                e = e->searchReplace(res, repl, ch);
+                s->searchAndReplace(res, repl);
                 // In case the top level is changed (common)
-                rtl->updateExp(e, j);
+                rtl->updateStmt(s, j);
             }
         }
    

@@ -215,7 +215,7 @@ OPERAND
 
 
 FETCHEXEC           *32* %g0 := 0
-		    *1* %CTI := 0
+                    *1* %CTI := 0
                     *32* execute( %pc )
                     *32* %pc := [ %CTI = 0 ? %npc : %pc ]
                     *32* %npc := [ %CTI = 0 ? %npc + 4 : %npc ];
@@ -224,7 +224,7 @@ FETCHEXEC           *32* %g0 := 0
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd. 
 #LOADD := { LDD_, LDDA_ }
-LDD      eaddr, rd                      *32* 	   rd := m[eaddr]
+LDD      eaddr, rd                      *32*            rd := m[eaddr]
                                         *32* succ(rd) := m[eaddr + WORD]; 
 # Note: the above offset (WORD) is now in bytes!
 
@@ -301,7 +301,7 @@ STBAR                                   _; # store barrier
 SHIFTS  := { "SLL", "SRL", "SRA" };
 OP2     := { "<<",  ">>",  ">>A" };
 SHIFTS[IDX]     rs1, reg_or_imm, rd
-			        *32* rd := rs1 OP2[IDX] reg_or_imm;
+                                *32* rd := rs1 OP2[IDX] reg_or_imm;
 
 
 # Arithmetic operators- uses OP3 table for correct operator. 
@@ -313,7 +313,7 @@ OP3     := {  "+",   "-",    "+",     "-",     "+",       "-"   };
 
 ARITH[IDX]   rs1, reg_or_imm, rd
                 *32* r[tmp] := rs1
-			    *32* rd  := rs1 OP3[IDX] reg_or_imm;
+                            *32* rd  := rs1 OP3[IDX] reg_or_imm;
 
 ADDCC         rs1, reg_or_imm, rd
                 ADDFLAGS(r[tmp], reg_or_imm, rd);
@@ -524,9 +524,9 @@ COND := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)",
         "~%NF", "%NF", "~%OF", "%OF" };
 
 JUMPS[idx]  reloc 
-		*32* %pc := %npc
-		*32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
-		*1* %CTI := 1;
+                *32* %pc := %npc
+                *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
+                *1* %CTI := 1;
 
 JUMPSA_C  := { "BNEA", "BEA", "BGA", "BLEA", "BGEA",
             "BLA", "BGUA", "BLEUA", "BCCA", "BCSA", "BPOSA",
@@ -540,16 +540,16 @@ COND1_C := { "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))",
 BAA reloc  # unconditional branches
                 *32* %pc := reloc
                 *32* %npc := reloc + 4
-		*1* %CTI := 1;
+                *1* %CTI := 1;
 BNA reloc
                 *32* %pc := %npc + 4
                 *32* %npc := %npc + 8
-		*1* %CTI := 1;
+                *1* %CTI := 1;
 
 JUMPSA_C[idx] reloc   # Conditional branches
                 *32* %pc := [(COND1_C[idx] = 0) ? %npc+4 : %npc ]
                 *32* %npc := [(COND1_C[idx] = 0) ? %npc+8 : reloc]
-		*1* %CTI := 1;
+                *1* %CTI := 1;
 
 # BG_ := JUMPS( ~(%ZF | (%NF ^ %OF)), 1)
 
@@ -561,9 +561,9 @@ JUMPSA_C[idx] reloc   # Conditional branches
 # PC relative transfer of control
 CALL__ reloc
                 *32* r[15] := %pc  
-		*32* %pc := %npc
+                *32* %pc := %npc
                 *32* %npc := reloc
-		*1* %CTI := 1;
+                *1* %CTI := 1;
 
 # Jump and Link instruction- always executes delay instruction
 # Register indirect transfer of control
@@ -571,9 +571,9 @@ CALL__ reloc
 JMPL  eaddr, rd
                 *32* r[tmp] := eaddr
                 *32* rd := %pc
-		*32* %pc := %npc
+                *32* %pc := %npc
                 *32* %npc := r[tmp]
-		*1* %CTI := 1;
+                *1* %CTI := 1;
 
 
 # Read and Write State Register Instructions
@@ -733,24 +733,24 @@ JUMPS2_C  := { "FBNE", "FBE", "FBG", "FBLE", "FBUE",
 JUMPS2 := { "FBA", "FBN", JUMPS2_C };
 
 JUMPS2[idx]  reloc 
-	    *32* %pc := %npc
-	    *32* %npc := [(COND2[idx] = 0) ? %npc+4 : reloc]
-	    *1* %CTI := 1;
+            *32* %pc := %npc
+            *32* %npc := [(COND2[idx] = 0) ? %npc+4 : reloc]
+            *1* %CTI := 1;
 
 FBAA    reloc
             *32* %pc := reloc
             *32* %npc := reloc + 4
-	    *1* %CTI := 1;
+            *1* %CTI := 1;
 
 FBNA    reloc
             *32* %pc := %npc + 4
             *32* %npc := %npc + 8
-	    *1* %CTI := 1;
+            *1* %CTI := 1;
 
 JUMPS2_C[idx]"A"   reloc
             *32* %pc := [(COND2_C[idx] = 0) ? %npc+4 : %npc ]
             *32* %npc := [(COND2_C[idx] = 0) ? %npc+8 : reloc]
-	    *1* %CTI := 1;
+            *1* %CTI := 1;
 
 # Loading and storing Floating point registers.
 LDFSR      eaddr       *32* %FSR := m[eaddr]{32};

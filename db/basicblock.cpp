@@ -34,7 +34,7 @@
 #endif 
 
 #include "types.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -348,8 +348,8 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
 
     // Set the link between the last instruction (a call) and this BB
     // if this is a call BB
-    HLCall* call = (HLCall*)*(m_pRtls->rbegin());
-    if (call->getKind() == CALL_RTL)
+    CallStatement* call = (CallStatement*)*(m_pRtls->rbegin());
+    if (call->getKind() == STMT_CALL)
         call->setBB(this);
 }
 
@@ -461,7 +461,7 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
     if (m_pRtls) {                  // Can be zero if e.g. INVALID
         std::list<RTL*>::iterator rit;
         for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-            (*rit)->printFull(os, withDF);
+            (*rit)->print(os, withDF);
         }
     }
     if (m_bJumpReqd) {
@@ -787,10 +787,14 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
 ADDRESS BasicBlock::getCallDest() {
     if (m_nodeType != CALL)
         return (ADDRESS)-1;
-    std::list<RTL*>::reverse_iterator it;
-    for (it = m_pRtls->rbegin(); it != m_pRtls->rend(); it++) {
-        if ((*it)->getKind() == CALL_RTL)
-            return ((HLCall*)(*it))->getFixedDest();
+    if (m_pRtls->size() == 0)
+        return (ADDRESS)-1;
+    RTL* lastRtl = m_pRtls->back();
+    std::list<Statement*>::reverse_iterator it;
+    std::list<Statement*>& sl = lastRtl->getList();
+    for (it = sl.rbegin(); it != sl.rend(); it++) {
+        if ((*it)->getKind() == STMT_CALL)
+            return ((CallStatement*)(*it))->getFixedDest();
     }
     return (ADDRESS)-1;
 }
@@ -913,75 +917,30 @@ bool BasicBlock::deserialize(std::istream &inf) {
 //
 // Get First/Next Statement in a BB
 //
-Statement* BasicBlock::getFirstStmt(rtlit& rit, elit& it, elit& cit) {
+Statement* BasicBlock::getFirstStmt(rtlit& rit, stmtlistIt& sit) {
     rit = m_pRtls->begin();
-    cit = NULL;         // Will need for getNextStmt
     while (rit != m_pRtls->end()) {
         RTL* rtl = *rit;
-        it = rtl->getList().begin();
-        if (it != rtl->getList().end())
-            return dynamic_cast<Statement*>(*it);
-        RTL_KIND k = rtl->getKind();
-        if (k == CALL_RTL || k == JCOND_RTL || k == SCOND_RTL)
-            // These are statements too, and may need special processing
-            return dynamic_cast<Statement*>(rtl);
+        sit = rtl->getList().begin();
+        if (sit != rtl->getList().end())
+            return *sit;
         rit++;
     }
     return NULL;
 }
 
-Statement* BasicBlock::getNextStmt(rtlit& rit, elit& it, elit& cit) {
+Statement* BasicBlock::getNextStmt(rtlit& rit, stmtlistIt& sit) {
     do {
-        RTL* rtl = *rit;
-        if (cit == NULL) {
-            // Not (yet) iterating through post-call semantics
-            if (it != NULL) {
-                // Could have just done the HLCall/HLJcond/HLScond
-                if (it != rtl->getList().end()) {
-                    // Not yet at the end of ordinary expressions
-                    if (++it != rtl->getList().end())
-                        return dynamic_cast<Statement*>(*it);
-                }
-                // Inc to end of ordinary expressions.
-                // Check for call/jcond/scond
-                RTL_KIND k = rtl->getKind();
-                if (k == CALL_RTL || k == JCOND_RTL || k == SCOND_RTL) {
-                    // These are statements too, and may need special processing
-                    // Set it to NULL as a flag (so we don't keep doing this stmt)
-                    it = NULL;
-                    return dynamic_cast<Statement*>(rtl);
-                }
-            }
-            else {
-                // "it" was NULL, but not started post-call
-                // That means we have just done call/jcond/scond
-                if (rtl->getKind() == CALL_RTL) {
-                    // We may have post-call semantics
-                    std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
-                    if (le) {
-                        cit = le->begin();
-                        if (cit != le->end())
-                            return dynamic_cast<Statement*>(*cit);
-                        cit = NULL;
-                    }
-                }
-            }
-        }
-        if (cit != NULL) {
-            std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
-            if (++cit != le->end())
-                return dynamic_cast<Statement*>(*cit);
-            cit = NULL;
-        }
-        // Else, finished with this rtl; move to next rtl
+        if (++sit != (*rit)->getList().end())
+            return *sit;
         if (++rit == m_pRtls->end())
-            return NULL;
-        it = (*rit)->getList().begin();
-        if (it != (*rit)->getList().end())
-            return dynamic_cast<Statement*>(*it);
+            break;
+        sit = (*rit)->getList().begin();
+        if (sit != (*rit)->getList().end())
+            return *sit;
     } while (1);
+    return NULL;
 }
-
 
 /*
  * Structuring and code generation.
@@ -998,21 +957,33 @@ Exp *BasicBlock::getCond() {
     // the condition will be in the last rtl
     assert(m_pRtls);
     RTL *last = m_pRtls->back();
-    // it should be a HLJcond
-    assert(last->getKind() == JCOND_RTL);
-    HLJcond *j = (HLJcond*)last;
-    Exp *e = j->getCondExpr();  
-    return e;
+    // it should contain a BranchStatement
+    std::list<Statement*>& sl = last->getList();
+    std::list<Statement*>::reverse_iterator it;
+    assert(sl.size());
+    for (it = sl.rbegin(); it != sl.rend(); it++) {
+        if ((*it)->getKind() == STMT_BRANCH)
+            return ((BranchStatement*)(*it))->getCondExpr();
+    }
+    assert(0);
+    return 0;
 }
 
 void BasicBlock::setCond(Exp *e) {
     // the condition will be in the last rtl
     assert(m_pRtls);
     RTL *last = m_pRtls->back();
-    // it should be a HLJcond
-    assert(last->getKind() == JCOND_RTL);
-    HLJcond *j = (HLJcond*)last;
-    j->setCondExpr(e);
+    // it should contain a BranchStatement
+    std::list<Statement*>& sl = last->getList();
+    std::list<Statement*>::reverse_iterator it;
+    assert(sl.size());
+    for (it = sl.rbegin(); it != sl.rend(); it++) {
+        if ((*it)->getKind() == STMT_BRANCH) {
+            ((BranchStatement*)(*it))->setCondExpr(e);
+            return;
+        }
+    }
+    assert(0);
 }
 
 /* Check for branch if equal relation */
@@ -1020,18 +991,24 @@ bool BasicBlock::isJmpZ(PBB dest) {
     // The condition will be in the last rtl
     assert(m_pRtls);
     RTL *last = m_pRtls->back();
-    // It should be a HLJcond
-    assert(last->getKind() == JCOND_RTL);
-    HLJcond *j = (HLJcond*)last;
-    JCOND_TYPE jt = j->getCond();
-    if ((jt != HLJCOND_JE) && (jt != HLJCOND_JNE)) return false;
-    PBB trueEdge = m_OutEdges[0];
-    if (jt == HLJCOND_JE)
-        return dest == trueEdge;
-    else {
-        PBB falseEdge = m_OutEdges[1];
-        return dest == falseEdge;
+    // it should contain a BranchStatement
+    std::list<Statement*>& sl = last->getList();
+    std::list<Statement*>::reverse_iterator it;
+    assert(sl.size());
+    for (it = sl.rbegin(); it != sl.rend(); it++) {
+        if ((*it)->getKind() == STMT_BRANCH) {
+            BRANCH_TYPE jt = ((BranchStatement*)(*it))->getCond();
+            if ((jt != BRANCH_JE) && (jt != BRANCH_JNE)) return false;
+            PBB trueEdge = m_OutEdges[0];
+            if (jt == BRANCH_JE)
+            return dest == trueEdge;
+            else {
+                PBB falseEdge = m_OutEdges[1];
+                return dest == falseEdge;
+            }
+        }
     }
+    assert(0);
 }
 
 /* Get the loop body */
@@ -1479,30 +1456,10 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin,
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
           it != rtl->getList().end(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcReachOut(reachin);
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            if (call == stmt) return;
-            call->calcReachOut(reachin);
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::iterator pp;
-                for (pp = le->begin(); pp != le->end(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->calcReachOut(reachin);
-                }
-            }
-        }
-        if (rtl->getKind() == JCOND_RTL) {
-            HLJcond *jcond = (HLJcond*)rtl;
-            if (jcond == stmt) return;
-            jcond->calcReachOut(reachin);
+            if (*it == stmt) return;
+            (*it)->calcReachOut(reachin);
         }
     }
 }
@@ -1513,30 +1470,10 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
           it != rtl->getList().end(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcAvailOut(availin);
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            if (call == stmt) return;
-            call->calcAvailOut(availin);
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::iterator pp;
-                for (pp = le->begin(); pp != le->end(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->calcAvailOut(availin);
-                }
-            }
-        }
-        if (rtl->getKind() == JCOND_RTL) {
-            HLJcond *jcond = (HLJcond*)rtl;
-            if (jcond == stmt) return;
-            jcond->calcAvailOut(availin);
+            if (*it == stmt) return;
+            (*it)->calcAvailOut(availin);
         }
     }
 }
@@ -1547,44 +1484,11 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase,
     for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
          rit != m_pRtls->rend(); rit++) {
         RTL *rtl = *rit;
-        // Do any post call semantics first
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::reverse_iterator pp;
-                for (pp = le->rbegin(); pp != le->rend(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->calcLiveIn(liveout);
-                    s->checkLiveIn(liveout, ig);
-                }
-            }
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            if (call == stmt) return;
-            call->calcLiveIn(liveout);
-            call->checkLiveIn(liveout, ig);
-        }
-        else if (rtl->getKind() == JCOND_RTL) {
-            HLJcond *jcond = (HLJcond*)rtl;
-            if (jcond == stmt) return;
-            jcond->calcLiveIn(liveout);
-            jcond->checkLiveIn(liveout, ig);
-        }
-        else if (rtl->getKind() == SCOND_RTL) {
-            HLScond *scond = (HLScond*)rtl;
-            if (scond == stmt) return;
-            scond->calcLiveIn(liveout);
-            scond->checkLiveIn(liveout, ig);
-        }
-        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
+        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
              it != rtl->getList().rend(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcLiveIn(liveout);
-            e->checkLiveIn(liveout, ig);
+            if (*it == stmt) return;
+            (*it)->calcLiveIn(liveout);
+            (*it)->checkLiveIn(liveout, ig);
         }
     }
 }
@@ -1595,38 +1499,10 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase){
          rit != m_pRtls->rend(); rit++) {
         RTL *rtl = *rit;
         // Do any post call semantics first
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::reverse_iterator pp;
-                for (pp = le->rbegin(); pp != le->rend(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->calcLiveIn(liveout);
-                }
-            }
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            if (call == stmt) return;
-            call->calcLiveIn(liveout);
-        }
-        else if (rtl->getKind() == JCOND_RTL) {
-            HLJcond *jcond = (HLJcond*)rtl;
-            if (jcond == stmt) return;
-            jcond->calcLiveIn(liveout);
-        }
-        else if (rtl->getKind() == SCOND_RTL) {
-            HLScond *scond = (HLScond*)rtl;
-            if (scond == stmt) return;
-            scond->calcLiveIn(liveout);
-        }
-        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
-             it != rtl->getList().rend(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcLiveIn(liveout);
+        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
+          it != rtl->getList().rend(); it++) {
+            if (*it == stmt) return;
+            (*it)->calcLiveIn(liveout);
         }
     }
 }
@@ -1636,39 +1512,10 @@ void BasicBlock::getDeadOutAt(Statement *stmt, LocationSet &deadout, int phase){
     for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
          rit != m_pRtls->rend(); rit++) {
         RTL *rtl = *rit;
-        // Do any post call semantics first
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::reverse_iterator pp;
-                for (pp = le->rbegin(); pp != le->rend(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->calcDeadIn(deadout);
-                }
-            }
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            if (call == stmt) return;
-            call->calcDeadIn(deadout);
-        }
-        else if (rtl->getKind() == JCOND_RTL) {
-            HLJcond *jcond = (HLJcond*)rtl;
-            if (jcond == stmt) return;
-            jcond->calcDeadIn(deadout);
-        }
-        else if (rtl->getKind() == SCOND_RTL) {
-            HLScond *scond = (HLScond*)rtl;
-            if (scond == stmt) return;
-            scond->calcDeadIn(deadout);
-        }
-        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
-             it != rtl->getList().rend(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcDeadIn(deadout);
+        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
+          it != rtl->getList().rend(); it++) {
+            if (*it == stmt) return;
+            (*it)->calcDeadIn(deadout);
         }
     }
 }
@@ -1945,9 +1792,10 @@ void BasicBlock::getDeadOut(LocationSet &liveout) {
 // Get the destination proc
 // Note: this must be a call BB!
 Proc* BasicBlock::getDestProc() {
-    // The last RTL should be a HLCall
-    HLCall* call = (HLCall*)m_pRtls->back();
-    assert(call->getKind() == CALL_RTL);
+    // The last Statement of the last RTL should be a CallStatement
+    CallStatement* call = (CallStatement*)
+      (m_pRtls->back()->getHlStmt());
+    assert(call->getKind() == STMT_CALL);
     Proc* proc = call->getDestProc();
     if (proc == NULL) {
         std::cerr << "Indirect calls not handled yet\n";
@@ -1985,7 +1833,7 @@ void BasicBlock::clearCallInterprocEdges() {
 
 /*
  * Set the interprocedural outedge from the callee exit to the post-call block
- * Also sets the returnBlock entry in the HLCall, so we can identify in phase 2
+ * Also sets the returnBlock entry in the CallStatement, so we can identify in phase 2
  * which are "real" post-call BBs
  */
 void BasicBlock::setReturnInterprocEdges() {
@@ -2194,9 +2042,9 @@ void BasicBlock::toSSAform(int memDepth, StatementSet& rs) {
     // statement
     StatementSet reachin;
     getReachIn(reachin, 2);
-    rtlit rit; elit it, cit;
-    for (Statement* s = getFirstStmt(rit, it, cit); s;
-          s = getNextStmt(rit, it, cit)) {
+    rtlit rit; stmtlistIt sit;
+    for (Statement* s = getFirstStmt(rit, sit); s;
+          s = getNextStmt(rit, sit)) {
         // Call the polymorphic function to update used expressions
         s->toSSAform(reachin, memDepth, rs);
         // Update reachin to be the input for the next statement in this BB
@@ -2208,8 +2056,8 @@ void BasicBlock::toSSAform(int memDepth, StatementSet& rs) {
 // Used in dotty file generation
 char* BasicBlock::getStmtNumber() {
     static char ret[12];
-    rtlit rit; elit it, cit;
-    Statement* first = getFirstStmt(rit, it, cit);
+    rtlit rit; stmtlistIt sit;
+    Statement* first = getFirstStmt(rit, sit);
     if (first)
         sprintf(ret, "%d", first->getNumber());
     else
@@ -2218,20 +2066,19 @@ char* BasicBlock::getStmtNumber() {
 } 
 
 // Prepend an expression (usually an assignment representing a phi function)
-void BasicBlock::prependExp(Exp* e) {
+void BasicBlock::prependStmt(Statement* s) {
     // Check the first RTL (if any)
     if (m_pRtls->size()) {
         RTL* rtl = m_pRtls->front();
         if (rtl->getAddress() == 0) {
             // Append to this RTL
-            rtl->appendExp(e);
+            rtl->appendStmt(s);
             return;
         }
     }
     // Otherwise, prepent a new RTL
-    std::list<Exp*> listExp;
-    listExp.push_back(e);
-    RTL* rtl = new RTL(0, &listExp);
+    std::list<Statement*> listStmt;
+    listStmt.push_back(s);
+    RTL* rtl = new RTL(0, &listStmt);
     m_pRtls->push_front(rtl);
 }
-    

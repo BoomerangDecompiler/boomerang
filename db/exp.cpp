@@ -21,7 +21,7 @@
  * 10 Jul 02 - Mike: Added simplifyAddr() methods
  * 16 Jul 02 - Mike: Fixed memory issues with operator==
  * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
- * 26 Nov 02 - Mike: Quelched some warnings; fixed an error in AssignExp copy
+ * 26 Nov 02 - Mike: Quelched some warnings; fixed an error in Assign copy
  *              constructor
  * 03 Dec 02 - Mike: Fixed simplification of exp AND -1 (was exp AND +1)
  * 09 Dec 02 - Mike: Print succ()
@@ -42,7 +42,7 @@
 #include <map>          // In decideType()
 #include <sstream>      // Yes, you need gcc 3.0 or better
 #include "types.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "cfg.h"
 #include "exp.h"
 #include "register.h"
@@ -130,20 +130,6 @@ TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
 {
     subExp1 = o.subExp1->clone();
     type = o.type->clone();
-}
-
-AssignExp::AssignExp() : Binary(opAssignExp), size(32) {}
-AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(32)
-{ 
-    if (lhs->getOper() == opTypedExp) { 
-        size = ((TypedExp*)lhs)->getType()->getSize(); 
-    } 
-}
-AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(sz) { }
-AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size)
-{
-    subExp1 = o.subExp1->clone();
-    subExp2 = o.subExp2->clone();
 }
 
 FlagDef::FlagDef(Exp* params, RTL* rtl)
@@ -250,15 +236,6 @@ void TypedExp::setType(Type* ty)
     type = ty;
 }
 
-int AssignExp::getSize()
-{
-    return size;
-}
-void AssignExp::setSize(int sz)
-{
-    size = sz;
-}
-
 /*==============================================================================
  * FUNCTION:        Binary::commute
  * OVERVIEW:        Swap the two subexpressions
@@ -335,17 +312,6 @@ Exp* Ternary::clone() {
 Exp* TypedExp::clone() {
     TypedExp* c = new TypedExp(type, subExp1->clone());
     return c;
-}
-Exp* AssignExp::clone() {
-    AssignExp* a = new AssignExp(size, subExp1->clone(), subExp2->clone());
-    // Statement members
-    a->pbb = pbb;
-    a->proc = proc;
-    a->number = number;
-    return a;
-}
-Statement* AssignExp::cloneStmt() {
-    return (Statement*)(AssignExp*)clone();
 }
 Exp* RefsExp::clone() {
     RefsExp* c = new RefsExp(subExp1->clone());
@@ -427,15 +393,6 @@ bool TypedExp::operator==(const Exp& o) const {
     if (*type != *((TypedExp&)o).type) return false;
     return *((Unary*)this)->getSubExp1() == *((Unary&)o).getSubExp1();
 }
-bool AssignExp::operator==(const Exp& o) const {
-    if (op == opWild) return true;
-    if (((AssignExp&)o).op == opWild) return true;
-    if (((AssignExp&)o).op != opAssignExp) return false;
-    if (size != ((AssignExp&)o).size) return false;
-    return *((Binary*)this)->getSubExp1() == *((Binary&)o).getSubExp1() &&
-           *((Binary*)this)->getSubExp2() == *((Binary&)o).getSubExp2();
-}
-
 bool RefsExp::operator==(const Exp& o) const {
     if (op == opWild) return true;
     if (((RefsExp&)o).op == opWild) return true;
@@ -576,16 +533,6 @@ bool TypedExp::operator<  (const Exp& o) const {        // Type sensitive
     if (*type < *((TypedExp&)o).type) return true;
     if (*((TypedExp&)o).type < *type) return false;
     return *subExp1 < *((Unary&)o).getSubExp1();
-}
-
-bool AssignExp::operator<  (const Exp& o) const {        // Type sensitive
-    if (op < o.getOper()) return true;
-    if (op > o.getOper()) return false;
-    if (size < ((AssignExp&)o).size) return true;
-    if (((AssignExp&)o).size < size) return false;
-    if (*subExp1 < *((Binary&)o).getSubExp1()) return true;
-    if (*((Binary&)o).getSubExp1() < *subExp1) return false;
-    return *subExp2 < *((Binary&)o).getSubExp2();
 }
 
 bool RefExp::operator< (const Exp& o) const {
@@ -977,22 +924,6 @@ void TypedExp::print(std::ostream& os, bool withUses) {
     p1->print(os, withUses);
 }
 
-//  //  //  //
-// AssignExp //
-//  //  //  //
-void AssignExp::print(std::ostream& os, bool withUses) {
-    os << "*" << std::dec << size << "* ";
-    Exp* p1 = ((Binary*)this)->getSubExp1();
-    p1->print(os, withUses);
-    os << " := ";
-    Exp* p2 = ((Binary*)this)->getSubExp2();
-    p2->print(os, withUses);
-}
-
-void AssignExp::getDefinitions(LocationSet &defs) {
-    defs.insert(getLeft());
-}
-
 
 //  //  //  //
 // RefsExp  //
@@ -1164,20 +1095,6 @@ void TypedExp::appendDotFile(std::ofstream& of) {
     subExp1->appendDotFile(of);
     of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp1 << ";\n";
 }
-//  //  //  //
-// AssignExp //
-//  //  //  //
-void AssignExp::appendDotFile(std::ofstream& of) {
-    of << "e" << std::hex << (int)this << " [shape=record,label=\"{";
-    of << "opAssignExp\\n0x" << std::hex << (int)this << " | ";
-    of << size << " | <p1>";
-    of << " }\"];\n";
-    subExp1->appendDotFile(of);
-    of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp1 << ";\n";
-    subExp2->appendDotFile(of);
-    of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp2 << ";\n";
-}
-
 
 //  //  //  //
 //  FlagDef //
@@ -1187,7 +1104,7 @@ void FlagDef::appendDotFile(std::ofstream& of) {
     of << "opFlagDef \\n0x" << std::hex << (int)this << "| ";
     // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
     of << "{ RTL ";
-    int n = rtl->getNumExp();
+    int n = rtl->getNumStmt();
     for (int i=0; i < n; i++)
         of << "| <r" << std::dec << i << "> ";
     of << "} | <p1> }\"];\n";
@@ -1195,20 +1112,6 @@ void FlagDef::appendDotFile(std::ofstream& of) {
     of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp1 << ";\n";
 }
 
-/*==============================================================================
- * FUNCTION:        Exp::isAssign
- * OVERVIEW:        Returns true if the expression is typed assignment
- * PARAMETERS:      <none>
- * RETURNS:         True if matches
- *============================================================================*/
-bool Exp::isAssign()
-{
-    Exp* sub;
-    assert(!((op == opTypedExp) &&
-      ((sub = ((Binary*)this)->getSubExp1()) != 0) &&
-      (sub->getOper() == opAssignExp)));
-    return op == opAssignExp;
-}
 /*==============================================================================
  * FUNCTION:        Exp::isRegOfK
  * OVERVIEW:        Returns true if the expression is r[K] where K is int const
@@ -1259,38 +1162,6 @@ bool Exp::isAfpTerm()
     return ((subOp1 == opAFP) && (subOp2 == opIntConst));
 }
 
-/*==============================================================================
- * FUNCTION:        Exp::isFlagAssgn
- * OVERVIEW:        Returns true if the expression is an asignment to the
- *                    abstract flags location
- * PARAMETERS:      None
- * RETURNS:         True if matches
- *============================================================================*/
-bool Exp::isFlagAssgn() {
-    if (op != opAssignExp) return false;
-    if (getSubExp1()->getOper() != opFlags) return false;
-    if (getSubExp2()->getOper() != opFlagCall) return false;
-    return true;
-}
-
-/*==============================================================================
- * FUNCTION:        Exp::isPhi
- * OVERVIEW:        Returns true if the expression is a phi assignment
- *                    Example: r24 := phi{3 4 12}
- * NOTE:            This is very similar to the RefsExp class, and will
- *                    probably replace it
- * PARAMETERS:      None
- * RETURNS:         True if matches
- *============================================================================*/
-/*     opAssign
-        /   \
-     any    opPhi {defs}
-*/
-bool Exp::isPhi() {
-    if (op != opAssignExp) return false;
-    Exp* e = getSubExp2();
-    return (e->getOper() == opPhi);
-}
 
 /*==============================================================================
  * FUNCTION:        Exp::getVarIndex
@@ -1475,13 +1346,6 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
     return li.size() != 0;
 }
 
-bool AssignExp::searchAndReplace(Exp* search, Exp* replace) {
-    bool change = false;
-    Exp *e = searchReplaceAll(search, replace, change);
-    assert(e == this);
-    return change;
-}
-
 // These simplifying functions don't really belong in class Exp, but they know
 // too much about how Exps work
 // They can't go into util.so, since then util.so and db.so would co-depend
@@ -1527,13 +1391,7 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
             p1 = ((Binary*)this)->getSubExp1();
             p1->partitionTerms(positives, negatives, integers, negate);
             break;
-        case opAssignExp:
-            p1 = ((Binary*)this)->getSubExp1();
-            p2 = ((Binary*)this)->getSubExp1();
-            p1->partitionTerms(positives, negatives, integers, negate);
-            p2->partitionTerms(positives, negatives, integers, negate);
-            break;
-         case opIntConst: {
+        case opIntConst: {
             int k = ((Const*)this)->getInt();
             if (negate)
                 integers.push_back(-k);
@@ -1567,12 +1425,6 @@ Exp* Unary::simplifyArith()
         subExp1 = subExp1->simplifyArith();
     }
     return this;            // Else, do nothing
-}
-
-Exp* AssignExp::simplifyArith() {
-    subExp1 = subExp1->simplifyArith();
-    subExp2 = subExp2->simplifyArith();
-    return this;
 }
 
 Exp* Ternary::simplifyArith() {
@@ -2261,12 +2113,6 @@ Exp* Ternary::polySimplify(bool& bMod) {
     return res;
 }
 
-Exp* AssignExp::polySimplify(bool& bMod) {
-    subExp1 = subExp1->polySimplify(bMod);
-    subExp2 = subExp2->polySimplify(bMod);
-    return this;
-}
-
 /*==============================================================================
  * FUNCTION:        Exp::simplifyAddr
  * OVERVIEW:        Just do addressof simplification: a[ m[ any ]] == any,
@@ -2455,15 +2301,17 @@ Exp *Exp::deserialize(std::istream &inf)
                 e = new TypedExp(t, e1);
             }
             break;
+        #if 0
         case 'A':
             {
                 int sz;
                 loadValue(inf, sz, false);
                 Exp *e1 = deserialize(inf);
                 Exp *e2 = deserialize(inf);
-                e = new AssignExp(sz, e1, e2);
+                e = new Assign(sz, e1, e2);
             }
             break;
+        #endif
         case 'F':
             {
                 Exp *e1 = deserialize(inf);
@@ -2607,25 +2455,6 @@ bool TypedExp::serialize(std::ostream &ouf, int &len)
     return true;
 }
 
-bool AssignExp::serialize(std::ostream &ouf, int &len)
-{
-    std::streampos st = ouf.tellp();
-
-    char ch = 'A';
-    saveValue(ouf, ch, false);
-    saveValue(ouf, (int)op, false);
-
-    saveValue(ouf, size, false);
-    int l;
-    subExp1->serialize(ouf, l);
-    subExp2->serialize(ouf, l);
-
-    saveFID(ouf, FID_EXP_END);
-    saveLen(ouf, 0);
-
-    len = ouf.tellp() - st;
-    return true;
-}
 
 bool FlagDef::serialize(std::ostream &ouf, int &len)
 {
@@ -2644,95 +2473,6 @@ bool FlagDef::serialize(std::ostream &ouf, int &len)
 
     len = ouf.tellp() - st;
     return true;
-}
-
-void AssignExp::killDef(StatementSet &reach) {
-    StatementSet kills;
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() == NULL) continue;     // Should never happen?
-        bool isKilled = false;
-        // Note: *= is "subscript insensitive" comparison. If attempt to
-        // redo global dataflow in SSA form, may need to change this
-        if (*s->getLeft() *= *subExp1)
-            isKilled = true;
-        // The below is NOT necessarily conservative!
-        // In fact, it prevents hello world from working, so is commmented
-        // out for now:
-        //isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
-        if (isKilled)
-            kills.insert(s);
-    }
-    reach.makeDiff(kills);
-}
-
-// Liveness is killed by a definition
-void AssignExp::killLive(LocationSet &live) {
-    if (subExp1 == NULL) return;
-    LocSetIter it;
-    for (Exp* loc = live.getFirst(it); loc; loc = live.getNext(it)) {
-        // MVE: do we need to consider aliasing?
-        if (*loc == *subExp1)
-            live.remove(loc);
-    }
-}
-
-// Deadness is killed by a use
-void AssignExp::killDead(LocationSet &dead) {
-    LocationSet uses;
-    addUsedLocs(uses);
-    dead.makeDiff(uses);
-}
-
-#if 0
-// MVE: I don't think that this will be needed any more
-void AssignExp::getDeadStatements(StatementSet &dead) {
-    StatementSet reach;
-    getReachIn(reach, 2);
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() == NULL) continue;
-        bool isKilled = false;
-        if (*s->getLeft() == *subExp1)
-            isKilled = true;
-        if (s->getLeft()->isMemOf() && subExp1->isMemOf())
-            isKilled = true; // might alias, very "conservative"
-        if (isKilled && s->getNumUsedBy() == 0)
-        dead.insert(s);
-    }
-}
-#endif
-
-// update type for expression
-Type *AssignExp::updateType(Exp *e, Type *curType) {
-    return curType;
-}
-
-bool AssignExp::usesExp(Exp *e) {
-    Exp *where = 0;
-    return (subExp2->search(e, where) || (subExp1->isMemOf() && 
-        ((Unary*)subExp1)->getSubExp1()->search(e, where)));
-}
-
-void AssignExp::doReplaceRef(Exp* from, Exp* to) {
-    bool changeright = false;
-    subExp2 = subExp2->searchReplaceAll(from, to, changeright);
-    bool changeleft = false;
-    // If LHS is a memof, substitute its subexpression as well
-    if (subExp1->isMemOf()) {
-        Exp* subsub1 = ((Unary*)subExp1)->getSubExp1();
-        ((Unary*)subExp1)->setSubExp1ND(
-          subsub1->searchReplaceAll(from, to, changeleft));
-    }
-    //assert(changeright || changeleft);    // HACK!
-    if (!changeright && !changeleft)
-        std::cerr << "Exp::doReplaceRef: could not change " << from << " to " <<
-          to << " in " << std::dec <<
-          dynamic_cast<Statement*>(this)->getNumber() << (Exp*)this << " !!\n";
-    // simplify the expression
-    subExp2 = subExp2->simplifyArith();
-    subExp1 = subExp1->simplifyArith();
-    simplify();
 }
 
 // Replace all e in this Exp with e{def}
@@ -2767,22 +2507,6 @@ Exp* RefExp::expSubscriptVar(Exp* e, Statement* def) {
         subExp1 = subExp1->expSubscriptVar(e, def);
     return this;
 }
-Exp* AssignExp::expSubscriptVar(Exp* e, Statement* def) {
-    assert(0);              // No: use the Statement version substituteVar()
-}
-
-void AssignExp::subscriptVar(Exp* e, Statement* def) {
-    // Replace all e with e{def} (on the RHS or in memofs in the LHS)
-    // NOTE: don't use searchReplace. It deletes the original, which could
-    // already be used as a key in a map!
-    subExp2 = subExp2->expSubscriptVar(e, def);
-    if (subExp1->isMemOf()) {
-        Exp* subLeft = ((Unary*)subExp1)->getSubExp1();
-        Exp* temp = subLeft->expSubscriptVar(e, def);
-        if (subLeft != temp)
-            ((Unary*)subExp1)->setSubExp1ND(temp);
-    }
-}
 
 /*==============================================================================
  * FUNCTION:        Unary::fixSuccessor
@@ -2793,10 +2517,10 @@ void AssignExp::subscriptVar(Exp* e, Statement* def) {
  *============================================================================*/
 static Unary succRegOf(opSuccessor,
     new Unary(opRegOf, new Terminal(opWild)));
-Exp* Unary::fixSuccessor() {
+Exp* Exp::fixSuccessor() {
     bool change;
     Exp* result;
-    // Assume only one successor function in any 1 assignment
+    // Assume only one successor function in any 1 expression
     if (search(&succRegOf, result)) {
         // Result has the matching expression, i.e. succ(r[K])
         Exp* sub1 = ((Unary*)result)->getSubExp1();
@@ -2816,11 +2540,6 @@ Exp* Unary::fixSuccessor() {
     return this;
 }
     
-void AssignExp::processConstants(Prog *prog)
-{
-    // TODO
-}
-
 /*==============================================================================
  * FUNCTION:        Exp::killFill
  * OVERVIEW:        Remove size operations such as zero fill, sign extend
@@ -2852,24 +2571,6 @@ bool Exp::isTemp() {
     // Some old code has r[tmpb] instead of just tmpb
     Exp* sub = ((Unary*)this)->getSubExp1();
     return sub->op == opTemp;
-}
-
-/*==============================================================================
- * FUNCTION:        AssignExp::addUsedLocs
- * OVERVIEW:        Add all locations (registers or memory) used by this
- *                    assignment
- * PARAMETERS:      used: ref to a LocationSet to insert the used locations into
- * RETURNS:         nothing
- *============================================================================*/
-void AssignExp::addUsedLocs(LocationSet& used) {
-    Exp* left = getSubExp1();
-    Exp* right = getSubExp2();
-    right->addUsedLocs(used);
-    if (left->isMemOf()) {
-        // We also use any expr like m[exp] on the LHS (but not the outer m[])
-        Exp* leftChild = ((Unary*)left)->getSubExp1();
-        leftChild->addUsedLocs(used);
-    }
 }
 
 void Unary::addUsedLocs(LocationSet& used) {
@@ -2976,26 +2677,6 @@ Exp* Binary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     return this;
 }
 
-//  //  //  //  //
-//  AssignExp   //
-//  //  //  //  //
-Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // No need to test for equality to left
-    // However, need to update aa iff LHS is m[aa]
-    if (subExp1->isMemOf())
-        // Beware. Consider left == m[r[28]]; subExp1 is the same.
-        // If we call subExp1->updateRefs, we will double subscript our
-        // LHS (violating a basic property of SSA form)
-        // If we call left->updateRefs, we would get a
-        // subscript of a subscript, also not what we want!
-        // Don't call setSubExp1 either, since it deletes the old
-        // expression (old expression is always needed)
-        ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateRefs(defs, memDepth, rs));
-    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
-    return this;
-}
-
 //  //  //  //
 //  RefsExp //
 //  //  //  //
@@ -3086,14 +2767,6 @@ void Binary::doRemoveRestoreRefs(StatementSet& rs) {
     subExp2->doRemoveRestoreRefs(rs);
 }
 
-//  //  //  //  //
-//  AssignExp   //
-//  //  //  //  //
-void AssignExp::doRemoveRestoreRefs(StatementSet& rs) {
-    subExp1->doRemoveRestoreRefs(rs);
-    subExp2->doRemoveRestoreRefs(rs);
-}
-
 //  //  //  //
 // Ternary  //
 //  //  //  //
@@ -3176,11 +2849,6 @@ Exp* Ternary::fromSSA(igraph& ig) {
     subExp2 = subExp2->fromSSA(ig);
     subExp3 = subExp3->fromSSA(ig);
     return this;
-}
-
-void AssignExp::fromSSAform(igraph& ig) {
-    subExp1 = subExp1->fromSSA(ig);
-    subExp2 = subExp2->fromSSA(ig);
 }
 
 // Return the memory nesting depth

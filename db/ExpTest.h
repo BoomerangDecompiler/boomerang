@@ -27,9 +27,7 @@ class ExpTest : public CppUnit::TestCase {
     void testBinaries ();
     void testUnaries ();
 
-    void testIsAssign();
     void testIsAfpTerm();
-    void testIsFlagCall();
 
     void testCompare1();
     void testCompare2();
@@ -60,7 +58,6 @@ class ExpTest : public CppUnit::TestCase {
     void testMapOfExp();
 
     void testList();
-    void testClone();
     void testParen();
     void testFixSuccessor();
 	void testKillFill();

@@ -27,7 +27,7 @@
 
 #include "types.h"
 #include "table.h"
-#include "dataflow.h"
+#include "statement.h"
 #include "exp.h"
 
 Table::Table(TABLE_TYPE t) :

@@ -20,6 +20,7 @@
 
 #include "types.h"
 #include "FrontSparcTest.h"
+#include "proc.h"
 #include "prog.h"
 #include "frontend.h"
 #include "sparcfrontend.h"
@@ -174,7 +175,7 @@ void FrontSparcTest::test2() {
     std::ostringstream o4;
     inst = pFE->decodeInstruction(0x10a6c);
     inst.rtl->print(o4);
-    expected = std::string("00010a6c      JUMP 0x10a74\n");
+    expected = std::string("00010a6c    0 JUMP 0x10a74\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
     delete pFE;
@@ -201,7 +202,7 @@ void FrontSparcTest::test3() {
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x10a74);
     inst.rtl->print(o2);
-    expected = std::string("00010a74      RET\n");
+    expected = std::string("00010a74    0 RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;

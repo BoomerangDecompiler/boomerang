@@ -16,7 +16,7 @@
 #include "ExpTest.h"
 #include "ProgTest.h"
 #include "ProcTest.h"
-#include "DataflowTest.h"
+#include "StatementTest.h"
 #include "RtlTest.h"
 #include "ParserTest.h"
 #include "TypeTest.h"
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     FrontPentTest fpt("FrontPentTest");
     AnalysisTest ant("AnalysisTest");
     CTest c("CTest");
-    DataflowTest dft("DataflowTest");
+    StatementTest dft("StatementTest");
     CfgTest cfgt("CfgTest");
 
     expt.registerTests(&suite);

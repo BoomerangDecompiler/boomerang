@@ -145,7 +145,7 @@ void FrontPentTest::test2() {
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x804892a);
     inst.rtl->print(o3);
-    expected = std::string("0804892a      JUMP 0x804892c\n");
+    expected = std::string("0804892a    0 JUMP 0x804892c\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -178,7 +178,7 @@ void FrontPentTest::test3() {
     expected = std::string(
       "0804892d    0 *32* %pc := m[r28]\n"
       "            0 *32* r28 := r28 + 4\n"
-      "0804892d      RET\n");
+      "            0 RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     delete pFE;

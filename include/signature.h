@@ -14,6 +14,9 @@
 #ifndef __SIGNATURE_H_
 #define __SIGNATURE_H_
 
+#include "exp.h"
+#include "type.h"
+
 class Statement;
 class BinaryFile;
 

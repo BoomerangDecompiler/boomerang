@@ -44,7 +44,7 @@ typedef union {
     char*           str;
     int             num;
     double          dbl;
-    Exp*            regtransfer;
+    Statement*      regtransfer;
     
     Table*          tab;
     InsNameElem*    insel;
@@ -78,7 +78,7 @@ public: \
         SSLParser(std::istream &in, bool trace); \
         virtual ~SSLParser(); \
 OPER    strToOper(const char*s); /* Convert string to an operator */ \
-static  Exp* parseExp(const char *str); /* Parse an expression from a string */ \
+static  Statement* parseExp(const char *str); /* Parse an expression or assignment from a string */ \
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
@@ -96,9 +96,9 @@ protected: \
     std::string sslFile; \
 \
     /* \
-     * Result for parsing an expression. \
+     * Result for parsing an assignment. \
      */ \
-    Exp *the_exp; \
+    Statement *the_asgn; \
 \
     /* \
      * Maps SSL constants to their values. \
