@@ -1,11 +1,16 @@
 #!/bin/bash
 # functest.sh functional test script $Revision$
 # Note: to test with data flow based type analysis, pass a parameter of -Td
+#
+# 02-Feb-05 - Mike: Conditional tests for no type analysis. So all tests should pass whether -Td is passed or not
+#
 if [ -z $1 ]; then BOOMSW="--"; else BOOMSW=$1; fi
 echo Boomerang switch is $BOOMSW
+
 rm -rf functest
 mkdir functest
 rm -rf functests.out
+
 ./testOne.sh pentium hello $BOOMSW
 ./testOne.sh sparc   hello $BOOMSW
 ./testOne.sh ppc	 hello $BOOMSW
@@ -22,10 +27,16 @@ rm -rf functests.out
 ./testOne.sh sparc   global2 $BOOMSW
 ./testOne.sh pentium global3 $BOOMSW
 ./testOne.sh sparc   global3 $BOOMSW
+if [ $BOOMSW == "--" ]
+then
+  echo Skipping switch tests, requires type analysis
+  echo
+else
 ./testOne.sh pentium switch_gcc $BOOMSW 2 3 4 5
 ./testOne.sh sparc   switch_gcc $BOOMSW 2 3 4 5
 ./testOne.sh pentium switch_cc $BOOMSW 2 3 4
 ./testOne.sh sparc   switch_cc $BOOMSW 2 3 4
+fi
 ./testOne.sh pentium stattest $BOOMSW
 ./testOne.sh sparc   stattest $BOOMSW
 ./testOne.sh pentium minmax $BOOMSW 2 3 4
@@ -33,17 +44,31 @@ rm -rf functests.out
 ./testOne.sh pentium minmax2 $BOOMSW two
 ./testOne.sh sparc   minmax2 $BOOMSW two
 ./testOne.sh pentium minmax3 $BOOMSW two
+if [ $BOOMSW == "--" ]
+then
+  echo Skipping printpi tests, requires type analysis
+  echo
+else
 ./testOne.sh pentium printpi $BOOMSW
 ./testOne.sh sparc   printpi $BOOMSW
+fi
 ./testOne.sh pentium uns $BOOMSW 2 3
 ./testOne.sh sparc   uns $BOOMSW 2 3
 ./testOne.sh pentium fromssa2 $BOOMSW
 ./testOne.sh sparc   fromssa2 $BOOMSW
 ./testOne.sh pentium sumarray-O4 $BOOMSW
+if [ $BOOMSW == "--" ]
+then
+  echo Skipping sparc sumarray test, requires type analysis
+  echo
+else
 ./testOne.sh sparc   sumarray-O4 $BOOMSW
+fi
 ./testOne.sh pentium bswap $BOOMSW
 ./testOne.sh pentium testset -O 2 3 4
 ./testOne.sh sparc   andn $BOOMSW
+
 #./testOne.sh pentium line1 $BOOMSW test/source/line1.c
 #./testOne.sh sparc   line1 $BOOMSW test/source/line1.c
+
 echo === Done ===

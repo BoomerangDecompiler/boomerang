@@ -4,12 +4,13 @@
 # e.g. "./testOne.sh pentium hello"
 # or   "./testOne.sh sparc fibo -- 10" 
 # Note: at this stage, only one string can be passed as the options, e.g. -O
+
 echo $* > functest.res
 rm -f functest/$2.c
 ./boomerang -o functest $3 test/$1/$2 2>/dev/null >/dev/null
 ret=$?
 if [[ ret -ge 128 ]]; then
-	echo Result for $1 $2: Boomerang failed with signal $((ret-128))
+	echo Result for $1 $2: Boomerang FAILED with signal $((ret-128))
 		>> functest.res
 else
 	if [[ ! -f functest/$2/$2.c ]]; then
@@ -22,7 +23,7 @@ else
 			sed -f test/$1/$2.sed functest.c > functest.tmp
 			ret=$?
 			if [[ ret -ne 0 ]]; then
-				echo test/$1/$2.sed failed! >> functest.res
+				echo test/$1/$2.sed FAILED! >> functest.res
 				echo
 				exit 10
 			fi
@@ -30,7 +31,7 @@ else
 		fi
 		gcc -o functest.exe functest.c >> functest.res 2>&1
 		if [[ $? != 0 ]]; then
-			echo Result for $1 $2: Compile failed >> functest.res
+			echo Result for $1 $2: Compile FAILED >> functest.res
 		else
 			rm -f functest.out
 			./functest.exe $4 $5 $6 $7 $8 $9 >> functest.out 2>&1
@@ -46,7 +47,7 @@ else
 				# Filter out control chars that may happen due to bad decomp.
 				tr -d < functest.tmp [:cntrl:] >> functest.res
 				if [[ ret -ne 0 ]]; then
-					echo Result for $1 $2: failed diff >> functest.res
+					echo Result for $1 $2: FAILED diff >> functest.res
 				else
 					echo Result for $1 $2: Passed >> functest.res
 				fi
