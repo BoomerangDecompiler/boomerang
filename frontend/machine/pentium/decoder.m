@@ -2273,7 +2273,9 @@ DWord PentiumDecoder::getDword (unsigned lc)
  * RETURNS:        N/A
  *============================================================================*/
 PentiumDecoder::PentiumDecoder() : NJMCDecoder()
-{}
+{
+  RTLDict.readSSLFile("frontend/machine/pentium/pentium.ssl");
+}
 
 // For now...
 int PentiumDecoder::decodeAssemblyInstruction(unsigned, int)

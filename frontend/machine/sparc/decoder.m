@@ -655,7 +655,9 @@ DWord SparcDecoder::getDword(ADDRESS lc)
  * RETURNS:        N/A
  *============================================================================*/
 SparcDecoder::SparcDecoder() : NJMCDecoder()
-{}
+{
+  RTLDict.readSSLFile("frontend/machine/sparc/sparc.ssl");
+}
 
 // For now...
 int SparcDecoder::decodeAssemblyInstruction(unsigned, int)
