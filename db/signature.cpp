@@ -1415,7 +1415,7 @@ bool Signature::isStackLocal(Prog* prog, Exp *e) {
 bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	OPER op = e->getOper();
 	// e must be sp -/+ K or just sp
-	static Exp *sp = Location::regOf(getStackRegister());
+	static Exp *sp = Location::regOf(getStackRegister(prog));
 	if (op != opMinus && op != opPlus) {
 		// Matches if e is sp or sp{0}
 		return (*e == *sp ||

@@ -2171,7 +2171,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 
 Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass) {
 	// Expression r[sp] (build just once per call)
-	Exp* regSP = Location::regOf(signature->getStackRegister());
+	Exp* regSP = Location::regOf(signature->getStackRegister(prog));
 	// The implicit definition for r[sp], if any
 	Statement* defSP = cfg->findTheImplicitAssign(regSP);
 	// The expression r[sp]{0}
@@ -2273,7 +2273,7 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
 		LOG << "\n";
 	}
 
-	int sp = signature->getStackRegister();
+	int sp = signature->getStackRegister(prog);
 	if (getProven(Location::regOf(sp)) == NULL) {
 		if (VERBOSE)
 			LOG << "Can't replace locals since sp unproven\n";
@@ -2578,6 +2578,7 @@ bool UserProc::propagateStatements(int memDepth, int toDepth) {
 		if (s->isPhi()) continue;
 		// We can propagate to ReturnStatements now, and "return 0"
 		// if (s->isReturn()) continue;
+        LOG << s << "\n";
 		convertedIndirect |= s->propagateTo(memDepth, empty, toDepth, limitPropagations);
 	}
 	simplify();
