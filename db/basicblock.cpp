@@ -1526,11 +1526,7 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
             StatementList &internals = call->getInternalStatements();
             StmtListRevIter it1;
             for (Statement* s1 = internals.getLast(it1); s1;
-                 s1 = internals.getPrev(it1)) {
-                // MVE: I think this next statement is wrong. The only way
-                // stmt can be == to *it1 is in a recursive function; it is
-                // affected by assignments to any part of the procedure, not
-                // just up to this recursive call
+              s1 = internals.getPrev(it1)) {
                 if (stmt == s1) return;
                 s1->calcLiveIn(liveout);
             } 
