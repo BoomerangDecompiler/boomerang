@@ -1993,7 +1993,8 @@ void Cfg::dominators() {
     bucket.resize(numBB);
     DF.resize(numBB);
     DFS(-1, 0);
-    for (int i=N-1; i >= 1; i--) {
+    int i;
+    for (i=N-1; i >= 1; i--) {
         int n = vertex[i]; int p = parent[n]; int s = p;
         /* These lines calculate the semi-dominator of n, based on the
             Semidominator Theorem */
@@ -2186,8 +2187,9 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     // For each statement S in block n
     BasicBlock::rtlit rit; StatementList::iterator sit;
     PBB bb = BBs[n];
-    for (Statement* S = bb->getFirstStmt(rit, sit); S;
-                    S = bb->getNextStmt(rit, sit)) {
+    Statement* S;
+    for (S = bb->getFirstStmt(rit, sit); S;
+         S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function
         if (1) { //!S->isPhi()) {
             // For each use of some variable x in S (not just assignments)
