@@ -1412,23 +1412,10 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin,
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->calcReachOut(reachin);
-            StatementList &internals = call->getInternalStatements();
-            StmtListIter it1;
-            for (Statement* s1 = internals.getFirst(it1); s1;
-              s1 = internals.getNext(it1)) {
-                // MVE: I think this next statement is wrong. The only way
-                // stmt can be == to *it1 is in a recursive function; it is
-                // affected by assignments to any part of the procedure, not
-                // just up to this recursive call
-                if (stmt == s1) return;
-                s1->setBB(this);            // ??
-                s1->calcReachOut(reachin);
-            } 
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
             if (jcond == stmt) return;
-            jcond->setBB(this);
             jcond->calcReachOut(reachin);
         }
     }
@@ -1451,23 +1438,10 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->calcAvailOut(availin);
-            StatementList &internals = call->getInternalStatements();
-            StmtListIter it1;
-            for (Statement* s1 = internals.getFirst(it1); s1;
-              s1 = internals.getNext(it1)) {
-                // MVE: I think this next statement is wrong. The only way
-                // stmt can be == to *it1 is in a recursive function; it is
-                // affected by assignments to any part of the procedure, not
-                // just up to this recursive call
-                if (stmt == s1) return;
-                s1->setBB(this);            // ??
-                s1->calcAvailOut(availin);
-            } 
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
             if (jcond == stmt) return;
-            jcond->setBB(this);
             jcond->calcAvailOut(availin);
         }
     }
@@ -1489,13 +1463,6 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->calcLiveIn(liveout);
-            StatementList &internals = call->getInternalStatements();
-            StmtListRevIter it1;
-            for (Statement* s1 = internals.getLast(it1); s1;
-              s1 = internals.getPrev(it1)) {
-                if (stmt == s1) return;
-                s1->calcLiveIn(liveout);
-            } 
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
@@ -1534,7 +1501,7 @@ bool BasicBlock::isPostCall() {
 }
 
 /*==============================================================================
- * FUNCTION:        BasicBlock::computeReaches
+ * FUNCTION:        BasicBlock::calcReaches
  * OVERVIEW:        Computes the reaching definitions for this BB
  * PARAMETERS:      phase: 1=phase 1, 2=phase 2
  * RETURNS:         <nothing>
@@ -1620,8 +1587,8 @@ void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
                     } else {
                         StatementSet temp(inEdge->reachOut);
                         Cfg* cfgDest = ((UserProc*)dest)->getCFG();
-                        temp.makeDiff(*cfgDest->getAvailExit());
-                        temp.makeUnion(*cfgDest->getReachExit());
+                        temp.makeDiff(cfgDest->getSavedAvailExit());
+                        temp.makeUnion(cfgDest->getSavedReachExit());
                         reachin.makeUnion(temp);
                     }
                 } else
@@ -1640,6 +1607,10 @@ void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
     }
 }
 
+// Get a set of statements. If the inedge is a call, make it the reach out
+// set of the call, less the reach out of the exit block, union the available
+// out of the exit block.
+// For other blocks, it's just their avail out.
 void BasicBlock::doAvail(StatementSet& availSet, PBB inEdge) {
     if (inEdge->m_nodeType == CALL) {
         Proc* dest = inEdge->getDestProc();
@@ -1650,17 +1621,26 @@ void BasicBlock::doAvail(StatementSet& availSet, PBB inEdge) {
         }
         // AVAILOUT[call]
         availSet = inEdge->availOut;
+HLCall* call = (HLCall*)inEdge->getRTLs()->back();
+std::cerr << "doAvail: call to " << dest->getName() << " from ";call->print(std::cerr, true);
+std::cerr << "doAvail:  avail from call: "; availSet.printNums(std::cerr); std::cerr << "\n";
         PBB exitBlock = ((UserProc*)dest)->getCFG()->getExitBB();
         // - REACHOUT[exit]
         availSet.makeDiff(exitBlock->reachOut);
+std::cerr << "doAvail:    exit reachout: "; exitBlock->reachOut.printNums(std::cerr); std::cerr << "\n";
+std::cerr << "doAvail:   after makeDiff: "; availSet.printNums(std::cerr); std::cerr << "\n";
         // U AVAILOUT[exit]
         availSet.makeUnion(exitBlock->availOut);
-    } else if (inEdge->m_nodeType != RET) {
+std::cerr << "doAvail:    exit availout: "; exitBlock->availOut.printNums(std::cerr); std::cerr << "\n";
+std::cerr << "doAvail:  after makeUnion: "; availSet.printNums(std::cerr); std::cerr << "\n";
+    } else {
         // Non call in-edge; just copy the available set to intersect with the
         // rest, except for return edges. These are considered with the special
         // case for CALL basic blocks, above.
         availSet = inEdge->availOut;
     }
+    // Note: for return in-edges, this func is just not called
+    // This would be a lot simpler if we could set availSet to the universal set
 }
 
 // Definitions that are available at the start of this BB are usually the
@@ -1671,15 +1651,21 @@ void BasicBlock::getAvailIn(StatementSet &availin, int phase) {
     if (isPostCall() && (phase != 0)) {
         // Phase 1: AVAILIN[return] = AVAILOUT[exit] U
         //    AVAILOUT[call] - REACHOUT[exit]
-        availin.clear();            // in case there is only a libproc, say
-        doAvail(availin, m_InEdges[0]);
-        for (unsigned i = 1; i < m_InEdges.size(); i++) {
+        // Find a non return in-edge (there must be one, the call)
+        unsigned i=0;
+        while (m_InEdges[i]->m_nodeType == RET)
+            i++;
+        doAvail(availin, m_InEdges[i]);
+        for (i++; i < m_InEdges.size(); i++) {
+            if (m_InEdges[i]->m_nodeType == RET)
+                // Don't intersect return in-edges
+                continue;
             StatementSet temp;
             doAvail(temp, m_InEdges[i]);
             availin.makeIsect(temp);
         }
     } else {
-        // Standard situation: find the intersection of alailable defs of
+        // Standard situation: find the intersection of available defs of
         // in-edges
         if (m_InEdges.size() == 0) {
             availin.clear();

@@ -923,16 +923,6 @@ void UserProc::initStatements(int& stmtNum) {
                 call->setProc(this);   // Different statement to its assignments
                 call->setBB(bb);
                 call->setNumber(++stmtNum);
-                // Take this opportunity to set up the parameters now
-                call->setSigArguments();
-                // FIXME: Likely not needed now:
-                StatementList &internal = call->getInternalStatements();
-                StmtListIter it1;
-                for (Statement* s1 = internal.getFirst(it1); s1;
-                  s1 = internal.getNext(it1)) {
-                    s1->setProc(this);
-                    s1->setBB(bb);
-                }
             }
             if (rtl->getKind() == JCOND_RTL) {
                 HLJcond *jcond = (HLJcond*)rtl;
@@ -959,33 +949,18 @@ void UserProc::getStatements(StatementList &stmts) {
                 Statement *e = dynamic_cast<Statement*>(*it);
                 if (e == NULL) continue;
                 stmts.append(e);
-                e->setProc(this);
-                e->setBB(bb);
             }
             if (rtl->getKind() == CALL_RTL) {
                 HLCall *call = (HLCall*)rtl;
                 stmts.append(call);
-                call->setProc(this);
-                StatementList &internal = call->getInternalStatements();
-                StmtListIter it1;
-                for (Statement* s1 = internal.getFirst(it1); s1;
-                  s1 = internal.getNext(it1)) {
-                    stmts.append(s1);
-                    s1->setProc(this);
-                    s1->setBB(bb);
-                }
             }
             if (rtl->getKind() == JCOND_RTL) {
                 HLJcond *jcond = (HLJcond*)rtl;
                 stmts.append(jcond);
-                jcond->setProc(this);
-                jcond->setBB(bb);
             }
             if (rtl->getKind() == SCOND_RTL) {
                 HLScond *scond = (HLScond*)rtl;
                 stmts.append(scond);
-                scond->setProc(this);
-                scond->setBB(bb);
             }
         }
     }
@@ -1008,13 +983,6 @@ void UserProc::removeStatement(Statement *stmt) {
                 rtl->getList().erase(it);
                 return;
             }
-        }
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            assert(call != stmt);
-            StatementList &internal = call->getInternalStatements();
-            if (internal.remove(stmt))
-                stmt->updateDfForErase();
         }
     }
 }

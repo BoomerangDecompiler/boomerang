@@ -155,6 +155,29 @@ int stmtNumber = 0;
     // First do forward-flow global dataflow
     forwardGlobalDataflow();
 
+PROGMAP::iterator pp;
+std::list<PBB> workList;            // List of BBs still to be processed
+// Set of the same; used for quick membership test
+std::set<PBB> workSet;
+for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+            if (proc->isLib()) continue;
+                Cfg* cfg = proc->getCFG();
+                    cfg->appendBBs(workList, workSet);
+}
+StatementSet ss;
+while (workList.size()) {
+    PBB currBB = workList.front();
+    workList.erase(workList.begin());
+    currBB->print(std::cerr);
+
+    std::cerr << "reach out: ";
+    currBB->getReachOut().printNums(std::cerr); std::cerr << "\n";
+    std::cerr << "avail out: ";
+    currBB->getAvailOut().printNums(std::cerr); std::cerr << "\n\n";
+}
+
+    
     //int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
@@ -162,9 +185,6 @@ int stmtNumber = 0;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-
-        // Initialise (number, etc) the statements of this proc
-      //p->initStatements(stmtNumber);
 
         // Put this proc into implicit SSA form
         p->toSSAform();
@@ -738,10 +758,12 @@ std::cerr << "Global DFA: phase 1\n";
         Cfg* cfg = proc->getCFG();
         cfg->setReturnInterprocEdges();
         // Clear the dataflow info for this proc's cfg
-        cfg->clearDataflow();
+        cfg->clearReaches();
+        cfg->clearAvailable();
     }
     bool change;
 int iter=0;
+    // Phase 1
     while (workList.size()) {
         PBB currBB = workList.front();
         workList.erase(workList.begin());
@@ -753,15 +775,18 @@ int iter=0;
 //std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
     };
 
-    // Phase 2
+    // Set up for Phase 2
 std::cerr << "Global DFA: phase 2\n";
     workSet.clear();            // Should be clear already
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
         UserProc* proc = (UserProc*)pp->second;
         if (proc->isLib()) continue;
         Cfg* cfg = proc->getCFG();
+        // Save reaching and available defs from phase 1
+        cfg->saveForwardFlow();
         // Clear the dataflow info for this proc's cfg
-        proc->getCFG()->clearDataflow();
+        // Note: leave available definitions alone; won't recalc this phase
+        proc->getCFG()->clearReaches();
         // Clear the return interprocedural edges
         cfg->clearReturnInterprocEdges();
         // Set the call interprocedural edges
@@ -769,6 +794,7 @@ std::cerr << "Global DFA: phase 2\n";
         cfg->appendBBs(workList, workSet);
     }
 iter=0;
+    // Phase 2
     while (workList.size()) {
         PBB currBB = workList.front();
         workList.erase(workList.begin());
@@ -778,19 +804,6 @@ iter=0;
         if (change) updateWorkList(currBB, workList, workSet);
 //std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
     };
-
-    // For now, stay in phase 2. Going to "standard" ("phase 0") dataflow
-    // won't work (I think). MVE
-#if 0
-std::cerr << "Global DFA: phase 0\n";
-    interProcDFAphase = 0;
-    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
-        UserProc* proc = (UserProc*)pp->second;
-        if (proc->isLib()) continue;
-        Cfg* cfg = proc->getCFG();
-        cfg->clearCallInterprocEdges();
-    }
-#endif
 
 }
 

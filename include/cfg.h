@@ -597,6 +597,15 @@ typedef std::map<ADDRESS, PBB, std::less<ADDRESS> >   MAPBB;
  * the Cfg, one traverses the whole procedure.
  *============================================================================*/
 class Cfg {
+    /*
+     * These statements reach the exit (saved from phase 1 of [SW93])
+     */
+    StatementSet reachExit;
+    /*
+     * These statements are available at the exit
+     */
+    StatementSet availExit;
+
 public:
     /*
      * Constructor.
@@ -872,7 +881,8 @@ public:
     /*
      * Compute reaches/use information
      */
-    void clearDataflow();
+    void clearReaches();
+    void clearAvailable();
     // Compute dataflow for this Cfg, return true if a change
     //bool computeDataflow();
     bool computeReaches(int phase);
@@ -880,13 +890,16 @@ public:
     //bool computeLiveness();
     void updateLiveEntryDefs();
     void clearLiveEntryDefsUsedby();
-    // Summary information for this cfg
+    // Summary information saved from phase 1 for this cfg
+    StatementSet &getSavedReachExit() { return reachExit;}
+    StatementSet &getSavedAvailExit() { return availExit;}
+    // Summary information at end of phase 2 for this cfg
     StatementSet *getReachExit() {
-        return (exitBB == NULL) ? NULL : &exitBB->reachOut; }
-    StatementSet *getAvailExit() { 
-        return (exitBB == NULL) ? NULL : &exitBB->availOut; }
-    LocationSet *getLiveEntry() {
-        return (entryBB == NULL) ? NULL : &entryBB->liveIn; }
+        return exitBB ? &exitBB->reachOut : NULL;}
+    StatementSet *getAvailExit() {
+        return exitBB ? &exitBB->availOut : NULL;}
+    //LocationSet *getLiveEntry() { }
+    void    saveForwardFlow();      // Save forward flow info
     void   setCallInterprocEdges();
     void clearCallInterprocEdges();
     void   setReturnInterprocEdges();

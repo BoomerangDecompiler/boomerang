@@ -1228,18 +1228,6 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
             os << "\n";
         }
     }
-    
-    // FIXME: VERY LIKELY WE DON'T WANT THIS ANY MORE
-    if (withDF) {
-        StatementList &internal = getInternalStatements();
-        StmtListIter it;
-        for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it))
-        {
-            os << "internal ";
-            s->printWithUses(os);
-            os << std::endl;
-        }
-    }
 }
 
 /*==============================================================================
@@ -1385,32 +1373,7 @@ void HLCall::decompile() {
         if (p != NULL)
             p->decompile();
 
-        // FIXME: Very likely don't want this now:
-        // This is now "on the way back up" for this call
-        if (procDest && !procDest->isLib()) {
-            // Copy the live-on-entry-to-the-dest-of-this-call info
-            // We need a copy so it can be substituted
-            // (e.g. m[r[29]-4] -> m[r[28]-12] or something)
-            // MVE: not needed if we copy them as parameters!
-            liveEntry = *((UserProc*)procDest)->getCFG()->getLiveEntry();
-        }
-        procDest->getInternalStatements(internal);
-#if 0       // Done in HLCall::setSigArguments() now
-        assert(arguments.size() == 0);
-        int n = procDest->getSignature()->getNumParams();
-        arguments.resize(n);
-        for (int i = 0; i < n; i++) {
-            Exp *e = procDest->getSignature()->getArgumentExp(i);
-            assert(e);
-            arguments[i] = e->clone();
-        }
-        if (procDest->getSignature()->hasEllipsis()) {
-            // Just guess 10 parameters for now
-            //for (int i = 0; i < 10; i++)
-                arguments.push_back(procDest->getSignature()->
-                                getArgumentExp(arguments.size())->clone());
-        }
-#endif
+        // FIXME: Likely there is a much better place to do this
         // init return location
         setIgnoreReturnLoc(false);
     } else {
@@ -1427,70 +1390,8 @@ void HLCall::clearLiveEntry() {
 }
 
 void HLCall::truncateArguments() {
-    // Don't do this for register calls (yet)
-    if (procDest == NULL)
-return;
-    // Don't do this for library calls
-    if (procDest && procDest->isLib()) return;
-
-    // We now have full dataflow for all callees. For any that are involved
-    // in recursion, they will have too many parameters (e.g. the stack pointer
-    // is always recognised as a potential parameter). So restrict to live
-    // locations, if applicable
-    UserProc* uproc = (UserProc*)procDest;
-    LocationSet* li = uproc->getCFG()->getLiveEntry();
-    assert(li);
-    // This is a bit of a hack, and there is the issue of ordering parameters
-    // when the standard calling convention is not used
-//std::cerr << "Parameters " << uproc->getSignature()->getNumParams() << " and live set is " << li->size() << ", arguments " << arguments.size() << "\n";
-//std::cerr << "Live set: "; li->print();
-// Ugh - for now, we just chop the arguments to the same size as the parameters
-    //int n = uproc->getSignature()->getNumParams() - arguments.size();
-    // This is the number of parameters that have "disappeared" after we have
-    // done full dataflow. For now, we just chop these off the end of the list
-    // of actual arguments
-    int keep = uproc->getSignature()->getNumParams();
-    std::vector<Exp*>::iterator it;
-//std::cerr << "Removing " << n << " arguments and keeping " << keep << "\n";
-//std::cerr << "keeping " << keep << "\n";
-    for (it = arguments.begin(); keep>0 && it != arguments.end(); it++,keep--);
-    while (it != arguments.end()) {
-        if (VERBOSE)
-            std::cerr << "Removing argument " << *it << " from proc " <<
-              procDest->getName() << std::endl;
-        it = arguments.erase(it);
-    }
+    // Needs a total rewrite
 }
-
-#if 0
-void HLCall::printAsUse(std::ostream &os) {
-    // Print the return location if there is one
-    if (getReturnLoc() != NULL)
-        os << " " << getReturnLoc() << " := ";
- 
-    os << "CALL ";
-    if (procDest)
-        os << procDest->getName();
-    else if (pDest == NULL)
-            os << "*no dest*";
-    else {
-        pDest->print(os);
-    }
-
-    // Print the actual arguments of the call
-    os << "(";    
-    for (unsigned i = 0; i < arguments.size(); i++) {
-        if (i != 0)
-            os << ", ";
-        os << arguments[i];
-    }
-    os << ")";
-}
-
-void HLCall::printAsUseBy(std::ostream &os) {
-    printAsUse(os);
-}
-#endif
 
 void HLCall::killReach(StatementSet &reach) {
     if (procDest == NULL) {
@@ -1541,8 +1442,8 @@ void HLCall::killAvail(StatementSet &avail) {
     }
 
     // A UserProc
-    // This call kills those available definitions that are defined on any path
-    avail.removeIfDefines(*((UserProc*)procDest)->getCFG()->getReachExit());
+    // Don't kill anything. The interprocedural analysis handles the effects
+    // of the callee now
 }
 
 void HLCall::killLive(LocationSet &live) {

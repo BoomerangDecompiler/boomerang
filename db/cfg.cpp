@@ -1405,10 +1405,25 @@ void Cfg::computePostDominators() {
 }
 #endif
 
-void Cfg::clearDataflow() {
+void Cfg::saveForwardFlow() {
+    StatementSet* ss = getReachExit();
+    if (ss) reachExit = *ss;        // Copy reaching defs set
+    ss = getAvailExit();
+    if (ss) availExit = *ss;        // Copy available defs set
+std::cerr << "Cfg reachExit: ";reachExit.printNums(std::cerr);std::cerr << "\n";
+std::cerr << "Cfg availExit: ";availExit.printNums(std::cerr);std::cerr << "\n";
+}
+
+void Cfg::clearReaches() {
     for (std::list<PBB>::iterator it = m_listBB.begin(); 
       it != m_listBB.end(); it++) {
         (*it)->reachOut.clear();
+    }
+}
+
+void Cfg::clearAvailable() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+      it != m_listBB.end(); it++) {
         (*it)->availOut.clear();
     }
 }
