@@ -78,6 +78,7 @@ void Boomerang::helpcmd() {
     std::cerr << "\tinfo prog: print info about the program.\n";
     std::cerr << "\tinfo cluster <cluster>: print info about a cluster.\n";
     std::cerr << "\tinfo proc <proc>: print info about a proc.\n";
+    std::cerr << "\tprint <proc>: print the RTL for a proc.\n";
     std::cerr << "\thelp: this help.\n";
     std::cerr << "\texit: quit the shell.\n";
 }
@@ -478,6 +479,25 @@ int Boomerang::parseCmd(int argc, const char **argv)
 	    std::cerr << "don't know how to print info about a " << argv[1] << "\n";
 	    return 1;
 	}
+    } else if (!strcmp(argv[0], "print")) {
+	if (argc <= 1) {
+	    std::cerr << "not enough arguments for cmd\n";
+	    return 1;
+	}
+
+	Proc *proc = prog->findProc(argv[1]);
+	if (proc == NULL) {
+	    std::cerr << "cannot find proc " << argv[1] << "\n";
+	    return 1;
+	}
+	if (proc->isLib()) {
+	    std::cerr << "cannot print a libproc.\n";
+	    return 1;
+	}
+
+	((UserProc*)proc)->print(std::cout);
+	std::cout << "\n";
+	return 0;
     } else if (!strcmp(argv[0], "exit")) {
 	return 2;
     } else if (!strcmp(argv[0], "quit")) {
