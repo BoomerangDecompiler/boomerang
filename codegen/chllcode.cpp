@@ -137,7 +137,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opLongConst:
 			// sprintf(s, "%lld", c->getLong());
 			//strcat(str, s);
-			str << std::dec << c->getLong(); break;
+			str << std::dec << c->getLong() << "LL"; break;
 		case opFltConst:
 			// What to do with precision here?
 			str << c->getFlt(); break;
