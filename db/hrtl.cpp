@@ -20,6 +20,7 @@
  * 17 May 02 - Mike: Split off from rtl.cc (was getting too large)
  * 26 Nov 02 - Mike: Generate code for HlReturn with semantics (eg SPARC RETURN)
  * 26 Nov 02 - Mike: In getReturnLoc test for null procDest
+ * 03 Dec 02 - Mike: Made a small mod to HLCall::killLive for indirect calls
  */
 
 #include <assert.h>
@@ -1289,7 +1290,11 @@ void HLCall::killLive(std::set<Statement*> &live)
 {
     // conservative solution: if calling a userproc, kill everything.
     //                        if calling a libproc, kill return address.
-    assert(procDest);
+//assert(procDest);			// Mod MVE: Fails for all non direct calls
+	if (procDest == NULL) {
+		live.clear();
+		return;
+	}
     if (procDest->isLib()) {
         std::set<Statement*> kills;
         for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
