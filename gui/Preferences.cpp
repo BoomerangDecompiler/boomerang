@@ -1,3 +1,12 @@
+/*==============================================================================
+ * FILE:       Preferences.cpp
+ * OVERVIEW:   Implementation of the Preferences and related classes, which
+ *              displays, loads, and saves preferences
+ *============================================================================*/
+/*
+ * $Revision$
+ * 03 Apr 02 - Mike: Added code to size the dialog box, space controls
+ */
 
 #include "stdincs.h"
 #include "Preferences.h"
@@ -32,17 +41,24 @@ Preferences::Preferences(wxWindow* parent) :
 {
 	config = wxConfigBase::Get();
 
+    SetSize(500, 400);
+
 	LoadPreferences();
 
-	wxStaticText *st = new wxStaticText(this, -1, "Projects directory", wxPoint(0, 0));	
-	m_textProjectDir = new wxTextCtrl(this, -1, m_ProjectDir, wxPoint(st->GetRect().GetRight(), 0));
-	m_btnBrowse = new wxButton(this, -1, "Browse", wxPoint(m_textProjectDir->GetRect().GetRight(), 0));
-	wxStaticText *st1 = new wxStaticText(this, -1, "Plugin directory", wxPoint(m_btnBrowse->GetRect().GetRight(), 0));	
-	m_textPluginDir = new wxTextCtrl(this, -1, m_PluginDir, wxPoint(st1->GetRect().GetRight(), 0));
-	m_btnBrowse1 = new wxButton(this, -1, "Browse", wxPoint(m_textPluginDir->GetRect().GetRight(), 0));
-	m_btnApply = new wxButton(this, -1, "&Apply", wxPoint(0, GetSize().GetHeight() - 100));
-    m_btnSave = new wxButton(this, -1, "&Save", wxPoint(GetSize().GetWidth()/2 - 100, GetSize().GetHeight() - 100));
-    m_btnCancel = new wxButton(this, -1, "&Cancel", wxPoint(GetSize().GetWidth() - 200, GetSize().GetHeight() - 100));
+	wxStaticText *st = new wxStaticText(this, -1, "Projects directory", wxPoint(5, 5));	
+	m_textProjectDir = new wxTextCtrl(this, -1, m_ProjectDir, wxPoint(st->GetRect().GetRight()+10, 2),
+        wxSize(300, -1));
+	m_btnBrowse = new wxButton(this, -1, "Browse", wxPoint(m_textProjectDir->GetRect().GetRight()+5, 2));
+
+	wxStaticText *st1 = new wxStaticText(this, -1, "Plugin directory", wxPoint(5, 35));	
+	m_textPluginDir = new wxTextCtrl(this, -1, m_PluginDir, wxPoint(st->GetRect().GetRight()+10, 32),
+        wxSize(300, -1));
+	m_btnBrowse1 = new wxButton(this, -1, "Browse", wxPoint(m_textPluginDir->GetRect().GetRight()+5, 32));
+
+    // Buttons seem to be a width of about 70 pixels. Place them 50 from the bottom of the dialog
+	m_btnApply = new wxButton(this, -1, "&Apply", wxPoint(20, GetSize().GetHeight() - 50));
+    m_btnSave = new wxButton(this, -1, "&Save", wxPoint(GetSize().GetWidth()/2 - 70/2, GetSize().GetHeight() - 50));
+    m_btnCancel = new wxButton(this, -1, "&Cancel", wxPoint(GetSize().GetWidth() - 70-20, GetSize().GetHeight() - 50));
 
     m_btnSave->SetFocus();
     m_btnSave->SetDefault();
