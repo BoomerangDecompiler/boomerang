@@ -1208,13 +1208,14 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void CaseStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "CASE [";
-    if (pDest == NULL)
-        os << "*no dest*";
-    else os << pDest;
-    os << "] ";
-    if (pSwitchInfo)
-        os << "Switch variable: " << pSwitchInfo->pSwitchVar << std::endl;
+    if (pSwitchInfo == NULL) {
+        os << "CASE [";
+        if (pDest == NULL)
+            os << "*no dest*";
+        else os << pDest;
+        os << "] ";
+    } else
+        os << "SWITCH(" << pSwitchInfo->pSwitchVar << ")\n";
 }
 
 
@@ -1248,22 +1249,38 @@ void CaseStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 }
 
 bool CaseStatement::usesExp(Exp *e) {
-    return *pSwitchInfo->pSwitchVar == *e;
+    // Before a switch statement is recognised, pDest is non null
+    if (pDest)
+        return *pDest == *e;
+    // After a switch statement is recognised, pDest is null, and pSwitchInfo->
+    // pSwitchVar takes over
+    if (pSwitchInfo->pSwitchVar)
+        return *pSwitchInfo->pSwitchVar == *e;
+    return false;
 }
 
 void CaseStatement::addUsedLocs(LocationSet& used) {
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar)
+    if (pDest)
+        pDest->addUsedLocs(used);
+    else if (pSwitchInfo && pSwitchInfo->pSwitchVar)
         pSwitchInfo->pSwitchVar->addUsedLocs(used);
 }
 
 void CaseStatement::subscriptVar(Exp* e, Statement* def) {
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar)
+    if (pDest)
+        pDest = pDest->expSubscriptVar(e, def);
+    else if (pSwitchInfo && pSwitchInfo->pSwitchVar)
         pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->expSubscriptVar(
           e, def);
 }
 
 void CaseStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change;
+    if (pDest) {
+        pDest = pDest->searchReplaceAll(from, to, change);
+        pDest = pDest->simplify();
+        return;
+    }
     assert(pSwitchInfo && pSwitchInfo->pSwitchVar);
     pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(
       from, to, change);
@@ -1272,12 +1289,18 @@ void CaseStatement::doReplaceRef(Exp* from, Exp* to) {
 
 // Convert from SSA form
 void CaseStatement::fromSSAform(igraph& ig) {
+    if (pDest) {
+        pDest = pDest->fromSSA(ig);
+        return;
+    }
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
         pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->fromSSA(ig); 
 }
 
 void CaseStatement::simplify() {
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar)
+    if (pDest)
+        pDest = pDest->simplify();
+    else if (pSwitchInfo && pSwitchInfo->pSwitchVar)
         pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->simplify();
 }
 
@@ -2244,7 +2267,7 @@ void CallStatement::processConstants(Prog *prog) {
  * PARAMETERS:       None
  * RETURNS:          <nothing>
  *============================================================================*/
-ReturnStatement::ReturnStatement() : nBytesPopped(0) {
+ReturnStatement::ReturnStatement() : nBytesPopped(0), retAddr(NO_ADDRESS) {
     kind = STMT_RET;
 }
 
