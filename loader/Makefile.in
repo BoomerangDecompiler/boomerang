@@ -27,8 +27,8 @@
 # 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
 # 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
 
-C = gcc -g -Wall
-CC = g++ -g -Wall
+C = gcc -Wall -g -O0
+CC = g++ -Wall -g -O0
 CXX=$(CC)
 
 ALLLIBSRC =  $(wildcard *BinaryFile.cpp)
@@ -44,7 +44,9 @@ HOST_GNU_LD = @HOST_GNU_LD@
 # LDL is -ldl if needed (Cygwin does not)
 LDL = -ldl
 
-BOOMDIR="$(shell pwd)/.."
+# Relative paths
+#BOOMDIR="$(shell pwd)/.."
+BOOMDIR="."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
@@ -93,6 +95,8 @@ SymTab.o:   SymTab.h
 clean:
 	rm -f *.o $(ALLLIB) testLoader
 
+# Because of the relative paths, testLoader will only work from the parent
+# directory...
 test: all testLoader
-	./testLoader
+	cd .. ; loader/testLoader; cd -
 

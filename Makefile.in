@@ -25,8 +25,8 @@ MACH_FE_SRC=$(patsubst %, frontend/%frontend.cpp, $(MACHS))
 MACH_FE_OBJ=$(patsubst %, frontend/%frontend.o, $(MACHS))
 
 
-C = gcc -g -Wall -O4
-CC = g++ -g -Wall -O4
+C = gcc -Wall -g -O4
+CC = g++ -Wall -g -O4
 CXX=$(CC)
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
@@ -35,7 +35,10 @@ HOST_GNU_LD = @HOST_GNU_LD@
 BISONPP=@BISONPP@
 FLEXPP=@FLEXPP@
 
-BOOMDIR="$(shell pwd)"
+#
+# Want relative paths these days
+#BOOMDIR="$(shell pwd)"
+BOOMDIR="."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
