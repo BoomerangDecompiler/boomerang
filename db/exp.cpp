@@ -2577,19 +2577,19 @@ bool AssignExp::usesExp(Exp *e) {
         ((Unary*)subExp1)->getSubExp1()->search(e, where)));
 }
 
-void AssignExp::doReplaceUse(Statement *use) {
-    Exp *left = use->getLeft();
-    Exp *right = use->getRight();
-    assert(left);
-    assert(right);
+void AssignExp::doReplaceUse(Statement *def) {
+    Exp *defLeft = def->getLeft();
+    Exp *defRight = def->getRight();
+    assert(defLeft);
+    assert(defRight);
     bool changeright = false;
-    subExp2 = subExp2->searchReplaceAll(left, right, changeright);
+    subExp2 = subExp2->searchReplaceAll(defLeft, defRight, changeright);
     bool changeleft = false;
     Exp* baseSub1 = subExp1;
     if (subExp1->isSubscript()) baseSub1 = ((UsesExp*)subExp1)->getSubExp1();
     if (baseSub1->isMemOf()) {
         Exp *e = baseSub1->getSubExp1()->clone();
-        e = e->searchReplaceAll(left, right, changeleft);
+        e = e->searchReplaceAll(defLeft, defRight, changeleft);
         baseSub1->setSubExp1(e);
     }
 //    assert(changeright || changeleft);
@@ -2749,21 +2749,23 @@ Exp* Exp::addSubscript(Statement* def) {
 //  //  //  //
 Exp* Unary::updateRefs(StatementSet& defs, int memDepth) {
     // Only consider expressions that are of the correct "memory nesting depth"
+    Exp* res = this;
     if (getMemDepth() == memDepth) {
         StmtSetIter it;
         for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
             Exp* left = s->getLeft();
             assert(left);           // A definition must have a left
             if (*left == *this)
-                // Need to subscript
-                return addSubscript(s);
+                // Need to subscript.
+                // Note: several defs could reach, so don't return yet
+                res = res->addSubscript(s);
         }
     }
-    // Did not match at the top level. Recurse (in case a memof, addrof etd)
-    // (recurse even if memory depths don't match; we want to subscript all
-    // the addresses)
+    // Recurse (in case a memof, addrof etc)
+    // Recurse even if memory depths don't match; we want to subscript all
+    // the parameters to m[]'s
     subExp1 = subExp1->updateRefs(defs, memDepth);
-    return this;
+    return res;
 }
 
 //  //  //  //

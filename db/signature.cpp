@@ -879,7 +879,7 @@ void Signature::analyse(UserProc *p)
                 s->printAsUse(std::cerr);
                 std::cerr << std::endl;
             }
-            p->eraseInternalStatement(s);
+            //p->eraseInternalStatement(s);
             p->getCFG()->setReturnVal(s->getRight()->clone());
             updateParams(p, s);
             setReturnType(new IntegerType());

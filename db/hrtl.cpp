@@ -713,10 +713,10 @@ void HLJcond::printAsUseBy(std::ostream &os) {
 void HLJcond::processConstants(Prog *prog) {
 }
 
-void HLJcond::doReplaceUse(Statement *use) {
+void HLJcond::doReplaceUse(Statement *def) {
     bool change;
     assert(pCond);
-    pCond = pCond->searchReplaceAll(use->getLeft(), use->getRight(), change);
+    pCond = pCond->searchReplaceAll(def->getLeft(), def->getRight(), change);
     simplify();
 }
 
@@ -1548,15 +1548,16 @@ void HLCall::getDefinitions(LocationSet &defs)
     }
 }
 
-void HLCall::doReplaceUse(Statement *use) {
-    Exp *left = use->getLeft()->clone();        // Note: could be changed!
-    Exp *right = use->getRight()->clone();
-    assert(left);
-    assert(right);
+void HLCall::doReplaceUse(Statement *def) {
+    Exp *defLeft = def->getLeft()->clone();        // Note: could be changed!
+    Exp *defRight = def->getRight()->clone();
+    assert(defLeft);
+    assert(defRight);
     bool change = false;
 
     for (unsigned i = 0; i < arguments.size(); i++) {
-        arguments[i] = arguments[i]->searchReplaceAll(left, right, change);
+        arguments[i] = arguments[i]->searchReplaceAll(defLeft, defRight,
+          change);
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
@@ -2083,9 +2084,9 @@ void HLScond::fromSSAform(igraph& ig) {
     // To be completed
 }
 
-void HLScond::doReplaceUse(Statement *use)
+void HLScond::doReplaceUse(Statement *def)
 {
-    searchAndReplace(use->getLeft(), use->getRight());
+    searchAndReplace(def->getLeft(), def->getRight());
     simplify();
 }
 

@@ -1041,9 +1041,11 @@ void UserProc::decompile() {
             if (++memDepth > maxDepth) break;
             repairDataflow(memDepth);
             if (VERBOSE) {
-                std::cerr << "===== After repair dataflow =====\n";
+                std::cerr << "===== After repair dataflow depth " <<
+                  memDepth << " =====\n";
                 print(std::cerr, true);
-                std::cerr << "===== End after repair dataflow =====\n\n";
+                std::cerr << "===== End after repair dataflow depth " <<
+                    memDepth << " =====\n\n";
             }
         }
         if (!Boomerang::get()->noRemoveNull) {
@@ -1058,8 +1060,6 @@ void UserProc::decompile() {
             }
         }
     }
-    if (!Boomerang::get()->noRemoveInternal)
-        moveInternalStatements();
     cfg->compressCfg();
     processConstants();
 
@@ -1328,7 +1328,8 @@ bool UserProc::removeDeadStatements() {
             continue;
         if (s->getNumUsedBy() == 0) {
             if (VERBOSE) 
-                std::cerr << "Removing unused statement " << s << std::endl;
+                std::cerr << "Removing unused statement " << s->getNumber() <<
+                  " " << s << std::endl;
             removeStatement(s);
             change = true;
         }
@@ -1383,39 +1384,6 @@ bool UserProc::removeDeadStatements() {
     return change;
 }
 
-// Find assignments that have no uses, but which reach the end of the proc.
-// These are moved from the cfg to the set of internal statements
-void UserProc::moveInternalStatements() {
-    StatementList stmts;
-    getStatements(stmts);
-    // remove any statements that have no uses and reach the end of this proc
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        AssignExp *e = dynamic_cast<AssignExp *>(s);
-        if (e == NULL) continue;
-        if (s->getNumUsedBy() == 0 && 
-          s->getNumUses() == 0 &&           // ? why this condition?
-          cfg->getReachExit()->exists(s)) {
-            // move this to an internal statement
-            if (VERBOSE) {
-                std::cerr << "internalising: ";
-                s->printAsUse(std::cerr);
-                std::cerr << std::endl;
-            }
-            // This reaches the end of the proc. Save it in case it's for
-            // the return location
-            s->clearUses();
-            internal.append(s);
-            removeStatement(s);
-            cfg->getReachExit()->remove(s);
-        }
-    }
-}
-
-void UserProc::eraseInternalStatement(Statement *stmt) {
-    internal.remove(stmt);
-}
-
 void UserProc::processConstants() {
     StatementList stmts;
     getStatements(stmts);
@@ -1456,7 +1424,7 @@ bool UserProc::propagateAndRemoveStatements() {
                     } else
                         continue;
                 } else {
-                    if (Boomerang::get()->noRemoveInternal)
+                    //if (Boomerang::get()->noRemoveInternal)
                         continue;
                     // new internal statement
                     if (VERBOSE) {
@@ -1596,9 +1564,11 @@ void UserProc::removeUnusedStatements() {
         }
     }
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+std::cerr << "Statement " << s->getNumber() << " used " << useCounts[s] << " times\n";
         if (useCounts[s] == 0) {
             if (VERBOSE)
-                std::cerr << "Removing unused statement " << s << "\n";
+                std::cerr << "Removing unused statement " << s->getNumber() <<
+                  " " << s << std::endl;
             removeStatement(s);
         }
     }

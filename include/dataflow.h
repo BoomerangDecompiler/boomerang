@@ -283,7 +283,7 @@ public:
     virtual void   toSSAform(StatementSet& reachin, int memDepth) = 0;
     virtual void fromSSAform(igraph& igm) = 0;
 protected:
-    virtual void doReplaceUse(Statement *use) = 0;
+    virtual void doReplaceUse(Statement *def) = 0;
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };

@@ -9,7 +9,7 @@
 Boomerang *Boomerang::boomerang = NULL;
 
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
-    noBranchSimplify(false), noRemoveInternal(false),
+    noBranchSimplify(false), 
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
     noDataflow(false), noDecompile(false), noDecompileUp(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
@@ -35,7 +35,6 @@ void Boomerang::help() {
     std::cerr << "-r: print rtl for each proc to stderr before code generation\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-nb: no simplications for branches\n";
-    std::cerr << "-ni: no removal of internal statements\n";
     std::cerr << "-nn: no removal of null and dead statements\n";
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
@@ -90,9 +89,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 switch(argv[i][2]) {
                     case 'b':
                         noBranchSimplify = true;
-                        break;
-                    case 'i':
-                        noRemoveInternal = true;
                         break;
                     case 'n':
                         noRemoveNull = true;

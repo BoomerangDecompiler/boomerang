@@ -666,7 +666,7 @@ public:
     virtual void fromSSAform(igraph& ig);
 
 protected:
-	virtual void doReplaceUse(Statement *use);
+	virtual void doReplaceUse(Statement *def);
 };
 
 /*==============================================================================
