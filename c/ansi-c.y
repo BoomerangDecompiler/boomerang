@@ -548,9 +548,9 @@ identifier_list
 
 type_name
 	: specifier_qualifier_list
-          {}
+          { $$ = $1; }
 	| specifier_qualifier_list abstract_declarator
-          {}
+          { $$ = $1; $$->addToType($2); }
 	;
 
 abstract_declarator
@@ -564,39 +564,59 @@ abstract_declarator
 
 direct_abstract_declarator
 	: '(' abstract_declarator ')'
-          {}
+          { $$ = $2; }
 	| '[' ']'
-          {}
+          { $$ = new Type(Type::C_ARRAY); }
 	| '[' constant_expression ']'
-          {}
+          { $$ = new Type(Type::C_ARRAY); 
+            $$->setArrayExp($2);
+          }
 	| direct_abstract_declarator '[' ']'
-          {}
+          { $$ = $1; 
+            $$->addToType(new Type(Type::C_ARRAY));
+          }
 	| direct_abstract_declarator '[' constant_expression ']'
-          {}
+          { Type *t = new Type(Type::C_ARRAY);
+            t->setArrayExp($3);
+            $$ = $1;
+            $$->addToType(t);
+          }
 	| '(' ')'
-          {}
+          { $$ = new Type(Type::C_FUNC); }
 	| '(' parameter_type_list ')'
-          {}
+          { $$ = new Type(Type::C_FUNC); 
+            $$->setParamTypeList($2);
+          }
 	| direct_abstract_declarator '(' ')'
-          {}
+          { $$ = $1;
+            $$->addToType(new Type(Type::C_FUNC));
+          }
 	| direct_abstract_declarator '(' parameter_type_list ')'
-          {}
+          { Type *t = new Type(Type::C_FUNC);
+            t->setParamTypeList($3);
+            $$ = $1;
+            $$->addToType(t);
+          }
 	;
 
 initializer
 	: assignment_expression
-          {}
+          { $$ = $1; }
 	| '{' initializer_list '}'
-          {}
+          { $$ = $2; }
 	| '{' initializer_list ',' '}'
-          {}
+          { $$ = $2; }
 	;
 
 initializer_list
 	: initializer
-          {}
+          { $$ = new list<Exp*>; 
+            $$->push_back($1);
+          }
 	| initializer_list ',' initializer
-          {}
+          { $$ = $1;
+            $$->push_back($3);
+          }
 	;
 
 statement
@@ -616,11 +636,11 @@ statement
 
 labeled_statement
 	: IDENTIFIER ':' statement
-          {}
+          { $$ = new LabeledStatement($1, $3); }
 	| CASE constant_expression ':' statement
-          {}
+          { $$ = new CaseStatement($2, $4); }
 	| DEFAULT ':' statement
-          {}
+          { $$ = new DefaultCaseStatement($3); }
 	;
 
 compound_statement
@@ -658,42 +678,42 @@ statement_list
 
 expression_statement
 	: ';'
-          {}
+          { $$ = new Exp(); }
 	| expression ';'
-          {}
+          { $$ = $1; }
 	;
 
 selection_statement
 	: IF '(' expression ')' statement
-          {}
+          { $$ = new IfStmt($3, $5); }
 	| IF '(' expression ')' statement ELSE statement
-          {}
+          { $$ = new IfStmt($3, $5, $7); }
 	| SWITCH '(' expression ')' statement
-          {}
+          { $$ = new SwitchStmt($3, $5); }
 	;
 
 iteration_statement
 	: WHILE '(' expression ')' statement
-          {}
+          { $$ = new CondLoopStmt($3, $5, true); }
 	| DO statement WHILE '(' expression ')' ';'
-          {}
+          { $$ = new CondLoopStmt($2, $5, false); }
 	| FOR '(' expression_statement expression_statement ')' statement
-          {}
+          { $$ = new ForStmt($3, $4, $6); }
 	| FOR '(' expression_statement expression_statement expression ')' statement
-          {}
+          { $$ = new ForStmt($3, $4, $5, $7); }
 	;
 
 jump_statement
 	: GOTO IDENTIFIER ';'
-          {}
+          { $$ = new GotoStmt($2); }
 	| CONTINUE ';'
-          {}
+          { $$ = new ContinueStmt(); }
 	| BREAK ';'
-          {}
+          { $$ = new BreakStmt(); }
 	| RETURN ';'
-          {}
+          { $$ = new ReturnStmt(); }
 	| RETURN expression ';'
-          {}
+          { $$ = new ReturnStmt($2); }
 	;
 
 translation_unit
@@ -705,9 +725,9 @@ translation_unit
 
 external_declaration
 	: function_definition
-          {}
+          { $$ = $1; }
 	| declaration
-          {}
+          { $$ = $1; }
 	;
 
 function_definition
