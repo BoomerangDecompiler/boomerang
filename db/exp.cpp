@@ -2747,9 +2747,10 @@ Exp* RefExp::polySimplify(bool& bMod) {
         // base to 1, base to 2, ... base to n
         // Seems to work
         Exp* first = new RefExp(subExp1->clone(), *phi->begin());
-        //for (uu = phi->begin(); allProven && uu != phi->end(); uu++) {
+        //for (uu = phi->begin(); allProven && uu != phi->end(); uu++) { // }
         for (uu = ++phi->begin(); allProven && uu != phi->end(); uu++) {
-            //Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), *uu), base->clone());
+            //Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(),
+            //   *uu), base->clone());
             Exp* query = new Binary(opEquals, first,
               new RefExp(subExp1->clone(), *uu));
             if (Boomerang::get()->debugProof)
@@ -2777,15 +2778,16 @@ Exp* PhiExp::polySimplify(bool& bMod) {
     Exp *tmp = getSubExp1()->polySimplify(bMod);
     if (bMod) {
         subExp1 = tmp;
-        bMod = true;
         return res;
     }
 
     if (stmtVec.begin() != stmtVec.end()) {
         StatementVec::iterator uu;
         bool allSame = true;
-        for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-            if (*uu != *stmtVec.begin()) {
+        uu = stmtVec.begin();
+        Statement* first;
+        for (first = *uu++; uu != stmtVec.end(); uu++) {
+            if (*uu != first) {
                 allSame = false;
                 break;
             }
@@ -2795,22 +2797,21 @@ Exp* PhiExp::polySimplify(bool& bMod) {
             if (VERBOSE)
                 LOG << "all the same in " << this << "\n";
             bMod = true;
-            res = new RefExp(subExp1, *stmtVec.begin());
+            res = new RefExp(subExp1, first);
             return res;
         }
 
         bool onlyOneNotThis = true;
-        Statement *silly = new Assign();
-        Statement *notthis = silly;
+        Statement *notthis = (Statement*)-1;
         for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
             if (*uu == NULL || !(*uu)->isPhi() || (*uu)->getRight() != this)
-                if (notthis != silly) {
+                if (notthis != (Statement*)-1) {
                     onlyOneNotThis = false;
                     break;
                 } else notthis = *uu;
         }
 
-        if (onlyOneNotThis && notthis != silly) {
+        if (onlyOneNotThis && notthis != (Statement*)-1) {
             if (VERBOSE)
                 LOG << "all but one not this in " << this << "\n";
             bMod = true;
@@ -3317,6 +3318,10 @@ Exp* RefExp::fromSSA(igraph& ig) {
         return ret;
     }
     else {
+        if (subExp1->isPC())
+            // pc is just a nuisance at this stage. Make it explicit for
+            // debugging (i.e. to find out why it is still here)
+            return Location::local("pc", NULL);
         // It is in the map. Delete the current expression, and replace
         // with a new local
         std::ostringstream os;
@@ -3325,13 +3330,14 @@ Exp* RefExp::fromSSA(igraph& ig) {
         ;//delete this;
         UserProc *p = def ? def->getProc() : NULL;
         if (p == NULL)
-            // The below handles all permutations of subscripting etc
+            // The below handles all permutations of subscripting, arrays, etc
             p = findProc();
         if (p == NULL) {
             for (igraph::iterator it1 = ig.begin(); it1 != ig.end(); it1++)
                 if ((*it1).first->isLocation())
                     p = ((Location*)(*it1).first)->getProc();
         }
+        if (p == NULL) std::cerr << "Error: no proc for " << this << "\n";
         assert(p);
         return Location::local(strdup(name.c_str()), p);
     }
