@@ -192,8 +192,13 @@ public:
 
     Exp *getProven(Exp *left);
 
+    // Set an equation as proven. Useful for some sorts of testing
+    void setProven(Exp* fact) {proven.insert(fact);}
+
     /*
      * Get the callers
+     * Note: the callers will be in a random order (determined by memory
+     * allocation)
      */
     std::set<CallStatement*>& getCallers() { return callerSet; }
 
