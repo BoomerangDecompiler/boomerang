@@ -49,6 +49,7 @@
 #include "frontend.h"
 #include "util.h"
 #include "signature.h"
+#include "hllcode.h"
 
 /************************
  * Proc methods.
@@ -600,7 +601,7 @@ std::ostream& LibProc::put(std::ostream& os)
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 	Proc(prog, uNative, new Signature(name.c_str())), 
-	cfg(new Cfg()), decoded(false),
+	cfg(new Cfg()), decoded(false), decompiled(false),
     	returnIsSet(false), isSymbolic(false), uniqueID(0)
 {
     cfg->setProc(this);              // Initialise cfg.myProc
@@ -932,6 +933,7 @@ void UserProc::toSymbolic(TypedExp* loc, TypedExp* result,
 }
 #endif
 
+#if 0       // We will need this or something like it soon
 /*==============================================================================
  * FUNCTION:       UserProc::newLocal
  * OVERVIEW:       Return the next available local variable.
@@ -949,7 +951,6 @@ TypedExp* UserProc::newLocal(Type* ty)
     return result;
 }
 
-#if 0       // We will need this or something like it soon
 /*==============================================================================
  * FUNCTION:      UserProc::propagateSymbolics
  * OVERVIEW:      Replace each instance of a location in this procedure with its
@@ -1054,7 +1055,6 @@ int UserProc::getLocalsSize()
     else
         return 0;
 }
-#endif
 
 /*==============================================================================
  * FUNCTION:    Proc::getFirstLocalIndex()
@@ -1071,6 +1071,7 @@ int UserProc::getFirstLocalIndex()
     }
     return (*it)->getVarIndex();
 }
+#endif
 
 #if 0       // This will work when all Exp's have types
 /*==============================================================================
@@ -1089,7 +1090,6 @@ int UserProc::getLastLocalIndex()
     it--;			// point to last element
     return it->getSecondIdx();
 }
-#endif
 
 /*==============================================================================
  * FUNCTION:    UserProc::getSymbolicLocals()
@@ -1101,6 +1101,7 @@ std::vector<TypedExp*>& UserProc::getSymbolicLocals()
 {
     return locals;
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:        UserProc::setDecoded
@@ -1595,6 +1596,12 @@ bool UserProc::generateCode(HLLCode &hll)
 	cfg->establishRevDFTOrder();
 	assert(getEntryBB());
 
+	hll.AddProcStart(signature);
+	
+	for (std::map<std::string, Type*>::iterator it = locals.begin();
+	     it != locals.end(); it++)
+	    hll.AddLocal((*it).first.c_str(), (*it).second);
+
 	cfg->unTraverse();
 	BB_IT it;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
@@ -1613,6 +1620,8 @@ bool UserProc::generateCode(HLLCode &hll)
 				break;
 			}
 	}
+	
+	hll.AddProcEnd();
 
 	return true;
 }
@@ -1691,6 +1700,18 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 
 // decompile this userproc
 void UserProc::decompile() {
+    if (decompiled) return;
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+        HLCall *call = dynamic_cast<HLCall*>(*it);
+	if (call == NULL) continue;
+	call->decompile();
+    }
+
+    cfg->computeDataflow();
+
     print(std::cout, true);
     bool change = true;
     while (change) {
@@ -1701,7 +1722,82 @@ void UserProc::decompile() {
     }
     removeInternalStatements();
     inlineConstants();
-    signature = signature->promote(this);
+    promoteSignature();
+    //fixCalls();
+    renameLocalVariables();
+    print(std::cout, true);
+    decompiled = true;
+}
+
+void UserProc::fixCalls()
+{
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+	    HLCall *call = dynamic_cast<HLCall*>(*it);
+	    if (call->getDestProc() && 
+		call->getDestProc()->getSignature()->hasEllipsis()) {
+	        // functions like printf almost always have too many args
+		for (int i = 0; i < call->getNumArguments(); i++)
+		    if (call->findUse(call->getArgumentExp(i)) == NULL &&
+			call->getArgumentExp(i)->getOper() != opParam &&
+			call->getArgumentExp(i)->getOper() != opStrConst &&
+			call->getArgumentExp(i)->getOper() != opIntConst &&
+			call->getArgumentExp(i)->getOper() != opAddrConst &&
+			call->getArgumentExp(i)->getOper() != opFltConst) {
+			int n = call->getDestProc()->getSignature()->getNumParams();
+		        if (i < n) 
+				call->setNumArguments(n);
+			else 
+				call->setNumArguments(i);
+			break;
+		    }
+	    }
+    }
+}
+
+void UserProc::renameLocalVariables()
+{
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++)
+	    if ((*it)->getLeft() && 
+	        symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
+		std::ostringstream os;
+		os << "local" << locals.size();
+		std::string name = os.str();
+		symbolMap[(*it)->getLeft()->clone()] = 
+		    new Unary(opLocal, new Const(strdup(name.c_str())));
+		locals[name] = (*it)->getLeftType();
+	    }
+
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+	    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
+			    it1 != symbolMap.end(); it1++)
+	        (*it)->searchAndReplace((*it1).first, (*it1).second);
+    }
+
+    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
+	 it1 != symbolMap.end(); it1++) {
+        bool change;
+        Exp *e = cfg->getReturnVal();
+	if (e == NULL) break;
+	std::cerr << "return value: ";
+	e->print(std::cerr);
+	std::cerr << " replace ";
+        (*it1).first->print(std::cerr);
+	std::cerr << " with ";
+        (*it1).second->print(std::cerr);
+	std::cerr << std::endl;
+	e = e->searchReplaceAll((*it1).first, (*it1).second, change);
+	std::cerr << "  after: ";
+	e->print(std::cerr);
+	std::cerr << std::endl;
+        if (change) cfg->setReturnVal(e->clone());
+    }
 }
 
 bool UserProc::removeNullStatements()
@@ -1720,6 +1816,17 @@ bool UserProc::removeNullStatements()
 	    //e->print(std::cerr);
 	    //std::cerr << std::endl;
             removeStatement(e);
+	    // remove from uses
+            std::set<Statement*> uses = (*it)->getUses();
+	    for (std::set<Statement*>::iterator it1 = uses.begin();
+		         it1 != uses.end(); it1++)
+		        (*it1)->getUseBy().erase(*it);
+            // remove from liveness
+            std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
+            if (liveout.find(*it) != liveout.end()) {
+                liveout.erase(*it);
+        	cfg->updateLiveness();
+            }
 	    change = true;
 	}
     }
@@ -1785,8 +1892,11 @@ void UserProc::removeInternalStatements()
     getAllStatements(stmts);
     // remove any statements that have no uses and are live out of this proc
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++)
+		    it++) {
+	    AssignExp *e = dynamic_cast<AssignExp *>(*it);
+	    if (e == NULL) continue;
 	    if ((*it)->getUseBy().size() == 0 && 
+	        (*it)->getUses().size() == 0 &&
                 cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
                 // new internal statement
 		std::cerr << "new internal statement: ";
@@ -1795,6 +1905,14 @@ void UserProc::removeInternalStatements()
 		internal.push_back(*it);
 	        removeStatement(*it);
 	    }
+    }
+}
+
+void UserProc::eraseInternalStatement(Statement *stmt)
+{
+    for (std::list<Statement*>::iterator it = internal.begin();
+		    it != internal.end(); it++)
+	    if (*it == stmt) { internal.erase(it); break; }
 }
 
 void UserProc::inlineConstants()
@@ -1817,11 +1935,23 @@ bool UserProc::propogateAndRemoveStatements()
 		    it++) {
         if ((*it)->canPropogateToAll()) {
 	    if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
-                // new internal statement
-		std::cerr << "new internal statement: ";
-		(*it)->printAsUse(std::cerr);
-		std::cerr << std::endl;
-		internal.push_back(*it);
+		if ((*it)->getUses().size() != 0) {
+		    // tempories that store the results of calls are ok
+	            if ((*it)->getRight() && 
+		        (*it)->findUse((*it)->getRight()) &&
+			!(*it)->findUse((*it)->getRight())->getRight()) {
+		        std::cerr << "allowing propogation of temporary: ";
+			(*it)->printAsUse(std::cerr);
+			std::cerr << std::endl;
+		    } else
+		        continue;
+		} else {
+                    // new internal statement
+		    std::cerr << "new internal statement: ";
+		    (*it)->printAsUse(std::cerr);
+		    std::cerr << std::endl;
+		    internal.push_back(*it);
+		}
 	    }
 	    removeStatement(*it);
             // remove from liveness

@@ -141,7 +141,7 @@ void Analysis::analyse(UserProc* proc)
     while (pBB)
     {
         // Match flags
-        checkBBflags(pBB, proc);
+        //checkBBflags(pBB, proc);
         // Perform final simplifications
         finalSimplify(pBB);
 #if USE_PROCESS_CONST		// Fatally flawed. Somehow, conversion of
@@ -157,7 +157,6 @@ void Analysis::analyse(UserProc* proc)
     }
 
     cfg->simplify();
-    cfg->computeDataflow();
 }
 
 #if DEBUG_ANALYSIS

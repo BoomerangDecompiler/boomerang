@@ -481,6 +481,7 @@ public:
 
 	/* set the return value */
 	void setReturnVal(Exp *e);
+	Exp *getReturnVal() { return m_returnVal; }
 
 protected:
         std::set<Statement*> liveout;
@@ -792,6 +793,7 @@ public:
      * (assumes there is only one exit bb)
      */
     void setReturnVal(Exp *e);
+    Exp *getReturnVal();
 
     /*
      * Structures the control flow graph

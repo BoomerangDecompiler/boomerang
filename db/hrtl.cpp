@@ -879,7 +879,7 @@ HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
   std::list<Exp*>* le /*= NULL*/):
 
     HLJump(instNativeAddr, le),returnTypeSize(returnTypeSize),
-      returnAfterCall(false)
+      returnAfterCall(false), returnLoc(NULL)
 {
     kind = CALL_RTL;
     postCallExpList = NULL;
@@ -944,10 +944,21 @@ void HLCall::setArguments(std::vector<Exp*>& arguments)
  *============================================================================*/
 Exp* HLCall::getReturnLoc() 
 {
-    if (procDest && !ignoreReturnLoc)
-        return procDest->getSignature()->getReturnExp();
-    else
-	return NULL;
+    return returnLoc;
+}
+
+void HLCall::setIgnoreReturnLoc(bool b)
+{
+    if (b) { returnLoc = NULL; return; }
+    assert(procDest);
+    returnLoc = procDest->getSignature()->getReturnExp()->clone();
+}
+
+Type* HLCall::getLeftType()
+{
+    if (procDest == NULL || returnLoc == NULL)
+	    return new VoidType();
+    return procDest->getSignature()->getReturnType();
 }
 
 #if 0
@@ -1020,8 +1031,8 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace)
 {
     bool change;
     HLJump::searchAndReplace(search, replace);
-    //if (returnLoc != 0)
-    //    returnLoc = returnLoc->searchReplaceAll(search, replace, change);    
+    if (returnLoc != NULL)
+        returnLoc = returnLoc->searchReplaceAll(search, replace, change);
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
     // Also replace the postCall rtls, if any
@@ -1105,6 +1116,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
     }
     
     if (withDF) {
+	std::list<Statement*> &internal = getInternalStatements();
         for (std::list<Statement*>::iterator it = internal.begin(); 
              it != internal.end(); it++) {
             os << "internal ";
@@ -1179,6 +1191,7 @@ RTL* HLCall::clone()
     ret->m_isComputed = m_isComputed;
     ret->arguments = arguments;
     ret->numNativeBytes = numNativeBytes;
+    ret->returnLoc = returnLoc;
     return ret;
 }
 
@@ -1225,14 +1238,6 @@ void HLCall::setDestProc(Proc* dest)
     assert(procDest == NULL);
     procDest = dest;
     destStr = procDest->getName();
-    // init arguments
-    assert(arguments.size() == 0);
-    arguments.resize(procDest->getSignature()->getNumParams());
-    for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
-        arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
-    // init internal statements
-    assert(internal.size() == 0);
-    procDest->getInternalStatements(internal);
 }
 
 void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
@@ -1258,6 +1263,31 @@ void HLCall::simplify()
         arguments[i] = e->simplify();
     }
 }
+
+void HLCall::decompile()
+{
+    if (procDest) { 
+	UserProc *p = dynamic_cast<UserProc*>(procDest);
+	if (p != NULL)
+            p->decompile();
+        procDest->getInternalStatements(internal);
+        // init arguments
+        assert(arguments.size() == 0);
+        arguments.resize(procDest->getSignature()->getNumParams());
+        for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
+            arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
+        if (procDest->getSignature()->hasEllipsis()) {
+	    // TODO
+	    arguments.push_back(procDest->getSignature()->
+				getArgumentExp(arguments.size())->clone());
+        }
+	// init return location
+	returnLoc = procDest->getSignature()->getReturnExp()->clone();
+    } else {
+	// TODO
+    }
+}
+
 
 void HLCall::printAsUse(std::ostream &os)
 {
@@ -1292,38 +1322,31 @@ void HLCall::printAsUseBy(std::ostream &os)
 
 void HLCall::killLive(std::set<Statement*> &live)
 {
-    // conservative solution: if calling a userproc, kill everything.
-    //                        if calling a libproc, kill return address.
-//assert(procDest);			// Mod MVE: Fails for all non direct calls
-	if (procDest == NULL) {
-		live.clear();
-		return;
-	}
-    if (procDest->isLib()) {
-        std::set<Statement*> kills;
-        for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
-            bool isKilled = false;
-            if (getReturnLoc() && (*it)->getLeft() && 
-		*(*it)->getLeft() == *getReturnLoc())
-                isKilled = true;
-            if (getReturnLoc() && (*it)->getLeft() &&
-	        (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
-                isKilled = true; // might alias, very conservative
-            if (isKilled)
-	        kills.insert(*it);
-        }
-        for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); it++)
-            live.erase(*it);
-    } else 
-        live.clear();
+    if (procDest == NULL) {
+	live.clear();
+        return;
+    }
+    std::set<Statement*> kills;
+    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
+        bool isKilled = false;
+        if (getReturnLoc() && (*it)->getLeft() && 
+	    *(*it)->getLeft() == *getReturnLoc())
+            isKilled = true;
+        if (getReturnLoc() && (*it)->getLeft() &&
+	    (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+            isKilled = true; // might alias, very conservative
+        if (isKilled)
+	    kills.insert(*it);
+    }
+    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); it++)
+        live.erase(*it);
 }
 
 void HLCall::getDeadStatements(std::set<Statement*> &dead)
 {
     std::set<Statement*> live;
     getLiveIn(live);
-    assert(procDest);
-    if (procDest->isLib()) {
+    if (procDest && procDest->isLib()) {
         for (std::set<Statement*>::iterator it = live.begin(); 
 	     it != live.end(); it++) {
             bool isKilled = false;

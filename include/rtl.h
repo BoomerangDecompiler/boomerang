@@ -452,6 +452,9 @@ public:
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
     std::vector<Exp*>& getArguments();            // Return call's arguments
+    Exp* getArgumentExp(int i) { return arguments[i]; }
+    int getNumArguments() { return arguments.size(); }
+    void setNumArguments(int i) { arguments.resize(i); }
     Type *getArgumentType(int i);
 
     Exp* getReturnLoc();                // Get location used for return value
@@ -507,9 +510,10 @@ public:
 
         // get how to access this value
         virtual Exp* getLeft() { return getReturnLoc(); }
+	virtual Type* getLeftType();
 
         // get how to replace this statement in a use
-        virtual Exp* getRight() { assert(false); return NULL; }
+        virtual Exp* getRight() { return NULL; }
 
 	// custom printing functions
         virtual void printWithLives(std::ostream& os);
@@ -529,7 +533,9 @@ public:
 	// for interprocedural analysis
 	std::list<Statement*> &getInternalStatements() { return internal; }
 
-	void setIgnoreReturnLoc(bool b) { ignoreReturnLoc = b; }
+	void setIgnoreReturnLoc(bool b);
+
+	void decompile();
 
 protected:
 	virtual void doReplaceUse(Statement *use);
@@ -553,7 +559,7 @@ private:
 	// Destination name of call (used in serialization)
 	std::string destStr;
 
-    bool ignoreReturnLoc;
+    Exp *returnLoc;
     std::list<Statement*> internal;
 };
 

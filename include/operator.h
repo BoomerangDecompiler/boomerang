@@ -105,6 +105,7 @@ enum OPER
 	opSubscript,			// Represents subscript(e, n) .. ie SSA renaming
     opParam,                // Parameter param`'
 	opArg,					// Used a temporary for arguments to calls
+    opLocal,                // used to represent a local, takes a string
     opExpand,               // Expandable expression
     opTemp,                 // Temp register name
     opSize,                 // Size override

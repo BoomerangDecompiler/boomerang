@@ -28,6 +28,7 @@ class Exp;
 class BasicBlock;
 typedef BasicBlock *PBB;
 class Prog;
+class Type;
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
@@ -62,6 +63,9 @@ public:
     // returns an expression that would be used to reference the value
     // defined by this statement
     virtual Exp* getLeft() = 0;
+
+    // returns a type for the left
+    virtual Type* getLeftType() = 0;
 
     // returns an expression that would be used to replace this statement
     // in a use
@@ -104,6 +108,9 @@ public:
 
     // inline any constants in the statement
     virtual void inlineConstants(Prog *prog) = 0;
+
+    // general search and replace
+    virtual void searchAndReplace(Exp *search, Exp *replace) = 0;
 
 protected:
     virtual void doReplaceUse(Statement *use) = 0;

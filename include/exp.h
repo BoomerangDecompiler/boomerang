@@ -555,6 +555,7 @@ public:
 
         // get how to access this value
         virtual Exp* getLeft() { return subExp1; }
+	virtual Type* getLeftType() { return NULL; }
 
         // get how to replace this statement in a use
         virtual Exp* getRight() { return subExp2; }
@@ -569,6 +570,13 @@ public:
 
 	// inline any constants in the statement
 	virtual void inlineConstants(Prog *prog);
+
+	// general search and replace
+	virtual void searchAndReplace(Exp *search, Exp *replace) {
+	    bool change;
+	    Exp *e = searchReplaceAll(search, replace, change);
+	    assert(e == this);
+	}
 
 protected:
 	virtual void doReplaceUse(Statement *use);

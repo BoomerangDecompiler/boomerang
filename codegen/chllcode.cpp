@@ -327,6 +327,10 @@ void CHLLCode::appendExp(Exp *exp)
 		case opFltConst:    // floating point constant
 			appendToken(exp, C_FLOAT);
 			break;
+	        case opParam:
+		case opLocal:
+			appendToken(exp, C_NAME);
+			break;
 		case opStrConst:    // string constant
 			appendToken(exp, C_STRING);
 			break;
@@ -557,9 +561,41 @@ void CHLLCode::AddReturnStatement(BasicBlock *bb, Exp *ret)
 	appendToken(';');
 }
 
+void CHLLCode::AddProcStart(Signature *signature)
+{
+	if (signature->getReturnType())
+	    appendToken(signature->getReturnType(), C_TYPE);
+	appendExp(new Unary(opParam, new Const((char*)signature->getName())));
+	appendToken('(');
+	for (int i = 0; i < signature->getNumParams(); i++) {
+	    appendToken(signature->getParamType(i), C_TYPE);
+	    appendExp(new Unary(opParam, 
+			    new Const((char*)signature->getParamName(i))));
+	    if (i != signature->getNumParams()-1 || signature->hasEllipsis())
+	        appendToken(',');
+	}
+	if (signature->hasEllipsis())
+	    appendToken(C_ELLIPSIS);
+	appendToken(')');
+	appendToken('{');
+}
+
+void CHLLCode::AddProcEnd()
+{
+	appendToken('}');
+}
+
+void CHLLCode::AddLocal(const char *name, Type *type)
+{
+	appendToken(type, C_TYPE);
+	appendExp(new Unary(opLocal, new Const((char*)name)));
+	appendToken(';');
+}
+
 void CHLLToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code)
 {
 	char t = (char)tok;
+	if (t == '=') s += " ";
 	if (t == '}') {
 		code->decIndent();		
 		code->appendIndent(s);
@@ -578,9 +614,10 @@ void CHLLToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*
 	if (t == ':') {
 		code->appendNL(s);
 	}
-//	if (t == ')') {
-//		s += ' ';
-//	}
+	if (t == ',' || t == ')') {
+		s += ' ';
+	}
+	if (t == '=') s += " ";
 }
 
 void CControlToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code)
@@ -632,6 +669,9 @@ void CControlToken::appendString(std::string &s, CTok &context, std::list<CHLLTo
 			code->incIndent();
 			code->appendIndent(s);
 			s += "default";
+			break;
+		case C_ELLIPSIS:
+			s += "...";
 			break;
 		case C_GOTO:
 			code->appendIndent(s);
@@ -765,6 +805,12 @@ void CProcToken::appendString(std::string &s, CTok &context, std::list<CHLLToken
 		s += "COMPUTED";
 }
 
+void CTypeToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code)
+{
+	s += type->getCtype();
+	s += " ";
+}
+
 void CFmtToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code)
 {
 	s += str;
@@ -787,17 +833,13 @@ void CHLLCode::appendNL(std::string &s)
 
 void CHLLCode::toString(std::string &s)
 {
-	std::ostringstream os;
-	m_proc->getSignature()->print(os);
-	os << "{\n";
-	s = os.str();
-	indent = 1;
+	s = "";
+	indent = 0;
 	CTok context = (CTok)0;
 	for (std::list<CHLLToken*>::iterator it = tokens.begin(); it != tokens.end(); it++) {
 		(*it)->setPos(s.length());
 		(*it)->appendString(s, context, it, this);	
 	}
-	s += "}\n";
 }
 
 bool CHLLCode::isLabelAt(int nCharIndex)

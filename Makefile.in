@@ -90,7 +90,7 @@ UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/dataflow.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
   db/type.o db/hrtl.o db/sslinst.o db/insnameelem.o db/signature.o \
-  c/ansi-c-parser.o c/ansi-c-scanner.o 
+  c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o
@@ -133,8 +133,8 @@ $(MACH_SRC): frontend/%decoder.cpp : frontend/machine/%/core.spec \
 #
 # Extra flags
 #
-db/prog.o:					EXTRA = $(BOOMSET)
-frontend/frontend.o:		EXTRA = $(BOOMSET)
+db/prog.o:					EXTRA = $(BOOMSET) -Icodegen
+frontend/frontend.o:		EXTRA = $(BOOMSET) -Ic
 frontend/FrontSparcTest.o:	EXTRA = $(BOOMSET)
 frontend/FrontPentTest.o:	EXTRA = $(BOOMSET)
 analysis/AnalysisTest.o:	EXTRA = $(BOOMSET) -Ifrontend
@@ -150,7 +150,7 @@ $(STATIC_OBJS): %.o : %.cpp
 $(TEST_OBJS): %.o : %.cpp
 	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
 
-driver.o: driver.cpp
+driver.o: driver.cpp include/boomerang.h
 	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
 
 testAll.o: testAll.cpp
@@ -178,9 +178,11 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 util/UtilTest.o: util/UtilTest.h
 util/util.o: include/util.h
 
-frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h
+frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h c/ansi-c-parser.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
+c/CTest.o:  c/ansi-c-parser.h
+boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h
 

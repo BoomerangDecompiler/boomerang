@@ -84,6 +84,8 @@ void Statement::replaceUse(Statement *use)
     for (std::set<Statement*>::iterator it = tmp_useBy.begin(); 
 	     it != tmp_useBy.end(); it++) {
 	    (*it)->calcUseLinks();
+	    if (use->useBy.find(*it) != use->useBy.end())
+                useBy.insert(*it);
     }
     // update statements used by this statement
     for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end();
@@ -244,11 +246,15 @@ bool Statement::canPropogateToAll()
 // assumes this statement will be removed by the caller
 void Statement::propogateToAll()
 {
-    while(useBy.begin() != useBy.end()) {
-	Statement *e = *useBy.begin();
+    std::set<Statement*> stmts = useBy;
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+	 it++) {
+	Statement *e = *it;
         e->replaceUse(this);
 	assert(useBy.begin() == useBy.end() || e != *useBy.begin());
     }
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end();
+         it++) (*it)->calcUseLinks();
 }
 
 

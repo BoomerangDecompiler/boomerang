@@ -21,6 +21,8 @@
 #ifndef _CHLLCODE_H_
 #define _CHLLCODE_H_
 
+#include <string>
+
 class BasicBlock;
 class Exp;
 class Proc;
@@ -62,7 +64,10 @@ enum CTok {
 	C_FLOAT,
 	C_STRING,
 	C_FMT,
-	C_NAME
+	C_NAME,
+	C_IDENTIFIER,
+	C_TYPE,
+	C_ELLIPSIS,
 };
 
 class CHLLCode;
@@ -107,6 +112,17 @@ protected:
 public:	
 	CDataToken(Exp *e, CTok t) : CHLLToken(t), exp(e) { }
 	virtual Exp *getExp() { return exp; }
+};
+
+class CTypeToken : public CHLLToken {
+protected:
+	Type *type;
+
+	virtual void appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code);
+
+public:	
+	CTypeToken(Type *type, CTok t) : CHLLToken(t), type(type) { }
+	virtual Type *getType() { return type; }
 };
 
 class CProcToken : public CHLLToken {
@@ -156,6 +172,11 @@ private:
 	}
 	CProcToken *appendToken(Proc *p, CTok t) { 
 		CProcToken *tok = new CProcToken(p, t);
+		tokens.push_back(tok);
+		return tok;
+	}
+	CTypeToken *appendToken(Type *type, CTok t) {
+		CTypeToken *tok = new CTypeToken(type, t);
 		tokens.push_back(tok);
 		return tok;
 	}
@@ -230,6 +251,9 @@ public:
 	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Proc *proc, std::vector<Exp*> &args);
 	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Exp *dest, std::vector<Exp*> &args);
 	virtual void AddReturnStatement(BasicBlock *bb, Exp *ret);
+	virtual void AddProcStart(Signature *signature);
+	virtual void AddProcEnd();
+	virtual void AddLocal(const char *name, Type *type);
 
 	/*
 	 * output functions

@@ -21,10 +21,14 @@
 #ifndef _HLLCODE_H_
 #define _HLLCODE_H_
 
+#include <string>
+
 class BasicBlock;
 class Exp;
 class UserProc;
 class Proc;
+class Type;
+class Signature;
 
 class HLLCode {
 protected:
@@ -115,6 +119,9 @@ public:
 	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Proc *proc, std::vector<Exp*> &args) = 0;
 	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Exp *dest, std::vector<Exp*> &args) = 0;
 	virtual void AddReturnStatement(BasicBlock *bb, Exp *ret) = 0;
+	virtual void AddProcStart(Signature *signature) = 0;
+	virtual void AddProcEnd() = 0;
+	virtual void AddLocal(const char *name, Type *type) = 0;
 
 	/*
 	 * output functions, pure virtual.

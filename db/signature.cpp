@@ -123,6 +123,8 @@ Signature *CallingConvention::Win32Signature::clone()
 {
 	Win32Signature *n = new Win32Signature(name.c_str());
 	n->params = params;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
 	return n;
 }
 
@@ -224,14 +226,12 @@ Exp *CallingConvention::Win32Signature::getReturnExp()
 
 Exp *CallingConvention::Win32Signature::getParamExp(unsigned int n)
 {
-	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
 }
 
 Exp *CallingConvention::Win32Signature::getArgumentExp(unsigned int n)
 {
-	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const(n * 4)));
 }
@@ -264,6 +264,8 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
 {
 	PentiumSignature *n = new PentiumSignature(name.c_str());
 	n->params = params;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
 	return n;
 }
 
@@ -375,14 +377,12 @@ Exp *CallingConvention::StdC::PentiumSignature::getReturnExp()
 
 Exp *CallingConvention::StdC::PentiumSignature::getParamExp(unsigned int n)
 {
-	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
-	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((int)((n+1) * 4))));
 }
 
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(unsigned int n)
 {
-	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
         //if (n == 0)
 	//    return new Unary(opMemOf, esp);
@@ -393,15 +393,60 @@ Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(unsigned int n)
 void CallingConvention::StdC::PentiumSignature::analyse(UserProc *p)
 {
     std::cerr << "accepted promotion" << std::endl;
-    std::set<Statement*> liveout = p->getCFG()->getLiveOut();
+    std::set<Statement*> &liveout = p->getCFG()->getLiveOut();
     for (std::set<Statement*>::iterator it = liveout.begin();
-         it != liveout.end(); it++) 
-        updateReturnValue(p, *it);
-/*    std::list<Statement*> internal;
+         it != liveout.end(); it++)
+	if (updateReturnValue(p, *it))
+	    p->eraseInternalStatement(*it);
+    std::cerr << "searching for arguments" << std::endl;
+    std::set<Statement*> stmts;
+    p->getAllStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin();
+	 it != stmts.end(); it++)
+	updateParams(p, *it);
+    std::list<Statement*> internal;
     p->getInternalStatements(internal);
     for (std::list<Statement*>::iterator it = internal.begin();
-	 it != internal.end(); it++)
-        updateReturnValue(p, *it); */
+         it != internal.end(); it++)
+	updateParams(p, *it, false);
+}
+
+void Signature::updateParams(UserProc *p, Statement *stmt, bool checklive)
+{
+    int i;
+    if (usesNewParam(p, stmt, checklive, i)) {
+        setNumParams(i+1);
+	std::cerr << "found param " << i << std::endl;
+	p->getCFG()->searchAndReplace(getParamExp(i), 
+	    new Unary(opParam, new Const((char *)getParamName(i))));
+    }
+}
+
+bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive, int &n)
+{
+	std::cerr << "searching ";
+	stmt->printAsUse(std::cerr);
+	std::cerr << std::endl;
+	std::set<Statement*> livein;
+	stmt->getLiveIn(livein);
+	for (int i = getNumParams(); i < 10; i++)
+            if (stmt->usesExp(getParamExp(i))) {
+		bool ok = true;
+		if (checklive) {
+		    bool hasDef = false;
+	            for (std::set<Statement*>::iterator it1 = livein.begin();
+	                 it1 != livein.end(); it1++)
+	                if (*(*it1)->getLeft() == *getParamExp(i)) {
+	                    hasDef = true; break; 
+		        }
+		        if (hasDef) ok = false;
+		}
+		if (ok) {
+		    n = i;
+		    return true;
+		}
+	    }
+	return false;
 }
 
 Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
@@ -435,6 +480,8 @@ Signature *CallingConvention::StdC::SparcSignature::clone()
 {
 	SparcSignature *n = new SparcSignature(name.c_str());
 	n->params = params;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
 	return n;
 }
 
@@ -522,13 +569,11 @@ Exp *CallingConvention::StdC::SparcSignature::getReturnExp()
 
 Exp *CallingConvention::StdC::SparcSignature::getParamExp(unsigned int n)
 {
-	assert(n < params.size());
 	return new Unary(opRegOf, new Const((int)(24 + n)));
 }
 
 Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(unsigned int n)
 {
-	assert(n < params.size());
 	return new Unary(opRegOf, new Const((int)(8 + n)));
 }
 
@@ -556,6 +601,8 @@ Signature *Signature::clone()
 {
 	Signature *n = new Signature(name.c_str());
 	n->params = params;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
 	return n;
 }
 
@@ -726,7 +773,9 @@ Exp *Signature::getParamExp(unsigned int n)
 
 Type *Signature::getParamType(unsigned int n)
 {
-	assert(n < params.size());
+        static IntegerType def;
+	assert(n < params.size() || ellipsis);
+	if (n >= params.size()) return &def;
 	return params[n]->getType();
 }
 
@@ -804,19 +853,32 @@ void Signature::getInternalStatements(std::list<Statement*> &stmts)
 {
 }
 
-void Signature::updateReturnValue(UserProc *p, Statement *stmt)
+bool Signature::updateReturnValue(UserProc *p, Statement *stmt)
 {
+	bool found = false;
 	std::cerr << "update ret val with: ";
 	stmt->print(std::cerr);
 	std::cerr << std::endl;
-        AssignExp *e = dynamic_cast<AssignExp*>(stmt);
-	if (e == NULL) return;
-	if (*e->getLeft() == *getReturnExp()) {
+	if (stmt->getLeft() && *stmt->getLeft() == *getReturnExp()) {
 	    assert(*rettype == VoidType());
 	    rettype = new IntegerType();
+	    found = true;
 	    std::cerr << "function has a return value" << std::endl;
-	    p->getCFG()->setReturnVal(e->getRight());
+	    Exp *right = stmt->getRight();
+	    if (right == NULL) right = stmt->getLeft();
+	    right = right->clone();
+	    int i;
+	    while (usesNewParam(p, stmt, true, i)) {
+                setNumParams(i+1);
+	        std::cerr << "found param " << i << std::endl;
+		bool change;
+	        right = right->searchReplaceAll(getParamExp(i), 
+	            new Unary(opParam, new Const((char *)getParamName(i))), 
+		    change);
+	    }
+	    p->getCFG()->setReturnVal(right);
 	}
+    return found;
 }
 
 

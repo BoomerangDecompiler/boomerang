@@ -376,6 +376,7 @@ public:
 
 	// decompile this proc
 	void decompile();
+	void renameLocalVariables();
 	bool removeNullStatements();
 	bool removeDeadStatements();
         bool propogateAndRemoveStatements();
@@ -391,6 +392,12 @@ public:
 
 	// remove internal statements
 	void removeInternalStatements();
+
+	// fix calls
+	void fixCalls();
+
+	// erase a statement from the internal statements list
+	void eraseInternalStatement(Statement *stmt);
 
 	// inline constants
 	void inlineConstants();
@@ -568,6 +575,11 @@ private:
     bool decoded;
 
     /*
+     * True if this procedure has been decomplied.
+     */
+    bool decompiled;
+
+    /*
      * Indicates whether or not a non-default return type has been
      * determined for this procedure.
      */
@@ -599,7 +611,7 @@ private:
     /*
      * This map records the allocation of local variables and their types.
      */
-    std::vector<TypedExp*> locals;
+    std::map<std::string, Type*> locals;
 
     /*
      * A map between machine dependent locations and their corresponding

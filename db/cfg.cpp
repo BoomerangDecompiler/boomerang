@@ -1755,3 +1755,16 @@ void Cfg::setReturnVal(Exp *e)
 		onlyOneReturnBB = false;
 	}
 }
+
+Exp *Cfg::getReturnVal()
+{
+    Exp *e = NULL;
+    bool onlyOneReturnBB = true;
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+        if ((*it)->getType() == RET) {
+		assert(onlyOneReturnBB);
+		e = (*it)->getReturnVal();
+		onlyOneReturnBB = false;
+	}
+    return e;
+}

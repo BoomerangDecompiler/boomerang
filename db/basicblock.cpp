@@ -958,7 +958,6 @@ Exp *BasicBlock::getCond()
 	assert(last->getKind() == JCOND_RTL);
 	HLJcond *j = (HLJcond*)last;
 	Exp *e = j->getCondExpr();	
-	assert(e != NULL);
 	return e;
 }
 
