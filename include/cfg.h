@@ -515,33 +515,33 @@ protected:
 	void WriteBB(HLLCode *hll, int indLevel);
 
 public:
-	void generateCode(HLLCode *hll, int indLevel, PBB latch, 
+	void	generateCode(HLLCode *hll, int indLevel, PBB latch, 
 					  std::list<PBB> &followSet, std::list<PBB> &gotoSet);
 	// For prepending phi functions
-	void prependStmt(Statement* s, UserProc* proc);
+	void	prependStmt(Statement* s, UserProc* proc);
 
 	// Liveness
-	bool calcLiveness(igraph& ig, int& tempNum);
-	void getLiveOut(LocationSet& live);
+	bool	calcLiveness(igraph& ig, int& tempNum, UserProc* proc);
+	void	getLiveOut(LocationSet& live, LocationSet& phiLocs);
 
 	// Find indirect jumps and calls
-	bool decodeIndirectJmp(UserProc* proc);
-	void processSwitch(UserProc* proc, SWITCH_INFO* swi);
-	int	 findNumCases();
+	bool	decodeIndirectJmp(UserProc* proc);
+	void	processSwitch(UserProc* proc, SWITCH_INFO* swi);
+	int		findNumCases();
 
 	/*
 	 * Change the BB enclosing stmt to be CALL, not COMPCALL
 	 */
-	bool undoComputedBB(Statement* stmt);
+	bool	undoComputedBB(Statement* stmt);
 
 protected:
 	friend class XMLProgParser;
-	void addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
-	void addRTL(RTL *rtl) { if (m_pRtls == NULL) 
+	void	addOutEdge(PBB bb) { m_OutEdges.push_back(bb); }
+	void	addRTL(RTL *rtl) { if (m_pRtls == NULL) 
 				m_pRtls = new std::list<RTL*>;
 				m_pRtls->push_back(rtl);
 			  }
-	void addLiveIn(Location *e) { liveIn.insert(e); }
+	void	addLiveIn(Location *e) { liveIn.insert(e); }
 
 };	// class BasicBlock
 

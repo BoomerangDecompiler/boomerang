@@ -1531,11 +1531,52 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 
 ////////////////////////////////////////////////////
 
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, int& localNum, UserProc* proc) {
+	// For each new use
+	LocationSet::iterator uu;
+	for (uu = ls.begin(); uu != ls.end(); uu++) {
+		Exp* u = (Exp*)*uu;
+		// Only interested in subscripted vars
+		if (!u->isSubscript()) continue;
+		// Interference if we can find a live variable which differs
+		// only in the reference
+		Exp *dr;
+		if (liveLocs.findDifferentRef((RefExp*)u, dr)) {
+			// We have an interference. Record it, but only if new
+			igraph::iterator gg = ig.find(u);
+			if (gg == ig.end()) {
+				ig[u] = localNum++;
+				std::ostringstream sto;
+				sto << "local" << localNum-1;
+				std::string local = sto.str();
+				Type *ty = u->getType();
+				if (ty)
+					proc->setLocalType(local.c_str(), ty);
+				proc->setLocalExp(local.c_str(), u);
+				if (VERBOSE || Boomerang::get()->debugLiveness) {
+					LOG << "Interference of " << dr << " with " << u << ", assigned " << local.c_str();
+					if (ty)
+						LOG << " with type " << ty->getCtype();
+					LOG << "\n";
+				}
+			}
+		// Don't add the interfering variable to liveLocs, otherwise
+		// we could register other interferences that will not exist
+		// once this one is renamed
+		} else
+			// Add the uses one at a time. Note: don't use makeUnion,
+			// because then we don't discover interferences from the
+			// same statement, e.g.
+			// blah := r24{2} + r24{3}
+			liveLocs.insert(u);
+	}
+}
 
-bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
+bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
 	// Start with the liveness at the bottom of the BB
-	LocationSet liveLocs;
-	getLiveOut(liveLocs);
+	LocationSet liveLocs, phiLocs;
+	getLiveOut(liveLocs, phiLocs);
+	checkForOverlap(liveLocs, phiLocs, ig, localNum, myProc);
 	// For each RTL in this BB
 	std::list<RTL*>::reverse_iterator rit;
 	for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
@@ -1561,48 +1602,9 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
 			// Check for livenesses that overlap
 			LocationSet uses;
 			s->addUsedLocs(uses);
-			// For each new use
-			LocationSet::iterator uu;
-			for (uu = uses.begin(); uu != uses.end(); uu++) {
-				Exp* u = (Exp*)*uu;
-				// Only interested in subscripted vars
-				if (!u->isSubscript()) continue;
-				// Interference if we can find a live variable which differs
-				// only in the reference
-				Exp *dr;
-				if (liveLocs.findDifferentRef((RefExp*)u, dr)) {
-					// We have an interference. Record it, but only if new
-					igraph::iterator gg = ig.find(u);
-					if (gg == ig.end()) {
-						ig[u] = localNum++;
-						std::ostringstream sto;
-						sto << "local" << localNum-1;
-						std::string local = sto.str();
-						Type *ty = u->getType();
-						if (ty)
-							s->getProc()->setLocalType(local.c_str(), ty);
-						s->getProc()->setLocalExp(local.c_str(), u);
-						if (VERBOSE || Boomerang::get()->debugLiveness) {
-							LOG << "Interference of " << dr << " with " << u <<
-							", assigned " << local.c_str();
-							if (ty)
-								LOG << " with type " << ty->getCtype();
-							LOG << "\n";
-						}
-					}
-				// Don't add the interfering variable to liveLocs, otherwise
-				// we could register other interferences that will not exist
-				// once this one is renamed
-				} else
-					// Add the uses one at a time. Note: don't use makeUnion,
-					// because then we don't discover interferences from the
-					// same statement, e.g.
-					// blah := r24{2} + r24{3}
-					liveLocs.insert(u);
-			}
+			checkForOverlap(liveLocs, uses, ig, localNum, myProc);
 			if (Boomerang::get()->debugLiveness)
-				LOG << " ## Liveness: at top of " << s <<
-				  ", liveLocs is " << liveLocs.prints() << "\n";
+				LOG << " ## Liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
 		}
 	}
 	// liveIn is what we calculated last time
@@ -1616,7 +1618,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
 
 // Locations that are live at the end of this BB are the union of the
 // locations that are live at the start of its successors
-void BasicBlock::getLiveOut(LocationSet &liveout) {
+void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 	liveout.clear();
 	for (unsigned i = 0; i < m_OutEdges.size(); i++) {
 		PBB currBB = m_OutEdges[i];
@@ -1640,9 +1642,9 @@ void BasicBlock::getLiveOut(LocationSet &liveout) {
 			Statement* def = pa->getAt(j);
 			RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
 			liveout.insert(r);
+			phiLocs.insert(r);
 			if (Boomerang::get()->debugLiveness)
-				LOG << " ## Liveness: adding " << r <<
-				  " due to ref to phi " << *it << " in BB at " << 
+				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " << 
 				  getLowAddr() << "\n";
 		}
 	}

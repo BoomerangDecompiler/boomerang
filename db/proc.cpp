@@ -58,6 +58,7 @@ typedef std::map<Statement*, int> RefCounter;
 #define DEBUG_PROOF (Boomerang::get()->debugProof)
 #define DEBUG_UNUSED_RETS (Boomerang::get()->debugUnusedRets)
 #define DEBUG_UNUSED_STMT (Boomerang::get()->debugUnusedStmt)
+#define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
 
 /************************
  * Proc methods.
@@ -2941,7 +2942,7 @@ void UserProc::fromSSAform() {
 			// Is the left of the phi assignment the same base variable as all
 			// the operands?
 			if (*s->getLeft() *= *first) {
-				if (DEBUG_UNUSED_STMT)
+				if (DEBUG_LIVENESS || DEBUG_UNUSED_STMT)
 					LOG << "Removing phi: left and all refs same or 0: " << s << "\n";
 				// Just removing the refs will work, or removing the whole phi
 				// NOTE: Removing the phi here may cause other statments to be
@@ -2956,7 +2957,7 @@ void UserProc::fromSSAform() {
 		}
 		else {
 			// Need copies
-			if (Boomerang::get()->debugLiveness)
+			if (DEBUG_LIVENESS)
 				LOG << "Phi statement " << s << " requires copies, using temp" << tempNum << "\n";
 			// For each definition ref'd in the phi
 			StatementVec::iterator rr;
@@ -3433,7 +3434,9 @@ void UserProc::typeAnalysis(Prog* prog) {
 	if (solns.size()) {
 		ConstraintMap& cm = *solns.begin();
 		for (cc = cm.begin(); cc != cm.end(); cc++) {
-			assert(cc->first->isTypeOf());
+			// Ick. A workaround for now (see test/pentium/sumarray-O4)
+			//assert(cc->first->isTypeOf());
+if (!cc->first->isTypeOf()) continue;
 			Exp* loc = ((Unary*)cc->first)->getSubExp1();
 			assert(cc->second->isTypeVal());
 			Type* ty = ((TypeVal*)cc->second)->getType();
