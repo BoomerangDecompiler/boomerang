@@ -2088,7 +2088,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
             s->getDefinitions(ls);
             for (it = ls.begin(); it != ls.end(); it++)
                 if ((*it)->getMemDepth() == memDepth)
-                    A_orig[n].insert(*it);
+                    A_orig[n].insert((*it)->clone());
         }
     }
 
@@ -2119,9 +2119,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
             for (yy = DFn.begin(); yy != DFn.end(); yy++) {
                 int y = *yy;
                 // if y not element of A_phi[a]
-                // FIXME: clone a in case the expression is changed
-                // Not right: should be recalculating the data
-                std::set<int>& s = A_phi[a->clone()];
+                std::set<int>& s = A_phi[a];
                 if (s.find(y) == s.end()) {
                     // Insert trivial phi function for a at top of block y
                     // a := phi{}
