@@ -30,6 +30,7 @@ define([[POP1]], [[
 	*32* %Breg := %Creg]])
 dnl#	*32* %Creg := -1
 dnl	]])
+define([[POP2]], [[]])
 
 #OP2(op) {
 #	*32* %Areg := %Breg op %Areg
@@ -72,8 +73,12 @@ breakpoint       # breakpoint
 cj         val      # conditional jump
 	*32* tmp := %Areg
 	*32* %ZF := [tmp = 0?1:0]
-#	*32* %pc := [tmp = 0?val:%pc]
-	*32* %pc := [tmp = 0?%pc+val:%pc]
+	*32* %Areg := [tmp = 0?%Areg:%Breg]
+	*32* %Breg := [tmp = 0?%Breg:%Creg]
+	*32* %pc := [tmp = 0?%pc+val:%pc];
+cj1        val      # conditional jump
+	*32* tmp := %Areg
+	*32* %ZF := [tmp = 0?1:0]
 	*32* %Areg := [tmp = 0?%Areg:%Breg]
 	*32* %Breg := [tmp = 0?%Breg:%Creg];
 dequeue          # dequeue a process
@@ -116,9 +121,9 @@ lbinc            # load byte and increment
 ldc        val      # load constant
 	PUSH(val);
 ldl        val      # load local
-	PUSH(m[%sp + (%val*4)]{32});
+	PUSH(m[%sp + (val*4)]{32});
 ldlp       val      # load local pointer
-	PUSH(%sp + (val * 4));
+	PUSH(%sp + (val*4));
 ldnl       val      # load non-local
 	*32* %Areg := m[%Areg + (val * 4)]{32};
 ldnlp      val      # load non-local pointer
@@ -264,10 +269,33 @@ call    val         # call
 	*32* m[%sp+4] := %Areg
 	*32* m[%sp+8] := %Breg
 	*32* m[%sp+12] := %Creg
-	*32* %Areg := %pc
+#	*32* %Areg := %pc
 #	*32* %Breg := -1
 #	*32* %Creg := -1
 	*32* %pc := %pc + val;
+#	*32* %pc := val;
+call1   val         # call
+	*32* %sp := %sp - 16
+	*32* m[%sp] := %pc
+	*32* m[%sp+4] := %Areg
+	*32* m[%sp+8] := %Breg
+	*32* m[%sp+12] := %Creg;
+#	*32* %Areg := %pc
+#	*32* %Breg := -1
+#	*32* %Creg := -1
+#	*32* %pc := %pc + val;
+#	*32* %pc := val;
+call2   val         # call
+	*32* %sp := %sp - 16
+	*32* m[%sp] := %pc
+	*32* m[%sp+4] := %Areg
+	*32* m[%sp+8] := %Breg
+	*32* m[%sp+12] := %Creg
+	*32* %sp := %sp + 16;
+#	*32* %Areg := %pc
+#	*32* %Breg := -1
+#	*32* %Creg := -1
+#	*32* %pc := %pc + val;
 #	*32* %pc := val;
 causeerror          # cause error
 	_ ;
@@ -374,8 +402,7 @@ iret                # interrupt return
 	# no status reg yet
 ladd                # long add
 	*32* %Areg := %Areg + %Breg + zfill(1,32,%Creg@[0:0])
-	POP1()
-	POP1();
+	POP2();
 lb                  # load byte
 	*32* %Areg := m[%Areg]{8};
 lbx                 # load byte and sign extend
@@ -404,7 +431,7 @@ ldpri               # load current priority
 ldshadow            # load shadow registers
 	_ ;
 ldtimer             # load timer
-	_ ;
+	PUSH(0);
 ldtraph             # load trap handler
 	_ ;
 ldtrapped           # load trapped process status
@@ -489,8 +516,7 @@ savel               # save low priority queue registers
 	_ ;
 sb                  # store byte
 	*8* m[%Areg{32}] := %Breg@[0:7]
-	POP1()
-	POP1();
+	POP2();
 seterr              # set error flags
 	_ ;
 sethalterr          # set halt-on error flag
@@ -501,8 +527,7 @@ slmul               # signed long multiply
 	_ ;
 ss                  # store sixteen
 	*16* m[%Areg{32}] := %Breg@[0:15]
-	POP1()
-	POP1();
+	POP2();
 ssub                # sixteen subscript
 	#OP2("*2 +");
 	*32* %Areg := (%Breg *2) + %Areg
