@@ -30,6 +30,14 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
+/**
+ * Initializes the Boomerang object the following settings:
+ * - All options disabled
+ * - Infinite propagations
+ * - A maximum memory depth of 99
+ * - The path to the executable is "./"
+ * - The output directory is "./output/"
+ */
 Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
@@ -56,6 +64,9 @@ Log &Boomerang::log() {
 FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {
 }
 
+/**
+ * \returns The HLLCode for the given proc.
+ */
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
 	return new CHLLCode(p);
 }
@@ -189,6 +200,11 @@ void Cluster::printTree(std::ostream &out)
 
 typedef char *crazy_vc_bug;
 
+/**
+ * \remark Gerard: This function seems a bit buggy.
+ *
+ * \returns The number of words found.
+ */
 int Boomerang::splitLine(char *line, char ***pargv)
 {
 	int argc = 0;
@@ -905,6 +921,15 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	return prog;
 }
 
+/**
+ * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
+ * After decompilation the elapsed time is printed to std::cerr.
+ *
+ * \param fname The name of the file to load.
+ * \param pname How the Prog will be named.
+ *
+ * \returns Zero on success, nonzero on faillure.
+ */
 int Boomerang::decompile(const char *fname, const char *pname)
 {
 	Prog *prog;
