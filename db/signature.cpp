@@ -289,7 +289,7 @@ void CallingConvention::Win32Signature::getInternalStatements(StatementList &stm
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
 {
-    addReturn(Unary::regOf(24));
+    addReturn(Unary::regOf(24));   // actually, what about void?
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old)
