@@ -1152,8 +1152,8 @@ void StatementTest::testCallRefsFixer () {
     bool gotMain;
     ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
-    UserProc* proc = (UserProc*) prog->getProc(1);
-    assert(strcmp(proc->getName(), "fib") == 0);
+    UserProc* proc = (UserProc*) prog->findProc("fib");
+    assert(proc);
     Cfg* cfg = proc->getCFG();
     // Sort by address
     cfg->sortByAddress();
@@ -1166,20 +1166,27 @@ void StatementTest::testCallRefsFixer () {
     proc->numberStatements(stmtNumber);
     cfg->renameBlockVars(0, 0);      // Block 0, mem depth 0
     cfg->renameBlockVars(0, 1);      // Block 0, mem depth 1
-    // Find statement 22
+    // Find various needed statements
     StatementList stmts;
     proc->getStatements(stmts);
     StatementList::iterator it;
-    it = stmts.begin();     // Statement 1
-    // Advance 21 statements
-    advance(it, 21);
+    it = stmts.begin();                         // Statement 1
+    advance(it, 20-1);
+    CallStatement* call = (CallStatement*)*it;  // Statement 20
+    call->setDestProc(proc);                    // A recursive call
+    // std::cerr << "Call is " << call << "\n";
+    advance(it, 2);
+    Statement* s22 = *it;                       // Statement 22
     // Make sure it's what we expect!
     std::string expected("  22 *i32* r24 := m[r29{20} + 8]{0}");
     std::string actual;
     std::ostringstream ost1;
-    ost1 << *it;
+    ost1 << s22;
     actual = ost1.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
+    // Fake it to be known that r29 is preserved
+    Exp* r29 = Location::regOf(29);
+    proc->setProven(new Binary(opEquals, r29, r29->clone()));
     (*it)->fixCallRefs();
     // Now expect r29{30} to be r29{3}
     expected = "  22 *i32* r24 := m[r29{3} + 8]{0}";
