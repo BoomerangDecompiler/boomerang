@@ -67,6 +67,7 @@ MYTEST(testFixSuccessor);
 	MYTEST(testFixSuccessor);
 	MYTEST(testKillFill);
 	MYTEST(testAssociativity);
+    MYTEST(testSubscriptVar);
 }
 
 int ExpTest::countTestCases () const
@@ -1099,3 +1100,55 @@ void ExpTest::testAssociativity() {
     std::string actual  (os2.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testSubscriptVar
+ * OVERVIEW:        Test AssignExp::subscriptVar and thereby
+ *                    Exp::expSubscriptVar
+ *============================================================================*/
+void ExpTest::testSubscriptVar() {
+    // m[r28 - 4] := r28 + r29
+    Exp* left = new Unary(opMemOf,
+            new Binary(opMinus,
+                Unary::regOf(28),
+                new Const(4)));
+    AssignExp* ae = new AssignExp(
+        left->clone(),
+        new Binary(opPlus,
+            Unary::regOf(28),
+            Unary::regOf(29)));
+
+    Statement* s = dynamic_cast<Statement*>(ae);
+    // Subtest 1: should do nothing
+    Exp* r28 = Unary::regOf(28);
+    Statement* def1 = dynamic_cast<Statement*>(new AssignExp(r28->clone(),
+      r28->clone()));
+    def1->setNumber(12);
+    def1->subscriptVar(left, def1);           // Should do nothing
+    std::string expected1;
+    expected1 = "*32* m[r28 - 4] := r28 + r29";
+    std::ostringstream actual1;
+    actual1 << s;
+    CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
+    // m[r28 - 4]
+
+    // Subtest 2: Ordinary substitution, on LHS and RHS
+    s->subscriptVar(r28, def1);
+    std::string expected2("*32* m[r28{12} - 4] := r28{12} + r29");
+    std::ostringstream actual2;
+    actual2 << s;
+    CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
+
+    // Subtest 3: change to a different definition
+    Statement* def3 = dynamic_cast<Statement*>(new AssignExp(Unary::regOf(29),
+        new Const(0)));
+    def3->setNumber(99);
+    s->subscriptVar(r28, def3);
+    std::string expected3("*32* m[r28{99} - 4] := r28{99} + r29");
+    std::ostringstream actual3;
+    actual3 << s;
+    CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());
+
+    delete ae; delete def1; delete def3; delete r28; delete left;
+}
+

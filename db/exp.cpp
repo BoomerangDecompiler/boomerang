@@ -158,6 +158,17 @@ RefsExp::RefsExp(RefsExp& o) : Unary(o) {
     stmtSet = o.stmtSet;
 }
 
+RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
+}
+
+PhiExp::PhiExp(Statement* d) : Terminal(opPhi)
+{   stmtSet.insert(d);
+}
+
+PhiExp::PhiExp(PhiExp& o) : Terminal(opPhi)
+{   stmtSet = o.stmtSet;
+}
+
 /*==============================================================================
  * FUNCTION:        Unary::~Unary etc
  * OVERVIEW:        Destructors.
@@ -341,6 +352,15 @@ Exp* RefsExp::clone() {
     c->stmtSet = stmtSet;
     return c;
 }
+Exp* PhiExp::clone() {
+    PhiExp* c = new PhiExp();
+    c->stmtSet = stmtSet;
+    return c;
+}
+Exp* RefExp::clone() {
+    RefExp* c = new RefExp(subExp1->clone(), def);
+    return c;
+}
 
 
 /*==============================================================================
@@ -422,6 +442,24 @@ bool RefsExp::operator==(const Exp& o) const {
     if (((RefsExp&)o).op != opSubscript) return false;
     if (!( *subExp1 == *((RefsExp&)o).subExp1)) return false;
     return stmtSet == ((RefsExp&)o).stmtSet;
+}
+
+bool RefExp::operator==(const Exp& o) const {
+    if (op == opWild) return true;
+    if (((RefExp&)o).op == opWild) return true;
+    if (((RefExp&)o).op != opSubscript) return false;
+    if (!( *subExp1 == *((RefExp&)o).subExp1)) return false;
+    // Allow a def of (Statement*)-1 as a wild card
+    if ((int)def == -1) return true;
+    if ((int)((RefExp&)o).def == -1) return true;
+    return def == ((RefExp&)o).def;
+}
+
+bool PhiExp::operator==(const Exp& o) const {
+    if (op == opWild) return true;
+    if (((PhiExp&)o).op == opWild) return true;
+    if (((PhiExp&)o).op != opPhi) return false;
+    return stmtSet == ((PhiExp&)o).stmtSet;
 }
 
 // Compare, ignoring subscripts
@@ -718,6 +756,7 @@ void Terminal::print(std::ostream& os, bool withUses) {
         case opAnull:   os << "%anul"; break;
         case opFpush:   os << "FPUSH"; break;
         case opFpop:    os << "FPOP";  break;
+        case opPhi:     os << "phi"; break;
         case opWildMemOf:os<< "m[WILD]"; break;
         case opWildRegOf:os<< "r[WILD]"; break;
         case opWildAddrOf:os<< "a[WILD]"; break;
@@ -936,6 +975,31 @@ void AssignExp::getDefinitions(LocationSet &defs) {
 //  //  //  //
 void RefsExp::print(std::ostream& os, bool withUses) {
     subExp1->print(os, withUses);
+    if (withUses) {
+        os << "{";
+        stmtSet.printNums(os);
+        os << "}";
+    }
+}
+
+//  //  //  //
+//  RefExp  //
+//  //  //  //
+void RefExp::print(std::ostream& os, bool withUses) {
+    subExp1->print(os, withUses);
+    if (withUses) {
+        os << "{";
+        if (def) def->printNum(os);
+        else os << "0";
+        os << "}";
+    }
+}
+
+//  //  //  //
+// PhiExp  //
+//  //  //  //
+void PhiExp::print(std::ostream& os, bool withUses) {
+    os << "phi";
     if (withUses) {
         os << "{";
         stmtSet.printNums(os);
@@ -1186,6 +1250,25 @@ bool Exp::isFlagAssgn() {
 }
 
 /*==============================================================================
+ * FUNCTION:        Exp::isPhi
+ * OVERVIEW:        Returns true if the expression is a phi assignment
+ *                    Example: r24 := phi{3 4 12}
+ * NOTE:            This is very similar to the RefsExp class, and will
+ *                    probably replace it
+ * PARAMETERS:      None
+ * RETURNS:         True if matches
+ *============================================================================*/
+/*     opAssign
+        /   \
+     any    opPhi {defs}
+*/
+bool Exp::isPhi() {
+    if (op != opAssignExp) return false;
+    Exp* e = getSubExp2();
+    return (e->getOper() == opPhi);
+}
+
+/*==============================================================================
  * FUNCTION:        Exp::getVarIndex
  * OVERVIEW:        Returns the index for this var, e.g. if v[2], return 2
  * PARAMETERS:      <none>
@@ -1345,8 +1428,8 @@ bool Exp::search(Exp* search, Exp*& result)
 /*==============================================================================
  * FUNCTION:        Exp::searchAll
  * OVERVIEW:        Search this expression for the given subexpression, and for
- *                    each found, return a pointer to the pointer to the matched
- *                    expression in results
+ *                    each found, return a pointer to the matched
+ *                    expression in result
  * PARAMETERS:      search:  ptr to Exp we are searching for
  *                  results:  ref to list of Exp that matched 
  * RETURNS:         True if a match was found
@@ -2595,6 +2678,55 @@ void AssignExp::doReplaceRef(Exp* from, Exp* to) {
     simplify();
 }
 
+// Replace all e in this Exp with e{def}
+Exp* Unary::expSubscriptVar(Exp* e, Statement* def) {
+    subExp1 = subExp1->expSubscriptVar(e, def);
+    if (*e == *this)
+        return new RefExp(this, def);
+    return this;
+}
+Exp* Terminal::expSubscriptVar(Exp* e, Statement* def) {
+    if (*e == *this)
+        return new RefExp(this, def);
+    return this;
+}
+Exp* Binary::expSubscriptVar(Exp* e, Statement* def) {
+    subExp1 = subExp1->expSubscriptVar(e, def);
+    subExp2 = subExp2->expSubscriptVar(e, def);
+    return this;
+}
+Exp* Ternary::expSubscriptVar(Exp* e, Statement* def) {
+    subExp1 = subExp1->expSubscriptVar(e, def);
+    subExp2 = subExp2->expSubscriptVar(e, def);
+    subExp3 = subExp3->expSubscriptVar(e, def);
+    return this;
+}
+Exp* RefExp::expSubscriptVar(Exp* e, Statement* def) {
+    if (*e == *subExp1)
+        this->def = def;
+    else
+        // Need the else, otherwise in changing r28{3} to r28{4} will
+        // change again to r28{4}{4}
+        subExp1 = subExp1->expSubscriptVar(e, def);
+    return this;
+}
+Exp* AssignExp::expSubscriptVar(Exp* e, Statement* def) {
+    assert(0);              // No: use the Statement version substituteVar()
+}
+
+void AssignExp::subscriptVar(Exp* e, Statement* def) {
+    // Replace all e with e{def} (on the RHS or in memofs in the LHS)
+    // NOTE: don't use searchReplace. It deletes the original, which could
+    // already be used as a key in a map!
+    subExp2 = subExp2->expSubscriptVar(e, def);
+    if (subExp1->isMemOf()) {
+        Exp* subLeft = ((Unary*)subExp1)->getSubExp1();
+        Exp* temp = subLeft->expSubscriptVar(e, def);
+        if (subLeft != temp)
+            ((Unary*)subExp1)->setSubExp1ND(temp);
+    }
+}
+
 /*==============================================================================
  * FUNCTION:        Unary::fixSuccessor
  * OVERVIEW:        Replace succ(r[k]) by r[k+1]
@@ -2726,6 +2858,18 @@ void RefsExp::addUsedLocs(LocationSet& used) {
     }
 }
 
+void RefExp::addUsedLocs(LocationSet& used) {
+    used.insert(clone());           // We want to see these
+    if (subExp1->isMemOf()) {
+        Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
+        grandChild->addUsedLocs(used);
+    }
+}
+
+void PhiExp::addUsedLocs(LocationSet& used) {
+    // Not sure if we need to see these "uses"
+}
+
 Exp* Exp::addSubscript(Statement* def) {
         return new RefsExp(this, def);
 }
@@ -2810,6 +2954,17 @@ Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     return this;
 }
 
+Exp* PhiExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
+    // Don't think we need this
+    return this;
+}
+
+Exp* RefExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
+    // Don't think we need this
+    return this;
+}
+
+
 //  //  //  //
 // Ternary  //
 //  //  //  //
@@ -2850,6 +3005,13 @@ Exp* Terminal::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
 void RefsExp::doRemoveRestoreRefs(StatementSet& rs) {
     stmtSet.makeDiff(rs);               // Just use set difference
     subExp1->doRemoveRestoreRefs(rs);   // Also recurse (e.g. m[..]{7})
+}
+
+//  //  //  //
+//  PhiExp  //
+//  //  //  //
+void PhiExp::doRemoveRestoreRefs(StatementSet& rs) {
+    stmtSet.makeDiff(rs);               // Just use set difference
 }
 
 //  //  //  //
@@ -2911,6 +3073,35 @@ Exp* RefsExp::fromSSA(igraph& ig) {
         return new Unary(opLocal, new Const(strdup(name.c_str())));
     }
 }
+
+Exp* RefExp::fromSSA(igraph& ig) {
+    // FIXME: Need to check if the argument is a memof, and if so
+    // deal with that specially (e.g. global)
+    // Check to see if it is in the map
+    igraph::iterator it = ig.find(this);
+    if (it == ig.end()) {
+        // It is not in the map. Remove the opSubscript
+        Exp* ret = becomeSubExp1();
+        // ret could be a memof, etc, which could need subscripts removed from
+        ret->fromSSA(ig);
+        return ret;
+    }
+    else {
+        // It is in the map. Delete the current expression, and replace
+        // with a new local
+        std::ostringstream os;
+        os << "temp" << ig[this];
+        std::string name = os.str();
+        delete this;
+        return new Unary(opLocal, new Const(strdup(name.c_str())));
+    }
+}
+
+Exp* PhiExp::fromSSA(igraph& ig) {
+    // FIXME: More required
+    return this;
+}
+
 
 Exp* Unary::fromSSA(igraph& ig) {
     subExp1 = subExp1->fromSSA(ig);

@@ -152,7 +152,6 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
     d->dfnum.resize(0);
     d->semi.resize(0);
     d->ancestor.resize(0);
-    d->idom.resize(0);
     d->samedom.resize(0);
     d->vertex.resize(0);
     d->parent.resize(0);
@@ -207,9 +206,11 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
                 // if y not element of A_phi[a]
                 std::set<int>& s = d->A_phi[a];
                 if (s.find(y) == s.end()) {
-                    // Supposed to insert trivial phi function for a at top of
-                    // block y
-//std::cerr << "Trivial phi function for " << a << " at top of block " << std::dec << y << " (0x" << std::hex << (unsigned)d->BBs[y]->getLowAddr() << ")\n";
+                    // Insert trivial phi function for a at top of block y
+                    // a := phi{}
+                    Exp* e = new AssignExp(a, new PhiExp);
+                    PBB Ybb = d->BBs[y];
+                    Ybb->prependExp(e);
                     // A_phi[a] <- A_phi[a] U {y}
                     s.insert(y);
                     // if a !elementof A_orig[y]
@@ -219,5 +220,79 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
                 }
             }
         }
+    }
+}
+
+void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
+    // For each statement S in block n
+    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+    PBB bb = d->BBs[n];
+    for (Statement* S = bb->getFirstStmt(rit, ii, cii); S;
+      S = bb->getNextStmt(rit, ii, cii)) {
+        // if S is not a phi function
+        AssignExp* ae = dynamic_cast<AssignExp*>(S);
+        if (!ae || !ae->isPhi()) {
+            // For each use of some variable x in S (not just assignments)
+            LocationSet locs;
+            S->addUsedLocs(locs);
+            LocSetIter xx;
+            for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+                if (x->getMemDepth() == memDepth) {
+                    // If the stack is empty, assume NULL (statement "0")
+                    // This avoids having to initialise the stack for ALL
+                    // variables (not just those that need phi functions)
+                    Statement* def;
+                    if (d->Stack[x].empty())
+                        def = NULL;
+                    else
+                        def = d->Stack[x].top();
+                    // Replace the use of x with x{def} in S
+                    S->subscriptVar(x, def);
+                }
+            }
+        }
+        // For each definition of some variable a in S
+        Exp* a = S->getLeft();
+        if (a != NULL && a->getMemDepth() == memDepth) {
+            // Push i onto Stack[a]
+            d->Stack[a].push(S);
+            // Replace definition of a with definition of a_i in S
+            // (we don't do this)
+        }
+    }
+    // For each successor Y of block n
+    int numSucc = bb->m_OutEdges.size();
+    for (int succ = 0; succ != numSucc; succ++) {
+        PBB Ybb = bb->m_OutEdges[succ];
+        // For each phi-function in Y
+        for (Statement* S = Ybb->getFirstStmt(rit, ii, cii); S;
+          S = Ybb->getNextStmt(rit, ii, cii)) {
+            AssignExp* ae = dynamic_cast<AssignExp*>(S);
+            // if S is not a phi function, then quit the loop (no more phi's)
+            if (ae && !ae->isPhi()) break;
+            Exp* a = ae->getLeft();
+            Statement* def;
+            if (d->Stack[a].empty())
+                def = NULL;
+            else
+                def = d->Stack[a].top();
+            // "Replace jth operand with a_i"
+            ae->getRight()->addSubscript(def);
+        }
+    }
+    // For each child X of n
+    // Note: linear search!
+    int numBB = m_listBB.size();
+    for (int X=0; X < numBB; X++) {
+        if (d->idom[X] == n)
+            renameBlockVars(d, X, memDepth);
+    }
+    // For each statement S in block n
+    for (Statement* S = bb->getFirstStmt(rit, ii, cii); S;
+      S = bb->getNextStmt(rit, ii, cii)) {
+        // For each definition of some variable a in S
+        Exp* a = S->getLeft();
+        if (a == NULL || a->getMemDepth() != memDepth) continue;
+        d->Stack[a].pop();
     }
 }

@@ -107,14 +107,19 @@ void Statement::replaceRef(Statement *def) {
     // This is so that it doesn't "short circuit" to unsubscripted variables
     // Example: 42:r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
     // The bare r28 on the left "short circuits" to the bare r28 in this LHS
-    RefsExp re(lhs, def);
+    Unary* re;
+    if (Boomerang::get()->impSSA)
+        re = new RefsExp(lhs, def);
+    else
+        re = new RefExp(lhs, def);
 
     // do the replacement
-    doReplaceRef(&re, rhs);
+    doReplaceRef(re, rhs);
 
-    // Careful: don't allow re to destruct while lhs is still a part of it!
+    // Careful: don't delete re while lhs is still a part of it!
     // Else, will delete lhs, which is still a part of def!
-    re.setSubExp1ND(NULL);
+    re->setSubExp1ND(NULL);
+    delete re;
 }
 
 // special replace a use in this statement (where this statement has a
@@ -924,7 +929,14 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
             if (e->getNumRefs() != 1) continue;
             // Can propagate TO this (if memory depths are suitable)
             StmtSetIter dummy;
-            Statement* def = ((RefsExp*)e)->getFirstRef(dummy);
+            Statement* def;
+            if (Boomerang::get()->impSSA)
+                def = ((RefsExp*)e)->getFirstRef(dummy);
+            else
+                def = ((RefExp*)e)->getRef();
+            if (def == NULL)
+                // Can't propagate statement "0"
+                continue;
             if (def == this)
                 // Don't propagate to self! Can happen with %pc's
                 continue;
@@ -934,6 +946,10 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
                 continue;
             // Don't propagate from statements in the exclude list
             if (exclude.exists(def)) continue;
+            AssignExp* ae = dynamic_cast<AssignExp*>(def);
+            if (ae && ae->isPhi())
+                // Don't propagate phi statements!
+                continue;
             change = doPropagateTo(memDepth, def, false);
         }
     } while (change && ++changes < 20);
@@ -982,15 +998,20 @@ bool Statement::isNullStatement() {
     if (e == NULL) return false;
     Exp* sub2 = e->getSubExp2();
     if (sub2->isSubscript()) {
-        RefsExp* re = (RefsExp*)sub2;
-        if (re->getNumRefs() != 1)
-            // Can't be null
-            return false;
-        StmtSetIter dummy;
-        // Has only 1 reference; has to be equal to self to be a null statement
-        // Not even necessary to compare the statements; just the statement
-        // numbers
-        return re->getFirstRef(dummy)->number == number;
+        if (Boomerang::get()->impSSA) {
+            RefsExp* re = (RefsExp*)sub2;
+            if (re->getNumRefs() != 1)
+                // Can't be null
+                return false;
+            StmtSetIter dummy;
+            // Has only 1 reference; has to be equal to self to be a null statement
+            // Not even necessary to compare the LHS and RHS; just the statement
+            // numbers
+            return re->getFirstRef(dummy)->number == number;
+        }
+        else
+            // Must refer to self to be null
+            return this == ((RefExp*)sub2)->getRef();
     }
     else
         // Null if left == right

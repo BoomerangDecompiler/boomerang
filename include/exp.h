@@ -148,8 +148,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isSizeCast() {return op == opSize;}
     // True if this is a subscripted expression (SSA)
     bool isSubscript() {return op == opSubscript;}
-    // True if this is a phi operation (SSA)
-    bool isPhi() {return op == opPhi;}
+    // True if this is a phi assignmnet (SSA)
+    bool isPhi();
     // Get the index for this var
     int getVarIndex();
     // True if this is a terminal
@@ -242,6 +242,8 @@ virtual Exp* fixSuccessor() {return this;}
         StatementSet& rs) {return this;}
     // Add a subscript to this; may return a new Exp
     virtual Exp* addSubscript(Statement* def);
+    // Add a subscript to all e (pointing to def)
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def) {return this;}
 
     // Get number of definitions (statements this expression depends on)
     virtual int getNumRefs() {return 0;}
@@ -258,7 +260,7 @@ virtual Exp* fixSuccessor() {return this;}
 
     // Remove refs that define restored locations
     virtual void doRemoveRestoreRefs(StatementSet& rs) {};
-};
+};  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Exp* p);  // Print the Exp poited to by p
@@ -340,6 +342,9 @@ public:
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
+    // Do the work of subscripting variables
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
+
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -401,6 +406,9 @@ virtual Exp* fixSuccessor();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    // Do the work of subscripting variables
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Update the "uses" information implicit in expressions
     virtual Exp* updateRefs(StatementSet& defs, int memDepth,
@@ -472,6 +480,9 @@ virtual int getMemDepth();
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
+    // Do the work of subscripting variables
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
+
     // Update the "uses" information implicit in expressions
     virtual Exp* updateRefs(StatementSet& defs, int memDepth,
                 StatementSet& rs);
@@ -537,6 +548,9 @@ virtual int getMemDepth();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    // Do the work of subscripting variables
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
@@ -640,6 +654,8 @@ public:
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    // Do the work of subscripting variables
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
     virtual Exp* updateRefs(StatementSet& defs, int memDepth,
@@ -658,10 +674,6 @@ public:
         // get how to replace this statement in a use
         virtual Exp* getRight() { return subExp2; }
 
-    // special print functions
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
-
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
 
@@ -675,6 +687,9 @@ public:
  
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
+
+    // subscript one variable
+    void subscriptVar(Exp* e, Statement* def);
 
     // to/from SSA form
     virtual void   toSSAform(StatementSet& reachin, int memDepth,
@@ -741,5 +756,70 @@ virtual Exp* addSubscript(Statement* def) {
     virtual void doRemoveRestoreRefs(StatementSet& rs);
 };
 
+/*==============================================================================
+ * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and
+ *  a pointer to a defining statement (could be a phi assignment)
+ * This is used for subscripting SSA variables. Example:
+ * m[1000] becomes m[1000]{3} if defined at statement 3
+ * The integer is really a pointer to the definig statement,
+ * printed as the statement number for compactness
+ *============================================================================*/
+class RefExp : public Unary {
+    Statement* def;             // The defining statement
+
+public:
+            // Constructor with expression (e) and statement defining it (def)
+            RefExp(Exp* e, Statement* def);
+            RefExp(Exp* e);
+            RefExp(RefExp& o);
+virtual Exp* clone();
+    bool    operator==(const Exp& o) const;
+    void    print(std::ostream& os, bool withUses = false);
+    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
+virtual int getNumRefs() {return 1;}
+    Statement* getRef() {return def;}
+    void    addUsedLocs(LocationSet& used);
+    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
+virtual Exp* addSubscript(Statement* def) {this->def = def; return this;}
+    void    setDef(Statement* def) {this->def = def;}
+    virtual Exp* fromSSA(igraph& ig);
+    bool    references(Statement* s) {return def == s;}
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs) {};
+};
+
+/*==============================================================================
+ * PhiExp is a subclass of Terminal, holding just an operator (opPhi), and
+ *  a StatementSet
+ * This is used for phi functions. For example:
+ * m[1000] := phi{3 7 10} if defined at statements 3, 7, and 10
+ * m[r28{3}+4] := phi{2 8} if the memof is defined at 2 and 8, and
+ * the r28 is defined at 3. The integers are really pointers to statements,
+ * printed as the statement number for compactness
+ *============================================================================*/
+class PhiExp : public Terminal {
+    StatementSet    stmtSet;            // A set of pointers to statements
+
+public:
+            PhiExp() : Terminal(opPhi) {};
+            // Constructor with statement defining it (def)
+            PhiExp(Statement* def);
+            PhiExp(PhiExp& o);
+virtual Exp* clone();
+    bool    operator==(const Exp& o) const;
+    void    print(std::ostream& os, bool withUses = false);
+    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
+virtual int getNumRefs() {return stmtSet.size();}
+    void    addUsedLocs(LocationSet& used);
+virtual Exp* addSubscript(Statement* def) {
+                stmtSet.insert(def); return this;}
+    Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
+    Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
+    virtual Exp* fromSSA(igraph& ig);
+    bool    references(Statement* s) {return stmtSet.exists(s);}
+    StatementSet& getRefs() {return stmtSet;}
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
+};
     
 #endif // __EXP_H__

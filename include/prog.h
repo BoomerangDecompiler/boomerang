@@ -178,6 +178,7 @@ public:
     void toSSAform();
 
     // Do decompilation
+    void decompile_issa();
     void decompile();
 
     // All that used to be done in UserProc::decompile, but now done globally.

@@ -15,7 +15,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
     debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
-    noPropMult(false)
+    noPropMult(false), impSSA(false)
 {
 }
 
@@ -51,6 +51,7 @@ void Boomerang::help() {
     std::cerr << "-dd: debug - debug global dataflow\n";
     std::cerr << "-dr: debug - print reaching and available definitions\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
+    std::cerr << "-issa: use Implicit SSA form (TEMPORARY)\n";
     exit(1);
 }
         
@@ -164,6 +165,11 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                 }
                 break;
+            case 'i':
+                if (argv[i][2] == 's') {
+                    impSSA = true;
+                    break;
+                }
             default:
                 help();
         }
@@ -191,7 +197,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
     if (!noDecompile) {
         std::cerr << "decompiling..." << std::endl;
-        prog->decompile();
+        if (impSSA)
+            prog->decompile_issa();
+        else
+            prog->decompile();
     }
 
     // Note: printing of dotty file has been moved into Prog::decompile()

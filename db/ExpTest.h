@@ -65,5 +65,7 @@ class ExpTest : public CppUnit::TestCase {
     void testFixSuccessor();
 	void testKillFill();
     void testAssociativity();
+
+    void testSubscriptVar();
 };
 

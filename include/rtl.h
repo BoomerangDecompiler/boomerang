@@ -274,12 +274,6 @@ public:
     // expression and adds them to a given list in reverse nesting order.    
     virtual bool searchAll(Exp* search, std::list<Exp*> &result);                           
 
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    virtual void storeUseDefineStruct(BBBlock& inBlock);               
-#endif
 
     // serialize this rtl
     virtual bool serialize_rest(std::ostream &ouf);
@@ -372,6 +366,7 @@ public:
     //virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
     virtual bool canPropagateToAll() { return false; }
@@ -560,6 +555,7 @@ public:
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    virtual void subscriptVar(Exp* e, Statement* def);
             void setPhase1();       // Set up for phase 1 of SW93
 
     // dataflow related functions
@@ -753,6 +749,7 @@ public:
     virtual void killLive (LocationSet &kill );
     virtual void killDead (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
+    virtual void subscriptVar(Exp* e, Statement* def);
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &def);

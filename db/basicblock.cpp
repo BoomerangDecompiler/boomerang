@@ -2216,3 +2216,22 @@ char* BasicBlock::getStmtNumber() {
         sprintf(ret, "bb%x", (unsigned)this);
     return ret;
 } 
+
+// Prepend an expression (usually an assignment representing a phi function)
+void BasicBlock::prependExp(Exp* e) {
+    // Check the first RTL (if any)
+    if (m_pRtls->size()) {
+        RTL* rtl = m_pRtls->front();
+        if (rtl->getAddress() == 0) {
+            // Append to this RTL
+            rtl->appendExp(e);
+            return;
+        }
+    }
+    // Otherwise, prepent a new RTL
+    std::list<Exp*> listExp;
+    listExp.push_back(e);
+    RTL* rtl = new RTL(0, &listExp);
+    m_pRtls->push_front(rtl);
+}
+    

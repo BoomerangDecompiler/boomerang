@@ -67,6 +67,7 @@ public:
     bool debugPrintReach;
     bool debugPrintSSA;
     bool noPropMult;
+    bool impSSA;
 };
 
 #define VERBOSE Boomerang::get()->vFlag

@@ -42,6 +42,7 @@ void CfgTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testSemiDominators);
     MYTEST(testPlacePhi);
     MYTEST(testPlacePhi2);
+    MYTEST(testRenameVars);
 }
 
 int CfgTest::countTestCases () const
@@ -254,4 +255,27 @@ void CfgTest::testPlacePhi2 () {
         actual2 << *pp << " ";
     CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
     delete e;
+}
+
+/*==============================================================================
+ * FUNCTION:        CfgTest::testRenameVars
+ * OVERVIEW:        Test the renaming of variables
+ *============================================================================*/
+void CfgTest::testRenameVars () {
+    BinaryFile* pBF = BinaryFile::Load(FRONTIER_PENTIUM);
+    CPPUNIT_ASSERT(pBF != 0);
+    FrontEnd* pFE = new PentiumFrontEnd(pBF);
+    Prog* prog = pFE->decode();
+
+    UserProc* pProc = (UserProc*) prog->getProc(0);
+    Cfg* cfg = pProc->getCFG();
+
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    prog->analyse();
+
+    DOM* d = new DOM;
+    cfg->dominators(d);
+    cfg->placePhiFunctions(d, 1);
+    prog->numberStatements();           // After placing phi functions!
+    cfg->renameBlockVars(d, 0, 1);      // Block 0, mem depth 1
 }

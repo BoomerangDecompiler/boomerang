@@ -5,6 +5,7 @@
 #ifndef __DOM_H__
 #define __DOM_H__
 
+#include <stack>
 #include "cfg.h"
 #include "exphelp.h"            // For lessExpStar
 
@@ -40,6 +41,12 @@ typedef struct DOM {
     std::map<Exp*, std::set<int>, lessExpStar > defsites;
     // Array of sets of BBs needing phis
     std::map<Exp*, std::set<int>, lessExpStar> A_phi;
+
+    /*
+     * Renaming variables
+     */
+    // Note: this becomes a map of stacks of Statement*s. 
+    std::map<Exp*, std::stack<Statement*>, lessExpStar> Stack;
 
 };
 

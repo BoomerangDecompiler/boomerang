@@ -815,6 +815,11 @@ void HLJcond::addUsedLocs(LocationSet& used) {
         pCond->addUsedLocs(used);
 }
 
+void HLJcond::subscriptVar(Exp* e, Statement* def) {
+    if (pCond)
+        pCond = pCond->expSubscriptVar(e, def);
+}
+
 /**********************************
  * HLNwayJump methods
  **********************************/
@@ -1579,6 +1584,12 @@ void HLCall::getDefinitions(LocationSet &defs)
     }
 }
 
+void HLCall::subscriptVar(Exp* e, Statement* def) {
+    for (unsigned i = 0; i < arguments.size(); i++) {
+        arguments[i] = arguments[i]->expSubscriptVar(e, def);
+    }
+}
+
 void HLCall::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
     for (unsigned i = 0; i < arguments.size(); i++) {
@@ -2162,6 +2173,10 @@ void HLScond::addUsedLocs(LocationSet& used) {
         pCond->addUsedLocs(used);
 }
 
+void HLScond::subscriptVar(Exp* e, Statement* def) {
+    if (pCond) pCond = pCond->expSubscriptVar(e, def);
+    if (pDest) pDest = pDest->expSubscriptVar(e, def);
+}
 
 /*==============================================================================
  * FUNCTION:         CallBB:setPhase1

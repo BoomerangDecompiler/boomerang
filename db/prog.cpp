@@ -55,6 +55,7 @@
 #include "signature.h"
 #include "analysis.h"
 #include "boomerang.h"
+#include "dom.h"
 
 Prog::Prog()
     : interProcDFAphase(0),
@@ -173,7 +174,7 @@ void Prog::toSSAform() {
 }
 
 // Do decompilation
-void Prog::decompile() {
+void Prog::decompile_issa() {
     numberStatements();
     forwardGlobalDataflow();
 
@@ -1260,4 +1261,59 @@ void Prog::removeRestoreRefs(StatementSet& restoredSet) {
 }
 void Prog::removeRestoreStmts(StatementSet& restoredSet) {
     // To be completed
+}
+
+void Prog::decompile() {
+    // For each proc
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+
+        // Sort by address, so printouts make sense
+        Cfg* cfg = proc->getCFG();
+        cfg->sortByAddress();
+
+        // Compute dominance frontier
+        DOM* d = new DOM;
+        cfg->dominators(d);
+
+
+        // For each memory depth
+        int maxDepth = proc->findMaxDepth();
+        for (int depth = 0; depth <= maxDepth; depth++) {
+
+            // Place the phi functions for this memory depth
+            cfg->placePhiFunctions(d, depth);
+
+            // Number the statements
+            int stmtNumber = 0;
+            proc->initStatements(stmtNumber); 
+
+
+            // Rename variables
+            cfg->renameBlockVars(d, 0, depth);
+
+            // Print if requested
+            if (Boomerang::get()->debugPrintSSA) {
+                std::cerr << "=== Debug Print SSA for " << proc->getName()
+                  << " at memory depth " << depth << " (no propagations) ===\n";
+                proc->print(std::cerr, true);
+                std::cerr << "=== End Debug Print SSA for " <<
+                  proc->getName() << " at depth " << depth << " ===\n\n";
+            }
+
+            // Propagate at this memory depth
+            proc->propagateStatements(depth);
+            if (VERBOSE) {
+                std::cerr << "=== After propagate for " << proc->getName() <<
+                  " at memory depth " << depth << " ===\n";
+                proc->print(std::cerr, true);
+                std::cerr << "=== End propagate for " << proc->getName() <<
+                  " at depth " << depth << " ===\n\n";
+            }
+        }
+        delete d;
+    }
 }

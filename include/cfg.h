@@ -582,6 +582,8 @@ protected:
 public:
     void generateCode(HLLCode *hll, int indLevel, PBB latch, 
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
+    // For prepending phi functions
+    void prependExp(Exp* e);
 };  // class BasicBlock
 
     // A type for the ADDRESS to BB map
@@ -1073,6 +1075,8 @@ public:
     void Link(DOM* d, int p, int n);
     void computeDF(DOM* d, int n);
     void placePhiFunctions(DOM* d, int memDepth);
+    void renameBlockVars(DOM* d, int n, int memDepth);
+
 };              /* Cfg */
 
 #endif
