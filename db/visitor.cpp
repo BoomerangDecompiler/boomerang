@@ -318,9 +318,14 @@ bool UsedLocsFinder::visit(PhiExp* e, bool& override) {
     StatementVec::iterator uu;
     for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
         Exp* temp = new RefExp(subExp1, *uu);
+        // Note: the below is not really correct; it is kept for compatibility
+        // with the pre-visitor code.
+        // A phi of m[blah] uses blah, but a phi should never be the only place
+        // it is used, so that should be OK.
+        // Should really be temp->accept(this);
         used->insert(temp);
     }
-    override = false;
+    override = true;
     return true;
 }
 
@@ -457,4 +462,3 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
     }
     recur = false;          // Don't do the usual accept logic
 }
-
