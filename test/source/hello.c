@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main()
-{	printf ("hello from sparc!\n");
+{	printf ("Hello, world!\n");
 	return 0;
 }
 
