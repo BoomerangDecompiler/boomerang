@@ -582,7 +582,7 @@ public:
         virtual void printAsUseBy(std::ostream &os);
 
 	// inline any constants in the statement
-	virtual void inlineConstants(Prog *prog);
+	virtual void processConstants(Prog *prog);
 
         // general search
         virtual bool search(Exp* search, Exp*& result) {

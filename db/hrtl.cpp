@@ -691,8 +691,8 @@ void HLJcond::printAsUseBy(std::ostream &os) {
         os << "<empty cond>";
 }
 
-// inline any constants in the statement
-void HLJcond::inlineConstants(Prog *prog) {
+// process any constants in the statement
+void HLJcond::processConstants(Prog *prog) {
 }
 
 void HLJcond::doReplaceUse(Statement *use) {
@@ -1487,7 +1487,7 @@ void HLCall::doReplaceUse(Statement *use) {
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
-    inlineConstants(proc->getProg());
+    processConstants(proc->getProg());
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
@@ -1518,20 +1518,24 @@ void HLCall::doReplaceUse(Statement *use) {
     }
 }
 
-void HLCall::inlineConstants(Prog *prog) {
+void HLCall::processConstants(Prog *prog) {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
         // char* and a constant
-        if ((arguments[i]->isIntConst()) && t && t->isPointer() && 
-          ((PointerType*)t)->getPointsTo()->isChar()) {
-            char *str = 
-              prog->getStringConstant(((Const*)arguments[i])->getAddr());
-            if (str) {
-                std::string s(str);
-                while (s.find('\n') != (unsigned)-1)
-                    s.replace(s.find('\n'), 1, "\\n");
-                delete arguments[i];
-                arguments[i] = new Const(strdup(s.c_str()));
+        if ((arguments[i]->isIntConst()) && t && t->isPointer()) {
+            if (((PointerType*)t)->getPointsTo()->isChar()) {
+                char *str = 
+                    prog->getStringConstant(((Const*)arguments[i])->getAddr());
+                if (str) {
+                    std::string s(str);
+                    while (s.find('\n') != (unsigned)-1)
+                        s.replace(s.find('\n'), 1, "\\n");
+                    delete arguments[i];
+                    arguments[i] = new Const(strdup(s.c_str()));
+                }
+            }
+            if (((PointerType*)t)->getPointsTo()->isFunc()) {
+                prog->decode(((Const*)arguments[i])->getAddr());
             }
         }
     }

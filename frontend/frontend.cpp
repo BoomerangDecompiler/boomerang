@@ -142,7 +142,8 @@ void FrontEnd::readLibraryCatalog() {
     }
 }
 
-Prog *FrontEnd::decode() {
+Prog *FrontEnd::decode() 
+{
     Prog *prog = new Prog(pBF, this);
     readLibraryCatalog();
 
@@ -150,7 +151,12 @@ Prog *FrontEnd::decode() {
     ADDRESS a = getMainEntryPoint(gotMain);
     if (a == NO_ADDRESS) return false;
 
-    //newProc(prog, a);
+    decode(prog, a);
+    return prog;
+}
+
+void FrontEnd::decode(Prog *prog, ADDRESS a) 
+{
     prog->setNewProc(a);
 
     bool change = true;
@@ -174,7 +180,6 @@ Prog *FrontEnd::decode() {
         }
     }
     prog->wellForm();
-    return prog;
 }
 
 DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {

@@ -366,8 +366,8 @@ public:
 	// erase a statement from the internal statements list
 	void eraseInternalStatement(Statement *stmt);
 
-	// inline constants
-	void inlineConstants();
+	// inline constants / decode function pointer constants
+	void processConstants();
 
 	// get internal statements
     // Note: assignment causes shallow copy of list

@@ -103,12 +103,28 @@ param_list: param ',' param_list
           { $$ = new std::list<Parameter*>(); 
             $$->push_back($1);
           }
+          | VOID
+          { $$ = new std::list<Parameter*>()}
           | /* empty */
           { $$ = new std::list<Parameter*>()}
           ;
 
 param: type IDENTIFIER
      { $$ = new Parameter($1, $2); }
+     | type '(' '*' IDENTIFIER ')' '(' param_list ')'
+     { Signature *sig = Signature::instantiate(sigstr, NULL);
+       sig->setReturnType($1);
+       for (std::list<Parameter*>::iterator it = $7->begin();
+            it != $7->end(); it++)
+           if (std::string((*it)->getName()) != "...")
+               sig->addParameter(*it);
+           else {
+               sig->addEllipsis();
+               delete *it;
+           }
+       delete $7;
+       $$ = new Parameter(new PointerType(new FuncType(sig)), $4); 
+     }
      | ELLIPSIS
      { $$ = new Parameter(new VoidType, "..."); }
      ;
@@ -139,6 +155,8 @@ type: CHAR
     { $$ = new IntegerType(16); }
     | INT 
     { $$ = new IntegerType(); }
+    | UNSIGNED INT 
+    { $$ = new IntegerType(32, false); }
     | LONG 
     { $$ = new IntegerType(); }
     | FLOAT 
@@ -151,6 +169,8 @@ type: CHAR
     { $$ = new PointerType($1); }
     | IDENTIFIER
     { $$ = new NamedType($1); }
+    | CONST type
+    { $$ = $2; }
     ;
 
 

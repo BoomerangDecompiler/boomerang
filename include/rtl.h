@@ -381,7 +381,7 @@ public:
     virtual void printAsUseBy(std::ostream &os);
 
     // inline any constants in the statement
-    virtual void inlineConstants(Prog *prog);
+    virtual void processConstants(Prog *prog);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();
@@ -557,7 +557,7 @@ public:
     virtual void printAsUseBy(std::ostream &os);
 
     // inline any constants in the statement
-    virtual void inlineConstants(Prog *prog);
+    virtual void processConstants(Prog *prog);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();

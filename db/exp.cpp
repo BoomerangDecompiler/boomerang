@@ -2582,7 +2582,7 @@ Exp* Unary::fixSuccessor() {
     return this;
 }
     
-void AssignExp::inlineConstants(Prog *prog)
+void AssignExp::processConstants(Prog *prog)
 {
     // TODO
 }

@@ -172,8 +172,8 @@ public:
     virtual void printAsUse(std::ostream &os) = 0;
     virtual void printAsUseBy(std::ostream &os) = 0;
 
-    // inline any constants in the statement
-    virtual void inlineConstants(Prog *prog) = 0;
+    // inline / decode any constants in the statement
+    virtual void processConstants(Prog *prog) = 0;
 
     // general search
     virtual bool search(Exp *search, Exp *&result) = 0;

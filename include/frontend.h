@@ -128,6 +128,9 @@ virtual int     getInst(int addr);
      */
     Prog *decode();
 
+    /* Decode starting at a given address in a given program. */
+    void decode(Prog *prog, ADDRESS a);
+
     /*
      * create a new procedure of the appropriate type in a program at
      * the given address.

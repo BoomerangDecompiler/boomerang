@@ -1008,7 +1008,7 @@ void UserProc::decompile() {
     if (!Boomerang::get()->noRemoveInternal)
         removeInternalStatements();
     cfg->compressCfg();
-    inlineConstants();
+    processConstants();
     promoteSignature();
     cfg->structure();
     replaceExpressionsWithGlobals();
@@ -1292,13 +1292,13 @@ void UserProc::eraseInternalStatement(Statement *stmt) {
     internal.remove(stmt);
 }
 
-void UserProc::inlineConstants() {
+void UserProc::processConstants() {
     StatementList stmts;
     getStatements(stmts);
-    // inline any constants in the statement
+    // process any constants in the statement
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->inlineConstants(prog);
+        s->processConstants(prog);
 }
 
 // bMemProp set to true if a memory location is propagated

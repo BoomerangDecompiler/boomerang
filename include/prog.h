@@ -117,6 +117,11 @@ public:
 	// watcher allowed at the moment, old watchers will be disconnected).
 	void setWatcher(ProgWatcher *p) { m_watcher = p; }
 
+        void decode(ADDRESS a) { 
+            if (findProc(a) == NULL)
+                pFE->decode(this, a);
+        }
+
 	// Well form all the procedures/cfgs in this program
 	bool wellForm();
 

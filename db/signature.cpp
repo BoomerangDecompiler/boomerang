@@ -596,7 +596,10 @@ Exp *CallingConvention::StdC::SparcSignature::getStackWildcard()
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
 {
-    name = nam;
+    if (nam == NULL) 
+        name = "<ANON>";
+    else
+        name = nam;
 }
 
 Signature *Signature::clone()
