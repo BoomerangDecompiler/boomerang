@@ -395,19 +395,9 @@ protected:
 
 public:
 
-	/* stuff for data flow analysis */
-    
     bool isPostCall();
     static void doAvail(StatementSet& s, PBB inEdge);
-
-    /**
-      * Set up for phases 1 or 2 of [SW93] (or clear them)
-      */
     Proc* getDestProc();
-    void   setCallInterprocEdges();
-    void clearCallInterprocEdges();
-    void   setReturnInterprocEdges();
-    void clearReturnInterprocEdges();
 
     /**
      * Get first/next statement this BB
@@ -721,6 +711,13 @@ public:
      */
     PBB getNextBB(BB_IT& it);
 
+    /*
+     * An alternative to the above is to use begin() and end():
+     */
+    typedef BB_IT iterator;
+    iterator begin() {return m_listBB.begin();}
+    iterator end()   {return m_listBB.end();}
+
 
     /*
      * Checks whether the given native address is a label (explicit or non
@@ -948,7 +945,7 @@ public:
      * given. Sort out all the in and out edges.
      */
     PBB splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
-      BranchStatement* br2);
+      BranchStatement* br2, BB_IT& it);
 
     /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
      */

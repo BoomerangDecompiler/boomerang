@@ -1196,7 +1196,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     return start;
 }
 
-void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB pBB) {
+void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB bb, BB_IT& it)
+{
     BranchStatement* br1 = new BranchStatement;
     assert(rtl->getList().size() >= 4);     // They vary; at least 5 or 6
     Statement* s1 = *rtl->getList().begin();
@@ -1206,18 +1207,22 @@ void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB pBB) {
     BranchStatement* br2 = new BranchStatement;
     br2->setCondExpr(s6->getRight());
     br2->setDest(a);
-    cfg->splitForBranch(pBB, rtl, br1, br2);
+    cfg->splitForBranch(bb, rtl, br1, br2, it);
 }
 
 void PentiumFrontEnd::processStringInst(UserProc* proc) {
-    BB_IT it;
+    Cfg::iterator it;
     Cfg* cfg = proc->getCFG();
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+    // For each BB this proc
+    for (it = cfg->begin(); it != cfg->end(); /* no increment! */) {
+        bool noinc = false;
+        PBB bb = *it;
         std::list<RTL*> *rtls = bb->getRTLs();
         ADDRESS prev, addr = 0;
         bool lastRtl = true;
-        for (std::list<RTL*>::reverse_iterator rit = rtls->rbegin();
-              rit != rtls->rend(); rit++) {
+        // For each RTL this BB
+        for (std::list<RTL*>::iterator rit = rtls->begin();
+              rit != rtls->end(); rit++) {
             RTL *rtl = *rit;
             prev = addr;
             addr = rtl->getAddress();
@@ -1229,9 +1234,12 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
                         Const* sub = (Const*)((Unary*)lhs)->getSubExp1();
                         char* str = sub->getStr();
                         if (strncmp(str, "%SKIP", 5) == 0) {
-                            toBranches(addr, lastRtl, cfg, rtl, bb);
-                            break;  // Next BB NOTE: assumes one string instr
-                                    // per BB!
+                            toBranches(addr, lastRtl, cfg, rtl, bb, it);
+                            noinc = true;       // toBranches inc's it
+                            // Abandon this BB; if there are other string instr
+                            // this BB, they will appear in new BBs near the
+                            // end of the list
+                            break;
                         }
                         else
                             LOG << "Unhandled machine feature " << str << "\n";
@@ -1240,5 +1248,6 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
             }
             lastRtl = false;
         }
+        if (!noinc) it++;
     }
 }

@@ -2320,13 +2320,14 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
  * %SKIP and %RPT parts of string instructions)
  */
 PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
-  BranchStatement* br2) {
+  BranchStatement* br2, BB_IT& it) {
 
 #if 0
-std::cerr << "splitForBranch before:\n";
-std::cerr << pBB->prints() << "\n";
+    std::cerr << "splitForBranch before:\n";
+    std::cerr << pBB->prints() << "\n";
 #endif
 
+    unsigned i, j;
     std::list<RTL*>::iterator ri;
     // First find which RTL has the split address
     for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
@@ -2386,7 +2387,7 @@ std::cerr << pBB->prints() << "\n";
 
     // Move the remaining RTLs (if any) to a new list of RTLs
     PBB newBb;
-    int oldOutEdges = 0;
+    unsigned oldOutEdges = 0;
     bool haveB = true;
     if (ri != pBB->m_pRtls->end()) {
         pRtls = new std::list<RTL*>;
@@ -2397,8 +2398,11 @@ std::cerr << pBB->prints() << "\n";
         oldOutEdges = pBB->getNumOutEdges();
         newBb = newBB(pRtls, pBB->getType(), oldOutEdges);
         // Transfer the out edges from A to B (pBB to newBb)
-        for (int i=0; i < oldOutEdges; i++)
-            addOutEdge(newBb, pBB->getOutEdge(i));
+        for (i=0; i < oldOutEdges; i++)
+            // Don't use addOutEdge, since it will also add in-edges back to
+            // pBB
+            newBb->m_OutEdges.push_back(pBB->getOutEdge(i));
+            //addOutEdge(newBb, pBB->getOutEdge(i));
     } else {
         // The "B" part of the above diagram is empty.
         // Don't create a new BB; just point newBB to the successor of pBB
@@ -2411,19 +2415,19 @@ std::cerr << pBB->prints() << "\n";
     // Set the first out-edge to be skipBB
     pBB->m_OutEdges.erase(pBB->m_OutEdges.begin(), pBB->m_OutEdges.end());
     addOutEdge(pBB, skipBB);
-    // Set the out edges for skipBB
-    addOutEdge(skipBB, rptBB);
+    // Set the out edges for skipBB. First is the taken (true) leg.
     addOutEdge(skipBB, newBb);
+    addOutEdge(skipBB, rptBB);
     // Set the out edges for the rptBB
-    addOutEdge(rptBB, newBb);
     addOutEdge(rptBB, skipBB);
+    addOutEdge(rptBB, newBb);
 
     // For each out edge of newBb, change any in-edges to pBB to instead point
     // to newBb
     if (haveB) {
-        for (int i=0; i < oldOutEdges; i++) {
+        for (i=0; i < oldOutEdges; i++) {
             PBB succ = newBb->m_OutEdges[i];
-            for (unsigned j=0; j < succ->m_InEdges.size(); j++) {
+            for (j=0; j < succ->m_InEdges.size(); j++) {
                 PBB pred = succ->m_InEdges[j];
                 if (pred == pBB) {
                     succ->m_InEdges[j] = newBb;
@@ -2434,7 +2438,7 @@ std::cerr << pBB->prints() << "\n";
     } else {
         // There is no "B" bb (newBb is just the successor of pBB)
         // Fix that one out-edge to point to rptBB
-        for (unsigned j=0; j < newBb->m_InEdges.size(); j++) {
+        for (j=0; j < newBb->m_InEdges.size(); j++) {
             PBB pred = newBb->m_InEdges[j];
             if (pred == pBB) {
                 newBb->m_InEdges[j] = rptBB;
@@ -2443,21 +2447,18 @@ std::cerr << pBB->prints() << "\n";
         }
     }
     if (!haveA) {
-        // Must delete pBB
-        BB_IT it;
-        for (it = m_listBB.begin(); it != m_listBB.end(); it++)
-            if (*it == pBB) break;
-        assert(it != m_listBB.end());
-        m_listBB.erase(it);
+        // Must delete pBB. Note that this effectively "increments" it
+        it = m_listBB.erase(it);
         pBB = NULL;
-    }
+    } else
+        it++;
 
 #if 0
-std::cerr << "splitForBranch after:\n";
-if (pBB) std::cerr << pBB->prints(); else std::cerr << "<null>\n";
-std::cerr << skipBB->prints();
-std::cerr << rptBB->prints();
-std::cerr << newBb->prints() << "\n";
+    std::cerr << "splitForBranch after:\n";
+    if (pBB) std::cerr << pBB->prints(); else std::cerr << "<null>\n";
+    std::cerr << skipBB->prints();
+    std::cerr << rptBB->prints();
+    std::cerr << newBb->prints() << "\n";
 #endif
     return newBb;
 }
