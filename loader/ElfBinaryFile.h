@@ -87,7 +87,7 @@ public:
     Elf32_Phdr* GetProgHeader(int idx);         // Get the indicated prog hdr
     Elf32_Shdr* GetSectionHeader(int idx);      // Get indicated section hdr
 // Mike: deprecated! Remove when possible!
-    Elf_Scn*    GetElfScn(int idx);             // Do a elf_getscn()
+//    Elf_Scn*    GetElfScn(int idx);             // Do a elf_getscn()
 
                 // Header functions
 virtual ADDRESS GetFirstHeaderAddress();        // Get ADDRESS of main header
@@ -167,19 +167,19 @@ virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
     void        dumpShdr(Elf32_Shdr *pShdr, int idxElf, FILE* f);
     void        dumpSymtab(char* sSymName, char* sStrName,
                     Elf32_Shdr* pShdr, FILE* f);
-    void        dumpDynTab(Elf_Scn *scn, const char* name, FILE* f);
-    void        dumpPLT(Elf_Scn *scn, Elf32_Shdr *shdr, Elf32_Addr sh_addr,
-                    FILE* f);
-    void        dumpVerdef(Elf_Scn *scn, const char* scn_name,
-                    Elf32_Shdr* pShdr, FILE* f);
-    void        dumpVerneed(Elf_Scn *scn, const char* scn_name,
-                    Elf32_Shdr* pShdr, FILE* f);
-    void        dumpVersym(Elf_Scn *scn, const char* scn_name,
-                    Elf32_Shdr* pShdr, FILE* f);
+//    void        dumpDynTab(Elf_Scn *scn, const char* name, FILE* f);
+//    void        dumpPLT(Elf_Scn *scn, Elf32_Shdr *shdr, Elf32_Addr sh_addr,
+//                    FILE* f);
+//    void        dumpVerdef(Elf_Scn *scn, const char* scn_name,
+//                    Elf32_Shdr* pShdr, FILE* f);
+//    void        dumpVerneed(Elf_Scn *scn, const char* scn_name,
+//                    Elf32_Shdr* pShdr, FILE* f);
+//    void        dumpVersym(Elf_Scn *scn, const char* scn_name,
+//                    Elf32_Shdr* pShdr, FILE* f);
 
     int         m_fd;                   // File descriptor
-    Elf*        m_arf;                  // Archive pointer
-    Elf*        m_elf;                  // Pointer to main elf info
+//    Elf*        m_arf;                  // Archive pointer
+//    Elf*        m_elf;                  // Pointer to main elf info
     Elf32_Shdr* m_pShdrs;               // Array of section header structs
     std::map<ADDRESS, std::string> m_SymA;        // Map from address to symbol name
     SymTab      m_Reloc;                // Object to store the reloc syms

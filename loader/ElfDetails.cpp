@@ -1,3 +1,4 @@
+#if 0
 /*
  * Copyright (C) 1996-1998, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
@@ -621,3 +622,4 @@ void ElfBinaryFile::dumpShdr (Elf32_Shdr *pShdr, int idxElf, FILE* f)
        	dumpStrTab(scn, name.c_str(), f);
 }
 
+#endif

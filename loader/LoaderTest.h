@@ -24,6 +24,7 @@ class LoaderTest : public CppUnit::TestCase {
     void testPalmLoad ();
     void testWinLoad ();
 
-    void testMicroDis();
+    void testMicroDis1();
+    void testMicroDis2();
 };
 
