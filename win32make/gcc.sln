@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gc_cpp", "gcc.vcproj", "{F86FFADC-E84D-4B50-8782-087CF517E6B9}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{F86FFADC-E84D-4B50-8782-087CF517E6B9}.Debug.ActiveCfg = Debug|Win32
+		{F86FFADC-E84D-4B50-8782-087CF517E6B9}.Debug.Build.0 = Debug|Win32
+		{F86FFADC-E84D-4B50-8782-087CF517E6B9}.Release.ActiveCfg = Release|Win32
+		{F86FFADC-E84D-4B50-8782-087CF517E6B9}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
