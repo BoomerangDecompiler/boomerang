@@ -2014,7 +2014,6 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | FSUB.STi.ST(idx) =>
         stmts = instantiate(pc,  "FSUB.STi.ST", DIS_IDX);
-std::cout << "FSUB.STi.ST at 0x" << std::hex << pc << "\n";
 
     | FISUB.I32(Mem32) =>
         stmts = instantiate(pc,  "FISUB.I32", DIS_MEM32);
@@ -2036,7 +2035,6 @@ std::cout << "FSUB.STi.ST at 0x" << std::hex << pc << "\n";
 
     | FSUBR.STi.ST(idx) =>
         stmts = instantiate(pc,  "FSUBR.STi.ST", DIS_IDX);
-std::cout << "FSUBR.STi.ST at 0x" << std::hex << pc << "\n";
 
     | FISUBR.I32(Mem32) =>
         stmts = instantiate(pc,  "FISUBR.I32", DIS_MEM32);
