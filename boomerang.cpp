@@ -30,6 +30,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false)
 {
+    outputPath = "./output/";
 }
 
 class FileLogger : public Log {
@@ -227,7 +228,6 @@ int Boomerang::commandLine(int argc, const char **argv)
         std::cerr << "? No slash in argv[0]!" << std::endl;
         return 1;
     }
-    outputPath = "./output/";
 
     // Parse switches on command line
     if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
