@@ -228,7 +228,8 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 		LOG << "consider promotion to stdc win32 signature for " << p->getName() << "\n";
 
 	bool gotcorrectret1, gotcorrectret2;
-	gotcorrectret1 = *p->getProven(new Terminal(opPC)) == *savedReturnLocation;
+	Exp *proven = p->getProven(new Terminal(opPC));
+	gotcorrectret1 = proven && (*proven == *savedReturnLocation);
 	if (gotcorrectret1) {
 		if (VERBOSE)
 			LOG << "got pc = m[r[28]]\n";
@@ -371,6 +372,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
 	n->preferedName = preferedName;
 	n->preferedReturn = preferedReturn;
 	n->preferedParams = preferedParams;
+	n->unknown = unknown;
 	return n;
 }
 
@@ -506,6 +508,7 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
 	n->preferedName = preferedName;
 	n->preferedReturn = preferedReturn;
 	n->preferedParams = preferedParams;
+	n->unknown = unknown;
 	return n;
 }
 
