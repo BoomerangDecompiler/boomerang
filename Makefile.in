@@ -71,7 +71,7 @@ clean:
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
 	cd analysis && ${MAKE} clean
-	rm -f driver.o codegen/chllcode.o codegen/syntax.o boomerang testAll.o c/*.o
+	rm -f *.o codegen/*.o boomerang testAll.o c/*.o
 
 #20 Aug 02 icer
 #added config.h config.log config.status and analysis/Makefile
@@ -97,7 +97,7 @@ DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o log.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
-	frontend/pentiumfrontend.o frontend/switch.o
+	frontend/pentiumfrontend.o
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o
@@ -213,14 +213,14 @@ util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
 
 frontend/frontend.o: frontend/frontend.cpp include/frontend.h \
-	include/decoder.h c/ansi-c-parser.h include/boomerang.h
+	include/decoder.h c/ansi-c-parser.h include/boomerang.h include/proc.h \
+    include/exp.h include/prog.h include/signature.h include/cfg.h
 frontend/sparcfrontend.o: include/frontend.h include/boomerang.h
 frontend/pentiumfrontend.o: include/frontend.h include/boomerang.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
-frontend/switch.o: include/exp.h include/operator.h
 frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h
 frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
