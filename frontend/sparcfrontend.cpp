@@ -117,7 +117,8 @@ bool SparcFrontEnd::optimise_DelayCopy(ADDRESS src, ADDRESS dest, int delta, ADD
  * RETURNS:         the basic block containing the single return instruction if
  *                    this optimisation applies, NULL otherwise.
  *============================================================================*/
-BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RTL* delay, Cfg* cfg)
+BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl,
+    RTL* delay, Cfg* cfg)
 {
 
     if (call->isReturnAfterCall()) {
@@ -265,9 +266,12 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst,
     // case where the delay instruction is a restore
     BasicBlock* returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl,
       cfg);
-    if (returnBB)
-        proc->setTheReturnAddr((ReturnStatement*)inst.rtl->getList().back(),
+    if (returnBB) {
+        // The return statement is the one we generated in this return BB
+        proc->setTheReturnAddr((ReturnStatement*)
+          returnBB->getRTLs()->front()->getList().back(),
           inst.rtl->getAddress());
+    }
 
     int disp30 = (call_stmt->getFixedDest() - address) >> 2;
     // Don't test for small offsets if part of a move_call_move pattern.
