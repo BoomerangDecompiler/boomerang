@@ -620,8 +620,18 @@ public:
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
     
+    // dataflow analysis
+    virtual bool usesExp(Exp *e);
+    virtual void addUsedLocs(LocationSet& used);
+    virtual void subscriptVar(Exp* e, Statement* def);
+protected:
+    virtual void doReplaceRef(Exp* from, Exp* to);
+public:
+
     // simplify all the uses/defs in this RTL
     virtual void simplify();
+
+    virtual void fromSSAform(igraph& ig);
 
 };          // class CaseStatement
 

@@ -2204,14 +2204,13 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
             if (d->getOper() == opLocal) {
                 d = S->getProc()->getLocalExp(((Const*)d->getSubExp1())->
                   getStr());
-                if (d == 0) {
-                    std::cerr << "For definition " << *dd <<
-                      " in " << S << ", can't getLocalExp() (proc is " <<
-                      S->getProc()->getName() << ")\n";
-                    std::cerr << std::flush;
-                    assert(d);
-                }
-                if (d->getMemDepth() == memDepth)
+                // Note: used to assert(d) here. However, with switch
+                // statements and in other cases, a local may be created which
+                // does not represent memory at all (created with
+                // UserProc::newLocal()), and so there is no entry in symbolMap,
+                // and so d becomes NULL. This is not an error.
+                // Stack already has a definition for d (as just the bare local)
+                if (d && d->getMemDepth() == memDepth)
                     Stack[d].push(S);
             }
         }
