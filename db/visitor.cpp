@@ -152,11 +152,6 @@ void PhiStripper::visit(PhiAssign* s, bool& recur) {
 	recur = true;
 }
 
-Exp* RefStripper::preVisit(RefExp* e, bool& recur) {
-	recur = false;
-	return e->getSubExp1();		// Do the actual stripping of references!
-}
-
 Exp* CallRefsFixer::postVisit(RefExp* r) {
 	Exp* ret = r;
 	// If child was modified, simplify now

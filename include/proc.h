@@ -686,8 +686,6 @@ public:
 
 	// Visitation
 
-	// Strip the refs from each expression
-	void stripRefs();
 	// Cast the constant whose conscript is num to be type ty
 	void castConst(int num, Type* ty);
  

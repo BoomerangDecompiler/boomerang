@@ -258,14 +258,6 @@ virtual void	visit(PhiAssign* stmt, bool& recur);
 		bool	getDelete() {return del;}
 };
 
-// This class visits subexpressions, strips references
-class RefStripper : public ExpModifier {
-public:
-				RefStripper() {}
-virtual Exp*	preVisit(RefExp* ei, bool& recur);
-		// All other virtual functions inherit and do nothing
-};
-
 class CallRefsFixer : public ExpModifier {
 		// These two provide 31 bits (or sizeof(int)-1) of information about whether
 		// the child is unchanged. If the mask overflows, it goes to zero, and

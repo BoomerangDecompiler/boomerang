@@ -3755,11 +3755,6 @@ void Exp::setConscripts(int n, bool bClear) {
 	accept(&sc);
 }
 
-// Strip references from an Exp
-Exp* Exp::stripRefs() {
-	RefStripper rs;
-	return accept(&rs);
-}
 
 // Strip size casts from an Exp
 Exp* Exp::stripSizes() {

@@ -293,10 +293,6 @@ virtual	void		regReplace(UserProc* proc) = 0;
 		int			setConscripts(int n);
 		void		clearConscripts();
 
-		// Strip all references and phis (using a visitor). Returns true if the
-		// statement was a phi (and to be deleted)
-		bool		stripRefs();
-
 		// Strip all size casts
 		void		stripSizes();
 

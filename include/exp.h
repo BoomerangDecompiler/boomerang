@@ -332,7 +332,6 @@ virtual Exp*	accept(ExpModifier* v) = 0;
 		UserProc* findProc();
 		// Set or clear the constant subscripts
 		void	setConscripts(int n, bool bClear);
-		Exp*	stripRefs();			// Strip all references
 		Exp*	stripSizes();			// Strip all size casts
 		// Subscript all e in this Exp with statement def:
 		Exp*	expSubscriptVar(Exp* e, Statement* def /*, Cfg* cfg */ );
