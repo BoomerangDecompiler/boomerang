@@ -94,7 +94,7 @@ void FrontSparcTest::test1 () {
     inst.rtl->print(ost);
     
     std::string expected(
-        "00010a54    0 *32* tmp := r14 + -112\n"
+        "00010684    0 *32* tmp := r14 + -112\n"
         "            0 *32* m[r14 + 0] := r16\n"
         "            0 *32* m[r14 + 4] := r17\n"
         "            0 *32* m[r14 + 8] := r18\n"
@@ -126,14 +126,14 @@ void FrontSparcTest::test1 () {
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
-    expected = std::string("00010a58    0 *32* r9 := 70656\n");
+    expected = std::string("00010688    0 *32* r8 := 66560\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
-    expected = std::string("00010a5c    0 *32* r8 := r9 | 464\n");
+    expected = std::string("0001068c    0 *32* r8 := r8 | 848\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -152,30 +152,30 @@ void FrontSparcTest::test2() {
     FrontEnd *pFE = new SparcFrontEnd(pBF);
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x10a60);
+    inst = pFE->decodeInstruction(0x10690);
     inst.rtl->print(o1);
     // This call is to out of range of the program's
     // text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
-    expected = std::string("00010a60    0 CALL 0x21668( implicit: )\n");
+    expected = std::string("00010690    0 CALL 0x20800( implicit: )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x10a64);
+    inst = pFE->decodeInstruction(0x10694);
     inst.rtl->print(o2);
-    expected = std::string("00010a64\n");
+    expected = std::string("00010694\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x10a68);
+    inst = pFE->decodeInstruction(0x10698);
     inst.rtl->print(o3);
-    expected = std::string("00010a68    0 *32* r24 := 0 | 0\n");
+    expected = std::string("00010698    0 *32* r8 := 0 | 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     std::ostringstream o4;
-    inst = pFE->decodeInstruction(0x10a6c);
+    inst = pFE->decodeInstruction(0x1069c);
     inst.rtl->print(o4);
-    expected = std::string("00010a6c    0 GOTO 0x10a74\n");
+    expected = std::string("0001069c    0 *32* r24 := 0 | r8\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
     delete pFE;
@@ -194,22 +194,22 @@ void FrontSparcTest::test3() {
     FrontEnd *pFE = new SparcFrontEnd(pBF);
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x10a70);
+    inst = pFE->decodeInstruction(0x106a0);
     inst.rtl->print(o1);
-    expected = std::string("00010a70\n");
+    expected = std::string("000106a0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x10a74);
+    inst = pFE->decodeInstruction(0x106a4);
     inst.rtl->print(o2);
-    expected = std::string("00010a74    0 RET \n");
+    expected = std::string("000106a4    0 RET \n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x10a78);
+    inst = pFE->decodeInstruction(0x106a8);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010a78    0 *32* tmp := 0 + 0\n"
+        "000106a8    0 *32* tmp := 0 + 0\n"
         "            0 *32* r8 := r24\n"
         "            0 *32* r9 := r25\n"
         "            0 *32* r10 := r26\n"

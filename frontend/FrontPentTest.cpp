@@ -90,7 +90,7 @@ void FrontPentTest::test1 () {
     inst.rtl->print(ost);
     
     std::string expected(
-        "08048918    0 *32* r28 := r28 - 4\n"
+        "08048328    0 *32* r28 := r28 - 4\n"
         "            0 *32* m[r28] := r29\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
 
@@ -98,16 +98,16 @@ void FrontPentTest::test1 () {
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
-    expected = std::string("08048919    0 *32* r29 := r28\n");
+    expected = std::string("08048329    0 *32* r29 := r28\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    addr += inst.numBytes;
+    addr = 0x804833b;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
     expected = std::string(
-        "0804891b    0 *32* r28 := r28 - 4\n"
-        "            0 *32* m[r28] := 134517752\n");
+        "0804833b    0 *32* r28 := r28 - 4\n"
+        "            0 *32* m[r28] := 134513660\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -126,26 +126,25 @@ void FrontPentTest::test2() {
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x8048925);
+    inst = pFE->decodeInstruction(0x8048345);
     inst.rtl->print(o1);
     expected = std::string(
-        "08048925    0 *32* tmp1 := r28\n"
-        "            0 *32* r28 := r28 + 4\n"
-        "            0 *32* %flags := ADDFLAGS32( tmp1, 4, r28 )\n");
+        "08048345    0 *32* tmp1 := r28\n"
+        "            0 *32* r28 := r28 + 16\n"
+        "            0 *32* %flags := ADDFLAGS32( tmp1, 16, r28 )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x8048928);
+    inst = pFE->decodeInstruction(0x8048348);
     inst.rtl->print(o2);
     expected = std::string(
-        "08048928    0 *32* r24 := r24 ^ r24\n"
-        "            0 *32* %flags := LOGICALFLAGS32( r24 )\n");
+        "08048348    0 *32* r24 := 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = pFE->decodeInstruction(0x804892a);
+    inst = pFE->decodeInstruction(0x8048329);
     inst.rtl->print(o3);
-    expected = std::string("0804892a    0 GOTO 0x804892c\n");
+    expected = std::string("08048329    0 *32* r29 := r28\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -164,19 +163,19 @@ void FrontPentTest::test3() {
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
 
     std::ostringstream o1;
-    inst = pFE->decodeInstruction(0x804892c);
+    inst = pFE->decodeInstruction(0x804834d);
     inst.rtl->print(o1);
     expected = std::string(
-        "0804892c    0 *32* r28 := r29\n"
+        "0804834d    0 *32* r28 := r29\n"
         "            0 *32* r29 := m[r28]\n"
         "            0 *32* r28 := r28 + 4\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = pFE->decodeInstruction(0x804892d);
+    inst = pFE->decodeInstruction(0x804834e);
     inst.rtl->print(o2);
     expected = std::string(
-      "0804892d    0 *32* %pc := m[r28]\n"
+      "0804834e    0 *32* %pc := m[r28]\n"
       "            0 *32* r28 := r28 + 4\n"
       "            0 RET \n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
