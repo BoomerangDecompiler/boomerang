@@ -29,6 +29,9 @@
  * 09 Dec 02 - Mike: Added succ() syntax (for SPARC LDD and STD)
  * 29 Sep 03 - Mike: Parse %DF correctly
  * 22 Jun 04 - Mike: TEMP can be a location now (location was var_op)
+ * 31 Oct 04 - Mike: srchExpr and srchOp are statics now; saves creating and deleting these expressions for every
+ *				opcode. Seems to prevent a lot of memory churn, and may prevent (for now) the mystery
+ *				test/sparc/switch_gcc problem (which goes away when you try to gdb it)
  */
 
 %name SSLParser		// the parser class name will be SSLParser
@@ -387,7 +390,7 @@ a_reglist:
 			}
 		|	'[' reg_table ']' '[' NUM ']' INDEX NUM TO NUM {
 				if ((int)$2->size() != ($10 - $8 + 1)) {
-					std::cerr << "size of register array does not match mapping"						" to r[" << $8 << ".." << $10 << "]\n";
+					std::cerr << "size of register array does not match mapping to r[" << $8 << ".." << $10 << "]\n";
 					exit(1);
 				} else {
 					std::list<std::string>::iterator loc = $2->begin();
@@ -1177,8 +1180,7 @@ assigntype:
 					case 'f': $$ = new FloatType(size); break;
 					case 'c': $$ = new CharType; break;
 					default:
-						std::cerr << "Unexpected char " << c <<
-							" in assign type\n";
+						std::cerr << "Unexpected char " << c << " in assign type\n";
 						$$ = new IntegerType;
 				}
 			}
@@ -1515,8 +1517,14 @@ Exp* listStrToExp(std::list<std::string>* ls) {
  *					  of the parse
  * RETURNS:			<nothing>
  *============================================================================*/
-void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict)
-{
+static Exp* srchExpr = new Binary(opExpTable,
+	new Terminal(opWild),
+	new Terminal(opWild));
+static Exp* srchOp = new Ternary(opOpTable,
+	new Terminal(opWild),
+	new Terminal(opWild),
+	new Terminal(opWild));
+void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {
 	int i, m;
 	std::string nam;
 	std::ostringstream o;
@@ -1527,13 +1535,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 		// Need to make substitutions to a copy of the RTL
 		RTL* rtl = o_rtlist->clone();
 		int n = rtl->getNumStmt();
-		Exp* srchExpr = new Binary(opExpTable,
-			new Terminal(opWild),
-			new Terminal(opWild));
-		Exp* srchOp = new Ternary(opOpTable,
-			new Terminal(opWild),
-			new Terminal(opWild),
-			new Terminal(opWild));
 		for (int j=0; j < n; j++) {
 			Statement* s = rtl->elementAt(j);
 			std::list<Exp*> le;
@@ -1581,9 +1582,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 			yyerror(STR(o));
 		}
 	}
-	//delete iname;
-	//delete params;
-	//delete o_rtlist;
 	indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 

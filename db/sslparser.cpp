@@ -829,7 +829,7 @@ static const short yyrline[] = { 0,
    885,   891,   896,   901,   906,   909,   914,   920,   944,   970,
    975,   985,   995,   999,  1003,  1007,  1011,  1015,  1019,  1023,
   1030,  1053,  1058,  1089,  1093,  1099,  1103,  1122,  1126,  1131,
-  1134,  1139,  1145,  1150,  1154,  1159,  1189,  1193,  1196,  1200
+  1134,  1139,  1145,  1150,  1154,  1159,  1188,  1192,  1195,  1199
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
@@ -1756,7 +1756,7 @@ case 31:
 #line 388 "sslparser.y"
 {
 				if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-					std::cerr << "size of register array does not match mapping"						" to r[" << yyvsp[-2].num << ".." << yyvsp[0].num << "]\n";
+					std::cerr << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num << "]\n";
 					exit(1);
 				} else {
 					std::list<std::string>::iterator loc = yyvsp[-8].strlist->begin();
@@ -2669,15 +2669,14 @@ case 136:
 					case 'f': yyval.typ = new FloatType(size); break;
 					case 'c': yyval.typ = new CharType; break;
 					default:
-						std::cerr << "Unexpected char " << c <<
-							" in assign type\n";
+						std::cerr << "Unexpected char " << c << " in assign type\n";
 						yyval.typ = new IntegerType;
 				}
 			}
 		;
     break;}
 case 140:
-#line 1201 "sslparser.y"
+#line 1200 "sslparser.y"
 {
 			Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
 		;
@@ -2886,8 +2885,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 1010 "/usr/local/lib/bison.cc" */
-#line 2890 "sslparser.cpp"
-#line 1204 "sslparser.y"
+#line 2889 "sslparser.cpp"
+#line 1203 "sslparser.y"
 
 
 /*==============================================================================
@@ -3202,6 +3201,14 @@ Exp* listStrToExp(std::list<std::string>* ls) {
  *					  of the parse
  * RETURNS:			<nothing>
  *============================================================================*/
+static bool now = false;
+static Exp* srchExpr = new Binary(opExpTable,
+	new Terminal(opWild),
+	new Terminal(opWild));
+static Exp* srchOp = new Ternary(opOpTable,
+	new Terminal(opWild),
+	new Terminal(opWild),
+	new Terminal(opWild));
 void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict)
 {
 	int i, m;
@@ -3214,13 +3221,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 		// Need to make substitutions to a copy of the RTL
 		RTL* rtl = o_rtlist->clone();
 		int n = rtl->getNumStmt();
-		Exp* srchExpr = new Binary(opExpTable,
-			new Terminal(opWild),
-			new Terminal(opWild));
-		Exp* srchOp = new Ternary(opOpTable,
-			new Terminal(opWild),
-			new Terminal(opWild),
-			new Terminal(opWild));
 		for (int j=0; j < n; j++) {
 			Statement* s = rtl->elementAt(j);
 			std::list<Exp*> le;
@@ -3268,9 +3268,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 			yyerror(STR(o));
 		}
 	}
-	//delete iname;
-	//delete params;
-	//delete o_rtlist;
 	indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 
