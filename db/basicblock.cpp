@@ -1461,8 +1461,12 @@ void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein) {
             std::list<Statement*> &stmts = call->getInternalStatements();
             for (std::list<Statement*>::iterator it1 = stmts.begin();
               it1 != stmts.end(); it1++) {
+                // MVE: I think this next statement is wrong. The only way
+                // stmt can be == to *it1 is in a recursive function; it is
+                // affected by assignments to any part of the procedure, not
+                // just up to this recursive call
                 if (stmt == *it1) return;
-                (*it1)->setBB(this);
+                (*it1)->setBB(this);            // ??
                 (*it1)->calcLiveOut(livein);
             } 
         }
