@@ -748,9 +748,10 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
                 Unary regOfK(opRegOf, new Const(iDest));
                 bool changed;
                 ssJmp = ssJmp->searchReplaceAll(&regOfK, &expReg999, changed);
-                // Do the same to ssBound
-                ssBound = ssBound->searchReplaceAll(&regOfK, &expReg999,
-                  changed);
+                // Do the same to ssBound, if set
+                if (ssBound)
+                    ssBound = ssBound->searchReplaceAll(&regOfK, &expReg999,
+                      changed);
                 iDest = 999;             // Don't subst again
                 // This defines the switch variable, if not already set
                 if (!bGotDefines) {
