@@ -942,15 +942,15 @@ std::set<UserProc*>* UserProc::decompile() {
 		}
 
 		// recognising locals early prevents them from becoming returns
-		// But with indirect procs in a loop, the propagaton is not yet complete
+		// But with indirect procs in a loop, the propagation is not yet complete
 		// replaceExpressionsWithLocals(depth == maxDepth);
 		if (!Boomerang::get()->noChangeSignatures) {
 			addNewReturns(depth);
 			cfg->renameBlockVars(0, depth, true);
 			printXML();
 			if (VERBOSE) {
-				LOG << "=== Debug Print SSA for " << getName() << " at memory depth " << depth
-				<< " (after adding new returns) ===\n";
+				LOG << "=== Debug Print SSA for " << getName() << " at memory depth " << depth <<
+					" (after adding new returns) ===\n";
 				printToLog();
 				LOG << "=== End Debug Print SSA for " << getName() << " at depth " << depth << " ===\n\n";
 			}
@@ -963,7 +963,7 @@ std::set<UserProc*>* UserProc::decompile() {
 		// Print if requested
 		if (VERBOSE) {		// was if debugPrintSSA
 			LOG << "=== Debug Print SSA for " << getName() << " at memory depth " << depth <<
-			  " (after trimming return set) ===\n";
+				" (after trimming return set) ===\n";
 			printToLog();
 			LOG << "=== End Debug Print SSA for " << getName() << " at depth " << depth << " ===\n\n";
 		}
@@ -979,8 +979,7 @@ std::set<UserProc*>* UserProc::decompile() {
 			convert = false;
 			for (int td = maxDepth; td >= 0; td--) {
 				if (VERBOSE)
-					LOG << "propagating at depth " << depth << " to depth " 
-							  << td << "\n";
+					LOG << "propagating at depth " << depth << " to depth " << td << "\n";
 				convert |= propagateStatements(depth, td);
 				for (int i = 0; i <= depth; i++)
 					cfg->renameBlockVars(0, i, true);
@@ -1010,11 +1009,9 @@ std::set<UserProc*>* UserProc::decompile() {
 
 		printXML();
 		if (VERBOSE) {
-			LOG << "=== After propagate for " << getName() <<
-			  " at memory depth " << depth << " ===\n";
+			LOG << "=== After propagate for " << getName() << " at memory depth " << depth << " ===\n";
 			printToLog();
-			LOG << "=== End propagate for " << getName() <<
-			  " at depth " << depth << " ===\n\n";
+			LOG << "=== End propagate for " << getName() << " at depth " << depth << " ===\n\n";
 		}
 
 		Boomerang::get()->alert_decompile_afterPropagate(this, depth);
@@ -1027,8 +1024,8 @@ std::set<UserProc*>* UserProc::decompile() {
 		// There was at least one indirect jump or call found and decoded.
 		// That means that most of what has been done to this function so far
 		// is invalid. So redo everything. Very expensive!!
-		LOG << "=== About to restart decompilation of " << 
-		  getName() << " because indirect jumps or calls have been removed\n\n";
+		LOG << "=== About to restart decompilation of " << getName() <<
+			" because indirect jumps or calls have been removed\n\n";
 		Analysis a;
 		a.analyse(this);		// Get rid of this soon
 		return decompile();	 // Restart decompiling this proc
@@ -1038,7 +1035,7 @@ std::set<UserProc*>* UserProc::decompile() {
 	// the proc
 	for (depth = 0; depth <= maxDepth; depth++) {
 		// Remove unused statements
-		RefCounter refCounts;		   // The map
+		RefCounter refCounts;			// The map
 		// Count the references first
 		countRefs(refCounts);
 		// Now remove any that have no used
@@ -1051,11 +1048,9 @@ std::set<UserProc*>* UserProc::decompile() {
 
 		printXML();
 		if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-			LOG << "===== After removing null and unused statements "
-			  "=====\n";
+			LOG << "===== After removing null and unused statements =====\n";
 			printToLog();
-			LOG << "===== End after removing unused "
-			  "statements =====\n\n";
+			LOG << "===== End after removing unused statements =====\n\n";
 		}
 		Boomerang::get()->alert_decompile_afterRemoveStmts(this, depth);
 	}
@@ -1126,21 +1121,21 @@ void UserProc::propagateAtDepth(int depth)
 		cfg->renameBlockVars(0, i, true);
 }
 
+#if 0 			// Not called any more
 void UserProc::complete() {
 	cfg->compressCfg();
 	processConstants();
 
-	// Convert the signature object to one of a derived class, e.g.
-	// SparcSignature.
-//	  if (!Boomerang::get()->noPromote)
-//		  promoteSignature();	 // No longer needed?
+	// Convert the signature object to one of a derived class, e.g. SparcSignature.
+	if (!Boomerang::get()->noPromote)
+		promoteSignature();
 	// simplify the procedure (currently just to remove a[m['s)
 	// Not now! I think maybe only pa/risc needs this, and it nobbles
 	// the a[m[xx]] that processConstants() does (just above)
 	// If needed, move this to after m[xxx] are converted to variables
-//	  simplify();
-
+//	simplify();
 }
+#endif
 
 int UserProc::findMaxDepth() {
 	StatementList stmts;
@@ -1192,8 +1187,7 @@ void UserProc::removeRedundantPhis() {
 					StatementVec::iterator it1;
 					for (it1 = p->begin(); it1 != p->end(); it1++) {
 						Statement* s1 = *it1;
-						if (s1 && (!s1->isCall() || 
-							  ((CallStatement*)s1)->getDestProc() != this))
+						if (s1 && (!s1->isCall() || ((CallStatement*)s1)->getDestProc() != this))
 							allZeroOrSelfCall = false;
 					}
 					if (allZeroOrSelfCall) {
@@ -1306,7 +1300,7 @@ void UserProc::trimReturns() {
 
 	int sp = signature->getStackRegister(prog);
 
-	for (int n = 0; n < 2; n++) {	
+	for (int n = 0; n < 2; n++) {
 		// may need to do multiple times due to dependencies
 
 		// Special case for 32-bit stack-based machines (e.g. Pentium).
@@ -1315,10 +1309,10 @@ void UserProc::trimReturns() {
 			if (DEBUG_PROOF)
 				LOG << "attempting to prove sp = sp + " << p*4 << " for " << getName() << "\n";
 			stdsp = prove(new Binary(opEquals,
-						  Location::regOf(sp),
-						  new Binary(opPlus,
-							  Location::regOf(sp),
-							  new Const(p * 4))));
+						Location::regOf(sp),
+						new Binary(opPlus,
+							Location::regOf(sp),
+							new Const(p * 4))));
 		}
 
 		// Prove that pc is set to the return value
@@ -1337,6 +1331,11 @@ void UserProc::trimReturns() {
 			}
 		}
 	}
+
+	if (!Boomerang::get()->noPromote)
+		// We want functions other than main to be promoted
+		promoteSignature();
+
 	if (stdsp) {
 		Unary *regsp = Location::regOf(sp);
 		// I've been removing sp from the return set as it makes 
@@ -1357,16 +1356,20 @@ void UserProc::trimReturns() {
 		// also check for any locals that slipped into the returns
 		for (int i = 0; i < signature->getNumReturns(); i++) {
 			Exp *e = signature->getReturnExp(i);
-			if ((signature->isLocalOffsetNegative() && e->getOper() == opMemOf
-					&& e->getSubExp1()->getOper() == opMinus && *e->getSubExp1()->getSubExp1() == *regsp
-					&& e->getSubExp1()->getSubExp2()->isIntConst()) ||
-				  (signature->isLocalOffsetPositive() && e->getOper() == opMemOf
-					&& e->getSubExp1()->getOper() == opPlus && *e->getSubExp1()->getSubExp1() == *regsp
-					&& e->getSubExp1()->getSubExp2()->isIntConst()) ||
-				  (signature->isLocalOffsetNegative() && signature->isLocalOffsetPositive()
-					&& e->getOper() == opMemOf && *e->getSubExp1() == *regsp))
+#if 1
+			if (signature->isStackLocal(prog, e))
+#else	// HACK!
+            if ((signature->isLocalOffsetNegative() && e->getOper() == opMemOf
+                    && e->getSubExp1()->getOper() == opMinus && *e->getSubExp1()->getSubExp1() == *regsp
+                    && e->getSubExp1()->getSubExp2()->isIntConst()) ||
+                  (signature->isLocalOffsetPositive() && e->getOper() == opMemOf
+                    && e->getSubExp1()->getOper() == opPlus && *e->getSubExp1()->getSubExp1() == *regsp
+                    && e->getSubExp1()->getSubExp2()->isIntConst()) ||
+                  (signature->isLocalOffsetNegative() && signature->isLocalOffsetPositive()
+                    && e->getOper() == opMemOf && *e->getSubExp1() == *regsp))
+#endif
 				preserved.insert(e);
-			if (*e == *regsp) {
+			else if (*e == *regsp) {
 				assert(theReturnStatement);
 				Exp *e = getProven(regsp)->clone();
 				// Make sure that the regsp in this expression is subscripted with a proper implicit assignment
@@ -1385,11 +1388,10 @@ void UserProc::trimReturns() {
 			}
 		}
 	}
-	if (!signature->isPromoted()) {
+	if (!signature->isFullSignature()) {
 		if (stdret)
 			removeReturn(new Terminal(opPC));
-		for (std::set<Exp*>::iterator it = preserved.begin(); 
-			 it != preserved.end(); it++)
+		for (std::set<Exp*>::iterator it = preserved.begin(); it != preserved.end(); it++)
 			removeReturn(*it);
 	}
 
@@ -1434,7 +1436,7 @@ void UserProc::fixCallRefs()
 
 void UserProc::addNewReturns(int depth) {
 
-	if (signature->isPromoted())
+	if (signature->isFullSignature())
 		return;
 
 	if (VERBOSE)
@@ -1493,7 +1495,7 @@ static RefExp* regOfWild = new RefExp(
 
 void UserProc::addNewParameters() {
 
-	if (signature->isPromoted())
+	if (signature->isFullSignature())
 		return;
 
 	if (VERBOSE)
@@ -1515,11 +1517,10 @@ void UserProc::addNewParameters() {
 			Exp *e = results.front()->clone()->removeSubscripts(allZero);
 			results.erase(results.begin());		// Remove first result
 			if (allZero && signature->findParam(e) == -1
-				  // ? Often need to transfer from implit to explicit:
-				  // && signature->findImplicitParam(e) == -1
-				  ) {
-				if (signature->isStackLocal(prog, e) ||
-					  e->getOper() == opLocal)	{
+					// ? Often need to transfer from implit to explicit:
+				 	// && signature->findImplicitParam(e) == -1
+					) {
+				if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
 					if (VERBOSE)
 						LOG << "ignoring local " << e << "\n";
 					continue;
@@ -1534,14 +1535,12 @@ void UserProc::addNewParameters() {
 						LOG << "ignoring complex " << e << "\n";
 					continue;
 				}
-				if (e->getOper() == opMemOf && 
-					e->getSubExp1()->getOper() == opGlobal) {
+				if (e->getOper() == opMemOf && e->getSubExp1()->getOper() == opGlobal) {
 					if (VERBOSE)
 						LOG << "ignoring m[global] " << e << "\n";
 					continue;
 				}
-				if (e->getOper() == opMemOf &&
-					e->getSubExp1()->getOper() == opParam) {
+				if (e->getOper() == opMemOf && e->getSubExp1()->getOper() == opParam) {
 					if (VERBOSE)
 						LOG << "ignoring m[param] " << e << "\n";
 					continue;
@@ -1575,7 +1574,7 @@ void UserProc::addNewParameters() {
 
 void UserProc::trimParameters(int depth) {
 
-	if (signature->isPromoted())
+	if (signature->isFullSignature())
 		return;
 
 	if (VERBOSE)
@@ -1757,7 +1756,7 @@ void Proc::sortParameters()
 				else if (e->getOper() == opMemOf && f->getOper() == opMemOf) {
 					if (e->getSubExp1()->getOper() == opPlus && f->getSubExp1()->getOper() == opPlus)
 						if (e->getSubExp1()->getSubExp2()->isIntConst() && f->getSubExp1()->getSubExp2()->isIntConst())
-                            if (((Const*)e->getSubExp1()->getSubExp2())->getInt() > ((Const*)f->getSubExp1()->getSubExp2())->getInt())
+							if (((Const*)e->getSubExp1()->getSubExp2())->getInt() > ((Const*)f->getSubExp1()->getSubExp2())->getInt())
 								swapem = true;
 				}
 				if (swapem) {
@@ -1783,9 +1782,10 @@ void UserProc::processFloatConstants()
 	StatementList stmts;
 	getStatements(stmts);
 
-	Exp *match = new Ternary(opFsize, new Terminal(opWild), 
-									  new Terminal(opWild), 
-								Location::memOf(new Terminal(opWild)));
+	Exp *match = new Ternary(opFsize,
+						new Terminal(opWild), 
+						new Terminal(opWild), 
+						Location::memOf(new Terminal(opWild)));
 	
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -1793,19 +1793,16 @@ void UserProc::processFloatConstants()
 
 		std::list<Exp*> results;
 		s->searchAll(match, results);
-		for (std::list<Exp*>::iterator it1 = results.begin(); 
-									   it1 != results.end(); it1++) {
+		for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
 			Ternary *fsize = (Ternary*) *it1;
 			if (fsize->getSubExp3()->getOper() == opMemOf &&
-				fsize->getSubExp3()->getSubExp1()->getOper() 
-					== opIntConst) {
+					fsize->getSubExp3()->getSubExp1()->getOper() == opIntConst) {
 				Exp *memof = fsize->getSubExp3();
 				ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
 				bool ok;
 				double d = prog->getFloatConstant(u, ok);
 				if (ok) {
-					LOG << "replacing " << memof << " with " << d 
-						<< " in " << fsize << "\n";
+					LOG << "replacing " << memof << " with " << d << " in " << fsize << "\n";
 					fsize->setSubExp3(new Const(d));
 				}
 			}
@@ -1834,14 +1831,13 @@ void UserProc::replaceExpressionsWithGlobals() {
 			for (int i = 0; i < call->getNumArguments(); i++) {
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
-				// Temporary: the below assumes that the address of a global is
-				// an integer constant
+				// The below assumes that the address of a global is an integer constant
 				if (ty && ty->resolvesToPointer() && e->getOper() == opIntConst) {
 					Type *pty = ty->asPointer()->getPointsTo();
 					if (pty->resolvesToArray() && pty->asArray()->isUnbounded()) {
 						ArrayType *a = (ArrayType*)pty->asArray()->clone();
 						pty = a;
-						a->setLength(1024);	  // just something arbitrary
+						a->setLength(1024);		// just something arbitrary
 						if (i+1 < call->getNumArguments()) {
 							Type *nt = call->getArgumentType(i+1);
 							if (nt->isNamed())
@@ -1959,9 +1955,9 @@ void UserProc::replaceExpressionsWithGlobals() {
 					}
 				// look for m[(blah * K1 + K2)]
 				} else if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
-					   r1->getSubExp1()->getSubExp1()->getOper() == opMult &&
-					   r1->getSubExp1()->getSubExp1()->getSubExp2() ->getOper() == opIntConst &&
-					   r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+						r1->getSubExp1()->getSubExp1()->getOper() == opMult &&
+						r1->getSubExp1()->getSubExp1()->getSubExp2() ->getOper() == opIntConst &&
+						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
 					Exp *memof = r1;
 					// K1 is the stride
 					int stride = ((Const*)memof->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
@@ -2672,8 +2668,7 @@ void UserProc::removeUnusedLocals() {
 				Const* c = (Const*)((Unary*)r)->getSubExp1();
 				std::string name(c->getStr());
 				usedLocals.insert(name);
-				if (VERBOSE) LOG << "Counted local " << name.c_str() <<
-				  " in " << s << "\n";
+				if (VERBOSE) LOG << "Counted local " << name.c_str() << " in " << s << "\n";
 			}
 		}
 	}
@@ -2732,8 +2727,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				ll++;
 				continue;
 			}
-			if (s->getLeft() && depth >= 0 &&
-				  s->getLeft()->getMemDepth() > depth) {
+			if (s->getLeft() && depth >= 0 && s->getLeft()->getMemDepth() > depth) {
 				ll++;
 				continue;
 			}
@@ -2779,8 +2773,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				for (dd = refs.begin(); dd != refs.end(); dd++)
 					refCounts[*dd]--;
 				if (DEBUG_UNUSED_STMT)
-					LOG << "Removing unused statement " << s->getNumber() 
-						<< " " << s << "\n";
+					LOG << "Removing unused statement " << s->getNumber() << " " << s << "\n";
 				removeStatement(s);
 				ll = stmts.remove(ll);	// So we don't try to re-remove it
 				change = true;
@@ -2825,7 +2818,7 @@ void UserProc::fromSSAform() {
 		bool same = true;
 		LocationSet::iterator rr;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
-			if (!(**rr *= *first)) {	   // Ref-insensitive compare
+			if (!(**rr *= *first)) {		// Ref-insensitive compare
 				same = false;
 				break;
 			}
@@ -2962,7 +2955,7 @@ bool UserProc::prove(Exp *query)
 		return false;
 	}
 	//delete query;
-   
+ 
 	inProve = false;
 	if (DEBUG_PROOF) LOG << "prove returns true\n";
 	return true;
@@ -3102,11 +3095,11 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 
 			// is ok if both of the memofs is subscripted with NULL
 			if (!change && query->getSubExp1()->getOper() == opSubscript &&
-				  query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
-				  ((RefExp*)query->getSubExp1())->getRef() == NULL &&
-				  query->getSubExp2()->getOper() == opSubscript &&
-				  query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
-				  ((RefExp*)query->getSubExp2())->getRef() == NULL) {
+					query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
+					((RefExp*)query->getSubExp1())->getRef() == NULL &&
+					query->getSubExp2()->getOper() == opSubscript &&
+					query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
+					((RefExp*)query->getSubExp2())->getRef() == NULL) {
 				query->refSubExp1() = ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
 				query->refSubExp2() = ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
 				change = true;
@@ -3174,8 +3167,7 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
 	UserProc* proc = (UserProc*) call->getDestProc();
 	//if (proc->isLib()) return;
 	if (DEBUG_UNUSED_RETS_PARAMS) {
-		LOG << " @@ Counted use of return location " << loc 
-			<< " for call to ";
+		LOG << " @@ Counted use of return location " << loc << " for call to ";
 		if (proc) 
 			LOG << proc->getName();
 		else
@@ -3218,8 +3210,6 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 			if (loc->isLocal()) {
 				// We want the raw expression here
 				loc = getLocalExp(((Const*)((Location*)loc)->getSubExp1())->getStr());
-LOG << "symbolMap is:\n";
-std::map<Exp*, Exp*, lessExpStar>::iterator xx; for (xx = symbolMap.begin(); xx != symbolMap.end(); xx++) LOG << xx->first << " -> " << xx->second << "\n";
 				if (loc == NULL) continue;		// Needed?
 			}
 			if (loc->isSubscript()) {
@@ -3244,22 +3234,25 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
 	std::set<Exp*, lessExpStar>& useSet = rc[this];
 	for (int i = 0; i < signature->getNumReturns(); i++) {
 		Exp *ret = signature->getReturnExp(i);
-		if (useSet.find(ret) == useSet.end())
+		if (useSet.find(ret) == useSet.end()) {
 			removes.insert(ret);
+		}
 	}
 	std::set<Exp*, lessExpStar>::iterator it;
 	Exp* stackExp = NULL;
-	// if (signature->isPromoted()) {
-		stackExp = Location::regOf(signature->getStackRegister());
-		assert(stackExp);
-	// }
+	// if (signature->isPromoted())
+		stackExp = Location::regOf(signature->getStackRegister(prog));
 	bool removedOne = false;
 	for (it = removes.begin(); it != removes.end(); it++) {
-		// ?? Logic is surely screwed below:
-	 // if ( signature->isPromoted() && !(*stackExp == **it))
-		if (!signature->isPromoted() &&	 (*stackExp == **it))
-			// Only remove stack pointer if promoted
-			continue;
+		// The logic here was doubly screwed. For one thing, there should not have been a not on isPromoted.
+		// For another, when signatures are not promoted, getStackRegister() (the one that does NOT take a Prog
+		// parameter) always returned 0 (!!), so for unpromoted procs, the SP was removed.
+		// Plus, it turns out that somehow even full signature procs need this removal
+	 	//if ( signature->isPromoted() && !(*stackExp == **it))
+		//if (!signature->isPromoted() &&	 (*stackExp == **it))
+		//if (**it == *stackExp && signature->isFullSignature())
+			// If known to have a full signature, don't attempt to remove the SP
+			// continue;
 		if (DEBUG_UNUSED_RETS_PARAMS)
 			LOG << " @@ Removing unused return " << *it << " in " << getName() << "\n";
 		removeReturn(*it);
@@ -3393,14 +3386,14 @@ bool UserProc::searchAndReplace(Exp *search, Exp *replace)
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		ch |= s->searchAndReplace(search, replace);	  
+		ch |= s->searchAndReplace(search, replace);	
 	}
 	return ch; 
 }
 
 unsigned fudge(StatementList::iterator x) {
-  StatementList::iterator y = x;
-  return *(unsigned*)&y;
+	StatementList::iterator y = x;
+	return *(unsigned*)&y;
 }
 void UserProc::stripRefs() {
 	StatementList stmts, delList;

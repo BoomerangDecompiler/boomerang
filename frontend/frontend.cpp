@@ -20,8 +20,7 @@
  * $Revision$
  * 08 Apr 02 - Mike: Mods to adapt UQBT code to boomerang
  * 16 May 02 - Mike: Moved getMainEntry point here from prog
- * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness
- *					  rather than machine type)
+ * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness rather than machine type)
  * 22 Nov 02 - Mike: Quelched warnings
  * 16 Apr 03 - Mike: trace (-t) to cerr not cout now
  */
@@ -123,11 +122,10 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
 		if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
 			sFile = sFile.substr(0, sFile.size()-1);
 		if (sFile == "") continue;
-		std::string sPath = Boomerang::get()->getProgPath() + "signatures/"
-		  + sFile;
+		std::string sPath = Boomerang::get()->getProgPath() + "signatures/" + sFile;
 		callconv cc = CONV_C;			// Most APIs are C calling convention
-		if (sFile == "windows.h") cc = CONV_PASCAL;		// One exception
-		if (sFile == "mfc.h")	  cc = CONV_THISCALL;	// Another exception
+		if (sFile == "windows.h")	cc = CONV_PASCAL;		// One exception
+		if (sFile == "mfc.h")		cc = CONV_THISCALL;		// Another exception
 		readLibrarySignatures(sPath.c_str(), cc);
 	}
 	inf.close();
@@ -135,8 +133,7 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
 
 void FrontEnd::readLibraryCatalog() {
 	librarySignatures.clear();
-	std::string sList = Boomerang::get()->getProgPath() +
-	  "signatures/common.hs";
+	std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
 	readLibraryCatalog(sList.c_str());
 	sList = Boomerang::get()->getProgPath() + "signatures/" + 
 		Signature::platformName(getFrontEndId()) + ".hs";
@@ -161,12 +158,8 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 
 	bool gotMain;
 	ADDRESS a = getMainEntryPoint(gotMain);
-	if (VERBOSE) {
-		const char *tmp = gotMain ? "true" : "false";
-		LOG << "start: ";
-		LOG << a;
-		LOG << " gotmain: " << tmp << "\n";
-	}
+	if (VERBOSE)
+		LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 	if (a == NO_ADDRESS) return false;
 
 	decode(prog, a);
@@ -186,6 +179,7 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 				else {
 					proc->setSignature(fty->getSignature()->clone());
 					proc->getSignature()->setName(name);
+					proc->getSignature()->setFullSig(true);		// Don't add or remove parameters
 				}
 				break;
 			}
@@ -205,8 +199,7 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
 	while (change) {
 		change = false;
 		PROGMAP::const_iterator it;
-		for (Proc *pProc = prog->getFirstProc(it); pProc != NULL; 
-		  pProc = prog->getNextProc(it)) {
+		for (Proc *pProc = prog->getFirstProc(it); pProc != NULL; pProc = prog->getNextProc(it)) {
 			if (pProc->isLib()) continue;
 			UserProc *p = (UserProc*)pProc;
 			if (p->isDecoded()) continue;
@@ -271,11 +264,9 @@ void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
 	platform plat = getFrontEndId();
 	p->yyparse(plat, cc);
 
-	for (std::list<Signature*>::iterator it = p->signatures.begin();
-		   it != p->signatures.end(); it++) {
+	for (std::list<Signature*>::iterator it = p->signatures.begin(); it != p->signatures.end(); it++) {
 #if 0
-		std::cerr << "readLibrarySignatures from " << sPath << ": " <<
-		  (*it)->getName() << "\n";
+		std::cerr << "readLibrarySignatures from " << sPath << ": " << (*it)->getName() << "\n";
 #endif
 		librarySignatures[(*it)->getName()] = *it;
 	}
@@ -528,7 +519,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						}
 						else {
 							LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to "
-							  << uDest << "\n";
+								<< uDest << "\n";
 						}
 					}
 					break;
@@ -571,7 +562,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							Boomerang::get()->alert_update_signature(pProc);
 						}
 						callSet.insert(call);
-						ss = sl.end(); ss--;  // get out of the loop
+						ss = sl.end(); ss--;	// get out of the loop
 						break;
 					}
 					BB_rtls->push_back(pRtl);
@@ -593,8 +584,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						LOG << "Warning: COMPUTED JUMP at " << uAddr << "\n";
 					}
 					sequentialDecode = false;
-					BB_rtls = NULL;	   // New RTLList for next BB
-					break;	   
+					BB_rtls = NULL;		// New RTLList for next BB
+					break;
 				}
 
 
@@ -616,9 +607,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							pCfg->addOutEdge(pBB, uDest, true);
 						}
 						else {
-							LOG << "Error: Instruction at " << 
-							  uAddr << " branches beyond end of section, to "
-							  << uDest << "\n";
+							LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to "
+								<< uDest << "\n";
 						}
 
 						// Add the fall-through outedge
@@ -674,7 +664,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						// will check for machine specific func calls
 						if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
 							// We have already added to BB_rtls
-							pRtl = NULL;	   // Discard the call semantics
+							pRtl = NULL;		// Discard the call semantics
 							break;
 						}
 
@@ -756,8 +746,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						// Create the basic block
 						pBB = pCfg->newBB(BB_rtls, RET, 0);
 
-						pProc->setTheReturnAddr((ReturnStatement*)s,
-						  pRtl->getAddress());
+						pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
 
 						// If this ret pops anything other than the return
 						// address, this information can be useful in the proc
@@ -778,7 +767,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 					// Create the list of RTLs for the next basic block and
 					// continue with the next instruction.
-					BB_rtls = NULL;	   // New RTLList for next BB
+					BB_rtls = NULL;		// New RTLList for next BB
 				}
 				break;
 
@@ -786,8 +775,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					// This is just an ordinary instruction; no control transfer
 					// Fall through
 				case STMT_ASSIGN:
-                case STMT_PHIASSIGN:
-                case STMT_IMPASSIGN:
+				case STMT_PHIASSIGN:
+				case STMT_IMPASSIGN:
 					// Do nothing
 					break;
 		
@@ -872,8 +861,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 /*==============================================================================
  * FUNCTION:	FrontEnd::getInst
- * OVERVIEW:	Fetch the smallest (nop-sized) instruction, in an endianness
- *				  independent manner
+ * OVERVIEW:	Fetch the smallest (nop-sized) instruction, in an endianness independent manner
  * NOTE:		Frequently overridden
  * PARAMETERS:	addr - host address to getch from
  * RETURNS:		An integer with the instruction in it
@@ -960,15 +948,14 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
 	DecodeResult inst = 
 		decoder->decodeInstruction(address, delta);
 
-	RTL*   rtl		  = inst.rtl;
+	RTL*	rtl	= inst.rtl;
 
 	return rtl;
 }
 
 
 bool isSwitch(PBB pbb, Exp* e, UserProc* p);
-void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq,
-  BinaryFile* pBF);
+void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq, BinaryFile* pBF);
 
 /*==============================================================================
  * FUNCTION:	getInstanceFor
@@ -984,8 +971,7 @@ typedef FrontEnd* (*constructFcn)(int, ADDRESS, NJMCDecoder**);
 #define TESTMAGIC2(buf,off,a,b)		(buf[off] == a && buf[off+1] == b)
 #define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
 									 buf[off+2] == c && buf[off+3] == d)
-FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
-  BinaryFile *pBF, NJMCDecoder*& decoder) {
+FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle, BinaryFile *pBF, NJMCDecoder*& decoder) {
 	FILE *f;
 	char buf[64];
 	std::string libName, machName;
@@ -1022,8 +1008,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
 			}
 #endif
 		} else {
-			LOG << "Unknown ELF machine type " << 
-			  (ADDRESS)buf[0x12] << (ADDRESS)buf[0x13] << "\n";
+			LOG << "Unknown ELF machine type " << (ADDRESS)buf[0x12] << (ADDRESS)buf[0x13] << "\n";
 			return NULL;
 		}
 	} else if( TESTMAGIC2( buf,0, 'M','Z' ) ) { /* DOS-based file */
@@ -1034,13 +1019,12 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
 		decoder = fe->getDecoder();
 		return fe;
 #endif
-	} else if( TESTMAGIC4( buf,0x3C, 'a','p','p','l' ) ||
-			   TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
+	} else if( TESTMAGIC4( buf,0x3C, 'a','p','p','l' ) || TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
 		/* PRC Palm-pilot binary */
 		machName = "mc68k";
 	} else if( buf[0] == 0x02 && buf[2] == 0x01 &&
-			   (buf[1] == 0x10 || buf[1] == 0x0B) &&
-			   (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
+				(buf[1] == 0x10 || buf[1] == 0x0B) &&
+				(buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
 		/* HP Som binary (last as it's not really particularly good magic) */
 		libName = "hppa";
 	} else {

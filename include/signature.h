@@ -72,129 +72,131 @@ protected:
 
 class Return : public Memoisable {
 private:
-	Type *type;
-	Exp *exp;
+		Type		*type;
+		Exp			*exp;
 
 public:
-	Return(Type *type, Exp *exp) : type(type), exp(exp) { }
-	~Return() { delete type; delete exp; }
-	bool	operator==(Return& other);
+					Return(Type *type, Exp *exp) : type(type), exp(exp) { }
+					~Return() { delete type; delete exp; }
+		bool		operator==(Return& other);
 
-	Type *getType() { return type; }
-	void setType(Type *ty) { type = ty; }
-	Exp *getExp() { return exp; }
-	Exp*& getRefExp() {return exp;}
-	void setExp(Exp* e) { exp = e; }
+		Type 		*getType() { return type; }
+		void		setType(Type *ty) { type = ty; }
+		Exp			*getExp() { return exp; }
+		Exp*&		getRefExp() {return exp;}
+		void		setExp(Exp* e) { exp = e; }
 
-	virtual Memo *makeMemo(int mId);
-	virtual void readMemo(Memo *m, bool dec);
+virtual Memo		*makeMemo(int mId);
+virtual void		readMemo(Memo *m, bool dec);
 
 protected:
-	friend class XMLProgParser;
-	Return() : type(NULL), exp(NULL) { }
-};
+					Return() : type(NULL), exp(NULL) { }
+		friend class XMLProgParser;
+};		// class Return
 
 class Signature : public Memoisable {
 protected:
-	std::string name;		// name of procedure
-	std::vector<Parameter*> params;
-	std::vector<ImplicitParameter*> implicitParams;
-	std::vector<Return*> returns;
-	Type *rettype;
-	bool ellipsis;
-	Type *preferedReturn;
-	std::string preferedName;
-	std::vector<int> preferedParams;
-	bool unknown;
+		std::string	name;		// name of procedure
+		std::vector<Parameter*> params;
+		std::vector<ImplicitParameter*> implicitParams;
+		std::vector<Return*> returns;
+		Type		*rettype;
+		bool		ellipsis;
+		Type		*preferedReturn;
+		std::string	preferedName;
+		std::vector<int> preferedParams;
+		bool		unknown;
+		bool		bFullSig;			// True if have a full signature from a signature file etc
 
-	void updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
-	bool usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
+		void		updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
+		bool		usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
 
-	void addImplicitParametersFor(Parameter *p);
-	void addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
+		void		addImplicitParametersFor(Parameter *p);
+		void		addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
 
 public:
-	Signature(const char *nam);
-	// Platform plat, calling convention cc (both enums)
-	// nam is name of the procedure (no longer stored in the Proc)
-	static Signature *instantiate(platform plat, callconv cc, const char *nam);
-	virtual ~Signature() { }
+					Signature(const char *nam);
+		// Platform plat, calling convention cc (both enums)
+		// nam is name of the procedure (no longer stored in the Proc)
+static	Signature	*instantiate(platform plat, callconv cc, const char *nam);
+virtual				~Signature() { }
 
-	virtual bool operator==(Signature& other);
+virtual bool		operator==(Signature& other);
 
-	// clone this signature
-	virtual Signature *clone();
+		// clone this signature
+virtual	Signature	*clone();
 
-	bool isUnknown() { return unknown; }
-	void setUnknown(bool b) { unknown = b; }
+		bool		isUnknown() { return unknown; }
+		void		setUnknown(bool b) { unknown = b; }
+		void		setFullSig(bool full) {bFullSig = full;}
 
-	// get the return location
-	virtual void addReturn(Type *type, Exp *e = NULL);
-	virtual void addReturn(Exp *e);
-	virtual void addReturn(Return *ret) { returns.push_back(ret); }
-	virtual void removeReturn(Exp *e);
-	virtual int getNumReturns();
-	virtual Exp *getReturnExp(int n);
-	void		 setReturnExp(int n, Exp* e);
-	virtual Type *getReturnType(int n);
-	virtual void setReturnType(int n, Type *ty);
-	virtual int findReturn(Exp *e);
-	void fixReturnsWithParameters();
-	void setRetType(Type *t) { rettype = t; }
+		// get the return location
+virtual void		addReturn(Type *type, Exp *e = NULL);
+virtual void		addReturn(Exp *e);
+virtual void		addReturn(Return *ret) { returns.push_back(ret); }
+virtual void		removeReturn(Exp *e);
+virtual int			getNumReturns();
+virtual Exp			*getReturnExp(int n);
+		void		setReturnExp(int n, Exp* e);
+virtual Type		*getReturnType(int n);
+virtual void		setReturnType(int n, Type *ty);
+virtual int			findReturn(Exp *e);
+		void		fixReturnsWithParameters();
+		void		setRetType(Type *t) { rettype = t; }
 
-	// get/set the name
-	virtual const char *getName();
-	virtual void setName(const char *nam);
+		// get/set the name
+virtual const char	*getName();
+virtual void		setName(const char *nam);
 
-	// add a new parameter to this signature
-	virtual void addParameter(const char *nam = NULL);
-	virtual void addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
-	virtual void addParameter(Exp *e);
-	virtual void addParameter(Parameter *param);
-			void addEllipsis() { ellipsis = true; }
-			void killEllipsis() {ellipsis = false; }
-	virtual void removeParameter(Exp *e);
-	virtual void removeParameter(int i);
-	// set the number of parameters using defaults
-	virtual void setNumParams(int n);
+		// add a new parameter to this signature
+virtual void		addParameter(const char *nam = NULL);
+virtual void		addParameter(Type *type, const char *nam = NULL, Exp *e = NULL);
+virtual void		addParameter(Exp *e);
+virtual void		addParameter(Parameter *param);
+		void		addEllipsis() { ellipsis = true; }
+		void		killEllipsis() {ellipsis = false; }
+virtual void		removeParameter(Exp *e);
+virtual void		removeParameter(int i);
+		// set the number of parameters using defaults
+virtual void		setNumParams(int n);
 
-	// accessors for parameters
-	virtual int getNumParams();
-	virtual const char *getParamName(int n);
-	virtual Exp *getParamExp(int n);
-	virtual Type *getParamType(int n);
-	virtual void setParamType(int n, Type *ty);
-	virtual void setParamName(int n, const char *name);
-	virtual void setParamExp(int n, Exp *e);
-	virtual int findParam(Exp *e);
-	virtual int findParam(const char *nam);
-	// accessor for argument expressions
-	virtual Exp *getArgumentExp(int n);
-	virtual bool hasEllipsis() { return ellipsis; }
-	std::list<Exp*> *getCallerSave(Prog* prog);
+		// accessors for parameters
+virtual int			getNumParams();
+virtual const char	*getParamName(int n);
+virtual Exp			*getParamExp(int n);
+virtual Type		*getParamType(int n);
+virtual void		setParamType(int n, Type *ty);
+virtual void		setParamName(int n, const char *name);
+virtual void		setParamExp(int n, Exp *e);
+virtual int			findParam(Exp *e);
+virtual int			findParam(const char *nam);
+		// accessor for argument expressions
+virtual Exp			*getArgumentExp(int n);
+virtual bool		hasEllipsis() { return ellipsis; }
+		std::list<Exp*> *getCallerSave(Prog* prog);
 
-	void renameParam(const char *oldName, const char *newName);
+		void		renameParam(const char *oldName, const char *newName);
 
 	// add a new implicit parameter
-	virtual void addImplicitParameter(Exp *e);
-	virtual void removeImplicitParameter(int i);
+virtual void addImplicitParameter(Exp *e);
+virtual void removeImplicitParameter(int i);
 
 	// accessors for implicit params
-	virtual int getNumImplicitParams();
-	virtual const char *getImplicitParamName(int n);
-	virtual Exp *getImplicitParamExp(int n);
-	virtual Type *getImplicitParamType(int n);
-	virtual int findImplicitParam(Exp *e);
+virtual int getNumImplicitParams();
+virtual const char *getImplicitParamName(int n);
+virtual Exp *getImplicitParamExp(int n);
+virtual Type *getImplicitParamType(int n);
+virtual int findImplicitParam(Exp *e);
 
 	// analysis determines parameters / return type
 	//virtual void analyse(UserProc *p);
 
 	// any signature can be promoted to a higher level signature, if available
-	virtual Signature *promote(UserProc *p);
+virtual Signature *promote(UserProc *p);
 	void print(std::ostream &out);
 	void printToLog();
 
-	virtual void getInternalStatements(StatementList &stmts);
+virtual void getInternalStatements(StatementList &stmts);
 
 	// Special for Mike: find the location that conventionally holds
 	// the first outgoing (actual) parameter
@@ -207,39 +209,42 @@ public:
 	// where the proc will end up using a standard calling convention
 	Exp* getEarlyParamExp(int n, Prog* prog);
 
-	// Get a wildcard to find stack locations
-	virtual Exp *getStackWildcard() { return NULL; }
-	virtual int	 getStackRegister(			) {return 0; };
-			int	 getStackRegister(Prog* prog);
-	// Does expression e represent a local stack-based variable?
-	// Result can be ABI specific, e.g. sparc has locals in the parent's stack frame,
-	// at POSITIVE offsets from the stack pointer register
-	// Also, I believe that the PA/RISC stack grows away from 0
-	bool isStackLocal(Prog* prog, Exp *e);
-	// Similar to the above, but checks for address of a local (i.e.
-	// sp{0} -/+ K)
-	bool isAddrOfStackLocal(Prog* prog, Exp* e);
-	// For most machines, local variables are always NEGATIVE offsets from sp
-virtual bool isLocalOffsetNegative() {return true;}
-	// For most machines, local variables are not POSITIVE offsets from sp
-virtual bool isLocalOffsetPositive() {return false;}
-	// Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
-	bool	isOpCompatStackLocal(OPER op);	
+		// Get a wildcard to find stack locations
+virtual Exp			*getStackWildcard() { return NULL; }
+virtual int			getStackRegister(			) {return 0; };
+		int			getStackRegister(Prog* prog);
+		// Does expression e represent a local stack-based variable?
+		// Result can be ABI specific, e.g. sparc has locals in the parent's stack frame,
+		// at POSITIVE offsets from the stack pointer register
+		// Also, I believe that the PA/RISC stack grows away from 0
+		bool		isStackLocal(Prog* prog, Exp *e);
+		// Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
+		bool		isAddrOfStackLocal(Prog* prog, Exp* e);
+		// For most machines, local variables are always NEGATIVE offsets from sp
+virtual bool		isLocalOffsetNegative() {return true;}
+		// For most machines, local variables are not POSITIVE offsets from sp
+virtual bool		isLocalOffsetPositive() {return false;}
+		// Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
+		bool		isOpCompatStackLocal(OPER op);	
 
-	// Quick and dirty hack
-static Exp* getReturnExp2(BinaryFile* pBF);
-static StatementList& getStdRetStmt(Prog* prog);
+		// Quick and dirty hack
+static	Exp*		getReturnExp2(BinaryFile* pBF);
+static	StatementList& getStdRetStmt(Prog* prog);
 
-	// get anything that can be proven as a result of the signature
-	virtual Exp *getProven(Exp *left) { return NULL; }
+		// get anything that can be proven as a result of the signature
+virtual Exp			*getProven(Exp *left) { return NULL; }
 
-	virtual bool isPromoted() { return false; }
+		// Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
+virtual bool		isPromoted() { return false; }
+		// Return true if this has a full blown signature, e.g. main/WinMain etc.
+		// Note that many calls to isFullSignature were incorrectly calls to isPromoted()
+		bool		isFullSignature() {return bFullSig;}
 
 	// ascii versions of platform, calling convention name
-static char*   platformName(platform plat);
-static char*   conventionName(callconv cc);
-virtual platform getPlatform() { return PLAT_GENERIC; }
-virtual callconv getConvention() { return CONV_NONE; }
+static char*		platformName(platform plat);
+static char*		conventionName(callconv cc);
+virtual platform	getPlatform() { return PLAT_GENERIC; }
+virtual callconv	getConvention() { return CONV_NONE; }
 
 	// prefered format
 	void setPreferedReturn(Type *ty) { preferedReturn = ty; }

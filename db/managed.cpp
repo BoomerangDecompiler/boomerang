@@ -488,10 +488,10 @@ void StatementVec::printLefts(std::ostream& os) {
 				left->print(os);
 				os << "{" << std::dec << (*it)->getNumber() << "}";
 			} else 
-				os << "NUL";
+				os << "-";
 		}
 		else
-			os << "NULL";
+			os << "-";
 		if (++it != svec.end())
 			os << " ";
 	}

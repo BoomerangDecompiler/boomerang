@@ -87,13 +87,19 @@ void UserProc::dfaTypeAnalysis() {
 
 	// Now use the type information gathered
 	Prog* prog = getProg();
+	if (DEBUG_TA)
+		LOG << " *** Converting expressions to local variables for " << getName() << " ***\n";
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		s->dfaConvertLocals();
+	}
+	if (DEBUG_TA)
+		LOG << " *** End converting expressions to local variables for " << getName() << " ***\n";
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		//Type* t = s->getType();
 		// Locations
 		// ...
-		// Convert expressions to locals
-		s->dfaConvertLocals();
 		// Constants
 		std::list<Const*>lc;
 		s->findConstants(lc);
@@ -892,7 +898,6 @@ void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
 DfaLocalConverter::DfaLocalConverter(UserProc* proc) : parentType(NULL), proc(proc) {
 	sig = proc->getSignature();
 	prog = proc->getProg();
-	sp = sig->getStackRegister();
 }
 
 Exp* DfaLocalConverter::preVisit(Location* e, bool& recur) {

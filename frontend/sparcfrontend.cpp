@@ -846,10 +846,10 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
  *					 spec - if true, this is a speculative decode
  * RETURNS:			 True if a good decode
  *============================================================================*/
-bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
-  std::ofstream &os, bool fragment /* = false */, bool spec /* = false */) {
+bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &os, bool fragment /* = false */,
+		bool spec /* = false */) {
 
-	if (!fragment && !proc->getSignature()->isPromoted()) {
+	if (!fragment && !proc->getSignature()->isFullSignature()) {
 		if (VERBOSE)
 			LOG << "adding default params and returns for " << proc->getName()
 			  << "\n";

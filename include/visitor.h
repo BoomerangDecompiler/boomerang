@@ -398,7 +398,6 @@ class DfaLocalConverter : public ExpModifier {
 		UserProc* proc;
 		Prog*	prog;
 		Signature* sig;		// Look up once (from proc) for speed
-		int		sp;			// Look up the stack pointer register once
 public:
 				DfaLocalConverter(UserProc* proc);
 		void	setType(Type* ty) {parentType = ty;}
