@@ -68,10 +68,10 @@ test:	lib bigtest
 # In case you don't have bison++ and flex++ and don't need to mess with the
 # parsers
 remote:
-	touch db/sslparser.cpp db/sslscanner.cpp \
-          db/sslparser.h   db/sslscanner.h \
+	touch db/sslparser.cpp db/sslparser.h \
         c/ansi-c-parser.cpp c/ansi-c-scanner.cpp  \
-        c/ansi-c-parser.h   c/ansi-c-scanner.h 
+        c/ansi-c-parser.h   c/ansi-c-scanner.h \
+        db/sslscanner.cpp   db/sslscanner.h
 
 clean:
 	cd util     && ${MAKE} clean
