@@ -20,6 +20,8 @@
  * 18 Nov 02 - Mike: Mods for MOV.Ed.Iv^od etc. Also suppressed warning re name
  * 09 Dec 02 - Mike: Changed DIS_REG32 to use dis_Reg again, because in the
  *				SSL file we have reg32 instead of r[reg32] (compat with SPARC)
+ * 07 May 03 - Mike: Fixed several arithmetic and logical "iodb" instructions
+ *              that had 8 bit instead of 32 bit modrm sizes
 */
 
 #include <assert.h>
@@ -1505,7 +1507,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         Exps = instantiate(pc,  "CMPiowb", DIS_EADDR16, DIS_I8);
 
     | XORiodb(Eaddr, i8) =>
-        Exps = instantiate(pc,  "XORiodb", DIS_EADDR8, DIS_I8);
+        Exps = instantiate(pc,  "XORiodb", DIS_EADDR32, DIS_I8);
 
     | XORiowb(Eaddr, i8) =>
         Exps = instantiate(pc,  "XORiowb", DIS_EADDR16, DIS_I8);
@@ -1517,7 +1519,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         Exps = instantiate(pc,  "SUBiowb", DIS_EADDR16, DIS_I8);
 
     | ANDiodb(Eaddr, i8) =>
-        Exps = instantiate(pc,  "ANDiodb", DIS_EADDR8, DIS_I8);
+        Exps = instantiate(pc,  "ANDiodb", DIS_EADDR32, DIS_I8);
 
     | ANDiowb(Eaddr, i8) =>
         Exps = instantiate(pc,  "ANDiowb", DIS_EADDR16, DIS_I8);
@@ -1529,13 +1531,13 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         Exps = instantiate(pc,  "SBBiowb", DIS_EADDR16, DIS_I8);
 
     | ADCiodb(Eaddr, i8) =>
-        Exps = instantiate(pc,  "ADCiodb", DIS_EADDR8, DIS_I8);
+        Exps = instantiate(pc,  "ADCiodb", DIS_EADDR32, DIS_I8);
 
     | ADCiowb(Eaddr, i8) =>
         Exps = instantiate(pc,  "ADCiowb", DIS_EADDR16, DIS_I8);
 
     | ORiodb(Eaddr, i8) =>
-        Exps = instantiate(pc,  "ORiodb", DIS_EADDR8, DIS_I8);
+        Exps = instantiate(pc,  "ORiodb", DIS_EADDR32, DIS_I8);
 
     | ORiowb(Eaddr, i8) =>
         Exps = instantiate(pc,  "ORiowb", DIS_EADDR16, DIS_I8);
