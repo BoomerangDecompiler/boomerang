@@ -3099,6 +3099,7 @@ void Assign::simplify() {
 			}
 	}
 
+	if (!ADHOC_TYPE_ANALYSIS) return;
 	// let's gather some more accurate type information
 	if (lhs->isLocation() && rhs->getType()) {
 		Location *llhs = dynamic_cast<Location*>(lhs);
