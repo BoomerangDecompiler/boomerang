@@ -421,13 +421,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             std::list<Statement*>::iterator ss;
             for (ss = sl.begin(); ss != sl.end(); ss++) {
                 Statement* s = *ss;
-                GotoStatement* rtl_jump = static_cast<GotoStatement*>(s);
+                GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
 
                 switch (s->getKind())
                 {
 
                 case STMT_GOTO: {
-                    uDest = rtl_jump->getFixedDest();
+                    uDest = stmt_jump->getFixedDest();
     
                     // Handle one way jumps and computed jumps separately
                     if (uDest != NO_ADDRESS) {
@@ -436,12 +436,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         sequentialDecode = false;
 
                         pBB = pCfg->newBB(BB_rtls,ONEWAY,1);
+                        BB_rtls = NULL;     // Clear when make new BB
 
-                        // Exit the switch now and stop decoding sequentially
-                        // if the basic block already existed
+                        // Exit the switch now if the basic block already
+                        // existed
                         if (pBB == 0) {
-                            sequentialDecode = false;
-                            BB_rtls = NULL;
                             break;
                         }
 
@@ -461,18 +460,18 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 }
 
                 case STMT_CASE: {
-                    if (rtl_jump->getDest()->getOper() == opMemOf &&
-                        rtl_jump->getDest()->getSubExp1()->getOper() ==
+                    if (stmt_jump->getDest()->getOper() == opMemOf &&
+                        stmt_jump->getDest()->getSubExp1()->getOper() ==
                           opIntConst && 
-                        pBF->IsDynamicLinkedProcPointer(((Const*)rtl_jump->
+                        pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->
                           getDest()->getSubExp1())->getAddr())) {
                         // jump to a library function
                         // replace with a call ret
                         std::string func = pBF->GetDynamicProcName(
-                          ((Const*)rtl_jump->getDest()->getSubExp1())->
+                          ((Const*)stmt_jump->getDest()->getSubExp1())->
                           getAddr());
                         CallStatement *call = new CallStatement(pRtl->getAddress());
-                        call->setDest(rtl_jump->getDest()->clone());
+                        call->setDest(stmt_jump->getDest()->clone());
                         LibProc *lp = pProc->getProg()->getLibraryProc(
                           func.c_str());
                         assert(lp);
@@ -489,6 +488,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         pret->addInEdge(pBB);
                         pBB->setOutEdge(0, pret);
                         sequentialDecode = false;
+                        BB_rtls = NULL;
                         if (pRtl->getAddress() == pProc->getNativeAddress()) {
                             // it's a thunk
                             // Proc *lp = prog->findProc(func.c_str());
@@ -506,7 +506,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
                     // FIXME: This needs to call a new register branch
                     // processing function
-                    if (isSwitch(pBB, rtl_jump->getDest(), pProc, pBF)) {
+                    if (isSwitch(pBB, stmt_jump->getDest(), pProc, pBF)) {
                         processSwitch(pBB, pBF->getTextDelta(), pCfg,
                         targetQueue, pBF);
                     }
@@ -516,16 +516,16 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         if (type == I_COMPCALL) sKind = "CALL";
                         std::cerr << "Warning: COMPUTED " << sKind << " at "
                           << std::hex << uAddr << std::endl;
-                        BB_rtls = NULL;    // New RTLList for next BB
                     }
                     sequentialDecode = false;
+                    BB_rtls = NULL;    // New RTLList for next BB
                     break;     
                 }
 
 
 
                 case STMT_BRANCH: {
-                    uDest = rtl_jump->getFixedDest();
+                    uDest = stmt_jump->getFixedDest();
                     BB_rtls->push_back(pRtl);
                     pBB = pCfg->newBB(BB_rtls, TWOWAY, 2);
 
@@ -643,11 +643,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                                 std::list<RTL*>* rtls = new std::list<RTL*>();
                                 // The only RTL in the basic block is one with a
                                 // ReturnStatement
-                                std::list<Statement*>* sl = new std::list<Statement*>;
+                                std::list<Statement*>* sl =
+                                  new std::list<Statement*>;
                                 sl->push_back(new ReturnStatement());
-                                rtls->push_back(new RTL(pRtl->getAddress()+1, sl));
+                                rtls->push_back(new RTL(pRtl->getAddress()+1,
+                                  sl));
         
-                                BasicBlock* returnBB = pCfg->newBB(rtls, RET, 0);
+                                BasicBlock* returnBB =
+                                  pCfg->newBB(rtls, RET, 0);
                                 // Add out edge from call to return
                                 pCfg->addOutEdge(pBB, returnBB);
                                 // Put a label on the return BB (since it's an
