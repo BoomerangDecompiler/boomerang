@@ -1138,14 +1138,20 @@ void UserProc::replaceExpressionsWithSymbols()
     std::set<Statement*> stmts;
     getStatements(stmts);
 
-    // replace expressions with symbols
+    // replace expressions in regular statements with symbols
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
         for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
-          it1 != symbolMap.end(); it1++)
+          it1 != symbolMap.end(); it1++) {
             (*it)->searchAndReplace((*it1).first, (*it1).second);
+            if (VERBOSE) {
+                Exp* ee = dynamic_cast<Exp*>(*it);
+                if (ee) std::cerr << "Std stmt: replace " << (*it1).first <<
+                  " with " << (*it1).second << " in " << ee << std::endl;
+            }
+        }
     }
-
+ 
     // replace expressions with symbols in the return value
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
@@ -1153,21 +1159,11 @@ void UserProc::replaceExpressionsWithSymbols()
         Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
         e = e->clone(); 
-        if (VERBOSE) {
-            std::cerr << "return value: ";
-            e->print(std::cerr);
-            std::cerr << " replace ";
-            (*it1).first->print(std::cerr);
-            std::cerr << " with ";
-            (*it1).second->print(std::cerr);
-            std::cerr << std::endl;
-        }
+        if (VERBOSE) std::cerr << "return value: " << e << " replace " <<
+              (*it1).first << " with " << (*it1).second << " in " << e <<
+              std::endl;
         e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-        if (VERBOSE) {
-            std::cerr << "  after: ";
-            e->print(std::cerr);
-            std::cerr << std::endl;
-        }
+        if (VERBOSE) std::cerr << "  after: " << e << std::endl;
         if (change) cfg->setReturnVal(e->clone());
     }
 }
@@ -1213,31 +1209,28 @@ bool UserProc::nameRegisters()
 {
     Exp *match = new Unary(opRegOf, new Terminal(opWild));
     if (match == NULL) return false;
-
     bool found = false;
+
     std::set<Statement*> stmts;
     getStatements(stmts);
     // create a symbol for every register
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-         it++) {
+    std::set<Statement*>::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
         Exp *memref; 
         if ((*it)->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
-                if (VERBOSE) {
-                    std::cerr << "register found: ";
-                    memref->print(std::cerr);
-                    std::cerr << std::endl;
-                }
+                if (VERBOSE)
+                    std::cerr << "register found: " << memref << std::endl;
                 std::ostringstream os;
                 os << "local" << locals.size();
                 std::string name = os.str();
                 symbolMap[memref->clone()] = 
-                    new Unary(opLocal, new Const(strdup(name.c_str())));
+                  new Unary(opLocal, new Const(strdup(name.c_str())));
                 locals[name] = new IntegerType();
             }
             assert(symbolMap.find(memref) != symbolMap.end());
-            std::string name = ((Const*)symbolMap[memref]->getSubExp1())
-					->getStr();
+            std::string name = ((Const*)symbolMap[memref]->getSubExp1())->
+              getStr();
             locals[name] = (*it)->updateType(memref, locals[name]);
             found = true;
         }
@@ -1257,6 +1250,8 @@ bool UserProc::removeNullStatements()
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
         if (e == NULL) continue;
         if (*e->getSubExp1() == *e->getSubExp2()) { 
+            // A statement of the form x := x
+            // Note that Statement::updateDfForErase() will propagate the DF
             if (VERBOSE) {
                 std::cerr << "removing null code: ";
                 e->print(std::cerr);
@@ -1345,7 +1340,7 @@ void UserProc::removeInternalStatements()
           cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
             // remove internal statement
             if (VERBOSE) {
-                std::cerr << "remove internal statement: ";
+                std::cerr << "internalising: ";
                 (*it)->printAsUse(std::cerr);
                 std::cerr << std::endl;
             }
@@ -1353,6 +1348,7 @@ void UserProc::removeInternalStatements()
             // the return location
             internal.push_back(*it);
             removeStatement(*it);
+            cfg->getLiveOut().erase(*it);
         }
     }
 }

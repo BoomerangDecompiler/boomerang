@@ -318,7 +318,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     bool gotcorrectret2 = false;
     std::list<Statement*> internal;
     p->getInternalStatements(internal);
-    for (std::list<Statement*>::iterator it1 = 
+    for (std::set<Statement*>::iterator it1 = 
             p->getCFG()->getLiveOut().begin(); 
          it1 != p->getCFG()->getLiveOut().end(); it1++)
         internal.push_back(*it1);
@@ -870,11 +870,12 @@ void Signature::analyse(UserProc *p)
             }
             p->eraseInternalStatement(*it);
             p->getCFG()->setReturnVal((*it)->getRight()->clone());
+            updateParams(p, *it);
             setReturnType(new IntegerType());
         }
     }
     for (std::set<Statement*>::iterator it = p->getCFG()->getLiveOut().begin();
-         it != p->getCFG()->getLiveOut().end(); it++) {
+      it != p->getCFG()->getLiveOut().end(); it++) {
         if ((*it)->getLeft() && *(*it)->getLeft() == *getReturnExp()) {
             if (VERBOSE) {
                 std::cerr << "found: ";
@@ -897,8 +898,10 @@ void Signature::analyse(UserProc *p)
     std::set<Statement*> stmts;
     p->getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin();
-     it != stmts.end(); it++)
-    updateParams(p, *it);
+      it != stmts.end(); it++) {
+        if (VERBOSE) std::cerr << "updateParameters for " << *it << std::endl;
+        updateParams(p, *it);
+    }
 /*    std::cerr << "searching for arguments in internals" << std::endl;
     internal.clear();
     p->getInternalStatements(internal);
