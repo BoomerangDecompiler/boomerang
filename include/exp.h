@@ -209,6 +209,7 @@ static Exp* Accumulate(std::list<Exp*> exprs);
 virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
     // Just the address simplification a[ m[ any ]]
 virtual Exp* simplifyAddr() {return this;}
+virtual Exp* fixSuccessor() {return this;}
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len) = 0;
@@ -338,6 +339,7 @@ virtual     ~Unary();
     Exp*    becomeSubExp1();
     // Get a reference to subexpression 1
     Exp*&   refSubExp1();
+virtual Exp* fixSuccessor();
 
     // Search children
     void doSearchChildren(Exp* search,

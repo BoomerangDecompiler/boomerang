@@ -93,6 +93,7 @@ enum OPER
     // index, and a list of expressions to operate on. This actually allows
     // more generality, e.g. unary or ternary operators int the table
     opOpTable,              // A table of operators
+	opSuccessor,			// Get the successor register of this parameter
 
     opTern,                 // Ternary (i.e. ? : )
     opAt,                   // Bit extraction (expr@first:last in that order)
