@@ -797,9 +797,8 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
  *                    function mechanism won't work). Do not use.
  * RETURNS:          True if a good decode
  *============================================================================*/
-bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &os,
-    bool spec /* = false */, PHELPER helperFunc /* = NULL */)
-{
+bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
+  std::ofstream &os, bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;
@@ -1335,15 +1334,17 @@ if (0)          // SETTINGS
 
     // Add the callees to the set of HLCalls to proces for parameter recovery,
     // and also to the Prog object
-    for (std::set<HLCall*>::iterator it = callSet.begin(); it != callSet.end(); it++)
-    {
+    for (std::set<HLCall*>::iterator it = callSet.begin(); it != callSet.end();
+      it++) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
-        if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
+        if (pBF->IsDynamicLinkedProc(dest) || !spec ||
+          (dest < pBF->getLimitTextHigh())) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
-            if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
+            //if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
+            if (dest != NO_ADDRESS) proc->getProg()->setNewProc(dest);
         }
     }
 
