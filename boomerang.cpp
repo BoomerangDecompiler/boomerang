@@ -545,8 +545,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 		progPath = progPath.substr(0, j+1);
 	}
 	else {
-		std::cerr << "? No slash in argv[0]! assuming ." << std::endl;
-		progPath = "./";
+		progPath = "./";			// Just assume the current directory
 	}
 
 	// Parse switches on command line
