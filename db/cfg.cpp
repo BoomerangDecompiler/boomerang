@@ -1405,13 +1405,17 @@ void Cfg::computePostDominators() {
 }
 #endif
 
-void Cfg::saveForwardFlow() {
+void Cfg::saveForwardFlow(UserProc* proc) {
     StatementSet* ss = getReachExit();
     if (ss) reachExit = *ss;        // Copy reaching defs set
     ss = getAvailExit();
     if (ss) availExit = *ss;        // Copy available defs set
-std::cerr << "Cfg reachExit: ";reachExit.printNums(std::cerr);std::cerr << "\n";
-std::cerr << "Cfg availExit: ";availExit.printNums(std::cerr);std::cerr << "\n";
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "Cfg reachExit for " << proc->getName() << ": ";
+        reachExit.printNums(std::cerr);std::cerr << "\n";
+        std::cerr << "Cfg availExit for " << proc->getName() << ": ";
+        availExit.printNums(std::cerr);std::cerr << "\n";
+    }
 }
 
 void Cfg::clearReaches() {

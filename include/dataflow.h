@@ -238,6 +238,9 @@ public:
     // update the statement number
     void    setNumber(int num) {number = num;}
 
+    // To/from SSA form
+    virtual void toSSAform(StatementSet& reachin) = 0;
+
 protected:
     virtual void doReplaceUse(Statement *use) = 0;
     bool calcMayAlias(Exp *e1, Exp *e2, int size);

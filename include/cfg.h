@@ -465,6 +465,16 @@ public:
     void   setReturnInterprocEdges();
     void clearReturnInterprocEdges();
 
+    /*
+     * Get first/next statement this BB
+     * Somewhat intricate because of the post call semantics; these funcs
+     * save a lot of duplicated, easily-bugged code
+     */
+    typedef std::list<RTL*>::iterator rtlit;
+    typedef std::list<Exp*>::iterator elit;
+    Statement* getFirstStmt(rtlit& rit, elit& it, elit& cit);
+    Statement*  getNextStmt(rtlit& rit, elit& it, elit& cit);
+
 //
 //  SSA
 //
@@ -477,13 +487,13 @@ public:
     /*
      * Types and functions needed for fromSSA()
      */
-    void LivenessAnalysis();
     typedef std::set<PBB> BBSet;
     // The interference graph type. We use just a set of subscripted locations.
     // Suppose that r[24]{3} interferes with r[24]{5}; we store the expression
     // with the LARGER subscript (here r[24]{5}) in the set, and give this a
     // different variable from all other r[24]s (if any)
     typedef std::set<Exp*, lessExpStar> igraph;
+       void LivenessAnalysis(igraph& ig);
 static void LiveOutAtBlock(PBB n, Exp* v, BBSet& M, igraph& ig);
 static void  LiveInAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
 static void LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
@@ -914,10 +924,10 @@ public:
     StatementSet *getAvailExit() {
         return exitBB ? &exitBB->availOut : NULL;}
     //LocationSet *getLiveEntry() { }
-    void    saveForwardFlow();      // Save forward flow info
-    void   setCallInterprocEdges();
+    void saveForwardFlow(UserProc* proc);   // Save forward flow info
+    void setCallInterprocEdges();
     void clearCallInterprocEdges();
-    void   setReturnInterprocEdges();
+    void setReturnInterprocEdges();
     void clearReturnInterprocEdges();
     void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
 

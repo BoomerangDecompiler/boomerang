@@ -768,7 +768,7 @@ void Prog::forwardGlobalDataflow() {
         if (proc->isLib()) continue;
         Cfg* cfg = proc->getCFG();
         // Save reaching and available defs from phase 1
-        cfg->saveForwardFlow();
+        cfg->saveForwardFlow(proc);
         // Clear the dataflow info for this proc's cfg
         // Note: leave available definitions alone; won't recalc this phase
         proc->getCFG()->clearReaches();

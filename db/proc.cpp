@@ -905,24 +905,15 @@ void UserProc::initStatements(int& stmtNum) {
         return;         // Already done
     stmts_init = true;  // Only do this once
     BB_IT it;
+    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        std::list<RTL*> *rtls = bb->getRTLs();
-        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-          rit++) {
-            RTL *rtl = *rit;
-            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-              it != rtl->getList().end(); it++) {
-                Statement *e = dynamic_cast<Statement*>(*it);
-                if (e == NULL) continue;
-                e->setProc(this);
-                e->setBB(bb);
-                e->setNumber(++stmtNum);
-            }
-            if (rtl->getKind() == CALL_RTL) {
-                HLCall *call = (HLCall*)rtl;
-                call->setProc(this);   // Different statement to its assignments
-                call->setBB(bb);
-                call->setNumber(++stmtNum);
+        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
+              s = bb->getNextStmt(rit, ii, cii)) {
+            s->setProc(this);
+            s->setBB(bb);
+            s->setNumber(++stmtNum);
+            HLCall* call = dynamic_cast<HLCall*>(s);
+            if (call) {
                 // FIXME: Temporary hack for lib procs!
                 Proc* dest = call->getDestProc();
                 if (dest && dest->isLib()) {
@@ -940,12 +931,6 @@ void UserProc::initStatements(int& stmtNum) {
                     }
                     call->setPostCallExpList(le);
                 }
-            }
-            if (rtl->getKind() == JCOND_RTL) {
-                HLJcond *jcond = (HLJcond*)rtl;
-                jcond->setProc(this);
-                jcond->setBB(bb);
-                jcond->setNumber(++stmtNum);
             }
         }
     }

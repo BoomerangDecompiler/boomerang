@@ -395,6 +395,10 @@ public:
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
 
+    // to SSA form
+    virtual void toSSAform(StatementSet& reachin) {
+        pCond = pCond->updateUses(reachin);}
+
 protected:
     virtual void doReplaceUse(Statement *use);
 
@@ -497,7 +501,6 @@ public:
     int  getNumArguments() { return arguments.size(); }
     void setNumArguments(int i);
     Type *getArgumentType(int i);
-    void updateArgUses(StatementSet& defs);  // Update arguments to {1 2} format
     void truncateArguments();
     void clearLiveEntry();
 
@@ -582,9 +585,8 @@ public:
 
     void decompile();
 
-    // Find a definition for a given location. Need to include parameters
-    //virtual Statement *findDef(Exp *e);
-
+    virtual void toSSAform(StatementSet& reachin);
+        
 protected:
     virtual void doReplaceUse(Statement *use);
 
@@ -744,6 +746,9 @@ public:
     virtual void searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
     virtual void doReplaceUse(Statement *use);
+    // to SSA form
+    virtual void toSSAform(StatementSet& reachin) {
+        pCond = pCond->updateUses(reachin);}
 
 private:
     JCOND_TYPE jtCond;             // the condition for setting true

@@ -909,6 +909,79 @@ bool BasicBlock::deserialize(std::istream &inf) {
     return true;
 }
 
+//
+// Get First/Next Statement in a BB
+//
+Statement* BasicBlock::getFirstStmt(rtlit& rit, elit& it, elit& cit) {
+    rit = m_pRtls->begin();
+    cit = NULL;         // Will need for getNextStmt
+    while (rit != m_pRtls->end()) {
+        RTL* rtl = *rit;
+        it = rtl->getList().begin();
+        if (it != rtl->getList().end())
+            return dynamic_cast<Statement*>(*it);
+        RTL_KIND k = rtl->getKind();
+        if (k == CALL_RTL || k == JCOND_RTL || k == SCOND_RTL)
+            // These are statements too, and may need special processing
+            return dynamic_cast<Statement*>(rtl);
+        rtl++;
+    }
+    return NULL;
+}
+
+Statement* BasicBlock::getNextStmt(rtlit& rit, elit& it, elit& cit) {
+    do {
+        RTL* rtl = *rit;
+        if (cit == NULL) {
+            // Not (yet) iterating through post-call semantics
+            if (it != NULL) {
+                // Could have just done the HLCall/HLJcond/HLScond
+                if (it != rtl->getList().end()) {
+                    // Not yet at the end of ordinary expressions
+                    if (++it != rtl->getList().end())
+                        return dynamic_cast<Statement*>(*it);
+                }
+                // Inc to end of ordinary expressions.
+                // Check for call/jcond/scond
+                RTL_KIND k = rtl->getKind();
+                if (k == CALL_RTL || k == JCOND_RTL || k == SCOND_RTL) {
+                    // These are statements too, and may need special processing
+                    // Set it to NULL as a flag (so we don't keep doing this stmt)
+                    it = NULL;
+                    return dynamic_cast<Statement*>(rtl);
+                }
+            }
+            else {
+                // "it" was NULL, but not started post-call
+                // That means we have just done call/jcond/scond
+                if (rtl->getKind() == CALL_RTL) {
+                    // We may have post-call semantics
+                    std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
+                    if (le) {
+                        cit = le->begin();
+                        if (cit != le->end())
+                            return dynamic_cast<Statement*>(*cit);
+                        cit = NULL;
+                    }
+                }
+            }
+        }
+        if (cit != NULL) {
+            std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
+            if (++cit != le->end())
+                return dynamic_cast<Statement*>(*cit);
+            cit = NULL;
+        }
+        // Else, finished with this rtl; move to next rtl
+        if (++rit == m_pRtls->end())
+            return NULL;
+        it = (*rit)->getList().begin();
+        if (it != (*rit)->getList().end())
+            return dynamic_cast<Statement*>(*it);
+    } while (1);
+}
+
+
 /*
  * Structuring and code generation.
  *
@@ -1887,8 +1960,7 @@ void BasicBlock::setCaseHead(PBB head, PBB follow)
                 m_OutEdges[i]->setCaseHead(head, follow);
 }
 
-void BasicBlock::setStructType(structType s)
-{
+void BasicBlock::setStructType(structType s) {
     // if this is a conditional header, determine exactly which type of 
     // conditional header it is (i.e. switch, if-then, if-then-else etc.)
     if (s == Cond) {
@@ -1905,20 +1977,17 @@ void BasicBlock::setStructType(structType s)
     sType = s;
 }
 
-void BasicBlock::setUnstructType(unstructType us)
-{
+void BasicBlock::setUnstructType(unstructType us) {
     assert((sType == Cond || sType == LoopCond) && cType != Case);
     usType = us;
 }
 
-unstructType BasicBlock::getUnstructType()
-{
+unstructType BasicBlock::getUnstructType() {
     assert((sType == Cond || sType == LoopCond) && cType != Case);
     return usType;
 }
 
-void BasicBlock::setLoopType(loopType l)
-{
+void BasicBlock::setLoopType(loopType l) {
     assert (sType == Loop || sType == LoopCond);
     lType = l;
 
@@ -1928,26 +1997,22 @@ void BasicBlock::setLoopType(loopType l)
         sType = Loop;
 }
 
-loopType BasicBlock::getLoopType()
-{
+loopType BasicBlock::getLoopType() {
     assert (sType == Loop || sType == LoopCond);
     return lType;
 }
 
-void BasicBlock::setCondType(condType c)
-{
+void BasicBlock::setCondType(condType c) {
     assert (sType == Cond || sType == LoopCond);
     cType = c;
 }
 
-condType BasicBlock::getCondType()
-{
+condType BasicBlock::getCondType() {
     assert (sType == Cond || sType == LoopCond);
     return cType;
 }
 
-bool BasicBlock::inLoop(PBB header, PBB latch)
-{
+bool BasicBlock::inLoop(PBB header, PBB latch) {
    assert(header->latchNode == latch);
    assert(header == latch || 
           ((header->loopStamps[0] > latch->loopStamps[0] && 
@@ -1975,53 +2040,14 @@ void BasicBlock::toSSAform() {
     // statement
     StatementSet reachin;
     getReachIn(reachin, 2);
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-      rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
-            Statement *s = dynamic_cast<Statement*>(*it);
-            if (s == NULL) continue;
-
-            // We have a statement, which is also an expression (usually an
-            // assignment expression)
-            // Update the expression (*it)'s uses info
-            (*it)->updateUses(reachin);
-            // Update reachin to be the input for the next statement in this BB
-            s->calcReachOut(reachin);
-        }
-
-        if (rtl->getKind() == CALL_RTL) {
-            HLCall *call = (HLCall*)rtl;
-            call->updateArgUses(reachin);
-            call->calcReachOut(reachin);        // ? Should be a NOP now
-            std::list<Exp*>* le = call->getPostCallExpList();
-            if (le) {
-                std::list<Exp*>::iterator pp;
-                for (pp = le->begin(); pp != le->end(); pp++) {
-                    Statement* s = dynamic_cast<Statement*>(*pp);
-                    // Update the expression (*pp)'s uses info
-                    (*pp)->updateUses(reachin);
-                    s->calcReachOut(reachin);
-                }
-            }
-        }
-        else if (rtl->getKind() == JCOND_RTL) {
-            // Fix up the HL expression
-            HLJcond* jc = (HLJcond*)rtl;
-            jc->setCondExprND(jc->getCondExpr()->updateUses(reachin));
-        }
-        else if (rtl->getKind() == SCOND_RTL) {
-            // HL expression
-            HLScond* sc = (HLScond*)rtl;
-            sc->setCondExprND(sc->getCondExpr()->updateUses(reachin));
-        }
+    rtlit rit; elit it, cit;
+    for (Statement* s = getFirstStmt(rit, it, cit); s;
+          s = getNextStmt(rit, it, cit)) {
+        // Call the polymorphic function to update used expressions
+        s->toSSAform(reachin);
+        // Update reachin to be the input for the next statement in this BB
+        s->calcReachOut(reachin);
     }
-}
-
-void BasicBlock::fromSSAform() {
-    // Generate the interference graph
-    LivenessAnalysis();
 }
 
 typedef std::set<PBB> BBSet;
@@ -2031,13 +2057,26 @@ typedef std::set<PBB> BBSet;
 // different variable from all other r[24]s (if any). Note: v may be an
 // unsubscripted variable (effectively r[24]{0})
 typedef std::set<Exp*, lessExpStar> igraph;
-void  LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
 
-void BasicBlock::LivenessAnalysis() {
+void BasicBlock::fromSSAform() {
+    // Generate the interference graph
+    igraph ig;                                  // Interference graph
+    LivenessAnalysis(ig);
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+      rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            Statement *s = dynamic_cast<Statement*>(*it);
+            if (s == NULL) continue;
+        }
+    }
+}
+
+void BasicBlock::LivenessAnalysis(igraph& ig) {
     // Algorithm adapted from "Modern Compiler Implementation in Java",
     // Andrew W. Appel, Cambridge University Press 2002
     BBSet M;                                    // Already worked blocks
-    igraph ig;                                  // Interference graph
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
@@ -2149,3 +2188,4 @@ void BasicBlock::LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig) 
     else
         LiveInAtStatement(s, v, M, ig);
 }
+
