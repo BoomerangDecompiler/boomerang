@@ -6,6 +6,7 @@
 ######################################################
 
 # $Revision$
+# 20 Jul 04 - Mike: Removed BOOMDIR
 # 21 Aug 02 - Icer: added codegen/chllcode.cpp to the build process
 #		    by adding it in STATIC_OBJ
 # 20 Aug 02 - Icer: removed test from all, test code is broken
@@ -15,7 +16,6 @@
 # 20 May 02 - Trent: Created
 # 31 May 02 - Mike: Make lib directory if needed
 # 15 Jul 01 - Mike: Added static target
-# 20 Jul 04 - Mike: Removed BOOMDIR
 
 # Front end
 MACHS     = sparc pentium
