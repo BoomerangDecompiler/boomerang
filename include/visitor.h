@@ -186,13 +186,13 @@ public:
     // visitor functions, 
     // returns true to continue iterating the container
     virtual bool visit(RTL *rtl);   // By default, visits all statements
-    virtual bool visit(Assign *stmt) = 0;
-    virtual bool visit(GotoStatement *stmt) = 0;
-    virtual bool visit(BranchStatement *stmt) = 0;
-    virtual bool visit(CaseStatement *stmt) = 0;
-    virtual bool visit(CallStatement *stmt) = 0;
-    virtual bool visit(ReturnStatement *stmt) = 0;
-    virtual bool visit(BoolStatement *stmt) = 0;
+    virtual bool visit(Assign *stmt)         { return true;}
+    virtual bool visit(GotoStatement *stmt)  { return true;}
+    virtual bool visit(BranchStatement *stmt){ return true;}
+    virtual bool visit(CaseStatement *stmt)  { return true;}
+    virtual bool visit(CallStatement *stmt)  { return true;}
+    virtual bool visit(ReturnStatement *stmt){ return true;}
+    virtual bool visit(BoolStatement *stmt)  { return true;}
 };
 
 class StmtSetConscripts : public StmtVisitor {
@@ -202,8 +202,6 @@ public:
     int          getLast() {return curConscript;}
 
     virtual bool visit(Assign *stmt);
-    virtual bool visit(GotoStatement *stmt) {return true;}
-    virtual bool visit(BranchStatement *stmt) {return true;}
     virtual bool visit(CaseStatement *stmt);
     virtual bool visit(CallStatement *stmt);
     virtual bool visit(ReturnStatement *stmt);
