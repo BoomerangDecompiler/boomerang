@@ -1347,6 +1347,7 @@ int CallStatement::getNumReturns() {
 }
 
 Exp *CallStatement::getReturnExp(int i) {
+	if (i > (int)returns.size()) return NULL;
 	return returns[i];
 }
 

@@ -2852,7 +2852,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				continue;
 			}
 			if (s->getLeft()->getOper() == opMemOf &&
-				!(*new RefExp(s->getLeft(), NULL) == *s->getRight())) {
+					(s->getRight() == NULL || !(*new RefExp(s->getLeft(), NULL) == *s->getRight()))) {
+				// ? Is the above right? Looking for m[x] := m[x]{0} ???
 				// assignments to memof anything must always be kept
 				ll++;
 				continue;
