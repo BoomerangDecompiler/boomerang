@@ -63,5 +63,7 @@ class ExpTest : public CppUnit::TestCase {
     void testClone();
     void testParen();
     void testFixSuccessor();
+	void testKillFill();
+    void testAssociativity();
 };
 
