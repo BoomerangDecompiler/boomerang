@@ -36,16 +36,17 @@ protected:
 };
 
 Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
-	noBranchSimplify(false), noRemoveNull(false), noLocals(false),
-	noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
-	traceDecoder(false), dotFile(NULL), numToPropagate(-1),
-	noPromote(false), propOnlyToAll(false), debugGen(false),
-	maxMemDepth(99), debugSwitch(false),
-	noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
-	debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
-	noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
-	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false)
+    noBranchSimplify(false), noRemoveNull(false), noLocals(false),
+    noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
+    noPromote(false), propOnlyToAll(false), debugGen(false),
+    maxMemDepth(99), debugSwitch(false),
+    noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
+    debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
+    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
+    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
+    loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
+	noProve(false), noChangeSignatures(false)
 {
 	progPath = "./";
 	outputPath = "./output/";

@@ -27,7 +27,7 @@ HTREEITEM treeDragging = NULL;
 HMENU clusterMenu = NULL, procMenu = NULL, callersMenu = NULL, callsMenu = NULL;
 bool someUnknown = false;
 
-enum { V_CODE, V_RTL, V_MIXED } view_as = V_CODE;
+enum { V_CODE, V_RTL, V_MIXED } view_as = V_RTL;
 
 struct my_tab {
 	const char *name;
@@ -58,10 +58,12 @@ void updateDecompilerMenu()
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_GRAYED);
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_TERMINATE, MF_GRAYED);
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_START, MF_ENABLED);
+		SendMessage(hStatusBar, SB_SETICON, 2, NULL);
 	} else {
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_ENABLED);		
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_TERMINATE, MF_ENABLED);
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_START, MF_GRAYED);
+		SendMessage(hStatusBar, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME)));
 	}
 }
 
@@ -112,7 +114,16 @@ void suspendDecompiler()
 {
 	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_GRAYED);
 	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_ENABLED);
+	SendMessage(hStatusBar, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_SUSPEND)));
 	SuspendThread(hDecompilerThread);
+}
+
+void resumeDecompiler()
+{
+	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_ENABLED);
+	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_GRAYED);
+	SendMessage(hStatusBar, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME)));
+	ResumeThread(hDecompilerThread);
 }
 
 void generateCodeForCluster(Cluster *c);
@@ -121,6 +132,8 @@ void generateCodeForUserProc(UserProc *p);
 void updateCodeView()
 {
 	HTREEITEM h = TreeView_GetSelection(hTreeView);
+	if (h == NULL)
+		return;
 	TVITEM i;
 	i.hItem = h;
 	i.mask = TVIF_PARAM;
@@ -163,8 +176,12 @@ void saveUndoPoint()
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	StatusBar(HWND, UINT, WPARAM, LPARAM);
+WNDPROC oldStatusBarProc = NULL;
 LRESULT CALLBACK	TreeView(HWND, UINT, WPARAM, LPARAM);
 WNDPROC oldTreeViewProc = NULL;
+LRESULT CALLBACK	TabEdit(HWND, UINT, WPARAM, LPARAM);
+WNDPROC oldTabEditProc = NULL;
 LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	NewProject(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	DebugOptions(HWND, UINT, WPARAM, LPARAM);
@@ -172,6 +189,7 @@ LRESULT CALLBACK	DecodeOptions(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	DecompileOptions(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	Decoding(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	ProcProperties(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	SymbolTable(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY WinMain(HINSTANCE hInstance,
 					 HINSTANCE hPrevInstance,
@@ -371,9 +389,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	hStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP, 0, 0, 0, 0, hWnd, NULL, hInstance, NULL);
 
+	oldStatusBarProc = (WNDPROC)SetWindowLongPtr (hStatusBar, GWLP_WNDPROC, (LONG_PTR)StatusBar);
+	SetTimer(hStatusBar, 1, 1000, NULL);
+
 	RECT r, rsb;
 	GetClientRect(hWnd, &r);
 	GetClientRect(hStatusBar, &rsb);
+
+	int parts[] = { rsb.right / 2, rsb.right / 2 + 200, rsb.right / 2 + 232, -1 };
+	SendMessage(hStatusBar, SB_SETPARTS, 4, (LPARAM) parts);
+
 	hTreeView = CreateWindowEx(0, WC_TREEVIEW, NULL, WS_CHILD | WS_DLGFRAME | WS_VISIBLE | TVS_EDITLABELS | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS, r.right - 200, 0, 200, r.bottom - rsb.bottom, hWnd, NULL, hInstance, NULL);
 
 	oldTreeViewProc = (WNDPROC)SetWindowLongPtr (hTreeView, GWLP_WNDPROC, (LONG_PTR)TreeView);
@@ -474,6 +499,8 @@ void generateCodeForAll()
 
 void generateCodeForUserProcThread(UserProc *proc)
 {
+	if (prog == NULL)
+		return;
 	char buf[1024];
 	sprintf(buf, "Generating code for proc %s", proc->getName());
 	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)buf);
@@ -535,6 +562,7 @@ void addNewTab(Cluster *cluster)
 	tab.edit = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL	| WS_DLGFRAME
 		| ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 
 		0, tabBarRect.bottom, r.right - 200, r.bottom - rsb.bottom - tabBarRect.bottom - 200, hTopWnd, NULL, hInst, NULL);
+	oldTabEditProc = (WNDPROC)SetWindowLongPtr (tab.edit, GWLP_WNDPROC, (LONG_PTR)TabEdit);
 	tabWithName[name] = tab;
 	if (selectedTab == NULL)
 		selectTab(name);
@@ -599,11 +627,49 @@ Proc *selectedProc()
 	TVITEM it;
 	it.hItem = h;
 	it.mask = TVIF_HANDLE;
-	TreeView_GetItem(hTreeView, &it);
+	if (!TreeView_GetItem(hTreeView, &it))
+		return NULL;
 	MyLParam *lp = (MyLParam*)it.lParam;
 	if (lp->isCluster)
 		return NULL;
 	return lp->p;
+}
+
+LRESULT CALLBACK StatusBar(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) 
+	{
+	case WM_COMMAND:
+		break;
+	case WM_LBUTTONUP:
+		{
+			int parts[5];
+			SendMessage(hWnd, SB_GETPARTS, 5, (LPARAM)parts);
+			if (LOWORD(lParam) > parts[1] && LOWORD(lParam) < parts[2]) {
+				if ((HICON)SendMessage(hWnd, SB_GETICON, 2, 0) == LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME)) ||
+					(HICON)SendMessage(hWnd, SB_GETICON, 2, 0) == LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME1))) {
+					SendMessage(hWnd, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_SUSPEND)));
+					suspendDecompiler();
+				} else {
+					SendMessage(hWnd, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME)));
+					resumeDecompiler();
+				}
+			}
+		}
+		break;
+	case WM_TIMER:
+		if ((HICON)SendMessage(hWnd, SB_GETICON, 2, 0) == LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME))) {
+			SendMessage(hWnd, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME1)));
+		} else if ((HICON)SendMessage(hWnd, SB_GETICON, 2, 0) == LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME1))) {
+			SendMessage(hWnd, SB_SETICON, 2, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_RESUME)));
+		}
+		break;
+	case WM_RBUTTONDOWN:
+		break;
+	case WM_MOUSEMOVE:
+		break;
+	}
+	return CallWindowProc(oldStatusBarProc, hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -681,16 +747,24 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			TreeView_SelectItem(hTreeView, tvhti.hItem);
 			TrackPopupMenu(clusterMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, r.left + LOWORD(lParam), r.top + HIWORD(lParam), 0, hTopWnd, NULL);
 		} else {
-			if (procMenu == NULL) {
-				procMenu = CreatePopupMenu();
+			UserProc *u = dynamic_cast<UserProc*>(lp->p);
+			if (procMenu != NULL) {
+				DestroyMenu(procMenu);
+			} else {
 				callersMenu = CreatePopupMenu();
 				callsMenu = CreatePopupMenu();
-				AppendMenu(procMenu, MF_STRING, ID_VIEW_RENAME, "&Rename");
-				AppendMenu(procMenu, MF_SEPARATOR, 0, 0);
-				AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callersMenu, "&Callers");
-				AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callsMenu, "&Calls");				
-				AppendMenu(procMenu, MF_STRING, ID_VIEW_PROPERTIES, "&Properties");
 			}
+			procMenu = CreatePopupMenu();
+			AppendMenu(procMenu, MF_STRING, ID_VIEW_RENAME, "&Rename");
+			if (u) {
+				AppendMenu(procMenu, MF_STRING, ID_TO_SSA, "Convert to &SSA");
+				AppendMenu(procMenu, MF_STRING, ID_PROP_REGS, "Propagate &registers");
+				AppendMenu(procMenu, MF_STRING, ID_FROM_SSA, "Convert &from SSA");
+			}
+			AppendMenu(procMenu, MF_SEPARATOR, 0, 0);
+			AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callersMenu, "&Callers");
+			AppendMenu(procMenu, MF_STRING | MF_POPUP, (UINT_PTR)callsMenu, "C&alls");				
+			AppendMenu(procMenu, MF_STRING, ID_VIEW_PROPERTIES, "&Properties");
 			while (DeleteMenu(callersMenu, 0, MF_BYPOSITION))
 				;
 			std::set<CallStatement*> &callers = lp->p->getCallers();
@@ -699,7 +773,6 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				AppendMenu(callersMenu, MF_STRING, n, (*it)->getProc()->getName());
 			while (DeleteMenu(callsMenu, 0, MF_BYPOSITION))
 				;
-			UserProc *u = dynamic_cast<UserProc*>(lp->p);
 			if (u) {
 				std::set<Proc*> &calls = u->getCallees();
 				n = 34001;
@@ -726,6 +799,59 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return CallWindowProc(oldTreeViewProc, hWnd, uMsg, wParam, lParam);
 	}
 	return 0;
+}
+
+LRESULT CALLBACK TabEdit(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	static Statement *stmt;
+	static Exp *exp;
+
+	//std::map<std::string, my_tab>::iterator it;
+	//for (it = tabWithName.begin(); it != tabWithName.end(); it++)
+	//	if ((*it).second.edit == hWnd)
+	//		break;
+
+	switch (uMsg) 
+	{
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+			case ID_STMT_PROPAGATE_TO:
+				StatementSet exclude;
+				stmt->propagateTo(-1, exclude);
+				stmt->getProc()->updateBlockVars();
+				updateCodeView();
+				break;
+		}
+		break;
+	case WM_LBUTTONUP:
+		break;
+	case WM_RBUTTONDOWN:
+		{
+			DWORD d = SendMessage(hWnd, EM_CHARFROMPOS, 0, lParam);
+			int ch = LOWORD(d);
+			int line = HIWORD(d);
+			Proc *p = selectedProc();
+			if (p == NULL)
+				break;  // don't currently support right click in cluster view
+			UserProc *u = dynamic_cast<UserProc*>(p);
+			if (u == NULL)
+				break;
+			stmt = u->getStmtAtLex(ch, -1);
+			if (stmt == NULL)
+				break;
+			exp = stmt->getExpAtLex(ch, -1);
+			HMENU editMenu = CreatePopupMenu();
+			AppendMenu(editMenu, MF_STRING, ID_STMT_PROPAGATE_TO, "&Propagate to this statement");
+			RECT r;
+			GetWindowRect(hWnd, &r);
+			TrackPopupMenu(editMenu, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, r.left + LOWORD(lParam), r.top + HIWORD(lParam), 0, hWnd, NULL);
+			DestroyMenu(editMenu);
+		}
+		break;
+	case WM_MOUSEMOVE:
+		break;
+	}
+	return CallWindowProc(oldTabEditProc, hWnd, uMsg, wParam, lParam);
 }
 
 //
@@ -814,6 +940,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_HELP_BOOMERANGFAQ:
 			ShellExecute(NULL, "open", "http://boomerang.sourceforge.net/FAQ.html", NULL, NULL, SW_SHOW);
 			break;
+		case ID_LOADER_SYMBOLTABLE:
+			DialogBox(hInst, (LPCTSTR)IDD_SYMBOLTABLE, hWnd, (DLGPROC)SymbolTable);
+			break;
 		case ID_DECOMPILER_START:
 			if (hDecompilerThread == NULL) {
 				saveUndoPoint();
@@ -827,9 +956,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_DECOMPILER_RESUME:
 			if (hDecompilerThread) {
-				ResumeThread(hDecompilerThread);
-				EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_ENABLED);
-				EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_GRAYED);
+				resumeDecompiler();
 			}
 			break;
 		case ID_DECOMPILER_TERMINATE:
@@ -873,6 +1000,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_VIEW_RENAME:
 			TreeView_EditLabel(hTreeView, TreeView_GetSelection(hTreeView));
+			break;
+		case ID_TO_SSA:
+			{
+				UserProc *u = dynamic_cast<UserProc*>(selectedProc());
+				if (u == NULL)
+					break;
+				Boomerang::get()->noDecompile = true;
+				u->decompile();
+				Boomerang::get()->noDecompile = false;
+				updateCodeView();
+			}
+			break;
+		case ID_FROM_SSA:
+			{
+				UserProc *u = dynamic_cast<UserProc*>(selectedProc());
+				if (u == NULL)
+					break;
+				u->fromSSAform();
+				updateCodeView();
+			}
+			break;
+		case ID_PROP_REGS:
+			{
+				UserProc *u = dynamic_cast<UserProc*>(selectedProc());
+				if (u == NULL)
+					break;
+				u->propagateAtDepth(0);
+				updateCodeView();
+			}
 			break;
 		case ID_VIEW_NEWCLUSTER:
 			{
@@ -1058,6 +1214,10 @@ public:
 	virtual void alert_end_decode();
 	virtual void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes);
 	virtual void alert_start_decompile(UserProc *p);
+	virtual void alert_decompile_SSADepth(UserProc *p, int depth);
+	virtual void alert_decompile_beforePropagate(UserProc *p, int depth);
+	virtual void alert_decompile_afterPropagate(UserProc *p, int depth);
+	virtual void alert_decompile_afterRemoveStmts(UserProc *p, int depth);
 	virtual void alert_end_decompile(UserProc *p);
 	virtual void alert_load(Proc *p);
 	virtual void alert_new(Proc *p);
@@ -1156,7 +1316,10 @@ void drawBlk(ADDRESS start, int nBytes, blk_color color)
 	if (scale == 0) {
 		do {
 			scale++;
-			vsize = height / (totalBytes / scale / width);
+			if (totalBytes < width)
+				vsize = height;
+			else
+				vsize = height / (totalBytes / scale / width);
 		} while (vsize < 10);
 	}
 	SelectObject(decodeDC, pens[color]);
@@ -1339,8 +1502,66 @@ void MyWatcher::alert_end_decode()
 void MyWatcher::alert_start_decompile(UserProc *p)
 {
 	char buf[1024];
-	sprintf(buf, "Decompiling %s. %i of %i complete.", p->getName(), completedProcs, p->getProg()->getNumUserProcs());
-	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)buf);
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	sprintf(buf, "Decompiling %s.", p->getName());
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
+}
+
+void MyWatcher::alert_decompile_SSADepth(UserProc *p, int depth)
+{
+	char buf[1024];
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	sprintf(buf, "Decompiling %s. SSA at depth %i.", p->getName(), depth);
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
+}
+
+void MyWatcher::alert_decompile_beforePropagate(UserProc *p, int depth)
+{
+	char buf[1024];
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	sprintf(buf, "Decompiling %s. Before propagate at depth %i.", p->getName(), depth);
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
+}
+
+void MyWatcher::alert_decompile_afterPropagate(UserProc *p, int depth)
+{
+	char buf[1024];
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	sprintf(buf, "Decompiling %s. After propagate at depth %i.", p->getName(), depth);
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
+}
+
+void MyWatcher::alert_decompile_afterRemoveStmts(UserProc *p, int depth)
+{
+	char buf[1024];
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	sprintf(buf, "Decompiling %s. After removing statements at depth %i.", p->getName(), depth);
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)buf);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
 }
 
 void MyWatcher::alert_end_decompile(UserProc *p)
@@ -1348,13 +1569,18 @@ void MyWatcher::alert_end_decompile(UserProc *p)
 	saveUndoPoint();
 	completedProcs++;
 	char buf[1024];
-	sprintf(buf, "Done. %i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
-	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)buf);
+	sprintf(buf, "%i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
+	SendMessage(hStatusBar, SB_SETTEXT, 1, (LPARAM)buf);
+	SendMessage(hStatusBar, SB_SETTEXT, 3, (LPARAM)"Decompiled");
 	TVITEM tv;
 	tv.hItem = procItems[p];
 	tv.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	tv.iImage = tv.iSelectedImage = iDProc;
 	TreeView_SetItem(hTreeView, &tv);
+	if (selectedProc() == p) {
+		updateCodeView();
+		suspendDecompiler();
+	}
 }
 
 void setupDecompiler()
@@ -1566,6 +1792,8 @@ LRESULT CALLBACK DecompileOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			Boomerang::get()->noRemoveReturns = (IsDlgButtonChecked(hDlg, IDC_CHECKNOUNNEEDEDRETURNS) == BST_CHECKED);
 			Boomerang::get()->noDataflow = (IsDlgButtonChecked(hDlg, IDC_CHECKNODATAFLOW) == BST_CHECKED);
 			Boomerang::get()->stopBeforeDecompile = (IsDlgButtonChecked(hDlg, IDC_CHECKNODECOMP) == BST_CHECKED);
+			Boomerang::get()->noProve = (IsDlgButtonChecked(hDlg, IDC_CHECKNOPROOF) == BST_CHECKED);
+			Boomerang::get()->noChangeSignatures = (IsDlgButtonChecked(hDlg, IDC_CHECKNOCHANGESIGS) == BST_CHECKED);
 			char file[MAX_PATH];
 			GetDlgItemText(hDlg, IDC_COMBOSYMBOLFILE, file, sizeof(file));
 			if (file[0])
@@ -1749,3 +1977,51 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
+LRESULT CALLBACK SymbolTable(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static HWND hSymbols = NULL;
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		{
+			hSymbols = GetDlgItem(hDlg, IDC_LIST1);
+			LVCOLUMN lvc;
+			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
+			lvc.cx = 120;
+			lvc.pszText = "Name";
+			ListView_InsertColumn(hSymbols, 0, &lvc);
+			lvc.cx = 120;
+			lvc.pszText = "Address";
+			ListView_InsertColumn(hSymbols, 1, &lvc);
+
+			LVITEM lvi;
+			lvi.mask = LVIF_TEXT;
+			lvi.iSubItem = 0;
+			std::map<ADDRESS, std::string> &symbols = prog->getSymbols();
+			int i = 0;
+			for (std::map<ADDRESS, std::string>::iterator it = symbols.begin(); it != symbols.end(); it++, i++) {
+				lvi.iItem = i;
+				lvi.pszText = (LPSTR)(*it).second.c_str();
+				ListView_InsertItem(hSymbols, &lvi);
+				char tmp[20];
+				sprintf(tmp, "%08X", (*it).first);
+				ListView_SetItemText(hSymbols, i, 1, (LPSTR)tmp);
+			}
+		}
+		return TRUE;
+
+	case WM_COMMAND:
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDOK) && LOWORD(wParam) == IDOK) {
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDCANCEL) && LOWORD(wParam) == IDCANCEL) 
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}

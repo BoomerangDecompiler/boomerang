@@ -320,30 +320,32 @@ Statement* RTL::elementAt(unsigned i) {
  *============================================================================*/
 void RTL::print(std::ostream& os /*= cout*/, bool withDF /*= false*/) {
 
-	// print out the instruction address of this RTL
-	os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-	os << std::dec << std::setfill(' ');	  // Ugh - why is this needed?
+    // print out the instruction address of this RTL
+    os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
+    os << std::dec << std::setfill(' ');      // Ugh - why is this needed?
 
-	// Print the statements
-	// First line has 8 extra chars as above
-	bool bFirst = true;
-	std::list<Statement*>::iterator ss;
-	for (ss = stmtList.begin(); ss != stmtList.end(); ss++) {
-		Statement* stmt = *ss;
-		if (bFirst) os << " ";
-		else		os << std::setw(9) << " ";
-		if (stmt) {
-			if (withDF)
-				stmt->printWithUses(os);
-			else
-				stmt->print(os);
-		}
-		// Note: we only put newlines where needed. So none at the end of
-		// Statement::print; one here to separate from other statements
-		os << "\n";
-		bFirst = false;
-	}
-	if (stmtList.empty()) os << std::endl;	   // New line for NOP
+    // Print the statements
+    // First line has 8 extra chars as above
+    bool bFirst = true;
+    std::list<Statement*>::iterator ss;
+    for (ss = stmtList.begin(); ss != stmtList.end(); ss++) {
+        Statement* stmt = *ss;
+        if (bFirst) os << " ";
+        else        os << std::setw(9) << " ";
+        if (stmt) {
+			stmt->setLexBegin(os.tellp());
+            if (withDF)
+                stmt->printWithUses(os);
+            else
+                stmt->print(os);
+			stmt->setLexEnd(os.tellp());
+        }
+        // Note: we only put newlines where needed. So none at the end of
+        // Statement::print; one here to separate from other statements
+        os << "\n";
+        bFirst = false;
+    }
+    if (stmtList.empty()) os << std::endl;     // New line for NOP
 }
 
 extern char debug_buffer[];

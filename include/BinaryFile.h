@@ -240,8 +240,10 @@ virtual ~BinaryFile() {}			// Virtual destructor
 
 	virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
 
-	ADDRESS getLimitTextLow() { return limitTextLow; }
-	ADDRESS getLimitTextHigh() { return limitTextHigh; }
+	virtual std::map<ADDRESS, std::string> &getSymbols() { return *new std::map<ADDRESS, std::string>(); }
+
+    ADDRESS getLimitTextLow() { return limitTextLow; }
+    ADDRESS getLimitTextHigh() { return limitTextHigh; }
 
 	int getTextDelta() { return textDelta; }
 

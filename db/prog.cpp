@@ -58,6 +58,7 @@
 #include "boomerang.h"
 #include "ansi-c-parser.h"
 #include "config.h"
+#include "managed.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -231,10 +232,30 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
 			continue;
 
 		p->getCluster()->openStream("rtl");
-		p->print(p->getCluster()->getStream());
-	}
-	m_rootCluster->closeStreams();
+		p->print(p->getCluster()->getStream(), true);
+    }
+    m_rootCluster->closeStreams();
 }
+
+Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end)
+{
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+		if (cluster != NULL && p->getCluster() != cluster)
+			continue;
+
+		if (p->getCluster() == cluster) {
+			Statement *s = p->getStmtAtLex(begin, end);
+			if (s)
+				return s;
+		}
+	}
+	return NULL;
+}
+
 
 const char *Cluster::makeDirs()
 {
@@ -573,26 +594,33 @@ Global* Prog::getGlobal(char *nam) {
 
 void Prog::globalUsed(ADDRESS uaddr)
 {
-	for (unsigned i = 0; i < globals.size(); i++)
-		if (globals[i]->getAddress() == uaddr)
-			return;
-		else if (globals[i]->getAddress() < uaddr &&
-				 globals[i]->getAddress() + 
-					globals[i]->getType()->getSize() / 8 > uaddr)
-			return;
-	if (uaddr < 0x10000) {
-		// This happens in windows code because you can pass a low value integer instead 
-		// of a string to some functions.
+    for (unsigned i = 0; i < globals.size(); i++)
+        if (globals[i]->getAddress() == uaddr)
+            return;
+        else if (globals[i]->getAddress() < uaddr &&
+                 globals[i]->getAddress() + 
+                    globals[i]->getType()->getSize() / 8 > uaddr)
+            return;
+#if 0
+    if (uaddr < 0x10000) {
+        // This happens in windows code because you can pass a low value integer instead 
+        // of a string to some functions.
 		if (VERBOSE)
 			LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
-		return;
-	}
-	const char *nam = newGlobal(uaddr); 
-	Type *ty = guessGlobalType(nam, uaddr);
-	globals.push_back(new Global(ty, uaddr, nam));
-	if (VERBOSE)
-		LOG << "globalUsed: name " << nam << ", address " << 
-		  uaddr << ", guessed type " << ty->getCtype() << "\n";
+        return;
+    }
+#endif
+    const char *nam = newGlobal(uaddr); 
+    Type *ty = guessGlobalType(nam, uaddr);
+    globals.push_back(new Global(ty, uaddr, nam));
+    if (VERBOSE)
+        LOG << "globalUsed: name " << nam << ", address " << 
+          uaddr << ", guessed type " << ty->getCtype() << "\n";
+}
+
+std::map<ADDRESS, std::string> &Prog::getSymbols()
+{
+	return pBF->getSymbols();
 }
 
 Type *Prog::guessGlobalType(const char *nam, ADDRESS u)

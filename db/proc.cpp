@@ -1136,121 +1136,124 @@ std::set<UserProc*>* UserProc::decompile() {
 
 	printXML();
 
-	if (Boomerang::get()->noDecompile) {
-		decompiled = true;
-		Boomerang::get()->alert_end_decompile(this);
-		return cycleSet;
-	}
+    // For each memory depth
+    int maxDepth = findMaxDepth() + 1;
+    if (Boomerang::get()->maxMemDepth < maxDepth)
+        maxDepth = Boomerang::get()->maxMemDepth;
+    int depth;
+    for (depth = 0; depth <= maxDepth; depth++) {
 
-	// For each memory depth
-	int maxDepth = findMaxDepth() + 1;
-	if (Boomerang::get()->maxMemDepth < maxDepth)
-		maxDepth = Boomerang::get()->maxMemDepth;
-	int depth;
-	for (depth = 0; depth <= maxDepth; depth++) {
+        if (VERBOSE)
+            LOG << "placing phi functions at depth " << depth << "\n";
+        // Place the phi functions for this memory depth
+        cfg->placePhiFunctions(depth, this);
 
-		if (VERBOSE)
-			LOG << "placing phi functions at depth " << depth << "\n";
-		// Place the phi functions for this memory depth
-		cfg->placePhiFunctions(depth, this);
+        if (VERBOSE)
+            LOG << "numbering phi statements at depth " << depth << "\n";
+        // Number them
+        numberPhiStatements(stmtNumber);
 
-		if (VERBOSE)
-			LOG << "numbering phi statements at depth " << depth << "\n";
-		// Number them
-		numberPhiStatements(stmtNumber);
+        if (VERBOSE)
+            LOG << "renaming block variables at depth " << depth << "\n";
+        // Rename variables
+        cfg->renameBlockVars(0, depth);
 
-		if (VERBOSE)
-			LOG << "renaming block variables at depth " << depth << "\n";
-		// Rename variables
-		cfg->renameBlockVars(0, depth);
+        printXML();
 
-		printXML();
+		if (Boomerang::get()->noDecompile)
+			continue;
 
-		// Print if requested
-		if (VERBOSE) {		// was if debugPrintSSA
-			LOG << "=== Debug Print SSA for " << getName()
-			  << " at memory depth " << depth << " (no propagations) ===\n";
-			printToLog(true);
-			LOG << "=== End Debug Print SSA for " <<
-			  getName() << " at depth " << depth << " ===\n\n";
-		}
-		
-		if (depth == 0) {
-			trimReturns();
-		}
-		if (depth == maxDepth) {
-			fixCallRefs();
-			processConstants();
-			removeRedundantPhis();
-		}
-		fixCallRefs();
-		// recognising globals early prevents them from becoming parameters
-		if (depth == maxDepth)		// Else Sparc problems... MVE
-			replaceExpressionsWithGlobals();
-		int nparams = signature->getNumParams();
-		if (depth > 0) {
-			addNewParameters();
-			//trimParameters(depth);
-		}
+        // Print if requested
+        if (VERBOSE) {      // was if debugPrintSSA
+            LOG << "=== Debug Print SSA for " << getName()
+              << " at memory depth " << depth << " (no propagations) ===\n";
+            printToLog(true);
+            LOG << "=== End Debug Print SSA for " <<
+              getName() << " at depth " << depth << " ===\n\n";
+        }
 
-		// if we've added new parameters, need to do propagations up to this
-		// depth.  it's a recursive function thing.
-		if (nparams != signature->getNumParams()) {
-			for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
-				// Propagate at this memory depth
-				for (int td = maxDepth; td >= 0; td--) {
-					if (VERBOSE)
-						LOG << "parameter propagating at depth " << depth_tmp <<
-							" to depth " << td << "\n";
-					propagateStatements(depth_tmp, td);
-					for (int i = 0; i <= depth_tmp; i++)
-						cfg->renameBlockVars(0, i, true);
-				}
-			}
+		Boomerang::get()->alert_decompile_SSADepth(this, depth);
+        
+        if (depth == 0) {
+            trimReturns();
+        }
+        if (depth == maxDepth) {
+            fixCallRefs();
+            processConstants();
+            removeRedundantPhis();
+        }
+        fixCallRefs();
+        // recognising globals early prevents them from becoming parameters
+        if (depth == maxDepth)      // Else Sparc problems... MVE
+            replaceExpressionsWithGlobals();
+        int nparams = signature->getNumParams();
+		if (depth > 0 && !Boomerang::get()->noChangeSignatures) {
+            addNewParameters();
+            //trimParameters(depth);
+        }
+
+        // if we've added new parameters, need to do propagations up to this
+        // depth.  it's a recursive function thing.
+        if (nparams != signature->getNumParams()) {
+            for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
+                // Propagate at this memory depth
+                for (int td = maxDepth; td >= 0; td--) {
+                    if (VERBOSE)
+                        LOG << "parameter propagating at depth " << depth_tmp <<
+                            " to depth " << td << "\n";
+                    propagateStatements(depth_tmp, td);
+                    for (int i = 0; i <= depth_tmp; i++)
+                        cfg->renameBlockVars(0, i, true);
+                }
+            }
+            cfg->renameBlockVars(0, depth, true);
+            printXML();
+            if (VERBOSE) {
+                LOG << "=== Debug Print SSA for " << getName()
+                  << " at memory depth " << depth
+                  << " (after adding new parameters) ===\n";
+                printToLog(true);
+                LOG << "=== End Debug Print SSA for " <<
+                  getName() << " at depth " << depth << " ===\n\n";
+            }
+        }
+        // replacing expressions with Parameters as we go
+        if (!Boomerang::get()->noParameterNames) {
+            replaceExpressionsWithParameters(depth);
+            cfg->renameBlockVars(0, depth, true);
+        }
+
+        // recognising locals early prevents them from becoming returns
+        // But with indirect procs in a loop, the propagaton is not yet complete
+        // replaceExpressionsWithLocals(depth == maxDepth);
+		if (!Boomerang::get()->noChangeSignatures) {
+			addNewReturns(depth);
 			cfg->renameBlockVars(0, depth, true);
 			printXML();
 			if (VERBOSE) {
 				LOG << "=== Debug Print SSA for " << getName()
-				  << " at memory depth " << depth
-				  << " (after adding new parameters) ===\n";
+				<< " at memory depth " << depth
+				<< " (after adding new returns) ===\n";
 				printToLog(true);
 				LOG << "=== End Debug Print SSA for " <<
-				  getName() << " at depth " << depth << " ===\n\n";
+				getName() << " at depth " << depth << " ===\n\n";
 			}
-		}
-		// replacing expressions with Parameters as we go
-		if (!Boomerang::get()->noParameterNames) {
-			replaceExpressionsWithParameters(depth);
-			cfg->renameBlockVars(0, depth, true);
+			trimReturns();
+			fixCallRefs();
 		}
 
-		// recognising locals early prevents them from becoming returns
-		// But with indirect procs in a loop, the propagaton is not yet complete
-		// replaceExpressionsWithLocals(depth == maxDepth);
-		addNewReturns(depth);
-		cfg->renameBlockVars(0, depth, true);
-		printXML();
-		if (VERBOSE) {
-			LOG << "=== Debug Print SSA for " << getName()
-			  << " at memory depth " << depth
-			  << " (after adding new returns) ===\n";
-			printToLog(true);
-			LOG << "=== End Debug Print SSA for " <<
-			  getName() << " at depth " << depth << " ===\n\n";
-		}
-		trimReturns();
-		fixCallRefs();
+        printXML();
+        // Print if requested
+        if (VERBOSE) {      // was if debugPrintSSA
+            LOG << "=== Debug Print SSA for " << getName() <<
+              " at memory depth " << depth <<
+              " (after trimming return set) ===\n";
+            printToLog(true);
+            LOG << "=== End Debug Print SSA for " <<
+              getName() << " at depth " << depth << " ===\n\n";
+        }
 
-		printXML();
-		// Print if requested
-		if (VERBOSE) {		// was if debugPrintSSA
-			LOG << "=== Debug Print SSA for " << getName() <<
-			  " at memory depth " << depth <<
-			  " (after trimming return set) ===\n";
-			printToLog(true);
-			LOG << "=== End Debug Print SSA for " <<
-			  getName() << " at depth " << depth << " ===\n\n";
-		}
+		Boomerang::get()->alert_decompile_beforePropagate(this, depth);
 
 #define RESTART_DATAFLOW 0
 		// Propagate at this memory depth
@@ -1290,72 +1293,81 @@ std::set<UserProc*>* UserProc::decompile() {
 		} while (convert);
 #endif
 
-		printXML();
-		if (VERBOSE) {
-			LOG << "=== After propagate for " << getName() <<
-			  " at memory depth " << depth << " ===\n";
-			printToLog(true);
-			LOG << "=== End propagate for " << getName() <<
-			  " at depth " << depth << " ===\n\n";
-		}
+        printXML();
+        if (VERBOSE) {
+            LOG << "=== After propagate for " << getName() <<
+              " at memory depth " << depth << " ===\n";
+            printToLog(true);
+            LOG << "=== End propagate for " << getName() <<
+              " at depth " << depth << " ===\n\n";
+        }
+
+		Boomerang::get()->alert_decompile_afterPropagate(this, depth);
+    }
+
+	if (Boomerang::get()->noDecompile) {
+		decompiled = true;
+		Boomerang::get()->alert_end_decompile(this);
+		return cycleSet;
 	}
 
-	// Check for indirect jumps or calls not already removed by propagation of
-	// constants
-	if (cfg->decodeIndirectJmp(this)) {
-		// There was at least one indirect jump or call found and decoded.
-		// That means that most of what has been done to this function so far
-		// is invalid. So redo everything. Very expensive!!
-		LOG << "=== About to restart decompilation of " << 
-		  getName() << " because indirect jumps or calls have been removed\n\n";
-		Analysis a;
-		a.analyse(this);		// Get rid of this soon
-		return decompile();		// Restart decompiling this proc
-	}
+    // Check for indirect jumps or calls not already removed by propagation of
+    // constants
+    if (cfg->decodeIndirectJmp(this)) {
+        // There was at least one indirect jump or call found and decoded.
+        // That means that most of what has been done to this function so far
+        // is invalid. So redo everything. Very expensive!!
+        LOG << "=== About to restart decompilation of " << 
+          getName() << " because indirect jumps or calls have been removed\n\n";
+        Analysis a;
+        a.analyse(this);        // Get rid of this soon
+        return decompile();     // Restart decompiling this proc
+    }
 
-	// Only remove unused statements after decompiling as much as possible of
-	// the proc
-	for (depth = 0; depth <= maxDepth; depth++) {
-		// Remove unused statements
-		RefCounter refCounts;			// The map
-		// Count the references first
-		countRefs(refCounts);
-		// Now remove any that have no used
-		if (!Boomerang::get()->noRemoveNull)
-			removeUnusedStatements(refCounts, depth);
+    // Only remove unused statements after decompiling as much as possible of
+    // the proc
+    for (depth = 0; depth <= maxDepth; depth++) {
+        // Remove unused statements
+        RefCounter refCounts;           // The map
+        // Count the references first
+        countRefs(refCounts);
+        // Now remove any that have no used
+        if (!Boomerang::get()->noRemoveNull)
+            removeUnusedStatements(refCounts, depth);
 
-		// Remove null statements
-		if (!Boomerang::get()->noRemoveNull)
-			removeNullStatements();
+        // Remove null statements
+        if (!Boomerang::get()->noRemoveNull)
+            removeNullStatements();
 
-		printXML();
-		if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-			LOG << "===== After removing null and unused statements "
-			  "=====\n";
-			printToLog(true);
-			LOG << "===== End after removing unused "
-			  "statements =====\n\n";
-		}
-	}
+        printXML();
+        if (VERBOSE && !Boomerang::get()->noRemoveNull) {
+            LOG << "===== After removing null and unused statements "
+              "=====\n";
+            printToLog(true);
+            LOG << "===== End after removing unused "
+              "statements =====\n\n";
+        }
+		Boomerang::get()->alert_decompile_afterRemoveStmts(this, depth);
+    }
 
-	if (!Boomerang::get()->noParameterNames) {
-		for (int i = maxDepth; i >= 0; i--) {
-			replaceExpressionsWithParameters(i);
-			replaceExpressionsWithLocals(true);
-			cfg->renameBlockVars(0, i, true);
-		}
-		trimReturns();
-		fixCallRefs();
-		trimParameters();
-		if (VERBOSE) {
-			LOG << "=== After replacing expressions, trimming params "
-			  "and returns ===\n";
-			printToLog(true);
-			LOG << "=== End after replacing expressions, trimming params "
-			  "and returns ===\n";
-			LOG << "===== End after replacing params =====\n\n";
-		}
-	}
+    if (!Boomerang::get()->noParameterNames) {
+        for (int i = maxDepth; i >= 0; i--) {
+            replaceExpressionsWithParameters(i);
+            replaceExpressionsWithLocals(true);
+            cfg->renameBlockVars(0, i, true);
+        }
+        trimReturns();
+        fixCallRefs();
+        trimParameters();
+        if (VERBOSE) {
+            LOG << "=== After replacing expressions, trimming params "
+              "and returns ===\n";
+            printToLog(true);
+            LOG << "=== End after replacing expressions, trimming params "
+              "and returns ===\n";
+            LOG << "===== End after replacing params =====\n\n";
+        }
+    }
 
 	processConstants();
 
@@ -1365,6 +1377,20 @@ std::set<UserProc*>* UserProc::decompile() {
 								// pass, and transforming out of SSA form)
 	Boomerang::get()->alert_end_decompile(this);
 	return cycleSet;
+}
+
+void UserProc::updateBlockVars()
+{
+	int depth = findMaxDepth() + 1;
+    for (int i = 0; i <= depth; i++)
+        cfg->renameBlockVars(0, i, true);
+}
+
+void UserProc::propagateAtDepth(int depth)
+{
+    propagateStatements(depth, -1);
+    for (int i = 0; i <= depth; i++)
+        cfg->renameBlockVars(0, i, true);
 }
 
 void UserProc::complete() {
@@ -2689,6 +2715,23 @@ bool UserProc::propagateStatements(int memDepth, int toDepth) {
 	return convertedIndirect;
 }
 
+Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
+{
+	StatementList stmts;
+	getStatements(stmts);
+	
+	unsigned int lowest = begin;
+	Statement *loweststmt = NULL;
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++)
+		if (begin >= (*it)->getLexBegin() && begin <= lowest && 
+			begin <= (*it)->getLexEnd() &&
+			(end == -1 || end < (*it)->getLexEnd())) {
+			loweststmt = (*it);
+			lowest = (*it)->getLexBegin();
+		}
+	return loweststmt;
+}
+
 void UserProc::promoteSignature() {
 	signature = signature->promote(this);
 }
@@ -3044,62 +3087,67 @@ bool UserProc::canProveNow()
 // this function is non-reentrant
 bool UserProc::prove(Exp *query)
 {
-	if (inProve) {
-		LOG << "attempted reentry of prove, returning false\n";
+    if (inProve) {
+        LOG << "attempted reentry of prove, returning false\n";
+        return false;
+    }
+    inProve = true;
+    if (proven.find(query) != proven.end()) {
+        inProve = false;
+        if (DEBUG_PROOF) LOG << "prove returns true\n";
+        return true;
+    }
+
+	if (Boomerang::get()->noProve) {
+		inProve = false;
 		return false;
 	}
-	inProve = true;
-	if (proven.find(query) != proven.end()) {
-		inProve = false;
-		if (DEBUG_PROOF) LOG << "prove returns true\n";
-		return true;
-	}
 
-	Exp *original = query->clone();
+    Exp *original = query->clone();
 
-	assert(query->getOper() == opEquals);
-	
-	// subscript locs on the right with {0}
-	LocationSet locs;
-	query->getSubExp2()->addUsedLocs(locs);
-	LocationSet::iterator xx;
-	for (xx = locs.begin(); xx != locs.end(); xx++) {
-		query->refSubExp2() = query->getSubExp2()->expSubscriptVar(*xx, NULL);
-	}
+    assert(query->getOper() == opEquals);
+    
+    // subscript locs on the right with {0}
+    LocationSet locs;
+    query->getSubExp2()->addUsedLocs(locs);
+    LocationSet::iterator xx;
+    for (xx = locs.begin(); xx != locs.end(); xx++) {
+        query->refSubExp2() = query->getSubExp2()->expSubscriptVar(*xx, NULL);
+    }
 
-	if (query->getSubExp1()->getOper() != opSubscript) {
-		bool gotdef = false;
-		// replace expression from return set with expression in return 
-		if (theReturnStatement) {
-			for (int i = 0; i < signature->getNumReturns(); i++) {
-				Exp *e = signature->getReturnExp(i); 
-				if (*e == *query->getSubExp1()) {
-					query->refSubExp1() = 
-						theReturnStatement->getReturnExp(i)->clone();
-					gotdef = true;
-					break;
-				}
-			}
-		}
-		if (!gotdef && DEBUG_PROOF) {
-			LOG << "not in return set: " << query->getSubExp1() << "\n";
-			LOG << "prove returns false\n";
-			inProve = false;
-			return false;
-		}
-	}
+    if (query->getSubExp1()->getOper() != opSubscript) {
+        bool gotdef = false;
+        // replace expression from return set with expression in return 
+        if (theReturnStatement) {
+            for (int i = 0; i < signature->getNumReturns(); i++) {
+                Exp *e = signature->getReturnExp(i); 
+                if (*e == *query->getSubExp1()) {
+                    query->refSubExp1() = 
+                        theReturnStatement->getReturnExp(i)->clone();
+                    gotdef = true;
+                    break;
+                }
+            }
+        }
+        if (!gotdef && DEBUG_PROOF) {
+            LOG << "not in return set: " << query->getSubExp1() << "\n";
+            LOG << "prove returns false\n";
+            inProve = false;
+            return false;
+        }
+    }
 
-	proven.insert(original);
-	std::set<PhiExp*> lastPhis;
-	std::map<PhiExp*, Exp*> cache;
-	if (!prover(query, lastPhis, cache)) {
-		proven.erase(original);
-		//delete original;
-		inProve = false;
-		if (DEBUG_PROOF) LOG << "prove returns false\n";
-		return false;
-	}
-	//delete query;
+    proven.insert(original);
+    std::set<PhiExp*> lastPhis;
+    std::map<PhiExp*, Exp*> cache;
+    if (!prover(query, lastPhis, cache)) {
+        proven.erase(original);
+        //delete original;
+        inProve = false;
+        if (DEBUG_PROOF) LOG << "prove returns false\n";
+        return false;
+    }
+    //delete query;
    
 	inProve = false;
 	if (DEBUG_PROOF) LOG << "prove returns true\n";

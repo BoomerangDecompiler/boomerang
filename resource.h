@@ -26,6 +26,10 @@
 #define IDI_DPROC                       140
 #define IDI_ULPROC                      141
 #define IDI_LPROC                       142
+#define IDI_RESUME                      143
+#define IDI_SUSPEND                     144
+#define IDI_RESUME1                     145
+#define IDD_SYMBOLTABLE                 145
 #define IDC_NAME                        1000
 #define IDC_TARGET                      1001
 #define IDC_BROWSEBUTTON                1002
@@ -63,12 +67,15 @@
 #define IDC_CHECKV                      1036
 #define IDC_CHECKNODATAFLOW             1036
 #define IDC_CHECKNODECOMP               1037
+#define IDC_CHECKNOPROOF                1038
+#define IDC_CHECKNOCHANGESIGS           1039
 #define IDC_LOCALS                      1041
 #define IDC_SIGNATURE_RETURNS           1042
 #define IDC_SIGNATURE_PARAMS            1043
 #define IDC_SIGNATURE_NAME              1044
 #define IDC_REREADSIGS                  1045
 #define IDC_MSDN                        1046
+#define IDC_LIST1                       1047
 #define ID_FILE_NEW                     32771
 #define ID_FILE_OPEN                    32773
 #define ID_FILE_CLOSE                   32775
@@ -105,6 +112,12 @@
 #define ID_VIEW_NEWCLUSTER              32809
 #define ID_VIEW_DELETECLUSTER           32810
 #define ID_VIEW_RENAME                  32814
+#define ID_TO_SSA                       32815
+#define ID_TOOLS_LOADER                 32815
+#define ID_PROP_REGS                    32816
+#define ID_FROM_SSA                     32817
+#define ID_STMT_PROPAGATE_TO            32818
+#define ID_LOADER_SYMBOLTABLE           32819
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -112,9 +125,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        142
-#define _APS_NEXT_COMMAND_VALUE         32815
-#define _APS_NEXT_CONTROL_VALUE         1047
+#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_COMMAND_VALUE         32817
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

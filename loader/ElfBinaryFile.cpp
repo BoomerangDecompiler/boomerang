@@ -102,148 +102,152 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 {
 	int i;
 
-	if (m_bArchive) {
-		// This is a member of an archive. Should not be using this
-		// function at all
-		return false;
-	}
+    if (m_bArchive) {
+        // This is a member of an archive. Should not be using this
+        // function at all
+        return false;
+    }
 
-	m_pFileName = sName;
-	m_fd = fopen (sName, "rb");
-	if (m_fd == NULL) return 0;
+    m_pFileName = sName;
+    m_fd = fopen (sName, "rb");
+    if (m_fd == NULL) return 0;
 
-	// Determine file size
-	if (fseek(m_fd, 0, SEEK_END)) {
-		fprintf(stderr, "Error seeking to end of binary file\n");
-		return false;
-	}
-	m_lImageSize = ftell(m_fd);
+    // Determine file size
+    if (fseek(m_fd, 0, SEEK_END)) {
+        fprintf(stderr, "Error seeking to end of binary file\n");
+        return false;
+    }
+    m_lImageSize = ftell(m_fd);
 
-	// Allocate memory to hold the file
-	m_pImage = new char[m_lImageSize];
-	if (m_pImage == 0) {
-		fprintf(stderr, "Could not allocate %ld bytes for program image\n",
-		  m_lImageSize);
-		return false;
-	}
-	Elf32_Ehdr* pHeader = (Elf32_Ehdr*)m_pImage;	// Save a lot of casts
+    // Allocate memory to hold the file
+    m_pImage = new char[m_lImageSize];
+    if (m_pImage == 0) {
+        fprintf(stderr, "Could not allocate %ld bytes for program image\n",
+          m_lImageSize);
+        return false;
+    }
+    Elf32_Ehdr* pHeader = (Elf32_Ehdr*)m_pImage;    // Save a lot of casts
 
-	// Read the whole file in
-	fseek(m_fd, 0, SEEK_SET);
-	size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
-	if (size != (size_t)m_lImageSize)
-		fprintf(stderr, "WARNING! Only read %ud of %ld bytes of binary file!\n",
-		  size, m_lImageSize);
+    // Read the whole file in
+    fseek(m_fd, 0, SEEK_SET);
+    size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
+    if (size != (size_t)m_lImageSize)
+        fprintf(stderr, "WARNING! Only read %ud of %ld bytes of binary file!\n",
+          size, m_lImageSize);
 
-	// Basic checks
-	if (strncmp(m_pImage, "\x7F""ELF", 4) != 0) {
-		fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
-		  pHeader->e_ident[0], pHeader->e_ident[1], pHeader->e_ident[2],
-		  pHeader->e_ident[3]);
-		return 0;
-	}
-	if ((pHeader->endianness != 1) &&
-		(pHeader->endianness != 2)) {
-		fprintf(stderr, "Unknown endianness %02X\n", pHeader->endianness);
-		return 0;
-	}
-	// Needed for elfRead4 to work:
-	m_elfEndianness = pHeader->endianness - 1;
+    // Basic checks
+    if (strncmp(m_pImage, "\x7F""ELF", 4) != 0) {
+        fprintf(stderr, "Incorrect header: %02X %02X %02X %02X\n",
+          pHeader->e_ident[0], pHeader->e_ident[1], pHeader->e_ident[2],
+          pHeader->e_ident[3]);
+        return 0;
+    }
+    if ((pHeader->endianness != 1) &&
+        (pHeader->endianness != 2)) {
+        fprintf(stderr, "Unknown endianness %02X\n", pHeader->endianness);
+        return 0;
+    }
+    // Needed for elfRead4 to work:
+    m_elfEndianness = pHeader->endianness - 1;
 
-	// Set up program header pointer (in case needed)
-	i = elfRead4(&pHeader->e_phoff);
-	if (i) m_pPhdrs = (Elf32_Phdr*)(m_pImage + i);
+    // Set up program header pointer (in case needed)
+    i = elfRead4(&pHeader->e_phoff);
+    if (i) m_pPhdrs = (Elf32_Phdr*)(m_pImage + i);
 
-	// Set up section header pointer
-	i = elfRead4(&pHeader->e_shoff);
-	if (i) m_pShdrs = (Elf32_Shdr*)(m_pImage + i);
+    // Set up section header pointer
+    i = elfRead4(&pHeader->e_shoff);
+    if (i) m_pShdrs = (Elf32_Shdr*)(m_pImage + i);
 
-	// Set up section header string table pointer
-	i = elfRead2(&pHeader->e_shstrndx);
-	if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
+    // Set up section header string table pointer
+    i = elfRead2(&pHeader->e_shstrndx);
+    if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
 
-	i = 1;				// counter - # sects. Start @ 1, total m_iNumSections
-	char* pName;		// Section's name
+    i = 1;              // counter - # sects. Start @ 1, total m_iNumSections
+    char* pName;        // Section's name
 
-	// Number of sections
-	m_iNumSections = elfRead2(&pHeader->e_shnum);
+    // Number of sections
+    m_iNumSections = elfRead2(&pHeader->e_shnum);
 
-	// Allocate room for all the Elf sections (including the silly first one)
-	m_pSections = new SectionInfo[m_iNumSections];
-	if (m_pSections == 0) return false;		// Failed!
-	// Initialise to zero; especially for flags and addresses
-	memset(m_pSections, '\0', m_iNumSections*sizeof(SectionInfo));
+    // Allocate room for all the Elf sections (including the silly first one)
+    m_pSections = new SectionInfo[m_iNumSections];
+    if (m_pSections == 0) return false;     // Failed!
+    // Initialise to zero; especially for flags and addresses
+    memset(m_pSections, '\0', m_iNumSections*sizeof(SectionInfo));
 
-	// Number of elf sections
-	bool bGotCode = false;					// True when have seen a code sect
-	for (i=0; i < m_iNumSections; i++) {
-		// Get section information.
-		Elf32_Shdr* pShdr = m_pShdrs + i;
-		pName = m_pStrings + elfRead4(&pShdr->sh_name);
-		m_pSections[i].pSectionName = pName;
-		int off = elfRead4(&pShdr->sh_offset);
-		if (off) m_pSections[i].uHostAddr = (ADDRESS)(m_pImage + off);
-		m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
-		m_pSections[i].uType = elfRead4(&pShdr->sh_type);
-		m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
-		m_pSections[i].uSectionEntrySize = elfRead4(&pShdr->sh_entsize);
-		if ((elfRead4(&pShdr->sh_flags) & SHF_WRITE) == 0)
-			m_pSections[i].bReadOnly = true;
-		// Can't use the SHF_ALLOC bit to determine bss section; the bss section
-		// has SHF_ALLOC but also SHT_NOBITS. (But many other sections, such as
-		// .comment, also have SHT_NOBITS). So for now, just use the name
-//		if ((elfRead4(&pShdr->sh_flags) & SHF_ALLOC) == 0)
-		if (strcmp(pName, ".bss") == 0)
-			m_pSections[i].bBss = true;
-		if (elfRead4(&pShdr->sh_flags) & SHF_EXECINSTR) {
-			m_pSections[i].bCode = true;
-			bGotCode = true;			// We've got to a code section
-		}
-		// Deciding what is data and what is not is actually quite tricky but
-		// important. For example, it's crucial to flag the .exception_ranges
-		// section as data, otherwise there is a "hole" in the allocation map,
-		// that means that there is more than one "delta" from a read-only
-		// section to a page, and in the end using -C results in a file that
-		// looks OK but when run just says "Killed".
-		// So we use the Elf designations; it seems that ALLOC.!EXEC -> data
-		// But we don't want sections before the .text section, like .interp,
-		// .hash, etc etc. Hence bGotCode.
-		// NOTE: this ASSUMES that sections appear in a sensible order in
-		// the input binary file: junk, code, rodata, data, bss
-		if (bGotCode &&
-		  ((elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) ==
-		  SHF_ALLOC) && (elfRead4(&pShdr->sh_type) != SHT_NOBITS))
-			m_pSections[i].bData = true;
-	}
+    // Number of elf sections
+    bool bGotCode = false;                  // True when have seen a code sect
+    for (i=0; i < m_iNumSections; i++) {
+        // Get section information.
+        Elf32_Shdr* pShdr = m_pShdrs + i;
+        pName = m_pStrings + elfRead4(&pShdr->sh_name);
+        m_pSections[i].pSectionName = pName;
+        int off = elfRead4(&pShdr->sh_offset);
+        if (off) m_pSections[i].uHostAddr = (ADDRESS)(m_pImage + off);
+        m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
+        m_pSections[i].uType = elfRead4(&pShdr->sh_type);
+        m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
+        m_pSections[i].uSectionEntrySize = elfRead4(&pShdr->sh_entsize);
+		if (m_pSections[i].uNativeAddr + m_pSections[i].uSectionSize > next_extern)
+			first_extern = next_extern = m_pSections[i].uNativeAddr + m_pSections[i].uSectionSize;
+        if ((elfRead4(&pShdr->sh_flags) & SHF_WRITE) == 0)
+            m_pSections[i].bReadOnly = true;
+        // Can't use the SHF_ALLOC bit to determine bss section; the bss section
+        // has SHF_ALLOC but also SHT_NOBITS. (But many other sections, such as
+        // .comment, also have SHT_NOBITS). So for now, just use the name
+//      if ((elfRead4(&pShdr->sh_flags) & SHF_ALLOC) == 0)
+        if (strcmp(pName, ".bss") == 0)
+            m_pSections[i].bBss = true;
+        if (elfRead4(&pShdr->sh_flags) & SHF_EXECINSTR) {
+            m_pSections[i].bCode = true;
+            bGotCode = true;            // We've got to a code section
+        }
+        // Deciding what is data and what is not is actually quite tricky but
+        // important. For example, it's crucial to flag the .exception_ranges
+        // section as data, otherwise there is a "hole" in the allocation map,
+        // that means that there is more than one "delta" from a read-only
+        // section to a page, and in the end using -C results in a file that
+        // looks OK but when run just says "Killed".
+        // So we use the Elf designations; it seems that ALLOC.!EXEC -> data
+        // But we don't want sections before the .text section, like .interp,
+        // .hash, etc etc. Hence bGotCode.
+        // NOTE: this ASSUMES that sections appear in a sensible order in
+        // the input binary file: junk, code, rodata, data, bss
+        if (bGotCode &&
+          ((elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) ==
+          SHF_ALLOC) && (elfRead4(&pShdr->sh_type) != SHT_NOBITS))
+            m_pSections[i].bData = true;
+    }
 
-	// Add symbol info. Note that some symbols will be in the main table only,
-	// and others in the dynamic table only. So the best idea is to add symbols
-	// for both sections (if any).
-	AddSyms(".symtab", ".strtab");
-	AddSyms(".dynsym", ".dynstr");
+    // Add symbol info. Note that some symbols will be in the main table only,
+    // and others in the dynamic table only. So the best idea is to add symbols
+    // for both sections (if any).
+    AddSyms(".symtab", ".strtab");
+    AddSyms(".dynsym", ".dynstr");
+	AddRelocsAsSyms(".rela.text");
+	AddRelocsAsSyms(".rel.text");
 
-	// Save the relocation to symbol table info
-	PSectionInfo pRel = GetSectionInfoByName(".rela.text"); 
-	if (pRel) {
-		m_bAddend = true;				// Remember its a relA table
-		m_pReloc = pRel->uHostAddr;		// Save pointer to reloc table
-		//SetRelocInfo(pRel);
-	}
-	else {
-		m_bAddend = false;
-		pRel = GetSectionInfoByName(".rel.text");
-		if (pRel) {
-			//SetRelocInfo(pRel);
-			m_pReloc = pRel->uHostAddr;		// Save pointer to reloc table
-		}
-	}
+    // Save the relocation to symbol table info
+    PSectionInfo pRel = GetSectionInfoByName(".rela.text"); 
+    if (pRel) {
+        m_bAddend = true;               // Remember its a relA table
+        m_pReloc = (Elf32_Rel*)pRel->uHostAddr;     // Save pointer to reloc table
+        //SetRelocInfo(pRel);
+    }
+    else {
+        m_bAddend = false;
+        pRel = GetSectionInfoByName(".rel.text");
+        if (pRel) {
+            //SetRelocInfo(pRel);
+            m_pReloc = (Elf32_Rel*)pRel->uHostAddr;     // Save pointer to reloc table
+        }
+    }
 
-	// Find the PLT limits. Required for IsDynamicLinkedProc(), e.g.
-	PSectionInfo pPlt = GetSectionInfoByName(".plt");
-	if (pPlt) {
-		m_uPltMin = pPlt->uNativeAddr;
-		m_uPltMax = pPlt->uNativeAddr + pPlt->uSectionSize;
-	}
+    // Find the PLT limits. Required for IsDynamicLinkedProc(), e.g.
+    PSectionInfo pPlt = GetSectionInfoByName(".plt");
+    if (pPlt) {
+        m_uPltMin = pPlt->uNativeAddr;
+        m_uPltMax = pPlt->uNativeAddr + pPlt->uSectionSize;
+    }
 
 #if 0
 	// Find the space occupied by the loaded image
@@ -294,46 +298,46 @@ char* ElfBinaryFile::GetStrPtr(int idx, int offset)
 // is the name of the associated string section (e.g. ".dynstr")
 void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
 {
-	PSectionInfo pSect = GetSectionInfoByName(sSymSect);
-	if (pSect == 0) return;
-	// Calc number of symbols
-	int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
-	// Pointer to symbols
-	m_pSym = (Elf32_Sym*) pSect->uHostAddr;
-	// Get index to string table
-	int idx = GetSectionIndexByName(sStrSect);
+    PSectionInfo pSect = GetSectionInfoByName(sSymSect);
+    if (pSect == 0) return;
+    // Calc number of symbols
+    int nSyms = pSect->uSectionSize / pSect->uSectionEntrySize;
+    // Pointer to symbols
+    m_pSym = (Elf32_Sym*) pSect->uHostAddr;
+    // Get index to string table
+    int idx = GetSectionIndexByName(sStrSect);
 
-	PSectionInfo siPLT = GetSectionInfoByName(".plt");
-	assert(siPLT);
-	ADDRESS addrPLT = siPLT->uNativeAddr;
-	static bool warned = false;
-	// Number of entries in the PLT:
-	int max_i_for_hack = (int)siPLT->uSectionSize / 0x10;
-	// Index 0 is a dummy entry
-	for (int i = 1; i < nSyms; i++) {
-		ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
-		int name = elfRead4(&m_pSym[i].st_name);
-		if (name == 0)	/* Silly symbols with no names */ continue;
-		std::string str(GetStrPtr(idx, name));
-		// Hack off the "@@GLIBC_2.0" of Linux, if present
-		unsigned pos;
-		if ((pos = str.find("@@")) != std::string::npos)
-			str.erase(pos);
-		std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
-		// Ensure no overwriting (except functions)
-		if (aa == m_SymA.end() || 
-			  ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-			if (val == 0 && i < max_i_for_hack) {
-				// Special hack for gcc circa 3.3.3: the value in the dynamic
-				// symbol table is zero! Assume that index i in the dynamic
-				// symbol table corresponds to index i in the .plt section
-				// Note that entries in .plt are 4 words (0x10 bytes) each
-				// Note that this hack can cause strange symbol names to appear
-				val = addrPLT + 0x10*i;
-				if (!warned) { warned = true;
-					std::cerr << "Warning: dynamic symbol table hack used!\n";
-				}
-			}
+    PSectionInfo siPLT = GetSectionInfoByName(".plt");
+	ADDRESS addrPLT = siPLT ? siPLT->uNativeAddr : 0;
+    static bool warned = false;
+    // Number of entries in the PLT:
+	int max_i_for_hack = siPLT ? (int)siPLT->uSectionSize / 0x10 : 0;
+    // Index 0 is a dummy entry
+    for (int i = 1; i < nSyms; i++) {
+        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+        int name = elfRead4(&m_pSym[i].st_name);
+        if (name == 0)  /* Silly symbols with no names */ continue;
+        std::string str(GetStrPtr(idx, name));
+        // Hack off the "@@GLIBC_2.0" of Linux, if present
+        unsigned pos;
+        if ((pos = str.find("@@")) != std::string::npos)
+            str.erase(pos);
+        std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
+        // Ensure no overwriting (except functions)
+        if (aa == m_SymA.end() || 
+              ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
+            if (siPLT && val == 0 && i < max_i_for_hack) {
+                // Special hack for gcc circa 3.3.3: the value in the dynamic
+                // symbol table is zero! Assume that index i in the dynamic
+                // symbol table corresponds to index i in the .plt section
+                // Note that entries in .plt are 4 words (0x10 bytes) each
+                // Note that this hack can cause strange symbol names to appear
+                val = addrPLT + 0x10*i;
+                if (!warned) { warned = true;
+                    std::cerr << "Warning: dynamic symbol table hack used!\n";
+                }
+            }
+
 #define ECHO_SYMS 0
 #if		ECHO_SYMS
 			std::cerr << "Elf AddSym: about to add " << str << " to address "
@@ -350,6 +354,52 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
 		m_SymA[uMain] = sMain;
 	}
 	return;
+}
+
+void ElfBinaryFile::AddRelocsAsSyms(const char* sRelocSect)
+{
+    PSectionInfo pSect = GetSectionInfoByName(sRelocSect);
+    if (pSect == 0) return;
+    // Calc number of symbols
+    int nRelocs = pSect->uSectionSize / pSect->uSectionEntrySize;
+    // Pointer to symbols
+    m_pReloc = (Elf32_Rel*) pSect->uHostAddr;
+    // Get index to string table
+    int idx = GetSectionIndexByName(".strtab");
+
+    // Index 0 is a dummy entry
+    for (int i = 0; i < nRelocs; i++) {
+        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pReloc[i].r_offset);
+        int name = elfRead4(&m_pReloc[i].r_info) >> 8;
+		int flags = elfRead4(&m_pReloc[i].r_info);
+		if (flags & R_386_32) {
+			ADDRESS a = elfRead4((int*)&m_pSym[name].st_value);
+			if (m_pSym[name].st_info & STT_SECTION)
+				a = GetSectionInfo(elfRead2(&m_pSym[name].st_shndx))->uNativeAddr;
+			writeNative4(val, a);
+			continue;
+		}
+		if ((flags & R_386_PC32) == 0)
+			continue;
+        if (name == 0)  /* Silly symbols with no names */ continue;
+        std::string str(GetStrPtr(idx, elfRead4(&m_pSym[name].st_name)));
+        // Hack off the "@@GLIBC_2.0" of Linux, if present
+        unsigned pos;
+        if ((pos = str.find("@@")) != std::string::npos)
+            str.erase(pos);
+		std::map<ADDRESS, std::string>::iterator it;
+		for (it = m_SymA.begin(); it != m_SymA.end(); it++)
+			if ((*it).second == str)
+				break;
+        // Add new extern
+		if (it == m_SymA.end()) {
+            m_SymA[next_extern] = str;
+			it = m_SymA.find(next_extern);
+			next_extern += 4;
+        }
+		writeNative4(val, (*it).first - val - 4);
+    }
+    return;
 }
 
 // Note: this function overrides a simple "return 0" function in the
@@ -626,8 +676,10 @@ bool ElfBinaryFile::IsAddressRelocatable(ADDRESS uNative)
 
 bool ElfBinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
 {
-	if (m_uPltMin == 0) return false;
-	return (uNative >= m_uPltMin) && (uNative < m_uPltMax);
+	if (uNative >= first_extern && uNative < next_extern)
+		return true;
+    if (m_uPltMin == 0) return false;
+    return (uNative >= m_uPltMin) && (uNative < m_uPltMax);
 }
 
 
@@ -1390,6 +1442,23 @@ int ElfBinaryFile::readNative4(ADDRESS nat) {
 	if (si == 0) return 0;
 	ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
 	return elfRead4((int*)host);
+}
+
+void ElfBinaryFile::writeNative4(ADDRESS nat, unsigned int n) {
+    PSectionInfo si = GetSectionInfoByAddr(nat);
+    if (si == 0) return;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    if (m_elfEndianness) {
+		*(unsigned char*)host = (n >> 24) & 0xff;
+		*(unsigned char*)(host+1) = (n >> 16) & 0xff;
+		*(unsigned char*)(host+2) = (n >> 8) & 0xff;
+		*(unsigned char*)(host+3) = n & 0xff;
+	} else {
+		*(unsigned char*)(host+3) = (n >> 24) & 0xff;
+		*(unsigned char*)(host+2) = (n >> 16) & 0xff;
+		*(unsigned char*)(host+1) = (n >> 8) & 0xff;
+		*(unsigned char*)host = n & 0xff;
+	}
 }
 
 // Read 8 bytes from given native address

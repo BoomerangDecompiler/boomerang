@@ -42,6 +42,10 @@ public:
 		virtual void alert_end_decode() { }
 		virtual void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) { }
 		virtual void alert_start_decompile(UserProc *p) { }
+		virtual void alert_decompile_SSADepth(UserProc *p, int depth) { }
+		virtual void alert_decompile_beforePropagate(UserProc *p, int depth) { }
+		virtual void alert_decompile_afterPropagate(UserProc *p, int depth) { }
+		virtual void alert_decompile_afterRemoveStmts(UserProc *p, int depth) { }
 		virtual void alert_end_decompile(UserProc *p) { }
 		virtual void alert_load(Proc *p) { }
 };
@@ -129,6 +133,22 @@ public:
 		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 			(*it)->alert_start_decompile(p);
 	}
+	virtual void alert_decompile_SSADepth(UserProc *p, int depth) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decompile_SSADepth(p, depth);
+	}
+	virtual void alert_decompile_beforePropagate(UserProc *p, int depth) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decompile_beforePropagate(p, depth);
+	}
+	virtual void alert_decompile_afterPropagate(UserProc *p, int depth) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decompile_afterPropagate(p, depth);
+	}
+	virtual void alert_decompile_afterRemoveStmts(UserProc *p, int depth) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decompile_afterRemoveStmts(p, depth);
+	}
 	virtual void alert_end_decompile(UserProc *p) { 
 		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 			(*it)->alert_end_decompile(p);
@@ -144,34 +164,36 @@ public:
 	bool noDataflow;
 	bool noDecompile;
 	bool stopBeforeDecompile;
-	bool noDecompileUp;
-	bool traceDecoder;
-	const char *dotFile;
-	int numToPropagate;
-	bool noPromote;
-	bool propOnlyToAll;
-	bool debugGen;
-	int maxMemDepth;
-	bool debugSwitch;
-	bool noParameterNames;
-	bool debugLiveness;
-	bool debugUnusedRets;
-	bool debugTA;
-	std::vector<ADDRESS> entrypoints;
-	std::vector<std::string> symbolFiles;
-	std::map<ADDRESS, std::string> symbols;
-	bool decodeMain;
-	bool printAST;
-	bool dumpXML;
-	bool noRemoveReturns;
-	bool debugDecoder;
-	bool decodeThruIndCall;
-	bool noDecodeChildren;
-	bool debugProof;
-	bool debugUnusedStmt;
-	bool loadBeforeDecompile;
-	bool saveBeforeDecompile;
-	bool overlapped;
+    bool noDecompileUp;
+    bool traceDecoder;
+    const char *dotFile;
+    int numToPropagate;
+    bool noPromote;
+    bool propOnlyToAll;
+    bool debugGen;
+    int maxMemDepth;
+    bool debugSwitch;
+    bool noParameterNames;
+    bool debugLiveness;
+    bool debugUnusedRets;
+    bool debugTA;
+    std::vector<ADDRESS> entrypoints;
+    std::vector<std::string> symbolFiles;
+    std::map<ADDRESS, std::string> symbols;
+    bool decodeMain;
+    bool printAST;
+    bool dumpXML;
+    bool noRemoveReturns;
+    bool debugDecoder;
+    bool decodeThruIndCall;
+    bool noDecodeChildren;
+    bool debugProof;
+    bool debugUnusedStmt;
+    bool loadBeforeDecompile;
+    bool saveBeforeDecompile;
+    bool overlapped;
+	bool noProve;
+	bool noChangeSignatures;
 };
 
 #define VERBOSE	 (Boomerang::get()->vFlag)

@@ -68,6 +68,9 @@ typedef struct {
 
 #define ET_DYN	3		// Elf type (dynamic library)
 
+#define R_386_32 1
+#define R_386_PC32 2
+
 // Program header
 typedef struct {
 	int	 p_type;	 /* entry type */
@@ -109,11 +112,18 @@ unsigned char st_other;
    short	st_shndx;
 } Elf32_Sym;
 
-#define ELF32_ST_BIND(i)			 ((i) >> 4)
-#define ELF32_ST_TYPE(i)			 ((i) & 0xf)
-#define ELF32_ST_INFO(b, t)			 (((b)<<4)+((t)&0xf))
-#define STT_NOTYPE 0	// Symbol table type: none
-#define STT_FUNC 2		// Symbol table type: function
+typedef struct {
+	unsigned r_offset;
+	int r_info;
+} Elf32_Rel;
+
+#define ELF32_ST_BIND(i)             ((i) >> 4)
+#define ELF32_ST_TYPE(i)             ((i) & 0xf)
+#define ELF32_ST_INFO(b, t)          (((b)<<4)+((t)&0xf))
+#define STT_NOTYPE 0    // Symbol table type: none
+#define STT_FUNC 2      // Symbol table type: function
+#define STT_SECTION 3
+#define STB_GLOBAL 1
 
 typedef struct {
 	short d_tag;			  /* how to interpret value */
@@ -149,25 +159,28 @@ public:
   virtual size_t getImageSize();
 
 
-				// Header functions
-//virtual ADDRESS GetFirstHeaderAddress();		// Get ADDRESS of main header
-//	  ADDRESS	  GetNextHeaderAddress();		// Get any other headers
+                // Header functions
+//virtual ADDRESS GetFirstHeaderAddress();      // Get ADDRESS of main header
+//    ADDRESS     GetNextHeaderAddress();       // Get any other headers
 
-	int			readNative2(ADDRESS a);			// Read 2 bytes from native addr
-	int			readNative4(ADDRESS a);			// Read 4 bytes from native addr
-	QWord		readNative8(ADDRESS a);			// Read 8 bytes from native addr
-	float		readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
-	double		readNativeFloat8(ADDRESS a);	// Read 8 bytes as float
+    int         readNative2(ADDRESS a);         // Read 2 bytes from native addr
+    int         readNative4(ADDRESS a);         // Read 4 bytes from native addr
+    QWord       readNative8(ADDRESS a);         // Read 8 bytes from native addr
+    float       readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
+    double      readNativeFloat8(ADDRESS a);    // Read 8 bytes as float
 
-				// Symbol functions
-	char*		SymbolByAddress(ADDRESS uAddr); // Get name of symbol
-				// Get value of symbol, if any
-	ADDRESS		GetAddressByName(const char* pName, bool bNoTypeOK = false);
-				// Get the size associated with the symbol
-	int			GetSizeByName(const char* pName, bool bNoTypeOK = false);
-				// Get the size associated with the symbol; guess if necessary
-	int			GetDistanceByName(const char* pName);
-	int			GetDistanceByName(const char* pName, const char* pSectName);
+	void		writeNative4(ADDRESS nat, unsigned int n);
+
+                // Symbol functions
+    char*       SymbolByAddress(ADDRESS uAddr); // Get name of symbol
+                // Get value of symbol, if any
+    ADDRESS     GetAddressByName(const char* pName, bool bNoTypeOK = false);
+                // Get the size associated with the symbol
+    int         GetSizeByName(const char* pName, bool bNoTypeOK = false);
+                // Get the size associated with the symbol; guess if necessary
+    int         GetDistanceByName(const char* pName);
+    int         GetDistanceByName(const char* pName, const char* pSectName);
+
 virtual ADDRESS* GetImportStubs(int& numImports);
 
 				// Relocation functions
@@ -183,79 +196,84 @@ virtual ADDRESS* GetImportStubs(int& numImports);
 //
 //	--	--	--	--	--	--	--	--	--	--	--
 //
-				// Internal information
-	// Dump headers, etc
-//virtual bool	  DisplayDetails(const char* fileName, FILE* f = stdout);
+                // Internal information
+    // Dump headers, etc
+//virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
 
-				// Analysis functions
-	virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-	virtual ADDRESS GetMainEntryPoint();
-	virtual ADDRESS GetEntryPoint();
+                // Analysis functions
+    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+    virtual ADDRESS GetMainEntryPoint();
+    virtual ADDRESS GetEntryPoint();
 
-	bool		IsDynamicLinkedProc(ADDRESS wNative);
-	ADDRESS		NativeToHostAddress(ADDRESS uNative);
-	// Get a map from ADDRESS to const char*. This map contains the native
-	// addresses and symbolic names of global data items (if any) which are
-	// shared with dynamically linked libraries. Example: __iob (basis for
-	// stdout).The ADDRESS is the native address of a pointer to the real
-	// dynamic data object.
-	// The caller should delete the returned map.
-	virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
+    bool        IsDynamicLinkedProc(ADDRESS wNative);
+    ADDRESS     NativeToHostAddress(ADDRESS uNative);
+    // Get a map from ADDRESS to const char*. This map contains the native
+    // addresses and symbolic names of global data items (if any) which are
+    // shared with dynamically linked libraries. Example: __iob (basis for
+    // stdout).The ADDRESS is the native address of a pointer to the real
+    // dynamic data object.
+    // The caller should delete the returned map.
+    virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
-				// Not meant to be used externally, but sometimes you just
-				// have to have it.
-	char*		GetStrPtr(int idx, int offset); // Calc string pointer
+	virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
 
-				// Similarly here; sometimes you just need to change a section's
-				// link and info fields
-				// idx is the section index; link and info are indices to other
-				// sections that will be idx's sh_link and sh_info respectively
-	void		SetLinkAndInfo(int idx, int link, int info);
+                // Not meant to be used externally, but sometimes you just
+                // have to have it.
+    char*       GetStrPtr(int idx, int offset); // Calc string pointer
+
+                // Similarly here; sometimes you just need to change a section's
+                // link and info fields
+                // idx is the section index; link and info are indices to other
+                // sections that will be idx's sh_link and sh_info respectively
+    void        SetLinkAndInfo(int idx, int link, int info);
 
 	const char* m_pFileName;			// Pointer to input file name
   protected:
 	virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
 
   private:
-	void		Init();					// Initialise most member variables
-	int			ProcessElfFile();		// Does most of the work
-	void		AddSyms(const char* pSymScn, const char* sStrScn);	
-	void		SetRelocInfo(PSectionInfo pSect);
-	bool		ValueByName(const char* pName, SymValue* pVal,
-					bool bNoTypeOK = false);
-	bool		SearchValueByName(const char* pName, SymValue* pVal);
-	bool		SearchValueByName(const char* pName, SymValue* pVal,
-					const char* pSectName, const char* pStrName);
-	bool		PostLoad(void* handle); // Called after archive member loaded
+    void        Init();                 // Initialise most member variables
+    int         ProcessElfFile();       // Does most of the work
+    void        AddSyms(const char* pSymScn, const char* sStrScn);
+	void        AddRelocsAsSyms(const char* pRelocScn);
+    void        SetRelocInfo(PSectionInfo pSect);
+    bool        ValueByName(const char* pName, SymValue* pVal,
+                    bool bNoTypeOK = false);
+    bool        SearchValueByName(const char* pName, SymValue* pVal);
+    bool        SearchValueByName(const char* pName, SymValue* pVal,
+                    const char* pSectName, const char* pStrName);
+    bool        PostLoad(void* handle); // Called after archive member loaded
 
-	// Internal elf reading methods
-	// Read a short with endianness care
-	int			elfRead2(short* ps) const;
-	// Read an int with endianness care
-	int			elfRead4(int*	pi) const;
+    // Internal elf reading methods
+    // Read a short with endianness care
+    int         elfRead2(short* ps) const;
+    // Read an int with endianness care
+    int         elfRead4(int*   pi) const;
 
 	FILE*		m_fd;					// File stream
 	long		m_lImageSize;			// Size of image in bytes
-	char*		m_pImage;				// Pointer to the loaded image
-	Elf32_Phdr* m_pPhdrs;				// Pointer to program headers
-	Elf32_Shdr* m_pShdrs;				// Array of section header structs
-	char*		m_pStrings;				// Pointer to the string section
-	char		m_elfEndianness;		// 1 = Big Endian
-	std::map<ADDRESS, std::string> m_SymA; // Map from address to symbol name
-	SymTab		m_Reloc;				// Object to store the reloc syms
-	ADDRESS		m_pReloc;				// Pointer to the relocation section
-	Elf32_Sym*	m_pSym;					// Pointer to loaded symbol section
-	bool		m_bAddend;				// true if reloc table has addend
-	const char* m_pLastName;			// Save pointer to last name looked up
-	ADDRESS		m_uLastAddr;			// Save last address looked up
-	int			m_iLastSize;			// Size associated with that name
-	ADDRESS		m_uPltMin;				// Min address of PLT table
-	ADDRESS		m_uPltMax;				// Max address (1 past last) of PLT
-	std::list<SectionInfo*>	 m_EntryPoint;	 // A list of one entry point
-	ADDRESS*	m_pImportStubs;			// An array of import stubs
-	ADDRESS		m_uBaseAddr;			// Base image virtual address
-	size_t		m_uImageSize;			// total image size (bytes)
+    char*       m_pImage;               // Pointer to the loaded image
+    Elf32_Phdr* m_pPhdrs;               // Pointer to program headers
+    Elf32_Shdr* m_pShdrs;               // Array of section header structs
+    char*       m_pStrings;             // Pointer to the string section
+    char        m_elfEndianness;        // 1 = Big Endian
+    std::map<ADDRESS, std::string> m_SymA; // Map from address to symbol name
+    SymTab      m_Reloc;                // Object to store the reloc syms
+    Elf32_Rel*  m_pReloc;               // Pointer to the relocation section
+    Elf32_Sym*  m_pSym;                 // Pointer to loaded symbol section
+    bool        m_bAddend;              // true if reloc table has addend
+    const char* m_pLastName;            // Save pointer to last name looked up
+    ADDRESS     m_uLastAddr;            // Save last address looked up
+    int         m_iLastSize;            // Size associated with that name
+    ADDRESS     m_uPltMin;              // Min address of PLT table
+    ADDRESS     m_uPltMax;              // Max address (1 past last) of PLT
+    std::list<SectionInfo*>  m_EntryPoint;   // A list of one entry point
+    ADDRESS*    m_pImportStubs;         // An array of import stubs
+    ADDRESS     m_uBaseAddr;            // Base image virtual address
+    size_t      m_uImageSize;           // total image size (bytes)
+	ADDRESS		first_extern;			// where the first extern will be placed
+	ADDRESS		next_extern;			// where the next extern will be placed
 };
 
 #endif		// #ifndef __ELFBINARYFILE_H__

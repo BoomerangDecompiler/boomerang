@@ -657,7 +657,16 @@
 				RelativePath=".\proc1.ico">
 			</File>
 			<File
+				RelativePath=".\resume.ico">
+			</File>
+			<File
+				RelativePath=".\resume1.ico">
+			</File>
+			<File
 				RelativePath=".\small.ico">
+			</File>
+			<File
+				RelativePath=".\suspend.ico">
 			</File>
 		</Filter>
 	</Files>

@@ -414,56 +414,61 @@ public:
 	bool isAnalysed() { return analysed; }
 	void setAnalysed() { analysed = true; }
 
-	/*
-	 * Return the number of bytes allocated for locals on the stack.
-	 */
-	int getLocalsSize();
+    /*
+     * Return the number of bytes allocated for locals on the stack.
+     */
+    int getLocalsSize();
 
-	/*
-	 * Get the type of the given var
-	 */
-//	  Type getVarType(int idx);
+    /*
+     * Get the type of the given var
+     */
+//    Type getVarType(int idx);
 
-	/*
-	 * Set the size of the given var
-	 */
-//	  void setVarSize(int idx, int size);
+    /*
+     * Set the size of the given var
+     */
+//    void setVarSize(int idx, int size);
 
-	// code generation
-	void generateCode(HLLCode *hll);
+    // code generation
+    void generateCode(HLLCode *hll);
 
-	// print this proc, mainly for debugging
-	void print(std::ostream &out, bool withDF = false);
-	void printToLog(bool withDF = false);
+    // print this proc, mainly for debugging
+    void print(std::ostream &out, bool withDF = false);
+    void printToLog(bool withDF = false);
 
-	// simplify the statements in this proc
-	void simplify() { cfg->simplify(); }
+    // simplify the statements in this proc
+    void simplify() { cfg->simplify(); }
 
-	// decompile this proc
-	std::set<UserProc*>* decompile();
+    // decompile this proc
+    std::set<UserProc*>* decompile();
+	void propagateAtDepth(int depth);
+	void updateBlockVars();
 
-	// All the decompile stuff except propagation, DFA repair, and null/unused
-	// statement removal
-	void	complete(); 
+	Statement *getStmtAtLex(unsigned int begin, unsigned int end);
 
-	// Initialise the statements, e.g. proc, bb pointers
-	void initStatements();
-	void numberStatements(int& stmtNum);
-	void numberPhiStatements(int& stmtNum);
-	bool nameStackLocations();
-	bool nameRegisters();
-	void removeRedundantPhis();
-	void trimReturns();
-	void fixCallRefs();
-	void addNewParameters();
-	void addNewReturns(int depth);
-	// Trim parameters. If depth not given or == -1, perform at all depths
-	void trimParameters(int depth = -1);
-	void processFloatConstants();
-	void replaceExpressionsWithGlobals();
-	void replaceExpressionsWithSymbols();
-	void replaceExpressionsWithParameters(int depth);	// must be in SSA form
-	void replaceExpressionsWithLocals(bool lastPass = false);
+    // All the decompile stuff except propagation, DFA repair, and null/unused
+    // statement removal
+    void    complete(); 
+
+    // Initialise the statements, e.g. proc, bb pointers
+    void initStatements();
+    void numberStatements(int& stmtNum);
+    void numberPhiStatements(int& stmtNum);
+    bool nameStackLocations();
+    bool nameRegisters();
+    void removeRedundantPhis();
+    void trimReturns();
+    void fixCallRefs();
+    void addNewParameters();
+    void addNewReturns(int depth);
+    // Trim parameters. If depth not given or == -1, perform at all depths
+    void trimParameters(int depth = -1);
+    void processFloatConstants();
+    void replaceExpressionsWithGlobals();
+    void replaceExpressionsWithSymbols();
+    void replaceExpressionsWithParameters(int depth);   // must be in SSA form
+    void replaceExpressionsWithLocals(bool lastPass = false);
+
 private:
 	void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp,
 		StatementList& stmts);

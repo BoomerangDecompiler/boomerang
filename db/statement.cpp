@@ -62,6 +62,11 @@ void Statement::setProc(UserProc *p)
 	}
 }
 
+Exp *Statement::getExpAtLex(unsigned int begin, unsigned int end)
+{
+	return NULL;
+}
+
 // replace a use in this statement
 bool Statement::replaceRef(Statement *def) {
 	Exp* lhs = def->getLeft();
@@ -352,34 +357,34 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 // Parameter convert is set true if an indirect call is converted to direct
 // Return true if a change made
 bool Statement::doPropagateTo(int memDepth, Statement* def, bool& convert) {
-	// Check the depth of the definition (an assignment)
-	// This checks the depth for the left and right sides, and
-	// gives the max for both. Example: can't propagate
-	// tmp := m[x] to foo := tmp if memDepth == 0
-	Assign* assignDef = dynamic_cast<Assign*>(def);
-	if (assignDef) {
-		int depth = assignDef->getMemDepth();
-		if (depth > memDepth)
-			return false;
-	}
+    // Check the depth of the definition (an assignment)
+    // This checks the depth for the left and right sides, and
+    // gives the max for both. Example: can't propagate
+    // tmp := m[x] to foo := tmp if memDepth == 0
+    Assign* assignDef = dynamic_cast<Assign*>(def);
+    if (assignDef) {
+        int depth = assignDef->getMemDepth();
+        if (depth > memDepth && memDepth != -1)
+            return false;
+    }
 
-	// Respect the -p N switch
-	if (Boomerang::get()->numToPropagate >= 0) {
-		if (Boomerang::get()->numToPropagate == 0) return false;
-			Boomerang::get()->numToPropagate--;
-	}
+    // Respect the -p N switch
+    if (Boomerang::get()->numToPropagate >= 0) {
+        if (Boomerang::get()->numToPropagate == 0) return false;
+            Boomerang::get()->numToPropagate--;
+    }
 
-	if (VERBOSE) {
-		LOG << "Propagating " << def << "\n"
-			<< "	   into " << this << "\n";
-	}
-	convert |= replaceRef(def);
-	// simplify is costly... done once above
-	// simplify();
-	if (VERBOSE) {
-		LOG << "	 result " << this << "\n\n";
-	}
-	return true;
+    if (VERBOSE) {
+        LOG << "Propagating " << def << "\n"
+            << "       into " << this << "\n";
+    }
+    convert |= replaceRef(def);
+    // simplify is costly... done once above
+    // simplify();
+    if (VERBOSE) {
+        LOG << "     result " << this << "\n\n";
+    }
+    return true;
 }
 
 bool Statement::operator==(Statement& other) {

@@ -75,8 +75,11 @@ class Exp : public Memoisable {
 protected:
 	OPER   op;			   // The operator (e.g. opPlus)
 
-	// Constructor, with ID
-			Exp(OPER op) : op(op) {}
+	unsigned int lexBegin, lexEnd;
+
+    // Constructor, with ID
+            Exp(OPER op) : op(op) {}
+
 public:
 	// Virtual destructor
 virtual		~Exp() {}
@@ -86,7 +89,13 @@ virtual		~Exp() {}
 	OPER	getOper() const {return op;}
 	void	setOper(OPER x) {op = x;}	  // A few simplifications use this
 
-	// Print the expression to the given stream
+	void	setLexBegin(unsigned int n) { lexBegin = n; }
+	void	setLexEnd(unsigned int n) { lexEnd = n; }
+	unsigned int getLexBegin() { return lexBegin; }
+	unsigned int getLexEnd() { return lexEnd; }
+
+    // Print the expression to the given stream
+
 virtual void print(std::ostream& os, bool withUses = false) = 0;
 			 // Print with <type>
 	void	 printt(std::ostream& os = std::cout, bool withUses = false);
