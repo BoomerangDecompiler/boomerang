@@ -1,8 +1,14 @@
 HLOCAL LocalFree(HLOCAL hMem);
-DWORD FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPTSTR lpBuffer, DWORD nSize, va_list* Arguments);
+DWORD FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPSTR lpBuffer, DWORD nSize, va_list* Arguments);
 int _write(int fd, char *buf, int size);
-short *CharNextW(short *lpsz);
-short *GetCommandLineW();
+LPSTR CharNextA(      
+    LPCSTR lpsz
+);
+LPWSTR CharNextW(      
+    LPCWSTR lpsz
+);
+LPSTR GetCommandLineA(void);
+LPWSTR GetCommandLineW(void);
 
 typedef struct {
     UINT cbSize;
@@ -14,25 +20,38 @@ typedef struct {
     HICON hIcon;
     HCURSOR hCursor;
     HBRUSH hbrBackground;
-    LPCTSTR lpszMenuName;
-    LPCTSTR lpszClassName;
+    LPCSTR lpszMenuName;
+    LPCSTR lpszClassName;
     HICON hIconSm;
 } WNDCLASSEX;
-typedef WNDCLASSEX *PWNDCLASSEX;
+typedef struct {
+    UINT cbSize;
+    UINT style;
+    WNDPROC lpfnWndProc;
+    int cbClsExtra;
+    int cbWndExtra;
+    HINSTANCE hInstance;
+    HICON hIcon;
+    HCURSOR hCursor;
+    HBRUSH hbrBackground;
+    LPCWSTR lpszMenuName;
+    LPCWSTR lpszClassName;
+    HICON hIconSm;
+} WNDCLASSEXw;
 
-ATOM RegisterClassExW(WNDCLASSEX *lpwcx);
+ATOM RegisterClassExW(WNDCLASSEXw *lpwcx);
 ATOM RegisterClassExA(WNDCLASSEX *lpwcx);
 
 int LoadStringA(      
     HINSTANCE hInstance,
     UINT uID,
-    LPTSTR lpBuffer,
+    LPSTR lpBuffer,
     int nBufferMax
 );
 
 HACCEL LoadAcceleratorsA(      
     HINSTANCE hInstance,
-    LPCTSTR lpTableName
+    LPCSTR lpTableName
 );
 
 typedef struct {
@@ -68,18 +87,18 @@ LRESULT DispatchMessageA(
 
 HICON LoadIconA(      
     HINSTANCE hInstance,
-    LPCTSTR lpIconName
+    LPCSTR lpIconName
 );
 
 HCURSOR LoadCursorA(      
     HINSTANCE hInstance,
-    LPCTSTR lpCursorName
+    LPCSTR lpCursorName
 );
 
 HWND CreateWindowExA(      
     DWORD dwExStyle,
-    LPCTSTR lpClassName,
-    LPCTSTR lpWindowName,
+    LPCSTR lpClassName,
+    LPCSTR lpWindowName,
     DWORD dwStyle,
     int x,
     int y,
