@@ -52,11 +52,30 @@ SETXER(value) {
 	*1* %XERSO := %XER@[31:31]
 };
 
+ADDFLAGSX(result, op1, op2) {
+	*1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+	*1*  %XER@[29:29] := %XERCA
+};
+
+ADDFLAGSX0(result, op1, op2) {
+	*1*  %XERCA := ((op1@[31:31]) & (op2@[31:31])) | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+	*1*  %XER@[29:29] := %XERCA
+	*1* %CR0@[0:0] := %XERSO
+	*1* %CR0@[1:1] := [rd = 0?1:0]	
+	*1* %CR0@[2:2] := [rd > 0?1:0]
+	*1* %CR0@[3:3] := [rd < 0?1:0]
+};
+
+SUBFLAGSX(result, op1, op2) {
+	*1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+	*1*  %XER@[29:29] := %XERCA
+};
+
 SETFLAGS0(rd) {
-   *1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
-   *1* %CR0@[1:1] := [rd = 0?1:0]	
-   *1* %CR0@[2:2] := [rd > 0?1:0]
-   *1* %CR0@[3:3] := [rd < 0?1:0]
+	*1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
+	*1* %CR0@[1:1] := [rd = 0?1:0]	
+	*1* %CR0@[2:2] := [rd > 0?1:0]
+	*1* %CR0@[3:3] := [rd < 0?1:0]
 };
 
 SUBFLAGSNL(op1, op2, crfd) {
@@ -130,6 +149,12 @@ ADDEq		 rd, ra, rb						*32* rd := ra + rb + %XERCA
 
 ADDI		 rd, rs, simm					*32* rd := rs + simm;
 
+ADDIC		 rd, rs, simm					*32* rd := rs + simm
+											ADDFLAGSX(rd, rs, simm);	# Set carry
+
+ADDICq		 rd, rs, simm					*32* rd := rs + simm
+											ADDFLAGSX0(rd, rs, simm);	# Set carry and CR0
+
 ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
 
 ADDME		 rd, ra	 						*32* rd := ra + %XERCA - 1;
@@ -154,14 +179,17 @@ DIVWUq	 	 rd, ra, rb						*32* rd := ra / rb
 
 MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
 
-MULLW	 	 rd, ra, rb						*32* rd := ra * rb;
+MULLW	 	rd, ra, rb						*32* rd := ra * rb;
 
-MULLWq	 	 rd, ra, rb						*32* rd := ra * rb
+MULLWq	 	rd, ra, rb						*32* rd := ra * rb
 			 	 	 						SETFLAGS0(rd);
 
-SUBF	 	 rd, ra, rb						*32* rd := rb - ra;
+SUBF	 	rd, ra, rb						*32* rd := rb - ra;
 
-SUBFE	 	 rd, ra, rb						*32* rd := rb + %XERCA - ra;
+SUBFE	 	rd, ra, rb						*32* rd := rb + %XERCA - ra;
+
+SUBFIC		rd, ra, simm					*32* rd := simm - ra
+											SUBFLAGSX(rd, simm, ra);
 
 NOP											_;
 
@@ -205,16 +233,22 @@ LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
 
 
-#Memory access
+#Memory access. rA is passed twice; as part of eaddr, and by itself for the U versions (update rA)
 
-LWZ		rd, eaddr						*32* rd := m[eaddr];
+LWZ		rd, eaddr, ra					*32* rd := m[eaddr];
 
-LWZX	rd, eaddr						*32* rd := m[eaddr];
+LWZX	rd, eaddr, ra					*32* rd := m[eaddr];
 
-STWU	rs, d, ra						*32* m[ra + d] := rs
-										*32* ra := ra + d;
+LBZ		rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
 
-STW		rs, d, ra						*32* m[ra + d] := rs;
+LBZX	rd, eaddr, ra					*32* rd := zfill(8, 32, m[eaddr]);
+
+STWU	rs, eaddr, ra					*32* m[eaddr] := rs
+										*32* ra := eaddr;
+
+STW		rs, eaddr, ra					*32* m[eaddr] := rs;
+
+STB		rs, eaddr, ra					*8*  m[eaddr] := truncs(32, 8, rs);
 
 # Multi word load and store
 
@@ -283,70 +317,70 @@ LMW		rd, eaddr, d					*32* tmp := 0
                                         *32* d <= 30 => tmp := tmp + 1
                                         *32* d <= 31 => r[d + tmp] := m[eaddr + (tmp*4)];
 
-STMW	rs, d, ra, s					*32* tmp := 0
-                                        *32* s <=  0 => m[ra + d + (tmp*4)] := r[s + tmp]
+STMW	rs, eaddr, s					*32* tmp := 0
+                                        *32* s <=  0 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  0 => tmp := tmp + 1
-                                        *32* s <=  1 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  1 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  1 => tmp := tmp + 1
-                                        *32* s <=  2 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  2 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  2 => tmp := tmp + 1
-                                        *32* s <=  3 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  3 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  3 => tmp := tmp + 1
-                                        *32* s <=  4 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  4 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  4 => tmp := tmp + 1
-                                        *32* s <=  5 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  5 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  5 => tmp := tmp + 1
-                                        *32* s <=  6 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  6 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  6 => tmp := tmp + 1
-                                        *32* s <=  7 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  7 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  7 => tmp := tmp + 1
-                                        *32* s <=  8 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  8 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  8 => tmp := tmp + 1
-                                        *32* s <=  9 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <=  9 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <=  9 => tmp := tmp + 1
-                                        *32* s <= 10 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 10 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 10 => tmp := tmp + 1
-                                        *32* s <= 11 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 11 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 11 => tmp := tmp + 1
-                                        *32* s <= 12 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 12 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 12 => tmp := tmp + 1
-                                        *32* s <= 13 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 13 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 13 => tmp := tmp + 1
-                                        *32* s <= 14 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 14 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 14 => tmp := tmp + 1
-                                        *32* s <= 15 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 15 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 15 => tmp := tmp + 1
-                                        *32* s <= 16 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 16 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 16 => tmp := tmp + 1
-                                        *32* s <= 17 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 17 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 17 => tmp := tmp + 1
-                                        *32* s <= 18 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 18 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 18 => tmp := tmp + 1
-                                        *32* s <= 19 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 19 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 19 => tmp := tmp + 1
-                                        *32* s <= 20 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 20 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 20 => tmp := tmp + 1
-                                        *32* s <= 21 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 21 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 21 => tmp := tmp + 1
-                                        *32* s <= 22 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 22 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 22 => tmp := tmp + 1
-                                        *32* s <= 23 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 23 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 23 => tmp := tmp + 1
-                                        *32* s <= 24 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 24 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 24 => tmp := tmp + 1
-                                        *32* s <= 25 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 25 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 25 => tmp := tmp + 1
-                                        *32* s <= 26 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 26 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 26 => tmp := tmp + 1
-                                        *32* s <= 27 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 27 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 27 => tmp := tmp + 1
-                                        *32* s <= 28 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 28 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 28 => tmp := tmp + 1
-                                        *32* s <= 29 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 29 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 29 => tmp := tmp + 1
-                                        *32* s <= 30 => m[ra + d + (tmp*4)] := r[s + tmp]
+                                        *32* s <= 30 => m[eaddr + (tmp*4)] := r[s + tmp]
                                         *32* s <= 30 => tmp := tmp + 1
-                                        *32* s <= 31 => m[ra + d + (tmp*4)] := r[s + tmp];
+                                        *32* s <= 31 => m[eaddr + (tmp*4)] := r[s + tmp];
 
 BCLR   	   								*32* %pc := %LR;
 

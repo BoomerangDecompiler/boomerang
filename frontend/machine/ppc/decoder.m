@@ -56,8 +56,8 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-#define DIS_INDEX   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
-#define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
+#define DIS_DISP   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
+#define DIS_INDEX    (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 #define DIS_RS_NUM	(new Const(rs))
 #define DIS_RD_NUM	(new Const(rd))
@@ -116,12 +116,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc,	 name, DIS_RD, DIS_RA, DIS_RB);
 	| XOb_ ( rd, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
+	// The number of parameters in these matcher arms has to agree with the number in core.spec
+	// The number of parameters passed to instantiate() after pc and name has to agree with ppc.ssl
+	// Stores and loads pass rA to instantiate twice: as part of DIS_DISP, and separately as DIS_NZRA
 	| Dsad_ (rs, d, ra) [name] =>
 		if (strcmp(name, "stmw") == 0) {
-			// Needs the fourth param s, which is the register number from rs
-			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA, DIS_RS_NUM);
+			// Needs the last param s, which is the register number from rs
+			stmts = instantiate(pc, name, DIS_RS, DIS_DISP, DIS_RS_NUM);
 		} else
-			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
+			stmts = instantiate(pc, name, DIS_RS, DIS_DISP, DIS_NZRA);
 		
 	| Dsaui_ (rd, ra, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_UIMM);
@@ -134,14 +137,14 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| Xsabx_ (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_RB);
 	| Xdab_ (rd, ra, rb) [name] =>
-		stmts = instantiate(pc, name, DIS_RD, DIS_DISP);
+		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
 	// Load instructions
 	| Ddad_ (rd, d, ra) [name] =>
 		if (strcmp(name, "lmw") == 0) {
 			// Needs the third param d, which is the register number from rd
-			stmts = instantiate(pc, name, DIS_RD, DIS_INDEX, DIS_RD_NUM);
+			stmts = instantiate(pc, name, DIS_RD, DIS_DISP, DIS_RD_NUM);
 		} else
-			stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
+			stmts = instantiate(pc, name, DIS_RD, DIS_DISP, DIS_NZRA);
 	| XLb_ (b0, b1) [name] =>
 		/*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring control registers) */
 		stmts = instantiate(pc,	 name);
