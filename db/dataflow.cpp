@@ -113,9 +113,7 @@ void Statement::replaceUse(Statement *use) {
     updateUses();
     std::set<Statement*>::iterator pos;
     pos = uses->find(use);
-    if (pos == uses->end())
-        std::cerr << "Highly unusual: Statement::replace()\n";
-    else
+    if (pos != uses->end())
         uses->erase(pos);
     // However, we are now using whatever *use was using
     std::set<Statement*>::iterator ii;
@@ -127,9 +125,7 @@ void Statement::replaceUse(Statement *use) {
     for (ii=use->uses->begin(); ii!= use->uses->end(); ii++) {
         (*ii)->updateUsedBy();
         pos = (*ii)->usedBy->find(use);
-        if (pos == (*ii)->usedBy->end())
-            std::cerr << "Highly unusual (2): Statement::replace()\n";
-        else
+        if (pos != (*ii)->usedBy->end())
             (*ii)->usedBy->erase(pos);
         // They now point to this
         (*ii)->usedBy->insert(this);
@@ -308,9 +304,7 @@ void Statement::updateDfForErase() {
         if (ss->usedBy == NULL) continue;
         std::set<Statement*>::iterator pos;
         pos = ss->usedBy->find(this);
-        if (pos == ss->usedBy->end())
-            std::cerr << "Highly suspicious in updateDfForErase\n";
-        else
+        if (pos != ss->usedBy->end())
             // Erase this use of my definition, since I'm about to be deleted
             ss->usedBy->erase(pos);
     }
