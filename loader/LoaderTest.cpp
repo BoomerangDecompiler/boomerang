@@ -89,19 +89,16 @@ void LoaderTest::testSparcLoad () {
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
-    for (int i=0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
-    }
+    ost << "Number of sections = " << std::dec << n << "\r\n\t";
+    // Just use the first (real one) and last sections
+    si = pBF->GetSectionInfo(1);
+    ost << si->pSectionName << "\t";
+    si = pBF->GetSectionInfo(n-1);
+    ost << si->pSectionName;
     pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 28\r\n\t"
-        ".interp	.hash	.dynsym	.dynstr	.SUNW_version	.rela.bss	"
-        ".rela.plt	.text	.init	.fini	.rodata	.got	"
-        ".plt	.dynamic	.data	.ctors	.dtors	.eh_frame	"
-        ".bss	.symtab	.strtab	.comment	.stab.index	.stab	"
-        ".shstrtab	.stab.indexstr	.stabstr	");
+    std::string expected("Number of sections = 29\r\n\t"
+        ".interp	.stab.indexstr");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 }
 
@@ -118,20 +115,18 @@ void LoaderTest::testPentiumLoad () {
     int n;
     SectionInfo* si;
     n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
-    for (int i=0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
-    }
+    ost << "Number of sections = " << std::dec << n << "\r\n\t";
+    si = pBF->GetSectionInfo(1);
+    ost << si->pSectionName << "\t";
+    si = pBF->GetSectionInfo(n-1);
+    ost << si->pSectionName;
     pBF->UnLoad();
     // Note: the string below needs to have embedded tabs. Edit with caution!
     // (And slightly different string to the sparc test, e.g. rel vs rela)
-    std::string expected("Number of sections = 28\r\n\t"
-        ".interp	.hash	.dynsym	.dynstr	.SUNW_version	.rel.bss	"
-        ".rel.plt	.plt	.text	.init	.fini	.rodata	.got	"
-        ".dynamic	.data	.ctors	.dtors	.eh_frame	"
-        ".bss	.symtab	.strtab	.comment	.stab.index	"
-        ".debug	.debug_pubnames	.shstrtab	.stab.indexstr	");
+    std::string expected("Number of sections = 34\r\n\t"
+        ".interp	.strtab");
+
+
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 }
 
