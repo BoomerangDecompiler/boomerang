@@ -504,7 +504,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             }
             break;
         case opArraySubscript:
+            if (b->getSubExp1()->getOper() == opMemOf)
+                strcat(str, "(");
             appendExp(str, b->getSubExp1());
+            if (b->getSubExp1()->getOper() == opMemOf)
+                strcat(str, ")");
             strcat(str, "[");
             appendExp(str, b->getSubExp2());
             strcat(str, "]");

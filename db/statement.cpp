@@ -287,6 +287,11 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                             !def->getLeft()->isTemp())
                             continue;
                 }
+                if (def->getLeft()->getType() && 
+                    def->getLeft()->getType()->isArray()) {
+                    // Assigning to an array, don't propagate
+                    continue;
+                }
                 change = doPropagateTo(memDepth, def);
             }
         }
@@ -2665,6 +2670,64 @@ void Assign::simplify() {
             lhs->getOper() == opNF)
             return;
     }
+
+    // this is a very complex pattern :)
+    // replace:  1 r31 = a           where a is an array pointer
+    //           2 r31 = phi{1 4}
+    //           3 m[r31{2}] = x
+    //           4 r31 = r31{2} + b  where b is the size of the base of the 
+    //                               array pointed at by a
+    // with:     1 r31 = 0
+    //           2 r31 = phi{1 4}
+    //           3 m[a][r31{2}] = x
+    //           4 r31 = r31{2} + 1
+    // I just assume this can only happen in a loop.. 
+    if (lhs->getOper() == opMemOf && 
+        lhs->getSubExp1()->getOper() == opSubscript &&
+        ((RefExp*)lhs->getSubExp1())->getRef() &&
+        ((RefExp*)lhs->getSubExp1())->getRef()->isPhi()) {
+        Statement *phistmt = ((RefExp*)lhs->getSubExp1())->getRef();
+        PhiExp *phi = (PhiExp*)phistmt->getRight();
+        if (phi->getNumRefs() == 2 && 
+            phi->getAt(0) && phi->getAt(1) &&
+            phi->getAt(0)->isAssign() &&
+            phi->getAt(1)->isAssign()) {
+            Assign *a1 = (Assign*)phi->getAt(0);
+            Assign *a4 = (Assign*)phi->getAt(1);
+            if (a1->getRight()->getType() &&
+                a4->getRight()->getOper() == opPlus &&
+                a4->getRight()->getSubExp1()->getOper() == opSubscript &&
+                ((RefExp*)a4->getRight()->getSubExp1())->getRef() == phistmt &&
+                *a4->getRight()->getSubExp1()->getSubExp1() == 
+                                                        *phi->getSubExp1() &&
+                a4->getRight()->getSubExp2()->getOper() == opIntConst) {
+                Type *ty = a1->getRight()->getType();
+                int b = ((Const*)a4->getRight()->getSubExp2())->getInt();
+                if (ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                if (ty->isPointer()) {
+                    ty = ((PointerType*)ty)->getPointsTo();
+                    if (ty->isNamed())
+                        ty = ((NamedType*)ty)->resolvesTo();
+                    if (ty->isArray() && 
+                        b*8 == ((ArrayType*)ty)->getBaseType()->getSize()) {
+                        if (VERBOSE)
+                            LOG << "doing complex pattern on " << this
+                                << " using " << a1 << " and " << a4 << "\n";
+                        ((Const*)a4->getRight()->getSubExp2())->setInt(1);
+                        lhs = new Binary(opArraySubscript, 
+                                Location::memOf(a1->getRight()->clone()), 
+                                lhs->getSubExp1()->clone());
+                        a1->setRight(new Const(0));
+                        if (VERBOSE)
+                            LOG << "replaced with " << this << " using " 
+                                << a1 << " and " << a4 << "\n";
+                    }
+                }
+            }
+        }
+    }
+
     lhs = lhs->simplifyArith();
     rhs = rhs->simplifyArith();
     // simplify the resultant expression
@@ -2743,6 +2806,10 @@ void Assign::simplify() {
             unsigned n = ((Const*)rhs)->getInt();
             rhs = new Const(*(float*)&n);
         }
+    }
+
+    if (lhs->getType() && lhs->getType()->isArray()) {
+        lhs = new Binary(opArraySubscript, lhs, new Const(0));
     }
 }
 
@@ -2921,6 +2988,7 @@ void Assign::addUsedLocs(LocationSet& used) {
 }
 
 void Assign::fixCallRefs() {
+    simplify();
     rhs = rhs->fixCallRefs();
     if (lhs->isMemOf()) {
         ((Unary*)lhs)->refSubExp1() =

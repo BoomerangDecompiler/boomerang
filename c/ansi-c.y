@@ -71,6 +71,14 @@ public: \
       SymbolMods() : noDecode(false), incomplete(false) { }
   };
 
+  class CustomOptions {
+  public:
+      Exp *exp;
+      int sp;
+
+      CustomOptions() : exp(NULL), sp(0) { }
+  };
+
   class SymbolRef {
   public:
       ADDRESS addr;
@@ -88,6 +96,10 @@ public: \
 %token INCOMPLETE
 %token SYMBOLREF
 %token CDECL
+%token REGOF
+%token MEMOF
+%token CUSTOM
+%token WITHSTACK
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
@@ -110,6 +122,7 @@ public: \
    TypeIdent *type_ident;
    std::list<TypeIdent*> *type_ident_list;
    SymbolMods *mods;
+   CustomOptions *custom_options;
 }
 
 %{
@@ -118,6 +131,9 @@ public: \
 
 %type<type> type
 %type<param> param
+%type<param> param_exp
+%type<exp> exp
+%type<custom_options> custom_options
 %type<param_list> param_list;
 %type<type_ident> type_ident;
 %type<type_ident_list> type_ident_list;
@@ -148,11 +164,11 @@ decl: type_decl
     { }
     ;
 
-param_list: param ',' param_list 
+param_list: param_exp ',' param_list 
           { $$ = $3;
             $$->push_front($1);
           }
-          | param
+          | param_exp
           { $$ = new std::list<Parameter*>(); 
             $$->push_back($1);
           }
@@ -161,6 +177,32 @@ param_list: param ',' param_list
           | /* empty */
           { $$ = new std::list<Parameter*>()}
           ;
+
+param_exp: exp ':' param
+    { $$ = $3;
+      $$->setExp($1);
+    }
+    | param
+    { $$ = $1;
+    }
+    ;
+
+exp: REGOF CONSTANT ']'
+    { $$ = Location::regOf($2);
+    }
+    | MEMOF exp ']'
+    { $$ = Location::memOf($2);
+    }
+    | exp '+' exp
+    { $$ = new Binary(opPlus, $1, $3);
+    }
+    | exp '-' exp
+    { $$ = new Binary(opMinus, $1, $3);
+    }
+    | CONSTANT
+    { $$ = new Const($1);
+    }
+    ;
 
 param: type_ident
      {  if ($1->ty->isArray() || 
@@ -267,6 +309,23 @@ signature: type_ident '(' param_list ')'
            delete $4;
            $$ = sig;
          }
+         | CUSTOM custom_options type_ident '(' param_list ')'
+         { CustomSignature *sig = new CustomSignature($3->nam.c_str()); 
+           if ($2->exp)
+               sig->addReturn($3->ty, $2->exp);
+           if ($2->sp)
+               sig->setSP($2->sp);
+           for (std::list<Parameter*>::iterator it = $5->begin();
+                it != $5->end(); it++)
+               if (std::string((*it)->getName()) != "...") {
+                   sig->addParameter(*it);
+               } else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete $5;
+           $$ = sig;
+         }
          ;
 
 symbol_ref_decl: SYMBOLREF CONSTANT IDENTIFIER ';'
@@ -299,6 +358,18 @@ symbol_mods: NODECODE symbol_mods
            } 
            | /* */
            { $$ = new SymbolMods(); }
+           ;
+
+custom_options: exp ':'
+           { $$->exp = $1;
+           }
+           | WITHSTACK CONSTANT ')'
+           { $$->sp = $2;
+           }
+           | /* */
+           { $$ = new CustomOptions(); }
+           ;
+          
 
 array_modifier: '[' CONSTANT ']'
           { $$ = new ArrayType(NULL, $2);

@@ -517,6 +517,22 @@ Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
         name = nam;
 }
 
+CustomSignature::CustomSignature(const char *nam) : Signature(nam), sp(0)
+{
+}
+
+void CustomSignature::setSP(int nsp)
+{
+    sp = nsp;
+    std::cerr << "using sp " << sp << "\n";
+    if (sp) {
+        addReturn(Location::regOf(sp));
+        addImplicitParameter(new PointerType(new IntegerType()), "sp",
+                                    Location::regOf(sp), NULL);
+    }
+    this->print(std::cerr);
+}
+
 Signature *Signature::clone()
 {
     Signature *n = new Signature(name.c_str());
@@ -527,6 +543,19 @@ Signature *Signature::clone()
     n->rettype = rettype;
     return n;
 }
+
+Signature *CustomSignature::clone()
+{
+    CustomSignature *n = new CustomSignature(name.c_str());
+    n->params = params;
+    n->implicitParams = implicitParams;
+    n->returns = returns;
+    n->ellipsis = ellipsis;
+    n->rettype = rettype;
+    n->sp = sp;
+    return n;
+}
+
 
 bool Signature::operator==(const Signature& other) const
 {
@@ -695,6 +724,7 @@ int Signature::findReturn(Exp *e) {
 }
 
 void Signature::addReturn(Type *type, Exp *exp) {
+    assert(exp);
     addReturn(new Return(type, exp));
 }
 

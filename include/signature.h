@@ -34,6 +34,7 @@ public:
     void setType(Type *ty) { type = ty; }
     const char *getName() { return name.c_str(); }
     Exp *getExp()       { return exp; }
+    void setExp(Exp *e) { exp = e; }
 };
 
 class ImplicitParameter : public Parameter {
@@ -177,6 +178,18 @@ static StatementList& getStdRetStmt(Prog* prog);
     virtual Exp *getProven(Exp *left) { return NULL; }
 
     virtual bool isPromoted() { return false; }
+};
+
+class CustomSignature : public Signature {
+protected:
+    int sp;
+public:
+    CustomSignature(const char *nam);
+    virtual ~CustomSignature() { }
+    virtual bool isPromoted() { return true; }
+    virtual Signature *clone();
+    void setSP(int nsp);
+    virtual int  getStackRegister(          ) {return sp; };
 };
 
 #endif

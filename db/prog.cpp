@@ -140,6 +140,7 @@ void Prog::analyse() {
         p->setAnalysed();
 
         // decoded userproc.. analyse it
+        p->getCFG()->sortByAddress();
         analysis->analyse(p);
         p->printAnalysedXML();
     }
@@ -716,7 +717,7 @@ void Prog::decompile() {
     assert(m_procs.size());
 
     if (VERBOSE) 
-        LOG << "Decompiling " << m_procs.size() << " procedures\n";
+        LOG << "Decompiling " << (int)m_procs.size() << " procedures\n";
 
     UserProc* entryProc = (UserProc*) m_procs.front();
     if (entryProc && !entryProc->isLib()) {

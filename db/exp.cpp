@@ -1824,9 +1824,9 @@ Exp* Binary::polySimplify(bool& bMod) {
         switch (op) {
             case opPlus:    k1 = k1 + k2; break;
             case opMinus:   k1 = k1 - k2; break;
-            case opDiv:     k1 = (int) ((unsigned)k1 / (unsigned)k2);
+            case opDiv:     k1 = (int) ((unsigned)k1 / (unsigned)k2); break;
             case opDivs:    k1 = k1 / k2; break;
-            case opMod:     k1 = (int) ((unsigned)k1 % (unsigned)k2);
+            case opMod:     k1 = (int) ((unsigned)k1 % (unsigned)k2); break;
             case opMods:    k1 = k1 % k2; break;
             case opMult:    k1 = (int) ((unsigned)k1 * (unsigned)k2); break;
             case opMults:   k1 = k1 * k2; break;
@@ -2318,15 +2318,23 @@ Exp* Binary::polySimplify(bool& bMod) {
                 int b = ((ArrayType*)ty)->getBaseType()->getSize() / 8;
                 int br = ((ArrayType*)ty)->getBaseType()->getSize() % 8;
                 assert(br == 0);
-                if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b) {
+                if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || 
+                    ((ArrayType*)ty)->getBaseType()->isArray()) {
                     res = new Binary(opPlus, 
                             new Unary(opAddrOf, 
                                 new Binary(opArraySubscript, 
-                                  Location::memOf(l), 
+                                  Location::memOf(l->clone()), 
                                   new Binary(opDiv, x->clone(), new Const(b)))),
                             new Binary(opMod, x->clone(), new Const(b)));
                     if (VERBOSE)
                         LOG << "replacing " << this << " with " << res << "\n";
+                    if (l->getOper() == opSubscript) {
+                        RefExp *r = (RefExp*)l;
+                        if (r->getRef() && r->getRef()->isPhi()) {
+                            PhiExp *p = (PhiExp*)r->getRef()->getRight();
+                            LOG << "argh: " << p->getAt(1) << "\n";
+                        }
+                    }
                     bMod = true;
                     return res;
                 }
@@ -2371,6 +2379,54 @@ Exp* Binary::polySimplify(bool& bMod) {
                                 subExp1->getSubExp2()->getSubExp1()->clone(), 
                                 new Const(1)), 
                     new Const(n1)));
+            bMod = true;
+            return res;
+        }
+    }
+
+    // check for ((x * a) + (y * b)) / c where a, b and c are all integers and a and b divide evenly by c
+    // becomes: (x * a/c) + (y * b/c)
+    if (op == opDiv && subExp1->getOper() == opPlus && subExp2->getOper() == opIntConst &&
+        subExp1->getSubExp1()->getOper() == opMult && 
+        subExp1->getSubExp2()->getOper() == opMult && 
+        subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst && 
+        subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) { 
+        int a = ((Const*)subExp1->getSubExp1()->getSubExp2())->getInt();
+        int b = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
+        int c = ((Const*)subExp2)->getInt();
+        if ((a%c) == 0 && (b%c) == 0) {
+            res = new Binary(opPlus, 
+                    new Binary(opMult, subExp1->getSubExp1()->getSubExp1(), new Const(a/c)),
+                    new Binary(opMult, subExp1->getSubExp2()->getSubExp1(), new Const(b/c)));
+            bMod = true;
+            return res;
+        }
+    }
+
+    // check for ((x * a) + (y * b)) % c where a, b and c are all integers
+    // becomes: (y * b) % c if a divides evenly by c
+    // becomes: (x * a) % c if b divides evenly by c
+    // becomes: 0           if both a and b divide evenly by c
+    if (op == opMod && subExp1->getOper() == opPlus && subExp2->getOper() == opIntConst &&
+        subExp1->getSubExp1()->getOper() == opMult && 
+        subExp1->getSubExp2()->getOper() == opMult && 
+        subExp1->getSubExp1()->getSubExp2()->getOper() == opIntConst && 
+        subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) { 
+        int a = ((Const*)subExp1->getSubExp1()->getSubExp2())->getInt();
+        int b = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
+        int c = ((Const*)subExp2)->getInt();
+        if ((a%c) == 0 && (b%c) == 0) {
+            res = new Const(0);
+            bMod = true;
+            return res;
+        }
+        if ((a%c) == 0) {
+            res = new Binary(opMod, subExp1->getSubExp2()->clone(), new Const(c));
+            bMod = true;
+            return res;
+        }
+        if ((b%c) == 0) {
+            res = new Binary(opMod, subExp1->getSubExp1()->clone(), new Const(c));
             bMod = true;
             return res;
         }
@@ -2480,6 +2536,7 @@ Exp* TypedExp::polySimplify(bool& bMod) {
 
 Exp* RefExp::polySimplify(bool& bMod) {
     Exp *res = this;
+    
 
     Exp *tmp = subExp1->polySimplify(bMod);
     if (bMod) {
@@ -2552,7 +2609,12 @@ Exp* RefExp::polySimplify(bool& bMod) {
 
 Exp* PhiExp::polySimplify(bool& bMod) {
     Exp *res = this;
-    Exp *subExp1 = getSubExp1()->polySimplify(bMod);
+    Exp *tmp = getSubExp1()->polySimplify(bMod);
+    if (bMod) {
+        subExp1 = tmp;
+        bMod = true;
+        return res;
+    }
 
     if (stmtVec.begin() != stmtVec.end()) {
         StatementVec::iterator uu;
@@ -2876,6 +2938,9 @@ void RefExp::addUsedLocs(LocationSet& used) {
     if (subExp1->isMemOf()) {
         Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
         grandChild->addUsedLocs(used);
+    }
+    if (subExp1->getOper() == opArraySubscript) {
+        subExp1->addUsedLocs(used);
     }
 }
 
@@ -3443,151 +3508,6 @@ Exp* Location::polySimplify(bool& bMod) {
         return res;
     }
 
-#if 0
-    // check for m[exp + x] where exp is a pointer to an array
-    // becomes exp[x / b] where b is the size of the base type in bytes
-    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->getType()) {
-        Exp *x = res->getSubExp1()->getSubExp2();
-        Exp *l = res->getSubExp1()->getSubExp1();
-        Type *ty = l->getType();
-        LOG << "consider " << l << " + " << x << " with type ";
-        if (ty)
-            LOG << ty->getCtype();
-        LOG << "\n";
-        if (ty && ty->isNamed())
-            ty = ((NamedType*)ty)->resolvesTo();
-        if (ty && ty->isPointer()) {
-            ty = ((PointerType*)ty)->getPointsTo();
-            if (ty && ty->isNamed())
-                ty = ((NamedType*)ty)->resolvesTo();
-            if (ty && ty->isArray()) {
-                int b = ((ArrayType*)ty)->getBaseType()->getSize() / 8;
-                int br = ((ArrayType*)ty)->getBaseType()->getSize() % 8;
-                assert(br == 0);
-                res = new Binary(opArraySubscript, Location::memOf(l), 
-                        new Binary(opDivs, x, new Const(b)));
-                if (VERBOSE)
-                    LOG << "replacing " << this << " with " << res << "\n";
-                bMod = true;
-                return res;
-            }
-        }
-    }
-#endif
-
-#if 0
-    // This is a Cism
-    // check for m[exp + x * n] where exp is a pointer and n is an int that
-    // is the size of the base of the pointer
-    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->getType() &&
-        (res->getSubExp1()->getSubExp2()->getOper() == opMult ||
-         res->getSubExp1()->getSubExp2()->getOper() == opMults) &&
-        res->getSubExp1()->getSubExp2()->getSubExp2()->getOper() == opIntConst)
-    {
-        Exp *loc = res->getSubExp1()->getSubExp1();
-        Type *ty = loc->getType();
-        int n = ((Const*)res->getSubExp1()->getSubExp2()->
-                              getSubExp2())->getInt();
-        if (ty && ty->isPointer() &&
-            ((PointerType*)ty)->getPointsTo()->getSize() == n*8) {
-            res = new Binary(opArraySubscript, loc, 
-                             res->getSubExp1()->getSubExp2()->getSubExp1());
-            if (VERBOSE)
-                LOG << "replacing " << this << " with " << res << "\n";
-            bMod = true;
-            return res;
-        }
-    }
-
-    // this is a bit of a Cism.. turn m[exp + n] into m[a[exp[i]] + r] 
-    // where exp is a pointer and i is n / the size of the base type of the 
-    // pointer and r is n % the size of the base type of the pointer.
-    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->getType() &&
-        res->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-        int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
-        Exp *l = res->getSubExp1()->getSubExp1();
-        Type *ty = l->getType();
-        if (ty && ty->isNamed())
-            ty = ((NamedType*)ty)->resolvesTo();
-        if (ty && ty->isPointer()) {
-            Type *base = ((PointerType*)ty)->getPointsTo();
-            int idxbits = (n*8) / base->getSize(); 
-            int rembits = (n*8) % base->getSize();
-            if ((idxbits % 8) == 0 && (rembits % 8) == 0) {
-                res = new Binary(opArraySubscript, l, new Const(idxbits / 8));
-                res = Location::memOf(new Binary(opPlus, 
-                        new Unary(opAddrOf, res), new Const(rembits / 8)));
-                if (VERBOSE)
-                    LOG << "replacing " << this << " with " << res << "\n";
-                bMod = true;
-                return res;
-            }
-        }
-    }
-#endif
-
-    // this is a very complex pattern :)
-    // replace:  1 r31 = a           where a is an array pointer
-    //           2 r31 = phi{1 4}
-    //           3 m[r31{2}] = x
-    //           4 r31 = r31{2} + b  where b is the size of the base of the 
-    //                               array pointed at by a
-    // with:     1 r31 = 0
-    //           2 r31 = phi{1 4}
-    //           3 m[a][r31{2}] = x
-    //           4 r31 = r31{2} + 1
-    // I just assume this can only happen in a loop.. 
-    if (res->getOper() == opMemOf && 
-        res->getSubExp1()->getOper() == opSubscript &&
-        ((RefExp*)res->getSubExp1())->getRef() &&
-        ((RefExp*)res->getSubExp1())->getRef()->isPhi()) {
-        Statement *phistmt = ((RefExp*)res->getSubExp1())->getRef();
-        PhiExp *phi = (PhiExp*)phistmt->getRight();
-        if (phi->getNumRefs() == 2 && 
-            phi->getAt(0) && phi->getAt(1) &&
-            phi->getAt(0)->isAssign() &&
-            phi->getAt(1)->isAssign()) {
-            Assign *a1 = (Assign*)phi->getAt(0);
-            Assign *a4 = (Assign*)phi->getAt(1);
-            if (a1->getRight()->getType() &&
-                a4->getRight()->getOper() == opPlus &&
-                a4->getRight()->getSubExp1()->getOper() == opSubscript &&
-                ((RefExp*)a4->getRight()->getSubExp1())->getRef() == phistmt &&
-                *a4->getRight()->getSubExp1()->getSubExp1() == 
-                                                        *phi->getSubExp1() &&
-                a4->getRight()->getSubExp2()->getOper() == opIntConst) {
-                Type *ty = a1->getRight()->getType();
-                int b = ((Const*)a4->getRight()->getSubExp2())->getInt();
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty->isPointer()) {
-                    ty = ((PointerType*)ty)->getPointsTo();
-                    if (ty->isNamed())
-                        ty = ((NamedType*)ty)->resolvesTo();
-                    if (ty->isArray() && 
-                        b*8 == ((ArrayType*)ty)->getBaseType()->getSize()) {
-                        if (VERBOSE)
-                            LOG << "doing complex pattern on " << res 
-                                << " using " << a1 << " and " << a4 << "\n";
-                        ((Const*)a4->getRight()->getSubExp2())->setInt(1);
-                        res = new Binary(opArraySubscript, 
-                                Location::memOf(a1->getRight()->clone()), 
-                                res->getSubExp1()->clone());
-                        a1->setRight(new Const(0));
-                        if (VERBOSE)
-                            LOG << "replaced with " << res << " using " 
-                                << a1 << " and " << a4 << "\n";
-                        bMod = true;
-                        return res;
-                    }
-                }
-            }
-        }
-    }
-
     return res;
 }
 
@@ -3627,8 +3547,11 @@ Type *Binary::getType() {
                 if (sty->isNamed())
                     sty = ((NamedType*)sty)->resolvesTo();
                 ArrayType *ty = dynamic_cast<ArrayType*>(sty);
-                if (ty == NULL)
+                if (ty == NULL) {
                     LOG << "subExp1 not of array type: " << this << "\n";
+                    if (sty)
+                        LOG << "it has a type: " << sty->getCtype() << "\n";
+                }
                 assert(ty);
                 return ty->getBaseType();
             }
@@ -3671,7 +3594,7 @@ Type *RefExp::getType()
         return def->getRight()->getType();
     if (def && def->isPhi()) {
         PhiExp *phi = (PhiExp*)def->getRight();
-#if 0
+#if 1
         if (VERBOSE)
             LOG << "checking statements in " << phi << " for type of " << this 
                 << "\n";
@@ -3679,14 +3602,18 @@ Type *RefExp::getType()
         StatementVec::iterator uu;
         for (uu = phi->begin(); uu != phi->end(); uu++) {
             Statement *s = *uu;
-            if (s && s->getRight() && s->getRight()->getType()) {
-#if 0
-                if (VERBOSE)
-                    LOG << "returning type " 
-                        << s->getRight()->getType()->getCtype() << " for " 
-                        << this << "\n";
+            if (s && s->getRight() && 
+                (s->getRight()->getOper() != opSubscript ||
+                 ((RefExp*)s->getRight())->getRef() == NULL)) {
+                if (s->getRight()->getType()) {
+#if 1
+                    if (VERBOSE)
+                        LOG << "returning type " 
+                            << s->getRight()->getType()->getCtype() << " for " 
+                            << this << "\n";
 #endif
-                return s->getRight()->getType();
+                    return s->getRight()->getType();
+                } else break;
             }
         }
     }
@@ -3729,10 +3656,6 @@ Type *Location::getType()
                     int n = proc->getSignature()->findParam(e);
                     if (n != -1) {
                         Type *ty = proc->getSignature()->getParamType(n);
-                        if (ty->isArray()) {
-                            // we actually mean the first element of the array
-                            ty = ((ArrayType*)ty)->getBaseType();
-                        }
 #if 0
                         LOG << "type from signature " << ty->getCtype()
                             << " for " << this << "\n";
@@ -3745,10 +3668,6 @@ Type *Location::getType()
                             dynamic_cast<PointerType*>(subExp1->getType());
                     if (ty) {
                         Type *t = ty->getPointsTo();
-                        if (t->isArray()) {
-                            // we actually mean the first element of the array
-                            t = ((ArrayType*)t)->getBaseType();
-                        }
 #if 0
                         LOG << "type from subexp1 " 
                             << t->getCtype()
@@ -3758,10 +3677,6 @@ Type *Location::getType()
                     }
                 }
                 if (ty) {
-                    if (ty->isArray()) {
-                        // we actually mean the first element of the array
-                        ty = ((ArrayType*)ty)->getBaseType();
-                    }
 #if 0
                     LOG << "type (saved) " 
                         << ty->getCtype()

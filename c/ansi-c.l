@@ -83,6 +83,8 @@ private: \
 "__nodecode"		{ count(); return AnsiCParser::NODECODE; }
 "__incomplete"		{ count(); return AnsiCParser::INCOMPLETE; }
 "__cdecl"               { count(); return AnsiCParser::CDECL; }
+"__custom"              { count(); return AnsiCParser::CUSTOM; }
+"__withstack("          { count(); return AnsiCParser::WITHSTACK; }
 "__symref"              { count(); return AnsiCParser::SYMBOLREF; }
 "static"		{ count(); return AnsiCParser::STATIC; }
 "struct"		{ count(); return AnsiCParser::STRUCT; }
@@ -93,6 +95,8 @@ private: \
 "void"			{ count(); return AnsiCParser::VOID; }
 "volatile"		{ count(); return AnsiCParser::VOLATILE; }
 "while"			{ count(); return AnsiCParser::WHILE; }
+"r["                    { count(); return AnsiCParser::REGOF; }
+"m["                    { count(); return AnsiCParser::MEMOF; }
 
 {L}({L}|{D})*		{ count(); yylval.str = strdup(yytext); return check_type(); }
 
@@ -130,15 +134,15 @@ L?\"(\\.|[^\\"])*\"	{ count(); yylval.str = strdup(yytext); return AnsiCParser::
 "=="			{ count(); return AnsiCParser::EQ_OP; }
 "!="			{ count(); return AnsiCParser::NE_OP; }
 ";"			{ count(); return ';'; }
-("{"|"<%")		{ count(); return '{'; }
-("}"|"%>")		{ count(); return '}'; }
+"{"		        { count(); return '{'; }
+"}"		        { count(); return '}'; }
 ","			{ count(); return ','; }
 ":"			{ count(); return ':'; }
 "="			{ count(); return '='; }
 "("			{ count(); return '('; }
 ")"			{ count(); return ')'; }
-("["|"<:")		{ count(); return '['; }
-("]"|":>")		{ count(); return ']'; }
+"["		        { count(); return '['; }
+"]"		        { count(); return ']'; }
 "."			{ count(); return '.'; }
 "&"			{ count(); return '&'; }
 "!"			{ count(); return '!'; }

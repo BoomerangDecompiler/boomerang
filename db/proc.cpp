@@ -1397,7 +1397,7 @@ void UserProc::trimReturns() {
         // Special case for 32-bit stack-based machines (e.g. Pentium).
         // RISC machines generally preserve the stack pointer (so no special
         // case required)
-        for (int p = 0; !stdsp && p < 5; p++) {
+        for (int p = 0; !stdsp && p < 7; p++) {
             if (VERBOSE)
                 LOG << "attempting to prove sp = sp + " << 4 + p*4 << 
                              " for " << getName() << "\n";
@@ -1598,10 +1598,10 @@ void UserProc::addNewParameters() {
                     continue;
                 }
 #if 1
-                if (e->getOper() != opMemOf ||
+                if ((e->getOper() != opMemOf ||
                     e->getSubExp1()->getOper() != opPlus ||
                     !(*e->getSubExp1()->getSubExp1() == *Location::regOf(28)) ||
-                    e->getSubExp1()->getSubExp2()->getOper() != opIntConst) {
+                    e->getSubExp1()->getSubExp2()->getOper() != opIntConst) && e->getOper() != opRegOf) {
                     if (VERBOSE)
                         LOG << "ignoring non pentium " << e << "\n";
                     continue;
@@ -2190,8 +2190,41 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
             }
         }
 
-    // replace expressions in regular statements with locals
+    // look for array locals
     Exp *l = Location::memOf(new Binary(opMinus, 
+                new Binary(opPlus,
+                   new RefExp(Location::regOf(sp), NULL),
+                   new Terminal(opWild)),
+                new Terminal(opWild)));
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        std::list<Exp*> results;
+        s->searchAll(l, results);
+        for (std::list<Exp*>::iterator it1 = results.begin(); 
+                                       it1 != results.end(); it1++) {
+            Exp *result = *it1;
+            if (result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+                Location *arr = Location::memOf(new Binary(opMinus, 
+                              new RefExp(Location::regOf(sp), NULL),
+                              result->getSubExp1()->getSubExp2()->clone()));
+                int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
+                arr->setProc(this);
+                arr->setType(new ArrayType(new IntegerType(), n/4));
+                if (VERBOSE)
+                    LOG << "found a local array using " << n << " bytes\n";
+                Exp *replace = Location::memOf(new Binary(opPlus,
+                                  new Unary(opAddrOf, arr),
+                                  result->getSubExp1()->getSubExp1()->getSubExp2()->clone()));
+                if (VERBOSE)
+                    LOG << "replacing " << result << " with " << replace << " in " 
+                        << s << "\n";
+                s->searchAndReplace(result->clone(), replace);
+            }
+        }
+    }
+
+    // replace expressions in regular statements with locals
+    l = Location::memOf(new Binary(opMinus, 
                 new RefExp(Location::regOf(sp), NULL),
                 new Terminal(opWild)));
     for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -2203,8 +2236,6 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
             Exp *result = *it1;
             if (result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
                 Type *ty = result->getType();
-                if (ty == NULL && s->isAssign())
-                    ty = s->getRight()->getType();
                 if (ty == NULL && lastPass)
                     ty = new IntegerType();
                 Exp *e = getLocalExp(result, ty);
@@ -2214,10 +2245,10 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
                         LOG << "replacing " << search << " with " << e << " in " 
                             << s << "\n";
                     s->searchAndReplace(search, e);
-                    s->simplify();
                 }
             }
         }
+        s->simplify();
     }
 }
 
@@ -2426,6 +2457,8 @@ void UserProc::countRefs(RefCounter& refCounts) {
             ((PhiExp*)s->getRight())->simplifyRefs();
             s->simplify();
         }
+        if (s->isReturn())
+            LOG << "counting references in " << s << "\n";
         LocationSet refs;
         s->addUsedLocs(refs);
         LocationSet::iterator rr;
@@ -2433,6 +2466,9 @@ void UserProc::countRefs(RefCounter& refCounts) {
             if (((Exp*)*rr)->isSubscript()) {
                 Statement *ref = ((RefExp*)*rr)->getRef();
                 refCounts[ref]++;
+                if (s->isReturn())
+                    LOG << "counted ref to " << *rr << "\n";
+                
             }
         }
     }
@@ -2936,7 +2972,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
 
         Exp *old = query->clone();
 
-        query = query->simplify();
+        query = query->clone()->simplify();
 
         if (change && !(*old == *query) && VERBOSE) {
             LOG << old << "\n";
