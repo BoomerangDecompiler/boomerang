@@ -1447,7 +1447,7 @@ void Cfg::findImmedPDom() {
     PBB curNode, succNode;  // the current Node and its successor
 
     // traverse the nodes in order (i.e from the bottom up)
-	unsigned int i;
+	int i;
     for (i = revOrdering.size() - 1; i >= 0; i--) {
         curNode = revOrdering[i];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
@@ -1459,8 +1459,9 @@ void Cfg::findImmedPDom() {
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (i = 0; i < Ordering.size(); i++) {
-        curNode = Ordering[i];
+    unsigned u;
+    for (u = 0; u < Ordering.size(); u++) {
+        curNode = Ordering[u];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
         if (oEdges.size() > 1)
             for (unsigned int j = 0; j < oEdges.size(); j++) {
@@ -1470,8 +1471,8 @@ void Cfg::findImmedPDom() {
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (i = 0; i < Ordering.size(); i++) {
-        curNode = Ordering[i];
+    for (u = 0; u < Ordering.size(); u++) {
+        curNode = Ordering[u];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
         if (oEdges.size() > 1)
             for (unsigned int j = 0; j < oEdges.size(); j++) {
