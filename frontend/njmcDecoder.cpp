@@ -183,6 +183,7 @@ void DecodeResult::reset()
     type = NCT;
     valid = true;
     rtl = NULL;
+    reDecode = false;
     forceOutEdge = 0;   
 }
 
