@@ -43,6 +43,9 @@
 #include "visitor.h"
 #include <sstream>
 
+#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
+
+
 extern char debug_buffer[];		 // For prints functions
 
 void Statement::setProc(UserProc *p)
@@ -1304,7 +1307,7 @@ void CaseStatement::simplify() {
  * RETURNS:			 <nothing>
  *============================================================================*/
 CallStatement::CallStatement(int returnTypeSize /*= 0*/):  
-	  returnTypeSize(returnTypeSize), returnType(NULL), returnAfterCall(false) {
+	  returnTypeSize(returnTypeSize), returnType(new VoidType), returnAfterCall(false) {
 	kind = STMT_CALL;
 	procDest = NULL;
 }
@@ -2322,29 +2325,37 @@ void CallStatement::processConstants(Prog *prog) {
 		}
 	}
 
-	ellipsisTruncation();
+	ellipsisProcessing();
 }
 
-void CallStatement::ellipsisTruncation() {
+void setSigParam(Signature* sig, Type* ty, bool isScanf) {
+	if (isScanf) ty = new PointerType(ty);
+	sig->addParameter(ty);
+}
+
+// This function has two jobs. One is to truncate the list of arguments based on the format string.
+// The second is to add parameter types to the signature.
+// If -Td is used, type analysis will be rerun with these changes.
+bool CallStatement::ellipsisProcessing() {
 	// This code was in CallStatement::doReplaceRef()
 	if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
-		return;
+		return false;
 	// functions like printf almost always have too many args
 	std::string name(getDestProc()->getName());
 	int format;
 	if ((name == "printf" || name == "scanf")) format = 0;
 	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") format = 1;
-	else return;
+	else return false;
 	char* formatStr = NULL;
 	Exp* formatExp = getArgumentExp(format);
 	if (formatExp->isSubscript()) {
 		// Maybe it's defined to be a Const string
 		Statement* def = ((RefExp*)formatExp)->getRef();
-if (def == NULL) return;	// Waiting for ImplicitAssigns
+if (def == NULL) return false;	// Waiting for ImplicitAssigns
 		if (def->isAssign()) {
 			// This would be unusual; propagation would normally take care of this
 			Exp* rhs = ((Assign*)def)->getRight();
-			if (rhs == NULL || !rhs->isStrConst()) return;
+			if (rhs == NULL || !rhs->isStrConst()) return false;
 			formatStr = ((Const*)rhs)->getStr();
 		} else if (def->isPhi()) {
 			// More likely. Example: switch_gcc. Only need ONE candidate format string
@@ -2358,26 +2369,47 @@ if (def == NULL) continue;
 				formatStr = ((Const*)rhs)->getStr();
 				break;
 			}
-			if (formatStr == NULL) return;
-		} else return;
+			if (formatStr == NULL) return false;
+		} else return false;
 	} else if (formatExp->isStrConst()) {
 		formatStr = ((Const*)formatExp)->getStr();
-	} else return;
+	} else return false;
 	// actually have to parse it
-	int n = 1;		// Number of %'s plus 1 = number of args
+	int n = 1;		// Count the format string itself (may also be "format" more arguments)
+	char ch;
+	Signature* sig = getDestProc()->getSignature();
+	// Set a flag if the name of the function is scanf/sscanf/fscanf
+	bool isScanf = name == "scanf" || name.substr(1, 5) == "scanf";
 	char *p = formatStr;
 	while ((p = strchr(p, '%'))) {
-		// special hack for scanf
-		// Mike: do we want this here?
-		if (name == "scanf" || name.substr(1, 5) == "scanf") {
-			setArgumentExp(format+n, new Unary(opAddrOf, Location::memOf(getArgumentExp(n), proc)));
-		}
-		p++;
+		p++;				// Point past the %
+		do {
+			ch = *p++;		// Skip size and precision
+		} while ('0' <= ch && ch <= '9' || ch == '.');
 		if (*p != '%')		// Don't count %%
 			n++;
-		p++;
+		switch (ch) {
+			case 'd': case 'n':
+				setSigParam(sig, new IntegerType(), isScanf);
+				break;
+			case 'f':
+				setSigParam(sig, new FloatType(64), isScanf);
+				break;
+			case 's':
+				setSigParam(sig, new PointerType(new CharType), isScanf);
+				break;
+			case 'c':
+				setSigParam(sig, new CharType, isScanf);
+				break;
+			case '%':
+				break;			// Ignore %%
+			default:
+				LOG << "Unhandled format character " << ch << " in format string for call " << this << "\n";
+		}
 	}
 	setNumArguments(format + n);
+	sig->killEllipsis();	// So we don't do this again
+	return true;
 }
 
 /**********************************
@@ -2862,6 +2894,7 @@ void Assign::simplify() {
 
 	// this hack finds address constants.. it should go away when
 	// Mike writes some decent type analysis.
+	if (DFA_TYPE_ANALYSIS) return;
 	if (lhs->getOper() == opMemOf && lhs->getSubExp1()->getOper() == opSubscript) {
 		RefExp *ref = (RefExp*)lhs->getSubExp1();
 		Statement *phist = ref->getRef();
@@ -3763,19 +3796,19 @@ void PhiAssign::simplifyRefs() {
 
 void CallStatement::dfaTypeAnalysis(bool& ch) {
 	Signature* sig = procDest->getSignature();
+	Prog* prog = procDest->getProg();
 	// Iterate through the parameters
 	int n = sig->getNumParams();
 	for (int i=0; i < n; i++) {
 		Exp* e = getArgumentExp(i);
 		Type* t = sig->getParamType(i);
-std::cerr << "CallStatement::dfaTypeAnalysis: expression " << e << " and type " << (t ? t->getCtype() : "NULL") << "\n";
 		Const* c;
 		if (e->isSubscript()) {
 			// A subscripted location. Find the definition
 			RefExp* r = (RefExp*)e;
 			Statement* def = r->getRef();
 			// assert(def);			// Soon!
-if (def) {
+if (def == NULL) continue;
 			Type* tParam = def->getType();
 			assert(tParam);
 			Type* oldTparam = tParam;
@@ -3784,12 +3817,21 @@ if (def) {
 			if (DEBUG_TA && tParam != oldTparam)
 				LOG << "Type of " << r << " changed from " << oldTparam->getCtype() << " to " <<
 					tParam->getCtype() << "\n";
-}
 		} else if ((c = dynamic_cast<Const*>(e)) != NULL) {
 			// A constant.
 			Type* oldConType = c->getType();
 			c->setType(t);
 			ch |= (t != oldConType);
+		} else if (t->isPointer() && sig->isAddrOfStackLocal(prog, e)) {
+			// e is probably the address of some local
+			Exp* localExp = Location::memOf(e);
+			char* name = proc->getSymbolName(localExp);
+			if (name) {
+				Exp* old = arguments[i]->clone();
+				arguments[i] = new Unary(opAddrOf, Location::local(name, proc));
+				if (DEBUG_TA)
+					LOG << "Changed argument " << i << " was " << old << ", result is " << this << "\n";
+			}
 		}
 	}
 }

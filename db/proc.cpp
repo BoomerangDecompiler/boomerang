@@ -582,10 +582,6 @@ std::list<Type>* Proc::getParamTypeList(const std::list<Exp*>& actuals) {
 }
 #endif
 
-Prog *Proc::getProg() {
-	return prog;
-}
-
 Proc *Proc::getFirstCaller() { 
 	if (m_firstCaller == NULL && m_firstCallerAddr != NO_ADDRESS) {
 		m_firstCaller = prog->findProc(m_firstCallerAddr);
@@ -2222,23 +2218,16 @@ void UserProc::replaceExpressionsWithSymbols() {
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		for (std::map<Exp*, Exp*,lessExpStar>::iterator it1 = symbolMap.begin();
-		  it1 != symbolMap.end(); it1++) {
+		for (std::map<Exp*, Exp*,lessExpStar>::iterator it1 = symbolMap.begin(); it1 != symbolMap.end(); it1++) {
 			bool ch = s->searchAndReplace((*it1).first, (*it1).second);
 			if (ch && VERBOSE) {
-				LOG << "std stmt: replace " << (*it1).first <<
-				  " with " << (*it1).second << " result " << s << "\n";
+				LOG << "std stmt: replace " << (*it1).first << " with " << (*it1).second << " result " << s << "\n";
 			}
 		}
 	}
 }
 
 void UserProc::replaceExpressionsWithParameters(int depth) {
-	if (DFA_TYPE_ANALYSIS) {
-		if (VERBOSE)
-			LOG << "Not replacing expressions with parameters (for now) because -Td in force\n";
-		return;
-	}
 	StatementList stmts;
 	getStatements(stmts);
 
@@ -2247,7 +2236,6 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 			<< "\n";
 
 	bool found = false;
-	// start with calls because that's where we have the most types
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if ((*it)->isCall()) {
@@ -2264,8 +2252,14 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 						continue;
 					}
 
-					Location *pe = Location::memOf(e, this);
-					Exp *ne = new Unary(opAddrOf, pe);
+					Exp* ne;
+					if (DFA_TYPE_ANALYSIS)
+						ne = e;		// No a[m[e]]
+					else {
+						// Do the a[m[e]] hack
+						Location *pe = Location::memOf(e, this);
+						ne = new Unary(opAddrOf, pe);
+					}
 					if (VERBOSE)
 						LOG << "replacing argument " << e << " with " << ne <<
 						  " in " << call << "\n";
@@ -2764,6 +2758,22 @@ void UserProc::addLocals(int b, int n) {
 		}
 	}
 }
+
+const char* UserProc::getLocalName(int n) { 
+	int i = 0;
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++, i++)
+		if (i == n)
+			return it->first.c_str();
+	return NULL;
+}
+
+char* UserProc::getSymbolName(Exp* e) {
+	std::map<Exp*,Exp*,lessExpStar>::iterator it = symbolMap.find(e);
+	if (it == symbolMap.end()) return NULL;
+	if (!it->second->isLocal()) return NULL;
+	return ((Const*)((Location*)it->second)->getSubExp1())->getStr();
+}
+
 
 void UserProc::countRefs(RefCounter& refCounts) {
 	StatementList stmts;
@@ -3427,7 +3437,7 @@ void UserProc::addCallees(std::set<UserProc*>& callees) {
 	}
 }
 
-void UserProc::conTypeAnalysis(Prog* prog) {
+void UserProc::conTypeAnalysis() {
 	if (DEBUG_TA)
 		LOG << "Type Analysis for Procedure " << getName() << "\n";
 	Constraints consObj;
@@ -3473,6 +3483,7 @@ void UserProc::conTypeAnalysis(Prog* prog) {
 	}
 
 	// Just use the first solution, if there is one
+	Prog* prog = getProg();
 	if (solns.size()) {
 		ConstraintMap& cm = *solns.begin();
 		for (cc = cm.begin(); cc != cm.end(); cc++) {
@@ -3523,15 +3534,13 @@ if (!cc->first->isTypeOf()) continue;
 	}
 }
 
-void UserProc::dfaTypeAnalysis(Prog* prog) {
+#define DFA_ITER_LIMIT 20
+
+void UserProc::dfaTypeAnalysis() {
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
-	int conscript = 0;		// Assumes numbering is local to this procedure
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		conscript = (*it)->setConscripts(conscript);
-	}
-	for (int i=0; i < 20; i++) {
+	for (int i=0; i < DFA_ITER_LIMIT; i++) {
 		bool ch = false;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
 			(*it)->dfaTypeAnalysis(ch);	  
@@ -3549,6 +3558,7 @@ void UserProc::dfaTypeAnalysis(Prog* prog) {
 				LOG << "\n *** End results for Data flow based Type Analysis ***\n";
 			}
 			// Now use the type information gathered
+			Prog* prog = getProg();
 			for (it = stmts.begin(); it != stmts.end(); it++) {
 				Statement* s = *it;
 				Type* t = s->getType();
@@ -3579,7 +3589,7 @@ void UserProc::dfaTypeAnalysis(Prog* prog) {
 			return;
 		}
 	}
-	LOG << "**** Iteration limit exceeded for dfaTypeAnalysis of procedure " << getName() << " ****\n";
+	LOG << "**** Iteration limit " << DFA_ITER_LIMIT << " exceeded for dfaTypeAnalysis of procedure " << getName() << " ****\n";
 }
 
 
@@ -3637,14 +3647,17 @@ void UserProc::castConst(int num, Type* ty) {
 	}
 }
 
-void UserProc::ellipsisTruncation() {
+// Process calls with ellipsis parameters. Return true if any signature parameter types added.
+bool UserProc::ellipsisProcessing() {
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
+	bool ch = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		CallStatement* call = dynamic_cast<CallStatement*>(*it);
-		if (call) call->ellipsisTruncation();
+		if (call) ch |= call->ellipsisProcessing();
 	}
+	return ch;
 }
 
 class LibProcMemo : public Memo {

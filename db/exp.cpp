@@ -58,6 +58,8 @@
 #include "visitor.h"
 #include <iomanip>			// For std::setw etc
 
+#define DEBUG_PROOF (Boomerang::get()->debugProof)
+
 /*==============================================================================
  * FUNCTION:		Const::Const etc
  * OVERVIEW:		Constructors
@@ -2712,10 +2714,10 @@ Exp* RefExp::polySimplify(bool& bMod) {
 			//	 *uu), base->clone());
 			Exp* query = new Binary(opEquals, first,
 			  new RefExp(subExp1->clone(), *uu));
-			if (Boomerang::get()->debugProof)
+			if (DEBUG_PROOF)
 				LOG << "attempting to prove " << query << " for ref to phi\n";
 			if (!def->getProc()->prove(query)) {
-				if (Boomerang::get()->debugProof) LOG << "not proven\n";
+				if (DEBUG_PROOF) LOG << "not proven\n";
 				allProven = false;
 				break;
 			}
@@ -2724,7 +2726,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
 			bMod = true;
 			//res = base->clone();
 			res = first;
-			LOG << "replacing ref to phi " << def << " with " << res << "\n";
+			if (DEBUG_PROOF)
+				LOG << "replacing ref to phi " << def << " with " << res << "\n";
 			return res;
 		}
 	}

@@ -2279,7 +2279,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 			if (a->getOper() == opLocal) {
 				a = S->getProc()->getLocalExp(((Const*)a->getSubExp1())->
 				  getStr());
-				// Note: used to assert(d) here. However, with switch
+				// Note: used to assert(a) here. However, with switch
 				// statements and in other cases, a local may be created which
 				// does not represent memory at all (created with
 				// UserProc::newLocal()), and so there is no entry in symbolMap,

@@ -1099,7 +1099,7 @@ void Prog::conTypeAnalysis() {
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
-		proc->conTypeAnalysis(this);
+		proc->conTypeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== End Type Analysis ===\n";
@@ -1108,14 +1108,13 @@ void Prog::conTypeAnalysis() {
 void Prog::dfaTypeAnalysis() {
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== Start Data-flow-based Type Analysis ===\n";
-	// FIXME: Does this need to be done bottom of the call-tree first, with repeat
-	// until no change for cycles in the call graph?
 	std::list<Proc*>::iterator pp;
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
-		proc->dfaTypeAnalysis(this);
-		proc->ellipsisTruncation();
+		do
+			proc->dfaTypeAnalysis();
+		while (proc->ellipsisProcessing());
 	}
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== End Type Analysis ===\n";

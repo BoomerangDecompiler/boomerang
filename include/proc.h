@@ -17,8 +17,6 @@
  *============================================================================*/
 
 /* $Revision$
- * 20 Sep 01 - Brian: Added getSymbolicLocals() to return the list of symbolic
- *				locals for a procedure.
 */
 
 #ifndef _PROC_H_
@@ -89,7 +87,7 @@ public:
 	/*
 	 * Get the program this procedure belongs to.
 	 */
-	Prog *getProg();
+	Prog *getProg() { return prog; }
 	void setProg(Prog *p) { prog = p; }
  
 	/*
@@ -325,6 +323,7 @@ class UserProc : public Proc {
 	/*
 	 * A map between machine dependent locations and their corresponding
 	 * symbolic, machine independent representations.
+	 * Example: m[r28{0} - 8] -> local5
 	 */
 	std::map<Exp*,Exp*,lessExpStar> symbolMap;
 
@@ -489,9 +488,11 @@ public:
 	void insertAssignAfter(Statement* s, int tempNum, Exp* right);
 	// Insert statement a after statement s
 	void insertStatementAfter(Statement* s, Statement* a);
-	void conTypeAnalysis(Prog* prog);
-	void dfaTypeAnalysis(Prog* prog);
-	void ellipsisTruncation();		// e.g. trim printf to appropriate number of parameters
+	void conTypeAnalysis();
+	void dfaTypeAnalysis();
+	// Trim parameters to procedure calls with ellipsis (...). Also add types for ellipsis parameters, if any
+	// Returns true if any signature types so added
+	bool ellipsisProcessing();
 
 	// For the final pass of removing returns that are never used
 	typedef std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
@@ -601,13 +602,8 @@ public:
 	void setLocalExp(const char *nam, Exp *e);
 
 	int getNumLocals() { return (int)locals.size(); }
-	const char *getLocalName(int n) { 
-		int i = 0;
-		for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++, i++)
-			if (i == n)
-				return (*it).first.c_str();
-		return NULL;
-	}
+	const char *getLocalName(int n);
+	char *getSymbolName(Exp* e);		// As above, but look for expression e
 	void renameLocal(const char *oldName, const char *newName);
 	virtual void renameParam(const char *oldName, const char *newName);
 
@@ -620,27 +616,6 @@ public:
 	 * Print the locals declaration in C style.
 	 */
 	void printLocalsAsC(std::ostream& os);
-
-	/*
-	 * Return the index of the first symbolic local for the procedure.
-	 */
-	int getFirstLocalIndex();
-
-	/*
-	 * Return the index of the last symbolic local for the procedure.
-	 */
-	int getLastLocalIndex();
-	
-	/*
-	 * Return the list of symbolic locals for the procedure.
-	 */
-	std::vector<TypedExp*>& getSymbolicLocals();
-	
-	/*
-	 * Replace each instance of a location in this procedure with its symbolic
-	 * representation if it has one.
-	 */
-	void propagateSymbolics();
 
 	/*
 	 * Get the BB that is the entry point (not always the first BB)

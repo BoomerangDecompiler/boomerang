@@ -481,7 +481,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 		case opSize:
 			{
 				/*Type *ty = new IntegerType(((Const*)b->getSubExp1())->getInt(), 1);
-				str << "*(" << ty->getCtype() << " *)";
+				str << "*(" << ty->getCtype(true) << " *)";
 				appendExp(str, new Unary(opAddrOf, b->getSubExp2()), PREC_UNARY);*/
 				appendExp(str, b->getSubExp2(), PREC_UNARY);
 			}

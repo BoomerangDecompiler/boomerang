@@ -791,7 +791,7 @@ const char* SizeType::getCtype(bool final) const {
 	if (final) {
 		// Make a signed integer type of the same size
 		IntegerType it(size);
-		return it.getCtype();
+		return it.getCtype(final);
 	}
 	// Emit a comment and the size
 	std::ostringstream ost;
