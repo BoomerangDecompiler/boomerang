@@ -22,12 +22,14 @@ int main(int argc, char** argv)
 {
 	CppUnit::TestSuite suite;
 
-	FrontSparcTest fst("FrontSparcTest");
+//	FrontSparcTest fst("FrontSparcTest");
 //	  FrontendTest fet("FrontendTest");
-	FrontPentTest fpt("FrontPentTest");
+//	FrontPentTest fpt("FrontPentTest");
+	FrontPentTest fSt("FrontPentTest");
 
-	fst.registerTests(&suite);
-	fpt.registerTests(&suite);
+//	fst.registerTests(&suite);
+//	fpt.registerTests(&suite);
+	fSt.registerTests(&suite);
 
 	CppUnit::TextTestResult res;
 

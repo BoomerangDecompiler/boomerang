@@ -9,6 +9,7 @@ enum platform {
 	PLAT_PARISC,
 	PLAT_PPC,
 	PLAT_MIPS,
+	PLAT_ST20,
 	PLAT_GENERIC
 };
 

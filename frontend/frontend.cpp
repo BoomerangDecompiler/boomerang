@@ -50,6 +50,7 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "ppcfrontend.h"
+#include "st20frontend.h"
 #include "prog.h"
 #include "signature.h"
 #include "boomerang.h"
@@ -72,6 +73,8 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
 		return new SparcFrontEnd(pBF);
 	case MACHINE_PPC:
 		return new PPCFrontEnd(pBF);
+	case MACHINE_ST20:
+		return new ST20FrontEnd(pBF);
 	default:
 		LOG << "Machine architecture not supported\n";
 	}
@@ -107,6 +110,8 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF) {
 		return new SparcFrontEnd(pBF);
 	if (str == "ppc")
 		return new PPCFrontEnd(pBF);
+	if (str == "st20")
+		return new ST20FrontEnd(pBF);
 	return NULL;
 }
 
@@ -992,6 +997,17 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle, BinaryFi
 #ifndef DYNAMIC
 			{
 				PPCFrontEnd *fe = new PPCFrontEnd(pBF);
+				decoder = fe->getDecoder();
+				return fe;
+			}
+#endif
+
+		}
+		else if (buf[0x12] == (char)0xa8) {		// ST20, little endian
+			machName = "st20"; 
+#ifndef DYNAMIC
+			{
+				ST20FrontEnd *fe = new ST20FrontEnd(pBF);
 				decoder = fe->getDecoder();
 				return fe;
 			}

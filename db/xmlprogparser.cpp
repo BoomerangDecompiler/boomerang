@@ -629,6 +629,8 @@ void XMLProgParser::start_signature(const char **attr)
 		p = PLAT_PENTIUM;
 	else if (!strcmp(plat, "sparc"))
 		p = PLAT_SPARC;
+	else if (!strcmp(plat, "st20"))
+		p = PLAT_ST20;
 	else {
 		std::cerr << "unknown platform: " << plat << "\n";
 		assert(false);

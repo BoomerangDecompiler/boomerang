@@ -20,7 +20,7 @@
 # 15 Jul 01 - Mike: Added static target
 
 # Front end
-MACHS     = sparc pentium ppc
+MACHS     = sparc pentium ppc st20
 MACH_LIBS = $(patsubst %, lib/libfront%.so, $(MACHS))
 MACH_OBJS = $(patsubst %, frontend/%decoder.o, $(MACHS))
 MACH_SRC  = $(patsubst %, frontend/%decoder.cpp, $(MACHS))
@@ -104,7 +104,7 @@ remote:
         transform/transformation-parser.cpp transform/transformation-scanner.cpp \
         transform/transformation-parser.h transform/transformation-scanner.h
 # Also touch the decoders, since the user won't have the NJMC toolkit
-	touch frontend/pentiumdecoder.cpp frontend/sparcdecoder.cpp frontend/ppcdecoder.cpp
+	touch frontend/pentiumdecoder.cpp frontend/sparcdecoder.cpp frontend/ppcdecoder.cpp frontend/st20decoder.cpp
 
 clean:
 	cd util     && ${MAKE} clean
@@ -135,7 +135,8 @@ TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o \
   transform/transformation-parser.o transform/transformation-scanner.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
-	frontend/pentiumfrontend.o frontend/ppcdecoder.o frontend/ppcfrontend.o
+	frontend/pentiumfrontend.o frontend/ppcdecoder.o frontend/ppcfrontend.o \
+	frontend/st20decoder.o frontend/st20frontend.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 LOADER_OBJS = loader/BinaryFileFactory.o
@@ -264,6 +265,7 @@ frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h 
 	include/BinaryFile.h
 frontend/sparcfrontend.o: include/frontend.h include/boomerang.h
 frontend/pentiumfrontend.o: include/frontend.h include/boomerang.h
+frontend/st20frontend.o: include/frontend.h include/boomerang.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h include/BinaryFile.h include/frontend.h include/proc.h \
 	include/prog.h include/cfg.h include/BinaryFile.h
@@ -273,6 +275,8 @@ frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h
 frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
+    include/exp.h include/proc.h include/statement.h include/BinaryFile.h
+frontend/st20decoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h include/BinaryFile.h
 
 c/CTest.o:  c/ansi-c-parser.h

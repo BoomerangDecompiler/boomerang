@@ -53,6 +53,7 @@ char* Signature::platformName(platform plat) {
 		case PLAT_PARISC:	return "parisc";
 		case PLAT_PPC:		return "ppc";
 		case PLAT_MIPS:		return "mips";
+		case PLAT_ST20:		return "st20";
 		default:			return "???";
 	}
 }
@@ -177,6 +178,29 @@ namespace CallingConvention {
             virtual Exp *getProven(Exp *left);
             virtual bool isLocalOffsetPositive() {return true;}
             //virtual	bool isAddrOfStackLocal(Prog* prog, Exp* e);
+		};
+		class ST20Signature : public Signature {
+		public:
+			ST20Signature(const char *name);
+			ST20Signature(Signature &old);
+			virtual ~ST20Signature() { }
+			Signature *clone();
+			virtual bool operator==(Signature& other);
+			static bool qualified(UserProc *p, Signature &candidate);
+
+			virtual void addReturn(Type *type, Exp *e = NULL);
+			void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
+			Exp *getArgumentExp(int n);
+
+			virtual Signature *promote(UserProc *p);
+			virtual Exp *getStackWildcard();
+			virtual int	 getStackRegister() {return 3; }
+			virtual Exp *getProven(Exp *left);
+			virtual bool	isPromoted() { return true; }
+			//virtual bool isLocalOffsetPositive() {return true;}
+			virtual platform getPlatform() { return PLAT_ST20; }
+			virtual callconv getConvention() { return CONV_C; }
+			//virtual	bool isAddrOfStackLocal(Prog* prog, Exp* e);
 		};
 	};	// namespace StdC
 };	// namespace CallingConvention
@@ -616,6 +640,120 @@ Exp *CallingConvention::StdC::PPCSignature::getProven(Exp* left) {
 		}
 	}
 	return NULL; 
+}
+
+/// ST20 signatures
+
+CallingConvention::StdC::ST20Signature::ST20Signature(const char *nam) : Signature(nam) {
+	Signature::addReturn(Location::regOf(3));
+	Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp",
+				Location::regOf(3), NULL);
+	// FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
+}
+
+CallingConvention::StdC::ST20Signature::ST20Signature(Signature &old) : Signature(old)
+{
+
+}
+
+Signature *CallingConvention::StdC::ST20Signature::clone() {
+	ST20Signature *n = new ST20Signature(name.c_str());
+	n->params = params;
+	n->implicitParams = implicitParams;
+	n->returns = returns;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
+	n->preferedName = preferedName;
+	n->preferedReturn = preferedReturn;
+	n->preferedParams = preferedParams;
+	n->unknown = unknown;
+	return n;
+}
+
+bool CallingConvention::StdC::ST20Signature::operator==(Signature& other)
+{
+	return Signature::operator==(other);
+}
+
+
+Exp *CallingConvention::StdC::ST20Signature::getArgumentExp(int n) {
+	if (n < (int)params.size())
+		return Signature::getArgumentExp(n);
+	// m[%sp+4], etc.
+	Exp *sp = Location::regOf(3);
+	if (params.size() != 0 && *params[0]->getExp() == *sp)
+		n--;
+	Exp *e = Location::memOf(new Binary(opPlus, sp, new Const((n+1) * 4)));
+	return e;
+}
+
+void CallingConvention::StdC::ST20Signature::addReturn(Type *type, Exp *e)
+{
+	if (type->isVoid())
+		return;
+	if (e == NULL) {
+		e = Location::regOf(0);
+	}
+	Signature::addReturn(type, e);
+}
+
+Signature *CallingConvention::StdC::ST20Signature::promote(UserProc *p) {
+	// No promotions from here up, obvious idea would be c++ name mangling	
+	return this;
+}
+
+void CallingConvention::StdC::ST20Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+{
+	if (e == NULL) {
+		e = getArgumentExp(params.size());
+	}
+	Signature::addParameter(type, nam, e);
+}
+
+Exp* CallingConvention::StdC::ST20Signature::getStackWildcard() {
+	// m[r1 - WILD]
+	return Location::memOf(
+		new Binary(opMinus,
+			Location::regOf(3),
+			new Terminal(opWild)));
+}
+
+#if 1
+Exp *CallingConvention::StdC::ST20Signature::getProven(Exp *left) {
+	if (left->isRegOfK()) {
+		int r = ((Const*)left->getSubExp1())->getInt();
+		switch (r) {
+			case 3:
+				//return new Binary(opPlus, Location::regOf(3), new Const(4));
+				return left;
+			case 0: case 1: case 2:
+				//Registers A, B, and C are callee save
+				return Location::regOf(r);
+		}
+	}
+	return NULL;
+}
+#else
+Exp *CallingConvention::StdC::ST20Signature::getProven(Exp* left) {
+	if (left->isRegOfK()) {
+		int r = ((Const*)((Location*)left)->getSubExp1())->getInt();
+		switch (r) {
+			case 3: // stack
+				return left;
+		}
+	}
+	return NULL; 
+}
+#endif
+
+bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature &candidate) {
+	platform plat = p->getProg()->getFrontEndId();
+	if (plat != PLAT_ST20) return false;
+
+	if (VERBOSE)
+		LOG << "consider promotion to stdc st20 signature for " << p->getName() << "\n";
+
+	return true;
 }
 
 /*
@@ -1125,6 +1263,13 @@ Signature *Signature::promote(UserProc *p) {
 		return sig;
 	}
 
+	if (CallingConvention::StdC::ST20Signature::qualified(p, *this)) {
+		Signature *sig = new CallingConvention::StdC::ST20Signature(*this);
+//		sig->analyse(p);
+		delete this;
+		return sig;
+	}
+
 	return this;
 }
 
@@ -1143,6 +1288,8 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 			return new CallingConvention::StdC::SparcSignature(nam);
 		case PLAT_PPC:
 			return new CallingConvention::StdC::PPCSignature(nam);
+		case PLAT_ST20:
+			return new CallingConvention::StdC::ST20Signature(nam);
 		// insert other conventions here
 	default:
 		std::cerr << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
@@ -1291,6 +1438,12 @@ Exp* Signature::getFirstArgLoc(Prog* prog) {
 Exp* e = Location::memOf(Location::regOf(28));
 			return e;
 		}
+		case MACHINE_ST20: {
+			CallingConvention::StdC::ST20Signature sig("");
+			return sig.getArgumentExp(0);
+			//return Location::regOf(0);
+
+		}
 		default:
 			std::cerr << "Signature::getFirstArgLoc: machine not handled\n";
 			assert(0);
@@ -1308,6 +1461,8 @@ Exp* e = Location::memOf(Location::regOf(28));
 			return Location::regOf(8);
 		case MACHINE_PENTIUM:
 			return Location::regOf(24);
+		case MACHINE_ST20: 
+			return Location::regOf(0);
 		default:
 			std::cerr << "getReturnExp2: machine not handled\n";
 			return NULL;
@@ -1341,6 +1496,13 @@ std::list<Exp*> *Signature::getCallerSave(Prog* prog) {
 			li->push_back(Location::regOf(1));	// %g1
 			return li;
 		}
+		case MACHINE_ST20: {
+			std::list<Exp*> *li = new std::list<Exp*>;
+			li->push_back(Location::regOf(0));	 // A
+			li->push_back(Location::regOf(1));	 // B
+			li->push_back(Location::regOf(2));	 // C
+			return li;
+		}
 		default:
 			break;
 	}
@@ -1358,6 +1520,10 @@ Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
 		case MACHINE_PENTIUM: {
 			// Would we ever need Win32?
 			CallingConvention::StdC::PentiumSignature temp("");
+			return temp.getParamExp(n);
+		}
+		case MACHINE_ST20: {
+			CallingConvention::StdC::ST20Signature temp("");
 			return temp.getParamExp(n);
 		}
 		default:
@@ -1378,6 +1544,14 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
 		new Binary(opPlus,
 			Location::regOf(28),
 			new Const(4)));
+	static Assign st20_1ret(
+		new Terminal(opPC),
+		Location::memOf(Location::regOf(3)));
+	static Assign st20_2ret(
+		Location::regOf(3),
+		new Binary(opPlus,
+			Location::regOf(3),
+			new Const(16)));
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
 		case MACHINE_SPARC:
@@ -1386,6 +1560,12 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
 			StatementList* sl = new StatementList;
 			sl->append((Statement*)&pent1ret);
 			sl->append((Statement*)&pent2ret);
+			return *sl;
+		}
+		case MACHINE_ST20: {
+			StatementList* sl = new StatementList;
+			sl->append((Statement*)&st20_1ret);
+			sl->append((Statement*)&st20_2ret);
 			return *sl;
 		}
 		default:
@@ -1404,6 +1584,8 @@ int Signature::getStackRegister(Prog* prog) {
 			return 28;
 		case MACHINE_PPC:
 			return 1;
+		case MACHINE_ST20:
+			return 3;
 		default:
 			assert(0);
 			return 0;

@@ -879,7 +879,9 @@ MACHINE ElfBinaryFile::GetMachine() const {
 	else if (machine == EM_PA_RISC)	return MACHINE_HPRISC;
 	else if (machine == EM_68K)		return MACHINE_PALM;	// Unlikely
 	else if (machine == EM_PPC)		return MACHINE_PPC;
+	else if (machine == EM_ST20)		return MACHINE_ST20;
 	// What sort of machine is this?
+	printf("Machine type is %x %d\n",machine,machine);
 	assert(false);
 	return (MACHINE)-1;
 }

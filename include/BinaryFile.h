@@ -134,7 +134,7 @@ typedef BinaryFile *(*get_library_callback_t)(char *name);
 // This enum allows a sort of run time type identification, without using
 // compiler specific features
 enum LOAD_FMT {LOADFMT_ELF, LOADFMT_PE, LOADFMT_PALM, LOADFMT_PAR, LOADFMT_EXE, LOADFMT_MACHO, LOADFMT_LX};
-enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC};
+enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20};
 
 class BinaryFileFactory {
 public:
