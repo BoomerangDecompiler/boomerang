@@ -65,7 +65,7 @@ microX86dis.o: microX86dis.c
 
 # Extra object files, etc
 # Only ElfBinaryFile needs libelf. These are target specific variables.
-../lib/libElfBinaryFile.so: EXTRAS = -lelf SymTab.o
+../lib/libElfBinaryFile.so: EXTRAS = SymTab.o
 ../lib/libHpSomBinaryFile.so: EXTRAS = SymTab.o
 ../lib/libBinaryFile.so: EXTRAS = -ldl
 ../lib/libWin32BinaryFile.so: EXTRAS = microX86dis.o
