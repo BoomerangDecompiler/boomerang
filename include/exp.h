@@ -21,6 +21,16 @@
 #ifndef __EXP_H_
 #define __EXP_H_
 
+/* Main class hierarchy:    Exp (abstract)
+                      _____/ | \
+                     /       |  \
+                  Unary    Const Terminal
+     TypedExp____/  |   \         \
+      FlagDef___/ Binary Location  TypeVal
+       RefExp__/    |
+       PhiExp_/  Ternary
+*/
+
 #include <iostream>
 #include <fstream>      // For ostream, cout etc
 #include <stdio.h>      // For sprintf
