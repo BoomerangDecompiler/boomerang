@@ -665,6 +665,12 @@ bool RTL::isCompare(int& iReg, Exp*& expOperand) {
 bool RTL::isGoto() {
     if (stmtList.empty()) return false;
     Statement* last = stmtList.back();
+    return last->getKind() == STMT_GOTO;
+}
+
+bool RTL::isBranch() {
+    if (stmtList.empty()) return false;
+    Statement* last = stmtList.back();
     return last->getKind() == STMT_BRANCH;
 }
 

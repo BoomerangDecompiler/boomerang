@@ -41,6 +41,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -55,7 +56,6 @@
 #include "signature.h"
 #include "analysis.h"
 #include "boomerang.h"
-#include "dom.h"
 
 Prog::Prog()
     : interProcDFAphase(0),
@@ -1268,121 +1268,17 @@ void Prog::removeRestoreStmts(StatementSet& restoredSet) {
 }
 
 void Prog::decompile() {
-    // For each proc
-    UserProc* proc;
+    assert(m_procs.size());
+    UserProc* entryProc = (UserProc*) m_procs.front();
+    assert(!entryProc->isLib());
+    entryProc->decompile();
+
+    // Just in case there are any Procs not in the call graph
     std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-        proc = (UserProc*)(*pp);
+        UserProc* proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
-
-        // Sort by address, so printouts make sense
-        Cfg* cfg = proc->getCFG();
-        cfg->sortByAddress();
-        // Initialise statements
-        proc->initStatements();
-
-        // Compute dominance frontier
-        DOM* d = new DOM;
-        cfg->dominators(d);
-
-
-        // For each memory depth
-        int maxDepth = proc->findMaxDepth();
-        if (Boomerang::get()->maxMemDepth < maxDepth)
-            maxDepth = Boomerang::get()->maxMemDepth;
-        for (int depth = 0; depth <= maxDepth; depth++) {
-
-            // Place the phi functions for this memory depth
-            cfg->placePhiFunctions(d, depth, proc);
-
-            // Number the statements
-            int stmtNumber = 0;
-            proc->numberStatements(stmtNumber); 
-
-
-            // Rename variables
-            cfg->renameBlockVars(d, 0, depth);
-
-            // Print if requested
-            if (Boomerang::get()->debugPrintSSA) {
-                std::cerr << "=== Debug Print SSA for " << proc->getName()
-                  << " at memory depth " << depth << " (no propagations) ===\n";
-                proc->print(std::cerr, true);
-                std::cerr << "=== End Debug Print SSA for " <<
-                  proc->getName() << " at depth " << depth << " ===\n\n";
-            }
-
-            // Propagate at this memory depth
-            proc->propagateStatements(depth);
-            if (VERBOSE) {
-                std::cerr << "=== After propagate for " << proc->getName() <<
-                  " at memory depth " << depth << " ===\n";
-                proc->print(std::cerr, true);
-                std::cerr << "=== End propagate for " << proc->getName() <<
-                  " at depth " << depth << " ===\n\n";
-            }
-        }
-
-        // Now all the other things that were in UserProc::decompile()
-        proc->complete();
-
-#if 0
-        // Find the "restore set"
-        StatementSet restoreSet;
-        proc->findRestoreSet(restoreSet);
-        if (VERBOSE) {
-            std::cerr << "=== Restore set for " << proc->getName() << " ===\n";
-            StmtSetIter rr;
-            for (Statement* r = restoreSet.getFirst(rr); r;
-              r = restoreSet.getNext(rr))
-                std::cerr << std::dec << r->getNumber() << " ";
-            std::cerr << "\n\n";
-        }
-#endif
-
-        // Remove null statements
-        if (!Boomerang::get()->noRemoveNull)
-            proc->removeNullStatements();
-
-        // Remove unused statements
-        // FIXME: refCounts doesn't have to be parameter when remove global
-        typedef std::map<Statement*, int> RefCounter;
-        RefCounter refCounts;           // The map
-        // Count the references first
-        proc->countRefs(refCounts);
-        // Now remove any that have no used (globally)
-        if (!Boomerang::get()->noRemoveNull)
-            proc->removeUnusedStatements(refCounts);
-
-        if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-            std::cerr << "===== After removing null and unused statements "
-              "=====\n";
-            for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-                proc = (UserProc*)(*pp);
-                if (proc->isLib()) continue;
-                    proc->print(std::cerr, true);
-            }
-            std::cerr << "===== End after removing unused "
-              "statements =====\n\n";
-        }
-
-        igraph ig;      // FIXME: need to make an attempt to calculate this!
-        proc->fromSSAform(ig);
-
-        if (Boomerang::get()->vFlag) {
-            std::cerr << "===== After transformation from SSA form =====\n";
-            for (std::list<Proc*>::iterator it = m_procs.begin();
-                  it != m_procs.end(); it++) {
-                Proc *pProc = *it;
-                if (pProc->isLib()) continue;
-                UserProc *p = (UserProc*)pProc;
-                p->print(std::cerr, true);
-            }
-            std::cerr << "===== End after transformation from SSA =====\n\n";
-        }
-
-        delete d;
-
-
-    }       // for each proc
+        proc->decompile();
+    }
 }
+

@@ -53,6 +53,7 @@
 #include "signature.h"
 #include "hllcode.h"
 #include "boomerang.h"
+#include "dom.h"
 
 /************************
  * Proc methods.
@@ -593,8 +594,8 @@ std::ostream& LibProc::put(std::ostream& os) {
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
-    cfg(new Cfg()), decoded(false), 
-    returnIsSet(false), isSymbolic(false), uniqueID(0) {
+    cfg(new Cfg()), decoded(false), isSymbolic(false), uniqueID(0),
+    decompileSeen(false), decompiled(false), isRecursive(false) {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
 
@@ -645,66 +646,6 @@ void UserProc::deleteCFG() {
     delete cfg;
     cfg = NULL;
 }
-
-#if 0           // This should be done by some sort of max stack depth thing
-/*==============================================================================
- * FUNCTION:        UserProc::getLocalsSize
- * OVERVIEW:        Sets the number of bytes allocated for locals on
- *                  the stack.
- * PARAMETERS:      <none>
- * RETURNS:         the number of bytes allocated for locals on
- *                  the stack
- *============================================================================*/
-int UserProc::getLocalsSize() {
-    if (prologue != NULL)
-        return prologue->getLocalsSize();
-    else
-        return 0;
-}
-
-/*==============================================================================
- * FUNCTION:    Proc::getFirstLocalIndex()
- * OVERVIEW:    Return the index of the first symbolic local declared.
- * PARAMETERS:  None
- * RETURNS:     An integer value of the first symbolic local declared. For e.g
-                variable v12, it returns 12. If no locals, returns -1.
- *============================================================================*/
-int UserProc::getFirstLocalIndex() {
-    std::vector<TypedExp*>::iterator it = locals.begin();
-    if (it == locals.end()) {
-        return -1;
-    }
-    return (*it)->getVarIndex();
-}
-#endif
-
-#if 0       // This will work when all Exp's have types
-/*==============================================================================
- * FUNCTION:    Proc::getLastLocalIndex()
- * OVERVIEW:    Return the index of the last symbolic local declared.
- * PARAMETERS:  None
- * RETURNS:     An integer value of the first symbolic local declared. For e.g
-                variable v12, it returns 12. If no locals, returns -1.
- *============================================================================*/
-int UserProc::getLastLocalIndex() {
-    std::vector<TypedExp*>::iterator it = locals.end(); // just after end
-    if (it == locals.begin()) { // must be empty
-        return -1;
-    }
-    it--;           // point to last element
-    return it->getSecondIdx();
-}
-
-/*==============================================================================
- * FUNCTION:    UserProc::getSymbolicLocals()
- * OVERVIEW:    Return the list of symbolic locals for the procedure.
- * PARAMETERS:  None
- * RETURNS:     A reference to the list of the procedure's symbolic locals.
- *============================================================================*/
-std::vector<TypedExp*>& UserProc::getSymbolicLocals() {
-    return locals;
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        UserProc::setDecoded
@@ -984,104 +925,159 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
-#if 0
-// decompile this userproc
-void UserProc::decompile() {
+// Decompile this UserProc
+std::set<UserProc*>* UserProc::decompile() {
     // Prevent infinite loops when there are cycles in the call graph
-    if (decompiled_down) return;
+    if (decompiled) return NULL;
 
-    // Done "on the way down" processing (there is none any more)
-    // for this proc
-    decompiled_down = true;
+    // We have seen this proc
+    decompileSeen = true;
 
+
+    std::set<UserProc*>* cycleSet = new std::set<UserProc*>;
     BB_IT it;
-#if 0   // Actually better for calls and rets not to DFS
     // Look at each call, to perform a depth first search.
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         if (bb->getType() == CALL) {
-            // The call RTL will be the last in this BB
-            CallStatement* call = (CallStatement*)bb->getRTLs()->back();
-            call->decompile();
+            // The call Statement will be in the last RTL in this BB
+            CallStatement* call = (CallStatement*)bb->getRTLs()->back()->
+              getHlStmt();
+            UserProc* destProc = (UserProc*)call->getDestProc();
+            if (destProc->isLib()) continue;
+            if (destProc->decompileSeen && !destProc->decompiled)
+                // We have discovered a cycle in the call graph
+                cycleSet->insert(destProc);
+                // Don't recurse into the loop
+            else {
+                // Recurse to this child (in the call graph)
+                std::set<UserProc*>* childSet = destProc->decompile();
+                // Union this child's set into cycleSet
+                if (childSet)
+                    cycleSet->insert(childSet->begin(), childSet->end());
+            }
         }
     }
-#endif
+
+    isRecursive = cycleSet->size() != 0;
+std::cerr << "Proc " << getName() << ((isRecursive) ? " is" : " is not") <<
+  " recursive\n";
+    // Remove self from the cycle list
+    cycleSet->erase(this);
+std::cerr << "After erase in " << getName() << ", cycleSet has " << cycleSet->size() << " members\n";
+std::set<UserProc*>::iterator zz;
+for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
+  std::cerr << (*zz)->getName() << ", ";
 
     if (Boomerang::get()->noDecompileUp) {
         decompiled = true;
-        return;
+        return cycleSet;
     }
 
     if (VERBOSE) {
         std::cerr << "decompiling: " << getName() << std::endl;
     }
 
-    if (!Boomerang::get()->noDataflow) {
-        int maxDepth = findMaxDepth();
-        int memDepth = 0;
-        while (1) {
-            propagateStatements(memDepth);
-            if (VERBOSE) {
-                std::cerr << "===== After propagate with memory depth " <<
-                  memDepth << " =====\n";
-                print(std::cerr, true);
-                std::cerr << "===== End propagate with memory depth " <<
-                  memDepth << " =====\n\n";
-            }
-            if (++memDepth > maxDepth) break;
-            repairDataflow(memDepth);
-            if (VERBOSE) {
-                std::cerr << "===== After repair dataflow depth " <<
-                  memDepth << " =====\n";
-                print(std::cerr, true);
-                std::cerr << "===== End after repair dataflow depth " <<
-                    memDepth << " =====\n\n";
-            }
+
+    // Sort by address, so printouts make sense
+    cfg->sortByAddress();
+    // Initialise statements
+    initStatements();
+
+    // Compute dominance frontier
+    DOM* d = new DOM;
+    cfg->dominators(d);
+
+
+    // For each memory depth
+    int maxDepth = findMaxDepth();
+    if (Boomerang::get()->maxMemDepth < maxDepth)
+        maxDepth = Boomerang::get()->maxMemDepth;
+    for (int depth = 0; depth <= maxDepth; depth++) {
+
+        // Place the phi functions for this memory depth
+        cfg->placePhiFunctions(d, depth, this);
+
+        // Number the statements
+        int stmtNumber = 0;
+        numberStatements(stmtNumber); 
+
+
+        // Rename variables
+        cfg->renameBlockVars(d, 0, depth);
+
+        // Print if requested
+        if (Boomerang::get()->debugPrintSSA) {
+            std::cerr << "=== Debug Print SSA for " << getName()
+              << " at memory depth " << depth << " (no propagations) ===\n";
+            print(std::cerr, true);
+            std::cerr << "=== End Debug Print SSA for " <<
+              getName() << " at depth " << depth << " ===\n\n";
         }
-        if (!Boomerang::get()->noRemoveNull) {
-            removeNullStatements();
-            removeUnusedStatements();
-            if (VERBOSE) {
-                std::cerr << "===== After removing null and unused statements "
-                  "=====\n";
-                print(std::cerr, true);
-                std::cerr << "===== End after removing null and unused "
-                  "statements =====\n\n";
-            }
-        }
-    }
-    cfg->compressCfg();
-    processConstants();
 
-    // Convert the signature object to one of a derived class, e.g.
-    // SparcSignature.
-    if (!Boomerang::get()->noPromote)
-        promoteSignature();
-    // simplify the procedure (currently just to remove a[m['s)
-    simplify();
-
-    // promoteSignature has converted some register and memory locations
-    // to "param1" etc (opParam). Redo the liveness to reflect this change
-    //cfg->computeLiveness();
-    //LocationSet* le = cfg->getLiveEntry();
-    // Above is unused... not finished
-    // Get the live set on entry to this procedure. It could well be
-    // shorter than it was
-    // MVE: Also need to fix return location (remove when not used)
-
-    // Truncate the number of arguments to calls (only needed for calls
-    // promoteSignature has converted some 
-    // involved in cycles in the call graph, e.g. recursive calls)
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        if (bb->getType() == CALL) {
-            // The call RTL will be the last in this BB
-            CallStatement* call = (CallStatement*)bb->getRTLs()->back();
-            call->truncateArguments();
+        // Propagate at this memory depth
+        propagateStatements(depth);
+        if (VERBOSE) {
+            std::cerr << "=== After propagate for " << getName() <<
+              " at memory depth " << depth << " ===\n";
+            print(std::cerr, true);
+            std::cerr << "=== End propagate for " << getName() <<
+              " at depth " << depth << " ===\n\n";
         }
     }
+
+    // Now all the other things that were in UserProc::decompile()
+    complete();
+
+#if 0
+    // Find the "restore set"
+    StatementSet restoreSet;
+    findRestoreSet(restoreSet);
+    if (VERBOSE) {
+        std::cerr << "=== Restore set for " << getName() << " ===\n";
+        StmtSetIter rr;
+        for (Statement* r = restoreSet.getFirst(rr); r;
+          r = restoreSet.getNext(rr))
+            std::cerr << std::dec << r->getNumber() << " ";
+        std::cerr << "\n\n";
+    }
+#endif
+
+    // Remove null statements
+    if (!Boomerang::get()->noRemoveNull)
+        removeNullStatements();
+
+    // Remove unused statements
+    // FIXME: refCounts doesn't have to be parameter when remove global
+    typedef std::map<Statement*, int> RefCounter;
+    RefCounter refCounts;           // The map
+    // Count the references first
+    countRefs(refCounts);
+    // Now remove any that have no used (globally)
+    if (!Boomerang::get()->noRemoveNull)
+        removeUnusedStatements(refCounts);
+
+    if (VERBOSE && !Boomerang::get()->noRemoveNull) {
+        std::cerr << "===== After removing null and unused statements "
+          "=====\n";
+        print(std::cerr, true);
+        std::cerr << "===== End after removing unused "
+          "statements =====\n\n";
+    }
+
+    igraph ig;      // FIXME: need to make an attempt to calculate this!
+    fromSSAform(ig);
+
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "===== After transformation from SSA form =====\n";
+        print(std::cerr, true);
+        std::cerr << "===== End after transformation from SSA =====\n\n";
+    }
+
+    delete d;
 
     decompiled = true;          // Now fully decompiled
+    return cycleSet;
 }
-#endif
 
 void UserProc::complete() {
     cfg->compressCfg();
@@ -1517,12 +1513,6 @@ void UserProc::computeUses() {
         s->calcUseLinks();
 }
 #endif
-
-void UserProc::getReturnSet(LocationSet &ret) {
-    if (returnSet.size()) {
-        ret = returnSet;
-    }
-}
 
 void UserProc::countRefs(RefCounter& refCounts) {
     StatementList stmts;

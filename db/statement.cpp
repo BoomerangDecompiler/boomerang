@@ -2441,15 +2441,13 @@ bool CallStatement::isDefinition()
     return defs.size() != 0;
 }
 
-// MVE: likely not correct to use this any more
-void CallStatement::getDefinitions(LocationSet &defs)
-{
+void CallStatement::getDefinitions(LocationSet &defs) {
     if (procDest) {
         if (procDest->isLib()) {
             Exp *e = getLeft();
             if (e) defs.insert(e);
         } else {
-            ((UserProc*)procDest)->getReturnSet(defs);
+            ((UserProc*)procDest)->getDefinitions(defs);
         }
     } else {
         // TODO: computed call

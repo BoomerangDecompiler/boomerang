@@ -285,6 +285,95 @@ public:
  * UserProc class.
  *============================================================================*/
 class UserProc : public Proc {
+
+    /*
+     * The control flow graph.
+     */
+    Cfg* cfg;
+
+    /*
+     * True if this procedure has been decoded.
+     */
+    bool decoded;
+
+    /*
+     * Indicate that the procedure has had its variables converted to
+     * symbolic form, e.g. r[8]->v2. This is only done once, by a call to
+     * propagateSymbolics(). We need to know that this has happened if we
+     * later determine a different return location, and it happens not to
+     * have been converted to symbolic as yet 
+     */
+    bool isSymbolic;
+
+    /*
+     * Used to generate unique IDs for the parameters and locals to
+     * calls that are recovered and given a symbolic name.
+     */
+    unsigned uniqueID;
+
+    /*
+     * Indicate that the aggregate location pointer "hidden" parameter is used,
+     * and is thus explicit in this translation. Needed only by architectures
+     * like Sparc where a special parent stack location is used to pass the
+     * address of aggregates. Set with the setParams() member function
+     */
+    bool aggregateUsed;
+
+    /*
+     * This map records the allocation of local variables and their types.
+     */
+    std::map<std::string, Type*> locals;
+
+    /*
+     * A map between machine dependent locations and their corresponding
+     * symbolic, machine independent representations.
+     */
+    std::map<Exp*,Exp*,lessExpStar> symbolMap;
+
+    /*
+     * The return location as written to the .c file. Not valid unless the file
+     * has been written (fileWritten true)
+     */
+    Exp* fileRetLocn;
+
+    /*
+     * Set of callees (Procedures that this procedure calls). Used for
+     * call graph, among other things
+     */
+    std::set<Proc*> calleeSet;
+    std::set<ADDRESS> calleeAddrSet;  // used in serialization
+ 
+    /*
+     * Set if visited on the way down the call tree during decompile()
+     * Used for recursion detection
+     */
+    bool decompileSeen;
+
+    /*
+     * Set if decompilation essentially completed (there may be extra return
+     * locations set later)
+     */
+    bool decompiled;
+
+    /*
+     * Set if involved in recursion (a cycle in the call graph)
+     */
+    bool isRecursive;
+
+    /*
+     * Set of locations defined in this proc. Some or all or none of these
+     * may be return locations (will be if used before definition after the
+     * call)
+     */
+    LocationSet definesSet;
+
+    /*
+     * Set of locations returned by this proc (see above). As calls are found
+     * with use-before-def of locations in definesSet, they are transferred
+     * to this set.
+     */
+    LocationSet returnsSet;
+
 public:
 
     UserProc(Prog *prog, std::string& name, ADDRESS address);
@@ -348,10 +437,12 @@ public:
     void simplify() { cfg->simplify(); }
 
     // decompile this proc
-    //void    decompile();
+    std::set<UserProc*>* decompile();
+
     // All the decompile stuff except propagation, DFA repair, and null/unused
     // statement removal
     void    complete(); 
+
     // Initialise the statements, e.g. proc, bb pointers
     void initStatements();
     void numberStatements(int& stmtNum);
@@ -394,12 +485,6 @@ public:
     // remove a statement
     void removeStatement(Statement *stmt);
 
-    // remove statements to the internal list
-    void moveInternalStatements();
-
-    // erase a statement from the internal statements list
-    void eraseInternalStatement(Statement *stmt);
-
     // inline constants / decode function pointer constants
     void processConstants();
 
@@ -409,9 +494,11 @@ public:
     // Calculate uses info
     void computeUses();
 
+    // get the set of locations "defined" in this procedure
+    void getDefinitions(LocationSet &defs) {defs = definesSet;}
+
     // get the set of locations "returned" by this procedure
-    // I'm thinking this belongs here instead of in signature.
-    void getReturnSet(LocationSet &ret);
+    void getReturnSet(LocationSet &ret) {ret = returnsSet;}
 
 private:
     /*
@@ -515,82 +602,6 @@ public:
     virtual bool isAggregateUsed() {return aggregateUsed;}
 
 
-private:
-
-    /*
-     * The control flow graph.
-     */
-    Cfg* cfg;
-
-    /*
-     * True if this procedure has been decoded.
-     */
-    bool decoded;
-
-    /*
-     * Indicates whether or not a non-default return type has been
-     * determined for this procedure.
-     */
-    bool returnIsSet;
-
-    /*
-     * Indicate that the procedure has had its variables converted to
-     * symbolic form, e.g. r[8]->v2. This is only done once, by a call to
-     * propagateSymbolics(). We need to know that this has happened if we
-     * later determine a different return location, and it happens not to
-     * have been converted to symbolic as yet 
-     */
-    bool isSymbolic;
-
-    /*
-     * Used to generate unique IDs for the parameters and locals to
-     * calls that are recovered and given a symbolic name.
-     */
-    unsigned uniqueID;
-
-    /*
-     * Indicate that the aggregate location pointer "hidden" parameter is used,
-     * and is thus explicit in this translation. Needed only by architectures
-     * like Sparc where a special parent stack location is used to pass the
-     * address of aggregates. Set with the setParams() member function
-     */
-    bool aggregateUsed;
-
-    /*
-     * This map records the allocation of local variables and their types.
-     */
-    std::map<std::string, Type*> locals;
-
-    /*
-     * A map between machine dependent locations and their corresponding
-     * symbolic, machine independent representations.
-     */
-    std::map<Exp*,Exp*,lessExpStar> symbolMap;
-
-    /*
-     * The return location as written to the .c file. Not valid unless the file
-     * has been written (fileWritten true)
-     */
-    Exp* fileRetLocn;
-
-    /*
-     * Set of callees (Procedures that this procedure calls). Used for
-     * call graph, among other things
-     */
-    std::set<Proc*> calleeSet;
-    std::set<ADDRESS> calleeAddrSet;  // used in serialization
- 
-    /*
-     * Internal statements for this procedure
-     * See Proc::moveInternalStatements
-     */
-    //StatementList internal;
-
-    /* 
-     * Locations "returned" by this procedure.  These are different to the
-     * return location of the signature.  This is a dataflow concept.
-     */
-    LocationSet returnSet;
 
 };      /* UserProc */
 #endif
