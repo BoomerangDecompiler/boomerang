@@ -598,9 +598,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					if (call->getDest()->getOper() == opMemOf &&
 							call->getDest()->getSubExp1()->getOper() == opIntConst &&
 							pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
-						// dynamic linked proc pointers are assumed to be static.
-						const char *nam = pBF->GetDynamicProcName(
-							((Const*)call->getDest()->getSubExp1())->getAddr());
+						// Dynamic linked proc pointers are treated as static.
+						const char *nam = pBF->GetDynamicProcName( ((Const*)call->getDest()->getSubExp1())->getAddr());
 						Proc *p = pProc->getProg()->getLibraryProc(nam);
 						call->setDestProc(p);
 						call->setIsComputed(false);
