@@ -468,10 +468,10 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 //         ____and_45____________/ |  \  \______sahf____________
 //        /                        |   \_____and_5__________    \     ___ 
 //       [1]__________cmp_1___    and 44                    \    \   /   |jp
-//cmp_40/||\\___dec_[10]      \    [2]__                 __[3]   [23]____|
-//  /    | \\__je_    \cmp 40 [20]  |   \xor 40         /  / |    | \ 
-// [4]  jne se    \    \       |\   je   [7]           /  /  |    |  \ 
-// | \   |   \    |    [11]  jne \    \   | \         je se  |   jx   sx
+//cmp_40/||\\___dec_[10]      \    [2]__________         __[3]   [23]____|
+//  /    | \\__je_    \cmp 40 [20]  |   \xor 40 \jne    /  / |    | \ 
+// [4]  jne se    \    \       |\   je   [7]     \     /  /  |    |  \ 
+// | \   |   \    |    [11]  jne \    \   | \    [5]  je se  |   jx   sx
 // je se  \   \   | jae|  \sb  \  se   \ jne setne   /  /   jne   |    \ 
 // |   \   \   \   \   |   \    \  \    \ |    \    /  /     |    |     \ 
 //[5]  [6][14][13][26][12] [15][21][22]  [8]   [9] [21][18] [19] [24]   [25]
@@ -798,8 +798,11 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         else if (state == 7) state = 8;
         else if (state == 3) state = 19;
         else if (state == 20) state = 21;
+        else if (state == 2) state = 5;
         else {
-            std::cerr << "Problem with JNE\n";
+            std::cerr << "Problem with JNE: state is " << state << "\n";
+            std::cerr << "pJump to " << std::hex << pJump->getFixedDest() <<
+              "\n";
             return true;
         }
     }
