@@ -202,7 +202,7 @@ virtual void  setSubExp3(Exp* e) {};
     
     void    partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
         std::vector<int>& integers, bool negate);
-    Exp*    simplifyArith();
+virtual Exp*    simplifyArith() {return this;}
 static Exp* Accumulate(std::list<Exp*> exprs);
     // Simplify the expression
     Exp*    simplify();
@@ -349,6 +349,7 @@ virtual Exp* fixSuccessor();
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyArith();
     Exp* simplifyAddr();
 
 	// serialization
@@ -405,6 +406,7 @@ virtual     ~Binary();
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyArith();
     Exp* simplifyAddr();
 
 	// serialization
@@ -549,6 +551,7 @@ public:
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyArith();
     Exp* simplifyAddr();
 
 	// serialization

@@ -1409,7 +1409,7 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
     }
 }
 /*==============================================================================
- * FUNCTION:        Exp::simplifyArith
+ * FUNCTION:        [Unary|Binary]::simplifyArith
  * OVERVIEW:        This method simplifies an expression consisting of + and -
  *                  at the top level. For example,
  *                  (%sp + 100) - (%sp + 92) will be simplified to 8.
@@ -1418,15 +1418,34 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
  * PARAMETERS:      <none>
  * RETURNS:         Ptr to the simplified expression
  *============================================================================*/
-Exp* Exp::simplifyArith()
+Exp* Unary::simplifyArith()
 {
 	if (op == opMemOf || op == opRegOf) {
 		// assume we want to simplify the subexpression
 		return new Unary(op, getSubExp1()->simplifyArith());
 	}
+    return this;            // Else, do nothing
+}
 
+Exp* AssignExp::simplifyArith() {
+    subExp1 = subExp1->simplifyArith();
+    subExp2 = subExp2->simplifyArith();
+#if 0
+    Exp* res = new AssignExp(op, getSubExp1()->simplifyArith()->clone(),
+      getSubExp2()->simplifyArith()->clone());
+    delete this;
+    return res;
+#else
+    return this;
+#endif
+}
+
+Exp* Binary::simplifyArith() {
 	if (op == opSubscript) {
-		return new Binary(op, getSubExp1()->simplifyArith(), getSubExp2()->clone());
+		Exp* res = new Binary(op, getSubExp1()->simplifyArith()->clone(),
+          getSubExp2()->clone());
+        delete this;
+        return res;
 	}
 
     // Partition this expression into positive non-integer terms, negative
@@ -1554,6 +1573,7 @@ Exp* Exp::Accumulate(std::list<Exp*> exprs)
  * critical. - trent 8/7/2002
  *============================================================================*/
 Exp* Exp::simplify() {
+Exp* save = clone();
     bool bMod;                  // True if simplified at this or lower level
     Exp* res = this;
     do {
@@ -1562,7 +1582,15 @@ Exp* Exp::simplify() {
     } while (bMod);             // If modified at this (or a lower) level, redo
     // The below is still important. E.g. want to canonicalise sums, so we
     // know that a + K + b is the same as a + b + K
+#if 0
+    res = res->simplifyArith();
+    if (!(*res == *save)) std::cout << "simplified " << save << " to " << res
+      << "\n";
+    delete save;
+    return res;
+#else
     return res->simplifyArith();
+#endif
 }
 
 /*==============================================================================
@@ -1739,6 +1767,11 @@ Exp* Binary::polySimplify(bool& bMod) {
 
     // Next change: if we have x + k where k is a negative
     // integer constant, change this to x - p where p = -k 
+    // FIXME: The above is inconsistent with what happens with
+    // simplifyArith(). Also, it may make more sense to do it the
+    // other way, i.e. change x - 4 to x + -4 (only have to check for
+    // opPlus, not opPlus and opMinus)
+#if 0
     if (op == opPlus &&
       opSub2 == opIntConst && ((k = ((Const*)subExp2)->getInt()) < 0)) {
         res->setOper(opMinus);
@@ -1746,6 +1779,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         bMod = true;
         return res;
     }
+#endif
 
     // Check for [exp] << k where k is a positive integer const
     if (op == opShiftL && opSub2 == opIntConst &&
