@@ -119,146 +119,145 @@ enum BRANCH_TYPE {
  */
 class Statement {
 protected:
-	PBB			pbb;			// contains a pointer to the enclosing BB
-	UserProc	*proc;			// procedure containing this statement
-	int			number;			// Statement number for printing
-	STMT_KIND	kind;			// Statement kind (e.g. STMT_BRANCH)
-	Statement	*parent;		// The statement that contains this one
+		PBB			pbb;			// contains a pointer to the enclosing BB
+		UserProc	*proc;			// procedure containing this statement
+		int			number;			// Statement number for printing
+		STMT_KIND	kind;			// Statement kind (e.g. STMT_BRANCH)
+		Statement	*parent;		// The statement that contains this one
 
-	unsigned int lexBegin, lexEnd;
+		unsigned int lexBegin, lexEnd;
 
 public:
 
-				Statement() : pbb(NULL), proc(NULL), number(0), parent(NULL) { }
-	virtual		~Statement() { }
+					Statement() : pbb(NULL), proc(NULL), number(0), parent(NULL) { }
+virtual				~Statement() { }
 
-	// get/set the enclosing BB, etc
-	PBB			getBB() { return pbb; }
-	void		setBB(PBB bb) { pbb = bb; }
+		// get/set the enclosing BB, etc
+		PBB			getBB() { return pbb; }
+		void		setBB(PBB bb) { pbb = bb; }
 
-	bool		operator==(Statement& o);
-	void		setProc(UserProc *p);
-	UserProc*	getProc() {return proc;}
+		bool		operator==(Statement& o);
+		// Get and set *enclosing* proc (not destination proc)
+		void		setProc(UserProc *p);
+		UserProc*	getProc() {return proc;}
 
-	int			getNumber() {return number;}
-	void		setNumber(int num) {number = num;}
+		int			getNumber() {return number;}
+		void		setNumber(int num) {number = num;}
 
-	STMT_KIND	getKind() { return kind;}
-	void		setKind(STMT_KIND k) {kind = k;}
+		STMT_KIND	getKind() { return kind;}
+		void		setKind(STMT_KIND k) {kind = k;}
 
-	void		setParent(Statement* par) {parent = par;}
-	Statement*	getParent() {return parent;}
+		void		setParent(Statement* par) {parent = par;}
+		Statement*	getParent() {return parent;}
 
-virtual Statement* clone() = 0;			   // Make copy of self
+virtual Statement*	clone() = 0;			   // Make copy of self
 
 	// Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
-virtual bool	accept(StmtVisitor* visitor) = 0;
-virtual bool	accept(StmtExpVisitor* visitor) = 0;
-virtual bool	accept(StmtModifier* visitor) = 0;
+virtual bool		accept(StmtVisitor* visitor) = 0;
+virtual bool		accept(StmtExpVisitor* visitor) = 0;
+virtual bool		accept(StmtModifier* visitor) = 0;
 
-	void		setLexBegin(unsigned int n) { lexBegin = n; }
-	void		setLexEnd(unsigned int n) { lexEnd = n; }
-	unsigned int getLexBegin() { return lexBegin; }
-	unsigned int getLexEnd() { return lexEnd; }
-	Exp			*getExpAtLex(unsigned int begin, unsigned int end);
+		void		setLexBegin(unsigned int n) { lexBegin = n; }
+		void		setLexEnd(unsigned int n) { lexEnd = n; }
+		unsigned	int getLexBegin() { return lexBegin; }
+		unsigned	int getLexEnd() { return lexEnd; }
+		Exp			*getExpAtLex(unsigned int begin, unsigned int end);
 
 
-	// returns true if this statement defines anything
-virtual bool	isDefinition() = 0;
+		// returns true if this statement defines anything
+virtual bool		isDefinition() = 0;
 
-	// true if is a null statement
-	bool		isNullStatement();
+		// true if is a null statement
+		bool		isNullStatement();
 
-	// true if this statement is a standard assign
-	bool		isAssign() {return kind == STMT_ASSIGN;}
-	// true if this statement is a any kind of assignment
-	bool		isAssignment() {return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN ||
-					kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;}
-	// true if this statement is a phi assignment
-	bool		isPhi() {return kind == STMT_PHIASSIGN; }
-	// true if this statement is an implicit assignment
-	bool		isImplicit() {return kind == STMT_IMPASSIGN;}
+		// true if this statement is a standard assign
+		bool		isAssign() {return kind == STMT_ASSIGN;}
+		// true if this statement is a any kind of assignment
+		bool		isAssignment() {return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN ||
+						kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;}
+		// true	if this statement is a phi assignment
+		bool		isPhi() {return kind == STMT_PHIASSIGN; }
+		// true	if this statement is an implicit assignment
+		bool		isImplicit() {return kind == STMT_IMPASSIGN;}
+		// true	if this statment is a flags assignment
+		bool		isFlagAssgn();
 
-	// true if this statment is a flags assignment
-	bool		isFlagAssgn();
+virtual bool		isGoto() { return kind == STMT_GOTO; }
+virtual bool		isBranch() { return kind == STMT_BRANCH; }
 
-virtual bool	isGoto() { return kind == STMT_GOTO; }
-virtual bool	isBranch() { return kind == STMT_BRANCH; }
+		// true if this statement is a call
+		bool		isCall() { return kind == STMT_CALL; }
 
-	// true if this statement is a call
-	bool		isCall() { return kind == STMT_CALL; }
+		// true if this statement is a BoolAssign
+		bool		isBool() { return kind == STMT_BOOLASSIGN; }
 
-	// true if this statement is a BoolAssign
-	bool		isBool() { return kind == STMT_BOOLASSIGN; }
+		// true if this statement is a ReturnStatement
+		bool		isReturn() { return kind == STMT_RET; }
 
-	// true if this statement is a ReturnStatement
-	bool		isReturn() { return kind == STMT_RET; }
+		// true if this is a fpush/fpop
+		bool		isFpush();
+		bool		isFpop();
 
-	// true if this is a fpush/fpop
-	bool		isFpush();
-	bool		isFpop();
+		// returns a set of locations defined by this statement
+		// Classes with no definitions (e.g. GotoStatement and children) don't
+		// override this
+virtual void		getDefinitions(LocationSet &def) {}
 
-	// returns a set of locations defined by this statement
-	// Classes with no definitions (e.g. GotoStatement and children) don't
-	// override this
-virtual void	getDefinitions(LocationSet &def) {}
+		// returns an expression that would be used to reference the value
+		// defined by this statement (if this statement is propogatable)
+virtual Exp*		getLeft() = 0;
 
-	// returns an expression that would be used to reference the value
-	// defined by this statement (if this statement is propogatable)
-virtual Exp*	getLeft() = 0;
-
-	// returns an expression that would be used to replace this statement
-	// in a use
-virtual Exp*	getRight() = 0;
+	// returns an expression that would be used to replace this statement in a use
+virtual Exp*		getRight() = 0;
 
 	// returns true if this statement uses the given expression
-virtual bool	usesExp(Exp *e) = 0;
+virtual bool		usesExp(Exp *e) = 0;
 
 	// statements should be printable (for debugging)
-virtual void	print(std::ostream &os) = 0;
-		void	printAsUse(std::ostream &os)   {os << std::dec << number;}
-		void	printAsUseBy(std::ostream &os) {os << std::dec << number;}
-		void	printNum(std::ostream &os)	   {os << std::dec << number;}
-		char*	prints();	   // For use in a debugger
+virtual void		print(std::ostream &os) = 0;
+		void		printAsUse(std::ostream &os)   {os << std::dec << number;}
+		void		printAsUseBy(std::ostream &os) {os << std::dec << number;}
+		void		printNum(std::ostream &os)	   {os << std::dec << number;}
+		char*		prints();	   // For use in a debugger
 
 		// inline / decode any constants in the statement
-virtual void	processConstants(Prog *prog) = 0;
+virtual void		processConstants(Prog *prog) = 0;
 
 		// general search
-virtual bool	search(Exp *search, Exp *&result) = 0;
-virtual bool	searchAll(Exp* search, std::list<Exp*>& result) = 0;
+virtual bool		search(Exp *search, Exp *&result) = 0;
+virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
 		// general search and replace
-virtual bool	searchAndReplace(Exp *search, Exp *replace) = 0;
+virtual bool		searchAndReplace(Exp *search, Exp *replace) = 0;
 
 		// From SSA form
-virtual void	fromSSAform(igraph& igm) = 0;
+virtual void		fromSSAform(igraph& igm) = 0;
 
 		// Propagate to this statement
-		bool	propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
+		bool		propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
 		// code generation
-virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
+virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
 
 		// simpify internal expressions
-virtual void	simplify() = 0;
+virtual void		simplify() = 0;
 
 		// simplify internal address expressions (a[m[x]] -> x)
 		// Only Assigns override at present
-virtual void	simplifyAddr() {}
+virtual void		simplifyAddr() {}
 
 		// fixSuccessor
 		// Only Assign overrides at present
-virtual void	fixSuccessor() {}
+virtual void		fixSuccessor() {}
 
 		// Generate constraints (for constraint based type analysis)
-virtual void	genConstraints(LocationSet& cons) {}
+virtual void		genConstraints(LocationSet& cons) {}
 
 		// Data flow based type analysis
-virtual	void	dfaTypeAnalysis(bool& ch) {}
+virtual	void		dfaTypeAnalysis(bool& ch) {}
 
 		// Replace registers with locals
-virtual	void	regReplace(UserProc* proc) = 0;
+virtual	void		regReplace(UserProc* proc) = 0;
 
 //	//	//	//	//	//	//	//	//	//
 //									//
@@ -268,63 +267,63 @@ virtual	void	regReplace(UserProc* proc) = 0;
 
 	// Adds (inserts) all locations (registers or memory etc) used by this
 	// statement
-		void	addUsedLocs(LocationSet& used, bool final = false);
-		void	fixCallRefs();
+		void		addUsedLocs(LocationSet& used, bool final = false);
+		void		fixCallRefs();
 
 
 		// replaces a use of the given statement with an expression
-		bool	replaceRef(Statement *use);
+		bool		replaceRef(Statement *use);
 		// special version of the above for the "special hack"
 		// (see Proc::propagateStatements, where numUses == 2)
 		void		specialReplaceRef(Statement* def);
 
 		// Find all constants in this statement
-		void	findConstants(std::list<Const*>& lc);
+		void		findConstants(std::list<Const*>& lc);
 
 		// Set or clear the constant subscripts (using a visitor)
-		int		setConscripts(int n);
-		void	clearConscripts();
+		int			setConscripts(int n);
+		void		clearConscripts();
 
 		// Strip all references and phis (using a visitor). Returns true if the
 		// statement was a phi (and to be deleted)
-		bool	stripRefs();
+		bool		stripRefs();
 
 		// Strip all size casts
-		void	stripSizes();
+		void		stripSizes();
 
 		// For all expressions in this Statement, replace all e with e{def}
-		void	subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */);
+		void		subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */);
 
 		// Cast the constant num to type ty. If a change was made, return true
-		bool	castConst(int num, Type* ty);
+		bool		castConst(int num, Type* ty);
 
 		// Convert expressions to locals
-		void	dfaConvertLocals();
+		void		dfaConvertLocals();
 
 		// End Statement visitation functions
 
 
 		// Get the type for the given expression in this statement. This is an old version for processConstants
-		Type	*getTypeFor(Exp *e, Prog *prog);
+		Type		*getTypeFor(Exp *e, Prog *prog);
 
 		// Get the type for the definition, if any, for expression e in this statement 
 		// Overridden only by Assignment and CallStatement. (ReturnStatements do not define anything.)
-virtual	Type*	getTypeFor(Exp* e) { return NULL;}
+virtual	Type*		getTypeFor(Exp* e) { return NULL;}
 		// Set the type for the definition of e in this Statement
-virtual	void	setTypeFor(Exp* e, Type* ty) {assert(0);}
+virtual	void		setTypeFor(Exp* e, Type* ty) {assert(0);}
 
 //virtual	Type*	getType() {return NULL;}			// Assignment, ReturnStatement and
 //virtual	void	setType(Type* t) {assert(0);}		// CallStatement override
 
 protected:
 		// Returns true if an indirect call is converted to direct:
-virtual bool	doReplaceRef(Exp* from, Exp* to) = 0;
-		bool	doPropagateTo(int memDepth, Statement* def, bool& convert);
-		bool	calcMayAlias(Exp *e1, Exp *e2, int size);
-		bool	mayAlias(Exp *e1, Exp *e2, int size);
+virtual bool		doReplaceRef(Exp* from, Exp* to) = 0;
+		bool		doPropagateTo(int memDepth, Statement* def, bool& convert);
+		bool		calcMayAlias(Exp *e1, Exp *e2, int size);
+		bool		mayAlias(Exp *e1, Exp *e2, int size);
 
 	friend class XMLProgParser;
-};			// class Statement
+};		// class Statement
 
 // Print the Statement (etc) poited to by p
 std::ostream& operator<<(std::ostream& os, Statement* p);

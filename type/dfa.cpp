@@ -314,7 +314,12 @@ Type* ArrayType::meetWith(Type* other, bool& ch) {
 }
 
 Type* NamedType::meetWith(Type* other, bool& ch) {
-	return resolvesTo()->meetWith(other, ch);
+	Type * rt = resolvesTo();
+	if (rt)
+		return rt->meetWith(other, ch);
+	if (other->isVoid()) return this;
+	if (*this == *other) return this;
+	return createUnion(other, ch);
 }
 
 Type* CompoundType::meetWith(Type* other, bool& ch) {
@@ -340,32 +345,26 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 Type* UnionType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
 	if (*this == *other) return this;
-	std::vector<Type*>::iterator it;
+	std::list<UnionElement>::iterator it;
 	if (other->isUnion()) {
 		ch = true;
 		UnionType* otherUnion = (UnionType*)other;
-		UnionType* currUnion;
-		if (otherUnion->types.size() < types.size()) {
-			currUnion = this;
-			for (it = otherUnion->types.begin(); it != otherUnion->types.end(); it++)
-				currUnion = (UnionType*)currUnion->meetWith(*it, ch);
-			return currUnion;
-		} else {
-			currUnion = otherUnion;
-			for (it = types.begin(); it != types.end(); it++)
-				currUnion = (UnionType*)currUnion->meetWith(*it, ch);
-			return currUnion;
+		// Always return this, never other, (even if other is larger than this) because otherwise iterators can become
+		// invalid below
+		for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++) {
+			meetWith(it->type, ch);
+			return this;
 		}
 	}
 
 	// Other is a non union type
-	for (it = types.begin(); it != types.end(); it++) {
-		Type* curr = (*it)->clone();
+	for (it = li.begin(); it != li.end(); it++) {
+		Type* curr = it->type->clone();
 		bool thisCh = false;
 		curr = curr->meetWith(other, thisCh);
 		if (!curr->isUnion()) {
 			// These types met successfully. Replace the current union type with this one
-			*it = curr;
+			it->type = curr;
 			ch = thisCh;
 			return this;
 		}

@@ -207,12 +207,12 @@ Type *CompoundType::clone() const
 	return t;
 }
 
-Type *UnionType::clone() const
-{
-	UnionType *t = new UnionType();
-	for (unsigned i = 0; i < types.size(); i++)
-		t->addType(types[i]->clone(), names[i].c_str());
-	return t;
+Type *UnionType::clone() const {
+	UnionType *u = new UnionType();
+	std::list<UnionElement>::const_iterator it;
+	for (it = li.begin(); it != li.end(); it++)
+		u->addType(it->type, it->name.c_str());
+	return u;
 }
 
 Type *SizeType::clone() const
@@ -256,8 +256,9 @@ int CompoundType::getSize() const {
 }
 int UnionType::getSize() const {
 	int max = 0;
-	for (unsigned i = 0; i < types.size(); i++) {
-		int sz = types[i]->getSize();
+	std::list<UnionElement>::const_iterator it;
+	for (it = li.begin(); it != li.end(); it++) {
+		int sz = it->type->getSize();
 		if (sz > max) max = sz;
 	}
 	return max;
@@ -274,6 +275,7 @@ Type *CompoundType::getType(const char *nam)
 	return NULL;
 }
 
+#if 0
 Type *UnionType::getType(const char *nam)
 {
 	for (unsigned i = 0; i < types.size(); i++)
@@ -281,6 +283,7 @@ Type *UnionType::getType(const char *nam)
 			return types[i];
 	return NULL;
 }
+#endif
 
 Type *CompoundType::getTypeAtOffset(int n)
 {
@@ -424,9 +427,10 @@ bool CompoundType::operator==(const Type& other) const {
 
 bool UnionType::operator==(const Type& other) const {
 	const UnionType &uother = (UnionType&)other;
-	if (other.isUnion() && uother.types.size() == types.size()) {
-		for (unsigned i = 0; i < types.size(); i++)
-			if (!(*types[i] == *uother.types[i]))
+	std::list<UnionElement>::const_iterator it1, it2;
+	if (other.isUnion() && uother.li.size() == li.size()) {
+		for (it1 = li.begin(), it2 = uother.li.begin(); it1 != li.end(); it1++, it2++)
+			if (!(*it1->type == *it2->type))
 				return false;
 		return true;
 	}
@@ -756,11 +760,12 @@ const char *CompoundType::getCtype(bool final) const {
 
 const char *UnionType::getCtype(bool final) const {
 	std::string &tmp = *(new std::string("union { "));
-	for (unsigned i = 0; i < types.size(); i++) {
-		tmp += types[i]->getCtype(final);
-		if (names[i] != "") {
+	std::list<UnionElement>::const_iterator it;
+	for (it = li.begin(); it != li.end(); it++) {
+		tmp += it->type->getCtype(final);
+		if (it->name != "") {
 			tmp += " ";
-			tmp += names[i];
+			tmp += it->name;
 		}
 		tmp += "; ";
 	}
@@ -1330,45 +1335,43 @@ void CompoundType::readMemo(Memo *mm, bool dec)
 class UnionTypeMemo : public Memo {
 public:
 	UnionTypeMemo(int m) : Memo(m) { }
-	std::vector<Type*> types;
-	std::vector<std::string> names;
+	std::list<UnionElement> li;
 };
 
 Memo *UnionType::makeMemo(int mId)
 {
 	UnionTypeMemo *m = new UnionTypeMemo(mId);
-	m->types = types;
-	m->names = names;
+	m->li = li;
 
-	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
-		(*it)->takeMemo(mId);
+	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
+		it->type->takeMemo(mId);		// Is this right? What about the names? MVE
 	return m;
 }
 
 void UnionType::readMemo(Memo *mm, bool dec)
 {
 	UnionTypeMemo *m = dynamic_cast<UnionTypeMemo*>(mm);
-	types = m->types;
-	names = m->names;
+	li = m->li;
 
-	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
-		(*it)->restoreMemo(m->mId, dec);
+	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
+		it->type->restoreMemo(m->mId, dec);
 }
 
 void UnionType::addType(Type *n, const char *str) {
 	if (n->isUnion()) {
 		UnionType* utp = (UnionType*)n;
 		// Note: need to check for name clashes eventually
-		types.insert(types.end(), utp->types.begin(), utp->types.end());
-		names.insert(names.end(), utp->names.begin(), utp->names.end());
+		li.insert(li.end(), utp->li.begin(), utp->li.end());
 	} else {
 		if (n->isPointer() && n->asPointer()->getPointsTo() == this) {		// Note: pointer comparison
 			n = new PointerType(new VoidType);
 			if (VERBOSE)
 				LOG << "Warning: attempt to union with pointer to self!\n";
 		}
-		types.push_back(n); 
-		names.push_back(str);
+		UnionElement ue;
+		ue.type = n;
+		ue.name = str;
+		li.push_back(ue);
 	}
 }
 
@@ -1396,9 +1399,9 @@ bool CompoundType::isSubStructOf(Type* other) {
 
 // Return true if this type is already in the union. Note: linear search, but number of types is usually small
 bool UnionType::findType(Type* ty) {
-	std::vector<Type*>::iterator it;
-	for (it = types.begin(); it != types.end(); it++) {
-		if (**it == *ty)
+	std::list<UnionElement>::iterator it;
+	for (it = li.begin(); it != li.end(); it++) {
+		if (*it->type == *ty)
 			return true;
 	}
 	return false;

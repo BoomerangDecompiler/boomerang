@@ -1633,6 +1633,7 @@ void UserProc::trimParameters(int depth) {
 					pe = signature->getImplicitParamExp(i - nparams);
 				}
 if (!referenced[i] && excluded.find(s) == excluded.end())
+ LOG << " ## Searching " << s << " for " << p << " ( " << params[i] << " )\n";       // HACK!
 				if (!referenced[i] && excluded.find(s) == excluded.end() && 
 						// Search for the named parameter (e.g. param1), and just
 						// in case, also for the expression (e.g. r8{0})
@@ -2054,8 +2055,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 			for (int i = 0; i < call->getNumArguments(); i++) {
 				Type *ty = call->getArgumentType(i);
 				Exp *e = call->getArgumentExp(i);
-				if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf 
-					   && e->getMemDepth() == 0) {
+				if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf && e->getMemDepth() == 0) {
 					// Check for an expression representing the address of a
 					// local variable. NOTE: machine dependent
 					if (signature->isAddrOfStackLocal(prog, e)) {
@@ -2072,8 +2072,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 						ne = new Unary(opAddrOf, pe);
 					}
 					if (VERBOSE)
-						LOG << "replacing argument " << e << " with " << ne <<
-						  " in " << call << "\n";
+						LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
 					call->setArgumentExp(i, ne);
 					found = true;
 				}
@@ -2923,7 +2922,7 @@ bool UserProc::prove(Exp *query)
 
 	assert(query->getOper() == opEquals);
 	
-	// subscript locs on the right with {0} (note: no longer a NULL reference)
+	// subscript locs on the right with {-} (NULL reference)
 	LocationSet locs;
 	query->getSubExp2()->addUsedLocs(locs);
 	LocationSet::iterator xx;
@@ -3022,6 +3021,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 				Statement *s = r->getRef();
 				CallStatement *call = dynamic_cast<CallStatement*>(s);
 				if (call) {
+					// See if we can prove something about this register.
+					// Note: it could be the original register we are looking for ("proven" by induction)
 					Exp *right = call->getProven(r->getSubExp1());
 					if (right) {
 						right = right->clone();
@@ -3042,8 +3043,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 						}
 					}
 				} else if (s && s->isPhi()) {
-					// for a phi, we have to prove the query for every 
-					// statement
+					// for a phi, we have to prove the query for every statement
 					PhiAssign *pa = (PhiAssign*)s;
 					StatementVec::iterator it;
 					bool ok = true;

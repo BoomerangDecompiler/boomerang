@@ -2398,6 +2398,8 @@ void CallStatement::processConstants(Prog *prog) {
 void setSigParam(Signature* sig, Type* ty, bool isScanf) {
 	if (isScanf) ty = new PointerType(ty);
 	sig->addParameter(ty);
+	if (VERBOSE)
+		LOG << "  ellipsisProcessing: adding parameter of type " << ty->getCtype() << "\n";
 }
 
 // This function has two jobs. One is to truncate the list of arguments based on the format string.

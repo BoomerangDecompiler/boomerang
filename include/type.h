@@ -500,10 +500,15 @@ protected:
 };	// class CompoundType
 
 // The union type represents the union of any number of any other types
+struct UnionElement {
+		Type*		type;
+		std::string name;
+};
 class UnionType : public Type {
 private:
-	std::vector<Type*> types;
-	std::vector<std::string> names;
+		// Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
+		// (e.g. meetWith(another Union))
+		std::list<UnionElement> li;
 
 public:
 				UnionType();
@@ -511,11 +516,11 @@ virtual			~UnionType();
 virtual bool	isUnion() const { return true; }
 
 		void	addType(Type *n, const char *str);
-		int		getNumTypes() const { return types.size(); }
+		int		getNumTypes() const { return li.size(); }
 		bool	findType(Type* ty);				// Return true if ty is already in the union
-		Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
-		Type	*getType(const char *nam);
-		const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
+		//Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
+		//Type	*getType(const char *nam);
+		//const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
 virtual Type* clone() const;
 
