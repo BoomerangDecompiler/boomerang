@@ -109,7 +109,7 @@ lib/libBinaryFile.so:
 
 bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
-	  $(RUNPATH) -Llib -ldl -lcppunit
+	  $(RUNPATH) -Llib -ldl -lcppunit -lgc
 
 boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ driver.o $(STATIC_OBJS) lib/libBinaryFile.so $(RUNPATH) \
