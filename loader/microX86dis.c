@@ -182,7 +182,8 @@ int microX86Dis(unsigned char* pCode) {
         /* ds:d32 is a special case */
         if ((mod == 0) && ((modrm & 0x7) == 5))
             size += 4;                  /* ds:d32 */
-    }
+    } else
+		modrm = 0;
     if (size & OPSIZE) {
         /* This means add on the current op size */
         size &= ~OPSIZE;
