@@ -276,16 +276,27 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                 if (def->isBool())
                     continue;
                 if (isBranch()) {
+                    Exp* defRight = def->getRight();
                     // Propagating to a branch often doesn't give good results,
                     // unless propagating flags
                     // Special case for Pentium: allow prop of
                     // r12 := SETFFLAGS(...) (fflags stored via register AH)
-                    if (!hasSetFlags(def->getRight()))
-                        // ?? Also allow assignments of temps with something
-                        // subscripted
-                        if (def->getRight()->getOper() != opSubscript &&
+                    if (!hasSetFlags(defRight))
+                        // Allow propagation of constants
+                        if (defRight->isIntConst() || defRight->isFltConst())
+                            if (VERBOSE) LOG << "Allowing prop. into "
+                                "branch (1) of " << def << "\n";
+                            else
+                                ;
+                        // ?? Also allow any assignments to temps or assignment
+                        // of anything to anything subscripted. Trent:
+                        // was the latter meant to be anything NOT subscripted?
+                        else if (defRight->getOper() != opSubscript &&
                             !def->getLeft()->isTemp())
                             continue;
+                        else
+                            if (VERBOSE) LOG << "Allowing prop. into "
+                                "branch (2) of " << def << "\n";
                 }
                 if (def->getLeft()->getType() && 
                     def->getLeft()->getType()->isArray()) {
