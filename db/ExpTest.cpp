@@ -1027,8 +1027,10 @@ void ExpTest::testAssociativity() {
                         new Unary(opRegOf, new Const(8)),
                         new Const(12))),
                 new Const(-12))));
-    Exp* p1 = e1.simplify();
-    Exp* p2 = e2.simplify();
+    // Note: at one stage, simplifyArith was part of simplify().
+    // Now call implifyArith() explicitly only where needed
+    Exp* p1 = e1.simplify()->simplifyArith();
+    Exp* p2 = e2.simplify()->simplifyArith();
     std::ostringstream os1, os2;
     p1->print(os1); p2->print(os2);
     std::string expected(os1.str());

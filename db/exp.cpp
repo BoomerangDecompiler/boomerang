@@ -1768,21 +1768,20 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
-    // Next change: if we have x + k where k is a negative
-    // integer constant, change this to x - p where p = -k 
-    // FIXME: The above is inconsistent with what happens with
-    // simplifyArith(). Also, it may make more sense to do it the
+    // NOTE: this simplification used to be around the other way, i.e.
+    // x + -4 was changed to x - 4.
+    // However, this is inconsistent with what happens with
+    // simplifyArith(). Also, it makes more sense to do it the
     // other way, i.e. change x - 4 to x + -4 (only have to check for
     // opPlus, not opPlus and opMinus)
-#if 0
-    if (op == opPlus &&
-      opSub2 == opIntConst && ((k = ((Const*)subExp2)->getInt()) < 0)) {
-        res->setOper(opMinus);
+    // Change x - 4 to x + -4 (and x - -5 to x + 5)
+    if ((op == opMinus) && (opSub2 == opIntConst)) {
+        res->setOper(opPlus);
+        k = ((Const*)subExp2)->getInt();
         ((Const*)subExp2)->setInt(-k);
         bMod = true;
         return res;
     }
-#endif
 
     // Check for [exp] << k where k is a positive integer const
     if (op == opShiftL && opSub2 == opIntConst &&
