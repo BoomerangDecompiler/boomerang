@@ -1960,7 +1960,8 @@ void BasicBlock::setCallInterprocEdges() {
     if (proc->isLib()) return;      // Leave it alone
     m_iNumOutEdges = 2;
     PBB entry = ((UserProc*)proc)->getCFG()->getEntryBB();
-    m_OutEdges[1] = entry;
+    m_OutEdges.resize(2, entry);        // Append 1 new edge (entry)
+    assert((int)m_OutEdges.size() == m_iNumOutEdges);
     entry->m_iNumInEdges++;
     entry->m_InEdges.push_back(this);
 }
@@ -1987,13 +1988,14 @@ void BasicBlock::setReturnInterprocEdges() {
     Proc* proc = getDestProc();
     if (proc->isLib()) return;      // Leave it alone
     PBB exitBB = ((UserProc*)proc)->getCFG()->getExitBB();
-    exitBB->m_iNumOutEdges = 1;
-    exitBB->m_OutEdges.resize(1);
     PBB postCall = m_OutEdges[0];
-    exitBB->m_OutEdges[0] = postCall;
+    exitBB->m_iNumOutEdges++;
+    exitBB->m_OutEdges.push_back(postCall);
+    assert((int)exitBB->m_OutEdges.size() == exitBB->m_iNumOutEdges);
     postCall->m_iNumInEdges++;
     postCall->m_InEdges.push_back(exitBB);
-    returnBlock = postCall;         // For phase 2 identifying real post-call BBs
+    assert((int)postCall->m_InEdges.size() == postCall->m_iNumInEdges);
+    returnBlock = postCall;     // For phase 2 identifying real post-call BBs
 }
 
 // Kill the interprocedural outedges from exit BBs to post-call BBs
@@ -2012,10 +2014,11 @@ void BasicBlock::clearReturnInterprocEdges() {
       it++) {
         if (*it == exitBB) {
             postCall->m_InEdges.erase(it);
+            postCall->m_iNumInEdges--;
             break;
         }
     }
-    postCall->m_iNumInEdges--;
+    assert((int)postCall->m_InEdges.size() == postCall->m_iNumInEdges);
 }
 
 void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order) {
