@@ -501,11 +501,16 @@ public:
     // Calculate uses info
     void computeUses();
 
+#if 0
     // get the set of locations "defined" in this procedure
     void getDefinitions(LocationSet &defs) {defs = definesSet;}
 
     // get the set of locations "returned" by this procedure
     void getReturnSet(LocationSet &ret) {ret = returnsSet;}
+
+#endif
+
+    void getDefinitions(LocationSet &defs);
 
 private:
     /*

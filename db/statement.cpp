@@ -1783,6 +1783,7 @@ Exp *CallStatement::substituteParams(Exp *e)
     LocSetIter xx;
     for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
         Exp *r = findArgument(x);
+        if (r == NULL) continue;    // Can happen for the stack pointer
         bool change;
         e = e->searchReplaceAll(x, r->clone(), change);
     }
@@ -2153,6 +2154,8 @@ void CallStatement::getDefinitions(LocationSet &defs) {
             Exp *e = getLeft();
             if (e) defs.insert(e);
         } else {
+            // FIXME: I believe that these may need "translation" into the
+            // caller's environment
             ((UserProc*)procDest)->getDefinitions(defs);
         }
     } else {
