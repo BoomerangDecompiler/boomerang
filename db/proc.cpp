@@ -1640,7 +1640,7 @@ void UserProc::trimParameters(int depth) {
     int nparams = signature->getNumParams() + signature->getNumImplicitParams();
     std::vector<Exp*> params;
     bool referenced[32];
-		assert(nparams < sizeof(referenced)/sizeof(bool));
+		assert(nparams < (int)(sizeof(referenced)/sizeof(bool)));
 	int i;
     for (i = 0; i < signature->getNumParams(); i++) {
         referenced[i] = false;
