@@ -2,6 +2,7 @@
 #include <fstream>
 #include <time.h>
 #include <sys/stat.h>     // For mkdir
+#include <direct.h>       // mkdir under Windows
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
@@ -120,11 +121,19 @@ bool createDirectory(std::string dir) {
     while ((i = remainder.find('/')) != std::string::npos) {
         path += remainder.substr(0, i+1);
         remainder = remainder.substr(i+1);
-        mkdir(path.c_str(), 0777);          // Doesn't matter if already exists
-    }
+#ifdef WIN32
+	    mkdir(path.c_str());
+#else
+		mkdir(path.c_str(), 0777);              // Doesn't matter if already exists
+#endif
+            }
     // Now try to create a test file
     path += remainder;
-    mkdir(path.c_str(), 0777);              // Make the last dir if needed
+#ifdef WIN32
+    mkdir(path.c_str());	                // Make the last dir if needed
+#else
+	mkdir(path.c_str(), 0777);              // Make the last dir if needed
+#endif
     path += "test.file";
     std::ofstream test;
     test.open(path.c_str(), std::ios::out);

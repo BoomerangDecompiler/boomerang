@@ -1,6 +1,6 @@
 #include "boomerang.h"
 #include "gc.h"
-
+#include <direct.h>		// For mkdir
 #include <signal.h>
 
 #ifdef SPARC_DEBUG

@@ -2064,9 +2064,11 @@ void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc)
 
     persistToXML(out, proc->signature);
 
-    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
+    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin();
+      it != proc->callerSet.end(); it++)
 	out << "<caller call=\"" << (int)(*it) << "\"/>\n";
-    for (std::set<Exp*>::iterator it = proc->proven.begin(); it != proc->proven.end(); it++) {
+    for (std::set<Exp*, lessExpStar>::iterator it = proc->proven.begin();
+      it != proc->proven.end(); it++) {
 	out << "<proven>\n";
 	persistToXML(out, *it);
 	out << "</proven>\n";
@@ -2094,9 +2096,11 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 
     persistToXML(out, proc->signature);
 
-    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
+    for (std::set<CallStatement*>::iterator it = proc->callerSet.begin();
+      it != proc->callerSet.end(); it++)
 	out << "<caller call=\"" << (int)(*it) << "\"/>\n";
-    for (std::set<Exp*>::iterator it = proc->proven.begin(); it != proc->proven.end(); it++) {
+    for (std::set<Exp*, lessExpStar>::iterator it = proc->proven.begin();
+      it != proc->proven.end(); it++) {
 	out << "<proven>\n";
 	persistToXML(out, *it);
 	out << "</proven>\n";

@@ -10,7 +10,7 @@
  */
 
 /*==============================================================================
- * FILE:        prog.cc
+ * FILE:        prog.cpp
  * OVERVIEW:    Implementation of the program class. Holds information of
  *              interest to the whole program.
  *============================================================================*/
@@ -42,6 +42,7 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
+#include <direct.h>					// For mkdir()
 
 #include "cluster.h"
 #include "types.h"
@@ -49,7 +50,7 @@
 #include "exp.h"
 #include "cfg.h"
 #include "proc.h"
-#include "util.h"                   // For str()
+#include "util.h"                   // For lockFileWrite etc
 #include "register.h"
 #include "rtl.h"
 #include "BinaryFile.h"
@@ -223,7 +224,11 @@ const char *Cluster::makeDirs()
 	path = Boomerang::get()->getOutputPath();	
     if (getNumChildren() > 0 || parent == NULL) {
 	path = path + "/" + name;
+#ifdef WIN32
+	mkdir(path.c_str());
+#else
 	mkdir(path.c_str(), 0777);
+#endif
     }
     return path.c_str();
 }
