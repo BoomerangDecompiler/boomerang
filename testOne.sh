@@ -1,15 +1,16 @@
 #!/bin/bash
 # testOne.sh functional test script $Revision$
-# Call with test platform, test-program, arguments
+# Call with test platform, test-program [,options [,arguments]]
 # e.g. "./testOne.sh pentium hello"
-# or   "./testOne.sh sparc fibo 10" 
+# or   "./testOne.sh sparc fibo -- 10" 
+# Note: at this stage, only one string can be passed as the options, e.g. -O
 echo $* > functest.res
 rm -f functest/$2.c
-./boomerang -o functest test/$1/$2 2>/dev/null >/dev/null
+./boomerang -o functest $3 test/$1/$2 2>/dev/null >/dev/null
 ret=$?
 if [[ ret -ge 128 ]]; then
 	echo Result for $1 $2: Boomerang failed with signal $((ret-128))
-	  >> functest.res
+		>> functest.res
 else
 	if [[ ! -f functest/$2/$2.c ]]; then
 		echo Result for $1 $2: No boomerang output! >> functest.res
@@ -33,15 +34,13 @@ else
 			echo Result for $1 $2: Compile failed >> functest.res
 		else
 			rm -f functest.out
-			./functest.exe $3 $4 $5 $6 $7 $8 $9 >> functest.out 2>&1
+			./functest.exe $4 $5 $6 $7 $8 $9 >> functest.out 2>&1
 			ret=$?
 			if [[ ret -ge 128 ]]; then
-				echo Result for $1 $2: Execution terminated with signal \
-				  $((ret-128)) >> functest.res
+				echo Result for $1 $2: Execution terminated with signal $((ret-128)) >> functest.res
 			else
 				if [[ ret -ne 0 ]]; then
-					echo Warning! return code from execute was $((ret)) >> \
-					  functest.res
+					echo Warning! return code from execute was $((ret)) >> functest.res
 				fi
 				diff -c test/source/$2.out functest.out > functest.tmp
 				ret=$?
