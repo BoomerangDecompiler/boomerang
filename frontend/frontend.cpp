@@ -22,6 +22,7 @@
  * 16 May 02 - Mike: Moved getMainEntry point here from prog
  * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness
  *                    rather than machine type)
+ * 22 Nov 02 - Mike: Quelched warnings
  */
 
 #include <assert.h>
@@ -75,6 +76,9 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF)
 		return new PentiumFrontEnd(pBF);
 	case MACHINE_SPARC:
 		return new SparcFrontEnd(pBF);
+	case MACHINE_HPRISC:
+	case MACHINE_PALM:
+		std::cerr << "Machine not supported\n";
     }
     return NULL;
 }
@@ -372,7 +376,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     // call rtl of this procedure
     //decoder.resetLastCall();
 
-    ADDRESS initAddr = uAddr;
+	// ADDRESS initAddr = uAddr;
     int nTotalBytes = 0;
     ADDRESS lastAddr = uAddr;
 
