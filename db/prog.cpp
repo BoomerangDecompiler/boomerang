@@ -59,8 +59,8 @@ Prog::Prog()
     : pBF(NULL),
       pFE(NULL),
       globalMap(NULL),
-      m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
-{
+      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
+      m_iNumberedProc(1) {
     // Default constructor
 }
 
@@ -68,9 +68,19 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
     : pBF(pBF),
       pFE(pFE),
       globalMap(NULL),
-      m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
-{
-    // Default constructor
+      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
+      m_iNumberedProc(1) {
+}
+
+Prog::Prog(const char* name)
+    : pBF(NULL),
+      pFE(NULL),
+      globalMap(NULL),
+      m_name(name),
+      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
+      m_iNumberedProc(1) {
+    // Constructor taking a name. Technically, the allocation of the
+    // space for the name could fail, but this is unlikely
 }
 
 Prog::~Prog() {
@@ -82,17 +92,6 @@ Prog::~Prog() {
             delete *it;
     }
     m_procs.clear();
-}
-
-Prog::Prog(const char* name)
-    : pBF(NULL),
-      pFE(NULL),
-      globalMap(NULL),
-      m_name(name),
-      m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
-{
-    // Constructor taking a name. Technically, the allocation of the
-    // space for the name could fail, but this is unlikely
 }
 
 void Prog::setName (const char *name) {    // Assign a name to this program
@@ -244,7 +243,7 @@ void Prog::deserialize(std::istream &inf) {
 
 bool Prog::serialize(std::ostream &ouf, int &len) {
     int fid;
-    std::streampos st = ouf.tellp();
+    //std::streampos st = ouf.tellp();
 
     int nProcs = 0, cProcs = 0;
     for (std::list<Proc *>::iterator it = m_procs.begin(); it != m_procs.end();
@@ -331,6 +330,40 @@ void Prog::clear() {
     if (pFE)
         delete pFE;
     pFE = NULL;
+}
+
+/*==============================================================================
+ * FUNCTION:    Prog::setNewProc
+ * NOTE:        Formally Frontend::newProc
+ * OVERVIEW:    Call this function when a procedure is discovered (usually by
+ *                decoding a call instruction). That way, it is given a name
+ *                that can be displayed in the dot file, etc. If we assign it
+ *                a number now, then it will retain this number always
+ * PARAMETERS:  prog  - program to add the new procedure to
+ *              uAddr - Native address of the procedure entry point
+ * RETURNS:     Pointer to the Proc object, or 0 if this is a deleted (not to
+ *                be decoded) address
+ *============================================================================*/
+Proc* Prog::setNewProc(ADDRESS uAddr) {
+    // this test fails when decoding sparc, why?  Please investigate - trent
+    //assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
+    // Check if we already have this proc
+    Proc* pProc = findProc(uAddr);
+    if (pProc == (Proc*)-1)         // Already decoded and deleted?
+        return 0;                   // Yes, exit with 0
+    if (pProc)
+        // Yes, we are done
+        return pProc;
+    char* pName = pBF->SymbolByAddress(uAddr);
+    bool bLib = pBF->IsDynamicLinkedProc(uAddr);
+    if (pName == 0) {
+        // No name. Give it a numbered name
+        std::ostringstream ost;
+        ost << "proc" << m_iNumberedProc++;
+        pName = strdup(ost.str().c_str());
+    }
+    pProc = newProc(pName, uAddr, bLib);
+    return pProc;
 }
 
 
@@ -469,7 +502,7 @@ void Prog::makeGlobal(ADDRESS uaddr, const char *name)
     (*globalMap)[uaddr] = strdup(name);*/
 }
 
-// get a string constant at a give address if appropriate
+// get a string constant at a given address if appropriate
 char *Prog::getStringConstant(ADDRESS uaddr) {
     if (pBF->isReadOnly(uaddr))
         return (char *)(uaddr + pBF->getTextDelta());

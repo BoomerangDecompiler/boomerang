@@ -68,7 +68,7 @@
  * RETURNS:       <N/a>
  *============================================================================*/
 FrontEnd::FrontEnd(BinaryFile *pBF)
- : pBF(pBF), m_iNumberedProc(1)
+ : pBF(pBF)
 {}
 
 FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
@@ -150,7 +150,8 @@ Prog *FrontEnd::decode() {
     ADDRESS a = getMainEntryPoint(gotMain);
     if (a == NO_ADDRESS) return false;
 
-    newProc(prog, a);
+    //newProc(prog, a);
+    prog->setNewProc(a);
 
     bool change = true;
     while (change) {
@@ -233,6 +234,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     return signature;
 }
 
+#if 0       // Note: moved to Prog::setNewProc
 /*==============================================================================
  * FUNCTION:    FrontEnd::newProc
  * OVERVIEW:    Call this function when a procedure is discovered (usually by
@@ -265,7 +267,7 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
     pProc = prog->newProc(pName, uAddr, bLib);
     return pProc;
 }
-
+#endif
 
 
 /*==============================================================================
@@ -652,7 +654,8 @@ if (0) {
                               itl != l.end(); itl++)
                                 processed[*itl] = NULL;
                             // create a new procedure in the same program
-                            newProc(pProc->getProg(), uNewAddr);
+                            //newProc(pProc->getProg(), uNewAddr);
+                            pProc->getProg()->setNewProc(uNewAddr);
                             // undecode the old procedure
                             p->unDecode();
                             if (p == pProc) {
@@ -847,7 +850,8 @@ if (0) {
             // Don't visit the destination of a register call
             Proc *np = (*it)->getDestProc();
             if (np == NULL && dest != NO_ADDRESS) {
-                np = newProc(pProc->getProg(), dest);
+                //np = newProc(pProc->getProg(), dest);
+                np = pProc->getProg()->setNewProc(dest);
             }
             if (np != NULL) {
                 np->setFirstCaller(pProc);

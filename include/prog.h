@@ -45,8 +45,8 @@
 #include "proc.h"
 #include "rtl.h"
 #include "BinaryFile.h"
+#include "frontend.h"
 
-class FrontEnd;
 class RTLInstDict;
 class Proc;
 class UserProc;
@@ -73,6 +73,7 @@ public:
             ~Prog();
             Prog(const char* name);     // Constructor with name
     void    setName(const char *name);      // Set the name of this program
+    Proc*   setNewProc(ADDRESS uNative);    // Set up new proc
     Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
                                         // Returns a pointer to a new proc
     void    remProc(UserProc* proc);    // Remove the given UserProc
@@ -161,6 +162,14 @@ public:
         { return pBF->GetMachine();}    // e.g. MACHINE_SPARC
     char* symbolByAddress(ADDRESS dest) // Get a symbol from an address
         { return pBF->SymbolByAddress(dest);}
+    PSectionInfo getSectionInfoByAddr(ADDRESS a)
+        { return pBF->GetSectionInfoByAddr(a);}
+    bool processProc(int addr, UserProc* proc)  // Decode a proc
+        { std::ofstream os;
+          return pFE->processProc((unsigned)addr, proc, os);}
+    // Read 2 or 4 bytes given a native address
+    int readNative2(ADDRESS a) {return pBF->readNative2(a);}
+    int readNative4(ADDRESS a) {return pBF->readNative4(a);}
 
     // Public object that keeps track of the coverage of the source program's
     // text segment
@@ -182,6 +191,8 @@ protected:
     std::list<Proc*> m_procs;           // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*
     ProgWatcher *m_watcher;		// used for status updates
+    // Next numbered proc will use this
+    int m_iNumberedProc;        
 }; 
 
 #endif

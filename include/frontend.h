@@ -71,8 +71,6 @@ protected:
     NJMCDecoder *decoder;
     // The binary file
     BinaryFile *pBF;
-    // Next numbered proc will use this
-    int m_iNumberedProc;        
     // Public map from function name (string) to signature.
     std::map<std::string, Signature*> librarySignatures;
 
@@ -133,8 +131,9 @@ virtual int     getInst(int addr);
     /*
      * create a new procedure of the appropriate type in a program at
      * the given address.
+     * Note: moved to Prog::setNewProc(ADDRESS);
      */
-    Proc* newProc(Prog *prog, ADDRESS uAddr);
+    //Proc* newProc(Prog *prog, ADDRESS uAddr);
 
     /*
      * processProc. This is the main function for decoding a procedure.
