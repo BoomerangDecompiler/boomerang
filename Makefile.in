@@ -82,7 +82,7 @@ distclean: clean
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
-	db/DataflowTest.o \
+	db/DataflowTest.o db/CfgTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
 	analysis/AnalysisTest.o loader/BinaryFileStub.o \
         c/CTest.o
@@ -94,7 +94,7 @@ UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/dataflow.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
   db/type.o db/hrtl.o db/sslinst.o db/insnameelem.o db/signature.o \
-  c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o
+  c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o   db/dom.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o frontend/switch.o
@@ -149,6 +149,7 @@ db/ParserTest.o:			EXTRA = $(BOOMSET)
 db/ExpTest.o:				EXTRA = $(BOOMSET)
 db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 db/DataflowTest.o:			EXTRA = $(BOOMSET) -Ifrontend
+db/CfgTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
@@ -174,6 +175,7 @@ db/prog.o: include/prog.h include/exp.h include/cfg.h include/proc.h \
 db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
 db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
+db/dom.o: include/cfg.h include/dom.h
 db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h \
     include/exp.h include/types.h include/rtl.h include/proc.h include/prog.h \
     include/util.h

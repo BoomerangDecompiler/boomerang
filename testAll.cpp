@@ -24,6 +24,7 @@
 #include "FrontPentTest.h"
 #include "AnalysisTest.h"
 #include "CTest.h"
+#include "CfgTest.h"
 
 #include "prog.h"
 
@@ -47,6 +48,7 @@ int main(int argc, char** argv)
     AnalysisTest ant("AnalysisTest");
     CTest c("CTest");
     DataflowTest dft("DataflowTest");
+    CfgTest cfgt("CfgTest");
 
     expt.registerTests(&suite);
     progt.registerTests(&suite);
@@ -59,6 +61,7 @@ int main(int argc, char** argv)
     ant.registerTests(&suite);
     c.registerTests(&suite);
     dft.registerTests(&suite);
+    cfgt.registerTests(&suite);
 
     CppUnit::TextTestResult res;
 

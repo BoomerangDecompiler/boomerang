@@ -19,7 +19,8 @@ BISONPP=bison++
 FLEXPP=flex++
 
 DB_LIB=../lib/libdb.so
-TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o
+TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o \
+            CfgTest.o
 LIB_OBJS = exp.o prog.o proc.o rtl.o hrtl.o cfg.o basicblock.o register.o \
            sslparser.o sslscanner.o insnameelem.o sslinst.o table.o type.o \
            dataflow.o

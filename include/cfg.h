@@ -49,6 +49,7 @@ typedef BasicBlock* PBB;
 class HLLCode;
 class HLCall;
 class RTL;
+struct DOM;
 
 #define BTHEN 0
 #define BELSE 1
@@ -329,33 +330,6 @@ public:
     int         m_DFTlast;         // depth-first traversal last visit
     int         m_DFTrevfirst;     // reverse depth-first traversal first visit
     int         m_DFTrevlast;      // reverse depth-first traversal last visit
-
-#if 0
-    BITSET& getPostDominatorSet() { return postdominators; }
-
-        
-    /*
-     * The following are used for type analysis
-     *
-     * This function is use to gather and store the
-     * use define chains for each register within
-     * a basic block
-     */     
-    void storeUseDefineStruct(BBBlock& inBlock);
-    
-    /*
-     * Propagates type information between basic blocks
-     * within a function
-     */    
-    void propagateType(BasicBlock * prevBlock, bool endCase = false );
-    
-    /* 
-     * Used by propagate type to back track the
-     * parent BB. The value of this variable is 
-     * meaningless otherwise
-     */
-    BasicBlock * tempPrevBB;
-#endif
 
 private:
     /*
@@ -901,16 +875,6 @@ public:
     void structure();
 
     /*
-     * Computes dominators for each BB.
-     */
-    void computeDominators();
-
-    /*
-     * Computes postdominators for each BB.
-     */
-    void computePostDominators();
-
-    /*
      * Compute reaches/use information
      */
     void clearReaches();
@@ -1100,6 +1064,14 @@ public:
      */
     void print(std::ostream &out, bool withDF = false);
 
+    /*
+     * Experimental domonator frontier code
+     */
+    void DFS(DOM* d, int p, int n);
+    void dominators(DOM* d);
+    int  ancestorWithLowestSemi(DOM* d, int v);
+    void Link(DOM* d, int p, int n);
+    void computeDF(DOM* d, int n);
 };              /* Cfg */
 
 #endif

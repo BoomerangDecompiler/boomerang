@@ -359,6 +359,8 @@ public:
             Unary(OPER op, Exp* e);
     // Copy constructor
             Unary(Unary& o);
+    // Custom constructor
+    static Unary*  regOf(int r) {return new Unary(opRegOf, new Const(r));}
 
     // Clone
     virtual Exp* clone();
@@ -611,6 +613,7 @@ public:
 
     // Clone
     virtual Exp* clone();
+    virtual Statement* cloneStmt();
 
     // Compare
     bool    operator==(const Exp& o) const;
