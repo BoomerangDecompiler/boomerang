@@ -6,6 +6,8 @@
 ######################################################
 
 # $Revision$
+# 19 Aug 02 - Icer: changed make distclean delete toplevel makefile
+#		    changed all: to read lib static test
 # 20 May 02 - Trent: Created
 # 31 May 02 - Mike: Make lib directory if needed
 # 15 Jul 01 - Mike: Added static target
@@ -40,8 +42,8 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 .PHONY: test clean all static
-
-all: lib test static
+#should read lib static test
+all: lib static test
 static: boomerang
 
 # Make the lib directory if needed
@@ -65,8 +67,8 @@ clean:
 	cd frontend && ${MAKE} clean
 
 distclean: clean
-	rm -f util/Makefile loader/Makefile db/Makefile frontend/Makefile
-
+	rm -f Makefile util/Makefile loader/Makefile db/Makefile \
+		frontend/Makefile
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
