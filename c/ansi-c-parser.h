@@ -1,7 +1,7 @@
 #ifndef YY_AnsiCParser_h_included
 #define YY_AnsiCParser_h_included
 
-#line 1 "/usr/local/lib/bison.h"
+#line 1 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/usr/local/lib/bison.h" */
+/* #line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 21 "ansi-c-parser.h"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
@@ -106,7 +106,7 @@ typedef union {
 } yy_AnsiCParser_stype;
 #define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
 
-#line 14 "/usr/local/lib/bison.h"
+#line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_AnsiCParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -157,32 +157,32 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 63 "/usr/local/lib/bison.h" */
+/* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 162 "ansi-c-parser.h"
 
-#line 63 "/usr/local/lib/bison.h"
+#line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
-/* #line 65 "/usr/local/lib/bison.h" */
+/* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 169 "ansi-c-parser.h"
 
-#line 65 "/usr/local/lib/bison.h"
+#line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 67 "/usr/local/lib/bison.h" */
+/* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 176 "ansi-c-parser.h"
 
-#line 67 "/usr/local/lib/bison.h"
+#line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_DEBUG */
 #endif
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 70 "/usr/local/lib/bison.h" */
+/* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 184 "ansi-c-parser.h"
 
-#line 70 "/usr/local/lib/bison.h"
+#line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -257,7 +257,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #endif
 
 
-/* #line 143 "/usr/local/lib/bison.h" */
+/* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 262 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
@@ -333,7 +333,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #define	RETURN	329
 
 
-#line 143 "/usr/local/lib/bison.h"
+#line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -360,7 +360,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #ifndef YY_AnsiCParser_USE_CONST_TOKEN
 #define YY_AnsiCParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 #ifndef YY_AnsiCParser_ENUM_TOKEN
@@ -370,11 +370,11 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 
 class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT
 {
-public: 
+public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/usr/local/lib/bison.h" */
+/* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 379 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
@@ -450,12 +450,12 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 182 "/usr/local/lib/bison.h"
+#line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 185 "/usr/local/lib/bison.h" */
+/* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 460 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
@@ -531,7 +531,7 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,RETURN=329
 
 
-#line 185 "/usr/local/lib/bison.h"
+#line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -584,6 +584,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/usr/local/lib/bison.h" */
+/* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 589 "ansi-c-parser.h"
 #endif

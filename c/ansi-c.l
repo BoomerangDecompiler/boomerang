@@ -10,7 +10,8 @@
 
 
 D			[0-9]
-L			[a-zA-Z_]
+/* ALlow ? and @ in identifiers, so we can use mangled names */
+L			[a-zA-Z_?@]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
 FS			(f|F|l|L)

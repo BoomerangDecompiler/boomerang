@@ -107,6 +107,16 @@ HACCEL LoadAcceleratorsW(
 );
 
 typedef struct {
+    int x;
+    int y;
+} POINT;
+
+typedef struct {
+    int cx;
+    int cy;
+} SIZE;
+
+typedef struct {
     HWND hwnd;
     UINT message;
     WPARAM wParam;
@@ -358,3 +368,30 @@ BOOL EndDialog(
     HWND hDlg,
     INT_PTR nResult
 );
+
+POINT ?MoveTo@CDC@@QAE?AVCPoint@@HH@Z(  /* CDC::MoveTo */
+    POINT *ret,     /* MSVC convention when returning structs is to pass a
+                        hidden first parameter */
+    int x,
+    int y
+);
+
+BOOL ?LineTo@CDC@@QAEHHH@Z(     /* CDC::LineTo */
+    int x,
+    int y
+);
+
+UINT ?SetTextAlign@CDC@@QAEII@Z(UINT flags);
+void ??0CString@@QAE@PBD@Z(char* sz);   /* CString constructor with C string */
+void ??1CString@@QAE@XZ();          /* CString destructor */
+int ?FindIndex@CObList@@QBEPAU__POSITION@@H@Z(  /* CObList::FindIndex */
+    int idx
+);
+int wsprintfA(
+    LPTSTR lpOut,
+    LPCTSTR lpFmt,
+    ...
+);
+
+char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
+
