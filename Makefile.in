@@ -70,6 +70,7 @@ clean:
 	cd loader   && ${MAKE} clean
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
+	cd analysis && ${MAKE} clean
 	rm driver.o codegen/chllcode.o boomerang
 
 #20 Aug 02 icer
@@ -82,12 +83,14 @@ distclean: clean
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
-	analysis/AnalysisTest.o loader/BinaryFileStub.o
+	analysis/AnalysisTest.o loader/BinaryFileStub.o \
+        c/CTest.o
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/dataflow.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
-  db/type.o db/hrtl.o db/sslinst.o db/insnameelem.o db/signature.o
+  db/type.o db/hrtl.o db/sslinst.o db/insnameelem.o db/signature.o \
+  c/ansi-c-parser.o c/ansi-c-scanner.o 
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o
@@ -112,6 +115,12 @@ db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y
 	cd db ; ${FLEXPP} -osslscanner.cpp -hsslscanner.h sslscanner.l
 
+c/ansi-c-parser.cpp c/ansi-c-parser.h: c/ansi-c.y c/ansi-c.l
+	cd c ; ${BISONPP} -d -v -oansi-c-parser.cpp -hansi-c-parser.h ansi-c.y
+
+c/ansi-c-scanner.cpp c/ansi-c-scanner.h: c/ansi-c.l c/ansi-c.y
+	cd c ; ${FLEXPP} -oansi-c-scanner.cpp -hansi-c-scanner.h ansi-c.l
+
 # The .cpp's depend on the .m's
 $(MACH_SRC): frontend/%decoder.cpp : frontend/machine/%/core.spec \
                                    frontend/machine/%/synth.spec \
@@ -129,6 +138,7 @@ frontend/frontend.o:		EXTRA = $(BOOMSET)
 frontend/FrontSparcTest.o:	EXTRA = $(BOOMSET)
 frontend/FrontPentTest.o:	EXTRA = $(BOOMSET)
 analysis/AnalysisTest.o:	EXTRA = $(BOOMSET) -Ifrontend
+c/CTest.o:	EXTRA = $(BOOMSET)
 db/ProgTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ProcTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ParserTest.o:			EXTRA = $(BOOMSET)
@@ -159,6 +169,8 @@ db/hrtl.o: include/rtl.h include/exp.h include/operator.h
 db/register.o: include/register.h
 db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h
 db/sslscanner.o: db/sslscanner.cpp db/sslscanner.h
+c/ansi-c-parser.o: c/ansi-c-parser.cpp c/ansi-c-parser.h c/ansi-c-scanner.h
+c/ansi-c-scanner.o: c/ansi-c-scanner.cpp c/ansi-c-scanner.h
 db/insnameelem.o: db/insnameelem.h
 db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/prog.h include/type.h

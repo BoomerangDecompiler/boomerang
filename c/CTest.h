@@ -1,16 +1,15 @@
 #include <cppunit/TestCaller.h>
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
+#include "util.h"
+#include "type.h"
 
-#include "exp.h"
+#include "ansi-c-parser.h"
 
-class ExpTest : public CppUnit::TestCase {
-  protected:
-    Const*  m_99;
-    Unary*  m_rof2;
+class CTest : public CppUnit::TestCase {
 
   public:
-    ExpTest(std::string name) : CppUnit::TestCase (name)
+    CTest(std::string name) : CppUnit::TestCase (name)
     {}
 
     virtual void registerTests(CppUnit::TestSuite* suite);
@@ -20,16 +19,6 @@ class ExpTest : public CppUnit::TestCase {
     void setUp ();
     void tearDown ();
 
-    void test99 ();
-    void testRegOf2 ();
-
-    void testPlus ();
-    void testMinus ();
-    void testMult ();
-    void testDiv ();
-    void testMults ();
-    void testDivs ();
-    void testMod ();
-    void testMods ();
+    void test1();
 };
 

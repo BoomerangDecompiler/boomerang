@@ -131,7 +131,7 @@ void FrontPentTest::test2() {
     expected = std::string(
         "08048925 *32* r[tmp1] := r[28]\n"
         "         *32* r[28] := r[28] + 4\n"
-	"         ADDFLAGS32( r[tmp1], 4, r[28] )\n");
+	"         *32* %flags := ADDFLAGS32( r[tmp1], 4, r[28] )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
@@ -139,7 +139,7 @@ void FrontPentTest::test2() {
     inst.rtl->print(o2);
     expected = std::string(
         "08048928 *32* r[24] := r[24] ^ r[24]\n"
-	"         LOGICALFLAGS32( r[24] )\n");
+	"         *32* %flags := LOGICALFLAGS32( r[24] )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;

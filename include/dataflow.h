@@ -62,6 +62,10 @@ public:
     // defined by this statement
     virtual Exp* getLeft() = 0;
 
+    // returns an expression that would be used to replace this statement
+    // in a use
+    virtual Exp* getRight() = 0;
+
     // returns true if this statement uses the given expression
     virtual bool usesExp(Exp *e) = 0;
 
@@ -82,13 +86,13 @@ public:
 
     // returns true if this statement can be propogated to all it's
     // uses and removed
-    virtual bool canPropogateToAll() = 0;
+    virtual bool canPropogateToAll();
 
     // propogates this statement to all it's uses, caller must remove
-    virtual void propogateToAll() = 0;
+    virtual void propogateToAll();
 
     // replaces a use of the given statement with an expression
-    virtual void replaceUse(Statement *use, Exp *with);
+    virtual void replaceUse(Statement *use);
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os) = 0;
@@ -98,7 +102,7 @@ public:
     virtual void printAsUseBy(std::ostream &os) = 0;
 
 protected:
-    virtual void doReplaceUse(Statement *use, Exp *with) = 0;
+    virtual void doReplaceUse(Statement *use) = 0;
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };
 

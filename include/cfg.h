@@ -203,8 +203,8 @@ public:
      * Print the BB. For -R and for debugging
 	 * Don't use = std::cout, because gdb doesn't know about std::
      */
-    void print(std::ostream& os);
-	void print() {print(std::cout);}
+    void print(std::ostream& os, bool withDF = false);
+    void print() {print(std::cout);}
 
     /*
      * Set the type of the basic block.
@@ -931,6 +931,7 @@ public:
      */
     void computeDataflow();
     void updateLiveness();
+    std::set<Statement*> &getLiveOut() { return liveout; }
 
     std::vector<PBB> m_vectorBB; // faster access
 
@@ -996,6 +997,11 @@ protected:
     std::list<PBB> m_listBB;
 
     /*
+     * Intersection of all statements live at the end of all the ret bbs.
+     */
+    std::set<Statement*> liveout;
+
+    /*
      * The ADDRESS to PBB map.
      */
     MAPBB m_mapBB;
@@ -1042,7 +1048,7 @@ public:
     void addNewOutEdge(PBB fromBB, PBB newOutEdge);
 
     // print this cfg, mainly for debugging
-    void print(std::ostream &out);
+    void print(std::ostream &out, bool withDF = false);
   
 };              /* Cfg */
 

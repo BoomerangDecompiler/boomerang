@@ -530,8 +530,6 @@ public:
     bool    operator< (const Exp& o) const;
 
     virtual void print(std::ostream& os);
-    virtual void printWithLives(std::ostream& os);
-    virtual void printWithUses(std::ostream& os);
     void    printr(std::ostream& os) {print(os);}     // Printr same as print
     void    appendDotFile(std::ofstream& of);
 
@@ -555,19 +553,22 @@ public:
         virtual void getDeadStatements(std::set<Statement*> &dead);
 	virtual bool usesExp(Exp *e);
 
-	// dataflow related functions
-	virtual bool canPropogateToAll();
-	virtual void propogateToAll();
-
         // get how to access this value
         virtual Exp* getLeft() { return subExp1; }
+
+        // get how to replace this statement in a use
+        virtual Exp* getRight() { return subExp2; }
+
+	// dataflow print functions
+        virtual void printWithLives(std::ostream& os);
+        virtual void printWithUses(std::ostream& os);
 
 	// special print functions
         virtual void printAsUse(std::ostream &os);
         virtual void printAsUseBy(std::ostream &os);
 
 protected:
-	virtual void doReplaceUse(Statement *use, Exp *with);
+	virtual void doReplaceUse(Statement *use);
 };
 
 /*==============================================================================
@@ -585,7 +586,6 @@ virtual     ~FlagDef();                         // Destructor
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
-
 };
 
 /*

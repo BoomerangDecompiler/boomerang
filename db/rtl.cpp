@@ -176,8 +176,7 @@ void RTL::deepCopyList(std::list<Exp*>& dest) {
  *============================================================================*/
 void RTL::appendExp(Exp* exp) {
     if (expList.size()) {
-        FlagDef *def = dynamic_cast<FlagDef*>(expList.back());
-	if (def != NULL) {
+	if (expList.back()->isFlagCall()) {
             std::list<Exp*>::iterator it = expList.end();
             expList.insert(--it, exp);
 	    return;
@@ -313,7 +312,7 @@ Exp* RTL::elementAt(unsigned i) {
  * PARAMETERS:      os - stream to output to (often cout or cerr)
  * RETURNS:         <nothing>
  *============================================================================*/
-void RTL::print(std::ostream& os /*= cout*/) {
+void RTL::print(std::ostream& os /*= cout*/, bool withDF /*= false*/) {
 
     // print out the instruction address of this RTL
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
@@ -328,7 +327,7 @@ void RTL::print(std::ostream& os /*= cout*/) {
         if (bFirst) os << " ";
         else        os << std::setw(9) << " ";
 	Statement *stmt = dynamic_cast<Statement*>(*p);
-	if (stmt)
+	if (stmt && withDF)
             stmt->printWithUses(os);
 	else
 	    (*p)->print(os);
@@ -337,7 +336,6 @@ void RTL::print(std::ostream& os /*= cout*/) {
     }
     if (expList.empty()) os << std::endl;     // New line for NOP
 }
-
 
 /*==============================================================================
  * FUNCTION:        RTL::getAddress

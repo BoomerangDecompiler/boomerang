@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 	std::cerr << "decompiling..." << std::endl;
 	prog->decompile();
         std::cerr << "printing..." << std::endl;
-        prog->print(std::cout);
+        prog->print(std::cout, true);
 
 /*	std::cerr << "generating code..." << std::endl;
 	PROGMAP::const_iterator it;

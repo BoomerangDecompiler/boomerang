@@ -126,7 +126,7 @@ public:
 	void decompile();
 
         // Print this program (primarily for debugging)
-        void print(std::ostream &out);
+        void print(std::ostream &out, bool withDF = false);
 
 	// map for global symbols
 	std::map<std::string, TypedExp *> symbols;

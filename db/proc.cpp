@@ -77,7 +77,7 @@ Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
  *============================================================================*/
 const char* Proc::getName()
 {
-	assert(signature);
+    assert(signature);
     return signature->getName();
 }
 
@@ -89,8 +89,8 @@ const char* Proc::getName()
  *============================================================================*/
 void Proc::setName(const char *nam)
 {
-	assert(signature);
-	signature->setName(nam);
+    assert(signature);
+    signature->setName(nam);
 }
 
 
@@ -441,8 +441,8 @@ Proc *Proc::getFirstCaller()
 
 Signature *Proc::getSignature()
 {
-	assert(signature);
-	return signature;
+    assert(signature);
+    return signature;
 }
 
 // deserialize a procedure
@@ -570,6 +570,10 @@ bool LibProc::deserialize_fid(std::istream &inf, int fid)
 	return true;
 }
 
+void LibProc::getInternalStatements(std::list<Statement*> &internal)
+{
+     signature->getInternalStatements(internal);
+}
 
 /*==============================================================================
  * FUNCTION:        LibProc::put
@@ -1614,9 +1618,9 @@ bool UserProc::generateCode(HLLCode &hll)
 }
 
 // print this userproc, maining for debugging
-void UserProc::print(std::ostream &out) {
+void UserProc::print(std::ostream &out, bool withDF) {
     signature->print(out);
-    cfg->print(out);
+    cfg->print(out, withDF);
 }
 
 // get all statements
@@ -1627,7 +1631,6 @@ void UserProc::getAllStatements(std::set<Statement*> &stmts) {
 	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
 		       rit++) {
 	    RTL *rtl = *rit;
-	    rtl->simplify();
             for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
 		 it != rtl->getList().end(); it++) {
 		Statement *e = dynamic_cast<Statement*>(*it);
@@ -1679,9 +1682,16 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
+void UserProc::getInternalStatements(std::list<Statement*> &internal)
+{
+     for (std::list<Statement*>::iterator it = this->internal.begin();
+	  it != this->internal.end(); it++)
+         internal.push_back(*it);
+}
+
 // decompile this userproc
 void UserProc::decompile() {
-    print(std::cout);
+    print(std::cout, true);
     bool change = true;
     while (change) {
         change = false;
@@ -1689,6 +1699,7 @@ void UserProc::decompile() {
 	change |= removeDeadStatements();
 	change |= propogateAndRemoveStatements();
     }
+    removeInternalStatements();
 }
 
 bool UserProc::removeNullStatements()
@@ -1744,9 +1755,14 @@ bool UserProc::removeDeadStatements()
 	        (*it1)->printAsUse(std::cerr);
 	        std::cerr << std::endl;
 		HLCall *call = dynamic_cast<HLCall*>(*it1);
-		if (call == NULL)
+		if (call == NULL) {
                     removeStatement(*it1);
-		else {
+		    // remove from uses
+                    std::set<Statement*> uses1 = (*it1)->getUses();
+		    for (std::set<Statement*>::iterator it2 = uses1.begin();
+		         it2 != uses1.end(); it2++)
+		        (*it2)->getUseBy().erase(*it1);
+		} else {
 		    call->setIgnoreReturnLoc(true);
 		}
                 // remove from liveness
@@ -1761,6 +1777,24 @@ bool UserProc::removeDeadStatements()
     return change;
 }
 
+void UserProc::removeInternalStatements()
+{
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    // remove any statements that have no uses and are live out of this proc
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++)
+	    if ((*it)->getUseBy().size() == 0 && 
+                cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
+                // new internal statement
+		std::cerr << "new internal statement: ";
+		(*it)->printAsUse(std::cerr);
+		std::cerr << std::endl;
+		internal.push_back(*it);
+	        removeStatement(*it);
+	    }
+}
+
 bool UserProc::propogateAndRemoveStatements()
 {
     bool change = false;
@@ -1770,6 +1804,13 @@ bool UserProc::propogateAndRemoveStatements()
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
 		    it++) {
         if ((*it)->canPropogateToAll()) {
+	    if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
+                // new internal statement
+		std::cerr << "new internal statement: ";
+		(*it)->printAsUse(std::cerr);
+		std::cerr << std::endl;
+		internal.push_back(*it);
+	    }
 	    removeStatement(*it);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
@@ -1784,7 +1825,7 @@ bool UserProc::propogateAndRemoveStatements()
 	        (*it1)->getUseBy().erase(*it);
 	    (*it)->propogateToAll();
 	    // debug: print
-	    print(std::cout);
+	    print(std::cout, true);
 	    change = true;
 	}
     }

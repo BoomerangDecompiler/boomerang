@@ -200,11 +200,11 @@ bool HLJump::searchAll(Exp* search, std::list<Exp*> &result)
  * PARAMETERS:      os: stream to write to
  * RETURNS:         Nothing
  *============================================================================*/
-void HLJump::print(std::ostream& os /*= cout*/)
+void HLJump::print(std::ostream& os /*= cout*/, bool withDF)
 {
     // Returns can all have semantics (e.g. ret/restore)
     if (expList.size() != 0)
-        RTL::print(os);
+        RTL::print(os, withDF);
 
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
@@ -541,11 +541,11 @@ bool HLJcond::searchAll(Exp* search, std::list<Exp*> &result)
  * PARAMETERS:      os: stream
  * RETURNS:         Nothing
  *============================================================================*/
-void HLJcond::print(std::ostream& os /*= cout*/)
+void HLJcond::print(std::ostream& os /*= cout*/, bool withDF)
 {
     // These can have semantics (e.g. pa-risc add and (conditionally) branch)
     if (expList.size() != 0)
-        RTL::print(os);
+        RTL::print(os, withDF);
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
     os << "JCOND ";
@@ -796,7 +796,7 @@ bool HLNwayJump::searchAll(Exp* search, std::list<Exp*> &result)
  *                  indent: number of columns to skip
  * RETURNS:         Nothing
  *============================================================================*/
-void HLNwayJump::print(std::ostream& os /*= cout*/)
+void HLNwayJump::print(std::ostream& os /*= cout*/, bool withDF)
 {
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
@@ -1056,11 +1056,11 @@ bool HLCall::searchAll(Exp* search, std::list<Exp *>& result)
  * PARAMETERS:      os: stream to write to
  * RETURNS:         Nothing
  *============================================================================*/
-void HLCall::print(std::ostream& os /*= cout*/)
+void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
 {
     // Calls can all have semantics (e.g. call/restore)
     if (expList.size() != 0)
-        RTL::print(os);
+        RTL::print(os, withDF);
 
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
@@ -1097,11 +1097,13 @@ void HLCall::print(std::ostream& os /*= cout*/)
         }
     }
     
-    for (std::list<Statement*>::iterator it = internal.begin(); 
-         it != internal.end(); it++) {
-	os << "internal ";
-        (*it)->printWithUses(os);
-	os << std::endl;
+    if (withDF) {
+        for (std::list<Statement*>::iterator it = internal.begin(); 
+             it != internal.end(); it++) {
+            os << "internal ";
+            (*it)->printWithUses(os);
+            os << std::endl;
+        }
     }
 }
 
@@ -1223,12 +1225,7 @@ void HLCall::setDestProc(Proc* dest)
         arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
     // init internal statements
     assert(internal.size() == 0);
-    if (procDest->isLib()) {
-        procDest->getSignature()->getInternalStatements(internal);
-    } else {
-	// TODO
-	assert(false);
-    }
+    procDest->getInternalStatements(internal);
 }
 
 void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
@@ -1350,18 +1347,20 @@ bool HLCall::usesExp(Exp *e)
     return false;
 }
 
-void HLCall::doReplaceUse(Statement *use, Exp *with)
+void HLCall::doReplaceUse(Statement *use)
 {
     Exp *left = use->getLeft();
+    Exp *right = use->getRight();
     assert(left);
+    assert(right);
     bool change = false;
     for (int i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
-	    arguments[i] = with->clone();
+	    arguments[i] = right->clone();
 	    change = true;
 	} else {
             bool changeright = false;
-            arguments[i]->searchReplaceAll(left, with->clone(), changeright);
+            arguments[i]->searchReplaceAll(left, right->clone(), changeright);
 	    change |= changeright;
 	}
     }
@@ -1606,7 +1605,7 @@ void HLScond::setCondExpr(Exp* pss)
  * PARAMETERS:      os: stream
  * RETURNS:         <Nothing>
  *============================================================================*/
-void HLScond::print(std::ostream& os /*= cout*/)
+void HLScond::print(std::ostream& os /*= cout*/, bool withDF)
 {
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";

@@ -383,7 +383,7 @@ bool BasicBlock::isJumpReqd()
  * PARAMETERS:      os - stream to output to
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::print(std::ostream& os) 
+void BasicBlock::print(std::ostream& os, bool withDF) 
 {
     if (m_iLabelNum) os << "L" << std::dec << m_iLabelNum << ": ";
     switch(m_nodeType)
@@ -401,19 +401,22 @@ void BasicBlock::print(std::ostream& os)
     // Printing the address is bad for unit testing, since address will
     // be arbitrary
     //os << " (0x" << std::hex << (unsigned int)this << "):\n";
-    os << ": live in: ";
-    std::set<Statement*> livein;
-    getLiveIn(livein);
-    for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
-        (*it)->printAsUse(os);
-        os << ", ";
+    os << ":";
+    if (withDF) {
+        os << " live in: ";
+        std::set<Statement*> livein;
+        getLiveIn(livein);
+        for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
+            (*it)->printAsUse(os);
+            os << ", ";
+        }
     }
     os << std::endl;
     if (m_pRtls)                    // Can be zero if e.g. INVALID
     {
         std::list<RTL*>::iterator rit;
         for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-            (*rit)->print(os);
+            (*rit)->print(os, withDF);
         }
     }
     if (m_bJumpReqd) {

@@ -672,6 +672,7 @@ void Binary::print(std::ostream& os)
 void Terminal::print(std::ostream& os) {
     switch (op) {
         case opPC:      os << "%pc";   break;
+	case opFlags:   os << "%flags"; break;
         case opCF:      os << "%CF";   break;
         case opZF:      os << "%ZF";   break;
         case opOF:      os << "%OF";   break;
@@ -2370,81 +2371,18 @@ bool AssignExp::usesExp(Exp *e) {
 	    subExp1->getSubExp1()->search(e, where)));
 }
 
-/* 
- * Returns true if the statement can be propogated to all uses (and
- * therefore can be removed).
- * Returns false otherwise.
- *
- * To completely propogate a statement which does not kill any of it's
- * own uses it is sufficient to show that all the uses of the statement
- * are still live at the expression to be propogated to.
- *
- * A statement that kills one or more of it's own uses is slightly more 
- * complicated.  All the uses that are not killed must still be live at
- * the expression to be propogated to, but the uses that were killed must
- * be live at the expression to be propogated to after the statement is 
- * removed.  This is clearly the case if the only use killed by a 
- * statement is the same as the left hand side, however, if multiple uses
- * are killed a search must be conducted to ensure that no statement between
- * the source and the destination kills the other uses.  This is considered
- * too complex a task and is therefore defered for later experimentation.
- */
-bool AssignExp::canPropogateToAll()
-{
-    std::set<Statement*> tmp_uses;
-    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end(); 
-		    it++)
-        tmp_uses.insert(*it);
-    int nold = tmp_uses.size();
-    killLive(tmp_uses);
-    if (nold - tmp_uses.size() > 1) {
-        // see comment.
-	return false;
-    }
-
-    if (useBy.size() == 0) return false; // not doing useless code removal here
-
-    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); 
-		    it++) {
-	std::set<Statement*> in;
-	(*it)->getLiveIn(in);
-	// all uses must be live at the destination
-	for (std::set<Statement*>::iterator iuse = tmp_uses.begin();
-	         iuse != tmp_uses.end(); iuse++)
-	    if (in.find(*iuse) == in.end()) return false;
-	// no false uses must be created
-	for (std::set<Statement*>::iterator ilive = in.begin();
-		 ilive != in.end(); ilive++) {
-	    if (*ilive == this) continue;
-	    Exp *left = (*ilive)->getLeft();
-	    if (left == NULL) return false;
-	    if (usesExp(left) && findUse(left) == NULL) return false;
-        }
-    }
-    return true;
-}
-
-// assumes canPropogateToAll has returned true
-// assumes this statement will be removed by the caller
-void AssignExp::propogateToAll()
-{
-    while(useBy.begin() != useBy.end()) {
-	Statement *e = *useBy.begin();
-        e->replaceUse(this, subExp2);
-	assert(useBy.begin() == useBy.end() || e != *useBy.begin());
-    }
-}
-
-void AssignExp::doReplaceUse(Statement *use, Exp *with) 
+void AssignExp::doReplaceUse(Statement *use) 
 {
     Exp *left = use->getLeft();
+    Exp *right = use->getRight();
     assert(left);
+    assert(right);
     bool changeright = false;
-    subExp2 = subExp2->searchReplaceAll(left, with->clone(), changeright);
+    subExp2 = subExp2->searchReplaceAll(left, right->clone(), changeright);
     bool changeleft = false;
     if (subExp1->isMemOf()) {
 	Exp *e = subExp1->getSubExp1();
-	e = e->searchReplaceAll(left, with->clone(), changeleft);
+	e = e->searchReplaceAll(left, right->clone(), changeleft);
 	if (e != subExp1->getSubExp1()) subExp1->setSubExp1(e);
     }
     assert(changeright || changeleft);

@@ -58,13 +58,7 @@ namespace CallingConvention {
 		virtual Type *getReturnType();
 		virtual void setReturnType(Type *t);
 
-		virtual	void addParameter(const char *nam = NULL);
-		virtual void addParameter(Type *type, const char *nam = NULL);
-		virtual void setNumParams(unsigned int n);
-
-		virtual unsigned int getNumParams();
 		virtual	Exp *getParamExp(unsigned int n);
-		virtual PARAM_DIR getParamDirection(unsigned int n);
 		virtual Exp *getArgumentExp(unsigned int n);
 
 		virtual void analyse(UserProc *p);
@@ -92,13 +86,7 @@ namespace CallingConvention {
 			virtual Type *getReturnType();
 			virtual void setReturnType(Type *t);
 
-			virtual	void addParameter(const char *nam = NULL);
-			virtual void addParameter(Type *type, const char *nam = NULL);
-			virtual void setNumParams(unsigned int n);
-
-			virtual unsigned int getNumParams();
 			virtual	Exp *getParamExp(unsigned int n);
-			virtual PARAM_DIR getParamDirection(unsigned int n);
 			virtual Exp *getArgumentExp(unsigned int n);
 
 			virtual void analyse(UserProc *p);
@@ -126,13 +114,7 @@ namespace CallingConvention {
 			virtual Type *getReturnType();
 			virtual void setReturnType(Type *t);
 
-			virtual	void addParameter(const char *nam = NULL);
-			virtual void addParameter(Type *type, const char *nam = NULL);
-			virtual void setNumParams(unsigned int n);
-
-			virtual unsigned int getNumParams();
 			virtual	Exp *getParamExp(unsigned int n);
-			virtual PARAM_DIR getParamDirection(unsigned int n);
 			virtual Exp *getArgumentExp(unsigned int n);
 
 			virtual void analyse(UserProc *p);
@@ -155,10 +137,7 @@ CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(ol
 Signature *CallingConvention::Win32Signature::clone()
 {
 	Win32Signature *n = new Win32Signature(name.c_str());
-	n->pnames = pnames;
-	n->ptypes = ptypes;
-	n->inregs = inregs;
-	n->outregs = outregs;
+	n->params = params;
 	return n;
 }
 
@@ -170,6 +149,7 @@ bool CallingConvention::Win32Signature::operator==(const Signature& other) const
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candidate)
 {
+/*
 	std::vector<int> &inregs = candidate.getInRegs();
 	std::vector<int> &outregs = candidate.getOutRegs();
 	// must be callee pop
@@ -194,7 +174,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 	// eax must be the only outreg (if any)
 	if (outregs.size() == 1 && outregs[0] != 24) return false;
 	if (outregs.size() > 1) return false;
-
+*/
 	return true;
 }
 
@@ -206,16 +186,16 @@ bool CallingConvention::Win32Signature::serialize(std::ostream &ouf, int len)
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (unsigned int i = 0; i < pnames.size(); i++) {
+	for (unsigned int i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
 		saveLen(ouf, -1, true);
 		std::streampos posa = ouf.tellp();
 
-		saveString(ouf, pnames[i]);
+		saveString(ouf, params[i]->getName());
 		int l;
-		ptypes[i]->serialize(ouf, l);
+		params[i]->getType()->serialize(ouf, l);
 
 		std::streampos now = ouf.tellp();
 		assert((int)(now - posa) == len);
@@ -241,9 +221,7 @@ bool CallingConvention::Win32Signature::deserialize_fid(std::istream &inf, int f
 				std::string nam;
 				loadString(inf, nam);
 				Type *t = Type::deserialize(inf);
-				pnames.push_back(nam);
-				ptypes.push_back(t);
-				delete t;
+				params.push_back(new Parameter(t, nam.c_str()));
 				std::streampos now = inf.tellg();
 				assert(len == (now - pos));
 			}
@@ -270,63 +248,16 @@ void CallingConvention::Win32Signature::setReturnType(Type *t)
 	rettype = t;
 }
 
-void CallingConvention::Win32Signature::addParameter(const char *nam /*= NULL*/)
-{
-	if (nam == NULL) {
-		std::stringstream os;
-		os << "arg" << pnames.size() << std::ends;
-		std::string s = os.str();
-		addParameter(s.c_str());
-	}
-	else
-		addParameter(nam);
-}
-
-void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/)
-{
-	ptypes.push_back(type);
-	if (nam == NULL) {
-		std::stringstream os;
-		os << "arg" << pnames.size()+1 << std::ends;
-		std::string s = os.str();
-		pnames.push_back(s.c_str());
-	}
-	else
-		pnames.push_back(nam);
-}
-
-void CallingConvention::Win32Signature::setNumParams(unsigned int n)
-{
-	if (n < pnames.size()) {
-		// truncate
-		pnames.erase(pnames.begin() + n, pnames.end());
-		ptypes.erase(ptypes.begin() + n, ptypes.end());
-	} else {
-		for (unsigned int i = pnames.size(); i < n; i++)
-			addParameter();		
-	}
-}
-
-unsigned int CallingConvention::Win32Signature::getNumParams()
-{
-	return pnames.size();
-}
-
 Exp *CallingConvention::Win32Signature::getParamExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
 }
 
-PARAM_DIR CallingConvention::Win32Signature::getParamDirection(unsigned int n)
-{
-	return D_IN;
-}
-
 Exp *CallingConvention::Win32Signature::getArgumentExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const(n * 4)));
 }
@@ -358,10 +289,7 @@ CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Si
 Signature *CallingConvention::StdC::PentiumSignature::clone()
 {
 	PentiumSignature *n = new PentiumSignature(name.c_str());
-	n->pnames = pnames;
-	n->ptypes = ptypes;
-	n->inregs = inregs;
-	n->outregs = outregs;
+	n->params = params;
 	return n;
 }
 
@@ -374,6 +302,7 @@ bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& othe
 
 bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature &candidate)
 {
+	/*
 	std::vector<int> &inregs = candidate.getInRegs();
 	std::vector<int> &outregs = candidate.getOutRegs();
 
@@ -393,6 +322,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 	// eax must be the only outreg (if any)
 	if (outregs.size() == 1 && outregs[0] != 24) return false;
 	if (outregs.size() > 1) return false;
+	*/
 
 	return true;
 }
@@ -405,16 +335,16 @@ bool CallingConvention::StdC::PentiumSignature::serialize(std::ostream &ouf, int
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (unsigned int i = 0; i < pnames.size(); i++) {
+	for (unsigned int i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
 		saveLen(ouf, -1, true);
 		std::streampos posa = ouf.tellp();
 
-		saveString(ouf, pnames[i]);
+		saveString(ouf, params[i]->getName());
 		int l;
-		ptypes[i]->serialize(ouf, l);
+		params[i]->getType()->serialize(ouf, l);
 
 		std::streampos now = ouf.tellp();
 		assert((int)(now - posa) == len);
@@ -440,9 +370,7 @@ bool CallingConvention::StdC::PentiumSignature::deserialize_fid(std::istream &in
 				std::string nam;
 				loadString(inf, nam);
 				Type *t = Type::deserialize(inf);
-				pnames.push_back(nam);
-				ptypes.push_back(t);
-				delete t;
+				params.push_back(new Parameter(t, nam.c_str()));
 				std::streampos now = inf.tellg();
 				assert(len == (now - pos));
 			}
@@ -469,57 +397,16 @@ void CallingConvention::StdC::PentiumSignature::setReturnType(Type *t)
 	rettype = t;
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(const char *nam /*= NULL*/)
-{
-	addParameter(new IntegerType(), nam);
-}
-
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/)
-{
-	ptypes.push_back(type);
-	if (nam)
-		pnames.push_back(nam);
-	else {
-		std::stringstream os;
-		os << "arg" << pnames.size() + 1 << std::ends;
-		std::string s = os.str();
-		pnames.push_back(s.c_str());
-	}
-}
-
-void CallingConvention::StdC::PentiumSignature::setNumParams(unsigned int n)
-{
-	if (n < pnames.size()) {
-		// truncate
-		pnames.erase(pnames.begin() + n, pnames.end());
-		ptypes.erase(ptypes.begin() + n, ptypes.end());
-	} else {
-		for (unsigned int i = pnames.size(); i < n; i++) {
-			addParameter();
-		}
-	}
-}
-
-unsigned int CallingConvention::StdC::PentiumSignature::getNumParams()
-{
-	return pnames.size();
-}
-
 Exp *CallingConvention::StdC::PentiumSignature::getParamExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
 }
 
-PARAM_DIR CallingConvention::StdC::PentiumSignature::getParamDirection(unsigned int n)
-{
-	return D_IN;
-}
-
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
         //if (n == 0)
 	//    return new Unary(opMemOf, esp);
@@ -563,10 +450,7 @@ CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signat
 Signature *CallingConvention::StdC::SparcSignature::clone()
 {
 	SparcSignature *n = new SparcSignature(name.c_str());
-	n->pnames = pnames;
-	n->ptypes = ptypes;
-	n->inregs = inregs;
-	n->outregs = outregs;
+	n->params = params;
 	return n;
 }
 
@@ -590,16 +474,16 @@ bool CallingConvention::StdC::SparcSignature::serialize(std::ostream &ouf, int l
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (unsigned int i = 0; i < pnames.size(); i++) {
+	for (unsigned int i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
 		saveLen(ouf, -1, true);
 		std::streampos posa = ouf.tellp();
 
-		saveString(ouf, pnames[i]);
+		saveString(ouf, params[i]->getName());
 		int l;
-		ptypes[i]->serialize(ouf, l);
+		params[i]->getType()->serialize(ouf, l);
 
 		std::streampos now = ouf.tellp();
 		assert((int)(now - posa) == len);
@@ -625,9 +509,7 @@ bool CallingConvention::StdC::SparcSignature::deserialize_fid(std::istream &inf,
 				std::string nam;
 				loadString(inf, nam);
 				Type *t = Type::deserialize(inf);
-				pnames.push_back(nam);
-				ptypes.push_back(t);
-				delete t;
+				params.push_back(new Parameter(t, nam.c_str()));
 				std::streampos now = inf.tellg();
 				assert(len == (now - pos));
 			}
@@ -661,57 +543,16 @@ void CallingConvention::StdC::SparcSignature::setReturnType(Type *t)
 	rettype = t;
 }
 
-void CallingConvention::StdC::SparcSignature::addParameter(const char *nam /*= NULL*/)
-{
-	addParameter(new IntegerType(), nam);
-}
-
-void CallingConvention::StdC::SparcSignature::addParameter(Type *type, const char *nam /*= NULL*/)
-{
-	ptypes.push_back(type);
-	if (nam)
-		pnames.push_back(nam);
-	else {
-		std::stringstream os;
-		os << "arg" << pnames.size() + 1 << std::ends;
-		std::string s = os.str();
-		pnames.push_back(s.c_str());
-	}
-}
-
-void CallingConvention::StdC::SparcSignature::setNumParams(unsigned int n)
-{
-	if (n < pnames.size()) {
-		// truncate
-		pnames.erase(pnames.begin() + n, pnames.end());
-		ptypes.erase(ptypes.begin() + n, ptypes.end());
-	} else {
-		for (unsigned int i = pnames.size(); i < n; i++) {
-			addParameter();
-		}
-	}
-}
-
-unsigned int CallingConvention::StdC::SparcSignature::getNumParams()
-{
-	return pnames.size();
-}
-
 Exp *CallingConvention::StdC::SparcSignature::getParamExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
 }
 
-PARAM_DIR CallingConvention::StdC::SparcSignature::getParamDirection(unsigned int n)
-{
-	return D_IN;
-}
-
 Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(unsigned int n)
 {
-	assert(n < pnames.size());
+	assert(n < params.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
 	return new Unary(opMemOf, new Binary(opPlus, esp, new Const(n * 4)));
 }
@@ -736,10 +577,7 @@ Signature::Signature(const char *nam)
 Signature *Signature::clone()
 {
 	Signature *n = new Signature(name.c_str());
-	n->pnames = pnames;
-	n->ptypes = ptypes;
-	n->inregs = inregs;
-	n->outregs = outregs;
+	n->params = params;
 	return n;
 }
 
@@ -757,17 +595,16 @@ bool Signature::serialize(std::ostream &ouf, int len)
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (unsigned int i = 0; i < pnames.size(); i++) {
+	for (unsigned int i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
 		saveLen(ouf, -1, true);
 		std::streampos posa = ouf.tellp();
 
-		saveString(ouf, pnames[i]);
+		saveString(ouf, params[i]->getName());
 		int l;
-		ptypes[i]->serialize(ouf, l);
-		saveValue(ouf, inregs[i], false);
+		params[i]->getType()->serialize(ouf, l);
 
 		std::streampos now = ouf.tellp();
 		assert((int)(now - posa) == len);
@@ -828,12 +665,7 @@ bool Signature::deserialize_fid(std::istream &inf, int fid)
 				std::string nam;
 				loadString(inf, nam);
 				Type *t = Type::deserialize(inf);
-				pnames.push_back(nam);
-				ptypes.push_back(t);
-				int r;
-				loadValue(inf, r, false);
-				inregs.push_back(r);
-				delete t;
+				params.push_back(new Parameter(t, nam.c_str()));
 				std::streampos now = inf.tellg();
 				assert(len == (now - pos));
 			}
@@ -872,70 +704,58 @@ void Signature::setName(const char *nam)
 
 void Signature::addParameter(const char *nam /*= NULL*/)
 {
-	assert(false);
+	addParameter(new IntegerType(), nam);
 }
 
 void Signature::addParameter(Type *type, const char *nam /*= NULL*/)
 {
-	assert(false);
+	std::string s;
+	if (nam == NULL) {
+		std::stringstream os;
+		os << "arg" << params.size()+1 << std::ends;
+		s = os.str();
+		nam = s.c_str();
+	}
+	addParameter(new Parameter(type, nam));
 }
 
 void Signature::setNumParams(unsigned int n)
 {
-	assert(false);
+	if (n < params.size()) {
+		// truncate
+		params.erase(params.begin() + n, params.end());
+	} else {
+		for (unsigned int i = params.size(); i < n; i++)
+			addParameter();		
+	}
 }
 
 unsigned int Signature::getNumParams()
 {
-	return inregs.size() + outregs.size();
+	return params.size();
 }
 
 const char *Signature::getParamName(unsigned int n)
 {
-	assert(n < pnames.size());
-	return pnames[n].c_str();
+	assert(n < params.size());
+	return params[n]->getName();
 }
 
 Exp *Signature::getParamExp(unsigned int n)
 {
-	if (n < inregs.size()) {
-		return new Unary(opRegOf, new Const(inregs[n]));
-	}
-	n -= inregs.size();
-	assert(n < outregs.size());
-	return new Unary(opRegOf, new Const(outregs[n]));	
+	assert(false);
 }
 
 Type *Signature::getParamType(unsigned int n)
 {
-	assert(n < ptypes.size());
-	return ptypes[n];
-}
-
-PARAM_DIR Signature::getParamDirection(unsigned int n)
-{
-	if (n < inregs.size())
-		return D_IN;
-	assert(n < inregs.size() + outregs.size());
-	return D_OUT;
+	assert(n < params.size());
+	return params[n]->getType();
 }
 
 Exp *Signature::getArgumentExp(unsigned int n)
 {
 	// TODO: esp?
 	return getParamExp(n);
-}
-
-void Signature::findInRegs(UserProc *p)
-{
-	inregs.clear();
-	// TODO
-}
-
-void Signature::findOutRegs(UserProc *p)
-{
-	outregs.clear();
-	// TODO
 }
 
 void Signature::analyse(UserProc *p) {
@@ -995,9 +815,9 @@ Signature *Signature::instantiate(const char *str, const char *nam)
 void Signature::print(std::ostream &out)
 {
     out << name << "(";
-    for (int i = 0; i < pnames.size(); i++) {
-        out << pnames[i];
-        if (i != pnames.size()-1) out << ", ";
+    for (int i = 0; i < params.size(); i++) {
+        out << params[i]->getName();
+        if (i != params.size()-1) out << ", ";
     }
     out << ")" << std::endl;
 }

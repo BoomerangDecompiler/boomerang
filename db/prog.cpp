@@ -140,7 +140,7 @@ void Prog::decompile()
 }
 
 // Print this program, mainly for debugging
-void Prog::print(std::ostream &out)
+void Prog::print(std::ostream &out, bool withDF)
 {
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		Proc *pProc = *it;
@@ -149,7 +149,7 @@ void Prog::print(std::ostream &out)
 		if (!p->isDecoded()) continue;
 
 		// decoded userproc.. print it
-		p->print(out);
+		p->print(out, withDF);
 	}
 }
 

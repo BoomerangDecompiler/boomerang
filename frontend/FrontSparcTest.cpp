@@ -302,7 +302,7 @@ void FrontSparcTest::testDelaySlot() {
     PBB bb = cfg->getFirstBB(it);
     std::ostringstream o1;
     bb->print(o1);
-    std::string expected("Call BB: live in: \n"
+    std::string expected("Call BB:\n"
         "00010a80 *32* r[tmp] := r[14] + -120\n"
         "         *32* m[r[14] + 0] := r[16]\n"
         "         *32* m[r[14] + 4] := r[17]\n"
@@ -342,7 +342,7 @@ void FrontSparcTest::testDelaySlot() {
     CPPUNIT_ASSERT(bb);
     std::ostringstream o2;
     bb->print(o2);
-    expected = std::string("Call BB: live in: \n"
+    expected = std::string("Call BB:\n"
         "00010a98 *32* r[8] := r[0] | r[16]\n"
         "00010a9c *32* r[tmp] := r[30]\n"
         "         *32* r[9] := r[30] + -24\n"
@@ -354,12 +354,12 @@ void FrontSparcTest::testDelaySlot() {
     CPPUNIT_ASSERT(bb);
     std::ostringstream o3;
     bb->print(o3);
-    expected = std::string("Twoway BB: live in: \n"
+    expected = std::string("Twoway BB:\n"
 	"00010aa4 *32* r[8] := m[r[30] + -20]\n"
 	"00010aa8 *32* r[16] := r[0] | 5\n"
 	"00010aac *32* r[tmp] := r[16]\n"
 	"         *32* r[0] := r[16] - r[8]\n"
-	"         SUBFLAGS( r[tmp], r[8], r[0] )\n"
+	"         *32* %flags := SUBFLAGS( r[tmp], r[8], r[0] )\n"
 	"00010ab0 *32* r[8] := 70656\n"
 	"00010ab0 JCOND 0x10ac8, condition not equals\n");
     actual = std::string(o3.str());
@@ -369,7 +369,7 @@ void FrontSparcTest::testDelaySlot() {
     CPPUNIT_ASSERT(bb);
     std::ostringstream o4;
     bb->print(o4);
-    expected = std::string("L1: Twoway BB: live in: \n"
+    expected = std::string("L1: Twoway BB:\n"
         "00010ac8 *32* r[8] := 70656\n"
         "00010ac8 JCOND 0x10ad8, condition equals\n");
     actual = std::string(o4.str());
@@ -379,7 +379,7 @@ void FrontSparcTest::testDelaySlot() {
     CPPUNIT_ASSERT(bb);
     std::ostringstream o5;
     bb->print(o5);
-    expected = std::string("Call BB: live in: \n"
+    expected = std::string("Call BB:\n"
         "00010ab8 *32* r[8] := r[8] | 816\n"
         "00010ab8 CALL 0x21874()\n");
     actual = std::string(o5.str());

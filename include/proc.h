@@ -223,12 +223,14 @@ public:
      */
     std::list<int> regParams;
 
-	// serialize this procedure
-	virtual bool serialize(std::ostream &ouf, int &len) = 0;
+    // serialize this procedure
+    virtual bool serialize(std::ostream &ouf, int &len) = 0;
 
-	// deserialize a procedure
-	static Proc *deserialize(Prog *prog, std::istream &inf);
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize a procedure
+    static Proc *deserialize(Prog *prog, std::istream &inf);
+    virtual bool deserialize_fid(std::istream &inf, int fid);
+
+    virtual void getInternalStatements(std::list<Statement*> &internal) = 0;
 
 protected:
 
@@ -301,11 +303,12 @@ public:
      */
     std::ostream& put(std::ostream& os);
 
-	// serialize this procedure
-	virtual bool serialize(std::ostream &ouf, int &len);
-	// deserialize the subclass specific portion of this procedure
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // serialize this procedure
+    virtual bool serialize(std::ostream &ouf, int &len);
+    // deserialize the subclass specific portion of this procedure
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
+    virtual void getInternalStatements(std::list<Statement*> &internal);
 };
 
 /*==============================================================================
@@ -369,7 +372,7 @@ public:
 	bool generateCode(HLLCode &hll);
 
         // print this proc, mainly for debugging
-        void print(std::ostream &out);
+        void print(std::ostream &out, bool withDF = false);
 
 	// decompile this proc
 	void decompile();
@@ -385,6 +388,12 @@ public:
 
 	// remove a statement
 	void removeStatement(Statement *stmt);
+
+	// remove internal statements
+	void removeInternalStatements();
+
+	// get internal statements
+        virtual void getInternalStatements(std::list<Statement*> &internal);
 
 private:
     /*
@@ -613,6 +622,11 @@ private:
      */
     std::set<Proc*> calleeSet;
 	std::set<ADDRESS> calleeAddrSet;  // used in serialization
+ 
+    /*
+     * Internal statements for this procedure
+     */
+    std::list<Statement*> internal;
 
 };      /* UserProc */
 #endif

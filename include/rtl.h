@@ -137,7 +137,7 @@ public:
 	std::list<Exp*> &getList() { return expList; } // direct access to the list of expressions
 
      // Print RTL to a stream.
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Set the RTL's source address
     void updateAddress(ADDRESS addr);
@@ -263,7 +263,7 @@ public:
     void setIsComputed(bool b = true);
     bool isComputed();
 
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
     void searchAndReplace(Exp* search, Exp* replace);
@@ -331,7 +331,7 @@ public:
     // signed conditional branch
     void makeSigned();
 
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
     void searchAndReplace(Exp* search, Exp* replace);
@@ -397,7 +397,7 @@ public:
     SWITCH_INFO* getSwitchInfo(); 
     void setSwitchInfo(SWITCH_INFO* pss);
     
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
     void searchAndReplace(Exp* search, Exp* replace);
@@ -455,7 +455,8 @@ public:
 
     Exp* getReturnLoc();                // Get location used for return value
 
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
+    virtual void print(std::ostream& os = std::cout) { print(os, false); }
 
     // Replace all instances of "search" with "replace".
     void searchAndReplace(Exp* search, Exp* replace);
@@ -506,6 +507,9 @@ public:
         // get how to access this value
         virtual Exp* getLeft() { return getReturnLoc(); }
 
+        // get how to replace this statement in a use
+        virtual Exp* getRight() { assert(false); return NULL; }
+
 	// custom printing functions
         virtual void printWithLives(std::ostream& os);
         virtual void printWithUses(std::ostream& os);
@@ -524,7 +528,7 @@ public:
 	void setIgnoreReturnLoc(bool b) { ignoreReturnLoc = b; }
 
 protected:
-	virtual void doReplaceUse(Statement *use, Exp *with);
+	virtual void doReplaceUse(Statement *use);
 
 private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
@@ -631,7 +635,7 @@ public:
 
     void makeSigned();
 
-    virtual void print(std::ostream& os = std::cout);
+    virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
 #if 0
     // Used for type analysis. Stores type information that

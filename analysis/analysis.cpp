@@ -156,6 +156,7 @@ void Analysis::analyse(UserProc* proc)
         pBB = cfg->getNextBB(it);
     }
 
+    cfg->simplify();
     cfg->computeDataflow();
 }
 
@@ -247,6 +248,7 @@ void Analysis::findDefs(PBB pBB, UserProc* proc, int flagId, bool flt,
         pBB = inEdges[0];
         if ((pBB->getType() == CALL) || (pBB->getType() == COMPCALL)) {
             std::ostringstream ost;
+#if DEBUG_ANALYSIS
             ost << "jcond at " << std::hex << pOrigBB->getHiAddr();
             ost << " has a CALL BB leading to it (call to ";
             std::list<RTL*>* prtls = pBB->getRTLs();
@@ -258,6 +260,7 @@ void Analysis::findDefs(PBB pBB, UserProc* proc, int flagId, bool flt,
             else
                 ost << std::hex << "computed dest)";
             std::cerr << ost.str() << std::endl;
+#endif
             // Just have to give up on this use of flags
 #if DEBUG_ANALYSIS
             findDefsCallDepth--;
@@ -323,13 +326,13 @@ void Analysis::findDefs(PBB pBB, UserProc* proc, int flagId, bool flt,
     // vit becomes invalid
     std::vector<PBB>::iterator vit = pBB->getInEdges().begin();
     if (vit == pBB->getInEdges().end()) {
+#if DEBUG_ANALYSIS
         std::ostringstream os;
         os << "flag use at " << std::hex << pOrigBB->getHiAddr();
         os << " has no RTL defining the flags; current BB: ";
         pBB->print(os);
         std::cerr << os.str() << std::endl;
         // Continue with next BB this Cfg
-#if DEBUG_ANALYSIS
     findDefsCallDepth--;
 #endif
         return;
