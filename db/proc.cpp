@@ -1010,6 +1010,11 @@ std::set<UserProc*>* UserProc::decompile() {
     // Initialise statements
     initStatements();
 
+    if (Boomerang::get()->noDecompile) {
+        decompiled = true;
+        return cycleSet;
+    }
+
     // Compute dominance frontier
     cfg->dominators();
 
@@ -1017,6 +1022,19 @@ std::set<UserProc*>* UserProc::decompile() {
     // Number the statements
     int stmtNumber = 0;
     numberStatements(stmtNumber); 
+
+    printXML();
+
+    // Print if requested
+    if (Boomerang::get()->debugPrintSSA) {
+        LOG << "=== Debug Print for " << getName()
+          << " before processing float constants ===\n";
+        printToLog(true);
+        LOG << "=== End Debug Print for " <<
+          getName() << " before processing float constants ===\n\n";
+    }
+ 
+    processFloatConstants();
 
     // For each memory depth
     int maxDepth = findMaxDepth() + 1;
@@ -1667,6 +1685,42 @@ void Proc::addParameter(Exp *e)
          it != callerSet.end(); it++)
             (*it)->addArgument(e);
     signature->addParameter(e);
+}
+
+void UserProc::processFloatConstants()
+{
+    StatementList stmts;
+    getStatements(stmts);
+
+    Exp *match = new Ternary(opFsize, new Terminal(opWild), 
+                                      new Terminal(opWild), 
+                                new Unary(opMemOf, new Terminal(opWild)));
+    
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement *s = *it;
+
+        std::list<Exp*> results;
+        s->searchAll(match, results);
+        for (std::list<Exp*>::iterator it1 = results.begin(); 
+                                       it1 != results.end(); it1++) {
+            Ternary *fsize = (Ternary*) *it1;
+            if (fsize->getSubExp3()->getOper() == opMemOf &&
+                fsize->getSubExp3()->getSubExp1()->getOper() 
+                    == opIntConst) {
+                Exp *memof = fsize->getSubExp3();
+                ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
+                bool ok;
+                double d = prog->getFloatConstant(u, ok);
+                if (ok) {
+                    LOG << "replacing " << memof << " with " << d 
+                        << " in " << fsize << "\n";
+                    fsize->setSubExp3(new Const(d));
+                }
+            }
+        }
+        s->simplify();
+    }
 }
 
 void UserProc::replaceExpressionsWithGlobals() {

@@ -790,7 +790,12 @@ void Unary::print(std::ostream& os, bool withUses) {
             if (op == opVar) ((Const*)p1)->printNoQuotes(os, withUses);
             // Use print, not printr, because this is effectively the top
             // level again (because the [] act as parentheses)
-            else p1->print(os, withUses);
+            else {
+                if (op == opMemOf && p1->getOper() == opIntConst)
+                    os << std::hex << ((Const*)p1)->getInt();
+                else 
+                    p1->print(os, withUses);
+            }
             os << "]";
             break;
 
@@ -2160,6 +2165,12 @@ Exp* Ternary::polySimplify(bool& bMod) {
     if (op == opFsize && subExp3->getOper() == opItof &&
         *subExp1 == *subExp3->getSubExp2() &&
         *subExp2 == *subExp3->getSubExp1()) {
+        res = this->becomeSubExp3();
+        bMod = true;
+        return res;
+    }
+
+    if (op == opFsize && subExp3->getOper() == opFltConst) {
         res = this->becomeSubExp3();
         bMod = true;
         return res;

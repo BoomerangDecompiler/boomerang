@@ -16,6 +16,7 @@ public:
     virtual Log &operator<<(Statement *s);
     virtual Log &operator<<(Exp *e);
     virtual Log &operator<<(int i);
+    virtual Log &operator<<(double d);
     virtual Log &operator<<(ADDRESS a);
     virtual Log &operator<<(LocationSet *l);
 };

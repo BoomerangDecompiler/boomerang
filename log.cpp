@@ -37,6 +37,14 @@ Log &Log::operator<<(int i)
     return *this;
 }
 
+Log &Log::operator<<(double d)
+{
+    std::ostringstream st;
+    st << d;
+    *this << st.str().c_str();
+    return *this;
+}
+
 Log &Log::operator<<(ADDRESS a)
 {
     std::ostringstream st;

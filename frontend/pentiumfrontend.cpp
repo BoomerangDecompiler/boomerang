@@ -228,6 +228,7 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns()
         returns.push_back(Unary::regOf(29/*ebp*/));
         returns.push_back(Unary::regOf(30/*esi*/));
         returns.push_back(Unary::regOf(31/*edi*/));
+        returns.push_back(Unary::regOf(39/*st7*/));
         returns.push_back(new Terminal(opPC));
     }
     return returns;

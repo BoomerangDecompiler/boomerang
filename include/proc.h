@@ -491,6 +491,7 @@ public:
     void addNewReturns(int depth);
     // Trim parameters. If depth not given or == -1, perform at all depths
     void trimParameters(int depth = -1);
+    void processFloatConstants();
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters(int depth);   // must be in SSA form

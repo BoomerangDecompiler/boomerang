@@ -258,10 +258,8 @@ int Boomerang::decompile(const char *fname)
     prog->printCallGraph();
     prog->printCallGraphXML();
 
-    if (!noDecompile) {
-        std::cerr << "decompiling...\n";
-        prog->decompile();
-    }
+    std::cerr << "decompiling...\n";
+    prog->decompile();
 
     if (dotFile)
         prog->generateDotFile();

@@ -2329,6 +2329,15 @@ bool BoolStatement::search(Exp *search, Exp *&result)
     return pCond->search(search, result);
 }
 
+bool BoolStatement::searchAll(Exp* search, std::list<Exp*>& result)
+{
+    bool ch = false;
+    assert(pDest);
+    if (pDest->searchAll(search, result)) ch = true;
+    assert(pCond);
+    return pCond->searchAll(search, result) || ch;
+}
+
 bool BoolStatement::searchAndReplace(Exp *search, Exp *replace) {
     bool change = false;
     assert(pCond);

@@ -216,6 +216,7 @@ public:
 
     // general search
     virtual bool search(Exp *search, Exp *&result) = 0;
+    virtual bool searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
     // general search and replace
     virtual bool searchAndReplace(Exp *search, Exp *replace) = 0;
@@ -331,9 +332,7 @@ public:
 
     // general search
     virtual bool search(Exp* search, Exp*& result);
-
-    // search for all
-    bool searchAll(Exp* search, std::list<Exp*>& result);
+    virtual bool searchAll(Exp* search, std::list<Exp*>& result);
 
     // general search and replace
     virtual bool searchAndReplace(Exp *search, Exp *replace);
@@ -903,6 +902,7 @@ public:
     virtual void print(std::ostream &os) { print(os, false); }
     virtual void processConstants(Prog *prog);
     virtual bool search(Exp *search, Exp *&result);
+    virtual bool searchAll(Exp* search, std::list<Exp*>& result);
     virtual bool searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
     virtual void doReplaceRef(Exp* from, Exp* to);
