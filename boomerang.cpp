@@ -43,6 +43,7 @@ void Boomerang::help() {
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-p num: only do num propogations\n";
+    std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     exit(1);
 }
         
@@ -66,6 +67,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         help();
         return 1;
     }
+    std::list<ADDRESS> entrypoints;
     bool noDecompilation = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
@@ -114,6 +116,23 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         help();
                 }
                 break;
+            case 'e':
+                {
+                    ADDRESS addr;
+                    int n;
+                    if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
+                        n = sscanf(argv[i+1], "0x%x", &addr);
+                    } else {
+                        n = sscanf(argv[i+1], "%i", &addr);
+                    }
+                    i++;
+                    if (n != 1) {
+                        std::cerr << "bad address: " << argv[i+1] << std::endl;
+                        exit(1);
+                    }
+                    entrypoints.push_back(addr);
+                }
+                break;
             default:
                 help();
         }
@@ -127,6 +146,13 @@ int Boomerang::commandLine(int argc, const char **argv) {
     }
     std::cerr << "decoding..." << std::endl;
     Prog *prog = fe->decode();
+    if (entrypoints.size()) {
+        for (std::list<ADDRESS>::iterator it = entrypoints.begin();
+             it != entrypoints.end(); it++) {
+            std::cerr << "decoding extra entrypoint " << *it << std::endl;
+            prog->decode(*it);
+        }
+    }
     std::cerr << "analysing..." << std::endl;
     prog->analyse();
     if (!noDecompilation) {
@@ -142,4 +168,3 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
     return 0;
 }
-
