@@ -22,6 +22,7 @@
 /*
  * 17 May 02 - Mike: Mods for boomerang
  * 22 Nov 02 - Mike: Added check for invalid instructions; prints opcode
+ * 12 Dec 02 - Mike: Fixed various bugs in move/call/move (etc) pattern handling
  */
 
 /*==============================================================================
@@ -222,9 +223,8 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
 }
 
 /*==============================================================================
- * FUNCTION:         case_CALL_NCT
- * OVERVIEW:         Handles a call instruction followed by an NCT or NOP
- *                   instruction.
+ * FUNCTION:         case_CALL
+ * OVERVIEW:         Handles a call instruction
  * PARAMETERS:       address - the native address of the call instruction
  *                   inst - the info summaries when decoding the call
  *                     instruction
@@ -242,7 +242,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  * RETURNS:          true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
-bool SparcFrontEnd::case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
+bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst,
     DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls, 
     UserProc* proc, std::set<HLCall*>& callSet, std::ofstream &os,
     bool isPattern/* = false*/)
@@ -253,14 +253,9 @@ bool SparcFrontEnd::case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
 
     Cfg* cfg = proc->getCFG();
 
-    // Assume that if we find a call in the delay slot, it's actually a pattern
-    // such as move/call/move
-    bool delayPattern = delay_rtl->getKind() == CALL_RTL;
-
     // Emit the delay instruction, unless a the delay instruction is a nop,
     // or we have a pattern, or are followed by a restore
-    if ((delay_inst.type != NOP) && !delayPattern &&
-	  !call_rtl->isReturnAfterCall()) {
+    if ((delay_inst.type != NOP) && !call_rtl->isReturnAfterCall()) {
         delay_rtl->updateAddress(address);
         BB_rtls->push_back(delay_rtl);
         //if (progOptions.rtl)
@@ -391,9 +386,8 @@ if (0)      // SETTINGS!
 }
 
 /*==============================================================================
- * FUNCTION:         case_SD_NCT
+ * FUNCTION:         case_SD
  * OVERVIEW:         Handles a non-call, static delayed (SD) instruction
- *                   followed by an NCT or NOP instruction.
  * PARAMETERS:       address - the native address of the SD
  *                   delta - the offset of the above address from the logical
  *                     address at which the procedure starts (i.e. the one
@@ -410,7 +404,7 @@ if (0)      // SETTINGS!
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
  * RETURNS:          <nothing>
  *============================================================================*/
-void SparcFrontEnd::case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+void SparcFrontEnd::case_SD(ADDRESS& address, int delta, ADDRESS hiAddress,
     DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
     Cfg* cfg, TargetQueue& tq, std::ofstream &os)
 {
@@ -455,9 +449,9 @@ if (0)          // SETTINGS!
 
 
 /*==============================================================================
- * FUNCTION:         case_DD_NCT
+ * FUNCTION:         case_DD
  * OVERVIEW:         Handles all dynamic delayed jumps (jmpl, also dynamic
- *                    calls) followed by an NCT or NOP instruction.
+ *                    calls)
  * PARAMETERS:       address - the native address of the DD
  *                   delta - the offset of the above address from the logical
  *                     address at which the procedure starts (i.e. the one
@@ -477,16 +471,12 @@ if (0)          // SETTINGS!
  * RETURNS:          true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
-bool SparcFrontEnd::case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
+bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
     DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls, Cfg* cfg,
     TargetQueue& tq, UserProc* proc, std::set<HLCall*>& callSet)
 {
-    // Assume that if we find a call in the delay slot, it's actually a pattern
-    // such as move/call/move
-    bool delayPattern = delay_inst.rtl->getKind() == CALL_RTL;
-
-    if ((delay_inst.type != NOP) && !delayPattern) {
-        // Emit the delayed instruction, unless a pattern
+    if (delay_inst.type != NOP) {
+        // Emit the delayed instruction, unless a NOP
         delay_inst.rtl->updateAddress(address);
         BB_rtls->push_back(delay_inst.rtl);
     }
@@ -573,17 +563,13 @@ bool SparcFrontEnd::case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
     // Set the address of the lexical successor of the call
     // that is to be decoded next and create a new list of
     // RTLs for the next basic block.
-    // Except if we had a pattern in the delay slot; then don't skip
-    // Remember that we have already bumped address by 8
-    if (delayPattern) address -= 4;
     BB_rtls = NULL;
     return bRet;
 }
 
 /*==============================================================================
- * FUNCTION:         case_SCD_NCT
+ * FUNCTION:         case_SCD
  * OVERVIEW:         Handles all static conditional delayed non-anulled branches
- *                     followed by an NCT or NOP instruction.
  * PARAMETERS:       address - the native address of the DD
  *                   delta - the offset of the above address from the logical
  *                     address at which the procedure starts (i.e. the one
@@ -601,7 +587,7 @@ bool SparcFrontEnd::case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
  * RETURNS:          true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
-bool SparcFrontEnd::case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
     DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
     Cfg* cfg, TargetQueue& tq)
 {
@@ -610,6 +596,7 @@ bool SparcFrontEnd::case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
     
     // Assume that if we find a call in the delay slot, it's actually a pattern
     // such as move/call/move
+// MVE: Check this! Only needed for HP PA/RISC
     bool delayPattern = delay_inst.rtl->getKind() == CALL_RTL;
 
     if (delayPattern) {
@@ -709,7 +696,7 @@ bool SparcFrontEnd::case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
 }
 
 /*==============================================================================
- * FUNCTION:         case_SCDAN_NCT
+ * FUNCTION:         case_SCDAN
  * OVERVIEW:         Handles all static conditional delayed anulled branches
  *                     followed by an NCT (but not NOP) instruction.
  * PARAMETERS:       address - the native address of the DD
@@ -729,7 +716,7 @@ bool SparcFrontEnd::case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
  * RETURNS:          true if next instruction is to be fetched sequentially from
  *                      this one
  *============================================================================*/
-bool SparcFrontEnd::case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
     DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
     Cfg* cfg, TargetQueue& tq)
 {
@@ -982,58 +969,72 @@ if (0)          // SETTINGS!
                 DecodeResult delay_inst = decodeInstruction(address+4);
                 if (rtl->getKind() == CALL_RTL) {
                     // Check the delay slot of this call. First case of interest
-                    // is when the instruction is a restore
-                    if (((SparcDecoder*)decoder)->isRestore(address+4+pBF->getTextDelta())) {
+                    // is when the instruction is a restore, e.g.
+					// 142c8:  40 00 5b 91        call         exit
+    				// 142cc:  91 e8 3f ff        restore      %g0, -1, %o0
+if (address == 0x1a4bc)
+  std::cerr << "HACK!\n";
+                    if (((SparcDecoder*)decoder)->
+					  isRestore(address+4+pBF->getTextDelta())) {
                         // Give the address of the call; I think that this is
                         // actually important, if faintly annoying
                         delay_inst.rtl->updateAddress(address);
                         BB_rtls->push_back(delay_inst.rtl);
-                        case_CALL_NCT(address, inst, nop_inst, BB_rtls,
-                            proc, callSet, os, true);
                         // The restore means it is effectively followed by a
                         // return (since the resore semantics chop off one level
                         // of return address)
                         ((HLCall*)inst.rtl)->setReturnAfterCall(true);
                         sequentialDecode = false;
+                        case_CALL(address, inst, nop_inst, BB_rtls,
+                          proc, callSet, os, true);
                         break;
                     }
                     // Next class of interest is if it assigns to %o7
-                    // (could be a move, add, and possibly others) 
-                    Exp* a = delay_inst.rtl->elementAt(0);
+                    // (could be a move, add, and possibly others). E.g.:
+					// 14e4c:  82 10 00 0f        mov          %o7, %g1
+    				// 14e50:  7f ff ff 60        call         blah
+    				// 14e54:  9e 10 00 01        mov          %g1, %o7
+					// Note there could be an unrelated instruction between the
+					// first move and the call (move/x/call/move in UQBT terms)
+					// In boomerang, we leave the semantics of the moves there
+					// (to be likely removed by dataflow analysis) and merely
+					// insert a return BB after the call
+					int nd = delay_inst.rtl->getNumExp();
+					// Note that if an add, there may be an assignment to a
+					// temp register first. So look at last RT
+                    Exp* a = delay_inst.rtl->elementAt(nd-1);	// Look at last
                     if (a && a->isAssign()) {
-                        Exp* lhs = ((Binary*)
-                          ((Unary*)a)->getSubExp1())
-                            ->getSubExp1();
+                        Exp* lhs = ((Binary*)a)->getSubExp1();
                         if (lhs->isRegN(15)) {       // %o7 is r[15]
                             // If it's an add, this is special. Example:
                             //   call foo
                             //   add %o7, K, %o7
                             // is equivalent to call foo / ba .+K
-                            Exp* rhs = ((Binary*)
-                              ((Unary*)a)->getSubExp1())
-                                ->getSubExp2();
-                            Unary o7(opRegOf, new Const(15));
-                            if ((((Binary*)rhs)->getSubExp1()->getOper() ==
-                              opIntConst) && (*((Binary*)rhs)->getSubExp2()
+                            Exp* rhs = ((Binary*)a)->getSubExp2();
+                            static Unary o7(opRegOf, new Const(15));
+                            if ((((Binary*)rhs)->getSubExp2()->getOper() ==
+                              opIntConst) && (*((Binary*)rhs)->getSubExp1()
                               == o7)) {
                                 // Get the constant
                                 int K = ((Const*)
-                                  ((Binary*)rhs)->getSubExp2())
-                                    ->getInt();
-                                case_CALL_NCT(address, inst, nop_inst, BB_rtls,
+                                  ((Binary*)rhs)->getSubExp2()) ->getInt();
+                                case_CALL(address, inst, nop_inst, BB_rtls,
                                   proc, callSet, os, true);
                                 // We don't generate a goto; instead, we just
                                 // decode from the new address
-                                // The 8 is for the call and dly slot add
-                                address += K+8;
+								// Note: the call to case_CALL has already
+								//  incremented address by 8, so don't do again
+                                address += K;
+								break;
                             } else {
                                 // We assume this is some sort of move/x/call/                                  // move pattern. The overall effect is to
                                 // pop one return address, we we emit a return
                                 // after this call
-                                case_CALL_NCT(address, inst, nop_inst, BB_rtls,
-                                  proc, callSet, os, true);
                                 ((HLCall*)inst.rtl)->setReturnAfterCall(true);
                                 sequentialDecode = false;
+                                case_CALL(address, inst, nop_inst, BB_rtls,
+                                  proc, callSet, os, true);
+								break;
                             }
                         }
                     }
@@ -1051,13 +1052,14 @@ if (0)          // SETTINGS!
                     if (rtl->getKind() == CALL_RTL) {
 
                         // This is a call followed by an NCT/NOP
-                        sequentialDecode = case_CALL_NCT(address, inst,
+                        sequentialDecode = case_CALL(address, inst,
                             delay_inst, BB_rtls, proc, callSet, os);
                     }
                     else {
                         // This is a non-call followed by an NCT/NOP
-                        case_SD_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(), inst, delay_inst,
-                            BB_rtls, cfg, targetQueue, os);
+                        case_SD(address, pBF->getTextDelta(),
+						  pBF->getLimitTextHigh(), inst, delay_inst,
+                          BB_rtls, cfg, targetQueue, os);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -1152,7 +1154,7 @@ if (0)              // SETTINGS!
                 case NOP:
                 case NCT:
                 {
-                    sequentialDecode = case_DD_NCT(address, pBF->getTextDelta(), inst,
+                    sequentialDecode = case_DD(address, pBF->getTextDelta(), inst,
                         delay_inst, BB_rtls, cfg, targetQueue, proc, callSet);
                     break;
                 }
@@ -1191,14 +1193,14 @@ if (0)              // SETTINGS!
                 case NOP:
                 case NCT:
                 {
-                    sequentialDecode = case_SCD_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(),
+                    sequentialDecode = case_SCD(address, pBF->getTextDelta(), pBF->getLimitTextHigh(),
                         inst, delay_inst, BB_rtls, cfg, targetQueue);
                     break;
                 }
                 default:
                     if (delay_inst.rtl->getKind() == CALL_RTL) {
                         // Assume it's the move/call/move pattern
-                        sequentialDecode = case_SCD_NCT(address, pBF->getTextDelta(),
+                        sequentialDecode = case_SCD(address, pBF->getTextDelta(),
                             pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
                             targetQueue);
                         break;
@@ -1245,8 +1247,9 @@ if (0)              // SETTINGS!
 
                 case NCT:
                 {
-                    sequentialDecode = case_SCDAN_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(),
-                        inst, delay_inst, BB_rtls, cfg, targetQueue);
+                    sequentialDecode = case_SCDAN(address, pBF->getTextDelta(),
+					  pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
+					  targetQueue);
                     break;
                 }
 
