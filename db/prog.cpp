@@ -131,6 +131,7 @@ void Prog::analyse() {
         // decoded userproc.. analyse it
         analysis->analyse(p);
     }
+    delete analysis;
 }
 
 // Do decompilation

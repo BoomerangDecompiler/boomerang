@@ -1334,6 +1334,9 @@ void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
         return;
     }
 
+//    std::cerr << "call: ";
+//    print(std::cerr, false);
+//    std::cerr << "in proc " << proc->getName() << std::endl;
     assert(p);
     hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments);
 }
@@ -1690,9 +1693,9 @@ void HLCall::doReplaceUse(Statement *use) {
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
-// Note: relies on types of parameters, which is not available when there are
-// cycles in the call graph
-processConstants(proc->getProg());
+    // Note: relies on types of parameters, which is not available when there 
+    // are cycles in the call graph
+    processConstants(proc->getProg());
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());

@@ -329,10 +329,12 @@ bool Statement::canPropagateToAll() {
     // We would like to propagate to each dest
     // sdest iterates through the destinations
     for (Statement* sdest = usedBy.getFirst(it); sdest;
-      sdest = usedBy.getNext(it)) {
+         sdest = usedBy.getNext(it)) {
         // all locations used by this (the source statement) must not be
         // defined on any path from this statement to the destination
         // This is the condition 2 in the Dragon book, p636
+        if (sdest == this) 
+            return false; // can't propogate to self
         StatementSet destIn;
         sdest->getReachIn(destIn);
         StmtSetIter dd;

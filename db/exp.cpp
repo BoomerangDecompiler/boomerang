@@ -2082,6 +2082,15 @@ Exp* Ternary::polySimplify(bool& bMod) {
         bMod = true;
         return res;
     }
+
+    if (op == opFsize && subExp3->getOper() == opItof &&
+        *subExp1 == *subExp3->getSubExp2() &&
+        *subExp2 == *subExp3->getSubExp1()) {
+        res = this->becomeSubExp3();
+        bMod = true;
+        return res;
+    }
+
     return res;
 }
 

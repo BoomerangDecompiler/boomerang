@@ -210,20 +210,71 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opTemp:
             strcat(str, "tmp");
             break;
+        case opItof:
+            strcat(str, "(float)(");
+            appendExp(str, t->getSubExp3());
+            strcat(str, ")");
+            break;
+        case opFsize:
+            // needs work
+            appendExp(str, t->getSubExp3());
+            break;
         case opMult:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " * ");
+            appendExp(str, b->getSubExp2());
+            break;
         case opDiv:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " / ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opShiftL:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " << ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opShiftR:
+        case opShiftRA:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " >> ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opTern:
+            appendExp(str, t->getSubExp1());
+            strcat(str, " ? ");
+            appendExp(str, t->getSubExp2());
+            strcat(str, " : ");
+            appendExp(str, t->getSubExp3());
+            break;
         case opFPlus:
-        case opFMinus:
-        case opFMult:
-        case opFDiv:
         case opFPlusd:
-        case opFMinusd:
-        case opFMultd:
-        case opFDivd:
         case opFPlusq:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " + ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opFMinus:
+        case opFMinusd:
         case opFMinusq:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " - ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opFMult:
+        case opFMultd:
         case opFMultq:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " * ");
+            appendExp(str, b->getSubExp2());
+            break;
+        case opFDiv:
+        case opFDivd:
         case opFDivq:
+            appendExp(str, b->getSubExp1());
+            strcat(str, " / ");
+            appendExp(str, b->getSubExp2());
+            break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
@@ -234,9 +285,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opMod:
         case opMods:
         case opSignExt:
-        case opShiftL:
-        case opShiftR:
-        case opShiftRA:
         case opRotateL:
         case opRotateR:
         case opRotateLC:
@@ -244,7 +292,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opTargetInst:
         case opNamedExp:
         case opGuard:
-        case opTern:
         case opVar:
         case opArg:
         case opExpand:
@@ -253,7 +300,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opPostVar:
         case opTruncu:
         case opTruncs:
-        case opItof:
         case opFtoi:
         case opFround:
         case opForceInt:

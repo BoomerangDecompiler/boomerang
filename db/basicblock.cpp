@@ -1402,6 +1402,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 return;
             }
 
+            // return if this doesn't have any out edges (emit a warning)
+            if (m_OutEdges.size() == 0) {
+                std::cerr << "WARNING: no out edge for BB: " << std::endl;
+                this->print(std::cerr, false);
+                std::cerr << std::endl;
+                return;
+            }
+
             // generate code for its successor if it hasn't already been 
             // visited and is in the same loop/case and is not the latch 
             // for the current most enclosing loop.  The only exception 

@@ -118,8 +118,10 @@ public:
 	void setWatcher(ProgWatcher *p) { m_watcher = p; }
 
         void decode(ADDRESS a) { 
-            if (findProc(a) == NULL)
+            if (findProc(a) == NULL) {
                 pFE->decode(this, a);
+                analyse();
+            }
         }
 
 	// Well form all the procedures/cfgs in this program

@@ -1122,13 +1122,13 @@ void UserProc::decompile() {
     // Convert the signature object to one of a derived class, e.g.
     // SparcSignature.
     promoteSignature();
-// May have trouble with the below if there are cycles in the call graph
-processConstants();
+    // May have trouble with the below if there are cycles in the call graph
+    processConstants();
     // promoteSignature has converted some register and memory locations
     // to "arg1" etc (opParam). Redo the liveness to reflect this change
     cfg->computeLiveness();
     LocationSet* le = cfg->getLiveEntry();
-// Above is unused... not finished
+    // Above is unused... not finished
     // Get the live set on entry to this procedure. It could well be
     // shorter than it was
     // MVE: Also need to fix return location (remove when not used)
