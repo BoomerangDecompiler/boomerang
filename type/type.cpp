@@ -651,8 +651,13 @@ void Type::addNamedType(const char *name, Type *type)
                 namedTypes[name]->getCtype() << "\n" << std::flush;
             assert(false);
         }
-    } else
+    } else {
+#if 0
+        std::cerr << "Added named type" << name << " as " << type->getCtype()
+          << "\n";
+#endif
         namedTypes[name] = type->clone();
+    }
 }
 
 Type *Type::getNamedType(const char *name)
@@ -923,4 +928,6 @@ bool Type::resolvesToCompound()
     return ty && ty->isCompound();
 }
 
-
+bool Type::isPointerToAlpha() {
+    return isPointer() && ((PointerType*)this)->pointsToAlpha();
+}

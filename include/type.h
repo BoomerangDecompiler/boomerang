@@ -118,7 +118,9 @@ virtual std::string getTempName() const; // Get a temporary name for the type
 
     // Clear the named type map. This is necessary when testing; the
     // type for the first parameter to 'main' is different for sparc and pentium
-static void     clearNamedTypes() { namedTypes.clear(); }
+static  void    clearNamedTypes() { namedTypes.clear(); }
+
+        bool    isPointerToAlpha();
 };
 
 class VoidType : public Type {
