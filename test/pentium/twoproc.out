@@ -1,5 +1,5 @@
 
-int main(int param1)
+int main()
 {
 int local4;
     local4 = proc1(4, 3);

@@ -1,5 +1,5 @@
 
-int main(int param1)
+int main()
 {
 int local3;
 int local6;
@@ -27,9 +27,9 @@ int local7;
     if (param8 <= 1) {
         local7 = param8;
     } else {
-        local7 = fib(param8 - 1);
-        local6 = fib(param8 - 2);
-        local7 = local6 + local7;
+        local6 = fib(param8 - 1);
+        local7 = fib(param8 - 2);
+        local7 = local7 + local6;
     }
     return local7;
 }

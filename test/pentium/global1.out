@@ -1,14 +1,14 @@
 int a = 5;
 int b = 7;
 
-int main(int param1)
+int main()
 {
-    foo1(param1 - 16);
+    foo1();
     printf("b = %i\n", b);
     return 0;
 }
 
-void foo1(int param5)
+void foo1()
 {
     foo2();
     return;
