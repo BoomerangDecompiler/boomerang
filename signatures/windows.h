@@ -400,6 +400,5 @@ char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
 int MulDiv(int number, int numerator, int denominator);
 void ?OnCreate@CView@@IAEHPAUtagCREATESTRUCTA@@@Z(void* lpCreateStruct);
 HFONT CreateFontIndirectA(void* lf);
-HFONT      MFC42_DLL_4464(void* lf);    /* Hack */
 void ?Attach@CGdiObject@@QAEHPAX@Z(void* obj);
-void                MFC42_DLL_1641(void* obj);     /* Hack */
+
