@@ -292,7 +292,7 @@ void RTL::deleteLastStmt() {
 
 void RTL::replaceLastStmt(Statement* repl) {
 	assert(stmtList.size());
-	Statement* last = stmtList.back();
+	Statement*& last = stmtList.back();
 	last = repl;
 }
 
