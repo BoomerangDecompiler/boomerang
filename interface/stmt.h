@@ -161,4 +161,18 @@ public:
    void setLoop(LoopStmt *l) { setDest(l->getHeader()); loop = l; }
 };
 
-#endif // __STMT_H__
+class ReturnStmt : public JumpStmt {
+   Exp *exp;
+public:
+   ReturnStmt(Func *f, Exp *e) : JumpStmt(f), exp(e) { }
+   Exp *getExp() { return exp; }
+   void setExp(Exp *e) { exp = e; }
+};
+
+class GotoStmt : public JumpStmt {
+   Exp *ident;
+public:
+   GotoStmt(Func *f, Exp *e) : JumpStmt(f), ident(e) { }
+   Exp *getIdent() { return exp; }
+   void setIdent(Exp *e) { ident = e; }
+};
