@@ -1522,7 +1522,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         // Special hack to ignore and $0xfffffff0, %esp
         Exp* oper = dis_Eaddr(Eaddr, 32);
         static Unary esp(opRegOf, new Const(28));
-        if (i8 != -16 || *oper != esp) 
+        if (i8 != -16 || !(*oper == esp))
             Exps = instantiate(pc,  "ANDiodb", DIS_EADDR32, DIS_I8);
 
     | ANDiowb(Eaddr, i8) =>
