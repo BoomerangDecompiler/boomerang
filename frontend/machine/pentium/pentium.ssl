@@ -143,6 +143,11 @@ SUBFLAGS32(op1, op2, result)  {
 #           *1*  %AF := ??                  # unpacked BCD
 };
 
+SUBFLAGSFL(op1, op2) {
+			*1* %CF := op1 < op2
+			*1* %ZF := op1 = op2
+};
+
 LOGICALFLAGS8(result)  {
             *1* %CF := 0
             *1* %OF := 0
@@ -1908,12 +1913,23 @@ FUCOM       i
             *80* tmpD := %st -f i
             SETFFLAGS(%st, i);
 
+FUCOMI.ST.STi	i 
+			*80* tmpD := %st -f i
+			SUBFLAGSFL(%st, i);
+
 FUCOMP      i 
             *80* tmpD1 := %st
             *80* tmpD2 := i
             *80* tmpD := %st -f i
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
+
+FUCOMIP.ST.STi	i 
+            *80* tmpD1 := %st
+            *80* tmpD2 := i
+            *80* tmpD := %st -f i
+            FPOP
+            SUBFLAGSFL(tmpD1, tmpD2);
 
 FUCOMPP    
             *80* tmpD1 := %st
