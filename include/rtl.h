@@ -365,6 +365,7 @@ public:
     // dataflow analysis
     virtual void killDef(StatementSet &reach) { }
     virtual void killLive (LocationSet &kill ) { }
+    virtual void killDead (LocationSet &dead );
     virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
@@ -395,9 +396,10 @@ public:
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
 
-    // to SSA form
+    // to/from SSA form
     virtual void toSSAform(StatementSet& reachin) {
         pCond = pCond->updateUses(reachin);}
+    virtual void fromSSAform(igraph& ig);
 
 protected:
     virtual void doReplaceUse(Statement *use);
@@ -545,6 +547,7 @@ public:
     // dataflow analysis
     virtual void killDef(StatementSet &reach);
     virtual void killLive (LocationSet  &live );
+    virtual void killDead (LocationSet  &live );
     virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
@@ -586,6 +589,7 @@ public:
     void decompile();
 
     virtual void toSSAform(StatementSet& reachin);
+    virtual void fromSSAform(igraph& ig);
         
 protected:
     virtual void doReplaceUse(Statement *use);
@@ -730,6 +734,7 @@ public:
     // Statement functions
     virtual void killDef(StatementSet &reach);
     virtual void killLive (LocationSet &kill );
+    virtual void killDead (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
     virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }
@@ -746,9 +751,10 @@ public:
     virtual void searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
     virtual void doReplaceUse(Statement *use);
-    // to SSA form
+    // to/from SSA form
     virtual void toSSAform(StatementSet& reachin) {
         pCond = pCond->updateUses(reachin);}
+    virtual void fromSSAform(igraph& ig);
 
 private:
     JCOND_TYPE jtCond;             // the condition for setting true

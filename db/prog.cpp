@@ -201,10 +201,10 @@ void Prog::decompile() {
     if (Boomerang::get()->debugPrintSSA)
         std::cerr << "====== End Debug Print SSA Form ======\n\n";
 
-    if (Boomerang::get()->noDecompile) {
-        return;
-    }
+    // usedby analysis goes about here
 
+    // Decompile
+    if (Boomerang::get()->noDecompile) return;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
@@ -215,6 +215,9 @@ void Prog::decompile() {
         // decoded userproc.. decompile it
         p->decompile();
     }
+
+    // Convert from SSA to non-SSA form. First perform reverse global dataflow
+    reverseGlobalDataflow();
 }
 
 void Prog::generateDotFile() {
@@ -698,7 +701,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 #endif
 }
 
-void updateWorkList(PBB currBB, std::list<PBB>&workList,
+void updateWorkListFwd(PBB currBB, std::list<PBB>&workList,
   std::set<PBB>& workSet) {
     // Insert outedges of currBB into the worklist, unless already there
     std::vector<PBB>& outs = currBB->getOutEdges();
@@ -712,13 +715,24 @@ void updateWorkList(PBB currBB, std::list<PBB>&workList,
     }
 }
 
-// Calculate global dataflow. The whole program is treated as one large
-// dataflow problem
-// This is done only once (as a global dataflow problem); dataflow may be
+void updateWorkListRev(PBB currBB, std::list<PBB>&workList,
+  std::set<PBB>& workSet) {
+    // Insert inedges of currBB into the worklist, unless already there
+    std::vector<PBB>& ins = currBB->getInEdges();
+    int n = ins.size();
+    for (int i=0; i < n; i++) {
+        PBB currIn = ins[i];
+        if (workSet.find(currIn) != workSet.end()) {
+            workList.push_front(currIn);
+            workSet.insert(currIn);
+        }
+    }
+}
+
+// Calculate forwards global dataflow. The whole program is treated as
+// one large dataflow problem
+// This is done only once (as a global dataflow problem); dataflow might be
 // recalculated repeatedly one proc at a time as substitutions are made
-// This is fine, since the global dataflow has one main objective: set up
-// the sets of locations used by a procedure (parameters), and the locations
-// that it defines (possible return locations).
 void Prog::forwardGlobalDataflow() {
     PROGMAP::iterator pp;
     std::list<PBB> workList;            // List of BBs still to be processed
@@ -751,14 +765,15 @@ void Prog::forwardGlobalDataflow() {
     }
     bool change;
     // Phase 1
+    if (Boomerang::get()->debugDataflow)
+        std::cerr << "Global dataflow phase 1\n";
     while (workList.size()) {
         PBB currBB = workList.front();
         workList.erase(workList.begin());
         workSet.erase(currBB);
-        StatementSet out;
         change  = currBB->calcReaches(1);   // Reaching definitions
         change |= currBB->calcAvailable(1); // Available definitions
-        if (change) updateWorkList(currBB, workList, workSet);
+        if (change) updateWorkListFwd(currBB, workList, workSet);
     };
 
     // Set up for Phase 2
@@ -779,14 +794,18 @@ void Prog::forwardGlobalDataflow() {
         cfg->appendBBs(workList, workSet);
     }
     // Phase 2
+    if (Boomerang::get()->debugDataflow)
+        std::cerr << "Global dataflow phase 2\n";
     while (workList.size()) {
         PBB currBB = workList.front();
         workList.erase(workList.begin());
         workSet.erase(currBB);
         change = currBB->calcReaches(2);   // Reaching definitions
         // Don't need available definitions in phase 2
-        if (change) updateWorkList(currBB, workList, workSet);
+        if (change) updateWorkListFwd(currBB, workList, workSet);
     };
+    if (Boomerang::get()->debugDataflow)
+        std::cerr << "Global dataflow complete\n";
 
     // Reset to address order (so prints are easier to read)
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
@@ -795,5 +814,112 @@ void Prog::forwardGlobalDataflow() {
         Cfg* cfg = proc->getCFG();
         cfg->sortByAddress();
     }
+}
+
+// Calculate reverse global dataflow. The whole program is treated as
+// one large dataflow problem
+void Prog::reverseGlobalDataflow() {
+    PROGMAP::iterator pp;
+    std::list<PBB> workList;            // List of BBs still to be processed
+    // Set of the same; used for quick membership test
+    std::set<PBB> workSet; 
+    // Sort the BBs into approximatly postorder
+    // Note: the ideal order differs for phase 1 and 2
+    // This order should be ideal for phase 2, and so-so for phase 1
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->establishDFTOrder();
+        cfg->sortByLastDFT();
+        // Insert all BBs into the worklist and workset. For many programs,
+        // it would be enough to insert the first BB of main, but some may
+        // have BBs that don't have explicit in-edges
+        cfg->appendBBs(workList, workSet);
+    }
+
+    // Set up for phase 1
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->clearReturnInterprocEdges();
+        cfg->setCallInterprocEdges();
+        // Clear the dataflow info for this proc's cfg
+        cfg->clearLiveness();
+        cfg->clearDeadness();
+    }
+    bool change;
+    // Phase 1
+    while (workList.size()) {
+        PBB currBB = workList.back();
+        workList.erase(--workList.end());
+        workSet.erase(currBB);
+        change  = currBB->calcLiveness(1);  // Live locations
+        change |= currBB->calcDeadness(1);  // Dead locations
+        if (change) updateWorkListRev(currBB, workList, workSet);
+    };
+
+    // Set up for Phase 2
+    workSet.clear();            // Should be clear already
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        // Save live and dead locations from phase 1
+        cfg->saveReverseFlow(proc);
+        // Clear the dataflow info for this proc's cfg
+        // Note: leave dead locations alone; won't recalc this phase
+        proc->getCFG()->clearLiveness();
+        // Clear the call interprocedural edges
+        cfg->clearCallInterprocEdges();
+        // Set the return interprocedural edges
+        cfg->setReturnInterprocEdges();
+        cfg->appendBBs(workList, workSet);
+    }
+    // Phase 2
+    while (workList.size()) {
+        PBB currBB = workList.back();
+        workList.erase(--workList.end());
+        workSet.erase(currBB);
+        change = currBB->calcLiveness(2);   // Live locations
+        // Don't need available definitions in phase 2
+        if (change) updateWorkListRev(currBB, workList, workSet);
+    };
+
+    // Calculate the interference graph
+    igraph ig;
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->calcLiveness(ig);
+    }
+
+if (Boomerang::get()->vFlag) {
+std::cerr << "==== Start interference graph ===\n";
+igraph::iterator xx;
+for (xx=ig.begin(); xx != ig.end(); xx++)
+  std::cerr << (*xx).first << " = " << (*xx).second << "\n";
+std::cerr << "==== End interference graph ===\n\n";}
+
+
+    // Take out of SSA mode
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        proc->fromSSAform(ig);
+    }
+
+if (Boomerang::get()->vFlag) {
+std::cerr << "==== After transformation from SSA form =====\n";
+for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+  it++) {
+    Proc *pProc = *it;
+    if (pProc->isLib()) continue;
+    UserProc *p = (UserProc*)pProc;
+        p->print(std::cerr, true);
+}}
+
 }
 

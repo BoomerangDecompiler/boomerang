@@ -1418,6 +1418,19 @@ void Cfg::saveForwardFlow(UserProc* proc) {
     }
 }
 
+void Cfg::saveReverseFlow(UserProc* proc) {
+    LocationSet* ls = getLiveEntry();
+    if (ls) liveEntry = *ls;        // Copy live locations set
+    ls = getDeadEntry();
+    if (ls) deadEntry = *ls;        // Copy dead locations set
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "Cfg liveEntry for " << proc->getName() << ": ";
+        liveEntry.prints();std::cerr << "\n";
+        std::cerr << "Cfg deadEntry for " << proc->getName() << ": ";
+        deadEntry.prints();std::cerr << "\n";
+    }
+}
+
 void Cfg::clearReaches() {
     for (std::list<PBB>::iterator it = m_listBB.begin(); 
       it != m_listBB.end(); it++) {
@@ -1432,6 +1445,27 @@ void Cfg::clearAvailable() {
     }
 }
 
+void Cfg::clearLiveness() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+      it != m_listBB.end(); it++) {
+        (*it)->liveIn.clear();
+    }
+}
+
+void Cfg::clearDeadness() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+      it != m_listBB.end(); it++) {
+        (*it)->deadIn.clear();
+    }
+}
+
+void Cfg::calcLiveness(igraph& ig) {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+      it != m_listBB.end(); it++) {
+        (*it)->calcLiveness(ig);
+    }
+}
+
 void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
     // Append my list of BBs to the worklist
     worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
@@ -1439,6 +1473,11 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
     std::list<PBB>::iterator it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++)
         workset.insert(*it);
+}
+
+void Cfg::appendBBs(std::list<PBB>& allBBs) {
+    // Append my list of BBs to the worklist
+    allBBs.insert(allBBs.end(), m_listBB.begin(), m_listBB.end());
 }
 
 bool Cfg::computeAvailable(int phase) {
@@ -1457,35 +1496,6 @@ bool Cfg::computeAvailable(int phase) {
     } while (change);
     return anychange;
 }
-
-#if 0           // Probably don't need this now
-void Cfg::computeLiveness() {
-    bool change;
-    do {
-        change = false;
-        for (std::list<PBB>::iterator it = m_listBB.begin(); 
-          it != m_listBB.end(); it++) {
-            LocationSet in;
-            (*it)->calcLiveIn(in);
-            if (!(in == (*it)->liveIn)) {
-                (*it)->liveIn = in;             // Copy the set
-                change = true;
-            }
-        }
-    } while (change);
-}
-#endif
-
-#if 0       // Probably only need computeReaches now
-bool Cfg::computeDataflow() {
-    computeReaches();
-    computeAvailable();
-    computeLiveness();
-    StatementList stmts;
-    myProc->getStatements(stmts);
-    StmtListIter it;
-}
-#endif
 
 void Cfg::setCallInterprocEdges() {
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
@@ -2276,9 +2286,3 @@ void Cfg::toSSAform() {
     }
 }
 
-void Cfg::fromSSAform() {
-    BB_IT it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        (*it)->fromSSAform();
-    }
-}

@@ -1154,7 +1154,6 @@ void UserProc::decompile() {
 
     if (VERBOSE) {
         std::cerr << "decompiling: " << getName() << std::endl;
-        print(std::cerr, false);    // First time no df so it's readable!
     }
 
     // compute uses/usedby info
@@ -1655,8 +1654,7 @@ void UserProc::computeUses() {
         s->calcUseLinks();
 }
 
-void UserProc::getReturnSet(LocationSet &ret)
-{
+void UserProc::getReturnSet(LocationSet &ret) {
     if (returnSet.size()) {
         ret = returnSet;
     }
@@ -1670,6 +1668,11 @@ void UserProc::toSSAform() {
     cfg->toSSAform();
 }
 
-void UserProc::fromSSAform() {
-    cfg->fromSSAform();
+void UserProc::fromSSAform(igraph& ig) {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        s->fromSSAform(ig);
+    }
 }

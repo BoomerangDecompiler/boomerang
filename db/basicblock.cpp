@@ -490,8 +490,7 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
 ADDRESS BasicBlock::getLowAddr() {
     assert(m_pRtls != NULL);
     ADDRESS a = m_pRtls->front()->getAddress();
-    if ((a == 0) && (m_pRtls->size() > 1))
-    {
+    if ((a == 0) && (m_pRtls->size() > 1)) {
         std::list<RTL*>::iterator it = m_pRtls->begin();
         ADDRESS add2 = (*++it)->getAddress();
         // This is a bit of a hack for 286 programs, whose main actually starts
@@ -1536,7 +1535,55 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
     }
 }
 
-void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
+void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase,
+  igraph& ig) {
+    getLiveOut(liveout);
+    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
+         rit != m_pRtls->rend(); rit++) {
+        RTL *rtl = *rit;
+        // Do any post call semantics first
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::reverse_iterator pp;
+                for (pp = le->rbegin(); pp != le->rend(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->calcLiveIn(liveout);
+                    s->checkLiveIn(liveout, ig);
+                }
+            }
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            if (call == stmt) return;
+            call->calcLiveIn(liveout);
+            call->checkLiveIn(liveout, ig);
+        }
+        else if (rtl->getKind() == JCOND_RTL) {
+            HLJcond *jcond = (HLJcond*)rtl;
+            if (jcond == stmt) return;
+            jcond->calcLiveIn(liveout);
+            jcond->checkLiveIn(liveout, ig);
+        }
+        else if (rtl->getKind() == SCOND_RTL) {
+            HLScond *scond = (HLScond*)rtl;
+            if (scond == stmt) return;
+            scond->calcLiveIn(liveout);
+            scond->checkLiveIn(liveout, ig);
+        }
+        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
+             it != rtl->getList().rend(); it++) {
+            if (*it == (AssignExp*)stmt) return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            e->calcLiveIn(liveout);
+            e->checkLiveIn(liveout, ig);
+        }
+    }
+}
+
+void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase){
     getLiveOut(liveout);
     for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
          rit != m_pRtls->rend(); rit++) {
@@ -1558,10 +1605,15 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
             if (call == stmt) return;
             call->calcLiveIn(liveout);
         }
-        if (rtl->getKind() == JCOND_RTL) {
+        else if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
             if (jcond == stmt) return;
             jcond->calcLiveIn(liveout);
+        }
+        else if (rtl->getKind() == SCOND_RTL) {
+            HLScond *scond = (HLScond*)rtl;
+            if (scond == stmt) return;
+            scond->calcLiveIn(liveout);
         }
         for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
              it != rtl->getList().rend(); it++) {
@@ -1572,6 +1624,49 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
         }
     }
 }
+
+void BasicBlock::getDeadOutAt(Statement *stmt, LocationSet &deadout, int phase){
+    getDeadOut(deadout);
+    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
+         rit != m_pRtls->rend(); rit++) {
+        RTL *rtl = *rit;
+        // Do any post call semantics first
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::reverse_iterator pp;
+                for (pp = le->rbegin(); pp != le->rend(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->calcDeadIn(deadout);
+                }
+            }
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            if (call == stmt) return;
+            call->calcDeadIn(deadout);
+        }
+        else if (rtl->getKind() == JCOND_RTL) {
+            HLJcond *jcond = (HLJcond*)rtl;
+            if (jcond == stmt) return;
+            jcond->calcDeadIn(deadout);
+        }
+        else if (rtl->getKind() == SCOND_RTL) {
+            HLScond *scond = (HLScond*)rtl;
+            if (scond == stmt) return;
+            scond->calcDeadIn(deadout);
+        }
+        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
+             it != rtl->getList().rend(); it++) {
+            if (*it == (AssignExp*)stmt) return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            e->calcDeadIn(deadout);
+        }
+    }
+}
+
 
 void BasicBlock::calcReachOut(StatementSet &reach, int phase) {
     /* hopefully we can be sure that NULL is not a valid assignment,
@@ -1585,10 +1680,22 @@ void BasicBlock::calcAvailOut(StatementSet &avail, int phase) {
     getAvailInAt(NULL, avail, phase);
 }
 
-void BasicBlock::calcLiveIn(LocationSet &live) {
+void BasicBlock::calcLiveIn(LocationSet &live, int phase, igraph& ig) {
     /* hopefully we can be sure that NULL is not a valid assignment,
        so this will calculate the live locations before every statement */
-    getLiveOutAt(NULL, live);
+    getLiveOutAt(NULL, live, phase, ig);
+}
+
+void BasicBlock::calcLiveIn(LocationSet &live, int phase) {
+    /* hopefully we can be sure that NULL is not a valid assignment,
+       so this will calculate the live locations before every statement */
+    getLiveOutAt(NULL, live, phase);
+}
+
+void BasicBlock::calcDeadIn(LocationSet &dead, int phase) {
+    /* hopefully we can be sure that NULL is not a valid assignment,
+       so this will calculate the dead locations before every statement */
+    getDeadOutAt(NULL, dead, phase);
 }
 
 // Check if this is a post-call BB (a return block in [SW93] terms)
@@ -1639,6 +1746,34 @@ bool BasicBlock::calcAvailable(int phase) {
     return change;
 }
 
+bool BasicBlock::calcLiveness(int phase) {
+    bool change = false;
+    LocationSet in;
+    calcLiveIn(in, phase);
+    if (!(in == liveIn)) {
+        liveIn = in;          // Copy the set
+        change = true;
+    }
+    return change;
+}
+
+bool BasicBlock::calcDeadness(int phase) {
+    bool change = false;
+    LocationSet in;
+    calcDeadIn(in, phase);
+    if (!(in == deadIn)) {
+        deadIn = in;          // Copy the set
+        change = true;
+    }
+    return change;
+}
+
+void BasicBlock::calcLiveness(igraph& ig) {
+    LocationSet in;
+    calcLiveIn(in, 2);
+}
+
+// Definitions that reach the start of this BB are usually the union of the
 // Definitions that reach the start of this BB are usually the union of the
 // definitions that reach its predecessors
 // There is an exception for post-call blocks (BBs after call blocks, called
@@ -1781,9 +1916,19 @@ void BasicBlock::getAvailIn(StatementSet &availin, int phase) {
     }
 }
 
-// Variables that are live at the end of this BB are the union of the
-// variables that are live at the start of its successors
+// Locations that are live at the end of this BB are the union of the
+// locations that are live at the start of its successors
 void BasicBlock::getLiveOut(LocationSet &liveout) {
+    liveout.clear();
+    for (unsigned i = 0; i < m_OutEdges.size(); i++) {
+        LocationSet &out = m_OutEdges[i]->liveIn;
+        liveout.makeUnion(out);
+    }
+}
+
+// Locations that are dead at the end of this BB are the intersection of the
+// locations that are dead at the start of its successors
+void BasicBlock::getDeadOut(LocationSet &liveout) {
     liveout.clear();
     for (unsigned i = 0; i < m_OutEdges.size(); i++) {
         LocationSet &out = m_OutEdges[i]->liveIn;
@@ -2048,144 +2193,5 @@ void BasicBlock::toSSAform() {
         // Update reachin to be the input for the next statement in this BB
         s->calcReachOut(reachin);
     }
-}
-
-typedef std::set<PBB> BBSet;
-// The interference graph type. We use just a set of subscripted locations.
-// Suppose that r[24]{3} interferes with r[24]{5}; we store the expression
-// which compares as less (here r[24]{3}) in the set, and give this a
-// different variable from all other r[24]s (if any). Note: v may be an
-// unsubscripted variable (effectively r[24]{0})
-typedef std::set<Exp*, lessExpStar> igraph;
-
-void BasicBlock::fromSSAform() {
-    // Generate the interference graph
-    igraph ig;                                  // Interference graph
-    LivenessAnalysis(ig);
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-      rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
-            Statement *s = dynamic_cast<Statement*>(*it);
-            if (s == NULL) continue;
-        }
-    }
-}
-
-void BasicBlock::LivenessAnalysis(igraph& ig) {
-    // Algorithm adapted from "Modern Compiler Implementation in Java",
-    // Andrew W. Appel, Cambridge University Press 2002
-    BBSet M;                                    // Already worked blocks
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-      rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
-            Statement *s = dynamic_cast<Statement*>(*it);
-            if (s == NULL) continue;
-            LocationSet uses;
-            s->addUsedLocs(uses);
-            LocSetIter ll;
-            for (Exp* v = uses.getFirst(ll); v; v = uses.getNext(ll)) {
-                M.clear();
-                if (v->isSubscript() && ((UsesExp*)v)->getNumUses() > 1) {
-                    StmtSetIter ssi;
-                    UsesExp* ue = (UsesExp*)v;
-                    for (Statement* ss = ue->getFirstUse(ssi); ss;
-                      ss = ue->getNextUse(ssi)) {
-                        PBB p = ss->getBB();
-                        LiveOutAtBlock(p, v, M, ig);
-                    }
-                } else
-                    LiveInAtStatement(s, v, M, ig);
-            }
-        }
-    }
-std::cerr << "Interference graph:";
-std::set<Exp*, lessExpStar>::iterator xx;
-for (xx = ig.begin(); xx != ig.end(); xx++)
-  std::cerr << *xx << ", ";
-std::cerr << "\n";
-}
-
-void BasicBlock::LiveOutAtBlock(PBB n, Exp* v, BBSet& M, igraph& ig) {
-    std::cerr << v << " is live-out at BB 0x" << std::hex << n->getLowAddr() << "\n";
-    // Check if already walked block
-    if (M.find(n) == M.end()) {
-        M.insert(n);
-        // Let s be the last statement in n
-        RTL *rtl = n->m_pRtls->back();
-        Exp* e = rtl->getList().back();
-        Statement *s = dynamic_cast<Statement*>(e);
-        LiveOutAtStatement(s, v, M, ig);
-    }
-}
-
-void BasicBlock::LiveInAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig) {
-    std::cerr << v << " is live-in at statement " << s << "\n";
-    // if s is the first statement of some block n
-    PBB n = s->getBB();
-    RTL *rtl = n->m_pRtls->front();
-    Statement* firsts;
-    Exp* firste = rtl->getList().front();
-    firsts = dynamic_cast<Statement*>(firste);
-    if (s == firsts) {          // Is s first statement?
-        std::cerr << v << " is live-in at BB 0x" << std::hex << n->getLowAddr() << "\n";
-        // For each predecessor p of n
-        int numPred = n->m_iNumInEdges;
-        for (int i=0; i < numPred; i++) {
-            PBB p = n->m_InEdges[i];
-            LiveOutAtBlock(p, v, M, ig);
-        }
-    } else {
-        // Let sdash be the statement preceeding s
-        // What a pain!
-        Statement* sdash = NULL;
-        Statement* cur;
-        for (std::list<RTL*>::iterator rit = n->m_pRtls->begin(); 
-          rit != n->m_pRtls->end(); rit++) {
-            RTL *rtl = *rit;
-            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-              it != rtl->getList().end(); it++) {
-                cur = dynamic_cast<Statement*>(*it);
-                if (cur == NULL) continue;
-                if (cur == s) break;
-                sdash = cur;
-            }
-            if (cur == s) break;
-            if (rtl->getKind() == CALL_RTL) {
-                std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
-                if (le) {
-                    std::list<Exp*>::iterator pp;
-                    for (pp = le->begin(); pp != le->end(); pp++) {
-                        cur = dynamic_cast<Statement*>(*pp);
-                        if (cur == s) break;
-                        sdash = cur;
-                    }
-                }
-            }
-        }
-        assert(cur == s);
-        assert(sdash);
-        LiveOutAtStatement(sdash, v, M, ig);
-    }
-}
-
-void BasicBlock::LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig) {
-    std::cerr << v << " is live-out at statement " << s << "\n";
-    Exp* w = s->getLeft();          // Let w be variable s defines
-    if (!(*v == *w)) {
-        // Add (v, w) to the interference graph
-        // We get the numbers and add the one that is least (as defined
-        // by Exp::operator<())
-        if (*v < *w)
-            ig.insert(v);
-        else
-            ig.insert(w);
-    }
-    // If v not element of W (boils down to else)
-    else
-        LiveInAtStatement(s, v, M, ig);
 }
 

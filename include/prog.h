@@ -144,10 +144,10 @@ public:
     // Similar to the [SW93] paper
     void forwardGlobalDataflow();
 
-    // Get the interprocedural data flow analysis phase number (0-2)
-    int getGDFAphase() {return interProcDFAphase; }
-
-    // As above, but backward-floAs perw
+    // Calculate reverse-flow global dataflow for all procs (i.e. live and
+    // dead locations, as one large dataflow problem).
+    // Very similar to the [SW93] paper
+    void reverseGlobalDataflow();
 
     // Do decompilation
     void decompile();

@@ -124,6 +124,7 @@ enum SBBTYPE {
 };
 
 typedef std::list<PBB>::iterator BB_IT;
+
 /*==============================================================================
  * BasicBlock class. <more comments>
  *============================================================================*/
@@ -416,7 +417,7 @@ protected:
 public:
 
 	/* stuff for data flow analysis */
-
+    
     bool isPostCall();
     static void doAvail(StatementSet& s, PBB inEdge);
 
@@ -427,8 +428,8 @@ public:
     bool calcReaches(int phase);
     StatementSet &getReachOut() { return reachOut; }
         
-    /* As above, for available definitions. These are used for the second
-     * condition allowing copy propagation
+    /* As above, for available definitions. These are used for the first
+     * phase of the global reaching definitions DFA
      * Forward flow, all paths */
 	void getAvailInAt(Statement *stmt, StatementSet &availini, int phase);
 	void getAvailIn(StatementSet &availin, int phase);
@@ -436,20 +437,26 @@ public:
     bool calcAvailable(int phase);
     StatementSet &getAvailOut() { return availOut; }
 
-    /* As above, for live locations. These are used for parameters and return
-     * locations. Backwards flow, any path */
-	void getLiveOutAt(Statement *stmt, LocationSet &liveout);
+    /* As above, for live locations. These are used for coming out of SSA
+     * mode, parameters and return locations.
+     * Backwards flow, any path */
+	void getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase);
+	void getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase,
+        igraph& ig);
 	void getLiveOut(LocationSet &liveout);
-	void calcLiveIn(LocationSet &live);
+	void calcLiveIn(LocationSet &live, int phase, igraph& ig);
+	void calcLiveIn(LocationSet &live, int phase);
+    bool calcLiveness(int phase);
+    void calcLiveness(igraph& ig);
     LocationSet &getLiveIn() { return liveIn; }
 
-    /**
-     * As above, for dead locations. These are used for killing liveness through
-     * a call. Backwards flow, all paths
-     */
-	void getDeadOutAt(Statement *stmt, LocationSet &deadout);
+    /* As above, for dead locations. These are used for the first phase
+     * of the global live location DFA.
+     * Backwards flow, all paths */
+	void getDeadOutAt(Statement *stmt, LocationSet &deadout, int phase);
 	void getDeadOut(LocationSet &deadout);
-	void calcDeadIn(LocationSet &dead);
+	void calcDeadIn(LocationSet &dead, int phase);
+    bool calcDeadness(int phase);
     LocationSet &getDeadIn() { return deadIn; }
 
     /* set the return value */
@@ -484,19 +491,11 @@ public:
      */
     void toSSAform();
     void fromSSAform();
+
+    // FIXME: Some moved to prog.h now
     /*
      * Types and functions needed for fromSSA()
      */
-    typedef std::set<PBB> BBSet;
-    // The interference graph type. We use just a set of subscripted locations.
-    // Suppose that r[24]{3} interferes with r[24]{5}; we store the expression
-    // with the LARGER subscript (here r[24]{5}) in the set, and give this a
-    // different variable from all other r[24]s (if any)
-    typedef std::set<Exp*, lessExpStar> igraph;
-       void LivenessAnalysis(igraph& ig);
-static void LiveOutAtBlock(PBB n, Exp* v, BBSet& M, igraph& ig);
-static void  LiveInAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
-static void LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
 
 protected:
     // This is the set of statements whose definitions reach the end of this BB
@@ -630,6 +629,16 @@ class Cfg {
      * These statements are available at the exit
      */
     StatementSet availExit;
+    /*
+     * These locations are live at the entry to the proc (saved from phase 1
+     * of [SW93])
+     */
+    LocationSet liveEntry;
+    /*
+     * These locations are dead at the entry to the proc (saved from phase 1
+     * of [SW93])
+     */
+    LocationSet deadEntry;
 
 public:
     /*
@@ -908,6 +917,8 @@ public:
      */
     void clearReaches();
     void clearAvailable();
+    void clearLiveness();
+    void clearDeadness();
     // Compute dataflow for this Cfg, return true if a change
     //bool computeDataflow();
     bool computeReaches(int phase);
@@ -918,18 +929,24 @@ public:
     // Summary information saved from phase 1 for this cfg
     StatementSet &getSavedReachExit() { return reachExit;}
     StatementSet &getSavedAvailExit() { return availExit;}
-    // Summary information at end of phase 2 for this cfg
+    // Summary information at end of phase 1 for this cfg
     StatementSet *getReachExit() {
         return exitBB ? &exitBB->reachOut : NULL;}
     StatementSet *getAvailExit() {
         return exitBB ? &exitBB->availOut : NULL;}
-    //LocationSet *getLiveEntry() { }
+    LocationSet *getLiveEntry() {
+        return entryBB ? &entryBB->liveIn : NULL;}
+    LocationSet *getDeadEntry() {
+        return entryBB ? &entryBB->deadIn : NULL;}
     void saveForwardFlow(UserProc* proc);   // Save forward flow info
+    void saveReverseFlow(UserProc* proc);   // Save reverse flow info
     void setCallInterprocEdges();
     void clearCallInterprocEdges();
     void setReturnInterprocEdges();
     void clearReturnInterprocEdges();
     void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
+    void appendBBs(std::list<PBB>& allBBs);
+    void calcLiveness(igraph& ig);
 
     /*
      * Virtual Function Call analysis
@@ -964,7 +981,6 @@ public:
      * Transform the CFG to/from SSA form.
      */
     void toSSAform();
-    void fromSSAform();
 
 private:
 

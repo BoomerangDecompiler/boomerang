@@ -25,7 +25,9 @@
 
 #include <set>
 #include <list>
+#include <map>
 #include <ostream>
+#include "exphelp.h"    // For lessExpStar
 
 
 class Exp;              // Can't #include exp.h, since AssignExp is derived
@@ -38,6 +40,7 @@ class Cfg;
 class Type;
 class Statement;
 class LocationSet;      // Actually declared in exp.h
+typedef std::map<Exp*, int, lessExpStar> igraph;
 
 // A class to implement sets of statements
 // We may choose to implement these very differently one day
@@ -95,6 +98,37 @@ public:
     void prints();                          // Print to cerr (for debugging)
 };
 
+// For liveness, we need sets of locations (registers or memory)
+typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
+class LocationSet {
+    // We use a standard set, but with a special "less than" operator
+    // so that the sets are ordered by expression value. If this is not done,
+    // then two expressions with the same value (say r[10]) but that happen to
+    // have different addresses (because they came from different statements)
+    // would both be stored in the set (instead of the required set 
+    // behaviour, where only one is stored)
+    std::set<Exp*, lessExpStar> sset; 
+public:
+    LocationSet() {}                        // Default constructor
+    LocationSet(const LocationSet& o);      // Copy constructor
+    LocationSet& operator=(const LocationSet& o); // Assignment
+    void makeUnion(LocationSet& other);    // Set union
+    void makeDiff (LocationSet& other);    // Set difference
+    void clear() {sset.clear();}            // Clear the set
+    Exp* getFirst(LocSetIter& it);          // Get the first Statement
+    Exp* getNext (LocSetIter& it);          // Get next
+    void insert(Exp* loc) {sset.insert(loc);}// Insert the given location
+    void remove(Exp* loc);                  // Remove the given location
+    void remove(LocSetIter ll);             // Remove location, given iterator
+    void removeIfDefines(StatementSet& given);// Remove locs defined in given
+    int  size() const {return sset.size();}  // Number of elements
+    bool operator==(const LocationSet& o) const; // Compare
+    void substitute(Statement& s);          // Substitute the statement to all
+    void prints();                          // Print to cerr for debugging
+    // Return true if the location exists in the set
+    bool find(Exp* e);
+};
+
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
@@ -135,12 +169,19 @@ public:
     // calculates the live variables (used before definition) before this stmt
     virtual void calcLiveIn(LocationSet &livein);
 
-    // get the statements containing live variables after this statement
-    virtual void getLiveOut(LocationSet& liveout);
-
     // removes any statement from the set containing live variables which is
     // killed by this statement
     virtual void killLive(LocationSet &live) = 0;
+
+    // calculates the dead variables (defined before use) before this stmt
+    virtual void calcDeadIn(LocationSet &deadin);
+
+    // removes any statement from the set containing dead variables which is
+    // killed (in a deadness sense, i.e. used) by this statement
+    virtual void killDead(LocationSet &dead) = 0;
+
+    // check live in for interference
+    void checkLiveIn(LocationSet& liveout, igraph& ig);
 
 
     // creates a set of statements that are killed by this statement
@@ -239,8 +280,8 @@ public:
     void    setNumber(int num) {number = num;}
 
     // To/from SSA form
-    virtual void toSSAform(StatementSet& reachin) = 0;
-
+    virtual void   toSSAform(StatementSet& reachin) = 0;
+    virtual void fromSSAform(igraph& igm) = 0;
 protected:
     virtual void doReplaceUse(Statement *use) = 0;
     bool calcMayAlias(Exp *e1, Exp *e2, int size);

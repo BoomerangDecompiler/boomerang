@@ -171,10 +171,40 @@ void Statement::getAvailIn(StatementSet &availin, int phase) {
     pbb->getAvailInAt(this, availin, phase);
 }
 
-void Statement::getLiveOut(LocationSet &liveout) {
-    assert(pbb);
-    pbb->getLiveOutAt(this, liveout);
+//void Statement::getLiveOut(LocationSet &liveout, int phase) {
+//    assert(pbb);
+//    pbb->getLiveOutAt(this, liveout, phase);
+//}
+
+// Check the liveout set for interferences
+// Examples:  r[24]{3} and r[24]{5} both live at same time,
+// or m[r[28]{3}] and m[r[28]{3}]{2}
+static int nextVarNum = 0;
+void insertInterference(igraph& ig, Exp* e) {
+    igraph::iterator it = ig.find(e);
+    if (it == ig.end())
+        // We will be inserting a new element
+        ig.insert(std::pair<Exp*, int>(e, ++nextVarNum));
+    // else it is already in the map: no need to do anything
 }
+
+void Statement::checkLiveIn(LocationSet& liveout, igraph& ig) {
+    // Note: this is an O(N**2) operation!
+    LocSetIter aa, bb;
+    for (Exp* a = liveout.getFirst(aa); a; a = liveout.getNext(aa)) {
+        bb = aa;
+        Exp* b = liveout.getNext(bb);
+        while (b) {
+            if (*a *= *b) {         // Compare, ignoring subscripts
+                if (*a < *b)
+                    insertInterference(ig, a);
+                else
+                    insertInterference(ig, b);
+            }
+            b = liveout.getNext(bb);
+        }
+    }
+} 
 
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
     if (*e1 == *e2) return true;
@@ -281,11 +311,22 @@ void Statement::calcLiveIn(LocationSet &live) {
     killLive(live);
     // add all locations that this statement uses (register or memory)
     addUsedLocs(live);
+#if 0
     // Now substitute. If any of the locations in the live set use this
     // statement's left hand side, do the substitution
     // (Since live is a set of locations, this will only happend for
     // memofs)
     live.substitute(*this);
+#endif
+}
+
+void Statement::calcDeadIn(LocationSet &dead) {
+    // calculate kills
+    killDead(dead);
+    // add the location that this statement defines (register or memory)
+    Exp* left = getLeft();
+    if (left) dead.insert(left);
+//    dead.substitute(*this);
 }
 
 

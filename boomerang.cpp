@@ -11,9 +11,10 @@ Boomerang *Boomerang::boomerang = NULL;
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
-    traceDecoder(false), dotFile(NULL), numToPropagate(-1), noPromote(false),
     noDataflow(false), noDecompile(false), noDecompileUp(false),
-    debugPrintReach(false), debugPrintSSA(false)
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
+    noPromote(false),
+    debugDataflow(false), debugPrintReach(false), debugPrintSSA(false)
 {
 }
 
@@ -44,6 +45,7 @@ void Boomerang::help() {
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-p num: only do num propogations\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
+    std::cerr << "-dd: debug - debug global dataflow\n";
     std::cerr << "-dr: debug - print reaching and available definitions\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
     exit(1);
@@ -136,6 +138,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 break;
             case 'd':
                 switch(argv[i][2]) {
+                    case 'd':
+                        debugDataflow = true;
+                        break;
                     case 'r':       // debug print reaching and avail defs
                         debugPrintReach = true;
                         break;

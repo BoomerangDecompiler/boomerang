@@ -536,6 +536,11 @@ Type *HLJcond::updateType(Exp *e, Type *curType) {
     return curType;
 }
 
+// Convert from SSA form
+void HLJcond::fromSSAform(igraph& ig) {
+
+}
+
 /*==============================================================================
  * FUNCTION:        HLJCond::searchAll
  * OVERVIEW:        Find all instances of the search expression
@@ -677,6 +682,12 @@ void HLJcond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 bool HLJcond::usesExp(Exp *e) {
     Exp *tmp;
     return pCond && pCond->search(e, tmp);
+}
+
+// Deadness is killed by a use
+void HLJcond::killDead(LocationSet &dead) {
+    if (pCond)
+        dead.remove(pCond);
 }
 
 // special print functions
@@ -1450,6 +1461,12 @@ void HLCall::killLive(LocationSet &live) {
     live.removeIfDefines(*((UserProc*)procDest)->getCFG()->getAvailExit());
 }
 
+void HLCall::killDead(LocationSet &dead) {
+    // All parameters kill deadness
+    int n = arguments.size();
+    for (int i = 0; i < n; i++)
+        dead.remove(arguments[i]);
+}
 
 // MVE: Probably not needed, and probably not correct
 void HLCall::getDeadStatements(StatementSet &dead) {
@@ -1637,6 +1654,11 @@ void HLCall::toSSAform(StatementSet& reachin) {
     for (int i = 0; i < n; i++) {
         arguments[i] = arguments[i]->updateUses(reachin);
     }
+}
+
+// Convert from SSA form
+void HLCall::fromSSAform(igraph& ig) {
+
 }
 
 void HLCall::processConstants(Prog *prog) {
@@ -1984,6 +2006,13 @@ void HLScond::killLive(LocationSet &live) {
     }
 }
 
+// Deadness is killed by a use
+void HLScond::killDead(LocationSet &dead) {
+    if (pCond)
+        dead.remove(pCond);
+}
+
+
 // Probably not needed, and probably not right
 void HLScond::getDeadStatements(StatementSet &dead)
 {
@@ -2059,6 +2088,11 @@ Type* HLScond::updateType(Exp *e, Type *curType)
 {
     delete curType;
     return new BooleanType();
+}
+
+// Convert from SSA form
+void HLScond::fromSSAform(igraph& ig) {
+    // To be completed
 }
 
 void HLScond::doReplaceUse(Statement *use)

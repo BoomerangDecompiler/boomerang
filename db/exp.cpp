@@ -2538,6 +2538,13 @@ void AssignExp::killLive(LocationSet &live) {
     }
 }
 
+// Deadness is killed by a use
+void AssignExp::killDead(LocationSet &dead) {
+    LocationSet uses;
+    addUsedLocs(uses);
+    dead.makeDiff(uses);
+}
+
 // MVE: I don't think that this will be needed any more
 void AssignExp::getDeadStatements(StatementSet &dead)
 {
@@ -2557,8 +2564,7 @@ void AssignExp::getDeadStatements(StatementSet &dead)
 }
 
 // update type for expression
-Type *AssignExp::updateType(Exp *e, Type *curType)
-{
+Type *AssignExp::updateType(Exp *e, Type *curType) {
     return curType;
 }
 
@@ -2567,7 +2573,6 @@ bool AssignExp::usesExp(Exp *e) {
     return (subExp2->search(e, where) || (subExp1->isMemOf() && 
         ((Unary*)subExp1)->getSubExp1()->search(e, where)));
 }
-
 
 void AssignExp::doReplaceUse(Statement *use) {
     Exp *left = use->getLeft();
@@ -2840,6 +2845,53 @@ Exp* Terminal::updateUses(StatementSet& defs) {
     return res;
 }
 
+//
+// From SSA form
+//
+
+Exp* UsesExp::fromSSA(igraph& ig) {
+    // FIXME: Need to check if the argument is a memof, and if so
+    // deal with that specially (e.g. global)
+    // Check to see if it is in the map
+    igraph::iterator it = ig.find(this);
+    if (it == ig.end())
+        // It is not in the map. Just remove the opSubscript
+        return becomeSubExp1();
+    else {
+        // It is in the map. Delete the current expression, and replace
+        // with a new local
+        std::ostringstream os;
+        os << "temp" << ig[this];
+        std::string name = os.str();
+        delete this;
+        return new Unary(opLocal, new Const(strdup(name.c_str())));
+    }
+}
+
+Exp* Unary::fromSSA(igraph& ig) {
+    subExp1 = subExp1->fromSSA(ig);
+    return this;
+}
+
+Exp* Binary::fromSSA(igraph& ig) {
+    subExp1 = subExp1->fromSSA(ig);
+    subExp2 = subExp2->fromSSA(ig);
+    return this;
+}
+
+Exp* Ternary::fromSSA(igraph& ig) {
+    subExp1 = subExp1->fromSSA(ig);
+    subExp2 = subExp2->fromSSA(ig);
+    subExp3 = subExp3->fromSSA(ig);
+    return this;
+}
+
+void AssignExp::fromSSAform(igraph& ig) {
+    subExp1 = subExp1->fromSSA(ig);
+    subExp2 = subExp2->fromSSA(ig);
+}
+
+
 // Might be a useful framework for various tests one day
 void Exp::check() {
     Ternary* t = dynamic_cast<Ternary*>(this);
@@ -2872,4 +2924,13 @@ void Exp::check() {
             }
         }
     }
+}
+
+// A helper file for comparing Exp*'s sensibly
+bool lessExpStar::operator()(const Exp* x, const Exp* y) const {
+    return (*x < *y);       // Compare the actual Exps
+}
+
+bool lessTI::operator()(const Exp* x, const Exp* y) const {
+    return (*x << *y);      // Compare the actual Exps
 }

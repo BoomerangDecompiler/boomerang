@@ -242,6 +242,9 @@ virtual Exp* fixSuccessor() {return this;}
     // Get number of definitions (statements this expression depends on)
     virtual int getNumUses() {return 0;}
 
+    // Convert from SSA form
+    virtual Exp* fromSSA(igraph& ig) {return this;}
+
     // Consistency check. Might be useful another day
     void check();
 
@@ -392,6 +395,9 @@ virtual Exp* fixSuccessor();
     // Update the "uses" information implicit in expressions
     virtual Exp* updateUses(StatementSet& defs);
 
+    // Convert from SSA form
+    virtual Exp* fromSSA(igraph& ig);
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -454,6 +460,9 @@ virtual     ~Binary();
     // Update the "uses" information implicit in expressions
     virtual Exp* updateUses(StatementSet& defs);
 
+    // Convert from SSA form
+    virtual Exp* fromSSA(igraph& ig);
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -512,6 +521,9 @@ virtual     ~Ternary();
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
     virtual Exp* updateUses(StatementSet& defs);
+
+    // Convert from SSA form
+    virtual Exp* fromSSA(igraph& ig);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -602,6 +614,7 @@ public:
 	// new dataflow analysis
     virtual void killDef(StatementSet &reach);
     virtual void killLive(LocationSet &live);
+    virtual void killDead(LocationSet &dead);
     virtual void getDeadStatements(StatementSet &dead);
 	virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
@@ -641,8 +654,9 @@ public:
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
 
-    // to SSA form
-    virtual void toSSAform(StatementSet& reachin) {updateUses(reachin);}
+    // to/from SSA form
+    virtual void   toSSAform(StatementSet& reachin) {updateUses(reachin);}
+    virtual void fromSSAform(igraph& ig);
 
 protected:
 	virtual void doReplaceUse(Statement *use);
@@ -693,63 +707,8 @@ virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
     Statement* getFirstUse(StmtSetIter it) {return stmtSet.getFirst(it);}
     Statement* getNextUse (StmtSetIter it) {return stmtSet.getNext (it);}
-};
-
-/*
- * A class for comparing Exp*s (comparing the actual expressions)
- * Type sensitive
- */
-class lessExpStar : public std::binary_function<Exp*, Exp*, bool> {
-public:
-    bool operator()(const Exp* x, const Exp* y) const
-        {
-            return (*x < *y);       // Compare the actual Exps
-        }
-};
-
-/*
- * A class for comparing Exp*s (comparing the actual expressions)
- * Type insensitive
- */
-class lessTI : public std::binary_function<Exp*, Exp*, bool> {
-public:
-    bool operator()(const Exp* x, const Exp* y) const
-        {
-            return (*x << *y);      // Compare the actual Exps
-        }
+    virtual Exp* fromSSA(igraph& ig);
 };
 
     
-// This should be in dataflow.h; here because of #include ordering issues
-// For liveness, we need sets of locations (registers or memory)
-typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
-class LocationSet {
-    // We use a standard set, but with a special "less than" operator
-    // so that the sets are ordered by expression value. If this is not done,
-    // then two expressions with the same value (say r[10]) but that happen to
-    // have different addresses (because they came from different statements)
-    // would both be stored in the set (instead of the required set 
-    // behaviour, where only one is stored)
-    std::set<Exp*, lessExpStar> sset; 
-public:
-    LocationSet() {}                        // Default constructor
-    LocationSet(const LocationSet& o);      // Copy constructor
-    LocationSet& operator=(const LocationSet& o); // Assignment
-    void makeUnion(LocationSet& other);    // Set union
-    void makeDiff (LocationSet& other);    // Set difference
-    void clear() {sset.clear();}            // Clear the set
-    Exp* getFirst(LocSetIter& it);          // Get the first Statement
-    Exp* getNext (LocSetIter& it);          // Get next
-    void insert(Exp* loc) {sset.insert(loc);}// Insert the given location
-    void remove(Exp* loc);                  // Remove the given location
-    void remove(LocSetIter ll);             // Remove location, given iterator
-    void removeIfDefines(StatementSet& given);// Remove locs defined in given
-    int  size() const {return sset.size();}  // Number of elements
-    bool operator==(const LocationSet& o) const; // Compare
-    void substitute(Statement& s);          // Substitute the statement to all
-    void prints();                          // Print to cerr for debugging
-    // Return true if the location exists in the set
-    bool find(Exp* e);
-};
-
 #endif // __EXP_H__

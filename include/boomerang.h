@@ -62,6 +62,7 @@ public:
     const char *dotFile;
     int numToPropagate;
     bool noPromote;
+    bool debugDataflow;
     bool debugPrintReach;
     bool debugPrintSSA;
 };
