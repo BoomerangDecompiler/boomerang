@@ -882,6 +882,11 @@ void UserProc::print(std::ostream &out, bool withDF) {
 void UserProc::printToLog(bool withDF)
 {
     signature->printToLog();
+    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
+        LOG << (*it).second->getCtype() << " " << (*it).first.c_str() << " ";
+        Exp *e = getLocalExp((*it).first.c_str());
+        LOG << e << "\n";
+    }
     cfg->printToLog(withDF);
     LOG << "\n";
 }
@@ -1895,6 +1900,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                             if (ty == NULL || ty->getSize() == 0)
                                 prog->setGlobalType((char*)global, new IntegerType(bits));
                         }
+                        ty = prog->getGlobalType((char*)global);
                         Location *g = Location::global(strdup(global), this);
                         if (ty && ty->isArray()) 
                             ne = new Binary(opArraySubscript, g, new Const(0));
@@ -1969,6 +1975,8 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
         LOG << "replacing expressions with parameters at depth " << depth 
             << "\n";
 
+    int sp = signature->getStackRegister(prog);
+
     bool found = false;
     // start with calls because that's where we have the most types
     StatementList::iterator it;
@@ -1982,16 +1990,22 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                     ty = ((NamedType*)ty)->resolvesTo();
                 if (ty && ty->isPointer() && e->getOper() != opAddrOf &&
                            e->getMemDepth() == 0) {
+                    if (e->getOper() == opMinus && 
+                        *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
+                        e->getSubExp2()->getOper() == opIntConst) {
+                        // don't do locals here!
+                        continue;
+                    }
                     Location *pe = Location::memOf(e);
                     pe->setProc(this);
-                    if (pe->getType() && 
-                        *pe->getType() == *((PointerType*)ty)->getPointsTo()) {
+//                    if (pe->getType() && 
+//                        *pe->getType() == *((PointerType*)ty)->getPointsTo()) {
                         Exp *ne = new Unary(opAddrOf, pe);
                         if (VERBOSE)
                             LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
                         call->setArgumentExp(i, ne);
                         found = true;
-                    }
+//                    }
                 }
             }
         }
@@ -2401,8 +2415,10 @@ void UserProc::countRefs(RefCounter& refCounts) {
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        if (s->isPhi())
+        if (s->isPhi()) {
             ((PhiExp*)s->getRight())->simplifyRefs();
+            s->simplify();
+        }
         LocationSet refs;
         s->addUsedLocs(refs);
         LocationSet::iterator rr;
@@ -2435,7 +2451,7 @@ void UserProc::removeUnusedLocals() {
                 Const* c = (Const*)((Unary*)r)->getSubExp1();
                 std::string name(c->getStr());
                 usedLocals.insert(name);
-                // LOG << "Counted local " << name << "\n";
+                LOG << "Counted local " << name.c_str() << " in " << s << "\n";
             }
         }
     }
@@ -2444,13 +2460,14 @@ void UserProc::removeUnusedLocals() {
 #if 0
     int nextLocal = 0;
 #endif
+    std::vector<std::string> removes;
     for (it = locals.begin(); it != locals.end(); it++) {
         std::string& name = const_cast<std::string&>(it->first);
         // LOG << "Considering local " << name << "\n";
         if (usedLocals.find(name) == usedLocals.end()) {
             if (VERBOSE)
                 LOG << "Removed unused local " << name.c_str() << "\n";
-            locals.erase(it);
+            removes.push_back(name);
         }
 #if 0   // Ugh - still have to rename the variables.
         else {
@@ -2463,6 +2480,8 @@ void UserProc::removeUnusedLocals() {
         }
 #endif
     }
+    for (std::vector<std::string>::iterator it1 = removes.begin(); it1 != removes.end(); it1++)
+        locals.erase(*it1);
 }
 
 // Note: if depth < 0, consider all depths
@@ -2996,8 +3015,6 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 }
 
 bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
-//    if (signature->isPromoted())
-//        return 0;
     std::set<Exp*, lessExpStar> removes;    // Else iterators confused
     std::set<Exp*, lessExpStar>& useSet = rc[this];
     for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -3011,6 +3028,7 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
         stackExp = Location::regOf(signature->getStackRegister());
         assert(stackExp);
     }
+    bool removedOne = false;
     for (it = removes.begin(); it != removes.end(); it++) {
         if (signature->isPromoted() && !(*stackExp == **it))
             // Only remove stack pointer if promoted
@@ -3019,8 +3037,9 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
             LOG << " @@ Removing unused return " << *it <<
             " in " << getName() << "\n";
         removeReturn(*it);
+        removedOne = true;
     }
-    return removes.size();
+    return removedOne;
 }
 
 void Proc::addCallers(std::set<UserProc*>& callers) {

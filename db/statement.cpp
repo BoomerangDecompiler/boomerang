@@ -2566,30 +2566,13 @@ void Assign::simplify() {
     }
 
     // let's gather some more accurate type information
-    if (lhs->isLocation() && rhs->isLocation()) {
-        Location *llhs = (Location*)lhs;
-        Location *lrhs = (Location*)rhs;
-        if (lrhs->getType())
-            llhs->setType(lrhs->getType());
-    }
-
-    if (lhs->isLocation() && rhs->getOper() == opAddrOf &&
-        rhs->getSubExp1()->isLocation()) {
-        Location *llhs = (Location*)lhs;
-        Location *lrhs = (Location*)rhs->getSubExp1();
-        if (lrhs->getType())
-            llhs->setType(new PointerType(lrhs->getType()));
-    }
-
-
-    if (lhs->isLocation() && rhs->getOper() == opSubscript &&
-        ((RefExp*)rhs)->getRef() &&
-        ((RefExp*)rhs)->getRef()->isAssign() &&
-        ((Assign*)((RefExp*)rhs)->getRef())->lhs->isLocation()) {
-        Location *llhs = (Location*)lhs;
-        Location *lrhs = (Location*)((Assign*)((RefExp*)rhs)->getRef())->lhs;
-        if (lrhs->getType())
-            llhs->setType(lrhs->getType());
+    if (lhs->isLocation() && rhs->getType()) {
+        Location *llhs = dynamic_cast<Location*>(lhs);
+        assert(llhs);
+        Type *ty = rhs->getType();
+        llhs->setType(ty);
+        if (VERBOSE)
+            LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
     }
 
     if (lhs->getType() && lhs->getType()->isFloat() && 

@@ -1,7 +1,7 @@
 #ifndef YY_SSLParser_h_included
 #define YY_SSLParser_h_included
 
-#line 1 "/usr/local/lib/bison.h"
+#line 1 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/usr/local/lib/bison.h" */
+/* #line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 21 "sslparser.h"
 #line 36 "sslparser.y"
 
@@ -121,7 +121,7 @@ protected: \
      */ \
     bool bFloat;
 
-#line 14 "/usr/local/lib/bison.h"
+#line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_SSLParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -172,32 +172,32 @@ protected: \
 
 #ifndef YY_SSLParser_PURE
 
-/* #line 63 "/usr/local/lib/bison.h" */
+/* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 177 "sslparser.h"
 
-#line 63 "/usr/local/lib/bison.h"
+#line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
-/* #line 65 "/usr/local/lib/bison.h" */
+/* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 184 "sslparser.h"
 
-#line 65 "/usr/local/lib/bison.h"
+#line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
-/* #line 67 "/usr/local/lib/bison.h" */
+/* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 191 "sslparser.h"
 
-#line 67 "/usr/local/lib/bison.h"
+#line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_SSLParser_DEBUG */
 #endif
 #ifndef YY_SSLParser_LSP_NEEDED
 
-/* #line 70 "/usr/local/lib/bison.h" */
+/* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 199 "sslparser.h"
 
-#line 70 "/usr/local/lib/bison.h"
+#line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -272,7 +272,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #endif
 
 
-/* #line 143 "/usr/local/lib/bison.h" */
+/* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 277 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
@@ -325,7 +325,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #define	FLOATNUM	306
 
 
-#line 143 "/usr/local/lib/bison.h"
+#line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -352,7 +352,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #ifndef YY_SSLParser_USE_CONST_TOKEN
 #define YY_SSLParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 #ifndef YY_SSLParser_ENUM_TOKEN
@@ -362,11 +362,11 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 class YY_SSLParser_CLASS YY_SSLParser_INHERIT
 {
-public: 
+public:
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/usr/local/lib/bison.h" */
+/* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 371 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
@@ -419,12 +419,12 @@ static const int ASSIGNSIZE;
 static const int FLOATNUM;
 
 
-#line 182 "/usr/local/lib/bison.h"
+#line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* decl const */
 #else
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
-/* #line 185 "/usr/local/lib/bison.h" */
+/* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 429 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
@@ -477,7 +477,7 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,FLOATNUM=306
 
 
-#line 185 "/usr/local/lib/bison.h"
+#line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -530,6 +530,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/usr/local/lib/bison.h" */
+/* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 535 "sslparser.h"
 #endif

@@ -588,6 +588,8 @@ virtual Exp* polySimplify(bool& bMod);
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
+    virtual Type*   getType();
+
 };  // class Ternary
 
 /*==============================================================================

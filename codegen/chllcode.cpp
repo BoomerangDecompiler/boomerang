@@ -35,6 +35,7 @@
 #include "hllcode.h"
 #include "chllcode.h"
 #include "signature.h"
+#include "boomerang.h"
 
 #include <sstream>
 
@@ -203,22 +204,20 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, b->getSubExp2());
             break;
         case opMemOf:
-            if (u->getSubExp1()->isLocation()) {
-                Location *l = (Location*)u->getSubExp1();
+            if (u->getSubExp1()->getType()) {
+                Exp *l = u->getSubExp1();
                 Type *ty = l->getType();
-                if (ty) {
-                    if (ty->isPointer()) {
-                        strcat(str, "*");
-                        appendExp(str, l);
-                        break;
-                    }
-                    strcat(str, "*(");
-                    appendType(str, ty);
-                    strcat(str, "*)(");
-                    appendExp(str, u->getSubExp1());
-                    strcat(str, ")");
+                if (ty->isPointer()) {
+                    strcat(str, "*");
+                    appendExp(str, l);
                     break;
                 }
+                strcat(str, "*(");
+                appendType(str, ty);
+                strcat(str, "*)(");
+                appendExp(str, l);
+                strcat(str, ")");
+                break;
             }
             strcat(str, "*(int*)(");
             appendExp(str, u->getSubExp1());
@@ -486,25 +485,21 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             assert(false);
             break;
         case opMemberAccess:
-            if (b->getSubExp1()->isLocation()) {
-                Type *ty = ((Location*)b->getSubExp1())->getType();
-                if (ty) {
-                    if (ty->isNamed())
-                        ty = ((NamedType*)ty)->resolvesTo();
-                    if (ty->isPointer()) {
-                        appendExp(str, b->getSubExp1());
-                        strcat(str, "->");
-                        strcat(str, ((Const*)b->getSubExp2())->getStr());
-                    } else {
-                        assert(ty->isCompound());
-                        appendExp(str, b->getSubExp1());
-                        strcat(str, ".");
-                        strcat(str, ((Const*)b->getSubExp2())->getStr());
-                    }
+            {
+                Type *ty = b->getSubExp1()->getType();
+                if (ty == NULL)
+                    LOG << "no type for subexp1 of " << b << "\n";
+                assert(ty);
+                if (ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                assert(ty->isCompound());
+                if (b->getSubExp1()->getOper() == opMemOf) {
+                    appendExp(str, b->getSubExp1()->getSubExp1());
+                    strcat(str, "->");
+                } else {
+                    appendExp(str, b->getSubExp1());
+                    strcat(str, ".");
                 }
-            } else {
-                appendExp(str, b->getSubExp1());
-                strcat(str, ".");
                 strcat(str, ((Const*)b->getSubExp2())->getStr());
             }
             break;
