@@ -157,6 +157,14 @@ namespace CallingConvention {
 	    virtual platform getPlatform() { return PLAT_SPARC; }
 	    virtual callconv getConvention() { return CONV_C; }
         };
+
+        class SparcLibSignature : public SparcSignature {
+        public:
+            SparcLibSignature(const char *nam) : SparcSignature(nam) {}
+            SparcLibSignature(Signature &old) : SparcSignature(old) {}
+            virtual Signature *clone();
+            virtual Exp* getProven(Exp* left);
+        };
     };
 };
 
@@ -353,7 +361,8 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
                 return Location::regOf(30);
             case 31:
                 return Location::regOf(31);
-            // there are other things that must be preserved here, look at calling convention
+            // there are other things that must be preserved here,
+            // look at calling convention
         }
     }
     return NULL;
@@ -527,7 +536,8 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
                 return new Binary(opPlus, Location::regOf(28), new Const(4));
             case 29:
                 return Location::regOf(29);
-            // there are other things that must be preserved here, look at calling convention
+            // there are other things that must be preserved here,
+            // look at calling convention
         }
     }
     return NULL;
@@ -570,6 +580,19 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
     return n;
 }
 
+Signature *CallingConvention::StdC::SparcLibSignature::clone() {
+    SparcLibSignature *n = new SparcLibSignature(name.c_str());
+    n->params = params;
+    n->implicitParams = implicitParams;
+    n->returns = returns;
+    n->ellipsis = ellipsis;
+    n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
+    return n;
+}
+
 bool CallingConvention::StdC::SparcSignature::operator==(Signature&
   other) {
     return Signature::operator==(other);
@@ -581,7 +604,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
     platform plat = p->getProg()->getFrontEndId();
     if (plat != PLAT_SPARC) return false;
 
-    // is there other constraints?
+    // are there other constraints?
     
     return true;
 }
@@ -640,11 +663,34 @@ Exp *CallingConvention::StdC::SparcSignature::getProven(Exp* left) {
             case 14:
             case 24: case 25: case 26: case 27:
             case 28: case 29: case 30: case 31:
+            // NOTE: Registers %g2 to %g4 are NOT preserved in ordinary
+            // application (non library) code
                 return left;
         }
     }
     return NULL; 
 }
+
+Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp* left) {
+    if (left->isRegOfK()) {
+        int r = ((Const*)((Location*)left)->getSubExp1())->getInt();
+        switch (r) {
+            // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
+            case 14:
+            case 24: case 25: case 26: case 27:
+            case 28: case 29: case 30: case 31:
+            // Also the "application global registers" g2-g4 (2-4) (preserved
+            // by library functions, but apparently don't have to be preserved
+            // by application code)
+            case 2:  case 3:  case 4:
+            // The system global registers (g5-g7) are also preserved, but
+            // should never be changed in an application anyway
+                return left;
+        }
+    }
+    return NULL; 
+}
+
 
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
