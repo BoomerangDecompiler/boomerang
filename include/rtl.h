@@ -167,7 +167,7 @@ public:
     char* prints();
 
     // Set all the "constant subscripts" (conscripts) in this RTL
-    void    setConscripts();
+    int     setConscripts(int n);
 
 };
 

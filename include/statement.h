@@ -254,7 +254,7 @@ public:
     virtual void genConstraints(LocationSet& cons) {}
 
     // Set the constant subscripts
-    void    setConscripts();
+    int    setConscripts(int n);
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
@@ -964,7 +964,9 @@ public:
 class StmtSetConscripts : public StmtVisitor {
     int     curConscript;
 public:
-                 StmtSetConscripts() {curConscript = 0;}
+                 StmtSetConscripts(int n) {curConscript = n;}
+    int          getLast() {return curConscript;}
+
     virtual bool visit(Assign *stmt);
     virtual bool visit(GotoStatement *stmt) {return true;}
     virtual bool visit(BranchStatement *stmt) {return true;}

@@ -3136,9 +3136,9 @@ void CallStatement::genConstraints(LocationSet& cons) {
         std::string name = dest->getName();
         // Note: might have to chase back via a phi statement to get a sample
         // string
-        if ((name == "printf" || name == "scanf") && arguments[0]->isStrConst())
-        {
-            char *str = ((Const*)arguments[0])->getStr();
+        char* str;
+        if ((name == "printf" || name == "scanf") &&
+          (str = arguments[0]->getAnyStrConst()) != NULL) {
             // actually have to parse it
             int n = 1;      // Number of %s plus 1 = number of args
             char* p = str;
@@ -3196,9 +3196,7 @@ void CallStatement::genConstraints(LocationSet& cons) {
                         t = new PointerType(t);
                     // Generate a constraint for the parameter
                     TypeVal* tv = new TypeVal(t);
-                    Exp* con = new Binary(opEquals,
-                        new Unary(opTypeOf, arguments[n]->clone()),
-                        tv);
+                    Exp* con = arguments[n]->genConstraints(tv);
                     cons.insert(con);
                 }
                 n++;
@@ -3268,8 +3266,9 @@ bool StmtSetConscripts::visit(BoolStatement* stmt) {
     return true;
 }
 
-void Statement::setConscripts() {
-    StmtSetConscripts ssc;
+int Statement::setConscripts(int n) {
+    StmtSetConscripts ssc(n);
     accept(&ssc);
+    return ssc.getLast();
 }
 

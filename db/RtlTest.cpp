@@ -294,7 +294,7 @@ void RtlTest::testSetConscripts() {
     list.push_back(s1);
     list.push_back(s2);
     RTL* rtl = new RTL(0x1000, &list);
-    rtl->setConscripts();
+    rtl->setConscripts(0);
     std::string expected(
         "00001000    0 *32* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
 "            0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");

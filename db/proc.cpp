@@ -1086,7 +1086,7 @@ std::set<UserProc*>* UserProc::decompile() {
         printXML();
 
         // Print if requested
-        if (Boomerang::get()->debugPrintSSA) {
+        if (VERBOSE) {      // was if debugPrintSSA
             LOG << "=== Debug Print SSA for " << getName()
               << " at memory depth " << depth << " (no propagations) ===\n";
             printToLog(true);
@@ -1158,7 +1158,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
         printXML();
         // Print if requested
-        if (Boomerang::get()->debugPrintSSA && depth == 0) {
+        if (VERBOSE) {      // was if debugPrintSSA
             LOG << "=== Debug Print SSA for " << getName() <<
               " at memory depth " << depth <<
               " (after trimming return set) ===\n";
@@ -3119,9 +3119,11 @@ void UserProc::typeAnalysis(Prog* prog) {
     getStatements(stmts);
     StatementList::iterator ss;
     // For each statement this proc
+    int conscript = 0;
     for (ss = stmts.begin(); ss != stmts.end(); ss++) {
         cons.clear();
-        (*ss)->setConscripts();     // So we can co-erce constants
+        // So we can co-erce constants:
+        conscript = (*ss)->setConscripts(conscript);
         (*ss)->genConstraints(cons);
         consObj.addConstraints(cons);
         if (DEBUG_TA)
