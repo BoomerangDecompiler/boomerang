@@ -286,7 +286,7 @@ AND             r1, r2, t, c_c
 
                 
 ANDCM           r1, r2, t, c_c
-                *32* r[t] := r[r1] & ~r[r2];
+                *32* r[tmp1] := r[r1] & ~r[r2];
 
 add_conds := { $adds, "ADDL", "OR", "XOR", "AND", "ANDCM" };
 sub_conds := { $subs };
