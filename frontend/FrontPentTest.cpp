@@ -145,7 +145,7 @@ void FrontPentTest::test2() {
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x804892a);
     inst.rtl->print(o3);
-    expected = std::string("0804892a    0 JUMP 0x804892c\n");
+    expected = std::string("0804892a    0 GOTO 0x804892c\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -200,7 +200,7 @@ void FrontPentTest::testBranch() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x8048979);
     inst.rtl->print(o1);
-    expected = std::string("08048979    0 JCOND 0x8048988, condition "
+    expected = std::string("08048979    0 BRANCH 0x8048988, condition "
       "not equals\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, o1.str());
@@ -210,7 +210,7 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x80489c1);
     inst.rtl->print(o2);
     expected = std::string(
-      "080489c1    0 JCOND 0x80489d5, condition signed greater\n"
+      "080489c1    0 BRANCH 0x80489d5, condition signed greater\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
@@ -219,7 +219,7 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x8048a1b);
     inst.rtl->print(o3);
     expected = std::string(
-        "08048a1b    0 JCOND 0x8048a2a, condition unsigned less or equals\n"
+        "08048a1b    0 BRANCH 0x8048a2a, condition unsigned less or equals\n"
         "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 

@@ -1131,9 +1131,6 @@ GotoStatement::GotoStatement()
  *============================================================================*/
 GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
     kind = STMT_GOTO;
-    // Note: we used to generate an assignment (pc := <dest>), but it gets
-    // ignored anyway, and it causes us to declare pc as a variable in the back
-    // end. So now the semantics of a HLJUMP are purely implicit
     pDest = new Const(uDest);
 }
 
@@ -1256,12 +1253,14 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void GotoStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
+#if 0
     if (getKind() == STMT_RET) {
         os << "RET";                // RET is a special case of a STMT_GOTO
         return;
     }
+#endif
 
-    os << "JUMP ";
+    os << "GOTO ";
     if (pDest == NULL)
         os << "*no dest*";
     else if (pDest->getOper() != opIntConst)
@@ -1585,7 +1584,7 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void BranchStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "JCOND ";
+    os << "BRANCH ";
     if (pDest == NULL)
         os << "*no dest*";
     else if (!pDest->isIntConst())
@@ -1899,7 +1898,7 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void CaseStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "NWAY_JUMP [";
+    os << "CASE [";
     if (pDest == NULL)
         os << "*no dest*";
     else os << pDest;

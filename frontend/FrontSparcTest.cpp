@@ -175,7 +175,7 @@ void FrontSparcTest::test2() {
     std::ostringstream o4;
     inst = pFE->decodeInstruction(0x10a6c);
     inst.rtl->print(o4);
-    expected = std::string("00010a6c    0 JUMP 0x10a74\n");
+    expected = std::string("00010a6c    0 GOTO 0x10a74\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
     delete pFE;
@@ -257,7 +257,8 @@ void FrontSparcTest::testBranch() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x10ab0);
     inst.rtl->print(o1);
-    expected = std::string("00010ab0    0 JCOND 0x10ac8, condition not equals\n"
+    expected = std::string(
+      "00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
@@ -265,7 +266,7 @@ void FrontSparcTest::testBranch() {
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x10af8);
     inst.rtl->print(o2);
-    expected = std::string("00010af8    0 JCOND 0x10b10, condition "
+    expected = std::string("00010af8    0 BRANCH 0x10b10, condition "
       "signed greater\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
@@ -275,7 +276,7 @@ void FrontSparcTest::testBranch() {
     inst = pFE->decodeInstruction(0x10b44);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010b44    0 JCOND 0x10b54, condition unsigned less or equals\n"
+        "00010b44    0 BRANCH 0x10b54, condition unsigned less or equals\n"
         "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
@@ -367,7 +368,7 @@ void FrontSparcTest::testDelaySlot() {
     "            0 *32* r0 := r16 - r8\n"
     "            0 *32* %flags := SUBFLAGS( tmp, r8, r0 )\n"
     "00010ab0    0 *32* r8 := 70656\n"
-    "00010ab0    0 JCOND 0x10ac8, condition not equals\n"
+    "00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
     "High level: %flags\n");
     actual = std::string(o3.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -378,7 +379,7 @@ void FrontSparcTest::testDelaySlot() {
     bb->print(o4);
     expected = std::string("L1: Twoway BB:\n"
         "00010ac8    0 *32* r8 := 70656\n"
-        "00010ac8    0 JCOND 0x10ad8, condition equals\n"
+        "00010ac8    0 BRANCH 0x10ad8, condition equals\n"
         "High level: %flags\n");
     actual = std::string(o4.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
