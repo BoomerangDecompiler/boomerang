@@ -389,6 +389,7 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
 		// Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
 		// Use the actual left from Statement **uu
+		if (*uu == NULL) continue;
 		Exp* temp = new RefExp((*uu)->getLeft(), *uu);
 		temp->accept(ev);
 	}
