@@ -155,7 +155,7 @@ enum STMT_KIND {
     STMT_RET,
     STMT_BRANCH,
     STMT_GOTO,
-    STMT_SET,                   // For "setCC" instructions that set destination
+    STMT_BOOL,                  // For "setCC" instructions that set destination
                                 // to 1 or 0 depending on the condition codes.
     STMT_CASE,                  // Used to represent switch statements.
 };
@@ -208,6 +208,9 @@ public:
 
     // true if this statement is a call
     bool isCall() { return kind == STMT_CALL; }
+
+    // true if this statement is a BoolStatement
+    bool isBool() { return kind == STMT_BOOL; }
 
     // true if this is a fpush/fpop
     bool isFpush();

@@ -702,7 +702,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     }
                     break;
 
-                case STMT_SET:
+                case STMT_BOOL:
                     // This is just an ordinary instruction; no control transfer
                     // Fall through
                 case STMT_ASSIGN:

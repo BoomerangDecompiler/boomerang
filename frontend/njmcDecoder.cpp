@@ -232,18 +232,3 @@ void NJMCDecoder::unconditionalJump(const char* name, int size,
     SHOW_ASM(name<<" "<<relocd)
 }
 
-#if 0       // HACK!
-/*==============================================================================
- * FUNCTION:        NJMCDecoder::decodeInstruction
- * OVERVIEW:        Dummy function
- * NOTE:            Must be overridden in a derived class (e.g. in
- *                    ../lib/libsparc.so)
- * PARAMETERS:      Not actually used!
- * RETURNS:         N/A
- *============================================================================*/
-DecodeResult dummy;
-DecodeResult& decodeInstruction (ADDRESS pc, int delta)
-{   assert(0);
-    return dummy;
-}
-#endif

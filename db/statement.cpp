@@ -729,6 +729,8 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
                 continue;
             if (def->isCall())
                 continue;
+            if (def->isBool())
+                continue;
             change = doPropagateTo(memDepth, def);
         }
     } while (change && ++changes < 20);
@@ -1477,87 +1479,92 @@ void BranchStatement::doReplaceRef(Exp* from, Exp* to) {
     simplify();
 }
 
-void BranchStatement::simplify() {
-    if (pCond) {
-        pCond = pCond->simplifyArith()->simplify();
+// Common to BranchStatement and BoolStatement
+void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
+    pCond = pCond->simplifyArith()->simplify();
 
-        std::stringstream os;
-        pCond->print(os);
-        std::string s = os.str();
+    std::stringstream os;
+    pCond->print(os);
+    std::string s = os.str();
 
-        if (pCond->getOper() == opFlagCall && 
-            !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-                    "SUBFLAGS", 8)) {
-            Exp *e = pCond;
-            OPER op = opWild;
-            switch (jtCond) {
-                case BRANCH_JE:    op = opEquals; break;
-                case BRANCH_JNE:   op = opNotEqual; break;
-                case BRANCH_JSL:   op = opLess; break;
-                case BRANCH_JSLE:  op = opLessEq; break;
-                case BRANCH_JSGE:  op = opGtrEq; break;
-                case BRANCH_JSG:   op = opGtr; break;
-                case BRANCH_JUL:   op = opLessUns; break;
-                case BRANCH_JULE:  op = opLessEqUns; break;
-                case BRANCH_JUGE:  op = opGtrEqUns; break;
-                case BRANCH_JUG:   op = opGtrUns; break;
-                case BRANCH_JMI:
-                    pCond = new Binary(opLess,
-                        pCond->getSubExp2()->getSubExp2()->getSubExp2()
-                            ->getSubExp1()->clone(), new Const(0));
-                    delete e;
-                    break;
-                case BRANCH_JPOS:
-                    pCond = new Binary(opGtrEq,
-                        pCond->getSubExp2()->getSubExp2()->getSubExp2()
-                            ->getSubExp1()->clone(), new Const(0));
-                    delete e;
-                    break;
-                case BRANCH_JOF:
-                case BRANCH_JNOF:
-                case BRANCH_JPAR:
-                    break;
-            }
-            if (op != opWild) {
-                pCond = new Binary(op,
-                    pCond->getSubExp2()->getSubExp1()->clone(), 
-                    pCond->getSubExp2()->getSubExp2()->getSubExp1()
-                        ->clone());
+    if (pCond->getOper() == opFlagCall && 
+        !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+                "SUBFLAGS", 8)) {
+        Exp *e = pCond;
+        OPER op = opWild;
+        switch (jtCond) {
+            case BRANCH_JE:    op = opEquals; break;
+            case BRANCH_JNE:   op = opNotEqual; break;
+            case BRANCH_JSL:   op = opLess; break;
+            case BRANCH_JSLE:  op = opLessEq; break;
+            case BRANCH_JSGE:  op = opGtrEq; break;
+            case BRANCH_JSG:   op = opGtr; break;
+            case BRANCH_JUL:   op = opLessUns; break;
+            case BRANCH_JULE:  op = opLessEqUns; break;
+            case BRANCH_JUGE:  op = opGtrEqUns; break;
+            case BRANCH_JUG:   op = opGtrUns; break;
+            case BRANCH_JMI:
+                pCond = new Binary(opLess,
+                    pCond->getSubExp2()->getSubExp2()->getSubExp2()
+                        ->getSubExp1()->clone(), new Const(0));
                 delete e;
-            }
+                break;
+            case BRANCH_JPOS:
+                pCond = new Binary(opGtrEq,
+                    pCond->getSubExp2()->getSubExp2()->getSubExp2()
+                        ->getSubExp1()->clone(), new Const(0));
+                delete e;
+                break;
+            case BRANCH_JOF:
+            case BRANCH_JNOF:
+            case BRANCH_JPAR:
+                break;
         }
-        if (pCond->getOper() == opFlagCall && 
-            !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-                    "LOGICALFLAGS", 12)) {
-            Exp *e = pCond;
-            switch (jtCond) {
-                case BRANCH_JE:
-                    pCond = new Binary(opEquals,
-                        pCond->getSubExp2()->getSubExp1()->clone(), 
-                        new Const(0));
-                    break;
-                case BRANCH_JNE:
-                    pCond = new Binary(opNotEqual,
-                        pCond->getSubExp2()->getSubExp1()->clone(), 
-                        new Const(0));
-                    break;
-                case BRANCH_JMI:
-                    pCond = new Binary(opLess,
-                        pCond->getSubExp2()->getSubExp1()->clone(), 
-                        new Const(0));
-                    delete e;
-                    break;
-                case BRANCH_JPOS:
-                    pCond = new Binary(opGtrEq,
-                        pCond->getSubExp2()->getSubExp1()->clone(), 
-                        new Const(0));
-                    delete e;
-                    break;
-                default:
-                    break;
-            }
+        if (op != opWild) {
+            pCond = new Binary(op,
+                pCond->getSubExp2()->getSubExp1()->clone(), 
+                pCond->getSubExp2()->getSubExp2()->getSubExp1()
+                    ->clone());
+            delete e;
         }
     }
+    if (pCond->getOper() == opFlagCall && 
+        !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+                "LOGICALFLAGS", 12)) {
+        Exp *e = pCond;
+        switch (jtCond) {
+            case BRANCH_JE:
+                pCond = new Binary(opEquals,
+                    pCond->getSubExp2()->getSubExp1()->clone(), 
+                    new Const(0));
+                break;
+            case BRANCH_JNE:
+                pCond = new Binary(opNotEqual,
+                    pCond->getSubExp2()->getSubExp1()->clone(), 
+                    new Const(0));
+                break;
+            case BRANCH_JMI:
+                pCond = new Binary(opLess,
+                    pCond->getSubExp2()->getSubExp1()->clone(), 
+                    new Const(0));
+                delete e;
+                break;
+            case BRANCH_JPOS:
+                pCond = new Binary(opGtrEq,
+                    pCond->getSubExp2()->getSubExp1()->clone(), 
+                    new Const(0));
+                delete e;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+
+void BranchStatement::simplify() {
+    if (pCond)
+        condToRelational(pCond, jtCond);
 }
 
 void BranchStatement::addUsedLocs(LocationSet& used) {
@@ -1764,7 +1771,7 @@ Exp *CallStatement::getReturnExp(int i) {
 }
 
 int CallStatement::findReturn(Exp *e) {
-    for (int i = 0; i < returns.size(); i++)
+    for (unsigned i = 0; i < returns.size(); i++)
         if (*returns[i] == *e)
             return i;
     return -1;
@@ -2426,7 +2433,7 @@ void ReturnStatement::print(std::ostream& os /*= cout*/, bool withDF) {
  *============================================================================*/
 BoolStatement::BoolStatement(int sz): jtCond((BRANCH_TYPE)0), pCond(NULL),
   pDest(NULL), size(sz) {
-    kind = STMT_SET;
+    kind = STMT_BOOL;
 }
 
 /*==============================================================================
@@ -2531,11 +2538,8 @@ void BoolStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << ")";
     if (bFloat) os << ", float";
     os << std::endl;
-    if (pCond) {
-        os << "High level: ";
-        pCond->print(os);
-        os << std::endl;
-    }
+    if (pCond)
+        os << "High level: " << pCond << "\n";
 }
 
 /*==============================================================================
@@ -2579,25 +2583,18 @@ bool BoolStatement::deserialize_fid(std::istream &inf, int fid) {
 }
 
 void BoolStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+    assert(pDest);
+    assert(pCond);
+    // pDest := (pCond) ? 1 : 0
+    Assign as(pDest->clone(), new Ternary(opTern, pCond->clone(),
+      new Const(1), new Const(0)));
+    hll->AddAssignmentStatement(indLevel, &as);
 }
 
 void BoolStatement::simplify() {
+    if (pCond)
+        condToRelational(pCond, jtCond);
 }
-
-#if 0
-// Probably not needed, and probably not right
-void BoolStatement::getDeadStatements(StatementSet &dead) {
-    assert(pDest);
-    StatementSet reach;
-    getReachIn(reach, 2);
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() && *s->getLeft() == *pDest && 
-            s->getNumUsedBy() == 0)
-            dead.insert(s);
-    }
-}
-#endif
 
 void BoolStatement::getDefinitions(LocationSet &defs) 
 {
