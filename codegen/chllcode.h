@@ -33,9 +33,9 @@ class CHLLCode : public HLLCode {
 private:
 	std::list<char *> lines;
 
-        void indent(char *str, int indLevel);
-        void appendExp(char *str, Exp *exp);
-        void appendType(char *str, Type *typ);
+        void indent(std::ostringstream& str, int indLevel);
+        void appendExp(std::ostringstream& str, Exp *exp);
+        void appendType(std::ostringstream& str, Type *typ);
 
         std::map<std::string, Type*> locals;
 

@@ -20,6 +20,7 @@
  * 20 Jun 02 - Trent: Quick and dirty implementation for debugging
  * 28 Jun 02 - Trent: Starting to look better
  * 22 May 03 - Mike: delete -> free() to keep valgrind happy
+ * 16 Apr 04 - Mike: char[] replaced by ostringstreams
  */
 
 #include <assert.h>
@@ -44,7 +45,6 @@
 
 #include <sstream>
 
-#define BUFSIZE 1024
 extern char *operStrings[];
 
 CHLLCode::CHLLCode() : HLLCode()
@@ -59,18 +59,17 @@ CHLLCode::~CHLLCode()
 {
 }
 
-void CHLLCode::indent(char *str, int indLevel)
+void CHLLCode::indent(std::ostringstream& str, int indLevel)
 {
-    memset(str, ' ', indLevel * 4);
-    str[indLevel * 4] = 0;
+    // Can probably do more efficiently
+    for (int i=0; i < indLevel*4; i++)
+        str << ' ';
 }
 
-void CHLLCode::appendExp(char *str, Exp *exp)
+void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
 {
     if (exp == NULL) return;
 
-    char s[BUFSIZE];
-    s[0] = '\0';        // Initialise the string to null, in case never used
     Const   *c = (Const*)exp;
     Unary   *u = (Unary*)exp;
     Binary  *b = (Binary*)exp;
@@ -78,27 +77,18 @@ void CHLLCode::appendExp(char *str, Exp *exp)
     
     switch(exp->getOper()) {
         case opIntConst:
-            sprintf(s, "%d", c->getInt());
-            strcat(str, s);
-            break;
+            str << std::dec << c->getInt(); break;
         case opLongConst:
-            sprintf(s, "%lld", c->getLong());
-            strcat(str, s);
-            break;
+            // sprintf(s, "%lld", c->getLong());
+            //strcat(str, s);
+// Check that this works!
+            str << std::dec << c->getLong(); break;
         case opFltConst:
-            {
-                std::ostringstream os;
-                os << c->getFlt();
-                strcat(str, os.str().c_str());
-            }
-            break;
+            str << c->getFlt(); break;
         case opStrConst:
-            sprintf(s, "\"%s\"", c->getStr());
-            strcat(str, s);
-            break;
+            str << "\"" << c->getStr() << "\""; break;
         case opFuncConst:
-            strcat(str, c->getFuncName());
-            break;
+            str << c->getFuncName(); break;
         case opAddrOf: {
             Exp* sub = u->getSubExp1();
             if (sub->isGlobal()) {
@@ -109,7 +99,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                     // an array
                     break;
             }
-            strcat(str, "&");
+            str << "&";
             appendExp(str, sub);
             break;
         }
@@ -118,108 +108,106 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opLocal:
             c = dynamic_cast<Const*>(u->getSubExp1());
             assert(c && c->getOper() == opStrConst);
-            strcat(str, c->getStr());
+            str << c->getStr();
             break;
         case opEquals:
             appendExp(str, b->getSubExp1());
-            strcat(str, " == ");
+            str << " == ";
             appendExp(str, b->getSubExp2());
             break;
         case opNotEqual:
             appendExp(str, b->getSubExp1());
-            strcat(str, " != ");
+            str << " != ";
             appendExp(str, b->getSubExp2());
             break;
         case opLess:
         case opLessUns:
             appendExp(str, b->getSubExp1());
-            strcat(str, " < ");
+            str << " < ";
             appendExp(str, b->getSubExp2());
             break;
         case opGtr:
         case opGtrUns:
             appendExp(str, b->getSubExp1());
-            strcat(str, " > ");
+            str << " > ";
             appendExp(str, b->getSubExp2());
             break;
         case opLessEq:
         case opLessEqUns:
             appendExp(str, b->getSubExp1());
-            strcat(str, " <= ");
+            str << " <= ";
             appendExp(str, b->getSubExp2());
             break;
         case opGtrEq:
         case opGtrEqUns:
             appendExp(str, b->getSubExp1());
-            strcat(str, " >= ");
+            str << " >= ";
             appendExp(str, b->getSubExp2());
             break;
         case opAnd:
             appendExp(str, b->getSubExp1());
-            strcat(str, " && ");
+            str << " && ";
             appendExp(str, b->getSubExp2());
             break;
         case opOr:
             appendExp(str, b->getSubExp1());
-            strcat(str, " || ");
+            str << " || ";
             appendExp(str, b->getSubExp2());
             break;
         case opBitAnd:
             appendExp(str, b->getSubExp1());
-            strcat(str, " & ");
+            str << " & ";
             appendExp(str, b->getSubExp2());
             break;
         case opBitOr:
             appendExp(str, b->getSubExp1());
-            strcat(str, " | ");
+            str << " | ";
             appendExp(str, b->getSubExp2());
             break;
         case opBitXor:
             appendExp(str, b->getSubExp1());
-            strcat(str, " ^ ");
+            str << " ^ ";
             appendExp(str, b->getSubExp2());
             break;
         case opNot:
-            strcat(str, "~(");
+            str << "~(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opLNot:
-            strcat(str, "!(");
+            str << "!(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opNeg:
         case opFNeg:
-            strcat(str, "-(");
+            str << "-(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opAt:
         {
-            strcat(str, "(((");
+            str << "(((";
             appendExp(str, t->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             c = dynamic_cast<Const*>(t->getSubExp3());
             assert(c && c->getOper() == opIntConst);
             int last = c->getInt();
-            sprintf(s, ">>%d)", last);
-            strcat(str, s);
+            str << ">>" << std::dec << last; 
             c = dynamic_cast<Const*>(t->getSubExp2());
             assert(c && c->getOper() == opIntConst);
             unsigned int mask = (1 << (c->getInt() - last + 1)) - 1;
-            sprintf(s, "&0x%x)", mask);
-            strcat(str, s);
+            str << "&0x" << std::hex << mask;
             break;
         }
         case opPlus:
             appendExp(str, b->getSubExp1());
-            strcat(str, " + ");
+            str << " + ";
             appendExp(str, b->getSubExp2());
             break;
         case opMinus:
             appendExp(str, b->getSubExp1());
-            strcat(str, " - ");
+            str << " - ";
             appendExp(str, b->getSubExp2());
             break;
         case opMemOf:
@@ -227,130 +215,132 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 Exp *l = u->getSubExp1();
                 Type *ty = l->getType();
                 if (ty->isPointer()) {
-                    strcat(str, "*");
+                    str << "*";
                     appendExp(str, l);
                     break;
                 }
-                strcat(str, "*(");
+                str << "*(";
                 appendType(str, ty);
-                strcat(str, "*)(");
+                str << "*)(";
                 appendExp(str, l);
-                strcat(str, ")");
+                str << ")";
                 break;
             }
-            strcat(str, "*(int*)(");
+            str << "*(int*)(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opRegOf:
             {
                 if (u->getSubExp1()->getOper() == opTemp) {
                     // The great debate: r[tmpb] vs tmpb
-                    strcat(str, "tmp");
+                    str << "tmp";
                     break;
                 }
                 assert(u->getSubExp1()->getOper() == opIntConst);
                 const char *n = m_proc->getProg()->getRegName(
                                     ((Const*)u->getSubExp1())->getInt());
                 if (n)
-                    strcat(str, n);
+                    str << n;
                 else {
-                    strcat(str, "r[");
+// What is this doing in the back end???
+                    str << "r[";
                     appendExp(str, u->getSubExp1());
-                    strcat(str, "]");
+                    str << "]";
                 }
             }
             break;
         case opTemp:
-            strcat(str, "tmp");
+            str << "tmp";
+// Doesn't this need a name as well?
             break;
         case opItof:
-            strcat(str, "(float)(");
+            str << "(float)(";
             appendExp(str, t->getSubExp3());
-            strcat(str, ")");
+            str << ")";
             break;
         case opFsize:
-            // needs work
+   // needs work!
             appendExp(str, t->getSubExp3());
             break;
         case opMult:
         case opMults:       // FIXME: check types
             appendExp(str, b->getSubExp1());
-            strcat(str, " * ");
+            str << " * ";
             appendExp(str, b->getSubExp2());
             break;
         case opDiv:
         case opDivs:        // FIXME: check types
             appendExp(str, b->getSubExp1());
-            strcat(str, " / ");
+            str << " / ";
             appendExp(str, b->getSubExp2());
             break;
         case opMod:
         case opMods:        // Fixme: check types
             appendExp(str, b->getSubExp1());
-            strcat(str, " % ");
+            str << " % ";
             appendExp(str, b->getSubExp2());
             break;
         case opShiftL:
             appendExp(str, b->getSubExp1());
-            strcat(str, " << ");
+            str << " << ";
             appendExp(str, b->getSubExp2());
             break;
         case opShiftR:
         case opShiftRA:
             appendExp(str, b->getSubExp1());
-            strcat(str, " >> ");
+            str << " >> ";
             appendExp(str, b->getSubExp2());
             break;
         case opTern:
             appendExp(str, t->getSubExp1());
-            strcat(str, " ? ");
+            str << " ? ";
             appendExp(str, t->getSubExp2());
-            strcat(str, " : ");
+            str << " : ";
             appendExp(str, t->getSubExp3());
             break;
         case opFPlus:
         case opFPlusd:
         case opFPlusq:
             appendExp(str, b->getSubExp1());
-            strcat(str, " + ");
+            str << " + ";
             appendExp(str, b->getSubExp2());
             break;
         case opFMinus:
         case opFMinusd:
         case opFMinusq:
             appendExp(str, b->getSubExp1());
-            strcat(str, " - ");
+            str << " - ";
             appendExp(str, b->getSubExp2());
             break;
         case opFMult:
         case opFMultd:
         case opFMultq:
             appendExp(str, b->getSubExp1());
-            strcat(str, " * ");
+            str << " * ";
             appendExp(str, b->getSubExp2());
             break;
         case opFDiv:
         case opFDivd:
         case opFDivq:
             appendExp(str, b->getSubExp1());
-            strcat(str, " / ");
+            str << " / ";
             appendExp(str, b->getSubExp2());
             break;
         case opFround:
-            strcat(str, "fround(");
+            str << "fround(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opFtrunc:
-            strcat(str, "ftrunc(");
+            str << "ftrunc(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opFabs:
-            strcat(str, "fabs(");
+            str << "fabs(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opFMultsd:
         case opFMultdq:
@@ -389,23 +379,22 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opFlagCall:
             {
                 assert(b->getSubExp1()->getOper() == opStrConst);
-                strcat(str, ((Const*)b->getSubExp1())->getStr());
-                strcat(str, "(");
+                str << ((Const*)b->getSubExp1())->getStr();
+                str << "(";
                 Binary *l = (Binary*)b->getSubExp2();
                 for (; l && l->getOper() == opList; 
                      l = (Binary*)l->getSubExp2()) {
                     appendExp(str, l->getSubExp1());
                     if (l->getSubExp2()->getOper() == opList)
-                        strcat(str, ", ");
+                        str << ", ";
                 }
-                strcat(str, ")");
+                str << ")";
             } 
             break;
         case opFlags:
-            strcat(str, "%flags");    
-            break;
+            str << "%flags"; break;
         case opPC:
-            strcat(str, "%pc");
+            str << "%pc"; break;
             break;
         case opZfill:
             // MVE: this is a temporary hack... needs cast?
@@ -413,9 +402,9 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             //  ((Const*)t->getSubExp1())->getInt(),
             //  ((Const*)t->getSubExp2())->getInt());
             //strcat(str, s); */
-            strcat(str, "(");
+            str << "(";
             appendExp(str, t->getSubExp3());
-            strcat(str, ")");
+            str << ")";
             break;
         case opTypedExp:
             if (u->getSubExp1()->getOper() == opTypedExp &&
@@ -423,87 +412,87 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 *((TypedExp*)u->getSubExp1())->getType()) {
                 appendExp(str, u->getSubExp1());
             } else if (u->getSubExp1()->getOper() == opMemOf) {
-                strcat(str, "*(");
+                str << "*(";
                 appendType(str, ((TypedExp*)u)->getType());
-                strcat(str, "*)(");
+                str << "*)(";
                 appendExp(str, u->getSubExp1()->getSubExp1());
-                strcat(str, ")");
+                str << ")";
             } else {
-                strcat(str, "(");
+                str << "(";
                 appendType(str, ((TypedExp*)u)->getType());
-                strcat(str, ")(");
+                str << ")(";
                 appendExp(str, u->getSubExp1());
-                strcat(str, ")");
+                str << ")";
             }
             break;
         case opSgnEx: {
-            strcat(str, "/* opSgnEx */ (int) ");
+            str << "/* opSgnEx */ (int) ";
             Exp* s = t->getSubExp3();
             appendExp(str, s);
             break;
         }
         case opTruncu:
         case opTruncs: {
-            strcat(str, "/* opTruncs/u */ (int) ");
+            str << "/* opTruncs/u */ (int) ";
             Exp* s = t->getSubExp3();
             appendExp(str, s);
             break;
         }
         case opMachFtr: {
-            strcat(str, "/* machine specific */ (int) ");
+            str << "/* machine specific */ (int) ";
             Exp* sub = u->getSubExp1();
             assert(sub->isStrConst());
             char* s = ((Const*)sub)->getStr();
             if (s[0] == '%')        // e.g. %Y
-                strcat(str, s+1);   // Just use Y
+                str << s+1;         // Just use Y
             else
-                strcat(str, s);
+                str << s;
             break;
         }
         case opFflags:
-            strcat(str, "/* Fflags() */ ");
-            break;
+            str << "/* Fflags() */ "; break;
         case opPow:
-            strcat(str, "pow(");
+            str << "pow(";
             appendExp(str, b->getSubExp1());
-            strcat(str, ", ");
+            str << ", ";
             appendExp(str, b->getSubExp2());
-            strcat(str, ")");
+            str << ")";
             break;
         case opLog2:
-            strcat(str, "log2(");
+            str << "log2(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opLog10:
-            strcat(str, "log10(");
+            str << "log10(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opSin:
-            strcat(str, "sin(");
+            str << "sin(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opCos:
-            strcat(str, "cos(");
+            str << "cos(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opTan:
-            strcat(str, "tan(");
+            str << "tan(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opArcTan:
-            strcat(str, "atan(");
+            str << "atan(";
             appendExp(str, u->getSubExp1());
-            strcat(str, ")");
+            str << ")";
             break;
         case opSubscript:
             appendExp(str, u->getSubExp1());
             std::cerr << "subscript in code generation of proc " <<
-              m_proc->getName() << " exp (without subscript): " << str << "\n";
+              m_proc->getName() << " exp (without subscript): " << str.str().c_str()
+                << "\n";
             assert(false);
             break;
         case opMemberAccess:
@@ -511,7 +500,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 Type *ty = b->getSubExp1()->getType();
                 if (ty == NULL) {
                     LOG << "no type for subexp1 of " << b << "\n";
-                    strcat(str, "/* type failure */ ");
+                    str << "/* type failure */ ";
                     break;
                 }
                 // Trent: what were you thinking here? Fails for things like
@@ -519,23 +508,23 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 //assert(ty->resolvesToCompound());
                 if (b->getSubExp1()->getOper() == opMemOf) {
                     appendExp(str, b->getSubExp1()->getSubExp1());
-                    strcat(str, "->");
+                    str << "->";
                 } else {
                     appendExp(str, b->getSubExp1());
-                    strcat(str, ".");
+                    str << ".";
                 }
-                strcat(str, ((Const*)b->getSubExp2())->getStr());
+                str << ((Const*)b->getSubExp2())->getStr();
             }
             break;
         case opArraySubscript:
             if (b->getSubExp1()->getOper() == opMemOf)
-                strcat(str, "(");
+                str << "(";
             appendExp(str, b->getSubExp1());
             if (b->getSubExp1()->getOper() == opMemOf)
-                strcat(str, ")");
-            strcat(str, "[");
+                str << ")";
+            str << "[";
             appendExp(str, b->getSubExp2());
-            strcat(str, "]");
+            str << "]";
             break;
         default:
             // others
@@ -543,24 +532,20 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             if (op >= opZF) {
                 // Machine flags; can occasionally be manipulated individually
                 // Chop off the "op" part
-                strcat(str, operStrings[op]+2);
+                str << operStrings[op]+2;
                 break;
             }
             std::cerr << "not implemented " << operStrings[exp->getOper()] << 
                 std::endl;
             assert(false);
     }
-    // We should be using std::strings and strstrings. For now, we assert that
-    // the buffers did not overflow
-    assert(strlen(s) < BUFSIZE);
-    assert(strlen(str) < BUFSIZE);
 }
 
-void CHLLCode::appendType(char *str, Type *typ)
+void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 {
     if (typ == NULL) return;
     // TODO: decode types
-    strcat(str, typ->getCtype());
+    str << typ->getCtype();
 }
 
 void CHLLCode::reset()
@@ -572,191 +557,194 @@ void CHLLCode::reset()
 
 void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "while (");
+    s << "while (";
     appendExp(s, cond);
-    strcat(s, ") {");
-    lines.push_back(strdup(s));
+    s << ") {";
+    // Note: removing the strdup() causes weird problems.
+    // Looks to me that it should work (with no real operator delete(),
+    // and garbage collecting...
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddPretestedLoopEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "}");
-    lines.push_back(strdup(s));
+    s << "}";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddEndlessLoopHeader(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "for (;;) {");
-    lines.push_back(strdup(s));
+    s << "for(;;) {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddEndlessLoopEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "}");
-    lines.push_back(strdup(s));
+    s << "}";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddPosttestedLoopHeader(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "do {");
-    lines.push_back(strdup(s));
+    s << "do {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "} while (");
+    s << "} while (";
     appendExp(s, cond);
-    strcat(s, ");");
-    lines.push_back(strdup(s));
+    s << ");";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "switch(");
+    s << "switch(";
     appendExp(s, cond);
-    strcat(s, ") {");
-    lines.push_back(strdup(s));
+    s << ") {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCaseCondOption(int indLevel, Exp *opt)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "case ");
+    s << "case ";
     appendExp(s, opt);
-    strcat(s, ":");
-    lines.push_back(strdup(s));
+    s << ":";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "break;");
-    lines.push_back(strdup(s));
+    s << "break;";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCaseCondElse(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "default:");
-    lines.push_back(strdup(s));
+    s << "default:";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCaseCondEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "}");
-    lines.push_back(strdup(s));
+    s << "}";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "if (");
+    s << "if (";
     appendExp(s, cond);
-    strcat(s, ") {");
-    lines.push_back(strdup(s));
+    s << ") {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddIfCondEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "}");
-    lines.push_back(strdup(s));
+    s << "}";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "if (");
+    s << "if (";
     appendExp(s, cond);
-    strcat(s, ") {");
-    lines.push_back(strdup(s));
+    s << ") {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddIfElseCondOption(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "} else {");
-    lines.push_back(strdup(s));
+    s << "} else {";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddIfElseCondEnd(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "}");
-    lines.push_back(strdup(s));
+    s << "}";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddGoto(int indLevel, int ord)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    sprintf(s + strlen(s), "goto L%d;", ord);
-    lines.push_back(strdup(s));
+    s << "goto L" << std::dec << ord;
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddContinue(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "continue;");
-    lines.push_back(strdup(s));
+    s << "continue;";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddBreak(int indLevel)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "break;");
-    lines.push_back(strdup(s));
+    s << "break;";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddLabel(int indLevel, int ord)
 {
-    char s[BUFSIZE];
-    sprintf(s, "L%d:", ord);
-    lines.push_back(strdup(s));     // See below
+    std::ostringstream s;
+    s << "L" << std::dec << ord << ":";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::RemoveLabel(int ord)
 {
-    char s[BUFSIZE];
-    sprintf(s, "L%d:", ord);
+    std::ostringstream s;
+    s << "L" << std::dec << ord << ":";
     for (std::list<char*>::iterator it = lines.begin();
-         it != lines.end(); it++)
-        if (!strcmp(*it, s)) {
-            free (*it);             // Note: allocated in strdup (above)
+      it != lines.end(); it++) {
+        if (!strcmp(*it, s.str().c_str())) {
             lines.erase(it);
             break;
         }
+    }
 }
 
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
     if (asgn->getLeft()->getOper() == opMemOf && asgn->getSize() != 32) 
         appendExp(s, new TypedExp(new IntegerType(asgn->getSize()), asgn->getLeft()));
@@ -765,25 +753,24 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
         appendExp(s, new Binary(opArraySubscript, asgn->getLeft(), new Const(0)));
     else
         appendExp(s, asgn->getLeft());
-    strcat(s, " = ");
+    s << " = ";
     appendExp(s, asgn->getRight());
-    strcat(s, ";");
-    lines.push_back(strdup(s));
+    s << ";";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
     const char *name, std::vector<Exp*> &args, LocationSet &defs)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
     if (defs.size() >= 1) {
         LocationSet::iterator it = defs.begin();
         appendExp(s, (Exp*)*it);
-        strcat(s, " = ");
+        s << " = ";
         defs.remove((Exp*)*it);
     }
-    strcat(s, name); 
-    strcat(s, "(");
+    s << name << "(";
     for (unsigned int i = 0; i < args.size(); i++) {
         Type *t = proc->getSignature()->getParamType(i);
         bool ok = true;
@@ -791,26 +778,28 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
               && args[i]->isIntConst()) {
             Proc *p = proc->getProg()->findProc(((Const*)args[i])->getInt());
             if (p) {
-                strcat(s, p->getName());
+                s << p->getName();
                 ok = false;
             }
         }
         if (ok)
             appendExp(s, args[i]);
-        if (i < args.size() - 1) strcat(s, ", ");
+        if (i < args.size() - 1) s << ", ";
     }
-    strcat(s, ");");
+    s << ");";
     LocationSet::iterator it = defs.begin();
     if (it != defs.end()) {
-        strcat(s, " // OUT: ");
+        s << " // OUT: ";
     }
     for (; it != defs.end(); it++) {
         appendExp(s, *it);
-        strcat(s, ", ");
+        s << ", ";
     }
-    if (s[strlen(s)-1] == ' ' && s[strlen(s)-2] == ',')
-        s[strlen(s)-2] = 0;
-    lines.push_back(strdup(s));
+    std::string str = s.str();  // Copy the whole string
+    int n = str.length();
+    if (str.substr(n-2, 2) == ", ")
+        str = str.substr(0, n-2);
+    lines.push_back(strdup(str.c_str()));
 }
 
 // Ugh - almost the same as the above, but it needs to take an expression,
@@ -818,55 +807,52 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
     std::vector<Exp*> &args)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "(*");
+    s << "(*";
     appendExp(s, exp);
-    strcat(s, ")(");
+    s << ")(";
     for (unsigned int i = 0; i < args.size(); i++) {
         appendExp(s, args[i]);
-        if (i < args.size() - 1) strcat(s, ", ");
+        if (i < args.size() - 1) s << ", ";
     }
-    strcat(s, ");");
-    lines.push_back(strdup(s));
+    s << ");";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 
 void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns)
 {
-    char s[BUFSIZE];
+    std::ostringstream s;
     indent(s, indLevel);
-    strcat(s, "return");
+    s << "return";
     if (returns.size() >= 1) {
-        strcat(s, " ");
+        s << " ";
         appendExp(s, returns[0]);
     }
-    strcat(s, ";");
+    s << ";";
     if (returns.size() > 1) {
-        strcat(s, "/* ");
+        s << "/* ";
     }
     for (unsigned i = 1; i < returns.size(); i++) {
         if (i != 1)
-            strcat(s, ", ");
+            s << ", ";
         appendExp(s, returns[i]);
     }
     if (returns.size() > 1) {
-        strcat(s, "*/");
+        s << "*/";
     }
-    lines.push_back(strdup(s));
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::AddProcStart(Signature *signature)
 {
-    char s[BUFSIZE];
-    s[0] = 0;
+    std::ostringstream s;
     if (signature->getNumReturns() == 0) {
-        strcat(s, "void");
+        s << "void";
     }  else 
         appendType(s, signature->getReturnType(0));
-    strcat(s, " ");
-    strcat(s, signature->getName());
-    strcat(s, "(");
+    s << " " << signature->getName() << "(";
     for (int i = 0; i < signature->getNumParams(); i++) {
         Type *ty = signature->getParamType(i); 
         if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isArray()) {
@@ -885,14 +871,13 @@ void CHLLCode::AddProcStart(Signature *signature)
                                        signature->getParamName(i)));
         }
         appendType(s, ty);
-        strcat(s, " ");
-        strcat(s, signature->getParamName(i));
+        s << " " <<  signature->getParamName(i);
         if (i != signature->getNumParams() - 1)
-            strcat(s, ", ");
+            s << ", ";
     }
-    strcat(s, ")");
-    lines.push_back(strdup(s));
-    lines.push_back(strdup("{"));
+    s << ")";
+    lines.push_back(strdup(s.str().c_str()));
+    lines.push_back("{");
 }
 
 void CHLLCode::AddProcEnd()
@@ -903,45 +888,36 @@ void CHLLCode::AddProcEnd()
 
 void CHLLCode::AddLocal(const char *name, Type *type)
 {
-    char s[BUFSIZE];
-    s[0] = 0;
+    std::ostringstream s;
     appendType(s, type);
-    strcat(s, " ");
-    strcat(s, name);
+    s << " " <<  name;
     Exp *e = m_proc->getLocalExp(name);
     if (e) {
         if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
             (e->getSubExp1()->getOper() == opParam ||
              e->getSubExp1()->getOper() == opGlobal)) {
-            strcat(s, " = ");
+            s << " = ";
             appendExp(s, e->getSubExp1());
-            strcat(s, ";");
+            s << ";";
         } else {
-            strcat(s, "; // ");
-            std::ostringstream os;
-            e->print(os, true);
-            strcat(s, os.str().c_str());
+            s << "; // ";
+            e->print(s, true);
         }
     }
-    lines.push_back(strdup(s));
+    lines.push_back(strdup(s.str().c_str()));
     locals[name] = type->clone();
 }
 
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
 {
-    char s[BUFSIZE];
-    s[0] = '\0';
+    std::ostringstream s;
     // Check for array types. These are declared differently in C than
     // they are printed
     if (type->isArray()) {
         // Get the component type
         Type* base = ((ArrayType*)type)->getBaseType();
         appendType(s, base);
-        strcat(s, " ");
-        strcat(s, name);
-        strcat(s, "[");
-        sprintf(s + strlen(s), "%d", ((ArrayType*)type)->getLength());
-        strcat(s, "]");
+        s << " " << name << "[" << std::dec << ((ArrayType*)type)->getLength() << "]";
     } else if (type->isPointer() &&
       ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
@@ -951,23 +927,18 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
         FuncType* ft = (FuncType*)pt->getPointsTo();
         const char *ret, *param;
         ft->getReturnAndParam(ret, param);
-        strcat(s, ret);
-        strcat(s, " (*");
-        strcat(s, name);
-        strcat(s, ")");
-        strcat(s, param);
+        s << ret << "(*" << name << ")" << param;
     } else {
         appendType(s, type);
-        strcat(s, " ");
-        strcat(s, name);
+        s << " " << name;
     }
     // Don't attempt to initialise arrays yet; complex syntax required
     if (init && !type->isArray()) {
-        strcat(s, " = ");
+        s << " = ";
         appendExp(s, init);
     }
-    strcat(s, ";");
-    lines.push_back(strdup(s));
+    s << ";";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 void CHLLCode::print(std::ostream &os)
@@ -979,11 +950,9 @@ void CHLLCode::print(std::ostream &os)
 }
 
 void CHLLCode::AddLineComment(char* cmt) {
-    char s[BUFSIZE];
-    s[0] = '/'; s[1] = '*'; s[2] = ' ';
-    strcat(&s[3], cmt);
-    strcat(s, " */");
-    lines.push_back(strdup(s));
+    std::ostringstream s;
+    s << "/* " << cmt << "*/";
+    lines.push_back(strdup(s.str().c_str()));
 }
 
 
