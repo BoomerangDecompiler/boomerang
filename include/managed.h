@@ -112,6 +112,7 @@ typedef std::vector<Statement*>::reverse_iterator reverse_iterator;
 	void   putAt(int idx, Statement* s);
 	iterator remove(iterator it);
 	char*  prints();						// Print to string (for debugging)
+	void   printLefts(std::ostream& os);	// Print the LHSs only e.g. 7 r8 := 0 print "r8{7}"
 	void   printNums(std::ostream& os);
 	void   clear() { svec.clear(); }
 	bool operator==(const StatementVec& o) const	// Compare if equal
