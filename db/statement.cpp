@@ -1772,8 +1772,7 @@ void CaseStatement::simplify() {
  * RETURNS:          <nothing>
  *============================================================================*/
 CallStatement::CallStatement(int returnTypeSize /*= 0*/):  
-      returnTypeSize(returnTypeSize), returnAfterCall(false), 
-      returnLoc(NULL) {
+      returnTypeSize(returnTypeSize), returnAfterCall(false) {
     kind = STMT_CALL;
     procDest = NULL;
 }
@@ -1906,6 +1905,7 @@ void CallStatement::setSigArguments() {
         returns.push_back(procDest->getSignature()->getReturnExp(i)->clone());
 }
 
+#if 0
 /*==============================================================================
  * FUNCTION:      CallStatement::getReturnLoc
  * OVERVIEW:      Return the location that will be used to hold the value
@@ -1914,27 +1914,17 @@ void CallStatement::setSigArguments() {
  * RETURNS:       ptr to the location that will be used to hold the return value
  *============================================================================*/
 Exp* CallStatement::getReturnLoc() {
-    if (returnLoc == NULL && returns.size() == 1) {
-        /*returnLoc = returns[0]->clone();*/
+    if (returns.size() == 1)
         return returns[0];
-    }
-    return returnLoc;
-}
-
-void CallStatement::setIgnoreReturnLoc(bool b) {
-    if (b) { returnLoc = NULL; return; }
-    assert(procDest);
-    if (procDest->getSignature()->getReturnType()->isVoid())
-        returnLoc = NULL;
-    else
-        returnLoc = procDest->getSignature()->getReturnExp()->clone();
+    return NULL;
 }
 
 Type* CallStatement::getLeftType() {
-    if (procDest == NULL || returnLoc == NULL)
+    if (procDest == NULL)
         return new VoidType();
     return procDest->getSignature()->getReturnType();
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:         CallStatement::returnsStruct
@@ -1950,11 +1940,13 @@ bool CallStatement::returnsStruct() {
 
 bool CallStatement::search(Exp* search, Exp*& result) {
     result = NULL;
-    if (returnLoc && *returnLoc == *search) {
-        result = returnLoc;
-        return true;
+    for (int i = 0; i < returns.size(); i++) {
+        if (*returns[i] == *search) {
+            result = returns[i];
+            return true;
+        }
+        if (returns[i]->search(search, result)) return true;
     }
-    if (returnLoc && returnLoc->search(search, result)) return true;
     for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *search) {
             result = arguments[i];
@@ -1974,10 +1966,16 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-    if (returnLoc != NULL)
-        returnLoc = returnLoc->searchReplaceAll(search, replace, change);
-    for (unsigned i = 0; i < arguments.size(); i++)
-        arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
+    for (int i = 0; i < (int)returns.size(); i++) {
+        bool ch;
+        returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
+        change |= ch;
+    }
+    for (unsigned i = 0; i < arguments.size(); i++) {
+        bool ch;
+        arguments[i] = arguments[i]->searchReplaceAll(search, replace, ch);
+        change |= ch;
+    }
     return change;
 }
 
@@ -1991,11 +1989,11 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
  *============================================================================*/
 bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
     bool found = false;
-    //if( GotoStatement::searchAll(search, result) ||
-    //  (returnLoc != 0 && returnLoc->searchAll(search, result)))
-    //    found = true;
     for (unsigned i = 0; i < arguments.size(); i++)
         if (arguments[i]->searchAll(search, result))
+            found = true;
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (returns[i]->searchAll(search, result))
             found = true;
     return found;
 }
@@ -2008,9 +2006,6 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  *============================================================================*/
 void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    // Print the return location if there is one
-    if (getReturnLoc() != NULL)
-        os << " " << getReturnLoc() << " := ";
  
     os << "CALL ";
     if (procDest)
@@ -2082,8 +2077,6 @@ Statement* CallStatement::clone() {
     int n = arguments.size();
     for (int i=0; i < n; i++)
         ret->arguments.push_back(arguments[i]->clone());
-    if (returnLoc)
-        ret->returnLoc = returnLoc->clone();
     // Statement members
     ret->pbb = pbb;
     ret->proc = proc;
@@ -2139,7 +2132,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     Proc *p = getDestProc();
 
     if (p == NULL && isComputed()) {
-        hll->AddIndCallStatement(indLevel, getReturnLoc(), pDest, arguments);
+        hll->AddIndCallStatement(indLevel, pDest, arguments);
         return;
     }
 
@@ -2149,7 +2142,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     std::cerr << "in proc " << proc->getName() << std::endl;
 #endif
     assert(p);
-    hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments, defs);
+    hll->AddCallStatement(indLevel, p, arguments, defs);
 }
 
 void CallStatement::simplify() {
@@ -2187,8 +2180,11 @@ bool CallStatement::usesExp(Exp *e) {
             return true;
         }
     }
-    if (returnLoc && returnLoc->isMemOf())
-        return ((Unary*)returnLoc)->getSubExp1()->search(e, where);
+    for (unsigned int i = 0; i < returns.size(); i++) {
+        if (returns[i]->isMemOf() && 
+                returns[i]->getSubExp1()->search(e, where))
+            return true;
+    }
     if (procDest == NULL)
         // No destination (e.g. indirect call)
         // For now, just return true (overstating uses is safe)
@@ -2206,16 +2202,19 @@ bool CallStatement::usesExp(Exp *e) {
 void CallStatement::addUsedLocs(LocationSet& used) {
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i]->addUsedLocs(used);
-    // FIXME!
-    if (returnLoc && returnLoc->isMemOf())
-        ((Unary*)returnLoc)->getSubExp1()->addUsedLocs(used);
+    
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (returns[i]->isMemOf())
+            returns[i]->getSubExp1()->addUsedLocs(used);
 }
 
 void CallStatement::fixCallRefs() {
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->fixCallRefs();
-    if (returnLoc && returnLoc->isMemOf())
-        ((Unary*)returnLoc)->refSubExp1() = ((Unary*)returnLoc)->getSubExp1()->fixCallRefs();
+
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (returns[i]->isMemOf())
+            returns[i]->getSubExp1()->fixCallRefs();
 }
 
 bool CallStatement::isDefinition() 

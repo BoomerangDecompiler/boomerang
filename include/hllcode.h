@@ -95,9 +95,9 @@ public:
 
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *s) = 0;
-	virtual void AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
+	virtual void AddCallStatement(int indLevel, Proc *proc, 
             std::vector<Exp*> &args, LocationSet &defs) = 0;
-	virtual void AddIndCallStatement(int indLevel, Exp *retloc, Exp *exp,
+	virtual void AddIndCallStatement(int indLevel, Exp *exp,
             std::vector<Exp*> &args) = 0;
 	virtual void AddReturnStatement(int indLevel, Exp *ret) = 0;
 	virtual void AddProcStart(Signature *signature) = 0;

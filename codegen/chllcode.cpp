@@ -589,15 +589,16 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
     lines.push_back(strdup(s));
 }
 
-void CHLLCode::AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
+void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
     std::vector<Exp*> &args, LocationSet &defs)
 {
     char s[1024];
     indent(s, indLevel);
-    if (retloc) {
-        appendExp(s, retloc);
+    if (defs.size() == 1) {
+        LocSetIter it;
+        appendExp(s, defs.getFirst(it));
         strcat(s, " = ");
-        defs.remove(retloc);
+        defs.remove(defs.getFirst(it));
     }
     strcat(s, proc->getName());
     strcat(s, "(");
@@ -633,15 +634,11 @@ void CHLLCode::AddCallStatement(int indLevel, Exp *retloc, Proc *proc,
 
 // Ugh - almost the same as the above, but it needs to take an expression,
 // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *retloc, Exp *exp,
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
     std::vector<Exp*> &args)
 {
     char s[1024];
     indent(s, indLevel);
-    if (retloc) {
-        appendExp(s, retloc);
-        strcat(s, " = ");
-    }
     strcat(s, "(*");
     appendExp(s, exp);
     strcat(s, ")(");

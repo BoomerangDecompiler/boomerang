@@ -1003,7 +1003,7 @@ std::set<UserProc*>* UserProc::decompile() {
             trimReturns();
         }
         if (depth == maxDepth) {
-            complete();
+            processConstants();
             removeRedundantPhis();
         }
         addNewParameters();
@@ -1037,6 +1037,10 @@ std::set<UserProc*>* UserProc::decompile() {
         if (!Boomerang::get()->noRemoveNull)
             removeUnusedStatements(refCounts, depth);
 
+        // Remove null statements
+        if (!Boomerang::get()->noRemoveNull)
+            removeNullStatements();
+
         if (VERBOSE && !Boomerang::get()->noRemoveNull) {
             std::cerr << "===== After removing null and unused statements "
               "=====\n";
@@ -1045,10 +1049,6 @@ std::set<UserProc*>* UserProc::decompile() {
               "statements =====\n\n";
         }
     }
-
-    // Remove null statements
-    if (!Boomerang::get()->noRemoveNull)
-        removeNullStatements();
 
     if (!Boomerang::get()->noParameterNames) {
         for (int i = maxDepth; i >= 0; i--) {
@@ -1779,11 +1779,20 @@ void UserProc::countRefs(RefCounter& refCounts) {
         }
         if (s->getLeft() && signature->findReturn(s->getLeft()) != -1)
             lastDef[s->getLeft()] = s;
+        if (s->isCall()) {
+            CallStatement *call = (CallStatement*)s;
+            for (int i = 0; i < signature->getNumReturns(); i++)
+                for (int j = 0; j < call->getNumReturns(); j++)
+                    if (*call->getReturnExp(j) == *signature->getReturnExp(i))
+                        lastDef[call->getReturnExp(j)] = s;
+        }
     }
     // Returned locations are used (outside this proc)
     for (std::map<Exp*, Statement*>::iterator it = lastDef.begin();
-         it != lastDef.end(); it++)
+         it != lastDef.end(); it++) {
+        std::cerr << "ref " << (*it).first << " to " << (*it).second << std::endl;
         refCounts[(*it).second]++;
+    }
 }
 
 void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
@@ -1795,6 +1804,20 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
         change = false;
         Statement* s = stmts.getFirst(ll);
         while (s) {
+            if (s->isCall() && refCounts[s] == 0) {
+                if (VERBOSE)
+                    std::cerr << "clearing return set of unused call " << s 
+                              << std::endl;
+                CallStatement *call = (CallStatement*)s;
+                std::vector<Exp*> returns;
+                for (int i = 0; i < call->getNumReturns(); i++)
+                    returns.push_back(call->getReturnExp(i));
+                for (int i = 0; i < (int)returns.size(); i++)
+                    if (returns[i]->getMemDepth() <= depth)
+                        call->removeReturn(returns[i]);
+                s = stmts.getNext(ll);
+                continue;
+            }
             if (s->getKind() != STMT_ASSIGN && s->getKind() != STMT_BOOL) {
                 // Never delete a statement other than an assignment or setstmt
                 // (e.g. nothing "uses" a Jcond)
@@ -1904,7 +1927,7 @@ bool UserProc::prove(Exp *query)
     return true;
 }
 
-bool UserProc::prover(Exp *query)
+bool UserProc::prover(Exp *query, PhiExp *lastPhi)
 {
     query = query->clone();
     bool change = true;
@@ -1963,20 +1986,27 @@ bool UserProc::prover(Exp *query)
                                       << std::endl;
                         StmtSetIter it;
                         bool ok = true;
-                        for (Statement *s1 = p->getFirstRef(it); 
-                                        !p->isLastRef(it);
-                                        s1 = p->getNextRef(it)) {
-                            Exp *e = query->clone();
-                            RefExp *r1 = (RefExp*)e->getSubExp1();
-                            r1->setDef(s1);
+                        if (p == lastPhi) {
                             if (VERBOSE)
-                                std::cerr << "proving for " << e << std::endl;
-                            if (!prover(e)) { 
-                                ok = false; 
-                                delete e; 
-                                break; 
+                                std::cerr << "phi loop detected" << std::endl;
+                            ok = false;
+                        } else {
+                            for (Statement *s1 = p->getFirstRef(it); 
+                                            !p->isLastRef(it);
+                                            s1 = p->getNextRef(it)) {
+                                Exp *e = query->clone();
+                                RefExp *r1 = (RefExp*)e->getSubExp1();
+                                r1->setDef(s1);
+                                if (VERBOSE)
+                                    std::cerr << "proving for " << e 
+                                              << std::endl;
+                                if (!prover(e, p)) { 
+                                    ok = false; 
+                                    delete e; 
+                                    break; 
+                                }
+                                delete e;
                             }
-                            delete e;
                         }
                         if (ok) query = new Terminal(opTrue);
                         else query = new Terminal(opFalse);

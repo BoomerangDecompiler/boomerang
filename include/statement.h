@@ -741,8 +741,6 @@ class CallStatement: public GotoStatement {
     // Destination name of call (used in serialization)
     std::string destStr;
 
-    Exp *returnLoc;             // For old code
-
 public:
     CallStatement(int returnTypeSize = 0);
     virtual ~CallStatement();
@@ -778,7 +776,7 @@ public:
     void truncateArguments();
     void clearLiveEntry();
 
-    Exp* getReturnLoc();                // FIXME Get location used for return value
+    //Exp* getReturnLoc();                // FIXME Get location used for return value
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
@@ -826,10 +824,6 @@ public:
 
     virtual bool isDefinition();
     virtual void getDefinitions(LocationSet &defs);
-
-    // get how to access this value
-    virtual Exp* getLeft() { return getReturnLoc(); }
-    virtual Type* getLeftType();
 
     // get how to replace this statement in a use
     virtual Exp* getRight() { return NULL; }

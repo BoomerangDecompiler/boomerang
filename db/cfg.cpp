@@ -2348,7 +2348,7 @@ void Cfg::renameBlockVars(int n, int memDepth) {
     }
     // For each successor Y of block n
     int numSucc = bb->m_OutEdges.size();
-    for (int succ = 0; succ != numSucc; succ++) {
+    for (int succ = 0; succ < numSucc; succ++) {
         PBB Ybb = bb->m_OutEdges[succ];
         // For each phi-function in Y
         for (Statement* S = Ybb->getFirstStmt(rit, sit); S;

@@ -765,6 +765,7 @@ bool BasicBlock::deserialize(std::istream &inf) {
 // Get First/Next Statement in a BB
 //
 Statement* BasicBlock::getFirstStmt(rtlit& rit, stmtlistIt& sit) {
+    if (m_pRtls == NULL) return NULL;
     rit = m_pRtls->begin();
     while (rit != m_pRtls->end()) {
         RTL* rtl = *rit;
