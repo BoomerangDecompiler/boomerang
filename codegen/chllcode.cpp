@@ -1149,7 +1149,7 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last)
 	Exp *e = m_proc->getLocalExp(name);
 	if (e) {
 	  //if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
-		if (e->getOper() == opSubscript && ((RefExp*)e)->getRef()->isImplicit() &&
+		if (e->getOper() == opSubscript && ((RefExp*)e)->isImplicitDef() &&
 			(e->getSubExp1()->getOper() == opParam ||
 			 e->getSubExp1()->getOper() == opGlobal)) {
 			s << " = ";
