@@ -46,7 +46,7 @@ void Statement::flushDataFlow() {
     usedBy = NULL;
 }
 
-// Finds a use for a given expression
+// Finds a use for a given location
 Statement *Statement::findUse(Exp *e) {
     updateUses();
     for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
@@ -57,6 +57,9 @@ Statement *Statement::findUse(Exp *e) {
     return NULL;
 }
 
+// From the set of live statements, find those which assign to a location
+// that I use (i.e. are in my RHS, or in a m[] on my LHS)
+// This is the set of statements that this statement uses (relies on)
 void Statement::calcUses(std::set<Statement*> &uses) {
     std::set<Statement*> liveIn;
     getLiveIn(liveIn);
@@ -71,6 +74,8 @@ void Statement::calcUses(std::set<Statement*> &uses) {
     }
 }
 
+// From all statements in this proc, find those which use my LHS
+// These statements rely on my assignment; this statement is usedBy these
 void Statement::calcUsedBy(std::set<Statement*> &useBy) {
     if (getLeft() == NULL) return;
     std::set<Statement*> stmts;
