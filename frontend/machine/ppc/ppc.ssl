@@ -52,13 +52,23 @@ SETXER(value) {
 	*1* %XERSO := %XER@[31:31]
 };
 
-SETCR0(rd) {
+SETFLAGS0(rd) {
    *1* %CR0@[3:3] := %XERSO
    *1* %CR0@[2:2] := [rd = 0?1:0]
    *1* %CR0@[1:1] := [rd > 0?1:0]
    *1* %CR0@[0:0] := [rd < 0?1:0]
 };
 
+SETFLAGSTO(crfd, mask) {
+   *32* crfd = 0 => %CR0 = mask
+   *32* crfd = 1 => %CR1 = mask
+   *32* crfd = 2 => %CR2 = mask
+   *32* crfd = 3 => %CR3 = mask
+   *32* crfd = 4 => %CR4 = mask
+   *32* crfd = 5 => %CR5 = mask
+   *32* crfd = 6 => %CR6 = mask
+   *32* crfd = 7 => %CR7 = mask
+};
 
 
 #Arithmetic operations
@@ -66,12 +76,12 @@ SETCR0(rd) {
 ADD			 rd, ra, rb						*32* rd := ra + rb;
 
 ADDq		 rd, ra, rb						*32* rd := ra + rb
-			 	 	 						SETCR0(rd);
+			 	 	 						SETFLAGS0(rd);
 
 ADDE		 rd, ra, rb						*32* rd := ra + rb + %XERCA;
 
 ADDEq		 rd, ra, rb						*32* rd := ra + rb + %XERCA
-			 	 	 						SETCR0(rd);
+			 	 	 						SETFLAGS0(rd);
 
 ADDI		 rd, rs, simm					*32* rd := rs + simm;
 
@@ -80,29 +90,29 @@ ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
 ADDME		 rd, ra	 						*32* rd := ra + %XERCA - 1;
 			 	 							
 ADDMEq		 rd, ra	 						*32* rd := ra + %XERCA - 1
-			 	 							SETCR0(rd);
+			 	 							SETFLAGS0(rd);
 
 ADDZE		 rd, ra							*32* rd:= ra + %XERCA;
 
 ADDZEq		 rd, ra							*32* rd:= ra + %XERCA
-			 	 							SETCR0(rd);
+			 	 							SETFLAGS0(rd);
 
 DIVW	 	 rd, ra, rb						*32* rd := ra / rb;
 
 DIVWq	 	 rd, ra, rb						*32* rd := ra / rb
-			 	 	 						SETCR0(rd);
+			 	 	 						SETFLAGS0(rd);
 
 DIVWU	 	 rd, ra, rb						*32* rd := ra / rb;
 
 DIVWUq	 	 rd, ra, rb						*32* rd := ra / rb
-			 	 	 						SETCR0(rd);
+			 	 	 						SETFLAGS0(rd);
 
 MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
 
 MULLW	 	 rd, ra, rb						*32* rd := ra * rb;
 
 MULLWq	 	 rd, ra, rb						*32* rd := ra * rb
-			 	 	 						SETCR0(rd);
+			 	 	 						SETFLAGS0(rd);
 
 SUBF	 	 rd, ra, rb						*32* rd := rb - ra;
 
@@ -116,7 +126,7 @@ NOP											_;
 NEG			 rd, ra							*32* rd := 0 - ra;
 
 NEGq		 rd, ra							*32* rd := 0 - ra
-			 	 							SETCR0(rd);
+			 	 							SETFLAGS0(rd);
 
 # Note: the "andq" instruction comes out as "AND"^"Rc" or "ANDRc" here. However, "andiq" comes out as "ANDI"
 LOGDOT	:= {"ANDRc",	"ORRc",		"XORRc"};			# Logicals that set flags as well
@@ -133,19 +143,19 @@ LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORCRq
 
 
 LOG[IDX]		rd, ra, rb				*32* rd := ra LOGOP[IDX] rb;
-LOGDOT[IDX]		rd, ra, rb				SETCR0(rd);
+LOGDOT[IDX]		rd, ra, rb				SETFLAGS0(rd);
 
 LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] uimm
-										SETCR0(rd);				# All immediates set flags
+										SETFLAGS0(rd);				# All immediates set flags
 
 LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] (uimm << 16)
-										SETCR0(rd);				# All immediates set flags
+										SETFLAGS0(rd);				# All immediates set flags
 
 NLOG[IDX]		rd, ra, rb				*32* rd := ~(ra LOGOP[IDX] rb);
-NLOGDOT[IDX]	rd, ra, rb				SETCR0(rd);
+NLOGDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
 LOGC[IDX]		rd, ra, rb				*32* rd := ra LOGCOP[IDX] (~rb);
-LOGCDOT[IDX]	rd, ra, rb				SETCR0(rd);
+LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
 
 
@@ -241,16 +251,20 @@ MTCTR	rs								*32* %CTR := rs;
 BL		reloc 							*32* %LR := %pc + 4 
 										*32* %pc := reloc;
 
-# comparisons
+# Comparisons. Ignore XER[SO] for now.
 
-CMPI crfd, ra, simm						*4* crfd := [ra < sgnex(16,32,simm)?8:[ra > sgnex(16,32,simm)?4:2]] | %XERSO;
+CMPS := {	"CMPI",	"CMPLI",	"CMP",	"CMPL"};
 
-CMPLI crfd, ra, uimm					*4* crfd := [ra <u zfill(16,32,uimm)?8:[ra >u zfill(16,32,uimm)?4:2]] | %XERSO;
+# Note: must use op1 and op2 for parameters, not ra and simm/uimm/rb, so CMPS has the same named parameters
+CMPI		crfd, op1, op2				*32* tmp_c := [op1 < sgnex(16,32,op2)?8:[op1 > sgnex(16,32,op2)?4:2]];
 
-CMP crfd, ra, rb						*4* crfd := [ra < rb?8:[ra > rb?4:2]] | %XERSO;
+CMPLI		crfd, op1, op2				*32* tmp_c := [op1 <u zfill(16,32,op2)?8:[op1 >u zfill(16,32,op2)?4:2]];
 
-CMPL crfd, ra, rb				  		*4* crfd := [ra <u rb?8:[ra >u rb?4:2]] | %XERSO;
+CMP			crfd, op1, op2				*32* tmp_c := [op1 < op2?8:[op1 > op2?4:2]];
 
+CMPL		crfd, op1, op2				*32* tmp_c := [op1 <u op2?8:[op1 >u op2?4:2]];
+
+CMPS[IDX]	crfd, op1, op2				SETFLAGSTO(crfd, tmp_c);
 
 #condition register manipulation
 
