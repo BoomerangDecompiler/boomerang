@@ -10,6 +10,7 @@
  */
 
 #include "ExpTest.h"
+#include <strstream>        // For ostrstream
 
 /*==============================================================================
  * FUNCTION:        ExpTest::registerTests
