@@ -31,12 +31,12 @@ if [ $# -lt 4 ]; then
 fi
 
 # FIXME: This needs to be configured!
-#TKML="/home/02/binary/u9.luna.extra/tools/smlnj/bin/.run-sml";
-#HEAP="@SMLload=/home/02/binary/u9.luna.extra/tools/mltk/sml-toolkit.sparc-solaris";
-TKML="/usr/share/sml-nj/bin/.run-sml";
-HEAP="@SMLload=/home/emmerik/install/sml-toolkit.x86-linux";
-#UNGENERATE=/home/02/binary/u0.luna.tools/NJ/base/ungenerate;
-UNGENERATE=/home/emmerik/install/ungenerate;
+TKML="/home/02/binary/u9.luna.extra/tools/smlnj/bin/.run-sml";
+HEAP="@SMLload=/home/02/binary/u9.luna.extra/tools/mltk/sml-toolkit.sparc-solaris";
+#TKML="/usr/share/sml-nj/bin/.run-sml";
+#HEAP="@SMLload=/home/emmerik/install/sml-toolkit.x86-linux";
+UNGENERATE=/home/02/binary/u0.luna.tools/NJ/base/ungenerate;
+#UNGENERATE=/home/emmerik/install/ungenerate;
 
 # Set the matcher to be the last positional parameter and derive the
 # .cc file to be generated from it.

@@ -88,6 +88,7 @@ namespace CallingConvention {
             virtual void getInternalStatements(StatementList &stmts);
             virtual Exp *getStackWildcard();
             virtual int  getStackRegister() {return 28; }
+            virtual Exp *getProven(Exp *left);
         };      
 
         class SparcSignature : public Signature {
@@ -451,6 +452,20 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
                new Const(28)), new Terminal(opWild)));
 }
 
+Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
+{
+    if (left->getOper() == opRegOf && 
+        left->getSubExp1()->getOper() == opIntConst) {
+        switch (((Const*)left->getSubExp1())->getInt()) {
+            case 28:
+                return new Binary(opPlus, Unary::regOf(28), new Const(4));
+            case 29:
+                return Unary::regOf(29);
+            // there are other things that must be preserved here, look at calling convention
+        }
+    }
+    return NULL;
+}
 
 void CallingConvention::StdC::PentiumSignature::getInternalStatements(
   StatementList &stmts) {
@@ -803,6 +818,31 @@ Type *Signature::getParamType(int n)
 // With recursion, parameters not set yet. Hack for now:
     if (n >= (int)params.size()) return &def;
     return params[n]->getType();
+}
+
+void Signature::addReturn(Type *type, Exp *exp)
+{
+    addReturn(new Return(type, exp));
+}
+
+void Signature::addReturn(Exp *exp)
+{
+    addReturn(new IntegerType(), exp);
+}
+
+int Signature::getNumReturns()
+{
+    return returns.size();
+}
+
+Exp *Signature::getReturnExp(int n)
+{
+    return returns[n]->getExp();
+}
+
+Type *Signature::getReturnType(int n)
+{
+    return returns[n]->getType();
 }
 
 Exp *Signature::getArgumentExp(int n)

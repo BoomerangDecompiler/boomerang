@@ -42,6 +42,7 @@
 #include "cfg.h"
 #include "exp.h"
 #include "proc.h"
+#include "signature.h"
 #include "prog.h"           // For findProc()
 #include "BinaryFile.h"     // For SymbolByAddress()
 
@@ -170,6 +171,25 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
  *============================================================================*/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
+
+    // init arguments and return set
+    Signature *sig = pProc->getSignature();
+    sig->addParameter(Unary::regOf(24/*eax*/));
+    sig->addParameter(Unary::regOf(25/*ecx*/));
+    sig->addParameter(Unary::regOf(26/*edx*/));
+    sig->addParameter(Unary::regOf(27/*ebx*/));
+    sig->addParameter(Unary::regOf(28/*esp*/));
+    sig->addParameter(Unary::regOf(29/*ebp*/));
+    sig->addParameter(Unary::regOf(30/*esi*/));
+    sig->addParameter(Unary::regOf(31/*edi*/));
+    sig->addReturn(Unary::regOf(24/*eax*/));
+    sig->addReturn(Unary::regOf(25/*ecx*/));
+    sig->addReturn(Unary::regOf(26/*edx*/));
+    sig->addReturn(Unary::regOf(27/*ebx*/));
+    sig->addReturn(Unary::regOf(28/*esp*/));
+    sig->addReturn(Unary::regOf(29/*ebp*/));
+    sig->addReturn(Unary::regOf(30/*esi*/));
+    sig->addReturn(Unary::regOf(31/*edi*/));
 
     // Call the base class to do most of the work
     // Pass the address of our helperFunc function, to check for pentium

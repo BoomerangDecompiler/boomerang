@@ -499,7 +499,8 @@ Exp *Proc::getProven(Exp *left)
          it != proven.end(); it++) 
         if (*(*it)->getSubExp1() == *left)
             return (*it)->getSubExp2();
-    return NULL;
+    // not found, try the signature
+    return signature->getProven(left);
 }
 
 /**********************
@@ -860,17 +861,7 @@ void UserProc::initStatements() {
             s->setBB(bb);
             CallStatement* call = dynamic_cast<CallStatement*>(s);
             if (call) {
-                // Temporary hack for lib procs!
-                Proc* dest = call->getDestProc();
-                if (dest && dest->isLib()) {
-                    call->setSigArguments();    // Get params
-                    StatementList sl;
-                    ((LibProc*)dest)->getInternalStatements(sl);
-                    StmtListIter ii;
-                    for (Statement* in = sl.getFirst(ii); in;
-                      in = sl.getNext(ii))
-                        (*rit)->appendStmt(in);
-                }
+                call->setSigArguments();
             }
         }
     }
@@ -1012,6 +1003,25 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
             print(std::cerr, true);
             std::cerr << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
+        }
+
+        if (depth == 0 && Boomerang::get()->prove) {
+            std::cerr << "proving esp = esp + 4 for " << getName() << ": ";
+            if (prove(new Binary(opEquals,
+                          new Unary(opRegOf, new Const(28)),
+                          new Binary(opPlus,
+                              new Unary(opRegOf, new Const(28)),
+                              new Const(4)))))
+                std::cerr << "proven" << std::endl;
+            else
+                std::cerr << "not proven" << std::endl;
+            std::cerr << "proving ebp = ebp for " << getName() << ": ";
+            if (prove(new Binary(opEquals,
+                          new Unary(opRegOf, new Const(29)),
+                          new Unary(opRegOf, new Const(29)))))
+                std::cerr << "proven" << std::endl;
+            else
+                std::cerr << "not proven" << std::endl;
         }
 
         // Propagate at this memory depth
@@ -1737,13 +1747,11 @@ bool UserProc::prover(Exp *query)
                             right->addUsedLocs(locs);
                             LocSetIter xx;
                             for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-                                for (unsigned int i = 0;
-                                     i != call->getArguments().size(); i++) {
-                                    assert(call->getArguments()[i]->getOper() == 
-                                                opSubscript);
-                                    if (*call->getArguments()[i]->getSubExp1() == *x) {
-                                        right = right->expSubscriptVar(x, 
-                                            ((RefExp*)call->getArguments()[i])->getRef());
+                                for (int i = 0; i != dest->getSignature()->getNumParams(); i++) {
+                                    if (*dest->getSignature()->getParamExp(i) == *x) {
+                                        Exp *a = call->getArguments()[i];
+                                        bool change;
+                                        right = right->searchReplace(x, a->clone(), change);
                                         break;
                                     }
                                 }

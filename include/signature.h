@@ -36,10 +36,24 @@ public:
     Exp *getExp() { return exp; }
 };
 
+class Return {
+private:
+    Type *type;
+    Exp *exp;
+
+public:
+    Return(Type *type, Exp *exp) : type(type), exp(exp) { }
+    ~Return() { delete type; delete exp; }
+
+    Type *getType() { return type; }
+    Exp *getExp() { return exp; }
+};
+
 class Signature {
 protected:
     std::string name;       // name of procedure
     std::vector<Parameter*> params;
+    std::vector<Return*> returns;
     Type *rettype;
     bool ellipsis;
 
@@ -66,6 +80,12 @@ public:
     static  Exp *getReturnExp2(BinaryFile *pBF);
     virtual Type *getReturnType();
     virtual void setReturnType(Type *t);
+    virtual void addReturn(Type *type, Exp *e = NULL);
+    virtual void addReturn(Exp *e);
+    virtual void addReturn(Return *ret) { returns.push_back(ret); }
+    virtual int getNumReturns();
+    virtual Exp *getReturnExp(int n);
+    virtual Type *getReturnType(int n);
 
     // get/set the name
     virtual const char *getName();
@@ -118,6 +138,9 @@ public:
 
     // Quick and dirty hack
 static StatementList& getStdRetStmt(Prog* prog);
+
+    // get anything that can be proven as a result of the signature
+    virtual Exp *getProven(Exp *left) { return NULL; }
 };
 
 #endif

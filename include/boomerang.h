@@ -70,6 +70,7 @@ public:
     bool impSSA;
     int maxMemDepth;
     bool debugSwitch;
+    bool prove;
 };
 
 #define VERBOSE Boomerang::get()->vFlag

@@ -1186,7 +1186,6 @@ void GotoStatement::setDest(ADDRESS addr) {
         delete pDest;
 
     pDest = new Const(addr);
-assert((unsigned)pDest > 0x8048000);
 }
 
 /*==============================================================================
@@ -2031,6 +2030,7 @@ void CallStatement::setReturns(std::vector<Exp*>& returns) {
  * RETURNS:       <nothing>
  *============================================================================*/
 void CallStatement::setSigArguments() {
+    if (procDest == NULL) return;
     int n = procDest->getSignature()->getNumParams();
     arguments.resize(n);
     for (int i = 0; i < n; i++) {
@@ -2043,6 +2043,13 @@ void CallStatement::setSigArguments() {
         for (int i = 0; i < 4; i++)
             arguments.push_back(procDest->getSignature()->
                             getArgumentExp(arguments.size())->clone());
+    }
+    n = procDest->getSignature()->getNumReturns();
+    returnLocs.resize(n);
+    for (int i = 0; i < n; i++) {
+        Exp *e = procDest->getSignature()->getReturnExp(i);
+        assert(e);
+        returnLocs[i] = e->clone();
     }
 }
 
