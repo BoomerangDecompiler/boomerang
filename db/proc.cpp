@@ -1008,38 +1008,38 @@ std::set<UserProc*>* UserProc::decompile() {
     // We have seen this proc
     decompileSeen = true;
 
-
     std::set<UserProc*>* cycleSet = new std::set<UserProc*>;
-    BB_IT it;
-    // Look at each call, to perform a depth first search.
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        if (bb->getType() == CALL) {
-            // The call Statement will be in the last RTL in this BB
-            CallStatement* call = (CallStatement*)bb->getRTLs()->back()->
-              getHlStmt();
-            UserProc* destProc = (UserProc*)call->getDestProc();
-            if (destProc->isLib()) continue;
-            if (destProc->decompileSeen && !destProc->decompiled)
-                // We have discovered a cycle in the call graph
-                cycleSet->insert(destProc);
-                // Don't recurse into the loop
-            else {
-                // Recurse to this child (in the call graph)
-                std::set<UserProc*>* childSet = destProc->decompile();
-                // Union this child's set into cycleSet
-                if (childSet)
-                    cycleSet->insert(childSet->begin(), childSet->end());
+    if (!Boomerang::get()->noDecodeChildren) {
+        // Recurse to children first, to perform a depth first search
+        BB_IT it;
+        // Look at each call, to do the DFS
+        for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+            if (bb->getType() == CALL) {
+                // The call Statement will be in the last RTL in this BB
+                CallStatement* call = (CallStatement*)bb->getRTLs()->back()->
+                  getHlStmt();
+                UserProc* destProc = (UserProc*)call->getDestProc();
+                if (destProc->isLib()) continue;
+                if (destProc->decompileSeen && !destProc->decompiled)
+                    // We have discovered a cycle in the call graph
+                    cycleSet->insert(destProc);
+                    // Don't recurse into the loop
+                else {
+                    // Recurse to this child (in the call graph)
+                    std::set<UserProc*>* childSet = destProc->decompile();
+                    // Union this child's set into cycleSet
+                    if (childSet)
+                        cycleSet->insert(childSet->begin(), childSet->end());
+                }
             }
         }
+
+        isRecursive = cycleSet->size() != 0;
+        // Remove self from the cycle list
+        cycleSet->erase(this);
     }
 
-    isRecursive = cycleSet->size() != 0;
-    // Remove self from the cycle list
-    cycleSet->erase(this);
-
-    if (VERBOSE) {
-        LOG << "decompiling: " << getName() << "\n";
-    }
+    if (VERBOSE) LOG << "decompiling: " << getName() << "\n";
 
     // Sort by address, so printouts make sense
     cfg->sortByAddress();
