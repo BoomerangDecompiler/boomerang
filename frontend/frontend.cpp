@@ -468,7 +468,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 // This can happen if an instruction is "cancelled", e.g.
                 // call to __main in a hppa program
                 // Just ignore the whole instruction
-                uAddr += inst.numBytes;
+                if (inst.numBytes > 0)
+                    uAddr += inst.numBytes;
                 continue;
             }
 
@@ -809,6 +810,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 // as yet
                 BB_rtls->push_back(pRtl);
 
+            if (inst.reDecode)
+                // Special case: redecode the last instruction, without
+                // advancing uAddr by numBytes
+                continue;
             uAddr += inst.numBytes;
             if (uAddr > lastAddr)
                 lastAddr = uAddr;
@@ -821,7 +826,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             // coverage, but also will cause subtle problems like add a call
             // to the list of calls to be processed, then delete the call RTL
             // (e.g. Pentium 134.perl benchmark)
-            if (sequentialDecode && pCfg->isLabel(uAddr)) {
+            if (sequentialDecode && pCfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     PBB pBB = pCfg->newBB(BB_rtls, FALL, 1);
@@ -947,7 +952,7 @@ ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
 
         // If no label there at all, or if there is a BB, it's incomplete,
         // then we can parse this address next
-        if (!cfg->isLabel(address) || cfg->isIncomplete(address))
+        if (!cfg->existsBB(address) || cfg->isIncomplete(address))
             return address;
     }
     return NO_ADDRESS;
