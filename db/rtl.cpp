@@ -334,8 +334,13 @@ void RTL::print(std::ostream& os /*= cout*/, bool withDF /*= false*/) {
     if (stmtList.empty()) os << std::endl;     // New line for NOP
 }
 
-void RTL::prints() {
-    print(std::cerr, true);
+extern char debug_buffer[];
+char* RTL::prints() {
+      std::ostringstream ost;
+      print(ost, true);
+      strncpy(debug_buffer, ost.str().c_str(), 199);
+      debug_buffer[199] = '\0';
+      return debug_buffer;
 }
 
 /*==============================================================================

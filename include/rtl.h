@@ -165,7 +165,7 @@ public:
     Statement* getHlStmt();
 
     // Print to std::cerr (mainly for debugging)
-    void prints();
+    char* prints();
 
 };
 
