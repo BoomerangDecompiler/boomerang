@@ -550,8 +550,7 @@ void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 }
 
 void RTL::simplify() {
-	for (std::list<Statement*>::iterator it = stmtList.begin();
-		 it != stmtList.end(); /*it++*/) {
+	for (std::list<Statement*>::iterator it = stmtList.begin(); it != stmtList.end(); /*it++*/) {
 		Statement *s = *it;
 		s->simplify();		  
 		if (s->isBranch()) {
@@ -564,9 +563,19 @@ void RTL::simplify() {
 					continue;
 				} else {
 					if (VERBOSE)
-						LOG << "replacing branch with true condition with goto at " << getAddress() << " " << *it << "\n";
+						LOG << "replacing branch with true condition with goto at " << getAddress() << " " << *it <<
+							"\n";
 					*it = new GotoStatement(((BranchStatement*)s)->getFixedDest());
 				}
+			}
+		} else if (s->isAssign()) {
+			Exp* guard = ((Assign*)s)->getGuard();
+			if (guard && (guard->isFalse() || guard->isIntConst() && ((Const*)guard)->getInt() == 0)) {
+				// This assignment statement can be deleted
+				if (VERBOSE)
+					LOG << "removing assignment with false guard at " << getAddress() << " " << *it << "\n";
+				it = stmtList.erase(it);
+				continue;
 			}
 		}
 		it++;
