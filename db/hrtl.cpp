@@ -1401,6 +1401,9 @@ void HLCall::printAsUseBy(std::ostream &os) {
 
 void HLCall::killLive(std::set<Statement*> &live) {
     if (procDest == NULL) {
+        // Will always be null for indirect calls
+        // MVE: we may have a "candidate" callee in the future
+        // Kills everything. Not clear that this is always "conservative"
         live.clear();
         return;
     }
@@ -1460,11 +1463,17 @@ bool HLCall::usesExp(Exp *e) {
 }
 
 void HLCall::doReplaceUse(Statement *use) {
-    Exp *left = use->getLeft();
-    Exp *right = use->getRight();
+    Exp *left = use->getLeft()->clone();        // Note: could be changed!
+    Exp *right = use->getRight()->clone();
     assert(left);
     assert(right);
     bool change = false;
+
+    std::list<Exp*>::iterator p;
+    for (p = expList.begin(); p != expList.end(); p++) {
+        *p = (*p)->searchReplaceAll(left, right, change);
+    }
+
     for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
             arguments[i] = right->clone();
@@ -1648,6 +1657,7 @@ void HLReturn::simplify() {
     if (returnVal)
         returnVal = returnVal->simplify();
 }
+
 
 /**********************************
  * HLScond methods
