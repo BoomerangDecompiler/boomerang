@@ -40,6 +40,7 @@
 #include "rtl.h"            // For debugging code
 #include "util.h"
 #include "signature.h"
+#include "visitor.h"
 #include <sstream>
 
 extern char debug_buffer[];      // For prints functions
@@ -193,7 +194,8 @@ bool Statement::isFlagAssgn() {
 bool Statement::isPhi() {
     if (kind != STMT_ASSIGN)
         return false;
-    return ((Assign*)this)->getRight()->isPhi();
+    Exp* rhs = ((Assign*)this)->getRight();
+    return /*rhs &&*/  rhs->isPhi();
 }
     
 char* Statement::prints() {
@@ -2108,20 +2110,40 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 returns[i]->getSubExp1()->searchReplaceAll(from, to, change);
             // Simplify is very expensive, especially if it happens to
             // reference a phi statement (attempts proofs)
-            if (change) returns[i] = returns[i]->simplifyArith()->simplify();
+            if (change) {
+                returns[i] = returns[i]->simplifyArith()->simplify();
+                if (0 & VERBOSE)
+                    LOG << "doReplaceRef: updated return[" << i << "] with " <<
+                      returns[i] << "\n";
+            }
         }    
     for (i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to, change);
-        if (change) arguments[i] = arguments[i]->simplifyArith()->simplify();
+        if (change) {
+            arguments[i] = arguments[i]->simplifyArith()->simplify();
+            if (0 & VERBOSE)
+                LOG << "doReplaceRef: updated argument[" << i << "] with " <<
+                  arguments[i] << "\n";
+        }
     }
-    for (i = 0; i < implicitArguments.size(); i++) 
-        // ? Don't replace if matches whole expression... why? MVE
+    for (i = 0; i < implicitArguments.size(); i++) {
+        // Don't replace the implicit argument if it matches whole expression.
+        // A large part of the use of these is to allow fixCallRefs to change
+        // a definition of a location (say sp) by what the function does with
+        // it (maybe replaces it with sp+4). If you substitute sp{K} with say
+        // sp{K-3}+4, then it won't do its job with fixCallRefs.
         if (!(*implicitArguments[i] == *from)) {
             implicitArguments[i] = implicitArguments[i]->
               searchReplaceAll(from, to, change);
-            if (change) implicitArguments[i] =
-              implicitArguments[i]->simplifyArith()->simplify();
+            if (change) {
+                implicitArguments[i] =
+                  implicitArguments[i]->simplifyArith()->simplify();
+                if (0 & VERBOSE)
+                    LOG << "doReplaceRef: updated implicitArguments[" << i <<
+                      "] with " << implicitArguments[i] << "\n";
+            }
         }
+    }
     return convertIndirect;
 }
 
@@ -2345,7 +2367,7 @@ void CallStatement::processConstants(Prog *prog) {
             }
     }
 
-    // This code was in CallStatement:doReplaceRef()
+    // This code was in CallStatement::doReplaceRef()
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
@@ -3165,7 +3187,7 @@ void Assign::addUsedLocs(LocationSet& used) {
 }
 
 void Assign::fixCallRefs() {
-    simplify();
+    simplify();         // This seems like an arbitrary HACK
     rhs = rhs->fixCallRefs();
     if (lhs->isMemOf()) {
         ((Unary*)lhs)->refSubExp1() =
@@ -3337,72 +3359,75 @@ void BranchStatement::genConstraints(LocationSet& cons) {
     cons.insert(equ);
 }
 
-// By default, visit all children (statements)
-bool StmtVisitor::visit(RTL* rtl) {
-    std::list<Statement*>::iterator it;
-    std::list<Statement*>& list = rtl->getList();
-    for (it = list.begin(); it != list.end(); it++) {
-        if (! (*it)->accept(this)) return false;
-    }
-    return true;
-} 
-
-bool StmtSetConscripts::visit(Assign* stmt) {
-    SetConscripts sc(curConscript);
-    stmt->getLeft()->accept(&sc);
-    stmt->getRight()->accept(&sc);
-    curConscript = sc.getLast();
-    return true;
-}
-
-bool StmtSetConscripts::visit(CallStatement* stmt) {
-    SetConscripts sc(curConscript);
-    std::vector<Exp*> args;
-    args = stmt->getArguments();
-    int i, n = args.size();
-    for (i=0; i < n; i++)
-        args[i]->accept(&sc);
-    n = stmt->getNumReturns();
-    for (i=0; i < n; i++) {
-        Exp* r = stmt->getReturnExp(i);
-        r->accept(&sc);
-    }
-    curConscript = sc.getLast();
-    return true;
-}
-
-bool StmtSetConscripts::visit(CaseStatement* stmt) {
-    SetConscripts sc(curConscript);
-    SWITCH_INFO* si = stmt->getSwitchInfo();
-    if (si) {
-        si->pSwitchVar->accept(&sc);
-        curConscript = sc.getLast();
-    }
-    return true;
-}
-
-bool StmtSetConscripts::visit(ReturnStatement* stmt) {
-    SetConscripts sc(curConscript);
-    int n = stmt->getNumReturns();
-    for (int i=0; i < n; i++) {
-        Exp* r = stmt->getReturnExp(i);
-        r->accept(&sc);
-    }
-    curConscript = sc.getLast();
-    return true;
-}
-
-bool StmtSetConscripts::visit(BoolStatement* stmt) {
-    SetConscripts sc(curConscript);
-    stmt->getCondExpr()->accept(&sc);
-    stmt->getDest()->accept(&sc);
-    curConscript = sc.getLast();
-    return true;
-}
-
 int Statement::setConscripts(int n) {
     StmtSetConscripts ssc(n);
     accept(&ssc);
     return ssc.getLast();
+}
+
+bool Statement::stripRefs() {
+    StripRefs sr;
+    StripPhis sp(&sr);
+    accept(&sp);
+    return sp.getDelete();
+}
+
+// Visiting from class StmtModifier
+// Modify all the various expressions in a statement
+bool Assign::accept(StmtModifier* v) {
+    v->visit(this);
+    if (lhs) lhs = lhs->acceptMod(v->mod);
+    if (rhs) rhs = rhs->acceptMod(v->mod);
+    return true;
+}
+
+bool GotoStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    if (pDest)
+        pDest = pDest->acceptMod(v->mod);
+    return true;
+}
+
+bool BranchStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    if (pDest)
+        pDest = pDest->acceptMod(v->mod);
+    return true;
+}
+
+bool CaseStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    if (pSwitchInfo && pSwitchInfo->pSwitchVar)
+        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->acceptMod(v->mod);
+    return true;
+}
+
+bool CallStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    if (pDest)
+        pDest = pDest->acceptMod(v->mod);
+    std::vector<Exp*>::iterator it;
+    for (it = arguments.begin(); it != arguments.end(); it++)
+        *it = (*it)->acceptMod(v->mod);
+    for (it = implicitArguments.begin(); it != implicitArguments.end(); it++)
+        *it = (*it)->acceptMod(v->mod);
+    for (it = returns.begin(); it != returns.end(); it++)
+        *it = (*it)->acceptMod(v->mod);
+    return true;
+}
+
+bool ReturnStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    std::vector<Exp*>::iterator it;
+    for (it = returns.begin(); it != returns.end(); it++)
+        *it = (*it)->acceptMod(v->mod);
+    return true;
+}
+
+bool BoolStatement::accept(StmtModifier* v) {
+    v->visit(this);
+    if (pCond)
+        pCond = pCond->acceptMod(v->mod);
+    return true;
 }
 

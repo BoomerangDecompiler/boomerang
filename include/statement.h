@@ -56,6 +56,7 @@ class Cfg;
 class Type;
 class Statement;
 class StmtVisitor;
+class StmtModifier;
 class HLLCode;
 class Assign;
 class RTL;
@@ -106,6 +107,7 @@ public:
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor* visitor) = 0;
+    virtual bool accept(StmtModifier* visitor) = 0;
 
     STMT_KIND getKind() { return kind;}
     void setKind(STMT_KIND k) {kind = k;}
@@ -256,8 +258,12 @@ public:
     // Generate constraints
     virtual void genConstraints(LocationSet& cons) {}
 
-    // Set the constant subscripts
+    // Set the constant subscripts (using a visitor)
     int    setConscripts(int n);
+
+    // Strip all references and phis (using a visitor). Returns true if the
+    // statement was a phi (and to be deleted)
+    bool    stripRefs();
 
 protected:
     // Returns true if an indirect call is converted to direct:
@@ -300,6 +306,7 @@ public:
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Compare
     bool    operator==(const Statement& o) const;
@@ -406,6 +413,7 @@ public:
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Set and return the destination of the jump. The destination is either
     // a Exp, or an ADDRESS that is converted to a Exp.
@@ -495,6 +503,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
@@ -607,6 +616,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Set and return the Exp representing the switch variable
     SWITCH_INFO* getSwitchInfo(); 
@@ -678,6 +688,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Return true if the called function returns an aggregate: i.e., a
     // struct, union or quad floating point value.
@@ -807,6 +818,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // print
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
@@ -882,6 +894,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtModifier* visitor);
 
     // Set and return the BRANCH_TYPE of this scond as well as whether the
     // floating point condition codes are used.
@@ -938,52 +951,6 @@ public:
     // from SSA form
     virtual void fromSSAform(igraph& ig);
 
-};
-
-/* 
- * The StmtVisitor class is used to iterate over all stmts in a basic 
- * block. It contains methods for each kind of Statement found in an
- * RTL and can be used to eliminate switch statements.
- */
-class StmtVisitor {
-private:
-    // the enclosing basic block
-    PBB pBB;
-
-public:
-    StmtVisitor() { pBB = NULL; }
-    virtual ~StmtVisitor() { }
-
-    // allows the container being iteratorated over to identify itself
-    PBB getBasicBlock() { return pBB; }
-    void setBasicBlock(PBB bb) { pBB = bb; }
-
-    // visitor functions, 
-    // returns true to continue iterating the container
-    virtual bool visit(RTL *rtl);   // By default, visits all statements
-    virtual bool visit(Assign *stmt) = 0;
-    virtual bool visit(GotoStatement *stmt) = 0;
-    virtual bool visit(BranchStatement *stmt) = 0;
-    virtual bool visit(CaseStatement *stmt) = 0;
-    virtual bool visit(CallStatement *stmt) = 0;
-    virtual bool visit(ReturnStatement *stmt) = 0;
-    virtual bool visit(BoolStatement *stmt) = 0;
-};
-
-class StmtSetConscripts : public StmtVisitor {
-    int     curConscript;
-public:
-                 StmtSetConscripts(int n) {curConscript = n;}
-    int          getLast() {return curConscript;}
-
-    virtual bool visit(Assign *stmt);
-    virtual bool visit(GotoStatement *stmt) {return true;}
-    virtual bool visit(BranchStatement *stmt) {return true;}
-    virtual bool visit(CaseStatement *stmt);
-    virtual bool visit(CallStatement *stmt);
-    virtual bool visit(ReturnStatement *stmt);
-    virtual bool visit(BoolStatement *stmt);
-};
-
+};  // class BoolStatement
 
 #endif // __STATEMENT_H__
