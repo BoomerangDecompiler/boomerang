@@ -452,7 +452,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl,
         }
         (*rt)->fixSuccessor();
         if (Boomerang::get()->debugDecoder)
-            std::cerr << "          " << *rt << "\n";
+            std::cout << "          " << *rt << "\n";
     }
 
     transformPostVars( newList, true );
