@@ -118,7 +118,7 @@ virtual bool operator< (const Exp& o)  const = 0;
 virtual bool operator<<(const Exp& o) const
     {return (*this < o);}
 // Comparison ignoring subscripts
-        bool operator*=(const Exp& o) const;
+virtual bool operator*=(Exp& o) = 0;
 
 // Return the number of subexpressions. This is only needed in rare cases,
 // Could use polymorphism for all those cases, but this is easier
@@ -346,8 +346,9 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
 
     // Get the constant
     int     getInt() {return u.i;}
@@ -390,8 +391,9 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
 
     void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
@@ -426,8 +428,9 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
 
     // Destructor
 virtual     ~Unary();
@@ -497,8 +500,9 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const ;
-    bool    operator< (const Exp& o) const ;
+virtual bool operator==(const Exp& o) const ;
+virtual bool operator< (const Exp& o) const ;
+virtual bool operator*=(Exp& o);
 
     // Destructor
 virtual     ~Binary();
@@ -572,8 +576,9 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const ;
-    bool    operator< (const Exp& o) const ;
+virtual bool operator==(const Exp& o) const ;
+virtual bool operator< (const Exp& o) const ;
+virtual bool operator*=(Exp& o);
 
     // Destructor
 virtual     ~Ternary();
@@ -645,11 +650,12 @@ public:
     virtual Exp* clone();
 
     // Compare
-    bool    operator==(const Exp& o) const;
-    bool    operator%=(const Exp& o) const;        // Type insensitive compare
-    bool    operator-=(const Exp& o) const;        // Sign insensitive compare
-    bool    operator< (const Exp& o) const;
-    bool    operator<<(const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator%=(const Exp& o) const;        // Type insensitive compare
+virtual bool operator-=(const Exp& o) const;        // Sign insensitive compare
+virtual bool operator< (const Exp& o) const;
+virtual bool operator<<(const Exp& o) const;
+virtual bool operator*=(Exp& o);
 
 
     void    print(std::ostream& os, bool withUses = false);
@@ -702,8 +708,10 @@ public:
             RefExp(Exp* e);
             RefExp(RefExp& o);
 virtual Exp* clone();
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
+
 virtual void print(std::ostream& os, bool withUses = false);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
@@ -750,8 +758,9 @@ public:
             PhiExp(Exp* e, Statement* def);
             PhiExp(PhiExp& o);
 virtual Exp* clone();
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
     void    print(std::ostream& os, bool withUses = false);
 virtual int getNumRefs() {return stmtVec.size();}
     void    addUsedLocs(LocationSet& used);
@@ -793,8 +802,9 @@ public:
     virtual Type*   getType() {return val;}
     virtual void    setType(Type* t) {val = t;}
 virtual Exp* clone();
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
+virtual bool operator==(const Exp& o) const;
+virtual bool operator< (const Exp& o) const;
+virtual bool operator*=(Exp& o);
     void    print(std::ostream& os, bool withUses = false);
     virtual Exp*  genConstraints(Exp* restrictTo) {
         assert(0); return NULL;} // Should not be constraining constraints
@@ -848,12 +858,9 @@ virtual int getMemDepth();
  * in an and can be used to eliminate switch statements.
  */
 class ExpVisitor {
-private:
-    // the enclosing UserProc (if a Location)
-    UserProc* proc;
 
 public:
-    ExpVisitor() { proc = NULL; }
+    ExpVisitor() { }
     virtual ~ExpVisitor() { }
 
     // visitor functions,
@@ -874,6 +881,7 @@ public:
 
 // This class visits subexpressions, and if a location, sets the UserProc
 class FixProcVisitor : public ExpVisitor {
+    // the enclosing UserProc (if a Location)
     UserProc* proc;
 
 public:

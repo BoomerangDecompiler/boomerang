@@ -396,7 +396,6 @@ bool Const::operator==(const Exp& o) const {
     return false;
 }
 bool Unary::operator==(const Exp& o) const {
-    //if (op == opWild) return true;
     if (((Unary&)o).op == opWild) return true;
     if (((Unary&)o).op == opWildRegOf && op == opRegOf) return true;
     if (((Unary&)o).op == opWildMemOf && op == opMemOf) return true;
@@ -405,7 +404,6 @@ bool Unary::operator==(const Exp& o) const {
     return *subExp1 == *((Unary&)o).getSubExp1();
 }
 bool Binary::operator==(const Exp& o) const {
-    //if (op == opWild) return true;
     if (((Binary&)o).op == opWild) return true;
     if (op != ((Binary&)o).op)     return false;
     if (!( *subExp1 == *((Binary&)o).getSubExp1())) return false;
@@ -413,7 +411,6 @@ bool Binary::operator==(const Exp& o) const {
 }
 
 bool Ternary::operator==(const Exp& o) const {
-    //if (op == opWild) return true;
     if (((Ternary&)o).op == opWild) return true;
     if (op != ((Ternary&)o).op) return false;
     if (!( *subExp1 == *((Ternary&)o).getSubExp1())) return false;
@@ -430,7 +427,6 @@ bool Terminal::operator==(const Exp& o) const {
             (op == ((Terminal&)o).op));
 }
 bool TypedExp::operator==(const Exp& o) const {
-    //if (op == opWild) return true;
     if (((TypedExp&)o).op == opWild) return true;
     if (((TypedExp&)o).op != opTypedExp) return false;
     // This is the strict type version
@@ -439,7 +435,6 @@ bool TypedExp::operator==(const Exp& o) const {
 }
 
 bool RefExp::operator==(const Exp& o) const {
-    if (op == opWild) return true;
     if (((RefExp&)o).op == opWild) return true;
     if (((RefExp&)o).op != opSubscript) return false;
     if (!( *subExp1 == *((RefExp&)o).subExp1)) return false;
@@ -450,7 +445,6 @@ bool RefExp::operator==(const Exp& o) const {
 }
 
 bool PhiExp::operator==(const Exp& o) const {
-    if (op == opWild) return true;
     if (((PhiExp&)o).op == opWild) return true;
     if (((PhiExp&)o).op != opPhi) return false;
     if (!( *subExp1 == *((PhiExp&)o).subExp1)) return false;
@@ -458,21 +452,9 @@ bool PhiExp::operator==(const Exp& o) const {
 }
 
 bool TypeVal::operator==(const Exp& o) const {
-    if (op == opWild) return true;
     if (((TypeVal&)o).op == opWild) return true;
     if (((TypeVal&)o).op != opTypeVal) return false;
     return *val == *((TypeVal&)o).val;
-}
-
-// Compare, ignoring subscripts
-bool Exp::operator*=(const Exp& o) const {
-    const Exp* one = this;
-    if (op == opSubscript)
-        one = ((RefExp*)this)->getSubExp1();
-    Exp* two = const_cast<Exp*>(&o);
-    if (two->isSubscript())
-        two = ((RefExp*)two)->getSubExp1();
-    return *one == *two;
 }
 
 /*==============================================================================
@@ -605,8 +587,81 @@ bool TypeVal::operator< (const Exp& o) const {
     return *val < *((TypeVal&)o).val;
 }
 
+/*==============================================================================
+ * FUNCTION:        Const::operator*=() etc
+ * OVERVIEW:        Virtual function to compare myself for equality with
+ *                  another Exp, *ignoring subscripts*
+ * PARAMETERS:      Ref to other Exp
+ * RETURNS:         True if equal
+ *============================================================================*/
+bool Const::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    return *this == *other;
+}
+bool Unary::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    if (((Unary*)other)->op == opWild) return true;
+    if (((Unary*)other)->op == opWildRegOf && op == opRegOf) return true;
+    if (((Unary*)other)->op == opWildMemOf && op == opMemOf) return true;
+    if (((Unary*)other)->op == opWildAddrOf && op == opAddrOf) return true;
+    if (op != ((Unary*)other)->op) return false;
+    return *subExp1 *= *((Unary*)other)->getSubExp1();
+}
+bool Binary::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    if (((Binary*)other)->op == opWild) return true;
+    if (op != ((Binary*)other)->op)     return false;
+    if (!( *subExp1 *= *((Binary*)other)->getSubExp1())) return false;
+    return *subExp2 *= *((Binary*)other)->getSubExp2();
+}
 
+bool Ternary::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    if (((Ternary*)other)->op == opWild) return true;
+    if (op != ((Ternary*)other)->op) return false;
+    if (!( *subExp1 *= *((Ternary*)other)->getSubExp1())) return false;
+    if (!( *subExp2 *= *((Ternary*)other)->getSubExp2())) return false;
+    return *subExp3 *= *((Ternary*)other)->getSubExp3();
+}
+bool Terminal::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    return *this == *other;
+}
+bool TypedExp::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    if (((TypedExp*)other)->op == opWild) return true;
+    if (((TypedExp*)other)->op != opTypedExp) return false;
+    // This is the strict type version
+    if (*type != *((TypedExp*)other)->type) return false;
+    return *((Unary*)this)->getSubExp1() *= *((Unary*)other)->getSubExp1();
+}
 
+bool RefExp::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    return *subExp1 *= *other;
+}
+
+bool PhiExp::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    if (((PhiExp*)other)->op == opWild) return true;
+    if (((PhiExp*)other)->op != opPhi) return false;
+    if (!( *subExp1 *= *((PhiExp*)other)->subExp1)) return false;
+    return stmtVec == ((PhiExp*)other)->stmtVec;
+}
+
+bool TypeVal::operator*=(Exp& o) {
+    Exp* other = &o;
+    if (o.getOper() == opSubscript) other = o.getSubExp1();
+    return *this == *other;
+}
 
 /*==============================================================================
  * FUNCTION:        Const::print etc
@@ -3739,3 +3794,4 @@ void Exp::fixLocationProc(UserProc* p) {
     fpv.setProc(p);
     accept(&fpv);
 }
+
