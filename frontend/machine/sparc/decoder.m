@@ -21,6 +21,7 @@
  * 30 Oct 02 - Mike: dis_Eaddr mode indirectA had extra memof
  * 22 Nov 02 - Mike: Support 32 bit V9 branches
  * 04 Dec 02 - Mike: r[0] -> 0 automatically (rhs only)
+ * 30 May 02 - Mike: Also fixed r[0] -> 0 for store instructions
 */
 
 /*==============================================================================
@@ -33,8 +34,8 @@
 #endif
 
 #include "exp.h"
-#include "proc.h"
 #include "prog.h"
+#include "proc.h"
 #include "decoder.h"
 #include "sparcdecoder.h"
 #include "rtl.h"
@@ -44,6 +45,7 @@
 #define DIS_ROI     (dis_RegImm(roi))
 #define DIS_ADDR    (dis_Eaddr(addr))
 #define DIS_RD      (dis_RegLhs(rd))
+#define DIS_RDR     (dis_RegRhs(rd))
 #define DIS_RS1     (dis_RegRhs(rs1))
 #define DIS_FS1S    (dis_RegRhs(fs1s+32))
 #define DIS_FS2S    (dis_RegRhs(fs2s+32))
@@ -438,7 +440,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
 		exps = instantiate(pc,  name, DIS_RD, DIS_ADDR);
 
 	| sto_greg(rd, addr) [name] => 
-		exps = instantiate(pc,  name, DIS_RD, DIS_ADDR);
+        // Note: RD is on the "right hand side" only for stores
+		exps = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
 
 	| STF (fds, addr) [name] => 
 		exps = instantiate(pc,  name, DIS_FDS, DIS_ADDR);
@@ -448,7 +451,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
 
 	| sto_asi (rd, addr, asi) [name] => 
         unused(asi);            // Note: this could be serious!
-		exps = instantiate(pc,  name, DIS_RD, DIS_ADDR);
+		exps = instantiate(pc,  name, DIS_RDR, DIS_ADDR);
 
 	| LDFSR(addr) [name] => 
 		exps = instantiate(pc,  name, DIS_ADDR);
