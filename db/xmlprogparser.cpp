@@ -32,7 +32,7 @@ typedef enum { e_prog, e_procs, e_global, e_cluster, e_libproc, e_userproc, e_lo
 			   e_signature, e_param, e_implicitparam, e_return, e_rettype, e_prefreturn, e_prefparam,
 		   e_cfg, e_bb, e_inedge, e_outedge, e_livein, e_order, e_revorder,
 		   e_rtl, e_stmt, e_assign, e_lhs, e_rhs, 
-		   e_callstmt, e_dest, e_argument, e_implicitarg, e_returnexp,
+		   e_callstmt, e_dest, e_argument, e_implicitarg, e_returnexp, e_returntype,
 		   e_returnstmt,
 		   e_gotostmt, e_branchstmt, e_cond,
 		   e_casestmt,
@@ -82,6 +82,7 @@ _tag XMLProgParser::tags[] = {
 	{ "argument", TAG(argument) },
 	{ "implicitarg", TAG(implicitarg) },
 	{ "returnexp", TAG(returnexp) },
+	{ "returntype", TAG(returntype) },
 	{ "returnstmt", TAG(returnstmt) },
 	{ "gotostmt", TAG(gotostmt) },
 	{ "branchstmt", TAG(branchstmt) },
@@ -1260,9 +1261,6 @@ void XMLProgParser::start_callstmt(const char **attr)
 	n = getAttr(attr, "computed");
 	if (n)
 	call->m_isComputed = atoi(n) > 0;
-	n = getAttr(attr, "returnTypeSize");
-	if (n)
-	call->returnTypeSize = atoi(n);
 	n = getAttr(attr, "returnAftercall");
 	if (n)
 	call->returnAfterCall = atoi(n) > 0;
@@ -1281,6 +1279,7 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e)
 	}
 	return;
 	}
+	Exp* returnExp;
 	switch(e) {
 	case e_dest:
 		call->setDest(stack.front()->exp);
@@ -1292,13 +1291,17 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e)
 		call->appendArgument(stack.front()->exp);
 		break;
 	case e_returnexp:
-		call->addReturn(stack.front()->exp);
+		// Assume that the corresponding return type will appear next
+		returnExp = stack.front()->exp;
+		break;
+	case e_returntype:
+		call->addReturn(returnExp, stack.front()->type);
 		break;
 	default:
 		if (e == e_unknown)
-		std::cerr << "unknown tag " << e << " in context callstmt\n";
+			std::cerr << "unknown tag " << e << " in context callstmt\n";
 		else 
-		std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
+			std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
 	break;
 	}
 }
@@ -1638,9 +1641,18 @@ void XMLProgParser::start_returnexp(const char **attr)
 {
 }
 
+void XMLProgParser::start_returntype(const char **attr)
+{
+}
+
 void XMLProgParser::addToContext_returnexp(Context *c, int e)
 {
 	c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::addToContext_returntype(Context *c, int e)
+{
+	c->type = stack.front()->type;
 }
 
 void XMLProgParser::start_cond(const char **attr)
@@ -2781,7 +2793,6 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 			out << " parent=\"" << (int)c->parent << "\"";
 		if (c->proc)
 			out << " proc=\"" << (int)c->proc << "\"";
-		out << " returnTypeSize=\"" << c->returnTypeSize << "\"";
 		out << " returnAfterCall=\"" << (int)c->returnAfterCall << "\"";
 		out << ">\n";
 	
@@ -2808,8 +2819,11 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 
 		for (unsigned i = 0; i < c->returns.size(); i++) {
 			out << "<returnexp>\n";
-			persistToXML(out, c->returns[i]);
+			persistToXML(out, c->returns[i].e);
 			out << "</returnexp>\n";
+			out << "<returntype>\n";
+			persistToXML(out, c->returns[i].type);
+			out << "</returntype>\n";
 		}
 
 		out << "</callstmt>\n";

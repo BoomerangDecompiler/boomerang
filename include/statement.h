@@ -304,11 +304,17 @@ virtual	void	regReplace(UserProc* proc) = 0;
 		// End Statement visitation functions
 
 
-		// Get the type for the given expression in this statement
+		// Get the type for the given expression in this statement. This is an old version for processConstants
 		Type	*getTypeFor(Exp *e, Prog *prog);
 
-virtual	Type*	getType() {return NULL;}			// Assignment, ReturnStatement, and 
-virtual	void	setType(Type* t) {assert(0);}		// CallStatement override
+		// Get the type for the definition, if any, for expression e in this statement 
+		// Overridden only by Assignment and CallStatement. (ReturnStatements do not define anything.)
+virtual	Type*	getTypeFor(Exp* e) { return NULL;}
+		// Set the type for the definition of e in this Statement
+virtual	void	setTypeFor(Exp* e, Type* ty) {assert(0);}
+
+//virtual	Type*	getType() {return NULL;}			// Assignment, ReturnStatement and
+//virtual	void	setType(Type* t) {assert(0);}		// CallStatement override
 
 protected:
 		// Returns true if an indirect call is converted to direct:
@@ -353,11 +359,14 @@ virtual bool	accept(StmtModifier* visitor) = 0;
 
 virtual void	print(std::ostream& os) = 0;
 
-		// Get and set the type
-virtual	Type*	getType() {return type;}
-virtual	void	setType(Type* ty) {type = ty;}
+virtual Type*	getTypeFor(Exp* e); 			// Get the type for this assignment. It should define e
+virtual void	setTypeFor(Exp* e, Type* ty); 	// Set the type for this assignment. It should define e
 
-virtual bool	usesExp(Exp *e);	   // PhiExp and ImplicitExp don't override
+		// Get and set the type. Not polymorphic (any more)
+		Type*	getType() {return type;}
+		void	setType(Type* ty) {type = ty;}
+
+virtual bool	usesExp(Exp *e);	   // PhiAssign and ImplicitAssign don't override
 
 virtual bool	isDefinition() { return true; }
 virtual void	getDefinitions(LocationSet &defs);
@@ -619,11 +628,11 @@ virtual bool	accept(StmtModifier* visitor);
  * Exp, similar to the BranchStatement class.
  * *==========================================================================*/
 class BoolAssign: public Assignment {
-	BRANCH_TYPE jtCond;			// the condition for setting true
-	Exp*		pCond;			// Exp representation of the high level
+		BRANCH_TYPE jtCond;		// the condition for setting true
+		Exp*	pCond;			// Exp representation of the high level
 								// condition: e.g. r[8] == 5
-	bool		bFloat;			// True if condition uses floating point CC
-	int			size;			// The size of the dest
+		bool	bFloat;			// True if condition uses floating point CC
+		int		size;			// The size of the dest
 public:
 				BoolAssign(int size);
 virtual			~BoolAssign();
@@ -928,79 +937,77 @@ virtual	void	regReplace(UserProc* proc);
 	friend class XMLProgParser;
 };			// class CaseStatement
 
+struct ReturnInfo {
+		Exp*	e;
+		Type*	type;
+				ReturnInfo();
+};
+
 /*==============================================================================
  * CallStatement: represents a high level call. Information about parameters and
  * the like are stored here.
  *============================================================================*/
 class CallStatement: public GotoStatement {
-	// FIXME: Below will likely go away soon...
-	int			returnTypeSize; // Size in bytes of the struct, union or quad FP
-								// value returned by the called function.
-	Type*		returnType;		// TEMPORARY
-	bool		returnAfterCall;// True if call is effectively followed by
-								// a return.
+		bool		returnAfterCall;// True if call is effectively followed by a return.
 	
-	// The list of arguments passed by this call
-	std::vector<Exp*> arguments;
-	// The list of arguments implicitly passed as a result of the calling 
-	// convention of the called procedure or the actual arguments
-	std::vector<Exp*> implicitArguments;
+		// The list of arguments passed by this call
+		std::vector<Exp*> arguments;
+		// The list of arguments implicitly passed as a result of the calling 
+		// convention of the called procedure or the actual arguments
+		std::vector<Exp*> implicitArguments;
 
-	// The set of locations that are defined by this call.
-	std::vector<Exp*> returns;
+		// The set of locations that are defined by this call, and their types
+		// Note: returns is not a great name, these are really definitions. The opposite of the returns in a
+		// ReturnStatement (which don't define anything, and hence don't store a type).
+		std::vector<ReturnInfo> returns;
 
-	// Destination of call
-	Proc*		procDest;
+		// Destination of call
+		Proc*		procDest;
 
 public:
-				CallStatement(int returnTypeSize = 0);
+				CallStatement();
 virtual			~CallStatement();
 
 	// Make a deep copy, and make the copy a derived object if needed.
-virtual Statement* clone();
+virtual Statement*	clone();
 
 	// Accept a visitor to this stmt
 virtual bool	accept(StmtVisitor* visitor);
 virtual bool	accept(StmtExpVisitor* visitor);
 virtual bool	accept(StmtModifier* visitor);
 
-	// Return true if the called function returns an aggregate: i.e., a
-	// struct, union or quad floating point value.
-	bool		returnsStruct();
-
-	// Set call's arguments
-	void		setArguments(std::vector<Exp*>& arguments);
-	// Set implicit arguments: so far, for testing only:
-	void		setImpArguments(std::vector<Exp*>& arguments);
-	void		setReturns(std::vector<Exp*>& returns);// Set call's return locs
-	void		setSigArguments();			// Set arguments based on signature
-	std::vector<Exp*>& getArguments();		// Return call's arguments
-	int			getNumReturns();
-	Exp			*getReturnExp(int i);
-	int			findReturn(Exp *e);
-	void		removeReturn(Exp *e);
-	void		ignoreReturn(Exp *e);
-	void		ignoreReturn(int n);
-	void		addReturn(Exp *e);
-	std::vector<Exp*>& getReturns() {return returns;}
-	Exp			*getProven(Exp *e);
-	// Substitute the various components of expression e with the appropriate actual arguments
-	Exp			*substituteParams(Exp *e);
-	void		addArgument(Exp *e);
-	// Treat e as the expression for a parameter, and return the actual, or failing that, the implicit parameter
-	Exp*		findArgument(Exp* e);
-	Exp*		getArgumentExp(int i);
-	Exp*		getImplicitArgumentExp(int i);
-	std::vector<Exp*>& getImplicitArguments() {return implicitArguments;}
-	int			getNumImplicitArguments() {return implicitArguments.size();}
-	void		setArgumentExp(int i, Exp *e);
-	void		setNumArguments(int i);
-	int			getNumArguments();
-	void		removeArgument(int i);
-	void		removeImplicitArgument(int i);
-	Type		*getArgumentType(int i);
-	void		truncateArguments();
-	void		clearLiveEntry();
+		void	setArguments(std::vector<Exp*>& arguments);
+		// Set implicit arguments: so far, for testing only:
+		void	setImpArguments(std::vector<Exp*>& arguments);
+		void	setReturns(std::vector<Exp*>& returns);// Set call's return locs
+		void	setSigArguments();			// Set arguments based on signature
+		std::vector<Exp*>& getArguments();		// Return call's arguments
+		int		getNumReturns();
+		Exp		*getReturnExp(int i);
+		int		findReturn(Exp *e);
+		void	removeReturn(Exp *e);
+		void	ignoreReturn(Exp *e);
+		void	ignoreReturn(int n);
+		void	addReturn(Exp *e, Type* ty = NULL);
+		std::vector<ReturnInfo>& getReturns() {return returns;}
+		Exp		*getProven(Exp *e);
+		// Substitute the various components of expression e with the appropriate actual arguments
+		Exp		*substituteParams(Exp *e);
+		void	addArgument(Exp *e);
+		// Treat e as the expression for a parameter, and return the actual, or failing that, the implicit parameter
+		Exp*	findArgument(Exp* e);
+		Exp*	getArgumentExp(int i);
+		Exp*	getImplicitArgumentExp(int i);
+		std::vector<Exp*>& getImplicitArguments() {return implicitArguments;}
+		int		getNumImplicitArguments() {return implicitArguments.size();}
+		void	setArgumentExp(int i, Exp *e);
+		void	setNumArguments(int i);
+		int		getNumArguments();
+		void	removeArgument(int i);
+		void	removeImplicitArgument(int i);
+		Type	*getArgumentType(int i);
+		void	truncateArguments();
+		void	clearLiveEntry();
 
 
 virtual void	print(std::ostream& os = std::cout);
@@ -1069,8 +1076,8 @@ virtual void	fromSSAform(igraph& ig);
 		// Insert actual arguments to match formal parameters
 		void	insertArguments(StatementSet& rs);
 
-virtual	Type*	getType() {return returnType;}		// MVE: TEMPORARY
-virtual	void	setType(Type* t) { returnType = t;}	// MVE: TEMPORARY
+virtual	Type*	getTypeFor(Exp* e);				// Get the type defined by this Statement for this location
+virtual void	setTypeFor(Exp* e, Type* ty);	// Set the type for this location, defined in this statement
 		// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the
 		// number of parameters if needed, and return true if any signature parameters added
 		bool	ellipsisProcessing(Prog* prog);
@@ -1095,11 +1102,8 @@ protected:
 		// number of bytes that this return pops
 		int		nBytesPopped;
 
-		// value returned
+		// value returned. No types stored. To find the type of a return, call ascendType on the return expression
 		std::vector<Exp*> returns;
-
-		// Each return has a type. MVE: for now:
-		Type*	type;
 
 		// Native address of the (only) return instruction
 		// Needed for branching to this only return statement
@@ -1162,9 +1166,6 @@ virtual void	dfaTypeAnalysis(bool& ch);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
-
-		Type*	getType() {return type;}			// TEMPORARY
-		void	setType(Type* ty) {type = ty;}
 
 	friend class XMLProgParser;
 };	// class ReturnStatement

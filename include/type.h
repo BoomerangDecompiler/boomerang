@@ -196,6 +196,7 @@ virtual bool isFunc() const { return true; }
 virtual Type *clone() const;
 
 		Signature *getSignature() { return signature; }
+		void	setSignature(Signature* sig) {signature = sig;}
 
 virtual bool	operator==(const Type& other) const;
 //virtual bool	  operator-=(const Type& other) const;

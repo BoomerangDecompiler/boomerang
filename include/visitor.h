@@ -350,9 +350,10 @@ public:
 				StmtSubscripter(ExpModifier* em) : StmtModifier(em) {}
 virtual			~StmtSubscripter() {}
 
-virtual void	visit(		   Assign *s, bool& recur);
-virtual void	visit(		PhiAssign *s, bool& recur);
+virtual void	visit(		  Assign *s, bool& recur);
+virtual void	visit(	   PhiAssign *s, bool& recur);
 virtual void	visit(ImplicitAssign *s, bool& recur);
+virtual void	visit(    BoolAssign *s, bool& recur);
 virtual void	visit( CallStatement *s, bool& recur);
 };
 
@@ -399,13 +400,26 @@ class DfaLocalConverter : public ExpModifier {
 		Signature* sig;		// Look up once (from proc) for speed
 		int		sp;			// Look up the stack pointer register once
 public:
-				DfaLocalConverter(Type* ty, UserProc* proc);
-		//void	setType(Type* ty) {parentType = ty;}
+				DfaLocalConverter(UserProc* proc);
+		void	setType(Type* ty) {parentType = ty;}
 		//Type*	getType() {return parentType;}
 
 		Exp*	preVisit(Location* e, bool& recur);
 		Exp*	postVisit(Location* e);
 		Exp*	preVisit(Binary* e, bool& recur);
+};
+
+class StmtDfaLocalConverter : public StmtModifier {
+public:
+				StmtDfaLocalConverter(ExpModifier* em) : StmtModifier(em) {}
+
+virtual void	visit(		   Assign *s, bool& recur);
+virtual void	visit(	    PhiAssign *s, bool& recur);
+virtual void	visit( ImplicitAssign *s, bool& recur);
+virtual void	visit(     BoolAssign *s, bool& recur);
+virtual void	visit(  CallStatement *s, bool& recur);
+virtual void	visit(BranchStatement *s, bool& recur);
+virtual void	visit(ReturnStatement *s, bool& recur);
 };
 
 // Convert any exp{0} with null definition so that the definition points instead to an implicit assignment

@@ -346,15 +346,16 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst,
 			return false;
 		}
 		else {
-			// Else no restore after this call.
-			// An outedge may be added to the lexical
-			// successor of the call which will be 8 bytes
-			// ahead or in the case where the callee returns
-			// a struct, 12 bytes head
+			// Else no restore after this call.  An outedge may be added to the lexical
+			// successor of the call which will be 8 bytes ahead or in the case where the callee returns
+			// a struct, 12 bytes ahead. But the problem is: how do you know this function returns a struct
+			// at decode time?
 			// If forceOutEdge is set, set offset to 0 and no out-edge will be
 			// added yet
 			int offset = inst.forceOutEdge ? 0 :
-				(call_stmt->returnsStruct() ? 12 : 8);
+				//(call_stmt->returnsStruct() ? 12 : 8);
+				// MVE: FIXME!
+				8;
 
 			bool ret = true;
 			// Check for _exit; probably should check for other "never return"

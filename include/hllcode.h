@@ -34,6 +34,7 @@ class Type;
 class Signature;
 class Assign;
 class LocationSet;
+class ReturnInfo;
 
 class HLLCode {
 protected:
@@ -99,19 +100,15 @@ public:
 
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *s) = 0;
-	virtual void AddCallStatement(int indLevel, Proc *proc, 
-			const char *name, std::vector<Exp*> &args,
-			std::vector<Exp*>& rets) = 0;
-	virtual void AddIndCallStatement(int indLevel, Exp *exp,
-			std::vector<Exp*> &args) = 0;
-	virtual void AddReturnStatement(int indLevel, 
-										std::vector<Exp*> &returns) = 0;
+	virtual void AddCallStatement(int indLevel, Proc *proc, const char *name, std::vector<Exp*> &args,
+			std::vector<ReturnInfo>& rets) = 0;
+	virtual void AddIndCallStatement(int indLevel, Exp *exp, std::vector<Exp*> &args) = 0;
+	virtual void AddReturnStatement(int indLevel, std::vector<Exp*> &returns) = 0;
 	virtual void AddProcStart(Signature *signature) = 0;
 	virtual void AddProcEnd() = 0;
 	virtual void AddLocal(const char *name, Type *type, bool last = false) = 0;
 
-		virtual void AddGlobal(const char *name, Type *type, 
-								Exp *init = NULL) = 0;
+		virtual void AddGlobal(const char *name, Type *type, Exp *init = NULL) = 0;
 
 	// comments
 	virtual void AddLineComment(char* cmt) = 0;

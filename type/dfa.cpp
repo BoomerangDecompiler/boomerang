@@ -70,8 +70,17 @@ void UserProc::dfaTypeAnalysis() {
 					LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
 				LOG << "\n";
 			}
-			// If it is a call, also display its return types
-			// TBC HACK!
+			// If s is a call, also display its return types
+			if (s->isCall()) {
+				std::vector<ReturnInfo>& returns = ((CallStatement*)s)->getReturns();
+				int n = returns.size();
+				if (n) {
+					LOG << "       Returns: ";
+					for (int i=0; i < n; i++)
+						if (returns[i].e) LOG << returns[i].type->getCtype() << " " << returns[i].e << "  ";
+					LOG << "\n";
+				}
+			}
 		}
 		LOG << "\n *** End results for Data flow based Type Analysis for " << getName() << " ***\n\n";
 	}
@@ -383,7 +392,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 			RefExp* r = (RefExp*)e;
 			Statement* def = r->getRef();
 			assert(def);
-			Type* tParam = def->getType();
+			Type* tParam = def->getTypeFor(r->getSubExp1());
 			assert(tParam);
 			Type* oldTparam = tParam;
 			tParam = tParam->meetWith(t, ch);
@@ -427,17 +436,17 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 // ...
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	unsigned i, n = stmtVec.size();
-	Type* meetOfPred = stmtVec[0]->getType();
+	Type* meetOfPred = stmtVec[0]->getTypeFor(lhs);
 	for (i=1; i < n; i++)
-		if (stmtVec[i] && stmtVec[i]->getType())
-			meetOfPred = meetOfPred->meetWith(stmtVec[i]->getType(), ch);
+		if (stmtVec[i] && stmtVec[i]->getTypeFor(lhs))
+			meetOfPred = meetOfPred->meetWith(stmtVec[i]->getTypeFor(lhs), ch);
 	type = type->meetWith(meetOfPred, ch);
 	for (i=0; i < n; i++) {
-		if (stmtVec[i] && stmtVec[i]->getType()) {
+		if (stmtVec[i] && stmtVec[i]->getTypeFor(lhs)) {
 			bool thisCh = false;
-			Type* res = stmtVec[i]->getType()->meetWith(type, thisCh);
+			Type* res = stmtVec[i]->getTypeFor(lhs)->meetWith(type, thisCh);
 			if (thisCh) {
-				stmtVec[i]->setType(res);
+				stmtVec[i]->setTypeFor(lhs, res);
 				ch = true;
 			}
 		}
@@ -613,10 +622,10 @@ Type* Binary::ascendType() {
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
 Type* RefExp::ascendType() {
 if (def == NULL) {
-	std::cerr << "Warning! Null reference in " << this << "\n";
-	return new VoidType;
+ std::cerr << "Warning! Null reference in " << this << "\n";
+ return new VoidType;
 }
-	return def->getType();
+	return def->getTypeFor(subExp1);
 }
 Type* Const::ascendType() {
 	if (type->isVoid()) {
@@ -673,6 +682,12 @@ Type* Unary::ascendType() {
 }
 
 Type* Ternary::ascendType() {
+	switch (op) {
+		case opFsize:
+			return new FloatType(((Const*)subExp2)->getInt());
+		default:
+			break;
+	}
 	return new VoidType;
 }
 
@@ -718,8 +733,8 @@ void Binary::descendType(Type* parentType, bool& ch) {
 }
 
 void RefExp::descendType(Type* parentType, bool& ch) {
-	Type* oldType = def->getType();
-	def->setType(parentType);
+	Type* oldType = def->getTypeFor(subExp1);
+	def->setTypeFor(subExp1, parentType);
 	ch |= oldType != parentType;
 	subExp1->descendType(parentType, ch);
 }
@@ -739,6 +754,13 @@ void Unary::descendType(Type* parentType, bool& ch) {
 }
 
 void Ternary::descendType(Type* parentType, bool& ch) {
+	switch (op) {
+		case opFsize:
+			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch);
+			break;
+		default:
+			break;
+	}
 }
 
 void TypedExp::descendType(Type* parentType, bool& ch) {
@@ -750,16 +772,82 @@ void Terminal::descendType(Type* parentType, bool& ch) {
 // Convert expressions to locals, using the (so far DFA based) type analysis information
 // Basically, descend types, and when you get to m[...] compare with the local high level pattern;
 // when at a sum or difference, check for the address of locals high level pattern that is a pointer
+
 void Statement::dfaConvertLocals() {
-	DfaLocalConverter dlc(getType(), proc);
-	StmtModifier sm(&dlc);
-	accept(&sm);
+	DfaLocalConverter dlc(proc);
+	StmtDfaLocalConverter sdlc(&dlc);
+	accept(&sdlc);
 }
 
+void StmtDfaLocalConverter::visit(Assign* s, bool& recur) {
+	((DfaLocalConverter*)mod)->setType(s->getType());
+	recur = true;
+}
+void StmtDfaLocalConverter::visit(PhiAssign* s, bool& recur) {
+	((DfaLocalConverter*)mod)->setType(s->getType());
+	recur = true;
+}
+void StmtDfaLocalConverter::visit(ImplicitAssign* s, bool& recur) {
+	((DfaLocalConverter*)mod)->setType(s->getType());
+	recur = true;
+}
+void StmtDfaLocalConverter::visit(BoolAssign* s, bool& recur) {
+	((DfaLocalConverter*)mod)->setType(s->getType());
+	recur = true;
+}
+void StmtDfaLocalConverter::visit(BranchStatement* s, bool& recur) {
+	((DfaLocalConverter*)mod)->setType(new BooleanType);
+	Exp* pCond = s->getCondExpr();
+	s->setCondExpr(pCond->accept(mod));
+	recur = false;
+}
+void StmtDfaLocalConverter::visit(ReturnStatement* s, bool& recur) {
+	int n = s->getNumReturns();
+	for (int i=0; i < n; i++) {
+		Exp* ret = s->getReturnExp(i);
+		((DfaLocalConverter*)mod)->setType(ret->ascendType());
+		s->setReturnExp(i, ret->accept(mod));
+	}
+	recur = false;
+}
+void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
+	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
+	Exp* pDest = s->getDest();
+	if (pDest) {
+		FuncType* ft = new FuncType;
+		Proc* destProc = s->getDestProc();
+		if (destProc && destProc->getSignature())
+			ft->setSignature(destProc->getSignature());
+		((DfaLocalConverter*)mod)->setType(ft);
+		s->setDest(pDest->accept(mod));
+	}
+	std::vector<Exp*>::iterator it;
+	std::vector<Exp*>& arguments = s->getArguments();
+	for (it = arguments.begin(); recur && it != arguments.end(); it++) {
+		// MVE: Should we get argument types from the signature, or ascend from the argument expression?
+		// Should come to the same thing, and the signature is presumably more efficient
+		// But is it always available?
+		((DfaLocalConverter*)mod)->setType((*it)->ascendType());
+		*it = (*it)->accept(mod);
+	}
+	std::vector<Exp*>& implicitArguments = s->getImplicitArguments();
+	for (it = implicitArguments.begin(); recur && it != implicitArguments.end(); it++) {
+		((DfaLocalConverter*)mod)->setType((*it)->ascendType());
+		*it = (*it)->accept(mod);
+	}
+	std::vector<ReturnInfo>::iterator rr;
+	std::vector<ReturnInfo>& returns = s->getReturns();
+	for (rr = returns.begin(); recur && rr != returns.end(); rr++) {
+		if (rr->e == NULL) continue;			// Can be NULL now; just ignore
+		((DfaLocalConverter*)mod)->setType(rr->type);
+		rr->e = rr->e->accept(mod);
+	}
+	recur = false;
+}
+
+
 // Convert expressions to locals
-DfaLocalConverter::DfaLocalConverter(Type* ty, UserProc* proc) : parentType(ty), proc(proc) {
-// Example: BranchStatement... does the condition have a top level type?
-if (parentType == NULL) parentType = new VoidType();	// MVE: Hack for now
+DfaLocalConverter::DfaLocalConverter(UserProc* proc) : parentType(NULL), proc(proc) {
 	sig = proc->getSignature();
 	prog = proc->getProg();
 	sp = sig->getStackRegister();

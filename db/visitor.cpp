@@ -591,6 +591,16 @@ void StmtSubscripter::visit(ImplicitAssign* s, bool& recur) {
 	}
 	recur = false;
 }
+void StmtSubscripter::visit(BoolAssign* s, bool& recur) {
+	Exp* lhs = s->getLeft();
+	if (lhs->isMemOf()) {
+		Exp*& child = ((Location*)lhs)->refSubExp1();
+		child = child->accept(mod);
+	}
+	Exp* rhs = s->getCondExpr();
+	s->setCondExpr(rhs->accept(mod));
+	recur = false;
+}
 
 void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	Exp* pDest = s->getDest();

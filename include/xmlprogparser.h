@@ -97,6 +97,7 @@ class XMLProgParser
 	TAGD(argument) 
 	TAGD(implicitarg) 
 	TAGD(returnexp)
+	TAGD(returntype)
 	TAGD(returnstmt)
 	TAGD(gotostmt) 
 	TAGD(branchstmt) 

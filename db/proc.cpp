@@ -1633,7 +1633,7 @@ void UserProc::trimParameters(int depth) {
 					pe = signature->getImplicitParamExp(i - nparams);
 				}
 if (!referenced[i] && excluded.find(s) == excluded.end())
-  LOG << " ## Searching " << s << " for " << p << " ( " << params[i] << " )\n";
+  LOG << " ## Searching " << s << " for " << p << " ( " << params[i] << " )\n";	// HACK!
 				if (!referenced[i] && excluded.find(s) == excluded.end() && 
 						// Search for the named parameter (e.g. param1), and just
 						// in case, also for the expression (e.g. r8{0})
@@ -2433,7 +2433,7 @@ void UserProc::regReplaceList(std::list<Exp**>& li) {
 	for (it = li.begin(); it != li.end(); it++) {
 		Exp* reg = ((RefExp*)**it)->getSubExp1();
 		Statement* def = ((RefExp*)**it)->getRef();
-		Type *ty = def->getType();
+		Type *ty = def->getTypeFor(reg);
 		// MVE: Might make sense to use some other map for this, and get rid of data member symbolMap
 		if (symbolMap.find(reg) == symbolMap.end()) {
 			symbolMap[reg] = newLocal(ty);

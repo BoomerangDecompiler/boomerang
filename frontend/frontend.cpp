@@ -543,7 +543,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						// replace with a call ret
 						std::string func = pBF->GetDynamicProcName(
 							((Const*)stmt_jump->getDest()->getSubExp1())->getAddr());
-						CallStatement *call = new CallStatement(pRtl->getAddress());
+						CallStatement *call = new CallStatement;
 						call->setDest(stmt_jump->getDest()->clone());
 						LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
 						assert(lp);

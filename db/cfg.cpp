@@ -2165,7 +2165,6 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 	}
 
 	// For each variable a (in defsites)
-	// Prog* prog = myProc->getProg();		// See def of Ta below MVE
 	std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
 	for (mm = defsites.begin(); mm != defsites.end(); mm++) {
 		Exp* a = (*mm).first;				// *mm is pair<Exp*, set<int>>
@@ -2185,8 +2184,6 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 				if (s.find(y) == s.end()) {
 					// Insert trivial phi function for a at top of block y
 					// a := phi()
-			// MVE: Needs work here!
-					// Type* Ta = defStmts[a]->getTypeFor(a, prog);
 					Statement* as = new PhiAssign(/*Ta,*/ a->clone());
 					PBB Ybb = BBs[y];
 					Ybb->prependStmt(as, proc);

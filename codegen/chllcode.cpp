@@ -1009,19 +1009,20 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 	lines.push_back(strdup(s.str().c_str()));
 }
 
-void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
-	const char *name, std::vector<Exp*> &args, std::vector<Exp*>& rets)
+void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, std::vector<Exp*> &args,
+	std::vector<ReturnInfo>& rets)
 {
 	std::ostringstream s;
 	indent(s, indLevel);
 	unsigned n = 0;
 	if (rets.size() >= 1) {
-		for (n = 0; n < rets.size(); n++)
-			if (rets[n]) {
-				appendExp(s, rets[n], PREC_ASSIGN);
+		for (n = 0; n < rets.size(); n++) {
+			if (rets[n].e) {
+				appendExp(s, rets[n].e, PREC_ASSIGN);
 				s << " = ";
 				break;
 			}
+		}
 	}
 	s << name << "(";
 	for (unsigned int i = 0; i < args.size(); i++) {
@@ -1042,12 +1043,12 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 	s << ");";
 	bool first = true;
 	for (n++; n < rets.size(); n++) 
-		if (rets[n]) {
+		if (rets[n].e) {
 			if (first)
 				s << " // OUT: ";
 			else
 				s << ", ";
-			appendExp(s, rets[n], PREC_COMMA);
+			appendExp(s, rets[n].e, PREC_COMMA);
 			first = false;
 		}
 	std::string str = s.str();	// Copy the whole string
@@ -1059,8 +1060,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 
 // Ugh - almost the same as the above, but it needs to take an expression,
 // not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
-	std::vector<Exp*> &args)
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, std::vector<Exp*> &args)
 {
 	std::ostringstream s;
 	indent(s, indLevel);
