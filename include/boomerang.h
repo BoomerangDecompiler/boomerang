@@ -32,6 +32,7 @@ class Boomerang {
 private:
     static Boomerang *boomerang;
     std::string progPath;   // String with the path to this exec
+    Log *logger;
 
     void usage();
     void help();
@@ -44,6 +45,7 @@ public:
     }
 
     Log &log();
+    void setLogger(Log *l) { logger = l; }
 
     HLLCode *getHLLCode(UserProc *p = NULL);
 
@@ -51,6 +53,7 @@ public:
     int commandLine(int argc, const char **argv);
     void setProgPath(const char* p) { progPath = p; }
     const std::string& getProgPath() { return progPath; }
+    int decompile(const char *fname);
 
     // Command line flags
     bool vFlag;
@@ -76,6 +79,9 @@ public:
     bool debugLiveness;
     bool debugUnusedRets;
     bool debugTA;
+    std::vector<ADDRESS> entrypoints;
+    bool decodeMain;
+    bool printAST;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

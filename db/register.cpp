@@ -64,7 +64,7 @@ Register Register::operator=(const Register& r2)
 	// copy operator
 
     if (name != NULL)
-        free(name);
+        ;//free(name);
 	name = r2.name;
 	size = r2.size;
     flt  = r2.flt;
@@ -117,7 +117,7 @@ void Register::s_name(const char *s)
 	assert(s != NULL);
 
 	if (name != NULL)
-		free(name);
+		;//free(name);
 	name = strdup(s);
 }
 

@@ -27,16 +27,16 @@
 #include "types.h"
 #include "insnameelem.h"
 
-InsNameElem::InsNameElem(std::string name)
+InsNameElem::InsNameElem(const char *name)
 {
-	elemname = name;
+    elemname = name;
     value = 0;
     nextelem = NULL;
 }
 
 InsNameElem::~InsNameElem(void)
 {
-    delete nextelem;
+//    delete nextelem;
 }
 
 int InsNameElem::ntokens(void)
@@ -97,7 +97,7 @@ int InsNameElem::getvalue(void)
     return value;
 }
 
-InsOptionElem::InsOptionElem(std::string name):
+InsOptionElem::InsOptionElem(const char *name):
     InsNameElem(name)
 {
 }
@@ -126,7 +126,7 @@ std::string InsOptionElem::getinspattern(void)
         : ('\'' + elemname + '\'');
 }
 
-InsListElem::InsListElem(std::string name, Table* t, std::string idx):
+InsListElem::InsListElem(const char *name, Table* t, const char *idx):
     InsNameElem(name)
 {
     indexname = idx;

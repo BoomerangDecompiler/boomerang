@@ -1577,7 +1577,7 @@ case 17:
             // Note: the below copies the list of strings!
             Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
             Dict.DetParamMap[yyvsp[-4].str].kind = PARAM_VARIANT;
-            delete yyvsp[-1].parmlist;
+            //delete $4;
         ;
     break;}
 case 18:
@@ -1594,8 +1594,8 @@ case 18:
             
             if( param.funcParams.size() != 0 )
                 param.kind = PARAM_LAMBDA;
-            delete yyvsp[-3].parmlist;
-            delete yyvsp[-2].parmlist;
+            //delete $2;
+            //delete $3;
         ;
     break;}
 case 19:
@@ -1711,7 +1711,7 @@ case 31:
                             yyerror("Name reglist declared twice\n");
                         Dict.addRegister( loc->c_str(), x, yyvsp[-5].num, bFloat);
                     }
-                    delete yyvsp[-8].strlist;
+                    //delete $2;
                 }
             ;
     break;}
@@ -1724,7 +1724,7 @@ case 32:
                         yyerror("Name reglist declared twice\n");
 		    Dict.addRegister(loc->c_str(), yyvsp[0].num, yyvsp[-3].num, bFloat);
                 }
-                delete yyvsp[-6].strlist;
+                //delete $2;
             ;
     break;}
 case 33:
@@ -1778,21 +1778,21 @@ case 39:
 #line 459 "sslparser.y"
 {
             yyval.tab = new Table(*yyvsp[0].namelist);
-            delete yyvsp[0].namelist;
+            //delete $1;
         ;
     break;}
 case 40:
 #line 464 "sslparser.y"
 {
             yyval.tab = new OpTable(*yyvsp[0].namelist);
-            delete yyvsp[0].namelist;
+            //delete $1;
         ;
     break;}
 case 41:
 #line 468 "sslparser.y"
 {
             yyval.tab = new ExprTable(*yyvsp[0].exprlist);
-            delete yyvsp[0].exprlist;
+            //delete $1;
         ;
     break;}
 case 42:
@@ -1804,8 +1804,8 @@ case 42:
             for (i = yyvsp[-1].namelist->begin(); i != yyvsp[-1].namelist->end(); i++)
                 for (j = yyvsp[0].namelist->begin(); j != yyvsp[0].namelist->end(); j++)
                     yyval.namelist->push_back((*i) + (*j));
-            delete yyvsp[-1].namelist;
-            delete yyvsp[0].namelist;
+            //delete $1;
+            //delete $2;
         ;
     break;}
 case 43:
@@ -1821,7 +1821,7 @@ case 44:
             // The following causes a massive warning message about mixing
             // signed and unsigned
             yyvsp[-2].namelist->insert(yyvsp[-2].namelist->end(), yyvsp[0].namelist->begin(), yyvsp[0].namelist->end());
-            delete yyvsp[0].namelist;
+            //delete $3;
             yyval.namelist = yyvsp[-2].namelist;
         ;
     break;}
@@ -1998,7 +1998,7 @@ case 65:
             while ((i = nm.find("_")) != nm.npos)
 	            nm.replace(i,1,"");
  
-            temp = new InsNameElem(nm);
+            temp = new InsNameElem(nm.c_str());
             yyval.insel = yyvsp[-1].insel;
             yyval.insel->append(temp);
         ;
@@ -2039,7 +2039,7 @@ case 70:
                 o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
                 yyerror(STR(o));
             } else
-                yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num]);
+                yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
         ;
     break;}
 case 71:
@@ -2064,7 +2064,7 @@ case 72:
                 o << "Can't get element " << yyvsp[-1].num << " of table " << yyvsp[-2].str << ".\n";
                 yyerror(STR(o));
             } else
-                yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num]);
+                yyval.insel = new InsNameElem(TableDict[yyvsp[-2].str]->records[yyvsp[-1].num].c_str());
         ;
     break;}
 case 73:
@@ -2368,7 +2368,7 @@ case 109:
                     yyval.exp = new Binary(opFlagDef,
                             new Const(yyvsp[-2].str),
                             listExpToExp(yyvsp[-1].explist));
-                    delete yyvsp[-1].explist;          // Delete the list of char*s
+                    //delete $2;          // Delete the list of char*s
                 }
             } else {
                 o << yyvsp[-2].str << " is not defined as a OPERAND function.\n";
@@ -3167,9 +3167,9 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
             yyerror(STR(o));
         }
     }
-    delete iname;
-    delete params;
-    delete o_rtlist;
+    //delete iname;
+    //delete params;
+    //delete o_rtlist;
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 

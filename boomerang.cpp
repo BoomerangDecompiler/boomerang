@@ -9,14 +9,14 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-Boomerang::Boomerang() : vFlag(false), printRtl(false), 
+Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugDataflow(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
-    debugTA(false)
+    debugTA(false), decodeMain(true), printAST(false)
 {
 }
 
@@ -27,8 +27,7 @@ public:
 };
 
 Log &Boomerang::log() {
-    static StdErrLogger l;
-    return l;
+    return *logger;
 }
 
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
@@ -72,6 +71,7 @@ void Boomerang::help() {
 }
         
 int Boomerang::commandLine(int argc, const char **argv) {
+    setLogger(new StdErrLogger());
     if (argc < 2) usage();
     progPath = argv[0];
     // Chop off after the last slash
@@ -91,9 +91,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
         help();
         return 1;
     }
-    std::list<ADDRESS> entrypoints;
-    bool decodeMain = true;
-    bool printAST = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -196,28 +193,32 @@ int Boomerang::commandLine(int argc, const char **argv) {
         }
     }
     
-    std::cerr << "loading..." << std::endl;
-    FrontEnd *fe = FrontEnd::Load(argv[argc-1]);
+    return decompile(argv[argc-1]);    
+}
+
+int Boomerang::decompile(const char *fname)
+{
+    std::cerr << "loading...\n";
+    FrontEnd *fe = FrontEnd::Load(fname);
     if (fe == NULL) {
-        std::cerr << "failed." << std::endl;
+        std::cerr << "failed.\n";
         return 1;
     }
 
-    std::cerr << "decoding..." << std::endl;
+    std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);
     if (entrypoints.size()) {
-        for (std::list<ADDRESS>::iterator it = entrypoints.begin();
-             it != entrypoints.end(); it++) {
-            std::cerr << "decoding extra entrypoint " << *it << std::endl;
-            prog->decode(*it);
+        for (unsigned i = 0; i < entrypoints.size(); i++) {
+            std::cerr<< "decoding extra entrypoint " << entrypoints[i] << "\n";
+            prog->decode(entrypoints[i]);
         }
     }
 
-    std::cerr << "analysing..." << std::endl;
+    std::cerr << "analysing...\n";
     prog->analyse();
 
     if (!noDecompile) {
-        std::cerr << "decompiling..." << std::endl;
+        std::cerr << "decompiling...\n";
         prog->decompile();
     }
 
@@ -225,7 +226,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         prog->generateDotFile();
 
     if (printAST) {
-        std::cerr << "printing AST..." << std::endl;
+        std::cerr << "printing AST...\n";
         PROGMAP::const_iterator it;
         for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
             if (!p->isLib()) {
@@ -235,25 +236,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
             }
     }
 
-    std::cerr << "generating code..." << std::endl;
+    std::cerr << "generating code...\n";
     prog->generateCode(std::cout);
 
     return 0;
 }
 
-/* This makes sure that the garbage collector sees all allocations, even those
-    that we can't be bothered collecting, especially standard STL objects */
-void* operator new(size_t n) {
-#ifdef DONT_COLLECT_STL
-    return GC_malloc_uncollectable(n);  // Don't collect, but mark
-#else
-    return GC_malloc(n);                // Collect everything
-#endif
-}
-
-void operator delete(void* p) {
-#ifdef DONT_COLLECT_STL
-    GC_free(p); // Important to call this if you call GC_malloc_uncollectable
-    // #else do nothing!
-#endif
-}

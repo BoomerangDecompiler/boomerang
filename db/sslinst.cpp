@@ -47,6 +47,7 @@
 #include "prog.h"
 #include "sslparser.h"
 
+//#define DEBUG_SSLPARSER 1
 
 /*==============================================================================
  * FUNCTION:        TableEntry::TableEntry
@@ -63,9 +64,12 @@ TableEntry::TableEntry() { flags = 0; }
  *                  r - reference to a RTL
  * RETURNS:         <nothing>
  *============================================================================*/
-TableEntry::TableEntry(std::list<std::string>& p, RTL& r) :
-    params(p), rtl(r)
-{ flags = 0; }
+TableEntry::TableEntry(std::list<std::string>& p, RTL& r) : rtl(r)
+{ 
+    for (std::list<std::string>::iterator it = p.begin(); it != p.end(); it++)
+        params.push_back(*it);
+    flags = 0; 
+}
 
 /*==============================================================================
  * FUNCTION:        TableEntry::setParam
@@ -95,7 +99,9 @@ void TableEntry::setRTL(RTL& r) {
  * RETURNS:         a reference to this object
  *============================================================================*/
 const TableEntry& TableEntry::operator=(const TableEntry& other) {
-    params = other.params;
+    for (std::list<std::string>::const_iterator it = other.params.begin(); 
+         it != other.params.end(); it++)
+        params.push_back(*it);
     rtl = *(new RTL(other.rtl));
     return *this;
 }
@@ -136,12 +142,13 @@ int RTLInstDict::appendToDict(std::string &n, std::list<std::string>& p, RTL& r)
     upperStr(opcode, opcode);
     std::remove(opcode, opcode+strlen(opcode)+1,'.');
     std::string s(opcode);
-    delete [] opcode;
+    //delete [] opcode;
    
-    if (idict.find(s) == idict.end())
+    if (idict.find(s) == idict.end()) {
         idict[s] = TableEntry(p, r);
-    else
+    } else {
         return idict[s].appendRTL(p, r);
+    }
     return 0;
 }
 
@@ -180,7 +187,7 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName, bool bPrint /*= fa
 #endif
 );
     if (theParser.theScanner == NULL)
-    return false;
+        return false;
     addRegister( "%CTI", -1, 1, false );
     addRegister( "%NEXT", -1, 32, false );
     
@@ -354,7 +361,7 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
 
     std::pair<std::string, unsigned> ret;
     ret = std::pair<std::string,unsigned>(opcode,(it->second).params.size());
-    delete [] opcode;
+    //delete [] opcode;
     return ret;
 }
 
@@ -440,7 +447,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl,
                 
             (*rt)->searchAndReplace(formal, *actual);
             (*rt)->fixSuccessor();
-            delete formal;
+            //delete formal;
         }
     }
 
@@ -606,7 +613,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
         } else {
             // The temp is either used (uncloned) in the assignment, or is
             // deleted here
-            delete sr->second.tmp;
+            //delete sr->second.tmp;
         }
     }
 

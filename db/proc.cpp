@@ -576,7 +576,7 @@ SyntaxNode *UserProc::getAST()
     int count = 0;
     while (ASTs.size()) {
         if (best_score < numBBs * 2)  {
-            std::cerr << "exit early: " << best_score << std::endl;
+            LOG << "exit early: " << best_score << "\n";
             break;
         }
 
@@ -710,7 +710,7 @@ void UserProc::generateCode(HLLCode *hll) {
     removeUnusedLocals();
 
     if (VERBOSE || Boomerang::get()->printRtl)
-        print(std::cerr);
+        printToLog();
 
     hll->AddProcStart(signature);
     
@@ -736,9 +736,9 @@ void UserProc::print(std::ostream &out, bool withDF) {
 
 void UserProc::printToLog(bool withDF)
 {
-    std::ostringstream st;
-    print(st, withDF);
-    LOG << st.str().c_str();
+    signature->printToLog();
+    cfg->printToLog(withDF);
+    LOG << "\n";
 }
 
 // initialise all statements
@@ -885,7 +885,7 @@ std::set<UserProc*>* UserProc::decompile() {
     cycleSet->erase(this);
 
     if (VERBOSE) {
-        std::cerr << "decompiling: " << getName() << std::endl;
+        LOG << "decompiling: " << getName() << "\n";
     }
 
 
@@ -919,10 +919,10 @@ std::set<UserProc*>* UserProc::decompile() {
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA) {
-            std::cerr << "=== Debug Print SSA for " << getName()
+            LOG << "=== Debug Print SSA for " << getName()
               << " at memory depth " << depth << " (no propagations) ===\n";
-            print(std::cerr, true);
-            std::cerr << "=== End Debug Print SSA for " <<
+            printToLog(true);
+            LOG << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
         }
         
@@ -944,39 +944,39 @@ std::set<UserProc*>* UserProc::decompile() {
         addNewReturns(depth);
         cfg->renameBlockVars(0, depth, true);
         if (VERBOSE) {
-            std::cerr << "=== Debug Print SSA for " << getName()
+            LOG << "=== Debug Print SSA for " << getName()
               << " at memory depth " << depth
               << " (after adding new returns) ===\n";
-            print(std::cerr, true);
-            std::cerr << "=== End Debug Print SSA for " <<
+            printToLog(true);
+            LOG << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
         }
         trimReturns();
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
-            std::cerr << "=== Debug Print SSA for " << getName() <<
+            LOG << "=== Debug Print SSA for " << getName() <<
               " at memory depth " << depth <<
               " (after trimming return set) ===\n";
-            print(std::cerr, true);
-            std::cerr << "=== End Debug Print SSA for " <<
+            printToLog(true);
+            LOG << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
         }
 
          // Propagate at this memory depth
         for (int td = maxDepth; td >= 0; td--) {
             if (VERBOSE)
-                std::cerr << "propagating at depth " << depth << " to depth " 
-                          << td << std::endl;
+                LOG << "propagating at depth " << depth << " to depth " 
+                          << td << "\n";
             propagateStatements(depth, td);
             for (int i = 0; i <= depth; i++)
                 cfg->renameBlockVars(0, i, true);
         }
         if (VERBOSE) {
-            std::cerr << "=== After propagate for " << getName() <<
+            LOG << "=== After propagate for " << getName() <<
               " at memory depth " << depth << " ===\n";
-            print(std::cerr, true);
-            std::cerr << "=== End propagate for " << getName() <<
+            printToLog(true);
+            LOG << "=== End propagate for " << getName() <<
               " at depth " << depth << " ===\n\n";
         }
 
@@ -993,10 +993,10 @@ std::set<UserProc*>* UserProc::decompile() {
             removeNullStatements();
 
         if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-            std::cerr << "===== After removing null and unused statements "
+            LOG << "===== After removing null and unused statements "
               "=====\n";
-            print(std::cerr, true);
-            std::cerr << "===== End after removing unused "
+            printToLog(true);
+            LOG << "===== End after removing unused "
               "statements =====\n\n";
         }
     }
@@ -1009,12 +1009,12 @@ std::set<UserProc*>* UserProc::decompile() {
         trimReturns();
         trimParameters();
         if (VERBOSE) {
-            std::cerr << "=== After replacing expressions, trimming params "
+            LOG << "=== After replacing expressions, trimming params "
               "and returns ===\n";
-            print(std::cerr, true);
-            std::cerr << "=== End after replacing expressions, trimming params "
+            printToLog(true);
+            LOG << "=== End after replacing expressions, trimming params "
               "and returns ===\n";
-            std::cerr << "===== End after replacing params =====\n\n";
+            LOG << "===== End after replacing params =====\n\n";
         }
     }
 
@@ -1058,7 +1058,7 @@ int UserProc::findMaxDepth() {
 void UserProc::removeRedundantPhis()
 {
     if (VERBOSE)
-        std::cerr << "removing redundant phi statements" << std::endl;
+        LOG << "removing redundant phi statements" << "\n";
 
     // some phis are just not used
     RefCounter refCounts;
@@ -1099,16 +1099,16 @@ void UserProc::removeRedundantPhis()
                     }
                     if (allZeroOrSelfCall) {
                         if (VERBOSE)
-                            std::cerr << "removing using shakey hack:"  
-                                      << std::endl;
+                            LOG << "removing using shakey hack:\n";
                         unused = true;
                         removeReturn(p->getSubExp1());
                     }
                 }
             }
             if (unused) {
-                if (VERBOSE)
-                    std::cerr << "removing unused statement " << s << std::endl;
+                if (VERBOSE) {
+                    LOG << "removing unused statement " << s << "\n";
+                }
                 removeStatement(s);
             }
         }
@@ -1120,8 +1120,9 @@ void UserProc::removeRedundantPhis()
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = (Statement*)*it;
         if (s->isPhi()) {
-            if (VERBOSE)
-                std::cerr << "checking " << s << std::endl;
+            if (VERBOSE) {
+                LOG << "checking " << s << "\n";
+            }
             // if we can prove that all the statements in the phi define
             // equal values then we can replace the phi with any one of 
             // the values, but there's not much point if they're all calls
@@ -1134,8 +1135,7 @@ void UserProc::removeRedundantPhis()
                 }
             if (hasphi) {
                 if (VERBOSE)
-                    std::cerr << "contains a ref to a phi statement (skipping)" 
-                              << std::endl;
+                    LOG << "contains a ref to a phi statement (skipping)\n";
                 continue;
             }
             bool allsame = true;
@@ -1172,7 +1172,7 @@ void UserProc::trimReturns() {
     bool stdret = false;
 
     if (VERBOSE)
-        std::cerr << "Trimming return set for " << getName() << std::endl;
+        LOG << "Trimming return set for " << getName() << "\n";
 
     int sp = signature->getStackRegister(prog);
 
@@ -1184,8 +1184,8 @@ void UserProc::trimReturns() {
         // case required)
         for (int p = 0; !stdsp && p < 5; p++) {
             if (VERBOSE)
-                std::cerr << "attempting to prove sp = sp + " << 4 + p*4 << 
-                             " for " << getName() << std::endl;
+                LOG << "attempting to prove sp = sp + " << 4 + p*4 << 
+                             " for " << getName() << "\n";
             stdsp = prove(new Binary(opEquals,
                           Unary::regOf(sp),
                           new Binary(opPlus,
@@ -1195,7 +1195,7 @@ void UserProc::trimReturns() {
 
         // Prove that pc is set to the return value
         if (VERBOSE)
-            std::cerr << "attempting to prove %pc = m[sp]" << std::endl;
+            LOG << "attempting to prove %pc = m[sp]\n";
         stdret = prove(new Binary(opEquals, new Terminal(opPC), 
                        new Unary(opMemOf, Unary::regOf(sp))));
 
@@ -1204,8 +1204,8 @@ void UserProc::trimReturns() {
             Exp *p = signature->getReturnExp(i);
             Exp *e = new Binary(opEquals, p->clone(), p->clone());
             if (VERBOSE)
-                std::cerr << "attempting to prove " << p << " is preserved by " 
-                          << getName() << std::endl;
+                LOG << "attempting to prove " << p << " is preserved by " 
+                          << getName() << "\n";
             if (prove(e)) {
                 preserved.insert(p);    
             }
@@ -1254,7 +1254,7 @@ void UserProc::fixCallRefs()
 void UserProc::addNewReturns(int depth) {
 
     if (VERBOSE)
-        std::cerr << "Adding new returns for " << getName() << std::endl;
+        LOG << "Adding new returns for " << getName() << "\n";
 
     StatementList stmts;
     getStatements(stmts);
@@ -1270,30 +1270,30 @@ void UserProc::addNewReturns(int depth) {
                 getProven(e) == NULL) {
                 if (e->getOper() == opLocal) {
                     if (VERBOSE)
-                        std::cerr << "ignoring local " << e << std::endl;
+                        LOG << "ignoring local " << e << "\n";
                     continue;
                 }
                 if (e->getOper() == opGlobal) {
                     if (VERBOSE)
-                        std::cerr << "ignoring global " << e << std::endl;
+                        LOG << "ignoring global " << e << "\n";
                     continue;
                 }
                 if (e->getOper() == opRegOf && 
                     e->getSubExp1()->getOper() == opTemp) {
                     if (VERBOSE)
-                        std::cerr << "ignoring temp " << e << std::endl;
+                        LOG << "ignoring temp " << e << "\n";
                     continue;
                 }
                 if (e->getOper() == opFlags) {
                     if (VERBOSE)
-                        std::cerr << "ignoring flags " << e << std::endl;
+                        LOG << "ignoring flags " << e << "\n";
                     continue;
                 }
                 if (e->getMemDepth() != depth) {
                     continue;
                 }
                 if (VERBOSE)
-                    std::cerr << "Found new return " << e << std::endl;
+                    LOG << "Found new return " << e << "\n";
                 addReturn(e);
             }
         }
@@ -1303,7 +1303,7 @@ void UserProc::addNewReturns(int depth) {
 void UserProc::addNewParameters() {
 
     if (VERBOSE)
-        std::cerr << "Adding new parameters for " << getName() << std::endl;
+        LOG << "Adding new parameters for " << getName() << "\n";
 
     StatementList stmts;
     getStatements(stmts);
@@ -1321,16 +1321,16 @@ void UserProc::addNewParameters() {
                 if (signature->isStackLocal(prog, e) ||
                     e->getOper() == opLocal)  {
                     if (VERBOSE)
-                        std::cerr << "ignoring local " << e << std::endl;
+                        LOG << "ignoring local " << e << "\n";
                     continue;
                 }
                 if (e->getOper() == opGlobal) {
                     if (VERBOSE)
-                        std::cerr << "ignoring global " << e << std::endl;
+                        LOG << "ignoring global " << e << "\n";
                     continue;
                 }
                 if (VERBOSE)
-                    std::cerr << "Found new parameter " << e << std::endl;
+                    LOG << "Found new parameter " << e << "\n";
                 addParameter(e);
             }
         }
@@ -1340,7 +1340,7 @@ void UserProc::addNewParameters() {
 void UserProc::trimParameters(int depth) {
 
     if (VERBOSE)
-        std::cerr << "Trimming parameters for " << getName() << std::endl;
+        LOG << "Trimming parameters for " << getName() << "\n";
 
     StatementList stmts;
     getStatements(stmts);
@@ -1367,8 +1367,8 @@ void UserProc::trimParameters(int depth) {
                 if (!referenced[i] && s->isPhi() && 
                       *s->getLeft() == *signature->getParamExp(i)) {
                     if (VERBOSE)
-                        std::cerr << "searching " << s << " for uses of " 
-                                  << params[i] << std::endl;
+                        LOG << "searching " << s << " for uses of " 
+                                  << params[i] << "\n";
                     PhiExp *ph = (PhiExp*)s->getRight();
                     StatementVec::iterator it1;
                     for (it1 = ph->begin(); it1 != ph->end(); it1++)
@@ -1388,7 +1388,7 @@ void UserProc::trimParameters(int depth) {
             bool allZero;
             Exp *e = params[i]->removeSubscripts(allZero);
             if (VERBOSE) 
-                std::cerr << "removing unused parameter " << e << std::endl;
+                LOG << "removing unused parameter " << e << "\n";
             removeParameter(e);
         }
     }
@@ -1400,8 +1400,8 @@ void Proc::removeReturn(Exp *e)
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
          it != callerSet.end(); it++) {
             if (VERBOSE)
-                std::cerr << "removing return " << e << " from " << *it 
-                          << std::endl;
+                LOG << "removing return " << e << " from " << *it 
+                          << "\n";
             (*it)->removeReturn(e);
     }
 }
@@ -1424,8 +1424,8 @@ void Proc::removeParameter(Exp *e)
         for (std::set<CallStatement*>::iterator it = callerSet.begin();
              it != callerSet.end(); it++) {
             if (VERBOSE)
-                std::cerr << "removing argument " << e << " in pos " << n 
-                          << " from " << *it << std::endl;
+                LOG << "removing argument " << e << " in pos " << n 
+                          << " from " << *it << "\n";
             (*it)->removeArgument(n);
         }
     }
@@ -1505,8 +1505,8 @@ void UserProc::replaceExpressionsWithSymbols() {
           it1 != symbolMap.end(); it1++) {
             bool ch = s->searchAndReplace((*it1).first, (*it1).second);
             if (ch && VERBOSE) {
-                std::cerr << "std stmt: replace " << (*it1).first <<
-                  " with " << (*it1).second << " result " << s << std::endl;
+                LOG << "std stmt: replace " << (*it1).first <<
+                  " with " << (*it1).second << " result " << s << "\n";
             }
         }
     }
@@ -1580,11 +1580,8 @@ bool UserProc::nameStackLocations() {
         Exp *memref; 
         if (s->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
-                if (VERBOSE) {
-                    std::cerr << "stack location found: ";
-                    memref->print(std::cerr);
-                    std::cerr << std::endl;
-                }
+                if (VERBOSE)
+                    LOG << "stack location found: " << memref << "\n";
                 symbolMap[memref->clone()] = newLocal(new IntegerType());
             }
             assert(symbolMap.find(memref) != symbolMap.end());
@@ -1613,7 +1610,7 @@ bool UserProc::nameRegisters() {
         if (s->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
                 if (VERBOSE)
-                    std::cerr << "register found: " << memref << std::endl;
+                    LOG << "register found: " << memref << "\n";
                 symbolMap[memref->clone()] = newLocal(new IntegerType());
             }
             assert(symbolMap.find(memref) != symbolMap.end());
@@ -1638,7 +1635,7 @@ bool UserProc::removeNullStatements() {
         if (s->isNullStatement()) {
             // A statement of the form x := x
             if (VERBOSE) {
-                std::cerr << "removing null statement: " << s->getNumber() <<
+                LOG << "removing null statement: " << s->getNumber() <<
                 " " << s << "\n";
             }
             removeStatement(s);
@@ -1655,99 +1652,9 @@ bool UserProc::removeNullStatements() {
     return change;
 }
 
-#if 0
-bool UserProc::removeDeadStatements() {
-    bool change = false;
-    StatementList stmts;
-    getStatements(stmts);
-    // remove dead code
-    StatementList::iterator it;
-    for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-#if 1       // This seems so simple... remove statements with no usedBy MVE
-            // Trent: this is not dead code removal!  Dead code is statements
-            // which define a location which is subsequently written to by
-            // another statement, without first being used.  So although
-            // having an empty usedBy set is a necessary condition, it is not
-            // a sufficient condition.
-        Assign* asgn = dynamic_cast<Assign*>(s);
-        if (asgn == NULL) {
-            // Never remove a call or jcond; they have important side effects
-            CallStatement *call = dynamic_cast<CallStatement*>(s);
-            if (call != NULL && call->getReturnLoc() != NULL) {
-                if (VERBOSE) 
-                    std::cerr << "Ignoring return value of statement " << s 
-                        << std::endl;
-                call->setIgnoreReturnLoc(true);
-                change = true;
-            }
-            continue;
-        }
-        if (getCFG()->getReachExit()->exists(s))
-            // Don't remove unused code that reaches the exit
-            // These will be handled later by moveInternalStatements()
-            continue;
-        if (s->getNumUsedBy() == 0) {
-            if (VERBOSE) 
-                std::cerr << "Removing unused statement " << s->getNumber() <<
-                  " " << s << std::endl;
-            removeStatement(s);
-            change = true;
-        }
-#else       // Why so complex? Is there a catch? MVE.. See above, Trent
-        StatementSet dead;
-        s->getDeadStatements(dead);
-        StmtSetIter it1;
-        for (Statement* s1 = dead.getFirst(it1); s1; s1 = dead.getNext(it1)) {
-            if (getCFG()->getReachExit().exists(s1))
-                continue;
-            if (!s1->getLeft()->isMemOf()) {
-                // hack: if the dead statement has a use which would make
-                // this statement useless if propagated, leave it
-                StatementSet uses;
-                s1->getUses(uses);
-                bool matchingUse = false;
-                StmtSetIter it2;
-                for (Statement* s2 = uses.getFirst(it2); s2;
-                  s2 = uses.getNext(it2)) {
-                    Assign *e = dynamic_cast<Assign*>(s2);
-                    if (e == NULL || s1->getLeft() == NULL) continue;
-                    if (*e->getSubExp2() == *s1->getLeft()) {
-                        matchingUse = true;
-                        break;
-                    }
-                }
-                CallStatement *call = dynamic_cast<CallStatement*>(*it1);
-                if (matchingUse && call == NULL) continue;
-                if (VERBOSE|1) {
-                    std::cerr << "removing dead code: ";
-                    s1->printAsUse(std::cerr);
-                    std::cerr << std::endl;
-                }
-                if (call == NULL) {
-                    removeStatement(s1);
-//std::cerr << "After remove, BB is"; s1->getBB()->print(std::cerr, true);
-                } else {
-                    call->setIgnoreReturnLoc(true);
-                }
-                // remove from reach sets
-                StatementSet &reachout = s1->getBB()->getReachOut();
-                reachout.remove(s1);
-                //cfg->computeReaches();      // Highly sus: do all or none!
-                //recalcDataflow();
-                change = true;
-            }
-        }
-#endif
-    }
-    if (VERBOSE && change)
-        print(std::cerr, true);
-    return change;
-}
-#endif
-
 void UserProc::processConstants() {
     if (VERBOSE)
-        std::cerr << "Process constants for " << getName() << "\n";
+        LOG << "Process constants for " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
     // process any constants in the statement
@@ -1757,71 +1664,6 @@ void UserProc::processConstants() {
         s->processConstants(prog);
     }
 }
-
-#if 0
-// bMemProp set to true if a memory location is propagated
-bool UserProc::propagateAndRemoveStatements() {
-    bool change = false;
-    StatementList stmts;
-    getStatements(stmts);
-    // propagate any statements that can be removed
-    StatementList::iterator it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        Assign *assign = dynamic_cast<Assign*>(*it);
-        if (assign && *assign->getSubExp1() == *assign->getSubExp2())
-            continue;
-        Exp* rhs = s->getRight();
-        if (s->canPropagateToAll()) {
-            if (Boomerang::get()->numToPropagate >= 0) {
-                if (Boomerang::get()->numToPropagate == 0) return change;
-                Boomerang::get()->numToPropagate--;
-            }
-            if (cfg->getReachExit()->exists(s)) {
-                if (s->getNumRefs() != 0) {
-                    // tempories that store the results of calls are ok
-                    if (rhs && 
-                      s->findDef(rhs) &&
-                      !s->findDef(rhs)->getRight()) {
-                        if (VERBOSE) {
-                            std::cerr << "allowing propagation of temporary: ";
-                            s->printAsUse(std::cerr);
-                            std::cerr << std::endl;
-                        }
-                    } else
-                        continue;
-                } else {
-                    //if (Boomerang::get()->noRemoveInternal)
-                        continue;
-                    // new internal statement
-                    if (VERBOSE) {
-                        std::cerr << "new internal statement: ";
-                        s->printAsUse(std::cerr);
-                        std::cerr << std::endl;
-                    }
-                    internal.append(s);
-                }
-            }
-            s->propagateToAll();
-            removeStatement(s);
-            // remove from reach sets
-            StatementSet &reachout = s->getBB()->getReachOut();
-#if 0
-            if (reachout.remove(s))
-                cfg->computeReaches();
-#else
-            reachout.remove(s);
-            //recalcDataflow();       // Fix alias problems
-#endif
-            if (VERBOSE) {
-                // debug: print
-                print(std::cerr, true);
-            }
-            change = true;
-        }
-    }
-    return change;
-}
-#endif
 
 // Propagate statements, but don't remove
 // Respect the memory depth (don't propagate statements that have components
@@ -1901,7 +1743,7 @@ void UserProc::removeUnusedLocals() {
                 Const* c = (Const*)((Unary*)r)->getSubExp1();
                 std::string name(c->getStr());
                 usedLocals.insert(name);
-                // std::cerr << "Counted local " << name << "\n";
+                // LOG << "Counted local " << name << "\n";
             }
         }
     }
@@ -1912,10 +1754,10 @@ void UserProc::removeUnusedLocals() {
 #endif
     for (it = locals.begin(); it != locals.end(); it++) {
         std::string& name = const_cast<std::string&>(it->first);
-        // std::cerr << "Considering local " << name << "\n";
+        // LOG << "Considering local " << name << "\n";
         if (usedLocals.find(name) == usedLocals.end()) {
             if (VERBOSE)
-                std::cerr << "Removed unused local " << name << "\n";
+                LOG << "Removed unused local " << name.c_str() << "\n";
             locals.erase(it);
         }
 #if 0   // Ugh - still have to rename the variables.
@@ -1943,8 +1785,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
             Statement* s = *ll;
             if (s->isCall() && refCounts[s] == 0) {
                 if (VERBOSE)
-                    std::cerr << "clearing return set of unused call " << s 
-                              << std::endl;
+                    LOG << "clearing return set of unused call " << s << "\n";
                 CallStatement *call = (CallStatement*)s;
                 std::vector<Exp*> returns;
                 for (int i = 0; i < call->getNumReturns(); i++)
@@ -1989,8 +1830,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 for (dd = refs.begin(); dd != refs.end(); dd++)
                     refCounts[*dd]--;
                 if (VERBOSE)
-                    std::cerr << "Removing unused statement " <<
-                      s->getNumber() << " " << s << std::endl;
+                    LOG << "Removing unused statement " << s->getNumber() 
+                        << " " << s << "\n";
                 removeStatement(s);
                 ll = stmts.remove(ll);  // So we don't try to re-remove it
                 change = true;
@@ -2051,7 +1892,7 @@ void UserProc::fromSSAform() {
         else {
             // Need copies
             if (Boomerang::get()->debugLiveness)
-                std::cerr << "Phi statement " << s <<
+                LOG << "Phi statement " << s <<
                   " requires copies, using temp" << tempNum << "\n";
             // For each definition ref'd in the phi
             StatementVec::iterator rr;
@@ -2127,8 +1968,7 @@ bool UserProc::prove(Exp *query)
                 }
             }
         if (!gotdef && VERBOSE) {
-            std::cerr << "not in return set: " << query->getSubExp1()
-                      << std::endl;
+            LOG << "not in return set: " << query->getSubExp1() << "\n";
             return false;
         }
     }
@@ -2154,7 +1994,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
     if (lastPhi && cache.find(lastPhi) != cache.end() &&
         *cache[lastPhi] == *phiInd) {
         if (VERBOSE)
-            std::cerr << "true - in the cache" << std::endl;
+            LOG << "true - in the cache\n";
         return true;
     } 
 
@@ -2163,8 +2003,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
     bool swapped = false;
     while (change) {
         if (VERBOSE) {
-            query->print(std::cerr, true);
-            std::cerr << std::endl;
+            LOG << query << "\n";
         }
     
         change = false;
@@ -2203,14 +2042,13 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                     if (right) {
                         right = right->clone();
                         if (VERBOSE)
-                            std::cerr << "using proven (or induction) for " 
-                                      << call->getDestProc()->getName() << " " 
-                                      << r->getSubExp1() 
-                                      << " = " << right << std::endl;
+                            LOG << "using proven (or induction) for " 
+                                << call->getDestProc()->getName() << " " 
+                                << r->getSubExp1() 
+                                << " = " << right << "\n";
                         right = call->substituteParams(right);
                         if (VERBOSE)
-                            std::cerr << "right with subs: " << right 
-                                      << std::endl;
+                            LOG << "right with subs: " << right << "\n";
                         query->setSubExp1(right);
                         change = true;
                     }
@@ -2224,27 +2062,23 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                         if (lastPhis.find(p) != lastPhis.end() || p == lastPhi)
                         {
                             if (VERBOSE)
-                                std::cerr << "phi loop detected ";
-                            ok = //(p == lastPhi && 
-                                (*query->getSubExp2() == *phiInd);
+                                LOG << "phi loop detected ";
+                            ok = (*query->getSubExp2() == *phiInd);
                             if (ok && VERBOSE)
-                                std::cerr << "(set true due to induction)" 
-                                          << std::endl;
+                                LOG << "(set true due to induction)\n";
                             if (!ok && VERBOSE)
-                                std::cerr << "(set false " << 
+                                LOG << "(set false " << 
                                     query->getSubExp2() << " != " << 
-                                    phiInd << " or wrong phi)" << std::endl;
+                                    phiInd << ")\n";
                         } else {
                             if (VERBOSE)
-                                std::cerr << "found " << s << " prove for each" 
-                                          << std::endl;
+                                LOG << "found " << s << " prove for each\n";
                             for (it = p->begin(); it != p->end(); it++) {
                                 Exp *e = query->clone();
                                 RefExp *r1 = (RefExp*)e->getSubExp1();
                                 r1->setDef(*it);
                                 if (VERBOSE)
-                                    std::cerr << "proving for " << e 
-                                              << std::endl;
+                                    LOG << "proving for " << e << "\n";
                                 lastPhis.insert(lastPhi);
                                 if (!prover(e, lastPhis, cache, p)) { 
                                     ok = false; 
@@ -2278,8 +2112,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                             seen.insert(s1);
                         }
                         if (refloop) {
-                            std::cerr << "detected ref loop " << s 
-                                      << std::endl;
+                            LOG << "detected ref loop " << s << "\n";
                         } else {
                             query->setSubExp1(s->getRight()->clone());
                             change = true;
@@ -2347,8 +2180,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
         query = query->simplify();
 
         if (change && !(*old == *query) && VERBOSE) {
-            old->print(std::cerr, true);
-            std::cerr << std::endl;
+            LOG << old << "\n";
         }
         delete old;
     }
@@ -2375,13 +2207,13 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
     UserProc* proc = (UserProc*) call->getDestProc();
     //if (proc->isLib()) return;
     if (Boomerang::get()->debugUnusedRets) {
-        std::cerr << " @@ Counted use of return location " << loc 
-                  << " for call to ";
+        LOG << " @@ Counted use of return location " << loc 
+            << " for call to ";
         if (proc) 
-            std::cerr << proc->getName();
+            LOG << proc->getName();
         else
-            std::cerr << "(null)";
-        std::cerr << " at " << def->getNumber() << " in " << getName() << "\n";
+            LOG << "(null)";
+        LOG << " at " << def->getNumber() << " in " << getName() << "\n";
     }
     // we want to count the return that corresponds to this loc
     // this can be a different expression to loc because replacements
@@ -2403,7 +2235,7 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
 
 void UserProc::countUsedReturns(ReturnCounter& rc) {
     if (Boomerang::get()->debugUnusedRets)
-        std::cerr << " @@ Counting used returns in " << getName() << "\n";
+        LOG << " @@ Counting used returns in " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator ss;
@@ -2441,7 +2273,7 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
     std::set<Exp*, lessExpStar>::iterator it;
     for (it = removes.begin(); it != removes.end(); it++) {
         if (Boomerang::get()->debugUnusedRets)
-            std::cerr << " @@ Removing unused return " << *it <<
+            LOG << " @@ Removing unused return " << *it <<
             " in " << getName() << "\n";
         removeReturn(*it);
     }
@@ -2467,7 +2299,7 @@ void UserProc::addCallees(std::set<UserProc*>& callees) {
 
 void UserProc::typeAnalysis(Prog* prog) {
     if (DEBUG_TA)
-        std::cerr << "Procedure " << getName() << "\n";
+        LOG << "Procedure " << getName() << "\n";
     Constraints consObj;
     LocationSet cons;
     StatementList stmts;
@@ -2479,17 +2311,17 @@ void UserProc::typeAnalysis(Prog* prog) {
         (*ss)->genConstraints(cons);
         consObj.addConstraints(cons);
         if (DEBUG_TA)
-            std::cerr << (*ss) << "\n" << &cons << "\n";
+            LOG << (*ss) << "\n" << &cons << "\n";
     }
 
     std::list<ConstraintMap> solns;
     bool ret = consObj.solve(solns);
     if (VERBOSE || DEBUG_TA) {
         if (!ret)
-            std::cerr << "** Could not solve type constraints for proc " <<
+            LOG << "** Could not solve type constraints for proc " <<
               getName() << "!\n";
         else if (solns.size() > 1)
-            std::cerr << "** " << solns.size() << " solutions to type "
+            LOG << "** " << solns.size() << " solutions to type "
               "constraints for proc " << getName() << "!\n";
     }
         
@@ -2498,12 +2330,12 @@ void UserProc::typeAnalysis(Prog* prog) {
     ConstraintMap::iterator cc;
     if (DEBUG_TA) {
         for (it = solns.begin(); it != solns.end(); it++) {
-            std::cerr << "Solution " << ++solnNum << " for proc " << getName()
+            LOG << "Solution " << ++solnNum << " for proc " << getName()
               << "\n";
             ConstraintMap& cm = *it;
             for (cc = cm.begin(); cc != cm.end(); cc++)
-                std::cerr << cc->first << " = " << cc->second << "\n";
-            std::cerr << "\n";
+                LOG << cc->first << " = " << cc->second << "\n";
+            LOG << "\n";
         }
     }
 

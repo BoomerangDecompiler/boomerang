@@ -743,6 +743,25 @@ void Signature::print(std::ostream &out)
     out << " }" << std::endl;
 }
 
+void Signature::printToLog()
+{
+    if (returns.size() >= 1)
+        LOG << returns[0]->getType()->getCtype() << " ";
+    else
+        LOG << "void ";
+    LOG << name.c_str() << "(";
+    for (unsigned i = 0; i < params.size(); i++) {
+        LOG << params[i]->getType()->getCtype() << " " << params[i]->getExp();
+        if (i != params.size()-1) LOG << ", ";
+    }
+    LOG << ") { "; 
+    for (unsigned i = 0; i < returns.size(); i++) {
+        LOG << returns[i]->getExp();
+        if (i != returns.size()-1) LOG << ", ";
+    }
+    LOG << " }" << "\n";
+}
+
 void Signature::getInternalStatements(StatementList &stmts)
 {
 }

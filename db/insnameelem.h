@@ -25,7 +25,7 @@
 class InsNameElem {
 
 public:
-    InsNameElem(std::string name);
+    InsNameElem(const char *name);
     virtual ~InsNameElem(void);
     virtual int ntokens(void);
     virtual std::string getinstruction(void);
@@ -47,7 +47,7 @@ protected:
 class InsOptionElem : public InsNameElem {
 
 public:
-    InsOptionElem(std::string name);
+    InsOptionElem(const char *name);
     virtual int ntokens(void);
     virtual std::string getinstruction(void);
     virtual std::string getinspattern(void);
@@ -57,7 +57,7 @@ public:
 class InsListElem : public InsNameElem {
 
 public:
-    InsListElem(std::string name, Table* t, std::string idx);
+    InsListElem(const char *name, Table* t, const char *idx);
     virtual int ntokens(void);
     virtual std::string getinstruction(void);
     virtual std::string getinspattern(void);

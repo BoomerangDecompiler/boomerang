@@ -1386,6 +1386,13 @@ void Cfg::print(std::ostream &out, bool withDF) {
     out << std::endl;
 }
 
+void Cfg::printToLog(bool withDF) {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
+        (*it)->printToLog(withDF);
+    LOG << "\n";
+}
+
 void Cfg::setTimeStamps() {
     // set DFS tag
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();

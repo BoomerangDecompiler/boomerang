@@ -2,16 +2,22 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "types.h"
+
+class Statement;
+class Exp;
+class LocationSet;
+
 class Log 
 {
 public:
-    Log() : printDec(true), printHex(false) { }
+    Log() { }
     virtual Log &operator<<(const char *str) = 0;
-    typedef enum { dec, hex, endl } modifer;
-    virtual Log &operator<<(modifer m);
-protected:
-    bool printDec;
-    bool printHex;
+    virtual Log &operator<<(Statement *s);
+    virtual Log &operator<<(Exp *e);
+    virtual Log &operator<<(int i);
+    virtual Log &operator<<(ADDRESS a);
+    virtual Log &operator<<(LocationSet *l);
 };
 
 #endif

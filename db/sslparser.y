@@ -272,7 +272,7 @@ operand:
             // Note: the below copies the list of strings!
             Dict.DetParamMap[$1].params = *$4;
             Dict.DetParamMap[$1].kind = PARAM_VARIANT;
-            delete $4;
+            //delete $4;
         }
 
         // In the documentation, these are the second and third kinds
@@ -294,8 +294,8 @@ operand:
             
             if( param.funcParams.size() != 0 )
                 param.kind = PARAM_LAMBDA;
-            delete $2;
-            delete $3;
+            //delete $2;
+            //delete $3;
         }
     ;
 
@@ -396,7 +396,7 @@ a_reglist:
                             yyerror("Name reglist declared twice\n");
                         Dict.addRegister( loc->c_str(), x, $5, bFloat);
                     }
-                    delete $2;
+                    //delete $2;
                 }
             }
         |   '[' reg_table ']' '[' NUM ']' INDEX NUM {
@@ -406,7 +406,7 @@ a_reglist:
                         yyerror("Name reglist declared twice\n");
 		    Dict.addRegister(loc->c_str(), $8, $5, bFloat);
                 }
-                delete $2;
+                //delete $2;
             }
         ;
 
@@ -458,16 +458,16 @@ table_assign:
 table_expr:
         str_expr {
             $$ = new Table(*$1);
-            delete $1;
+            //delete $1;
         }
         // Example: OP2 := { "<<",  ">>",  ">>A" };
     |   opstr_expr {
             $$ = new OpTable(*$1);
-            delete $1;
+            //delete $1;
         }
     |   exprstr_expr {
             $$ = new ExprTable(*$1);
-            delete $1;
+            //delete $1;
         }
     ;
 
@@ -479,8 +479,8 @@ str_expr:
             for (i = $1->begin(); i != $1->end(); i++)
                 for (j = $2->begin(); j != $2->end(); j++)
                     $$->push_back((*i) + (*j));
-            delete $1;
-            delete $2;
+            //delete $1;
+            //delete $2;
         }
     |   str_term {
             $$ = $1;
@@ -493,7 +493,7 @@ str_array:
             // The following causes a massive warning message about mixing
             // signed and unsigned
             $1->insert($1->end(), $3->begin(), $3->end());
-            delete $3;
+            //delete $3;
             $$ = $1;
         }
     |   str_array ',' '"' '"' {
@@ -640,7 +640,7 @@ instr_name:
             while ((i = nm.find("_")) != nm.npos)
 	            nm.replace(i,1,"");
  
-            temp = new InsNameElem(nm);
+            temp = new InsNameElem(nm.c_str());
             $$ = $1;
             $$->append(temp);
         }
@@ -672,7 +672,7 @@ name_contract:
                 o << "Can't get element " << $2 << " of table " << $1 << ".\n";
                 yyerror(STR(o));
             } else
-                $$ = new InsNameElem(TableDict[$1]->records[$2]);
+                $$ = new InsNameElem(TableDict[$1]->records[$2].c_str());
         }
 
         // Example: ARITH[IDX]  where ARITH := { "ADD", "SUB", ...};
@@ -694,7 +694,7 @@ name_contract:
                 o << "Can't get element " << $3 << " of table " << $2 << ".\n";
                 yyerror(STR(o));
             } else
-                $$ = new InsNameElem(TableDict[$2]->records[$3]);
+                $$ = new InsNameElem(TableDict[$2]->records[$3].c_str());
         }
     |   '$' NAME_LOOKUP NAME ']' {
             std::ostringstream o;
@@ -948,7 +948,7 @@ exp_term:
                     $$ = new Binary(opFlagDef,
                             new Const($1),
                             listExpToExp($2));
-                    delete $2;          // Delete the list of char*s
+                    //delete $2;          // Delete the list of char*s
                 }
             } else {
                 o << $1 << " is not defined as a OPERAND function.\n";
@@ -1527,9 +1527,9 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
             yyerror(STR(o));
         }
     }
-    delete iname;
-    delete params;
-    delete o_rtlist;
+    //delete iname;
+    //delete params;
+    //delete o_rtlist;
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
 }
 

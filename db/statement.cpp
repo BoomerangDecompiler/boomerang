@@ -65,7 +65,7 @@ void Statement::replaceRef(Statement *def) {
     // Careful: don't delete re while lhs is still a part of it!
     // Else, will delete lhs, which is still a part of def!
     re->setSubExp1ND(NULL);
-    delete re;
+    //delete re;
 }
 
 // Check the liveout set for interferences
@@ -87,7 +87,7 @@ bool Statement::mayAlias(Exp *e1, Exp *e2, int size) {
     // check one of these cases)
     bool b =  (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size)); 
     if (b && VERBOSE) {
-        std::cerr << "May alias: " << e1 << " and " << e2 << " size " << size
+        LOG << "May alias: " << e1 << " and " << e2 << " size " << size
           << "\n";
     }
     return b;
@@ -138,133 +138,6 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
     // args reversed
     return true;
 }
-
-
-/* 
- * Returns true if the statement can be propagated to all uses (and
- * therefore can be removed).
- * Returns false otherwise.
- *
- * To completely propagate a statement which does not kill any of its
- * own uses it is sufficient to show that:
- * of all the definitions reaching each target, those that define locations
- * that the source statement uses, should also reach the source statement.
- * Reaching the source statement is most easily accomplished by searching
- * the set of stataments that the source statement uses (its uses set).
- * (the above is for condition 2 of the Dragon book, p636).
- *
- * A statement that kills one or more of its own uses is slightly more 
- * complicated. 
- All the uses that are not killed must still have their
- * definitions reach the expression to be propagated to, but the
- * uses that were killed must have their definitions available at the
- * expression to be propagated to after the statement is 
- * removed.  This is clearly the case if the only use killed by a 
- * statement is the same as the left hand side, however, if multiple uses
- * are killed a search must be conducted to ensure that no statement between
- * the source and the destination kills the other uses. 
- * Example: *32* m[2] := m[0] + m[4]
- * This is considered too complex a task and is therefore defered for
- * later experimentation.
- */
-#if 0
-bool Statement::canPropagateToAll() {
-    StatementSet defs;     // Set of locations used, except for (max 1) killed
-    defs = uses;
-    int nold = uses.size();     // Number of statements I use
-    killDef(defs);            // Number used less those killed this stmt
-    if (nold - defs.size() > 1) {
-        // See comment above.
-        if (VERBOSE) {
-            std::cerr << "too hard failure in canPropagateToAll: ";
-            printWithUses(std::cerr);
-            std::cerr << std::endl;
-        }
-        return false;
-    }
-
-    if (usedBy.size() == 0) {
-        return false;
-    }
-
-    Exp* thisLhs = getLeft();
-    StmtSetIter it;
-    // We would like to propagate to each dest
-    // sdest iterates through the destinations
-    for (Statement* sdest = usedBy.getFirst(it); sdest;
-         sdest = usedBy.getNext(it)) {
-        // all locations used by this (the source statement) must not be
-        // defined on any path from this statement to the destination
-        // This is the condition 2 in the Dragon book, p636
-        if (sdest == this) 
-            return false; // can't propagate to self
-        StatementSet destIn;
-        // Note: this all needs changing. Can propagate anything with SSA!
-        sdest->getReachIn(destIn, 2);
-        StmtSetIter dd;
-        for (Statement* reachDest = destIn.getFirst(dd); reachDest;
-          reachDest = destIn.getNext(dd)) {
-            if (reachDest == this) {
-                // That means that the source defined one of its uses, e.g.
-                // it was r[28] := r[28] - 4
-                // this is fine
-                continue;
-            }
-            // Does this reaching definition define a location used by the
-            // source statement?
-            Exp* lhsReachDest = reachDest->getLeft();
-            if (lhsReachDest == NULL) continue;
-            if (usesExp(lhsReachDest)) {
-                // Yes, it is such a definition. Does this definition also reach
-                // the source statement? i.e. reachDest in uses?
-                if (!uses.exists(reachDest)) {
-                    // No... condition 2 does not hold
-#if 0
-  std::cerr << "Can't propagate " << this << " because destination " << sdest << " has a reaching definition " << reachDest << " which is not in my uses set: ";
-  uses.print();
-#endif
-                    return false;
-                }
-            }
-        }
-        // Mike's idea: reject if more than 1 def reaches the dest
-        // Must be only one definition (this statement) of thisLhs that reaches
-        // each destination (Dragon book p636 condition 1)
-        // sdest->uses is a set of statements defining various things that
-        // sdest uses (not all of them define thisLhs, e.g. if sdest is 
-        // foo := thisLhs + z, some of them define z)
-        int defThisLhs = 0;
-        StmtSetIter dui;
-        for (Statement* du = sdest->uses.getFirst(dui); du;
-          du = sdest->uses.getNext(dui)) {
-            Exp* lhs = du->getLeft();
-            if (*lhs == *thisLhs) defThisLhs++;
-        }
-        assert(defThisLhs);         // Should at least find one (this)
-        if (defThisLhs > 1) {
-#if 0
-  std::cerr << "Can't propagate " << this << " because there are " << defThisLhs
-    << " uses for destination " << sdest << "; they include: ";
-  StmtSetIter xx;
-  for (Statement* ss = sdest->uses.getFirst(xx); ss;
-    ss = sdest->uses.getNext(xx))
-      std::cerr << ss << ", "; std::cerr << "\n";
-#endif
-            return false;
-        }
-    }
-    return true;
-}
-
-// assumes canPropagateToAll has returned true
-// assumes this statement will be removed by the caller
-void Statement::propagateToAll() {
-    StmtSetIter it;
-    for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
-        s->replaceRef(this);
-    }
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        operator<<
@@ -381,9 +254,8 @@ bool Statement::doPropagateTo(int memDepth, Statement* def) {
 
     replaceRef(def);
     if (VERBOSE) {
-        std::cerr << "Propagating " << std::dec << def->getNumber() <<
-          " into " << getNumber() <<
-          ", result is " << this << "\n";
+        LOG << "Propagating " << def->getNumber() << " into " << getNumber() 
+            << ", result is " << this << "\n";
     }
     return true;
 }
@@ -468,7 +340,7 @@ GotoStatement::GotoStatement(ADDRESS uDest) : m_isComputed(false) {
  * RETURNS:         N/a
  *============================================================================*/
 GotoStatement::~GotoStatement() {
-    if (pDest) delete pDest;
+    if (pDest) ;//delete pDest;
 }
 
 /*==============================================================================
@@ -493,7 +365,7 @@ ADDRESS GotoStatement::getFixedDest() {
  *============================================================================*/
 void GotoStatement::setDest(Exp* pd) {
     if (pDest != NULL)
-        delete pDest;
+        ;//delete pDest;
     pDest = pd;
 }
 
@@ -508,7 +380,7 @@ void GotoStatement::setDest(ADDRESS addr) {
 //  assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
     // Delete the old destination if there is one
     if (pDest != NULL)
-        delete pDest;
+        ;//delete pDest;
 
     pDest = new Const(addr);
 }
@@ -535,7 +407,7 @@ Exp* GotoStatement::getDest() {
 void GotoStatement::adjustFixedDest(int delta) {
     // Ensure that the destination is fixed.
     if (pDest == 0 || pDest->getOper() != opIntConst)
-        std::cerr << "Can't adjust destination of non-static CTI\n";
+        LOG << "Can't adjust destination of non-static CTI\n";
 
     ADDRESS dest = ((Const*)pDest)->getAddr();
     ((Const*)pDest)->setAddr(dest + delta);
@@ -674,7 +546,7 @@ BranchStatement::BranchStatement() : jtCond((BRANCH_TYPE)0), pCond(NULL),
  *============================================================================*/
 BranchStatement::~BranchStatement() {
     if (pCond)
-        delete pCond;
+        ;//delete pCond;
 }
 
 /*==============================================================================
@@ -811,7 +683,7 @@ Exp* BranchStatement::getCondExpr() {
  * RETURNS:         <nothing>
  *============================================================================*/
 void BranchStatement::setCondExpr(Exp* e) {
-    if (pCond) delete pCond;
+    if (pCond) ;//delete pCond;
     pCond = e;
 }
 
@@ -983,13 +855,13 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 pCond = new Binary(opLess,
                     pCond->getSubExp2()->getSubExp2()->getSubExp2()
                         ->getSubExp1()->clone(), new Const(0));
-                delete e;
+                ;//delete e;
                 break;
             case BRANCH_JPOS:
                 pCond = new Binary(opGtrEq,
                     pCond->getSubExp2()->getSubExp2()->getSubExp2()
                         ->getSubExp1()->clone(), new Const(0));
-                delete e;
+                ;//delete e;
                 break;
             case BRANCH_JOF:
             case BRANCH_JNOF:
@@ -1001,7 +873,7 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 pCond->getSubExp2()->getSubExp1()->clone(), 
                 pCond->getSubExp2()->getSubExp2()->getSubExp1()
                     ->clone());
-            delete e;
+            ;//delete e;
         }
     }
     if (pCond->getOper() == opFlagCall && 
@@ -1023,13 +895,13 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 pCond = new Binary(opLess,
                     pCond->getSubExp2()->getSubExp1()->clone(), 
                     new Const(0));
-                delete e;
+                ;//delete e;
                 break;
             case BRANCH_JPOS:
                 pCond = new Binary(opGtrEq,
                     pCond->getSubExp2()->getSubExp1()->clone(), 
                     new Const(0));
-                delete e;
+                ;//delete e;
                 break;
             default:
                 break;
@@ -1082,7 +954,7 @@ CaseStatement::CaseStatement() :
  *============================================================================*/
 CaseStatement::~CaseStatement() {
     if (pSwitchInfo)
-        delete pSwitchInfo;
+        ;//delete pSwitchInfo;
 }
 
 /*==============================================================================
@@ -1213,9 +1085,9 @@ CallStatement::CallStatement(int returnTypeSize /*= 0*/):
  *============================================================================*/
 CallStatement::~CallStatement() {
     for (unsigned i = 0; i < arguments.size(); i++)
-        delete arguments[i];
+        ;//delete arguments[i];
     for (unsigned i = 0; i < returns.size(); i++)
-        delete returns[i];
+        ;//delete returns[i];
 }
 
 /*==============================================================================
@@ -1287,16 +1159,16 @@ Exp *CallStatement::findArgument(Exp *e) {
     else {
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
         if (params.size() != arguments.size()) {
-            std::cerr << "eep. " << arguments.size() << " args ";
+            LOG << "eep. " << arguments.size() << " args ";
             if (procDest) {
-                std::cerr << procDest->getName() << " ";
-                std::cerr << "(" << procDest->getSignature()->getNumParams()
+                LOG << procDest->getName() << " ";
+                LOG << "(" << procDest->getSignature()->getNumParams()
                           << " params) ";
             } else
-                std::cerr << "(no dest) ";
+                LOG << "(no dest) ";
             for (int i = 0; i < (int)arguments.size(); i++)
-                std::cerr << arguments[i] << " ";
-            std::cerr << std::endl;
+                LOG << arguments[i] << " ";
+            LOG << "\n";
         }
         assert(params.size() == arguments.size());
         for (unsigned i = 0; i < params.size(); i++)
@@ -1376,7 +1248,7 @@ void CallStatement::setSigArguments() {
         returns.push_back(sig->getReturnExp(i)->clone());
 
     if (procDest == NULL)
-        delete sig;
+        ;//delete sig;
 }
 
 #if 0
@@ -1585,9 +1457,8 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     }
 
 #if 0
-    std::cerr << "call: ";
-    print(std::cerr, false);
-    std::cerr << "in proc " << proc->getName() << std::endl;
+    LOG << "call: " << this;
+    LOG << " in proc " << proc->getName() << "\n";
 #endif
     assert(p);
     hll->AddCallStatement(indLevel, p, arguments, defs);
@@ -1698,7 +1569,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
     if (procDest == NULL && pDest) {
         pDest = pDest->searchReplaceAll(from, to, change);
         if (VERBOSE)
-            std::cerr << "propagated into call dest " << pDest << std::endl;
+            LOG << "propagated into call dest " << pDest << "\n";
         if (pDest->getOper() == opGlobal || 
             (pDest->getOper() == opSubscript && 
              pDest->getSubExp1()->getOper() == opGlobal)) {
@@ -1708,10 +1579,10 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
             char *nam = ((Const*)e->getSubExp1())->getStr();
             Proc *p = proc->getProg()->findProc(nam);
             if (VERBOSE)
-                std::cerr << "this is a global " << nam << std::endl;
+                LOG << "this is a global " << nam << "\n";
             if (p) {
                 if (VERBOSE)
-                    std::cerr << "this is a proc " << p->getName() << std::endl;
+                    LOG << "this is a proc " << p->getName() << "\n";
                 // we need to:
                 // 1) replace the current return set with the return set
                 //    of the new procDest
@@ -1721,15 +1592,15 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 procDest = p;
                 Signature *sig = p->getSignature();
                 // 1
-                //std::cerr << "1" << std::endl;
+                //LOG << "1\n";
                 returns.resize(sig->getNumReturns());
                 for (int i = 0; i < sig->getNumReturns(); i++)
                     returns[i] = sig->getReturnExp(i)->clone();
                 // 2
-                //std::cerr << "2" << std::endl;
+                //LOG << "2\n";
                 proc->fixCallRefs();
                 // 3
-                //std::cerr << "3" << std::endl;
+                //LOG << "3\n";
                 std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
                 std::vector<Exp*> oldargs = arguments;
                 std::vector<Exp*> newargs;
@@ -1753,7 +1624,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 arguments = newargs;
                 assert((int)arguments.size() == sig->getNumParams());
                 // 4
-                //std::cerr << "4" << std::endl;
+                //LOG << "4\n";
                 m_isComputed = false;
             }
         }
@@ -1844,7 +1715,7 @@ void CallStatement::processConstants(Prog *prog) {
                         std::string s(str);
                         while (s.find('\n') != (unsigned)-1)
                             s.replace(s.find('\n'), 1, "\\n");
-                        delete arguments[i];
+                        ;//delete arguments[i];
                         arguments[i] = new Const(strdup(s.c_str()));
                     }
                 }
@@ -1859,9 +1730,8 @@ void CallStatement::processConstants(Prog *prog) {
                             ((PointerType*)c->getType(i))->getPointsTo()
                                                          ->isCompound()) {
                         ADDRESS a = ((Const*)arguments[i])->getAddr();
-                        std::cerr << "got a compound at " << std::hex << a;
-                        std::cerr << " with a func pointer in pos " << i;
-                        std::cerr << std::endl;
+                        LOG << "got a compound at " << a
+                            << " with a func pointer in pos " << i << "\n";
                         assert(false);
                     }
                 }
@@ -1885,7 +1755,7 @@ void CallStatement::processConstants(Prog *prog) {
             removeArgument(0);
             removeReturn(esp);
         }
-        delete esp;
+        ;//delete esp;
     }
 
     // This code was in CallStatement:doReplaceRef()
@@ -2102,7 +1972,7 @@ BoolStatement::BoolStatement(int sz): jtCond((BRANCH_TYPE)0), pCond(NULL),
  *============================================================================*/
 BoolStatement::~BoolStatement() {
     if (pCond)
-        delete pCond;
+        ;//delete pCond;
 }
 
 /*==============================================================================
@@ -2160,7 +2030,7 @@ Exp* BoolStatement::getCondExpr() {
  * RETURNS:         <nothing>
  *============================================================================*/
 void BoolStatement::setCondExpr(Exp* pss) {
-    if (pCond) delete pCond;
+    if (pCond) ;//delete pCond;
     pCond = pss;
 }
 
@@ -2279,7 +2149,7 @@ bool BoolStatement::searchAndReplace(Exp *search, Exp *replace) {
 }
 
 Type* BoolStatement::updateType(Exp *e, Type *curType) {
-    delete curType;
+    ;//delete curType;
     return new BooleanType();
 }
 
@@ -2446,7 +2316,7 @@ void Assign::fromSSAform(igraph& ig) {
 }
 
 void Assign::setRight(Exp* e) {
-    if (rhs) delete rhs;
+    if (rhs) ;//delete rhs;
     rhs = e;
 }
 
@@ -2478,8 +2348,8 @@ void Assign::doReplaceRef(Exp* from, Exp* to) {
             // but now I do such weird propagation orders that this can
             // happen.  It does however mean that some dataflow information
             // is wrong somewhere.  - trent
-            std::cerr << "could not change " << from << " to " <<
-              to << " in " << std::dec << this << " !!\n";
+            LOG << "could not change " << from << " to " <<
+              to << " in " << this << " !!\n";
         }
     // simplify the expression
     rhs = rhs->simplifyArith();

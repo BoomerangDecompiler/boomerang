@@ -17,7 +17,7 @@
  * 13 May 02 - Mike: Added many more cases to print functions
  * 23 May 02 - Mike: Added error messages before several asserts
  * 02 Jun 02 - Mike: Fixed a nasty bug in Unary::polySimplify() where a member
- *              variable was used after "this" had been deleted
+ *              variable was used after "this" had been ;//deleted
  * 10 Jul 02 - Mike: Added simplifyAddr() methods
  * 16 Jul 02 - Mike: Fixed memory issues with operator==
  * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
@@ -158,40 +158,40 @@ TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty)
  * RETURNS:         <nothing>
  *============================================================================*/
 Unary::~Unary() {
-    // Remember to delete all children
-    if (subExp1 != 0) delete subExp1;
+    // Remember to ;//delete all children
+    if (subExp1 != 0) ;//delete subExp1;
 }
 Binary::~Binary() {
-    if (subExp2 != 0) delete subExp2;
+    if (subExp2 != 0) ;//delete subExp2;
     // Note that the first pointer is destructed in the Exp1 destructor
 }
 Ternary::~Ternary() {
-    if (subExp3 != 0) delete subExp3;
+    if (subExp3 != 0) ;//delete subExp3;
 }
 FlagDef::~FlagDef() {
-    delete rtl;
+    ;//delete rtl;
 }
 TypeVal::~TypeVal() {
-    delete val;
+    ;//delete val;
 }
 
 /*==============================================================================
  * FUNCTION:        Unary::setSubExp1 etc
  * OVERVIEW:        Set requested subexpression; 1 is first
  * PARAMETERS:      Pointer to subexpression to set
- * NOTE:            If an expression already exists, it is deleted
+ * NOTE:            If an expression already exists, it is ;//deleted
  * RETURNS:         <nothing>
  *============================================================================*/
 void Unary::setSubExp1(Exp* e) {
-    if (subExp1 != 0) delete subExp1;
+    if (subExp1 != 0) ;//delete subExp1;
     subExp1 = e;
 }
 void Binary::setSubExp2(Exp* e) {
-    if (subExp2 != 0) delete subExp2;
+    if (subExp2 != 0) ;//delete subExp2;
     subExp2 = e;
 }
 void Ternary::setSubExp3(Exp* e) {
-    if (subExp3 != 0) delete subExp3;
+    if (subExp3 != 0) ;//delete subExp3;
     subExp3 = e;
 }
 /*==============================================================================
@@ -231,7 +231,7 @@ Type* TypedExp::getType()
 }
 void TypedExp::setType(Type* ty)
 {
-    if (type) delete type;
+    if (type) ;//delete type;
     type = ty;
 }
 
@@ -252,26 +252,26 @@ void Binary::commute() {
  *                    perform simplifications, which could otherwise require
  *                    the copying then deleting of large subtrees
  *                    Example: 0 + B -> B where B is a large subexpression
- * NOTE:            This (enclosing) expression is deleted
+ * NOTE:            This (enclosing) expression is ;//deleted
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to the requested subexpression
  *============================================================================*/
 Exp* Unary::becomeSubExp1() {
     Exp* res = subExp1;
     subExp1 = 0;            // Change pointer to become NULL
-    delete this;            // Suicide!
+    ;//delete this;            // Suicide!
     return res;
 }
 Exp* Binary::becomeSubExp2() {
     Exp* res = subExp2;
     subExp2 = 0;            // Change pointer to become NULL
-    delete this;            // Suicide!
+    ;//delete this;            // Suicide!
     return res;
 }
 Exp* Ternary::becomeSubExp3() {
     Exp* res = subExp3;
     subExp3 = 0;            // Change pointer to become NULL
-    delete this;            // Suicide!
+    ;//delete this;            // Suicide!
     return res;
 }
 /*==============================================================================
@@ -1278,8 +1278,8 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  *                   "this" will be returned
  * NOTE:            It is possible with wildcards that in very unusual
  *                  circumstances a replacement will be made to something that
- *                  is already deleted.
- * NOTE:            Replacements are cloned. Caller to delete search and replace
+ *                  is already ;//deleted.
+ * NOTE:            Replacements are cloned. Caller to ;//delete search and replace
  * PARAMETERS:      search:  ptr to ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
  *                  change: set true if a change made; cleared otherwise
@@ -1293,7 +1293,7 @@ Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
     std::list<Exp**>::iterator it;
     for (it = li.begin(); it != li.end(); it++) {
         Exp** pp = *it;
-        //if (*pp) delete *pp;        // Delete any existing
+        //if (*pp) ;//delete *pp;        // Delete any existing
         *pp = replace->clone();     // Do the replacement
         if (once) {
             change = true;
@@ -1372,7 +1372,7 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
  *                     negatives = { %sp }
  *                     integers  = { 108, -92 }
  * NOTE:            integers is a vector so we can use the accumulate func
- * NOTE:            Expressions are NOT cloned. Therefore, do not delete the
+ * NOTE:            Expressions are NOT cloned. Therefore, do not ;//delete the
  *                    expressions in positives or negatives
  * PARAMETERS:      positives - the list of positive terms
  *                  negatives - the list of negative terms
@@ -1424,7 +1424,7 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
  *                  at the top level. For example,
  *                  (%sp + 100) - (%sp + 92) will be simplified to 8.
  * NOTE:            Any expression can be so simplified
- * NOTE:            User must delete result
+ * NOTE:            User must ;//delete result
  * PARAMETERS:      <none>
  * RETURNS:         Ptr to the simplified expression
  *============================================================================*/
@@ -1571,7 +1571,7 @@ Exp* Exp::Accumulate(std::list<Exp*> exprs)
  *                  hand side of sums, adding of negative constants changed to
  *                  subtracting positive constants, etc.
  *                  Changes << k to a multiply
- * NOTE:            User must delete result
+ * NOTE:            User must ;//delete result
  * NOTE:            Address simplification (a[ m[ x ]] == x) is done separately
  * PARAMETERS:      <none>
  * RETURNS:         Ptr to the simplified expression
@@ -1602,7 +1602,7 @@ Exp* Exp::simplify() {
 #if DEBUG_SIMP
     if (!(*res == *save)) std::cout << "simplified " << save << "  to  " << res
       << "\n";
-    delete save;
+    ;//delete save;
 #endif
     return res;
 }
@@ -1610,7 +1610,7 @@ Exp* Exp::simplify() {
 /*==============================================================================
  * FUNCTION:        Unary::simplify etc
  * OVERVIEW:        Do the work of simplification
- * NOTE:            User must delete result
+ * NOTE:            User must ;//delete result
  * NOTE:            Address simplification (a[ m[ x ]] == x) is done separately
  * PARAMETERS:      <none>
  * RETURNS:         Ptr to the simplified expression
@@ -1682,7 +1682,7 @@ Exp* Unary::polySimplify(bool& bMod) {
             if (subOP == opIntConst) {
                 // -k, ~k, or !k
                 // Note: op is invalid after call to becomeSubExp1() since
-                // it deletes this!
+                // it ;//deletes this!
                 OPER op2 = op;
                 res = ((Unary*)res)->becomeSubExp1();
                 int k = ((Const*)res)->getInt();
@@ -1770,7 +1770,7 @@ Exp* Binary::polySimplify(bool& bMod) {
             default: change = false;
         }
         if (change) {
-            delete res;
+            ;//delete res;
             res = new Const(k1);
             bMod = true;
             return res;
@@ -1779,7 +1779,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 
     if (((op == opBitXor) || (op == opMinus)) && (*subExp1 == *subExp2)) {
         // x ^ x or x - x: result is zero
-        delete this;
+        ;//delete this;
         res = new Const(0);
         bMod = true;
         return res;
@@ -1787,7 +1787,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         
     if (op == opEquals && *subExp1 == *subExp2) {
         // x == x: result is true
-        delete this;
+        ;//delete this;
         res = new Terminal(opTrue);
         bMod = true;
         return res;
@@ -1868,7 +1868,7 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for exp * 0  or exp & 0
     if ((op == opMult || op == opMults || op == opBitAnd) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0) {
-        delete res;
+        ;//delete res;
         res = new Const(0);
         bMod = true;
         return res;
@@ -1876,7 +1876,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 
     // Check for exp and false
     if (op == opAnd && subExp2->isFalse()) {
-        delete res;
+        ;//delete res;
         res = new Terminal(opFalse);
         bMod = true;
         return res;
@@ -1912,7 +1912,7 @@ Exp* Binary::polySimplify(bool& bMod) {
     if ((op == opOr) &&
       (opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) ||
        subExp2->isTrue()) {
-        delete res;
+        ;//delete res;
         res = new Terminal(opTrue);
         bMod = true;
         return res;
@@ -1934,7 +1934,7 @@ Exp* Binary::polySimplify(bool& bMod) {
     if (isComparison() && opSub1 == opNeg) {
         Exp *e = subExp1;
         subExp1 = e->getSubExp1()->clone();
-        delete e;
+        ;//delete e;
         subExp2 = new Unary(opNeg, subExp2);
     }
 
@@ -1942,13 +1942,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     if (isComparison() &&
         opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 && 
         opSub1 == opPlus) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         subExp2 = new Unary(opNeg, subExp2);
         bMod = true;
         return res;
@@ -1957,13 +1957,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for (x == y) == 1, becomes x == y
     if (op == opEquals && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 1 && opSub1 == opEquals) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         bMod = true;
         return res;
     }
@@ -1975,13 +1975,13 @@ Exp* Binary::polySimplify(bool& bMod) {
         Binary *b = (Binary*)subExp1;
         int n = ((Const*)b->subExp2)->getInt();
         if (n < 0) {
-            delete subExp2;
+            ;//delete subExp2;
             subExp2 = b->subExp2;
             ((Const*)subExp2)->setInt(-((Const*)subExp2)->getInt());
             b->subExp2 = 0;
             subExp1 = b->subExp1;
             b->subExp1 = 0;
-            delete b;
+            ;//delete b;
             bMod = true;
             return res;
         }
@@ -1990,13 +1990,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for (x == y) == 0, becomes x != y
     if (op == opEquals && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 0 && opSub1 == opEquals) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         bMod = true;
         res->setOper(opNotEqual);
         return res;
@@ -2005,13 +2005,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for (x == y) != 1, becomes x != y
     if (op == opNotEqual && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 1 && opSub1 == opEquals) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         bMod = true;
         res->setOper(opNotEqual);
         return res;
@@ -2029,13 +2029,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for (x > y) == 0, becomes x <= y
     if (op == opEquals && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 0 && opSub1 == opGtr) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         bMod = true;
         res->setOper(opLessEq);
         return res;
@@ -2044,13 +2044,13 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Check for (x >u y) == 0, becomes x <=u y
     if (op == opEquals && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 0 && opSub1 == opGtrUns) {
-        delete subExp2;
+        ;//delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
         b->subExp2 = 0;
         subExp1 = b->subExp1;
         b->subExp1 = 0;
-        delete b;
+        ;//delete b;
         bMod = true;
         res->setOper(opLessEqUns);
         return res;
@@ -2345,7 +2345,7 @@ Exp* Exp::fixSuccessor() {
         assert(sub2->getOper() == opIntConst);
         // result    sub1   sub2
         // succ(      r[   Const K  ])
-        // Note: we need to clone the r[K] part, since it will be deleted as
+        // Note: we need to clone the r[K] part, since it will be ;//deleted as
         // part of the searchReplace below
         Unary* replace = (Unary*)sub1->clone();
         Const* c = (Const*)replace->getSubExp1();
@@ -2495,7 +2495,7 @@ Exp *RefExp::fixCallRefs() {
         if (e) {
             e = call->substituteParams(e);
             assert(e);
-            delete this;
+            ;//delete this;
             return e;
         } else {
             if (call->findReturn(subExp1) == -1) {
@@ -2565,7 +2565,7 @@ Exp* RefExp::fromSSA(igraph& ig) {
         std::ostringstream os;
         os << "local" << ig[this];
         std::string name = os.str();
-        delete this;
+        ;//delete this;
         return new Unary(opLocal, new Const(strdup(name.c_str())));
     }
 }
@@ -2605,7 +2605,7 @@ Exp* Ternary::fromSSA(igraph& ig) {
 Exp* Exp::fromSSAleft(igraph& ig, Statement* d) {
     RefExp* r = new RefExp(this, d);       // "Wrap" in a ref
     return r->fromSSA(ig);
-    // Note: r will be deleted in fromSSA! Do not delete here!
+    // Note: r will be ;//deleted in fromSSA! Do not ;//delete here!
 }
 
 // Return the memory nesting depth
@@ -2775,7 +2775,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 res = new Binary(opAnd, res,
                     new Binary(opEquals, result->clone(), ftv));
             else
-                delete ftv;     // Also deletes ft
+                ;//delete ftv;     // Also ;//deletes ft
             return res;
             break;
         }

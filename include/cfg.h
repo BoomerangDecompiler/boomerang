@@ -185,6 +185,7 @@ public:
 	 * Don't use = std::cout, because gdb doesn't know about std::
      */
     void print(std::ostream& os, bool withDF = false);
+    void printToLog(bool withDF = false);
     char* prints();                     // For debugging
 
     /*
@@ -980,6 +981,7 @@ public:
      * print this cfg, mainly for debugging
      */
     void print(std::ostream &out, bool withDF = false);
+    void printToLog(bool withDF = false);
 
     /*
      * Domonator frontier code

@@ -80,7 +80,7 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
         return new SparcFrontEnd(pBF);
     case MACHINE_HPRISC:
     case MACHINE_PALM:
-        std::cerr << "Machine not supported\n";
+        LOG << "Machine not supported\n";
     }
     return NULL;
 }
@@ -119,7 +119,7 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF) {
 void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
     std::ifstream inf(sPath);
     if (!inf.good()) {
-        std::cerr << "can't open `" << sPath << "'" << std::endl;
+        LOG << "can't open `" << sPath << "'\n";
         exit(1);
     }
 
@@ -162,9 +162,12 @@ Prog *FrontEnd::decode(bool decodeMain)
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
-    if (VERBOSE)
-        std::cerr << "start: " << std::hex << a << std::dec 
-                  << " gotmain: " << gotMain << std::endl;
+    if (VERBOSE) {
+        const char *tmp = gotMain ? "true" : "false";
+        LOG << "start: ";
+        LOG << a;
+        LOG << " gotmain: " << tmp << "\n";
+    }
     if (a == NO_ADDRESS) return false;
 
     decode(prog, a);
@@ -227,7 +230,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     ifs.open(sPath);
 
     if (!ifs.good()) {
-        std::cerr << "can't open `" << sPath << "'" << std::endl;
+        LOG << "can't open `" << sPath << "'\n";
         exit(1);
     }
 
@@ -266,7 +269,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     std::map<std::string, Signature*>::iterator it;
     it = librarySignatures.find(name);
     if (it == librarySignatures.end()) {
-        std::cerr << "unknown library function " << name << std::endl;
+        LOG << "unknown library function " << name << "\n";
         signature = getDefaultSignature(name);
     }
     else {
@@ -386,7 +389,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
             // Decode and classify the current source instruction
             if (Boomerang::get()->traceDecoder)
-                std::cerr << "*" << std::hex << uAddr << "\t" << std::flush;
+                LOG << "*" << uAddr << "\t";
 
             // Decode the inst at uAddr.
             inst = decodeInstruction(uAddr);
@@ -411,9 +414,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 // An invalid instruction. Most likely because a call did
                 // not return (e.g. call _exit()), etc. Best thing is to
                 // emit a INVALID BB, and continue with valid instructions
-                std::cerr << "Warning: invalid instruction at " << std::hex
-                  << uAddr;
-                std::cerr << std::endl;
+                LOG << "Warning: invalid instruction at " << uAddr << "\n";
                 // Emit the RTL anyway, so we have the address and maybe
                 // some other clues
                 BB_rtls->push_back(new RTL(uAddr));  
@@ -438,8 +439,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             // Display RTL representation if asked
             if (Boomerang::get()->printRtl) {
                 //pRtl->print(os);
-                pRtl->print(std::cerr);
-                os << std::flush;        // Handy when the decompiler crashes
+                std::ostringstream st;
+                pRtl->print(st);
+                LOG << st.str().c_str();
             }
     
             ADDRESS uDest;
@@ -479,9 +481,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            std::cerr << "Error: Instruction at " << std::hex <<
+                            LOG << "Error: Instruction at " << 
                               uAddr << " branches beyond end of section, to "
-                              << uDest << std::endl;
+                              << uDest << "\n";
                         }
                     }
                     break;
@@ -545,8 +547,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         // Not a switch statement
                         std::string sKind("JUMP");
                         if (type == I_COMPCALL) sKind = "CALL";
-                        std::cerr << "Warning: COMPUTED " << sKind << " at "
-                          << std::hex << uAddr << std::endl;
+                        LOG << "Warning: COMPUTED " << sKind.c_str() << " at "
+                          << uAddr << "\n";
                     }
                     sequentialDecode = false;
                     BB_rtls = NULL;    // New RTLList for next BB
@@ -573,9 +575,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                             pCfg->addOutEdge(pBB, uDest, true);
                         }
                         else {
-                            std::cerr << "Error: Instruction at " << std::hex <<
+                            LOG << "Error: Instruction at " << 
                               uAddr << " branches beyond end of section, to "
-                              << uDest << std::endl;
+                              << uDest << "\n";
                         }
 
                         // Add the fall-through outedge
@@ -650,8 +652,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                             callSet.insert(call);
                             //newProc(pProc->getProg(), uNewAddr);
                             if (Boomerang::get()->traceDecoder)
-                                std::cerr << "p" << std::hex << uNewAddr << "\t"
-                                  << std::flush; 
+                                LOG << "p" << uNewAddr << "\t";
                         }
 
                         // Check if this is the _exit or exit function. May prevent
@@ -852,7 +853,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
     if (!bParsed) {
         targets.push(uNewAddr);
         if (Boomerang::get()->traceDecoder)
-            std::cerr << ">" << std::hex << uNewAddr << "\t" << std::flush;
+            LOG << ">" << uNewAddr << "\t";
     }
 }
 
@@ -880,7 +881,7 @@ ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
         ADDRESS address = targets.front();
         targets.pop();
         if (Boomerang::get()->traceDecoder)
-            std::cerr << "<" << std::hex << address << "\t" << std::flush;
+            LOG << "<" << address << "\t";
 
         // If no label there at all, or if there is a BB, it's incomplete,
         // then we can parse this address next
@@ -936,7 +937,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
 
     f = fopen (sName, "ro");
     if( f == NULL ) {
-        std::cerr << "Unable to open binary file: " << sName << std::endl;
+        LOG << "Unable to open binary file: " << sName << "\n";
         fclose(f);
         return NULL;
     }
@@ -965,8 +966,8 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
             }
 #endif
         } else {
-            std::cerr << "Unknown ELF machine type " << std::hex <<
-              (int)buf[0x12] << (int)buf[0x13] << std::endl;
+            LOG << "Unknown ELF machine type " << 
+              (ADDRESS)buf[0x12] << (ADDRESS)buf[0x13] << "\n";
             return NULL;
         }
     } else if( TESTMAGIC2( buf,0, 'M','Z' ) ) { /* DOS-based file */
@@ -987,8 +988,8 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
         /* HP Som binary (last as it's not really particularly good magic) */
         libName = "hppa";
     } else {
-        std::cerr << "FrontEnd::getInstanceFor: unrecognised binary file" <<
-            sName << std::endl;
+        LOG << "FrontEnd::getInstanceFor: unrecognised binary file" <<
+            sName << "\n";
         return NULL;
     }
 
@@ -997,15 +998,14 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
     libName = std::string(LIBDIR) + "/libfront" + machName + ".so";
     dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
     if (dlHandle == NULL) {
-        std::cerr << "Could not open dynamic loader library " << libName <<
-          std::endl;
-        std::cerr << "dlerror is " << dlerror() << std::endl;
+        LOG << "Could not open dynamic loader library " << libName << "\n";
+        LOG << "dlerror is " << dlerror() << "\n";
         return NULL;
     }
     // Use the handle to find the "construct" function
     constructFcn pFcn = (constructFcn) dlsym(dlHandle, "construct");
     if (pFcn == NULL) {
-        std::cerr << "Front end library " << libName <<
+        LOG << "Front end library " << libName <<
             " does not have a construct function\n";
         return NULL;
     }

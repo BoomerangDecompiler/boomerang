@@ -656,8 +656,7 @@ void Prog::decompile() {
     assert(m_procs.size());
 
     if (VERBOSE) 
-        std::cerr << "Decompiling " << m_procs.size() 
-                  << " procedures" << std::endl;
+        LOG << "Decompiling " << m_procs.size() << " procedures\n";
 
     UserProc* entryProc = (UserProc*) m_procs.front();
     assert(!entryProc->isLib());
@@ -734,8 +733,8 @@ void Prog::removeUnusedReturns() {
             UserProc* proc = *it;
             if (proc->isLib()) continue;
             if (Boomerang::get()->debugUnusedRets)
-                std::cerr << " @@ removeUnusedReturns: considering callee " <<
-                  proc->getName() << "\n";
+                LOG << " @@ removeUnusedReturns: considering callee " 
+                    << proc->getName() << "\n";
             bool thisChange = proc->removeUnusedReturns(rc);
             if (thisChange && !Boomerang::get()->noRemoveNull) {
                 // It may be that now there are more unused statements
@@ -784,10 +783,10 @@ void Prog::fromSSAform() {
         if (proc->isLib()) continue;
         proc->fromSSAform();
         if (Boomerang::get()->vFlag) {
-            std::cerr << "===== After transformation from SSA form for " <<
-              proc->getName() << " =====\n";
-            proc->print(std::cerr, true);
-            std::cerr << "===== End after transformation from SSA for " <<
+            LOG << "===== After transformation from SSA form for " 
+                << proc->getName() << " =====\n";
+            proc->printToLog(true);
+            LOG << "===== End after transformation from SSA for " <<
               proc->getName() << " =====\n\n";
         }
     }
@@ -795,7 +794,7 @@ void Prog::fromSSAform() {
 
 void Prog::typeAnalysis() {
     if (VERBOSE || DEBUG_TA)
-        std::cerr << "=== Start Type Analysis ===\n";
+        LOG << "=== Start Type Analysis ===\n";
     // FIXME: This needs to be done bottom of the call-tree first, with repeat
     // until no change for cycles in the call graph
     std::list<Proc*>::iterator pp;
@@ -805,5 +804,5 @@ void Prog::typeAnalysis() {
         proc->typeAnalysis(this);
     }
     if (VERBOSE || DEBUG_TA)
-        std::cerr << "=== End Type Analysis ===\n";
+        LOG << "=== End Type Analysis ===\n";
 }

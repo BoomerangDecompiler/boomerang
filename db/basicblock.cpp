@@ -336,6 +336,12 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
     }
 }
 
+void BasicBlock::printToLog(bool withDF) {
+    std::ostringstream st;
+    print(st, withDF);
+    LOG << st.str().c_str();
+}
+
 /*==============================================================================
  * FUNCTION:        BasicBlock::getLowAddr
  * OVERVIEW:        Get the lowest real address associated with this BB. Note
@@ -1448,8 +1454,8 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                     if (gg == ig.end()) {
                         ig[u] = localNum++;
                         if (VERBOSE || Boomerang::get()->debugLiveness)
-                            std::cerr << "Interference of " << u <<
-                            ", assigned local" << std::dec << localNum-1
+                            LOG << "Interference of " << u <<
+                            ", assigned local" << localNum-1
                             << "\n";
                     }
                 // Don't add the interfering variable to liveLocs, otherwise
@@ -1463,7 +1469,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                     liveLocs.insert(u);
             }
             if (Boomerang::get()->debugLiveness)
-                std::cerr << " ## Liveness: at top of " << s <<
+                LOG << " ## Liveness: at top of " << s <<
                   ", liveLocs is " << liveLocs.prints() << "\n";
         }
     }
@@ -1504,8 +1510,8 @@ void BasicBlock::getLiveOut(LocationSet &liveout) {
             RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
             liveout.insert(r);
             if (Boomerang::get()->debugLiveness)
-                std::cerr << " ## Liveness: adding " << std::dec << r <<
-                  " due to ref to phi " << *it << " in BB at " << std::hex <<
+                LOG << " ## Liveness: adding " << r <<
+                  " due to ref to phi " << *it << " in BB at " << 
                   getLowAddr() << "\n";
         }
     }
