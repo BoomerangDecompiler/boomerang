@@ -77,7 +77,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 	
 	OPER op = exp->getOper();
 	// First, a crude cast if unsigned
-	if (uns && op != opIntConst && !DFA_TYPE_ANALYSIS) {
+	if (uns && op != opIntConst /* && !DFA_TYPE_ANALYSIS */) {
 		str << "(unsigned)";
 		curPrec = PREC_UNARY;
 	}
@@ -589,13 +589,13 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opTypedExp:
 			if (u->getSubExp1()->getOper() == opTypedExp &&
-				*((TypedExp*)u)->getType() ==
-				*((TypedExp*)u->getSubExp1())->getType()) {
+					*((TypedExp*)u)->getType() == *((TypedExp*)u->getSubExp1())->getType()) {
 				appendExp(str, u->getSubExp1(), curPrec);
 			} else if (u->getSubExp1()->getOper() == opMemOf) {
 				PointerType *pty = dynamic_cast<PointerType*>(u->getSubExp1()->getSubExp1()->getType());
 				Type *tt = ((TypedExp*)u)->getType();
-				if (pty != NULL && (*pty->getPointsTo() == *tt || (tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
+				if (pty != NULL && (*pty->getPointsTo() == *tt ||
+						(tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
 					str << "*";
 				else {
 					str << "*(";
