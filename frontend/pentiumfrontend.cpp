@@ -800,7 +800,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         ls->push_back(newJump);
         BB_rtls->push_back(new RTL(uAddr, ls));
         break;
-    case 18:        // Jump if less
+    case 19:        // Jump if less
         newJump = new BranchStatement;
         newJump->setDest(pDest);
         newJump->setCondType(BRANCH_JSL, true);
