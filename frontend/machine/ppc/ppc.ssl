@@ -170,7 +170,7 @@ LWZX   rd, eaddr					   *32* rd := m[eaddr];
 
 BCLR   	   							   *32* %pc := %LR;
 
-MFSPR  rd, spr						   *32* rd := [spr >> 5 & 1?[spr >> 8 & 1?%CTR:%XER]:%LR];
+MFSPR  rd, spr						   *32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
 
 MTLR   rs  							   *32* %LR := rs;
 
