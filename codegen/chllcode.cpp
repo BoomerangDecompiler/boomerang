@@ -297,6 +297,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, " / ");
             appendExp(str, b->getSubExp2());
             break;
+        case opFround:
+            strcat(str, "fround(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
@@ -317,7 +322,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opCastIntStar:
         case opPostVar:
         case opFtoi:
-        case opFround:
         case opForceInt:
         case opForceFlt:
         case opFpush:
@@ -326,8 +330,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opCos:
         case opTan:
         case opArcTan:
-        case opLog2:
-        case opLog10:
         case opLoge:
         case opSqrt:
         case opExecute:
@@ -411,6 +413,23 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 strcat(str, s);
             break;
         }
+        case opPow:
+            strcat(str, "pow(");
+            appendExp(str, b->getSubExp1());
+            strcat(str, ", ");
+            appendExp(str, b->getSubExp2());
+            strcat(str, ")");
+            break;
+        case opLog2:
+            strcat(str, "log2(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
+        case opLog10:
+            strcat(str, "log10(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
         case opSubscript:
             appendExp(str, u->getSubExp1());
             std::cerr << "subscript in code generation of proc " << m_proc->getName() << " exp (without subscript): " << str << std::endl;

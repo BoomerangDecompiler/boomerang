@@ -563,8 +563,6 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
     jtCond = cond;
     bFloat = usesFloat;
 
-    if (bFloat) return;
-
     // set pCond to a high level representation of this type
     Exp* p = NULL;
 #if 0
