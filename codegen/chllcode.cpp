@@ -124,10 +124,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             if (sub->isGlobal()) {
                 Prog* prog = m_proc->getProg();
                 Const* con = (Const*)((Unary*)sub)->getSubExp1();
-                if (prog->getGlobalType(con->getStr())->isArray())
+                Type* gt = prog->getGlobalType(con->getStr());
+                if (gt->isArray() || gt->isPointer() &&
+                      gt->asPointer()->getPointsTo()->isChar()) {
                     // Special C requirement: don't emit "&" for address of
-                    // an array
+                    // an array or char*
+                    appendExp(str, sub, curPrec);
                     break;
+                }
             }
             openParen(str, curPrec, PREC_UNARY);
             str << "&";
