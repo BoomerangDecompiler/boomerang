@@ -84,6 +84,14 @@ struct DecodeResult {
     ICLASS type;
 
     /*
+     * If true, don't add numBytes and decode there; instead, re-decode
+     * the current instruction. Needed for instructions like the Pentium
+     * BSF/BSR, which emit branches (so numBytes needs to be carefully set
+     * for the fall through out edge after the branch)
+     */
+    bool reDecode;
+
+    /*
      * If non zero, this field represents a new native address to be used as
      * the out-edge for this instruction's BB. At present, only used for
      * the SPARC call/add caller prologue
@@ -184,13 +192,13 @@ bool isFuncPrologue(ADDRESS hostPC);
  *============================================================================*/
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output) if (DEBUG_DECODER) \
-    std::cerr << std::hex << pc << std::dec << ": " << output << std::endl;
+    std::cout << std::hex << pc << std::dec << ": " << output << std::endl;
 #define DEBUG_STMTS \
     std::list<Statement*>& lst = result.rtl->getList(); \
     if (DEBUG_DECODER) { \
         std::list<Statement*>::iterator ii; \
         for (ii = lst.begin(); ii != lst.end(); ii++) \
-            std::cerr << "          " << *ii << "\n"; \
+            std::cout << "          " << *ii << "\n"; \
     }
 
 /*
