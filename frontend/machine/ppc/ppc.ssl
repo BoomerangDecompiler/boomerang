@@ -53,21 +53,66 @@ SETXER(value) {
 };
 
 SETFLAGS0(rd) {
-   *1* %CR0@[3:3] := %XERSO
-   *1* %CR0@[2:2] := [rd = 0?1:0]
-   *1* %CR0@[1:1] := [rd > 0?1:0]
-   *1* %CR0@[0:0] := [rd < 0?1:0]
+   *1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
+   *1* %CR0@[1:1] := [rd = 0?1:0]	
+   *1* %CR0@[2:2] := [rd > 0?1:0]
+   *1* %CR0@[3:3] := [rd < 0?1:0]
 };
 
-SETFLAGSTO(crfd, mask) {
-   *32* crfd = 0 => %CR0 := mask
-   *32* crfd = 1 => %CR1 := mask
-   *32* crfd = 2 => %CR2 := mask
-   *32* crfd = 3 => %CR3 := mask
-   *32* crfd = 4 => %CR4 := mask
-   *32* crfd = 5 => %CR5 := mask
-   *32* crfd = 6 => %CR6 := mask
-   *32* crfd = 7 => %CR7 := mask
+SUBFLAGSNL(op1, op2, crfd) {
+	# Set flags in Logical (unsigned) fashion
+   *32* crfd = 0 => %CR0@[3:3] := op1 <u op2
+   *32* crfd = 0 => %CR0@[2:2] := op1 >u op2
+   *32* crfd = 0 => %CR0@[1:1] := op1 = op2
+   *32* crfd = 1 => %CR1@[3:3] := op1 <u op2
+   *32* crfd = 1 => %CR1@[2:2] := op1 >u op2
+   *32* crfd = 1 => %CR1@[1:1] := op1 = op2
+   *32* crfd = 2 => %CR2@[3:3] := op1 <u op2
+   *32* crfd = 2 => %CR2@[2:2] := op1 >u op2
+   *32* crfd = 2 => %CR2@[1:1] := op1 = op2
+   *32* crfd = 3 => %CR3@[3:3] := op1 <u op2
+   *32* crfd = 3 => %CR3@[2:2] := op1 >u op2
+   *32* crfd = 3 => %CR3@[1:1] := op1 = op2
+   *32* crfd = 4 => %CR4@[3:3] := op1 <u op2
+   *32* crfd = 4 => %CR4@[2:2] := op1 >u op2
+   *32* crfd = 4 => %CR4@[1:1] := op1 = op2
+   *32* crfd = 5 => %CR5@[3:3] := op1 <u op2
+   *32* crfd = 5 => %CR5@[2:2] := op1 >u op2
+   *32* crfd = 5 => %CR5@[1:1] := op1 = op2
+   *32* crfd = 6 => %CR6@[3:3] := op1 <u op2
+   *32* crfd = 6 => %CR6@[2:2] := op1 >u op2
+   *32* crfd = 6 => %CR6@[1:1] := op1 = op2
+   *32* crfd = 7 => %CR7@[3:3] := op1 <u op2
+   *32* crfd = 7 => %CR7@[2:2] := op1 >u op2
+   *32* crfd = 7 => %CR7@[1:1] := op1 = op2
+};
+
+SUBFLAGSNS(op1, op2, crfd) {
+	# Set flags in signed fashion
+   *32* crfd = 0 => %CR0@[3:3] := op1 < op2
+   *32* crfd = 0 => %CR0@[2:2] := op1 > op2
+   *32* crfd = 0 => %CR0@[1:1] := op1 = op2
+   *32* crfd = 1 => %CR1@[3:3] := op1 < op2
+   *32* crfd = 1 => %CR1@[2:2] := op1 > op2
+   *32* crfd = 1 => %CR1@[1:1] := op1 = op2
+   *32* crfd = 2 => %CR2@[3:3] := op1 < op2
+   *32* crfd = 2 => %CR2@[2:2] := op1 > op2
+   *32* crfd = 2 => %CR2@[1:1] := op1 = op2
+   *32* crfd = 3 => %CR3@[3:3] := op1 < op2
+   *32* crfd = 3 => %CR3@[2:2] := op1 > op2
+   *32* crfd = 3 => %CR3@[1:1] := op1 = op2
+   *32* crfd = 4 => %CR4@[3:3] := op1 < op2
+   *32* crfd = 4 => %CR4@[2:2] := op1 > op2
+   *32* crfd = 4 => %CR4@[1:1] := op1 = op2
+   *32* crfd = 5 => %CR5@[3:3] := op1 < op2
+   *32* crfd = 5 => %CR5@[2:2] := op1 > op2
+   *32* crfd = 5 => %CR5@[1:1] := op1 = op2
+   *32* crfd = 6 => %CR6@[3:3] := op1 < op2
+   *32* crfd = 6 => %CR6@[2:2] := op1 > op2
+   *32* crfd = 6 => %CR6@[1:1] := op1 = op2
+   *32* crfd = 7 => %CR7@[3:3] := op1 < op2
+   *32* crfd = 7 => %CR7@[2:2] := op1 > op2
+   *32* crfd = 7 => %CR7@[1:1] := op1 = op2
 };
 
 
@@ -252,19 +297,13 @@ BL		reloc 							*32* %LR := %pc + 4
 										*32* %pc := reloc;
 
 # Comparisons. Ignore XER[SO] for now.
+CMPI		crfd, ra, simm				SUBFLAGSNS(ra, simm, crfd);
 
-CMPS := {	"CMPI",	"CMPLI",	"CMP",	"CMPL"};
+CMPLI		crfd, ra, uimm				SUBFLAGSNL(ra, uimm, crfd);
 
-# Note: must use op1 and op2 for parameters, not ra and simm/uimm/rb, so CMPS has the same named parameters
-CMPI		crfd, op1, op2				*32* tmp_c := [op1 < sgnex(16,32,op2)?8:[op1 > sgnex(16,32,op2)?4:2]];
+CMP			crfd, ra, rb				SUBFLAGSNS(ra, rb, crfd);
 
-CMPLI		crfd, op1, op2				*32* tmp_c := [op1 <u zfill(16,32,op2)?8:[op1 >u zfill(16,32,op2)?4:2]];
-
-CMP			crfd, op1, op2				*32* tmp_c := [op1 < op2?8:[op1 > op2?4:2]];
-
-CMPL		crfd, op1, op2				*32* tmp_c := [op1 <u op2?8:[op1 >u op2?4:2]];
-
-CMPS[IDX]	crfd, op1, op2				SETFLAGSTO(crfd, tmp_c);
+CMPL		crfd, ra, rb				SUBFLAGSNL(ra, rb, crfd);
 
 #condition register manipulation
 
