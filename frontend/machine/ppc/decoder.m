@@ -177,8 +177,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
 		unused(l);
 
-//	| bcc_(BIcr, reladdr) [name] =>
-//		stmts = instantiate(pc, name, DIS_BICR, DIS_RELADDR);
+	| bcc_(BIcr, reladdr) [name] =>
+		stmts = instantiate(pc, name, DIS_BICR, DIS_RELADDR);
 
 	else
 		stmts = NULL;

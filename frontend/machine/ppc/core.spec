@@ -639,20 +639,34 @@ fieldinfo Bo is [ sparse [ dnzf = 0, dzf =  2,  f =  4,
                            dnzt = 8, dzt = 10,  t = 12,
                            dnz = 16, dz =  18 ] ]
 
-patterns
 
- blt is BO = t & BIcc = lt
- ble is BO = f & BIcc = gt
- beq is BO = t & BIcc = eq
- bge is BO = f & BIcc = lt
- bgt is BO = t & BIcc = gt
- bnl is BO = f & BIcc = lt
- bne is BO = f & BIcc = eq
- bng is BO = f & BIcc = gt
- bso is BO = t & BIcc = so
- bns is BO = f & BIcc = so
- bun is BO = t & BIcc = un
- bnu is BO = f & BIcc = un
+patterns
+# MVE: These seem to cause error messages
+# blt is BO = t & BIcc = lt
+# ble is BO = f & BIcc = gt
+# beq is BO = t & BIcc = eq
+# bge is BO = f & BIcc = lt
+# bgt is BO = t & BIcc = gt
+# bnl is BO = f & BIcc = lt
+# bne is BO = f & BIcc = eq
+# bng is BO = f & BIcc = gt
+# bso is BO = t & BIcc = so
+# bns is BO = f & BIcc = so
+# bun is BO = t & BIcc = un
+# bnu is BO = f & BIcc = un
+
+ blt is BO = 12 & BIcc = 0		# t, lt
+ ble is BO = 4  & BIcc = 1		# f, gt
+ beq is BO = 12 & BIcc = 2		# t, eq
+ bge is BO = 4  & BIcc = 0		# f, lt
+ bgt is BO = 12 & BIcc = 1		# t, gt
+ bnl is BO = 4  & BIcc = 0		# f, lt
+ bne is BO = 4  & BIcc = 2		# f, eq
+ bng is BO = 4  & BIcc = 1		# f, gt
+ bso is BO = 12 & BIcc = 3		# t, so
+ bns is BO = 4  & BIcc = 3		# f, so
+ bun is BO = 12 & BIcc = 3		# t, un
+ bnu is BO = 4  & BIcc = 3		# f, un
 
 bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu
 
