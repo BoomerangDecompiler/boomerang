@@ -242,7 +242,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opRotateLC:
         case opRotateRC:
         case opTargetInst:
-        case opTypedExp:
         case opNamedExp:
         case opGuard:
         case opTern:
@@ -255,8 +254,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opTruncu:
         case opTruncs:
         case opZfill:
-        case opSgnEx:
-        case opFsize:
         case opItof:
         case opFtoi:
         case opFround:
@@ -282,6 +279,21 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 std::endl;
             assert(false);
             break;
+        case opFlagCall:
+            strcat(str, "/* flag call */ ");    
+            break;
+        case opTypedExp: {
+            strcat(str, "/* typed exp */ ");
+            Exp* s = u->getSubExp1();
+            appendExp(str, s);
+            break;
+        }
+        case opSgnEx: {
+            strcat(str, "/* opSgnEx */ (int) ");
+            Exp* s = u->getSubExp1();
+            appendExp(str, s);
+            break;
+        }
         default:
             // others
             std::cerr << "not implemented " << operStrings[exp->getOper()] << 
