@@ -563,12 +563,15 @@ public:
     // From SSA form
     virtual void fromSSAform(igraph& ig);
 
+    // Generate constraints
+    virtual void genConstraints(LocationSet& cons);
+
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to);
 
 private:
-    BRANCH_TYPE jtCond;          // The condition for jumping
-    Exp* pCond;              // The Exp representation of the high level
+    BRANCH_TYPE jtCond;         // The condition for jumping
+    Exp* pCond;                 // The Exp representation of the high level
                                 // condition: e.g., r[8] == 5
     bool bFloat;                // True if uses floating point CC
 

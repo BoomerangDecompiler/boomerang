@@ -230,9 +230,12 @@ bool hasSetFlags(Exp* e) {
 // exclude: a set of statements not to propagate from
 void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
 {
+#if 0       // If don't propagate into flag assigns, some converting to locals
+            // doesn't happen, and errors occur
     // don't propagate to flag assigns
     if (isFlagAssgn())
         return;
+#endif
     // don't propagate into temp definitions
     if (isAssign() && getLeft()->isTemp())
         return;
@@ -277,6 +280,10 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                     continue;
                 if (def->isBool())
                     continue;
+#if 1   // Sorry, I don't believe prop into branches is wrong... MVE
+        // By not propagating into branches, we get memory locations not
+        // converted to locals, for example (e.g. test/source/csp.c)
+         
                 if (isBranch()) {
                     Exp* defRight = def->getRight();
                     // Propagating to a branch often doesn't give good results,
@@ -300,6 +307,7 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                             if (VERBOSE) LOG << "Allowing prop. into "
                                 "branch (2) of " << def << "\n";
                 }
+#endif
                 if (def->getLeft()->getType() && 
                     def->getLeft()->getType()->isArray()) {
                     // Assigning to an array, don't propagate
@@ -3224,6 +3232,21 @@ void CallStatement::genConstraints(LocationSet& cons) {
             }
         }
     }
+}
+
+void BranchStatement::genConstraints(LocationSet& cons) {
+    if (pCond == NULL && VERBOSE) {
+        LOG << "Warning: BranchStatment " << number <<
+            " has no condition expression!\n";
+        return;
+    }
+    assert(pCond->getArity() == 2);
+    Exp* lhs = ((Binary*)pCond)->getSubExp1();
+    Exp* rhs = ((Binary*)pCond)->getSubExp2();
+    Exp* equ = new Binary(opEquals,
+        new Unary(opTypeOf, lhs),
+        new Unary(opTypeOf, rhs));
+    cons.insert(equ);
 }
 
 // By default, visit all children (statements)
