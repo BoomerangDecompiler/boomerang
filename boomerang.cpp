@@ -1,8 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#include <sys/stat.h>     // For mkdir
+#ifdef WIN32
 #include <direct.h>       // mkdir under Windows
+#else
+#include <sys/stat.h>     // For mkdir
+#endif
+#include <unistd.h>   // For unlink
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
