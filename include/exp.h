@@ -225,6 +225,7 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
 
     // Search for Exp search in this Exp. For each found, add
     // a ptr to the matching expression in result (useful with wildcards).    
+    // Does NOT clear result on entry
     bool    searchAll(Exp* search, std::list<Exp*>& result);
 
     // Search this Exp for *search; if found, replace with *replace
