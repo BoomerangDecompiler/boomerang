@@ -5,11 +5,12 @@
 
 //#define SPARC_DEBUG
 
+#ifdef SPARC_DEBUG
+
 void segv_handler(int a, siginfo_t *b, void *c)
 {
-    fprintf(stderr, "Boomerang has encounted a fatal error.");
+    fprintf(stderr, "Boomerang has encounted a fatal error.\n");
 
-#ifdef SPARC_DEBUG
     ucontext_t *uc = (ucontext_t *) c;
 #if 0
     fprintf(stderr, "\n*** SIGNAL TRAPPED: SIGNAL %d ***\n", a);
@@ -62,7 +63,6 @@ void segv_handler(int a, siginfo_t *b, void *c)
         if (sp[i] - (unsigned int)(sp+i) < 100)
             fprintf(stderr, "%08X\n", sp[++i]);
     }
-#endif
    exit(0);
 }
 
@@ -73,7 +73,9 @@ int main(int argc, const char* argv[]) {
     act.sa_flags = (SA_SIGINFO | SA_ONSTACK);
 
     sigaction(SIGSEGV, &act, NULL);
-
+#else
+int main(int argc, const char* argv[]) {
+#endif
     return Boomerang::get()->commandLine(argc, argv);
 }
 
