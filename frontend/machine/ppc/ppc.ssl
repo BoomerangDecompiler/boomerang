@@ -266,13 +266,15 @@ LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
 
 # Shifts
-SHIFTS_DOT	:= {"SLWq", "SRWq"};
-SHIFTS		:= {"SLW",	"SRW", SHIFTS_DOT};
-SHIFT_OP	:= {"<<", ">>", "<<", ">>"};
+SHIFTS_DOT	:= {"SLWq", "SRWq", "SRAWq",	"SRAWIq"};
+SHIFTS		:= {"SLW",	"SRW",	"SRAW",		"SRAWI",	SHIFTS_DOT};
+SHIFT_OP	:= {"<<",   ">>",   ">>A",		">>A",
+				"<<",	">>",	">>A",		">>A"};
 
-SHIFTS[IDX]		Rd, Rs, uimm			*32* Rd := Rs SHIFT_OP[IDX] uimm;
+SHIFTS[IDX]		Rd, Rs, op2			*32* Rd := Rs SHIFT_OP[IDX] op2;
+				# Note: SRAW/SRAWI also set the carry flag (%XERCA) in some weird way
 
-SHIFTS_DOT[IDX]	Rd, Rs, uimm			SETFLAGS0(Rd);
+SHIFTS_DOT[IDX]	Rd, Rs, op2			SETFLAGS0(Rd);
 
 
 

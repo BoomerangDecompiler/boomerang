@@ -231,20 +231,20 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
 	| bgt(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
-	| bnl(BIcr, reladdr) [name] =>
-		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+//	| bnl(BIcr, reladdr) [name] =>								// bnl same as bge
+//		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
 	| bne(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JNE, BIcr);
-	| bng(BIcr, reladdr) [name] =>
-		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
+//	| bng(BIcr, reladdr) [name] =>								// bng same as blt
+//		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
 	| bso(BIcr, reladdr) [name] =>								// Branch on summary overflow
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
 	| bns(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
-	| bun(BIcr, reladdr) [name] =>
-		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
-	| bnu(BIcr, reladdr) [name] =>
-		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+//	| bun(BIcr, reladdr) [name] =>
+//		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+//	| bnu(BIcr, reladdr) [name] =>
+//		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
     | bal(BIcr, reladdr) =>
 		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
 
@@ -269,31 +269,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		std::cerr << "HACK " << name << "\n";
 //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSG, BIcr);
 
-	| bnlctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSGE, BIcr);
-
 	| bnectr(BIcr) [name] =>
 		std::cerr << "HACK " << name << "\n";
 //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JNE, BIcr);
-
-	| bngctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
 
 	| bsoctr(BIcr) [name] =>
 		std::cerr << "HACK " << name << "\n";
 //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
 
 	| bnsctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
-
-	| bunctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
-
-	| bnuctr(BIcr) [name] =>
 		std::cerr << "HACK " << name << "\n";
 //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
 
@@ -322,16 +306,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSLE, BIcr);
 		result.rtl->appendStmt(new ReturnStatement);
 
-	| bnllr(BIcr) [name] =>
-		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSL, BIcr);
-		result.rtl->appendStmt(new ReturnStatement);
-
 	| bnelr(BIcr) [name] =>
 		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JE, BIcr);
-		result.rtl->appendStmt(new ReturnStatement);
-
-	| bnglr(BIcr) [name] =>
-		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
 		result.rtl->appendStmt(new ReturnStatement);
 
 	| bsolr(BIcr) [name] =>
@@ -339,14 +315,6 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnslr(BIcr) [name] =>
-		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
-		result.rtl->appendStmt(new ReturnStatement);
-
-	| bunlr(BIcr) [name] =>
-		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
-		result.rtl->appendStmt(new ReturnStatement);
-
-	| bnulr(BIcr) [name] =>
 		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
 		result.rtl->appendStmt(new ReturnStatement);
 
@@ -371,20 +339,19 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		std::cerr << "HACK " << name << "\n";
 	| bgtl(BIcr, reladdr) [name] =>
 		std::cerr << "HACK " << name << "\n";
-	| bnll(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
 	| bnel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bngl(BIcr, reladdr) [name] =>
 		std::cerr << "HACK " << name << "\n";
 	| bsol(BIcr, reladdr) [name] =>
 		std::cerr << "HACK " << name << "\n";
 	| bnsl(BIcr, reladdr) [name] =>
 		std::cerr << "HACK " << name << "\n";
-	| bunl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bnul(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
+
+	// Shift right arithmetic
+	| srawi(ra, rs, uimm) [name] =>
+		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
+	| srawiq(ra, rs, uimm) [name] =>
+		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
+		
 	else
 		stmts = NULL;
 		result.valid = false;

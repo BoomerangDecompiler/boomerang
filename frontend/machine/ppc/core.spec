@@ -675,7 +675,7 @@ constructors
 #
 # "b"^Bo^LK^AA   BIcr    is bc & AA & LK & BIcr & Bo
 
-  "b"^BO^"lr"^LK BIcr    is bclr    & LK & BIcr & BO
+#  "b"^BO^"lr"^LK BIcr    is bclr    & LK & BIcr & BO		# See bcc_^"lr"... below
 
 # Table F-8
 
