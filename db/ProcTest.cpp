@@ -7,11 +7,12 @@
  * $Revision$
  *
  * 23 Apr 02 - Mike: Created
+ * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
  */
 
-//#ifndef BOOMDIR
-//#error Must define BOOMDIR
-//#endif
+#ifndef BOOMDIR
+#error Must define BOOMDIR
+#endif
 
 #define HELLO_PENTIUM       BOOMDIR "/test/pentium/hello"
 
@@ -53,10 +54,6 @@ void ProcTest::setUp () {
     CPPUNIT_ASSERT(pBF != 0);
     FrontEnd *pFE = new PentiumFrontEnd(pBF);
     CPPUNIT_ASSERT(pFE != 0);
-    m_prog = new Prog();
-    CPPUNIT_ASSERT(m_prog != 0);
-    m_prog->pBF = pBF;
-    m_prog->pFE = pFE;
 }
 
 /*==============================================================================
@@ -67,9 +64,7 @@ void ProcTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void ProcTest::tearDown () {
-    m_prog->pBF->UnLoad();
     delete m_proc;
-    delete m_prog;
 }
 
 /*==============================================================================
@@ -78,12 +73,16 @@ void ProcTest::tearDown () {
  *============================================================================*/
 void ProcTest::testName () {
     std::string nm("default name");
-    m_proc = new UserProc(m_prog, nm, 20000);   // They will print in decimal if error
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    Prog* prog = new Prog(pBF, pFE);
+    CPPUNIT_ASSERT(prog);
+    m_proc = new UserProc(prog, nm, 20000);   // They will print in decimal if error
     std::string actual(m_proc->getName());
     CPPUNIT_ASSERT_EQUAL(std::string("default name"), actual);
 
     std::string name("printf");
-    LibProc lp(m_prog, name, 30000);
+    LibProc lp(prog, name, 30000);
     actual =  lp.getName();
     CPPUNIT_ASSERT_EQUAL(name, actual);
 
@@ -93,5 +92,7 @@ void ProcTest::testName () {
     a = m_proc->getNativeAddress();
     expected = 20000;
     CPPUNIT_ASSERT_EQUAL(expected, a);
+
+    delete prog;
 }
 
