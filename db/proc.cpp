@@ -2808,6 +2808,8 @@ bool UserProc::canProveNow()
     return !inProve;
 }
 
+#define DEBUG_PROOF (Boomerang::get()->debugProof)
+
 // this function is non-reentrant
 bool UserProc::prove(Exp *query)
 {
@@ -2847,7 +2849,7 @@ bool UserProc::prove(Exp *query)
                 }
             }
         }
-        if (!gotdef && VERBOSE) {
+        if (!gotdef && DEBUG_PROOF) {
             LOG << "not in return set: " << query->getSubExp1() << "\n";
             inProve = false;
             return false;
@@ -2877,7 +2879,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
 
     if (lastPhi && cache.find(lastPhi) != cache.end() &&
         *cache[lastPhi] == *phiInd) {
-        if (VERBOSE)
+        if (DEBUG_PROOF)
             LOG << "true - in the cache\n";
         return true;
     } 
@@ -2888,7 +2890,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
     bool change = true;
     bool swapped = false;
     while (change) {
-        if (VERBOSE) {
+        if (DEBUG_PROOF) {
             LOG << query << "\n";
         }
     
@@ -2936,13 +2938,13 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                             change = true;
                         } else {
                             callwd[call] = query->clone();
-                            if (VERBOSE)
+                            if (DEBUG_PROOF)
                                 LOG << "using proven (or induction) for " 
                                     << call->getDestProc()->getName() << " " 
                                     << r->getSubExp1() 
                                     << " = " << right << "\n";
                             right = call->substituteParams(right);
-                            if (VERBOSE)
+                            if (DEBUG_PROOF)
                                 LOG << "right with subs: " << right << "\n";
                             query->setSubExp1(right);
                             change = true;
@@ -2957,23 +2959,23 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                         bool ok = true;
                         if (lastPhis.find(p) != lastPhis.end() || p == lastPhi)
                         {
-                            if (VERBOSE)
+                            if (DEBUG_PROOF)
                                 LOG << "phi loop detected ";
                             ok = (*query->getSubExp2() == *phiInd);
-                            if (ok && VERBOSE)
+                            if (ok && DEBUG_PROOF)
                                 LOG << "(set true due to induction)\n";
-                            if (!ok && VERBOSE)
+                            if (!ok && DEBUG_PROOF)
                                 LOG << "(set false " << 
                                     query->getSubExp2() << " != " << 
                                     phiInd << ")\n";
                         } else {
-                            if (VERBOSE)
+                            if (DEBUG_PROOF)
                                 LOG << "found " << s << " prove for each\n";
                             for (it = p->begin(); it != p->end(); it++) {
                                 Exp *e = query->clone();
                                 RefExp *r1 = (RefExp*)e->getSubExp1();
                                 r1->setDef(*it);
-                                if (VERBOSE)
+                                if (DEBUG_PROOF)
                                     LOG << "proving for " << e << "\n";
                                 lastPhis.insert(lastPhi);
                                 if (!prover(e, lastPhis, cache, p)) { 
@@ -3064,7 +3066,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
 
         query = query->clone()->simplify();
 
-        if (change && !(*old == *query) && VERBOSE) {
+        if (change && !(*old == *query) && DEBUG_PROOF) {
             LOG << old << "\n";
         }
         //delete old;

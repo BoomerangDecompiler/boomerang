@@ -90,6 +90,7 @@ public:
     bool debugDecoder;
     bool decodeThruIndCall;
     bool noDecodeChildren;
+    bool debugProof;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

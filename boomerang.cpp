@@ -24,7 +24,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
-    noDecodeChildren(false)
+    noDecodeChildren(false), debugProof(false)
 {
 }
 
@@ -55,13 +55,14 @@ void Boomerang::usage() {
 }
 
 void Boomerang::help() {
+    std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
     std::cerr << "-dd: debug - debug decoder to stderr\n";
     std::cerr << "-dg: debug - debug code generation\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
+    std::cerr << "-dp: debug - debug proof engine\n";
     std::cerr << "-dr: debug - debug unused Returns\n";
     std::cerr << "-dt: debug - debug type analysis\n";
-    std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
@@ -242,6 +243,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'a':
                         printAST = true;
                         break;
+                    case 'p':
+                        debugProof = true;
+                        break;
                     default:
                         help();
                 }
@@ -302,7 +306,7 @@ int Boomerang::decompile(const char *fname)
         }
     }
 
-    std::cerr << "found " << prog->getNumUserProcs() << " procs\n";
+    std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
 
     std::cerr << "analysing...\n";
     prog->analyse();
@@ -337,7 +341,7 @@ int Boomerang::decompile(const char *fname)
     int hours = (end-start) / 60 / 60;
     int mins = (end-start) / 60 - hours * 60;
     int secs = (end-start) - hours * 60 * 60 - mins * 60 * 60;
-    std::cerr << "completed in ";
+    std::cerr << "completed in " << std::dec;
     if (hours)
         std::cerr << hours << " hours ";
     if (mins)
