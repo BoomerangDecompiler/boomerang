@@ -149,6 +149,19 @@ public:
     // Very similar to the [SW93] paper
     void reverseGlobalDataflow();
 
+    // Recover parameters. Uses liveness from reverseGlobalDataflow
+    void recoverParameters();
+
+    // Insert arguments. Assumes all procedures have their formal parameters
+    // recovered
+    void insertArguments();
+
+    // Transform out of SSA form
+    void fromSSAform();
+
+    // Remove interprocedural edges
+    void removeInterprocEdges();
+
     // Do decompilation
     void decompile();
 

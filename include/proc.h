@@ -196,7 +196,7 @@ public:
     static Proc *deserialize(Prog *prog, std::istream &inf);
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
-    virtual void getInternalStatements(StatementList &internal) = 0;
+    //virtual void getInternalStatements(StatementList &internal) = 0;
 
 protected:
 
@@ -274,7 +274,7 @@ public:
     // deserialize the subclass specific portion of this procedure
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
-    virtual void getInternalStatements(StatementList &internal);
+    void getInternalStatements(StatementList &internal);
 };
 
 /*==============================================================================
@@ -370,6 +370,9 @@ public:
     void toSSAform(int memDepth);
     void fromSSAform(igraph& ig);
 
+    void recoverParameters();       // Find formal parameters
+    void insertArguments();         // Insert actual arguments to match formals
+
     // promote the signature if possible
     void promoteSignature();
 
@@ -390,24 +393,9 @@ public:
 
     // get internal statements
     // Note: assignment causes shallow copy of list
-    virtual void getInternalStatements(StatementList &sl) {sl = internal;}
+    //virtual void getInternalStatements(StatementList &sl) {sl = internal;}
     // Calculate uses info
     void computeUses();
-
-//
-//  SSA
-//
-    // return true if the procedure is in ssa form
-    bool isSSAForm();
-
-    // transform the procedure to ssa form
-    void transformToSSAForm();
-
-    // transform the procedure from ssa form
-    void transformFromSSAForm();
-
-    // minimise the SSA form, returns true if anything changed
-    bool minimiseSSAForm();
 
     // get the set of locations "returned" by this procedure
     // I'm thinking this belongs here instead of in signature.
@@ -601,7 +589,7 @@ private:
      * Internal statements for this procedure
      * See Proc::moveInternalStatements
      */
-    StatementList internal;
+    //StatementList internal;
 
     /* 
      * Locations "returned" by this procedure.  These are different to the

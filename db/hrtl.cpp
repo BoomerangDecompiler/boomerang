@@ -163,14 +163,15 @@ void HLJump::adjustFixedDest(int delta) {
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:      search - a location to search for
  *                  replace - the expression with which to replace it
- * RETURNS:         <nothing>
+ * RETURNS:         True if any change
  *============================================================================*/
-void HLJump::searchAndReplace(Exp* search, Exp* replace) {
+bool HLJump::searchAndReplace(Exp* search, Exp* replace) {
     RTL::searchAndReplace(search, replace);
+    bool change = false;
     if (pDest) {
-        bool change;
         pDest->searchReplaceAll(search, replace, change);
     }
+    return change;
 }
 
 /*==============================================================================
@@ -517,13 +518,14 @@ bool HLJcond::search(Exp* search, Exp*& result) {
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:      search - a location to search for
  *                  replace - the expression with which to replace it
- * RETURNS:         <nothing>
+ * RETURNS:         True if any change
  *============================================================================*/
-void HLJcond::searchAndReplace(Exp* search, Exp* replace) {
+bool HLJcond::searchAndReplace(Exp* search, Exp* replace) {
     HLJump::searchAndReplace(search, replace);
-    bool change;
+    bool change = false;
     if (pCond)
         pCond = pCond->searchReplaceAll(search, replace, change);
+    return change;
 }
 
 // update type for expression
@@ -862,13 +864,14 @@ void HLNwayJump::setSwitchInfo(SWITCH_INFO* psi) {
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:      search - a location to search for
  *                  replace - the expression with which to replace it
- * RETURNS:         <nothing>
+ * RETURNS:         True if any change
  *============================================================================*/
-void HLNwayJump::searchAndReplace(Exp* search, Exp* replace) {
+bool HLNwayJump::searchAndReplace(Exp* search, Exp* replace) {
     HLJump::searchAndReplace(search, replace);
-    bool ch;
+    bool ch = false;
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
         pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch);
+    return ch;
 }
 
 /*==============================================================================
@@ -1143,11 +1146,10 @@ bool HLCall::search(Exp* search, Exp*& result) {
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:      search - a location to search for
  *                  replace - the expression with which to replace it
- * RETURNS:         <nothing>
+ * RETURNS:         True if any change
  *============================================================================*/
-void HLCall::searchAndReplace(Exp* search, Exp* replace) {
-    bool change;
-    HLJump::searchAndReplace(search, replace);
+bool HLCall::searchAndReplace(Exp* search, Exp* replace) {
+    bool change = HLJump::searchAndReplace(search, replace);
     if (returnLoc != NULL)
         returnLoc = returnLoc->searchReplaceAll(search, replace, change);
     for (unsigned i = 0; i < arguments.size(); i++)
@@ -1158,6 +1160,7 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace) {
           it != postCallExpList->end(); it++)
             *it = (*it)->searchReplaceAll(search, replace, change);
     }
+    return change;
 }
 
 /*==============================================================================
@@ -1614,7 +1617,20 @@ void HLCall::toSSAform(StatementSet& reachin, int memDepth) {
 
 // Convert from SSA form
 void HLCall::fromSSAform(igraph& ig) {
+    // FIXME: process arguments
+}
 
+// Insert actual arguments to match the formal parameters
+// This is called very late, after all propagation
+void HLCall::insertArguments() {
+    if (procDest == NULL) return;
+    if (procDest->isLib()) return;
+    Signature* sig = procDest->getSignature();
+    int num = sig->getNumParams();
+    arguments.resize(num);
+    for (int i=0; i<num; i++) {
+        arguments[i] = sig->getArgumentExp(i)->clone();
+    }
 }
 
 void HLCall::processConstants(Prog *prog) {
@@ -2064,17 +2080,16 @@ bool HLScond::search(Exp *search, Exp *&result)
     return pCond->search(search, result);
 }
 
-void HLScond::searchAndReplace(Exp *search, Exp *replace)
-{
-    bool change;
+bool HLScond::searchAndReplace(Exp *search, Exp *replace) {
+    bool change = false;
     assert(pCond);
     assert(pDest);
     pCond = pCond->searchReplaceAll(search, replace, change);
     pDest = pDest->searchReplaceAll(search, replace, change);
+    return change;
 }
 
-Type* HLScond::updateType(Exp *e, Type *curType)
-{
+Type* HLScond::updateType(Exp *e, Type *curType) {
     delete curType;
     return new BooleanType();
 }
@@ -2084,8 +2099,7 @@ void HLScond::fromSSAform(igraph& ig) {
     // To be completed
 }
 
-void HLScond::doReplaceUse(Statement *def)
-{
+void HLScond::doReplaceUse(Statement *def) {
     searchAndReplace(def->getLeft(), def->getRight());
     simplify();
 }

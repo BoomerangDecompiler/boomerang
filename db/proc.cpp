@@ -919,7 +919,7 @@ void UserProc::initStatements(int& stmtNum) {
                 if (dest && dest->isLib()) {
                     call->setSigArguments();    // Get params
                     StatementList sl;
-                    dest->getInternalStatements(sl);
+                    ((LibProc*)dest)->getInternalStatements(sl);
                     std::list<Exp*>* le = new std::list<Exp*>;
                     // Convert to a list of Exp*; ugh
                     StmtListIter ii;
@@ -990,10 +990,25 @@ void UserProc::removeStatement(Statement *stmt) {
             Statement *e = dynamic_cast<Statement*>(*it);
             if (e == NULL) continue;
             if (e == stmt) {
-                stmt->updateDfForErase();
+                //stmt->updateDfForErase();
                 rtl->getList().erase(it);
                 return;
             }
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            // Check post call semantics
+            std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::iterator pp;
+                for (pp = le->begin(); pp != le->end(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    if (s == stmt) {
+                        le->erase(pp);
+                        return;
+                    }
+                }
+            }
+
         }
     }
 }
@@ -1007,8 +1022,9 @@ void UserProc::decompile() {
     // for this proc
     decompiled_down = true;
 
-    // Look at each call, to perform a depth first search.
     BB_IT it;
+#if 0   // Actually better for calls and rets not to DFS
+    // Look at each call, to perform a depth first search.
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         if (bb->getType() == CALL) {
             // The call RTL will be the last in this BB
@@ -1016,6 +1032,7 @@ void UserProc::decompile() {
             call->decompile();
         }
     }
+#endif
 
     if (Boomerang::get()->noDecompileUp) {
         decompiled = true;
@@ -1173,11 +1190,11 @@ void UserProc::replaceExpressionsWithSymbols() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
           it1 != symbolMap.end(); it1++) {
-            s->searchAndReplace((*it1).first, (*it1).second);
-            if (VERBOSE) {
+            bool ch = s->searchAndReplace((*it1).first, (*it1).second);
+            if (ch && VERBOSE) {
                 Exp* ee = dynamic_cast<Exp*>(s);
                 if (ee) std::cerr << "Std stmt: replace " << (*it1).first <<
-                  " with " << (*it1).second << " in " << ee << std::endl;
+                  " with " << (*it1).second << " result " << ee << std::endl;
             }
         }
     }
@@ -1185,15 +1202,17 @@ void UserProc::replaceExpressionsWithSymbols() {
     // replace expressions with symbols in the return value
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
-        bool change;
         Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
-        e = e->clone(); 
-        if (VERBOSE) std::cerr << "return value: " << e << " replace " <<
+        e = e->clone();
+        bool change = false;
+        e = e->searchReplaceAll((*it1).first, (*it1).second, change);
+        if (change && VERBOSE) {
+            std::cerr << "return value: " << e << " replace " <<
               (*it1).first << " with " << (*it1).second << " in " << e <<
               std::endl;
-        e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-        if (VERBOSE) std::cerr << "  after: " << e << std::endl;
+            std::cerr << "  after: " << e << std::endl;
+        }
         if (change) cfg->setReturnVal(e->clone());
     }
 }
@@ -1393,6 +1412,7 @@ void UserProc::processConstants() {
         s->processConstants(prog);
 }
 
+#if 0
 // bMemProp set to true if a memory location is propagated
 bool UserProc::propagateAndRemoveStatements() {
     bool change = false;
@@ -1455,6 +1475,7 @@ bool UserProc::propagateAndRemoveStatements() {
     }
     return change;
 }
+#endif
 
 // Propagate statements, but don't remove
 // Respect the memory depth (don't propagate statements that have components
@@ -1598,4 +1619,27 @@ void UserProc::repairDataflow(int memDepth) {
     Prog* prog = getProg();
     prog->forwardGlobalDataflow();
     toSSAform(memDepth);
+}
+
+void UserProc::recoverParameters() {
+    Prog* prog = getProg();
+    Unary sp(opRegOf, new Const(signature->getStackRegister(prog)));
+    LocationSet* le = cfg->getLiveEntry();
+    LocSetIter ll;
+    int numParams = 0;
+    for (Exp* loc = le->getFirst(ll); loc; loc = le->getNext(ll)) {
+        if (!(*loc *= sp)) {    // Not stack pointer (ignoring subscripts)?
+            signature->addParameter(loc);
+            numParams++;
+        }
+    }
+    for (int n = 0; n < numParams; n++) {
+        if (VERBOSE) std::cerr << "Found param " << n << std::endl;
+        cfg->searchAndReplace(signature->getParamExp(n),
+            new Unary(opParam, new Const((char *)signature->getParamName(n))));
+    }
+}
+
+void UserProc::insertArguments() {
+    cfg->insertArguments();
 }

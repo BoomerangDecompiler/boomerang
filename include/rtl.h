@@ -185,7 +185,7 @@ public:
     void insertAfterTemps(Exp* ssLhs, Exp* ssRhs, int size = -1);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace);
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of "search" and adds them to "result" in
     // reverse nesting order. The search is optionally type sensitive.
@@ -266,7 +266,7 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace);
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.    
@@ -340,7 +340,7 @@ public:
     virtual bool search(Exp *search, Exp *&result);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace);
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
@@ -445,7 +445,7 @@ public:
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace);
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
@@ -515,7 +515,7 @@ public:
     virtual bool search(Exp *search, Exp *&result);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace);
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
@@ -591,6 +591,9 @@ public:
     virtual void toSSAform(StatementSet& reachin, int memDepth);
     virtual void fromSSAform(igraph& ig);
         
+    // Insert actual arguments to match formal parameters
+    void    insertArguments();
+
 protected:
     virtual void doReplaceUse(Statement *def);
 
@@ -748,7 +751,7 @@ public:
     //virtual void printAsUseBy(std::ostream &os);
     virtual void processConstants(Prog *prog);
     virtual bool search(Exp *search, Exp *&result);
-    virtual void searchAndReplace(Exp *search, Exp *replace);
+    virtual bool searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
     virtual void doReplaceUse(Statement *def);
     // to/from SSA form

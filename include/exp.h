@@ -35,7 +35,7 @@
 class UseSet;
 class DefSet;
 class RTL;              // For class FlagDef
-class BasicBlock;	    // For class AssignExp
+class BasicBlock;       // For class AssignExp
 typedef BasicBlock* PBB;
 
 /*==============================================================================
@@ -56,8 +56,8 @@ protected:
     // Constructor, with ID
             Exp(OPER op) : op(op) {}
 public:
-	// Virtual destructor
-virtual		~Exp() {}
+    // Virtual destructor
+virtual     ~Exp() {}
 
     // Return the index. Note: I'd like to make this protected, but then
     // subclasses don't seem to be able to use it (at least, for subexpressions)
@@ -230,8 +230,8 @@ virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
     // Just the address simplification a[ m[ any ]]
 virtual Exp* simplifyAddr() {return this;}
 virtual Exp* fixSuccessor() {return this;}
-		// Kill any zero fill, sign extend, or truncates
-		Exp* killFill();
+        // Kill any zero fill, sign extend, or truncates
+        Exp* killFill();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used) {}
@@ -251,9 +251,9 @@ virtual Exp* fixSuccessor() {return this;}
     // Consistency check. Might be useful another day
     void check();
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len) = 0;
-	static Exp *deserialize(std::istream &inf);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len) = 0;
+    static Exp *deserialize(std::istream &inf);
 
 };
 
@@ -305,8 +305,8 @@ public:
 
     void    appendDotFile(std::ofstream& of);
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
     // Nothing to destruct: Don't deallocate the string passed to constructor
 };
@@ -336,8 +336,8 @@ public:
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
     virtual bool isTerminal() { return true; }
 };
@@ -402,8 +402,8 @@ virtual Exp* fixSuccessor();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
 };
 
@@ -421,7 +421,7 @@ public:
     // Copy constructor
             Binary(Binary& o);
 
-	// Clone
+    // Clone
     virtual Exp* clone();
 
     // Compare
@@ -468,8 +468,8 @@ virtual int getMemDepth();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
 };
 
@@ -531,8 +531,8 @@ virtual int getMemDepth();
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
 };
 
@@ -575,8 +575,8 @@ public:
     Exp* polySimplify(bool& bMod);
     Exp* simplifyAddr();
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
 };
 
@@ -606,7 +606,7 @@ public:
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the size
-    int	    getSize();
+    int     getSize();
     void    setSize(int sz);
 
     // Do the work of simplifying this expression
@@ -614,15 +614,15 @@ public:
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 
-	// new dataflow analysis
+    // new dataflow analysis
     virtual void killDef(StatementSet &reach);
     virtual void killLive(LocationSet &live);
     virtual void killDead(LocationSet &dead);
     virtual void getDeadStatements(StatementSet &dead);
-	virtual bool usesExp(Exp *e);
+    virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
@@ -633,29 +633,25 @@ public:
         
         // get how to access this value
     virtual Exp* getLeft() { return subExp1; }
-	virtual Type* getLeftType() { return NULL; }
+    virtual Type* getLeftType() { return NULL; }
 
         // get how to replace this statement in a use
         virtual Exp* getRight() { return subExp2; }
 
-	// special print functions
+    // special print functions
     //virtual void printAsUse(std::ostream &os);
     //virtual void printAsUseBy(std::ostream &os);
 
-	// inline any constants in the statement
-	virtual void processConstants(Prog *prog);
+    // inline any constants in the statement
+    virtual void processConstants(Prog *prog);
 
     // general search
     virtual bool search(Exp* search, Exp*& result) {
         return Exp::search(search, result);
     }
 
-	// general search and replace
-	virtual void searchAndReplace(Exp *search, Exp *replace) {
-	    bool change;
-	    Exp *e = searchReplaceAll(search, replace, change);
-	    assert(e == this);
-	}
+    // general search and replace
+    virtual bool searchAndReplace(Exp *search, Exp *replace);
  
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
@@ -666,7 +662,7 @@ public:
     virtual void fromSSAform(igraph& ig);
 
 protected:
-	virtual void doReplaceUse(Statement *def);
+    virtual void doReplaceUse(Statement *def);
 };
 
 /*==============================================================================
@@ -679,11 +675,11 @@ public:
             FlagDef(Exp* params, RTL* rtl);     // Constructor
 virtual     ~FlagDef();                         // Destructor
     void    appendDotFile(std::ofstream& of);
-	RTL*	getRtl() { return rtl; }
-	void	setRtl(RTL* r) { rtl = r; }
+    RTL*    getRtl() { return rtl; }
+    void    setRtl(RTL* r) { rtl = r; }
 
-	// serialization
-	virtual bool serialize(std::ostream &ouf, int &len);
+    // serialization
+    virtual bool serialize(std::ostream &ouf, int &len);
 };
 
 /*==============================================================================

@@ -973,14 +973,15 @@ public:
      */
     void simplify();
 
-//
-//  SSA
-//
-
     /**
-     * Transform the CFG to/from SSA form.
+     * Transform the CFG to SSA form.
      */
     void toSSAform(int memDepth);
+
+    /*
+     * Insert actual arguments to match formal parameters
+     */
+    void insertArguments();
 
 private:
 

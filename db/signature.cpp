@@ -62,7 +62,8 @@ namespace CallingConvention {
 
         virtual Signature *promote(UserProc *p);
         virtual void getInternalStatements(StatementList &stmts);
-	virtual Exp *getStackWildcard();
+        virtual Exp *getStackWildcard();
+        virtual int  getStackRegister() {return 28; }
     };
 
     namespace StdC {
@@ -85,7 +86,8 @@ namespace CallingConvention {
 
             virtual Signature *promote(UserProc *p);
             virtual void getInternalStatements(StatementList &stmts);
-	    virtual Exp *getStackWildcard();
+            virtual Exp *getStackWildcard();
+            virtual int  getStackRegister() {return 28; }
         };      
 
         class SparcSignature : public Signature {
@@ -106,7 +108,8 @@ namespace CallingConvention {
             virtual Exp *getArgumentExp(int n);
 
             virtual Signature *promote(UserProc *p);
-	    virtual Exp *getStackWildcard();
+            virtual Exp *getStackWildcard();
+            virtual int  getStackRegister() {return 14; }
         };
     };
 };
@@ -136,19 +139,20 @@ bool CallingConvention::Win32Signature::operator==(const Signature& other) const
     return false;
 }
 
-bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candidate)
-{
+bool CallingConvention::Win32Signature::qualified(UserProc *p,
+  Signature &candidate) {
     std::string feid(p->getProg()->getFrontEndId());
     if (feid != "pentium" || !p->getProg()->isWin32()) return false;
 
     if (VERBOSE) {
-        std::cerr << "consider promotion to stdc win32 signature for " << p->getName() << std::endl;
+        std::cerr << "consider promotion to stdc win32 signature for " <<
+          p->getName() << std::endl;
     }
 
     bool gotcorrectret1 = false;
     bool gotcorrectret2 = false;
     StatementList internal;
-    p->getInternalStatements(internal);
+    //p->getInternalStatements(internal);
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
         AssignExp *e = dynamic_cast<AssignExp*>(s);
@@ -308,18 +312,24 @@ bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& othe
 }
 
 
-bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature &candidate)
-{
+// FIXME: This needs changing. Would like to check that pc=pc and sp=sp
+// (or maybe sp=sp+4) for qualifying procs. Need work to get there
+bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
+  Signature &candidate) {
     std::string feid(p->getProg()->getFrontEndId());
     if (feid != "pentium") return false;
 
     if (VERBOSE)
-        std::cerr << "consider promotion to stdc pentium signature for " << p->getName() << std::endl;
+        std::cerr << "consider promotion to stdc pentium signature for " <<
+          p->getName() << std::endl;
 
+#if 1
+    return true;        // For now, always pass
+#else
     bool gotcorrectret1 = false;
     bool gotcorrectret2 = false;
     StatementList internal;
-    p->getInternalStatements(internal);
+    //p->getInternalStatements(internal);
     internal.append(*p->getCFG()->getReachExit());
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
@@ -352,6 +362,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         }
     }
     return gotcorrectret1 && gotcorrectret2;
+#endif
 }
 
 bool CallingConvention::StdC::PentiumSignature::serialize(std::ostream &ouf, int len)
@@ -869,7 +880,7 @@ void Signature::analyse(UserProc *p)
         std::cerr << "searching for creation of return value" << std::endl;
     }
     StatementList internal;
-    p->getInternalStatements(internal);
+    //p->getInternalStatements(internal);
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
         if (s->getLeft() && *s->getLeft() == *getReturnExp() &&
@@ -1085,3 +1096,15 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
     return *new StatementList;
 }
 
+// Temporary hack till get signature promotion sorted
+int Signature::getStackRegister(Prog* prog) {
+    MACHINE mach = prog->getMachine();
+    switch (mach) {
+        case MACHINE_SPARC:
+            return 14;
+        case MACHINE_PENTIUM:
+            return 28;
+        default:
+            return 0;
+    }
+}

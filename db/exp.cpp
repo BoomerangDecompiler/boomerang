@@ -1348,6 +1348,13 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
     return li.size() != 0;
 }
 
+bool AssignExp::searchAndReplace(Exp* search, Exp* replace) {
+    bool change = false;
+    Exp *e = searchReplaceAll(search, replace, change);
+    assert(e == this);
+    return change;
+}
+
 // These simplifying functions don't really belong in class Exp, but they know
 // too much about how Exps work
 // They can't go into util.so, since then util.so and db.so would co-depend

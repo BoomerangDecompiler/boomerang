@@ -2287,3 +2287,14 @@ void Cfg::toSSAform(int memDepth) {
     }
 }
 
+void Cfg::insertArguments() {
+    BB_IT it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        if ((*it)->getType() == CALL) {
+            // The last RTL should be a HLCall
+            HLCall* call = (HLCall*)(*it)->m_pRtls->back();
+            assert(call->getKind() == CALL_RTL);
+            call->insertArguments();
+        }
+    }
+}

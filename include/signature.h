@@ -110,6 +110,8 @@ public:
 
     // Get a wildcard to find stack locations
     virtual Exp *getStackWildcard() { return NULL; }
+    virtual int  getStackRegister(          ) {return 0; };
+            int  getStackRegister(Prog* prog);
 
     // Quick and dirty hack
 static StatementList& getStdRetStmt(Prog* prog);

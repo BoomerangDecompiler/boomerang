@@ -218,6 +218,12 @@ void Prog::decompile() {
 
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
     reverseGlobalDataflow();
+    recoverParameters();
+    insertArguments();
+    fromSSAform();
+
+    // Remove interprocedural edges for structuring algorithms
+    removeInterprocEdges();
 }
 
 void Prog::generateDotFile() {
@@ -885,10 +891,32 @@ void Prog::reverseGlobalDataflow() {
         change = currBB->calcLiveness(2);   // Live locations
         // Don't need available definitions in phase 2
         if (change) updateWorkListRev(currBB, workList, workSet);
-    };
+    }
+}
 
+void Prog::recoverParameters() {
+    PROGMAP::iterator pp;
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        proc->recoverParameters();
+    }
+}
+
+void Prog::insertArguments() {
+    PROGMAP::iterator pp;
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        proc->insertArguments();
+    }
+}
+
+
+void Prog::fromSSAform() {
     // Calculate the interference graph
     igraph ig;
+    PROGMAP::iterator pp;
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
         UserProc* proc = (UserProc*)pp->second;
         if (proc->isLib()) continue;
@@ -911,15 +939,27 @@ std::cerr << "==== End interference graph ===\n\n";}
         proc->fromSSAform(ig);
     }
 
-if (Boomerang::get()->vFlag) {
-std::cerr << "==== After transformation from SSA form =====\n";
-for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-  it++) {
-    Proc *pProc = *it;
-    if (pProc->isLib()) continue;
-    UserProc *p = (UserProc*)pProc;
-        p->print(std::cerr, true);
-}}
-
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "===== After transformation from SSA form =====\n";
+        for (std::list<Proc*>::iterator it = m_procs.begin();
+              it != m_procs.end(); it++) {
+            Proc *pProc = *it;
+            if (pProc->isLib()) continue;
+            UserProc *p = (UserProc*)pProc;
+            p->print(std::cerr, true);
+        }
+        std::cerr << "===== End after transformation from SSA =====\n\n";
+    }
 }
 
+void Prog::removeInterprocEdges() {
+    PROGMAP::iterator pp;
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        // Clear the return interprocedural edges
+        cfg->clearReturnInterprocEdges();
+    }
+}
+ 
