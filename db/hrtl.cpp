@@ -1347,26 +1347,68 @@ void HLCall::decompile() {
         UserProc *p = dynamic_cast<UserProc*>(procDest);
         if (p != NULL)
             p->decompile();
+
+        // This is now "on the way back up" for this call
+        if (procDest && !procDest->isLib()) {
+            // Copy the live-on-entry-to-the-dest-of-this-call info
+            // We need a copy so it can be substituted
+            // (e.g. m[r[29]-4] -> m[r[28]-12] or something)
+            // MVE: not needed if we copy them as parameters!
+            liveEntry = *((UserProc*)procDest)->getCFG()->getLiveEntry();
+        }
         procDest->getInternalStatements(internal);
         // init arguments
+        // Note that in the case of cycles in the call graph, the arguments
+        // can't be determined here
         assert(arguments.size() == 0);
-        arguments.resize(procDest->getSignature()->getNumParams());
-        for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
-            arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
-        if (procDest->getSignature()->hasEllipsis()) {
-            // Just guess 10 parameters for now
-            //for (int i = 0; i < 10; i++)
-            arguments.push_back(procDest->getSignature()->
-              getArgumentExp(arguments.size())->clone());
+        if (procDest->isLib() || ((UserProc*)procDest)->isDecompiled()) {
+            // Luxury: the destination is already fully decompiled (or is a
+            // library function)
+            arguments.resize(procDest->getSignature()->getNumParams());
+            for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
+                arguments[i] = procDest->getSignature()->getArgumentExp(i)->
+                  clone();
+            if (procDest->getSignature()->hasEllipsis()) {
+                // Just guess 10 parameters for now
+                //for (int i = 0; i < 10; i++)
+                arguments.push_back(procDest->getSignature()->
+                  getArgumentExp(arguments.size())->clone());
+            }
+            // init return location
+            returnLoc = procDest->getSignature()->getReturnExp();
+            if (returnLoc) returnLoc = returnLoc->clone();
         }
-        // init return location
-        returnLoc = procDest->getSignature()->getReturnExp();
-        if (returnLoc) returnLoc = returnLoc->clone();
+        else {
+            // We only have the summarised dataflow from the "on the way down"
+            // processing. So for now, we make all the liveEntry variables
+            // parameters. This will overstate the parameters, e.g.
+            // the stack pointer will always appear to be a parameter
+            LocationSet& le = *((UserProc*)procDest)->getCFG()->getLiveEntry();
+            arguments.resize(le.size());
+            LocSetIter ll; int i=0;
+            for (Exp* loc = le.getFirst(ll); loc; loc = le.getNext(ll))
+               arguments[i++] = loc->clone();
+        }
     } else {
-    // TODO
+    // TODO: indirect call
     }
 }
 
+void HLCall::recalcArguments() {
+            arguments.resize(procDest->getSignature()->getNumParams());
+            for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
+                arguments[i] = procDest->getSignature()->getArgumentExp(i)->
+                  clone();
+            if (procDest->getSignature()->hasEllipsis()) {
+                // Just guess 10 parameters for now
+                //for (int i = 0; i < 10; i++)
+                arguments.push_back(procDest->getSignature()->
+                  getArgumentExp(arguments.size())->clone());
+            }
+            // init return location
+            returnLoc = procDest->getSignature()->getReturnExp();
+            if (returnLoc) returnLoc = returnLoc->clone();
+}
 
 void HLCall::printAsUse(std::ostream &os) {
     // Print the return location if there is one
@@ -1405,22 +1447,82 @@ void HLCall::killReach(StatementSet &reach) {
         reach.clear();
         return;
     }
-    StatementSet kills;
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        bool isKilled = false;
-        if (getReturnLoc() && s->getLeft() && 
-          *s->getLeft() == *getReturnLoc())
-            isKilled = true;
-        if (getReturnLoc() && s->getLeft() &&
-          s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
-            isKilled = true; // might alias, very conservative
-        if (isKilled)
-            kills.insert(s);
+    if (procDest->isLib()) {
+        // A library function. We use the calling convention to find
+        // out what is killed.
+        Prog* prog = procDest->getProg();
+        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
+        assert(li);
+        std::list<Exp*>::iterator ll;
+        for (ll = li->begin(); ll != li->end(); ll++) {
+            // These statements do not reach the end of the call
+            reach.removeIfDefines(*ll);
+        }
+        return;
     }
-    for (Statement* s = kills.getFirst(it); s; s = kills.getNext(it))
-        reach.remove(s);
+
+    // A UserProc
+    // This call kills only those reaching definitions that are defined
+    // on all paths
+    reach.removeIfDefines(*((UserProc*)procDest)->getCFG()->getAvailExit());
 }
+
+void HLCall::killAvail(StatementSet &avail) {
+    if (procDest == NULL) {
+        // Will always be null for indirect calls
+        // MVE: we may have a "candidate" callee in the future
+        // Kills everything. Not clear that this is always "conservative"
+        avail.clear();
+        return;
+    }
+    if (procDest->isLib()) {
+        // A library function. We use the calling convention to find
+        // out what is killed.
+        Prog* prog = procDest->getProg();
+        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
+        assert(li);
+        std::list<Exp*>::iterator ll;
+        for (ll = li->begin(); ll != li->end(); ll++) {
+            // These statements are not available at the end of the call
+            avail.removeIfDefines(*ll);
+        }
+        return;
+    }
+
+    // A UserProc
+    // This call kills those available definitions that are defined on any path
+    avail.removeIfDefines(*((UserProc*)procDest)->getCFG()->getReachExit());
+}
+
+void HLCall::killLive(LocationSet &live) {
+    if (procDest == NULL) {
+        // Will always be null for indirect calls
+        // MVE: we may have a "candidate" callee in the future
+        // Kills everything. Not clear that this is always "conservative"
+        live.clear();
+        return;
+    }
+    if (procDest->isLib()) {
+        // A library function. We use the calling convention to find
+        // out what is killed.
+        Prog* prog = procDest->getProg();
+        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
+        assert(li);
+        std::list<Exp*>::iterator ll;
+        for (ll = li->begin(); ll != li->end(); ll++) {
+            // These locations are no longer live at the start of the call
+            live.remove(*ll);
+        }
+        return;
+    }
+
+    // A UserProc
+    // This call kills only those live locations that are defined
+    // on all paths, which is the same set that is available at the exit
+    // of the procedure
+    live.removeIfDefines(*((UserProc*)procDest)->getCFG()->getAvailExit());
+}
+
 
 void HLCall::getDeadStatements(StatementSet &dead) {
     StatementSet reach;
@@ -1435,12 +1537,12 @@ void HLCall::getDeadStatements(StatementSet &dead) {
             if (s->getLeft() && getReturnLoc() && 
                 s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
                 isKilled = true; // might alias, very conservative
-            if (isKilled && s->getNumUseBy() == 0)
+            if (isKilled && s->getNumUsedBy() == 0)
             dead.insert(s);
         }
     } else  {
         for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-            if (s->getNumUseBy() == 0)
+            if (s->getNumUsedBy() == 0)
                 dead.insert(s);
         }
     }
@@ -1452,12 +1554,28 @@ Type *HLCall::updateType(Exp *e, Type *curType) {
 }
 
 bool HLCall::usesExp(Exp *e) {
-    Exp *where = 0;
+    Exp *where;
     for (unsigned i = 0; i < arguments.size(); i++)
         if (arguments[i]->search(e, where))
             return true;
+    if (returnLoc && returnLoc->isMemOf())
+        return ((Unary*)returnLoc)->getSubExp1()->search(e, where);
+    if (!procDest->isLib()) {
+        // Get the info that was summarised on the way down
+        LocationSet* ls = ((UserProc*)procDest)->getCFG()->getLiveEntry();
+        if (ls && ls->find(e)) return true;
+    }
     return false;
 }
+
+// Add all locations that this call uses
+void HLCall::addUsedLocs(LocationSet& used) {
+    for (unsigned i = 0; i < arguments.size(); i++)
+        arguments[i]->addUsedLocs(used);
+    if (returnLoc && returnLoc->isMemOf())
+        ((Unary*)returnLoc)->getSubExp1()->addUsedLocs(used);
+}
+
 
 void HLCall::doReplaceUse(Statement *use) {
     Exp *left = use->getLeft()->clone();        // Note: could be changed!
@@ -1481,11 +1599,42 @@ void HLCall::doReplaceUse(Statement *use) {
             change |= changeright;
         }
     }
-    assert(change);
+
+    // Also substitute our copy of the liveEntry info (which is what we use
+    // by virtue of the call)
+    LocSetIter ll;
+    for (Exp* l = liveEntry.getFirst(ll); l; l = liveEntry.getNext(ll)) {
+        if (*l == *left) {
+            liveEntry.remove(ll);
+            liveEntry.insert(right->clone());
+            change = true;
+        } else {
+            bool changeLoc;
+            Exp* res = l->searchReplaceAll(left, right->clone(), changeLoc);
+            if (l != res) {         // Note: comparing pointers
+                liveEntry.remove(ll);
+                liveEntry.insert(res);
+            }
+            change |= changeLoc;
+        }
+    }
+
+//    assert(change);
+
     // simplify the arguments
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
+    }
+    // also simplify the liveEntry locations (these are effectively arguments,
+    // before arguments are sorted out; many will disappear though)
+    for (Exp* l = liveEntry.getFirst(ll); l; l = liveEntry.getNext(ll)) {
+        Exp* res = l->simplifyArith();
+        res = res->simplify();
+        if (l != res) {     // Note: comparing pointers here
+            liveEntry.remove(ll);
+            liveEntry.insert(res);
+        }
     }
     inlineConstants(proc->getProg());
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
