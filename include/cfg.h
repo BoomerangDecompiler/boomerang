@@ -762,10 +762,10 @@ public:
     bool isIncomplete ( ADDRESS uNativeAddr );
 
     /*
-     * Just checks to see if the native address is a label. If not, the
-     *  address is not added to the map of Lables to BBs.
+     * Just checks to see if there exists a BB starting with this native
+     * address. If not, the address is NOT added to the map of labels to BBs.
      */
-    bool isLabel ( ADDRESS uNativeAddr );
+    bool existsBB ( ADDRESS uNativeAddr );
 
     /*
      * Sorts the BBs in the CFG according to the low address of each BB.

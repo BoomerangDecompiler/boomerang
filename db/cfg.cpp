@@ -374,7 +374,7 @@ void Cfg::addOutEdge(PBB pBB, ADDRESS addr, bool bSetLabel /* = false */)
 }
 
 /*==============================================================================
- * FUNCTION:        Cfg::isLabel 
+ * FUNCTION:        Cfg::existsBB 
  * OVERVIEW:        Return true if the given address is the start of a basic
  *                    block, complete or not
  * PARAMETERS:      uNativeAddr: native address to look up
@@ -382,7 +382,7 @@ void Cfg::addOutEdge(PBB pBB, ADDRESS addr, bool bSetLabel /* = false */)
  *============================================================================*/
 // Note: must ignore entries with a null pBB, since these are caused by
 // calls to Label that failed, i.e. the instruction is not decoded yet.
-bool Cfg::isLabel (ADDRESS uNativeAddr)
+bool Cfg::existsBB (ADDRESS uNativeAddr)
 {
     MAPBB::iterator mi;
     mi = m_mapBB.find (uNativeAddr);
@@ -590,9 +590,10 @@ bool Cfg::label ( ADDRESS uNativeAddr, PBB& pCurBB )
         if (newi != m_mapBB.begin()) {
             pPrevBB = (*--mi).second;
             if (!pPrevBB->m_bIncomplete &&
-                (pPrevBB->getLowAddr() < uNativeAddr) &&
-                (pPrevBB->getHiAddr () >= uNativeAddr))
-                    bSplit = true;
+                  (pPrevBB->getLowAddr() < uNativeAddr) &&
+                  (pPrevBB->getHiAddr () >= uNativeAddr)) {
+                bSplit = true;
+            }
         }
         if (bSplit) {
             // Non-explicit label. Split the previous BB
