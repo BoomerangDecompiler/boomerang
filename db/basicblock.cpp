@@ -1519,10 +1519,14 @@ void BasicBlock::calcLiveIn(LocationSet &live) {
 }
 
 // Check if this is a post-call BB (a return block in [SW93] terms)
+// Note: need to distinguish between true post-call edges (those that were
+// in the original cfg) and procedure entry blocks (which in phase 2 look
+// just like post-call blocks)
 bool BasicBlock::isPostCall() {
     // Check in edges for a call. Could be other in-edges
     for (int i=0; i<m_iNumInEdges; i++) {
-        if (m_InEdges[i]->m_nodeType == CALL)
+        if (m_InEdges[i]->m_nodeType == CALL &&
+              m_InEdges[i]->returnBlock == this)
             return true;
     }
     return false;
@@ -1756,6 +1760,8 @@ void BasicBlock::clearCallInterprocEdges() {
 
 /*
  * Set the interprocedural outedge from the callee exit to the post-call block
+ * Also sets the returnBlock entry in the HLCall, so we can identify in phase 2
+ * which are "real" post-call BBs
  */
 void BasicBlock::setReturnInterprocEdges() {
     if (m_nodeType != CALL) return;
@@ -1768,6 +1774,7 @@ void BasicBlock::setReturnInterprocEdges() {
     exitBB->m_OutEdges[0] = postCall;
     postCall->m_iNumInEdges++;
     postCall->m_InEdges.push_back(exitBB);
+    returnBlock = postCall;         // For phase 2 identifying real post-call BBs
 }
 
 // Kill the interprocedural outedges from exit BBs to post-call BBs
