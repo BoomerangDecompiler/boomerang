@@ -603,7 +603,7 @@ std::ostream& LibProc::put(std::ostream& os) {
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
-    cfg(new Cfg()), decoded(false), isSymbolic(false), uniqueID(0),
+    cfg(new Cfg()), decoded(false), analysed(false), isSymbolic(false), uniqueID(0),
     decompileSeen(false), decompiled(false), isRecursive(false) {
     cfg->setProc(this);              // Initialise cfg.myProc
 }

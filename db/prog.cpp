@@ -132,6 +132,9 @@ void Prog::analyse() {
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
+        if (p->isAnalysed()) continue;
+
+        p->setAnalysed();
 
         // decoded userproc.. analyse it
         analysis->analyse(p);

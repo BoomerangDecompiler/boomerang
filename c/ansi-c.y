@@ -119,8 +119,8 @@ param_list: param ',' param_list
           { $$ = new std::list<Parameter*>()}
           ;
 
-param: type IDENTIFIER
-     { $$ = new Parameter($1, $2); }
+param: type_ident
+     { $$ = new Parameter($1->ty, $1->nam.c_str()); }
      | type '(' '*' IDENTIFIER ')' '(' param_list ')'
      { Signature *sig = Signature::instantiate(sigstr, NULL);
        sig->addReturn($1);
@@ -139,8 +139,8 @@ param: type IDENTIFIER
      { $$ = new Parameter(new VoidType, "..."); }
      ;
 
-type_decl: TYPEDEF type IDENTIFIER ';'
-         { Type::addNamedType($3, $2); }
+type_decl: TYPEDEF type_ident ';'
+         { Type::addNamedType($2->nam.c_str(), $2->ty); }
          | TYPEDEF type '(' '*' IDENTIFIER ')' '(' param_list ')' ';'
          { Signature *sig = Signature::instantiate(sigstr, NULL);
            sig->addReturn($2);
@@ -155,25 +155,9 @@ type_decl: TYPEDEF type IDENTIFIER ';'
            delete $8;
            Type::addNamedType($5, new PointerType(new FuncType(sig))); 
          }
-         | TYPEDEF type IDENTIFIER '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(sigstr, NULL);
-           sig->addReturn($2);
-           for (std::list<Parameter*>::iterator it = $5->begin();
-                it != $5->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $5;
-           Type::addNamedType($3, new FuncType(sig)); 
-         }
-         ;
-
-func_decl: type IDENTIFIER '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(sigstr, $2); 
-           sig->addReturn($1);
+         | TYPEDEF type_ident '(' param_list ')' ';'
+         { Signature *sig = Signature::instantiate(sigstr, $2->nam.c_str());
+           sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
                if (std::string((*it)->getName()) != "...")
@@ -183,21 +167,42 @@ func_decl: type IDENTIFIER '(' param_list ')' ';'
                    delete *it;
                }
            delete $4;
+           Type::addNamedType($2->nam.c_str(), new FuncType(sig)); 
+         }
+         ;
+
+func_decl: type_ident '(' param_list ')' ';'
+         { Signature *sig = Signature::instantiate(sigstr, $1->nam.c_str()); 
+           sig->addReturn($1->ty);
+           for (std::list<Parameter*>::iterator it = $3->begin();
+                it != $3->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete $3;
            signatures.push_back(sig);
          }
          ;
 
-type_ident: type IDENTIFIER ';'
+type_ident: type IDENTIFIER
           { $$ = new TypeIdent();
             $$->ty = $1;
             $$->nam = $2;
           }
+          | type IDENTIFIER '[' CONSTANT ']'
+          { $$ = new TypeIdent();
+            $$->ty = new ArrayType($1, $4);
+            $$->nam = $2;
+          }
 
-type_ident_list: type_ident type_ident_list 
-          { $$ = $2;
+type_ident_list: type_ident ';' type_ident_list 
+          { $$ = $3;
             $$->push_front($1);
           }
-          | type_ident
+          | type_ident ';'
           { $$ = new std::list<TypeIdent*>(); 
             $$->push_back($1);
           }
@@ -209,6 +214,8 @@ type: CHAR
     { $$ = new IntegerType(16); }
     | INT 
     { $$ = new IntegerType(); }
+    | UNSIGNED CHAR
+    { $$ = new IntegerType(8, false); }
     | UNSIGNED INT 
     { $$ = new IntegerType(32, false); }
     | LONG 
@@ -250,7 +257,8 @@ int AnsiCParser::yylex()
 void AnsiCParser::yyerror(char *s)
 {
 	fflush(stdout);
-	printf("\n%*s\n%*s\n", theScanner->column, "^", theScanner->column, s);
+        printf("\n%s", theScanner->lineBuf);
+	printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
 

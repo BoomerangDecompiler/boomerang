@@ -1800,7 +1800,13 @@ void AnsiCScanner::count()
 		else
 			column++;
 
-	//ECHO;
+        strcat(lineBuf, yytext);
+        if (strchr(lineBuf, '\n')) {
+            char buf[MAX_LINE];
+            strcpy(buf, lineBuf);
+            strcpy(lineBuf, strchr(buf, '\n')+1);
+            theLine++;
+        }
 }
 
 

@@ -383,6 +383,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     int nTotalBytes = 0;
     ADDRESS lastAddr = uAddr;
 
+    ADDRESS retAddr = NO_ADDRESS;
+
     while ((uAddr = targetQueue.nextAddress(pCfg)) != NO_ADDRESS) {
 
         // The list of RTLs for the current basic block
@@ -721,18 +723,29 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     // Stop decoding sequentially
                     sequentialDecode = false;
 
-                    // Add the RTL to the list
-                    BB_rtls->push_back(pRtl);
-                    // Create the basic block
-                    pBB = pCfg->newBB(BB_rtls, RET, 0);
+                    if (retAddr == NO_ADDRESS) {
 
-                    // If this ret pops anything other than the return
-                    // address, this information can be useful in the proc
-                    int popped = ((ReturnStatement*)s)->getNumBytesPopped(); 
-                    if (popped != 0)
-                        // This also gives us information about the calling
-                        // convention
-                        pProc->setBytesPopped(popped);
+                        // Add the RTL to the list
+                        BB_rtls->push_back(pRtl);
+                        // Create the basic block
+                        pBB = pCfg->newBB(BB_rtls, RET, 0);
+
+                        retAddr = pBB->getLowAddr();
+
+                        // If this ret pops anything other than the return
+                        // address, this information can be useful in the proc
+                        int popped = ((ReturnStatement*)s)->getNumBytesPopped(); 
+                        if (popped != 0)
+                            // This also gives us information about the calling
+                            // convention
+                            pProc->setBytesPopped(popped);
+                    } else {
+                        std::list<Statement*> *stmt_list = new std::list<Statement*>;
+                        stmt_list->push_back(new GotoStatement(retAddr));
+                        BB_rtls->push_back(new RTL(uAddr, stmt_list));
+                        pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
+                        pCfg->addOutEdge(pBB, retAddr, true);
+                    }
 
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.

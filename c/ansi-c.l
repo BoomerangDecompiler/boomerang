@@ -24,7 +24,7 @@ IS			(u|U|l|L)*
 
 %define CONSTRUCTOR_PARAM std::istream &ins, bool trace
 %define CONSTRUCTOR_INIT : theLine(1), traceLines(trace), in(ins), column(0)
-%define CONSTRUCTOR_CODE
+%define CONSTRUCTOR_CODE { *lineBuf = 0; }
 %define INPUT_CODE if (in.eof()) {  \
     result = 0; \
 } else { \
@@ -185,7 +185,13 @@ void AnsiCScanner::count()
 		else
 			column++;
 
-	//ECHO;
+        strcat(lineBuf, yytext);
+        if (strchr(lineBuf, '\n')) {
+            char buf[MAX_LINE];
+            strcpy(buf, lineBuf);
+            strcpy(lineBuf, strchr(buf, '\n')+1);
+            theLine++;
+        }
 }
 
 

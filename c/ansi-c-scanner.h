@@ -62,7 +62,7 @@
 #line 26 "ansi-c.l"
 #define YY_AnsiCScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins), column(0)
 #line 27 "ansi-c.l"
-#define YY_AnsiCScanner_CONSTRUCTOR_CODE 
+#define YY_AnsiCScanner_CONSTRUCTOR_CODE  { *lineBuf = 0; }
 #line 28 "ansi-c.l"
 #define YY_AnsiCScanner_INPUT_CODE  if (in.eof()) {  \
     result = 0; \

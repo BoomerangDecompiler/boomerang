@@ -1,6 +1,7 @@
 
 typedef unsigned int UINT;
 typedef unsigned int SIZE_T;
+typedef unsigned int LONG;
 typedef const void *LPCVOID;
 typedef void *LPVOID;
 typedef void *PVOID;
@@ -20,6 +21,8 @@ typedef int WPARAM;
 typedef int LPARAM;
 typedef int LRESULT;
 typedef int ATOM;
+typedef int BOOL;
+typedef unsigned char BYTE;
 typedef LRESULT WndProc(      
     HWND hwnd,
     UINT uMsg,
@@ -250,7 +253,7 @@ BOOL SetMenu(HWND hWnd, HMENU hMenu);
 BOOL DestroyWindow(HWND hWnd);
 BOOL DestroyMenu(HMENU hMenu);
 
-typedef int *INT_PTR;
+typedef int INT_PTR;
 typedef INT_PTR DlgProc(      
     HWND hwndDlg,
     UINT uMsg,
@@ -273,4 +276,85 @@ HWND CreateDialogParamW(
     HWND hWndParent,
     DLGPROC lpDialogFunc,
     LPARAM dwInitParam
+);
+
+LRESULT DefWindowProcA(      
+    HWND hWnd,
+    UINT Msg,
+    WPARAM wParam,
+    LPARAM lParam
+);
+
+void PostQuitMessage(      
+    int nExitCode
+);
+
+typedef struct { 
+  LONG left; 
+  LONG top; 
+  LONG right; 
+  LONG bottom; 
+} RECT;
+typedef RECT *LPRECT;
+
+typedef struct { 
+  HDC  hdc; 
+  BOOL fErase; 
+  RECT rcPaint; 
+  BOOL fRestore; 
+  BOOL fIncUpdate; 
+  BYTE rgbReserved[32]; 
+} PAINTSTRUCT;
+typedef PAINTSTRUCT *LPPAINTSTRUCT;
+
+HDC BeginPaint(
+  HWND hwnd,
+  LPPAINTSTRUCT lpPaint
+);
+
+BOOL GetClientRect(      
+    HWND hWnd,
+    LPRECT lpRect
+);
+
+int DrawTextA(
+  HDC hDC,
+  LPCSTR lpString,
+  int nCount,
+  LPRECT lpRect,
+  UINT uFormat
+);
+
+int DrawTextW(
+  HDC hDC,
+  LPCWSTR lpString,
+  int nCount,
+  LPRECT lpRect,
+  UINT uFormat
+);
+
+BOOL EndPaint(
+  HWND hWnd,
+  LPPAINTSTRUCT lpPaint
+);
+
+INT_PTR DialogBoxParamA(      
+    HINSTANCE hInstance,
+    LPCSTR lpTemplateName,
+    HWND hWndParent,
+    DLGPROC lpDialogFunc,
+    LPARAM dwInitParam
+);
+
+INT_PTR DialogBoxParamW(      
+    HINSTANCE hInstance,
+    LPCWSTR lpTemplateName,
+    HWND hWndParent,
+    DLGPROC lpDialogFunc,
+    LPARAM dwInitParam
+);
+
+BOOL EndDialog(      
+    HWND hDlg,
+    INT_PTR nResult
 );
