@@ -554,7 +554,6 @@ bool LibProc::serialize(std::ostream &ouf, int &len)
         saveFID(ouf, FID_PROC_FIRSTCALLER);
         saveValue(ouf, m_firstCaller->getNativeAddress());
     }
-
     saveFID(ouf, FID_PROC_END);
     saveLen(ouf, 0);
 
@@ -1028,6 +1027,7 @@ void UserProc::getStatements(std::set<Statement*> &stmts) {
 // remove a statement
 void UserProc::removeStatement(Statement *stmt) {
     // remove from BB/RTL
+    // Ugh: linear search of whole proc! We at least know our own BB
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
       std::list<RTL*> *rtls = bb->getRTLs();
@@ -1036,12 +1036,14 @@ void UserProc::removeStatement(Statement *stmt) {
             RTL *rtl = *rit;
             for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
               it != rtl->getList().end(); it++) {
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            if (e == stmt) {
-                rtl->getList().erase(it);
-                return;
-            }
+                Statement *e = dynamic_cast<Statement*>(*it);
+                if (e == NULL) continue;
+                if (e == stmt) {
+    assert(bb = stmt->getBB());
+                    stmt->updateDfForErase();
+                    rtl->getList().erase(it);
+                    return;
+                }
             }
             if (rtl->getKind() == CALL_RTL) {
                 HLCall *call = (HLCall*)rtl;
@@ -1050,6 +1052,8 @@ void UserProc::removeStatement(Statement *stmt) {
                 for (std::list<Statement*>::iterator it1 = internal.begin();
                   it1 != internal.end(); it1++)
                     if (*it1 == stmt) {
+     assert(bb = stmt->getBB());
+                        stmt->updateDfForErase();
                         internal.erase(it1);
                         return;
                     }
@@ -1060,7 +1064,7 @@ void UserProc::removeStatement(Statement *stmt) {
 
 void UserProc::getInternalStatements(std::list<Statement*> &internal)
 {
-     for (std::list<Statement*>::iterator it = this->internal.begin();
+    for (std::list<Statement*>::iterator it = this->internal.begin();
       it != this->internal.end(); it++)
          internal.push_back(*it);
 }
@@ -1068,6 +1072,9 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 // decompile this userproc
 void UserProc::decompile() {
     if (decompiled) return;
+    decompiled = true;
+    // The following loop could be a lot quicker if we just checked each BB,
+    // and just looked at the last rtl of each CALL BB
     std::set<Statement*> stmts;
     getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
@@ -1078,24 +1085,45 @@ void UserProc::decompile() {
     }
 
     cfg->computeDataflow();
+#if 0   // Calculate ud/du as needed
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end();
-      it++) (*it)->calcUseLinks();
+      it++)
+        (*it)->calcUseLinks();
+#endif
 
-    print(std::cout, true);
+    print(std::cout /*,true*/);
     bool change = true;
     while (change) {
         change = false;
         change |= removeNullStatements();
         change |= removeDeadStatements();
-        change |= propogateAndRemoveStatements();
+        change |= propagateAndRemoveStatements();
+std::cerr << "Flushing whole procedure\n";  // HACK!
+        flushProc();        // Flush the dataflow for the whole proc
     }
     removeInternalStatements();
     inlineConstants();
     fixCalls();
     promoteSignature();
     renameLocalVariables();
-    print(std::cout, true);
-    decompiled = true;
+    print(std::cout /*,true*/);
+}
+
+// Flush the dataflow for the whole proc. Needed because of aliasing problems.
+// E.g. in pentium hello world, have
+// m[esp] := "hello world";
+// ...
+// printf(m[esp+4], ...);
+// It only becomes obvious that the m[esp] and m[esp+4] are the same when
+// some copy propagation is done, so need to redo usedBy for the first
+// Note that there is a similarly named proc in class Statement
+void UserProc::flushProc() {
+    std::set<Statement*> stmts;
+    getStatements(stmts);
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+      it++) {
+        (*it)->flushDataFlow();
+    }
 }
 
 void UserProc::fixCalls()
@@ -1114,7 +1142,7 @@ void UserProc::fixCalls()
                 call->getArgumentExp(0)->isStrConst()) {
                 char *str = ((Const*)call->getArgumentExp(0))->getStr();
                 // actually have to parse it
-                int n = 1;
+                int n = 1;      // Number of %s plus 1 = number of args
                 char *p = str;
                 while ((p = strchr(p, '%'))) {
                     p++;
@@ -1221,39 +1249,41 @@ bool UserProc::removeDeadStatements()
         std::set<Statement*> dead;
         (*it)->getDeadStatements(dead);
         for (std::set<Statement*>::iterator it1 = dead.begin(); 
-           it1 != dead.end(); it1++) 
+          it1 != dead.end(); it1++) {
             if (!(*it1)->getLeft()->isMemOf()) {
-            // hack: if the dead statement has a use which would make
-            // this statement useless if propogated, leave it
-            std::set<Statement*> uses;
-            (*it1)->calcUses(uses);
-            bool matchingUse = false;
-            for (std::set<Statement*>::iterator it2 = uses.begin();
-              it2 != uses.end(); it2++) {
-                AssignExp *e = dynamic_cast<AssignExp*>(*it2);
-                if (e == NULL || (*it1)->getLeft() == NULL) continue;
-                if (*e->getSubExp2() == *(*it1)->getLeft()) {
-                    matchingUse = true;
-                    break;
+                // hack: if the dead statement has a use which would make
+                // this statement useless if propagated, leave it
+                std::set<Statement*> uses;
+                (*it1)->calcUses(uses);
+                bool matchingUse = false;
+                for (std::set<Statement*>::iterator it2 = uses.begin();
+                  it2 != uses.end(); it2++) {
+                    AssignExp *e = dynamic_cast<AssignExp*>(*it2);
+                    if (e == NULL || (*it1)->getLeft() == NULL) continue;
+                    if (*e->getSubExp2() == *(*it1)->getLeft()) {
+                        matchingUse = true;
+                        break;
+                    }
                 }
+                if (matchingUse) continue;
+                std::cerr << "removing dead code: ";
+                (*it1)->printAsUse(std::cerr);
+                std::cerr << std::endl;
+                HLCall *call = dynamic_cast<HLCall*>(*it1);
+                if (call == NULL) {
+                    removeStatement(*it1);
+//std::cerr << "After remove, BB is"; (*it1)->getBB()->print(std::cerr, true);
+                } else {
+                    call->setIgnoreReturnLoc(true);
+                }
+                // remove from liveness
+                std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
+                if (liveout.find(*it1) != liveout.end()) {
+                    liveout.erase(*it1);
+                }
+                cfg->updateLiveness();
+                change = true;
             }
-            if (matchingUse) continue;
-            std::cerr << "removing dead code: ";
-            (*it1)->printAsUse(std::cerr);
-            std::cerr << std::endl;
-            HLCall *call = dynamic_cast<HLCall*>(*it1);
-            if (call == NULL) {
-                removeStatement(*it1);
-            } else {
-                call->setIgnoreReturnLoc(true);
-            }
-            // remove from liveness
-            std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
-            if (liveout.find(*it1) != liveout.end()) {
-                liveout.erase(*it1);
-            }
-            cfg->updateLiveness();
-            change = true;
         }
     }
     return change;
@@ -1298,22 +1328,22 @@ void UserProc::inlineConstants()
         (*it)->inlineConstants(prog);
 }
 
-bool UserProc::propogateAndRemoveStatements()
+bool UserProc::propagateAndRemoveStatements()
 {
     bool change = false;
     std::set<Statement*> stmts;
     getStatements(stmts);
-    // propogate any statements that can be removed
+    // propagate any statements that can be removed
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
-        if ((*it)->canPropogateToAll()) {
+        if ((*it)->canPropagateToAll()) {
             if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
                 if ((*it)->getNumUses() != 0) {
                     // tempories that store the results of calls are ok
                     if ((*it)->getRight() && 
                       (*it)->findUse((*it)->getRight()) &&
                       !(*it)->findUse((*it)->getRight())->getRight()) {
-                        std::cerr << "allowing propogation of temporary: ";
+                        std::cerr << "allowing propagation of temporary: ";
                         (*it)->printAsUse(std::cerr);
                         std::cerr << std::endl;
                     } else
@@ -1326,7 +1356,7 @@ bool UserProc::propogateAndRemoveStatements()
                     internal.push_back(*it);
                 }
             }
-            (*it)->propogateToAll();
+            (*it)->propagateToAll();
             removeStatement(*it);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
@@ -1335,7 +1365,7 @@ bool UserProc::propogateAndRemoveStatements()
                 cfg->updateLiveness();
             }
             // debug: print
-            print(std::cout, true);
+            print(std::cout,true);
             change = true;
         }
     }

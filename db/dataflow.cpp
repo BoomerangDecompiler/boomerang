@@ -14,8 +14,9 @@
 
 /*
  * $Revision$
- * 03 July 02 - Trent: Created
- * 09 Jan  03 - Mike: Untabbed, reformatted
+ * 03 Jul 02 - Trent: Created
+ * 09 Jan 03 - Mike: Untabbed, reformatted
+ * 03 Feb 03 - Mike: cached dataflow (uses and usedBy)
  */
 
 /*==============================================================================
@@ -32,37 +33,44 @@
 #include "cfg.h"
 #include "proc.h"
 
-// finds a use for a given expression
+// Flush the cached dataflow
+void Statement::flushDataFlow() {
+    if (uses) delete uses;
+    uses = NULL;
+    if (usedBy) delete usedBy;
+    usedBy = NULL;
+}
+// Finds a use for a given expression
 Statement *Statement::findUse(Exp *e) {
-    std::set<Statement*> uses;
-    calcUses(uses);
-    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end();
-      it++)
+    updateUses();
+    for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
+      it++) {
         if (*(*it)->getLeft() == *e)
             return *it;
+    }
     return NULL;
 }
 
 void Statement::calcUses(std::set<Statement*> &uses) {
-    std::set<Statement*> live;
-    getLiveIn(live);
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end();
+    std::set<Statement*> liveIn;
+    getLiveIn(liveIn);
+    for (std::set<Statement*>::iterator it = liveIn.begin(); it != liveIn.end();
       it++) {
         assert(*it);
         Exp *left = (*it)->getLeft();
-        assert(left);
+        if (left == NULL) continue;     // E.g. HLCall with no return value
         if (usesExp(left)) {
             uses.insert(*it);
         }
     }
 }
 
-void Statement::calcUseBy(std::set<Statement*> &useBy) {
+void Statement::calcUsedBy(std::set<Statement*> &useBy) {
     if (getLeft() == NULL) return;
     std::set<Statement*> stmts;
     proc->getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-            it++) 
+      it++) 
         if ((*it)->findUse(getLeft()) == this)
             useBy.insert(*it);
 }
@@ -72,8 +80,8 @@ void Statement::calcUseBy(std::set<Statement*> &useBy) {
    expression.
  */
 void Statement::calcUseLinks() {
-    std::set<Statement*> uses;
-    calcUses(uses);
+    updateUses();
+    updateUsedBy();
 }
 
 // replace a use in this statement
@@ -83,6 +91,41 @@ void Statement::replaceUse(Statement *use) {
     std::cerr << " in ";
     printAsUse(std::cerr);
     std::cerr << std::endl;
+
+    // Fix dataflow. Both directions need fixing
+    //   Before           After
+    //     (1)             (1)
+    //     ^ |usedBy       ^ |
+    // uses| v             | |
+    //     (2) = *use  uses| |usedBy
+    //     ^ |usedBy       | |
+    // uses| v             | v
+    //     (3) = this      (3)
+    // Fix my ud chain; no longer using *use
+    updateUses();
+    std::set<Statement*>::iterator pos;
+    pos = uses->find(use);
+    if (pos == uses->end())
+        std::cerr << "Highly unusual: Statement::replace()\n";
+    else
+        uses->erase(pos);
+    // However, we are now using whatever *use was using
+    std::set<Statement*>::iterator ii;
+    for (ii=use->uses->begin(); ii != use->uses->end(); ii++)
+        uses->insert(*ii);
+    // Fix the du chains that pointed in to the statement that will
+    // be removed; they now point to this 
+    use->updateUses();
+    for (ii=use->uses->begin(); ii!= use->uses->end(); ii++) {
+        (*ii)->updateUsedBy();
+        pos = (*ii)->usedBy->find(use);
+        if (pos == (*ii)->usedBy->end())
+            std::cerr << "Highly unusual (2): Statement::replace()\n";
+        else
+            (*ii)->usedBy->erase(pos);
+        // They now point to this
+        (*ii)->usedBy->insert(this);
+    }
 
     // do the replacement
     doReplaceUse(use);
@@ -171,27 +214,28 @@ void Statement::calcLiveOut(std::set<Statement*> &live) {
 }
 
 /* 
- * Returns true if the statement can be propogated to all uses (and
+ * Returns true if the statement can be propagated to all uses (and
  * therefore can be removed).
  * Returns false otherwise.
  *
- * To completely propogate a statement which does not kill any of it's
+ * To completely propagate a statement which does not kill any of it's
  * own uses it is sufficient to show that all the uses of the statement
- * are still live at the expression to be propogated to.
+ * are still live at the expression to be propagated to.
  *
  * A statement that kills one or more of it's own uses is slightly more 
  * complicated.  All the uses that are not killed must still be live at
- * the expression to be propogated to, but the uses that were killed must
- * be live at the expression to be propogated to after the statement is 
+ * the expression to be propagated to, but the uses that were killed must
+ * be live at the expression to be propagated to after the statement is 
  * removed.  This is clearly the case if the only use killed by a 
  * statement is the same as the left hand side, however, if multiple uses
  * are killed a search must be conducted to ensure that no statement between
  * the source and the destination kills the other uses.  This is considered
  * too complex a task and is therefore defered for later experimentation.
  */
-bool Statement::canPropogateToAll() {
+bool Statement::canPropagateToAll() {
     std::set<Statement*> tmp_uses;
-    calcUses(tmp_uses);
+    updateUses();
+    tmp_uses = *uses;
     int nold = tmp_uses.size();
     killLive(tmp_uses);
     if (nold - tmp_uses.size() > 1) {
@@ -199,13 +243,11 @@ bool Statement::canPropogateToAll() {
         return false;
     }
 
-    std::set<Statement*> useBy;
-    calcUseBy(useBy);
+    updateUsedBy();
+    if (usedBy->size() == 0) return false;
 
-    if (useBy.size() == 0) return false;
-
-    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); 
-      it++) {
+    for (std::set<Statement*>::iterator it = usedBy->begin();
+      it != usedBy->end(); it++) {
         std::set<Statement*> in;
         (*it)->getLiveIn(in);
         // all uses must be live at the destination
@@ -225,16 +267,54 @@ bool Statement::canPropogateToAll() {
     return true;
 }
 
-// assumes canPropogateToAll has returned true
+// assumes canPropagateToAll has returned true
 // assumes this statement will be removed by the caller
-void Statement::propogateToAll() {
-    std::set<Statement*> useBy;
-    calcUseBy(useBy);
-    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); 
-      it++) {
+void Statement::propagateToAll() {
+AssignExp* e = dynamic_cast<AssignExp*>(this);
+if (e) {Exp* rhs = e->getSubExp2(); if (rhs->isIntConst()) {
+  Exp* ee = dynamic_cast<Exp*>(*usedBy->begin());
+  std::cerr << "Propagate to all: usedBy is " << std::hex << (unsigned)(*usedBy->begin()) << " " << (ee?ee->prints():"Null") << "\n";
+}}
+    updateUsedBy();
+    for (std::set<Statement*>::iterator it = usedBy->begin();
+      it != usedBy->end(); it++) {
         Statement *e = *it;
         e->replaceUse(this);
     }
 }
 
+// Update the dataflow for this stmt. This stmt is about to be deleted.
+//   Before           After
+//     (1)           nothing!
+//     ^ |usedBy       ^ |
+// uses| v             | v
+//     (2) = this      (2)
+//     ^ |usedBy       | |
+// uses| v             | v
+//  nothing!         nothing!
+//
+void Statement::updateDfForErase() {
+    std::set<Statement*>::iterator it;
+    updateUses();
+    for (it = uses->begin(); it != uses->end(); it++) {
+        Statement* ss = *it;
+        if (ss->usedBy == NULL) continue;
+        std::set<Statement*>::iterator pos;
+        pos = ss->usedBy->find(this);
+        if (pos == ss->usedBy->end())
+            std::cerr << "Highly suspicious in updateDfForErase\n";
+        else
+            // Erase this use of my definition, since I'm about to be deleted
+            ss->usedBy->erase(pos);
+    }
+}
 
+// Flush all dataflow for the whole procedure
+void Statement::flushProc() {
+    std::set<Statement*> stmts;
+    proc->getStatements(stmts);
+    std::set<Statement*>::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        (*it)->flushDataFlow();
+    }
+}

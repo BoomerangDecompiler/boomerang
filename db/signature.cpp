@@ -796,14 +796,15 @@ void Signature::analyse(UserProc *p)
     std::list<Statement*> internal;
     p->getInternalStatements(internal);
     for (std::list<Statement*>::iterator it = internal.begin();
-         it != internal.end(); it++)
+      it != internal.end(); it++) {
         if ((*it)->getLeft() && *(*it)->getLeft() == *getReturnExp()) {
-	     std::cerr << "found: ";
-	     (*it)->printAsUse(std::cerr);
-	     std::cerr << std::endl;
-	     p->eraseInternalStatement(*it);
-	     updateParams(p, *it);
-	}
+	        std::cerr << "found: ";
+	        (*it)->printAsUse(std::cerr);
+	        std::cerr << std::endl;
+	        p->eraseInternalStatement(*it);
+	        updateParams(p, *it);
+	    }
+    }
     std::cerr << "searching for arguments in statements" << std::endl;
     std::set<Statement*> stmts;
     p->getStatements(stmts);
@@ -883,8 +884,12 @@ Exp* Signature::getFirstArgLoc(BinaryFile* pBF) {
 		}
 		case MACHINE_PENTIUM:
 		{
-			CallingConvention::StdC::PentiumSignature sig("");
-			return sig.getArgumentExp(0);
+			//CallingConvention::StdC::PentiumSignature sig("");
+			//Exp* e = sig.getArgumentExp(0);
+            // For now, need to work around how the above appears to be the
+            // wrong thing!
+Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
+            return e;
 		}
 		default:
 			std::cerr << "Signature::getFirstArgLoc: machine not handled\n";
