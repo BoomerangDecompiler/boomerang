@@ -75,7 +75,6 @@ typedef std::list<RTL*>::iterator               RTLList_IT;
 /*==============================================================================
  * Forward declarartions.
  *============================================================================*/
-int getFuncRetReg();                // In cti<processor>.cc
 void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     ADDRESS uTable, int iNumTable, int iOffset, RTLList_IT itDefinesSw,
     UserProc* pProc);
@@ -379,7 +378,7 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
  *                Also creates a new SWITCH_INFO struct and fills it with info
  *                about this switch; last RTL this BB retains a pointer to this
  *============================================================================*/
-bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc) {
+bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
 
     // return false;                // Use to disable switch analysis
 
@@ -414,8 +413,15 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc) {
     uCopyPC = 0;                    // Needed only for type "r"; no call yet
     // Get the register that contains the function return value
     // e.g. 8 for sparc
-    const int iFuncRetReg = ((Const*)((Unary*)
-      pProc->getSignature()->getReturnExp()))->getInt();
+#if 0       // Problem is that the signature object is generic (class Signature)
+            // until the signature is "promoted" (happens much later).
+    Exp* retExp = pProc->getSignature()->getReturnExp();
+#else
+    // So for now, we call a special cludge in signature.cpp
+    Exp* retExp = Signature::getReturnExp2(pBF);
+#endif
+    assert(retExp);
+    const int iFuncRetReg = ((Const*)((Unary*)retExp)->getSubExp1())->getInt();
 	int iDest;
 	int n;
     Exp* pRHS;
@@ -498,12 +504,12 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc) {
                 if (rhs->getOper() == opMinus) {
                     // We have a subtract; is it from a register?
                     Exp* sub1 = rhs->getSubExp1();
-                    if (sub1->isRegOf()) {
+                    if (sub1->isRegOfK()) {
                         // We have a subtract from a register. But is the
                         // destination (lhs) a register of interest? That is,
                         // is the LHS register contained in ssJmp?
                         Exp* lhs = pRT->getSubExp1();
-                        if (lhs->isRegOf()) {
+                        if (lhs->isRegOfK()) {
                             Exp* result;
                             if (ssJmp->search(lhs, result)) {
                                 // Yes, it is. Remember this RTL, since it
@@ -562,7 +568,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc) {
             // It's a conditional branch
             JCOND_TYPE jt = ((HLJcond*)pRtl)->getCond();
             OPER operBr = opNil;
-            if (ssBound->getOper() == opNot) {
+            if (ssBound && ssBound->getOper() == opNot) {
                 // Expect branch if unsigned lower or equals
                 if (jt == HLJCOND_JULE) {
                     // Replace the not with opUpper
@@ -595,7 +601,13 @@ std::cerr << "FIXME: Replace the not with opUpper here: " << ssBound << std::end
                     // Add the appropriate index
                     ssBound->push(operBr);
 #else
+                    if (ssBound == NULL)
+                        ssBound = new Binary(operBr,
+                            new Terminal(opNil),
+                            new Terminal(opNil));
+                    else {
 std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a bare " << operStrings[operBr] << "\n";
+                    }
 #endif
 
 #if DEBUG_SWITCH
@@ -615,8 +627,8 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // FIXME: Check this!
         //if (ssBound->getLastIdx() == opUpper ||
         //    ssBound->getLastIdx() == opLower) {
-        if ((ssBound->getOper() == opUpper) || (ssBound->getOper() == opLower))
-        {
+        if (ssBound &&
+          (ssBound->getOper() == opUpper || ssBound->getOper() == opLower)) {
             int iReg;
             if ((*itCurRtl)->isCompare(iReg, expCompare)) {
                 // It is a compare instruction. But it should be a comparison
@@ -636,10 +648,10 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
                     continue;
                 }
                 // Append r[ int iReg
-                ssBound->setSubExp1(&regOfK);
+                ssBound->setSubExp1(regOfK.clone());
                 // Append the semantic string for the thing being compared
                 // to
-                ssBound->setSubExp2(expCompare);
+                ssBound->setSubExp2(expCompare->clone());
                 bUpperFnd = true;           // Trigger pattern matching
 
 #if DEBUG_SWITCH
@@ -664,7 +676,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         n = pRtl->getNumExp();
         if (n == 0) continue;
         // We assume that the last RTL will define the flags, if at all
-        if (pRtl->elementAt(n-1)->isFlagCall()) {
+        if (pRtl->elementAt(n-1)->isFlagAssgn()) {
             if (ssBound->getOper() == opNot) {
                 ssBound = ssBound->getSubExp1();
 #if DEBUG_SWITCH
@@ -811,9 +823,12 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         if (iDest != 999) {
             Unary regOfK(opRegOf, new Const(iDest));
             bool changed;
-            ssBound = ssBound->searchReplaceAll(&regOfK, pRHS, changed);
-            ssBound->simplify();
-            ssJmp->searchReplaceAll(&regOfK, pRHS, changed);
+            if (ssBound) {
+                ssBound = ssBound->searchReplaceAll(&regOfK, pRHS, changed);
+                ssBound->simplify();
+            }
+            if (ssJmp)
+                ssJmp = ssJmp->searchReplaceAll(&regOfK, pRHS, changed);
         }
 #endif
 
@@ -932,7 +947,7 @@ forcedCheck:
                 new Binary(opLower,
                     new Terminal(opWildRegOf),
                     new Terminal(opWildIntConst)));
-            if (*ssBound == expBoth) {
+            if (ssBound && *ssBound == expBoth) {
                 // We have both bounds
                 Exp* sub1 = ssBound->getSubExp1();
                 Exp* sub2 = ssBound->getSubExp2();
@@ -960,7 +975,7 @@ forcedCheck:
             static Binary expUpper(opUpper,
                 new Terminal(opWildRegOf),
                 new Terminal(opWildIntConst));
-            if (*ssBound == expUpper) {
+            if (ssBound && *ssBound == expUpper) {
                 bGotUpper = true;
                 Exp* sub = ((Binary*)ssBound)->getSubExp2();
                 iUpper = ((Const*)sub)->getInt();
@@ -1001,6 +1016,7 @@ forcedCheck:
             if (bRet) {
                 // We now have the lower bound, and all is done
                 bGotLower = true;
+                iLower = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
 #if DEBUG_SWITCH
             std::cout << "Got lower: ssJmp "; ssJmp->print(); std::cout <<
               " -> iLower " << std::dec << iLower << std::endl;
@@ -1013,7 +1029,8 @@ forcedCheck:
                 bool bRet = ssJmp->search(&expRegPlus, temp);
                 if (bRet) {
                     // We now have the lower bound, and all is done
-                    iLower = -iLower;
+                    iLower =
+                      -((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
 #if DEBUG_SWITCH
                     std::cout << "Got lower: ssJmp " << ssJmp <<
                       " -> iLower " << std::dec; std::cout << iLower << "\n";
@@ -1079,7 +1096,7 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     int n = (*itDefinesSw)->getNumExp();
     int i=n-1;
     Exp* pRT = (*itDefinesSw)->elementAt(i);
-    while (pRT->isAssign())
+    while (!pRT->isAssign())
         pRT = (*itDefinesSw)->elementAt(--i);
     Exp* rhs = ((AssignExp*)pRT)->getSubExp2();
     if (rhs->getOper() == opMinus) {
