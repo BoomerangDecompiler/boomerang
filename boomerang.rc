@@ -1,0 +1,437 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BOOMERANG           ICON                    "boomerang.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_BOOMERANG MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New Project",                ID_NEW_PROJECT
+        MENUITEM "&Open Project",               ID_OPEN_PROJECT
+        MENUITEM "&Save",                       ID_FILE_SAVE
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       ID_EDIT_UNDO, GRAYED
+        MENUITEM "&Redo",                       ID_EDIT_REDO, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy",                       ID_EDIT_COPY
+        MENUITEM "&Paste",                      ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",                 ID_EDIT_SELECTALL
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Code",                       ID_VIEW_CODE
+        MENUITEM "&RTL",                        ID_VIEW_RTL
+        MENUITEM "&Mixed Code and RTL",         ID_VIEW_MIXED, INACTIVE
+        MENUITEM SEPARATOR
+        MENUITEM "&Rename",                     ID_VIEW_RENAME
+        MENUITEM "&New Cluster",                ID_VIEW_NEWCLUSTER
+        MENUITEM "&Delete Cluster",             ID_VIEW_DELETECLUSTER
+        , GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties",                 ID_VIEW_PROPERTIES
+    END
+    POPUP "&Tools"
+    BEGIN
+        POPUP "De&coder"
+        BEGIN
+            MENUITEM "Show &coverage",              ID_DECODER_SHOWCOVERAGE
+            MENUITEM SEPARATOR
+            MENUITEM "&Options",                    ID_DECODER_OPTIONS
+        END
+        POPUP "&Decompiler"
+        BEGIN
+            MENUITEM "&Start",                      ID_DECOMPILER_START
+            , GRAYED
+            MENUITEM "&Suspend",                    ID_DECOMPILER_SUSPEND
+            , GRAYED
+            MENUITEM "&Resume",                     ID_DECOMPILER_RESUME
+            , GRAYED
+            MENUITEM "&Terminate",                  ID_DECOMPILER_TERMINATE
+            , GRAYED
+            MENUITEM SEPARATOR
+            MENUITEM "&Options",                    ID_DECOMPILER_OPTIONS
+        END
+        POPUP "&Code Generator"
+        BEGIN
+            MENUITEM "Regenerate &All",             ID_CODEGENERATOR_REGENERATEALL
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Set &Output Path",            ID_SETOUTPUTPATH
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "Boomerang &Web Site",         ID_HELP_BOOMERANGWEBSITE
+        MENUITEM "Boomerang &FAQ",              ID_HELP_BOOMERANGFAQ
+        MENUITEM "&About ...",                  IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_BOOMERANG ACCELERATORS 
+BEGIN
+    "?",            IDM_ABOUT,              ASCII,  ALT
+    "/",            IDM_ABOUT,              ASCII,  ALT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 22, 17, 230, 75
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "System", 0, 0, 0x0
+BEGIN
+    ICON            IDI_BOOMERANG,IDC_MYICON,14,9,20,20
+    LTEXT           "Boomerang Version 0.1",IDC_STATIC,49,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 1998-2004",IDC_STATIC,49,20,119,8
+    DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
+    LTEXT           "You are using the Win32 GUI to Boomerang, an Open Source decompiler.  For details see the Boomerang Web Site available from the Help menu.",
+                    IDC_STATIC,12,33,196,35
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE           "Boomerang"
+    IDC_BOOMERANG           "BOOMERANG"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Australia) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_CLUSTER             ICON                    "icon1.ico"
+IDI_DPROC               ICON                    "ico00001.ico"
+IDI_PROC                ICON                    "ico00002.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_NEWPROJECT DIALOGEX 0, 0, 247, 106
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "New Project"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,139,85,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,190,85,50,14
+    LTEXT           "Project Name:",IDC_STATIC,7,10,48,8
+    EDITTEXT        IDC_NAME,68,7,172,14,ES_AUTOHSCROLL
+    LTEXT           "File to Decompile:",IDC_STATIC,7,27,63,8
+    COMBOBOX        IDC_TARGET,68,25,112,30,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_BROWSEBUTTON,183,24,50,14
+    LTEXT           "Output path:",IDC_STATIC,7,44,42,8
+    COMBOBOX        IDC_OUTPUT,68,42,112,30,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_BROWSEBUTTON2,183,41,50,14
+    PUSHBUTTON      "Decompile Options",IDC_DECOMPILEOPTIONS,169,64,70,14
+    PUSHBUTTON      "Debug Options",IDC_DEBUGOPTIONS,7,64,57,14
+    PUSHBUTTON      "Decode Options",IDC_DECODEOPTIONS,86,64,61,14
+END
+
+IDD_DEBUGOPTIONS DIALOGEX 0, 0, 163, 111
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Debug options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,52,90,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,106,90,50,14
+    CONTROL         "print AST",IDC_CHECKAST,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,20,47,10
+    CONTROL         "switch analysis",IDC_CHECKSA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,33,65,10
+    CONTROL         "decoder",IDC_CHECKD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,7,42,10
+    CONTROL         "code generation",IDC_CHECKCG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,69,10
+    CONTROL         "liveness",IDC_CHECKL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,20,42,10
+    CONTROL         "proof engine",IDC_CHECKPROOF,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,33,57,10
+    CONTROL         "unused returns",IDC_CHECKUR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,46,65,10
+    CONTROL         "type analysis",IDC_CHECKTA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,46,58,10
+    CONTROL         "unused statements",IDC_CHECKUS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,59,78,10
+    CONTROL         "rtl before codegen",IDC_CHECKRTL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,72,76,10
+    CONTROL         "trace decoding",IDC_CHECKTD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,59,64,10
+    CONTROL         "verbose",IDC_CHECKV,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,91,72,42,10
+END
+
+IDD_DECOMPILEOPTIONS DIALOGEX 0, 0, 207, 134
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Decompilation options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,97,113,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,150,113,50,14
+    CONTROL         "no simplifications for branches",
+                    IDC_CHECKNOSIMPBRANCHES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,115,10
+    CONTROL         "no removal of null and unused statements",
+                    IDC_CHECKNOREMOVENULL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,16,153,10
+    CONTROL         "no creation of local variables",IDC_CHECKNOCREATELOCAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,110,10
+    CONTROL         "no replacement of expressions with parameter names",
+                    IDC_CHECKNOPARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,34,193,10
+    CONTROL         "no removal of unnedded labels",
+                    IDC_CHECKNOUNNEEDEDLABELS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,43,117,10
+    CONTROL         "no removal of unused returns",
+                    IDC_CHECKNOUNNEEDEDRETURNS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,52,113,10
+    CONTROL         "no (reduced) dataflow analysis",IDC_CHECKNODATAFLOW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,117,10
+    CONTROL         "no decompilation (at all!)",IDC_CHECKNODECOMP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,70,98,10
+    LTEXT           "Use symbol file:",IDC_STATIC,7,85,53,8
+    COMBOBOX        IDC_COMBOSYMBOLFILE,7,95,140,30,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Browse...",IDC_BROWSEBUTTON3,150,94,50,14
+END
+
+IDD_DECODEOPTIONS DIALOGEX 0, 0, 159, 132
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Decode options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,50,111,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,111,50,14
+    GROUPBOX        "Start decode at...",IDC_STATIC,7,7,145,78
+    CONTROL         "main",IDC_RADIOMAIN,"Button",BS_AUTORADIOBUTTON,23,18,
+                    32,10
+    CONTROL         "start",IDC_RADIOSTART,"Button",BS_AUTORADIOBUTTON,61,18,
+                    31,10
+    CONTROL         "neither",IDC_RADIONEITHER,"Button",BS_AUTORADIOBUTTON,
+                    95,18,39,10
+    LTEXT           "Entrypoint:",IDC_STATIC,8,32,36,8
+    COMBOBOX        IDC_COMBOENTRYPOINT,45,30,68,30,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LISTENTRYPOINT,7,43,105,40,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "don't decode child procedures",IDC_CHECKDECODECHILDREN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,88,114,10
+    CONTROL         "decode through some indirect calls",
+                    IDC_CHECKDECODEINDIRECT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,99,130,10
+    PUSHBUTTON      "Add",IDC_ADDBUTTON,116,28,33,14
+    PUSHBUTTON      "Remove",IDC_REMOVEBUTTON,116,43,33,14
+    PUSHBUTTON      "Clear",IDC_CLEARBUTTON,116,59,33,14
+END
+
+IDD_DECODING DIALOGEX 0, 0, 187, 120
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Decoding..."
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
+IDD_PROCPROPERTIES DIALOGEX 0, 0, 255, 264
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Signature",IDC_STATIC,7,7,241,160
+    LTEXT           "Locals:",IDC_STATIC,19,170,24,8
+    CONTROL         "",IDC_LOCALS,"SysListView32",LVS_REPORT | 
+                    LVS_EDITLABELS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,
+                    19,179,219,73
+    CONTROL         "",IDC_SIGNATURE_RETURNS,"SysListView32",LVS_REPORT | 
+                    LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,19,47,220,50
+    CONTROL         "",IDC_SIGNATURE_PARAMS,"SysListView32",LVS_REPORT | 
+                    LVS_EDITLABELS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,
+                    19,111,220,50
+    LTEXT           "Name:",IDC_STATIC,19,21,23,8
+    EDITTEXT        IDC_SIGNATURE_NAME,46,18,193,14,ES_AUTOHSCROLL
+    LTEXT           "Returns:",IDC_STATIC,19,37,29,8
+    LTEXT           "Parameters:",IDC_STATIC,18,101,42,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_NEWPROJECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 240
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 99
+    END
+
+    IDD_DEBUGOPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 156
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_DECOMPILEOPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 200
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_DECODEOPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 152
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 125
+    END
+
+    IDD_DECODING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 113
+    END
+
+    IDD_PROCPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 257
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (Australia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

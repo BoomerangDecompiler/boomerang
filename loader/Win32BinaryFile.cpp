@@ -195,9 +195,10 @@ bool Win32BinaryFile::RealLoad(const char* sName)
     // Add the Import Address Table entries to the symbol table
     PEImportDtor* id = (PEImportDtor*)
       (LMMH(m_pPEHeader->ImportTableRVA) + base);
-    while (id->originalFirstThunk != 0) {
+    while (id->name != 0) {
         char* dllName = LMMH(id->name) + base;
-        unsigned* iat = (unsigned*)(LMMH(id->originalFirstThunk) + base);
+		unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
+		unsigned* iat = (unsigned*)(LMMH(thunk) + base);
         unsigned iatEntry = LMMH(*iat);
         ADDRESS paddr = LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase);
         while (iatEntry) {
@@ -218,8 +219,9 @@ bool Win32BinaryFile::RealLoad(const char* sName)
                 // Skip the useless hint (2 bytes)
                 std::string name((const char*)(iatEntry+2+base));
                 dlprocptrs[paddr] = name;
-                dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)]
-                  = std::string("old_") + name; // add both possibilities
+				if (paddr != (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase))
+					dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)]
+					= std::string("old_") + name; // add both possibilities
                 // printf("Added symbol %s value %x\n", name.c_str(), paddr);
                 // printf("Also added old_%s value %x\n", name.c_str(),
                 //   (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase));
@@ -300,7 +302,6 @@ bool Win32BinaryFile::PostLoad(void* handle)
     return false;
 }
 
-#ifndef WIN32
 char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
     std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
@@ -326,8 +327,6 @@ void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
 {
     dlprocptrs[uNative] = pName;
 }
-
-#endif
 
 bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f
      /* = stdout */)

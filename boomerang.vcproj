@@ -20,11 +20,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="include;win32make\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
-				RuntimeTypeInfo="FALSE"
+				RuntimeLibrary="1"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
@@ -37,13 +37,13 @@
 				Outputs="boomerang.exe"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libexpat.lib gc.lib"
+				AdditionalDependencies="libexpat.lib gc.lib comctl32.lib"
 				OutputFile="$(OutDir)/boomerang.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/boomerang.pdb"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -75,8 +75,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="include;win32make\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
-				RuntimeLibrary="4"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -90,7 +90,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"/>
@@ -467,6 +467,9 @@
 				RelativePath=".\loader\Win32BinaryFile.cpp">
 			</File>
 			<File
+				RelativePath=".\windows.cpp">
+			</File>
+			<File
 				RelativePath=".\db\xmlprogparser.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -509,6 +512,9 @@
 			</File>
 			<File
 				RelativePath=".\codegen\chllcode.h">
+			</File>
+			<File
+				RelativePath=".\include\cluster.h">
 			</File>
 			<File
 				RelativePath=".\include\config.h">
@@ -577,6 +583,9 @@
 				RelativePath=".\include\register.h">
 			</File>
 			<File
+				RelativePath=".\resource.h">
+			</File>
+			<File
 				RelativePath=".\include\rtl.h">
 			</File>
 			<File
@@ -620,6 +629,27 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\boomerang.ico">
+			</File>
+			<File
+				RelativePath=".\boomerang.rc">
+			</File>
+			<File
+				RelativePath=".\ico00001.ico">
+			</File>
+			<File
+				RelativePath=".\ico00002.ico">
+			</File>
+			<File
+				RelativePath=".\icon1.ico">
+			</File>
+			<File
+				RelativePath=".\icon2.ico">
+			</File>
+			<File
+				RelativePath=".\small.ico">
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

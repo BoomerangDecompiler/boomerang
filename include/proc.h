@@ -104,6 +104,8 @@ public:
     Signature *getSignature() { return signature; }
     void setSignature(Signature *sig) { signature = sig; }
 
+	virtual void renameParam(const char *oldName, const char *newName);
+
     /*
      * Prints this procedure to an output stream.
      */
@@ -514,6 +516,8 @@ public:
     // Calculate uses info
     void computeUses();
 
+	bool searchAll(Exp* search, std::list<Exp*> &result);
+
 #if 0
     // get the set of locations "defined" in this procedure
     void getDefinitions(LocationSet &defs) {defs = definesSet;}
@@ -577,6 +581,17 @@ public:
     // return a local's exp
     Exp *getLocalExp(const char *nam);
     void setLocalExp(const char *nam, Exp *e);
+
+	int getNumLocals() { return (int)locals.size(); }
+	const char *getLocalName(int n) { 
+		int i = 0;
+		for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++, i++)
+			if (i == n)
+				return (*it).first.c_str();
+		return NULL;
+	}
+	void renameLocal(const char *oldName, const char *newName);
+	virtual void renameParam(const char *oldName, const char *newName);
 
     /*
      * Add new locals, local<b> to local<n-1>

@@ -65,7 +65,6 @@
 Prog::Prog() :
       pBF(NULL),
       pFE(NULL),
-      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
       globalMap(NULL),
       m_iNumberedProc(1),
       m_rootCluster(new Cluster("prog")) {
@@ -75,11 +74,11 @@ Prog::Prog() :
 Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) :
       pBF(pBF),
       pFE(pFE),
-      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
       globalMap(NULL),
       m_iNumberedProc(1) {
     if (pBF && pBF->getFilename()) {
         m_name = pBF->getFilename();
+		m_path = m_name;
         m_rootCluster = new Cluster(getNameNoPath().c_str());
     }
 }
@@ -87,13 +86,13 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) :
 Prog::Prog(const char* name) :
       pBF(NULL),
       pFE(NULL),
-      m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
       m_name(name),
       globalMap(NULL),
       m_iNumberedProc(1),
       m_rootCluster(new Cluster(getNameNoPath().c_str())) {
     // Constructor taking a name. Technically, the allocation of the
     // space for the name could fail, but this is unlikely
+	  m_path = m_name;
 }
 
 Prog::~Prog() {
@@ -109,6 +108,7 @@ Prog::~Prog() {
 
 void Prog::setName (const char *name) {    // Assign a name to this program
     m_name = name;
+	m_rootCluster->setName(name);
 }
 
 char* Prog::getName() {
@@ -172,27 +172,35 @@ void Prog::generateDotFile() {
 
 }
 
-void Prog::generateCode(Cluster *cluster) {
+void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
     std::string basedir = m_rootCluster->makeDirs();
     std::ofstream os;
+	if (cluster) {
+		cluster->openStream("c");
+		cluster->closeStreams();
+	}
     if (cluster == NULL || cluster == m_rootCluster) {
-            os.open(m_rootCluster->getOutPath("c"));
-        HLLCode *code = Boomerang::get()->getHLLCode();
-        for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
-            // Check for an initial value
-            Exp *e = NULL;
-            e = (*it1)->getInitialValue(this);
-            if (e)
-                code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
-        }
-        code->print(os);
-        delete code;
+        os.open(m_rootCluster->getOutPath("c"));
+		if (proc == NULL) {
+			HLLCode *code = Boomerang::get()->getHLLCode();
+			for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+				// Check for an initial value
+				Exp *e = NULL;
+				e = (*it1)->getInitialValue(this);
+				if (e)
+					code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+			}
+			code->print(os);
+			delete code;
+		}
     }
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
+		if (proc != NULL && p != proc)
+			continue;
         p->getCFG()->compressCfg();
         HLLCode *code = Boomerang::get()->getHLLCode(p);
         p->generateCode(code);
@@ -211,6 +219,23 @@ void Prog::generateCode(Cluster *cluster) {
     m_rootCluster->closeStreams();
 }
 
+void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+		if (proc != NULL && p != proc)
+			continue;
+		if (cluster != NULL && p->getCluster() != cluster)
+			continue;
+
+		p->getCluster()->openStream("rtl");
+		p->print(p->getCluster()->getStream());
+    }
+    m_rootCluster->closeStreams();
+}
+
 const char *Cluster::makeDirs()
 {
     std::string path;
@@ -226,7 +251,7 @@ const char *Cluster::makeDirs()
         mkdir(path.c_str(), 0777);
 #endif
     }
-    return path.c_str();
+    return strdup(path.c_str());
 }
 
 void Cluster::removeChild(Cluster *n)
@@ -377,8 +402,8 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
         pProc = new UserProc(this, sname, uNative);
     m_procs.push_back(pProc);       // Append this to list of procs
     m_procLabels[uNative] = pProc;
-    // alert the watcher of a new proc
-    if (m_watcher) m_watcher->alert_new(pProc);
+    // alert the watchers of a new proc
+	Boomerang::get()->alert_new(pProc);
     return pProc;
 }
 
@@ -513,7 +538,9 @@ const char *Prog::getGlobalName(ADDRESS uaddr)
                  globals[i]->getAddress() + 
                     globals[i]->getType()->getSize() / 8 > uaddr)
             return globals[i]->getName();
-    return pBF->SymbolByAddress(uaddr);
+	if (pBF)
+		return pBF->SymbolByAddress(uaddr);
+	return NULL;
 }
 
 ADDRESS Prog::getGlobalAddr(char *nam)
@@ -543,7 +570,8 @@ void Prog::globalUsed(ADDRESS uaddr)
     if (uaddr < 0x10000) {
         // This happens in windows code because you can pass a low value integer instead 
         // of a string to some functions.
-        LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
+		if (VERBOSE)
+			LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
         return;
     }
     const char *nam = newGlobal(uaddr); 
@@ -694,7 +722,9 @@ bool Prog::isProcLabel (ADDRESS addr) {
 std::string Prog::getNameNoPath() const {
     unsigned n = m_name.rfind("/");
     if (n == std::string::npos) {
-        return m_name;
+		n = m_name.rfind("\\");
+		if (n == std::string::npos)
+			return m_name;
     }
 
     return m_name.substr(n+1);
@@ -815,7 +845,7 @@ void Prog::insertArguments(StatementSet& rs) {
 void Prog::decodeExtraEntrypoint(ADDRESS a) { 
     Proc* p = findProc(a);
     if (p == NULL || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
-        pFE->decodeOnly(this, a);
+        pFE->decode(this, a);
         analyse();
     }
 }
@@ -877,6 +907,29 @@ void Prog::decompile() {
     // A final pass to remove unused locals
     // Now in UserProc::generateCode()
     //removeUnusedLocals();
+
+	removeUnusedGlobals();
+}
+
+void Prog::removeUnusedGlobals() {
+	std::list<Exp*> result;
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+		if ((*it)->isLib())
+			continue;
+		UserProc *u = (UserProc*)(*it);
+		u->searchAll(new Location(opGlobal, new Terminal(opWild), u), result);
+	}
+	std::map<std::string, Global*> unusedGlobals, usedGlobals;
+	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		unusedGlobals[(*it)->getName()] = *it;
+	usedGlobals = unusedGlobals;
+	for (std::list<Exp*>::iterator it = result.begin(); it != result.end(); it++)
+		unusedGlobals.erase(((Const*)(*it)->getSubExp1())->getStr());
+	for (std::map<std::string, Global*>::iterator it = unusedGlobals.begin(); it != unusedGlobals.end(); it++)
+		usedGlobals.erase((*it).first);
+	globals.clear();
+	for (std::map<std::string, Global*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++)
+		globals.push_back((*it).second);
 }
 
 void Prog::removeUnusedReturns() {
@@ -1135,7 +1188,7 @@ void Prog::readSymbolFile(const char *fname)
 
 Exp* Global::getInitialValue(Prog* prog) {
     Exp* e = NULL;
-    PSectionInfo si = prog->getSectionInfoByAddr(uaddr);
+	PSectionInfo si = prog->getSectionInfoByAddr(uaddr);
     if (si && si->bBss)
         // This global is in the BSS, so it can't be initialised
         return NULL;

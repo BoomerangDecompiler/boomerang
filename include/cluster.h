@@ -39,6 +39,7 @@ protected:
     std::vector<Cluster*> children;
     Cluster *parent;
     std::ofstream out;
+	std::string stream_ext;
 
 public:
     Cluster() : name(""), parent(NULL) { }

@@ -551,11 +551,13 @@ void RTL::simplify() {
             Exp *cond =  ((BranchStatement*)s)->getCondExpr();
             if (cond->getOper() == opIntConst) {
                 if (((Const*)cond)->getInt() == 0) {
-                    LOG << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
+					if (VERBOSE)
+						LOG << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
                     it = stmtList.erase(it);
                     continue;
                 } else {
-                    LOG << "replacing branch with true condition with goto at " << getAddress() << " " << *it << "\n";
+					if (VERBOSE)
+						LOG << "replacing branch with true condition with goto at " << getAddress() << " " << *it << "\n";
                     *it = new GotoStatement(((BranchStatement*)s)->getFixedDest());
                 }
             }

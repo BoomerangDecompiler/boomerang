@@ -147,13 +147,17 @@ void FrontEnd::readLibraryCatalog() {
     }
 }
 
-Prog *FrontEnd::decode(bool decodeMain) 
+Prog *FrontEnd::decode(bool decodeMain, const char *pname) 
 {
     Prog *prog = new Prog(pBF, this);
+	if (pname)
+		prog->setName(pname);
     readLibraryCatalog();
 
     if (!decodeMain)
         return prog;
+	
+	Boomerang::get()->alert_start_decode(pBF->getLimitTextLow(), pBF->getLimitTextHigh() - pBF->getLimitTextLow());
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -188,8 +192,10 @@ Prog *FrontEnd::decode(bool decodeMain)
 }
 
 void FrontEnd::decode(Prog *prog, ADDRESS a) {
-    if (a != NO_ADDRESS)
+	if (a != NO_ADDRESS) {
         prog->setNewProc(a);
+		LOG << "starting decode at address " << a << "\n";
+	}
 
     bool change = true;
     while (change) {
@@ -402,6 +408,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
     // ADDRESS initAddr = uAddr;
     int nTotalBytes = 0;
+	ADDRESS startAddr = uAddr;
     ADDRESS lastAddr = uAddr;
 
     while ((uAddr = targetQueue.nextAddress(pCfg)) != NO_ADDRESS) {
@@ -435,10 +442,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
             RTL* pRtl = inst.rtl;
             if (inst.valid == false) {
-                // Alert the watcher to the problem
-                //ProgWatcher *w = prog->getWatcher();
-                //if (w)
-                //    w->alert_baddecode(uAddr);
+                // Alert the watchers to the problem
+				Boomerang::get()->alert_baddecode(uAddr);
 
                 // An invalid instruction. Most likely because a call did
                 // not return (e.g. call _exit()), etc. Best thing is to
@@ -451,10 +456,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 sequentialDecode = false; BB_rtls = NULL; continue;
             }
 
-            // alert the watcher that we have decoded an instruction
-            //ProgWatcher *w = prog->getWatcher();
-            //if (w)
-            //    w->alert_decode(uAddr, inst.numBytes);
+            // alert the watchers that we have decoded an instruction
+			Boomerang::get()->alert_decode(uAddr, inst.numBytes);
             nTotalBytes += inst.numBytes;           
     
             if (pRtl == 0) {
@@ -870,6 +873,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             }           
         }
     }
+
+	Boomerang::get()->alert_decode(pProc, startAddr, lastAddr, nTotalBytes);
 
     return true;
 }

@@ -53,6 +53,7 @@ class CallStatement;
 class RTL;
 struct DOM;
 class XMLProgParser;
+class Global;
 
 #define BTHEN 0
 #define BELSE 1
@@ -891,6 +892,7 @@ public:
      * Can be type sensitive if reqd
      */
     void searchAndReplace(Exp* search, Exp* replace);
+	bool searchAll(Exp* search, std::list<Exp*> &result);
 
     /*
      * Set the return value for this CFG 
@@ -1044,6 +1046,8 @@ public:
 
     void findInterferences(igraph& ig, int& tempNum);
     void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
+
+	void removeUsedGlobals(std::set<Global*> &unusedGlobals);
 
 protected:
     friend class XMLProgParser;

@@ -128,6 +128,34 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
     return false;
 }
 
+void Proc::renameParam(const char *oldName, const char *newName) { 
+	signature->renameParam(oldName, newName); 
+}
+
+void UserProc::renameParam(const char *oldName, const char *newName)
+{
+	oldName = strdup(oldName);
+	Proc::renameParam(oldName, newName);
+	cfg->searchAndReplace(Location::param(strdup(oldName), this), Location::param(strdup(newName), this));
+}
+
+void UserProc::renameLocal(const char *oldName, const char *newName)
+{
+	Type *t = locals[oldName];
+	Exp *e = getLocalExp(oldName);
+	locals.erase(oldName);
+	Exp *l = symbolMap[e];
+	Exp *n = Location::local(strdup(newName), this);
+	symbolMap[e] = n;
+	locals[newName] = t;
+	cfg->searchAndReplace(l, n);
+}
+
+bool UserProc::searchAll(Exp* search, std::list<Exp*> &result)
+{
+	return cfg->searchAll(search, result);	
+}
+
 void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 {
     if (!Boomerang::get()->dumpXML)
@@ -942,6 +970,7 @@ void UserProc::getStatements(StatementList &stmts) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         std::list<RTL*> *rtls = bb->getRTLs();
+		if (rtls)
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
           rit++) {
             RTL *rtl = *rit;
@@ -971,7 +1000,8 @@ void UserProc::removeStatement(Statement *stmt) {
         }
     }
     if (usesIt) {
-        LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
+		if (VERBOSE)
+			LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
         proven.erase(it);
         it = proven.begin();
         continue;
@@ -1054,6 +1084,9 @@ std::set<UserProc*>* UserProc::decompile() {
     // We have seen this proc
     decompileSeen = true;
 
+	if (!decoded)
+		return NULL;
+
     std::set<UserProc*>* cycleSet = new std::set<UserProc*>;
     if (!Boomerang::get()->noDecodeChildren) {
         // Recurse to children first, to perform a depth first search
@@ -1085,6 +1118,7 @@ std::set<UserProc*>* UserProc::decompile() {
         cycleSet->erase(this);
     }
 
+	Boomerang::get()->alert_start_decompile(this);
     if (VERBOSE) LOG << "decompiling: " << getName() << "\n";
 
     // Sort by address, so printouts make sense
@@ -1103,6 +1137,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
     if (Boomerang::get()->noDecompile) {
         decompiled = true;
+		Boomerang::get()->alert_end_decompile(this);
         return cycleSet;
     }
 
@@ -1327,6 +1362,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
     decompiled = true;          // Now fully decompiled (apart from one final
                                 // pass, and transforming out of SSA form)
+	Boomerang::get()->alert_end_decompile(this);
     return cycleSet;
 }
 
@@ -2083,7 +2119,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                     r1->getOper() == opMemOf &&
                     r1->getSubExp1()->getOper() == opIntConst) {
                     Exp *memof = r1;
-                    ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
+                    ADDRESS u = ((Const*)memof->getSubExp1())->getInt();					
                     prog->globalUsed(u);
                     const char *gloName = prog->getGlobalName(u);
                     if (gloName) {
@@ -2098,7 +2134,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                         } else {
                             Type *ty = prog->getGlobalType((char*)gloName);
                             Unary *g = Location::global(strdup(gloName), this);
-                            if (ty && ty->isArray()) 
+                            if (ty && ty->isArray() && ty->getSize() > 0) 
                                 ne = new Binary(opArraySubscript,
                                     g,
                                     new Const(0));

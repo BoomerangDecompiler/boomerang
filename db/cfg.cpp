@@ -1315,6 +1315,21 @@ void Cfg::searchAndReplace(Exp* search, Exp* replace)
     }
 }
 
+bool Cfg::searchAll(Exp *search, std::list<Exp*> &result)
+{
+	bool ch = false;
+    for (BB_IT bb_it = m_listBB.begin(); bb_it != m_listBB.end(); bb_it++) {
+        std::list<RTL*>& rtls = *((*bb_it)->getRTLs());
+        for (std::list<RTL*>::iterator rtl_it = rtls.begin(); rtl_it != rtls.end(); rtl_it++) {
+            RTL& rtl = **rtl_it;
+			ch |= rtl.searchAll(search, result);
+        }
+	    if ((*bb_it)->getType() == RET && (*bb_it)->m_returnVal) {
+			ch |= (*bb_it)->m_returnVal->searchAll(search, result);
+		}
+    }
+	return ch;
+}
 
 /*==============================================================================
  * FUNCTION:    delete_lrtls
@@ -1848,6 +1863,10 @@ void Cfg::checkConds() {
 }
 
 void Cfg::structure() {
+    PBB retNode = findRetNode();
+	if (retNode == NULL)
+		return;
+
     setTimeStamps();
     findImmedPDom();
     structConds();

@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <set>
 #include "cfg.h"
 #include "proc.h"
 #include "hllcode.h"
@@ -28,12 +29,29 @@
 
 #define LOG Boomerang::get()->log()
 
+class Watcher {
+public:
+        Watcher() { }
+
+		virtual void alert_complete() { }
+		virtual void alert_new(Proc *p) { }
+		virtual void alert_decode(ADDRESS pc, int nBytes) { }
+		virtual void alert_baddecode(ADDRESS pc) { }
+		virtual void alert_start_decode(ADDRESS start, int nBytes) { }
+		virtual void alert_end_decode() { }
+		virtual void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) { }
+		virtual void alert_start_decompile(UserProc *p) { }
+		virtual void alert_end_decompile(UserProc *p) { }
+		virtual void alert_load(Proc *p) { }
+};
+
 class Boomerang {
 private:
     static Boomerang *boomerang;
     std::string progPath;   // String with the path to this exec
     std::string outputPath;
     Log *logger;
+	std::set<Watcher*> watchers;
 
     void usage();
     void help();
@@ -41,6 +59,7 @@ private:
     int splitLine(char *line, char ***pargv);
     int parseCmd(int argc, const char **argv);
     int cmdLine();
+
 
     Boomerang();
 public:
@@ -51,6 +70,7 @@ public:
 
     Log &log();
     void setLogger(Log *l) { logger = l; }
+	bool setOutputDirectory(const char *path);
 
     HLLCode *getHLLCode(UserProc *p = NULL);
 
@@ -60,8 +80,53 @@ public:
     const std::string& getProgPath() { return progPath; }
     void setOutputPath(const char* p) { outputPath = p; }
     const std::string& getOutputPath() { return outputPath; }
-    Prog *loadAndDecode(const char *fname);
-    int decompile(const char *fname);
+    Prog *loadAndDecode(const char *fname, const char *pname = NULL);
+    int decompile(const char *fname, const char *pname = NULL);
+	void addWatcher(Watcher *watcher) { watchers.insert(watcher); }
+	void persistToXML(Prog *prog);
+	Prog *loadFromXML(const char *fname);
+
+	// call the watchers
+	void alert_complete() {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_complete();
+	}
+	void alert_new(Proc *p) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_new(p);
+	}
+	void alert_decode(ADDRESS pc, int nBytes) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decode(pc, nBytes);
+	}
+	void alert_baddecode(ADDRESS pc) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_baddecode(pc);
+	}
+	void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_decode(p, pc, last, nBytes);
+	}
+	void alert_load(Proc *p) {
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_load(p);
+	}
+	void alert_start_decode(ADDRESS start, int nBytes) { 
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_start_decode(start, nBytes);
+	}
+	void alert_end_decode() { 
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_end_decode();
+	}
+	virtual void alert_start_decompile(UserProc *p) { 
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_start_decompile(p);
+	}
+	virtual void alert_end_decompile(UserProc *p) { 
+		for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+			(*it)->alert_end_decompile(p);
+	}
 
     // Command line flags
     bool vFlag;
@@ -72,6 +137,7 @@ public:
     bool noRemoveLabels;
     bool noDataflow;
     bool noDecompile;
+	bool stopBeforeDecompile;
     bool noDecompileUp;
     bool traceDecoder;
     const char *dotFile;

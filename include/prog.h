@@ -38,18 +38,6 @@ class XMLProgParser;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
-class ProgWatcher {
-public:
-        ProgWatcher() { }
-
-        virtual void alert_complete() = 0;
-        virtual void alert_new(Proc *p) = 0;
-        virtual void alert_decode(ADDRESS pc, int nBytes) = 0;
-        virtual void alert_baddecode(ADDRESS pc) = 0;
-        virtual void alert_done(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) = 0;
-        virtual void alert_progress(unsigned long off, unsigned long size) = 0;
-};
-
 class Global {
 private:
     Type *type;
@@ -88,6 +76,7 @@ public:
     Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
     void    remProc(UserProc* proc);    // Remove the given UserProc
     char*   getName();                  // Get the name of this program
+	const char *getPath() { return m_path.c_str(); }
     int     getNumProcs();              // # of procedures stored in prog
     int     getNumUserProcs();          // # of user procedures stored in prog
     Proc*   getProc(int i) const;       // returns pointer to indexed proc
@@ -120,14 +109,6 @@ public:
     // Lookup the given native address in the code section, returning
     // a host pointer corresponding to the same address
     const void* getCodeInfo(ADDRESS uAddr, const char*& last, int& delta);
-
-    // Get the watcher.. other classes (such as the decoder) can alert
-    // the watcher when there are changes.        
-    ProgWatcher *getWatcher() { return m_watcher; }
-
-    // Indicate that a watcher would like to be updated of status (only 1
-    // watcher allowed at the moment, old watchers will be disconnected).
-    void setWatcher(ProgWatcher *p) { m_watcher = p; }
 
     const char *getRegName(int idx) { return pFE->getRegName(idx); }
 
@@ -166,6 +147,7 @@ public:
     // Remove null, unused, and restored statements
     void removeNullStmts();
     void removeUnusedStmts();
+	void removeUnusedGlobals();
     void removeUnusedLocals();
     void removeRestoreStmts(StatementSet& rs);
 
@@ -186,7 +168,8 @@ public:
 
     // Generate code
     void generateCode(std::ostream &os);
-    void generateCode(Cluster *cluster = NULL);
+    void generateCode(Cluster *cluster = NULL, UserProc *proc = NULL, bool intermixRTL = false);
+	void generateRTL(Cluster *cluster = NULL, UserProc *proc = NULL);
 
     // Print this program (primarily for debugging)
     void print(std::ostream &out, bool withDF = false);
@@ -270,10 +253,9 @@ public:
 protected:
     BinaryFile* pBF;                    // Pointer to the BinaryFile object for the program
     FrontEnd *pFE;                      // Pointer to the FrontEnd object for the project
-    ProgWatcher *m_watcher;             // used for status updates
 
     /* Persistent state */
-    std::string      m_name;            // name of the program
+    std::string      m_name, m_path;    // name of the program and its full path
     std::list<Proc*> m_procs;           // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*
     std::vector<Global*> globals;       // globals to print at code generation time

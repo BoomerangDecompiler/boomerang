@@ -178,12 +178,10 @@ public:
   virtual ADDRESS GetMainEntryPoint();
   virtual ADDRESS GetEntryPoint();
   DWord getDelta();
-#ifndef WIN32
   virtual char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
   virtual ADDRESS GetAddressByName(const char* name,
     bool bNoTypeOK = false);                    // Find addr given name  
   virtual void AddSymbol(ADDRESS uNative, const char *pName);
-#endif
 
 //
 //      --      --      --      --      --      --      --      --      --

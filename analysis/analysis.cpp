@@ -58,6 +58,8 @@ int memXinit[] = {opMemOf, -1};
 void Analysis::finalSimplify(PBB pBB)
 {
     std::list<RTL*>* pRtls = pBB->getRTLs();
+	if (pRtls == NULL)
+		return;
     std::list<RTL*>::iterator rit;
     for (rit = pRtls->begin(); rit != pRtls->end(); rit++) {
         for (int i=0; i < (*rit)->getNumStmt(); i++) {
@@ -143,6 +145,8 @@ int Analysis::copySwap2(short* h)
 void Analysis::analyseCalls(PBB pBB, UserProc *proc)
 {
     std::list<RTL*>* rtls = pBB->getRTLs();
+	if (rtls == NULL)
+		return;
     for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 
       it++) {
         if (!(*it)->isCall()) continue;

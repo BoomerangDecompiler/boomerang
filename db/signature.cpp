@@ -886,11 +886,25 @@ void Signature::setParamType(int n, Type *ty) {
     params[n]->setType(ty);
 }
 
+void Signature::setParamName(int n, const char *name)
+{
+	params[n]->setName(name);
+}
+
 int Signature::findParam(Exp *e) {
     for (int i = 0; i < getNumParams(); i++)
         if (*getParamExp(i) == *e)
             return i;
     return -1;
+}
+
+void Signature::renameParam(const char *oldName, const char *newName)
+{
+	for (int i = 0; i < getNumParams(); i++)
+		if (!strcmp(params[i]->getName(), oldName)) {
+			params[i]->setName(newName);
+			break;
+		}
 }
 
 int Signature::findParam(const char *nam) {

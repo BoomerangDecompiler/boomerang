@@ -1245,6 +1245,8 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
         bool noinc = false;
         PBB bb = *it;
         std::list<RTL*> *rtls = bb->getRTLs();
+		if (rtls == NULL)
+			break;
         ADDRESS prev, addr = 0;
         bool lastRtl = true;
         // For each RTL this BB

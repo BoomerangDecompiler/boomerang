@@ -771,6 +771,7 @@ public:
 
 protected:
     virtual bool doReplaceRef(Exp* from, Exp* to);
+	bool convertToDirect();
 
     friend class XMLProgParser;
     void appendArgument(Exp *e) { arguments.push_back(e); }

@@ -221,6 +221,9 @@ void XMLProgParser::start_prog(const char **attr)
     const char *name = getAttr(attr, "name");
     if (name)
 	stack.front()->prog->setName(name);
+	name = getAttr(attr, "path");
+	if (name)
+		stack.front()->prog->m_path = name;
     const char *iNumberedProc = getAttr(attr, "iNumberedProc");
     stack.front()->prog->m_iNumberedProc = atoi(iNumberedProc);
 }
@@ -228,6 +231,12 @@ void XMLProgParser::start_prog(const char **attr)
 void XMLProgParser::addToContext_prog(Context *c, int e)
 {
     if (phase == 1) {
+		switch(e) {
+		case e_libproc:
+		case e_userproc:
+			Boomerang::get()->alert_load(stack.front()->proc);
+			break;
+		}
 	return;
     }
     switch(e) {
@@ -235,7 +244,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 	    stack.front()->proc->setProg(c->prog);
 	    c->prog->m_procs.push_back(stack.front()->proc);
 	    c->prog->m_procLabels[stack.front()->proc->getNativeAddress()] = stack.front()->proc;
-	    break;
+		break;
 	case e_userproc:
 	    stack.front()->proc->setProg(c->prog);
 	    c->prog->m_procs.push_back(stack.front()->proc);
@@ -245,6 +254,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 	    for (std::list<Proc*>::iterator it = stack.front()->procs.begin(); it != stack.front()->procs.end(); it++) {
 		c->prog->m_procs.push_back(*it);
 		c->prog->m_procLabels[(*it)->getNativeAddress()] = *it;
+			Boomerang::get()->alert_load(*it);
 	    }
 	    break;
 	case e_cluster:
@@ -2142,7 +2152,7 @@ Prog *XMLProgParser::parse(const char *filename)
   }
   if (prog == NULL)
       return NULL;
-  FrontEnd *pFE = FrontEnd::Load(prog->getName());
+  FrontEnd *pFE = FrontEnd::Load(prog->getPath());
   prog->setFrontEnd(pFE);
   prog->setBinaryFile(pFE->getBinaryFile());
   return prog;
@@ -2241,6 +2251,7 @@ void Cluster::openStream(const char *ext)
     if (out.is_open())
 	return;
     out.open(getOutPath(ext));
+	stream_ext = ext;
     if (!strcmp(ext, "xml")) {
 	out << "<?xml version=\"1.0\"?>\n";
 	if (parent != NULL)
@@ -2258,7 +2269,7 @@ void Cluster::openStreams(const char *ext)
 void Cluster::closeStreams()
 {
     if (out.is_open()) {
-	if (parent != NULL)
+	if (parent != NULL && stream_ext == "xml")
 	    out << "</procs>\n";
 	out.close();
     }
@@ -2270,7 +2281,7 @@ void XMLProgParser::persistToXML(Prog *prog)
 {
     prog->m_rootCluster->openStreams("xml");
     std::ofstream &os = prog->m_rootCluster->getStream();
-    os << "<prog name=\"" << prog->getName() << "\" iNumberedProc=\"" << prog->m_iNumberedProc << "\">\n";
+    os << "<prog path=\"" << prog->getPath() << "\" name=\"" << prog->getName() << "\" iNumberedProc=\"" << prog->m_iNumberedProc << "\">\n";
     for (std::vector<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
 	persistToXML(os, *it1);
     persistToXML(os, prog->m_rootCluster);

@@ -23,21 +23,6 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
-    noBranchSimplify(false), noRemoveNull(false), noLocals(false),
-    noRemoveLabels(false), noDataflow(false), noDecompile(false),
-    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
-    noPromote(false), propOnlyToAll(false), debugGen(false),
-    maxMemDepth(99), debugSwitch(false),
-    noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
-    debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
-    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
-    loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false)
-{
-    outputPath = "./output/";
-}
-
 class FileLogger : public Log {
 public:
     FileLogger() : Log(), out((Boomerang::get()->getOutputPath() + "log").c_str()) { }
@@ -49,6 +34,23 @@ public:
 protected:
     std::ofstream out;
 };
+
+Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false), 
+    noBranchSimplify(false), noRemoveNull(false), noLocals(false),
+    noRemoveLabels(false), noDataflow(false), noDecompile(false), stopBeforeDecompile(false),
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
+    noPromote(false), propOnlyToAll(false), debugGen(false),
+    maxMemDepth(99), debugSwitch(false),
+    noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
+    debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
+    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
+    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
+    loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false)
+{
+	progPath = "./";
+    outputPath = "./output/";
+}
+
 
 Log &Boomerang::log() {
     return *logger;
@@ -123,6 +125,7 @@ void Boomerang::help() {
     std::cerr << "-LD: load before decompile (<program> becomes xml input file)\n";
     std::cerr << "-SD: save before decompile\n";
     std::cerr << "-k: command mode, for available commands see -h cmd\n";
+	std::cerr << "-P <path>: Path to Boomerang files, defaults to where you run Boomerang from\n";
     std::cerr << "-v: verbose\n";
     exit(1);
 }
@@ -536,7 +539,7 @@ int Boomerang::cmdLine()
 int Boomerang::commandLine(int argc, const char **argv) 
 {
     if (argc < 2) usage();
-    progPath = argv[0];
+	progPath = argv[0];
     // Chop off after the last slash
     size_t j = progPath.rfind("/");
     if (j == (size_t)-1) 
@@ -547,8 +550,8 @@ int Boomerang::commandLine(int argc, const char **argv)
         progPath = progPath.substr(0, j+1);
     }
     else {
-        std::cerr << "? No slash in argv[0]!" << std::endl;
-        return 1;
+        std::cerr << "? No slash in argv[0]! assuming ." << std::endl;
+        progPath = "./";
     }
 
     // Parse switches on command line
@@ -723,16 +726,17 @@ int Boomerang::commandLine(int argc, const char **argv)
             case 'k':
                 kmd = 1;
                 break;
+			case 'P':
+				progPath = argv[++i];
+				if (progPath[progPath.length()-1] != '\\')
+					progPath += "\\";
+				break;
             default:
                 help();
         }
     }
 
-    // Create the output directory, if needed
-    if (!createDirectory(outputPath))
-        std::cerr << "Warning! Could not create path " <<
-          outputPath << "!\n";
-    setLogger(new FileLogger());
+	setOutputDirectory(outputPath.c_str());
     
     if (kmd)
         return cmdLine();
@@ -740,7 +744,21 @@ int Boomerang::commandLine(int argc, const char **argv)
     return decompile(argv[argc-1]);    
 }
 
-Prog *Boomerang::loadAndDecode(const char *fname)
+bool Boomerang::setOutputDirectory(const char *path)
+{
+	outputPath = path;
+    // Create the output directory, if needed
+	if (!createDirectory(outputPath)) {
+        std::cerr << "Warning! Could not create path " <<
+          outputPath << "!\n";
+		return false;
+	}
+	if (logger == NULL)
+		setLogger(new FileLogger());
+	return true;
+}
+
+Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 {
     Prog *prog;
     std::cerr << "loading...\n";
@@ -758,7 +776,7 @@ Prog *Boomerang::loadAndDecode(const char *fname)
 
     if (decodeMain)
         std::cerr << "decoding...\n";
-    prog = fe->decode(decodeMain);
+    prog = fe->decode(decodeMain, pname);
 
     // Delay symbol files to now, since need Prog* prog
     // Also, decode() reads the library catalog
@@ -781,6 +799,8 @@ Prog *Boomerang::loadAndDecode(const char *fname)
         prog->decodeExtraEntrypoint(entrypoints[i]);
     }
 
+	Boomerang::get()->alert_end_decode();
+
     std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
 
     std::cerr << "analysing...\n";
@@ -791,7 +811,7 @@ Prog *Boomerang::loadAndDecode(const char *fname)
     return prog;
 }
 
-int Boomerang::decompile(const char *fname)
+int Boomerang::decompile(const char *fname, const char *pname)
 {
     Prog *prog;
     time_t start;
@@ -804,7 +824,7 @@ int Boomerang::decompile(const char *fname)
         XMLProgParser *p = new XMLProgParser();
         prog = p->parse(fname);
     } else {
-        prog = loadAndDecode(fname);
+        prog = loadAndDecode(fname, pname);
         if (prog == NULL)
             return 1;
     }
@@ -815,8 +835,11 @@ int Boomerang::decompile(const char *fname)
         p->persistToXML(prog);
     }
 
-    std::cerr << "decompiling...\n";
-    prog->decompile();
+	if (stopBeforeDecompile)
+		return 0;
+
+	std::cerr << "decompiling...\n";
+	prog->decompile();
 
     if (dotFile)
         prog->generateDotFile();
@@ -848,4 +871,18 @@ int Boomerang::decompile(const char *fname)
     std::cerr << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
 
     return 0;
+}
+
+void Boomerang::persistToXML(Prog *prog)
+{
+    LOG << "saving persistable state...\n";
+    XMLProgParser *p = new XMLProgParser();
+    p->persistToXML(prog);
+}
+
+Prog *Boomerang::loadFromXML(const char *fname)
+{
+	LOG << "loading persistable state...\n";
+	XMLProgParser *p = new XMLProgParser();
+	return p->parse(fname);
 }

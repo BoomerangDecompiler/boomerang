@@ -1625,7 +1625,12 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  * RETURNS:         True if any change
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
-    bool change = GotoStatement::searchAndReplace(search, replace);
+    bool change = false; 
+    if (pDest) {
+        pDest = pDest->searchReplaceAll(search, replace, change);
+		if (change)
+			convertToDirect();
+    }
     unsigned int i;
     for (i = 0; i < returns.size(); i++) {
         bool ch;
@@ -1886,116 +1891,130 @@ void CallStatement::getDefinitions(LocationSet &defs) {
     }
 }
 
+bool CallStatement::convertToDirect()
+{
+	if (!m_isComputed)
+		return false;
+	bool convertIndirect = false;
+    Exp *e = pDest;
+    if (pDest->isSubscript())
+        e = ((RefExp*)e)->getSubExp1();
+    if (e->getOper() == opArraySubscript && 
+            ((Binary*)e)->getSubExp2()->isIntConst() &&
+            ((Const*)(((Binary*)e)->getSubExp2()))->getInt() == 0)
+        e = ((Binary*)e)->getSubExp1();
+    // Can actually have name{0}[0]{0} !!
+    if (e->isSubscript())
+        e = ((RefExp*)e)->getSubExp1();
+    if (e->getOper() != opGlobal) {
+		return false;
+    }
+    char *nam = ((Const*)e->getSubExp1())->getStr();
+    Proc *p = proc->getProg()->findProc(nam);
+    if (p == NULL)
+        p = proc->getProg()->getLibraryProc(nam);
+    if (VERBOSE)
+        LOG << "this is a global '" << nam << "'\n";
+    if (p) {
+		if (VERBOSE) {
+            LOG << "this is a proc " << p->getName() << "\n";
+			std::ostringstream st;
+			print(st);
+			LOG << st.str().c_str();			
+		}
+        // we need to:
+        // 1) replace the current return set with the return set
+        //    of the new procDest
+        // 2) call fixCallRefs on the enclosing procedure
+        // 3) fix the arguments (this will only affect the implicit 
+        //    arguments, the regular arguments should be empty at
+        //    this point)
+        // 3a replace current arguments with those of the new proc
+        // 4) change this to a non-indirect call
+        procDest = p;
+        Signature *sig = p->getSignature();
+        // 1
+        //LOG << "1\n";
+        returns.resize(sig->getNumReturns(), NULL);
+        int i;
+        for (i = 0; i < sig->getNumReturns(); i++)
+            returns[i] = sig->getReturnExp(i)->clone();
+        // 2
+        //LOG << "2\n";
+        proc->fixCallRefs();
+        // 3
+        //LOG << "3\n";
+        std::vector<Exp*> &params = proc->getProg()
+            ->getDefaultParams();
+        std::vector<Exp*> oldargs = implicitArguments;
+        std::vector<Exp*> newimpargs;
+        newimpargs.resize(sig->getNumImplicitParams(), NULL);
+        for (i = 0; i < sig->getNumImplicitParams(); i++) {
+            bool gotsub = false;
+            for (unsigned j = 0; j < params.size(); j++)
+                if (*params[j] == *sig->getImplicitParamExp(i)) {
+                    newimpargs[i] = oldargs[j];
+                    gotsub = true;
+                    break;
+                }
+            if (!gotsub) {
+                newimpargs[i] =
+                    sig->getImplicitParamExp(i)->clone();
+                if (newimpargs[i]->getOper() == opMemOf) {
+                    newimpargs[i]->refSubExp1() = 
+                        substituteParams(newimpargs[i]->
+                        getSubExp1());
+                }
+            }
+        }
+        // 3a Do the same with the regular arguments
+        assert(arguments.size() == 0);
+        std::vector<Exp*> newargs;
+        newargs.resize(sig->getNumParams(), NULL);
+        for (i = 0; i < sig->getNumParams(); i++) {
+            bool gotsub = false;
+            for (unsigned j = 0; j < params.size(); j++)
+                if (*params[j] == *sig->getParamExp(i)) {
+                    newargs[i] = oldargs[j];
+                    // Got something to substitute
+                    gotsub = true;
+                    break;
+                }
+            if (!gotsub) {
+                Exp* parami = sig->getParamExp(i);
+                newargs[i] = parami->clone();
+                if (newargs[i]->getOper() == opMemOf) {
+                    newargs[i]->refSubExp1() = 
+                        substituteParams(newargs[i]->getSubExp1());
+                }
+            }
+        }
+        // change em
+        arguments = newargs;
+        assert((int)arguments.size() == sig->getNumParams());
+        implicitArguments = newimpargs;
+        assert((int)implicitArguments.size() ==
+            sig->getNumImplicitParams());
+        // 4
+        //LOG << "4\n";
+        m_isComputed = false;
+        proc->undoComputedBB(this);
+        proc->addCallee(procDest);
+        procDest->printDetailsXML();
+        convertIndirect = true;
+    }
+	return convertIndirect;
+}
+
 bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
     bool convertIndirect = false;
     if (procDest == NULL && pDest) {
         pDest = pDest->searchReplaceAll(from, to, change);
         if (change) {
-            if (VERBOSE)
+			if (VERBOSE)
                 LOG << "propagated into call dest " << pDest << "\n";
-            Exp *e = pDest;
-            if (pDest->isSubscript())
-                e = ((RefExp*)e)->getSubExp1();
-            if (e->getOper() == opArraySubscript && 
-                  ((Binary*)e)->getSubExp2()->isIntConst() &&
-                  ((Const*)(((Binary*)e)->getSubExp2()))->getInt() == 0)
-                e = ((Binary*)e)->getSubExp1();
-            // Can actually have name{0}[0]{0} !!
-            if (e->isSubscript())
-                e = ((RefExp*)e)->getSubExp1();
-            if (e->getOper() == opGlobal) {
-                char *nam = ((Const*)e->getSubExp1())->getStr();
-                Proc *p = proc->getProg()->findProc(nam);
-                if (p == NULL)
-                    p = proc->getProg()->getLibraryProc(nam);
-                if (VERBOSE)
-                    LOG << "this is a global '" << nam << "'\n";
-                if (p) {
-                    if (VERBOSE)
-                        LOG << "this is a proc " << p->getName() << "\n";
-                    // we need to:
-                    // 1) replace the current return set with the return set
-                    //    of the new procDest
-                    // 2) call fixCallRefs on the enclosing procedure
-                    // 3) fix the arguments (this will only affect the implicit 
-                    //    arguments, the regular arguments should be empty at
-                    //    this point)
-                    // 3a replace current arguments with those of the new proc
-                    // 4) change this to a non-indirect call
-                    procDest = p;
-                    Signature *sig = p->getSignature();
-                    // 1
-                    //LOG << "1\n";
-                    returns.resize(sig->getNumReturns(), NULL);
-                    int i;
-                    for (i = 0; i < sig->getNumReturns(); i++)
-                        returns[i] = sig->getReturnExp(i)->clone();
-                    // 2
-                    //LOG << "2\n";
-                    proc->fixCallRefs();
-                    // 3
-                    //LOG << "3\n";
-                    std::vector<Exp*> &params = proc->getProg()
-                      ->getDefaultParams();
-                    std::vector<Exp*> oldargs = implicitArguments;
-                    std::vector<Exp*> newimpargs;
-                    newimpargs.resize(sig->getNumImplicitParams(), NULL);
-                    for (i = 0; i < sig->getNumImplicitParams(); i++) {
-                        bool gotsub = false;
-                        for (unsigned j = 0; j < params.size(); j++)
-                            if (*params[j] == *sig->getImplicitParamExp(i)) {
-                                newimpargs[i] = oldargs[j];
-                                gotsub = true;
-                                break;
-                            }
-                        if (!gotsub) {
-                            newimpargs[i] =
-                              sig->getImplicitParamExp(i)->clone();
-                            if (newimpargs[i]->getOper() == opMemOf) {
-                                newimpargs[i]->refSubExp1() = 
-                                    substituteParams(newimpargs[i]->
-                                    getSubExp1());
-                            }
-                        }
-                    }
-                    // 3a Do the same with the regular arguments
-                    assert(arguments.size() == 0);
-                    std::vector<Exp*> newargs;
-                    newargs.resize(sig->getNumParams(), NULL);
-                    for (i = 0; i < sig->getNumParams(); i++) {
-                        bool gotsub = false;
-                        for (unsigned j = 0; j < params.size(); j++)
-                            if (*params[j] == *sig->getParamExp(i)) {
-                                newargs[i] = oldargs[j];
-                                // Got something to substitute
-                                gotsub = true;
-                                break;
-                            }
-                        if (!gotsub) {
-                            Exp* parami = sig->getParamExp(i);
-                            newargs[i] = parami->clone();
-                            if (newargs[i]->getOper() == opMemOf) {
-                                newargs[i]->refSubExp1() = 
-                                    substituteParams(newargs[i]->getSubExp1());
-                            }
-                        }
-                    }
-                    // change em
-                    arguments = newargs;
-                    assert((int)arguments.size() == sig->getNumParams());
-                    implicitArguments = newimpargs;
-                    assert((int)implicitArguments.size() ==
-                      sig->getNumImplicitParams());
-                    // 4
-                    //LOG << "4\n";
-                    m_isComputed = false;
-                    proc->undoComputedBB(this);
-                    proc->addCallee(procDest);
-                    procDest->printDetailsXML();
-                    convertIndirect = true;
-                }
-            }
+			convertIndirect = convertToDirect();
         }
     }
     unsigned int i;
@@ -2245,6 +2264,15 @@ void CallStatement::processConstants(Prog *prog) {
         Exp *e = arguments[i];
     
         arguments[i] = processConstant(e, t, prog);
+		if (e->getOper() == opIntConst && arguments[i]->getOper() == opStrConst) {
+			for (std::vector<Exp*>::iterator it = implicitArguments.begin(); it != implicitArguments.end(); it++)
+				if ((*it)->getOper() == opSubscript && (*it)->getSubExp1()->getOper() == opMemOf &&
+					(*it)->getSubExp1()->getSubExp1()->getOper() == opIntConst &&
+					((Const*)(*it)->getSubExp1()->getSubExp1())->getInt() == ((Const*)e)->getInt()) {
+					implicitArguments.erase(it);
+					break;
+				}
+			}
     }
 
     // hack
@@ -2872,7 +2900,7 @@ void Assign::simplify() {
         }
     }
 
-    if (lhs->getType() && lhs->getType()->isArray()) {
+    if (lhs->getType() && lhs->getType()->isArray() && lhs->getType()->getSize() > 0) {
         lhs = new Binary(opArraySubscript, lhs, new Const(0));
     }
 }

@@ -639,7 +639,7 @@ const char *FuncType::getCtype() const
        s += signature->getParamType(i)->getCtype(); 
     }
     s += ")";
-    return s.c_str();
+    return strdup(s.c_str());
 }
 
 // As above, but split into the return and parameter parts
@@ -660,7 +660,7 @@ void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
        s += signature->getParamType(i)->getCtype(); 
     }
     s += ")";
-    param = s.c_str();
+    param = strdup(s.c_str());
 }
 
 const char *IntegerType::getCtype() const

@@ -368,8 +368,7 @@ void printBB(PBB bb) {
  * RETURNS:         the lowest real address associated with this BB
  *============================================================================*/
 ADDRESS BasicBlock::getLowAddr() {
-    assert(m_pRtls != NULL);
-    if (m_pRtls->size() == 0) return 0;
+    if (m_pRtls == NULL || m_pRtls->size() == 0) return 0;
     ADDRESS a = m_pRtls->front()->getAddress();
     if ((a == 0) && (m_pRtls->size() > 1)) {
         std::list<RTL*>::iterator it = m_pRtls->begin();
@@ -792,11 +791,12 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
 }
 
 void BasicBlock::simplify() {
+	if (m_pRtls)
     for (std::list<RTL*>::iterator it = m_pRtls->begin();
          it != m_pRtls->end(); it++)
         (*it)->simplify();
     if (m_nodeType == TWOWAY) {
-        if (m_pRtls->size() == 0) {
+        if (m_pRtls == NULL || m_pRtls->size() == 0) {
             m_nodeType = FALL;
         } else {
             RTL *last = m_pRtls->back();
@@ -810,48 +810,63 @@ void BasicBlock::simplify() {
         }
         if (m_nodeType == FALL) {
             // set out edges to be the second one
-            LOG << "turning TWOWAY into FALL: " 
-                << m_OutEdges[0]->getLowAddr() << " " 
-                << m_OutEdges[1]->getLowAddr() << "\n";
+			if (VERBOSE) {
+				LOG << "turning TWOWAY into FALL: " 
+					<< m_OutEdges[0]->getLowAddr() << " " 
+					<< m_OutEdges[1]->getLowAddr() << "\n";
+			}
             PBB redundant = m_OutEdges[0];
             m_OutEdges[0] = m_OutEdges[1];
             m_OutEdges.resize(1);
             m_iNumOutEdges = 1;
-            LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+			if (VERBOSE)
+				LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<PBB> rinedges = redundant->m_InEdges;
             redundant->m_InEdges.clear();
             for (unsigned i = 0; i < rinedges.size(); i++) {
                 LOG << rinedges[i]->getLowAddr() << " ";
                 if (rinedges[i] != this)
                     redundant->m_InEdges.push_back(rinedges[i]);
-                else
-                    LOG << "(ignored) ";
+				else {
+					if (VERBOSE)
+						LOG << "(ignored) ";
+				}
             }
-            LOG << "\n";
+			if (VERBOSE)
+				LOG << "\n";
             redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+			if (VERBOSE)
+				LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
         if (m_nodeType == ONEWAY) {
             // set out edges to be the first one
-            LOG << "turning TWOWAY into ONEWAY: " 
-                << m_OutEdges[0]->getLowAddr() << " " 
-                << m_OutEdges[1]->getLowAddr() << "\n";
+			if (VERBOSE) {
+				LOG << "turning TWOWAY into ONEWAY: " 
+					<< m_OutEdges[0]->getLowAddr() << " " 
+					<< m_OutEdges[1]->getLowAddr() << "\n";
+			}
             PBB redundant = m_OutEdges[1];
             m_OutEdges.resize(1);
             m_iNumOutEdges = 1;
-            LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+			if (VERBOSE)
+				LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
             std::vector<PBB> rinedges = redundant->m_InEdges;
             redundant->m_InEdges.clear();
             for (unsigned i = 0; i < rinedges.size(); i++) {
-                LOG << rinedges[i]->getLowAddr() << " ";
+				if (VERBOSE)
+					LOG << rinedges[i]->getLowAddr() << " ";
                 if (rinedges[i] != this)
                     redundant->m_InEdges.push_back(rinedges[i]);
-                else
-                    LOG << "(ignored) ";
+				else {
+					if (VERBOSE)
+						LOG << "(ignored) ";
+				}
             }
-            LOG << "\n";
+			if (VERBOSE)
+				LOG << "\n";
             redundant->m_iNumInEdges = redundant->m_InEdges.size();
-            LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+			if (VERBOSE)
+				LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
         }
     }
 }

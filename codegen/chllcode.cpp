@@ -501,9 +501,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
         case opAFP:
         case opAGP:
             // not implemented
-            std::cerr << "not implemented " << operStrings[exp->getOper()] << 
-                std::endl;
-            assert(false);
+            LOG << "not implemented for codegen " << operStrings[exp->getOper()] << "\n";
+			//assert(false);
             break;
         case opFlagCall:
             {
@@ -627,10 +626,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             break;
         case opSubscript:
             appendExp(str, u->getSubExp1(), curPrec);
-            std::cerr << "subscript in code generation of proc " <<
+			LOG << "ERROR: subscript in code generation of proc " <<
               m_proc->getName() << " exp (without subscript): " << str.str().c_str()
                 << "\n";
-            assert(false);
+            //assert(false);
             break;
         case opMemberAccess:
             {
@@ -670,9 +669,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
                 str << operStrings[op]+2;
                 break;
             }
-            std::cerr << "not implemented " << operStrings[exp->getOper()] << 
-                std::endl;
-            assert(false);
+			LOG << "ERROR: not implemented for codegen " << operStrings[exp->getOper()] << "\n";
+            //assert(false);
     }
 
 }

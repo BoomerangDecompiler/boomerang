@@ -432,7 +432,10 @@ if (0) {
             lname = &itf->second;
     }
     // Retrieve the dictionary entry for the named instruction
-    assert( idict.find(*lname) != idict.end() ); /* lname is in dictionary */
+	if ( idict.find(*lname) == idict.end() ) { /* lname is not in dictionary */
+		std::cerr << "ERROR: unknown instruction " << lname << ", ignoring.\n";
+		return NULL;
+	}
     TableEntry& entry = idict[*lname];
 
     return instantiateRTL( entry.rtl, natPC, entry.params, actuals );

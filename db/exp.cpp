@@ -702,6 +702,9 @@ void Const::print(std::ostream& os, bool withUses) {
         case opStrConst:
             os << "\"" << u.p << "\"";
             break;
+		case opLongConst:
+			os << std::dec << u.ll;
+			break;
         default:
             LOG << "Const::print invalid operator " << operStrings[op] <<
               "\n";
@@ -2749,8 +2752,9 @@ Exp* RefExp::polySimplify(bool& bMod) {
         if (used.size() == 0) {
             allProven = false;
         } else {
-            LOG << "attempting to simplify ref to " << phi << " with base "
-                << base << "\n";
+			if (VERBOSE)
+				LOG << "attempting to simplify ref to " << phi << " with base "
+					<< base << "\n";
         }
         // Experiment MVE: compare 1 to 2, 1 to 3 ... 1 to n instead of
         // base to 1, base to 2, ... base to n
@@ -2774,7 +2778,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
             bMod = true;
             //res = base->clone();
             res = first;
-            LOG << "replacing ref to phi " << def << " with " << res << "\n";
+			if (VERBOSE)
+				LOG << "replacing ref to phi " << def << " with " << res << "\n";
             return res;
         }
     }
@@ -3566,9 +3571,9 @@ Exp* Location::polySimplify(bool& bMod) {
     Exp *res = Unary::polySimplify(bMod);
 
 
-    if (res->getOper() == opMemOf && 
-        res->getSubExp1()->getOper() == opAddrOf) {
-        LOG << "polySimplify " << res << "\n";
+    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opAddrOf) {
+		if (VERBOSE)
+			LOG << "polySimplify " << res << "\n";
         res = res->getSubExp1()->getSubExp1();
         bMod = true;
         return res;
@@ -3614,7 +3619,7 @@ Type *Binary::getType() {
                     LOG << "subExp1 not of array/ptr type: " << this << "\n";
                     if (sty)
                         LOG << "it has a type: " << sty->getCtype() << "\n";
-                    assert(false);
+                    return NULL;
                 }
                 if (sty->resolvesToArray())
                     return sty->asArray()->getBaseType();
@@ -3627,7 +3632,7 @@ Type *Binary::getType() {
                 Type *sty = subExp1->getType();
                 if (!sty->resolvesToCompound()) {
                     LOG << "subExp1 not of compound type: " << this << "\n";
-                    assert(false);
+                    return NULL;
                 }
                 assert(subExp2->getOper() == opStrConst);
                 char* str = ((Const*)subExp2)->getStr();
