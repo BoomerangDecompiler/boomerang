@@ -109,6 +109,7 @@ virtual void	AddProcStart(Signature *signature) = 0;
 virtual void	AddProcEnd() = 0;
 virtual void	AddLocal(const char *name, Type *type, bool last = false) = 0;
 virtual void	AddGlobal(const char *name, Type *type, Exp *init = NULL) = 0;
+virtual void	AddPrototype(Signature* signature) = 0;
 
 	// comments
 virtual void AddLineComment(char* cmt) = 0;

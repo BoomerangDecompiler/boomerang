@@ -190,23 +190,43 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 			delete code;
 		}
 	}
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+
+	// First declare prototypes for all but the first proc
+	std::list<Proc*>::iterator it = m_procs.begin();
+	bool first = true, proto = false;
+	for (it = m_procs.begin(); it != m_procs.end(); it++) {
+		if ((*it)->isLib()) continue;
+		if (first) {
+			first = false;
+			continue;
+		}
+		proto = true;
+		UserProc* up = (UserProc*)*it;
+		HLLCode *code = Boomerang::get()->getHLLCode(up);
+		code->AddPrototype(up->getSignature());		// May be the wrong signature if up has ellipsis
+		if (cluster == NULL || cluster == m_rootCluster)
+			code->print(os);
+	}
+	if (proto && cluster == NULL || cluster == m_rootCluster)
+		os << "\n";				// Separate prototype(s) from first proc
+		
+	for (it = m_procs.begin(); it != m_procs.end(); it++) {
 		Proc *pProc = *it;
 		if (pProc->isLib()) continue;
-		UserProc *p = (UserProc*)pProc;
-		if (!p->isDecoded()) continue;
-		if (proc != NULL && p != proc)
+		UserProc *up = (UserProc*)pProc;
+		if (!up->isDecoded()) continue;
+		if (proc != NULL && up != proc)
 			continue;
-		p->getCFG()->compressCfg();
-		HLLCode *code = Boomerang::get()->getHLLCode(p);
-		p->generateCode(code);
-		if (p->getCluster() == m_rootCluster) {
+		up->getCFG()->compressCfg();
+		HLLCode *code = Boomerang::get()->getHLLCode(up);
+		up->generateCode(code);
+		if (up->getCluster() == m_rootCluster) {
 			if (cluster == NULL || cluster == m_rootCluster)
 				code->print(os);
 		} else {
-			if (cluster == NULL || cluster == p->getCluster()) {
-				p->getCluster()->openStream("c");
-				code->print(p->getCluster()->getStream());
+			if (cluster == NULL || cluster == up->getCluster()) {
+				up->getCluster()->openStream("c");
+				code->print(up->getCluster()->getStream());
 			}
 		}
 		delete code;
