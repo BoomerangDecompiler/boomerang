@@ -1858,7 +1858,9 @@ void UserProc::propagateStatements(int memDepth) {
     StatementSet empty;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         if (s->isPhi()) continue;
-        if (s->isReturn()) continue;
+        // Note: commenting out the following causes main not to return int
+        // sometimes...
+        // if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty);
     }
 }
@@ -1947,7 +1949,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 for (int i = 0; i < call->getNumReturns(); i++)
                     returns.push_back(call->getReturnExp(i));
                 for (int i = 0; i < (int)returns.size(); i++)
-                    if (depth < 0 || returns[i]->getMemDepth() <= depth)
+                    //if (depth < 0 || returns[i]->getMemDepth() <= depth)
+                    if (returns[i]->getMemDepth() <= depth)
                         call->removeReturn(returns[i]);
                 s = stmts.getNext(ll);
                 continue;
@@ -1958,7 +1961,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 s = stmts.getNext(ll);
                 continue;
             }
-            if (s->getLeft() && depth > 0 &&
+            if (s->getLeft() && depth >= 0 &&
                   s->getLeft()->getMemDepth() > depth) {
                 s = stmts.getNext(ll);
                 continue;
@@ -2127,7 +2130,7 @@ bool UserProc::prove(Exp *query)
                     break;
                 }
             }
-        if (!gotdef) {
+        if (!gotdef && VERBOSE) {
             std::cerr << "not in return set: " << query->getSubExp1()
                       << std::endl;
             return false;
