@@ -442,6 +442,9 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 strcat(str, s);
             break;
         }
+        case opFflags:
+            strcat(str, "/* Fflags() */ ");
+            break;
         case opPow:
             strcat(str, "pow(");
             appendExp(str, b->getSubExp1());
