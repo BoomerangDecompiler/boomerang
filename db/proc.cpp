@@ -24,6 +24,7 @@
  *
  * 14 Mar 02 - Mike: Fixed a problem caused with 16-bit pushes in richards2
  * 20 Apr 02 - Mike: Mods for boomerang
+ * 31 Jan 03 - Mike: Tabs and indenting
  */
 
 /*==============================================================================
@@ -108,15 +109,15 @@ ADDRESS Proc::getNativeAddress()
 
 void Proc::setNativeAddress(ADDRESS a)
 {
-	address = a;
+    address = a;
 }
 
 void Proc::setBytesPopped(int n)
 {
-	if (bytesPopped == 0) {
-		bytesPopped = n;
-	}
-	assert(bytesPopped == n);
+    if (bytesPopped == 0) {
+        bytesPopped = n;
+    }
+    assert(bytesPopped == n);
 }
 
 /*==============================================================================
@@ -127,11 +128,11 @@ void Proc::setBytesPopped(int n)
  *============================================================================*/
 bool UserProc::containsAddr(ADDRESS uAddr)
 {
-	BB_IT it;
-	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
-		if (bb->getRTLs() && bb->getLowAddr() <= uAddr && bb->getHiAddr() >= uAddr)
-			return true;	
-	return false;
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it))
+        if (bb->getRTLs() && bb->getLowAddr() <= uAddr && bb->getHiAddr() >= uAddr)
+            return true;    
+    return false;
 }
 
 /*==============================================================================
@@ -427,17 +428,17 @@ std::list<Type>* Proc::getParamTypeList(const std::list<Exp*>& actuals)
 
 Prog *Proc::getProg()
 {
-	return prog;
+    return prog;
 }
 
 Proc *Proc::getFirstCaller()
 { 
-	if (m_firstCaller == NULL && m_firstCallerAddr != NO_ADDRESS) {
-		m_firstCaller = prog->findProc(m_firstCallerAddr);
-		m_firstCallerAddr = NO_ADDRESS;
-	}
+    if (m_firstCaller == NULL && m_firstCallerAddr != NO_ADDRESS) {
+        m_firstCaller = prog->findProc(m_firstCallerAddr);
+        m_firstCallerAddr = NO_ADDRESS;
+    }
 
-	return m_firstCaller; 
+    return m_firstCaller; 
 }
 
 Signature *Proc::getSignature()
@@ -449,57 +450,58 @@ Signature *Proc::getSignature()
 // deserialize a procedure
 Proc *Proc::deserialize(Prog *prog, std::istream &inf)
 {
-	/*
-	 * These values are ordered in the save file because I think they are concrete 
-	 * and necessary to create the specific subclass of Proc.  This is the only
-	 * time that values should be ordered (instead of named) in the save file (I hope).	 
-	 * - trent 17/6/2002
-	 */
-	char type;
-	loadValue(inf, type, false);
-	assert(type == 0 || type == 1);
+    /*
+     * These values are ordered in the save file because I think they are
+     * concrete and necessary to create the specific subclass of Proc.
+     * This is the only time that values should be ordered (instead of named)
+     * in the save file (I hope).  
+     * - trent 17/6/2002
+     */
+    char type;
+    loadValue(inf, type, false);
+    assert(type == 0 || type == 1);
 
-	std::string nam;	
-	loadString(inf, nam);
-	ADDRESS uAddr;
-	loadValue(inf, uAddr, false);
+    std::string nam;    
+    loadString(inf, nam);
+    ADDRESS uAddr;
+    loadValue(inf, uAddr, false);
 
-	Proc *p = NULL;
-	if (type == 0)
-		p = new LibProc(prog, nam, uAddr);
-	else
-		p = new UserProc(prog, nam, uAddr);
-	assert(p);
+    Proc *p = NULL;
+    if (type == 0)
+        p = new LibProc(prog, nam, uAddr);
+    else
+        p = new UserProc(prog, nam, uAddr);
+    assert(p);
 
-	int fid;
-	while ((fid = loadFID(inf)) != -1 && fid != FID_PROC_END)
-		p->deserialize_fid(inf, fid);
-	assert(loadLen(inf) == 0);
+    int fid;
+    while ((fid = loadFID(inf)) != -1 && fid != FID_PROC_END)
+        p->deserialize_fid(inf, fid);
+    assert(loadLen(inf) == 0);
 
-	return p;
+    return p;
 }
 
 bool Proc::deserialize_fid(std::istream &inf, int fid)
 {
-	switch(fid) {
-		case FID_PROC_SIGNATURE:
-			{
-				int len = loadLen(inf);
-				std::streampos pos = inf.tellg();
-				signature = Signature::deserialize(inf);
-				assert(signature);
-				assert((int)(inf.tellg() - pos) == len);
-			}
-			break;
-		case FID_PROC_FIRSTCALLER:
-			loadValue(inf, m_firstCallerAddr);
-			break;
-		default:
-			skipFID(inf, fid);
-			return false;
-	}
+    switch(fid) {
+        case FID_PROC_SIGNATURE:
+            {
+                int len = loadLen(inf);
+                std::streampos pos = inf.tellg();
+                signature = Signature::deserialize(inf);
+                assert(signature);
+                assert((int)(inf.tellg() - pos) == len);
+            }
+            break;
+        case FID_PROC_FIRSTCALLER:
+            loadValue(inf, m_firstCallerAddr);
+            break;
+        default:
+            skipFID(inf, fid);
+            return false;
+    }
 
-	return true;
+    return true;
 }
 
 /**********************
@@ -514,7 +516,7 @@ bool Proc::deserialize_fid(std::istream &inf, int fid)
  * RETURNS:         <nothing>
  *============================================================================*/
 LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : 
-	Proc(prog, uNative, NULL)
+    Proc(prog, uNative, NULL)
 {
     signature = prog->pFE->getLibSignature(name.c_str());
 }
@@ -526,49 +528,49 @@ LibProc::~LibProc()
 // serialize this procedure
 bool LibProc::serialize(std::ostream &ouf, int &len)
 {
-	std::streampos st = ouf.tellp();
+    std::streampos st = ouf.tellp();
 
-	char type = 0;
-	saveValue(ouf, type, false);
-	saveValue(ouf, address, false);
+    char type = 0;
+    saveValue(ouf, type, false);
+    saveValue(ouf, address, false);
 
-	if (signature) {
-		saveFID(ouf, FID_PROC_SIGNATURE);
-		std::streampos pos = ouf.tellp();
-		int len = -1;
-		saveLen(ouf, -1, true);
-		std::streampos posa = ouf.tellp();
+    if (signature) {
+        saveFID(ouf, FID_PROC_SIGNATURE);
+        std::streampos pos = ouf.tellp();
+        int len = -1;
+        saveLen(ouf, -1, true);
+        std::streampos posa = ouf.tellp();
 
-		assert(signature->serialize(ouf, len));
+        assert(signature->serialize(ouf, len));
 
-		std::streampos now = ouf.tellp();
-		assert((int)(now - posa) == len);
-		ouf.seekp(pos);
-		saveLen(ouf, len, true);
-		ouf.seekp(now);
-	}
+        std::streampos now = ouf.tellp();
+        assert((int)(now - posa) == len);
+        ouf.seekp(pos);
+        saveLen(ouf, len, true);
+        ouf.seekp(now);
+    }
 
-	if (m_firstCaller) {
-		saveFID(ouf, FID_PROC_FIRSTCALLER);
-		saveValue(ouf, m_firstCaller->getNativeAddress());
-	}
+    if (m_firstCaller) {
+        saveFID(ouf, FID_PROC_FIRSTCALLER);
+        saveValue(ouf, m_firstCaller->getNativeAddress());
+    }
 
-	saveFID(ouf, FID_PROC_END);
-	saveLen(ouf, 0);
+    saveFID(ouf, FID_PROC_END);
+    saveLen(ouf, 0);
 
-	len = ouf.tellp() - st;
-	return true;
+    len = ouf.tellp() - st;
+    return true;
 }
 
 // deserialize the rest of this procedure
 bool LibProc::deserialize_fid(std::istream &inf, int fid)
 {
-	switch (fid) {
-		default:
-			return Proc::deserialize_fid(inf, fid);
-	}
+    switch (fid) {
+        default:
+            return Proc::deserialize_fid(inf, fid);
+    }
 
-	return true;
+    return true;
 }
 
 void LibProc::getInternalStatements(std::list<Statement*> &internal)
@@ -600,17 +602,17 @@ std::ostream& LibProc::put(std::ostream& os)
  * RETURNS:         <nothing>
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
-	Proc(prog, uNative, new Signature(name.c_str())), 
-	cfg(new Cfg()), decoded(false), decompiled(false),
-    	returnIsSet(false), isSymbolic(false), uniqueID(0)
+    Proc(prog, uNative, new Signature(name.c_str())), 
+    cfg(new Cfg()), decoded(false), decompiled(false),
+        returnIsSet(false), isSymbolic(false), uniqueID(0)
 {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
 
 UserProc::~UserProc()
 {
-	if (cfg)
-		delete cfg;	
+    if (cfg)
+        delete cfg; 
 }
 
 /*==============================================================================
@@ -708,7 +710,7 @@ int UserProc::getLastLocalIndex()
     if (it == locals.begin()) { // must be empty
         return -1;
     }
-    it--;			// point to last element
+    it--;           // point to last element
     return it->getSecondIdx();
 }
 
@@ -743,7 +745,7 @@ void UserProc::setDecoded()
  *============================================================================*/
 void UserProc::unDecode()
 {
-	cfg->clear();
+    cfg->clear();
     decoded = false;
 }
 
@@ -784,14 +786,15 @@ void UserProc::setEntryBB()
  *============================================================================*/
 std::set<Proc*>& UserProc::getCallees()
 {
-	if (calleeAddrSet.begin() != calleeAddrSet.end()) {
-		for (std::set<ADDRESS>::iterator it = calleeAddrSet.begin(); it != calleeAddrSet.end(); it++) {
-			Proc *p = prog->findProc(*it);
-			if (p)
-				calleeSet.insert(p);
-		}
-		calleeAddrSet.clear();
-	}
+    if (calleeAddrSet.begin() != calleeAddrSet.end()) {
+        for (std::set<ADDRESS>::iterator it = calleeAddrSet.begin();
+          it != calleeAddrSet.end(); it++) {
+            Proc *p = prog->findProc(*it);
+            if (p)
+                calleeSet.insert(p);
+        }
+        calleeAddrSet.clear();
+    }
     return calleeSet;
 }
 
@@ -809,174 +812,176 @@ void UserProc::setCallee(Proc* callee)
 // serialize this procedure
 bool UserProc::serialize(std::ostream &ouf, int &len)
 {
-	std::streampos st = ouf.tellp();
+    std::streampos st = ouf.tellp();
 
-	char type = 1;
-	saveValue(ouf, type, false);
-	saveValue(ouf, address, false);
+    char type = 1;
+    saveValue(ouf, type, false);
+    saveValue(ouf, address, false);
 
-	if (signature) {
-		saveFID(ouf, FID_PROC_SIGNATURE);
-		std::streampos pos = ouf.tellp();
-		int len = -1;
-		saveLen(ouf, -1, true);
-		std::streampos posa = ouf.tellp();
+    if (signature) {
+        saveFID(ouf, FID_PROC_SIGNATURE);
+        std::streampos pos = ouf.tellp();
+        int len = -1;
+        saveLen(ouf, -1, true);
+        std::streampos posa = ouf.tellp();
 
-		assert(signature->serialize(ouf, len));
+        assert(signature->serialize(ouf, len));
 
-		std::streampos now = ouf.tellp();
-		assert((int)(now - posa) == len);
-		ouf.seekp(pos);
-		saveLen(ouf, len, true);
-		ouf.seekp(now);
-	}
+        std::streampos now = ouf.tellp();
+        assert((int)(now - posa) == len);
+        ouf.seekp(pos);
+        saveLen(ouf, len, true);
+        ouf.seekp(now);
+    }
 
-	saveFID(ouf, FID_PROC_DECODED);
-	saveValue(ouf, decoded);
+    saveFID(ouf, FID_PROC_DECODED);
+    saveValue(ouf, decoded);
 
-	if (cfg) {
-		saveFID(ouf, FID_CFG);
-		std::streampos pos = ouf.tellp();
-		int len = -1;
-		saveLen(ouf, -1, true);
-		std::streampos posa = ouf.tellp();
+    if (cfg) {
+        saveFID(ouf, FID_CFG);
+        std::streampos pos = ouf.tellp();
+        int len = -1;
+        saveLen(ouf, -1, true);
+        std::streampos posa = ouf.tellp();
 
-		assert(cfg->serialize(ouf, len));
+        assert(cfg->serialize(ouf, len));
 
-		std::streampos now = ouf.tellp();
-		assert((int)(now - posa) == len);
-		ouf.seekp(pos);
-		saveLen(ouf, len, true);
-		ouf.seekp(now);
-	}
+        std::streampos now = ouf.tellp();
+        assert((int)(now - posa) == len);
+        ouf.seekp(pos);
+        saveLen(ouf, len, true);
+        ouf.seekp(now);
+    }
 
-	if (m_firstCaller) {
-		saveFID(ouf, FID_PROC_FIRSTCALLER);
-		saveValue(ouf, m_firstCaller->getNativeAddress());
-	}
+    if (m_firstCaller) {
+        saveFID(ouf, FID_PROC_FIRSTCALLER);
+        saveValue(ouf, m_firstCaller->getNativeAddress());
+    }
 
-	for (std::set<Proc *>::iterator it = calleeSet.begin(); it != calleeSet.end(); it++) {
-		saveFID(ouf, FID_PROC_CALLEE);
-		saveValue(ouf, (*it)->getNativeAddress());
-	}
+    for (std::set<Proc *>::iterator it = calleeSet.begin();
+      it != calleeSet.end(); it++) {
+        saveFID(ouf, FID_PROC_CALLEE);
+        saveValue(ouf, (*it)->getNativeAddress());
+    }
 
-	for (std::map<std::string, TypedExp *>::iterator its = symbols.begin(); its != symbols.end(); its++) {
-		saveFID(ouf, FID_PROC_SYMBOL);
-		std::streampos pos = ouf.tellp();
-		int len = -1;
-		saveLen(ouf, -1, true);
-		std::streampos posa = ouf.tellp();
+    for (std::map<std::string, TypedExp *>::iterator its = symbols.begin();
+      its != symbols.end(); its++) {
+        saveFID(ouf, FID_PROC_SYMBOL);
+        std::streampos pos = ouf.tellp();
+        int len = -1;
+        saveLen(ouf, -1, true);
+        std::streampos posa = ouf.tellp();
 
-		saveString(ouf, (*its).first);
-		assert((*its).second->serialize(ouf, len));
+        saveString(ouf, (*its).first);
+        assert((*its).second->serialize(ouf, len));
 
-		std::streampos now = ouf.tellp();
-		len = now - posa;
-		ouf.seekp(pos);
-		saveLen(ouf, len, true);
-		ouf.seekp(now);
-	}
+        std::streampos now = ouf.tellp();
+        len = now - posa;
+        ouf.seekp(pos);
+        saveLen(ouf, len, true);
+        ouf.seekp(now);
+    }
 
-	saveFID(ouf, FID_PROC_END);
-	saveLen(ouf, 0);
+    saveFID(ouf, FID_PROC_END);
+    saveLen(ouf, 0);
 
-	len = ouf.tellp() - st;
-	return true;
+    len = ouf.tellp() - st;
+    return true;
 }
 
 bool UserProc::deserialize_fid(std::istream &inf, int fid)
 {
-	ADDRESS a;
+    ADDRESS a;
 
-	switch (fid) {
-		case FID_PROC_DECODED:
-			loadValue(inf, decoded);
-			break;
-		case FID_CFG:
-			{
-				int len = loadLen(inf);
-				std::streampos pos = inf.tellg();
-				assert(cfg);
-				assert(cfg->deserialize(inf));
-				assert((int)(inf.tellg() - pos) == len);
-			}
-			break;
-		case FID_PROC_SYMBOL:
-			{
-				int len = loadLen(inf);
-				std::streampos pos = inf.tellg();
-				std::string s;
-				loadString(inf, s);
-				Exp *e = Exp::deserialize(inf);
-				assert(e->getOper() == opTypedExp);
-				symbols[s] = (TypedExp*)e;
-				assert((int)(inf.tellg() - pos) == len);
-			}
-			break;
-		case FID_PROC_CALLEE:
-			loadValue(inf, a);
-			calleeAddrSet.insert(a);
-			break;
-		default:
-			return Proc::deserialize_fid(inf, fid);
-	}
+    switch (fid) {
+        case FID_PROC_DECODED:
+            loadValue(inf, decoded);
+            break;
+        case FID_CFG:
+            {
+                int len = loadLen(inf);
+                std::streampos pos = inf.tellg();
+                assert(cfg);
+                assert(cfg->deserialize(inf));
+                assert((int)(inf.tellg() - pos) == len);
+            }
+            break;
+        case FID_PROC_SYMBOL:
+            {
+                int len = loadLen(inf);
+                std::streampos pos = inf.tellg();
+                std::string s;
+                loadString(inf, s);
+                Exp *e = Exp::deserialize(inf);
+                assert(e->getOper() == opTypedExp);
+                symbols[s] = (TypedExp*)e;
+                assert((int)(inf.tellg() - pos) == len);
+            }
+            break;
+        case FID_PROC_CALLEE:
+            loadValue(inf, a);
+            calleeAddrSet.insert(a);
+            break;
+        default:
+            return Proc::deserialize_fid(inf, fid);
+    }
 
-	return true;
+    return true;
 }
 
 // this can probably go
 bool UserProc::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
 {
-	Exp *e1 = e;
-	if (e->getOper() == opTypedExp)
-		e1 = e->getSubExp1();
-	for (std::map<std::string, TypedExp *>::iterator it = symbols.begin(); it != symbols.end(); it++) {
-		assert((*it).second);
-		if (*(*it).second->getSubExp1() == *e1)
-		{
-			sym = (*it).first;
-			sym_exp = (*it).second;
-			return true;
-		}
-	}
-	return prog->findSymbolFor(e, sym, sym_exp);
+    Exp *e1 = e;
+    if (e->getOper() == opTypedExp)
+        e1 = e->getSubExp1();
+    for (std::map<std::string, TypedExp *>::iterator it = symbols.begin();
+      it != symbols.end(); it++) {
+        assert((*it).second);
+        if (*(*it).second->getSubExp1() == *e1) {
+            sym = (*it).first;
+            sym_exp = (*it).second;
+            return true;
+        }
+    }
+    return prog->findSymbolFor(e, sym, sym_exp);
 }
 
 bool UserProc::generateCode(HLLCode &hll)
 {
-	assert(cfg);
-	cfg->establishDFTOrder();
-	cfg->establishRevDFTOrder();
-	assert(getEntryBB());
+    assert(cfg);
+    cfg->establishDFTOrder();
+    cfg->establishRevDFTOrder();
+    assert(getEntryBB());
 
-	hll.AddProcStart(signature);
-	
-	for (std::map<std::string, Type*>::iterator it = locals.begin();
-	     it != locals.end(); it++)
-	    hll.AddLocal((*it).first.c_str(), (*it).second);
+    hll.AddProcStart(signature);
+    
+    for (std::map<std::string, Type*>::iterator it = locals.begin();
+         it != locals.end(); it++)
+        hll.AddLocal((*it).first.c_str(), (*it).second);
 
-	cfg->unTraverse();
-	BB_IT it;
-	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-		bb->setLabelNeeded(false);
-	}
-	getEntryBB()->generateCode(hll, NULL);
+    cfg->unTraverse();
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        bb->setLabelNeeded(false);
+    }
+    getEntryBB()->generateCode(hll, NULL);
 
-	// generate any BBs that are left
-	bool change = true;
-	while (change) {
-		change = false;
-		for (PBB left = cfg->getFirstBB(it); left; left = cfg->getNextBB(it)) 
-			if (!left->isTraversed()) {
-				left->generateCode(hll, NULL);
-				change = true;
-				break;
-			}
-	}
-	
-	hll.AddProcEnd();
+    // generate any BBs that are left
+    bool change = true;
+    while (change) {
+        change = false;
+        for (PBB left = cfg->getFirstBB(it); left; left = cfg->getNextBB(it)) 
+            if (!left->isTraversed()) {
+                left->generateCode(hll, NULL);
+                change = true;
+                break;
+            }
+    }
+    
+    hll.AddProcEnd();
 
-	return true;
+    return true;
 }
 
 // print this userproc, maining for debugging
@@ -989,34 +994,34 @@ void UserProc::print(std::ostream &out, bool withDF) {
 void UserProc::getStatements(std::set<Statement*> &stmts) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        std::list<RTL*> *rtls = bb->getRTLs();
-	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-		       rit++) {
-	    RTL *rtl = *rit;
+      std::list<RTL*> *rtls = bb->getRTLs();
+        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+          rit++) {
+            RTL *rtl = *rit;
             for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-		 it != rtl->getList().end(); it++) {
-		Statement *e = dynamic_cast<Statement*>(*it);
-		if (e == NULL) continue;
-		stmts.insert(e);
-		e->setProc(this);
-	    }
-	    if (rtl->getKind() == CALL_RTL) {
-		HLCall *call = (HLCall*)rtl;
-	        stmts.insert(call);
-		call->setProc(this);
-		std::list<Statement*> &internal = call->getInternalStatements();
-		for (std::list<Statement*>::iterator it1 = internal.begin();
-		     it1 != internal.end(); it1++) {
-		    stmts.insert(*it1);
-		    (*it1)->setProc(this);
-		}
+              it != rtl->getList().end(); it++) {
+                Statement *e = dynamic_cast<Statement*>(*it);
+                if (e == NULL) continue;
+                stmts.insert(e);
+                e->setProc(this);
             }
-	    if (rtl->getKind() == JCOND_RTL) {
-		HLJcond *jcond = (HLJcond*)rtl;
-	        stmts.insert(jcond);
-		jcond->setProc(this);
-	    }
-	}
+            if (rtl->getKind() == CALL_RTL) {
+                HLCall *call = (HLCall*)rtl;
+                stmts.insert(call);
+                call->setProc(this);
+                std::list<Statement*> &internal = call->getInternalStatements();
+                for (std::list<Statement*>::iterator it1 = internal.begin();
+                  it1 != internal.end(); it1++) {
+                    stmts.insert(*it1);
+                    (*it1)->setProc(this);
+                }
+            }
+            if (rtl->getKind() == JCOND_RTL) {
+                HLJcond *jcond = (HLJcond*)rtl;
+                stmts.insert(jcond);
+                jcond->setProc(this);
+            }
+        }
     }
 }
 
@@ -1025,38 +1030,38 @@ void UserProc::removeStatement(Statement *stmt) {
     // remove from BB/RTL
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        std::list<RTL*> *rtls = bb->getRTLs();
-	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-		       rit++) {
+      std::list<RTL*> *rtls = bb->getRTLs();
+        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+          rit++) {
             RTL *rtl = *rit;
-	    for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-		 it != rtl->getList().end(); it++) {
-		Statement *e = dynamic_cast<Statement*>(*it);
-		if (e == NULL) continue;
-		if (e == stmt) {
-		    rtl->getList().erase(it);
-		    return;
-		}
-	    }
-	    if (rtl->getKind() == CALL_RTL) {
-		HLCall *call = (HLCall*)rtl;
-	        assert(call != stmt);
-		std::list<Statement*> &internal = call->getInternalStatements();
-		for (std::list<Statement*>::iterator it1 = internal.begin();
-		     it1 != internal.end(); it1++)
-		    if (*it1 == stmt) {
-		        internal.erase(it1);
-		        return;
-		    }
+            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+              it != rtl->getList().end(); it++) {
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            if (e == stmt) {
+                rtl->getList().erase(it);
+                return;
             }
-	}
+            }
+            if (rtl->getKind() == CALL_RTL) {
+                HLCall *call = (HLCall*)rtl;
+                assert(call != stmt);
+                std::list<Statement*> &internal = call->getInternalStatements();
+                for (std::list<Statement*>::iterator it1 = internal.begin();
+                  it1 != internal.end(); it1++)
+                    if (*it1 == stmt) {
+                        internal.erase(it1);
+                        return;
+                    }
+            }
+        }
     }
 }
 
 void UserProc::getInternalStatements(std::list<Statement*> &internal)
 {
      for (std::list<Statement*>::iterator it = this->internal.begin();
-	  it != this->internal.end(); it++)
+      it != this->internal.end(); it++)
          internal.push_back(*it);
 }
 
@@ -1066,23 +1071,23 @@ void UserProc::decompile() {
     std::set<Statement*> stmts;
     getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
+            it++) {
         HLCall *call = dynamic_cast<HLCall*>(*it);
-	if (call == NULL) continue;
-	call->decompile();
+        if (call == NULL) continue;
+        call->decompile();
     }
 
     cfg->computeDataflow();
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end();
-		    it++) (*it)->calcUseLinks();
+      it++) (*it)->calcUseLinks();
 
     print(std::cout, true);
     bool change = true;
     while (change) {
         change = false;
-	change |= removeNullStatements();
-	change |= removeDeadStatements();
-	change |= propogateAndRemoveStatements();
+        change |= removeNullStatements();
+        change |= removeDeadStatements();
+        change |= propogateAndRemoveStatements();
     }
     removeInternalStatements();
     inlineConstants();
@@ -1098,33 +1103,33 @@ void UserProc::fixCalls()
     std::set<Statement*> stmts;
     getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
-	    HLCall *call = dynamic_cast<HLCall*>(*it);
-	    if (call == NULL) continue;
-	    if (call->getDestProc() && 
-		call->getDestProc()->getSignature()->hasEllipsis()) {
-	        // functions like printf almost always have too many args
-		std::string name(call->getDestProc()->getName());
-		if ((name == "printf" || name == "scanf") &&
-		    call->getArgumentExp(0)->isStrConst()) {
-		    char *str = ((Const*)call->getArgumentExp(0))->getStr();
-		    // actually have to parse it
-		    int n = 1;
-		    char *p = str;
-		    while (p = strchr(p, '%')) {
-		        p++;
-			switch(*p) {
-			    case '%':
-			        break;
-			    // TODO: there's type information here
-		            default: 
-				n++;
-			}
-			p++;
-		    }
-		    call->setNumArguments(n);
-		}
-	    }
+      it++) {
+        HLCall *call = dynamic_cast<HLCall*>(*it);
+        if (call == NULL) continue;
+        if (call->getDestProc() && 
+          call->getDestProc()->getSignature()->hasEllipsis()) {
+            // functions like printf almost always have too many args
+            std::string name(call->getDestProc()->getName());
+            if ((name == "printf" || name == "scanf") &&
+                call->getArgumentExp(0)->isStrConst()) {
+                char *str = ((Const*)call->getArgumentExp(0))->getStr();
+                // actually have to parse it
+                int n = 1;
+                char *p = str;
+                while ((p = strchr(p, '%'))) {
+                    p++;
+                    switch(*p) {
+                        case '%':
+                            break;
+                        // TODO: there's type information here
+                            default: 
+                        n++;
+                    }
+                    p++;
+                }
+                call->setNumArguments(n);
+            }
+        }
     }
 }
 
@@ -1133,46 +1138,46 @@ void UserProc::renameLocalVariables()
     std::set<Statement*> stmts;
     getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++)
-	    if ((*it)->getLeft() && 
-	        symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
-		std::cerr << "new local: ";
-		(*it)->getLeft()->print(std::cerr);
-		std::cerr << std::endl;
-		std::ostringstream os;
-		os << "local" << locals.size();
-		std::string name = os.str();
-		symbolMap[(*it)->getLeft()->clone()] = 
-		    new Unary(opLocal, new Const(strdup(name.c_str())));
-		if ((*it)->getLeftType())
-		    locals[name] = (*it)->getLeftType();
-		else
-		    locals[name] = new IntegerType();
-	    }
+      it++)
+        if ((*it)->getLeft() && 
+            symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
+            std::cerr << "new local: ";
+            (*it)->getLeft()->print(std::cerr);
+            std::cerr << std::endl;
+            std::ostringstream os;
+            os << "local" << locals.size();
+            std::string name = os.str();
+            symbolMap[(*it)->getLeft()->clone()] = 
+              new Unary(opLocal, new Const(strdup(name.c_str())));
+            if ((*it)->getLeftType())
+                locals[name] = (*it)->getLeftType();
+            else
+                locals[name] = new IntegerType();
+        } 
 
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
-	    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
-			    it1 != symbolMap.end(); it1++)
-	        (*it)->searchAndReplace((*it1).first, (*it1).second);
+      it++) {
+        for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
+          it1 != symbolMap.end(); it1++)
+            (*it)->searchAndReplace((*it1).first, (*it1).second);
     }
 
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
-	 it1 != symbolMap.end(); it1++) {
+      it1 != symbolMap.end(); it1++) {
         bool change;
         Exp *e = cfg->getReturnVal();
-	if (e == NULL) break;
-	std::cerr << "return value: ";
-	e->print(std::cerr);
-	std::cerr << " replace ";
+        if (e == NULL) break;
+        std::cerr << "return value: ";
+        e->print(std::cerr);
+        std::cerr << " replace ";
         (*it1).first->print(std::cerr);
-	std::cerr << " with ";
+        std::cerr << " with ";
         (*it1).second->print(std::cerr);
-	std::cerr << std::endl;
-	e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-	std::cerr << "  after: ";
-	e->print(std::cerr);
-	std::cerr << std::endl;
+        std::cerr << std::endl;
+        e = e->searchReplaceAll((*it1).first, (*it1).second, change);
+        std::cerr << "  after: ";
+        e->print(std::cerr);
+        std::cerr << std::endl;
         if (change) cfg->setReturnVal(e->clone());
     }
 }
@@ -1184,23 +1189,23 @@ bool UserProc::removeNullStatements()
     getStatements(stmts);
     // remove null code
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
+      it++) {
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
-	if (e == NULL) continue;
-	if (*e->getSubExp1() == *e->getSubExp2() && 
-	    e->getNumUseBy() == 0) {
-	    //std::cerr << "removing null code: ";
-	    //e->print(std::cerr);
-	    //std::cerr << std::endl;
+        if (e == NULL) continue;
+        if (*e->getSubExp1() == *e->getSubExp2() && 
+          e->getNumUseBy() == 0) {
+            //std::cerr << "removing null code: ";
+            //e->print(std::cerr);
+            //std::cerr << std::endl;
             removeStatement(e);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
             if (liveout.find(*it) != liveout.end()) {
                 liveout.erase(*it);
-        	cfg->updateLiveness();
+                cfg->updateLiveness();
             }
-	    change = true;
-	}
+            change = true;
+        }
     }
     return change;
 }
@@ -1212,44 +1217,44 @@ bool UserProc::removeDeadStatements()
     getStatements(stmts);
     // remove dead code
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
+      it++) {
         std::set<Statement*> dead;
-	(*it)->getDeadStatements(dead);
-	for (std::set<Statement*>::iterator it1 = dead.begin(); 
-	     it1 != dead.end(); it1++) 
-	    if (!(*it1)->getLeft()->isMemOf()) {
-		// hack: if the dead statement has a use which would make
-		// this statement useless if propogated, leave it
-		std::set<Statement*> uses;
-	       	(*it1)->calcUses(uses);
-		bool matchingUse = false;
-		for (std::set<Statement*>::iterator it2 = uses.begin();
-		     it2 != uses.end(); it2++) {
-		    AssignExp *e = dynamic_cast<AssignExp*>(*it2);
-		    if (e == NULL || (*it1)->getLeft() == NULL) continue;
-		    if (*e->getSubExp2() == *(*it1)->getLeft()) {
-		        matchingUse = true;
-			break;
-		    }
-	        }
-		if (matchingUse) continue;
-	        std::cerr << "removing dead code: ";
-	        (*it1)->printAsUse(std::cerr);
-	        std::cerr << std::endl;
-		HLCall *call = dynamic_cast<HLCall*>(*it1);
-		if (call == NULL) {
-                    removeStatement(*it1);
-		} else {
-		    call->setIgnoreReturnLoc(true);
-		}
-                // remove from liveness
-                std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
-                if (liveout.find(*it1) != liveout.end()) {
-                    liveout.erase(*it1);
+        (*it)->getDeadStatements(dead);
+        for (std::set<Statement*>::iterator it1 = dead.begin(); 
+           it1 != dead.end(); it1++) 
+            if (!(*it1)->getLeft()->isMemOf()) {
+            // hack: if the dead statement has a use which would make
+            // this statement useless if propogated, leave it
+            std::set<Statement*> uses;
+            (*it1)->calcUses(uses);
+            bool matchingUse = false;
+            for (std::set<Statement*>::iterator it2 = uses.begin();
+              it2 != uses.end(); it2++) {
+                AssignExp *e = dynamic_cast<AssignExp*>(*it2);
+                if (e == NULL || (*it1)->getLeft() == NULL) continue;
+                if (*e->getSubExp2() == *(*it1)->getLeft()) {
+                    matchingUse = true;
+                    break;
                 }
-        	cfg->updateLiveness();
-		change = true;
-	    }
+            }
+            if (matchingUse) continue;
+            std::cerr << "removing dead code: ";
+            (*it1)->printAsUse(std::cerr);
+            std::cerr << std::endl;
+            HLCall *call = dynamic_cast<HLCall*>(*it1);
+            if (call == NULL) {
+                removeStatement(*it1);
+            } else {
+                call->setIgnoreReturnLoc(true);
+            }
+            // remove from liveness
+            std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
+            if (liveout.find(*it1) != liveout.end()) {
+                liveout.erase(*it1);
+            }
+            cfg->updateLiveness();
+            change = true;
+        }
     }
     return change;
 }
@@ -1260,27 +1265,27 @@ void UserProc::removeInternalStatements()
     getStatements(stmts);
     // remove any statements that have no uses and are live out of this proc
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
-	    AssignExp *e = dynamic_cast<AssignExp *>(*it);
-	    if (e == NULL) continue;
-	    if ((*it)->getNumUseBy() == 0 && 
-	        (*it)->getNumUses() == 0 &&
-                cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
-                // new internal statement
-		std::cerr << "new internal statement: ";
-		(*it)->printAsUse(std::cerr);
-		std::cerr << std::endl;
-		internal.push_back(*it);
-	        removeStatement(*it);
-	    }
+      it++) {
+        AssignExp *e = dynamic_cast<AssignExp *>(*it);
+        if (e == NULL) continue;
+        if ((*it)->getNumUseBy() == 0 && 
+          (*it)->getNumUses() == 0 &&
+          cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
+            // remove internal statement
+            std::cerr << "remove internal statement: ";
+            (*it)->printAsUse(std::cerr);
+            std::cerr << std::endl;
+            internal.push_back(*it);
+            removeStatement(*it);
+        }
     }
 }
 
 void UserProc::eraseInternalStatement(Statement *stmt)
 {
     for (std::list<Statement*>::iterator it = internal.begin();
-		    it != internal.end(); it++)
-	    if (*it == stmt) { internal.erase(it); break; }
+      it != internal.end(); it++)
+        if (*it == stmt) { internal.erase(it); break; }
 }
 
 void UserProc::inlineConstants()
@@ -1289,8 +1294,8 @@ void UserProc::inlineConstants()
     getStatements(stmts);
     // inline any constants in the statement
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++)
-	    (*it)->inlineConstants(prog);
+      it++)
+        (*it)->inlineConstants(prog);
 }
 
 bool UserProc::propogateAndRemoveStatements()
@@ -1300,44 +1305,44 @@ bool UserProc::propogateAndRemoveStatements()
     getStatements(stmts);
     // propogate any statements that can be removed
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-		    it++) {
+      it++) {
         if ((*it)->canPropogateToAll()) {
-	    if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
-		if ((*it)->getNumUses() != 0) {
-		    // tempories that store the results of calls are ok
-	            if ((*it)->getRight() && 
-		        (*it)->findUse((*it)->getRight()) &&
-			!(*it)->findUse((*it)->getRight())->getRight()) {
-		        std::cerr << "allowing propogation of temporary: ";
-			(*it)->printAsUse(std::cerr);
-			std::cerr << std::endl;
-		    } else
-		        continue;
-		} else {
+            if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
+                if ((*it)->getNumUses() != 0) {
+                    // tempories that store the results of calls are ok
+                    if ((*it)->getRight() && 
+                      (*it)->findUse((*it)->getRight()) &&
+                      !(*it)->findUse((*it)->getRight())->getRight()) {
+                        std::cerr << "allowing propogation of temporary: ";
+                        (*it)->printAsUse(std::cerr);
+                        std::cerr << std::endl;
+                    } else
+                        continue;
+                } else {
                     // new internal statement
-		    std::cerr << "new internal statement: ";
-		    (*it)->printAsUse(std::cerr);
-		    std::cerr << std::endl;
-		    internal.push_back(*it);
-		}
-	    }
-	    (*it)->propogateToAll();
-	    removeStatement(*it);
+                    std::cerr << "new internal statement: ";
+                    (*it)->printAsUse(std::cerr);
+                    std::cerr << std::endl;
+                    internal.push_back(*it);
+                }
+            }
+            (*it)->propogateToAll();
+            removeStatement(*it);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
             if (liveout.find(*it) != liveout.end()) {
                 liveout.erase(*it);
-        	cfg->updateLiveness();
+                cfg->updateLiveness();
             }
-	    // debug: print
-	    print(std::cout, true);
-	    change = true;
-	}
+            // debug: print
+            print(std::cout, true);
+            change = true;
+        }
     }
     return change;
 }
 
 void UserProc::promoteSignature()
 {
-	signature = signature->promote(this);
+    signature = signature->promote(this);
 }
