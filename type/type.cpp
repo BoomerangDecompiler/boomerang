@@ -247,7 +247,7 @@ int FuncType::getSize() const
 
 int PointerType::getSize() const
 {
-    return points_to->getSize();
+    return 4; //points_to->getSize(); // yes, it was a good idea at the time
 }
 
 int ArrayType::getSize() const

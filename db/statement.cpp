@@ -1851,6 +1851,19 @@ void CallStatement::processConstants(Prog *prog) {
                     ADDRESS a = ((Const*)arguments[i])->getAddr();
                     prog->decode(a);
                 }
+                if (pt->getPointsTo()->isCompound()) {
+                    CompoundType *c = (CompoundType*)pt->getPointsTo();
+                    for (int i = 0; i < c->getNumTypes(); i++)
+                        if (c->getType(i)->isPointer() &&
+                            ((PointerType*)c->getType(i))->getPointsTo()
+                                                         ->isCompound()) {
+                        ADDRESS a = ((Const*)arguments[i])->getAddr();
+                        std::cerr << "got a compound at " << std::hex << a;
+                        std::cerr << " with a func pointer in pos " << i;
+                        std::cerr << std::endl;
+                        assert(false);
+                    }
+                }
             } else if (t->isFloat()) {
                 arguments[i]->setOper(opFltConst);
             }
