@@ -1,0 +1,46 @@
+Subject: Back-slash('\\') support for windows progPath
+         and including "gc.h" header back to use GC
+
+If slash('/') not found in (progPath = argv[0]) 
+then look for back-slash('\\')
+The change is needed to pick up DOS/Windows program path
+that uses back-slash('\\') as a separator.
+
+Also "gc.h" header was included back to support GC usage
+
+From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+
+
+Index: boomerang.cpp
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/boomerang.cpp,v
+retrieving revision 1.63
+diff -u -r1.63 boomerang.cpp
+--- boomerang.cpp	30 Jan 2004 11:27:45 -0000	1.63
++++ boomerang.cpp	1 Feb 2004 00:57:23 -0000
+@@ -6,10 +6,7 @@
+ #include "hllcode.h"
+ #include "codegen/chllcode.h"
+ #include "boomerang.h"
+-
+-#ifndef _MSC_VER
+ #include "gc.h"
+-#endif
+ 
+ Boomerang *Boomerang::boomerang = NULL;
+ 
+@@ -91,6 +88,8 @@
+     progPath = argv[0];
+     // Chop off after the last slash
+     size_t j = progPath.rfind("/");
++    if (j == (size_t)-1) 
++        j = progPath.rfind("\\");
+     if (j != (size_t)-1)
+     {
+         // Do the chop; keep the trailing slash
+@@ -309,4 +308,3 @@
+ 
+     return 0;
+ }
+-

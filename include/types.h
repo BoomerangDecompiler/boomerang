@@ -14,3 +14,7 @@ typedef long unsigned long QWord;	// 64 bits
 #else
 typedef unsigned __int64   QWord;		
 #endif
+
+#if defined(_MSC_VER)
+#pragma warning(disable:4390)
+#endif

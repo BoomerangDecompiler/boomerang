@@ -1,0 +1,25 @@
+Subject: restore default pack alignment when going out of Win32BinaryFile.h
+
+It is needed to restore default pack alignment 
+when going out of Win32BinaryFile.h
+Otherwise every source file including Win32BinaryFile.h
+is going to be affected by the last #pragma pack(4) directive
+hiding in Win32BinaryFile.h
+
+From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+Index: loader/Win32BinaryFile.h
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/loader/Win32BinaryFile.h,v
+retrieving revision 1.6
+diff -u -r1.6 Win32BinaryFile.h
+--- loader/Win32BinaryFile.h	30 Jan 2004 11:27:47 -0000	1.6
++++ loader/Win32BinaryFile.h	1 Feb 2004 00:59:06 -0000
+@@ -206,4 +206,7 @@
+ 
+ };
+ 
++//#ifdef WIN32
++#pragma pack()
++//#endif
+ #endif          // ifndef __WIN32BINARYFILE_H__

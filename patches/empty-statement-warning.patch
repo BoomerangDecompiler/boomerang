@@ -1,0 +1,22 @@
+Subject: #pragma for _MSC_VER to disable 
+	   [empty controlled statement found;] warning.
+
+There are too many of them.
+
+From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+Index: include/types.h
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/include/types.h,v
+retrieving revision 1.4
+diff -u -r1.4 types.h
+--- include/types.h	30 Jan 2004 11:27:47 -0000	1.4
++++ include/types.h	1 Feb 2004 00:59:03 -0000
+@@ -14,3 +14,7 @@
+ #else
+ typedef unsigned __int64   QWord;		
+ #endif
++
++#if defined(_MSC_VER)
++#pragma warning(disable:4390)
++#endif

@@ -6,10 +6,7 @@
 #include "hllcode.h"
 #include "codegen/chllcode.h"
 #include "boomerang.h"
-
-#ifndef _MSC_VER
 #include "gc.h"
-#endif
 
 Boomerang *Boomerang::boomerang = NULL;
 
@@ -91,6 +88,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
     progPath = argv[0];
     // Chop off after the last slash
     size_t j = progPath.rfind("/");
+    if (j == (size_t)-1) 
+        j = progPath.rfind("\\");
     if (j != (size_t)-1)
     {
         // Do the chop; keep the trailing slash
@@ -309,4 +308,3 @@ int Boomerang::decompile(const char *fname)
 
     return 0;
 }
-

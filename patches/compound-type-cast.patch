@@ -1,0 +1,32 @@
+Subject: Bug fix - invalid type cast up to CompoundType
+
+The following type cast
+	if (points_to->resolvesToCompound()) {
+		CompoundType *c = (CompoundType*)points_to;
+	}
+is just wrong. 
+
+Not everything that resolvesToCompound IS compound.
+In other parts of the project in similar situations
+asCompound method gets called.
+
+Changed: type of fname from (const char *) to (std:string)
+
+From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+Index: db/signature.cpp
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/db/signature.cpp,v
+retrieving revision 1.66
+diff -u -r1.66 signature.cpp
+--- db/signature.cpp	18 Jan 2004 10:10:35 -0000	1.66
++++ db/signature.cpp	1 Feb 2004 00:58:43 -0000
+@@ -1034,7 +1034,7 @@
+          */
+         Type *points_to = p->getPointsTo();
+         if (points_to->resolvesToCompound()) {
+-            CompoundType *c = (CompoundType*)points_to;
++            CompoundType *c = points_to->asCompound();
+             int base = 0;
+             for (int n = 0; n < c->getNumTypes(); n++) {
+                 Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),

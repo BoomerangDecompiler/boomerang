@@ -1034,7 +1034,7 @@ void Signature::addImplicitParametersFor(Parameter *pn)
          */
         Type *points_to = p->getPointsTo();
         if (points_to->resolvesToCompound()) {
-            CompoundType *c = (CompoundType*)points_to;
+            CompoundType *c = points_to->asCompound();
             int base = 0;
             for (int n = 0; n < c->getNumTypes(); n++) {
                 Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),

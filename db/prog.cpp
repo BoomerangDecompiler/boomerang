@@ -890,10 +890,10 @@ void Prog::typeAnalysis() {
 }
 
 void Prog::printCallGraph() {
-    const char *fname = (Boomerang::get()->getOutputPath() +    
-                         "callgraph.out").c_str();
-    int fd = lockFileWrite(fname);
-    std::ofstream f(fname);
+    std::string fname = Boomerang::get()->getOutputPath() 
+                        + "callgraph.out";
+    int fd = lockFileWrite(fname.c_str());
+    std::ofstream f(fname.c_str());
     std::set<Proc*> seen;
     std::map<Proc*, int> spaces;
     std::map<Proc*, Proc*> parent;
@@ -937,10 +937,10 @@ void Prog::printCallGraphXML() {
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
          it++)
         (*it)->clearVisited();
-    const char *fname = (Boomerang::get()->getOutputPath() +    
-                         "callgraph.xml").c_str();
-    int fd = lockFileWrite(fname);
-    std::ofstream f(fname);
+    std::string fname = Boomerang::get()->getOutputPath()
+                        + "callgraph.xml";
+    int fd = lockFileWrite(fname.c_str());
+    std::ofstream f(fname.c_str());
     f << "<prog name=\"" << getName() << "\">\n";
     f << "   <callgraph>\n";
     Proc *entry = getEntryProc();

@@ -1,0 +1,73 @@
+Subject: Bug fix - strcmp gets called with null pointer
+
+Originally there are two conditions:
+
+-    if (gotMain && (pBF->SymbolByAddress(a) == NULL ||
+-        !strcmp(pBF->SymbolByAddress(a), "main"))) {
+...
+     }
+-
+-    if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
+...
+-    }
+
+For gotMain==true when pBF->SymbolByAddress(a) == NULL 
+the first condition is true and processed correctly.
+BUT the second condition is going to be checked anyway
+because there is no 'else' between them.
+
+So the bug could be fixed with 'else' only,
+but as soon as it's getting attention anyway
+it is better to get rid of code duplication here.
+
+Speaking privately, I hate the coding style.
+
+From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+Index: frontend/frontend.cpp
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/frontend/frontend.cpp,v
+retrieving revision 1.46
+diff -u -r1.46 frontend.cpp
+--- frontend/frontend.cpp	21 Jan 2004 07:03:24 -0000	1.46
++++ frontend/frontend.cpp	1 Feb 2004 00:58:50 -0000
+@@ -172,25 +172,22 @@
+ 
+     decode(prog, a);
+ 
+-    if (gotMain && (pBF->SymbolByAddress(a) == NULL ||
+-        !strcmp(pBF->SymbolByAddress(a), "main"))) {
+-        Proc *main = prog->findProc(a);
+-        assert(main);
+-        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("main"));
+-        assert(fty);
+-        main->setSignature(fty->getSignature()->clone());
+-        main->getSignature()->setName("main");
++    if (gotMain) {
++        static const char *mainName[] = { "main", "WinMain" };
++        const char *name = pBF->SymbolByAddress(a);
++        if (name == NULL)
++            name = mainName[0];
++        for (int i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
++            if (!strcmp(name, mainName[i])) {
++                Proc *proc = prog->findProc(a);
++                assert(proc);
++                FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
++                assert(fty);
++                proc->setSignature(fty->getSignature()->clone());
++                proc->getSignature()->setName(name);
++            }
++        }
+     }
+-
+-    if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
+-        Proc *main = prog->findProc(a);
+-        assert(main);
+-        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("WinMain"));
+-        assert(fty);
+-        main->setSignature(fty->getSignature()->clone());
+-        main->getSignature()->setName("WinMain");
+-    }
+-
+     return prog;
+ }

@@ -172,23 +172,22 @@ Prog *FrontEnd::decode(bool decodeMain)
 
     decode(prog, a);
 
-    if (gotMain && (pBF->SymbolByAddress(a) == NULL ||
-        !strcmp(pBF->SymbolByAddress(a), "main"))) {
-        Proc *main = prog->findProc(a);
-        assert(main);
-        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("main"));
-        assert(fty);
-        main->setSignature(fty->getSignature()->clone());
-        main->getSignature()->setName("main");
-    } else if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
-        Proc *main = prog->findProc(a);
-        assert(main);
-        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("WinMain"));
-        assert(fty);
-        main->setSignature(fty->getSignature()->clone());
-        main->getSignature()->setName("WinMain");
+    if (gotMain) {
+        static const char *mainName[] = { "main", "WinMain" };
+        const char *name = pBF->SymbolByAddress(a);
+        if (name == NULL)
+            name = mainName[0];
+        for (int i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
+            if (!strcmp(name, mainName[i])) {
+                Proc *proc = prog->findProc(a);
+                assert(proc);
+                FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
+                assert(fty);
+                proc->setSignature(fty->getSignature()->clone());
+                proc->getSignature()->setName(name);
+            }
+        }
     }
-
     return prog;
 }
 

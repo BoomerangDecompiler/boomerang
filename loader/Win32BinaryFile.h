@@ -206,4 +206,7 @@ virtual const char *GetDynamicProcName(ADDRESS uNative);
 
 };
 
+//#ifdef WIN32
+#pragma pack()
+//#endif
 #endif          // ifndef __WIN32BINARYFILE_H__
