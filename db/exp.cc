@@ -13,6 +13,8 @@
  * 10 May 02 - Mike: Added refSubExp1 etc
  * 13 May 02 - Mike: Added many more cases to print functions
  * 23 May 02 - Mike: Added error messages before several asserts
+ * 02 Jun 02 - Mike: Fixed a nasty bug in Unary::polySimplify() where a member
+ *              variable was used after "this" had been deleted
  */
 
 
@@ -1405,9 +1407,12 @@ Exp* Unary::polySimplify(bool& bMod) {
             OPER subOP = subExp1->getOper();
             if (subOP == opIntConst) {
                 // -k, ~k, or ~k
+                // Note: op is invalid after call to becomeSubExp1() since
+                // it deletes this!
+                OPER op2 = op;
                 res = ((Unary*)res)->becomeSubExp1();
                 int k = ((Const*)res)->getInt();
-                switch (op) {
+                switch (op2) {
                     case opNeg: k = -k; break; 
                     case opNot: k = ~k; break;
                     case opLNot:k = !k; break;
