@@ -1848,6 +1848,7 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
 }
 
 void Cfg::generateDotFile(std::ofstream& of) {
+    ADDRESS aret = NO_ADDRESS;
     // The nodes
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) {
@@ -1869,7 +1870,8 @@ void Cfg::generateDotFile(std::ofstream& of) {
                 else
                     of << "twoway";
                 break;
-            case NWAY: of << "nway"; break;
+            case NWAY: of << "nway\" shape=trapezium];\n";
+                continue;
             case CALL: {
                 of << "call";
                 Proc* dest = (*it)->getDestProc();
@@ -1878,6 +1880,8 @@ void Cfg::generateDotFile(std::ofstream& of) {
             }
             case RET: {
                 of << "ret\" shape=triangle];\n";
+                // Remember the (unbique) return BB's address
+                aret = (*it)->getLowAddr();
                 continue;
             }
             case FALL: of << "fall"; break;
@@ -1888,12 +1892,17 @@ void Cfg::generateDotFile(std::ofstream& of) {
         of << "\"];\n";
     }
 
+    // Force the one return node to be at the bottom (max rank). Otherwise,
+    // with all its in-edges, it will end up in the middle
+    if (aret) 
+        of << "{rank=max; bb" << std::hex << aret << "}\n";
+
     // Close the subgraph
     of << "}\n";
 
     // Now the edges
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) {
+    std::list<PBB>::iterator it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
         std::vector<PBB>& outEdges = (*it)->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {
             of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " -> ";
@@ -1904,9 +1913,20 @@ void Cfg::generateDotFile(std::ofstream& of) {
                 else
                     of << " [label=\"false\"]";
             }
-            of << ";\n";
+            of << " [color = \"blue\"];\n";
         }
     }
+#define BACK_EDGES 1
+#if BACK_EDGES
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        std::vector<PBB>& inEdges = (*it)->getInEdges();
+        for (unsigned int j = 0; j < inEdges.size(); j++) {
+            of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " -> ";
+            of << "bb" << std::hex << inEdges[j]->getLowAddr();
+            of << " [color = \"green\"];\n";
+        }
+    }
+#endif
 }
 
 void Cfg::insertArguments(StatementSet& rs) {
@@ -1939,7 +1959,7 @@ void Cfg::DFS(int p, int n) {
             PBB succ = *oo;
             int w;
             if (indices.find(succ) == indices.end()) {
-                w = next++;
+                w = indices.size();
                 indices[succ] = w;
                 BBs[w] = succ;
             }
@@ -1951,10 +1971,10 @@ void Cfg::DFS(int p, int n) {
 }
 
 void Cfg::dominators() {
-    PBB r = getEntryBB();
+    PBB r = entryBB;
     int numBB = m_listBB.size();
     BBs.resize(numBB, (PBB)-1);
-    N = 0; next = 1; BBs[0] = r; indices[r] = 0;
+    N = 0; BBs[0] = r; indices[r] = 0;
     // Initialise to "none"
     dfnum.resize(numBB, 0);
     semi.resize(numBB, -1);
@@ -2476,4 +2496,14 @@ PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
     std::cerr << newBb->prints() << "\n";
 #endif
     return newBb;
+}
+
+// Check for indirect jumps and calls in all my BBs; decode any new code
+bool Cfg::decodeIndirectJmp(UserProc* proc) {
+    std::list<PBB>::iterator it;
+    bool res = false;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        res |= (*it)->decodeIndirectJmp(proc);
+    }
+    return res;
 }

@@ -519,6 +519,11 @@ public:
     bool calcLiveness(igraph& ig, int& tempNum);
     void getLiveOut(LocationSet& live);
 
+    // Find indirect jumps and calls
+    bool decodeIndirectJmp(UserProc* proc);
+    void processSwitch(UserProc* proc, SWITCH_INFO* swi);
+    int  findNumCases();
+
 };  // class BasicBlock
 
 
@@ -575,10 +580,9 @@ class Cfg {
 
     /******************** Dominance Frontier Data *******************/
 
-    /* These first three are not from Appel; they map PBBs to indices */
+    /* These first two are not from Appel; they map PBBs to indices */
     std::vector<PBB> BBs;               // Pointers to BBs from indices
     std::map<PBB, int> indices;         // Indices from pointers to BBs
-    int next;                           // Next index to use
     /*
      * Calculating the dominance frontier
      */
@@ -986,6 +990,13 @@ public:
      */
     void print(std::ostream &out, bool withDF = false);
     void printToLog(bool withDF = false);
+
+    /*
+     * Check for indirect jumps and calls
+     * If any found, decode the extra code and return true
+     */
+    bool decodeIndirectJmp(UserProc* proc);
+
 
     /*
      * Domonator frontier code

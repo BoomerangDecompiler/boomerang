@@ -582,7 +582,7 @@ typedef struct {
     ADDRESS uTable;             // Native address of the table
     int     iNumTable;          // Number of entries in the table (form H only)
     int     iOffset;            // Distance from jump to table (form R only)
-    int     delta;              // Host address - Native address
+//    int     delta;              // Host address - Native address
 } SWITCH_INFO;
 
 class CaseStatement: public GotoStatement {
@@ -783,6 +783,9 @@ protected:
     // value returned
     std::vector<Exp*> returns;
 
+    // Native address of the (only) return instruction
+    ADDRESS retAddr;
+
 public:
     ReturnStatement();
     ~ReturnStatement();
@@ -839,6 +842,9 @@ public:
     void setSigArguments();   // Set returns based on signature
     void removeReturn(int n);
     void addReturn(Exp *e);
+
+    ADDRESS getRetAddr() {return retAddr;}
+    void    setRetAddr(ADDRESS r) {retAddr = r;}
 
 };  // class ReturnStatement
 

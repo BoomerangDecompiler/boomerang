@@ -1193,7 +1193,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                             followSet, gotoSet);
 
                     // generate the 'break' statement
-                    hll->AddCaseCondOptionEnd(indLevel);
+                    hll->AddCaseCondOptionEnd(indLevel+1);
                 }
                 // generate the closing bracket
                 hll->AddCaseCondEnd(indLevel);
@@ -1242,6 +1242,16 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 std::cerr << "WARNING: no out edge for BB: " << std::endl;
                 this->print(std::cerr, false);
                 std::cerr << std::endl;
+                if (m_nodeType == COMPJUMP) {
+                    std::ostringstream ost;
+                    assert(m_pRtls->size());
+                    RTL* lastRTL = m_pRtls->back();
+                    assert(lastRTL->getNumStmt());
+                    GotoStatement* gs = (GotoStatement*)
+                      lastRTL->elementAt(lastRTL->getNumStmt()-1);
+                    ost << "goto " << gs->getDest();
+                    hll->AddLineComment((char*)ost.str().c_str());
+                }
                 return;
             }
 
@@ -1609,4 +1619,284 @@ int BasicBlock::whichPred(PBB pred) {
     }
     assert(0);
     return -1;
+}
+
+#define DEBUG_SWITCH Boomerang::get()->debugSwitch
+// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible
+// decode extra code and return true
+
+// Pattern: m[<expr> * 4 + T ]
+static Location* formA  = Location::memOf(
+        new Binary(opPlus,
+            new Binary(opMult,
+                new Terminal(opWild),
+                new Const(4)),
+            new Terminal(opWildIntConst)));
+
+// Pattern: m[<expr> * 4 + T ] + T
+static Binary* formO  = new Binary(opPlus,
+    Location::memOf(
+        new Binary(opPlus,
+            new Binary(opMult,
+                new Terminal(opWild),
+                new Const(4)),
+            new Terminal(opWildIntConst))),
+    new Terminal(opWildIntConst));
+
+// Pattern: %pc + m[%pc  + (<expr> * 4) + k]
+// where k is a small constant, typically 28 or 20
+static Binary* formR = new Binary(opPlus,
+    new Terminal(opPC),
+    Location::memOf(new Binary(opPlus,
+        new Terminal(opPC),
+        new Binary(opPlus,
+            new Binary(opMult,
+                new Terminal(opWild),
+                new Const(4)),
+            new Const(opWildIntConst)))));
+
+// Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
+// where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
+static Binary* formr = new Binary(opPlus,
+    new Terminal(opPC),
+    Location::memOf(new Binary(opPlus,
+        new Terminal(opPC),
+        new Binary(opMinus,
+            new Binary(opMult,
+                new Terminal(opWild),
+                new Const(4)),
+        new Terminal(opWildIntConst)))));
+
+static Exp* hlForms[] = {formA, formO, formR, formr};
+static char chForms[] = {   'A',   'O',   'R',   'r'};
+
+void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
+    switch (form) {
+        case 'A': {
+            // Pattern: m[<expr> * 4 + T ]
+            if (e->isSubscript()) e = e->getSubExp1();
+            // b will be (<expr> * 4) + T
+            Binary* b = (Binary*)((Location*)e)->getSubExp1();
+            Const* TT = (Const*)b->getSubExp2();
+            T = (ADDRESS)TT->getInt();
+            b = (Binary*)b->getSubExp1();   // b is now <expr> * 4
+            expr = b->getSubExp1();
+            break;
+        }
+        case 'O': {   // Form O
+            // Pattern: m[<expr> * 4 + T ] + T
+            T = ((Const*)((Binary*)e)->getSubExp2())->getInt();
+            // l = m[<expr> * 4 + T ]:
+            Exp* l = ((Binary*)e)->getSubExp1();
+            if (l->isSubscript()) l = l->getSubExp1();
+            // b = <expr> * 4 + T:
+            Binary* b = (Binary*)((Location*)l)->getSubExp1();
+            // b = <expr> * 4:
+            b = (Binary*)b->getSubExp1();
+            // expr = <expr>:
+            expr = b->getSubExp1();
+            break;
+        }
+        case 'R': {
+            // Pattern: %pc + m[%pc  + (<expr> * 4) + k]
+            T = 0;      // ?
+            // l = m[%pc  + (<expr> * 4) + k]:
+            Exp* l = ((Binary*)e)->getSubExp2();
+            if (l->isSubscript()) l = l->getSubExp1();
+            // b = %pc  + (<expr> * 4) + k:
+            Binary* b = (Binary*)((Location*)l)->getSubExp1();
+            // b = (<expr> * 4) + k:
+            b = (Binary*)b->getSubExp2();
+            // b = <expr> * 4:
+            b = (Binary*)b->getSubExp1();
+            // expr = <expr>:
+            expr = b->getSubExp1();
+            break;
+        }
+        case 'r': {
+            // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
+            T = 0;      // ?
+            // b = %pc + m[%pc + ((<expr> * 4) - k)]:
+            Binary* b = (Binary*)((Binary*)e)->getSubExp1();
+            // l = m[%pc + ((<expr> * 4) - k)]:
+            Exp* l = b->getSubExp2();
+            if (l->isSubscript()) l = l->getSubExp1();
+            // b = %pc + ((<expr> * 4) - k)
+            b = (Binary*)((Location*)l)->getSubExp1();
+            // b = ((<expr> * 4) - k):
+            b = (Binary*)b->getSubExp2();
+            // b = <expr> * 4:
+            b = (Binary*)b->getSubExp1();
+            // expr = <expr>
+            expr = b->getSubExp1();
+            break;
+        }
+        default:
+            expr = NULL;
+            T = NO_ADDRESS;
+    }
+}
+
+int BasicBlock::findNumCases() {
+    std::vector<PBB>::iterator it;
+    for (it = m_InEdges.begin(); it != m_InEdges.end(); it++) {
+        if ((*it)->m_nodeType != TWOWAY)
+            continue;
+        assert((*it)->m_pRtls->size());
+        RTL* lastRtl = (*it)->m_pRtls->back();
+        assert(lastRtl->getNumStmt() >= 1);
+        BranchStatement* lastStmt = (BranchStatement*)lastRtl->elementAt(
+            lastRtl->getNumStmt()-1);
+        Exp* pCond = lastStmt->getCondExpr();
+        if (pCond->getArity() != 2) continue;
+        Exp* rhs = ((Binary*)pCond)->getSubExp2();
+        if (!rhs->isIntConst()) continue;
+        int k = ((Const*)rhs)->getInt();
+        OPER op = pCond->getOper();
+        if (op == opGtr || op == opGtrUns)
+            return k+1;
+        if (op == opGtrEq || op == opGtrEqUns)
+            return k;
+        if (op == opLess || op == opLessUns)
+            return k;
+        if (op == opLessEq || op == opLessEqUns)
+            return k+1;
+    }
+    std::cerr << "Could not find number of cases for n-way at address " <<
+      std::hex << getLowAddr() << "\n";
+    return 3;        // Bald faced guess if all else fails
+}
+
+bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
+    if (m_nodeType == COMPJUMP) {
+        assert(m_pRtls->size());
+        RTL* lastRtl = m_pRtls->back();
+        if (DEBUG_SWITCH)
+            LOG << "decodeIndirectJmp: " << lastRtl->prints();
+#if 0
+std::cerr << "In edges: " << m_InEdges.size() << "\n";
+if (m_InEdges.size())
+  std::cerr << "In edge 1: " << m_InEdges[0]->prints() << "\n";
+#endif
+        assert(lastRtl->getNumStmt() >= 1);
+        CaseStatement* lastStmt = (CaseStatement*)lastRtl->elementAt(
+            lastRtl->getNumStmt()-1);
+        Exp* e = lastStmt->getDest();
+        int n = sizeof(hlForms) / sizeof(Exp*);
+        char form = 0;
+        for (int i=0; i < n; i++) {
+            if (*e *= *hlForms[i]) {        // *= compare ignores subscripts
+                form = chForms[i];
+                if (DEBUG_SWITCH)
+                    LOG << "Matches form " << form << "\n";
+                break;
+            }
+        }
+        SWITCH_INFO* swi = new SWITCH_INFO;
+        swi->chForm = form;
+        ADDRESS T;
+        Exp* expr;
+        findSwParams(form, e, expr, T);
+        if (expr) {
+            swi->uTable = T;
+            swi->iNumTable = findNumCases();
+            swi->iUpper = swi->iNumTable-1;
+            if (expr->getOper() == opMinus && 
+              ((Binary*)expr)->getSubExp2()->isIntConst()) {
+                swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
+                swi->iUpper += swi->iLower;
+                expr = ((Binary*)expr)->getSubExp1();
+            } else
+                swi->iLower = 0;
+            swi->pSwitchVar = expr;
+            processSwitch(proc, swi);
+            return swi->iNumTable != 0;
+        }
+        return false;
+    } else if (m_nodeType == COMPCALL) {
+        std::cerr << "decodeIndirectJmp: COMPCALL:";
+        assert(m_pRtls->size());
+        RTL* lastRtl = m_pRtls->back();
+        std::cerr << lastRtl->prints() << "\n";
+        return false;
+    }
+    return false;
+}
+
+/*==============================================================================
+ * FUNCTION:      processSwitch
+ * OVERVIEW:      Called when a switch has been identified. Visits the
+ *                  destinations of the switch, adds out edges to the BB, etc
+ * PARAMETERS:    proc - Pointer to the UserProc object for this code
+ *                swi - Pointer to the SWITCH_INFO struct
+ * RETURNS:       <nothing>
+ *============================================================================*/
+void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
+
+    RTL* last = m_pRtls->back();
+    CaseStatement* lastStmt = (CaseStatement*)last->getHlStmt();
+    lastStmt->setDest((Exp*)NULL);
+    lastStmt->setSwitchInfo(swi);
+    SWITCH_INFO* si = lastStmt->getSwitchInfo();
+
+    if (Boomerang::get()->debugSwitch) {
+        LOG << "Found switch statement type " << si->chForm <<
+          " with table at 0x" << si->uTable << ", ";
+        if (si->iNumTable)
+            LOG << si->iNumTable << " entries, ";
+        LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
+    }
+    ADDRESS uSwitch;
+    int iNumOut, iNum;
+#if 0
+    if (si->chForm == 'H') {
+        iNumOut = 0; int i, j=0;
+        for (i=0; i < si->iNumTable; i++, j+=2) {
+            // Endian-ness doesn't matter here; -1 is still -1!
+            int iValue = ((ADDRESS*)(si->uTable+delta))[j];
+            if (iValue != -1)
+                iNumOut++;
+        }
+        iNum = si->iNumTable;
+    }
+    else
+#endif
+    {
+        iNumOut = si->iUpper-si->iLower+1;
+        iNum = iNumOut;
+    }
+    // Emit an NWAY BB instead of the COMPJUMP
+    // Also update the number of out edges.
+    updateType(NWAY, iNumOut);
+    
+    Prog* prog = proc->getProg();
+    Cfg* cfg = proc->getCFG();
+    for (int i=0; i < iNum; i++) {
+        // Get the destination address from the
+        // switch table.
+        if (si->chForm == 'H') {
+            int iValue = prog->readNative4(si->uTable + i*2);
+            if (iValue == -1) continue;
+            uSwitch =prog->readNative4(si->uTable + i*8 + 4);
+        }
+        else
+            uSwitch = prog->readNative4(si->uTable + i*4);
+        if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
+            // Offset: add table address to make a real pointer to code
+            // For type R, the table is relative to the branch, so take iOffset
+            // For others, iOffset is 0, so no harm
+            uSwitch += si->uTable - si->iOffset;
+        if (uSwitch < prog->getLimitTextHigh()) {
+            //tq.visit(cfg, uSwitch, this);
+            cfg->addOutEdge(this, uSwitch, true);
+            prog->decodeFragment(proc, uSwitch);
+        } else {
+            LOG << "switch table entry branches to past end of text section " 
+                << uSwitch << "\n";
+            iNumOut--;
+        }
+    }
+
+    // this can change now as a result of bad table entries
+    updateType(NWAY, iNumOut);
 }

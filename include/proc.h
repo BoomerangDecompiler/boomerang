@@ -106,11 +106,6 @@ public:
     virtual std::ostream& put(std::ostream& os) = 0;
 
     /*
-     * Return the coverage of this procedure in bytes.
-     */
-//    virtual unsigned getCoverage() = 0;
-
-    /*
      * Modify actuals so that it is now the list of locations that must
      * be passed to this procedure. The modification will be to either add
      * dummp locations to actuals, delete from actuals, or leave it
@@ -272,11 +267,6 @@ public:
     LibProc(Prog *prog, std::string& name, ADDRESS address);
     virtual ~LibProc();
 
-    /*
-     * Return the coverage of this procedure in bytes.
-     */
-    unsigned getCoverage() { return 0; }
-
 #if 0
     /*
      * See comment for Proc::matchParams.
@@ -355,12 +345,6 @@ class UserProc : public Proc {
      * symbolic, machine independent representations.
      */
     std::map<Exp*,Exp*,lessExpStar> symbolMap;
-
-    /*
-     * The return location as written to the .c file. Not valid unless the file
-     * has been written (fileWritten true)
-     */
-    Exp* fileRetLocn;
 
     /*
      * Set of callees (Procedures that this procedure calls). Used for
@@ -694,10 +678,19 @@ public:
 
 
     bool searchAndReplace(Exp *search, Exp *replace);
-
+ 
 private:
-    
-    std::vector<ReturnStatement*> returnStatements;
-
+    // We ensure that there is only one return statement now. See code in
+    // frontend/frontend.cpp handling case STMT_RET.
+    // If no return statement, this will be NULL
+    ReturnStatement* theReturnStatement;
+public:
+    ADDRESS getTheReturnAddr() {
+        return theReturnStatement == NULL ? NO_ADDRESS :
+        theReturnStatement->getRetAddr();}
+    void setTheReturnAddr(ReturnStatement* s, ADDRESS r) {
+        assert(theReturnStatement == NULL);
+        theReturnStatement = s;
+        theReturnStatement->setRetAddr(r);}
 };      /* UserProc */
 #endif

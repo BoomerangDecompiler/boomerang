@@ -136,6 +136,9 @@ public:
         }
     }
 
+    void decodeFragment(UserProc* proc, ADDRESS a) {
+        pFE->decodeFragment(proc, a); }
+
     // Well form all the procedures/cfgs in this program
     bool wellForm();
 
@@ -239,12 +242,13 @@ public:
         { return pBF->SymbolByAddress(dest);}
     PSectionInfo getSectionInfoByAddr(ADDRESS a)
         { return pBF->GetSectionInfoByAddr(a);}
-    bool processProc(int addr, UserProc* proc)  // Decode a proc
-        { std::ofstream os;
-          return pFE->processProc((unsigned)addr, proc, os);}
+    ADDRESS getLimitTextHigh() {return pBF->getLimitTextHigh();}
     // Read 2 or 4 bytes given a native address
     int readNative2(ADDRESS a) {return pBF->readNative2(a);}
     int readNative4(ADDRESS a) {return pBF->readNative4(a);}
+    bool processProc(int addr, UserProc* proc)  // Decode a proc
+        { std::ofstream os;
+          return pFE->processProc((unsigned)addr, proc, os);}
 
     void readSymbolFile(const char *fname);
 

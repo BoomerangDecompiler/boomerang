@@ -54,6 +54,7 @@
 #include "hllcode.h"
 #include "boomerang.h"
 #include "constraint.h"
+#include "analysis.h"
 
 typedef std::map<Statement*, int> RefCounter;
 
@@ -637,7 +638,8 @@ std::ostream& LibProc::put(std::ostream& os) {
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
     cfg(new Cfg()), decoded(false), analysed(false), isSymbolic(false), uniqueID(0),
-    decompileSeen(false), decompiled(false), isRecursive(false) {
+    decompileSeen(false), decompiled(false), isRecursive(false),
+    theReturnStatement(NULL) {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
 
@@ -911,10 +913,8 @@ void UserProc::initStatements() {
                 call->setSigArguments();
             }
             ReturnStatement *ret = dynamic_cast<ReturnStatement*>(s);
-            if (ret) {
+            if (ret)
                 ret->setSigArguments();
-                returnStatements.push_back(ret);
-            }
         }
     }
 }
@@ -1184,7 +1184,21 @@ std::set<UserProc*>* UserProc::decompile() {
             LOG << "=== End propagate for " << getName() <<
               " at depth " << depth << " ===\n\n";
         }
+    }
 
+    // Check for indirect jumps or calls
+    if (cfg->decodeIndirectJmp(this)) {
+        // There was at least one indirect jump or call found and decoded.
+        // That means that everything we have done to this function so far
+        // is invalid. So redo everything. Expensive!!
+        Analysis a;
+        a.analyse(this);        // Get rid of this soon
+        return decompile();
+    }
+
+    // Only remove unused statements after decoding as much as possible of the
+    // proc
+    for (int depth = 0; depth <= maxDepth; depth++) {
         // Remove unused statements
         RefCounter refCounts;           // The map
         refCounts.clear();
@@ -1293,11 +1307,8 @@ void UserProc::removeRedundantPhis()
                  */
                 RefExp *r = new RefExp(s->getLeft()->clone(), s);
                 bool usedInRet = false;
-                for (unsigned i = 0; i < returnStatements.size(); i++)
-                    if (returnStatements[i]->usesExp(r)) {
-                        usedInRet = true;
-                        break;
-                    }
+                if (theReturnStatement)
+                    usedInRet = theReturnStatement->usesExp(r);
                 delete r;
                 PhiExp *p = (PhiExp*)s->getRight();
                 if (usedInRet) {
@@ -1452,15 +1463,15 @@ void UserProc::trimReturns() {
                 e->getSubExp1()->getSubExp2()->isIntConst())
                 preserved.insert(e);
             if (*e == *regsp) {
-                assert(returnStatements.size() == 1);
-                ReturnStatement *ret = returnStatements[0];
+                assert(theReturnStatement);
                 Exp *e = getProven(regsp)->clone();
                 e = e->expSubscriptVar(new Terminal(opWild), NULL);
-                if (!(*e == *ret->getReturnExp(i))) {
+                if (!(*e == *theReturnStatement->getReturnExp(i))) {
                     if (VERBOSE)
                         LOG << "replacing in return statement " 
-                            << ret->getReturnExp(i) << " with " << e << "\n";
-                    ret->setReturnExp(i, e);
+                            << theReturnStatement->getReturnExp(i) <<
+                            " with " << e << "\n";
+                    theReturnStatement->setReturnExp(i, e);
                 }
             }
         }
@@ -1722,8 +1733,8 @@ void UserProc::removeReturn(Exp *e)
     int n = signature->findReturn(e);
     if (n != -1) {
         Proc::removeReturn(e);
-        for (unsigned i = 0; i < returnStatements.size(); i++)
-            returnStatements[i]->removeReturn(n);
+        if (theReturnStatement)
+            theReturnStatement->removeReturn(n);
     }
 }
 
@@ -1768,12 +1779,8 @@ void UserProc::addReturn(Exp *e)
         e1->refSubExp1() = e1->getSubExp1()->expSubscriptVar(
                                                 new Terminal(opWild), NULL);
     }
-    for (std::vector<ReturnStatement*>::iterator it = returnStatements.begin();
-         it != returnStatements.end(); it++)
-            // Each returnStatement needs a separate copy of the return
-            // expression, otherwise there will be problems when one is
-            // changed (e.g. substituted into) but another is not (yet)
-            (*it)->addReturn(e1->clone());
+    if (theReturnStatement)
+        theReturnStatement->addReturn(e1);
     Proc::addReturn(e);
 }
 
@@ -2489,7 +2496,8 @@ void UserProc::removeUnusedLocals() {
                 Const* c = (Const*)((Unary*)r)->getSubExp1();
                 std::string name(c->getStr());
                 usedLocals.insert(name);
-                LOG << "Counted local " << name.c_str() << " in " << s << "\n";
+                if (VERBOSE) LOG << "Counted local " << name.c_str() <<
+                  " in " << s << "\n";
             }
         }
     }
@@ -2742,16 +2750,17 @@ bool UserProc::prove(Exp *query)
     if (query->getSubExp1()->getOper() != opSubscript) {
         bool gotdef = false;
         // replace expression from return set with expression in return 
-        for (unsigned j = 0; j < returnStatements.size(); j++)
+        if (theReturnStatement) {
             for (int i = 0; i < signature->getNumReturns(); i++) {
                 Exp *e = signature->getReturnExp(i); 
                 if (*e == *query->getSubExp1()) {
                     query->refSubExp1() = 
-                        returnStatements[j]->getReturnExp(i)->clone();
+                        theReturnStatement->getReturnExp(i)->clone();
                     gotdef = true;
                     break;
                 }
             }
+        }
         if (!gotdef && VERBOSE) {
             LOG << "not in return set: " << query->getSubExp1() << "\n";
             inProve = false;
