@@ -185,6 +185,7 @@ Prog *FrontEnd::decode(bool decodeMain)
                 assert(fty);
                 proc->setSignature(fty->getSignature()->clone());
                 proc->getSignature()->setName(name);
+                break;
             }
         }
     }
