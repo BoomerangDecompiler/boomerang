@@ -172,6 +172,9 @@ public:
     // Get the "special" (High Level) Statement this RTL (else NULL)
     Statement* getHlStmt();
 
+    // Print to std::cerr (mainly for debugging)
+    void prints();
+
 };
 
 

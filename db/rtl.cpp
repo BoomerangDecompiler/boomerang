@@ -334,6 +334,10 @@ void RTL::print(std::ostream& os /*= cout*/, bool withDF /*= false*/) {
     if (stmtList.empty()) os << std::endl;     // New line for NOP
 }
 
+void RTL::prints() {
+    print(std::cerr, true);
+}
+
 /*==============================================================================
  * FUNCTION:        RTL::getAddress
  * OVERVIEW:        Return the native address of this RTL
