@@ -83,7 +83,8 @@ void Boomerang::help() {
     std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-ic: decode through type 0 indirect calls\n";
-    std::cerr << "-o <output path>: where to generate output (defaults to .)\n";
+    std::cerr << "-o <output path>: where to generate output (defaults to "
+        "./output/)\n";
     std::cerr << "-h: this help\n";
     std::cerr << "-m <num>: max memory depth\n";
     std::cerr << "-nb: no simplifications for branches\n";
@@ -226,7 +227,7 @@ int Boomerang::commandLine(int argc, const char **argv)
         std::cerr << "? No slash in argv[0]!" << std::endl;
         return 1;
     }
-    outputPath = "./";
+    outputPath = "./output/";
 
     // Parse switches on command line
     if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
