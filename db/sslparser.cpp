@@ -2147,7 +2147,7 @@ case 82:
 #line 764 "sslparser.y"
 {
             // Not sure why the below is commented out (MVE)
-/*          Unary* pFlag = new Unary(opRegOf, Dict.RegMap[$3]);
+/*          Location* pFlag = Location::regOf(Dict.RegMap[$3]);
             $1->push_back(pFlag);
             $$ = $1;
 */          yyval.explist = 0;
@@ -2494,14 +2494,14 @@ case 121:
             else {
                 // A register with a constant reg nmber, e.g. %g2.
                 // In this case, we want to return r[const 2]
-                yyval.exp = new Unary(opRegOf, new Const(it->second));
+                yyval.exp = Location::regOf(it->second);
             }
         ;
     break;}
 case 122:
 #line 1075 "sslparser.y"
 {
-            yyval.exp = new Unary(opRegOf, yyvsp[-1].exp);
+            yyval.exp = Location::regOf(yyvsp[-1].exp);
         ;
     break;}
 case 123:
@@ -2509,13 +2509,13 @@ case 123:
 {
             int regNum;
             sscanf(yyvsp[0].str, "r%d", &regNum);
-            yyval.exp = new Unary(opRegOf, new Const(regNum));
+            yyval.exp = Location::regOf(regNum);
         ;
     break;}
 case 124:
 #line 1085 "sslparser.y"
 {
-            yyval.exp = new Unary(opMemOf, yyvsp[-1].exp);
+            yyval.exp = Location::memOf(yyvsp[-1].exp);
         ;
     break;}
 case 125:

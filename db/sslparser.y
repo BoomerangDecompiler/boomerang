@@ -763,7 +763,7 @@ rt:
 flag_list:
         flag_list ',' REG_ID {
             // Not sure why the below is commented out (MVE)
-/*          Unary* pFlag = new Unary(opRegOf, Dict.RegMap[$3]);
+/*          Location* pFlag = Location::regOf(Dict.RegMap[$3]);
             $1->push_back(pFlag);
             $$ = $1;
 */          $$ = 0;
@@ -1068,22 +1068,22 @@ var_op:
             else {
                 // A register with a constant reg nmber, e.g. %g2.
                 // In this case, we want to return r[const 2]
-                $$ = new Unary(opRegOf, new Const(it->second));
+                $$ = Location::regOf(it->second);
             }
         }
 
     |   REG_IDX exp ']' {
-            $$ = new Unary(opRegOf, $2);
+            $$ = Location::regOf($2);
         }
 
     |   REG_NUM {
             int regNum;
             sscanf($1, "r%d", &regNum);
-            $$ = new Unary(opRegOf, new Const(regNum));
+            $$ = Location::regOf(regNum);
         }
 
     |   MEM_IDX exp ']' {
-            $$ = new Unary(opMemOf, $2);
+            $$ = Location::memOf($2);
         }
 
     |   NAME {

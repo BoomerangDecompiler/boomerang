@@ -89,8 +89,7 @@ static std::set<PBB> setPathDone;        // Set of PBBs already traversed
 // Arrays for the three forms (five since O has 2 subforms)
 
 // Pattern: m[<expr> * 4 + T ]
-static Unary formA (opMemOf,
-        new Binary(opPlus,
+Location *formA  = Location::memOf(new Binary(opPlus,
             new Binary(opMult,
                 new Terminal(opWild),
                 new Const(4)),
@@ -99,9 +98,8 @@ static Unary formA (opMemOf,
 //    opIntConst, 4, opIntConst, -1};
 
 // Pattern: m[<expr> * 4 + T ] + T
-static Binary formO (opPlus,
-    new Unary(opMemOf,
-        new Binary(opPlus,
+Binary *formO  = new Binary(opPlus,
+    Location::memOf(new Binary(opPlus,
             new Binary(opMult,
                 new Terminal(opWild),
                 new Const(4)),
@@ -112,8 +110,7 @@ static Binary formO (opPlus,
 
 // Pattern example: m[(((<expr> & 63) * 8) + 12340) + 4]
 // Simplifies to m[((<expr> & 63) * 8) + 12344]
-static Unary formH(opMemOf,
-    new Binary(opPlus,
+Location *formH = Location::memOf(new Binary(opPlus,
         new Binary(opMult,
             new Binary(opBitAnd,
                 new Terminal(opWild),
@@ -131,10 +128,9 @@ static Unary formH(opMemOf,
 
 // Pattern: %pc + m[%pc  + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static Binary formO1(opPlus,
+Binary *formO1 = new Binary(opPlus,
     new Terminal(opPC),
-    new Unary(opMemOf,
-        new Binary(opPlus,
+    Location::memOf(new Binary(opPlus,
             new Terminal(opPC),
             new Binary(opPlus,
                 new Binary(opMult,
@@ -152,10 +148,9 @@ static Binary formO1(opPlus,
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static Binary formO2(opPlus,
+Binary *formO2 = new Binary(opPlus,
     new Terminal(opPC),
-    new Unary(opMemOf,
-        new Binary(opPlus,
+    Location::memOf(new Binary(opPlus,
             new Terminal(opPC),
             new Binary(opMinus,
                 new Binary(opMult,
@@ -172,20 +167,20 @@ static Binary formO2(opPlus,
 //    opIntConst, -1};
 
 // A subexpression representing `r[v] - k' needed in two places below
-static Binary expRegMinus(opMinus,
+Binary *expRegMinus = new Binary(opMinus,
     new Terminal(opWildRegOf),
     new Terminal(opWild));
-static Binary expRegPlus(opPlus,
+Binary *expRegPlus = new Binary(opPlus,
     new Terminal(opWildRegOf),
     new Terminal(opWild));
-static Unary expReg999(opRegOf, new Const(999));
+Location *expReg999 = Location::regOf(999);
 
 // Pattern: r[iReg] + negativeConst
-static Binary expRegPlusNegConst(opPlus, new Terminal(opWildRegOf),
+Binary *expRegPlusNegConst = new Binary(opPlus, new Terminal(opWildRegOf),
     new Terminal(opWild)); 
 
 // Pattern: r[x] & const
-static Binary expRegAndConst(opBitAnd,
+Binary *expRegAndConst = new Binary(opBitAnd,
     new Terminal(opWildRegOf),
     new Terminal(opWildIntConst));
 
@@ -527,7 +522,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                     }
                 }
                 // Or it could be an add of a negative constant
-                else if (rhs && *rhs == expRegPlusNegConst) {
+                else if (rhs && *rhs == *expRegPlusNegConst) {
                     // Is the const negative?
                     Exp* sub = rhs->getSubExp2();
                     int iconst = ((Const*)sub)->getInt();
@@ -552,18 +547,18 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         // and branch. We need to do this first, because most other
         // cases require an assignment to a register of interest, and will
         // continue the loop if this is not found
-        Unary regOfFuncRet(opRegOf, new Const(iFuncRetReg));
+        Location *regOfFuncRet = Location::regOf(iFuncRetReg);
         Exp* result;
-        if (pRtl->isCall() && expJmp->search(&regOfFuncRet, result)) {
+        if (pRtl->isCall() && expJmp->search(regOfFuncRet, result)) {
             // We have come across a call, and the function return
             // register is used in expJmp-> We have to assume that
             // this call will define the switch variable. Replace it
             // with 999 to ensure it is not altered.
             bool changed;
-            expJmp = expJmp->searchReplaceAll(&regOfFuncRet, &expReg999,
+            expJmp = expJmp->searchReplaceAll(regOfFuncRet, expReg999,
               changed);
             // Do the same to expBound
-            expBound = expBound->searchReplaceAll(&regOfFuncRet, &expReg999,
+            expBound = expBound->searchReplaceAll(regOfFuncRet, expReg999,
               changed);
             continue;
         }
@@ -635,9 +630,9 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
             if ((*itCurRtl)->isCompare(iReg, expCompare)) {
                 // It is a compare instruction. But it should be a comparison
                 // to a register of interest
-                Unary regOfK(opRegOf, new Const(iReg));
+                Location *regOfK = Location::regOf(iReg);
                 Exp* result;
-                if (!expJmp->search(&regOfK, result)) {
+                if (!expJmp->search(regOfK, result)) {
                     // It doesn't appear to be a register of interest. But it
                     // might be, if there is a copy ahead. Example from
                     // /usr/ccs/bin/dis (Sparc Solaris 2.6):
@@ -650,7 +645,7 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
                     continue;
                 }
                 // Append r[ int iReg
-                expBound->setSubExp1(regOfK.clone());
+                expBound->setSubExp1(regOfK->clone());
                 // Append the semantic string for the thing being compared
                 // to
                 expBound->setSubExp2(expCompare->clone());
@@ -724,9 +719,9 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
             if (bDestBound) {
                 // Loading the upper expression from memory. Freeze the
                 // bounds expression
-                Unary regOfK(opRegOf, new Const(iDest));
+                Location *regOfK = Location::regOf(iDest);
                 bool changed;
-                expBound = expBound->searchReplaceAll(&regOfK, &expReg999,
+                expBound = expBound->searchReplaceAll(regOfK, expReg999,
                   changed);
                 continue;
             }
@@ -744,12 +739,12 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
                 // We are loading our switch variable from memory.
                 // To make sure we don't change this any more, replace
                 // the r[iDest] in expJmp to r[999]
-                Unary regOfK(opRegOf, new Const(iDest));
+                Location *regOfK = Location::regOf(iDest);
                 bool changed;
-                expJmp = expJmp->searchReplaceAll(&regOfK, &expReg999, changed);
+                expJmp = expJmp->searchReplaceAll(regOfK, expReg999, changed);
                 // Do the same to expBound, if set
                 if (expBound)
-                    expBound = expBound->searchReplaceAll(&regOfK, &expReg999,
+                    expBound = expBound->searchReplaceAll(regOfK, expReg999,
                       changed);
                 iDest = 999;             // Don't subst again
                 // This defines the switch variable, if not already set
@@ -792,7 +787,7 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
         // assume that this `and' is setting the upper bound
         // In any case, the lower bound is 0
         // r[K1] & K2
-        if (*pRHS == expRegAndConst) {
+        if (*pRHS == *expRegAndConst) {
             Exp* sub1 = ((Binary*)pRHS)->getSubExp1();
             Exp* sub2 = ((Binary*)pRHS)->getSubExp2();
             iReg = ((Const*)((Unary*)sub1)->getSubExp1())->getInt();
@@ -822,14 +817,14 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
 #else
         // Substitute both expJmp and expBound, if affected
         if (iDest != 999) {
-            Unary regOfK(opRegOf, new Const(iDest));
+            Location *regOfK = Location::regOf(iDest);
             bool changed;
             if (expBound) {
-                expBound = expBound->searchReplaceAll(&regOfK, pRHS, changed);
+                expBound = expBound->searchReplaceAll(regOfK, pRHS, changed);
                 expBound->simplify();
             }
             if (expJmp)
-                expJmp = expJmp->searchReplaceAll(&regOfK, pRHS, changed);
+                expJmp = expJmp->searchReplaceAll(regOfK, pRHS, changed);
         }
 #endif
 
@@ -857,7 +852,7 @@ forcedCheck:
 
             // Check for form A (addresses)
             // Pattern: m[<expr> * 4 + T ]
-            if (*expJmp == formA) {
+            if (*expJmp == *formA) {
                 chForm = 'A';
                 expJmp = ((Unary*) expJmp)->becomeSubExp1();     // <expr> * 4 + T
                 uTable = (ADDRESS)
@@ -868,7 +863,7 @@ forcedCheck:
 
             // Check for form O (offsets)
             // Pattern: m[<expr> * 4 + T ] + T
-            else if (*expJmp == formO) {
+            else if (*expJmp == *formO) {
                 chForm = 'O';
                 expJmp = ((Binary*)expJmp)->becomeSubExp1();
                 // m[<expr> * 4 + T]
@@ -884,7 +879,7 @@ forcedCheck:
             // Expect an expression like this:
             // m[(((<expr> & 63) * 8) + 12345) + 4]
             // Simplifies to m[((<expr> & 63) * 8) + 12344]
-            else if (*expJmp == formH) {
+            else if (*expJmp == *formH) {
                 chForm = 'H';
                 expJmp = ((Unary*) expJmp)->becomeSubExp1();
                 //((<expr> & K) * 8) + T
@@ -900,7 +895,7 @@ forcedCheck:
             // Expect an expression like this:
             // %pc + m[%pc  + ((<expr> * 4) + k)]
             // where k is a small constant, typically 28
-            else if (*expJmp == formO1) {
+            else if (*expJmp == *formO1) {
                 chForm = 'R';
                 expJmp = ((Binary*)expJmp)->becomeSubExp2();
                 // m[%pc + ((<expr> * 4) + k)]
@@ -918,7 +913,7 @@ forcedCheck:
             // Expect an expression like this:
             // %pc + m[%pc  + ((<expr> * 4) - k)] - k
             // where k is a smallish constant, e.g. 288
-            else if (*expJmp == formO2) {
+            else if (*expJmp == *formO2) {
                 chForm = 'r';
                 expJmp = ((Binary*)expJmp)->becomeSubExp2();
                 // m[%pc  + ((<expr> * 4) - k)] - k
@@ -946,14 +941,14 @@ forcedCheck:
         if (!bGotUpper || !bGotLower) {
             // Check if we have the upper and lower bounds together
             // ((r[v] GT k1] || (r[v] LT k2))
-            static Binary expBoth(opOr,
+            Binary *expBoth = new Binary(opOr,
                 new Binary(opUpper,
                     new Terminal(opWildRegOf),
                     new Terminal(opWildIntConst)),
                 new Binary(opLower,
                     new Terminal(opWildRegOf),
                     new Terminal(opWildIntConst)));
-            if (expBound && *expBound == expBoth) {
+            if (expBound && *expBound == *expBoth) {
                 // We have both bounds
                 Exp* sub1 = expBound->getSubExp1();
                 Exp* sub2 = expBound->getSubExp2();
@@ -978,10 +973,10 @@ forcedCheck:
 
         // Check for upper bound only
         if (!bGotUpper) {
-            static Binary expUpper(opUpper,
+            Binary *expUpper = new Binary(opUpper,
                 new Terminal(opWildRegOf),
                 new Terminal(opWildIntConst));
-            if (expBound && *expBound == expUpper) {
+            if (expBound && *expBound == *expUpper) {
                 bGotUpper = true;
                 Exp* sub = ((Binary*)expBound)->getSubExp2();
                 iUpper = ((Const*)sub)->getInt();
@@ -1016,7 +1011,7 @@ forcedCheck:
 
             // Now check if have `r[v] - k'
             Exp* result;
-            bool bRet = expJmp->search(&expRegMinus, result);
+            bool bRet = expJmp->search(expRegMinus, result);
             if (bRet) {
                 // We now have the lower bound, and all is done
                 bGotLower = true;
@@ -1029,7 +1024,7 @@ forcedCheck:
             else {
                 // Could be r[v] + k, where k is positive; in this case
                 // the lower bound is -k
-                bool bRet = expJmp->search(&expRegPlus, temp);
+                bool bRet = expJmp->search(expRegPlus, temp);
                 if (bRet) {
                     // We now have the lower bound, and all is done
                     iLower =
@@ -1110,7 +1105,7 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     }
     // Check if it's adding a negative constant to a register. If so,
     // assume it's just like the subtract above
-    else if ((*rhs == expRegPlusNegConst) &&
+    else if ((*rhs == *expRegPlusNegConst) &&
       (((Binary*)rhs)->getSubExp2()->isIntConst()) &&
       (((Const*)((Binary*)rhs)->getSubExp2())->getInt() < 0)) {
         insertAfterTemps(*itDefinesSw, new Assign(

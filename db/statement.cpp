@@ -1860,7 +1860,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     proc->getProg()->globalUsed(u);
                     const char *nam = proc->getProg()->getGlobal(u);
                     if (nam)
-                        e = new Unary(opGlobal, new Const((char*)nam));
+                        e = Location::global(nam);
                 }
             }
             if (points_to->isFunc()) {
@@ -1881,7 +1881,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     else
                         p->setName(sig->getName());
                     p->setSignature(sig);
-                    e = new Unary(opGlobal, new Const((char*)p->getName()));
+                    e = Location::global(p->getName());
                 }
             }
         } else if (t->isFloat()) {
@@ -1890,7 +1890,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
     }
 #if 0
     if (t->isPointer() && e->getOper() != opAddrOf) {
-        e = new Unary(opAddrOf, new Unary(opMemOf, e));
+        e = new Unary(opAddrOf, Location::memOf(e));
     }
 #endif
     
@@ -1931,14 +1931,14 @@ void CallStatement::processConstants(Prog *prog) {
     // hack
     if (getDestProc() && getDestProc()->isLib()) {
         int sp = proc->getSignature()->getStackRegister(prog);
-        removeReturn(Unary::regOf(sp));
+        removeReturn(Location::regOf(sp));
         for (unsigned i = 0; i < implicitArguments.size(); i++)
-            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Unary::regOf(sp)) {
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) {
                 implicitArguments[i] = new Const(0);
                 break;
             }
         for (unsigned i = 0; i < implicitArguments.size(); i++)
-            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *new Unary(opMemOf, Unary::regOf(sp))) {
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::memOf(Location::regOf(sp))) {
                 implicitArguments[i] = new Const(0);
                 break;
             }
@@ -1957,7 +1957,7 @@ void CallStatement::processConstants(Prog *prog) {
                 // special hack for scanf
                 if (name == "scanf") {
                     setArgumentExp(n, new Unary(opAddrOf,
-                        new Unary(opMemOf, getArgumentExp(n))));
+                        Location::memOf(getArgumentExp(n))));
                 }
                 p++;
                 switch(*p) {
@@ -2480,7 +2480,7 @@ void Assign::getDefinitions(LocationSet &defs) {
     // This is a hack to fix aliasing (replace with something general)
     if (lhs->getOper() == opRegOf &&
         ((Const*)lhs->getSubExp1())->getInt() == 24) {
-        defs.insert(Unary::regOf(0));
+        defs.insert(Location::regOf(0));
     }
 }
 

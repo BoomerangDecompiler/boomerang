@@ -198,7 +198,7 @@ void DecodeResult::reset()
  *============================================================================*/
 Exp* NJMCDecoder::dis_Reg(int regNum)
 {
-      Exp* expr = new Unary(opRegOf, new Const(regNum));
+      Exp* expr = Location::regOf(regNum);
       return expr;
 }
 

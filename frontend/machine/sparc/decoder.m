@@ -632,7 +632,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
  *============================================================================*/
 Exp* SparcDecoder::dis_RegLhs(unsigned r)
 {
-	return new  Unary(opRegOf, new Const((int) r));
+	return Location::regOf(r);
 }
 
 /*==============================================================================
@@ -647,7 +647,7 @@ Exp* SparcDecoder::dis_RegRhs(unsigned r)
 {
 	if (r == 0)
 		return new Const(0);
-	return new  Unary(opRegOf, new Const((int) r));
+	return Location::regOf(r);
 }
 
 /*==============================================================================
@@ -685,16 +685,16 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 
     match pc to
     | indirectA(rs1) =>
-        expr = new Unary(opRegOf, new Const((int)rs1));
+        expr = Location::regOf(rs1);
     | indexA(rs1, rs2) =>
         expr = new Binary(opPlus,
-            new Unary(opRegOf, new Const((int)rs1)),
-            new Unary(opRegOf, new Const((int)rs2)));
+            Location::regOf(rs1),
+            Location::regOf(rs2));
     | absoluteA(i) =>
         expr = new Const((int)i);
     | dispA(rs1,i) =>
         expr = new Binary(opPlus,
-            new Unary(opRegOf, new Const((int)rs1)),
+            Location::regOf(rs1),
             new Const((int)i));
     endmatch
 

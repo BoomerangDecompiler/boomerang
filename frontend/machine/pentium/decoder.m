@@ -1528,8 +1528,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     | ANDiodb(Eaddr, i8) =>
         // Special hack to ignore and $0xfffffff0, %esp
         Exp* oper = dis_Eaddr(Eaddr, 32);
-        static Unary esp(opRegOf, new Const(28));
-        if (i8 != -16 || !(*oper == esp))
+        if (i8 != -16 || !(*oper == *Location::regOf(28)))
             stmts = instantiate(pc,  "ANDiodb", DIS_EADDR32, DIS_I8);
 
     | ANDiowb(Eaddr, i8) =>
@@ -2111,35 +2110,30 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
     match pc to 
     | Abs32 (a) =>
             // [a]
-            expr = new Unary(opMemOf, new Const(a));
+            expr = Location::memOf(new Const(a));
     | Disp32 (d, base) => 
             // m[ r[ base] + d]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Const(d)));
     | Disp8 (d, r32) => 
             // m[ r[ r32] + d]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+r32),
                     new Const(d)));
     | Index (base, index, ss) =>
             // m[ r[base] + r[index] * ss]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Binary(opMult,
                         dis_Reg(24+index),
                         new Const(1<<ss))));
     | Base (base) =>
             // m[ r[base] ]
-            expr = new Unary(opMemOf,
-                dis_Reg(24+base));
+            expr = Location::memOf(dis_Reg(24+base));
     | Index32 (d, base, index, ss) =>
             // m[ r[ base ] + r[ index ] * ss + d ]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Binary(opPlus,
                         new Binary(opMult,
@@ -2148,14 +2142,12 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                         new Const(d))));
     | Base32 (d, base) =>
             // m[ r[ base] + d ]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Const(d)));
     | Index8 (d, base, index, ss) =>
             // m[ r[ base ] + r[ index ] * ss + d ]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Binary(opPlus,
                         new Binary(opMult,
@@ -2164,25 +2156,22 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
                         new Const(d))));
     | Base8 (d, base) =>
             // m[ r[ base] + d ]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     dis_Reg(24+base),
                     new Const(d)));
     | Indir (base) => 
             // m[ r[base] ]
-            expr = new Unary(opMemOf,
-                dis_Reg(24+base));
+            expr = Location::memOf(dis_Reg(24+base));
     | ShortIndex (d, index, ss) =>
             // m[ r[index] * ss + d ]
-            expr = new Unary(opMemOf,
-                new Binary(opPlus,
+            expr = Location::memOf(new Binary(opPlus,
                     new Binary(opMult,
                         dis_Reg(24+index),
                         new Const(1<<ss)),
                     new Const(d)));
     | IndirMem (d) =>
             // [d] (Same as Abs32 using SIB)
-            expr = new Unary(opMemOf, new Const(d));
+            expr = Location::memOf(new Const(d));
     endmatch
     return expr;
 }

@@ -151,6 +151,16 @@ PhiExp::PhiExp(PhiExp& o) : Unary(opPhi, subExp1)
 TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty)
 { }
 
+Location::Location(OPER op, Exp *exp) : Unary(op, exp)
+{
+    assert(op == opRegOf || op == opMemOf || op == opLocal ||
+           op == opGlobal || op == opParam);
+}
+
+Location::Location(Location& o) : Unary(o.op, o.subExp1->clone())
+{
+}
+
 /*==============================================================================
  * FUNCTION:        Unary::~Unary etc
  * OVERVIEW:        Destructors.
@@ -2232,8 +2242,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
     // another hack, this time for aliasing
     if (subExp1->getOper() == opRegOf && 
         ((Const*)subExp1->getSubExp1())->getInt() == 0 &&
-        def && def->getLeft() && *def->getLeft() == *Unary::regOf(24)) {
-        res = new TypedExp(new IntegerType(16), new RefExp(Unary::regOf(24), def));
+        def && def->getLeft() && *def->getLeft() == *Location::regOf(24)) {
+        res = new TypedExp(new IntegerType(16), new RefExp(Location::regOf(24), def));
         bMod = true;
         return res;
     }
@@ -2444,13 +2454,12 @@ Exp* RefExp::expSubscriptVar(Exp* e, Statement* def) {
  * PARAMETERS:      None
  * RETURNS:         Fixed expression
  *============================================================================*/
-static Unary succRegOf(opSuccessor,
-    new Unary(opRegOf, new Terminal(opWild)));
 Exp* Exp::fixSuccessor() {
     bool change;
     Exp* result;
     // Assume only one successor function in any 1 expression
-    if (search(&succRegOf, result)) {
+    if (search(new Unary(opSuccessor,
+                         Location::regOf(new Terminal(opWild))), result)) {
         // Result has the matching expression, i.e. succ(r[K])
         Exp* sub1 = ((Unary*)result)->getSubExp1();
         assert(sub1->getOper() == opRegOf);
@@ -2753,7 +2762,7 @@ Exp* RefExp::fromSSA(igraph& ig) {
         os << "local" << ig[this];
         std::string name = os.str();
         ;//delete this;
-        return new Unary(opLocal, new Const(strdup(name.c_str())));
+        return Location::local(strdup(name.c_str()));
     }
 }
 

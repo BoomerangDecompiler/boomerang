@@ -324,8 +324,8 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
             std::list<std::string>::iterator i,j;
             for( i = funcParams.begin(), j = sub.funcParams.begin();
               i != funcParams.end(); i++, j++ ) {
-                Exp* match = new Unary(opParam, new Const((char*)j->c_str()));
-                Exp* replace = new Unary(opParam, new Const((char*)i->c_str()));
+                Exp* match = Location::param(j->c_str());
+                Exp* replace = Location::param(i->c_str());
                 sub.asgn->searchAndReplace( match, replace );
             }
             sub.funcParams = funcParams;
@@ -442,8 +442,7 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl,
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
-            Exp* formal = new Unary(opParam, 
-            new Const((char*)(param->c_str())));
+            Exp* formal = Location::param(param->c_str());
                 
             (*rt)->searchAndReplace(formal, *actual);
             (*rt)->fixSuccessor();

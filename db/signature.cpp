@@ -107,9 +107,9 @@ namespace CallingConvention {
 
 CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam)
 {
-    Signature::addReturn(Unary::regOf(28));
+    Signature::addReturn(Location::regOf(28));
     Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
-                                    Unary::regOf(28), NULL);
+                                    Location::regOf(28), NULL);
 }
 
 CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old)
@@ -189,7 +189,7 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p,
 void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
 {
     if (e == NULL) {
-        e = Unary::regOf(24);
+        e = Location::regOf(24);
     }
     Signature::addReturn(type, e);
 }
@@ -206,10 +206,10 @@ void CallingConvention::Win32Signature::addParameter(Type *type,
 Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *esp = new Unary(opRegOf, new Const(28));
+    Exp *esp = Location::regOf(28);
     if (params.size() != 0 && *params[0]->getExp() == *esp)
         n--;
-    Exp *e = new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+    Exp *e = Location::memOf(new Binary(opPlus, esp, new Const((n+1) * 4)));
     return e;
 }
 
@@ -222,32 +222,32 @@ Signature *CallingConvention::Win32Signature::promote(UserProc *p)
 
 Exp *CallingConvention::Win32Signature::getStackWildcard() {
     // Note: m[esp + -8] is simnplified to m[esp - 8] now
-    return new Unary(opMemOf, new Binary(opMinus, new Unary(opRegOf, 
-               new Const(28)), new Terminal(opWild)));
+    return Location::memOf(new Binary(opMinus, Location::regOf(28), 
+                                               new Terminal(opWild)));
 }
 
 Exp *CallingConvention::Win32Signature::getProven(Exp *left)
 {
     int nparams = params.size();
-    if (nparams > 0 && *params[0]->getExp() == *Unary::regOf(28)) {
+    if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
         nparams--;
     }
     if (left->getOper() == opRegOf && 
         left->getSubExp1()->getOper() == opIntConst) {
         switch (((Const*)left->getSubExp1())->getInt()) {
             case 28:
-                return new Binary(opPlus, Unary::regOf(28), 
+                return new Binary(opPlus, Location::regOf(28), 
                                           new Const(4 + nparams*4));
             case 26:
-                return Unary::regOf(29);
+                return Location::regOf(29);
             case 27:
-                return Unary::regOf(29);
+                return Location::regOf(29);
             case 29:
-                return Unary::regOf(29);
+                return Location::regOf(29);
             case 30:
-                return Unary::regOf(30);
+                return Location::regOf(30);
             case 31:
-                return Unary::regOf(31);
+                return Location::regOf(31);
             // there are other things that must be preserved here, look at calling convention
         }
     }
@@ -257,9 +257,9 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
 void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
 {
     static Assign *fixpc = new Assign(new Terminal(opPC),
-            new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
-    static Assign *fixesp = new Assign(new Unary(opRegOf, new Const(28)),
-            new Binary(opPlus, new Unary(opRegOf, new Const(28)),
+            Location::memOf(Location::regOf(28)));
+    static Assign *fixesp = new Assign(Location::regOf(28),
+            new Binary(opPlus, Location::regOf(28),
                 new Const(4 + params.size()*4)));
     stmts.append((Assign*)fixpc->clone());
     stmts.append((Assign*)fixesp->clone());
@@ -267,9 +267,9 @@ void CallingConvention::Win32Signature::getInternalStatements(StatementList &stm
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
 {
-    Signature::addReturn(Unary::regOf(28));
+    Signature::addReturn(Location::regOf(28));
     Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
-                                    Unary::regOf(28), NULL);
+                                    Location::regOf(28), NULL);
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old)
@@ -351,7 +351,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
 void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 {
     if (e == NULL) {
-        e = Unary::regOf(24);
+        e = Location::regOf(24);
     }
     Signature::addReturn(type, e);
 }
@@ -368,10 +368,10 @@ void CallingConvention::StdC::PentiumSignature::addParameter(Type *type,
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
     if (n < (int)params.size())
         return Signature::getArgumentExp(n);
-    Exp *esp = new Unary(opRegOf, new Const(28));
+    Exp *esp = Location::regOf(28);
     if (params.size() != 0 && *params[0]->getExp() == *esp)
         n--;
-    Exp *e = new Unary(opMemOf, new Binary(opPlus, esp, new Const((n+1) * 4)));
+    Exp *e = Location::memOf(new Binary(opPlus, esp, new Const((n+1) * 4)));
     return e;
 }
 
@@ -383,8 +383,8 @@ Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
 
 Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
     // Note: m[esp + -8] is simplified to m[esp - 8] now
-    return new Unary(opMemOf, new Binary(opMinus, new Unary(opRegOf, 
-               new Const(28)), new Terminal(opWild)));
+    return Location::memOf(new Binary(opMinus, Location::regOf(28),
+                                                   new Terminal(opWild)));
 }
 
 Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
@@ -393,9 +393,9 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
         left->getSubExp1()->getOper() == opIntConst) {
         switch (((Const*)left->getSubExp1())->getInt()) {
             case 28:
-                return new Binary(opPlus, Unary::regOf(28), new Const(4));
+                return new Binary(opPlus, Location::regOf(28), new Const(4));
             case 29:
-                return Unary::regOf(29);
+                return Location::regOf(29);
             // there are other things that must be preserved here, look at calling convention
         }
     }
@@ -406,10 +406,10 @@ void CallingConvention::StdC::PentiumSignature::getInternalStatements(
   StatementList &stmts) {
     // pc := m[r28]
     static Assign *fixpc = new Assign(new Terminal(opPC),
-            new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
+            Location::memOf(Location::regOf(28)));
     // r28 := r28 + 4;
-    static Assign *fixesp = new Assign(new Unary(opRegOf, new Const(28)),
-            new Binary(opPlus, new Unary(opRegOf, new Const(28)),
+    static Assign *fixesp = new Assign(Location::regOf(28),
+            new Binary(opPlus, Location::regOf(28),
                 new Const(4)));
     stmts.append((Assign*)fixpc->clone());
     stmts.append((Assign*)fixesp->clone());
@@ -452,7 +452,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
 void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 {
     if (e == NULL) {
-        e = Unary::regOf(8);
+        e = Location::regOf(8);
     }
     Signature::addReturn(type, e);
 }
@@ -473,12 +473,11 @@ Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n) {
     if (n >= 6) {
         // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
         // m[%esp+96], etc.
-        e = new Unary(opMemOf,
-            new Binary(opPlus,
-                new Unary(opRegOf, new Const(14)),      // %o6 == %sp
+        e = Location::memOf(new Binary(opPlus,
+                Location::regOf(14), // %o6 == %sp
                 new Const(92 + (n-6)*4)));
     } else
-        e = new Unary(opRegOf, new Const((int)(8 + n)));
+        e = Location::regOf((int)(8 + n));
     return e;
 }
  
@@ -490,8 +489,8 @@ Signature *CallingConvention::StdC::SparcSignature::promote(UserProc *p)
 
 Exp *CallingConvention::StdC::SparcSignature::getStackWildcard()
 {
-    return new Unary(opMemOf, new Binary(opPlus, new Unary(opRegOf, 
-               new Const(14)), new Terminal(opWild)));
+    return Location::memOf(new Binary(opPlus, Location::regOf(14),
+               new Terminal(opWild)));
 }
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
@@ -713,8 +712,8 @@ void Signature::fixReturnsWithParameters() {
             bool change;
             RefExp r(getParamExp(i)->clone(), NULL);
             Exp*& retExp = returns[j]->getRefExp();
-            retExp = retExp->searchReplaceAll(&r, new Unary(opParam, 
-              new Const((char*)getParamName(i))), change);
+            retExp = retExp->searchReplaceAll(&r, 
+                                Location::param(getParamName(i)), change);
         }
     }
 }
@@ -876,7 +875,7 @@ void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
         for (n = 0; n < getNumParams(); n++) {
             if (VERBOSE) std::cerr << "found param " << n << std::endl;
             p->getCFG()->searchAndReplace(getParamExp(n), 
-                new Unary(opParam, new Const((char *)getParamName(n))));
+                Location::param(getParamName(n)));
         }
     }
 }
@@ -934,8 +933,7 @@ void Signature::addImplicitParametersFor(Parameter *pn)
                 CompoundType *c = (CompoundType*)points_to;
                 int base = 0;
                 for (int n = 0; n < c->getNumTypes(); n++) {
-                    Exp *e1 = new Unary(opMemOf, 
-                                    new Binary(opPlus, e->clone(),
+                    Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),
                                         new Const(base / 8)));
                     e1 = e1->simplify();
                     addImplicitParameter(c->getType(n), c->getName(n), e1, pn);
@@ -943,7 +941,7 @@ void Signature::addImplicitParametersFor(Parameter *pn)
                 }
             } else if (!points_to->isFunc()) 
                 addImplicitParameter(orig_points_to, NULL, 
-                                  new Unary(opMemOf, e->clone()), pn);
+                                  Location::memOf(e->clone()), pn);
         }
     }
 }
@@ -986,7 +984,7 @@ Exp* Signature::getFirstArgLoc(Prog* prog) {
             //Exp* e = sig.getArgumentExp(0);
             // For now, need to work around how the above appears to be the
             // wrong thing!
-Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
+Exp* e = Location::memOf(Location::regOf(28));
             return e;
         }
         default:
@@ -1003,9 +1001,9 @@ Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
 /*static*/ Exp* Signature::getReturnExp2(BinaryFile* pBF) {
     switch (pBF->GetMachine()) {
         case MACHINE_SPARC: 
-            return new Unary(opRegOf, new Const(8));
+            return Location::regOf(8);
         case MACHINE_PENTIUM:
-            return new Unary(opRegOf, new Const(24));
+            return Location::regOf(24);
         default:
             std::cerr << "getReturnExp2: machine not handled\n";
             return NULL;
@@ -1023,20 +1021,20 @@ std::list<Exp*> *Signature::getCallerSave(Prog* prog) {
     switch (mach) {
         case MACHINE_PENTIUM: {
             std::list<Exp*> *li = new std::list<Exp*>;
-            li->push_back(new Unary(opRegOf, new Const(24)));    // eax
-            li->push_back(new Unary(opRegOf, new Const(25)));    // ecx
-            li->push_back(new Unary(opRegOf, new Const(26)));    // edx
+            li->push_back(Location::regOf(24));    // eax
+            li->push_back(Location::regOf(25));    // ecx
+            li->push_back(Location::regOf(26));    // edx
             return li;
         }
         case MACHINE_SPARC: {
             std::list<Exp*> *li = new std::list<Exp*>;
-            li->push_back(new Unary(opRegOf, new Const(8)));    // %o0
-            li->push_back(new Unary(opRegOf, new Const(9)));    // %o1
-            li->push_back(new Unary(opRegOf, new Const(10)));   // %o2
-            li->push_back(new Unary(opRegOf, new Const(11)));   // %o3
-            li->push_back(new Unary(opRegOf, new Const(12)));   // %o4
-            li->push_back(new Unary(opRegOf, new Const(13)));   // %o5
-            li->push_back(new Unary(opRegOf, new Const(1)));    // %g1
+            li->push_back(Location::regOf(8));    // %o0
+            li->push_back(Location::regOf(9));    // %o1
+            li->push_back(Location::regOf(10));   // %o2
+            li->push_back(Location::regOf(11));   // %o3
+            li->push_back(Location::regOf(12));   // %o4
+            li->push_back(Location::regOf(13));   // %o5
+            li->push_back(Location::regOf(1));    // %g1
             return li;
         }
         default:
@@ -1070,13 +1068,12 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
     // pc := m[r[28]]
     static Assign pent1ret(
         new Terminal(opPC),
-        new Unary(opMemOf,
-            new Unary(opRegOf, new Const(28))));
+        Location::memOf(Location::regOf(28)));
     // r[28] := r[28] + 4
     static Assign pent2ret(
-        new Unary(opRegOf, new Const(28)),
+        Location::regOf(28),
         new Binary(opPlus,
-            new Unary(opRegOf, new Const(28)),
+            Location::regOf(28),
             new Const(4)));
     MACHINE mach = prog->getMachine();
     switch (mach) {
@@ -1109,7 +1106,7 @@ int Signature::getStackRegister(Prog* prog) {
 
 bool Signature::isStackLocal(Prog* prog, Exp *e)
 {
-    static Exp *sp = Unary::regOf(getStackRegister(prog));
+    static Exp *sp = Location::regOf(getStackRegister(prog));
     return e->getOper() == opMemOf && 
            e->getSubExp1()->getOper() == opMinus &&
            *e->getSubExp1()->getSubExp1() == *sp &&

@@ -63,12 +63,11 @@
  * PARAMETERS:    s - Ptr to the given Statement
  * RETURNS:       True if it is
  *============================================================================*/
-static Unary srch(opRegOf, new Const(FSW));
 bool PentiumFrontEnd::isStoreFsw(Statement* s) {
     if (!s->isAssign()) return false;
     Exp* rhs = ((Assign*)s)->getRight();
     Exp* result;
-    bool res = rhs->search(&srch, result);
+    bool res = rhs->search(Location::regOf(FSW), result);
     return res;
 }
 /*==============================================================================
@@ -87,7 +86,7 @@ bool PentiumFrontEnd::isDecAh(RTL* r) {
     Binary ahm1(opMinus,
         new Binary(opSize,
             new Const(8),
-            new Unary(opRegOf, new Const(12))),
+            Location::regOf(12)),
         new Const(1));
     return *rhs == ahm1;
 }
@@ -143,13 +142,12 @@ bool PentiumFrontEnd::isAssignFromTern(Statement* s) {
  * RETURNS:         Nothing
  *============================================================================*/
 void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int mask) {
-    Unary search(opRegOf, new Terminal(opWild));
     std::list<Exp**> li;
     std::list<Exp**>::iterator it;
     Exp* exp = e;
     // Use doSearch, which is normally an internal method of Exp, to avoid
     // problems of replacing the wrong subexpression (in some odd cases)
-    e->doSearch(&search, exp, li, false);
+    e->doSearch(Location::regOf(new Terminal(opWild)), exp, li, false);
     for (it = li.begin(); it != li.end(); it++) {
         int reg = ((Const*)((Unary*)**it)->getSubExp1())->getInt();
         if ((min <= reg) && (reg <= max)) {
@@ -206,15 +204,15 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultParams()
 {
     static std::vector<Exp*> params;
     if (params.size() == 0) {
-        params.push_back(Unary::regOf(24/*eax*/));
-        params.push_back(Unary::regOf(25/*ecx*/));
-        params.push_back(Unary::regOf(26/*edx*/));
-        params.push_back(Unary::regOf(27/*ebx*/));
-        params.push_back(Unary::regOf(28/*esp*/));
-        params.push_back(Unary::regOf(29/*ebp*/));
-        params.push_back(Unary::regOf(30/*esi*/));
-        params.push_back(Unary::regOf(31/*edi*/));
-        params.push_back(new Unary(opMemOf, Unary::regOf(28)));
+        params.push_back(Location::regOf(24/*eax*/));
+        params.push_back(Location::regOf(25/*ecx*/));
+        params.push_back(Location::regOf(26/*edx*/));
+        params.push_back(Location::regOf(27/*ebx*/));
+        params.push_back(Location::regOf(28/*esp*/));
+        params.push_back(Location::regOf(29/*ebp*/));
+        params.push_back(Location::regOf(30/*esi*/));
+        params.push_back(Location::regOf(31/*edi*/));
+        params.push_back(Location::memOf(Location::regOf(28)));
     }
     return params;
 }
@@ -223,22 +221,22 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns()
 {
     static std::vector<Exp*> returns;
     if (returns.size() == 0) {
-        returns.push_back(Unary::regOf(24/*eax*/));
-        returns.push_back(Unary::regOf(25/*ecx*/));
-        returns.push_back(Unary::regOf(26/*edx*/));
-        returns.push_back(Unary::regOf(27/*ebx*/));
-        returns.push_back(Unary::regOf(28/*esp*/));
-        returns.push_back(Unary::regOf(29/*ebp*/));
-        returns.push_back(Unary::regOf(30/*esi*/));
-        returns.push_back(Unary::regOf(31/*edi*/));
-        returns.push_back(Unary::regOf(32/*st0*/));
-        returns.push_back(Unary::regOf(33/*st1*/));
-        returns.push_back(Unary::regOf(34/*st2*/));
-        returns.push_back(Unary::regOf(35/*st3*/));
-        returns.push_back(Unary::regOf(36/*st4*/));
-        returns.push_back(Unary::regOf(37/*st5*/));
-        returns.push_back(Unary::regOf(38/*st6*/));
-        returns.push_back(Unary::regOf(39/*st7*/));
+        returns.push_back(Location::regOf(24/*eax*/));
+        returns.push_back(Location::regOf(25/*ecx*/));
+        returns.push_back(Location::regOf(26/*edx*/));
+        returns.push_back(Location::regOf(27/*ebx*/));
+        returns.push_back(Location::regOf(28/*esp*/));
+        returns.push_back(Location::regOf(29/*ebp*/));
+        returns.push_back(Location::regOf(30/*esi*/));
+        returns.push_back(Location::regOf(31/*edi*/));
+        returns.push_back(Location::regOf(32/*st0*/));
+        returns.push_back(Location::regOf(33/*st1*/));
+        returns.push_back(Location::regOf(34/*st2*/));
+        returns.push_back(Location::regOf(35/*st3*/));
+        returns.push_back(Location::regOf(36/*st4*/));
+        returns.push_back(Location::regOf(37/*st5*/));
+        returns.push_back(Location::regOf(38/*st6*/));
+        returns.push_back(Location::regOf(39/*st7*/));
         returns.push_back(new Terminal(opPC));
     }
     return returns;
@@ -263,26 +261,26 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                 // Get the current Exp
                 st = (*rit)->elementAt(i);
                 if (st->isFpush()) {
-                    (*rit)->insertStmt(new Assign(80, new Unary(opRegOf, 
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(
                                                         new Unary(opTemp, 
                                                           new Const("tmpD9"))), 
-                                                      Unary::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
-                                                      Unary::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(38), 
-                                                      Unary::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(37), 
-                                                      Unary::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(36), 
-                                                      Unary::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(35), 
-                                                      Unary::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(34), 
-                                                      Unary::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(33), 
-                                                      Unary::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
-                                                      new Unary(opRegOf,
+                                                      Location::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(39), 
+                                                      Location::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(38), 
+                                                      Location::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(37), 
+                                                      Location::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(36), 
+                                                      Location::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(35), 
+                                                      Location::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(34), 
+                                                      Location::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(33), 
+                                                      Location::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(32), 
+                                                      Location::regOf(
                                                         new Unary(opTemp, 
                                                          new Const("tmpD9")))), 
                                                       i++);
@@ -292,26 +290,26 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                     continue;
                 }
                 else if (st->isFpop()) {
-                    (*rit)->insertStmt(new Assign(80, new Unary(opRegOf, 
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(
                                                         new Unary(opTemp, 
                                                           new Const("tmpD9"))), 
-                                                      Unary::regOf(32)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
-                                                      Unary::regOf(33)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(33), 
-                                                      Unary::regOf(34)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(34), 
-                                                      Unary::regOf(35)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(35), 
-                                                      Unary::regOf(36)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(36), 
-                                                      Unary::regOf(37)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(37), 
-                                                      Unary::regOf(38)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(38), 
-                                                      Unary::regOf(39)), i++);
-                    (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
-                                                      new Unary(opRegOf,
+                                                      Location::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(32), 
+                                                      Location::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(33), 
+                                                      Location::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(34), 
+                                                      Location::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(35), 
+                                                      Location::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(36), 
+                                                      Location::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(37), 
+                                                      Location::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(38), 
+                                                      Location::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(80, Location::regOf(39), 
+                                                      Location::regOf(
                                                         new Unary(opTemp, 
                                                          new Const("tmpD9")))), 
                                                       i++);
@@ -366,7 +364,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
         if (isStoreFsw((*rit)->elementAt(0))) {
             // Check the register - at present we only handle AX
             Exp* lhs = ((Assign*)(*rit)->elementAt(0))->getLeft();
-            Exp* ax = new Unary(opRegOf, new Const(0));
+            Exp* ax = Location::regOf(0);
             assert(*lhs == *ax);
             delete ax;
 
@@ -494,10 +492,10 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
   std::list<RTL*>* BB_rtls, PBB pBB, Cfg* pCfg) {
     int state = 0;              // Start in state 0
-    static Unary ah(opRegOf, new Const(AH));
-    static Unary notZf(opNot, new Terminal(opZF));
-    static Ternary ahAt7(opTern,
-        new Unary(opRegOf, new Const(AH)),
+    Location *ah = Location::regOf(AH);
+    Unary *notZf = new Unary(opNot, new Terminal(opZF));
+    Ternary *ahAt7 = new Ternary(opTern,
+        Location::regOf(AH),
         new Const(7),
         new Const(7));
     // Keep a list of iterators representing 
@@ -521,8 +519,8 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         Exp* rhs = asgn->getRight();
         Exp* result;
         // Check if uses register ah, and assigns to either ah or a temp
-        if ((lhs->search(&ah, result) || lhs->isTemp()) &&
-          rhs->search(&ah, result)) {
+        if ((lhs->search(ah, result) || lhs->isTemp()) &&
+          rhs->search(ah, result)) {
             // Should be an AND or XOR instruction
             OPER op = rhs->getOper();
             if ((op == opBitAnd) || (op == opBitXor)) {
@@ -572,7 +570,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         }
         // Or might be a compare or decrement: uses ah, assigns to
         // temp register
-        else if (lhs->isTemp() && rhs->search(&ah, result)) {
+        else if (lhs->isTemp() && rhs->search(ah, result)) {
             // Might be a compare, i.e. subtract
             if (rhs->getOper() == opMinus) {
                 Exp* e;
@@ -641,7 +639,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
                         return true;
                     }
                 }
-                else if (*e == notZf) {
+                else if (*e == *notZf) {
                     if (state == 7) state = 9;
                     else {
                         std::cerr << "Problem with SETNE\n";
@@ -652,7 +650,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         }
         // Check for sahf instr, i.e.
         // r[12]@7:7
-        else if (*rhs == ahAt7) {
+        else if (*rhs == *ahAt7) {
             if (state == 0) {
                 state = 23;
                 liIt.push_front(rit2);
@@ -1006,16 +1004,16 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
         Statement* a = new Assign(64,
             new Unary(opTemp, new Const("tmpl")),
             new Ternary(opFtoi, new Const(64), new Const(32),
-                new Unary(opRegOf, new Const(32))));
+                Location::regOf(32)));
         RTL* pRtl = new RTL(addr);
         pRtl->appendStmt(a);
         a = new Assign(32,
-            new Unary(opRegOf, new Const(24)),
+            Location::regOf(24),
             new Ternary(opTruncs, new Const(64), new Const(32),
                 new Unary(opTemp, new Const("tmpl"))));
         pRtl->appendStmt(a);
         a = new Assign(32,
-            new Unary(opRegOf, new Const(26)),
+            Location::regOf(26),
             new Binary(opShiftR,
                 new Unary(opTemp, new Const("tmpl")),
                 new Const(32)));
@@ -1064,9 +1062,9 @@ PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF)
 		int i = (*it).first;
 		Register &r = (*it).second;
 		if (!strcmp(r.g_name(), "%esp"))
-			prog->symbols[std::string(r.g_name())] = new TypedExp(Type(DATA_ADDRESS), new Unary(opRegOf, new Const(i)));
+			prog->symbols[std::string(r.g_name())] = new TypedExp(Type(DATA_ADDRESS), Location:;regOf(i));
 		else
-			prog->symbols[std::string(r.g_name())] = new TypedExp(r.g_type(), new Unary(opRegOf, new Const(i)));
+			prog->symbols[std::string(r.g_name())] = new TypedExp(r.g_type(), Location::regOf(i));
 	} */
 }
 
@@ -1123,7 +1121,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
             if (inst.valid && inst.rtl->getNumStmt() == 2) {
                 Assign* a = dynamic_cast<Assign*>
                                 (inst.rtl->elementAt(1));
-                if (a && *a->getRight() == *Unary::regOf(24)) {
+                if (a && *a->getRight() == *Location::regOf(24)) {
 #if 0
                     std::cerr << "is followed by push eax.. "
                               << "good" << std::endl;

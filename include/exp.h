@@ -393,8 +393,6 @@ public:
             Unary(OPER op, Exp* e);
     // Copy constructor
             Unary(Unary& o);
-    // Custom constructor
-    static Unary*  regOf(int r) {return new Unary(opRegOf, new Const(r));}
 
     // Clone
     virtual Exp* clone();
@@ -739,6 +737,25 @@ virtual Exp* clone();
     void    print(std::ostream& os, bool withUses = false);
     virtual Exp*  genConstraints(Exp* restrictTo) {
         assert(0); return NULL;} // Should not be constraining constraints
+};
+
+class Location : public Unary {
+protected:
+    // Constructor, with ID and subexpression
+            Location(OPER op, Exp* e);
+public:
+    // Copy constructor
+            Location(Location& o);
+    // Custom constructor
+    static Location* regOf(int r) {return new Location(opRegOf, new Const(r));}
+    static Location* regOf(Exp *e) {return new Location(opRegOf, e);}
+    static Location* memOf(Exp *e) {return new Location(opMemOf, e);}
+    static Location* global(const char *nam) {return new Location(opGlobal, 
+                                                        new Const((char*)nam));}
+    static Location* local(const char *nam) {return new Location(opLocal, 
+                                                        new Const((char*)nam));}
+    static Location* param(const char *nam) {return new Location(opParam, 
+                                                        new Const((char*)nam));}
 };
     
 #endif // __EXP_H__
