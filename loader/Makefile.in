@@ -1,0 +1,85 @@
+######################################################
+# File: Makefile
+#
+# Desc: Makefile for the Loader library files.
+#   This loader is lightly adapted from the loader in UQBT
+#   Purpose is to load the input binary file into memory, with calls to
+#   iterate through sections, find entry points, symbols, etc.
+#   The main library is BinaryFile, which calls eactly one of ElfBinaryFile
+#   etc as needed.
+#
+# Prerequisite libraries: none
+#
+######################################################
+
+# $Revision$
+# Note: gnu make is probably required (for patsubst etc)
+# Whole make is dependent on finding the pattern *BinaryFile.cc;
+# a lib%.so file is made for each of these
+# You should be able to add a simple loader without any changes to this
+# Makefile, as long as you follow the naming convention <type>BinaryFile.*
+
+# 10 Apr 02 - Mike: interface -> include; use util.so for str()
+# 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
+# 17 Apr 02 - Mike: Use $(shell pwd) to get an absolute path for BOOMDIR
+# 26 Apr 02 - Mike: Make .so from .o files now
+
+CC = g++ -g
+CXX=$(CC)
+
+ALLLIBSRC =  $(wildcard *BinaryFile.cc)
+ALLLIB =  $(patsubst %.cc,../lib/lib%.so,$(ALLLIBSRC))
+ALLOBJS = $(patsubst %.cc, %.o, $(ALLLIBSRC))
+ALLOBJS += ElfDetails.o SymTab.o
+
+all:    $(ALLLIB) testLoader
+
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+
+testLoader: testLoader.o LoaderTest.o
+	$(CC) testLoader.o LoaderTest.o -o $@ -lutil -lcppunit -lBinaryFile \
+        $(RUNPATH) -L../lib
+
+testLoader.o: testLoader.cc
+	$(CC) -c -I../include $(BOOMSET) -o $@ $<
+
+LoaderTest.o: LoaderTest.cc LoaderTest.h
+	$(CC) -c -I../include $(BOOMSET) -o $@ $<
+
+# Extra object files, etc
+# Only ElfBinaryFile needs libelf. These are target specific variables.
+../lib/libElfBinaryFile.so: EXTRAS = -lelf SymTab.o ElfDetails.o
+../lib/libHpSomBinaryFile.so: EXTRAS = SymTab.o
+../lib/libBinaryFile.so: EXTRAS = -ldl
+
+# This pattern generates all the main dependencies
+$(ALLLIB): ../lib/lib%.so : %.o
+	$(CC) -o $@ -shared $< $(EXTRAS) $(RUNPATH) -L../lib
+
+# Compile all objects with -fPIC
+$(ALLOBJS): %.o : %.cc
+	$(CC) -c -fPIC -I../include $(BOOMSET) -o $@ $<
+
+# Dependencies
+../lib/libElfBinaryFile.so: SymTab.o ElfDetails.o
+ElfDetails.o: ElfDetails.h
+SymTab.o:   SymTab.h
+
+
+clean:
+	rm -f *.o $(ALLLIB) testLoader
+
+test: all
+	./testLoader
+
