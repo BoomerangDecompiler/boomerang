@@ -47,7 +47,7 @@ typedef BinaryFile* (*constructFcn)();
 BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 {
 	FILE *f;
-	char buf[64];
+	unsigned char buf[64];
 	std::string libName;
 	BinaryFile *res = NULL;
 
@@ -82,6 +82,9 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 			   TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
 		/* PRC Palm-pilot binary */
 		libName = "PalmBinaryFile";
+    } else if( buf[0] == 0xfe && buf[1] == 0xed && buf[2] == 0xfa && buf[3] == 0xce ) {
+        /* Mach-O Mac OS-X binary */
+        libName = "MachOBinaryFile";
 	} else if( buf[0] == 0x02 && buf[2] == 0x01 &&
 			   (buf[1] == 0x10 || buf[1] == 0x0B) &&
 			   (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
