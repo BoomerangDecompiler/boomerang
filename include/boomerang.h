@@ -59,7 +59,7 @@ public:
     bool noDecompileUp;
     bool traceDecoder;
     const char *dotFile;
-    int numToPropogate;
+    int numToPropagate;
     bool noPromote;
 };
 

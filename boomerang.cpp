@@ -12,7 +12,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     noBranchSimplify(false), noRemoveInternal(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
     noDataflow(false), noDecompileUp(false),
-    traceDecoder(false), dotFile(NULL), numToPropogate(-1), noPromote(false)
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1), noPromote(false)
 {
 }
 
@@ -79,7 +79,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 dotFile = argv[++i];
                 break;
             case 'p':
-                sscanf(argv[++i], "%i", &numToPropogate);
+                sscanf(argv[++i], "%i", &numToPropagate);
                 break;
             case 'n':
                 switch(argv[i][2]) {

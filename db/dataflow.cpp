@@ -116,7 +116,7 @@ void Statement::replaceUse(Statement *use) {
     uses.remove(use);
     // However, we are now using whatever *use was using
     // Actually, it's possible *use had uses on it's left that will not be
-    // propogated in the replacement, we have to remove these later - trent
+    // propagated in the replacement, we have to remove these later - trent
     uses.make_union(use->uses);
     // Fix the du chains that pointed in to the statement that will
     // be removed; they now point to this 
@@ -318,7 +318,7 @@ bool Statement::canPropagateToAll() {
     if (nold - defs.size() > 1) {
         // See comment above.
         if (VERBOSE) {
-            std::cerr << "too hard failure in canPropogateToAll: ";
+            std::cerr << "too hard failure in canPropagateToAll: ";
             printWithUses(std::cerr);
             std::cerr << std::endl;
         }
@@ -339,7 +339,7 @@ bool Statement::canPropagateToAll() {
         // defined on any path from this statement to the destination
         // This is the condition 2 in the Dragon book, p636
         if (sdest == this) 
-            return false; // can't propogate to self
+            return false; // can't propagate to self
         StatementSet destIn;
         sdest->getReachIn(destIn);
         StmtSetIter dd;
