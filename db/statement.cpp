@@ -701,7 +701,7 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
             break;
     }
 #else
-    p = new Terminal(opFlags);
+    p = new Terminal(usesFloat ? opFflags : opFlags);
 #endif
     assert(p);
     setCondExpr(p);
