@@ -1010,11 +1010,6 @@ std::set<UserProc*>* UserProc::decompile() {
     // Initialise statements
     initStatements();
 
-    if (Boomerang::get()->noDecompile) {
-        decompiled = true;
-        return cycleSet;
-    }
-
     // Compute dominance frontier
     cfg->dominators();
 
@@ -1025,8 +1020,13 @@ std::set<UserProc*>* UserProc::decompile() {
 
     printXML();
 
+    if (Boomerang::get()->noDecompile) {
+        decompiled = true;
+        return cycleSet;
+    }
+
     // Print if requested
-    if (Boomerang::get()->debugPrintSSA) {
+    if (VERBOSE) {
         LOG << "=== Debug Print for " << getName()
           << " before processing float constants ===\n";
         printToLog(true);

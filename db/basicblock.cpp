@@ -696,8 +696,9 @@ Exp *BasicBlock::getCond() {
     RTL *last = m_pRtls->back();
     // it should contain a BranchStatement
     BranchStatement* bs = (BranchStatement*)last->getHlStmt();
-    assert(bs->getKind() == STMT_BRANCH);
-    return bs->getCondExpr();
+    if (bs && bs->getKind() == STMT_BRANCH)
+        return bs->getCondExpr();
+    return NULL;
 }
 
 void BasicBlock::setCond(Exp *e) {
