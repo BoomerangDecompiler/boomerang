@@ -144,6 +144,7 @@ SOURCE=.\loader\ExeBinaryFile.cpp
 # Begin Source File
 
 SOURCE=.\db\exp.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
@@ -185,14 +186,17 @@ SOURCE=.\frontend\pentiumdecoder.cpp
 # Begin Source File
 
 SOURCE=.\frontend\pentiumfrontend.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
 SOURCE=.\db\proc.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
 SOURCE=.\db\prog.cpp
+# ADD CPP /I "c"
 # End Source File
 # Begin Source File
 
@@ -205,6 +209,7 @@ SOURCE=.\db\rtl.cpp
 # Begin Source File
 
 SOURCE=.\db\signature.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
@@ -229,6 +234,7 @@ SOURCE=.\db\sslscanner.cpp
 # Begin Source File
 
 SOURCE=.\db\statement.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
@@ -241,6 +247,7 @@ SOURCE=.\db\table.cpp
 # Begin Source File
 
 SOURCE=.\type\type.cpp
+# ADD CPP /GR
 # End Source File
 # Begin Source File
 
