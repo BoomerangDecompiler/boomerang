@@ -5,6 +5,7 @@
  * user interface.  It is based on the MDI demo from the wxwindows
  * toolkit.
  *
+ * 19 Mar 02 - Mike: Minor changes for Linux compile
  */
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -70,7 +71,7 @@ bool Boomerang::OnInit()
 #ifdef __WXMSW__
     frame->SetIcon(wxIcon("boomerang_icn"));
 #else
-    frame->SetIcon(wxIcon( boomerang_xpm ));
+    frame->SetIcon(wxIcon("boomerang_xpm"));
 #endif
 
 	SetVendorName("Aussie");
