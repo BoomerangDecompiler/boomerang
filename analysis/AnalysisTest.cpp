@@ -11,7 +11,6 @@
 
 #include "AnalysisTest.h"
 #include "prog.h"
-#include "BinaryFile.h"
 #include "sparcfrontend.h"
 
 #define CCX_SPARC       BOOMDIR "/test/sparc/condcodexform_gcc"

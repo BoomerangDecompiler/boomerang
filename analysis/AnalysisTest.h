@@ -4,6 +4,7 @@
 #include "util.h"
 #include "type.h"
 
+#include "BinaryFile.h"
 #include "frontend.h"
 #include "cfg.h"
 
