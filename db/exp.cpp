@@ -326,8 +326,15 @@ Exp* TypedExp::clone() {
     return c;
 }
 Exp* AssignExp::clone() {
-    AssignExp* c = new AssignExp(size, subExp1->clone(), subExp2->clone());
-    return c;
+    AssignExp* a = new AssignExp(size, subExp1->clone(), subExp2->clone());
+    // Statement members
+    a->pbb = pbb;
+    a->proc = proc;
+    a->number = number;
+    return a;
+}
+Statement* AssignExp::cloneStmt() {
+    return (Statement*)(AssignExp*)clone();
 }
 Exp* RefsExp::clone() {
     RefsExp* c = new RefsExp(subExp1->clone());
@@ -735,7 +742,7 @@ void Unary::print(std::ostream& os, bool withUses) {
         case opRegOf:
             // Make a special case for the very common case of r[intConst]
             if (p1->isIntConst()) {
-                os << "r" << ((Const*)p1)->getInt();
+                os << "r" << std::dec << ((Const*)p1)->getInt();
                 break;
             } else if (p1->isTemp()) {
                 // Just print the temp {
@@ -2669,13 +2676,10 @@ void AssignExp::addUsedLocs(LocationSet& used) {
     Exp* left = getSubExp1();
     Exp* right = getSubExp2();
     right->addUsedLocs(used);
-    Exp* baseLeft = left;
-    if (left->isSubscript())        // Should always be
-        baseLeft = ((RefsExp*)left)->getSubExp1();
-    if (baseLeft->isMemOf()) {
+    if (left->isMemOf()) {
         // We also use any expr like m[exp] on the LHS (but not the outer m[])
-        Exp* baseLeftChild = ((Unary*)baseLeft)->getSubExp1();
-        baseLeftChild->addUsedLocs(used);
+        Exp* leftChild = ((Unary*)left)->getSubExp1();
+        leftChild->addUsedLocs(used);
     }
 }
 
