@@ -585,7 +585,7 @@ class Cfg {
 	/*
 	 * True if well formed.
 	 */
-	bool m_bWellFormed;
+	bool m_bWellFormed, structured;
 
 	/*
 	 * Set of the call instructions in this procedure.

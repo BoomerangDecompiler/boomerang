@@ -94,7 +94,8 @@ public:
 
 	// labels
 	virtual void AddLabel(int indLevel, int ord) = 0;
-		virtual void RemoveLabel(int ord) = 0;
+	virtual void RemoveLabel(int ord) = 0;
+	virtual void RemoveUnusedLabels(int maxOrd) = 0;
 
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *s) = 0;

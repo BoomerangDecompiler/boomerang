@@ -125,7 +125,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 				Prog* prog = m_proc->getProg();
 				Const* con = (Const*)((Unary*)sub)->getSubExp1();
 				Type* gt = prog->getGlobalType(con->getStr());
-				if (gt->isArray() || gt->isPointer() &&
+				if (gt && gt->isArray() || gt->isPointer() &&
 					  gt->asPointer()->getPointsTo()->isChar()) {
 					// Special C requirement: don't emit "&" for address of
 					// an array or char*
@@ -478,6 +478,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 			appendExp(str, u->getSubExp1(), PREC_UNARY);
 		str << ")";
 		break;
+		case opSize:
+			{
+				/*Type *ty = new IntegerType(((Const*)b->getSubExp1())->getInt(), 1);
+				str << "*(" << ty->getCtype() << " *)";
+				appendExp(str, new Unary(opAddrOf, b->getSubExp2()), PREC_UNARY);*/
+				appendExp(str, b->getSubExp2(), PREC_UNARY);
+			}
+			break;
 		case opFMultsd:
 		case opFMultdq:
 		case opSQRTs:
@@ -489,8 +497,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 		case opGuard:
 		case opVar:
 		case opArg:
-		case opExpand:
-		case opSize:
+		case opExpand:		
 		case opCastIntStar:
 		case opPostVar:
 		case opForceInt:
@@ -841,6 +848,23 @@ void CHLLCode::AddGoto(int indLevel, int ord)
 	indent(s, indLevel);
 	s << "goto L" << std::dec << ord << ";";
 	lines.push_back(strdup(s.str().c_str()));
+	usedLabels.insert(ord);
+}
+
+void CHLLCode::RemoveUnusedLabels(int maxOrd)
+{
+	for (std::list<char *>::iterator it = lines.begin(); it != lines.end();) {
+		if ((*it)[0] == 'L') {
+			char *s = strdup(*it);
+			*strchr(s, ':') = 0;
+			int n = atoi(s+1);
+			if (usedLabels.find(n) == usedLabels.end()) {
+				it = lines.erase(it);
+				continue;
+			}
+		}
+		it++;
+	}
 }
 
 void CHLLCode::AddContinue(int indLevel)
@@ -870,8 +894,7 @@ void CHLLCode::RemoveLabel(int ord)
 {
 	std::ostringstream s;
 	s << "L" << std::dec << ord << ":";
-	for (std::list<char*>::iterator it = lines.begin();
-	  it != lines.end(); it++) {
+	for (std::list<char*>::iterator it = lines.begin(); it != lines.end(); it++) {
 		if (!strcmp(*it, s.str().c_str())) {
 			lines.erase(it);
 			break;
@@ -1106,8 +1129,8 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
 
 void CHLLCode::print(std::ostream &os)
 {
-	for (std::list<char*>::iterator it = lines.begin(); it != lines.end();
-		 it++) os << *it << std::endl;
+	for (std::list<char*>::iterator it = lines.begin(); it != lines.end(); it++) 
+		 os << *it << std::endl;
 	if (m_proc == NULL)
 		os << std::endl;
 }

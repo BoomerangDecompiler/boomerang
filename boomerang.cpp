@@ -34,7 +34,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
-	noProve(false), noChangeSignatures(false), noTypeAnalysis(false)
+	noProve(false), noChangeSignatures(false), noTypeAnalysis(true)
 {
 	progPath = "./";
 	outputPath = "./output/";

@@ -172,7 +172,7 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 	decode(prog, a);
 
 	if (gotMain) {
-		static const char *mainName[] = { "main", "WinMain" };
+		static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
 		const char *name = pBF->SymbolByAddress(a);
 		if (name == NULL)
 			name = mainName[0];
@@ -181,9 +181,12 @@ Prog *FrontEnd::decode(bool decodeMain, const char *pname)
 				Proc *proc = prog->findProc(a);
 				assert(proc);
 				FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
-				assert(fty);
-				proc->setSignature(fty->getSignature()->clone());
-				proc->getSignature()->setName(name);
+				if (fty == NULL)
+					LOG << "unable to find signature for known entrypoint " << name << "\n";
+				else {
+					proc->setSignature(fty->getSignature()->clone());
+					proc->getSignature()->setName(name);
+				}
 				break;
 			}
 		}

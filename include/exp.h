@@ -916,8 +916,7 @@ static Location* memOf(Exp *e, UserProc* p = NULL) {return new Location(opMemOf,
 static Location* tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
 static Location* global(const char *nam, UserProc *p) {
 					return new Location(opGlobal, new Const((char*)nam), p);}
-static Location* local(const char *nam, UserProc *p) {
-					return new Location(opLocal, new Const((char*)nam), p);}
+static Location* local(const char *nam, UserProc *p);
 static Location* param(const char *nam, UserProc *p = NULL) {
 					return new Location(opParam, new Const((char*)nam), p);}
 	// Clone

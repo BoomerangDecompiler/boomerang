@@ -373,6 +373,11 @@ bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
+	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
+		subExp1->accept(ev);
+		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
+		subExp2->accept(ev);
 	}
 	override = true;				// Don't do the usual accept logic
 	return true;					// Continue the recursion
@@ -383,6 +388,11 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
+	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
+		subExp1->accept(ev);
+		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
+		subExp2->accept(ev);
 	}
 	StatementVec& stmtVec = s->getRefs();
 	StatementVec::iterator uu;
@@ -403,6 +413,11 @@ bool UsedLocsVisitor::visit(ImplicitAssign* s, bool& override) {
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
+	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
+		subExp1->accept(ev);
+		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
+		subExp2->accept(ev);
 	}
 	override = true;				// Don't do the usual accept logic
 	return true;					// Continue the recursion
@@ -455,6 +470,11 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	if (lhs && lhs->isMemOf()) {	// If dest is of form m[x]...
 		Exp* x = ((Location*)lhs)->getSubExp1();
 		x->accept(ev);					// ... then x is used
+	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
+		subExp1->accept(ev);
+		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
+		subExp2->accept(ev);
 	}
 	override = true;			// Don't do the normal accept logic
 	return true;				// Continue the recursion

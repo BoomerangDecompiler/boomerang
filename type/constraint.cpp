@@ -59,7 +59,7 @@ void ConstraintMap::makeUnion(ConstraintMap& o) {
 			Type* ty1 = Tret->getType();
 			TypeVal* Toth = (TypeVal*)it->second;
 			Type* ty2 = Toth->getType();
-			if (*ty1 != *ty2) {
+			if (ty1 && ty2 && *ty1 != *ty2) {
 				Tret->setType(ty1->mergeWith(ty2));
 //std::cerr << "Now " << ret.first->first << " -> " << ret.first->second << "\n"; 
 			}

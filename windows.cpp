@@ -1874,6 +1874,26 @@ void addParamsToList(Proc *proc, HWND hParams)
 	}
 }
 
+void addLocalsToList(UserProc *u, HWND hLocals)
+{
+	ListView_DeleteAllItems(hLocals);
+	LVITEM lvi;
+	lvi.mask = LVIF_TEXT;
+	lvi.iSubItem = 0;
+
+	for (int i = 0; i < u->getNumLocals(); i++) {
+		lvi.iItem = i;
+		lvi.pszText = (LPSTR)u->getLocalName(i);
+		Exp *e = u->getLocalExp(lvi.pszText);
+		ListView_InsertItem(hLocals, &lvi);
+		ListView_SetItemText(hLocals, i, 1, (LPSTR)u->getLocalType(lvi.pszText)->getCtype());
+		std::ostringstream st;
+		e->print(st);
+		std::string s = st.str();
+		ListView_SetItemText(hLocals, i, 2, (LPSTR)s.c_str());
+	}
+}
+
 LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hReturns, hParams, hLocals;
@@ -1905,26 +1925,13 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			ListView_InsertColumn(hReturns, 1, &lvc);
 			ListView_InsertColumn(hParams, 2, &lvc);
 			ListView_InsertColumn(hLocals, 2, &lvc);
-			LVITEM lvi;
-			lvi.mask = LVIF_TEXT;
-			lvi.iSubItem = 0;
 
 			addReturnsToList(proc, hReturns);
 			addParamsToList(proc, hParams);
 
 			UserProc *u = dynamic_cast<UserProc*>(proc);
 			if (u) {
-				for (int i = 0; i < u->getNumLocals(); i++) {
-					lvi.iItem = i;
-					lvi.pszText = (LPSTR)u->getLocalName(i);
-					Exp *e = u->getLocalExp(lvi.pszText);
-					ListView_InsertItem(hLocals, &lvi);
-					ListView_SetItemText(hLocals, i, 1, (LPSTR)u->getLocalType(lvi.pszText)->getCtype());
-					std::ostringstream st;
-					e->print(st);
-					std::string s = st.str();
-					ListView_SetItemText(hLocals, i, 2, (LPSTR)s.c_str());
-				}				
+				addLocalsToList(u, hLocals);
 			}
 		}
 		return TRUE;
@@ -1976,6 +1983,7 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 				u->renameLocal(origName, pdi->item.pszText);
 				ListView_SetItemText(hLocals, pdi->item.iItem, 0, pdi->item.pszText);
 				generateCodeForUserProc(u);
+				addLocalsToList(u, hLocals);
 				return TRUE;
 			} else if (pdi->hdr.hwndFrom == hParams) {
 				proc->renameParam(proc->getSignature()->getParamName(pdi->item.iItem), pdi->item.pszText);

@@ -93,6 +93,8 @@ private:
 
 		std::map<std::string, Type*> locals;
 
+	std::set<int> usedLabels;
+
 public:
 	// constructor
 	CHLLCode();
@@ -145,6 +147,7 @@ public:
 	// labels
 	virtual void AddLabel(int indLevel, int ord);
 	virtual void RemoveLabel(int ord);
+	virtual void RemoveUnusedLabels(int maxOrd);
 
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *asgn);

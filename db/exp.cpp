@@ -2104,6 +2104,20 @@ Exp* Binary::polySimplify(bool& bMod) {
 		return res;
 	}
 
+	// Check for exp / 1, becomes exp
+	if ((op == opDiv || op == opDivs) && opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 1) {
+		res = ((Binary*)res)->becomeSubExp1();
+		bMod = true;
+		return res;
+	}
+
+	// Check for exp % 1, becomes 0
+	if ((op == opMod || op == opMods) && opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 1) {
+		res = new Const(0);
+		bMod = true;
+		return res;
+	}
+
 	// Check for exp * x % x, becomes 0
 	if ((op == opMod || op == opMods) && (opSub1 == opMult || opSub1 == opMults) && *subExp2 == *subExp1->getSubExp2()) {
 		res = new Const(0);
@@ -2516,6 +2530,20 @@ Exp* Binary::polySimplify(bool& bMod) {
 				}
 			}
 		}
+	}
+
+	// Replace opSize(n, loc) with loc and set the type if needed
+	if (op == opSize && subExp2->isLocation()) {
+		Location *loc = (Location*)subExp2;
+		int n = ((Const*)subExp1)->getInt();
+		Type *ty = loc->getType();
+		if (ty == NULL)
+			loc->setType(new SizeType(n));
+		else if (ty->getSize() != n)
+			ty->setSize(n);
+		res = ((Binary*)res)->becomeSubExp2();
+		bMod = true;
+		return res;
 	}
 
 	return res;
@@ -4044,5 +4072,9 @@ Memo *Location::makeMemo(int mId)
 void Location::readMemo(Memo *mm, bool dec)
 {
 	LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
+}
+
+Location* Location::local(const char *nam, UserProc *p) {
+	return new Location(opLocal, new Const((char*)nam), p);
 }
 

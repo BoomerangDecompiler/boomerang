@@ -147,7 +147,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 	Exp *l = symbolMap[e];
 	Exp *n = Location::local(strdup(newName), this);
 	symbolMap[e] = n;
-	locals[newName] = t;
+	locals[strdup(newName)] = t;
 	cfg->searchAndReplace(l, n);
 }
 
@@ -2110,6 +2110,12 @@ void UserProc::replaceExpressionsWithGlobals() {
 			if (((Exp*)*rr)->isSubscript()) {
 				Statement *ref = ((RefExp*)*rr)->getRef();
 				Exp *r1 = (*rr)->getSubExp1();
+				// look for m[exp + K]{0}, replace it with m[exp * 1 + K]{0} in the hope that it will get picked 
+				// up as a global array.
+				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
+					r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+					r1->getSubExp1()->setSubExp1(new Binary(opMult, r1->getSubExp1()->getSubExp1(), new Const(1)));
+				}
 				// Is it m[CONSTANT]{0}
 				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opIntConst) {
 					Exp *memof = r1;
@@ -2289,7 +2295,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 	}
 }
 
-Exp *UserProc::getLocalExp(Exp *le, Type *ty)
+Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass)
 {
 	Exp *e = NULL;
 	if (symbolMap.find(le) == symbolMap.end()) {
@@ -2336,7 +2342,10 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
 				}
 			}
 		}
-			
+		
+		if (ty == NULL && lastPass)
+			ty = new IntegerType();
+
 		if (ty) {
 			// the default of just assigning an int type is bad.. 
 			// if the locals is not an int then assigning it this type 
@@ -2426,6 +2435,19 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
 			}
 		}
 
+	// normalize sp usage (turn WILD + sp{0} into sp{0} + WILD)
+	Exp *nn = new Binary(opPlus, new Terminal(opWild), new RefExp(Location::regOf(sp), NULL));
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		std::list<Exp*> results;
+		s->searchAll(nn, results);
+		for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
+			Exp *wild = (*it1)->getSubExp1();
+			(*it1)->setSubExp1((*it1)->getSubExp2());
+			(*it1)->setSubExp2(wild);
+		}
+	}
+
 	// look for array locals
 	// l = m[(sp{0} + WILD1) - K2]
 	Exp *l = Location::memOf(new Binary(opMinus, 
@@ -2446,7 +2468,10 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
 					result->getSubExp1()->getSubExp2()->clone()));
 			int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
 			arr->setProc(this);
-			arr->setType(new ArrayType(new IntegerType(), n/4));
+			Type *base = new IntegerType();
+			if (s->isAssign() && s->getLeft() == result)
+				base = ((Assign*)s)->getType()->clone();
+			arr->setType(new ArrayType(base, n / (base->getSize() / 8)));
 			if (VERBOSE)
 				LOG << "found a local array using " << n << " bytes\n";
 			Exp *replace = Location::memOf(
@@ -2493,9 +2518,9 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 		for (std::list<Exp*>::iterator it1 = results.begin(); it1 != results.end(); it1++) {
 			Exp *result = *it1;
 			Type *ty = result->getType();
-			if (ty == NULL && lastPass)
-				ty = new IntegerType();
-			Exp *e = getLocalExp(result, ty);
+			if (s->isAssign() && s->getLeft() == result)
+				ty = ((Assign*)s)->getType();
+			Exp *e = getLocalExp(result, ty, lastPass);
 			if (e) {
 				Exp* search = result->clone();
 				if (VERBOSE)

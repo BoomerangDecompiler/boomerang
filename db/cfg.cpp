@@ -60,7 +60,7 @@ void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
  * RETURNS:			<nothing>
  *============================================================================*/
 Cfg::Cfg()
-  : entryBB(NULL), exitBB(NULL), m_bWellFormed(false), lastLabel(0)
+  : entryBB(NULL), exitBB(NULL), m_bWellFormed(false), lastLabel(0), structured(false)
 {}
 
 /*==============================================================================
@@ -1132,6 +1132,7 @@ void Cfg::unTraverse()
 	for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++)
 	{
 		(*it)->m_iTraversed = false;
+		(*it)->traversed = UNTRAVERSED;
 	}
 }
 	
@@ -1859,17 +1860,20 @@ void Cfg::checkConds() {
 }
 
 void Cfg::structure() {
+	if (structured) {
+		unTraverse();
+		return;
+	}
 	setTimeStamps();
 	findImmedPDom();
 	structConds();
 	structLoops();
 	checkConds();
+	structured = true;
 }
 
 void Cfg::removeUnneededLabels(HLLCode *hll) {
-	for (unsigned int i = 0; i < Ordering.size(); i++)
-		if (!Ordering[i]->hllLabel)
-			hll->RemoveLabel(Ordering[i]->ord);
+	hll->RemoveUnusedLabels(Ordering.size());
 }
 
 void Cfg::generateDotFile(std::ofstream& of) {
