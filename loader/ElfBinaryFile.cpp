@@ -31,7 +31,7 @@
 
 //#include "global.h"
 #include "ElfBinaryFile.h"
-// #ifndef NODETAILS		CC: 5Apr01
+// #ifndef NODETAILS        CC: 5Apr01
 //#include "ElfDetails.h"     // dumpElf32() etc
 // #endif
 #include <values.h>
@@ -100,7 +100,7 @@ int elf_hash(const char* o0) {
 // Return true for a good load
 bool ElfBinaryFile::RealLoad(const char* sName)
 {
-	int i;
+    int i;
 
     if (m_bArchive) {
         // This is a member of an archive. Should not be using this
@@ -112,28 +112,28 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     m_fd = fopen (sName, "rb");
     if (m_fd == NULL) return 0;
 
-	// Determine file size
-	if (fseek(m_fd, 0, SEEK_END)) {
-		fprintf(stderr, "Error seeking to end of binary file\n");
-		return false;
-	}
-	m_lImageSize = ftell(m_fd);
+    // Determine file size
+    if (fseek(m_fd, 0, SEEK_END)) {
+        fprintf(stderr, "Error seeking to end of binary file\n");
+        return false;
+    }
+    m_lImageSize = ftell(m_fd);
 
-	// Allocate memory to hold the file
-	m_pImage = new char[m_lImageSize];
+    // Allocate memory to hold the file
+    m_pImage = new char[m_lImageSize];
     if (m_pImage == 0) {
         fprintf(stderr, "Could not allocate %ld bytes for program image\n",
           m_lImageSize);
         return false;
     }
-	Elf32_Ehdr* pHeader = (Elf32_Ehdr*)m_pImage;	// Save a lot of casts
+    Elf32_Ehdr* pHeader = (Elf32_Ehdr*)m_pImage;    // Save a lot of casts
 
     // Read the whole file in
-	fseek(m_fd, 0, SEEK_SET);
-	size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
-	if (size != (size_t)m_lImageSize)
-		fprintf(stderr, "WARNING! Only read %ud of %ld bytes of binary file!\n",
-		  size, m_lImageSize);
+    fseek(m_fd, 0, SEEK_SET);
+    size_t size = fread(m_pImage, 1, m_lImageSize, m_fd);
+    if (size != (size_t)m_lImageSize)
+        fprintf(stderr, "WARNING! Only read %ud of %ld bytes of binary file!\n",
+          size, m_lImageSize);
 
     // Basic checks
     if (strncmp(m_pImage, "\x7F""ELF", 4) != 0) {
@@ -143,42 +143,42 @@ bool ElfBinaryFile::RealLoad(const char* sName)
         return 0;
     }
     if ((pHeader->endianness != 1) &&
-	    (pHeader->endianness != 2)) {
+        (pHeader->endianness != 2)) {
         fprintf(stderr, "Unknown endianness %02X\n", pHeader->endianness);
         return 0;
     }
     // Needed for elfRead4 to work:
     m_elfEndianness = pHeader->endianness - 1;
 
-	// Set up program header pointer (in case needed)
-	i = elfRead4(&pHeader->e_phoff);
-	if (i) m_pPhdrs = (Elf32_Phdr*)(m_pImage + i);
+    // Set up program header pointer (in case needed)
+    i = elfRead4(&pHeader->e_phoff);
+    if (i) m_pPhdrs = (Elf32_Phdr*)(m_pImage + i);
 
-	// Set up section header pointer
-	i = elfRead4(&pHeader->e_shoff);
-	if (i) m_pShdrs = (Elf32_Shdr*)(m_pImage + i);
+    // Set up section header pointer
+    i = elfRead4(&pHeader->e_shoff);
+    if (i) m_pShdrs = (Elf32_Shdr*)(m_pImage + i);
 
-	// Set up section header string table pointer
-	i = elfRead2(&pHeader->e_shstrndx);
-	if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
+    // Set up section header string table pointer
+    i = elfRead2(&pHeader->e_shstrndx);
+    if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
 
-    i = 1;          	// counter - # sects. Start @ 1, total m_iNumSections
+    i = 1;              // counter - # sects. Start @ 1, total m_iNumSections
     char* pName;        // Section's name
 
-   	// Number of sections
+    // Number of sections
     m_iNumSections = elfRead2(&pHeader->e_shnum);
 
     // Allocate room for all the Elf sections (including the silly first one)
     m_pSections = new SectionInfo[m_iNumSections];
-    if (m_pSections == 0) return false;		// Failed!
+    if (m_pSections == 0) return false;     // Failed!
     // Initialise to zero; especially for flags and addresses
     memset(m_pSections, '\0', m_iNumSections*sizeof(SectionInfo));
 
-	// Number of elf sections
+    // Number of elf sections
     bool bGotCode = false;                  // True when have seen a code sect
     for (i=0; i < m_iNumSections; i++) {
         // Get section information.
-		Elf32_Shdr* pShdr = m_pShdrs + i;
+        Elf32_Shdr* pShdr = m_pShdrs + i;
         pName = m_pStrings + elfRead4(&pShdr->sh_name);
         m_pSections[i].pSectionName = pName;
         int off = elfRead4(&pShdr->sh_offset);
@@ -211,7 +211,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
         // NOTE: this ASSUMES that sections appear in a sensible order in
         // the input binary file: junk, code, rodata, data, bss
         if (bGotCode &&
-		  ((elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) ==
+          ((elfRead4(&pShdr->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC)) ==
           SHF_ALLOC) && (elfRead4(&pShdr->sh_type) != SHT_NOBITS))
             m_pSections[i].bData = true;
     }
@@ -262,7 +262,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     m_uImageSize = top - base + 1;
 #endif
 
-    return true;                  		// Success
+    return true;                        // Success
 }
 
 // Clean up and unload the binary image
@@ -307,10 +307,10 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
     for (int i = 1; i < nSyms; i++)
     {
 //        if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            ADDRESS val = (ADDRESS)
-			  elfRead4((int*)&m_pSym[i].st_value);
-            std::string str(GetStrPtr(idx,
-			  elfRead4(&m_pSym[i].st_name)));
+            ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+            int name = elfRead4(&m_pSym[i].st_name);
+            if (name == 0)  /* Silly symbols with no names */ continue;
+            std::string str(GetStrPtr(idx, name));
             // Hack off the "@@GLIBC_2.0" of Linux, if present
             unsigned pos;
             if ((pos = str.find("@@")) != std::string::npos)
@@ -320,7 +320,7 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
             if (aa == m_SymA.end()) {
                 std::cerr << "Elf AddSym: about to add " << str << " to address " << std::hex << val << std::dec << std::endl;
                 m_SymA[val] = str;
-	    }
+            }
 //        }
     }
     ADDRESS uMain = GetMainEntryPoint();
@@ -397,7 +397,7 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal,
     if (y)
     {
         while (strcmp(pName, GetStrPtr(iStr, elfRead4(&pSym[y].st_name))) != 0)
-		{
+        {
             y = elfRead4(&pChains[y]);
             if (y == 0) {
                 found = false;
@@ -697,7 +697,7 @@ WORD ElfBinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord)
     if (idx == -1) return (ADDRESS)-1;
     ADDRESS wRes = 0;
 
-	int machine = elfRead4(&((Elf32_Ehdr*)m_pImage)->e_machine);
+    int machine = elfRead4(&((Elf32_Ehdr*)m_pImage)->e_machine);
     switch (machine)
     {
         case EM_SPARC:
@@ -892,12 +892,12 @@ LOAD_FMT ElfBinaryFile::GetFormat() const
 
 MACHINE ElfBinaryFile::GetMachine() const
 {
-	int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
-    	 if ((machine == EM_SPARC) ||
-			 (machine == EM_SPARC32PLUS)) return MACHINE_SPARC;
+    int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
+         if ((machine == EM_SPARC) ||
+             (machine == EM_SPARC32PLUS)) return MACHINE_SPARC;
     else if (machine == EM_386)   return MACHINE_PENTIUM;
     else if (machine == EM_PA_RISC)return MACHINE_HPRISC;
-    else if (machine == EM_68K)   return MACHINE_PALM;	// Unlikely
+    else if (machine == EM_68K)   return MACHINE_PALM;  // Unlikely
     // What sort of machine is this?
     assert(false);
     return (MACHINE)-1;
