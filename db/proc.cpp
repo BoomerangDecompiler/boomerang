@@ -1083,8 +1083,8 @@ void UserProc::complete() {
 
     // Convert the signature object to one of a derived class, e.g.
     // SparcSignature.
-    if (!Boomerang::get()->noPromote)
-        promoteSignature();
+//    if (!Boomerang::get()->noPromote)
+//        promoteSignature();    // No longer needed?
     // simplify the procedure (currently just to remove a[m['s)
     // Not now! I think maybe only pa/risc needs this, and it nobbles
     // the a[m[xx]] that processConstants() does (just above)
@@ -1162,27 +1162,35 @@ void UserProc::removeRedundantPhis()
 }
 
 void UserProc::trimReturns() {
-    // Special case for 32-bit stack-based machines (e.g. Pentium).
-    // RISC machines generally preserve the stack pointer (so special
-    // case required)
-    if (VERBOSE)
-        std::cerr << "attempting to prove sp = sp + 4 for " << getName() <<
-          std::endl;
-    int sp = signature->getStackRegister(prog);
-    bool stdsp = prove(new Binary(opEquals,
-                  Unary::regOf(sp),
-                  new Binary(opPlus,
-                      Unary::regOf(sp),
-                      new Const(4))));
     std::set<Exp*> preserved;
-    for (int i = 0; i < signature->getNumReturns(); i++) {
-        Exp *p = signature->getReturnExp(i);
-        Exp *e = new Binary(opEquals, p->clone(), p->clone());
+    bool stdsp = false;
+
+    for (int n = 0; n < 2; n++) {   
+        // may need to do multiple times due to dependencies
+
+        // Special case for 32-bit stack-based machines (e.g. Pentium).
+        // RISC machines generally preserve the stack pointer (so special
+        // case required)
         if (VERBOSE)
-            std::cerr << "attempting to prove " << p << " is preserved by " 
-                      << getName() << std::endl;
-        if (prove(e)) {
-            preserved.insert(p);    
+            std::cerr << "attempting to prove sp = sp + 4 for " << getName() <<
+              std::endl;
+        int sp = signature->getStackRegister(prog);
+        stdsp = prove(new Binary(opEquals,
+                      Unary::regOf(sp),
+                      new Binary(opPlus,
+                          Unary::regOf(sp),
+                          new Const(4))));
+
+        // prove preservation for each parameter
+        for (int i = 0; i < signature->getNumReturns(); i++) {
+            Exp *p = signature->getReturnExp(i);
+            Exp *e = new Binary(opEquals, p->clone(), p->clone());
+            if (VERBOSE)
+                std::cerr << "attempting to prove " << p << " is preserved by " 
+                          << getName() << std::endl;
+            if (prove(e)) {
+                preserved.insert(p);    
+            }
         }
     }
     if (stdsp)
@@ -1885,6 +1893,7 @@ bool UserProc::prover(Exp *query)
 {
     query = query->clone();
     bool change = true;
+    bool swapped = false;
     while (change) {
         if (VERBOSE) {
             query->print(std::cerr, true);
@@ -1985,6 +1994,15 @@ bool UserProc::prover(Exp *query)
                         change = true;
                         break;
                     }
+            }
+
+            // last chance, swap left and right if havn't swapped before
+            if (!change && !swapped) {
+                Exp *e = query->getSubExp1();
+                query->refSubExp1() = query->getSubExp2();
+                query->refSubExp2() = e;
+                change = true;
+                swapped = true;
             }
         }
 

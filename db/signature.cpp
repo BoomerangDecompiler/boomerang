@@ -741,6 +741,9 @@ Exp *Signature::getReturnExp()
 
 Type *Signature::getReturnType()
 {
+    if ((rettype == NULL || rettype->isVoid()) && returns.size() == 1) {
+        rettype = returns[0]->getType();
+    }
     return rettype;
 }
 
