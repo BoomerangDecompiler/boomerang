@@ -23,6 +23,7 @@
  * 21 May 02 - Mike: Slight mod for gcc 3.1
  * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
  * 02 Oct 02 - Mike: Fixed some more endianness issues
+ * 24 Mar 03 - Mike: GetAddressByName returns NO_ADDRESS on failure now
 */
 
 /*==============================================================================
@@ -462,8 +463,7 @@ bool ElfBinaryFile::SearchValueByName(const char* pName, SymValue* pVal)
 
 
 ADDRESS ElfBinaryFile::GetAddressByName(const char* pName,
-    bool bNoTypeOK /* = false */)
-{
+    bool bNoTypeOK /* = false */) {
     if (pName == m_pLastName)
         return m_uLastAddr;
     SymValue Val;
@@ -475,7 +475,7 @@ ADDRESS ElfBinaryFile::GetAddressByName(const char* pName,
         m_uLastAddr = Val.uSymAddr;
         return Val.uSymAddr;
     }
-    else return 0;
+    else return NO_ADDRESS;
 }
 
 int ElfBinaryFile::GetSizeByName(const char* pName,
