@@ -1943,9 +1943,11 @@ Exp* Unary::polySimplify(bool& bMod) {
 		Type *ty = subExp1->getSubExp1()->getType();
 		if (ty && ty->isPointer()) {
 			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
-			if ((basesz % 8) == 0 && (n % (basesz / 8)) == 0) {
+			if (basesz && (basesz % 8) == 0 && (n % (basesz / 8)) == 0) {
 				bMod = true;
-				return new Binary(opArraySubscript, subExp1->getSubExp1()->clone(), new Const(n / (basesz / 8)));
+				return new Binary(opArraySubscript,
+					subExp1->getSubExp1()->clone(),
+					new Const(n / (basesz / 8)));
 			}
 		}
 	}
@@ -1959,7 +1961,9 @@ Exp* Unary::polySimplify(bool& bMod) {
 			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
 			if (basesz == n * 8) {
 				bMod = true;
-				return new Binary(opArraySubscript, subExp1->getSubExp1()->clone(), subExp1->getSubExp2()->getSubExp1()->clone());
+				return new Binary(opArraySubscript,
+					subExp1->getSubExp1()->clone(),
+					subExp1->getSubExp2()->getSubExp1()->clone());
 			}
 		}
 	}
@@ -1992,22 +1996,20 @@ Exp* Binary::polySimplify(bool& bMod) {
 			case opMults:	k1 = k1 * k2; break;
 			case opShiftL:	k1 = k1 << k2; break;
 			case opShiftR:	k1 = k1 >> k2; break;
-			case opShiftRA: k1 = (k1 >> k2) |
-								(((1 << k2) -1) << (32 - k2));
-								break;
-			case opBitOr:		k1 = k1 | k2; break;
-			case opBitAnd:		k1 = k1 & k2; break;
-			case opBitXor:		k1 = k1 ^ k2; break;
-			case opEquals:		k1 = (k1 == k2); break;
-			case opNotEqual:	k1 = (k1 != k2); break;
-			case opLess:		k1 = (k1 <	k2); break;
-			case opGtr:			k1 = (k1 >	k2); break;
-			case opLessEq:		k1 = (k1 <= k2); break;
-			case opGtrEq:		k1 = (k1 >= k2); break;
-			case opLessUns:		k1 = ((unsigned)k1 < (unsigned)k2); break;
-			case opGtrUns:		k1 = ((unsigned)k1 > (unsigned)k2); break;
-			case opLessEqUns:	k1 = ((unsigned)k1 <=(unsigned)k2); break;
-			case opGtrEqUns:	k1 = ((unsigned)k1 >=(unsigned)k2); break;
+			case opShiftRA: k1 = (k1 >> k2) | (((1 << k2) -1) << (32 - k2)); break;
+			case opBitOr:	k1 = k1 | k2; break;
+			case opBitAnd:	k1 = k1 & k2; break;
+			case opBitXor:	k1 = k1 ^ k2; break;
+			case opEquals:	k1 = (k1 == k2); break;
+			case opNotEqual:k1 = (k1 != k2); break;
+			case opLess:	k1 = (k1 <	k2); break;
+			case opGtr:		k1 = (k1 >	k2); break;
+			case opLessEq:	k1 = (k1 <= k2); break;
+			case opGtrEq:	k1 = (k1 >= k2); break;
+			case opLessUns:	k1 = ((unsigned)k1 < (unsigned)k2); break;
+			case opGtrUns:	k1 = ((unsigned)k1 > (unsigned)k2); break;
+			case opLessEqUns:k1 = ((unsigned)k1 <=(unsigned)k2); break;
+			case opGtrEqUns:k1 = ((unsigned)k1 >=(unsigned)k2); break;
 			default: change = false;
 		}
 		if (change) {
