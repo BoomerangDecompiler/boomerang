@@ -93,20 +93,6 @@ bool Statement::replaceRef(Statement *def) {
 	return convert;
 }
 
-// Check the liveout set for interferences
-// Examples:  r[24]{3} and r[24]{5} both live at same time,
-// or m[r[28]{3}] and m[r[28]{3}]{2}
-static int nextVarNum = 0;
-void insertInterference(igraph& ig, Exp* e) {
-	igraph::iterator it = ig.find(e);
-	if (it == ig.end()) {
-		// We will be inserting a new element
-		const std::pair<Exp*, int> temp(e, ++nextVarNum);
-		ig.insert(temp);
-	}
-	// else it is already in the map: no need to do anything
-}
-
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
 	if (*e1 == *e2) return true;
 	// Pass the expressions both ways. Saves checking things like
@@ -272,7 +258,7 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth, bo
 				if (((RefExp*)e)->isImplicitDef())
 					// Can't propagate statement "0" (implicit assignments)
 					continue;
-				Statement* def = ((RefExp*)e)->getRef();
+				Statement* def = ((RefExp*)e)->getDef();
 				if (def == this)
 					// Don't propagate to self! Can happen with %pc's
 					continue;
@@ -388,7 +374,7 @@ bool Statement::isNullStatement() {
 	Exp* right = ((Assign*)this)->getRight();
 	if (right->isSubscript()) {
 		// Must refer to self to be null
-		return this == ((RefExp*)right)->getRef();
+		return this == ((RefExp*)right)->getDef();
 	}
 	else
 		// Null if left == right
@@ -1538,8 +1524,7 @@ void CallStatement::setSigArguments() {
 	if (sig->hasEllipsis()) {
 		// Just guess 4 parameters for now
 		for (int i = 0; i < 4; i++)
-			arguments.push_back(sig->getArgumentExp(
-									arguments.size())->clone());
+			arguments.push_back(sig->getArgumentExp(arguments.size())->clone());
 	}
 	if (procDest)
 		procDest->addCaller(this);
@@ -1558,6 +1543,7 @@ void CallStatement::setSigArguments() {
 	for (i = 0; i < sig->getNumReturns(); i++) {
 		ReturnInfo ri;
 		ri.e = sig->getReturnExp(i)->clone();
+		ri.type = sig->getReturnType(i)->clone();
 		returns.push_back(ri);
 	}
 	if (procDest == NULL)
@@ -2180,7 +2166,7 @@ void CallStatement::insertArguments(StatementSet& rs) {
 #endif
 }
 
-// MVE: Likely can go. Processes each argument of a CallStatement, and the RHS of an Assign
+// Processes each argument of a CallStatement, and the RHS of an Assign. Ad-hoc type analysis only.
 Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc)
 {
 	if (t == NULL) return e;
@@ -2313,7 +2299,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 			break;
 		}
 		case opSubscript: {
-			Statement* def = ((RefExp*)e)->getRef();
+			Statement* def = ((RefExp*)e)->getDef();
 			ty = def->getTypeFor(e->getSubExp1(), prog);
 			break;
 		}
@@ -2343,7 +2329,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 						if (!r->isSubscript()) continue;
 						Exp* base = r->getSubExp1();
 						if (*base == *e) {
-							Statement* def = r->getRef();
+							Statement* def = r->getDef();
 							return def->getTypeFor(e, prog);
 						}
 					}
@@ -2441,7 +2427,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 	Exp* formatExp = getArgumentExp(format);
 	if (formatExp->isSubscript()) {
 		// Maybe it's defined to be a Const string
-		Statement* def = ((RefExp*)formatExp)->getRef();
+		Statement* def = ((RefExp*)formatExp)->getDef();
 		if (def == NULL) return false;		// Not all NULL refs get converted to implicits
 		if (def->isAssign()) {
 			// This would be unusual; propagation would normally take care of this
@@ -2451,9 +2437,9 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 		} else if (def->isPhi()) {
 			// More likely. Example: switch_gcc. Only need ONE candidate format string
 			PhiAssign* pa = (PhiAssign*)def;
-			int n = pa->getNumRefs();
+			int n = pa->getNumDefs();
 			for (int i=0; i < n; i++) {
-				def = pa->getAt(i);
+				def = pa->getStmtAt(i);
 				if (def == NULL) continue;
 				Exp* rhs = ((Assign*)def)->getRight();
 				if (rhs == NULL || !rhs->isStrConst()) continue;
@@ -2952,7 +2938,13 @@ Statement* Assign::clone() {
 
 Statement* PhiAssign::clone() {
 	PhiAssign* pa = new PhiAssign(type, lhs);
-	pa->stmtVec = stmtVec;		// Copy the vector of Statement*s
+	Definitions::iterator dd;
+	for (dd = defVec.begin(); dd != defVec.end(); dd++) {
+		PhiInfo pi;
+		pi.def = dd->def;			// Don't clone the Statement pointer (never moves)
+		pi.e = dd->e->clone();		// Do clone the expression pointer
+		pa->defVec.push_back(pi);
+	}
 	return pa;
 }
 
@@ -2992,16 +2984,16 @@ void Assign::simplify() {
 	//			 4 r31 = r31{2} + 1
 	// I just assume this can only happen in a loop.. 
 	if (leftop == opMemOf && lhs->getSubExp1()->getOper() == opSubscript &&
-			((RefExp*)lhs->getSubExp1())->getRef() && ((RefExp*)lhs->getSubExp1())->getRef()->isPhi()) {
-		Statement *phistmt = ((RefExp*)lhs->getSubExp1())->getRef();
+			((RefExp*)lhs->getSubExp1())->getDef() && ((RefExp*)lhs->getSubExp1())->getDef()->isPhi()) {
+		Statement *phistmt = ((RefExp*)lhs->getSubExp1())->getDef();
 		PhiAssign *phi = (PhiAssign*)phistmt;
-		if (phi->getNumRefs() == 2 && phi->getAt(0) && phi->getAt(1) &&
-				phi->getAt(0)->isAssign() && phi->getAt(1)->isAssign()) {
-			Assign *a1 = (Assign*)phi->getAt(0);
-			Assign *a4 = (Assign*)phi->getAt(1);
+		if (phi->getNumDefs() == 2 && phi->getStmtAt(0) && phi->getStmtAt(1) &&
+				phi->getStmtAt(0)->isAssign() && phi->getStmtAt(1)->isAssign()) {
+			Assign *a1 = (Assign*)phi->getStmtAt(0);
+			Assign *a4 = (Assign*)phi->getStmtAt(1);
 			if (a1->getRight()->getType() && a4->getRight()->getOper() == opPlus &&
 					a4->getRight()->getSubExp1()->getOper() == opSubscript &&
-					((RefExp*)a4->getRight()->getSubExp1())->getRef() == phistmt &&
+					((RefExp*)a4->getRight()->getSubExp1())->getDef() == phistmt &&
 					*a4->getRight()->getSubExp1()->getSubExp1() == *phi->getLeft() &&
 					a4->getRight()->getSubExp2()->getOper() == opIntConst) {
 				Type *ty = a1->getRight()->getType();
@@ -3039,16 +3031,16 @@ void Assign::simplify() {
 	if (DFA_TYPE_ANALYSIS) return;
 	if (lhs->getOper() == opMemOf && lhs->getSubExp1()->getOper() == opSubscript) {
 		RefExp *ref = (RefExp*)lhs->getSubExp1();
-		Statement *phist = ref->getRef();
+		Statement *phist = ref->getDef();
 		PhiAssign *phi = NULL;
 		if (phist && phist->getRight())
 			phi = dynamic_cast<PhiAssign*>(phist);
-		for (int i = 0; phi && i < phi->getNumRefs(); i++) 
-			if (phi->getAt(i)) {
-				Assign *def = dynamic_cast<Assign*>(phi->getAt(i));
+		for (int i = 0; phi && i < phi->getNumDefs(); i++) 
+			if (phi->getStmtAt(i)) {
+				Assign *def = dynamic_cast<Assign*>(phi->getStmtAt(i));
 				if (def && (def->rhs->getOper() == opIntConst || (def->rhs->getOper() == opMinus &&
 						def->rhs->getSubExp1()->getOper() == opSubscript &&
-						((RefExp*)def->rhs->getSubExp1())->getRef() == NULL &&
+						((RefExp*)def->rhs->getSubExp1())->getDef() == NULL &&
 						def->rhs->getSubExp1()->getSubExp1()->getOper() == opRegOf &&
 						def->rhs->getSubExp2()->getOper() == opIntConst))) {
 					Exp *ne = new Unary(opAddrOf, Location::memOf(def->rhs, proc)); 
@@ -3135,30 +3127,42 @@ void PhiAssign::print(std::ostream& os) {
 	if (lhs) lhs->print(os);
 	os << " := phi";
 	// Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
-	// locations. When not, print as local4 := phi(r24{9} r24{17})
+	// locations. When not, print as local4 := phi(r24{9} argc{17})
 	bool simple = true;
-	int n = stmtVec.size();
+	int i, n = defVec.size();
 	if (n != 0) {
-		StatementVec::iterator it;
-		for (int i = 0; i < n; i++) {
-			Statement* def = stmtVec[i];
-			if (def == NULL) continue;
-			Exp* left = def->getLeft();
-			if (left == NULL) continue;
-			if (! (*left *= *lhs)) {
+		for (i = 0; i < n; i++) {
+			if (! (*defVec[i].e == *lhs)) {
 				// One of the phi parameters has a different base expression to lhs. Use non simple print.
 				simple = false;
 				break;
 			}
 		}
 	}
+	iterator it;
 	if (simple) {
-		os << "{";
-		stmtVec.printNums(os);
+		os << "{" << std::dec;
+		for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
+			if (it->def)
+				os << it->def->getNumber();
+			else
+				os << "-";
+			if (++it != defVec.end())
+				os << " ";
+		}
 		os << "}";
 	} else {
 		os << "(";
-		stmtVec.printLefts(os);
+		for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
+			os << it->e << "{";
+			if (it->def)
+				os << std::dec << it->def->getNumber();
+			else
+				os << "-";
+			os << "}";
+			if (++it != defVec.end())
+				os << " ";
+		}
 		os << ")";
 	}
 }
@@ -3254,6 +3258,15 @@ void Assignment::fromSSAform(igraph& ig) {
 
 void PhiAssign::fromSSAform(igraph& ig) {
 	lhs = lhs->fromSSAleft(ig, this);
+	iterator it;
+	igraph::iterator gg;
+	for (it = defVec.begin(); it != defVec.end(); it++) {
+		RefExp* r = new RefExp(it->e, it->def);
+		gg = ig.find(r);
+		if (gg != ig.end()) {
+			it->e = gg->second;
+		}
+	}
 }
 
 // PhiExp and ImplicitExp:
@@ -3282,7 +3295,7 @@ bool Assign::doReplaceRef(Exp* from, Exp* to) {
 		// Could be propagating %flags into %CF
 		Exp* baseFrom = ((RefExp*)from)->getSubExp1();
 		if (baseFrom->isFlags()) {
-			Statement* def = ((RefExp*)from)->getRef();
+			Statement* def = ((RefExp*)from)->getDef();
 			Exp* defRhs = def->getRight();
 			assert(defRhs->isFlagCall());
 			/* When the carry flag is used bare, and was defined in a subtract
@@ -3379,12 +3392,12 @@ void PhiAssign::genConstraints(LocationSet& cons) {
 	// Generate a constraints st that all the phi's have to be the same type as
 	// result
 	Exp* result = new Unary(opTypeOf, new RefExp(lhs, this));
-	StatementVec::iterator uu;
-	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+	Definitions::iterator uu;
+	for (uu = defVec.begin(); uu != defVec.end(); uu++) {
 		Exp* conjunct = new Binary(opEquals,
 			result,
 			new Unary(opTypeOf,
-				new RefExp(lhs, *uu)));
+				new RefExp(uu->e, uu->def)));
 		cons.insert(conjunct);
 	}
 }
@@ -3847,25 +3860,21 @@ void PhiAssign::convertToAssign(Exp* rhs) {
 
 
 
-// This is a hack.	If we have a phi which has one of its
-// elements referencing a statement which is defined as a 
-// function address, then we can use this information to
-// resolve references to indirect calls more aggressively.
-// Note that this is not technically correct and will give
-// the wrong result if the callee of an indirect call
+// This is a hack.	If we have a phi which has one of its elements referencing a statement which is defined as a 
+// function address, then we can use this information to resolve references to indirect calls more aggressively.
+// Note that this is not technically correct and will give the wrong result if the callee of an indirect call
 // actually modifies a function pointer in the caller. 
 bool PhiAssign::hasGlobalFuncParam()
 {
-	unsigned n = stmtVec.size();
+	unsigned n = defVec.size();
 	for (unsigned i = 0; i < n; i++) {
-		Statement* u = stmtVec[i];
+		Statement* u = defVec[i].def;
 		if (u == NULL) continue;
 		Exp *right = u->getRight();
 		if (right == NULL)
 			continue;
 		if (right->getOper() == opGlobal ||
-			(right->getOper() == opSubscript &&
-			 right->getSubExp1()->getOper() == opGlobal)) {
+			(right->getOper() == opSubscript && right->getSubExp1()->getOper() == opGlobal)) {
 			Exp *e = right;
 			if (right->getOper() == opSubscript)
 				e = right->getSubExp1();
@@ -3875,8 +3884,7 @@ bool PhiAssign::hasGlobalFuncParam()
 				p = proc->getProg()->getLibraryProc(nam);
 			if (p) {
 				if (VERBOSE)
-					LOG << "statement " << i << " of " << this 
-						<< " is a global func\n";
+					LOG << "statement " << i << " of " << this << " is a global func\n";
 				return true;
 			}
 		}
@@ -3893,13 +3901,13 @@ bool PhiAssign::hasGlobalFuncParam()
 void PhiAssign::simplify() {
 	lhs = lhs->simplify();
 
-	if (stmtVec.begin() != stmtVec.end()) {
-		StatementVec::iterator uu;
+	if (defVec.begin() != defVec.end()) {
+		Definitions::iterator uu;
 		bool allSame = true;
-		uu = stmtVec.begin();
+		uu = defVec.begin();
 		Statement* first;
-		for (first = *uu++; uu != stmtVec.end(); uu++) {
-			if (*uu != first) {
+		for (first = (uu++)->def; uu != defVec.end(); uu++) {
+			if (uu->def != first) {
 				allSame = false;
 				break;
 			}
@@ -3914,12 +3922,12 @@ void PhiAssign::simplify() {
 
 		bool onlyOneNotThis = true;
 		Statement *notthis = (Statement*)-1;
-		for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-			if (*uu == NULL || (*uu)->isImplicit() || !(*uu)->isPhi() || (*uu) != this)
+		for (uu = defVec.begin(); uu != defVec.end(); uu++) {
+			if (uu->def == NULL || uu->def->isImplicit() || !uu->def->isPhi() || uu->def != this)
 				if (notthis != (Statement*)-1) {
 					onlyOneNotThis = false;
 					break;
-				} else notthis = *uu;
+				} else notthis = uu->def;
 		}
 
 		if (onlyOneNotThis && notthis != (Statement*)-1) {
@@ -3932,32 +3940,30 @@ void PhiAssign::simplify() {
 }
 
 void PhiAssign::simplifyRefs() {
-	StatementVec::iterator uu;
-	for (uu = stmtVec.begin(); uu != stmtVec.end(); ) {
-		// Look for a phi chain: *uu is an assignment whose RHS is the same
-		// expression as our LHS
+	Definitions::iterator uu;
+	for (uu = defVec.begin(); uu != defVec.end(); ) {
+		// Look for a phi chain: *uu is an assignment whose RHS is the same expression as our LHS
 		// It is most likely a phi statement that was converted to an Assign
-		if (*uu && (*uu)->getRight() && 
-			  (*uu)->getRight()->getOper() == opSubscript &&
-			  *(*uu)->getRight()->getSubExp1() == *lhs) {
+		if (uu->def && uu->def->getRight() && 
+				uu->def->getRight()->getOper() == opSubscript &&
+				*uu->def->getRight()->getSubExp1() == *lhs) {
 			// If the assignment is to this phi...
-			if (((RefExp*)(*uu)->getRight())->getRef() == this) {
+			if (((RefExp*)uu->def->getRight())->getDef() == this) {
 				// ... then *uu can be removed
 				if (VERBOSE)
-					LOG << "removing statement " << *uu << " from phi at " << number << "\n";
-				uu = stmtVec.remove(uu);
+					LOG << "removing statement " << uu->def << " from phi at " << number << "\n";
+				uu = defVec.erase(uu);
 				continue;
 			}
 			// Else follow the chain, to get closer to the real, utlimate
 			// definition
 			if (VERBOSE)
-				LOG << "replacing " << (*uu)->getNumber() << " with ";
-			*uu = ((RefExp*)(*uu)->getRight())->getRef();
+				LOG << "replacing " << uu->def->getNumber() << " with ";
+			uu->def = ((RefExp*)uu->def->getRight())->getDef();
 			if (VERBOSE) {
 				int n = 0;
-				if (*uu) n = (*uu)->getNumber();
-				LOG << n << " in phi at " << number << " result is: " <<
-				  this << "\n";
+				if (uu->def) n = uu->def->getNumber();
+				LOG << n << " in phi at " << number << " result is: " << this << "\n";
 			}
 		}
 		uu++;
@@ -4039,3 +4045,20 @@ Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
 	}
 	return newType;
 }
+
+void PhiAssign::putAt(int i, Statement* def, Exp* e) {
+	if (i >= (int)defVec.size())
+		defVec.resize(i+1);		// Note: possible to insert uninitialised elements
+	defVec[i].def = def;
+	defVec[i].e = e;
+}
+
+void CallStatement::setLeftFor(Exp* forExp, Exp* newExp) {
+	for (unsigned u = 0; u < returns.size(); u++) {
+		if (*returns[u].e == *forExp) {
+			returns[u].e = newExp;
+			return;
+		}
+	}
+}
+
