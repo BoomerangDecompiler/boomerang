@@ -44,14 +44,6 @@
 #include <dlfcn.h>
 #endif
 
-// Check that BOOMDIR is set
-#ifndef WIN32
-#ifndef BOOMDIR
-#error BOOMDIR must be set!
-#endif
-#define LIBDIR BOOMDIR "/lib"
-#endif
-
 
 BinaryFile::BinaryFile(bool bArch /*= false*/)
 {
@@ -151,7 +143,7 @@ BinaryFile* BinaryFile::getInstanceFor( const char *sName )
     
 #ifndef WIN32           // Note: For now, Win32 statically links to all loaders
 // Load the specific loader library
-    libName = std::string(LIBDIR) + "/" + libName;
+    libName = std::string("lib/") + libName;
     void* dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
     if (dlHandle == NULL) {
         fprintf( stderr, "Could not open dynamic loader library %s\n",

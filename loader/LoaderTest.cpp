@@ -14,19 +14,14 @@
  * 30 Sep 02 - Trent: remove dependancy between microDis test1 and Elf loader
  */
 
-// Check that BOOMDIR is set
-#ifndef BOOMDIR
-#error BOOMDIR must be set!
-#endif
-
-#define HELLO_SPARC     BOOMDIR "/test/sparc/hello"
-#define HELLO_PENTIUM   BOOMDIR "/test/pentium/hello"
-#define HELLO_HPPA      BOOMDIR "/test/hppa/hello"
-#define STARTER_PALM    BOOMDIR "/test/mc68328/Starter.prc"
-#define CALC_WINDOWS    BOOMDIR "/test/windows/calc.exe"
-#define CALC_WINXP      BOOMDIR "/test/windows/calcXP.exe"
-#define CALC_WIN2000    BOOMDIR "/test/windows/calc2000.exe"
-#define LPQ_WINDOWS     BOOMDIR "/test/windows/lpq.exe"
+#define HELLO_SPARC     "test/sparc/hello"
+#define HELLO_PENTIUM   "test/pentium/hello"
+#define HELLO_HPPA      "test/hppa/hello"
+#define STARTER_PALM    "test/mc68328/Starter.prc"
+#define CALC_WINDOWS    "test/windows/calc.exe"
+#define CALC_WINXP      "test/windows/calcXP.exe"
+#define CALC_WIN2000    "test/windows/calc2000.exe"
+#define LPQ_WINDOWS     "test/windows/lpq.exe"
 
 #include "LoaderTest.h"
 //#include "util.h"           // For str()
