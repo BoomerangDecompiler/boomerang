@@ -566,46 +566,61 @@ void StatementTest::testEndlessLoop () {
  * OVERVIEW:		
  *============================================================================*/
 void StatementTest::testLocationSet () {
-	Location rof(opRegOf, new Const(12), NULL);
+	Location rof(opRegOf, new Const(12), NULL);		// r12
 	Const& theReg = *(Const*)rof.getSubExp1();
 	LocationSet ls;
 	LocationSet::iterator ii;
-	ls.insert(rof.clone());
+	ls.insert(rof.clone());							// ls has r12
 	theReg.setInt(8);
-	ls.insert(rof.clone());
+	ls.insert(rof.clone());							// ls has r8 r12
 	theReg.setInt(31);
-	ls.insert(rof.clone());
+	ls.insert(rof.clone());							// ls has r8 r12 r31
 	theReg.setInt(24);
-	ls.insert(rof.clone());
+	ls.insert(rof.clone());							// ls has r8 r12 r24 r31
 	theReg.setInt(12);
-	ls.insert(rof.clone());		// Note: r[12] already inserted
+	ls.insert(rof.clone());							// Note: r12 already inserted
 	CPPUNIT_ASSERT_EQUAL(4, ls.size());
 	theReg.setInt(8);
 	ii = ls.begin();
-	CPPUNIT_ASSERT(rof == **ii);
+	CPPUNIT_ASSERT(rof == **ii);					// First element should be r8
 	theReg.setInt(12);
 	Exp* e;
-	e = *(++ii); CPPUNIT_ASSERT(rof == *e);
+	e = *(++ii); CPPUNIT_ASSERT(rof == *e);			// Second should be r12
 	theReg.setInt(24);
-	e = *(++ii); CPPUNIT_ASSERT(rof == *e);
+	e = *(++ii); CPPUNIT_ASSERT(rof == *e);			// Next should be r24
 	theReg.setInt(31);
-	e = *(++ii); CPPUNIT_ASSERT(rof == *e);
+	e = *(++ii); CPPUNIT_ASSERT(rof == *e);			// Last should be r31
 	Location mof(opMemOf,
 		new Binary(opPlus,
 			Location::regOf(14),
-			new Const(4)), NULL);
+			new Const(4)), NULL);					// m[r14 + 4]
+	ls.insert(mof.clone());							// ls should be m[r14 + 4] r8 r12 r24 r31
 	ls.insert(mof.clone());
-	ls.insert(mof.clone());
-	CPPUNIT_ASSERT_EQUAL(5, ls.size());
+	CPPUNIT_ASSERT_EQUAL(5, ls.size());				// Should have 5 elements
 	ii = ls.begin();
-	CPPUNIT_ASSERT(mof == **ii);
+	CPPUNIT_ASSERT(mof == **ii);					// First element should be m[r14 + 4] now
 	LocationSet ls2 = ls;
 	Exp* e2 = *ls2.begin();
-	CPPUNIT_ASSERT(e2 != *ls.begin());		// Must be cloned
+	CPPUNIT_ASSERT(e2 != *ls.begin());				// Must be cloned
 	CPPUNIT_ASSERT_EQUAL(5, ls2.size());
-	CPPUNIT_ASSERT(mof == **ls2.begin());
+	CPPUNIT_ASSERT(mof == **ls2.begin());			// First elements should compare equal
 	theReg.setInt(8);
-	e = *(++ls2.begin()); CPPUNIT_ASSERT(rof == *e);
+	e = *(++ls2.begin());							// Second element
+	CPPUNIT_ASSERT(rof == *e);						// ... should be r8
+	Assign s10(new Const(0), new Const(0)), s20(new Const(0), new Const(0));
+	s10.setNumber(10);
+	s20.setNumber(20);
+	RefExp* r1 = new RefExp(
+		Location::regOf(8),
+		&s10);
+	RefExp* r2 = new RefExp(
+		Location::regOf(8),
+		&s20);
+	ls.insert(r1);					// ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
+	CPPUNIT_ASSERT_EQUAL(6, ls.size());
+	Exp* dummy;
+	CPPUNIT_ASSERT(!ls.findDifferentRef(r1, dummy));
+	CPPUNIT_ASSERT( ls.findDifferentRef(r2, dummy));
 }
 
 /*==============================================================================

@@ -302,6 +302,8 @@ bool LocationSet::find(Exp* e) {
 	return sset.find(e) != sset.end();
 }
 
+// Find a location with a different def, but same expression. For example, pass r28{10},
+// return true if r28{20} in the set. If return true, dr points to the first different ref
 bool LocationSet::findDifferentRef(RefExp* e, Exp *&dr) {
 	RefExp search(e->getSubExp1()->clone(), (Statement*)-1);
 	std::set<Exp*, lessExpStar>::iterator pos = sset.find(&search);
@@ -309,7 +311,9 @@ bool LocationSet::findDifferentRef(RefExp* e, Exp *&dr) {
 	while (pos != sset.end()) {
 		// Exit if we've gone to a new base expression
 		// E.g. searching for r13{10} and **pos is r14{0}
-		if (!(**pos *= *e)) break;		// *= is ref-insensitive compare
+		// Note: we want a ref-sensitive compare, but with the outer refs stripped off
+		// For example: m[r29{10} - 16]{any} is different from m[r29{20} - 16]{any}
+		if (!(*(*pos)->getSubExp1() == *e->getSubExp1())) break;
 		// Bases are the same; return true if only different ref
 		if (!(**pos == *e)) {
 			dr = *pos;
