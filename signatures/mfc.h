@@ -52,6 +52,10 @@ UINT ?SetTextAlign@CDC@@QAEII@Z(
     CDC* this,
     UINT flags);
 
+int ?SetBkMode@CDC@@QAEHH@Z(
+    CDC* this,
+    int mode);
+
 BOOL CDC_TextOut(CDC* this, int x, int y, char* sz, int len);
 void CDC_FillRect(CDC* this, RECT* r, CBrush* br);
 
