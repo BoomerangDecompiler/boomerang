@@ -32,15 +32,14 @@
 
 //#include "global.h"
 #include "ElfBinaryFile.h"
-// #ifndef NODETAILS        CC: 5Apr01
-//#include "ElfDetails.h"     // dumpElf32() etc
-// #endif
 #include <values.h>
 #include <sys/types.h>      // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>         // Close()
 #include <iostream>
+#include "config.h"
+
 typedef std::map<std::string, int, std::less<std::string> >     StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
