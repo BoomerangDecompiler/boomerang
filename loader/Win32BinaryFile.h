@@ -170,6 +170,19 @@ public:
         // Dump headers, etc
 virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
+protected:
+
+        int win32Read2(short *ps) const; // Read 2 bytes from native addr
+        int win32Read4(int *pi) const;   // Read 4 bytes from native addr
+
+public:
+
+virtual int readNative2(ADDRESS a);         // Read 2 bytes from native addr
+virtual int readNative4(ADDRESS a);         // Read 4 bytes from native addr
+virtual long long readNative8(ADDRESS a);   // Read 8 bytes from native addr
+virtual float readNativeFloat4(ADDRESS a);  // Read 4 bytes as float
+virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+
 virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
 virtual const char *GetDynamicProcName(ADDRESS uNative);
 

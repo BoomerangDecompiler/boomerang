@@ -29,6 +29,8 @@
 
 #include "BinaryFile.h"
 #include "Win32BinaryFile.h"
+#include "config.h"
+#include <iostream>
 #include <sstream>
 
 extern "C" {
@@ -265,6 +267,83 @@ bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f
      /* = stdout */)
 {
     return false;
+}
+
+int Win32BinaryFile::win32Read2(short* ps) const {
+    unsigned char* p = (unsigned char*)ps;
+    // Little endian
+    int n = (int)(p[0] + (p[1] << 8));
+    std::cerr << "win32 read2 " << std::hex << n << std::endl;
+    return n;
+}
+
+int Win32BinaryFile::win32Read4(int* pi) const{
+    short* p = (short*)pi;
+    int n1 = win32Read2(p);
+    int n2 = win32Read2(p+1);
+    int n = (int) (n1 | (n2 << 16));
+    std::cerr << "win32 read4 " << std::hex << n1 << ", " << n2 << " " 
+              << n << std::endl;
+    return n;
+}
+
+// Read 2 bytes from given native address
+int Win32BinaryFile::readNative2(ADDRESS nat) {
+    PSectionInfo si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    int n = win32Read2((short*)host);
+    std::cerr << "read native2 " << std::hex << n << std::endl;
+    return n;
+}
+
+// Read 4 bytes from given native address
+int Win32BinaryFile::readNative4(ADDRESS nat) {
+    PSectionInfo si = GetSectionInfoByAddr(nat);
+    if (si == 0) return 0;
+    ADDRESS host = si->uHostAddr - si->uNativeAddr + nat;
+    int n = win32Read4((int*)host);
+    std::cerr << "read native " << std::hex << n << std::endl;
+    return n;
+}
+
+// Read 8 bytes from given native address
+long long Win32BinaryFile::readNative8(ADDRESS nat) {
+    int raw[2];
+#ifdef WORDS_BIGENDIAN      // This tests the  host  machine
+    // Source and host are different endianness
+    raw[1] = readNative4(nat);
+    raw[0] = readNative4(nat+4);
+#else
+    // Source and host are same endianness
+    raw[0] = readNative4(nat);
+    raw[1] = readNative4(nat+4);
+#endif
+    return *(long long*)raw;
+}
+
+// Read 4 bytes as a float
+float Win32BinaryFile::readNativeFloat4(ADDRESS nat) {
+    int raw = readNative4(nat);
+    // Ugh! gcc says that reinterpreting from int to float is invalid!!
+    //return reinterpret_cast<float>(raw);    // Note: cast, not convert!!
+    return *(float*)&raw;           // Note: cast, not convert
+}
+
+// Read 8 bytes as a float
+double Win32BinaryFile::readNativeFloat8(ADDRESS nat) {
+    int raw[2];
+#ifdef WORDS_BIGENDIAN      // This tests the  host  machine
+    // Source and host are different endianness
+    raw[1] = readNative4(nat);
+    raw[0] = readNative4(nat+4);
+#else
+    // Source and host are same endianness
+    raw[0] = readNative4(nat);
+    raw[1] = readNative4(nat+4);
+#endif
+    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double*)raw;
 }
 
 bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)

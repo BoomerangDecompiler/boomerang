@@ -476,7 +476,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
             else
                 expBound = new Unary(opNot, new Terminal(opNil));
         }
-        
+
         // General approach: we look for the comparison that defines the
         // switch variable's upper bound separately.
         // We maintain a Expression, expJmp, that is the current
@@ -505,7 +505,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
               currStmt->getLeft()->isRegOfK()) {
                 Exp* rhs = currStmt->getRight();
                 // r[ int R] - iReg
-                if (rhs->getOper() == opMinus) {
+                if (rhs && rhs->getOper() == opMinus) {
                     // We have a subtract; is it from a register?
                     Exp* sub1 = rhs->getSubExp1();
                     if (sub1->isRegOfK()) {
@@ -528,7 +528,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                     }
                 }
                 // Or it could be an add of a negative constant
-                else if (*rhs == expRegPlusNegConst) {
+                else if (rhs && *rhs == expRegPlusNegConst) {
                     // Is the const negative?
                     Exp* sub = rhs->getSubExp2();
                     int iconst = ((Const*)sub)->getInt();
@@ -680,7 +680,7 @@ std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a
         if (n == 0) continue;
         // We assume that the last RTL will define the flags, if at all
         if (pRtl->elementAt(n-1)->isFlagAssgn()) {
-            if (expBound->getOper() == opNot) {
+            if (expBound && expBound->getOper() == opNot) {
                 expBound = expBound->getSubExp1();
                 if (Boomerang::get()->debugSwitch)
                     std::cerr << "Popping opNot from expBound: now " <<

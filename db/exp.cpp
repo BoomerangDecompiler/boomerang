@@ -1293,7 +1293,7 @@ Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
     std::list<Exp**>::iterator it;
     for (it = li.begin(); it != li.end(); it++) {
         Exp** pp = *it;
-        if (*pp) delete *pp;        // Delete any existing
+        //if (*pp) delete *pp;        // Delete any existing
         *pp = replace->clone();     // Do the replacement
         if (once) {
             change = true;
