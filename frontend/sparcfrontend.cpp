@@ -1332,6 +1332,10 @@ if (0)          // SETTINGS
             if (dest != NO_ADDRESS) prog.visitProc(dest);
         }
     }
+
+	// MVE: Not 100% sure this is the right place for this
+	proc->setEntryBB();
+
     return true;
 }
 
