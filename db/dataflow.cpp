@@ -873,6 +873,7 @@ void Statement::getDefinitions(LocationSet &def) {
 
 void Statement::propagateTo(int memDepth) {
     bool change;
+    int changes = 0;
     // Repeat substituting into s while there is a single reference
     // component in this statement
     do {
@@ -920,7 +921,7 @@ void Statement::propagateTo(int memDepth) {
                 continue;
             change = doPropagateTo(memDepth, def, false);
         }
-    } while (change);
+    } while (change && ++changes < 20);
 }
 
 bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
