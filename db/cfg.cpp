@@ -1463,6 +1463,19 @@ void Cfg::computeLiveness() {
     }
 }
 
+void Cfg::computeDataflow() {
+    computeReaches();
+    computeAvailable();
+    computeLiveness();
+    StatementList stmts;
+    myProc->getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->clearUses();
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->calcUseLinks();
+}
+
 /*==============================================================================
  * FUNCTION:    delete_lrtls
  * OVERVIEW:    "deep" delete for a list of pointers to RTLs
@@ -1692,10 +1705,13 @@ void Cfg::print(std::ostream &out, bool withDF) {
       it++) 
         (*it)->print(out, withDF);
     out << "cfg reachExit: ";
-    StmtSetIter it;
-    for (Statement* s = reachExit.getFirst(it); s; s = reachExit.getNext(it)) {
-        s->printAsUse(out);
-        out << ", ";
+    if (exitBB) {
+        StmtSetIter it;
+        for (Statement* s = exitBB->reachOut.getFirst(it); s;
+          s = exitBB->reachOut.getNext(it)) {
+            s->printAsUse(out);
+            out << ", ";
+        }
     }
     out << std::endl;
 }
@@ -1713,15 +1729,16 @@ void Cfg::setReturnVal(Exp *e)
     }
 }
 
-Exp *Cfg::getReturnVal()
-{
+Exp *Cfg::getReturnVal() {
     Exp *e = NULL;
     bool onlyOneReturnBB = true;
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) {
         if ((*it)->getType() == RET) {
-        assert(onlyOneReturnBB);
-        e = (*it)->getReturnVal();
-        onlyOneReturnBB = false;
+            assert(onlyOneReturnBB);
+            e = (*it)->getReturnVal();
+            onlyOneReturnBB = false;
+        }
     }
     return e;
 }
@@ -2229,3 +2246,112 @@ void Cfg::generateDotFile(const char *str)
     of.close();
 }
 
+//
+// SSA code
+//
+
+#if SSA
+bool Cfg::getSSADefs(LocationSet &defs) {
+	bool ssa = true;
+	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
+		ssa &= (*it)->getSSADefs(defs);
+	return ssa;
+}
+
+void Cfg::getAllUses(Exp *def, LocationSet &uses) {
+	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
+      bit++) 
+		(*bit)->getUsesOf(uses, def);
+}
+
+void Cfg::getAllUses(LocationSet &uses) {
+	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
+      bit++) 
+		(*bit)->getUses(uses);
+}
+
+void Cfg::propagateForward(Exp *e) {
+	LocationSet defs;
+	assert(getSSADefs(defs));
+
+	Location d;
+	assert(defs.find(*e, d));
+
+	if (d.getRight()->isPhi())
+		return;
+
+	if (isUsedInPhi(e))
+		return;	
+
+	LocationSet u;
+	getAllUses(e, u);
+
+	for (LocationSet::iterator it = u.begin(); it != u.end(); it++) {
+		assert(*(*it).getExp() == *e);
+		Exp* &use = (*it).getExp();
+		delete use;
+		use = d.getRight()->clone();
+	}
+
+	// important to remove it so the subscripting will be maintained
+	d.remove();
+
+	simplify();
+
+	//SSACounts counts;
+	//unTraverse();
+	//getEntryBB()->SSAsubscript(counts);
+}
+
+bool Cfg::isUsedInPhi(Exp *e) {
+	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
+		if ((*it)->isUsedInPhi(e)) return true;
+	return false;
+}
+
+
+void Cfg::SSATransform(LocationSet &defs) {
+	if (getSSADefs(defs))
+		return;
+
+	// make a unique set of definitions
+	std::set<Exp*> udefs;
+	for (LocationSet::iterator it = defs.begin(); it != defs.end(); it++) {
+		Exp *def = (*it).getLeft();
+		bool found = false;
+		for (std::set<Exp*>::iterator sit = udefs.begin(); sit != udefs.end();
+          sit++)
+			if (*(*sit) == *def) {
+				found = true;
+				break;
+			}
+		if (!found)
+			udefs.insert(def);
+	}
+
+	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
+      bit++) 
+		(*bit)->SSAaddPhiFunctions(udefs);
+
+	SSACounts counts;
+	counts.clearMaxes();
+	unTraverse();
+	getEntryBB()->SSAsubscript(counts);
+}
+
+void Cfg::revSSATransform() {
+	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
+		(*it)->revSSATransform();	
+}
+
+bool Cfg::minimiseSSAForm() {
+	bool change = true;
+	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
+		change &= (*it)->minimiseSSAForm();
+	return change;
+}
+#endif

@@ -1100,24 +1100,30 @@ void UserProc::decompile() {
         print(std::cerr, false);    // First time no df so it's readable!
     }
     bool change = true;
-    while (change) {
-        if (Boomerang::get()->noDataflow)
-            break;
-        change = false;
-        recalcDataflow();
-        if (VERBOSE) print(std::cerr, true);
-        change |= propagateAndRemoveStatements();
-        change |= removeNullStatements();
-        change |= removeDeadStatements();
+    if (!Boomerang::get()->noDataflow) {
+        while (change) {
+            change = false;
+            recalcDataflow();
+            if (VERBOSE) print(std::cerr, true);
+            bool propagate;
+            do {
+                propagate = propagateAndRemoveStatements();
+                change |= propagate;
+            } while (propagate);
+            change |= removeNullStatements();
+            change |= removeDeadStatements();
+        }
     }
     if (!Boomerang::get()->noRemoveInternal)
         moveInternalStatements();
     cfg->compressCfg();
-    processConstants();
+    //processConstants();
 
     // Convert the signature object to one of a derived class, e.g.
     // SparcSignature.
     promoteSignature();
+// May have trouble with the below if there are cycles in the call graph
+processConstants();
     // promoteSignature has converted some register and memory locations
     // to "arg1" etc (opParam). Redo the liveness to reflect this change
     cfg->computeLiveness();
@@ -1524,6 +1530,30 @@ void UserProc::recalcDataflow() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->clearUses();
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks(cfg);
+        s->calcUseLinks();
 }
 
+//
+//  SSA code
+//
+
+#if SSA
+bool UserProc::isSSAForm() {
+    LocationSet defs;
+    // TODO: add params to defs
+    return cfg->getSSADefs(defs);
+}
+
+void UserProc::transformToSSAForm() {
+    LocationSet defs;
+    // TODO: add params to defs
+    cfg->SSATransform(defs);
+    // minimise the SSA form
+    do cfg->simplify();
+    while (cfg->minimiseSSAForm());
+}
+
+void UserProc::transformFromSSAForm() {
+    cfg->revSSATransform();
+}
+#endif

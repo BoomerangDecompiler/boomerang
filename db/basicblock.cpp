@@ -696,23 +696,6 @@ void BasicBlock::deleteEdge(PBB edge) {
 }
 
 /*==============================================================================
- * FUNCTION:        BasicBlock::getCoverage
- * OVERVIEW:        
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-unsigned BasicBlock::getCoverage() {
-    assert(m_pRtls != NULL);
-    unsigned uTotal = 0;
-    std::list<RTL*>::iterator it;
-    for (it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-        if ((*it)->getAddress())
-            uTotal += (unsigned)(*it)->getNumBytes();
-    }
-    return uTotal;
-}
-
-/*==============================================================================
  * FUNCTION:        BasicBlock::DFTOrder
  * OVERVIEW:        Traverse this node and recurse on its children in a depth
  *                  first manner. Records the times at which this node was first
@@ -1098,8 +1081,7 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 }
 
 void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch, 
-    std::list<PBB> &followSet, std::list<PBB> &gotoSet)
-{
+    std::list<PBB> &followSet, std::list<PBB> &gotoSet) {
     // If this is the follow for the most nested enclosing conditional, then
     // don't generate anything. Otherwise if it is in the follow set
     // generate a goto to the follow

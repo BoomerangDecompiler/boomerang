@@ -2497,7 +2497,7 @@ void AssignExp::killReach(StatementSet &reach) {
     StatementSet kills;
     StmtSetIter it;
     for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() == NULL) continue;
+        if (s->getLeft() == NULL) continue;     // Should never happen?
         bool isKilled = false;
         if (*s->getLeft() == *subExp1)
             isKilled = true;

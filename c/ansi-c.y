@@ -2,7 +2,6 @@
  * FILE:       ansi-c.y
  * OVERVIEW:   Parser for ANSI C.
  *
- *  This doesn't actually work yet.
  *============================================================================*/
 /*
  * $Revision$

@@ -142,12 +142,13 @@ frontend/frontend.o:		EXTRA = $(BOOMSET) -Ic
 frontend/FrontSparcTest.o:	EXTRA = $(BOOMSET)
 frontend/FrontPentTest.o:	EXTRA = $(BOOMSET)
 analysis/AnalysisTest.o:	EXTRA = $(BOOMSET) -Ifrontend
-c/CTest.o:	EXTRA = $(BOOMSET)
+c/CTest.o:	                EXTRA = $(BOOMSET)
 db/ProgTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ProcTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ParserTest.o:			EXTRA = $(BOOMSET)
 db/ExpTest.o:				EXTRA = $(BOOMSET)
 db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
+db/DataflowTest.o:			EXTRA = $(BOOMSET) -Ifrontend
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp

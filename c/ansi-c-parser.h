@@ -32,7 +32,7 @@ private:        \
     AnsiCScanner *theScanner; \
 public: \
     std::list<Signature*> signatures;
-#line 36 "ansi-c.y"
+#line 35 "ansi-c.y"
 
   #include <list>
   #include <string>
@@ -43,7 +43,7 @@ public: \
   class AnsiCScanner;
 
 
-#line 61 "ansi-c.y"
+#line 60 "ansi-c.y"
 typedef union {
    int ival;
    char *str;

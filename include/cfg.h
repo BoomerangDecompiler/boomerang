@@ -41,7 +41,7 @@
 class Proc;
 class UserProc;
 class UseSet;
-class DefSet;
+class LocationSet;
 class SSACounts;
 class BinaryFile;
 class BasicBlock;
@@ -268,11 +268,6 @@ public:
     ADDRESS getCallDest();
 
     /*
-     * Get the coverage (total number of bytes for this BB).
-     */
-    unsigned getCoverage();
-
-    /*
      * Traverse this node and recurse on its children in a depth first manner.
      * Records the times at which this node was first visited and last visited.
      * Returns the number of nodes traversed.
@@ -461,6 +456,44 @@ public:
     /* set the return value */
     void setReturnVal(Exp *e);
     Exp *getReturnVal() { return m_returnVal; }
+
+//
+//  SSA
+//
+
+    /* Get all the definitions in this BB.  Returns true if the
+     * BB is in SSA form.
+     */
+    bool getSSADefs(LocationSet &defs);
+
+    /* Return true if this expression is used in a phi
+     */
+    bool isUsedInPhi(Exp *e);
+    /* Subscript the definitions in this BB to SSA form.
+     */
+    void SSAsubscript(SSACounts counts);
+
+    /* Set the parameters of a phi function based on current
+     * counts.
+     */
+    void SSAsetPhiParams(SSACounts &counts);
+
+    /* Add phi functions in every BB with more than one in edge for every def.
+     * takes a map of unique definitions (lhs of assigns) to subscript values.
+     */
+    void SSAaddPhiFunctions(std::set<Exp*> &defs);
+
+    /* Minimise the number of phi functions in this node.
+     * returns true if anything changed.
+     */
+    bool minimiseSSAForm();
+
+    /* Reverse the SSA transformation on this node.
+     */
+    void revSSATransform();
+    void getUsesOf(LocationSet &uses, Exp *e);
+    void getDefs(LocationSet &defs, Exp *before_use = NULL);
+
 
 protected:
     // This is the set of statements whose definitions reach the end of this BB
@@ -859,8 +892,9 @@ public:
      * Compute reaches/use information
      */
     void computeReaches();          // Compute reaching definitions
-    void computeAvailable();         // Compute available definitions
+    void computeAvailable();        // Compute available definitions
     void computeLiveness();         // Compute live locations
+    void computeDataflow();         // Calls the above 3
     void updateLiveEntryDefs();
     void clearLiveEntryDefsUsedby();
     // Summary information for this cfg
@@ -895,6 +929,40 @@ public:
     /* Simplify all the expressions in the CFG
      */
     void simplify();
+
+//
+//  SSA
+//
+
+    /* Get all the definitions in this CFG.
+     * Returns true if the CFG is in SSA form.
+     */
+    bool getSSADefs(LocationSet &defs);
+
+    /* Transform the CFG to SSA form.
+     */
+    void SSATransform(LocationSet &defs);
+
+    /* Transform the CFG from SSA form.
+     */
+    void revSSATransform();
+
+    /* Minimise the CFG, returns true if anything changed
+     */
+    bool minimiseSSAForm();
+    /* Get all uses of a given expression
+     */
+    void getAllUses(Exp *def, LocationSet &uses);
+    void getAllUses(LocationSet &uses);
+
+    /* Propogate a given expression forward in the CFG
+     */
+    void propagateForward(Exp *e);
+
+    /* Return true if this expression is used in a phi
+     */
+    bool isUsedInPhi(Exp *e);
+
 
 private:
 
@@ -960,17 +1028,6 @@ protected:
      */
     std::vector<PBB> Ordering;
     std::vector<PBB> revOrdering;
-
-    /*
-     * All statements which reach the end of the ret bb.
-     */
-    StatementSet reachExit;
-
-    /*
-     * All statements which are available at the end of the ret bb
-     * (not redefined on any path)
-     */
-    StatementSet availExit;
 
     /*
      * The ADDRESS to PBB map.

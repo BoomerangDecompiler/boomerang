@@ -33,6 +33,8 @@
 #include "cfg.h"
 #include "proc.h"
 #include "boomerang.h"
+#include "rtl.h"            // For debugging code
+#include <sstream>
 
 #define VERBOSE Boomerang::get()->vFlag
 
@@ -53,7 +55,7 @@ Statement *Statement::findDef(Exp *e) {
 // that I use (i.e. are in my RHS, or in a m[] on my LHS), parameter, etc
 // This is the set of statements that this statement uses (relies on)
 // Also calculates usedBy
-void Statement::calcUses(StatementSet &uses, Cfg* cfg) {
+void Statement::calcUses(StatementSet &uses) {
     StatementSet reachIn;
     getReachIn(reachIn);
     StmtSetIter it;
@@ -66,28 +68,6 @@ void Statement::calcUses(StatementSet &uses, Cfg* cfg) {
             s->usedBy.insert(this);     // s is usedBy this Statement
         }
     }
-#if 0
-    // The above only finds uses info for those locations which are defined
-    // in this procedure. There is no usedBy info for locations live on entry
-    // to this proc. These are defined in the cfg->liveEntryDefs set
-    cfg->updateLiveEntryDefs();     // Ensure that liveEntryDefs is set up
-    // Unfortunately, have to search every statement for these...
-    // awful performance
-    StatementList stmts;
-    proc->getStatements(stmts);
-    StatementSet* leds = cfg->getLiveEntryDefs();
-    StmtListIter ll;
-    for (Statement* def = leds->getFirst(it); def; def = leds->getNext(it)) {
-        Exp* lhs = def->getLeft();
-        for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
-            if (s->usesExp(lhs)) {
-                // s uses def (def is usedby s)
-                s->uses.insert(def);
-                def->usedBy.insert(s);
-            }
-        }
-    }
-#endif
 }
 
 // From all statements in this proc, find those which use my LHS
@@ -109,8 +89,8 @@ void Statement::calcUsedBy(StatementSet &usedBy) {
    link from any definition that is used by this expression to this 
    expression.
  */
-void Statement::calcUseLinks(Cfg* cfg) {
-    calcUses(uses, cfg);             // Does both uses and usedBy now
+void Statement::calcUseLinks() {
+    calcUses(uses);             // Does both uses and usedBy now
 }
 
 // replace a use in this statement
@@ -192,22 +172,19 @@ void Statement::getLiveOut(LocationSet &liveout) {
 
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
     if (*e1 == *e2) return true;
-
-    bool b = (calcAlias(e1, e2, size) && calcAlias(e2, e1, size)); 
-    if (b && 0) {           // ??
-        if (VERBOSE) {
-            std::cerr << "mayAlias: *" << size << "* ";
-            e1->print(std::cerr);
-            std::cerr << " ";
-            e2->print(std::cerr);
-            std::cerr << " : yes" << std::endl;
-        }
+    // Pass the expressions both ways. Saves checking things like
+    // m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly (only need to
+    // check one of these cases)
+    bool b =  (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size)); 
+    if (b && VERBOSE) {
+        std::cerr << "May alias: " << e1 << " and " << e2 << " size " << size
+          << "\n";
     }
     return b;
 }
 
 // returns true if e1 may alias e2
-bool Statement::calcAlias(Exp *e1, Exp *e2, int size) {
+bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
     // currently only considers memory aliasing..
     if (!e1->isMemOf() || !e2->isMemOf()) {
         return false;
@@ -247,6 +224,8 @@ bool Statement::calcAlias(Exp *e1, Exp *e2, int size) {
         if (diff < 0) diff = -diff;
         if (diff*8 >= size) return false;
     }
+    // Don't need [left +/- constant ] vs [left] because called twice with
+    // args reversed
     return true;
 }
 
@@ -306,15 +285,16 @@ void Statement::calcLiveIn(LocationSet &live) {
  *
  * To completely propagate a statement which does not kill any of its
  * own uses it is sufficient to show that:
- * of all the definitions live at each target, those that define locations
-* (in progress)
- * the definitions of all the uses
- * of the statement are available at the expression to be propagated to
+ * of all the definitions reaching each target, those that define locations
+ * that the source statement uses, should also reach the source statement.
+ * Reaching the source statement is most easily accomplished by searching
+ * the set of stataments that the source statement uses (its uses set).
  * (the above is for condition 2 of the Dragon book, p636).
  *
  * A statement that kills one or more of its own uses is slightly more 
- * complicated.  All the uses that are not killed must still have their
- * definitions available at the expression to be propagated to, but the
+ * complicated. 
+ All the uses that are not killed must still have their
+ * definitions reach the expression to be propagated to, but the
  * uses that were killed must have their definitions available at the
  * expression to be propagated to after the statement is 
  * removed.  This is clearly the case if the only use killed by a 
@@ -347,17 +327,40 @@ bool Statement::canPropagateToAll() {
     Exp* thisLhs = getLeft();
     StmtSetIter it;
     // We would like to propagate to each dest
+    // sdest iterates through the destinations
     for (Statement* sdest = usedBy.getFirst(it); sdest;
       sdest = usedBy.getNext(it)) {
-        // all locations on the RHS must not be defined on any path from this
-        // statement to the destination
+        // all locations used by this (the source statement) must not be
+        // defined on any path from this statement to the destination
         // This is the condition 2 in the Dragon book, p636
-        // The set of available expressions at the destination (destIn) must
-        // contain all the definitions in set defs
         StatementSet destIn;
-        sdest->getAvailIn(destIn);
-        if (!defs.isSubSetOf(destIn))
-            return false;       // Fails condition 2
+        sdest->getReachIn(destIn);
+        StmtSetIter dd;
+        for (Statement* reachDest = destIn.getFirst(dd); reachDest;
+          reachDest = destIn.getNext(dd)) {
+            if (reachDest == this) {
+                // That means that the source defined one of its uses, e.g.
+                // it was r[28] := r[28] - 4
+                // this is fine
+                continue;
+            }
+            // Does this reaching definition define a location used by the
+            // source statement?
+            Exp* lhsReachDest = reachDest->getLeft();
+            if (lhsReachDest == NULL) continue;
+            if (usesExp(lhsReachDest)) {
+                // Yes, it is such a definition. Does this definition also reach
+                // the source statement? i.e. reachDest in uses?
+                if (!uses.exists(reachDest)) {
+                    // No... condition 2 does not hold
+#if 0
+  std::cerr << "Can't propagate " << this << " because destination " << sdest << " has a reaching definition " << reachDest << " which is not in my uses set: ";
+  uses.print();
+#endif
+                    return false;
+                }
+            }
+        }
         // Mike's idea: reject if more than 1 def reaches the dest
         // Must be only one definition (this statement) of thisLhs that reaches
         // each destination (Dragon book p636 condition 1)
@@ -379,7 +382,7 @@ bool Statement::canPropagateToAll() {
   StmtSetIter xx;
   for (Statement* ss = sdest->uses.getFirst(xx); ss;
     ss = sdest->uses.getNext(xx))
-      std::cerr << ss << ", "; std::cerr << "\n";   // HACK!
+      std::cerr << ss << ", "; std::cerr << "\n";
 #endif
             return false;
         }
@@ -392,6 +395,8 @@ bool Statement::canPropagateToAll() {
 void Statement::propagateToAll() {
     StmtSetIter it;
     for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
+if (s == this) std::cerr << "Attempt to propagate " << this << " to self!\n";
+assert(s != this);
         s->replaceUse(this);
     }
 }
@@ -741,3 +746,18 @@ Statement* StatementList::getPrev(StmtListRevIter& it) {
     return *it;         // Else return the previous element
 }
 
+void StatementList::print() {
+    StmtListIter it;
+    for (it = slist.begin(); it != slist.end(); it++) {
+        std::cerr << *it << ",\t";
+    }
+}
+
+static char debug_buffer[200];
+char* Statement::prints() {
+      std::ostringstream ost;
+      print(ost);
+      strncpy(debug_buffer, ost.str().c_str(), 199);
+      debug_buffer[199] = '\0';
+      return debug_buffer;
+}

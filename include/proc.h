@@ -383,6 +383,21 @@ public:
     // Note: assignment causes shallow copy of list
     virtual void getInternalStatements(StatementList &sl) {sl = internal;}
 
+//
+//  SSA
+//
+    // return true if the procedure is in ssa form
+    bool isSSAForm();
+
+    // transform the procedure to ssa form
+    void transformToSSAForm();
+
+    // transform the procedure from ssa form
+    void transformFromSSAForm();
+
+    // minimise the SSA form, returns true if anything changed
+    bool minimiseSSAForm();
+
 private:
     /*
      * Find a pointer to the Exp* representing the given var

@@ -85,6 +85,7 @@ public:
     StmtListIter StatementList::remove(StmtListIter it) {
         return slist.erase(it); }
     bool exists(Statement* s);  // Find; returns false if not found
+    void print();                           // Print to cerr (for debugging)
 };
 
 // NOTE: class LocationSet is defined in exp.h (problems with #include ordering)
@@ -146,7 +147,7 @@ public:
     virtual void getDeadStatements(StatementSet &dead) = 0;
 
     // calculates the uses/usedBy links for this statement
-    virtual void calcUseLinks(Cfg* cfg);
+    virtual void calcUseLinks();
 
     // returns an expression that would be used to reference the value
     // defined by this statement
@@ -173,7 +174,7 @@ public:
     // 
     // get my uses' definitions (ud chain)
     // 
-    void calcUses(StatementSet &uses, Cfg* cfg);
+    void calcUses(StatementSet &uses);
     int getNumUses() { return uses.size(); }
     StatementSet &getUses() { return uses; }
     void clearUses() {uses.clear(); usedBy.clear();}
@@ -206,6 +207,7 @@ public:
     virtual void printWithUses(std::ostream& os);
     virtual void printAsUse(std::ostream &os) = 0;
     virtual void printAsUseBy(std::ostream &os) = 0;
+            char* prints();      // For use in a debugger
 
     // inline / decode any constants in the statement
     virtual void processConstants(Prog *prog) = 0;
@@ -221,7 +223,7 @@ public:
 
 protected:
     virtual void doReplaceUse(Statement *use) = 0;
-    bool calcAlias(Exp *e1, Exp *e2, int size);
+    bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };
 

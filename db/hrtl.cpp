@@ -1383,11 +1383,6 @@ void HLCall::decompile() {
             returnLoc = procDest->getSignature()->getReturnExp();
             if (returnLoc) returnLoc = returnLoc->clone();
 
-            // For pentium, need some artificial internal statements to
-            // keep the stack pointer correct. This is a shameless hack
-            UserProc* uproc = (UserProc*)procDest;
-            Prog* prog = uproc->getProg();
-            internal = Signature::getStdRetStmt(prog);
         }
         else {
             // We only have the summarised dataflow from the "on the way down"
@@ -1412,6 +1407,10 @@ void HLCall::decompile() {
             // Whatever is left can go in any order, presumably
             for (Exp* loc = le.getFirst(ll); loc; loc = le.getNext(ll))
                arguments[i++] = loc;
+// MVE: check this
+            // For pentium, need some artificial internal statements to
+            // keep the stack pointer correct. This is a shameless hack
+            internal = Signature::getStdRetStmt(prog);
         }
     } else {
     // TODO: indirect call
@@ -1427,6 +1426,9 @@ void HLCall::clearLiveEntry() {
 }
 
 void HLCall::truncateArguments() {
+    // Don't do this for register calls (yet)
+    if (procDest == NULL)
+return;
     // Don't do this for library calls
     if (procDest && procDest->isLib()) return;
 
@@ -1439,8 +1441,8 @@ void HLCall::truncateArguments() {
     assert(li);
     // This is a bit of a hack, and there is the issue of ordering parameters
     // when the standard calling convention is not used
-std::cerr << "Parameters " << uproc->getSignature()->getNumParams() << " and live set is " << li->size() << ", arguments " << arguments.size() << "\n";
-std::cerr << "Live set: "; li->print();
+//std::cerr << "Parameters " << uproc->getSignature()->getNumParams() << " and live set is " << li->size() << ", arguments " << arguments.size() << "\n";
+//std::cerr << "Live set: "; li->print();
 // Ugh - for now, we just chop the arguments to the same size as the parameters
     //int n = uproc->getSignature()->getNumParams() - arguments.size();
     // This is the number of parameters that have "disappeared" after we have
@@ -1604,11 +1606,17 @@ Type *HLCall::updateType(Exp *e, Type *curType) {
 
 bool HLCall::usesExp(Exp *e) {
     Exp *where;
-    for (unsigned i = 0; i < arguments.size(); i++)
-        if (arguments[i]->search(e, where))
+    for (unsigned i = 0; i < arguments.size(); i++) {
+        if (arguments[i]->search(e, where)) {
             return true;
+        }
+    }
     if (returnLoc && returnLoc->isMemOf())
         return ((Unary*)returnLoc)->getSubExp1()->search(e, where);
+    if (procDest == NULL)
+        // No destination (e.g. indirect call)
+        // For now, just return true (overstating uses is safe)
+return true;
     if (!procDest->isLib()) {
         // Get the info that was summarised on the way down
         if (liveEntry.find(e)) return true;
@@ -1632,10 +1640,16 @@ void HLCall::doReplaceUse(Statement *use) {
     assert(right);
     bool change = false;
 
+#if 0       // Arrgh! These are separate statements, and have already been
+            // substituted. Also, this is not the way to do it (don't sub the
+            // left, e.g. consider esp = esp-32
     std::list<Exp*>::iterator p;
     for (p = expList.begin(); p != expList.end(); p++) {
         *p = (*p)->searchReplaceAll(left, right, change);
+        *p = (*p)->simplifyArith();
+        *p = (*p)->simplify();
     }
+#endif
 
     for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
@@ -1659,6 +1673,8 @@ void HLCall::doReplaceUse(Statement *use) {
         } else {
             bool changeLoc;
             Exp* res = l->searchReplaceAll(left, right->clone(), changeLoc);
+            res = res->simplifyArith();
+            res = res->simplify();
             if (l != res) {         // Note: comparing pointers
                 liveEntry.remove(ll);
                 liveEntry.insert(res);
@@ -1674,7 +1690,9 @@ void HLCall::doReplaceUse(Statement *use) {
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
-    processConstants(proc->getProg());
+// Note: relies on types of parameters, which is not available when there are
+// cycles in the call graph
+processConstants(proc->getProg());
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());

@@ -443,8 +443,10 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard()
 
 void CallingConvention::StdC::PentiumSignature::getInternalStatements(
   StatementList &stmts) {
+    // pc := m[r28]
     static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
             new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
+    // r28 := r28 + 4;
     static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
             new Binary(opPlus, new Unary(opRegOf, new Const(28)),
                 new Const(4)));
@@ -779,7 +781,8 @@ Exp *Signature::getParamExp(int n)
 Type *Signature::getParamType(int n)
 {
     static IntegerType def;
-    assert(n < (int)params.size() || ellipsis);
+    //assert(n < (int)params.size() || ellipsis);
+// With recursion, parameters not set yet. Hack for now:
     if (n >= (int)params.size()) return &def;
     return params[n]->getType();
 }
@@ -911,8 +914,7 @@ void Signature::analyse(UserProc *p)
     updateParams(p, s, false); */
 }
 
-void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach)
-{
+void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
     int i;
     if (usesNewParam(p, stmt, checkreach, i)) {
         int n = getNumParams();
@@ -1050,12 +1052,12 @@ Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
 
 StatementList& Signature::getStdRetStmt(Prog* prog) {
     // pc := m[r[28]]
-    static AssignExp pent1ret(opAssignExp,
+    static AssignExp pent1ret(
         new Terminal(opPC),
         new Unary(opMemOf,
             new Unary(opRegOf, new Const(28))));
     // r[28] := r[28] + 4
-    static AssignExp pent2ret(opAssignExp,
+    static AssignExp pent2ret(
         new Unary(opRegOf, new Const(28)),
         new Binary(opPlus,
             new Unary(opRegOf, new Const(28)),
