@@ -95,6 +95,12 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	unsigned addr, lastOrdCall = 0;
 	int gap;			// Number of instructions from the last ordinary call
 
+	SectionInfo* si = GetSectionInfoByName(".text");
+	assert(si);
+	unsigned textSize = si->uSectionSize;
+	if (textSize < 0x200)
+		lim = p + textSize;
+
 	if (m_pPEHeader->Subsystem == 1) 	// native
 		return LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase);
 
@@ -174,9 +180,10 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 			size = 1;
 		}
 		p += size;
+		if (p >= textSize)
+			break;
 	}
 	
-
 	return NO_ADDRESS;
 }
 
