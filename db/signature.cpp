@@ -836,12 +836,14 @@ void Signature::addParameter(const char *nam /*= NULL*/)
 
 void Signature::addParameter(Exp *e)
 {
-	addParameter(new IntegerType(), NULL, e);
+//	if (ADHOC_TYPE_ANALYSIS)		// Needs thought
+if (true)
+		addParameter(new IntegerType(), NULL, e);
+	else
+		addParameter(new VoidType(), NULL, e);
 }
 
-void Signature::addParameter(Type *type, const char *nam /*= NULL*/, 
-							 Exp *e /*= NULL*/)
-{
+void Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
 	if (e == NULL) {
 		std::cerr << "No expression for parameter ";
 		if (type == NULL)
