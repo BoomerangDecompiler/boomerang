@@ -123,7 +123,7 @@ void DataflowTest::testFlow () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by:    live: \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
     expected += "Ret BB: live in: *32* r[24] := 5, \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
@@ -169,8 +169,8 @@ void DataflowTest::testKill () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by:    live: \n";
-    expected += "         *32* r[24] := 6   uses:    used by:    live: *32* r[24] := 5, \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
+    expected += "         *32* r[24] := 6   uses:    used by: \n";
     expected += "Ret BB: live in: *32* r[24] := 6, \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
@@ -216,8 +216,8 @@ void DataflowTest::testUse () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24],    live: \n";
-    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by:    live: *32* r[24] := 5, \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24], \n";
+    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by: \n";
     expected += "Ret BB: live in: *32* r[24] := 5, *32* r[28] := r[24], \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
@@ -267,9 +267,9 @@ void DataflowTest::testUseOverKill () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by:    live: \n";
-    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24],    live: *32* r[24] := 5, \n";
-    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by:    live: *32* r[24] := 6, \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
+    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n";
+    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n";
     expected += "Ret BB: live in: *32* r[24] := 6, *32* r[28] := r[24], \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
@@ -321,10 +321,10 @@ void DataflowTest::testUseOverBB () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by:    live: \n";
-    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24],    live: *32* r[24] := 5, \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
+    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n";
     expected += "Ret BB: live in: *32* r[24] := 6, \n";
-    expected += "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by:    live: *32* r[24] := 6, \n";
+    expected += "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
@@ -370,8 +370,8 @@ void DataflowTest::testUseKill () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1,    live: \n";
-    expected += "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by:    live: *32* r[24] := 5, \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n";
+    expected += "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by: \n";
     expected += "Ret BB: live in: *32* r[24] := r[24] + 1, \n";
     expected += "00000123 RET\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
@@ -421,9 +421,9 @@ void DataflowTest::testEndlessLoop () {
     // compare it to expected
     std::string expected;
     expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1,    live: \n";
+    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n";
     expected += "Oneway BB: live in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n";
-    expected += "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, *32* r[24] := r[24] + 1,    used by:    live: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n";
+    expected += "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, *32* r[24] := r[24] + 1,    used by: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;

@@ -893,7 +893,7 @@ void AssignExp::printWithUses(std::ostream& os) {
         (*it)->printAsUseBy(os);
         os << ", ";
     }
-#if 0
+#if 0       // Note: if you change this, you need to update DataflowTest.cpp!
     os << "   live: ";
     std::set<Statement*> liveIn;
     getLiveIn(liveIn);
