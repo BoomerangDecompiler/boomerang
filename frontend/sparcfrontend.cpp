@@ -986,7 +986,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                         // The restore means it is effectively followed by a
                         // return (since the resore semantics chop off one level
                         // of return address)
-                        ((CallStatement*)inst.rtl)->setReturnAfterCall(true);
+                        ((CallStatement*)last)->setReturnAfterCall(true);
                         sequentialDecode = false;
                         case_CALL(address, inst, nop_inst, BB_rtls,
                           proc, callSet, os, true);
@@ -1033,7 +1033,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                                 // We assume this is some sort of move/x/call/                                  // move pattern. The overall effect is to
                                 // pop one return address, we we emit a return
                                 // after this call
-                                ((CallStatement*)inst.rtl)->setReturnAfterCall(true);
+                                ((CallStatement*)last)->setReturnAfterCall(true);
                                 sequentialDecode = false;
                                 case_CALL(address, inst, nop_inst, BB_rtls,
                                   proc, callSet, os, true);
