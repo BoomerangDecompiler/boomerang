@@ -39,6 +39,7 @@ BranchStatement CaseStatement CallStatement ReturnStatement
 #include <map>
 #include <ostream>
 #include <iostream>     // For std::cerr
+#include <assert.h>
 //#include "exp.h"      // No! This is the bottom of the #include hierarchy
 #include "exphelp.h"    // For lessExpStar
 #include "types.h"

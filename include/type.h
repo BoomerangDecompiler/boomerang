@@ -31,6 +31,7 @@
 #include <map>
 #include <functional>       // For binary_function
 #include <vector>
+#include <assert.h>
 
 class Signature;
 class VoidType;

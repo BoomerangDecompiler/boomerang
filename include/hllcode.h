@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <vector>
+#include <assert.h>
 
 class BasicBlock;
 typedef BasicBlock *PBB;

@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <assert.h>
 #include "coverage.h"           // For Coverage class
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
