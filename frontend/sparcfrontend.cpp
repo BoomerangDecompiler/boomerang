@@ -1074,18 +1074,14 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 							// is equivalent to call foo / ba .+K
 							Exp* rhs = a->getRight();
 							Location *o7 = Location::regOf(15);
-							if ((((Binary*)rhs)->getSubExp2()->getOper() ==
-							  opIntConst) && (*((Binary*)rhs)->getSubExp1()
-							  == *o7)) {
+							if (rhs->getOper() == opPlus &&
+									(((Binary*)rhs)->getSubExp2()->getOper() == opIntConst) &&
+									(*((Binary*)rhs)->getSubExp1() == *o7)) {
 								// Get the constant
-								int K = ((Const*)
-								  ((Binary*)rhs)->getSubExp2()) ->getInt();
-								case_CALL(address, inst, nop_inst, BB_rtls,
-								  proc, callSet, os, true);
-								// We don't generate a goto; instead, we just
-								// decode from the new address
-								// Note: the call to case_CALL has already
-								//	incremented address by 8, so don't do again
+								int K = ((Const*)((Binary*)rhs)->getSubExp2()) ->getInt();
+								case_CALL(address, inst, nop_inst, BB_rtls, proc, callSet, os, true);
+								// We don't generate a goto; instead, we just decode from the new address
+								// Note: the call to case_CALL has already incremented address by 8, so don't do again
 								address += K;
 								break;
 							} else {
@@ -1095,8 +1091,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 								// after this call
 								((CallStatement*)last)->setReturnAfterCall(true);
 								sequentialDecode = false;
-								case_CALL(address, inst, nop_inst, BB_rtls,
-								  proc, callSet, os, true);
+								case_CALL(address, inst, nop_inst, BB_rtls, proc, callSet, os, true);
 								break;
 							}
 						}
