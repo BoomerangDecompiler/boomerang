@@ -1753,7 +1753,8 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
             // Pattern: <base>{}[<index>]{}
             e = ((RefExp*)e)->getSubExp1();
             Exp* base = ((Binary*)e)->getSubExp1();
-            base = ((RefExp*)base)->getSubExp1();
+            if (base->isSubscript())
+                base = ((RefExp*)base)->getSubExp1();
             Exp* con = ((Location*)base)->getSubExp1();
             char* gloName = ((Const*)con)->getStr();
             UserProc* p = ((Location*)base)->getProc();
