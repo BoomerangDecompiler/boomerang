@@ -809,9 +809,9 @@ protected:
     UserProc *proc;
     Type *ty;
 
+public:
     // Constructor with ID, subexpression, and UserProc*
             Location(OPER op, Exp* e, UserProc *proc);
-public:
     // Copy constructor
             Location(Location& o);
     // Custom constructor
