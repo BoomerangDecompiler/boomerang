@@ -21,7 +21,9 @@
  * 21 May 02 - Mike: Mods for boomerang
  * 27 Nov 02 - Mike: Fixed a bug in the floating point fixup code, which was
  *                  screwing up registers in flag calls
- * 16 Apr 03 - Mike: processFloatCode accepts test 0x45 where and 0x45 expected
+ * 30 Sep 03 - Mike: processFloatCode ORs mask with 0x04 for compilers that
+ *                  ignore the C1 status bit (e.g. MSVC)
+ *                  Also more JE cases
 */
 
 #include <assert.h>
@@ -371,18 +373,18 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 /*
 // Finite state machine for recognising code handling floating point CCs
 //
-//            test_45/41 or       Start=0
-//          ___and_45/41_________/ |  \  \______sahf____________
+//            test_45 or          Start=0
+//         ____and_45____________/ |  \  \______sahf____________
 //        /                        |   \_____and_5__________    \     ___ 
-//       [1]__________cmp_1_      and 44                    \    \   /   |jp
-//cmp_40/||\\___dec_[10]      \    [2]                     [3]   [23]____|
-//  /    | \\__je_    \cmp 40 [20]    \xor 40              / |    | \ 
-// [4]  jne se    \    \       |\      [7]                /  |    |  \ 
-// | \   |   \    |    [11]  jne \      | \              se  |   jx   sx
-// je se  \   \   | jae|  \sb  \  se   jne setne        /   jne   |    \ 
-// |   \   \   \   \   |   \    \  \    |    \         /     |    |     \ 
-//[5]  [6][14][13][26][12] [15][21][22][8]   [9]     [18]   [19] [24]   [25]
-//JE   SE  JLE  SG JG  JG  SLE JGE  SL JNE   SNE     SGE     JL  Many   Many
+//       [1]__________cmp_1___    and 44                    \    \   /   |jp
+//cmp_40/||\\___dec_[10]      \    [2]__                 __[3]   [23]____|
+//  /    | \\__je_    \cmp 40 [20]  |   \xor 40         /  / |    | \ 
+// [4]  jne se    \    \       |\   je   [7]           /  /  |    |  \ 
+// | \   |   \    |    [11]  jne \    \   | \         je se  |   jx   sx
+// je se  \   \   | jae|  \sb  \  se   \ jne setne   /  /   jne   |    \ 
+// |   \   \   \   \   |   \    \  \    \ |    \    /  /     |    |     \ 
+//[5]  [6][14][13][26][12] [15][21][22]  [8]   [9] [21][18] [19] [24]   [25]
+//JE   SE  JLE  SG JG  JG  SLE JGE  SL   JNE   SNE JGE SGE   JL  Many   Many
 */
 
 /*==============================================================================
@@ -435,8 +437,13 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
                 e = ((Binary*)rhs)->getSubExp2();
                 if (e->isIntConst()) {
                     if (op == opBitAnd) {
-                        int mask = ((Const*)e)->getInt();
-                        if (state == 0 && (mask == 0x45 || mask == 0x41)) {
+                        // Note: C1 is the "Z or O/U" bit, and is mostly unused.
+                        // Some compilers include this bit (mask 0x04) in their
+                        // masks, some don't. To catch them all properly, the
+                        // mask below is ORed with 0x04. That way, the test
+                        // for 0x45 also tests for 0x41, and so on
+                        int mask = ((Const*)e)->getInt() | 0x04;
+                        if (state == 0 && mask == 0x45) {
                             state = 1;
                             liIt.push_front(rit2);
                         }
@@ -449,7 +456,8 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
                             liIt.push_front(rit2);
                         }
                         else {
-                            std::cerr << "Problem with AND\n";
+                            std::cerr << "Problem with AND: state is " << state
+                              << ", mask is 0x" << std::hex << mask << "\n";
                             return true;
                         }
                     }
@@ -683,11 +691,15 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
     }       // if state == 23
     else if (pJump->getCond() == BRANCH_JE)
     {
-        if (state == 4) state = 5;
-        else if (state == 1) state = 26;
-        else {
-            std::cerr << "Problem with JE\n";
-            return true;
+        switch (state) {
+            case 1: state = 26; break;
+            case 2: state = 8;  break;
+            case 3: state = 21; break;
+            case 4: state = 5;  break;
+            default:
+                std::cerr << "Problem with JE: state is " << std::dec << state
+                  << "\n";
+                return true;
         }
     }
     else if (pJump->getCond() == BRANCH_JNE) {
