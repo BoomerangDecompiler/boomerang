@@ -156,7 +156,6 @@ void Analysis::analyse(UserProc* proc)
     }
 
     cfg->simplify();
-	cfg->virtualFunctionCalls(proc->getProg());
 }
 
 #if DEBUG_ANALYSIS
