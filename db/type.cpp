@@ -354,7 +354,7 @@ const char *FuncType::getCtype() const
 	return "void (void)"; 
     std::string s = signature->getReturnType()->getCtype();
     s += " (";
-    for (unsigned int i = 0; i < signature->getNumParams(); i++) {
+    for (int i = 0; i < signature->getNumParams(); i++) {
        if (i != 0) s += ", ";
        s += signature->getParamType(i)->getCtype(); 
     }
