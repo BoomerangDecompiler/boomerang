@@ -81,7 +81,6 @@ namespace CallingConvention {
 		virtual Exp *getArgumentExp(int n);
 
 		virtual Signature *promote(UserProc *p);
-		virtual void getInternalStatements(StatementList &stmts);
 		virtual Exp *getStackWildcard();
 		virtual int	 getStackRegister() {return 28; }
 		virtual Exp *getProven(Exp *left);
@@ -123,7 +122,6 @@ namespace CallingConvention {
 			virtual Exp *getArgumentExp(int n);
 
 			virtual Signature *promote(UserProc *p);
-			virtual void getInternalStatements(StatementList &stmts);
 			virtual Exp *getStackWildcard();
 			virtual int	 getStackRegister() {return 28; }
 			virtual Exp *getProven(Exp *left);
@@ -350,17 +348,6 @@ Exp *CallingConvention::Win32TcSignature::getProven(Exp *left)
 
 
 
-void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
-{
-	static Assign *fixpc = new Assign(new Terminal(opPC),
-			Location::memOf(Location::regOf(28)));
-	static Assign *fixesp = new Assign(Location::regOf(28),
-			new Binary(opPlus, Location::regOf(28),
-				new Const(4 + params.size()*4)));
-	stmts.append((Assign*)fixpc->clone());
-	stmts.append((Assign*)fixesp->clone());
-}
-
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
 {
 	Signature::addReturn(Location::regOf(28));
@@ -455,9 +442,8 @@ void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, 
-							 const char *nam /*= NULL*/, Exp *e /*= NULL*/)
-{
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/,
+		Exp *e /*= NULL*/) {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
@@ -474,8 +460,7 @@ Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) {
 	return e;
 }
 
-Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
-{
+Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p) {
 	// No promotions from here up, obvious idea would be c++ name mangling	
 	return this;
 }
@@ -488,8 +473,7 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 			new Terminal(opWild)));
 }
 
-Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
-{
+Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
 	if (left->isRegOfK()) {
 		switch (((Const*)left->getSubExp1())->getInt()) {
 			case 28:
@@ -501,18 +485,6 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
 		}
 	}
 	return NULL;
-}
-
-void CallingConvention::StdC::PentiumSignature::getInternalStatements(StatementList &stmts) {
-	// pc := m[r28]
-	static Assign *fixpc = new Assign(new Terminal(opPC),
-			Location::memOf(Location::regOf(28)));
-	// r28 := r28 + 4;
-	static Assign *fixesp = new Assign(Location::regOf(28),
-			new Binary(opPlus, Location::regOf(28),
-				new Const(4)));
-	stmts.append((Assign*)fixpc->clone());
-	stmts.append((Assign*)fixesp->clone());
 }
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam) {
@@ -1053,10 +1025,6 @@ void Signature::printToLog()
 	std::ostringstream os;
 	print(os);
 	LOG << os.str().c_str();
-}
-
-void Signature::getInternalStatements(StatementList &stmts)
-{
 }
 
 // Note: the below few functions require reaching definitions.
