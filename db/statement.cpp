@@ -557,7 +557,7 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
 bool GotoStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = false;
     if (pDest) {
-        pDest->searchReplaceAll(search, replace, change);
+        pDest = pDest->searchReplaceAll(search, replace, change);
     }
     return change;
 }
