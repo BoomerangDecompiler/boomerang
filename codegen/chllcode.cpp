@@ -427,7 +427,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
         case opFtoi:
             // Should check size!
             str << "(int)";
-            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            appendExp(str, u->getSubExp3(), PREC_UNARY);
             break;
         case opFMultsd:
         case opFMultdq:
