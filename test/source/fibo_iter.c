@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+/* Compile with
+  gcc -O4 -fno-inline -o fibo_iter test/source/fibo_iter.c
+*/
+
 int fib (int x)
 {
     int n, fibn, fibn_1, save;
