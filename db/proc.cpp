@@ -280,8 +280,8 @@ void UserProc::printUseGraph()
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			if (((Exp*)*rr)->isSubscript()) {
 				RefExp *r = (RefExp*)*rr;
-				if (r->getRef())
-					out << r->getRef()->getNumber() << " -> " << s->getNumber() << ";\n";
+				if (r->getDef())
+					out << r->getDef()->getNumber() << " -> " << s->getNumber() << ";\n";
 			}
 		}
 	}
@@ -369,11 +369,11 @@ Exp *LibProc::getProven(Exp *left)
  * RETURNS:			<nothing>
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
-		// Note quite ready for the below fix:
+		// Not quite ready for the below fix:
 		// Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 		Proc(prog, uNative, new Signature(name.c_str())),
-		cfg(new Cfg()), decoded(false), analysed(false),
-		decompileSeen(false), decompiled(false), isRecursive(false), theReturnStatement(NULL) {
+		cfg(new Cfg()), decoded(false), analysed(false), nextLocal(0), decompileSeen(false), decompiled(false),
+		isRecursive(false), theReturnStatement(NULL) {
 	cfg->setProc(this);				 // Initialise cfg.myProc
 }
 
@@ -445,7 +445,7 @@ SyntaxNode *UserProc::getAST()
 		numBBs++;
 	}
 	
-	// perform a best firs search for the nicest AST
+	// perform a best first search for the nicest AST
 	std::priority_queue<SyntaxNode*, std::vector<SyntaxNode*>, lessEvaluate > ASTs;
 	ASTs.push(init);
 
@@ -703,9 +703,8 @@ void UserProc::getStatements(StatementList &stmts) {
 	}
 }
 
-// Remove a statement. This is somewhat inefficient - we have to search the
-// whole BB for the statement. Should use iterators or other context
-// to find out how to erase "in place" (without having to linearly search)
+// Remove a statement. This is somewhat inefficient - we have to search the whole BB for the statement.
+// Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
 void UserProc::removeStatement(Statement *stmt) {
 	// remove anything proven about this statement
 	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++) {
@@ -715,7 +714,7 @@ void UserProc::removeStatement(Statement *stmt) {
 		bool usesIt = false;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			Exp* r = *rr;
-			if (r->isSubscript() && ((RefExp*)r)->getRef() == stmt) {
+			if (r->isSubscript() && ((RefExp*)r)->getDef() == stmt) {
 				usesIt = true;
 				break;
 			}
@@ -743,6 +742,7 @@ void UserProc::removeStatement(Statement *stmt) {
 	}
 }
 
+#if 0
 void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
 	std::list<Statement*>::iterator it;
 	std::list<Statement*>* stmts;
@@ -771,10 +771,10 @@ void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
 	stmts->insert(it, as);
 	return;
 }
+#endif
 
 void UserProc::insertStatementAfter(Statement* s, Statement* a) {
-	// Note: this procedure is designed for the front end, where enclosing
-	// BBs are not set up yet
+	// Note: this procedure is designed for the front end, where enclosing BBs are not set up yet
 	// So this is an inefficient linear search!
 	BB_IT bb;
 	for (bb = cfg->begin(); bb != cfg->end(); bb++) {
@@ -1179,9 +1179,9 @@ void UserProc::removeRedundantPhis() {
 				delete r;
 				if (usedInRet) {
 					bool allZeroOrSelfCall = true;
-					StatementVec::iterator it1;
+					PhiAssign::iterator it1;
 					for (it1 = p->begin(); it1 != p->end(); it1++) {
-						Statement* s1 = *it1;
+						Statement* s1 = it1->def;
 						if (s1 && (!s1->isCall() || ((CallStatement*)s1)->getDestProc() != this))
 							allZeroOrSelfCall = false;
 					}
@@ -1606,7 +1606,7 @@ void UserProc::trimParameters(int depth) {
 			for (int i = 0; i < signature->getNumImplicitParams(); i++) {
 				Exp *e = call->getImplicitArgumentExp(i);
 				if (e->isSubscript()) {
-					Statement *ref = ((RefExp*)e)->getRef();
+					Statement *ref = ((RefExp*)e)->getDef();
 					if (ref && !ref->isImplicit())
 						excluded.insert(ref);
 				}
@@ -1639,9 +1639,9 @@ void UserProc::trimParameters(int depth) {
 					if (DEBUG_UNUSED_RETS_PARAMS)
 						LOG << "searching " << s << " for uses of " << params[i] << "\n";
 					PhiAssign *pa = (PhiAssign*)s;
-					StatementVec::iterator it1;
+					PhiAssign::iterator it1;
 					for (it1 = pa->begin(); it1 != pa->end(); it1++)
-						if (*it1 == NULL) {
+						if (it1->def == NULL) {
 							referenced[i] = true;
 							if (DEBUG_UNUSED_RETS_PARAMS)
 								LOG << "Parameter " << p << " used by phi statement " << s->getNumber() << "\n";
@@ -1911,7 +1911,7 @@ void UserProc::replaceExpressionsWithGlobals() {
 		s->addUsedLocs(refs);
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			if (((Exp*)*rr)->isSubscript()) {
-				Statement *ref = ((RefExp*)*rr)->getRef();
+				Statement *ref = ((RefExp*)*rr)->getDef();
 				Exp *r1 = (*rr)->getSubExp1();
 				// look for m[exp + K]{0}, replace it with m[exp * 1 + K]{0} in the hope that it will get picked 
 				// up as a global array.
@@ -2018,6 +2018,8 @@ void UserProc::replaceExpressionsWithSymbols() {
 	getStatements(stmts);
 
 	// replace expressions in regular statements with symbols
+	// Note: O(MN) where M is the number of symbols, and N is the number of statements
+	// Should really use the map properly
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
@@ -2421,7 +2423,7 @@ void UserProc::regReplaceList(std::list<Exp**>& li) {
 	std::list<Exp**>::iterator it;
 	for (it = li.begin(); it != li.end(); it++) {
 		Exp* reg = ((RefExp*)**it)->getSubExp1();
-		Statement* def = ((RefExp*)**it)->getRef();
+		Statement* def = ((RefExp*)**it)->getDef();
 		Type *ty = def->getTypeFor(reg);
 		// MVE: Might make sense to use some other map for this, and get rid of data member symbolMap
 		if (symbolMap.find(reg) == symbolMap.end()) {
@@ -2491,10 +2493,8 @@ void UserProc::processConstants() {
 }
 
 // Propagate statements, but don't remove
-// Respect the memory depth (don't propagate FROM statements that have
-// components of a higher memory depth than memDepth)
-// Also don't propagate TO expressions of depth other than toDepth
-// (unless toDepth == -1)
+// Respect the memory depth (don't propagate FROM statements that have components of a higher memory depth than memDepth)
+// Also don't propagate TO expressions of depth other than toDepth (unless toDepth == -1)
 // Return true if an indirect call is converted to direct
 bool UserProc::propagateStatements(int memDepth, int toDepth) {
 	StatementList stmts;
@@ -2503,12 +2503,13 @@ bool UserProc::propagateStatements(int memDepth, int toDepth) {
 	StatementSet empty;
 	StatementList::iterator it;
 	bool convertedIndirect = false;
+	bool limitPropagations = !Boomerang::get()->noLimitPropagations;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
 		// We can propagate to ReturnStatements now, and "return 0"
 		// if (s->isReturn()) continue;
-		convertedIndirect |= s->propagateTo(memDepth, empty, toDepth);
+		convertedIndirect |= s->propagateTo(memDepth, empty, toDepth, limitPropagations);
 	}
 	simplify();
 	return convertedIndirect;
@@ -2536,18 +2537,16 @@ void UserProc::promoteSignature() {
 
 Exp* UserProc::newLocal(Type* ty) {
 	std::ostringstream os;
-	os << "local" << locals.size();
+	os << "local" << nextLocal++;
 	std::string name = os.str();
 	locals[name] = ty;
 	if (ty == NULL) {
-		LOG << "null type passed to newLocal\n";
+		std::cerr << "null type passed to newLocal\n";
 		assert(false);
 	}
 	if (VERBOSE)
-		LOG << "assigning type " << ty->getCtype() << " to " << name.c_str()
-			<< "\n";
-	// Note: this type of local (not representing memory) does not appear
-	// in symbolMap
+		LOG << "assigning type " << ty->getCtype() << " to new " << name.c_str() << "\n";
+	// Note: this type of local (not representing memory) does not automatically appear in symbolMap
 	return Location::local(strdup(name.c_str()), this);
 }
 
@@ -2577,22 +2576,6 @@ Exp *UserProc::getLocalExp(const char *nam)
 		if ((*it).second->getOper() == opLocal && !strcmp(((Const*)(*it).second->getSubExp1())->getStr(), nam))
 			return (*it).first;
 	return NULL;
-}
-
-// Add local variables local<b> .. local<n-1>
-void UserProc::addLocals(int b, int n) {
-	for (int i=b; i < n; i++) {
-		std::ostringstream os;
-		os << "local" << i;
-		std::string name = os.str();
-		if (locals.find(name) == locals.end()) {
-			Exp *e = getLocalExp(name.c_str());
-			if (e && e->getType())
-				locals[name] = e->getType();
-			else
-				locals[name] = new IntegerType();	// Fixed by type analysis later
-		}
-	}
 }
 
 const char* UserProc::getLocalName(int n) { 
@@ -2633,7 +2616,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
 		LocationSet::iterator rr;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			if (((Exp*)*rr)->isSubscript()) {
-				Statement *ref = ((RefExp*)*rr)->getRef();
+				Statement *ref = ((RefExp*)*rr)->getDef();
 				refCounts[ref]++;
 				if (DEBUG_UNUSED_STMT || DEBUG_UNUSED_RETS_PARAMS && s->isReturn())
 					LOG << "counted ref to " << *rr << "\n";
@@ -2761,7 +2744,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				LocationSet::iterator cc;
 				for (cc = components.begin(); cc != components.end(); cc++) {
 					if ((*cc)->isSubscript()) {
-						refs.insert(((RefExp*)*cc)->getRef());
+						refs.insert(((RefExp*)*cc)->getDef());
 					}
 				}
 				StatementSet::iterator dd;
@@ -2790,12 +2773,44 @@ void UserProc::fromSSAform() {
 	StatementList stmts;
 	getStatements(stmts);
 	igraph ig;
-	int tempNum = locals.size();
-	int tempBase = tempNum;
-	cfg->findInterferences(ig, tempNum);
+
+	// First split the live ranges where needed, i.e. when the type of a subscripted variable is different to
+	// its previous type. Start at the top, because we don't want to rename parameters (e.g. argc)
+	StatementList::iterator it;
+	std::map<Exp*, Type*, lessExpStar> firstTypes;
+	std::map<Exp*, Type*, lessExpStar>::iterator ff;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		LocationSet defs;
+		s->getDefinitions(defs);
+		LocationSet::iterator dd;
+		for (dd = defs.begin(); dd != defs.end(); dd++) {
+			Exp* base = *dd;
+			Type* ty = s->getTypeFor(base);
+			ff = firstTypes.find(base);
+			if (ff == firstTypes.end()) {
+				// There is no first type yet. Record it.
+				firstTypes[base] = ty;
+			} else if (!ty->isCompatibleWith(ff->second)) {
+				// There already is a type for base, and it is different to the type for this definition.
+				// Record an "interference" so it will get a new variable
+				RefExp* ref = new RefExp(base, s);
+				ig[ref] = newLocal(ty);
+			}
+		}
+	}
+	// Find the interferences generated by more than one version of a variable being live at the same program point
+	cfg->findInterferences(ig);
+
+
+	if (DEBUG_LIVENESS) {
+		LOG << "  ig Interference graph:\n";
+		igraph::iterator ii;
+		for (ii = ig.begin(); ii != ig.end(); ii++)
+			LOG << "  ig " << ii->first << " -> " << ii->second << "\n";
+	}
 
 	// First rename the variables (including phi's, but don't remove)
-	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		s->fromSSAform(ig);
@@ -2809,19 +2824,20 @@ void UserProc::fromSSAform() {
 		PhiAssign* pa = (PhiAssign*)s;
 		LocationSet refs;
 		pa->addUsedLocs(refs);
-		Exp* first = *refs.begin();
-		bool same = true;
-		LocationSet::iterator rr;
-		for (rr = refs.begin(); rr != refs.end(); rr++) {
-			if (!(**rr *= *first)) {		// Ref-insensitive compare
-				same = false;
-				break;
+		Exp* first = pa->begin()->e;
+		bool phiParamsSame = true;
+		if (pa->getNumDefs() > 1) {
+			PhiAssign::iterator uu;
+			for (uu = ++pa->begin(); uu != pa->end(); uu++) {
+				if (!(*uu->e == *first)) {
+					phiParamsSame = false;
+					break;
+				}
 			}
 		}
-		if (same) {
-			// Is the left of the phi assignment the same base variable as all
-			// the operands?
-			if (*s->getLeft() *= *first) {
+		if (phiParamsSame) {
+			// Is the left of the phi assignment the same base variable as all the operands?
+			if (*pa->getLeft() == *first) {
 				if (DEBUG_LIVENESS || DEBUG_UNUSED_STMT)
 					LOG << "Removing phi: left and all refs same or 0: " << s << "\n";
 				// Just removing the refs will work, or removing the whole phi
@@ -2833,46 +2849,28 @@ void UserProc::fromSSAform() {
 				// Need to replace the phi by an expression,
 				// e.g. local0 = phi(r24{3}, r24{5}) becomes 
 				//		local0 = r24
-				pa->convertToAssign(first->getSubExp1()->clone());
+				pa->convertToAssign(first->clone());
 		}
 		else {
-			// Need copies
+			// Need new local. Used to think we needed a copy statement, but that just creates too many locals.
+			// Just replace all the definitions the phi statement refers to with tempLoc
+			// Many times we could just use the LHS of the phiassign... maybe implement later. The problem is that
+			// the variable at the left of the phiassign might overlap with other versions of the same named variable
+			Exp* tempLoc = newLocal(pa->getType());
 			if (DEBUG_LIVENESS)
-				LOG << "Phi statement " << s << " requires copies, using temp" << tempNum << "\n";
+				LOG << "Phi statement " << s << " requires local, using local" << tempLoc << "\n";
 			// For each definition ref'd in the phi
-			StatementVec::iterator rr;
+			PhiAssign::iterator rr;
 			for (rr = pa->begin(); rr != pa->end(); rr++) {
-				// Start with the original name, in the left of the phi
-				// (note: this has not been renamed above)
-				Exp* right = pa->getLeft()->clone();
-				// Wrap it in a ref to *rr
-				right = new RefExp(right, *rr);
-				// Check the interference graph for a new name
-				if (ig.find(right) != ig.end()) {
-					std::ostringstream os;
-					os << "local" << ig[right];
-					delete right;
-					right = Location::local(strdup(os.str().c_str()), this);
-				} else {
-					// Just take off the reference
-					RefExp* old = (RefExp*)right;
-					right = right->getSubExp1();
-					old->setSubExp1ND(NULL);
-					delete old;
-				}
-				// Insert a new assignment, to local<tempNum>, from right
-				insertAssignAfter(*rr, tempNum, right);
+				std::ostringstream ost;
+				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one return)
+				// with the new temporary
+				rr->def->setLeftFor(rr->e, tempLoc);
 			}
-			// Replace the RHS of the phi with the new temp
-			std::ostringstream os;
-			os << "local" << tempNum++;
-			std::string name = os.str();
-			pa->convertToAssign(Location::local(strdup(name.c_str()), this));
+			// Replace the RHS of the phi with tempLoc
+			pa->convertToAssign(tempLoc);
 		}
 	}
-
-	// Add the resulting locals to the proc, so they will be declared
-	addLocals(tempBase, tempNum);
 
 }
 
@@ -3006,7 +3004,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 			// substitute using a statement that has the same left as the query
 			if (!change && query->getSubExp1()->getOper() == opSubscript) {
 				RefExp *r = (RefExp*)query->getSubExp1();
-				Statement *s = r->getRef();
+				Statement *s = r->getDef();
 				CallStatement *call = dynamic_cast<CallStatement*>(s);
 				if (call) {
 					// See if we can prove something about this register.
@@ -3033,7 +3031,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 				} else if (s && s->isPhi()) {
 					// for a phi, we have to prove the query for every statement
 					PhiAssign *pa = (PhiAssign*)s;
-					StatementVec::iterator it;
+					PhiAssign::iterator it;
 					bool ok = true;
 					if (lastPhis.find(pa) != lastPhis.end() || pa == lastPhi) {
 						if (DEBUG_PROOF)
@@ -3049,7 +3047,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 						for (it = pa->begin(); it != pa->end(); it++) {
 							Exp *e = query->clone();
 							RefExp *r1 = (RefExp*)e->getSubExp1();
-							r1->setDef(*it);
+							r1->setDef(it->def);
 							if (DEBUG_PROOF)
 								LOG << "proving for " << e << "\n";
 							lastPhis.insert(lastPhi);
@@ -3091,10 +3089,10 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 			// is ok if both of the memofs is subscripted with NULL
 			if (!change && query->getSubExp1()->getOper() == opSubscript &&
 					query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
-					((RefExp*)query->getSubExp1())->getRef() == NULL &&
+					((RefExp*)query->getSubExp1())->getDef() == NULL &&
 					query->getSubExp2()->getOper() == opSubscript &&
 					query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
-					((RefExp*)query->getSubExp2())->getRef() == NULL) {
+					((RefExp*)query->getSubExp2())->getDef() == NULL) {
 				query->refSubExp1() = ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
 				query->refSubExp2() = ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
 				change = true;
@@ -3209,7 +3207,7 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 			}
 			if (loc->isSubscript()) {
 				// for this one reference
-				def = ((RefExp*)loc)->getRef();
+				def = ((RefExp*)loc)->getDef();
 				doCountReturns(def, rc, ((RefExp*)loc)->getSubExp1());
 #if 0
 			} else if ((loc)->isPhi()) {
@@ -3217,7 +3215,7 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 				PhiAssign& pa = (PhiAssign&)*loc;
 				// for each reference this phi expression
 				for (rr = pa.begin(); rr != pa.end(); rr++)
-					doCountReturns(*rr, rc, pa.getSubExp1());
+					doCountReturns(rr->def, rc, pa.getSubExp1());
 #endif
 			} 
 		}
