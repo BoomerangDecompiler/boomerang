@@ -38,7 +38,7 @@
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
-#include "boomerang.h"
+#include <iostream>
 #include <stdio.h>
 #include <assert.h>
 #ifndef WIN32
@@ -57,11 +57,10 @@ BinaryFile *BinaryFile::Load( const char *sName )
 {
 	BinaryFile *pBF = BinaryFile::getInstanceFor( sName );
 	if( pBF == NULL ) {
-		LOG << "unrecognised binary file format.\n";
+		std::cerr << "unrecognised binary file format.\n";
 		return NULL;
 	}
 	if( pBF->RealLoad( sName ) == 0 ) {
-		LOG << "unable to load binary file.\n";
 		fprintf( stderr, "Loading '%s' failed\n", sName );
 		delete pBF;
 		return NULL;
@@ -336,7 +335,8 @@ void BinaryFile::getTextLimits()
 				textDelta = pSect->uHostAddr - pSect->uNativeAddr;
 			else {
 				if (textDelta != (int) (pSect->uHostAddr - pSect->uNativeAddr))
-					LOG << "warning: textDelta different for section " << pSect->pSectionName << " (ignoring).\n";
+					std::cerr << "warning: textDelta different for section " << pSect->pSectionName <<
+						" (ignoring).\n";
 			}
 		}
 	}
