@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#include <sys/stat.h>     // For mkdir
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
@@ -93,6 +94,30 @@ void Boomerang::help() {
     exit(1);
 }
         
+// Create the directory. Return false if invalid
+bool createDirectory(std::string dir) {
+    std::string remainder(dir);
+    std::string path;
+    unsigned i;
+    while ((i = remainder.find('/')) != std::string::npos) {
+        path += remainder.substr(0, i+1);
+        remainder = remainder.substr(i+1);
+        mkdir(path.c_str(), 0777);          // Doesn't matter if already exists
+    }
+    // Now try to create a test file
+    path += remainder;
+    mkdir(path.c_str(), 0777);              // Make the last dir if needed
+    path += "test.file";
+    std::ofstream test;
+    test.open(path.c_str(), std::ios::out);
+    test << "testing\n";
+    bool pathOK = !test.bad();
+    test.close();
+    if (pathOK)
+        remove(path.c_str());
+    return pathOK;
+}
+
 int Boomerang::commandLine(int argc, const char **argv) {
     if (argc < 2) usage();
     progPath = argv[0];
@@ -132,6 +157,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 outputPath = argv[++i];
                 if (outputPath[outputPath.size()-1] != '/')
                     outputPath += '/';
+                if (!createDirectory(outputPath))
+                    std::cerr << "Warning! Could not create path " <<
+                      outputPath << "!\n";
                 break;
             case 'p':
                 if (argv[i][2] == 'a') {
