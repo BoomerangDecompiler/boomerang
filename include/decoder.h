@@ -25,7 +25,6 @@
 #include <list>
 #include "types.h"
 #include "rtl.h"
-#include "gc_cpp.h"
 
 class Exp;
 class RTL;

@@ -38,7 +38,6 @@
 #include "exp.h"
 #include "register.h"
 #include "statement.h"          // At least for STMT_KIND
-#include "gc_cpp.h"
 
 class BasicBlock;
 class HLLCode;

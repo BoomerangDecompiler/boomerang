@@ -2532,7 +2532,9 @@ void Assign::processConstants(Prog* prog) {
 
 // generate constraints
 void Assign::genConstraints(LocationSet& cons) {
-    Exp* con = rhs->genConstraints(new Unary(opTypeOf, lhs->clone()));
+    Exp* con = rhs->genConstraints(
+        new Unary(opTypeOf,
+            new RefExp(lhs->clone(), this)));
     if (con) cons.insert(con);
 }
 

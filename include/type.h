@@ -30,7 +30,6 @@
 #include <string>
 #include <map>
 #include <functional>       // For binary_function
-#include "gc_cpp.h"
 
 class Signature;
 

@@ -2418,10 +2418,29 @@ void UserProc::typeAnalysis(Prog* prog) {
             std::cerr << (*ss) << "\n" << &cons << "\n";
     }
 
-    LocationSet soln;
-    if (consObj.solve(soln)) {
+    std::list<LocationSet> solns;
+    consObj.solve(solns);
+    if (VERBOSE || DEBUG_TA) {
+        if (solns.size() == 0)
+            std::cerr << "** Could not solve type constraints for proc " <<
+              getName() << "!\n";
+        else if (solns.size() > 1)
+            std::cerr << "** " << solns.size() << " solutions to type "
+              "constraints for proc " << getName() << "!\n";
+    }
+        
+    std::list<LocationSet>::iterator it;
+    int solnNum = 0;
+    for (it = solns.begin(); it != solns.end(); it++) {
+        if (DEBUG_TA) {
+            std::cerr << "Solution " << ++solnNum << " for proc " << getName()
+              << "\n";
+        }
         LocationSet::iterator cc;
-        for (cc = soln.begin(); cc != soln.end(); cc++) {
+        LocationSet ls = *it;
+        for (cc = ls.begin(); cc != ls.end(); cc++) {
+            if (DEBUG_TA)
+                std::cerr << *cc << "\n";
             //assert(con->isEquality());
 if (!(*cc)->isEquality()) continue;
             Exp* t = ((Binary*)*cc)->getSubExp1();
@@ -2437,10 +2456,6 @@ if (!(*cc)->isEquality()) continue;
             }
         }
     }
-    else
-        if (VERBOSE || DEBUG_TA)
-            std::cerr << "** Could not solve type constraints for proc " <<
-              getName() << "!\n";
 
     if (DEBUG_TA) std::cerr << "\n";
 }

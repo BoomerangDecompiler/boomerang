@@ -43,7 +43,6 @@ BranchStatement CaseStatement CallStatement ReturnStatement
 #include "exphelp.h"    // For lessExpStar
 #include "types.h"
 #include "managed.h"
-#include "gc_cpp.h"
 
 class BasicBlock;
 typedef BasicBlock *PBB;

@@ -32,7 +32,6 @@
 #include "type.h"       // The Type class for typed expressions
 #include "statement.h"  // For StmtSet etc
 #include "exphelp.h"
-#include "gc_cpp.h"
 
 class UseSet;
 class DefSet;
@@ -170,6 +169,10 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isTrue() {return op == opTrue;}
     // True if this is the constant "false"
     bool isFalse() {return op == opFalse;}
+    // True if this is a disjunction, i.e. x or y
+    bool isDisjunction() {return op == opOr;}
+    // True if this is a conjunction, i.e. x and y
+    bool isConjunction() {return op == opAnd;}
     // True if this is a boolean constant
     bool isBoolConst() {return op == opTrue || op == opFalse;}
     // True if this is an equality (== or !=)

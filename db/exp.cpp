@@ -2712,6 +2712,7 @@ Exp* Unary::genConstraints(Exp* result) {
         case opRegOf:
         case opParam:
         case opGlobal:
+        case opLocal:
             return new Binary(opEquals,
                 new Unary(opTypeOf, this->clone()),
                 result->clone());
@@ -2725,6 +2726,9 @@ Exp* RefExp::genConstraints(Exp* result) {
     OPER subOp = subExp1->getOper();
     switch (subOp) {
         case opRegOf:
+        case opParam:
+        case opGlobal:
+        case opLocal:
             return new Binary(opEquals,
                 new Unary(opTypeOf, this->clone()),
                 result->clone());

@@ -23,7 +23,10 @@
 
 
 class Constraints {
-    LocationSet conSet;
+    LocationSet     conSet;
+    std::list<Exp*> disjunctions;
+    LocationSet     constants;
+    std::map<Exp*, Exp*, lessExpStar> equates1, equates2;
 
 public:
     Constraints() {}
@@ -34,5 +37,10 @@ public:
     // Solve the constraints. If they can be solved, return true and put
     // a copy of the solution (in the form of a set of T<location> = <type>)
     // into soln
-    bool    solve(LocationSet& soln);
+    void    solve(std::list<LocationSet>& solns);
+private:
+    bool    doSolve(std::list<Exp*>::iterator it, LocationSet& extra,
+              std::list<LocationSet>& solns);
+    bool    unify(Exp* x, Exp* y, LocationSet& extra);
+    bool    unifyTerm(Exp* x, Exp* y, LocationSet& extra);
 };

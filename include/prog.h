@@ -25,7 +25,6 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "type.h"
-#include "gc_cpp.h"
 
 class RTLInstDict;
 class Proc;

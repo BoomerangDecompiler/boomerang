@@ -33,7 +33,6 @@
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
 #include "hllcode.h"
-#include "gc_cpp.h"
 
 class Prog;
 class UserProc;
@@ -54,7 +53,7 @@ class Signature;
 /*==============================================================================
  * Procedure class.
  *============================================================================*/
-class Proc : public gc {
+class Proc {
 public:
 
     /*
