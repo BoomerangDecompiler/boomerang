@@ -1042,7 +1042,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                             else
                                     op = opLess;
                             break;
-                        case 40:
+                        case 0x40:
                             if (condOp == opEquals && k == 0 ||
                                 condOp == opNotEqual && k == 0x40)
                                     op = opNotEqual;
