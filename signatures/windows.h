@@ -1,3 +1,5 @@
+/* NOTE: All functions in this file are assumed to be PASCAL calling convention
+  (hard coded in FrontEnd::readLibraryCatalog()) */
 
 typedef unsigned int UINT;
 typedef unsigned int SIZE_T;
@@ -325,6 +327,11 @@ HDC BeginPaint(
   LPPAINTSTRUCT lpPaint
 );
 
+BOOL EndPaint(
+  HWND hWnd,
+  LPPAINTSTRUCT lpPaint
+);
+
 BOOL GetClientRect(      
     HWND hWnd,
     LPRECT lpRect
@@ -344,11 +351,6 @@ int DrawTextW(
   int nCount,
   LPRECT lpRect,
   UINT uFormat
-);
-
-BOOL EndPaint(
-  HWND hWnd,
-  LPPAINTSTRUCT lpPaint
 );
 
 INT_PTR DialogBoxParamA(      
@@ -372,24 +374,8 @@ BOOL EndDialog(
     INT_PTR nResult
 );
 
-POINT ?MoveTo@CDC@@QAE?AVCPoint@@HH@Z(  /* CDC::MoveTo */
-    POINT *ret,     /* MSVC convention when returning structs is to pass a
-                        hidden first parameter */
-    int x,
-    int y
-);
+void FillRect(void* cdc, RECT* r, CBrush* br);
 
-BOOL ?LineTo@CDC@@QAEHHH@Z(     /* CDC::LineTo */
-    int x,
-    int y
-);
-
-UINT ?SetTextAlign@CDC@@QAEII@Z(UINT flags);
-void ??0CString@@QAE@PBD@Z(char* sz);   /* CString constructor with C string */
-void ??1CString@@QAE@XZ();          /* CString destructor */
-int ?FindIndex@CObList@@QBEPAU__POSITION@@H@Z(  /* CObList::FindIndex */
-    int idx
-);
 int wsprintfA(
     LPTSTR lpOut,
     LPCTSTR lpFmt,
@@ -398,7 +384,5 @@ int wsprintfA(
 
 char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
 int MulDiv(int number, int numerator, int denominator);
-void ?OnCreate@CView@@IAEHPAUtagCREATESTRUCTA@@@Z(void* lpCreateStruct);
 HFONT CreateFontIndirectA(void* lf);
-void ?Attach@CGdiObject@@QAEHPAX@Z(void* obj);
 
