@@ -79,6 +79,19 @@ case $host in
 esac
 AC_MSG_RESULT( $HOST_WINDOWS )
 
+AC_MSG_CHECKING( [if host is Cygwin] )
+case $host in
+ *-*-cygwin*)
+   HOST_CYGWIN=yes
+   ;;
+ *)
+   HOST_CYGWIN=no
+   ;;
+esac
+AC_MSG_RESULT( $HOST_CYGWIN )
+
+
+
 
 dnl Checks for elf library (no longer needed)
 dnl AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
@@ -166,6 +179,7 @@ AC_SUBST(PREFIX)
 AC_SUBST(LIBDIR)
 AC_SUBST(HOST_GNU_LD)
 AC_SUBST(HOST_WINDOWS)
+AC_SUBST(HOST_CYGWIN)
 
 
 AC_CONFIG_FILES(          Makefile)
