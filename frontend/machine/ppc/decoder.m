@@ -172,6 +172,10 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 				std::cerr << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
 		}
 		::unused(name);
+
+	| Xd_ (rd) [name] =>
+		stmts = instantiate(pc, name, DIS_RD);
+
 	| bl (reladdr) [name] =>
 		Exp* dest = DIS_RELADDR;
 		stmts = instantiate(pc, name, dest);
