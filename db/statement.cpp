@@ -2195,10 +2195,10 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
     if (t == NULL) return e;
     // char* and a constant
     if (e->isIntConst()) {
-        if (nt->getName() == "LPCWSTR") {
+        if (nt && nt->getName() == "LPCWSTR") {
             ADDRESS u = ((Const*)e)->getAddr();
             // TODO
-            LOG << "posible wide char string at " << u << "\n";
+            LOG << "possible wide char string at " << u << "\n";
         }
         if (t->resolvesToPointer()) {
             PointerType *pt = t->asPointer();
@@ -3336,8 +3336,10 @@ bool StmtSetConscripts::visit(CallStatement* stmt) {
 bool StmtSetConscripts::visit(CaseStatement* stmt) {
     SetConscripts sc(curConscript);
     SWITCH_INFO* si = stmt->getSwitchInfo();
-    si->pSwitchVar->accept(&sc);
-    curConscript = sc.getLast();
+    if (si) {
+        si->pSwitchVar->accept(&sc);
+        curConscript = sc.getLast();
+    }
     return true;
 }
 
