@@ -99,7 +99,8 @@ microX86dis.o: microX86dis.c
 ../libBinaryFile$(DLLEXT): ../lib/libBinaryFile$(DLLEXT)
 	cp $< $@
 
-BinaryFile.o: CCEXTRAS = -DBUILDING_LIBBINARYFILE
+BinaryFile.o:		CCEXTRAS = -DBUILDING_LIBBINARYFILE
+MachOBinaryFile.o:	CCEXTRAS = -I.
 
 $(BASEDLL) : BinaryFile.o
 	$(CC) -o $@ -shared BinaryFile.o $(OUTIMPLIB)
