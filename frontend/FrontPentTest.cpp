@@ -10,12 +10,8 @@
  * 21 May 02 - Mike: Mods for gcc 3.1
  */
 
-#ifndef BOOMDIR
-#error Must define BOOMDIR
-#endif
-
-#define HELLO_PENT     BOOMDIR "/test/pentium/hello"
-#define BRANCH_PENT    BOOMDIR "/test/pentium/branch"
+#define HELLO_PENT     "test/pentium/hello"
+#define BRANCH_PENT    "test/pentium/branch"
 
 #include "types.h"
 #include "rtl.h"
