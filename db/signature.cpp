@@ -524,13 +524,11 @@ CustomSignature::CustomSignature(const char *nam) : Signature(nam), sp(0)
 void CustomSignature::setSP(int nsp)
 {
     sp = nsp;
-    std::cerr << "using sp " << sp << "\n";
     if (sp) {
         addReturn(Location::regOf(sp));
         addImplicitParameter(new PointerType(new IntegerType()), "sp",
                                     Location::regOf(sp), NULL);
     }
-    this->print(std::cerr);
 }
 
 Signature *Signature::clone()
@@ -586,6 +584,20 @@ void Signature::addParameter(Exp *e)
 void Signature::addParameter(Type *type, const char *nam /*= NULL*/, 
                              Exp *e /*= NULL*/)
 {
+    if (e == NULL) {
+        std::cerr << "No expression for parameter ";
+        if (type == NULL)
+            std::cerr << "<notype> ";
+        else
+            std::cerr << type->getCtype() << " ";
+        if (nam == NULL)
+            std::cerr << "<noname>";
+        else
+            std::cerr << nam;
+        std::cerr << "\n";
+        assert(e);  // Else get infinite mutual recursion with the below proc
+    }
+
     std::string s;
     if (nam == NULL) {
         int n = params.size()+1;
