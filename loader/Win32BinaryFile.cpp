@@ -122,6 +122,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
     return NO_ADDRESS;
 }
 
+
 bool Win32BinaryFile::RealLoad(const char* sName)
 {
     m_pFileName = sName;
@@ -209,15 +210,18 @@ bool Win32BinaryFile::RealLoad(const char* sName)
                         nodots[j] = '_';    // Dots can't be in identifiers
                 ost << nodots << "_" << (iatEntry & 0x7FFFFFFF);                
                 dlprocptrs[paddr] = ost.str();
-                //printf("Added symbol %s value %x\n", ost.str().c_str(),paddr);
+                // printf("Added symbol %s value %x\n", ost.str().c_str(),
+                //   paddr);
             } else {
                 // Normal case (IMAGE_IMPORT_BY_NAME)                
                 // Skip the useless hint (2 bytes)
                 std::string name((const char*)(iatEntry+2+base));
                 dlprocptrs[paddr] = name;
-                dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)] = std::string("old_") + name; // add both possibilities
-                //printf("Added symbol %s value %x\n", name.c_str(), paddr);
-                //printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase));
+                dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)]
+                  = std::string("old_") + name; // add both possibilities
+                // printf("Added symbol %s value %x\n", name.c_str(), paddr);
+                // printf("Also added old_%s value %x\n", name.c_str(),
+                //   (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase));
             }
             iat++;
             iatEntry = LMMH(*iat);
@@ -234,8 +238,47 @@ bool Win32BinaryFile::RealLoad(const char* sName)
             dlprocptrs[entry] = "_init";
     }
 
+    // Give a name to any jumps you find to these import entries
+    // NOTE: VERY early MSVC specific!! Temporary till we can think
+    // of a better way.
+    ADDRESS start = GetEntryPoint();
+    findJumps(start);
+
     fclose(fp);
     return true;
+}
+
+// Used above for a hack to find jump instructions pointing to IATs
+// Heuristic: start just before the "start" entry point looking for
+// FF 25 opcodes followed by a pointer to an import entry
+// E.g. FF 25 58 44 40 00  where 00404458 is the IAT for _ftol
+// Note: some are on 0x10 byte boundaries, some on 2 byte boundaries
+// (6 byte jumps packed), and there are often up to 0x30 bytes of
+// statically linked library code (e.g. _atexit, __onexit) with sometimes
+// two static libs in a row. So keep going until there is about 0x60 bytes
+// with no match.
+// Note: slight chance of coming across a misaligned match; probability
+// is about 1/65536 times dozens in 2^32 ~= 10^-13
+void Win32BinaryFile::findJumps(ADDRESS curr) {
+    int cnt = 0;            // Count of bytes with no match
+    SectionInfo* sec = GetSectionInfoByName(".text");
+    // Add to native addr to get host:
+    int delta = sec->uHostAddr - sec->uNativeAddr;
+    while (cnt < 0x60) {    // Max of 0x60 bytes without a match
+        curr -= 2;          // Has to be on 2-byte boundary
+        cnt += 2;
+        if (LH(delta+curr) != 0xFF + (0x25<<8)) continue;
+        ADDRESS operand = LMMH2(delta+curr+2);
+        std::map<ADDRESS, std::string>::iterator it;
+        it = dlprocptrs.find(operand);
+        if (it == dlprocptrs.end()) continue;
+        std::string sym = it->second;
+        dlprocptrs[operand] = "__imp_" + sym;
+        dlprocptrs[curr] = sym;      // Add new entry
+        // std::cerr << "Added " << sym << " at 0x" << std::hex << curr << "\n";
+        curr -= 4;                  // Next match is at least 4+2 bytes away
+        cnt = 0;
+    }
 }
 
 // Clean up and unload the binary image
@@ -399,7 +442,10 @@ std::list<const char *> Win32BinaryFile::getDependencyList()
 
 DWord Win32BinaryFile::getDelta()
 {
-    return (DWord)base - LMMH(m_pPEHeader->Imagebase); 
+    // Stupid function anyway: delta depends on section
+    // This should work for the header only
+    //  return (DWord)base - LMMH(m_pPEHeader->Imagebase); 
+    return (DWord)base - (DWord)m_pPEHeader->Imagebase; 
 }
 
 #ifndef WIN32

@@ -37,6 +37,9 @@
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
 #define LMMH(x) ((int)((Byte *)(&x))[0] + ((int)((Byte *)(&x))[1] << 8) + \
     ((int)((Byte *)(&x))[2] << 16) + ((int)((Byte *)(&x))[3] << 24))
+// With this one, x IS a pointer
+#define LMMH2(x) ((int)((Byte *)(x))[0] + ((int)((Byte *)(x))[1] << 8) + \
+    ((int)((Byte *)(x))[2] << 16) + ((int)((Byte *)(x))[3] << 24))
 
 typedef struct {                /* exe file header, just the signature really */
          Byte   sigLo;          /* .EXE signature: 0x4D 0x5A     */
@@ -194,6 +197,7 @@ virtual const char *GetDynamicProcName(ADDRESS uNative);
   private:
 
         bool    PostLoad(void* handle); // Called after archive member loaded
+        void    findJumps(ADDRESS curr);// Find names for jumps to IATs
 
         Header* m_pHeader;              // Pointer to header
         PEHeader* m_pPEHeader;          // Pointer to pe header
@@ -201,7 +205,8 @@ virtual const char *GetDynamicProcName(ADDRESS uNative);
         int     m_cReloc;               // Number of relocation entries
         DWord*  m_pRelocTable;          // The relocation table
         char *  base;                   // Beginning of the loaded image
-        std::map<ADDRESS, std::string> dlprocptrs;  // Address of dynamic pointers to library procedures
+        // Map from address of dynamic pointers to library procedure names:
+        std::map<ADDRESS, std::string> dlprocptrs;
         const char *m_pFileName;
 
 };
