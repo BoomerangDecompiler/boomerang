@@ -263,7 +263,11 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst,
 
     // Get the new return basic block for the special
     // case where the delay instruction is a restore
-    BasicBlock* returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl, cfg);
+    BasicBlock* returnBB = optimise_CallReturn(call_stmt, inst.rtl, delay_rtl,
+      cfg);
+    if (returnBB)
+        proc->setTheReturnAddr((ReturnStatement*)inst.rtl->getList().back(),
+          inst.rtl->getAddress());
 
     int disp30 = (call_stmt->getFixedDest() - address) >> 2;
     // Don't test for small offsets if part of a move_call_move pattern.
@@ -496,6 +500,8 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
         case STMT_RET:
             newBB = cfg->newBB(BB_rtls, RET, 0);
             bRet = false;
+            proc->setTheReturnAddr((ReturnStatement*)inst.rtl->getList().back(),
+              inst.rtl->getAddress());
             break;
         case STMT_CASE:
             newBB = cfg->newBB(BB_rtls, COMPJUMP, 0);
@@ -517,6 +523,8 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
         BasicBlock* returnBB = optimise_CallReturn(call_stmt,
             inst.rtl, delay_inst.rtl, cfg);
         if (returnBB != NULL) {
+            proc->setTheReturnAddr((ReturnStatement*)inst.rtl->getList().back(),
+              inst.rtl->getAddress());
             cfg->addOutEdge(newBB,returnBB);
 
             // We have to set the epilogue
@@ -835,6 +843,22 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
  *============================================================================*/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
   std::ofstream &os, bool fragment /* = false */, bool spec /* = false */) {
+
+    if (!fragment && !proc->getSignature()->isPromoted()) {
+        if (VERBOSE)
+            LOG << "adding default params and returns for " << proc->getName()
+              << "\n";
+        std::vector<Exp*> &params = getDefaultParams();
+        std::vector<Exp*>::iterator it;
+        for (it = params.begin();
+             it != params.end(); it++)
+            proc->getSignature()->addImplicitParameter((*it)->clone());
+        std::vector<Exp*> &returns = getDefaultReturns();
+        for (it = returns.begin();
+             it != returns.end(); it++)
+            proc->getSignature()->addReturn((*it)->clone());
+    }
+
 
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)

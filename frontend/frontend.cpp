@@ -365,7 +365,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
     if (!frag && !pProc->getSignature()->isPromoted()) {
         if (VERBOSE)
-            LOG << "adding default params for " << pProc->getName() << "\n";
+            LOG << "adding default params and returns for " <<
+              pProc->getName() << "\n";
         std::vector<Exp*> &params = getDefaultParams();
 		std::vector<Exp*>::iterator it;
         for (it = params.begin(); 
