@@ -902,12 +902,13 @@ void Unary::print(std::ostream& os, bool withUses) {
                 break;
             }
             // Else fall through
-        case opMemOf: case opAddrOf:  case opVar:
+        case opMemOf: case opAddrOf:  case opVar: case opTypeOf:
             switch (op) {
                 case opRegOf: os << "r["; break;    // e.g. r[r2]
                 case opMemOf: os << "m["; break;
                 case opAddrOf:os << "a["; break;
                 case opVar:   os << "v["; break;
+                case opTypeOf:os << "T["; break;
                 default: break;     // Suppress compiler warning
             }
             if (op == opVar) ((Const*)p1)->printNoQuotes(os, withUses);
@@ -988,10 +989,6 @@ void Unary::print(std::ostream& os, bool withUses) {
             os << "phi(";
             p1->print(os, withUses);
             os << ")";
-            return;
-        case opTypeOf:
-            os << "T";
-            p1->print(os, withUses);
             return;
         case opFtrunc:
             os << "ftrunc(";

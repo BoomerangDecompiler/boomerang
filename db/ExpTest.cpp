@@ -706,7 +706,7 @@ void ExpTest::testSimplifyBinary() {
             new Unary(opTypeOf, Location::regOf(24)),
             new TypeVal(new IntegerType())));
     e = e->simplify();
-    expected = "Tr24 = <int>";
+    expected = "T[r24] = <int>";
     std::ostringstream ost4;
     e->print(ost4);
     CPPUNIT_ASSERT_EQUAL(expected, ost4.str());
@@ -1131,7 +1131,7 @@ void ExpTest::testSubscriptVar() {
  *============================================================================*/
 void ExpTest::testTypeOf() {
     // Tr24{5} = Tr25{9}
-    std::string expected1("Tr24{5} = Tr25{9}");
+    std::string expected1("T[r24{5}] = T[r25{9}]");
     Statement* s5 = new Assign;
     Statement* s9 = new Assign;
     s5->setNumber(5);
@@ -1146,7 +1146,7 @@ void ExpTest::testTypeOf() {
     CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
 
     // Tr24{5} = <float>
-    std::string expected2("Tr24{5} = <float>");
+    std::string expected2("T[r24{5}] = <float>");
     delete e;
     Type* t = new FloatType(32);
     e = new Binary(opEquals,
