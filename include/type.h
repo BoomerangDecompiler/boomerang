@@ -37,7 +37,7 @@ class Signature;
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed};    // For operator< only
 
-class Type : public gc {
+class Type {
 protected:
     eType id;
 private:

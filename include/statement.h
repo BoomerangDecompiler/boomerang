@@ -85,7 +85,7 @@ enum STMT_KIND {
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
  */
-class Statement : public gc {
+class Statement {
 protected:
     PBB     pbb;        // contains a pointer to the enclosing BB
     UserProc *proc;     // procedure containing this statement

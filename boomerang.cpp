@@ -232,10 +232,17 @@ int Boomerang::commandLine(int argc, const char **argv) {
 /* This makes sure that the garbage collector sees all allocations, even those
     that we can't be bothered collecting, especially standard STL objects */
 void* operator new(size_t n) {
-    return GC_malloc_uncollectable(n);
+#ifdef DONT_COLLECT_STL
+    return GC_malloc_uncollectable(n);  // Don't collect, but mark
+#else
+    return GC_malloc(n);                // Collect everything
+#endif
 }
 
 void operator delete(void* p) {
-    GC_free(p);
+#ifdef DONT_COLLECT_STL
+    GC_free(p); // Important to call this if you call GC_malloc_uncollectable
+    // #else do nothing!
+#endif
 }
 

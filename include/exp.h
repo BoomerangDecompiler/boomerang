@@ -57,7 +57,7 @@ typedef std::map<Exp*, int, lessExpStar> igraph;
 
 // Class Exp is abstract. However, the constructor can be called from the
 // constructors of derived classes
-class Exp : public gc {
+class Exp {
 protected:
     OPER   op;             // The operator (e.g. opPlus)
 
