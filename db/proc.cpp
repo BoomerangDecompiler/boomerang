@@ -59,6 +59,7 @@ typedef std::map<Statement*, int> RefCounter;
 #define DEBUG_UNUSED_RETS (Boomerang::get()->debugUnusedRets)
 #define DEBUG_UNUSED_STMT (Boomerang::get()->debugUnusedStmt)
 #define DEBUG_LIVENESS (Boomerang::get()->debugLiveness)
+#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
 
 /************************
  * Proc methods.
@@ -2006,6 +2007,11 @@ void UserProc::processFloatConstants()
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
+	if (DFA_TYPE_ANALYSIS) {
+		if (VERBOSE)
+			LOG << "Not replacing expressions with globals because -Td in force\n";
+		return;
+	}
 	StatementList stmts;
 	getStatements(stmts);
 
@@ -2228,6 +2234,11 @@ void UserProc::replaceExpressionsWithSymbols() {
 }
 
 void UserProc::replaceExpressionsWithParameters(int depth) {
+	if (DFA_TYPE_ANALYSIS) {
+		if (VERBOSE)
+			LOG << "Not replacing expressions with parameters (for now) because -Td in force\n";
+		return;
+	}
 	StatementList stmts;
 	getStatements(stmts);
 
@@ -2630,6 +2641,11 @@ bool UserProc::removeNullStatements() {
 }
 
 void UserProc::processConstants() {
+	if (DFA_TYPE_ANALYSIS) {
+		if (VERBOSE)
+			LOG << "Not processing constants since -Td in force\n";
+		return;
+	}
 	if (VERBOSE)
 		LOG << "Process constants for " << getName() << "\n";
 	StatementList stmts;
@@ -3508,9 +3524,62 @@ if (!cc->first->isTypeOf()) continue;
 }
 
 void UserProc::dfaTypeAnalysis(Prog* prog) {
-
-
-
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	int conscript = 0;		// Assumes numbering is local to this procedure
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		conscript = (*it)->setConscripts(conscript);
+	}
+	for (int i=0; i < 20; i++) {
+		bool ch = false;
+		for (it = stmts.begin(); it != stmts.end(); it++) {
+			(*it)->dfaTypeAnalysis(ch);	  
+		}
+		if (!ch) {
+			// No more changes: round robin algorithm terminates
+			if (DEBUG_TA) {
+				LOG << "\n *** Results for Data flow based Type Analysis ***\n";
+				LOG << i+1 << " iterations\n";
+				for (it = stmts.begin(); it != stmts.end(); it++) {
+					Statement* s = *it;
+					Type* t = s->getType();
+					LOG << s << " allocated type " << (t ? t->getCtype() : "NULL") << "\n";
+				}
+				LOG << "\n *** End results for Data flow based Type Analysis ***\n";
+			}
+			// Now use the type information gathered
+			for (it = stmts.begin(); it != stmts.end(); it++) {
+				Statement* s = *it;
+				Type* t = s->getType();
+				// Locations
+				// ...
+				// Constants
+				std::list<Const*>lc;
+				s->findConstants(lc);
+				std::list<Const*>::iterator cc;
+				for (cc = lc.begin(); cc != lc.end(); cc++) {
+					Const* con = (Const*)*cc;
+					Type* t = con->getType();
+					int val = con->getInt();
+					if (t && t->isPointer()) {
+						PointerType* pt = t->asPointer();
+						if (pt->getPointsTo()->resolvesToChar()) {
+							// Convert to a string
+							char* str = prog->getStringConstant(val, true);
+							if (str) {
+								// Make a string
+								con->setStr(escapeStr(str));
+								con->setOper(opStrConst);
+							}
+						}
+					}
+				}
+			}
+			return;
+		}
+	}
+	LOG << "**** Iteration limit exceeded for dfaTypeAnalysis of procedure " << getName() << " ****\n";
 }
 
 
@@ -3565,6 +3634,16 @@ void UserProc::castConst(int num, Type* ty) {
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if ((*it)->castConst(num, ty))
 			break;
+	}
+}
+
+void UserProc::ellipsisTruncation() {
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		CallStatement* call = dynamic_cast<CallStatement*>(*it);
+		if (call) call->ellipsisTruncation();
 	}
 }
 

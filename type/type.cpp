@@ -799,6 +799,9 @@ const char* SizeType::getCtype(bool final) const {
 	return strdup(ost.str().c_str());
 }
 
+const char* Type::prints() {
+	return getCtype(false);			// For debugging
+}
 
 std::map<std::string, Type*> Type::namedTypes;
 
@@ -1107,7 +1110,7 @@ bool Type::resolvesToCompound()
 }
 
 bool Type::isPointerToAlpha() {
-	return isPointer() && ((PointerType*)this)->pointsToAlpha();
+	return isPointer() && asPointer()->pointsToAlpha();
 }
 
 void Type::starPrint(std::ostream& os) {
@@ -1116,20 +1119,22 @@ void Type::starPrint(std::ostream& os) {
 
 // A crude shortcut representation of a type
 std::ostream& operator<<(std::ostream& os, Type* t) {
-	if (t == NULL) return os;
+	if (t == NULL) return os << '0';
 	switch (t->getId()) {
+		case eVoid:	os << 'v'; break;
 		case eInteger: {
 			int sg = ((IntegerType*)t)->getSignedness();
 			// 'j' for either i or u, don't know which
 			os << (sg == 0 ? 'j' : sg>0 ? 'i' : 'u');
-			os << std::dec << ((IntegerType*)t)->getSize();
+			os << std::dec << t->asInteger()->getSize();
 			break;
 		}
 		case eFloat:
 			os << 'f';
-			os << std::dec << ((FloatType*)t)->getSize();
+			os << std::dec << t->asFloat()->getSize();
 			break;
 		case eChar: os << 'c'; break;
+		case ePointer: os << t->asPointer()->getPointsTo() << '*'; break;
 		case eBoolean: os << 'b'; break;
 		case eSize: os << std::dec << t->getSize(); break;
 		default:
@@ -1360,3 +1365,27 @@ void UnionType::addType(Type *n, const char *str) {
 		names.push_back(str);
 	}
 }
+
+// Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
+bool CompoundType::isSuperStructOf(Type* other) {
+	if (!other->isCompound()) return false;
+	CompoundType* otherCmp = other->asCompound();
+	unsigned n = otherCmp->types.size();
+	if (n > types.size()) return false;
+	for (unsigned i=0; i < n; i++)
+		if (otherCmp->types[i] != types[i]) return false;
+	return true;
+}
+
+// Return true if this is a substructure of other, i.e. other has the same types at the same offsets as this
+bool CompoundType::isSubStructOf(Type* other) {
+	if (!other->isCompound()) return false;
+	CompoundType* otherCmp = other->asCompound();
+	unsigned n = types.size();
+	if (n > otherCmp->types.size()) return false;
+	for (unsigned i=0; i < n; i++)
+		if (otherCmp->types[i] != types[i]) return false;
+	return true;
+}
+
+

@@ -171,15 +171,6 @@ std::ostream& operator<<(std::ostream& os, Statement* s) {
 	return os;
 }
 
-bool Statement::isOrdinaryAssign() {
-	if (kind != STMT_ASSIGN)
-		return false;
-	OPER op = ((Assign*)this)->getRight()->getOper();
-	if (op == opFlagCall) return false;
-	if (op == opPhi) return false;
-	return true;
-}
-
 bool Statement::isFlagAssgn() {
 	if (kind != STMT_ASSIGN)
 		return false;
@@ -1304,7 +1295,8 @@ void CaseStatement::simplify() {
  *		CallStatement methods
  **********************************/
 
-/*============================================================================== * FUNCTION:		 CallStatement::CallStatement
+/*==============================================================================
+ * FUNCTION:		 CallStatement::CallStatement
  * OVERVIEW:		 Constructor for a call that we have extra information
  *					 for and is part of a prologue.
  * PARAMETERS:		 returnTypeSize - the size of a return union, struct or quad
@@ -1312,7 +1304,7 @@ void CaseStatement::simplify() {
  * RETURNS:			 <nothing>
  *============================================================================*/
 CallStatement::CallStatement(int returnTypeSize /*= 0*/):  
-	  returnTypeSize(returnTypeSize), returnAfterCall(false) {
+	  returnTypeSize(returnTypeSize), returnType(NULL), returnAfterCall(false) {
 	kind = STMT_CALL;
 	procDest = NULL;
 }
@@ -2330,33 +2322,62 @@ void CallStatement::processConstants(Prog *prog) {
 		}
 	}
 
+	ellipsisTruncation();
+}
+
+void CallStatement::ellipsisTruncation() {
 	// This code was in CallStatement::doReplaceRef()
-	if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
-		// functions like printf almost always have too many args
-		std::string name(getDestProc()->getName());
-		if ((name == "printf" || name == "scanf") && getArgumentExp(0)->isStrConst()) {
-			char *str = ((Const*)getArgumentExp(0))->getStr();
-			// actually have to parse it
-			int n = 1;		// Number of %s plus 1 = number of args
-			char *p = str;
-			while ((p = strchr(p, '%'))) {
-				// special hack for scanf
-				if (name == "scanf") {
-					setArgumentExp(n, new Unary(opAddrOf, Location::memOf(getArgumentExp(n), proc)));
-				}
-				p++;
-				switch(*p) {
-					case '%':
-						break;
-						// TODO: there's type information here
-					default:
-						n++;
-				}
-				p++;
+	if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
+		return;
+	// functions like printf almost always have too many args
+	std::string name(getDestProc()->getName());
+	int format;
+	if ((name == "printf" || name == "scanf")) format = 0;
+	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") format = 1;
+	else return;
+	char* formatStr = NULL;
+	Exp* formatExp = getArgumentExp(format);
+	if (formatExp->isSubscript()) {
+		// Maybe it's defined to be a Const string
+		Statement* def = ((RefExp*)formatExp)->getRef();
+if (def == NULL) return;	// Waiting for ImplicitAssigns
+		if (def->isAssign()) {
+			// This would be unusual; propagation would normally take care of this
+			Exp* rhs = ((Assign*)def)->getRight();
+			if (rhs == NULL || !rhs->isStrConst()) return;
+			formatStr = ((Const*)rhs)->getStr();
+		} else if (def->isPhi()) {
+			// More likely. Example: switch_gcc. Only need ONE candidate format string
+			PhiAssign* pa = (PhiAssign*)def;
+			int n = pa->getNumRefs();
+			for (int i=0; i < n; i++) {
+				def = pa->getAt(i);
+if (def == NULL) continue;
+				Exp* rhs = ((Assign*)def)->getRight();
+				if (rhs == NULL || !rhs->isStrConst()) continue;
+				formatStr = ((Const*)rhs)->getStr();
+				break;
 			}
-			setNumArguments(n);
+			if (formatStr == NULL) return;
+		} else return;
+	} else if (formatExp->isStrConst()) {
+		formatStr = ((Const*)formatExp)->getStr();
+	} else return;
+	// actually have to parse it
+	int n = 1;		// Number of %'s plus 1 = number of args
+	char *p = formatStr;
+	while ((p = strchr(p, '%'))) {
+		// special hack for scanf
+		// Mike: do we want this here?
+		if (name == "scanf" || name.substr(1, 5) == "scanf") {
+			setArgumentExp(format+n, new Unary(opAddrOf, Location::memOf(getArgumentExp(n), proc)));
 		}
+		p++;
+		if (*p != '%')		// Don't count %%
+			n++;
+		p++;
 	}
+	setNumArguments(format + n);
 }
 
 /**********************************
@@ -2728,6 +2749,8 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 // Assign //
 //	//	//	//
 
+Assignment::Assignment(Exp* lhs) : type(new VoidType), lhs(lhs) {}
+Assignment::Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {}
 Assignment::~Assignment() {}
 
 Assign::Assign(Exp* lhs, Exp* rhs)
@@ -2933,7 +2956,7 @@ void PhiAssign::print(std::ostream& os) {
 	if (n != 0) {
 		StatementVec::iterator it;
 		for (int i = 0; i < n; i++) {
-			Statement* def = stmtVec.getAt(i);
+			Statement* def = stmtVec[i];
 			if (def == NULL) continue;
 			Exp* left = def->getLeft();
 			if (left == NULL) continue;
@@ -3596,11 +3619,18 @@ void Statement::subscriptVar(Exp* e, Statement* def) {
 	accept(&ss);
 }
 
+// Find all constants in this Statement
+void Statement::findConstants(std::list<Const*>& lc) {
+	ConstFinder cf(lc);
+	StmtConstFinder scf(&cf);
+	accept(&scf);
+}
+
 // Convert this PhiAssignment to an ordinary Assignment
 // Hopefully, this is the only place that Statements change from one form
 // to another.
 // All throughout the code, we assume that the addresses of Statement objects
-// do not change, so we need this slight hack
+// do not change, so we need this slight hack to overwrite one object with another
 void PhiAssign::convertToAssign(Exp* rhs) {
 	Assign* a = new Assign(type, lhs, rhs);
 	a->setNumber(number);
@@ -3623,7 +3653,7 @@ bool PhiAssign::hasGlobalFuncParam()
 {
 	unsigned n = stmtVec.size();
 	for (unsigned i = 0; i < n; i++) {
-		Statement* u = stmtVec.getAt(i);
+		Statement* u = stmtVec[i];
 		if (u == NULL) continue;
 		Exp *right = u->getRight();
 		if (right == NULL)
@@ -3730,3 +3760,78 @@ void PhiAssign::simplifyRefs() {
 	}
 }
 
+
+void CallStatement::dfaTypeAnalysis(bool& ch) {
+	Signature* sig = procDest->getSignature();
+	// Iterate through the parameters
+	int n = sig->getNumParams();
+	for (int i=0; i < n; i++) {
+		Exp* e = getArgumentExp(i);
+		Type* t = sig->getParamType(i);
+std::cerr << "CallStatement::dfaTypeAnalysis: expression " << e << " and type " << (t ? t->getCtype() : "NULL") << "\n";
+		Const* c;
+		if (e->isSubscript()) {
+			// A subscripted location. Find the definition
+			RefExp* r = (RefExp*)e;
+			Statement* def = r->getRef();
+			// assert(def);			// Soon!
+if (def) {
+			Type* tParam = def->getType();
+			assert(tParam);
+			Type* oldTparam = tParam;
+			tParam = tParam->meetWith(t, ch);
+			def->setType(tParam);
+			if (DEBUG_TA && tParam != oldTparam)
+				LOG << "Type of " << r << " changed from " << oldTparam->getCtype() << " to " <<
+					tParam->getCtype() << "\n";
+}
+		} else if ((c = dynamic_cast<Const*>(e)) != NULL) {
+			// A constant.
+			Type* oldConType = c->getType();
+			c->setType(t);
+			ch |= (t != oldConType);
+		}
+	}
+}
+
+// For x0 := phi(x1, x2, ...) want
+// Ex0 := Ex0 meet (Ex1 meet Ex2 meet ...)
+// Ex1 := Ex1 meet Ex0
+// Ex2 := Ex1 meet Ex0
+// ...
+void PhiAssign::dfaTypeAnalysis(bool& ch) {
+	unsigned i, n = stmtVec.size();
+	Type* meetOfPred = stmtVec[0]->getType();
+	for (i=1; i < n; i++)
+		meetOfPred->meetWith(stmtVec[i]->getType(), ch);
+	type->meetWith(meetOfPred, ch);
+	for (i=0; i < n; i++) {
+		bool thisCh = false;
+		Type* res = stmtVec[i]->getType()->meetWith(type, thisCh);
+		if (thisCh) {
+			stmtVec[i]->setType(res);
+			ch = true;
+		}
+	}
+}
+
+void Assign::dfaTypeAnalysis(bool& ch) {
+	// Needs much more work!
+	if (rhs->isIntConst()) {
+		Const* c = (Const*)rhs;
+		type = type->meetWith(c->getType(), ch);
+		c->setType(c->getType()->meetWith(type, ch));
+	}
+}
+
+void BranchStatement::dfaTypeAnalysis(bool& ch) {
+	// Not implemented yet
+}
+
+void BoolAssign::dfaTypeAnalysis(bool& ch) {
+	// Not implemented yet
+}
+
+void ReturnStatement::dfaTypeAnalysis(bool& ch) {
+	// Not implemented yet
+}

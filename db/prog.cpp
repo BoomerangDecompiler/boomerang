@@ -1115,6 +1115,7 @@ void Prog::dfaTypeAnalysis() {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
 		proc->dfaTypeAnalysis(this);
+		proc->ellipsisTruncation();
 	}
 	if (VERBOSE || DEBUG_TA)
 		LOG << "=== End Type Analysis ===\n";

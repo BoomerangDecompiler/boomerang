@@ -30,10 +30,10 @@
 						 /		 \
 						/		  \
 			 GotoStatement	Assignment (abstract)
- BranchStatement__/			/	/ \	  \
- ReturnStatement_/	   Assign  /   \  PhiAssign
- CallStatement__/	ImplicitAssign BoolAssign
- CaseStatement_/
+ BranchStatement__/			/	/|\	  \
+ ReturnStatement_/	   Assign  / | \  PhiAssign
+ CallStatement__/ ImplicitAssign |  BoolAssign
+ CaseStatement_/			SigmaAssign (soon)
 */
 
 #include <vector>
@@ -54,6 +54,7 @@ class Prog;
 class Proc;
 class UserProc;
 class Exp;
+class Const;
 class RefExp;
 class Cfg;
 class Type;
@@ -173,18 +174,14 @@ virtual bool	isDefinition() = 0;
 	// true if this statement is a any kind of assignment
 	bool		isAssignment() {return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN ||
 					kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;}
-
-virtual bool	isGoto() { return kind == STMT_GOTO; }
-virtual bool	isBranch() { return kind == STMT_BRANCH; }
-
-	// true if this statement is an ordinary (non flags) assignment
-	bool		isOrdinaryAssign();
+	// true if this statement is a phi assignment
+	bool		isPhi() {return kind == STMT_PHIASSIGN; }
 
 	// true if this statment is a flags assignment
 	bool		isFlagAssgn();
 
-	// true if this statement is a phi assignment
-	bool		isPhi() {return kind == STMT_PHIASSIGN; }
+virtual bool	isGoto() { return kind == STMT_GOTO; }
+virtual bool	isBranch() { return kind == STMT_BRANCH; }
 
 	// true if this statement is a call
 	bool		isCall() { return kind == STMT_CALL; }
@@ -218,18 +215,6 @@ virtual Exp*	getRight() = 0;
 	// returns true if this statement uses the given expression
 virtual bool	usesExp(Exp *e) = 0;
 
-	// Adds (inserts) all locations (registers or memory etc) used by this
-	// statement
-	void		addUsedLocs(LocationSet& used, bool final = false);
-	void		fixCallRefs();
-
-
-	// replaces a use of the given statement with an expression
-	bool		replaceRef(Statement *use);
-	// special version of the above for the "special hack"
-	// (see Proc::propagateStatements, where numUses == 2)
-	void		specialReplaceRef(Statement* def);
-
 	// statements should be printable (for debugging)
 virtual void	print(std::ostream &os) = 0;
 		void	printAsUse(std::ostream &os)   {os << std::dec << number;}
@@ -237,65 +222,95 @@ virtual void	print(std::ostream &os) = 0;
 		void	printNum(std::ostream &os)	   {os << std::dec << number;}
 		char*	prints();	   // For use in a debugger
 
-	// inline / decode any constants in the statement
+		// inline / decode any constants in the statement
 virtual void	processConstants(Prog *prog) = 0;
 
-	// general search
+		// general search
 virtual bool	search(Exp *search, Exp *&result) = 0;
 virtual bool	searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
-	// general search and replace
+		// general search and replace
 virtual bool	searchAndReplace(Exp *search, Exp *replace) = 0;
 
-	// From SSA form
+		// From SSA form
 virtual void	fromSSAform(igraph& igm) = 0;
 
-	// Propagate to this statement
-	bool		propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
+		// Propagate to this statement
+		bool	propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
-	// code generation
+		// code generation
 virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
 
-	// simpify internal expressions
+		// simpify internal expressions
 virtual void	simplify() = 0;
 
-	// simplify internal address expressions (a[m[x]] -> x)
-	// Only Assigns override at present
+		// simplify internal address expressions (a[m[x]] -> x)
+		// Only Assigns override at present
 virtual void	simplifyAddr() {}
 
-	// fixSuccessor
-	// Only Assign overrides at present
+		// fixSuccessor
+		// Only Assign overrides at present
 virtual void	fixSuccessor() {}
 
-	// Generate constraints
+		// Generate constraints (for constraint based type analysis)
 virtual void	genConstraints(LocationSet& cons) {}
 
-	// Set or clear the constant subscripts (using a visitor)
-	int			setConscripts(int n);
-	void		clearConscripts();
+		// Data flow based type analysis
+virtual	void	dfaTypeAnalysis(bool& ch) {}
 
-	// Strip all references and phis (using a visitor). Returns true if the
-	// statement was a phi (and to be deleted)
-	bool		stripRefs();
+//	//	//	//	//	//	//	//	//	//
+//									//
+//	Statement visitation functions	//
+//									//
+//	//	//	//	//	//	//	//	//	//
 
-	// Strip all size casts
-	void		stripSizes();
+	// Adds (inserts) all locations (registers or memory etc) used by this
+	// statement
+		void	addUsedLocs(LocationSet& used, bool final = false);
+		void	fixCallRefs();
 
-	// For all expressions in this Statement, replace all e with e{def}
-	void		subscriptVar(Exp* e, Statement* def);
 
-	// Cast the constant num to type ty. If a change was made, return true
-	bool		castConst(int num, Type* ty);
+		// replaces a use of the given statement with an expression
+		bool	replaceRef(Statement *use);
+		// special version of the above for the "special hack"
+		// (see Proc::propagateStatements, where numUses == 2)
+		void		specialReplaceRef(Statement* def);
 
-	// Get the type for the given expression in this statement
-	Type		*getTypeFor(Exp *e, Prog *prog);
+		// Find all constants in this statement
+		void	findConstants(std::list<Const*>& lc);
+
+		// Set or clear the constant subscripts (using a visitor)
+		int		setConscripts(int n);
+		void	clearConscripts();
+
+		// Strip all references and phis (using a visitor). Returns true if the
+		// statement was a phi (and to be deleted)
+		bool	stripRefs();
+
+		// Strip all size casts
+		void	stripSizes();
+
+		// For all expressions in this Statement, replace all e with e{def}
+		void	subscriptVar(Exp* e, Statement* def);
+
+		// Cast the constant num to type ty. If a change was made, return true
+		bool	castConst(int num, Type* ty);
+
+		// End Statement visitation functions
+
+
+		// Get the type for the given expression in this statement
+		Type	*getTypeFor(Exp *e, Prog *prog);
+
+virtual	Type*	getType() {return NULL;}			// Assignment and 
+virtual	void	setType(Type* t) {assert(0);}		// CallStatement override
 
 protected:
-	// Returns true if an indirect call is converted to direct:
+		// Returns true if an indirect call is converted to direct:
 virtual bool	doReplaceRef(Exp* from, Exp* to) = 0;
-	bool		doPropagateTo(int memDepth, Statement* def, bool& convert);
-	bool		calcMayAlias(Exp *e1, Exp *e2, int size);
-	bool		mayAlias(Exp *e1, Exp *e2, int size);
+		bool	doPropagateTo(int memDepth, Statement* def, bool& convert);
+		bool	calcMayAlias(Exp *e1, Exp *e2, int size);
+		bool	mayAlias(Exp *e1, Exp *e2, int size);
 
 	friend class XMLProgParser;
 };			// class Statement
@@ -317,9 +332,9 @@ protected:
 	Exp*		lhs;		// The left hand side
 public:
 	// Constructor, subexpression
-				Assignment(Exp* lhs) : type(NULL), lhs(lhs) {}
+				Assignment(Exp* lhs);
 	// Constructor, type, and subexpression
-				Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {}
+				Assignment(Type* ty, Exp* lhs);
 	// Destructor
 virtual			~Assignment();
 
@@ -333,9 +348,9 @@ virtual bool	accept(StmtModifier* visitor) = 0;
 
 virtual void	print(std::ostream& os) = 0;
 
-	// Get and set the type
-	Type*		getType() {return type;}
-	void		setType(Type* ty) {type = ty;}
+		// Get and set the type
+virtual	Type*	getType() {return type;}
+virtual	void	setType(Type* ty) {type = ty;}
 
 virtual bool	usesExp(Exp *e);	   // PhiExp and ImplicitExp don't override
 
@@ -346,28 +361,28 @@ virtual void	getDefinitions(LocationSet &defs);
 virtual Exp*	getLeft() { return lhs; }
 // virtual Type* getLeftType() { return NULL; }
 
-	// set the lhs to something new
-	void		setLeft(Exp* e)	 { lhs = e; }
+		// set the lhs to something new
+		void	setLeft(Exp* e)	 { lhs = e; }
 
-	// memory depth
-	int			getMemDepth();
+		// memory depth
+		int		getMemDepth();
 
-	// from SSA form
+		// from SSA form
 virtual void	fromSSAform(igraph& ig);
 
-	// general search
+		// general search
 virtual bool	search(Exp *search, Exp *&result) = 0;
 virtual bool	searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
-	// general search and replace
+		// general search and replace
 virtual bool	searchAndReplace(Exp *search, Exp *replace) = 0;
 
 	void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {}
 
-	// simpify internal expressions
+		// simpify internal expressions
 virtual void	simplify() = 0;
 
-	// generate Constraints
+		// generate Constraints
 virtual void	genConstraints(LocationSet& cons);
 
 protected:
@@ -454,6 +469,9 @@ virtual void	fixSuccessor();
 	// generate Constraints
 virtual void	genConstraints(LocationSet& cons);
 
+		// Data flow based type analysis
+		void	dfaTypeAnalysis(bool& ch);
+
 protected:
 virtual bool	doReplaceRef(Exp* from, Exp* to);
 	friend class XMLProgParser;
@@ -517,12 +535,16 @@ virtual void	fromSSAform(igraph& ig);
 
 	// Generate constraints
 virtual void	genConstraints(LocationSet& cons);
+
+		// Data flow based type analysis
+		void	dfaTypeAnalysis(bool& ch);
+
 //
 //	Phi specific functions
 //
 
 	// Get or put the statement at index idx
-	Statement*	getAt(int idx) {return stmtVec.getAt(idx);}
+	Statement*	getAt(int idx) {return stmtVec[idx];}
 	void		putAt(int idx, Statement* d) {stmtVec.putAt(idx, d);}
 	void		simplifyRefs();
 virtual int		getNumRefs() {return stmtVec.size();}
@@ -642,6 +664,8 @@ virtual bool	doReplaceRef(Exp* from, Exp* to);
 virtual void	fromSSAform(igraph& ig);
 	// a hack for the SETS macro
 		void	setLeftFromList(std::list<Statement*>* stmts);
+
+virtual void	dfaTypeAnalysis(bool& ch);
 
 	friend class XMLProgParser;
 };	// class BoolAssign
@@ -779,33 +803,36 @@ virtual bool	searchAll(Exp* search, std::list<Exp*> &result);
 	void		storeUseDefineStruct(BBBlock& inBlock);	  
 #endif
 
-	// code generation
+		// code generation
 virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-	// dataflow analysis
+		// dataflow analysis
 virtual bool	usesExp(Exp *e);
 
-	// dataflow related functions
+		// dataflow related functions
 virtual bool	canPropagateToAll() { return false; }
 virtual void	propagateToAll() { assert(false); }
 
 virtual bool	isDefinition() { return false; }
 
-	// get how to access this value
+		// get how to access this value
 virtual Exp*	getLeft() { return NULL; }
 virtual Type*	getLeftType() { return NULL; }
 
-	// get how to replace this statement in a use
+		// get how to replace this statement in a use
 virtual Exp*	getRight() { return pCond; }
 
-	// simplify all the uses/defs in this RTL
+		// simplify all the uses/defs in this RTL
 virtual void	simplify();
 
-	// From SSA form
+		// From SSA form
 virtual void	fromSSAform(igraph& ig);
 
-	// Generate constraints
+		// Generate constraints
 virtual void	genConstraints(LocationSet& cons);
+
+		// Data flow based type analysis
+		void	dfaTypeAnalysis(bool& ch);
 
 protected:
 virtual bool	doReplaceRef(Exp* from, Exp* to);
@@ -893,6 +920,7 @@ class CallStatement: public GotoStatement {
 	// FIXME: Below will likely go away soon...
 	int			returnTypeSize; // Size in bytes of the struct, union or quad FP
 								// value returned by the called function.
+	Type*		returnType;		// TEMPORARY
 	bool		returnAfterCall;// True if call is effectively followed by
 								// a return.
 	
@@ -957,71 +985,77 @@ virtual bool	accept(StmtModifier* visitor);
 
 virtual void	print(std::ostream& os = std::cout);
 
-	// general search
+		// general search
 virtual bool	search(Exp *search, Exp *&result);
 
-	// Replace all instances of "search" with "replace".
+		// Replace all instances of "search" with "replace".
 virtual bool	searchAndReplace(Exp* search, Exp* replace);
 	
-	// Searches for all instances of a given subexpression within this
-	// expression and adds them to a given list in reverse nesting order.
+		// Searches for all instances of a given subexpression within this
+		// expression and adds them to a given list in reverse nesting order.
 virtual bool	searchAll(Exp* search, std::list<Exp*> &result);
 
-	// Set and return whether the call is effectively followed by a return.
-	// E.g. on Sparc, whether there is a restore in the delay slot.
-	void		setReturnAfterCall(bool b);
-	bool		isReturnAfterCall();
+		// Set and return whether the call is effectively followed by a return.
+		// E.g. on Sparc, whether there is a restore in the delay slot.
+		void	setReturnAfterCall(bool b);
+		bool	isReturnAfterCall();
 
-	// Set and return the list of Exps that occur *after* the call (the
-	// list of exps in the RTL occur before the call). Useful for odd patterns.
-	void		setPostCallExpList(std::list<Exp*>* le);
-	std::list<Exp*>* getPostCallExpList();
+		// Set and return the list of Exps that occur *after* the call (the
+		// list of exps in the RTL occur before the call). Useful for odd patterns.
+		void	setPostCallExpList(std::list<Exp*>* le);
+		std::list<Exp*>* getPostCallExpList();
 
-	// Set and return the destination proc.
-	void		setDestProc(Proc* dest);
-	Proc*		getDestProc();
+		// Set and return the destination proc.
+		void	setDestProc(Proc* dest);
+		Proc*	getDestProc();
 
-	// Generate constraints
+		// Generate constraints
 virtual void	genConstraints(LocationSet& cons);
 
-	// code generation
+		// Data flow based type analysis
+		void	dfaTypeAnalysis(bool& ch);
+
+		// code generation
 virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-	// dataflow analysis
+		// dataflow analysis
 virtual bool	usesExp(Exp *e);
 
-	// dataflow related functions
+		// dataflow related functions
 virtual bool	propagateToAll() { assert(false); return false;}
 
 virtual bool	isDefinition();
 virtual void	getDefinitions(LocationSet &defs);
 
 virtual Exp*	getLeft() {return getReturnExp(0);}
-	// get how to replace this statement in a use
+		// get how to replace this statement in a use
 virtual Exp*	getRight() { return NULL; }
 
-	// inline any constants in the statement
+		// inline any constants in the statement
 virtual void	processConstants(Prog *prog);
 
-	// simplify all the uses/defs in this RTL
+		// simplify all the uses/defs in this RTL
 virtual void	simplify();
 
-	void		setIgnoreReturnLoc(bool b);
+		void	setIgnoreReturnLoc(bool b);
 
-	void		decompile();
+		void	decompile();
 
 virtual void	fromSSAform(igraph& ig);
 		
-	// Insert actual arguments to match formal parameters
-	void		insertArguments(StatementSet& rs);
+		// Insert actual arguments to match formal parameters
+		void	insertArguments(StatementSet& rs);
+
+virtual	Type*	getType() {return returnType;}		// MVE: TEMPORARY
+virtual	void	setType(Type* t) { returnType = t;}	// MVE: TEMPORARY
+		void	ellipsisTruncation();		// E.g. remove excess arguments from printf etc
 
 protected:
 virtual bool	doReplaceRef(Exp* from, Exp* to);
-	bool		convertToDirect();
+		bool	convertToDirect();
 
-	void		appendArgument(Exp *e) { arguments.push_back(e); }
-	void		appendImplicitArgument(Exp *e) {
-					implicitArguments.push_back(e); }
+		void	appendArgument(Exp *e) { arguments.push_back(e); }
+		void	appendImplicitArgument(Exp *e) { implicitArguments.push_back(e); }
 	friend class XMLProgParser;
 };		// class CallStatement
 
@@ -1031,68 +1065,70 @@ virtual bool	doReplaceRef(Exp* from, Exp* to);
  *============================================================================*/
 class ReturnStatement: public GotoStatement {
 protected:
-	// number of bytes that this return pops
-	int			nBytesPopped;
+		// number of bytes that this return pops
+		int		nBytesPopped;
 
-	// value returned
-	std::vector<Exp*> returns;
+		// value returned
+		std::vector<Exp*> returns;
 
-	// Native address of the (only) return instruction
-	// Needed for branching to this only return statement
-	ADDRESS		retAddr;
+		// Native address of the (only) return instruction
+		// Needed for branching to this only return statement
+		ADDRESS	retAddr;
 
 public:
 				ReturnStatement();
 virtual			~ReturnStatement();
 
-	// Make a deep copy, and make the copy a derived object if needed.
+		// Make a deep copy, and make the copy a derived object if needed.
 virtual Statement* clone();
 
-	// Accept a visitor to this RTL
+		// Accept a visitor to this RTL
 virtual bool	accept(StmtVisitor* visitor);
 virtual bool	accept(StmtExpVisitor* visitor);
 virtual bool	accept(StmtModifier* visitor);
 
-	// print
+		// print
 virtual void	print(std::ostream& os = std::cout);
 
-	// From SSA form
+		// From SSA form
 virtual void	fromSSAform(igraph& igm);
 
-	// code generation
+		// code generation
 virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-	// simplify all the uses/defs in this RTL
+		// simplify all the uses/defs in this RTL
 virtual void	simplify();
 
-	// general search
+		// general search
 virtual bool	search(Exp*, Exp*&);
 
-	// Replace all instances of "search" with "replace".
+		// Replace all instances of "search" with "replace".
 virtual bool	searchAndReplace(Exp* search, Exp* replace);
 	
-	// Searches for all instances of a given subexpression within this
-	// expression and adds them to a given list in reverse nesting order.	 
+		// Searches for all instances of a given subexpression within this
+		// expression and adds them to a given list in reverse nesting order.	 
 virtual bool	searchAll(Exp* search, std::list<Exp*> &result);
 
-	// returns true if this statement uses the given expression
+		// returns true if this statement uses the given expression
 virtual bool	usesExp(Exp *e);
 
 virtual bool	doReplaceRef(Exp* from, Exp* to);
-	int			getNumBytesPopped() { return nBytesPopped; }
-	void		setNumBytesPopped(int n) { nBytesPopped = n; }
+		int		getNumBytesPopped() { return nBytesPopped; }
+		void	setNumBytesPopped(int n) { nBytesPopped = n; }
 
-	int			getNumReturns() { return returns.size(); }
-	Exp			*getReturnExp(int n) { return returns[n]; }
-	void		setReturnExp(int n, Exp *e) { returns[n] = e; }
-	std::vector<Exp*>& getReturns() {return returns;}
-	void		setSigArguments();	 // Set returns based on signature
-	void		removeReturn(int n);
-	void		addReturn(Exp *e);
+		int		getNumReturns() { return returns.size(); }
+		Exp		*getReturnExp(int n) { return returns[n]; }
+		void	setReturnExp(int n, Exp *e) { returns[n] = e; }
+		std::vector<Exp*>& getReturns() {return returns;}
+		void	setSigArguments();	 // Set returns based on signature
+		void	removeReturn(int n);
+		void	addReturn(Exp *e);
 
-	// Get and set the native address for the first and only return statement
+		// Get and set the native address for the first and only return statement
 	ADDRESS		getRetAddr() {return retAddr;}
 	void		setRetAddr(ADDRESS r) {retAddr = r;}
+
+virtual void	dfaTypeAnalysis(bool& ch);
 
 	friend class XMLProgParser;
 };	// class ReturnStatement

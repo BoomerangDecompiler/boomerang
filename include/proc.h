@@ -491,6 +491,7 @@ public:
 	void insertStatementAfter(Statement* s, Statement* a);
 	void conTypeAnalysis(Prog* prog);
 	void dfaTypeAnalysis(Prog* prog);
+	void ellipsisTruncation();		// e.g. trim printf to appropriate number of parameters
 
 	// For the final pass of removing returns that are never used
 	typedef std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
