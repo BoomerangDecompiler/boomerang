@@ -33,6 +33,7 @@
 #include "config.h"
 #include <iostream>
 #include <sstream>
+#include <assert.h>
 
 extern "C" {
 	int microX86Dis(void* p);			// From microX86dis.c
