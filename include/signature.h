@@ -188,15 +188,17 @@ virtual Exp *getImplicitParamExp(int n);
 virtual Type *getImplicitParamType(int n);
 virtual int findImplicitParam(Exp *e);
 
-	// analysis determines parameters / return type
-	//virtual void analyse(UserProc *p);
+		// analysis determines parameters / return type
+		//virtual void analyse(UserProc *p);
 
-	// any signature can be promoted to a higher level signature, if available
+		// Data flow based type analysis. Meet the parameters with their current types
+		// Returns true if a change
+		bool		dfaTypeAnalysis(Cfg* cfg);
+
+		// any signature can be promoted to a higher level signature, if available
 virtual Signature *promote(UserProc *p);
 	void print(std::ostream &out);
 	void printToLog();
-
-virtual void getInternalStatements(StatementList &stmts);
 
 	// Special for Mike: find the location that conventionally holds
 	// the first outgoing (actual) parameter
