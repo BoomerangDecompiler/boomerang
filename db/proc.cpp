@@ -1726,11 +1726,11 @@ Exp* UserProc::newLocal(Type* ty) {
     return new Unary(opLocal, new Const(strdup(name.c_str())));
 }
 
-// Add n local variables with name temp1 ... tempn
-void UserProc::addTemps(int n) {
-    for (int i=1; i < n; i++) {
+// Add local variables local<nextAvailable> .. local<n-1>
+void UserProc::addLocals(int n) {
+    for (int i=locals.size(); i < n; i++) {
         std::ostringstream os;
-        os << "temp" << i;
+        os << "local" << i;
         std::string name = os.str();
         locals[name] = new IntegerType();   // FIXME one day
     }
@@ -1869,7 +1869,7 @@ void UserProc::fromSSAform() {
     getStatements(stmts);
     StmtListIter it;
     igraph ig;
-    int tempNum = 0;
+    int tempNum = locals.size();
     cfg->findInterferences(ig, tempNum);
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         if (s->isPhi()) {
@@ -1878,7 +1878,7 @@ std::cerr << "   * * * Warning: ignoring " << s << " * * *\n";
         } else
             s->fromSSAform(ig);
     }
-    addTemps(tempNum);
+    addLocals(tempNum);
 }
 
 void UserProc::insertArguments(StatementSet& rs) {

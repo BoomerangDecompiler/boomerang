@@ -557,9 +557,9 @@ public:
     Exp* newLocal(Type* ty);
 
     /*
-     * Add n new locals, called temp1 .. tempn
+     * Add new locals, local<next available> to local<n-1>
      */
-    void addTemps(int n);
+    void addLocals(int n);
 
     /*
      * Print the locals declaration in C style.

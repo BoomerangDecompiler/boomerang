@@ -1515,7 +1515,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 ////////////////////////////////////////////////////
 
 
-bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
+bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
     // Start with the liveness at the bottom of the BB
     LocationSet liveLocs;
     getLiveOut(liveLocs);
@@ -1553,10 +1553,11 @@ bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
                         // We have an interference. Record it, but only if new
                         igraph::iterator gg = ig.find(u);
                         if (gg == ig.end()) {
-                            ig[u] = ++tempNum;
+                            ig[u] = localNum++;
                             if (VERBOSE)
                                 std::cerr << "Interference with " << u <<
-                                ", assigned temp" << std::dec << tempNum << "\n";
+                                ", assigned local" << std::dec << localNum-1
+                                << "\n";
                         }
                     }
                     // Add the uses one at a time. Note: don't use makeUnion,
@@ -1566,7 +1567,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
                     liveLocs.insert(u);
                 }
             }
-std::cerr << "At top of " << s << ": liveLocs is " << liveLocs.prints() << "\n";    // HACK!
+std::cerr << "At top of " << s << " liveLocs is " << liveLocs.prints() << "\n";
         }
     }
     // liveIn is what we calculated last time
