@@ -22,6 +22,8 @@ typedef int HICON;
 typedef int HCURSOR;
 typedef int HBRUSH;
 typedef int HACCEL;
+typedef int HDC;
+typedef int HGDIOBJ;
 typedef int WPARAM;
 typedef int LPARAM;
 typedef int LRESULT;
@@ -383,8 +385,6 @@ BOOL EndDialog(
     INT_PTR nResult
 );
 
-void FillRect(void* cdc, RECT* r, CBrush* br);
-
 int wsprintfA(
     LPTSTR lpOut,
     LPCTSTR lpFmt,
@@ -517,3 +517,9 @@ BOOL TextOutA(
     HDC hDC,
     int x, int y,
     char* sz, int len);
+
+int FillRect(
+  HDC hDC,          // handle to DC
+  RECT *lprc,       // rectangle
+  HBRUSH hbr        // handle to brush
+);
