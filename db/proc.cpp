@@ -1428,10 +1428,7 @@ void UserProc::fixCallRefs()
         Statement* s = *it;
         s->fixCallRefs();
     }
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement* s = *it;
-        s->simplify();
-    }
+    simplify();
 }
 
 void UserProc::addNewReturns(int depth) {
@@ -1777,9 +1774,34 @@ void UserProc::replaceExpressionsWithGlobals() {
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
 
+        LocationSet defs;
+        s->getDefinitions(defs);
+        LocationSet::iterator rr;
+        for (rr = defs.begin(); rr != defs.end(); rr++) {
+            if ((*rr)->getOper() == opMemOf &&
+                (*rr)->getSubExp1()->getOper() == opIntConst) {
+                Exp *memof = *rr;
+                ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
+                prog->globalUsed(u);
+                const char *global = prog->getGlobal(u);
+                if (global) {
+                    if (s->isAssign()) {
+                        Type *ty = prog->getGlobalType((char*)global);
+                        int bits = ((Assign*)s)->getSize();
+                        if (ty == NULL || ty->getSize() != bits)
+                            prog->setGlobalType((char*)global, new IntegerType(bits));
+                    }
+                    Unary *g = new Unary(opGlobal,
+                        new Const(strdup((char*)global)));
+                    Exp* memofCopy = memof->clone();
+                    s->searchAndReplace(memofCopy, g);
+                    delete memofCopy; delete g;
+                }
+            }
+        }
+
         LocationSet refs;
         s->addUsedLocs(refs);
-        LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             if (((Exp*)*rr)->isSubscript()) {
                 Statement *ref = ((RefExp*)*rr)->getRef();
@@ -2244,6 +2266,12 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
             }
             if (s->getLeft() && s->getLeft()->getOper() == opGlobal) {
                 // assignments to globals must always be kept
+                ll++;
+                continue;
+            }
+            if (s->getLeft()->getOper() == opMemOf &&
+                !(*new RefExp(s->getLeft(), NULL) == *s->getRight())) {
+                // assignments to memof anything must always be kept
                 ll++;
                 continue;
             }

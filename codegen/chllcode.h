@@ -37,6 +37,8 @@ private:
         void appendExp(char *str, Exp *exp);
         void appendType(char *str, Type *typ);
 
+        std::map<std::string, Type*> locals;
+
 public:
 	// constructor
 	CHLLCode();

@@ -947,7 +947,7 @@ case 40:
 	YY_BREAK
 case 41:
 #line 95 "ansi-c.l"
-{ count(); return AnsiCParser::CONSTANT; }
+{ count(); sscanf(yytext, "0x%x", &yylval.ival); return AnsiCParser::CONSTANT; }
 	YY_BREAK
 case 42:
 #line 96 "ansi-c.l"

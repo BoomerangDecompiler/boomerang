@@ -212,11 +212,15 @@ public:
     const char *getGlobal(ADDRESS uaddr);
     ADDRESS getGlobal(char *nam);
 
+    // Make up a name for a new global at address uaddr
+    // (or return an existing name if address already used)
+    const char *newGlobal(ADDRESS uaddr);
+
+    // Guess a global's type based on its name
+    Type *guessGlobalType(const char *nam);
+
     // Indicate that a given global has been seen used in the program.
     void globalUsed(ADDRESS uaddr);
-
-    // Make a global variable
-    void makeGlobal(ADDRESS uaddr, const char *name);
 
     // Get the type of a global variable
     Type *getGlobalType(char* nam);
@@ -241,6 +245,8 @@ public:
     // Read 2 or 4 bytes given a native address
     int readNative2(ADDRESS a) {return pBF->readNative2(a);}
     int readNative4(ADDRESS a) {return pBF->readNative4(a);}
+
+    void readSymbolFile(const char *fname);
 
     // Public booleans that are set if and when a register jump or call is
     // found, respectively

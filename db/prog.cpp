@@ -57,6 +57,7 @@
 #include "signature.h"
 #include "analysis.h"
 #include "boomerang.h"
+#include "ansi-c-parser.h"
 
 Prog::Prog()
     : interProcDFAphase(0),
@@ -469,14 +470,13 @@ void Prog::globalUsed(ADDRESS uaddr)
         LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
         return;
     }
-    const char *nam = getGlobal(uaddr);
-    if (nam == NULL) {
-        std::ostringstream os;
-        os << "global" << globals.size();
-        nam = strdup(os.str().c_str());
-        if (VERBOSE)
-            LOG << "adding new global: " << nam << " at address " << uaddr << "\n";
-    }
+    const char *nam = newGlobal(uaddr); 
+    Type *ty = guessGlobalType(nam);
+    globals.push_back(new Global(ty, uaddr, nam));
+}
+
+Type *Prog::guessGlobalType(const char *nam)
+{
     int sz = pBF->GetSizeByName(nam);
     Type *ty;
     switch(sz) {
@@ -489,14 +489,21 @@ void Prog::globalUsed(ADDRESS uaddr)
         default:
             ty = new ArrayType(new CharType(), sz);
     }
-    globals.push_back(new Global(ty, uaddr, nam));
+    return ty;
 }
 
-void Prog::makeGlobal(ADDRESS uaddr, const char *name)
+const char *Prog::newGlobal(ADDRESS uaddr)
 {
-/*    if (globalMap == NULL) globalMap = pBF->GetDynamicGlobalMap();
-    assert(globalMap && globalMap->find(uaddr) == globalMap->end());
-    (*globalMap)[uaddr] = strdup(name);*/
+    const char *nam = getGlobal(uaddr);
+    if (nam == NULL) {
+        std::ostringstream os;
+        os << "global" << globals.size();
+        nam = strdup(os.str().c_str());
+        if (VERBOSE)
+            LOG << "adding new global: " << nam << " at address " << uaddr 
+                << "\n";
+    } 
+    return nam;
 }
 
 Type *Prog::getGlobalType(char* nam) {
@@ -935,3 +942,42 @@ void Prog::printCallGraphXML() {
     f.close();
     unlockFile(fd);
 }
+
+void Prog::readSymbolFile(const char *fname)
+{
+    std::ifstream ifs;
+
+    ifs.open(fname);
+
+    if (!ifs.good()) {
+        LOG << "can't open `" << fname << "'\n";
+        exit(1);
+    }
+
+    AnsiCParser *p = new AnsiCParser(ifs, false);
+    std::string s = "-stdc-";
+    if (isWin32()) s = "-win32-";
+    s += getFrontEndId();
+    p->yyparse(s.c_str());
+
+    for (std::list<Symbol*>::iterator it = p->symbols.begin();
+         it != p->symbols.end(); it++) {
+        if ((*it)->sig) {
+            // probably wanna do something with this
+        } else {
+            const char *nam = (*it)->nam.c_str();
+            if (strlen(nam) == 0) {
+                nam = newGlobal((*it)->addr);
+            }
+            Type *ty = (*it)->ty;
+            if (ty == NULL) {
+                ty = guessGlobalType(nam);
+            }
+            globals.push_back(new Global(ty, (*it)->addr, nam));
+        }
+    }
+
+    delete p;
+    ifs.close();
+}
+

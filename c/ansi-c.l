@@ -92,7 +92,7 @@ private: \
 
 {L}({L}|{D})*		{ count(); yylval.str = strdup(yytext); return check_type(); }
 
-0[xX]{H}+{IS}?		{ count(); return AnsiCParser::CONSTANT; }
+0[xX]{H}+{IS}?		{ count(); sscanf(yytext, "0x%x", &yylval.ival); return AnsiCParser::CONSTANT; }
 0{D}+{IS}?		{ count(); return AnsiCParser::CONSTANT; }
 {D}+{IS}?		{ count(); return AnsiCParser::CONSTANT; }
 L?'(\\.|[^\\'])+'	{ count(); return AnsiCParser::CONSTANT; }

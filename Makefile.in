@@ -139,7 +139,7 @@ $(MACH_SRC): frontend/%decoder.cpp : frontend/machine/%/core.spec \
 #
 # Extra flags
 #
-db/prog.o:					EXTRA = $(BOOMSET) -Icodegen
+db/prog.o:					EXTRA = $(BOOMSET) -Icodegen -Ic
 frontend/frontend.o:		EXTRA = $(BOOMSET) -Ic
 frontend/FrontSparcTest.o:	EXTRA = $(BOOMSET)
 frontend/FrontPentTest.o:	EXTRA = $(BOOMSET)
@@ -173,7 +173,8 @@ testAll.o: testAll.cpp
 db/exp.o: include/exp.h include/operator.h include/types.h include/statement.h \
     include/cfg.h include/rtl.h include/proc.h include/prog.h db/operstrings.h
 db/prog.o: include/prog.h include/exp.h include/cfg.h include/proc.h \
-    include/rtl.h include/BinaryFile.h include/frontend.h include/signature.h
+    include/rtl.h include/BinaryFile.h include/frontend.h include/signature.h \
+    c/ansi-c-parser.h  
 db/proc.o: include/proc.h include/hllcode.h include/statement.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h \
     include/constraint.h

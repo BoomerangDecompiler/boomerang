@@ -83,6 +83,7 @@ public:
     bool debugUnusedRets;
     bool debugTA;
     std::vector<ADDRESS> entrypoints;
+    std::vector<std::string> symbolFiles;
     std::map<ADDRESS, std::string> symbols;
     bool decodeMain;
     bool printAST;

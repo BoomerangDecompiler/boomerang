@@ -657,7 +657,10 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 {
     char s[1024];
     indent(s, indLevel);
-    appendExp(s, asgn->getLeft());
+    if (asgn->getLeft()->getOper() == opMemOf && asgn->getSize() != 32) 
+        appendExp(s, new TypedExp(new IntegerType(asgn->getSize()), asgn->getLeft()));
+    else
+        appendExp(s, asgn->getLeft());
     strcat(s, " = ");
     appendExp(s, asgn->getRight());
     strcat(s, ";");
@@ -787,6 +790,7 @@ void CHLLCode::AddLocal(const char *name, Type *type)
     strcat(s, name);
     strcat(s, ";");
     lines.push_back(strdup(s));
+    locals[name] = type->clone();
 }
 
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)

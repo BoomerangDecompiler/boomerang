@@ -73,6 +73,7 @@ void Boomerang::help() {
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
                     "\n";
     std::cerr << "-s <addr> <name>: define a symbol\n";
+    std::cerr << "-sf <filename>: read a symbol/signature file\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-x: dump xml files\n";
     std::cerr << "-v: verbose\n";
@@ -177,6 +178,11 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 break;
             case 's':
                 {
+                    if (argv[i][2] == 'f') {
+                        symbolFiles.push_back(argv[i+1]);
+                        i++;
+                        break;
+                    }
                     ADDRESS addr;
                     int n;
                     if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
@@ -240,8 +246,9 @@ int Boomerang::decompile(const char *fname)
     }
 
     for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
-         it != symbols.end(); it++)
+         it != symbols.end(); it++) {
         fe->AddSymbol((*it).first, (*it).second.c_str());
+    }
 
     std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);
@@ -251,6 +258,9 @@ int Boomerang::decompile(const char *fname)
             prog->decode(entrypoints[i]);
         }
     }
+
+    for (unsigned i = 0; i < symbolFiles.size(); i++)
+        prog->readSymbolFile(symbolFiles[i].c_str());
 
     std::cerr << "analysing...\n";
     prog->analyse();

@@ -875,31 +875,27 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
           !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
           "LOGICALFLAGS", 12)) {
         // Exp *e = pCond;
+        OPER op = opWild;
         switch (jtCond) {
-            case BRANCH_JE:
-                pCond = new Binary(opEquals,
-                    pCond->getSubExp2()->getSubExp1()->clone(), 
-                    new Const(0));
-                break;
-            case BRANCH_JNE:
-                pCond = new Binary(opNotEqual,
-                    pCond->getSubExp2()->getSubExp1()->clone(), 
-                    new Const(0));
-                break;
-            case BRANCH_JMI:
-                pCond = new Binary(opLess,
-                    pCond->getSubExp2()->getSubExp1()->clone(), 
-                    new Const(0));
-                ;//delete e;
-                break;
-            case BRANCH_JPOS:
-                pCond = new Binary(opGtrEq,
-                    pCond->getSubExp2()->getSubExp1()->clone(), 
-                    new Const(0));
-                ;//delete e;
-                break;
+            case BRANCH_JE:   op = opEquals; break;
+            case BRANCH_JNE:  op = opNotEqual; break;
+            case BRANCH_JMI:  op = opLess; break;
+            case BRANCH_JPOS: op = opGtrEq; break;
+            case BRANCH_JSL:  op = opLess; break;
+            case BRANCH_JSLE: op = opLessEq; break;
+            case BRANCH_JSGE: op = opGtrEq; break;
+            case BRANCH_JSG:  op = opGtr; break;
+            case BRANCH_JUL:  op = opLessUns; break;
+            case BRANCH_JULE: op = opLessEqUns; break;
+            case BRANCH_JUGE: op = opGtrEqUns; break;
+            case BRANCH_JUG:  op = opGtrUns; break;
             default:
                 break;
+        }
+        if (op != opWild) {
+            pCond = new Binary(op,
+                pCond->getSubExp2()->getSubExp1()->clone(),
+                new Const(0));
         }
     }
 }
@@ -1604,8 +1600,9 @@ bool CallStatement::isDefinition()
 }
 
 void CallStatement::getDefinitions(LocationSet &defs) {
-    for (int i = 0; i < getNumReturns(); i++)
+    for (int i = 0; i < getNumReturns(); i++) {
         defs.insert(getReturnExp(i));
+    }
 }
 
 void CallStatement::subscriptVar(Exp* e, Statement* def) {
@@ -2479,6 +2476,11 @@ void Assign::getDefinitions(LocationSet &defs) {
     // Special case: flag calls define %CF (and others)
     if (lhs->isFlags()) {
         defs.insert(new Terminal(opCF));
+    }
+    // This is a hack to fix aliasing (replace with something general)
+    if (lhs->getOper() == opRegOf &&
+        ((Const*)lhs->getSubExp1())->getInt() == 24) {
+        defs.insert(Unary::regOf(0));
     }
 }
 

@@ -1065,7 +1065,8 @@ bool Cfg::compressCfg()
             PBB bb = (*it);             // Pointer to A
             if (pSucc->m_InEdges.size()==1 && pSucc->m_OutEdges.size()==1 &&
               pSucc->m_pRtls->size()==1 &&
-              pSucc->m_pRtls->front()->isGoto()) {
+              pSucc->m_pRtls->front()->getNumStmt() == 1 &&
+              pSucc->m_pRtls->front()->elementAt(0)->isGoto()) {
                 // Found an out-edge to an only-jump BB
                 /* std::cout << "outedge to jump detected at " << std::hex <<
                     bb->getLowAddr() << " to ";

@@ -668,6 +668,7 @@ virtual int getNumRefs() {return 1;}
     virtual Exp*  genConstraints(Exp* restrictTo);
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return def == s;}
+virtual Exp* polySimplify(bool& bMod);
 };
 
 /*==============================================================================

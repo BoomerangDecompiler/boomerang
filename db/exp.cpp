@@ -2155,6 +2155,20 @@ Exp* Ternary::polySimplify(bool& bMod) {
             return res;
         }
     }   
+    
+    if (op == opTern && subExp1->getOper() == opIntConst &&
+        ((Const*)subExp1)->getInt() == 1) {
+        res = this->becomeSubExp2();
+        bMod = true;
+        return res;
+    }
+
+    if (op == opTern && subExp1->getOper() == opIntConst &&
+        ((Const*)subExp1)->getInt() == 0) {
+        res = this->becomeSubExp3();
+        bMod = true;
+        return res;
+    }
 
     if (op == opSgnEx && subExp3->getOper() == opIntConst) {
         res = this->becomeSubExp3();
@@ -2186,6 +2200,33 @@ Exp* TypedExp::polySimplify(bool& bMod) {
     if (subExp1->getOper() == opRegOf) {
         // type cast on a reg of.. hmm.. let's remove this
         res = ((Unary*)res)->becomeSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    return res;
+}
+
+Exp* RefExp::polySimplify(bool& bMod) {
+    Exp *res = this;
+    Exp *subExp1 = getSubExp1()->polySimplify(bMod);
+
+    /* This is a nasty hack.  We assume that %DF{0} is 0.
+     * This happens when string instructions are used without
+     * first clearing the direction flag.  By convention, the
+     * direction flag is assumed to be clear on entry to a procedure.
+     */
+    if (subExp1->getOper() == opDF && def == NULL) {
+        res = new Const(0);
+        bMod = true;
+        return res;
+    }
+
+    // another hack, this time for aliasing
+    if (subExp1->getOper() == opRegOf && 
+        ((Const*)subExp1->getSubExp1())->getInt() == 0 &&
+        def && def->getLeft() && *def->getLeft() == *Unary::regOf(24)) {
+        res = new TypedExp(new IntegerType(16), new RefExp(Unary::regOf(24), def));
         bMod = true;
         return res;
     }
@@ -2478,7 +2519,7 @@ void Terminal::addUsedLocs(LocationSet& used) {
         case opFlags:
         // Fall through
         // The carry flag can be used in some SPARC idioms, etc
-        case opCF:
+        case opDF: case opCF: case opZF: case opNF: case opOF:  // these flags too
             used.insert(clone());
         default:
             break;

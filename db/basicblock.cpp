@@ -767,8 +767,67 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
 
 void BasicBlock::simplify() {
     for (std::list<RTL*>::iterator it = m_pRtls->begin();
-      it != m_pRtls->end(); it++)
+         it != m_pRtls->end(); it++)
         (*it)->simplify();
+    if (m_nodeType == TWOWAY) {
+        if (m_pRtls->size() == 0) {
+            m_nodeType = FALL;
+        } else {
+            RTL *last = m_pRtls->back();
+            if (last->getNumStmt() == 0) {
+                m_nodeType = FALL;
+            } else if (last->elementAt(last->getNumStmt()-1)->isGoto()) {
+                m_nodeType = ONEWAY;
+            } else if (!last->elementAt(last->getNumStmt()-1)->isBranch()) {
+                m_nodeType = FALL;
+            }
+        }
+        if (m_nodeType == FALL) {
+            // set out edges to be the second one
+            LOG << "turning TWOWAY into FALL: " 
+                << m_OutEdges[0]->getLowAddr() << " " 
+                << m_OutEdges[1]->getLowAddr() << "\n";
+            PBB redundant = m_OutEdges[0];
+            m_OutEdges[0] = m_OutEdges[1];
+            m_OutEdges.resize(1);
+            m_iNumOutEdges = 1;
+            LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            std::vector<PBB> rinedges = redundant->m_InEdges;
+            redundant->m_InEdges.clear();
+            for (unsigned i = 0; i < rinedges.size(); i++) {
+                LOG << rinedges[i]->getLowAddr() << " ";
+                if (rinedges[i] != this)
+                    redundant->m_InEdges.push_back(rinedges[i]);
+                else
+                    LOG << "(ignored) ";
+            }
+            LOG << "\n";
+            redundant->m_iNumInEdges = redundant->m_InEdges.size();
+            LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+        }
+        if (m_nodeType == ONEWAY) {
+            // set out edges to be the first one
+            LOG << "turning TWOWAY into ONEWAY: " 
+                << m_OutEdges[0]->getLowAddr() << " " 
+                << m_OutEdges[1]->getLowAddr() << "\n";
+            PBB redundant = m_OutEdges[1];
+            m_OutEdges.resize(1);
+            m_iNumOutEdges = 1;
+            LOG << "redundant edge to " << redundant->getLowAddr() << " inedges: ";
+            std::vector<PBB> rinedges = redundant->m_InEdges;
+            redundant->m_InEdges.clear();
+            for (unsigned i = 0; i < rinedges.size(); i++) {
+                LOG << rinedges[i]->getLowAddr() << " ";
+                if (rinedges[i] != this)
+                    redundant->m_InEdges.push_back(rinedges[i]);
+                else
+                    LOG << "(ignored) ";
+            }
+            LOG << "\n";
+            redundant->m_iNumInEdges = redundant->m_InEdges.size();
+            LOG << "   after: " << m_OutEdges[0]->getLowAddr() << "\n";
+        }
+    }
 }
         
 bool BasicBlock::hasBackEdgeTo(BasicBlock* dest) {

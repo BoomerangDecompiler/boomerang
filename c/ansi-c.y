@@ -28,8 +28,8 @@
 private:        \
     AnsiCScanner *theScanner; \
 public: \
-    std::list<Signature*> signatures;
-    
+    std::list<Signature*> signatures; \
+    std::list<Symbol*> symbols; 
 
 
 %header{
@@ -46,6 +46,16 @@ public: \
   public:
       Type *ty;
       std::string nam;
+  };
+
+  class Symbol {
+  public:
+      ADDRESS addr;
+      std::string nam;
+      Type *ty;
+      Signature *sig;
+
+      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL) { }
   };
 
 %}
@@ -71,7 +81,7 @@ public: \
    std::list<Parameter*> *param_list;
    Parameter *param;
    Exp *exp;
-   Signature *signature;
+   Signature *sig;
    TypeIdent *type_ident;
    std::list<TypeIdent*> *type_ident_list;
 }
@@ -85,6 +95,7 @@ public: \
 %type<param_list> param_list;
 %type<type_ident> type_ident;
 %type<type_ident_list> type_ident_list;
+%type<sig> signature;
 
 %start translation_unit
 %%
@@ -102,6 +113,8 @@ decls: decl decls
 decl: type_decl
     { }
     | func_decl
+    { }
+    | symbol_decl
     { }
     ;
 
@@ -185,7 +198,13 @@ type_decl: TYPEDEF type_ident ';'
          }
          ;
 
-func_decl: type_ident '(' param_list ')' ';'
+func_decl: signature ';'
+         {
+           signatures.push_back($1);
+         }
+         ;
+
+signature: type_ident '(' param_list ')'
          { Signature *sig = Signature::instantiate(sigstr, $1->nam.c_str()); 
            sig->addReturn($1->ty);
            for (std::list<Parameter*>::iterator it = $3->begin();
@@ -197,9 +216,22 @@ func_decl: type_ident '(' param_list ')' ';'
                    delete *it;
                }
            delete $3;
-           signatures.push_back(sig);
+           $$ = sig;
          }
          ;
+
+symbol_decl: CONSTANT type_ident ';'
+           { Symbol *sym = new Symbol($1);
+             sym->nam = $2->nam;
+             sym->ty = $2->ty;
+             symbols.push_back(sym);
+           }
+           | CONSTANT signature ';'
+           { Symbol *sym = new Symbol($1);
+             sym->sig = $2;
+             symbols.push_back(sym);
+           }
+           ; 
 
 type_ident: type IDENTIFIER
           { $$ = new TypeIdent();
@@ -209,6 +241,11 @@ type_ident: type IDENTIFIER
           | type IDENTIFIER '[' CONSTANT ']'
           { $$ = new TypeIdent();
             $$->ty = new ArrayType($1, $4);
+            $$->nam = $2;
+          }
+          | type IDENTIFIER '[' CONSTANT ']' '[' CONSTANT ']'
+          { $$ = new TypeIdent();
+            $$->ty = new ArrayType(new ArrayType($1, $4), $7);
             $$->nam = $2;
           }
           | type IDENTIFIER '[' ']'
