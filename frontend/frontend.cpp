@@ -431,7 +431,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 				// An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
 				// Best thing is to emit a INVALID BB, and continue with valid instructions
-				LOG << "Warning: invalid instruction at " << uAddr << "\n";
+				LOG << "Warning: invalid instruction at " << uAddr << ": ";
+				// Emit the next 4 bytes for debugging
+				for (int ii=0; ii < 4; ii++)
+					LOG << (unsigned)(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+				LOG << "\n";
 				// Emit the RTL anyway, so we have the address and maybe some other clues
 				BB_rtls->push_back(new RTL(uAddr));	 
 				pBB = pCfg->newBB(BB_rtls, INVALID, 0);
