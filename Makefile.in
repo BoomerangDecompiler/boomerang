@@ -203,6 +203,8 @@ db/ProgTest.o: db/ProgTest.h include/prog.h
 db/ProcTest.o: db/ProcTest.h include/proc.h
 db/StaementTest.o: db/StaementTest.h include/statement.h
 db/CfgTest.o: db/CfgTest.h include/statement.h include/exp.h
+db/StatementTest.o: db/StatementTest.h include/managed.h include/exp.h \
+    include/cfg.h include/rtl.h
 db/table.o: include/types.h db/table.h include/statement.h include/exp.h \
     include/statement.h
 db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h \
@@ -235,10 +237,11 @@ codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h \
     include/cfg.h include/exp.h include/proc.h include/prog.h \
     include/signature.h
 
+type/constraint.o: include/constraint.h include/exp.h include/type.h \
+    include/managed.h
 codegen/syntax.o: include/hllcode.h include/statement.h \
     include/cfg.h include/exp.h include/proc.h
 
-type/constraint.o: include/constraint.h include/exp.h include/type.h
 type/type.o: include/type.h
 type/TypeTest.o: type/TypeTest.h include/util.h include/type.h \
     include/constraint.h

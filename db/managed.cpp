@@ -80,7 +80,7 @@ bool StatementSet::isSubSetOf(StatementSet& other) {
 }
 
 
-#if 1
+#if 0
 Statement* StatementSet::getFirst(StmtSetIter& it) {
     it = sset.begin();
     if (it == sset.end())
@@ -95,6 +95,11 @@ Statement* StatementSet::getNext(StmtSetIter& it) {
         return NULL;
     return *it;         // Else return the next element
 }
+
+bool StatementSet::isLast(StmtSetIter& it) {
+    return it == sset.end();
+}
+ 
 #endif
 
 // Remove this Statement. Return false if it was not found
@@ -108,14 +113,13 @@ bool StatementSet::remove(Statement* s) {
 
 // Find s in this Statement set. Return true if found
 bool StatementSet::exists(Statement* s) {
-    StmtSetIter it = sset.find(s);
+    std::set<Statement*>::iterator it = sset.find(s);
     return (it != sset.end());
 }
 
 // Find a definition for loc in this Statement set. Return true if found
 bool StatementSet::defines(Exp* loc) {
-    StmtSetIter it;
-    for (it = sset.begin(); it != sset.end(); it++) {
+    for (iterator it = sset.begin(); it != sset.end(); it++) {
         Exp* lhs = (*it)->getLeft();
         if (lhs && (*lhs == *loc))
             return true;
@@ -126,8 +130,7 @@ bool StatementSet::defines(Exp* loc) {
 // Remove if defines the given expression
 bool StatementSet::removeIfDefines(Exp* given) {
     bool found = false;
-    std::set<Statement*>::iterator it;
-    for (it = sset.begin(); it != sset.end(); it++) {
+    for (iterator it = sset.begin(); it != sset.end(); it++) {
         Exp* left = (*it)->getLeft();
         if (left && *left == *given) {
             // Erase this Statement
@@ -140,10 +143,9 @@ bool StatementSet::removeIfDefines(Exp* given) {
 
 // As above, but given a whole statement set
 bool StatementSet::removeIfDefines(StatementSet& given) {
-    StmtSetIter it;
     bool found = false;
-    for (Statement* s = given.getFirst(it); s; s = given.getNext(it)) {
-        Exp* givenLeft = s->getLeft();
+    for (iterator it = given.sset.begin(); it != given.sset.end(); it++) {
+        Exp* givenLeft = (*it)->getLeft();
         if (givenLeft)
             found |= removeIfDefines(givenLeft);
     }
@@ -154,7 +156,7 @@ static char debug_buffer[200];      // For prints functions
 // Print to a string, for debugging
 char* StatementSet::prints() {
     std::ostringstream ost;
-    StmtSetIter it;
+    std::set<Statement*>::iterator it;
     for (it = sset.begin(); it != sset.end(); it++) {
         if (it != sset.begin()) ost << ",\t";
         ost << *it;
@@ -166,7 +168,7 @@ char* StatementSet::prints() {
 }
 
 void StatementSet::print(std::ostream& os) {
-    StmtSetIter it;
+    std::set<Statement*>::iterator it;
     for (it = sset.begin(); it != sset.end(); it++) {
         if (it != sset.begin()) os << ",\t";
         os << *it;
@@ -176,9 +178,8 @@ void StatementSet::print(std::ostream& os) {
 
 // Print just the numbers to stream os
 void StatementSet::printNums(std::ostream& os) {
-    StmtSetIter it;
     os << std::dec;
-    for (it = sset.begin(); it != sset.end(); ) {
+    for (iterator it = sset.begin(); it != sset.end(); ) {
         if (*it)
             (*it)->printNum(os);
         else
@@ -191,8 +192,8 @@ void StatementSet::printNums(std::ostream& os) {
 bool StatementSet::operator<(const StatementSet& o) const {
     if (sset.size() < o.sset.size()) return true;
     if (sset.size() > o.sset.size()) return false;
-    std::set<Statement*, lessExpStar>::iterator it1;
-    std::set<Statement*, lessExpStar>::const_iterator it2;
+    iterator it1;
+    std::set<Statement*>::const_iterator it2;
     for (it1 = sset.begin(), it2 = o.sset.begin(); it1 != sset.end();
       it1++, it2++) {
         if (*it1 < *it2) return true;
@@ -201,10 +202,6 @@ bool StatementSet::operator<(const StatementSet& o) const {
     return false;
 }
 
-bool StatementSet::isLast(StmtSetIter& it) {
-    return it == sset.end();
-}
- 
 //
 // LocationSet methods
 //
@@ -228,7 +225,7 @@ LocationSet::LocationSet(const LocationSet& o) {
 
 char* LocationSet::prints() {
     std::ostringstream ost;
-    LocSetIter it;
+    std::set<Exp*, lessExpStar>::iterator it;
     for (it = sset.begin(); it != sset.end(); it++) {
         if (it != sset.begin()) ost << ",\t";
         ost << *it;
@@ -240,7 +237,7 @@ char* LocationSet::prints() {
 }
 
 void LocationSet::print(std::ostream& os) {
-    LocSetIter it;
+    std::set<Exp*, lessExpStar>::iterator it;
     for (it = sset.begin(); it != sset.end(); it++) {
         if (it != sset.begin()) os << ",\t";
         os << *it;
@@ -260,16 +257,19 @@ void LocationSet::remove(Exp* given) {
 //std::cerr << "after : "; print();
 }
 
+#if 0
 void LocationSet::remove(LocSetIter ll) {
     //delete *ll;       // Don't trust this either
     sset.erase(ll);
 }
+#endif
 
 // Remove locations defined by any of the given set of statements
 // Used for killing in liveness sets
 void LocationSet::removeIfDefines(StatementSet& given) {
-    StmtSetIter it;
-    for (Statement* s = given.getFirst(it); s; s = given.getNext(it)) {
+    StatementSet::iterator it;
+    for (it = given.begin(); it != given.end(); it++) {
+        Statement* s = (Statement*)*it;
         Exp* givenLeft = s->getLeft();
         if (givenLeft)
             sset.erase(givenLeft);
@@ -278,7 +278,7 @@ void LocationSet::removeIfDefines(StatementSet& given) {
 
 // Make this set the union of itself and other
 void LocationSet::makeUnion(LocationSet& other) {
-    LocSetIter it;
+    iterator it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.insert(*it);
     }
@@ -286,12 +286,13 @@ void LocationSet::makeUnion(LocationSet& other) {
 
 // Make this set the set difference of itself and other
 void LocationSet::makeDiff(LocationSet& other) {
-    LocSetIter it;
+    std::set<Exp*, lessExpStar>::iterator it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.erase(*it);
     }
 }
 
+#if 0
 Exp* LocationSet::getFirst(LocSetIter& it) {
     it = sset.begin();
     if (it == sset.end())
@@ -306,6 +307,7 @@ Exp* LocationSet::getNext(LocSetIter& it) {
         return NULL;
     return *it;         // Else return the next element
 }
+#endif
 
 bool LocationSet::operator==(const LocationSet& o) const {
     // We want to compare the strings, not the pointers
@@ -324,7 +326,7 @@ bool LocationSet::find(Exp* e) {
 
 bool LocationSet::findDifferentRef(RefExp* e) {
     RefExp search(e->getSubExp1()->clone(), (Statement*)-1);
-    LocSetIter pos = sset.find(&search);
+    std::set<Exp*, lessExpStar>::iterator pos = sset.find(&search);
     if (pos == sset.end()) return false;
     while (pos != sset.end()) {
         // Exit if we've gone to a new base expression
@@ -339,7 +341,7 @@ bool LocationSet::findDifferentRef(RefExp* e) {
 
 // Add a subscript (to definition d) to each element
 void LocationSet::addSubscript(Statement* d) {
-    LocSetIter it;
+    std::set<Exp*, lessExpStar>::iterator it;
     std::set<Exp*, lessExpStar> newSet;
     for (it = sset.begin(); it != sset.end(); it++)
         newSet.insert((*it)->expSubscriptVar(*it, d));
@@ -353,7 +355,7 @@ void LocationSet::substitute(Statement& s) {
     if (lhs == NULL) return;
     Exp* rhs = s.getRight();
     if (rhs == NULL) return;        // ? Will this ever happen?
-    LocSetIter it;
+    std::set<Exp*, lessExpStar>::iterator it;
     // Note: it's important not to change the pointer in the set of pointers
     // to expressions, without removing and inserting again. Otherwise, the
     // set becomes out of order, and operations such as set comparison fail!
@@ -399,10 +401,10 @@ void LocationSet::substitute(Statement& s) {
     makeDiff(removeAndDelete); // These are to be removed as well
     makeUnion(insertSet);      // Insert the items to be added
     // Now delete the expressions that are no longer needed
-    LocSetIter dd;
-    for (Exp* e = removeAndDelete.getFirst(dd); e;
-      e = removeAndDelete.getNext(dd))
-        delete e;               // Plug that memory leak
+    std::set<Exp*, lessExpStar>::iterator dd;
+    for (dd = removeAndDelete.sset.begin(); dd != removeAndDelete.sset.end();
+      dd++)
+        delete *dd;             // Plug that memory leak
 }
 
 //
@@ -410,7 +412,8 @@ void LocationSet::substitute(Statement& s) {
 //
 
 bool StatementList::remove(Statement* s) {
-    for (StmtListIter it = slist.begin(); it != slist.end(); it++) {
+    std::list<Statement*>::iterator it;
+    for (it = slist.begin(); it != slist.end(); it++) {
         if (*it == s) {
             slist.erase(it);
             return true;
@@ -419,26 +422,19 @@ bool StatementList::remove(Statement* s) {
     return false;
 }
 
-Statement* StatementList::remove(StmtListIter& it) {
-    it = slist.erase(it);
-    if (it == slist.end())
-        return NULL;
-    return *it;
-}
-
 void StatementList::append(StatementList& sl) {
-    for (StmtListIter it = sl.slist.begin(); it != sl.slist.end(); it++) {
+    for (iterator it = sl.slist.begin(); it != sl.slist.end(); it++) {
         slist.push_back(*it);
     }
 }
 
 void StatementList::append(StatementSet& ss) {
-    StmtSetIter it;
-    for (Statement* s  = ss.getFirst(it); s; s = ss.getNext(it)) {
-        slist.push_back(s);
+    for (StatementSet::iterator it = ss.begin(); it != ss.end(); it++) {
+        slist.push_back(*it);
     }
 }
 
+#if 0
 Statement* StatementList::getFirst(StmtListIter& it) {
     it = slist.begin();
     if (it == slist.end())
@@ -468,11 +464,11 @@ Statement* StatementList::getPrev(StmtListRevIter& it) {
         return NULL;
     return *it;         // Else return the previous element
 }
+#endif
 
 char* StatementList::prints() {
     std::ostringstream ost;
-    StmtListIter it;
-    for (it = slist.begin(); it != slist.end(); it++) {
+    for (iterator it = slist.begin(); it != slist.end(); it++) {
         ost << *it << ",\t";
     }
     strncpy(debug_buffer, ost.str().c_str(), 199);

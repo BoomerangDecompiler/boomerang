@@ -19,12 +19,13 @@
  */
 
 #include "constraint.h"
+#include "managed.h"
 #include "exp.h"
 
 Constraints::~Constraints() {
-    LocSetIter cc;
-    for (Exp* c = conSet.getFirst(cc); c; c = conSet.getNext(cc)) {
-        delete c;
+    LocationSet::iterator cc;
+    for (cc = conSet.begin(); cc != conSet.end(); cc++) {
+        delete *cc;
     }
 }
 
@@ -33,8 +34,9 @@ std::cerr << conSet.size() << " constraints:";
 conSet.print(std::cerr);
     // Replace Ta[loc] = ptr(alpha) with
     //         Tloc = alpha
-    LocSetIter cc;
-    for (Exp* c = conSet.getFirst(cc); c; c = conSet.getNext(cc)) {
+    LocationSet::iterator cc;
+    for (cc = conSet.begin(); cc != conSet.end(); cc++) {
+        Exp* c = *cc;
         if (!c->isEquality()) continue;
         Exp* left  = ((Binary*)c)->getSubExp1();
         if (!left->isTypeOf()) continue;

@@ -944,7 +944,7 @@ void UserProc::print(std::ostream &out, bool withDF) {
 // initialise all statements
 void UserProc::initStatements() {
     BB_IT it;
-    BasicBlock::rtlit rit; StmtListIter sit;
+    BasicBlock::rtlit rit; StatementList::iterator sit;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
               s = bb->getNextStmt(rit, sit)) {
@@ -965,7 +965,7 @@ void UserProc::initStatements() {
 
 void UserProc::numberStatements(int& stmtNum) {
     BB_IT it;
-    BasicBlock::rtlit rit; StmtListIter sit;
+    BasicBlock::rtlit rit; StatementList::iterator sit;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
           s = bb->getNextStmt(rit, sit))
@@ -975,7 +975,7 @@ void UserProc::numberStatements(int& stmtNum) {
 
 void UserProc::numberPhiStatements(int& stmtNum) {
     BB_IT it;
-    BasicBlock::rtlit rit; StmtListIter sit;
+    BasicBlock::rtlit rit; StatementList::iterator sit;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
              s = bb->getNextStmt(rit, sit))
@@ -1242,9 +1242,10 @@ void UserProc::complete() {
 int UserProc::findMaxDepth() {
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter it;
     int maxDepth = 0;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         // Assume only need to check assignments
         if (s->getKind() == STMT_ASSIGN) {
             int depth = ((Assign*)s)->getMemDepth();
@@ -1265,8 +1266,9 @@ void UserProc::removeRedundantPhis()
 
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         if (s->isPhi()) {
             bool unused = false;
             if (refCounts[s] == 0)
@@ -1309,11 +1311,13 @@ void UserProc::removeRedundantPhis()
                 removeStatement(s);
             }
         }
+    }
 
     stmts.clear();
     getStatements(stmts);
 
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = (Statement*)*it;
         if (s->isPhi()) {
             if (VERBOSE)
                 std::cerr << "checking " << s << std::endl;
@@ -1343,6 +1347,7 @@ void UserProc::removeRedundantPhis()
                    new RefExp(s->getLeft(), noncall));
             }
         }
+    }
 }
 
 void UserProc::trimReturns() {
@@ -1423,9 +1428,11 @@ void UserProc::fixCallRefs()
 {
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         s->fixCallRefs();
+    }
 }
 
 void UserProc::addNewReturns(int depth) {
@@ -1436,8 +1443,9 @@ void UserProc::addNewReturns(int depth) {
     StatementList stmts;
     getStatements(stmts);
 
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = (Statement*)*it;
         Exp *left = s->getLeft();
         if (left) {
             bool allZero = true;
@@ -1484,9 +1492,10 @@ void UserProc::addNewParameters() {
     StatementList stmts;
     getStatements(stmts);
 
-    StmtListIter it;
     RefExp *r = new RefExp(new Unary(opMemOf, new Terminal(opWild)), NULL);
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         Exp *result;
         if (s->search(r, result)) {
             bool allZero;
@@ -1530,8 +1539,9 @@ void UserProc::trimParameters(int depth) {
                             expSubscriptVar(new Terminal(opWild), NULL));
     }
 
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) 
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
             for (int i = 0; i < nparams; i++) {
                 Exp *p = new Unary(opParam, 
@@ -1555,16 +1565,18 @@ void UserProc::trimParameters(int depth) {
                 delete p;
             }
         }
+    }
 
-    for (int i = 0; i < nparams; i++)
+    for (int i = 0; i < nparams; i++) {
         if (!referenced[i] && (depth == -1 || 
-            params[i]->getMemDepth() == depth)) {
+              params[i]->getMemDepth() == depth)) {
             bool allZero;
             Exp *e = params[i]->removeSubscripts(allZero);
             if (VERBOSE) 
                 std::cerr << "removing unused parameter " << e << std::endl;
             removeParameter(e);
         }
+    }
 }
 
 void Proc::removeReturn(Exp *e)
@@ -1639,8 +1651,9 @@ void UserProc::replaceExpressionsWithGlobals() {
     getStatements(stmts);
 
     // replace expressions with symbols
-    StmtListIter it;
-    for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         Exp *memof;
 
         if (s->search(match, memof)) {
@@ -1667,8 +1680,9 @@ void UserProc::replaceExpressionsWithSymbols() {
     getStatements(stmts);
 
     // replace expressions in regular statements with symbols
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
           it1 != symbolMap.end(); it1++) {
             bool ch = s->searchAndReplace((*it1).first, (*it1).second);
@@ -1685,8 +1699,9 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
     getStatements(stmts);
 
     // replace expressions in regular statements with parameters
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         for (int i = 0; i < signature->getNumParams(); i++) 
             if (signature->getParamExp(i)->getMemDepth() == depth) {
             Exp *r = signature->getParamExp(i)->clone();
@@ -1704,7 +1719,6 @@ void UserProc::replaceExpressionsWithLocals() {
 
 
     // replace expressions in regular statements with locals
-    StmtListIter it;
     int sp = signature->getStackRegister(prog);
     if (getProven(Unary::regOf(sp)) == NULL)
         return;    // can't replace if nothing proven about sp
@@ -1712,7 +1726,9 @@ void UserProc::replaceExpressionsWithLocals() {
     Exp *l = new Unary(opMemOf, new Binary(opMinus, 
                 new RefExp(Unary::regOf(sp), NULL),
                 new Terminal(opWild)));
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         Exp *result;
         bool ch = s->search(l, result);
         if (ch && 
@@ -1740,8 +1756,9 @@ bool UserProc::nameStackLocations() {
     StatementList stmts;
     getStatements(stmts);
     // create a symbol for every memory reference
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         Exp *memref; 
         if (s->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
@@ -1771,8 +1788,9 @@ bool UserProc::nameRegisters() {
     StatementList stmts;
     getStatements(stmts);
     // create a symbol for every register
-    StmtListIter it;
-    for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         Exp *memref; 
         if (s->search(match, memref)) {
             if (symbolMap.find(memref) == symbolMap.end()) {
@@ -1796,8 +1814,9 @@ bool UserProc::removeNullStatements() {
     StatementList stmts;
     getStatements(stmts);
     // remove null code
-    StmtListIter it;
-    for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         if (s->isNullStatement()) {
             // A statement of the form x := x
             if (VERBOSE) {
@@ -1824,7 +1843,7 @@ bool UserProc::removeDeadStatements() {
     StatementList stmts;
     getStatements(stmts);
     // remove dead code
-    StmtListIter it;
+    StatementList::iterator it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
 #if 1       // This seems so simple... remove statements with no usedBy MVE
             // Trent: this is not dead code removal!  Dead code is statements
@@ -1914,9 +1933,11 @@ void UserProc::processConstants() {
     StatementList stmts;
     getStatements(stmts);
     // process any constants in the statement
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         s->processConstants(prog);
+    }
 }
 
 #if 0
@@ -1926,7 +1947,7 @@ bool UserProc::propagateAndRemoveStatements() {
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be removed
-    StmtListIter it;
+    StatementList::iterator it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         Assign *assign = dynamic_cast<Assign*>(*it);
         if (assign && *assign->getSubExp1() == *assign->getSubExp2())
@@ -1991,9 +2012,10 @@ void UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
-    StmtListIter it;
     StatementSet empty;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         if (s->isPhi()) continue;
         // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
@@ -2023,43 +2045,18 @@ void UserProc::addLocals(int n) {
     }
 }
 
-#if 0
-void UserProc::recalcDataflow() {
-    if (VERBOSE) std::cerr << "Recalculating dataflow\n";
-    cfg->computeLiveness();
-    cfg->computeReaches();
-    cfg->computeAvailable();
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->clearUses();
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks();
-}
-
-void UserProc::computeUses() {
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->clearUses();
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks();
-}
-#endif
-
 void UserProc::countRefs(RefCounter& refCounts) {
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter ll;
-    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         LocationSet refs;
         s->addUsedLocs(refs);
-        LocSetIter rr;
-        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
-            if (r->isSubscript()) {
-                Statement *ref = ((RefExp*)r)->getRef();
+        LocationSet::iterator rr;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            if (((Exp*)*rr)->isSubscript()) {
+                Statement *ref = ((RefExp*)*rr)->getRef();
                 refCounts[ref]++;
             }
         }
@@ -2071,13 +2068,15 @@ void UserProc::removeUnusedLocals() {
     std::set<std::string> usedLocals;
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter ll;
     // First count any uses of the locals
-    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+    StatementList::iterator ss;
+    for (ss = stmts.begin(); ss != stmts.end(); ss++) {
+        Statement* s = *ss;
         LocationSet refs;
         s->addUsedLocs(refs);
-        LocSetIter rr;
-        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
+        LocationSet::iterator rr;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            Exp* r = *rr;
             //if (r->isSubscript())
                 //r = ((RefExp*)r)->getSubExp1();
             if (r->isLocal()) {
@@ -2118,12 +2117,12 @@ void UserProc::removeUnusedLocals() {
 void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter ll;
     bool change;
     do {
         change = false;
-        Statement* s = stmts.getFirst(ll);
-        while (s) {
+        StatementList::iterator ll = stmts.begin();
+        while (ll != stmts.end()) {
+            Statement* s = *ll;
             if (s->isCall() && refCounts[s] == 0) {
                 if (VERBOSE)
                     std::cerr << "clearing return set of unused call " << s 
@@ -2136,23 +2135,23 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                     //if (depth < 0 || returns[i]->getMemDepth() <= depth)
                     if (returns[i]->getMemDepth() <= depth)
                         call->removeReturn(returns[i]);
-                s = stmts.getNext(ll);
+                ll++;
                 continue;
             }
             if (s->getKind() != STMT_ASSIGN && s->getKind() != STMT_BOOL) {
                 // Never delete a statement other than an assignment or setstmt
                 // (e.g. nothing "uses" a Jcond)
-                s = stmts.getNext(ll);
+                ll++;
                 continue;
             }
             if (s->getLeft() && depth >= 0 &&
                   s->getLeft()->getMemDepth() > depth) {
-                s = stmts.getNext(ll);
+                ll++;
                 continue;
             }
             if (s->getLeft() && s->getLeft()->getOper() == opGlobal) {
                 // assignments to globals must always be kept
-                s = stmts.getNext(ll);
+                ll++;
                 continue;
             }
             if (refCounts[s] == 0) {
@@ -2162,27 +2161,24 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 StatementSet refs;
                 LocationSet components;
                 s->addUsedLocs(components);
-                LocSetIter cc;
-                for (Exp* c = components.getFirst(cc); c;
-                  c = components.getNext(cc)) {
-                    if (c->isSubscript()) {
-                        refs.insert(((RefExp*)c)->getRef());
+                LocationSet::iterator cc;
+                for (cc = components.begin(); cc != components.end(); cc++) {
+                    if ((*cc)->isSubscript()) {
+                        refs.insert(((RefExp*)*cc)->getRef());
                     }
                 }
-                StmtSetIter dd;
-                for (Statement* def = refs.getFirst(dd); def;
-                  def = refs.getNext(dd)) {
-                    refCounts[def]--;
-                }
+                StatementSet::iterator dd;
+                for (dd = refs.begin(); dd != refs.end(); dd++)
+                    refCounts[*dd]--;
                 if (VERBOSE)
                     std::cerr << "Removing unused statement " <<
                       s->getNumber() << " " << s << std::endl;
                 removeStatement(s);
-                s = stmts.remove(ll);  // So we don't try to re-remove it
+                ll = stmts.remove(ll);  // So we don't try to re-remove it
                 change = true;
                 continue;               // Don't call getNext this time
             }
-            s = stmts.getNext(ll);
+            ll++;
         }
     } while (change);
 }
@@ -2194,33 +2190,33 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 void UserProc::fromSSAform() {
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter it;
     igraph ig;
     int tempNum = locals.size();
     cfg->findInterferences(ig, tempNum);
 
     // First rename the variables (including phi's, but don't remove)
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         s->fromSSAform(ig);
     }
 
     // Now remove the phi's
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
         if (!s->isPhi()) continue;
         // Check that the base variables are all the same
         PhiExp* p = (PhiExp*)s->getRight();
         LocationSet refs;
         p->addUsedLocs(refs);
-        LocSetIter rr;
-        Exp* r = refs.getFirst(rr);
-        Exp* first = r;
+        Exp* first = *refs.begin();
         bool same = true;
-        while (r) {
-            if (!(*r *= *first)) {       // Ref-insensitive compare
+        LocationSet::iterator rr;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            if (!(**rr *= *first)) {       // Ref-insensitive compare
                 same = false;
                 break;
             }
-            r = refs.getNext(rr);
         }
         if (same) {
             // Is the left of the phi assignment the same base variabe as all
@@ -2296,9 +2292,9 @@ bool UserProc::prove(Exp *query)
     // subscript locs on the right with {0}
     LocationSet locs;
     query->getSubExp2()->addUsedLocs(locs);
-    LocSetIter xx;
-    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-        query->refSubExp2() = query->getSubExp2()->expSubscriptVar(x, NULL);
+    LocationSet::iterator xx;
+    for (xx = locs.begin(); xx != locs.end(); xx++) {
+        query->refSubExp2() = query->getSubExp2()->expSubscriptVar(*xx, NULL);
     }
 
     if (query->getSubExp1()->getOper() != opSubscript) {
@@ -2455,21 +2451,25 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
 
             // remove memofs from both sides if possible
             if (!change && query->getSubExp1()->getOper() == opMemOf &&
-                query->getSubExp2()->getOper() == opMemOf) {
-                query->refSubExp1() = ((Unary*)query->getSubExp1())->becomeSubExp1();
-                query->refSubExp2() = ((Unary*)query->getSubExp2())->becomeSubExp1();
+                  query->getSubExp2()->getOper() == opMemOf) {
+                query->refSubExp1() =
+                  ((Unary*)query->getSubExp1())->becomeSubExp1();
+                query->refSubExp2() =
+                  ((Unary*)query->getSubExp2())->becomeSubExp1();
                 change = true;
             }
 
             // is ok if both of the memofs is subscripted with NULL
             if (!change && query->getSubExp1()->getOper() == opSubscript &&
-                query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
-                ((RefExp*)query->getSubExp1())->getRef() == NULL &&
-                query->getSubExp2()->getOper() == opSubscript &&
-                query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
-                ((RefExp*)query->getSubExp2())->getRef() == NULL) {
-                query->refSubExp1() = ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
-                query->refSubExp2() = ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
+                  query->getSubExp1()->getSubExp1()->getOper() == opMemOf &&
+                  ((RefExp*)query->getSubExp1())->getRef() == NULL &&
+                  query->getSubExp2()->getOper() == opSubscript &&
+                  query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
+                  ((RefExp*)query->getSubExp2())->getRef() == NULL) {
+                query->refSubExp1() =
+                  ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
+                query->refSubExp2() =
+                  ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
                 change = true;
             }
 
@@ -2477,8 +2477,9 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
             if (!change && query->getSubExp1()->getOper() == opMemOf) {
                 StatementList stmts;
                 getStatements(stmts);
-                StmtListIter it;
-                for (Statement *s = stmts.getFirst(it); s; s = stmts.getNext(it))
+                StatementList::iterator it;
+                for (it = stmts.begin(); it != stmts.end(); it++) {
+                    Statement* s = *it;
                     if (s->getLeft() && s->getRight() && 
                         *s->getRight() == *query->getSubExp2() &&
                         s->getLeft()->getOper() == opMemOf) {
@@ -2486,6 +2487,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                         change = true;
                         break;
                     }
+                }
             }
 
             // last chance, swap left and right if havn't swapped before
@@ -2549,22 +2551,22 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
         std::cerr << " @@ Counting used returns in " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter ss;
+    StatementList::iterator ss;
     // For each statement this proc
-    for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
+    for (ss = stmts.begin(); ss != stmts.end(); ss++) {
         LocationSet used;
-        s->addUsedLocs(used);
-        LocSetIter ll;
+        (*ss)->addUsedLocs(used);
+        LocationSet::iterator ll;
         // For each use this statement
-        for (Exp* l = used.getFirst(ll); l; l = used.getNext(ll)) {
+        for (ll = used.begin(); ll != used.end(); ll++) {
             Statement* def;
-            if (l->isSubscript()) {
+            if ((*ll)->isSubscript()) {
                 // for this one reference
-                def = ((RefExp*)l)->getRef();
-                doCountReturns(def, rc, ((RefExp*)l)->getSubExp1());
-            } else if (l->isPhi()) {
+                def = ((RefExp*)*ll)->getRef();
+                doCountReturns(def, rc, ((RefExp*)*ll)->getSubExp1());
+            } else if ((*ll)->isPhi()) {
                 StmtVecIter rr;
-                PhiExp& pe = (PhiExp&)*l;
+                PhiExp& pe = (PhiExp&)**ll;
                 // for each reference this phi expression
                 for (def = pe.getFirstRef(rr); !pe.isLastRef(rr);
                       def = pe.getNextRef(rr))
@@ -2616,28 +2618,28 @@ void UserProc::typeAnalysis(Prog* prog) {
     LocationSet cons;
     StatementList stmts;
     getStatements(stmts);
-    StmtListIter ss;
+    StatementList::iterator ss;
     // For each statement this proc
-    for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
+    for (ss = stmts.begin(); ss != stmts.end(); ss++) {
         cons.clear();
-        s->genConstraints(cons);
+        (*ss)->genConstraints(cons);
         consObj.addConstraints(cons);
         if (DEBUG_TA)
-            std::cerr << s << "\n" << &cons << "\n";
+            std::cerr << (*ss) << "\n" << &cons << "\n";
     }
 
     LocationSet soln;
     if (consObj.solve(soln)) {
-        LocSetIter cc;
-        for (Exp* con = soln.getFirst(cc); con; con = soln.getNext(cc)) {
+        LocationSet::iterator cc;
+        for (cc = soln.begin(); cc != soln.end(); cc++) {
             //assert(con->isEquality());
-if (!con->isEquality()) continue;
-            Exp* t = ((Binary*)con)->getSubExp1();
+if (!(*cc)->isEquality()) continue;
+            Exp* t = ((Binary*)*cc)->getSubExp1();
             if (t->isSubscript())
                 t = ((RefExp*)t)->getSubExp1();
             assert(t->getOper() == opTypeOf);
             Exp* loc = ((Unary*)t)->getSubExp1();
-            Type* ty = ((TypeVal*)((Binary*)con)->getSubExp2())->getType();
+            Type* ty = ((TypeVal*)((Binary*)*cc)->getSubExp2())->getType();
             if (loc->isSubscript() && (loc = ((RefExp*)loc)->getSubExp1(),
                   loc->isGlobal())) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();

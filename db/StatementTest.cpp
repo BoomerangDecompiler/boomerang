@@ -23,6 +23,7 @@
 #include "pentiumfrontend.h"
 #include "boomerang.h"
 #include "exp.h"
+#include "managed.h"
 
 #include <sstream>
 #include <map>
@@ -496,7 +497,7 @@ void StatementTest::testLocationSet () {
     Unary rof(opRegOf, new Const(12));
     Const& theReg = *(Const*)rof.getSubExp1();
     LocationSet ls;
-    LocSetIter ii;
+    LocationSet::iterator ii;
     ls.insert(rof.clone());
     theReg.setInt(8);
     ls.insert(rof.clone());
@@ -508,14 +509,15 @@ void StatementTest::testLocationSet () {
     ls.insert(rof.clone());     // Note: r[12] already inserted
     CPPUNIT_ASSERT_EQUAL(4, ls.size());
     theReg.setInt(8);
-    CPPUNIT_ASSERT(rof == *ls.getFirst(ii));
+    ii = ls.begin();
+    CPPUNIT_ASSERT(rof == **ii);
     theReg.setInt(12);
     Exp* e;
-    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    e = *(++ii); CPPUNIT_ASSERT(rof == *e);
     theReg.setInt(24);
-    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    e = *(++ii); CPPUNIT_ASSERT(rof == *e);
     theReg.setInt(31);
-    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    e = *(++ii); CPPUNIT_ASSERT(rof == *e);
     Unary mof(opMemOf,
         new Binary(opPlus,
             new Unary(opRegOf, new Const(14)),
@@ -523,14 +525,15 @@ void StatementTest::testLocationSet () {
     ls.insert(mof.clone());
     ls.insert(mof.clone());
     CPPUNIT_ASSERT_EQUAL(5, ls.size());
-    CPPUNIT_ASSERT(mof == *ls.getFirst(ii));
+    ii = ls.begin();
+    CPPUNIT_ASSERT(mof == **ii);
     LocationSet ls2 = ls;
-    Exp* e2 = ls2.getFirst(ii);
-    CPPUNIT_ASSERT(e2 != ls.getFirst(ii));      // Must be cloned
+    Exp* e2 = *ls2.begin();
+    CPPUNIT_ASSERT(e2 != *ls.begin());      // Must be cloned
     CPPUNIT_ASSERT_EQUAL(5, ls2.size());
-    CPPUNIT_ASSERT(mof == *ls2.getFirst(ii));
+    CPPUNIT_ASSERT(mof == **ls2.begin());
     theReg.setInt(8);
-    e = ls2.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    e = *(++ls2.begin()); CPPUNIT_ASSERT(rof == *e);
 }
 
 /*==============================================================================

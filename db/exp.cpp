@@ -2696,16 +2696,16 @@ Exp *Exp::removeSubscripts(bool& allZero)
     Exp *e = this;
     LocationSet locs;
     e->addUsedLocs(locs);
-    LocSetIter xx; 
+    LocationSet::iterator xx; 
     allZero = true;
-    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-        if (x->getOper() == opSubscript) {
-            RefExp *r1 = (RefExp*)x;
+    for (xx = locs.begin(); xx != locs.end(); xx++) {
+        if ((*xx)->getOper() == opSubscript) {
+            RefExp *r1 = (RefExp*)*xx;
             if (r1->getRef() != NULL) {
                 allZero = false;
             }
             bool change; 
-            e = e->searchReplaceAll(x, r1->getSubExp1()->clone(), change);
+            e = e->searchReplaceAll(*xx, r1->getSubExp1()->clone(), change);
         }
     }
     return e;

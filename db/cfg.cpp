@@ -2205,16 +2205,16 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 
     // We need to create A_orig for the current memory depth
     for (int n=0; n < numBB; n++) {
-        BasicBlock::rtlit rit; StmtListIter sit;
+        BasicBlock::rtlit rit; StatementList::iterator sit;
         PBB bb = BBs[n];
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
                         s = bb->getNextStmt(rit, sit)) {
-            LocSetIter it;
             LocationSet ls;
+            LocationSet::iterator it;
             s->getDefinitions(ls);
-            for (Exp* l = ls.getFirst(it); l; l = ls.getNext(it)) 
-                if (l->getMemDepth() == memDepth)
-                    A_orig[n].insert(l);
+            for (it = ls.begin(); it != ls.end(); it++)
+                if ((*it)->getMemDepth() == memDepth)
+                    A_orig[n].insert(*it);
         }
     }
 
@@ -2272,7 +2272,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     if (clearStack) Stack.clear();
 
     // For each statement S in block n
-    BasicBlock::rtlit rit; StmtListIter sit;
+    BasicBlock::rtlit rit; StatementList::iterator sit;
     PBB bb = BBs[n];
     for (Statement* S = bb->getFirstStmt(rit, sit); S;
                     S = bb->getNextStmt(rit, sit)) {
@@ -2281,8 +2281,9 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
             S->addUsedLocs(locs);
-            LocSetIter xx;
-            for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+            LocationSet::iterator xx;
+            for (xx = locs.begin(); xx != locs.end(); xx++) {
+                Exp* x = *xx;
                 if (x->getMemDepth() == memDepth) {
                     // If the stack is empty, assume NULL (statement "0")
                     // This avoids having to initialise the stack for ALL
@@ -2300,11 +2301,11 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs);
-        LocSetIter dd;
-        for (Exp* a = defs.getFirst(dd); a; a = defs.getNext(dd)) {
-            if (a->getMemDepth() == memDepth) {
+        LocationSet::iterator dd;
+        for (dd = defs.begin(); dd != defs.end(); dd++) {
+            if ((*dd)->getMemDepth() == memDepth) {
                 // Push i onto Stack[a]
-                Stack[a].push(S);
+                Stack[*dd].push(S);
                 // Replace definition of a with definition of a_i in S
                 // (we don't do this)
             }
@@ -2350,10 +2351,10 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs);
-        LocSetIter dd;
-        for (Exp* a = defs.getFirst(dd); a; a = defs.getNext(dd)) {
-            if (a->getMemDepth() == memDepth)
-                Stack[a].pop();
+        LocationSet::iterator dd;
+        for (dd = defs.begin(); dd != defs.end(); dd++) {
+            if ((*dd)->getMemDepth() == memDepth)
+                Stack[*dd].pop();
         }
     }
 }

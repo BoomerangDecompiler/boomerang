@@ -321,15 +321,17 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
     do {
         LocationSet exps;
         addUsedLocs(exps);
-        LocSetIter ll;
+        LocationSet::iterator ll;
         change = false;
-        for (Exp* m = exps.getFirst(ll); m; m = exps.getNext(ll)) {
+        for (ll = exps.begin(); ll != exps.end(); ll++) {
+            Exp* m = *ll;
             if (toDepth != -1 && m->getMemDepth() != toDepth)
                 continue;
             LocationSet refs;
             m->addUsedLocs(refs);
-            LocSetIter rl;
-            for (Exp *e = refs.getFirst(rl); e; e = refs.getNext(rl)) {
+            LocationSet::iterator rl;
+            for (rl = refs.begin(); rl != refs.end(); rl++) {
+                Exp* e = *rl;
                 if (!e->getNumRefs() == 1) continue;
                 // Can propagate TO this (if memory depths are suitable)
                 Statement* def;
@@ -1368,12 +1370,12 @@ Exp *CallStatement::substituteParams(Exp *e)
     e = e->clone();
     LocationSet locs;
     e->addUsedLocs(locs);
-    LocSetIter xx;
-    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-        Exp *r = findArgument(x);
+    LocationSet::iterator xx;
+    for (xx = locs.begin(); xx != locs.end(); xx++) {
+        Exp *r = findArgument(*xx);
         if (r == NULL) continue;
         bool change;
-        e = e->searchReplaceAll(x, r, change);
+        e = e->searchReplaceAll(*xx, r, change);
     }
     return e->simplify();
 }

@@ -639,10 +639,10 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
     char s[1024];
     indent(s, indLevel);
     if (defs.size() >= 1) {
-        LocSetIter it;
-        appendExp(s, defs.getFirst(it));
+        LocationSet::iterator it = defs.begin();
+        appendExp(s, (Exp*)*it);
         strcat(s, " = ");
-        defs.remove(defs.getFirst(it));
+        defs.remove((Exp*)*it);
     }
     strcat(s, proc->getName());
     strcat(s, "(");
@@ -662,13 +662,12 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
         if (i < args.size() - 1) strcat(s, ", ");
     }
     strcat(s, ");");
-    LocSetIter it;
-    Exp *e = defs.getFirst(it);
-    if (e) {
+    LocationSet::iterator it = defs.begin();
+    if (it != defs.end()) {
         strcat(s, " // OUT: ");
     }
-    for (; e; e = defs.getNext(it)) {
-        appendExp(s, e);
+    for (; it != defs.end(); it++) {
+        appendExp(s, *it);
         strcat(s, ", ");
     }
     if (s[strlen(s)-1] == ' ' && s[strlen(s)-2] == ',')

@@ -153,10 +153,11 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p,
     bool gotcorrectret1 = false;
     bool gotcorrectret2 = false;
     StatementList internal;
+    // FIXME: Below is never executed now
     //p->getInternalStatements(internal);
-    StmtListIter it;
-    for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
-        Assign *e = dynamic_cast<Assign*>(s);
+    StatementList::iterator it;
+    for (it = internal.begin(); it != internal.end(); it++) {
+        Assign *e = dynamic_cast<Assign*>(*it);
         if (e == NULL) continue;
         if (VERBOSE) {
             std::cerr << "internal: ";
@@ -1097,10 +1098,9 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach,
             bool ok = true;
             if (checkreach) {
                 bool hasDef = false;
-                    StmtSetIter it1;
-                    for (Statement* s1 = reachin.getFirst(it1); s1;
-                      s1 = reachin.getNext(it1)) {
-                        if (*s1->getLeft() == *getParamExp(i)) {
+                    StatementSet::iterator it1;
+                    for (it1 = reachin.begin(); it1 != reachin.end(); it1++) {
+                        if (*(*it1)->getLeft() == *getParamExp(i)) {
                             hasDef = true; break; 
                         }
                     }

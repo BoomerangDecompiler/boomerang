@@ -30,52 +30,15 @@ class Statement;
 class Exp;
 class RefExp;
 
-class ManagedIter {
-public:
-    virtual void operator++(int) = 0;   // Postfix; dummy arg
-    virtual bool operator==(const ManagedIter& o) = 0;
-    virtual bool operator!=(const ManagedIter& o) = 0;
-};
-
-class StmtSetIt : public ManagedIter {
-    std::set<Statement*>::iterator iter;
-public:
-    StmtSetIt() {}
-    StmtSetIt(std::set<Statement*>::iterator it) : iter(it) {}
-    virtual void operator++(int) {iter++;}
-    Statement*   operator*() {return *iter;}
-    virtual bool operator==(const ManagedIter& o) {
-        return iter == ((StmtSetIt&)o).iter;}
-    virtual bool operator!=(const ManagedIter& o) {
-        return iter != ((StmtSetIt&)o).iter;}
-};
-
-class LocSetIt : public ManagedIter {
-    std::set<Exp*>::iterator iter;
-public:
-    LocSetIt() {}
-    LocSetIt(std::set<Exp*>::iterator it) : iter(it) {}
-    virtual void operator++(int) {iter++;}
-    Exp*         operator*() {return *iter;}
-    virtual bool operator==(const ManagedIter& o) {
-        return iter == ((LocSetIt&)o).iter;}
-    virtual bool operator!=(const ManagedIter& o) {
-        return iter != ((LocSetIt&)o).iter;}
-};
-
-class Managed {
-public:
-    virtual ManagedIter& begin() = 0;
-    virtual ManagedIter& end() = 0;
-};
-
 // A class to implement sets of statements
 // We may choose to implement these very differently one day
-typedef std::set<Statement*>::iterator StmtSetIter;
-class StatementSet /*: public Managed */{
+//typedef std::set<Statement*>::iterator StmtSetIter;
+class StatementSet {
     std::set<Statement*> sset;          // For now, use use standard sets
 
 public:
+typedef std::set<Statement*>::iterator iterator;
+
     virtual ~StatementSet() {}
     void makeUnion(StatementSet& other);    // Set union
     void makeDiff (StatementSet& other);    // Set difference
@@ -83,10 +46,10 @@ public:
     bool isSubSetOf(StatementSet& other);    // subset relation
 
     int size() {return sset.size();}        // Number of elements
-    Statement* getFirst(StmtSetIter& it);   // Get the first Statement
-    Statement* getNext (StmtSetIter& it);   // Get next
-    virtual ManagedIter& begin() {return *new StmtSetIt(sset.begin());}
-    virtual ManagedIter& end()   {return *new StmtSetIt(sset.end());}
+    //Statement* getFirst(StmtSetIter& it);   // Get the first Statement
+    //Statement* getNext (StmtSetIter& it);   // Get next
+    iterator begin() {return sset.begin();}
+    iterator end()   {return sset.end();}
     
     void insert(Statement* s) {sset.insert(s);} // Insertion
     bool remove(Statement* s);              // Removal; rets false if not found
@@ -102,34 +65,43 @@ public:
     char* prints();                         // Print to std::cerr (for debug)
     void  print(std::ostream& os);          // Print to os
     void printNums(std::ostream& os);       // Print statements as numbers
-    bool isLast(StmtSetIter& it);           // returns true if it is at end
+    //bool isLast(StmtSetIter& it);           // returns true if it is at end
 };  // class StatementSet
 
-typedef std::list<Statement*>::iterator StmtListIter;
-typedef std::list<Statement*>::reverse_iterator StmtListRevIter;
+//typedef std::list<Statement*>::iterator StmtListIter;
+//typedef std::list<Statement*>::reverse_iterator StmtListRevIter;
 class StatementList {
     std::list<Statement*> slist;          // For now, use use standard list
 
 public:
+typedef std::list<Statement*>::iterator iterator;
+typedef std::list<Statement*>::reverse_iterator reverse_iterator;
+    virtual ~StatementList() {}
     int size() {return slist.size();}        // Number of elements
-    Statement* getFirst(StmtListIter& it);   // Get the first Statement
-    Statement* getNext (StmtListIter& it);   // Get next
-    Statement* getLast (StmtListRevIter& it);// Get the last Statement
-    Statement* getPrev (StmtListRevIter& it);// Get previous
+    //Statement* getFirst(StmtListIter& it);   // Get the first Statement
+    //Statement* getNext (StmtListIter& it);   // Get next
+    //Statement* getLast (StmtListRevIter& it);// Get the last Statement
+    //Statement* getPrev (StmtListRevIter& it);// Get previous
+            iterator begin()  {return slist.begin();}
+            iterator end()    {return slist.end();}
+    reverse_iterator rbegin() {return slist.rbegin();}
+    reverse_iterator rend()   {return slist.rend();}
+    
     void append(Statement* s) {slist.push_back(s);} // Insert at end
     void append(StatementList& sl);         // Append whole StatementList
     void append(StatementSet& sl);          // Append whole StatementSet
     bool remove(Statement* s);              // Removal; rets false if not found
     // This one is needed where you remove in the middle of a loop
-    // Use like this: s = mystatementlist.remove(it);
-    Statement* StatementList::remove(StmtListIter& it);
+    // Use like this: it = mystatementlist.remove(it);
+    iterator remove(iterator it) {return slist.erase(it);}
     bool exists(Statement* s);  // Find; returns false if not found
-    char*  prints();                        // Print to string (for debugging)
+    char*  prints();            // Print to string (for debugging)
     void clear() { slist.clear(); }
 };  // class StatementList
 
 typedef std::vector<Statement*>::iterator StmtVecIter;
 typedef std::vector<Statement*>::reverse_iterator StmtVecRevIter;
+// FIXME: remove this class. No need to "manage" it.
 class StatementVec {
     std::vector<Statement*> svec;           // For now, use use standard vector
 
@@ -139,7 +111,7 @@ public:
     Statement* getNext (StmtVecIter& it);    // Get next
     Statement* getLast (StmtVecRevIter& it); // Get the last Statement
     Statement* getPrev (StmtVecRevIter& it); // Get previous
-    // returns true if it is at end
+     // returns true if it is at end
     bool isLast(StmtVecIter& it) {return it == svec.end();}
     Statement* getAt(int idx) {return svec[idx];}
     // Put at position idx (0 based)
@@ -154,7 +126,7 @@ public:
 };  // class StatementVec
 
 // For liveness, we need sets of locations (registers or memory)
-typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
+//typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
 class LocationSet {
     // We use a standard set, but with a special "less than" operator
     // so that the sets are ordered by expression value. If this is not done,
@@ -164,6 +136,7 @@ class LocationSet {
     // behaviour, where only one is stored)
     std::set<Exp*, lessExpStar> sset; 
 public:
+typedef std::set<Exp*, lessExpStar>::iterator iterator;
     LocationSet() {}                        // Default constructor
     virtual ~LocationSet() {}               // virtual destructor kills warning
     LocationSet(const LocationSet& o);      // Copy constructor
@@ -171,13 +144,13 @@ public:
     void makeUnion(LocationSet& other);     // Set union
     void makeDiff (LocationSet& other);     // Set difference
     void clear() {sset.clear();}            // Clear the set
-    Exp* getFirst(LocSetIter& it);          // Get the first Statement
-    Exp* getNext (LocSetIter& it);          // Get next
-    virtual ManagedIter& begin() {return *new LocSetIt(sset.begin());}
-    virtual ManagedIter& end()   {return *new LocSetIt(sset.end());}
+    //Exp* getFirst(LocSetIter& it);          // Get the first Statement
+    //Exp* getNext (LocSetIter& it);          // Get next
+    iterator begin() {return sset.begin();}
+    iterator end()   {return sset.end();}
     void insert(Exp* loc) {sset.insert(loc);}// Insert the given location
     void remove(Exp* loc);                  // Remove the given location
-    void remove(LocSetIter ll);             // Remove location, given iterator
+    void remove(iterator ll);           // Remove location, given iterator
     void removeIfDefines(StatementSet& given);// Remove locs defined in given
     int  size() const {return sset.size();} // Number of elements
     bool operator==(const LocationSet& o) const; // Compare
