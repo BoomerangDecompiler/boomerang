@@ -267,7 +267,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 // Clean up and unload the binary image
 void ElfBinaryFile::UnLoad()
 {
-    if (m_pImage) delete m_pImage;
+    if (m_pImage) delete [] m_pImage;
     fclose (m_fd);
     Init();                     // Set all internal state to 0
 } 
@@ -893,7 +893,8 @@ LOAD_FMT ElfBinaryFile::GetFormat() const
 MACHINE ElfBinaryFile::GetMachine() const
 {
 	int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
-    	 if (machine == EM_SPARC) return MACHINE_SPARC;
+    	 if ((machine == EM_SPARC) ||
+			 (machine == EM_SPARC32PLUS)) return MACHINE_SPARC;
     else if (machine == EM_386)   return MACHINE_PENTIUM;
     else if (machine == EM_PA_RISC)return MACHINE_HPRISC;
     else if (machine == EM_68K)   return MACHINE_PALM;	// Unlikely
