@@ -362,10 +362,10 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             break;
         case opZfill:
             // MVE: this is a temporary hack... needs cast?
-            sprintf(s, "/* zfill %d->%d */ ",
-              ((Const*)t->getSubExp1())->getInt(),
-              ((Const*)t->getSubExp2())->getInt());
-            strcat(str, s);
+            //sprintf(s, "/* zfill %d->%d */ ",
+            //  ((Const*)t->getSubExp1())->getInt(),
+            //  ((Const*)t->getSubExp2())->getInt());
+            //strcat(str, s); */
             appendExp(str, t->getSubExp3());
             break;
         case opTypedExp:
