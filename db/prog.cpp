@@ -206,20 +206,8 @@ void Prog::decompile() {
     if (!Boomerang::get()->noDecompile)
         decompileProcs();
 
-#if 0
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-      it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
-        UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
-
-        // decoded userproc.. decompile it
-        p->decompile();
-    }
-#endif
-
-    removeNullStmts();        // Remove null statements
+    removeNullStmts();          // Remove null statements
+    removeUnusedStmts();        // Remove unused statements
 
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
     reverseGlobalDataflow();
@@ -229,7 +217,6 @@ void Prog::decompile() {
     repairDataflow();   // HACK! Do it ALL again, with params and return locs
     if (VERBOSE)
         std::cerr << "After HACK repair, before remove unused statements\n";
-    removeUnusedStmts();        // Remove unused statements
     fromSSAform();
 
     // Remove interprocedural edges for structuring algorithms
@@ -593,8 +580,9 @@ void Prog::makeGlobal(ADDRESS uaddr, const char *name)
 
 // get a string constant at a given address if appropriate
 char *Prog::getStringConstant(ADDRESS uaddr) {
-    if (pBF->isReadOnly(uaddr))
-        return (char *)(uaddr + pBF->getTextDelta());
+    SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
+    if (si)
+        return (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
     return NULL;
 }
 
