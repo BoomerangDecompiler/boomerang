@@ -178,7 +178,7 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc,
     // Call the base class to do most of the work
     // Pass the address of our helperFunc function, to check for pentium
     // specific helper functions
-    if (!FrontEnd::processProc(uAddr, pProc, os, spec, helperFunc))
+    if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec, helperFunc))
         return false;
 
     // Need a post-cfg pass to remove the FPUSH and FPOP instructions,

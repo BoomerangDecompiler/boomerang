@@ -44,7 +44,7 @@ public:
   virtual size_t getImageSize();
 
   // Get a symbol given an address
-  char*         SymbolByAddress(const ADDRESS dwAddr);
+  char*         SymbolByAddress(ADDRESS dwAddr);
   // Return true if the address matches the convention for A-line system calls
   bool          IsDynamicLinkedProc(ADDRESS uNative);
 
