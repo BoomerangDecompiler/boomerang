@@ -11,6 +11,7 @@
  * 14 Apr 02 - Mike: search and replace functions take Exp*, was Exp&
  * 27 Apr 02 - Mike: Added testDecideType
  * 09 Dec 02 - Mike: Added test for fixSuccessor
+ * 13 Dec 02 - Mike: Added test for killFill()
  */
 
 #include "ExpTest.h"
@@ -64,6 +65,8 @@ MYTEST(testFixSuccessor);
     MYTEST(testClone);
     MYTEST(testParen);
 	MYTEST(testFixSuccessor);
+	MYTEST(testKillFill);
+	MYTEST(testAssociativity);
 }
 
 int ExpTest::countTestCases () const
@@ -630,11 +633,17 @@ void ExpTest::testSimplifyBinary() {
     delete b;
 
     // Add negative constant
+    // r[2] + -99
     b = new Binary(opPlus, m_rof2->clone(), new Const(-99));
+    // r[2] - 99
+    Exp* expb2 = new Binary(opMinus, m_rof2->clone(), new Const(99));
+#if OLD_WAY
     b = b->simplify();
-    Binary expb2(opMinus, m_rof2->clone(), new Const(99));
-    CPPUNIT_ASSERT(*b == expb2);
-    delete b;
+#else
+    expb2 = expb2->simplify();
+#endif
+    CPPUNIT_ASSERT(*b == *expb2);
+    delete b; delete expb2;
 
     std::string expected("(((0 + v[a]) - 0) | 0) or 0");
     std::ostringstream ost;
@@ -948,4 +957,81 @@ void ExpTest::testFixSuccessor() {
 	actual = o2.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 	delete e;
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testKillFill
+ * OVERVIEW:        Test removal of zero fill, sign extend, truncates
+ *============================================================================*/
+void ExpTest::testKillFill() {
+	// r[18] + sgnex(16,32,m[r[16] + 16])
+	Binary e(opPlus,
+		new Unary(opRegOf, new Const(18)),
+		new Ternary(opSgnEx, new Const(16), new Const(32),
+			new Unary(opMemOf,
+				new Binary(opPlus,
+					new Unary(opRegOf, new Const(16)),
+					new Const(16)))));
+	Exp* res = e.killFill();
+	std::string expected("r[18] + m[r[16] + 16]");
+	std::ostringstream ost1;
+	res->print(ost1);
+	std::string actual(ost1.str());
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// Note: e2 has to be a pointer, not a local Ternary, because it
+	// gets changed at the top level (and so would die in its destructor)
+	Ternary* e2 = new Ternary(opZfill, new Const(16), new Const(32),
+            new Unary(opMemOf,
+                new Binary(opPlus,
+                    new Unary(opRegOf, new Const(16)),
+                    new Const(16))));
+	// Try again but at top level
+	res = e2->killFill();
+	expected = "m[r[16] + 16]";
+	std::ostringstream ost2;
+	res->print(ost2);
+	actual = ost2.str();
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	delete res;
+
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testAssociativity
+ * OVERVIEW:        Test that a+K+b is the same as a+b+K when each is simplified
+ *============================================================================*/
+void ExpTest::testAssociativity() {
+    
+    // (r[8] + m[m[r[8] + 12] + -12]) + 12
+    Binary e1(opPlus,
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(8)),
+            new Unary(opMemOf,
+                new Binary(opPlus,
+                    new Unary(opMemOf,
+                        new Binary(opPlus,
+                            new Unary(opRegOf, new Const(8)),
+                            new Const(12))),
+                    new Const(-12)))),
+        new Const(12));
+    // (r[8] + 12) + m[m[r[8] + 12] + -12]
+    Binary e2(opPlus,
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(8)),
+            new Const(12)),
+        new Unary(opMemOf,
+            new Binary(opPlus,
+                new Unary(opMemOf,
+                    new Binary(opPlus,
+                        new Unary(opRegOf, new Const(8)),
+                        new Const(12))),
+                new Const(-12))));
+    Exp* p1 = e1.simplify();
+    Exp* p2 = e2.simplify();
+    std::ostringstream os1, os2;
+    p1->print(os1); p2->print(os2);
+    std::string expected(os1.str());
+    std::string actual  (os2.str());
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
 }

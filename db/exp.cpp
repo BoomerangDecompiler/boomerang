@@ -1560,7 +1560,9 @@ Exp* Exp::simplify() {
         bMod = false;
         res = res->polySimplify(bMod);// Call the polymorphic simplify
     } while (bMod);             // If modified at this (or a lower) level, redo
-    return res;
+    // The below is still important. E.g. want to canonicalise sums, so we
+    // know that a + K + b is the same as a + b + K
+    return res->simplifyArith();
 }
 
 /*==============================================================================
