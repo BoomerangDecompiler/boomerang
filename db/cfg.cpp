@@ -2409,7 +2409,7 @@ void updateWorkListRev(PBB currBB, std::list<PBB>&workList,
     }
 }
 
-void Cfg::findInterferences(igraph& ig) {
+void Cfg::findInterferences(igraph& ig, int& tempNum) {
     if (m_listBB.size() == 0) return;
 
     std::list<PBB> workList;            // List of BBs still to be processed
@@ -2422,7 +2422,6 @@ void Cfg::findInterferences(igraph& ig) {
     workSet.insert(last);
 
     bool change;
-    int tempNum = 0;
     while (workList.size()) {
         PBB currBB = workList.back();
         workList.erase(--workList.end());

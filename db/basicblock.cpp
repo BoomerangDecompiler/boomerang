@@ -1526,37 +1526,46 @@ bool BasicBlock::calcLiveness(igraph& ig, int& tempNum) {
         // For each statement this RTL
         for (sit = stmts.rbegin(); sit != stmts.rend(); sit++) {
             Statement* s = *sit;
-            LocationSet uses, defs;
-            s->addUsedLocs(uses);
+            LocationSet defs;
             s->getDefinitions(defs);
             // The definitions don't have refs yet
             defs.addSubscript(s);
             // Definitions kill uses
             liveLocs.makeDiff(defs);
-            // Check for livenesses that overlap
-            // For each new use
-            LocSetIter uu;  
-            for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
-                // Only interested in subscripted vars
-                if (!u->isSubscript()) continue;
-                // Interference if we can find a live variable which differs
-                // only in the reference
-                if (liveLocs.findDifferentRef((RefExp*)u)) {
-                    // We have an interference. Record it, but only if new
-                    igraph::iterator gg = ig.find(u);
-                    if (gg == ig.end()) {
-                        ig[u] = ++tempNum;
-                        if (VERBOSE)
-                            std::cerr << "Interference with " << u <<
-                            ", assigned temp" << std::dec << tempNum << "\n";
+            LocationSet uses;
+            s->addUsedLocs(uses);
+            // Phi functions are a special case. The operands of phi functions
+            // are uses (to be put into liveLocs) but they don't interfere with
+            // each other (since they come via different BBs)
+            if (s->isPhi())
+                liveLocs.makeUnion(uses);
+            else {
+                // Check for livenesses that overlap
+                // For each new use
+                LocSetIter uu;  
+                for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
+                    // Only interested in subscripted vars
+                    if (!u->isSubscript()) continue;
+                    // Interference if we can find a live variable which differs
+                    // only in the reference
+                    if (liveLocs.findDifferentRef((RefExp*)u)) {
+                        // We have an interference. Record it, but only if new
+                        igraph::iterator gg = ig.find(u);
+                        if (gg == ig.end()) {
+                            ig[u] = ++tempNum;
+                            if (VERBOSE)
+                                std::cerr << "Interference with " << u <<
+                                ", assigned temp" << std::dec << tempNum << "\n";
+                        }
                     }
+                    // Add the uses one at a time. Note: don't use makeUnion,
+                    // because then we don't discover interferences from the
+                    // same statement, e.g.
+                    // blah := r24{2} + r24{3}
+                    liveLocs.insert(u);
                 }
-                // Add the uses one at a time. Note: don't use makeUnion,
-                // because then we don't discover interferences from the
-                // same statement, e.g.
-                // blah := r24{2} + r24{3}
-                liveLocs.insert(u);
             }
+std::cerr << "At top of " << s << ": liveLocs is " << liveLocs.prints() << "\n";    // HACK!
         }
     }
     // liveIn is what we calculated last time

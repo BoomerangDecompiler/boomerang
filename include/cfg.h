@@ -1002,7 +1002,7 @@ public:
     int getSemi(int node) {return semi[node];}
     std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
 
-    void findInterferences(igraph& ig);
+    void findInterferences(igraph& ig, int& tempNum);
 };              /* Cfg */
 
 #endif

@@ -556,6 +556,11 @@ public:
     Exp* newLocal(Type* ty);
 
     /*
+     * Add n new locals, called temp1 .. tempn
+     */
+    void addTemps(int n);
+
+    /*
      * Print the locals declaration in C style.
      */
     void printLocalsAsC(std::ostream& os);
