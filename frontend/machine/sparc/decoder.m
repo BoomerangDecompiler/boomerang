@@ -245,11 +245,19 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | ret() =>
         /*
-         * Just a ret, no restore (? not sure now)
+         * Just a ret (non leaf)
          */
         result.rtl = new HLReturn(pc, exps);
         result.type = DD;
         SHOW_ASM("ret_")
+
+    | retl() =>
+        /*
+         * Just a ret (leaf; uses %o7 instead of %i7)
+         */
+        result.rtl = new HLReturn(pc, exps);
+        result.type = DD;
+        SHOW_ASM("retl_")
 
     | branch^",a" (tgt) [name] => 
         /*
