@@ -34,13 +34,13 @@
 #include <map>          // In decideType()
 #include <sstream>      // Yes, you need gcc 3.0 or better
 #include "types.h"
+#include "dataflow.h"
 #include "cfg.h"
 #include "exp.h"
 #include "register.h"
 #include "rtl.h"        // E.g. class ParamEntry in decideType()
 #include "proc.h"
 #include "prog.h"
-#include "dataflow.h"
 #include "operstrings.h"// Defines a large array of strings for the
                         // createDotFile functions. Needs -I. to find it
 #include "util.h"
@@ -128,18 +128,15 @@ TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
     type = o.type->clone();
 }
 
-AssignExp::AssignExp() : Binary(opAssignExp), pbb(NULL), size(32) { }
-AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs),
-  pbb(NULL), size(32)
+AssignExp::AssignExp() : Binary(opAssignExp), size(32) {}
+AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(32)
 { 
 	if (lhs->getOper() == opTypedExp) { 
 		size = ((TypedExp*)lhs)->getType()->getSize(); 
 	} 
 }
-AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) :
-  Binary(opAssignExp, lhs, rhs), pbb(NULL), size(sz) {}
-AssignExp::AssignExp(AssignExp& o) :
-  Binary(o), pbb(o.pbb), size(o.size)
+AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(sz) { }
+AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size)
 {
     subExp1 = o.subExp1->clone();
     subExp2 = o.subExp2->clone();
@@ -876,12 +873,36 @@ void AssignExp::print(std::ostream& os) {
 void AssignExp::printWithLives(std::ostream& os) {
     print(os);
     os << "   live: ";
-    std::set<AssignExp*> livein;
+    std::set<Statement*> livein;
     getLiveIn(livein);
-    for (std::set<AssignExp*>::iterator it = livein.begin(); it != livein.end(); it++) {
+    for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
         (*it)->print(os);
         os << ", ";
     }
+}
+
+void AssignExp::printWithUses(std::ostream& os) {
+    print(os);
+    os << "   uses: ";
+    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end(); it++) {
+        (*it)->printAsUse(os);
+        os << ", ";
+    }
+    os << "   used by: ";
+    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); it++) {
+        (*it)->printAsUseBy(os);
+        os << ", ";
+    }
+}
+
+void AssignExp::printAsUse(std::ostream &os)
+{
+    print(os);
+}
+
+void AssignExp::printAsUseBy(std::ostream &os)
+{
+    print(os);
 }
 
 /*==============================================================================
@@ -2308,205 +2329,128 @@ bool FlagDef::serialize(std::ostream &ouf, int &len)
 	return true;
 }
 
-
-/*==============================================================================
- * FUNCTION:        Const::getUses etc
- * OVERVIEW:        Get the uses for dataflow analysis
- * PARAMETERS:      set to output to
- * RETURNS:         <nothing>
- *============================================================================*/
-void Const::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
+void AssignExp::killLive(std::set<Statement*> &live)
 {
-}
-
-void Terminal::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	if (op != opNil)
-		uses.insert(ref);
-}
-
-void Unary::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	subExp1->getUses(uses, subExp1, defIsUse);
-	if (op == opRegOf /*|| op == opMemOf*/)
-		uses.insert(ref);	
-}
-
-void Binary::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	switch(op) {
-		case opAssignExp:
-			assert(false);
-			break;
-		case opSubscript:
-			uses.insert(ref);
-			subExp1->getUses(uses, subExp1, defIsUse);
-			uses.remove(subExp1);
-			break;
-		default:
-			subExp1->getUses(uses, subExp1, defIsUse);
-			subExp2->getUses(uses, subExp2, defIsUse);	
-	}
-}
-
-void Ternary::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	subExp1->getUses(uses, subExp1, defIsUse);
-	subExp2->getUses(uses, subExp2, defIsUse);	
-	subExp3->getUses(uses, subExp3, defIsUse);	
-}
-
-void TypedExp::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	subExp1->getUses(uses, subExp1, defIsUse);
-}
-
-void AssignExp::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	subExp2->getUses(uses, subExp2, defIsUse);
-	subExp1->getUses(uses, subExp1, defIsUse);
-	if (defIsUse) {
-		uses.setDef(subExp1, true);
-	} else
-		uses.remove(subExp1);
-}
-
-void FlagDef::getUses(UseSet &uses, Exp* &ref, bool defIsUse)
-{
-	assert(false); // flagdefs should never make it to this stage of analysis
-}
-
-
-/*==============================================================================
- * FUNCTION:        Const::getUsesOf etc
- * OVERVIEW:        Get the uses of a specific expression for dataflow analysis
- * PARAMETERS:      set to output to, expression
- * RETURNS:         <nothing>
- *============================================================================*/
-void Const::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-}
-
-void Terminal::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	if (op != opNil && *this == *e)
-		uses.insert(ref);
-}
-
-void Unary::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	subExp1->getUsesOf(uses, subExp1, e);
-}
-
-void Binary::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	if (op == opAssignExp) {
-		subExp2->getUsesOf(uses, subExp2, e);	
-		subExp1->getUsesOf(uses, subExp1, e);
-		uses.remove(subExp1);
-	} else {
-		subExp1->getUsesOf(uses, subExp1, e);
-		subExp2->getUsesOf(uses, subExp2, e);	
-	}
-}
-
-void Ternary::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	subExp1->getUsesOf(uses, subExp1, e);
-	subExp2->getUsesOf(uses, subExp2, e);	
-	subExp3->getUsesOf(uses, subExp3, e);	
-}
-
-void TypedExp::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	subExp1->getUsesOf(uses, subExp1, e);
-}
-
-void AssignExp::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	if (*this == *e)
-		uses.insert(ref);
-
-	subExp2->getUsesOf(uses, subExp2, e);
-	subExp1->getUsesOf(uses, subExp1, e);
-}
-
-void FlagDef::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
-{
-	assert(false); // flagdefs should never make it to this stage of analysis
-}
-
-void AssignExp::killLive(std::set<AssignExp*> &live)
-{
-    std::set<AssignExp*> kills;
-    for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
+    std::set<Statement*> kills;
+    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
+	 it++) {
+	if ((*it)->getLeft() == NULL) continue;
         bool isKilled = false;
-        if (*(*it)->subExp1 == *subExp1)
+        if (*(*it)->getLeft() == *subExp1)
             isKilled = true;
-        if ((*it)->subExp1->isMemOf() && subExp1->isMemOf())
-            isKilled = true; // might alias, very conservative
+	isKilled |= mayAlias((*it)->getLeft(), subExp1, getSize());
         if (isKilled)
 	    kills.insert(*it);
     }
-    for (std::set<AssignExp*>::iterator it = kills.begin(); it != kills.end(); it++)
+    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); 
+         it++)
         live.erase(*it);
 }
 
-
-/* calculates the definitions that are "live" after this assignment.
-   If the live set is empty, it will contain anything this assignment defines.
-   If the live set is not empty, then it will not contain anything this
-      assignment kills.
- */
-void AssignExp::calcLiveOut(std::set<AssignExp*> &live)
+void AssignExp::getDeadStatements(std::set<Statement*> &dead)
 {
-	// calculate kills
-        killLive(live);
-	// add this def
-	live.insert(this);
-}
-
-/* get everything that is live before this assignment.
-   To get the liveout, use getLiveIn(liveset), calcLiveOut(liveset).
- */
-void AssignExp::getLiveIn(std::set<AssignExp*> &livein)
-{
-	assert(pbb);
-	pbb->getLiveInAt(this, livein);
-}
-
-/* Goes through the definitions live at this expression and creates a
-   link from any definition that is used by this expression to this 
-   expression.
- */
-void AssignExp::calcUseLinks()
-{
-    std::set<AssignExp*> live;
+    std::set<Statement*> live;
     getLiveIn(live);
-    for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
-        assert(*it);
-        Exp *left = (*it)->getLeft();
-        assert(left);
-        Exp *where = 0;
-        if (subExp2->search(left, where) || (subExp1->isMemOf() && 
-	    subExp1->getSubExp1()->search(left, where)))
-            (*it)->uses.insert(this);
+    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
+	 it++) {
+	if ((*it)->getLeft() == NULL) continue;
+        bool isKilled = false;
+        if (*(*it)->getLeft() == *subExp1)
+            isKilled = true;
+        if ((*it)->getLeft()->isMemOf() && subExp1->isMemOf())
+            isKilled = true; // might alias, very conservative
+        if (isKilled && (*it)->getUseBy().size() == 0)
+	    dead.insert(*it);
     }
 }
+
+bool AssignExp::usesExp(Exp *e) {
+    Exp *where = 0;
+    return (subExp2->search(e, where) || (subExp1->isMemOf() && 
+	    subExp1->getSubExp1()->search(e, where)));
+}
+
+/* 
+ * Returns true if the statement can be propogated to all uses (and
+ * therefore can be removed).
+ * Returns false otherwise.
+ *
+ * To completely propogate a statement which does not kill any of it's
+ * own uses it is sufficient to show that all the uses of the statement
+ * are still live at the expression to be propogated to.
+ *
+ * A statement that kills one or more of it's own uses is slightly more 
+ * complicated.  All the uses that are not killed must still be live at
+ * the expression to be propogated to, but the uses that were killed must
+ * be live at the expression to be propogated to after the statement is 
+ * removed.  This is clearly the case if the only use killed by a 
+ * statement is the same as the left hand side, however, if multiple uses
+ * are killed a search must be conducted to ensure that no statement between
+ * the source and the destination kills the other uses.  This is considered
+ * too complex a task and is therefore defered for later experimentation.
+ */
+bool AssignExp::canPropogateToAll()
+{
+    std::set<Statement*> tmp_uses;
+    for (std::set<Statement*>::iterator it = uses.begin(); it != uses.end(); 
+		    it++)
+        tmp_uses.insert(*it);
+    int nold = tmp_uses.size();
+    killLive(tmp_uses);
+    if (nold - tmp_uses.size() > 1) {
+        // see comment.
+	return false;
+    }
+
+    if (useBy.size() == 0) return false; // not doing useless code removal here
+
+    for (std::set<Statement*>::iterator it = useBy.begin(); it != useBy.end(); 
+		    it++) {
+	std::set<Statement*> in;
+	(*it)->getLiveIn(in);
+	// all uses must be live at the destination
+	for (std::set<Statement*>::iterator iuse = tmp_uses.begin();
+	         iuse != tmp_uses.end(); iuse++)
+	    if (in.find(*iuse) == in.end()) return false;
+	// no false uses must be created
+	for (std::set<Statement*>::iterator ilive = in.begin();
+		 ilive != in.end(); ilive++) {
+	    if (*ilive == this) continue;
+	    Exp *left = (*ilive)->getLeft();
+	    if (left == NULL) return false;
+	    if (usesExp(left) && findUse(left) == NULL) return false;
+        }
+    }
+    return true;
+}
+
+// assumes canPropogateToAll has returned true
+// assumes this statement will be removed by the caller
+void AssignExp::propogateToAll()
+{
+    while(useBy.begin() != useBy.end()) {
+	Statement *e = *useBy.begin();
+        e->replaceUse(this, subExp2);
+	assert(useBy.begin() == useBy.end() || e != *useBy.begin());
+    }
+}
+
+void AssignExp::doReplaceUse(Statement *use, Exp *with) 
+{
+    Exp *left = use->getLeft();
+    assert(left);
+    bool changeright = false;
+    subExp2 = subExp2->searchReplaceAll(left, with->clone(), changeright);
+    bool changeleft = false;
+    if (subExp1->isMemOf()) {
+	Exp *e = subExp1->getSubExp1();
+	e = e->searchReplaceAll(left, with->clone(), changeleft);
+	if (e != subExp1->getSubExp1()) subExp1->setSubExp1(e);
+    }
+    assert(changeright || changeleft);
+    // simplify the expression
+    subExp2 = subExp2->simplifyArith();
+    subExp1 = subExp1->simplifyArith();
+    simplify();
+}
+

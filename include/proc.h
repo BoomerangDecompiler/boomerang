@@ -371,23 +371,20 @@ public:
         // print this proc, mainly for debugging
         void print(std::ostream &out);
 
-	// return true if the procedure is in ssa form
-	bool isSSAForm();
-
-	// transform the procedure to ssa form
-	void transformToSSAForm();
-
-	// transform the procedure from ssa form
-	void transformFromSSAForm();
-
-	// minimize the SSA form, returns true if anything changed
-	bool minimizeSSAForm();
-
-	// remove any useless code
-	void removeUselessCode();
+	// decompile this proc
+	void decompile();
+	bool removeNullStatements();
+	bool removeDeadStatements();
+        bool propogateAndRemoveStatements();
 
 	// promote the signature if possible
 	void promoteSignature();
+
+	// get all the statements
+	void getAllStatements(std::set<Statement*> &stmts);
+
+	// remove a statement
+	void removeStatement(Statement *stmt);
 
 private:
     /*
@@ -414,25 +411,6 @@ public:
      * Return the coverage of this procedure in bytes.
      */
 //    unsigned getCoverage() {return cover.totalCover();}
-
-    /*
-     * Given a map from registers to expressions, follow the control
-     * flow of the CFG replacing every use of a register in this map
-     * with the corresponding expression. Then for every definition of
-     * such a register, update its expression to be the RHS of the
-     * definition after the first type of substitution has been
-     * performed and remove that definition from the CFG. E.g.
-     *
-     *   map: { %esp -> %afp, %ebp -> %afp - 10 }
-     *
-     *  before subs: %esp    = %esp - 4
-     *               m[%esp] = %ebx
-     *               %esi    = m[%ebp + 8]
-     *
-     *  after subs:  m[%afp - 4] = %ebx
-     *               %esi        = m[%afp + 2]
-     */
-    void subAXP(std::map<Exp*,Exp*>& subMap);
 
     /*
      * Sets the parameters that have been recovered for this procedure through

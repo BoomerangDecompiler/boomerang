@@ -27,6 +27,7 @@
 
 #include <sstream>
 #include "types.h"
+#include "dataflow.h"
 #include "rtl.h"
 #include "table.h"
 #include "insnameelem.h"

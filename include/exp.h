@@ -36,6 +36,7 @@ class DefSet;
 class RTL;              // For class FlagDef
 class BasicBlock;	// For class AssignExp
 typedef BasicBlock* PBB;
+class Statement;
 
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
@@ -129,6 +130,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isAfpTerm();
     // True if is int const
     bool isIntConst() {return op == opIntConst;}
+    // True if is addr const
+    bool isAddrConst() {return op == opAddrConst;}
     // True if is flt point const
     bool isFltConst() {return op == opFltConst;}
     // True if is a post-var expression (var_op' in SSL file)
@@ -137,6 +140,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isSizeCast() { return op == opSize;}
     // Get the index for this var
     int getVarIndex();
+    // True if this is a terminal
+    virtual bool isTerminal() { return false; }
 
     //  //  //  //  //  //  //
     //  Search and Replace  //
@@ -207,9 +212,6 @@ virtual Exp* simplifyAddr() {return this;}
 	virtual bool serialize(std::ostream &ouf, int &len) = 0;
 	static Exp *deserialize(std::istream &inf);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false) = 0;
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e) = 0;
 };
 
 // Not part of the Exp class, but logically belongs with it:
@@ -236,7 +238,7 @@ public:
             Const(Const& o);
             
     // Clone
-    Exp*    clone();
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const;
@@ -264,9 +266,6 @@ public:
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -280,7 +279,7 @@ public:
         Terminal(Terminal& o);      // Copy constructor
 
     // Clone
-    Exp*    clone();
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const;
@@ -293,9 +292,7 @@ public:
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
+    virtual bool isTerminal() { return true; }
 };
 
 /*==============================================================================
@@ -313,7 +310,7 @@ public:
             Unary(Unary& o);
 
     // Clone
-    Exp*    clone();
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const;
@@ -351,9 +348,6 @@ virtual     ~Unary();
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -371,7 +365,7 @@ public:
             Binary(Binary& o);
 
 	// Clone
-	Exp*	clone();
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const ;
@@ -410,9 +404,6 @@ virtual     ~Binary();
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -428,8 +419,8 @@ public:
     // Copy constructor
             Ternary(Ternary& o);
 
-	// Clone
-	Exp*	clone();
+    // Clone
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const ;
@@ -465,9 +456,6 @@ virtual     ~Ternary();
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -487,8 +475,8 @@ public:
     // Copy constructor
             TypedExp(TypedExp& o);
 
-	// Clone
-	Exp*	clone();
+    // Clone
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const;
@@ -517,18 +505,13 @@ public:
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
  * AssignExp is a subclass of Binary, holding two subexpressions and a size
  *============================================================================*/
-class AssignExp : public Binary {
-    PBB pbb;  // contains a pointer to the enclosing BB
+class AssignExp : public Binary, public Statement {
     int size;
-    std::set<AssignExp*> uses;
 public:
     // Constructor
             AssignExp();
@@ -539,15 +522,16 @@ public:
     // Copy constructor
             AssignExp(AssignExp& o);
 
-	// Clone
-	Exp*	clone();
+    // Clone
+    virtual Exp* clone();
 
     // Compare
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
 
-    void    print(std::ostream& os);
-    void    printWithLives(std::ostream& os);
+    virtual void print(std::ostream& os);
+    virtual void printWithLives(std::ostream& os);
+    virtual void printWithUses(std::ostream& os);
     void    printr(std::ostream& os) {print(os);}     // Printr same as print
     void    appendDotFile(std::ofstream& of);
 
@@ -566,22 +550,24 @@ public:
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
-
 	// new dataflow analysis
-        void killLive(std::set<AssignExp*> &live);
-        void calcLiveOut(std::set<AssignExp*> &liveout);
-	void getLiveIn(std::set<AssignExp*> &livein);
-        void calcUseLinks();
+        virtual void killLive(std::set<Statement*> &live);
+        virtual void getDeadStatements(std::set<Statement*> &dead);
+	virtual bool usesExp(Exp *e);
 
-        // get/set the enclosing BB
-        PBB getBB() { return pbb; }
-        void setBB(PBB bb) { pbb = bb; }
+	// dataflow related functions
+	virtual bool canPropogateToAll();
+	virtual void propogateToAll();
 
         // get how to access this value
-        Exp* getLeft() { return subExp1; }
+        virtual Exp* getLeft() { return subExp1; }
+
+	// special print functions
+        virtual void printAsUse(std::ostream &os);
+        virtual void printAsUseBy(std::ostream &os);
+
+protected:
+	virtual void doReplaceUse(Statement *use, Exp *with);
 };
 
 /*==============================================================================
@@ -600,9 +586,6 @@ virtual     ~FlagDef();                         // Destructor
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
-	// for dataflow analysis
-	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*

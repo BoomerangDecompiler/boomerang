@@ -30,14 +30,15 @@
 #include <iomanip>          // For setfill
 #include <sstream>
 #include "types.h"
+#include "dataflow.h"
 #include "exp.h"
+#include "cfg.h"
 #include "register.h"
 #include "type.h"
 #include "rtl.h"
 #include "proc.h"           // For printing proc names
 #include "prog.h"
 #include "hllcode.h"
-#include "dataflow.h"
 #include "util.h"
 #include "signature.h"
 
@@ -186,7 +187,7 @@ void HLJump::searchAndReplace(Exp* search, Exp* replace)
  *                           appended to it
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLJump::searchAll(Exp* search, std::list<Exp *> &result)
+bool HLJump::searchAll(Exp* search, std::list<Exp*> &result)
 {
     return RTL::searchAll(search, result) ||
         ( pDest && pDest->searchAll(search, result) );
@@ -346,53 +347,12 @@ void HLJump::generateCode(HLLCode &hll, BasicBlock *pbb)
     // dont generate any code for jumps, they will be handled by the BB
 }
 
-bool HLJump::getSSADefs(DefSet &defs, bool ssa)
-{
-    return ssa;
-}
-
-void HLJump::SSAsubscript(SSACounts &counts)
-{
-    if (isComputed()) {
-        UseSet u;
-        pDest->getUses(u, pDest);
-
-        for (UseSet::iterator uit = u.begin(); uit != u.end(); uit++) {
-            (*uit).subscript(counts);
-        }
-    }
-}
-
-bool HLJump::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLJump::getDefs(DefSet &defs, Exp *before_use)
-{
-    // jumps dont define anything
-}
-
-void HLJump::getUses(UseSet &uses, bool defIsUse)
-{
-    if (isComputed()) {
-        pDest->getUses(uses, pDest, defIsUse);
-    }
-}
-
 void HLJump::simplify()
 {
     if (isComputed()) {
         Exp *e = pDest->simplifyArith()->clone();
         delete pDest;
         pDest = e->simplify();
-    }
-}
-
-void HLJump::getUsesOf(UseSet &uses, Exp *e)
-{
-    if (isComputed()) {
-        pDest->getUsesOf(uses, pDest, e);
     }
 }
 
@@ -567,7 +527,7 @@ void HLJcond::searchAndReplace(Exp* search, Exp* replace)
  *                           appended to it
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLJcond::searchAll(Exp* search, std::list<Exp *> &result)
+bool HLJcond::searchAll(Exp* search, std::list<Exp*> &result)
 {
     return RTL::searchAll(search, result) ||
       (pCond && (pCond->searchAll(search, result)));
@@ -699,39 +659,6 @@ void HLJcond::generateCode(HLLCode &hll, BasicBlock *pbb)
     // dont generate any code for jconds, they will be handled by the bb
 }
 
-bool HLJcond::getSSADefs(DefSet &defs, bool ssa)
-{
-    return ssa;
-}
-
-void HLJcond::SSAsubscript(SSACounts &counts)
-{
-    if (pCond) {
-        UseSet u;
-        pCond->getUses(u, pCond);
-
-        for (UseSet::iterator uit = u.begin(); uit != u.end(); uit++) {
-            (*uit).subscript(counts);
-        }
-    }
-}
-
-bool HLJcond::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLJcond::getDefs(DefSet &defs, Exp *before_use)
-{
-    // jconds dont define anything
-}
-
-void HLJcond::getUses(UseSet &uses, bool defIsUse)
-{
-    if (pCond)
-        pCond->getUses(uses, pCond, defIsUse);
-}
-
 void HLJcond::simplify()
 {
     if (pCond) {
@@ -777,12 +704,6 @@ void HLJcond::simplify()
                 break;
         }
     }
-}
-
-void HLJcond::getUsesOf(UseSet &uses, Exp *e)
-{
-    if (pCond)
-        pCond->getUsesOf(uses, pCond, e);
 }
 
 /**********************************
@@ -860,7 +781,7 @@ void HLNwayJump::searchAndReplace(Exp* search, Exp* replace)
  * NOTES:           search can't easily be made const
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLNwayJump::searchAll(Exp* search, std::list<Exp *> &result)
+bool HLNwayJump::searchAll(Exp* search, std::list<Exp*> &result)
 {
     return HLJump::searchAll(search, result) ||
         ( pSwitchInfo && pSwitchInfo->pSwitchVar &&
@@ -937,40 +858,10 @@ void HLNwayJump::generateCode(HLLCode &hll, BasicBlock *pbb)
     // dont generate any code for switches, they will be handled by the bb
 }
 
-bool HLNwayJump::getSSADefs(DefSet &defs, bool ssa)
-{
-    return ssa;
-}
-
-void HLNwayJump::SSAsubscript(SSACounts &counts)
-{
-}
-
-bool HLNwayJump::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLNwayJump::getDefs(DefSet &defs, Exp *before_use)
-{
-    // nway jumps dont define anything
-}
-
-void HLNwayJump::getUses(UseSet &uses, bool defIsUse)
-{
-    // TODO
-}
-
 void HLNwayJump::simplify()
 {
     // TODO
 }
-
-void HLNwayJump::getUsesOf(UseSet &uses, Exp *e)
-{
-    // TODO
-}
-
 
 /**********************************
  *      HLCall methods
@@ -990,7 +881,6 @@ HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
       returnAfterCall(false)
 {
     kind = CALL_RTL;
-    basicBlock = NULL;
     postCallExpList = NULL;
     procDest = NULL;
 }
@@ -1012,28 +902,6 @@ HLCall::~HLCall()
         delete postCallExpList;
         postCallExpList = NULL;
     }
-}
-
-/*==============================================================================
- * FUNCTION:      HLCall::setBB
- * OVERVIEW:      Sets the link from this call to its enclosing BB.
- * PARAMETERS:    BB - the enclosing basic block of this call
- * RETURNS:       <nothing>
- *============================================================================*/
-void HLCall::setBB(PBB BB)
-{
-    basicBlock = BB;
-}
-
-/*==============================================================================
- * FUNCTION:      HLCall::getBB
- * OVERVIEW:      Get the enclosing BB of this call.
- * PARAMETERS:    <none>
- * RETURNS:       the enclosing basic block of this call
- *============================================================================*/
-PBB HLCall::getBB()
-{
-    return basicBlock;
 }
 
 /*==============================================================================
@@ -1068,8 +936,9 @@ void HLCall::setArguments(std::vector<Exp*>& arguments)
  *============================================================================*/
 Exp* HLCall::getReturnLoc() 
 {
-	if (procDest)
-    	return procDest->getSignature()->getReturnExp();
+    if (procDest && !ignoreReturnLoc)
+        return procDest->getSignature()->getReturnExp();
+    else
 	return NULL;
 }
 
@@ -1226,6 +1095,13 @@ void HLCall::print(std::ostream& os /*= cout*/)
             os << "\n";
         }
     }
+    
+    for (std::list<Statement*>::iterator it = internal.begin(); 
+         it != internal.end(); it++) {
+	os << "internal ";
+        (*it)->printWithUses(os);
+	os << std::endl;
+    }
 }
 
 /*==============================================================================
@@ -1291,7 +1167,6 @@ RTL* HLCall::clone()
     HLCall* ret = new HLCall(nativeAddr, returnTypeSize, &le);
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
-    ret->basicBlock = basicBlock;
     ret->arguments = arguments;
     ret->numNativeBytes = numNativeBytes;
     return ret;
@@ -1329,25 +1204,30 @@ bool HLCall::deserialize_fid(std::istream &inf, int fid)
 	return true;
 }
 
-void HLCall::setDestProc(Proc* dest) 
-{ 
-	procDest = dest;
-	if (procDest) {
-		destStr = procDest->getName();
-	}
-}
-
 Proc* HLCall::getDestProc() 
 {
 	return procDest; 
 }
 
-void HLCall::initArguments()
-{
+void HLCall::setDestProc(Proc* dest) 
+{ 
+    assert(dest);
+    assert(procDest == NULL);
+    procDest = dest;
+    destStr = procDest->getName();
+    // init arguments
     assert(arguments.size() == 0);
-    arguments.resize(getDestProc()->getSignature()->getNumParams());
-    for (unsigned i = 0; i < getDestProc()->getSignature()->getNumParams(); i++)
-        arguments[i] = getDestProc()->getSignature()->getArgumentExp(i)->clone();
+    arguments.resize(procDest->getSignature()->getNumParams());
+    for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
+        arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
+    // init internal statements
+    assert(internal.size() == 0);
+    if (procDest->isLib()) {
+        procDest->getSignature()->getInternalStatements(internal);
+    } else {
+	// TODO
+	assert(false);
+    }
 }
 
 void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
@@ -1364,75 +1244,6 @@ void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
     hll.AddCallStatement(pbb, getReturnLoc(), p, arguments);
 }
 
-bool HLCall::getSSADefs(DefSet &defs, bool ssa)
-{
-    return ssa;
-}
-
-void HLCall::SSAsubscript(SSACounts &counts)
-{
-    HLJump::SSAsubscript(counts);
-    for (unsigned n = 0; n < arguments.size(); n++) {
-        UseSet u;
-        arguments[n]->getUses(u, arguments[n]);
-
-        for (UseSet::iterator uit = u.begin(); uit != u.end(); uit++) {
-            (*uit).subscript(counts);
-        }
-    }
-/*    if (returnLoc) {
-        if (returnLoc->getOper() == opMemOf) {
-            UseSet u;
-            returnLoc->getUses(u, returnLoc);
-            u.remove(returnLoc);
-
-            for (UseSet::iterator uit = u.begin(); uit != u.end(); uit++) {
-                (*uit).subscript(counts);
-            }
-        } else {
-            Exp *left = returnLoc;
-            // get the value of the left (if subscripted)
-            Exp *leftval = left;
-            if (leftval->getOper() == opSubscript) leftval = leftval->getSubExp1();
-
-            // increase counts for the left
-            counts.incSubscriptFor(leftval);
-            // get subscript for left
-            int ncount = counts.getMaxSubscriptFor(leftval);
-
-            if (left->getOper() == opSubscript) {
-                assert(left->getSubExp2()->getOper() == opIntConst);
-                int ocount = ((Const*)left->getSubExp2())->getInt();
-                if (ncount != ocount) {
-                    // update the count
-                    ((Const*)left->getSubExp2())->setInt(ncount);
-                }
-            } else {
-                // subscript the left
-                returnLoc = new Binary(opSubscript, left->clone(), new Const(ncount));
-            }
-            
-        }
-    } */
-}
-
-bool HLCall::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLCall::getDefs(DefSet &defs, Exp *before_use)
-{
-    // eep, implement this.
-}
-
-void HLCall::getUses(UseSet &uses, bool defIsUse)
-{
-    HLJump::getUses(uses, defIsUse);
-    for (unsigned i = 0; i < arguments.size(); i++)
-        arguments[i]->getUses(uses, arguments[i], defIsUse);
-}
-
 void HLCall::simplify()
 {
     HLJump::simplify();
@@ -1443,33 +1254,130 @@ void HLCall::simplify()
     }
 }
 
-void HLCall::getUsesOf(UseSet &uses, Exp *e)
+void HLCall::printAsUse(std::ostream &os)
 {
-    HLJump::getUsesOf(uses, e);
-    for (unsigned i = 0; i < arguments.size(); i++)
-        arguments[i]->getUsesOf(uses, arguments[i], e);
+    // Print the return location if there is one
+    if (getReturnLoc() != NULL)
+        os << " " << getReturnLoc() << " := ";
+ 
+    os << "CALL ";
+    if (procDest)
+        os << procDest->getName();
+    else if (pDest == NULL)
+            os << "*no dest*";
+    else {
+        pDest->print(os);
+    }
+
+    // Print the actual arguments of the call
+    os << "(";    
+    for (unsigned i = 0; i < arguments.size(); i++) {
+        if (i != 0)
+            os << ", ";
+        os << arguments[i];
+    }
+    os << ")";
 }
 
-void HLCall::killLive(std::set<AssignExp*> &live)
+void HLCall::printAsUseBy(std::ostream &os)
+{
+    printAsUse(os);
+}
+
+
+void HLCall::killLive(std::set<Statement*> &live)
 {
     // conservative solution: if calling a userproc, kill everything.
     //                        if calling a libproc, kill return address.
     assert(procDest);
     if (procDest->isLib()) {
-        std::set<AssignExp*> kills;
-        for (std::set<AssignExp*>::iterator it = live.begin(); it != live.end(); it++) {
+        std::set<Statement*> kills;
+        for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
             bool isKilled = false;
-            if (*(*it)->getSubExp1() == *getReturnLoc())
+            if (getReturnLoc() && (*it)->getLeft() && 
+		*(*it)->getLeft() == *getReturnLoc())
                 isKilled = true;
-            if ((*it)->getSubExp1()->isMemOf() && getReturnLoc()->isMemOf())
+            if (getReturnLoc() && (*it)->getLeft() &&
+	        (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
                 isKilled = true; // might alias, very conservative
             if (isKilled)
 	        kills.insert(*it);
         }
-        for (std::set<AssignExp*>::iterator it = kills.begin(); it != kills.end(); it++)
+        for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); it++)
             live.erase(*it);
     } else 
         live.clear();
+}
+
+void HLCall::getDeadStatements(std::set<Statement*> &dead)
+{
+    std::set<Statement*> live;
+    getLiveIn(live);
+    assert(procDest);
+    if (procDest->isLib()) {
+        for (std::set<Statement*>::iterator it = live.begin(); 
+	     it != live.end(); it++) {
+            bool isKilled = false;
+            if (getReturnLoc() && (*it)->getLeft() &&
+	        *(*it)->getLeft() == *getReturnLoc())
+                isKilled = true;
+            if ((*it)->getLeft() && getReturnLoc() && 
+                (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+                isKilled = true; // might alias, very conservative
+            if (isKilled && (*it)->getUseBy().size() == 0)
+	        dead.insert(*it);
+        }
+    } else  {
+        for (std::set<Statement*>::iterator it = live.begin(); 
+	     it != live.end(); it++) 
+		if ((*it)->getUseBy().size() == 0)
+			dead.insert(*it);
+    }
+}
+
+bool HLCall::usesExp(Exp *e)
+{
+    Exp *where = 0;
+    for (int i = 0; i < arguments.size(); i++)
+        if (*arguments[i] == *e ||
+	    arguments[i]->search(e, where))
+            return true;
+    return false;
+}
+
+void HLCall::doReplaceUse(Statement *use, Exp *with)
+{
+    Exp *left = use->getLeft();
+    assert(left);
+    bool change = false;
+    for (int i = 0; i < arguments.size(); i++) {
+        if (*arguments[i] == *left) {
+	    arguments[i] = with->clone();
+	    change = true;
+	} else {
+            bool changeright = false;
+            arguments[i]->searchReplaceAll(left, with->clone(), changeright);
+	    change |= changeright;
+	}
+    }
+    assert(change);
+    // simplify the arguments
+    for (int i = 0; i < arguments.size(); i++) {
+	    arguments[i] = arguments[i]->simplifyArith();
+	    arguments[i] = arguments[i]->simplify();
+    }
+}
+
+void HLCall::printWithLives(std::ostream& os)
+{
+    // TODO
+    assert(false);
+}
+
+void HLCall::printWithUses(std::ostream& os)
+{
+    // TODO
+    assert(false);
 }
 
 /**********************************
@@ -1592,37 +1500,7 @@ void HLReturn::generateCode(HLLCode &hll, BasicBlock *pbb)
 	RTL::generateCode(hll, pbb);
 }
 
-bool HLReturn::getSSADefs(DefSet &defs, bool ssa)
-{
-    return ssa;
-}
-
-void HLReturn::SSAsubscript(SSACounts &counts)
-{
-    // TODO: return value
-}
-
-bool HLReturn::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLReturn::getDefs(DefSet &defs, Exp *before_use)
-{
-    // returns dont define anything
-}
-
-void HLReturn::getUses(UseSet &uses, bool defIsUse)
-{
-    // TODO: return value?
-}
-
 void HLReturn::simplify()
-{
-    // TODO: return value?
-}
-
-void HLReturn::getUsesOf(UseSet &uses, Exp *e)
 {
     // TODO: return value?
 }
@@ -1836,37 +1714,7 @@ void HLScond::generateCode(HLLCode &hll, BasicBlock *pbb)
     RTL::generateCode(hll, pbb);
 }
 
-bool HLScond::getSSADefs(DefSet &defs, bool ssa)
-{
-    return RTL::getSSADefs(defs, ssa);
-}
-
-void HLScond::SSAsubscript(SSACounts &counts)
-{
-    RTL::SSAsubscript(counts);
-}
-
-bool HLScond::isUsedInPhi(Exp *e)
-{
-    return false;
-}
-
-void HLScond::getDefs(DefSet &defs, Exp *before_use)
-{
-    RTL::getDefs(defs, before_use);
-}
-
-void HLScond::getUses(UseSet &uses, bool defIsUse)
-{
-    RTL::getUses(uses, defIsUse);
-}
-
 void HLScond::simplify()
 {
     RTL::simplify();
-}
-
-void HLScond::getUsesOf(UseSet &uses, Exp *e)
-{
-    RTL::getUsesOf(uses, e);
 }

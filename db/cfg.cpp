@@ -33,13 +33,13 @@
 #include <fstream>
 #include <sstream>
 #include "types.h"
+#include "dataflow.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
 #include "rtl.h"
 #include "proc.h"           // For Proc::setTailCaller()
 #include "prog.h"           // For findProc()
-#include "dataflow.h"
 #include "util.h"
 
 // Prototype this procedure, to avoid dependency problems
@@ -1146,19 +1146,6 @@ unsigned Cfg::getCoverage()
     return uTotal;
 }
 
-/*==============================================================================
- * FUNCTION:        Cfg::subAXP
- * OVERVIEW:        (see comment for Proc::subAXP)
- * PARAMETERS:      subMap - a map from register to expressions
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::subAXP(std::map<Exp*,Exp*>& subMap)
-{
-    unTraverse();
-    if (checkEntryBB()) return;
-    entryBB->subAXP(subMap);
-}
-
 #if 0
 /*==============================================================================
  * FUNCTION:        Cfg::resetDFASets
@@ -1488,16 +1475,28 @@ void Cfg::computePostDominators() {
  *============================================================================*/
 void Cfg::computeDataflow()
 {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+        it != m_listBB.end(); it++)
+	    (*it)->liveout.clear();
+    updateLiveness();
+
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+        it != m_listBB.end(); it++)
+        (*it)->calcUses();
+}
+
+void Cfg::updateLiveness()
+{
     bool change = true;
     while(change) {
         change = false;
         for (std::list<PBB>::iterator it = m_listBB.begin(); 
              it != m_listBB.end(); it++) {
-            std::set<AssignExp*> out;
+            std::set<Statement*> out;
             (*it)->calcLiveOut(out);
             if (out != (*it)->liveout) {
                 (*it)->liveout.clear();
-                for (std::set<AssignExp*>::iterator it1 = out.begin();
+                for (std::set<Statement*>::iterator it1 = out.begin();
                      it1 != out.end(); it1++) {
                     (*it)->liveout.insert(*it1);
                 }
@@ -1505,10 +1504,6 @@ void Cfg::computeDataflow()
             }
         }
     }
-
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-        it != m_listBB.end(); it++)
-        (*it)->calcUses();
 }
 
 /*==============================================================================
@@ -1737,191 +1732,10 @@ void Cfg::makeCallRet(PBB head, Proc *p)
 	// find orphans, delete em
 }
 
-bool Cfg::getSSADefs(DefSet &defs)
-{
-	bool ssa = true;
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		ssa &= (*it)->getSSADefs(defs);
-	return ssa;
-}
-
-void Cfg::getAllUses(Exp *def, UseSet &uses)
-{
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end(); bit++) 
-		(*bit)->getUsesOf(uses, def);
-}
-
-void Cfg::getAllUses(UseSet &uses)
-{
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end(); bit++) 
-		(*bit)->getUses(uses);
-}
-
-void Cfg::propogateForward(Exp *e)
-{
-	DefSet defs;
-	assert(getSSADefs(defs));
-
-	Def d;
-	assert(defs.find(*e, d));
-
-	if (d.getRight()->getOper() == opPhi)
-		return;
-
-	if (isUsedInPhi(e))
-		return;	
-
-	UseSet u;
-	getAllUses(e, u);
-
-	for (UseSet::iterator it = u.begin(); it != u.end(); it++) {
-		assert(*(*it).getExp() == *e);
-		Exp* &use = (*it).getExp();
-		delete use;
-		use = d.getRight()->clone();
-	}
-
-	// important to remove it so the subscripting will be maintained
-	d.remove();
-
-	simplify();
-
-	//SSACounts counts;
-	//unTraverse();
-	//getEntryBB()->SSAsubscript(counts);
-}
-
-bool Cfg::isUsedInPhi(Exp *e)
-{
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		if ((*it)->isUsedInPhi(e)) return true;
-	return false;
-}
-
 void Cfg::simplify()
 {
 	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
 		(*it)->simplify();
-}
-
-void Cfg::SSATransform(DefSet &defs)
-{
-	if (getSSADefs(defs))
-		return;
-
-	// make a unique set of definitions
-	std::set<Exp*> udefs;
-	for (DefSet::iterator it = defs.begin(); it != defs.end(); it++) {
-		Exp *def = (*it).getLeft();
-		bool found = false;
-		for (std::set<Exp*>::iterator sit = udefs.begin(); sit != udefs.end(); sit++)
-			if (*(*sit) == *def) {
-				found = true;
-				break;
-			}
-		if (!found)
-			udefs.insert(def);
-	}
-
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end(); bit++) 
-		(*bit)->SSAaddPhiFunctions(udefs);
-
-	SSACounts counts;
-	counts.clearMaxes();
-	unTraverse();
-	getEntryBB()->SSAsubscript(counts);
-}
-
-void Cfg::revSSATransform()
-{
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		(*it)->revSSATransform();	
-}
-
-bool Cfg::minimizeSSAForm()
-{
-	bool change = true;
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		change &= (*it)->minimizeSSAForm();
-	return change;
-}
-
-PBB Cfg::findBBWith(Exp *exp)
-{
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
-		PBB bb = *it;
-		if (bb->m_pRtls == NULL) continue;
-
-		for (std::list<RTL*>::iterator rit = bb->m_pRtls->begin(); rit != bb->m_pRtls->end(); rit++) {
-			RTL *rtl = *rit;
-			if (rtl->getKind() != HL_NONE) continue;
-
-			for (std::list<Exp*>::iterator eit = rtl->getList().begin(); eit != rtl->getList().end(); eit++) {
-				Exp *e = *eit;
-				if (e == exp) return bb;
-			}
-		}
-	}
-	return NULL;
-}
-
-void Cfg::simplePropogate(Exp *def) 
-{
-	assert(def->isAssign());
-	PBB startbb = findBBWith(def);
-
-	UseSet uses;
-	def->getUses(uses, def);
-
-	bool afterdef = false;
-	bool stop = false;
-	for (std::list<RTL*>::iterator rit = startbb->m_pRtls->begin(); rit != startbb->m_pRtls->end(); rit++) {
-		RTL *rtl = *rit;
-
-		if (rtl->getKind() != HL_NONE) continue;
-
-		bool hasDef = false;
-		if (!afterdef) hasDef = rtl->containsDef(def);
-
-		if (!afterdef && !hasDef)
-			continue;
-
-		// find the start of exps in this rtl
-		std::list<Exp*>::iterator eit = rtl->getList().begin();
-		if (hasDef) {
-			for (; eit != rtl->getList().end(); eit++) {
-				Exp *e = *eit;
-				if (e == def)
-					break;
-			}
-			afterdef = true;
-		}
-		
-		// propogate forward if possible
-		for (; eit != rtl->getList().end(); eit++) {
-			Exp *e = *eit;
-			// only interested in assigns
-			if (!e->isAssign())
-				continue;
-			// check if this expression overwrites any of the uses
-			Exp *left = e->getSubExp1();
-			if (uses.contains(left) || (e != def && *left == *def->getSubExp1())) {
-				// no more valid propogations
-				stop = true;
-				break;
-			}
-			// otherwise propogate if this isn't the def
-			if (e != def) {
-				UseSet nuses;
-				e->getUsesOf(nuses, e, def->getSubExp1());
-				for (UseSet::iterator uit = nuses.begin(); uit != nuses.end(); uit++) {
-					Use &u = *uit;
-					u.getExp() = def->getSubExp2()->clone();
-				}
-			}
-		}
-		if (stop) break;
-	}
 }
 
 // print this cfg, mainly for debugging

@@ -326,11 +326,6 @@ public:
     static bool lessLastDFT(PBB bb1, PBB bb2);
 
     /*
-     * (see comment for Proc::subAXP)
-     */
-    void subAXP(std::map<Exp*, Exp*> subMap);
-
-    /*
      * Resets the DFA sets of this BB.
      */
     void resetDFASets();
@@ -525,77 +520,17 @@ protected:
 /* for traversal */
     bool            m_iTraversed;   // traversal marker
 
-/* Yet Another Implementation of dataflow analysis.  All but one of these
- * will go eventually, and we'll have something stable - trent 
- *
- * So how about some explanation of these things:
- *
- * * defs = set of assignment expressions in this BB defining a value
- * * uses = set of expressions in this BB where defs are used.
- * * liveIn = set of defs that reach this BB
- * * killed = set of expressions in liveIn which are overwritten by defs
- * * liveOut = liveIn - killed + defs
- *
- * This implementation tries to be a little more OO than the dragon book.
- */
 public:
 
-	/* Get all the definitions in this BB.  Returns true if the
-	 * BB is in SSA form.
-     */
-	bool getSSADefs(DefSet &defs);
-
-	/* Return true if this expression is used in a phi
-	 */
-	bool isUsedInPhi(Exp *e);
-
 	/* stuff for new data flow analysis */
-	void getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein);
-	void getLiveIn(std::set<AssignExp*> &livein);
-	void calcLiveOut(std::set<AssignExp*> &live);
-        void getLiveOut(std::set<AssignExp*> &liveout) {
-            liveout = this->liveout;
-        }
+	void getLiveInAt(Statement *stmt, std::set<Statement*> &livein);
+	void getLiveIn(std::set<Statement*> &livein);
+	void calcLiveOut(std::set<Statement*> &live);
+        std::set<Statement*> &getLiveOut() { return liveout; }
         void calcUses();
 
 protected:
-        std::set<AssignExp*> liveout;
-
-	void getUses(UseSet &uses);
-	void getUsesOf(UseSet &uses, Exp *e);
-	void getDefs(DefSet &defs, Exp *before_use = NULL);
-	void getKilled(DefSet &killed);
-	void getLiveIn(DefSet &liveIn);
-	void getLiveOut(DefSet &liveOut);
-
-	/* Get all the uses of a given def after it's definition.
-	 * This function recurses the remainder of the cfg and 
-	 * does not assume ssa form.
-	 */
-	void getUsesAfterDef(Exp *def, UseSet &uses, bool start = false);
-
-	/* Subscript the definitions in this BB to SSA form.
-	 */
-	void SSAsubscript(SSACounts counts);
-
-	/* Set the parameters of a phi function based on current
-	 * counts.
-	 */
-	void SSAsetPhiParams(SSACounts &counts);
-
-	/* Add phi functions in every BB with more than one in edge for every def.
-	 * takes a map of unique definitions (lhs of assigns) to subscript values.
-	 */
-	void SSAaddPhiFunctions(std::set<Exp*> &defs);
-
-	/* Minimize the number of phi functions in this node.
-	 * returns true if anything changed.
-	 */
-	bool minimizeSSAForm();
-
-	/* Reverse the SSA transformation on this node.
-	 */
-	void revSSATransform();
+        std::set<Statement*> liveout;
 
 /* others to come later for analysis purposes */
 
@@ -945,11 +880,6 @@ public:
     bool joinBB( PBB pb1, PBB pb2);
 
     /*
-     * (see comment for Proc::subXFP)
-     */
-    void subAXP(std::map<Exp*,Exp*>& subMap);
-
-    /*
      * Resets the DFA sets of all the BBs.
      */
     void resetDFASets();
@@ -1000,6 +930,7 @@ public:
      * Compute liveness/use information
      */
     void computeDataflow();
+    void updateLiveness();
 
     std::vector<PBB> m_vectorBB; // faster access
 
@@ -1017,47 +948,9 @@ public:
 	/* return a bb given an address */
 	PBB bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
 
-	/* Get all the definitions in this CFG.  Returns true if the
-	 * CFG is in SSA form.
-     */
-	bool getSSADefs(DefSet &defs);
-
-	/* Transform the CFG to SSA form.
-	 */
-	void SSATransform(DefSet &defs);
-
-	/* Transform the CFG from SSA form.
-	 */
-	void revSSATransform();
-
-	/* Minimize the CFG, returns true if anything changed
-	 */
-	bool minimizeSSAForm();
-
-	/* Get all uses of a given expression
-	 */
-	void getAllUses(Exp *def, UseSet &uses);
-	void getAllUses(UseSet &uses);
-
-	/* Propogate a given expression forward in the CFG
-	 */
-	void propogateForward(Exp *e);
-
-	/* Return true if this expression is used in a phi
-	 */
-	bool isUsedInPhi(Exp *e);
-
 	/* Simplify all the expressions in the CFG
 	 */
 	void simplify();
-
-	/* Find the basic block containing the given expression
-	 */
-	PBB findBBWith(Exp *exp);
-
-	/* does a simple forward propogation
-	 */
-	void simplePropogate(Exp *def);
 
 private:
 

@@ -31,6 +31,7 @@
 #endif 
 
 #include "types.h"
+#include "dataflow.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -38,7 +39,6 @@
 #include "hllcode.h"
 #include "proc.h"
 #include "prog.h"
-#include "dataflow.h"
 #include "util.h"
 
 /**********************************
@@ -402,10 +402,10 @@ void BasicBlock::print(std::ostream& os)
     // be arbitrary
     //os << " (0x" << std::hex << (unsigned int)this << "):\n";
     os << ": live in: ";
-    std::set<AssignExp*> livein;
+    std::set<Statement*> livein;
     getLiveIn(livein);
-    for (std::set<AssignExp*>::iterator it = livein.begin(); it != livein.end(); it++) {
-        (*it)->print(os);
+    for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
+        (*it)->printAsUse(os);
         os << ", ";
     }
     os << std::endl;
@@ -754,136 +754,6 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2)
     return bb1->m_DFTfirst < bb2->m_DFTfirst;
 }
 
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::subAXP
- * OVERVIEW:        Given a map from registers to expressions, follow
- *                  the control flow of the CFG replacing every use of a
- *                  register in this map with the corresponding
- *                  expression. Then for every definition of such a
- *                  register, update its expression to be the RHS of
- *                  the definition after the first type of substitution
- *                  has been performed and remove that definition from
- *                  the CFG.
- * PARAMETERS:      subMap - a map from register to expressions
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::subAXP(std::map<Exp*,Exp*> subMap)
-{
-    // Check that if this BB has already been visited, that the expressions
-    // in the map regSubs are the same now as they were when last visited.
-    // This is equivalent to checking that the stack "height" is consistent
-    // for all entry paths to this BB
-    if (m_iTraversed) {
-        for (std::map<Exp*,Exp*>::iterator it = subMap.begin();
-          it != subMap.end(); it++) {
-
-            std::map<Exp*,Exp*>::iterator val = regSubs.find(it->first);
-            if (val != regSubs.end()) {
-                if (!(val->second == it->second)) {
-                    std::cerr << "stack type assumption violated in BB @ ";
-                    std::cerr << std::hex << getLowAddr() << std::dec << ":\n";
-                    std::cerr << "\tprevious: " << it->first << " -> ";
-                    std::cerr << val->second << "\n\tcurrent: " << it->first;
-                    std::cerr << " -> " << it->second << std::endl;
-                }
-            }
-        }
-        return;
-    }
-
-    // Do some interBB forward substitutions involving %afp. In particular,
-    // pa-risc is fond of putting say %afp-64 into r19, then using m[r[19]+4]
-    // later on. We need these transformed in many cases
-    // Note that for simplicity, we do the transformations twice. The first time
-    // is to change raw register numbers into %afp relative expressions; we then
-    // do the forward substitution and if there was a change this RTL, the
-    // substitutions are done again.
-    std::map<Exp*, Exp*, lessExpStar> subs; // A map from left hand sides to right
-                                // hand sides, suitable for substition
-                                // The map exists for one BB only; we assume
-                                // that this is enough
-    std::map<Exp*, Exp*, lessExpStar>::iterator mm;
-    Exp* srch;
-    regSubs = subMap;
-    for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-    {
-        RTL& rtl = **it;
-        // First, do the actual substitutions for this rtl
-        rtl.subAXP(subMap);
-
-        bool change = false;
-        int n = rtl.getNumExp();
-        for (int i=0; i < n; i++) {
-            Exp* pe = rtl.elementAt(i);
-            if (pe->isAssign()) continue;
-            Exp* lhs = ((Binary*)pe)->getSubExp1();
-            Exp* rhs = ((Binary*)pe)->getSubExp2();
-            // Substitute the RHS, and LHS if in m[] etc
-            for (mm = subs.begin(); mm != subs.end(); mm++) {
-//              if (mm->second.len() == 0)
-//              // This temp assignment has been disabled by a clear() (below)
-//              continue;
-                srch = mm->first;
-                bool ch;
-                if ((rhs = rhs->searchReplaceAll(srch, mm->second, ch)), ch) {
-                    // Need to simplify. For example, m[r[19]+4] might end up as
-                    // m[%afp-64+4], and we want m[%afp-60] so it will match the
-                    // pattern m[%afp +- k] for later analyses
-                    rhs = rhs->simplify();
-                    change = true;
-                }
-                if (!(*lhs == *srch)) {
-                    if ((lhs = lhs->searchReplaceAll(srch, mm->second, ch)), ch)
-                    {
-                        lhs = lhs->simplify();
-                        change = true;
-                    }
-                }
-            }
-            // We are looking on the RHS for any of these three:
-            // 1) %afp
-            // 2) %afp + k
-            // 3) %afp - k
-            // In some architectures (e.g. pa-risc), we will see a[m[%afp +- K]]
-            // If so, treat these as %afp +- K
-            if (rhs->isAfpTerm() && lhs->isRegOfK()) {
-                // We have a suitable assignment. Add it to the map.
-                // (If it already exists, then the mapping is updated rather
-                //  than added)
-                // The map has to be of SemStr, not SemStr*, for this to work.
-                // Mike: CHECK THIS!
-                if (rhs->isAddrOf()) {
-                    // We have a[m[ %afp...]]. For the purposes of forward
-                    // substitution, discard the a[m[
-                    Exp* temp = ((Unary*)rhs)->getSubExp1();    // Discard a[
-                    temp = ((Unary*)temp)->getSubExp1();        // Discard m[
-                    subs[lhs] = temp;
-                } else
-                    subs[lhs] = rhs;      // Ordinary mapping
-            } else if (lhs->isRegOfK()) {
-                // This is assigning to a register. Must check whether any regs
-                // already in the map are now invalidated, for the purpose of
-                // substiution, by this assignment
-                for (mm = subs.begin(); mm != subs.end(); mm++) {
-                    if (*mm->first == *lhs)
-                        // This reg no longer contains an AFP expression, and
-                        // so is usable for forward substitutions
-                        // Note: std::map<>::erase doesn't return an iterator!
-                        subs.erase(mm);
-                }
-            }
-        }
-        // If there was a change this RTL, do another substitutuion pass
-        if (change) rtl.subAXP(subMap);
-    }
-
-    // Recurse to all the out-edges
-    m_iTraversed = true;
-    for (std::vector<PBB>::iterator it1 = m_OutEdges.begin();
-      it1 != m_OutEdges.end(); it1++)
-        (*it1)->subAXP(subMap);
-}
 
 #if 0
 /*==============================================================================
@@ -1674,333 +1544,79 @@ void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond)
 	}	
 }
 
-void BasicBlock::getUsesAfterDef(Exp *def, UseSet &uses, bool start)
+void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein)
 {
-	assert(def->isAssign());
-	if (m_iTraversed) return;
-	m_iTraversed = true;
-
-	if (m_pRtls) {
-		std::list<RTL*>::iterator rit = m_pRtls->begin();
-		bool rtlstart = false;
-		if (start) {
-			// must find start RTL containing def
-			for (; rit != m_pRtls->end(); rit++) 
-				if ((*rit)->containsDef(def))
-					break;
-			rtlstart = true;
-		}
-		for (; rit != m_pRtls->end(); rit++) {
-			RTL *rtl = *rit;
-			if (start && rtlstart) {
-				rtl->getUsesAfterDef(def, uses);
-				rtlstart = false;
-			} else
-				rtl->getUsesOf(uses, def->getSubExp1());
-		}
+    getLiveIn(livein);
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+		    rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+	for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+		it != rtl->getList().end(); it++) {
+	    if (*it == (AssignExp*)stmt)
+	        return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+	    if (e == NULL) continue;
+            e->setBB(this);
+	    e->calcLiveOut(livein);
 	}
-
-	// TODO: recurse
-}
-
-bool BasicBlock::getSSADefs(DefSet &defs)
-{	
-	bool ssa = true;
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) 
-		ssa &= (*it)->getSSADefs(defs, ssa);
-	return ssa;
-}
-
-void BasicBlock::SSAsubscript(SSACounts counts)
-{
-	if (isTraversed()) return;
-	setTraversed(true);
-
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) 
-		(*it)->SSAsubscript(counts);
-
-	for (std::vector<PBB>::iterator bit = m_OutEdges.begin(); bit != m_OutEdges.end(); bit++) {
-		(*bit)->SSAsetPhiParams(counts);
-		(*bit)->SSAsubscript(counts);
+        if (rtl->getKind() == CALL_RTL) {
+	    HLCall *call = (HLCall*)rtl;
+	    if (call == stmt) return;
+	    call->setBB(this);
+	    call->calcLiveOut(livein);
+	    std::list<Statement*> &stmts = call->getInternalStatements();
+	    for (std::list<Statement*>::iterator it1 = stmts.begin();
+	         it1 != stmts.end(); it1++) {
+		if (stmt == *it1) return;
+	        (*it1)->setBB(this);
+	        (*it1)->calcLiveOut(livein);
+	    } 
 	}
+    }
 }
 
-bool BasicBlock::isUsedInPhi(Exp *e)
+void BasicBlock::calcLiveOut(std::set<Statement*> &live)
 {
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-		RTL *rtl = *it;		
-		if (rtl->isUsedInPhi(e)) return true;
-	}
-	return false;
+    /* hopefully we can be sure that NULL is not a valid assignment,
+       so this will calculate the live set after every assignment */
+    getLiveInAt(NULL, live);
 }
 
-void BasicBlock::SSAsetPhiParams(SSACounts &counts)
+void BasicBlock::getLiveIn(std::set<Statement*> &livein)
 {
-	RTL *rtl = m_pRtls->front();
-	
-	for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-		if (!(*it)->isAssign()) break;
-		// get left and right of assign
-		Exp *left = (*it)->getSubExp1();
-		Exp *right = (*it)->getSubExp2();
-		// right should be phi
-		if (right->getOper() != opPhi) break;
-		// left should be the unsubscripted definition
-		if (left->getOper() == opSubscript) left = left->getSubExp1();
-		// get a count for this definition
-		int count = counts.getSubscriptFor(left);
-		// make a new subscripted use of this definition
-		Exp *e = new Binary(opSubscript, left->clone(), new Const(count));
-		// get the params of the phi
-		Exp *params = right->getSubExp1();
-		// append it to the param list
-		if (params->getOper() == opNil) {
-			// if only param then we just add it
-			right->setSubExp1(new Binary(opList, e, new Terminal(opNil)));
-		} else {
-			// otherwise we traverse the list
-			assert(params->getOper() == opList);
-			Exp *l;
-			for (l = params; l->getOper() == opList && l->getSubExp2()->getOper() != opNil; l = l->getSubExp2())
-				;
-			assert(l->getOper() == opList && l->getSubExp2()->getOper() == opNil);
-			// till we get to the last element and add it there
-			l->setSubExp2(new Binary(opList, e, new Terminal(opNil)));
-		}
-	}
-}
-
-void BasicBlock::SSAaddPhiFunctions(std::set<Exp*> &defs)
-{
-	if (m_InEdges.size() < 2)
-		return;
-
-	// get the first RTL or make one
-	RTL *rtl;
-	if (m_pRtls != NULL && m_pRtls->front()->getKind() == HL_NONE)
-		rtl = m_pRtls->front();
-	else {
-		rtl = new RTL();
-		if (m_pRtls == NULL)
-			m_pRtls = new std::list<RTL*>();
-		m_pRtls->push_front(rtl);
-	}
-	assert(rtl);
-
-	// add an empty phi function for every definition
-	for (std::set<Exp*>::iterator it = defs.begin(); it != defs.end(); it++) {		
-		Exp *phi = new AssignExp((*it)->clone(), new Unary(opPhi, new Terminal(opNil)));
-		rtl->getList().push_front(phi);
-	}
-}
-
-bool BasicBlock::minimizeSSAForm()
-{
-	bool change = false;
-	RTL *rtl = m_pRtls->front();
-	for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-		Exp *e = *it;
-		if (!e->isAssign()) continue;
-		if (e->getSubExp2()->getOper() != opPhi) break;
-
-		// two patterns:
-		// * if all the params are the same, delete it
-		// * if there is only 1 unique param, replace with a rename
-		// * otherwise, make sure params are unique
-
-		bool unique = true;
-		std::set<Exp*> uparams;
-		Exp *params = e->getSubExp2()->getSubExp1(); 
-		assert(params->getOper() == opList);
-		for (Exp *l = params; l->getOper() != opNil; l = l->getSubExp2()) {
-			bool found = false;
-			for (std::set<Exp*>::iterator uit = uparams.begin(); uit != uparams.end(); uit++)
-				if (**uit == *l->getSubExp1()) {
-					found = true;
-					unique = false;
-					break;
-				}
-			if (!found)
-				uparams.insert(l->getSubExp1()->clone());
-		}
-
-		// erase
-		if (uparams.size() == 0) {
-			delete *it;
-			it = rtl->getList().erase(it);
-			change = true;
-			continue;
-		}
-		
-		// rename
-		if (uparams.size() == 1) {
-			(*it)->setSubExp2(*(uparams.begin()));
-			change = true;
-			continue;
-		}
-
-		if (!unique) {
-			// replace list
-			Exp *nl = new Terminal(opNil);
-			for (std::set<Exp*>::iterator uit = uparams.begin(); uit != uparams.end(); uit++)
-				nl = new Binary(opList, *uit, nl);
-			(*it)->getSubExp2()->setSubExp1(nl);
-			change = true;
-		}
-	}
-	return change;
-}
-
-void BasicBlock::revSSATransform()
-{
-	if (m_pRtls == NULL) return;
-
-	// remove the phi's from this node, propogating them back up the in edges.
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-		RTL *rtl = *it;
-		std::list<Exp*> &exps = rtl->getList();
-		for (std::list<Exp*>::iterator eit = exps.begin(); eit != exps.end();) {
-			Exp *e = *eit;
-			if (e->isAssign() && e->getSubExp2()->getOper() == opPhi) {
-				// add an assign to each in edge.
-				// remove phi
-				eit = exps.erase(eit);
-				continue;
-			}
-			eit++;
-		}
-	}
-}
-
-void BasicBlock::getDefs(DefSet &defs, Exp *before_use)
-{
-	if (m_pRtls == NULL) return;
-
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-		RTL *rtl = *it;		
-		rtl->getDefs(defs, before_use);
-	}
-}
-
-void BasicBlock::getUses(UseSet &uses)
-{
-	if (m_pRtls == NULL) return;
-
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-		RTL *rtl = *it;
-		rtl->getUses(uses);
-	}
-}
-
-void BasicBlock::getUsesOf(UseSet &uses, Exp *e)
-{
-	if (m_pRtls == NULL) return;
-
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-		RTL *rtl = *it;
-		rtl->getUsesOf(uses, e);
-	}
-}
-
-void BasicBlock::getKilled(DefSet &killed)
-{
-	DefSet defs;
-	getDefs(defs);
-	DefSet liveIn;
-	getLiveIn(liveIn);
-
-	for (DefSet::iterator it = defs.begin(); it != defs.end(); it++) {
-		Def d;
-		if (liveIn.find(*((*it).getLeft()), d))
-			killed.insert(d);
-	}
-}
-
-void BasicBlock::getLiveIn(DefSet &liveIn)
-{
-	for (int i = 0; i < m_iNumInEdges; i++)
-		m_InEdges[i]->getLiveOut(liveIn);
-}
-
-void BasicBlock::getLiveOut(DefSet &liveOut)
-{
-	DefSet killed;
-	getKilled(killed);
-
-	getLiveIn(liveOut);
-
-	liveOut.remove(killed);
-
-	getDefs(liveOut);
-}
-
-void BasicBlock::getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein)
-{
-	getLiveIn(livein);
-	for (std::list<RTL*>::iterator rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-		RTL *rtl = *rit;
-		switch(rtl->getKind()) {
-			case HL_NONE:
-                        case RET_RTL:
-				{
-					for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-						Exp *e = *it;
-						if (e == asgn)
-							return;
-						if (e->isAssign()) {
-							((AssignExp*)e)->setBB(this);
-							((AssignExp*)e)->calcLiveOut(livein);
-						}
-					}
-				}
-				break;
-			case CALL_RTL:
-				((HLCall*)rtl)->killLive(livein);
-				break;
-		}
-	}
-}
-
-void BasicBlock::calcLiveOut(std::set<AssignExp*> &live)
-{
-	/* hopefully we can be sure that NULL is not a valid assignment,
-	   so this will calculate the live set after every assignment */
-	getLiveInAt(NULL, live);
-}
-
-void BasicBlock::getLiveIn(std::set<AssignExp*> &livein)
-{
-	for (unsigned i = 0; i < m_InEdges.size(); i++) {
-		std::set<AssignExp*> in;
-		m_InEdges[i]->getLiveIn(in);
-		m_InEdges[i]->calcLiveOut(in);
-		// set union, C++ doesn't have one!
-		for (std::set<AssignExp*>::iterator it = in.begin(); it != in.end(); it++) {
-                        assert(*it);
-			livein.insert(*it);
-                }
-	}
+    for (unsigned i = 0; i < m_InEdges.size(); i++) {
+        std::set<Statement*> &in = m_InEdges[i]->getLiveOut();
+        // set union, C++ doesn't have one!
+        for (std::set<Statement*>::iterator it = in.begin(); 
+        	it != in.end(); it++) {
+            assert(*it);
+	    livein.insert(*it);
+        }
+    }
 }
 
 void BasicBlock::calcUses()
 {
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+		    rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
-	switch(rtl->getKind()) {
-	    case HL_NONE:
-            case RET_RTL:
-	        {
-		    for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
-	                Exp *e = *it;
-		        if (e->isAssign()) {
-			    ((AssignExp*)e)->calcUseLinks();
-		        }
-		    }
-	        }
-	        break;
-	    case CALL_RTL:
-                // TODO: calculate uses for parameters!
-		break;
+	for (std::list<Exp*>::iterator it = rtl->getList().begin();
+	     it != rtl->getList().end(); it++) {
+	    Statement *e = dynamic_cast<Statement*>(*it);
+	    if (e == NULL) continue;
+	    e->setBB(this);
+	    e->calcUseLinks();
+        }
+	if (rtl->getKind() == CALL_RTL) {
+	    HLCall *call = (HLCall*)rtl;
+	    call->setBB(this);
+            call->calcUseLinks();
+	    std::list<Statement*> &stmts = call->getInternalStatements();
+	    for (std::list<Statement*>::iterator it1 = stmts.begin();
+	         it1 != stmts.end(); it1++) {
+	        (*it1)->setBB(this);
+	        (*it1)->calcUseLinks();
+	    } 
 	}
     }
 }

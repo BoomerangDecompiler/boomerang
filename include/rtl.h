@@ -44,7 +44,6 @@ class Exp;
 class TypedExp;
 class DefSet;
 class UseSet;
-class SSACounts;
 class Type;
 class Register;
 class Proc;
@@ -125,27 +124,20 @@ public:
     int getNumExp();                    // Return the number of Exps in RTL.
     Exp* elementAt(unsigned i);         // Return the i'th element in RTL.
     
-    // Exp list editing methods
+    // Expression list editing methods
     void appendExp(Exp *e);             // Add e to end of RTL.
-    void prependExp(Exp *rt);           // Add e to start of RTL.
-    void insertExp(Exp *rt, unsigned i); // Insert rt before Exp at position i
-    void updateExp(Exp *rt, unsigned i); // Change Exp at position i.
-    void deleteExp(unsigned int);       // Delete Exp at position i.
-    void clear();                       // Remove all Exps from this RTL.
-    void appendListExp(std::list<Exp*>& le); // Append list of Exps to end.
-    void appendRTL(RTL& rtl);           // Append Exps from other RTL to end
+    void prependExp(Exp *rt);           // Add rt to start of RTL.
+    void insertExp(Exp *rt, unsigned i); // Insert rt before expression at position i
+    void updateExp(Exp *rt, unsigned i); // Change expression at position i.
+    void deleteExp(unsigned int);       // Delete expression at position i.
+    void clear();                       // Remove all expressions from this RTL.
+    void appendListExp(std::list<Exp*>& le); // Append list of exps to end.
+    void appendRTL(RTL& rtl);           // Append Statements from other RTL to end
     void deepCopyList(std::list<Exp*>& dest);// Make a deep copy of the list of Exp*
-	std::list<Exp*> &getList() { return expList; } // direct access to the list of Exps
+	std::list<Exp*> &getList() { return expList; } // direct access to the list of expressions
 
      // Print RTL to a stream.
     virtual void print(std::ostream& os = std::cout);
-
-    // Given a map from registers to expressions, replace each use of a reg
-    // with the corresponding expression in the map. Then for every
-    // definition of such a reg, update the map with the new RHS resulting
-    // from the first substitution.
-    void subAXP(std::map<Exp*,Exp*>& subMap);
-
 
     // Set the RTL's source address
     void updateAddress(ADDRESS addr);
@@ -210,22 +202,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-	void getUsesAfterDef(Exp *def, UseSet &uses);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
-
-	// return true if a given expression is defined in this rtl
-	bool containsDef(Exp *def);
 
 protected:
     RTL_KIND kind;
@@ -233,7 +211,7 @@ protected:
     unsigned numNativeBytes;    // Number of source code bytes from which this
                                 // RTL was constructed. Used in coverage
                                 // analysis.
-    std::list<Exp*> expList;         // List of expressions in this RTL.
+    std::list<Exp*> expList;    // List of expressions in this RTL.
     bool isCommented;           // If true, RTL should be emitted as a comment.
 
 
@@ -310,18 +288,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
 
 protected:
     Exp* pDest;              // Destination of a jump or call. This is the
@@ -388,18 +356,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
 
 private:
     JCOND_TYPE jtCond;          // The condition for jumping
@@ -464,18 +422,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 	
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
 
 private:    
     SWITCH_INFO* pSwitchInfo;   // Exp representation of the switch variable:
@@ -486,7 +434,7 @@ private:
  * HLCall: represents a high level call. Information about parameters and
  * the like are stored here.
  *============================================================================*/
-class HLCall: public HLJump {
+class HLCall: public HLJump, public Statement {
 public:
     HLCall(ADDRESS instNativeAddr, int returnTypeSize = 0,
            std::list<Exp*>* listExp = NULL);
@@ -501,9 +449,6 @@ public:
     // Return true if the called function returns an aggregate: i.e., a
     // struct, union or quad floating point value.
     bool returnsStruct();
-
-    void setBB(PBB BB);                 // Set link from call to enclosing BB
-    PBB getBB();                        // Get link from call to enclosing BB
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
     std::vector<Exp*>& getArguments();            // Return call's arguments
@@ -533,9 +478,6 @@ public:
     void setDestProc(Proc* dest);
     Proc* getDestProc();
 
-    // initialize the arguments
-    void initArguments();
-    
 #if 0
     // Used for type analysis. Stores type information that
     // can be gathered from the RTL instruction inside a
@@ -552,26 +494,41 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
- 
-        // new dataflow analysis
-        void killLive(std::set<AssignExp*> &live);
+	// new dataflow analysis
+        virtual void killLive(std::set<Statement*> &live);
+        virtual void getDeadStatements(std::set<Statement*> &dead);
+	virtual bool usesExp(Exp *e);
+
+	// dataflow related functions
+	virtual bool canPropogateToAll() { return false; }
+	virtual void propogateToAll() { assert(false); }
+
+        // get how to access this value
+        virtual Exp* getLeft() { return getReturnLoc(); }
+
+	// custom printing functions
+        virtual void printWithLives(std::ostream& os);
+        virtual void printWithUses(std::ostream& os);
+
+	// special print functions
+        virtual void printAsUse(std::ostream &os);
+        virtual void printAsUseBy(std::ostream &os);
 
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
 
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
+	// add statements internal to the called procedure
+	// for interprocedural analysis
+	std::list<Statement*> &getInternalStatements() { return internal; }
+
+	void setIgnoreReturnLoc(bool b) { ignoreReturnLoc = b; }
+
+protected:
+	virtual void doReplaceUse(Statement *use, Exp *with);
 
 private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
                                 // value returned by the called function.
-    PBB basicBlock;             // The call's enclosing basic block.
     bool returnAfterCall;       // True if call is effectively followed by
                                 // a return.
     
@@ -587,6 +544,9 @@ private:
     Proc* procDest;
 	// Destination name of call (used in serialization)
 	std::string destStr;
+
+    bool ignoreReturnLoc;
+    std::list<Statement*> internal;
 };
 
 
@@ -620,18 +580,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
 
 	int getNumBytesPopped() { return nBytesPopped; }
 	void setNumBytesPopped(int n) { nBytesPopped = n; }
@@ -699,18 +649,8 @@ public:
 	// code generation
 	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// for dataflow analysis
-	virtual bool getSSADefs(DefSet &defs, bool ssa);
-	virtual void SSAsubscript(SSACounts &counts);
-	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
-	virtual void getUses(UseSet &uses, bool defIsUse = false);
-	virtual void getUsesOf(UseSet &uses, Exp *e);
-
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();
-
-	// return true if this expression is used in a phi
-	virtual bool isUsedInPhi(Exp *e);
 
 private:
     JCOND_TYPE jtCond;             // the condition for jumping

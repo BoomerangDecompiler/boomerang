@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
 	Prog *prog = fe->decode();
 	std::cerr << "analysing..." << std::endl;
 	prog->analyse();
+	std::cerr << "decompiling..." << std::endl;
+	prog->decompile();
         std::cerr << "printing..." << std::endl;
         prog->print(std::cout);
 

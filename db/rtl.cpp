@@ -32,10 +32,10 @@
 #include <iomanip>          // For setfill
 #include <sstream>
 #include "types.h"
+#include "dataflow.h"
 #include "exp.h"
 #include "type.h"
 #include "register.h"
-#include "dataflow.h"
 #include "proc.h"           // For printing proc names
 #include "rtl.h"
 #include "prog.h"
@@ -64,11 +64,11 @@ RTL::RTL()
  *                  listExp - ptr to existing list of Exps
  * RETURNS:         N/a
  *============================================================================*/
-RTL::RTL(ADDRESS instNativeAddr, std::list<Exp*>* listExp /*= NULL*/)
+RTL::RTL(ADDRESS instNativeAddr, std::list<Exp*>* listStmt /*= NULL*/)
     : kind(HL_NONE), nativeAddr(instNativeAddr), numNativeBytes(0),
       isCommented(false) {
-    if (listExp)
-        expList = *listExp;
+    if (listStmt)
+        expList = *listStmt;
 }
 
 /*==============================================================================
@@ -113,10 +113,8 @@ RTL& RTL::operator=(RTL& other) {
     if (this != &other) {
         // Do a deep copy always
         std::list<Exp*>::iterator it;
-        for (it = other.expList.begin(); it != other.expList.end(); it++) {
-            Exp* e = (*it)->clone();
-            expList.push_back(e);
-        }
+        for (it = other.expList.begin(); it != other.expList.end(); it++)
+            expList.push_back((*it)->clone());
         
         kind = other.kind;
         nativeAddr = other.nativeAddr;
@@ -172,23 +170,26 @@ void RTL::deepCopyList(std::list<Exp*>& dest) {
  * OVERVIEW:        Append the given Exp at the end of this RTL
  * NOTE:            Exception: Leaves any flag call at the end (so may push exp
  *                   to second last position, instead of last)
- * NOTE:            exp is NOT copied. This is different to how UQBT was!
+ * NOTE:            stmt is NOT copied. This is different to how UQBT was!
  * PARAMETERS:      rt: pointer to Exp to append
  * RETURNS:         Nothing
  *============================================================================*/
 void RTL::appendExp(Exp* exp) {
-    if (expList.size() && (expList.back()->isFlagCall())) {
-        std::list<Exp*>::iterator it = expList.end();
-        expList.insert(--it, exp);
-    } else {
-        expList.push_back(exp);
+    if (expList.size()) {
+        FlagDef *def = dynamic_cast<FlagDef*>(expList.back());
+	if (def != NULL) {
+            std::list<Exp*>::iterator it = expList.end();
+            expList.insert(--it, exp);
+	    return;
+	}
     }
+    expList.push_back(exp);
 }
 
 /*==============================================================================
  * FUNCTION:        RTL::prependExp
  * OVERVIEW:        Prepend the given Exp at the start of this RTL
- * NOTE:            No copy of exp is made. This is different to how UQBT was!
+ * NOTE:            No copy of statement is made. This is different to how UQBT was!
  * PARAMETERS:      rtxp to Exp to prepend
  * RETURNS:         Nothing
  *============================================================================*/
@@ -198,7 +199,7 @@ void RTL::prependExp(Exp* exp) {
 
 /*==============================================================================
  * FUNCTION:        RTL::appendListExp
- * OVERVIEW:        Append a given list of Exp*s to this RTL
+ * OVERVIEW:        Append a given list of Exps to this RTL
  * NOTE:            A copy of the Exps in le are appended
  * PARAMETERS:      rtl: list of Exps to insert
  * RETURNS:         Nothing
@@ -211,9 +212,9 @@ void RTL::appendListExp(std::list<Exp*>& le) {
 }
 
 /*==============================================================================
- * FUNCTION:        RTL::appendExplist
+ * FUNCTION:        RTL::appendRTL
  * OVERVIEW:        Append the Exps of another RTL to this object
- * NOTE:            A copy of the Exps in h are appended
+ * NOTE:            A copy of the Exps in r are appended
  * PARAMETERS:      rtl: RTL whose Exps we are to insert
  * RETURNS:         Nothing
  *============================================================================*/
@@ -224,12 +225,11 @@ void RTL::appendRTL(RTL& r) {
 /*==============================================================================
  * FUNCTION:        RTL::insertExp
  * OVERVIEW:        Insert the given Exp before index i
- * NOTE:            No copy of exp is made. This is different to UQBT
+ * NOTE:            No copy of stmt is made. This is different to UQBT
  * PARAMETERS:      exp: pointer to the Exp to insert
  *                  i: position to insert before (0 = first)
  * RETURNS:         Nothing
  *============================================================================*/
-// Insert register transfer at position i (or the head of the list)
 void RTL::insertExp(Exp* exp, unsigned i) {
     // Check that position i is not out of bounds
     assert (i < expList.size() || expList.size() == 0);
@@ -260,8 +260,8 @@ void RTL::updateExp(Exp *exp, unsigned i) {
     // Note that sometimes we might update even when we don't know if it's
     // needed, e.g. after a searchReplace.
     // In that case, don't update, and especially don't delete the existing
-    // expression (because it's also the one we are updating!)
-    if (!((char*)*pp == (char*)exp)) {
+    // statement (because it's also the one we are updating!)
+    if (*pp != exp) {
         // Do the update
         if (*pp) delete *pp;
         *pp = exp;
@@ -327,10 +327,11 @@ void RTL::print(std::ostream& os /*= cout*/) {
     {
         if (bFirst) os << " ";
         else        os << std::setw(9) << " ";
-        //if ((*p)->isAssign()) 
-        //    ((AssignExp*)(*p))->printWithLives(os);
-        //else
-        (*p)->print(os);
+	Statement *stmt = dynamic_cast<Statement*>(*p);
+	if (stmt)
+            stmt->printWithUses(os);
+	else
+	    (*p)->print(os);
         os << "\n";
         bFirst = false;
     }
@@ -381,83 +382,6 @@ bool RTL::getCommented() {
 }
 
 /*==============================================================================
- * FUNCTION:        RTL::expSubAXP
- * OVERVIEW:        (See comment for Proc::subAXP)
- * NOTE:            Was in RTAssgn::subAXP; assumes a typed assignment expr
- * PARAMETERS:      exp: ref to Exp to substitute (could be an assignment or
- *                    a flag call)
- *                  subMap - a map from expression to expression
- * RETURNS:         True if "left hand side" is substituted  (CHECK THIS!)
- *============================================================================*/
-bool expSubAXP(Exp* exp, std::map<Exp*, Exp*>& subMap)
-{
-    // Record whether or not this assignment is a definition of a register
-    // being substituted
-    bool isDef = false;
-    bool change;
-    Exp* pLHS = exp->getSubExp1()->getSubExp1();
-    Exp* pRHS = exp->getSubExp1()->getSubExp2();
-
-    // Go through each entry in the substitution map
-    for (std::map<Exp*,Exp*>::iterator it = subMap.begin();
-      it != subMap.end(); it++) {
-
-        // Replace any uses of the current register with its
-        // corresponding substitution
-        if (pRHS = pRHS->searchReplaceAll(it->first, it->second, change),
-          change) {
-            // Remove any sizes and sign extends; these will just complicate
-            // simplification. Address expressions shouldn't have these anyway
-            // No! This actually hacks off the size and sign casts from the
-            // whole expression (not just the address part)
-            // Commenting out the below may break some Palm code. But another
-            // way has to be found!
-//          pRHS->removeSize();
-            pRHS->simplify();
-// cout << "subAXP: RHS now "; pRHS->print(); cout << std::endl;
-        }
-        
-        // If this is a definition of the current register, then
-        // update the map accordingly otherwise replace any use of
-        // the register in the LHS of this assignment
-        if (*pLHS == *it->first) {
-            *it->second = *pRHS;
-            isDef = true;
-        }
-        else {
-            if(pLHS = pLHS->searchReplaceAll(it->first, it->second, change),
-              change) {
-                pLHS->simplify();
-// cout << "subAXP: LHS now "; pLHS->print(); cout << std::endl;
-            }
-        }
-    }
-    return isDef;
-}
-
-/*==============================================================================
- * FUNCTION:        RTL::subAXP
- * OVERVIEW:        (See comment for Proc::subAXP)
- * PARAMETERS:      subMap -
- * RETURNS:         Nothing
- *============================================================================*/
-void RTL::subAXP(std::map<Exp*,Exp*>& subMap) {
-    std::list<Exp*>::iterator it = expList.begin();
-    while (it != expList.end()) {
-// if (*it) {cerr << "\nAXP substitutution on `";
-// (*it)->print(cerr);cerr<<"'\n";}
-        if (expSubAXP((*it), (subMap))) {
-            // This Exp was a definition of a substituted register and
-            // so we must delete it here
-            delete *it;
-            it = expList.erase(it);
-        } else {
-            it++;
-        }
-    }
-}
-
-/*==============================================================================
  * FUNCTION:        RTL::searchReplace
  * OVERVIEW:        Replace all instances of search with replace.
  * PARAMETERS:      search - ptr to an expression to search for
@@ -468,8 +392,9 @@ void RTL::searchAndReplace(Exp* search, Exp* replace)
 {
     for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++)
     {
-        Exp* pSrc = *it;
-		bool ch;
+        Exp* pSrc = dynamic_cast<Exp*>(*it);
+	if (pSrc == NULL) continue;
+        bool ch;
         pSrc = pSrc->searchReplaceAll(search, replace, ch);
         // If the top level changed, must update the list
         if (pSrc != *it) {
@@ -491,7 +416,8 @@ bool RTL::searchAll(Exp* search, std::list<Exp *> &result)
     bool found = false;
     for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++)
     {
-        if ((*it)->searchAll(search, result)) {
+	Exp *e = *it;
+        if (e->searchAll(search, result)) {
             found = true;
         }
     }
@@ -577,7 +503,7 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
         size = 32;      // Ugh
 
     // Generate the assignment expression
-    Exp* asgn = new AssignExp(size, pLhs, pRhs);
+    AssignExp* asgn = new AssignExp(size, pLhs, pRhs);
     if (prep)
         prependExp(asgn);
     else
@@ -606,15 +532,16 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, int size /* = -1 */) {
     std::list<Exp*>::iterator it;
     // First skip all assignments with temps on LHS
     for (it = expList.begin(); it != expList.end(); it++) {
-        if (!(*it)->isAssign())
+	Exp *e = *it;
+        if (!e->isAssign())
             break;
-        Exp* LHS = (*it)->getSubExp1();
+        Exp* LHS = e->getSubExp1();
         if (LHS->isTemp())
             break;
     }
 
     // Now check if the next Exp is an assignment
-    if ((it == expList.end()) || (!(*it)->isAssign())) {
+    if ((it == expList.end()) || !(*it)->isAssign()) {
         // There isn't an assignment following. Use the previous Exp to insert
         // before
         if (it != expList.begin())
@@ -643,12 +570,14 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, int size /* = -1 */) {
 int RTL::getSize() {
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++) {
-        if ((*it)->isAssign())
-            return ((AssignExp*)(*it))->getSize();
+	Exp *e = *it;
+        if (e->isAssign())
+            return ((AssignExp*)e)->getSize();
     }
     return 32;              // Default to 32 bits if no assignments
 }
 
+#if 0 // eerk
 /*==============================================================================
  * FUNCTION:        RTL::forwardSubs
  * OVERVIEW:        Perform forward substitutions of temporaries (but not
@@ -764,6 +693,7 @@ void RTL::forwardSubs()
     }
 
 }
+#endif
 
 /*==============================================================================
  * FUNCTION:      RTL::areFlagsAffected
@@ -774,14 +704,15 @@ void RTL::forwardSubs()
  *============================================================================*/
 bool RTL::areFlagsAffected()
 {
-	if (expList.size() == 0) return false;
-	// Get an iterator to the last RT
-	std::list<Exp*>::iterator it = expList.end();
+    if (expList.size() == 0) return false;
+    // Get an iterator to the last RT
+    std::list<Exp*>::iterator it = expList.end();
     if (it == expList.begin())
         return false;           // Not expressions at all
     it--;                       // Will now point to the end of the list
-	// If it is a flag call, then the CCs are affected
-	return (*it)->isFlagCall();
+    Exp *e = *it;
+    // If it is a flag call, then the CCs are affected
+    return e->isFlagCall();
 }
 
 
@@ -901,162 +832,9 @@ bool RTL::deserialize_fid(std::istream &inf, int fid)
 void RTL::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
 	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		if ((*it)->isAssign()) {
-			hll.AddAssignmentStatement(pbb, *it);
-		}
-	}
-}
-
-bool RTL::getSSADefs(DefSet &defs, bool ssa)
-{
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		if (!(*it)->isAssign()) continue;
-		Exp *left = (*it)->getSubExp1();
-		if (left->getOper() == opMemOf)
-			continue;
-		// if ssa still ok check if defs contains left
-		if (ssa) {
-			// bool found = false;
-			for (DefSet::iterator it = defs.begin(); it != defs.end(); it++)
-				if (*(*it).getLeft() == *left) {
-					ssa = false;
-					break;
-				}
-		}		
-		// defs.insert(Def(this, it));  // Gcc won't have this
-        // Presumably it no longer allows making a ref to a temporary
-        Def dummy(this, it);
-		defs.insert(dummy);
-	}
-	return ssa;
-}
-
-void RTL::SSAsubscript(SSACounts &counts)
-{
-	// for each expression in this RTL
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		// make sure it's an assign
-		if (!(*it)->isAssign()) continue;
-		// get the left
-		Exp *left = (*it)->getSubExp1();
-
-		UseSet u;
-		// if it's a phi then we're only interested in uses on the left if it's a memof
-		if ((*it)->getSubExp2()->getOper() == opPhi) {
-			if (left->getOper() == opMemOf) {
-				left->getUses(u, left);
-				u.remove(left); // dont want the memOf
-			}
-		} else {
-			// get the uses in this expression
-			(*it)->getUses(u, *it);
-		}
-
-		// for each use
-		for (UseSet::iterator uit = u.begin(); uit != u.end(); uit++) {
-			(*uit).subscript(counts);
-		}		
-
-		if (left->getOper() == opMemOf)
-			continue;
-
-		// get the value of the left (if subscripted)
-		Exp *leftval = left;
-		if (leftval->getOper() == opSubscript) leftval = leftval->getSubExp1();
-
-		// increase counts for the left
-		counts.incSubscriptFor(leftval);
-		// get subscript for left
-		int ncount = counts.getMaxSubscriptFor(leftval);
-
-		if (left->getOper() == opSubscript) {
-			assert(left->getSubExp2()->getOper() == opIntConst);
-			int ocount = ((Const*)left->getSubExp2())->getInt();
-			if (ncount != ocount) {
-				// update the count
-				((Const*)left->getSubExp2())->setInt(ncount);
-			}
-		} else {
-			// subscript the left
-			(*it)->setSubExp1(new Binary(opSubscript, left->clone(), new Const(ncount)));
-		}
-	}
-}
-
-
-bool RTL::isUsedInPhi(Exp *e)
-{
-	// for each expression in this RTL
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		// make sure it's an assign
-		if (!(*it)->isAssign()) continue;
-		// get the right
-		Exp *right = (*it)->getSubExp2();
-		if (right->getOper() != opPhi)
-			continue;
-
-		for (Exp *l = right->getSubExp1(); l->getOper() != opNil; l = l->getSubExp2())
-			if (*l->getSubExp1() == *e)
-				return true;
-	}
-	return false;
-}
-
-void RTL::getUsesAfterDef(Exp *def, UseSet &uses)
-{
-	assert(kind == HL_NONE);
-
-	std::list<Exp*>::iterator it;
-	for (it = expList.begin(); it != expList.end(); it++) {
-		if (*it == def)
-			break;
-	}
-
-	for (it++; it != expList.end(); it++) {
-		(*it)->getUsesOf(uses, *it, def->getSubExp1()->getSubExp1());
-	}
-}
-
-bool RTL::containsDef(Exp *def)
-{
-	if (kind != HL_NONE) return false;
-
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		if (*it == def)
-			return true;
-	}
-	return false;
-}
-
-void RTL::getDefs(DefSet &defs, Exp *before_use)
-{
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		if (before_use) {
-			UseSet uses;
-			Exp *e;
-			Use u(e);
-			(*it)->getUses(uses, *it);
-			if (uses.find(before_use, u))
-				break;
-		}
-		if ((*it)->isAssign()) {
-			Def d(this, it);
-			defs.insert(d);
-		}
-	}
-}
-
-void RTL::getUses(UseSet &uses, bool defIsUse)
-{
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		(*it)->getUses(uses, *it, defIsUse);
-	}
-}
-
-void RTL::getUsesOf(UseSet &uses, Exp *e)
-{
-	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
-		(*it)->getUsesOf(uses, *it, e);
+		AssignExp *e = dynamic_cast<AssignExp*>(*it);
+		if (e != NULL)
+	            hll.AddAssignmentStatement(pbb, e);
 	}
 }
 
@@ -1064,7 +842,7 @@ void RTL::simplify()
 {
 	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
 		// simplify arithmetic of assignment
-		Exp *e = (*it);
+		Exp *e = *it;
 		if (!e->isAssign()) continue;
 		Exp *e1 = e->getSubExp1()->simplifyArith()->clone();
 		Exp *e2 = e->getSubExp2()->simplifyArith()->clone();

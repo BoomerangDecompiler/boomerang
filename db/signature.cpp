@@ -27,6 +27,7 @@
 #include <string>
 #include <sstream>
 #include "type.h"
+#include "dataflow.h"
 #include "exp.h"
 #include "prog.h"
 #include "BinaryFile.h"
@@ -34,7 +35,6 @@
 #include "signature.h"
 #include "util.h"
 #include "cfg.h"
-#include "dataflow.h"
 #include "proc.h"
 
 namespace CallingConvention {
@@ -104,6 +104,7 @@ namespace CallingConvention {
 			virtual void analyse(UserProc *p);
 
 			virtual Signature *promote(UserProc *p);
+                        virtual void getInternalStatements(std::list<Statement*> &stmts);
 		};		
 
 		class SparcSignature : public Signature {
@@ -520,9 +521,10 @@ Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(unsigned int n)
 {
 	assert(n < pnames.size());
 	Exp *esp = new Unary(opRegOf, new Const(28));
-        if (n == 0)
-	    return new Unary(opMemOf, esp);
-	return new Unary(opMemOf, new Binary(opPlus, esp, new Const(n * 4)));
+        //if (n == 0)
+	//    return new Unary(opMemOf, esp);
+	return new Unary(opMemOf, new Binary(opPlus, esp, 
+				new Const((int)((n+1) * 4))));
 }
 
 void CallingConvention::StdC::PentiumSignature::analyse(UserProc *p)
@@ -535,6 +537,17 @@ Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
 {
 	// No promotions from here up, obvious idea would be c++ name mangling	
 	return this;
+}
+
+void CallingConvention::StdC::PentiumSignature::getInternalStatements(std::list<Statement*> &stmts)
+{
+    static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
+		    new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
+    static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
+		    new Binary(opPlus, new Unary(opRegOf, new Const(28)),
+			    new Const(4)));
+    stmts.push_back((AssignExp*)fixpc->clone());
+    stmts.push_back((AssignExp*)fixesp->clone());
 }
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam), rettype(NULL)
@@ -915,55 +928,18 @@ Exp *Signature::getArgumentExp(unsigned int n)
 
 void Signature::findInRegs(UserProc *p)
 {
-	UseSet uses;
-	p->getCFG()->getAllUses(uses);
-	std::set<int> set_inregs;
-	for (UseSet::iterator it = uses.begin(); it != uses.end(); it++) {
-		Exp *e = (*it).getExp();
-		if (e->getOper() == opSubscript) {
-			Const *c = (Const*)e->getSubExp2();
-			assert(c->getOper() == opIntConst);
-			if (c->getInt() == 0) {
-				if (e->getSubExp1()->getOper() == opRegOf) {
-					Const *r = (Const*)e->getSubExp1()->getSubExp1();
-					if (r->getOper() == opIntConst) {
-						set_inregs.insert(r->getInt());
-					}
-				}
-			}
-		}
-	}
 	inregs.clear();
-	for (std::set<int>::iterator sit = set_inregs.begin(); sit != set_inregs.end(); sit++)
-		inregs.push_back(*sit);
+	// TODO
 }
 
 void Signature::findOutRegs(UserProc *p)
 {
-	DefSet defs;
-	p->getCFG()->getSSADefs(defs);
-	std::set<int> set_outregs;
-	for (DefSet::iterator it = defs.begin(); it != defs.end(); it++) {
-		Exp *e = (*it).getLeft();
-		if (e->getOper() == opSubscript) {
-			if (e->getSubExp1()->getOper() == opRegOf) {
-				Const *r = (Const*)e->getSubExp1()->getSubExp1();
-				if (r->getOper() == opIntConst) {
-					set_outregs.insert(r->getInt());
-				}
-			}
-		}	
-	}
 	outregs.clear();
-	for (std::set<int>::iterator sit = set_outregs.begin(); sit != set_outregs.end(); sit++)
-		outregs.push_back(*sit);
+	// TODO
 }
 
-void Signature::analyse(UserProc *p)
-{
-	p->transformToSSAForm();
-	findInRegs(p);
-	findOutRegs(p);
+void Signature::analyse(UserProc *p) {
+	// TODO
 }
 
 Signature *Signature::promote(UserProc *p)
@@ -1025,3 +1001,8 @@ void Signature::print(std::ostream &out)
     }
     out << ")" << std::endl;
 }
+
+void Signature::getInternalStatements(std::list<Statement*> &stmts)
+{
+}
+

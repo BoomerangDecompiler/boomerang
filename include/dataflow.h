@@ -14,6 +14,7 @@
 
 /*
  * $Revision$
+ * 25 Nov 02 - Trent: appropriated for use by new dataflow.
  * 3 July 02 - Trent: created.
  *
  */
@@ -24,97 +25,81 @@
 #include <set>
 
 class Exp;
-class UseSet;
-class SSACounts;
+class BasicBlock;
+typedef BasicBlock *PBB;
 
-class Def {
-private:
-	RTL* rtl;
-	std::list<Exp*>::iterator it;
-
+/* Statements define values that are used in expressions.
+ * They are akin to "definition" in the Dragon Book.
+ */
+class Statement {
+protected:
+    PBB pbb;  // contains a pointer to the enclosing BB
+    std::set<Statement*> uses;
+    std::set<Statement*> useBy;
 public:
-	Def();
-	Def(RTL *r, std::list<Exp*>::iterator i);
 
-	Exp *getLeft() const;
-	Exp *getRight() const;
-	Def &operator=(Def &other) { rtl = other.rtl; it = other.it; return *this; }
-	bool operator<(const Def &other) const;
-	Exp* &getExp() const { return *it; }
+    Statement() : pbb(NULL) { }
+    virtual ~Statement() { }
 
-	void remove();
-};
+    // calculates the live set after this statement
+    virtual void calcLiveOut(std::set<Statement*> &liveout);
 
-class Use {
-private:
-	Exp* &exp;
-	bool def;
+    // gets the live set before this statement
+    virtual void getLiveIn(std::set<Statement*> &livein);
 
-public:
-	Use(Exp* &e, bool isdef = false);
-	Use &operator=(Use &other) { exp = other.exp; return *this; }
-	bool expIs(Exp *e) { return exp == e; }
-	bool operator<(const Use &other) const;
-	bool isDef() { return def; }
-	void setDef(bool b) { def = b; }
-	Exp* &getExp() { return exp; }
-	void subscript(SSACounts &counts);
-};
+    // removes any statement from the live set which is killed by this 
+    // statement
+    virtual void killLive(std::set<Statement*> &live) = 0;
 
-class DefSet {
-private:
-	std::list<Def> defs;
+    // creates a set of statements that are killed by this statement
+    // and have no uses
+    virtual void getDeadStatements(std::set<Statement*> &dead) = 0;
 
-public:
-	DefSet() {}
+    // calculates the uses/useBy links for this statement
+    virtual void calcUseLinks();
 
-	void insert(Def &d);
-	void merge(DefSet &other);
-	void remove(DefSet &other);
-	void remove(Def &d);
-	bool find(Exp &left, Def &d);
-	void clear() { defs.clear(); }
+    // returns an expression that would be used to reference the value
+    // defined by this statement
+    virtual Exp* getLeft() = 0;
 
-	typedef std::list<Def>::iterator iterator;
-	iterator begin() { return defs.begin(); }
-	iterator end() { return defs.end(); }
-};
+    // returns true if this statement uses the given expression
+    virtual bool usesExp(Exp *e) = 0;
 
-class UseSet {
-private:
-	std::list<Use> uses;
-	
-public:
-	UseSet() {}
+    // returns the statement which is used by this statement and has a
+    // left like the given expression
+    virtual Statement *findUse(Exp *e);
 
-	void insert(Exp* &e);
-	void merge(UseSet &other);
+    // get the uses
+    std::set<Statement*> &getUses() { return uses; }
+    std::set<Statement*> &getUseBy() { return useBy; }
 
-	bool find(Exp *e, Use &u);
-	bool contains(Exp *e);
-	void remove(Exp *e);
-	bool empty() { return uses.begin() == uses.end(); }
-	void setDef(Exp *e, bool b);	
+    // adds a new statement to the useBy set
+    void addUseBy(Statement *stmt) { useBy.insert(stmt); }
 
-	typedef std::list<Use>::iterator iterator;
-	iterator begin() { return uses.begin(); }
-	iterator end() { return uses.end(); }
+    // get/set the enclosing BB
+    PBB getBB() { return pbb; }
+    void setBB(PBB bb) { pbb = bb; }
 
-	iterator erase(iterator it) { return uses.erase(it); }	
-};
+    // returns true if this statement can be propogated to all it's
+    // uses and removed
+    virtual bool canPropogateToAll() = 0;
 
-class SSACounts {
-private:
-	std::list<std::pair<Exp*, int> > counts;	
-	static std::list<std::pair<Exp*, int> > maxes;
+    // propogates this statement to all it's uses, caller must remove
+    virtual void propogateToAll() = 0;
 
-public:
-	SSACounts() { }
+    // replaces a use of the given statement with an expression
+    virtual void replaceUse(Statement *use, Exp *with);
 
-	int getSubscriptFor(Exp *e);
-	void incSubscriptFor(Exp *e);
-	int getMaxSubscriptFor(Exp *e);
-	void clearMaxes();
+    // statements should be printable (for debugging)
+    virtual void print(std::ostream &os) = 0;
+    virtual void printWithLives(std::ostream& os) = 0;
+    virtual void printWithUses(std::ostream& os) = 0;
+    virtual void printAsUse(std::ostream &os) = 0;
+    virtual void printAsUseBy(std::ostream &os) = 0;
+
+protected:
+    virtual void doReplaceUse(Statement *use, Exp *with) = 0;
+    bool mayAlias(Exp *e1, Exp *e2, int size);
 };
 
 #endif // DATAFLOW

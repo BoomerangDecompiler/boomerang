@@ -37,6 +37,7 @@
 
 #include <sstream>
 #include <algorithm>        // For find()
+#include "dataflow.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -44,7 +45,6 @@
 #include "rtl.h"
 #include "proc.h"
 #include "prog.h"
-#include "dataflow.h"
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "util.h"
@@ -1122,24 +1122,6 @@ void UserProc::unDecode()
 }
 
 /*==============================================================================
- * FUNCTION:      UserProc::subAXP
- * OVERVIEW:      Given a map from registers to expressions, follow
- *                the control flow of the CFG replacing every use of a
- *                register in this map with the corresponding
- *                expression. Then for every definition of such a
- *                register, update its expression to be the RHS of
- *                the definition after the first type of substitution
- *                has been performed and remove that definition from
- *                the CFG.
- * PARAMETERS:    subMap - a map from register to expressions
- * RETURNS:       <nothing>
- *============================================================================*/
-void UserProc::subAXP(std::map<Exp*,Exp*>& subMap)
-{
-    cfg->subAXP(subMap);
-}
-
-/*==============================================================================
  * FUNCTION:    UserProc::getEntryBB
  * OVERVIEW:    Get the BB with the entry point address for this procedure
  * PARAMETERS:  
@@ -1637,48 +1619,176 @@ void UserProc::print(std::ostream &out) {
     cfg->print(out);
 }
 
-bool UserProc::isSSAForm()
-{
-	DefSet defs;
-	// TODO: add params to defs
-	return cfg->getSSADefs(defs);
-}
-
-void UserProc::transformToSSAForm()
-{
-	DefSet defs;
-	// TODO: add params to defs
-	cfg->SSATransform(defs);
-	// minimize the SSA form
-	do cfg->simplify();
-	while (cfg->minimizeSSAForm());	
-}
-
-void UserProc::transformFromSSAForm()
-{
-	cfg->revSSATransform();
-}
-
-void UserProc::removeUselessCode()
-{
-	DefSet defs;
-
-	bool change = true;
-	while (change) {
-		change = false;
-		defs.clear();
-		assert(cfg->getSSADefs(defs));
-		for (DefSet::iterator it = defs.begin(); it != defs.end(); it++) {
-			Def &d = *it;
-			UseSet uses;
-			cfg->getAllUses(d.getLeft(), uses);
-			if (uses.empty()) {
-				d.remove();
-				change = true;
-			}
-		}
+// get all statements
+void UserProc::getAllStatements(std::set<Statement*> &stmts) {
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        std::list<RTL*> *rtls = bb->getRTLs();
+	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+		       rit++) {
+	    RTL *rtl = *rit;
+	    rtl->simplify();
+            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+		 it != rtl->getList().end(); it++) {
+		Statement *e = dynamic_cast<Statement*>(*it);
+		if (e == NULL) continue;
+		stmts.insert(e);
+	    }
+	    if (rtl->getKind() == CALL_RTL) {
+		HLCall *call = (HLCall*)rtl;
+	        stmts.insert(call);
+		std::list<Statement*> &internal = call->getInternalStatements();
+		for (std::list<Statement*>::iterator it1 = internal.begin();
+		     it1 != internal.end(); it1++)
+		    stmts.insert(*it1);
+            }
 	}
+    }
+}
 
+// remove a statement
+void UserProc::removeStatement(Statement *stmt) {
+    // remove from BB/RTL
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        std::list<RTL*> *rtls = bb->getRTLs();
+	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+		       rit++) {
+            RTL *rtl = *rit;
+	    for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+		 it != rtl->getList().end(); it++) {
+		Statement *e = dynamic_cast<Statement*>(*it);
+		if (e == NULL) continue;
+		if (e == stmt) {
+		    rtl->getList().erase(it);
+		    return;
+		}
+	    }
+	    if (rtl->getKind() == CALL_RTL) {
+		HLCall *call = (HLCall*)rtl;
+	        assert(call != stmt);
+		std::list<Statement*> &internal = call->getInternalStatements();
+		for (std::list<Statement*>::iterator it1 = internal.begin();
+		     it1 != internal.end(); it1++)
+		    if (*it1 == stmt) {
+		        internal.erase(it1);
+		        return;
+		    }
+            }
+	}
+    }
+}
+
+// decompile this userproc
+void UserProc::decompile() {
+    print(std::cout);
+    bool change = true;
+    while (change) {
+        change = false;
+	change |= removeNullStatements();
+	change |= removeDeadStatements();
+	change |= propogateAndRemoveStatements();
+    }
+}
+
+bool UserProc::removeNullStatements()
+{
+    bool change = false;
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    // remove null code
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+        AssignExp *e = dynamic_cast<AssignExp*>(*it);
+	if (e == NULL) continue;
+	if (*e->getSubExp1() == *e->getSubExp2() && 
+	    e->getUseBy().size() == 0) {
+	    //std::cerr << "removing null code: ";
+	    //e->print(std::cerr);
+	    //std::cerr << std::endl;
+            removeStatement(e);
+	    change = true;
+	}
+    }
+    return change;
+}
+
+bool UserProc::removeDeadStatements() 
+{
+    bool change = false;
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    // remove dead code
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+        std::set<Statement*> dead;
+	(*it)->getDeadStatements(dead);
+	for (std::set<Statement*>::iterator it1 = dead.begin(); 
+	     it1 != dead.end(); it1++) 
+	    if (!(*it1)->getLeft()->isMemOf()) {
+		// hack: if the dead statement has a use which would make
+		// this statement useless if propogated, leave it
+		std::set<Statement*> uses = (*it1)->getUses();
+		bool matchingUse = false;
+		for (std::set<Statement*>::iterator it2 = uses.begin();
+		     it2 != uses.end(); it2++) {
+		    AssignExp *e = dynamic_cast<AssignExp*>(*it2);
+		    if (e == NULL || (*it1)->getLeft() == NULL) continue;
+		    if (*e->getSubExp2() == *(*it1)->getLeft()) {
+		        matchingUse = true;
+			break;
+		    }
+	        }
+		if (matchingUse) continue;
+	        std::cerr << "removing dead code: ";
+	        (*it1)->printAsUse(std::cerr);
+	        std::cerr << std::endl;
+		HLCall *call = dynamic_cast<HLCall*>(*it1);
+		if (call == NULL)
+                    removeStatement(*it1);
+		else {
+		    call->setIgnoreReturnLoc(true);
+		}
+                // remove from liveness
+                std::set<Statement*> &liveout = (*it1)->getBB()->getLiveOut();
+                if (liveout.find(*it1) != liveout.end()) {
+                    liveout.erase(*it1);
+        	    cfg->updateLiveness();
+                }
+		change = true;
+	    }
+    }
+    return change;
+}
+
+bool UserProc::propogateAndRemoveStatements()
+{
+    bool change = false;
+    std::set<Statement*> stmts;
+    getAllStatements(stmts);
+    // propogate any statements that can be removed
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+		    it++) {
+        if ((*it)->canPropogateToAll()) {
+	    removeStatement(*it);
+            // remove from liveness
+            std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
+            if (liveout.find(*it) != liveout.end()) {
+                liveout.erase(*it);
+        	cfg->updateLiveness();
+            }
+	    // remove from useBy set of uses
+	    std::set<Statement*> &uses = (*it)->getUses();
+	    for (std::set<Statement*>::iterator it1 = uses.begin();
+                 it1 != uses.end(); it1++) 
+	        (*it1)->getUseBy().erase(*it);
+	    (*it)->propogateToAll();
+	    // debug: print
+	    print(std::cout);
+	    change = true;
+	}
+    }
+    return change;
 }
 
 void UserProc::promoteSignature()

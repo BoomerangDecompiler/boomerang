@@ -26,6 +26,7 @@
 #pragma warning(disable:4786)
 #endif
 
+#include "dataflow.h"
 #include "cfg.h"
 #include "exp.h"
 #include "proc.h"
@@ -200,16 +201,6 @@ void CHLLCode::appendExp(Exp *exp)
 			// TODO: check size of the assign agrees with type of 
 			// the right, otherwise we need a cast
 			appendExp(b->getSubExp2());
-                       
-                        // append liveness stuff
-                        std::set<AssignExp*> live;
-                        a->getLiveIn(live);
-                        appendToken(exp, ' ');
-                        for (std::set<AssignExp*>::iterator it = live.begin();
-                             it != live.end(); it++) {
-                            appendExp(*it);
-                            appendToken(*it, ' ');
-                        }
 			break;
                     }
 		case opTypedExp:    // Typed expression

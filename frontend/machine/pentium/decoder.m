@@ -1258,7 +1258,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         Exps = instantiate(pc, "NOP");
 
     | CALL.Jvod(relocd) =>
-        HLCall* newCall = new HLCall(pc, 0, 0);
+        Exps = instantiate(pc,  "CALL.Jvod", dis_Num(relocd));
+        HLCall* newCall = new HLCall(pc, 0, Exps);
 
         // Set the destination
 	// WAS: relocd-hostPC-5, which is broken? -trent

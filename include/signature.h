@@ -14,6 +14,8 @@
 #ifndef __SIGNATURE_H_
 #define __SIGNATURE_H_
 
+class Statement;
+
 // Used to represent local variables (registers, stack locations, etc)
 class Local {
 protected:
@@ -104,6 +106,8 @@ virtual void analyse(UserProc *p);
 	// any signature can be promoted to a higher level signature, if available
 virtual Signature *promote(UserProc *p);
         void print(std::ostream &out);
+
+virtual void getInternalStatements(std::list<Statement*> &stmts);
 };
 
 #endif

@@ -1233,7 +1233,6 @@ void Analysis::analyseCalls(PBB pBB, UserProc *proc)
 			Proc *p = proc->getProg()->findProc(call->getFixedDest());
 			assert(p);
 			call->setDestProc(p);
-                        call->initArguments();
 		}
 	}
 }

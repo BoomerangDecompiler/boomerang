@@ -35,6 +35,7 @@
 
 #include <algorithm>    // For remove()
 #include "types.h"
+#include "dataflow.h"
 #include "exp.h"
 #include "register.h"
 #include "type.h"
