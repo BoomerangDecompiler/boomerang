@@ -18,6 +18,8 @@
  *
  * 26 Apr 02 - Mike: Changes for boomerang
  * 18 Nov 02 - Mike: Mods for MOV.Ed.Iv^od etc. Also suppressed warning re name
+ * 09 Dec 02 - Mike: Changed DIS_REG32 to use dis_Reg again, because in the
+ *				SSL file we have reg32 instead of r[reg32] (compat with SPARC)
 */
 
 #include <assert.h>
@@ -33,17 +35,15 @@
 #include "proc.h"
 #include "boomerang.h"
 
-// The following are all dis_Num because the SSL has r[REG32], not just REG32
-// Else we will get r[r[24]]
-#define DIS_R8    (dis_Num(r8+8))
-#define DIS_R16   (dis_Num(r16+0))
-#define DIS_R32   (dis_Num(r32+24))
-#define DIS_REG8  (dis_Num(reg+8))
-#define DIS_REG16 (dis_Num(reg+0))
-#define DIS_REG32 (dis_Num(reg+24))
-#define DIS_SR16  (dis_Num(sr16+16))
-#define DIS_IDX   (dis_Num(idx+32))
-#define DIS_IDXP1 (dis_Num((idx+1)%7))
+#define DIS_R8    (dis_Reg(r8+8))
+#define DIS_R16   (dis_Reg(r16+0))
+#define DIS_R32   (dis_Reg(r32+24))
+#define DIS_REG8  (dis_Reg(reg+8))
+#define DIS_REG16 (dis_Reg(reg+0))
+#define DIS_REG32 (dis_Reg(reg+24))
+#define DIS_SR16  (dis_Reg(sr16+16))
+#define DIS_IDX   (dis_Reg(idx+32))
+#define DIS_IDXP1 (dis_Reg((idx+1)%7))
 
 #define DIS_EADDR32 (dis_Eaddr(Eaddr, 32))
 #define DIS_EADDR16 (dis_Eaddr(Eaddr, 16))
