@@ -1573,29 +1573,19 @@ FDIV.r64   modrm
 FDIV.ST.STi   i 
             *80* %st := %st /f i;
 
-# At this point, it should be noted that Intel have a really silly way of
-# defining what is and isn't an "R" instruction. There is an "R" bit in the
-# opcode (bit 2 of the second byte), which is NOT the same as the "R" in the
-# instruction name (according to the Intel book, and according to debug
-# and ida pro). Unix disassemblers like dis and objdump get it wrong, as
-# the .spec file does.
-# Looking at the bits in the instruction, the "R" (reverse) bit implies
-# reversing the operands such that ST is now the second operand, and the
-# "d" (direction) bit implies that ST(i) is the destination instead of ST.
-# Intel's crazy idea is that when "d" is in force, the operands have to be
-# swapped as well, so to get them the normal way around, you need an "R"
-# instruction to reverse the reversal. Clear?
-# Getting the R correct is difficult, so we tolerate the error and correct
-# for it. Basically, it means reversing the operands for instructions with
-# and R in the name (according to the spec, not Intel) AND with .STi.ST
-# (effectively, this form already implies a "reversal"). Note that the NO
-# argument forms (e.g. FDIVP) are effectively .STi.ST verions (with i=1).
+# At this point, it should be noted that Intel have an unusual way of
+# defining what is and isn't an "R" (reverse operands) instruction.
+# Beware! Many disassemblers and assemblers get it wrong.
+# Of course, gcc uses "AT&T" syntax, so that makes it more confusing again.
+# Note that the decoder now gets the names right, as per the Intel manual.
+# Note: some older Intel manuals have errors in the FSUB and FSUBR
+# instructions.
 
 FDIV.STi.ST   i 
-            *80* i := %st /f i;
+            *80* i := i /f %st;
 
 FDIVP.STi.ST   i 
-            *80* i := %st /f i
+            *80* i := i /f %st
             FPOP;
 
 FIDIV.i32   modrm 
@@ -1614,10 +1604,10 @@ FDIVR.ST.STi   i
             *80* %st := i /f %st;
 
 FDIVR.STi.ST   i 
-            *80* i := i /f %st;
+            *80* i := %st /f i;
 
 FDIVRP.STi.ST   i 
-            *80* i := i /f %st
+            *80* i := %st /f i
             FPOP;
 
 FIDIVR.i32   modrm 
@@ -1685,7 +1675,7 @@ FLD.lsR64   modrm
             FPUSH
             *80* %st := fsize(64,80,modrm);
 
-FLD80   modrm 
+FLD80       modrm 
             FPUSH
             *80* %st := modrm;
 
@@ -1695,7 +1685,7 @@ FLD80   modrm
 # around in the decoder that gives us a value of i that is one more than in
 # the instruction
 
-FLD.STi   i 
+FLD.STi     i 
             FPUSH
             *80* %st := i;
 
@@ -1835,12 +1825,13 @@ FSUBR.r64   modrm
 FSUBR.ST.STi   i 
             *80* %st := i -f %st;
 
-# Please see large comment above FDIV
+# We used to think this one had to be swapped
 FSUBR.STi.ST   i 
-            *80* i := i -f %st;
+            *80* i := %st -f i;
 
+# We used to think this one had to be swapped
 FSUBRP.STi.ST   i 
-            *80* i := i -f %st
+            *80* i := %st -f i
             FPOP;
 
 FISUBR.r32   modrm 

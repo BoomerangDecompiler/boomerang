@@ -10,6 +10,7 @@
 # 386-core.spec (based on pentium-core.spec, NJMC v0.5)
 # 18 Oct 01 - Mike: Added PUSH.Ix^ow (66 6A dd, 8 bit operand, 16 bit push)
 # 18 Nov 02 - Mike: Fixed MOV.Ew.Iv^ow and MOV.Ed.Iv^od (was Eb)
+# 01 Oct 03 - Mike: Changed rows 3 & 4 of esc2 map to rows 2 & 3
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -78,8 +79,8 @@ ESC is row = 13      & page = 1
 is esc2; page = 0 & row = [0 1] & col = {0 to 3}
 CLTS is esc2; page = 0 & row = 0 & col = 6
 [ MOV.Rd.Cd  MOV.Rd.Dd  MOV.Cd.Rd  MOV.Dd.Rd  MOV.Rd.Td _  MOV.Td.Rd ]
-is esc2; page = 0 & row = 3 & col = {0 to 6}
-[ WRMSR RDTSC RDMSR ] is esc2; page = 0 & row = 4 & col = {0 to 2}
+is esc2; page = 0 & row = 2 & col = {0 to 6}
+[ WRMSR RDTSC RDMSR ] is esc2; page = 0 & row = 3 & col = {0 to 2}
 Jv   is esc2; row = 8
 SETb is esc2; row = 9
 [ PUSH.FS       POP.FS        CPUID  BT   SHLD.Ib SHLD.CL _            _
@@ -118,7 +119,9 @@ patterns
 
 patterns
   [ D8 D9 DA DB DC DD DE DF ] is ESC & col = {0 to 7}
-  [ FADD FMUL FCOM FCOMP FSUB FSUBR FDIV FDIVR ] is reg_opcode = {0 to 7}
+  [ FADD  FMUL  FCOM   FCOMP   FSUB   FSUBR  FDIV   FDIVR ] is reg_opcode = {0 to 7}
+  [ FADD8 FMUL8 FCOM8  FCOMP8  FSUB8  FSUBR8 FDIV8  FDIVR8] is reg_opcode = {0 to 7}
+  [ FADDC FMULC _      _       FSUBRC FSUBC  FDIVRC FDIVC ] is reg_opcode = {0 to 7}
   [ FLD _ FST FSTP FLDENV FLDCW FSTENV FSTCW ]   is reg_opcode = {0 to 7} ...
   [ FNOP ]                         is D9; mod = 3 & reg_opcode = 2 & r_m = [0]
   [ FCHS FABS _ _ FTST FXAM _ _  ] is D9; mod = 3 & reg_opcode = 4 & r_m = {0 to 7}
@@ -135,7 +138,7 @@ patterns
   [ FCLEX FINIT ]                  is DB; mod = 3 & reg_opcode = 4 & r_m = [2 3]
   [ FRSTOR _ FSAVE FSTSW ]          is reg_opcode = {4 to 7} ...
   [ FFREE _ FST.st FSTP.st FUCOM FUCOMP  _ _ ]  is mod = 3 & reg_opcode = {0 to 7}
-  [ FADDP _ FUBSRP FDIVRP FMULP _ FSUBP FDIVP ] is mod = 3 & reg_opcode = {0 to 7}
+  [ FADDP _ FSUBRP FDIVRP FMULP _ FSUBP FDIVP ] is mod = 3 & reg_opcode = {0 to 7}
   FCOMPP    is DE; mod = 3 & reg_opcode = 3 & r_m = 1
   FSTSW.AX  is DF; mod = 3 & reg_opcode = 4 & r_m = 0
 patterns
@@ -300,17 +303,21 @@ FUCOMIP.ST.STi idx  is  DF ; mod = 3 & reg_opcode = 5 & r_m = idx
 FCOMPP
 FCOS
 FDECSTP
-FDIV^Fmem     Mem  is  Fmem; Mem & FDIV ...
-FDIV^Fstack   idx  is  Fstack & ... (FDIV & r_m = idx)
-FIDIV^Fint	Mem  is  Fint; Mem & FIDIV ...
-FDIVR^Fmem    Mem  is  Fmem; Mem & FDIVR ...
-FDIVR^Fstack  idx  is  Fstack & ... (FDIVR & r_m = idx)
-FIDIVR^Fint	Mem  is  Fint; Mem & FIDIVR ...
-FFREE         idx  is  DD; FFREE & r_m = idx
-FICOM^Fint   Mem is Fint; Mem & FICOM
-FICOMP^Fint  Mem is Fint; Mem & FICOMP
-FILD^FlsI Mem is FlsI; Mem & FILD
-FILD64    Mem is DF;  Mem & FLD.ext ...
+FDIV^Fmem      Mem  is  Fmem; Mem & FDIV ...
+FDIV.ST.STi    idx  is  .ST.STi  & ... (FDIV8 & r_m = idx)
+FDIV.STi.ST    idx  is  .STi.ST  & ... (FDIVC & r_m = idx)
+FDIVP.STi.ST   idx  is  P.STi.ST & ... (FDIVC & r_m = idx)
+FIDIV^Fint	   Mem  is  Fint; Mem & FIDIV ...
+FDIVR^Fmem     Mem  is  Fmem; Mem & FDIVR ...
+FDIVR.ST.STi   idx  is  .ST.STi  & ... (FDIVR8 & r_m = idx)
+FDIVR.STi.ST   idx  is  .STi.ST  & ... (FDIVRC & r_m = idx)
+FDIVRP.STi.ST  idx  is  P.STi.ST & ... (FDIVRC & r_m = idx)
+FIDIVR^Fint	   Mem  is  Fint; Mem & FIDIVR ...
+FFREE          idx  is  DD; FFREE & r_m = idx
+FICOM^Fint     Mem  is  Fint; Mem & FICOM
+FICOMP^Fint    Mem  is  Fint; Mem & FICOMP
+FILD^FlsI      Mem  is  FlsI; Mem & FILD
+FILD64         Mem  is  DF;  Mem & FLD.ext ...
 FINIT
    constructors
 FISTs^FlsI  Mem  is  FlsI; Mem & FISTs
@@ -345,17 +352,21 @@ FSTENV        Mem  is  D9;   Mem & FSTENV
 FSTSW         Mem  is  DD;   Mem & FSTSW
 FSTSW.AX
 FSUB^Fmem     Mem  is  Fmem; Mem & FSUB ...
-FSUB^Fstack   idx  is  Fstack & ... (FSUB & r_m = idx)
-FISUB^Fint	Mem  is  Fint; Mem & FISUB ...
+FSUB.ST.STi   idx  is  .ST.STi  & ... (FSUB8 & r_m = idx)
+FSUB.STi.ST   idx  is  .STi.ST  & ... (FSUBC & r_m = idx)
+FSUBP.STi.ST  idx  is  P.STi.ST & ... (FSUBC & r_m = idx)
+FISUB^Fint	  Mem  is  Fint; Mem & FISUB ...
 FSUBR^Fmem    Mem  is  Fmem; Mem & FSUBR ...
-FSUBR^Fstack  idx  is  Fstack & ... (FSUBR & r_m = idx)
-FISUBR^Fint	Mem  is  Fint; Mem & FISUBR ...
+FSUBR.ST.STi  idx  is  .ST.STi  & ... (FSUBR8 & r_m = idx)
+FSUBR.STi.ST  idx  is  .STi.ST  & ... (FSUBRC & r_m = idx)
+FSUBRP.STi.ST idx  is  P.STi.ST & ... (FSUBRC & r_m = idx)
+FISUBR^Fint	  Mem  is  Fint; Mem & FISUBR ...
 FTST
    constructors
-FUCOMs	  	idx   is  DD; FUCOMs & r_m = idx
+FUCOMs	  	  idx  is  DD; FUCOMs & r_m = idx
 FUCOMPP
 FXAM
-FXCH idx  is  FXCH & ... r_m = idx
+FXCH          idx  is  FXCH & ... r_m = idx
 FXTRACT
 FYL2X
 FYL2XP1
