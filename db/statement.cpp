@@ -3241,7 +3241,8 @@ bool CallStatement::accept(StmtExpVisitor* v) {
     std::vector<Exp*>::iterator it;
     for (it = arguments.begin(); ret && it != arguments.end(); it++)
         ret = (*it)->accept(v->ev);
-    for (it = implicitArguments.begin(); ret && it != implicitArguments.end(); it++)
+    for (it = implicitArguments.begin(); ret && it != implicitArguments.end();
+      it++)
         ret = (*it)->accept(v->ev);
     for (it = returns.begin(); ret && it != returns.end(); it++)
         ret = (*it)->accept(v->ev);
