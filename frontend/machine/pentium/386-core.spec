@@ -27,6 +27,7 @@
 # 28 Jan 99 - Mike: changed CMPS to not use address size prefix (av)
 # 25 Apr 01 - Mike: REP and REPNE are true prefixes now; REP MOVSB is one instr
 # 17 Oct 01 - Mike: Added PUSH.Ix^ow (66 6A dd, 8 bit operand, 16 bit push)
+# 01 Oct 03 - Mike: Changed rows 3 & 4 of esc2 map to rows 2 & 3
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -95,8 +96,8 @@ ESC is row = 13      & page = 1
 is esc2; page = 0 & row = [0 1] & col = {0 to 3}
 CLTS is esc2; page = 0 & row = 0 & col = 6
 [ MOV.Rd.Cd  MOV.Rd.Dd  MOV.Cd.Rd  MOV.Dd.Rd  MOV.Rd.Td _  MOV.Td.Rd ]
-is esc2; page = 0 & row = 3 & col = {0 to 6}
-[ WRMSR RDTSC RDMSR ] is esc2; page = 0 & row = 4 & col = {0 to 2}
+is esc2; page = 0 & row = 2 & col = {0 to 6}
+[ WRMSR RDTSC RDMSR ] is esc2; page = 0 & row = 3 & col = {0 to 2}
 Jv   is esc2; row = 8
 SETb is esc2; row = 9
 [ PUSH.FS       POP.FS        CPUID  BT   SHLD.Ib SHLD.CL _            _
