@@ -99,7 +99,8 @@ public:
             std::vector<Exp*> &args, LocationSet &defs) = 0;
 	virtual void AddIndCallStatement(int indLevel, Exp *exp,
             std::vector<Exp*> &args) = 0;
-	virtual void AddReturnStatement(int indLevel, Exp *ret) = 0;
+	virtual void AddReturnStatement(int indLevel, 
+                                        std::vector<Exp*> &returns) = 0;
 	virtual void AddProcStart(Signature *signature) = 0;
 	virtual void AddProcEnd() = 0;
 	virtual void AddLocal(const char *name, Type *type) = 0;

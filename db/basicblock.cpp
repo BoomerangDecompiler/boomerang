@@ -903,10 +903,15 @@ bool BasicBlock::allParentsGenerated()
 // are used instead if possible
 void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 {
+#if 0
+    // Return BB's have statements in them.. although it would be nice
+    // to have a return here.. I don't think it's correct.  Maybe the
+    // code generator can get rid of the return.  Trent 8/8/2003.
     // is this a goto to the ret block?
     if (dest->getType() == RET) { // WAS: check about size of ret bb
         hll->AddReturnStatement(indLevel, dest->getReturnVal());
     } else { 
+#endif
         if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
             if (loopHead == dest)
                 hll->AddContinue(indLevel);
@@ -917,7 +922,7 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 
             dest->hllLabel = true;
         }
-    }
+    //}
 }
 
 // Generates code for each non CTI (except procedure calls) statement within 
@@ -1268,7 +1273,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             // return if this is the 'return' block (i.e. has no out edges)
             // after emmitting a 'return' statement
             if (getType() == RET) {
-                hll->AddReturnStatement(indLevel, getReturnVal());
+                // This should be emited now, like a normal statement
+                //hll->AddReturnStatement(indLevel, getReturnVal());
                 return;
             }
 

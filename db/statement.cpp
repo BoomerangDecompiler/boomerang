@@ -1101,6 +1101,12 @@ void GotoStatement::adjustFixedDest(int delta) {
     ((Const*)pDest)->setAddr(dest + delta);
 }
 
+bool GotoStatement::search(Exp* search, Exp*& result) {
+    if (pDest)
+        return pDest->search(search, result);
+    return false;
+}
+
 /*==============================================================================
  * FUNCTION:        GotoStatement::searchAndReplace
  * OVERVIEW:        Replace all instances of search with replace.
@@ -2489,7 +2495,7 @@ void CallStatement::processConstants(Prog *prog) {
  * PARAMETERS:       None
  * RETURNS:          <nothing>
  *============================================================================*/
-ReturnStatement::ReturnStatement() : nBytesPopped(0), returnVal(NULL) {
+ReturnStatement::ReturnStatement() : nBytesPopped(0) {
     kind = STMT_RET;
 }
 
@@ -2500,8 +2506,6 @@ ReturnStatement::ReturnStatement() : nBytesPopped(0), returnVal(NULL) {
  * RETURNS:          <nothing>
  *============================================================================*/
 ReturnStatement::~ReturnStatement() {
-    if (returnVal)
-        delete returnVal;
 }
 
 /*==============================================================================
@@ -2539,22 +2543,76 @@ bool ReturnStatement::deserialize_fid(std::istream &inf, int fid) {
     return true;
 }
 
-void ReturnStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void ReturnStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) 
+{
+    hll->AddReturnStatement(indLevel, returns);
 }
 
 void ReturnStatement::simplify() {
-    if (returnVal)
-        returnVal = returnVal->simplify();
+    for (unsigned i = 0; i < returns.size(); i++)
+        returns[i] = returns[i]->simplify();
 }
 
-void ReturnStatement::setReturnValue(Exp *e) { 
-    if (returnVal) delete returnVal;
-    returnVal = e; 
+void ReturnStatement::setSigArguments() {
+    for (int i = 0; i < proc->getSignature()->getNumReturns(); i++)
+        returns.push_back(proc->getSignature()->getReturnExp(i));
+}
+
+int ReturnStatement::findReturn(Exp *e) {
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (*returns[i] == *e)
+            return i;
+    return -1;
+}
+
+void ReturnStatement::removeReturn(Exp *e)
+{
+    int i = findReturn(e);
+    if (i != -1) {
+        for (unsigned j = i+1; j < returns.size(); j++)
+            returns[j-1] = returns[j];
+        returns.resize(returns.size()-1);
+    }
 }
 
 void ReturnStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "RET";
+    os << "RET ";
+    for (unsigned i = 0; i < returns.size(); i++) {
+        if (i != 0)
+            os << ", ";
+        os << returns[i];
+    }
+}
+
+bool ReturnStatement::search(Exp* search, Exp*& result) {
+    result = NULL;
+    for (unsigned i = 0; i < returns.size(); i++) {
+        if (*returns[i] == *search) {
+            result = returns[i];
+            return true;
+        }
+        if (returns[i]->search(search, result)) return true;
+    }
+    return false;
+}
+
+bool ReturnStatement::searchAndReplace(Exp* search, Exp* replace) {
+    bool change = GotoStatement::searchAndReplace(search, replace);
+    for (int i = 0; i < (int)returns.size(); i++) {
+        bool ch;
+        returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
+        change |= ch;
+    }
+    return change;
+}
+
+bool ReturnStatement::searchAll(Exp* search, std::list<Exp *>& result) {
+    bool found = false;
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (returns[i]->searchAll(search, result))
+            found = true;
+    return found;
 }
 
 /**********************************************************************

@@ -520,13 +520,15 @@ public:
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
+    // general search
+    virtual bool search(Exp*, Exp*&);
+
     // Replace all instances of "search" with "replace".
     virtual bool searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.    
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result);                           
-
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
     // serialize this Statement
     virtual bool serialize_rest(std::ostream &ouf);
@@ -550,7 +552,6 @@ public:
     virtual void fixCallRefs() { }
     virtual void subscriptVar(Exp*, Statement*) {}
     virtual void processConstants(Prog*) {}
-    virtual bool search(Exp*, Exp*&) {return false;}
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
     virtual void fromSSAform(igraph&) {}
     virtual void doReplaceRef(Exp*, Exp*) {}
@@ -912,18 +913,31 @@ public:
     // simplify all the uses/defs in this RTL
     virtual void simplify();
 
+    // general search
+    virtual bool search(Exp*, Exp*&);
+
+    // Replace all instances of "search" with "replace".
+    virtual bool searchAndReplace(Exp* search, Exp* replace);
+    
+    // Searches for all instances of a given subexpression within this
+    // expression and adds them to a given list in reverse nesting order.    
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
+
     int getNumBytesPopped() { return nBytesPopped; }
     void setNumBytesPopped(int n) { nBytesPopped = n; }
 
-    Exp *getReturnValue() { return returnVal; }
-    void setReturnValue(Exp *e);
+    int getNumReturns() { return returns.size(); }
+    Exp *getReturnExp(int n) { return returns[n]; }
+    void setSigArguments();   // Set returns based on signature
+    int findReturn(Exp *e);
+    void removeReturn(Exp *e);
 
 protected:
     // number of bytes that this return pops
     int nBytesPopped;
 
     // value returned
-    Exp *returnVal;
+    std::vector<Exp*> returns;
 };
 
 

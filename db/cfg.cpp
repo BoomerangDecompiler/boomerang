@@ -1512,33 +1512,6 @@ void Cfg::print(std::ostream &out, bool withDF) {
     out << std::endl;
 }
 
-void Cfg::setReturnVal(Exp *e)
-{
-    bool onlyOneReturnBB = true;
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) {
-        if ((*it)->getType() == RET) {
-            assert(onlyOneReturnBB);
-            (*it)->setReturnVal(e);
-            onlyOneReturnBB = false;
-        }
-    }
-}
-
-Exp *Cfg::getReturnVal() {
-    Exp *e = NULL;
-    bool onlyOneReturnBB = true;
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) {
-        if ((*it)->getType() == RET) {
-            assert(onlyOneReturnBB);
-            e = (*it)->getReturnVal();
-            onlyOneReturnBB = false;
-        }
-    }
-    return e;
-}
-
 void Cfg::setTimeStamps() {
     // set DFS tag
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();

@@ -864,6 +864,11 @@ void UserProc::initStatements() {
             if (call) {
                 call->setSigArguments();
             }
+            ReturnStatement *ret = dynamic_cast<ReturnStatement*>(s);
+            if (ret) {
+                ret->setSigArguments();
+                returnStatements.push_back(ret);
+            }
         }
     }
 }
@@ -1094,8 +1099,6 @@ std::set<UserProc*>* UserProc::decompile() {
             trimReturns();
             trimParameters();
         }
-        if (signature->getNumReturns() >= 1)
-            cfg->setReturnVal(signature->getReturnExp(0)->clone());
         if (VERBOSE) {
             std::cerr << "===== After replacing params =====\n";
             print(std::cerr, true);
@@ -1327,6 +1330,14 @@ void Proc::removeReturn(Exp *e)
             (*it)->removeReturn(e);
 }
 
+void UserProc::removeReturn(Exp *e)
+{
+    Proc::removeReturn(e);
+    for (unsigned i = 0; i < returnStatements.size(); i++)
+        returnStatements[i]->removeReturn(e);
+}
+
+
 void Proc::removeParameter(Exp *e)
 {
     int n = signature->findParam(e);
@@ -1367,38 +1378,6 @@ void UserProc::replaceExpressionsWithGlobals() {
         }
     }
 
-    // replace expressions with symbols in the return value
-    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
-      it1 != symbolMap.end(); it1++) {
-        bool change;
-        Exp *e = cfg->getReturnVal();
-        if (e == NULL) break;
-        e = e->clone();
-        if (VERBOSE) {
-            std::cerr << "return value: ";
-            e->print(std::cerr);
-            std::cerr << " replace ";
-            (*it1).first->print(std::cerr);
-            std::cerr << " with ";
-            (*it1).second->print(std::cerr);
-            std::cerr << std::endl;
-        }
-        Exp *memof;
-        const char *global;
-        if (e->search(match, memof) && 
-            memof->getSubExp1()->getOper() == opIntConst &&
-            (global = 
-                prog->getGlobal(((Const*)memof->getSubExp1())->getInt()))) {
-            e->searchReplaceAll(memof, 
-                new Unary(opGlobal, new Const((char*)global)), change);
-        }
-        if (VERBOSE) {
-            std::cerr << "  after: ";
-            e->print(std::cerr);
-            std::cerr << std::endl;
-        }
-        if (change) cfg->setReturnVal(e->clone());
-    }
     delete match;
 }
 
@@ -1417,38 +1396,6 @@ void UserProc::replaceExpressionsWithSymbols() {
                   " with " << (*it1).second << " result " << s << std::endl;
             }
         }
-    }
- 
-    // replace expressions with symbols in the return value
-    for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
-      it1 != symbolMap.end(); it1++) {
-#if 1
-        Exp *e = cfg->getReturnVal();
-        if (e == NULL) break;
-        e = e->clone();
-        bool change = false;
-        e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-        if (change && VERBOSE) {
-            std::cerr << "return value: " << e << " replace " <<
-              (*it1).first << " with " << (*it1).second << " in " << e <<
-              std::endl;
-            std::cerr << "  after: " << e << std::endl;
-        }
-        if (change) cfg->setReturnVal(e->clone());
-#else
-        int n = signature->getNumReturns();
-        for (int j=0; j < n; j++) {
-            Exp* e = signature->getReturnExp(j)->clone();
-            bool change = false;
-            e = e->searchReplaceAll((*it1).first, (*it1).second, change);
-            if (change && VERBOSE) {
-                std::cerr << "return value: " << " replaced " <<
-                  (*it1).first << " with " << (*it1).second << " in " << e <<
-                  std::endl;
-            }
-            if (change) signature->setReturnExp(j, e);
-        }
-#endif
     }
 }
 
