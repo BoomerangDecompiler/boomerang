@@ -13,7 +13,7 @@
 %define DEBUG 1
 
 %define PARSE_PARAM \
-    const char *sigstr
+    platform plat, callconv cc
 
 %define CONSTRUCTOR_PARAM \
     std::istream &in, bool trace
@@ -30,7 +30,8 @@ private:        \
 public: \
     std::list<Signature*> signatures; \
     std::list<Symbol*> symbols; \
-    std::list<SymbolRef*> refs;
+    std::list<SymbolRef*> refs;\
+    virtual ~AnsiCParser();
 
 
 %header{
@@ -95,7 +96,7 @@ public: \
 %token NODECODE
 %token INCOMPLETE
 %token SYMBOLREF
-%token CDECL
+%token CDECL PASCAL
 %token REGOF
 %token MEMOF
 %token CUSTOM
@@ -123,6 +124,7 @@ public: \
    std::list<TypeIdent*> *type_ident_list;
    SymbolMods *mods;
    CustomOptions *custom_options;
+   callconv cc;
 }
 
 %{
@@ -140,6 +142,7 @@ public: \
 %type<sig> signature;
 %type<mods> symbol_mods;
 %type<type> array_modifier;
+%type<cc> convention;
 
 %start translation_unit
 %%
@@ -163,6 +166,13 @@ decl: type_decl
     | symbol_ref_decl
     { }
     ;
+
+convention:
+        CDECL
+        { $$ = CONV_C; }
+        | PASCAL
+        { $$ = CONV_PASCAL; }
+        ;
 
 param_list: param_exp ',' param_list 
           { $$ = $3;
@@ -221,7 +231,7 @@ param: type_ident
         $$ = new Parameter($1->ty, $1->nam.c_str()); 
      }
      | type '(' '*' IDENTIFIER ')' '(' param_list ')'
-     { Signature *sig = Signature::instantiate(sigstr, NULL);
+     { Signature *sig = Signature::instantiate(plat, cc, NULL);
        sig->addReturn($1);
        for (std::list<Parameter*>::iterator it = $7->begin();
             it != $7->end(); it++)
@@ -241,7 +251,7 @@ param: type_ident
 type_decl: TYPEDEF type_ident ';'
          { Type::addNamedType($2->nam.c_str(), $2->ty); }
          | TYPEDEF type '(' '*' IDENTIFIER ')' '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(sigstr, NULL);
+         { Signature *sig = Signature::instantiate(plat, cc, NULL);
            sig->addReturn($2);
            for (std::list<Parameter*>::iterator it = $8->begin();
                 it != $8->end(); it++)
@@ -255,7 +265,7 @@ type_decl: TYPEDEF type_ident ';'
            Type::addNamedType($5, new PointerType(new FuncType(sig))); 
          }
          | TYPEDEF type_ident '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(sigstr, $2->nam.c_str());
+         { Signature *sig = Signature::instantiate(plat, cc, $2->nam.c_str());
            sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
@@ -277,7 +287,7 @@ func_decl: signature ';'
          ;
 
 signature: type_ident '(' param_list ')'
-         { Signature *sig = Signature::instantiate(sigstr, $1->nam.c_str()); 
+         { Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str()); 
            sig->addReturn($1->ty);
            for (std::list<Parameter*>::iterator it = $3->begin();
                 it != $3->end(); it++)
@@ -290,13 +300,9 @@ signature: type_ident '(' param_list ')'
            delete $3;
            $$ = sig;
          }
-         | CDECL type_ident '(' param_list ')'
-         { std::string str = sigstr;
-           if (!strncmp(sigstr, "-win32", 6)) {
-              str = "-stdc";
-              str += sigstr + 6;
-           }
-           Signature *sig = Signature::instantiate(str.c_str(), $2->nam.c_str()); 
+         | convention type_ident '(' param_list ')'
+         { Signature *sig = Signature::instantiate(plat, $1,
+              $2->nam.c_str()); 
            sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
@@ -468,5 +474,9 @@ void AnsiCParser::yyerror(char *s)
 	printf("\n%*s\n%*s on line %i\n", theScanner->column, "^", theScanner->column, s, theScanner->theLine);
 }
 
+AnsiCParser::~AnsiCParser()
+{
+    // Suppress warnings from gcc about lack of virtual destructor
+}
 
 
