@@ -153,6 +153,7 @@ char* operStrings[] = {
     "opCF",                   // carry flag
     "opNF",                   // negative flag
     "opOF",                   // overflow flag
+    "opDF",                   // pentium Direction (=Down) flag
     "opFZF",                  // floating point zero flag
     "opFLF",                  // floating point less flag
     "opFGF",                  // floating point greater flag
