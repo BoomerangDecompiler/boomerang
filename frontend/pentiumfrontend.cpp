@@ -1010,37 +1010,27 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
                       ->getAddr()) << std::endl;
 #endif
             int oNumBytes = inst.numBytes;
-            inst = decodeInstruction(addr-2);  // should be 6a 00
+            inst = decodeInstruction(addr + oNumBytes);
             if (inst.valid && inst.rtl->getNumStmt() == 2) {
-                Assign* a = dynamic_cast<Assign*>(inst.rtl->elementAt(1));
-                if (a && a->getRight()->isIntConst() && 
-                    ((Const*)a->getRight())->getInt() == 0) {
+                Assign* a = dynamic_cast<Assign*>
+                                (inst.rtl->elementAt(1));
+                if (a && *a->getRight() == *Unary::regOf(24)) {
 #if 0
-                    std::cerr << "param is 0.. good" << std::endl;
+                    std::cerr << "is followed by push eax.. "
+                              << "good" << std::endl;
 #endif
-                    inst = decodeInstruction(addr + oNumBytes);
-                    if (inst.valid && inst.rtl->getNumStmt() == 2) {
-                        Assign* a = dynamic_cast<Assign*>
-                                        (inst.rtl->elementAt(1));
-                        if (a && *a->getRight() == *Unary::regOf(24)) {
-#if 0
-                            std::cerr << "is followed by push eax.. "
-                                      << "good" << std::endl;
-#endif
-                            inst = decodeInstruction(addr + oNumBytes + 
-                                                  inst.numBytes);
-                            if (inst.rtl->getList().size()) {
-                                CallStatement *toMain = 
-                                    dynamic_cast<CallStatement*>(inst.rtl
-                                                            ->getList().back());
-                                if (toMain && toMain->getFixedDest() 
-                                                            != NO_ADDRESS) {
-                                    pBF->AddSymbol(toMain->getFixedDest(), 
-                                                   "WinMain");
-                                    gotMain = true;
-                                    return toMain->getFixedDest();
-                                }
-                            }
+                    inst = decodeInstruction(addr + oNumBytes + 
+                                          inst.numBytes);
+                    if (inst.rtl->getList().size()) {
+                        CallStatement *toMain = 
+                            dynamic_cast<CallStatement*>(inst.rtl
+                                                    ->getList().back());
+                        if (toMain && toMain->getFixedDest() 
+                                                    != NO_ADDRESS) {
+                            pBF->AddSymbol(toMain->getFixedDest(), 
+                                           "WinMain");
+                            gotMain = true;
+                            return toMain->getFixedDest();
                         }
                     }
                 }
