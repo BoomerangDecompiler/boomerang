@@ -11,6 +11,7 @@ public:
   virtual void  Close() { }                     // Close file opened with Open()
   virtual LOAD_FMT GetFormat() const;           // Get format (e.g. LOADFMT_ELF)
   virtual MACHINE GetMachine() const;           // Get machine (e.g. MACHINE_SPARC)
+  virtual const char *getFilename() const { return m_pFileName; }
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();
   virtual ADDRESS getImageBase();
