@@ -1,10 +1,13 @@
+// To use, remove the binary, then "make checkstrings"
+// Could say "all is well" when not, if some operators are deleted and the
+// same number added
+
 #include <stdio.h>
 #include <string.h>
 #include "operstrings.h"
 #include "../include/operator.h"
 
 int main() {
-	int i;
 	if (sizeof(operStrings)/sizeof(char*) == opNumOf) {
 		printf("All is correct\n");
 		return 0;
