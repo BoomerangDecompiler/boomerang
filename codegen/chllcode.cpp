@@ -94,10 +94,20 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opFuncConst:
             strcat(str, c->getFuncName());
             break;
-        case opAddrOf:
+        case opAddrOf: {
+            Exp* sub = u->getSubExp1();
+            if (sub->isGlobal()) {
+                Prog* prog = m_proc->getProg();
+                Const* con = (Const*)((Unary*)sub)->getSubExp1();
+                if (prog->getGlobalType(con->getStr())->isArray())
+                    // Special C requirement: don't emit "&" for address of
+                    // an array
+                    break;
+            }
             strcat(str, "&");
-            appendExp(str, u->getSubExp1());
+            appendExp(str, sub);
             break;
+        }
         case opParam:
         case opGlobal:
         case opLocal:
