@@ -1931,20 +1931,6 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     // Print the return location if there is one
     if (getReturnLoc() != NULL)
         os << " " << getReturnLoc() << " := ";
-    // And the return locations if there are any
-    LocationSet defs;
-    getDefinitions(defs);
-    if (defs.size()) {
-        os << ")    {";
-        LocSetIter dd;
-        int i=0;
-        for (Exp* d = defs.getFirst(dd); d; d = defs.getNext(dd)) {
-            if (i++ != 0)
-                os << ", ";
-            os << d;
-        }
-        os << "} := ";
-    }
  
     os << "CALL ";
     if (procDest)
@@ -1966,6 +1952,15 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         os << arguments[i];
     }
     os << ")";
+
+    // And the return locations 
+    os << " { ";
+    for (int i = 0; i < getNumReturns(); i++) {
+        if (i != 0)
+            os << ", ";
+        os << getReturnExp(i);
+    }
+    os << " }";
 }
 
 /*==============================================================================
@@ -2150,14 +2145,8 @@ bool CallStatement::isDefinition()
 
 void CallStatement::getDefinitions(LocationSet &defs) {
     if (procDest) {
-        if (procDest->isLib()) {
-            Exp *e = getLeft();
-            if (e) defs.insert(e);
-        } else {
-            // FIXME: I believe that these may need "translation" into the
-            // caller's environment
-            ((UserProc*)procDest)->getDefinitions(defs);
-        }
+        for (int i = 0; i < getNumReturns(); i++)
+            defs.insert(getReturnExp(i));
     } else {
         // TODO: computed call
     }
