@@ -228,3 +228,14 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
     return 0;
 }
+
+/* This makes sure that the garbage collector sees all allocations, even those
+    that we can't be bothered collecting, especially standard STL objects */
+void* operator new(size_t n) {
+    return GC_malloc_uncollectable(n);
+}
+
+void operator delete(void* p) {
+    GC_free(p);
+}
+
