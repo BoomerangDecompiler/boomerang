@@ -176,10 +176,10 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/prog.h include/type.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
 db/ExpTest.o: db/ExpTest.h include/exp.h
-db/ParserTest.o: db/ParserTest.h db/sslparser.h db/prog.h
-db/ProgTest.o: db/ProgTest.h db/prog.h
-db/ProcTest.o: db/ProcTest.h db/proc.h
-db/TypeTest.o: db/TypeTest.h db/util.h db/type.h
+db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h
+db/ProgTest.o: db/ProgTest.h include/prog.h
+db/ProcTest.o: db/ProcTest.h include/proc.h
+db/TypeTest.o: db/TypeTest.h include/util.h include/type.h
 
 util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
