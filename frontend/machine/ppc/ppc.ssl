@@ -155,7 +155,7 @@ LOGCDOT[IDX]	rd, ra, rb				SETCR0(rd);
 STWU    rs, d, ra					   *32* m[ra + d] := rs
 									   *32* ra := ra + d;
 
-STW    rs, eaddr					   *32* m[eaddr] := rs;
+STW    rs, d, ra					   *32* m[ra + d] := rs;
 
 LWZ	   rd, eaddr					   *32* rd := m[eaddr];
 

@@ -1838,6 +1838,8 @@ void Cfg::structure() {
 		unTraverse();
 		return;
 	}
+    if (findRetNode() == NULL)
+        return;
 	setTimeStamps();
 	findImmedPDom();
 	structConds();

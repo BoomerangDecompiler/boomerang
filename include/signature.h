@@ -217,8 +217,8 @@ virtual Signature *promote(UserProc *p);
 		// Get a wildcard to find stack locations
 virtual Exp			*getStackWildcard() { return NULL; }
 virtual int			getStackRegister(			) {
-						assert(0);
-						return 0; };
+						//assert(0);
+						return 28; };
 		int			getStackRegister(Prog* prog);
 		// Does expression e represent a local stack-based variable?
 		// Result can be ABI specific, e.g. sparc has locals in the parent's stack frame,
@@ -226,7 +226,7 @@ virtual int			getStackRegister(			) {
 		// Also, I believe that the PA/RISC stack grows away from 0
 		bool		isStackLocal(Prog* prog, Exp *e);
 		// Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
-		bool		isAddrOfStackLocal(Prog* prog, Exp* e);
+virtual	bool		isAddrOfStackLocal(Prog* prog, Exp* e);
 		// For most machines, local variables are always NEGATIVE offsets from sp
 virtual bool		isLocalOffsetNegative() {return true;}
 		// For most machines, local variables are not POSITIVE offsets from sp

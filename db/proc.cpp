@@ -784,8 +784,113 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 	assert(false);			// Should have found this statement in this BB
 }
 
+void UserProc::fastx86decompile()
+{
+    if (decompiled)
+        return;
+    if (!decoded)
+        return;
+
+	// Sort by address, so printouts make sense
+	cfg->sortByAddress();
+	// Initialise statements
+	initStatements();
+
+	// Compute dominance frontier
+	cfg->dominators();
+
+	// Number the statements
+	int stmtNumber = 0;
+	numberStatements(stmtNumber); 
+
+	cfg->placePhiFunctions(0, this);
+	numberPhiStatements(stmtNumber);
+	cfg->renameBlockVars(0, 0);
+
+    // x86 specific hacks start here
+
+    // 1) fix call statements
+    StatementList stmts;
+    getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement *s = *it;
+        if (s->isCall()) {
+            CallStatement *call = (CallStatement*)s;
+            if (call->getDestProc() == NULL) {
+                std::cerr << "indirect call in proc " << getName() << " cannot complete fast decompile.\n";
+                return;
+            }
+            if (!call->getDestProc()->isLib() && call->getProven(Location::regOf(28)) == NULL) {
+                // assume that all calls to non-lib procs are standard-c calling convention (eg, esp = esp + 4)
+                UserProc *u = (UserProc*)call->getDestProc();
+                u->proven.insert(new Binary(opEquals, Location::regOf(28), new Binary(opPlus, Location::regOf(28), new Const(4))));
+            }
+        }
+    }
+
+    // 2) propagate everything at depth 0 as much as possible
+    fixCallRefs();
+    propagateStatements(0, -1);
+
+    // 3) recognise parameters
+    if (signature->getNumParams() == 0) {
+        for (int i = 0; i < 8; i++)
+            addParameter(Location::memOf(new Binary(opPlus, Location::regOf(28), new Const(4*(i+1)))));
+    }
+    replaceExpressionsWithParameters(-1);
+    //trimParameters();
+
+    // 4) propagate everything at depth 0 again (this should give more now that we've recognised parameters)
+    propagateStatements(0, -1);
+
+    // 5) ok, now we should be able to remove all assignments to r28
+    //    whilst we're here we'll remove any statements assigning %pc or to %pc
+    //           and any statements assigning to flags
+
+    // let's just do a little check to make sure I'm right.
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement *s = *it;
+        LocationSet refs;
+        s->addUsedLocs(refs);
+		LocationSet::iterator rr;
+		for (rr = refs.begin(); rr != refs.end(); rr++) {
+            if (!(*rr)->isSubscript())
+                continue;
+            if ((*rr)->getSubExp1()->isRegOfK() && ((Const*)(*rr)->getSubExp1()->getSubExp1())->getInt() == 28) {
+                Statement *def = ((RefExp*)*rr)->getDef();
+                if (def && def->isAssign()) {
+                    std::cerr << "there's still references to assignments to r28 in " << getName() 
+                              << ", cannot continue fast decompile.\n";
+                    return;
+                }
+            }
+        }
+    }
+
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement *s = *it;
+        if (!s->isAssign())
+            continue;
+        if (s->getLeft() && s->getLeft()->isRegOfK() && ((Const*)s->getLeft()->getSubExp1())->getInt() == 28)
+            removeStatement(s);
+        else if (s->getLeft() && s->getLeft()->getOper() == opPC)
+            removeStatement(s);
+        else if (s->getLeft() && s->getRight()->getOper() == opSubscript && s->getRight()->getSubExp1()->getOper() == opPC)
+            removeStatement(s);
+        else if (s->getLeft() && s->getLeft()->isFlags())
+            removeStatement(s);
+    }
+
+	processConstants();
+	sortParameters();
+
+    decompiled = true;
+}
+
 // Decompile this UserProc
-std::set<UserProc*>* UserProc::decompile() {
+std::set<UserProc*>* UserProc::decompile() 
+{
 	// Prevent infinite loops when there are cycles in the call graph
 	if (decompiled) return NULL;
 

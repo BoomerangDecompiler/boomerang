@@ -145,6 +145,9 @@ public:
 	// Initialise and number all statements globally
 	void initStatements();
 
+    // Do a fast x86 specific decompile
+    void fastx86decompile();
+
 	// Do decompilation
 	void decompile();
 

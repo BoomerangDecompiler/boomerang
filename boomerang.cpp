@@ -35,7 +35,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false)
+	noLimitPropagations(false), fastx86(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -121,6 +121,7 @@ void Boomerang::help() {
 	std::cout << "-SD: Save before Decompile\n";
 	std::cout << "-k: command mode, for available commands see -h cmd\n";
 	std::cout << "-P <path>: Path to Boomerang files, defaults to where you run Boomerang from\n";
+    std::cout << "-f: do a fast x86 specific decompilation\n";
 	std::cout << "-v: Verbose\n";
 	exit(1);
 }
@@ -745,6 +746,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 				if (progPath[progPath.length()-1] != '\\')
 					progPath += "\\";
 				break;
+            case 'f':
+                fastx86 = true;
+                break;
 			default:
 				help();
 		}
@@ -853,7 +857,10 @@ int Boomerang::decompile(const char *fname, const char *pname)
 		return 0;
 
 	std::cerr << "decompiling...\n";
-	prog->decompile();
+    if (fastx86)
+        prog->fastx86decompile();
+	else
+        prog->decompile();
 
 	if (dotFile)
 		prog->generateDotFile();
@@ -871,6 +878,14 @@ int Boomerang::decompile(const char *fname, const char *pname)
 
 	std::cerr << "generating code...\n";
 	prog->generateCode();
+
+    std::cerr << "output written to " << outputPath;
+#ifdef WIN32
+    std::cerr << "\\";
+#else
+    std::cerr << "/";
+#endif
+    std::cerr << prog->getRootCluster()->getName() << "\n";
 
 	time_t end;
 	time(&end);

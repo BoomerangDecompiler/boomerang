@@ -196,6 +196,7 @@ static Boomerang *get() {
 	bool conTypeAnalysis;
 	bool dfaTypeAnalysis;
 	bool noLimitPropagations;
+    bool fastx86;
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

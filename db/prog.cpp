@@ -925,6 +925,21 @@ void Prog::decodeExtraEntrypoint(ADDRESS a) {
 	}
 }
 
+void Prog::fastx86decompile()
+{
+	std::list<Proc*>::iterator pp;
+	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+		UserProc* proc = (UserProc*)(*pp);
+		if (proc->isLib()) continue;
+		proc->fastx86decompile();
+	}
+
+    generateRTL();
+
+    // Now it is OK to transform out of SSA form
+	fromSSAform();
+}
+
 void Prog::decompile() {
 	assert(m_procs.size());
 

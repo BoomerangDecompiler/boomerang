@@ -173,6 +173,9 @@ namespace CallingConvention {
 			void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
 			virtual Exp *getStackWildcard();
 			virtual int	 getStackRegister() {return 1; }
+            virtual Exp *getProven(Exp *left);
+            virtual bool isLocalOffsetPositive() {return true;}
+            //virtual	bool isAddrOfStackLocal(Prog* prog, Exp* e);
 		};
 	};	// namespace StdC
 };	// namespace CallingConvention
@@ -605,6 +608,29 @@ Exp* CallingConvention::StdC::PPCSignature::getStackWildcard() {
 			new Terminal(opWild)));
 }
 
+Exp *CallingConvention::StdC::PPCSignature::getProven(Exp* left) {
+	if (left->isRegOfK()) {
+		int r = ((Const*)((Location*)left)->getSubExp1())->getInt();
+		switch (r) {
+			case 1: // stack
+				return left;
+		}
+	}
+	return NULL; 
+}
+
+/*
+bool CallingConvention::StdC::PPCSignature::isAddrOfStackLocal(Prog* prog, Exp* e) {
+    LOG << "doing PPC specific check on " << e << "\n";
+    // special case for m[r1{-} + 4] which is used to store the return address in non-leaf procs.
+    if (e->getOper() == opPlus && e->getSubExp1()->isSubscript() && 
+        ((RefExp*)(e->getSubExp1()))->isImplicitDef() && e->getSubExp1()->getSubExp1()->isRegOfK() && 
+        ((Const*)e->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 1 && e->getSubExp2()->isIntConst() &&
+        ((Const*)e->getSubExp2())->getInt() == 4)
+        return true;
+    return Signature::isAddrOfStackLocal(prog, e);
+}
+*/
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam) {
 	Signature::addReturn(Location::regOf(14));
