@@ -1,3 +1,4 @@
+/* 26 Nov 02 - Mike: Fixed return types to avoid warnings with gcc */
 
 #include "BinaryFileStub.h"
 
@@ -226,36 +227,37 @@ bool BinaryFileStub::isLibrary() const
 std::list<const char *> BinaryFileStub::getDependencyList()
 {
 	assert(false);
+	return std::list<const char*> ();
 }
 
 ADDRESS BinaryFileStub::getImageBase()
 {
-	assert(false);
+	return 0;
 }
 
 size_t BinaryFileStub::getImageSize()
 {
-	assert(false);
+	return 0;
 }
 
 ADDRESS BinaryFileStub::GetFirstHeaderAddress()
 {
-	assert(false);
+	return 0;
 }
 
 ADDRESS* BinaryFileStub::GetImportStubs(int& numImports)
 {
-	assert(false);
+	return NULL;
 }
 
 bool    BinaryFileStub::DisplayDetails(const char* fileName, FILE* f)
 {
-	assert(false);
+	return false;
 }
 
 std::list<SectionInfo*>& BinaryFileStub::GetEntryPoints(const char* pEntry)
 {
-	assert(false);
+	return * new std::list<SectionInfo*>;
 }
 
 ADDRESS BinaryFileStub::GetMainEntryPoint()
@@ -265,17 +267,17 @@ ADDRESS BinaryFileStub::GetMainEntryPoint()
 
 ADDRESS BinaryFileStub::GetEntryPoint()
 {
-	assert(false);
+	return 0;
 }
 
 std::map<ADDRESS, const char*>* BinaryFileStub::GetDynamicGlobalMap()
 {
-	assert(false);
+	return new std::map<ADDRESS, const char*>;
 }
 
 char* BinaryFileStub::GetStrPtr(int idx, int offset)
 {
-	assert(false);
+	return NULL;
 }
 
 void BinaryFileStub::SetLinkAndInfo(int idx, int link, int info)
@@ -285,10 +287,10 @@ void BinaryFileStub::SetLinkAndInfo(int idx, int link, int info)
 
 bool  BinaryFileStub::RealLoad(const char* sName)
 {
-	assert(false);
+	return false;
 }
 
 bool BinaryFileStub::PostLoad(void* handle)
 {
-	assert(false);
+	return false;
 }

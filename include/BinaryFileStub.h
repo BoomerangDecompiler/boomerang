@@ -6,8 +6,8 @@ public:
                 BinaryFileStub(); // Constructor
   virtual       ~BinaryFileStub() { }
   virtual void  UnLoad() { }                    // Unload the image
-    bool        GetNextMember() { }             // Load next member of archive
-  virtual bool  Open(const char* sName) { }     // Open the file for r/w; pv
+    bool        GetNextMember() {return false;} // Load next member of archive
+  virtual bool  Open(const char* sName) {return false;} // Open for r/w; pv
   virtual void  Close() { }                     // Close file opened with Open()
   virtual LOAD_FMT GetFormat() const;           // Get format (e.g. LOADFMT_ELF)
   virtual MACHINE GetMachine() const;           // Get machine (e.g. MACHINE_SPARC)
