@@ -65,8 +65,9 @@ typedef std::map<Exp*, int, lessExpStar> igraph;
  * classes, derived from Exp.
  *============================================================================*/
 
-// Class Exp is abstract. However, the constructor can be called from the
-// constructors of derived classes
+// Class Exp is abstract. However, the constructor can be called from the 
+// the constructors of derived classes, and virtual functions not overridden
+// by derived classes can be called
 class Exp {
 protected:
     OPER   op;             // The operator (e.g. opPlus)
@@ -270,6 +271,7 @@ static Exp* Accumulate(std::list<Exp*> exprs);
 virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
     // Just the address simplification a[ m[ any ]]
 virtual Exp* simplifyAddr() {return this;}
+virtual Exp* simplifyConstraint() {return this;}
         Exp* fixSuccessor();        // succ(r2) -> r3
         // Kill any zero fill, sign extend, or truncates
         Exp* killFill();
@@ -464,8 +466,9 @@ virtual int getMemDepth();
 
     // Do the work of simplifying this expression
 virtual Exp* polySimplify(bool& bMod);
-    Exp* simplifyArith();
-    Exp* simplifyAddr();
+        Exp* simplifyArith();
+        Exp* simplifyAddr();
+virtual Exp* simplifyConstraint();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
@@ -540,6 +543,7 @@ virtual int getMemDepth();
 virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
+virtual Exp* simplifyConstraint();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);

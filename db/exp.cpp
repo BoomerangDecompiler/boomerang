@@ -1420,10 +1420,11 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * NOTE:            It is possible with wildcards that in very unusual
  *                  circumstances a replacement will be made to something that
  *                  is already ;//deleted.
- * NOTE:            Replacements are cloned. Caller to ;//delete search and replace
+ * NOTE:            Replacements are cloned. Caller to delete search and replace
  * PARAMETERS:      search:  ptr to ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
  *                  change: set true if a change made; cleared otherwise
+ * NOTE:            change is ALWAYS set. No need to clear beforehand.
  * RETURNS:         the result (often this, but possibly changed)
  *============================================================================*/
 Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
@@ -3388,6 +3389,8 @@ Exp* RefExp::genConstraints(Exp* result) {
     return new Terminal(opTrue);
 }
 
+// Return a constraint that my subexpressions have to be of type
+// typeval1 and typeval2 respectively
 Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
     Exp* con1 = subExp1->genConstraints(typeVal1);
     Exp* con2 = subExp2->genConstraints(typeVal2);
@@ -3476,7 +3479,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 if (!restrictTo)
                     res2 = new Binary(opAnd, res2,
                         new Binary(opEquals, result->clone(),
-                        ptrVal.clone()));
+                        intVal.clone()));
                 if (res) res = new Binary(opOr, res, res2);
                 else     res = res2;
             }
@@ -3730,7 +3733,43 @@ Type *Location::getType()
     return NULL;
 }
 
-const char* Const::getFuncName() {return u.pp->getName();}
+const char* Const::getFuncName() {
+    return u.pp->getName();
+}
+
+Exp* Unary::simplifyConstraint() {
+    subExp1 = subExp1->simplifyConstraint();
+    return this;
+}
+
+Exp* Binary::simplifyConstraint() {
+    subExp1 = subExp1->simplifyConstraint();
+    subExp2 = subExp2->simplifyConstraint();
+    switch (op) {
+        case opEquals: {
+            if (subExp1->isTypeVal() && subExp2->isTypeVal()) {
+                Type* t1 = ((TypeVal*)subExp1)->getType();
+                Type* t2 = ((TypeVal*)subExp2)->getType();
+                if (!t1->isPointerToAlpha() && !t2->isPointerToAlpha()) {
+                    delete this;
+                    if (*t1 == *t2)
+                        return new Terminal(opTrue);
+                    else
+                        return new Terminal(opFalse);
+                }
+            }
+            break;
+        }
+    
+        case opOr:
+        case opAnd:
+        case opNot:
+            return simplify();
+        default:
+            break;
+    }
+    return this;
+}
 
 //  //  //  //  //  //  //  //
 //                          //
