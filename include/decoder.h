@@ -99,9 +99,10 @@ struct DecodeResult {
 class NJMCDecoder {
 public:
     /*
-     * Constructor
+     * Constructor and destructor
      */
     NJMCDecoder();
+virtual ~NJMCDecoder() {};
 
     /*
      * Decodes the machine instruction at pc and returns an RTL instance for
