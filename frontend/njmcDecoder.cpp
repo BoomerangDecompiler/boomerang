@@ -35,6 +35,10 @@
 #include "prog.h"
 #include "BinaryFile.h"
 #include "boomerang.h"
+// For some reason, MSVC 5.00 complains about use of undefined types a lot
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "signature.h"		// For MSVC 5.00
+#endif
 
 /**********************************
  * NJMCDecoder methods.
@@ -80,7 +84,7 @@ std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
         for (std::vector<Exp*>::iterator itd = actuals.begin();
           itd != actuals.end(); itd++) {
             (*itd)->print(std::cout);
-            if (itd != --actuals.end())
+            if (itd != actuals.end()-1)
                 std::cout << ", ";
         }
         std::cout << std::endl;
