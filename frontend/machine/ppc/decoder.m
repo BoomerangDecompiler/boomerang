@@ -50,7 +50,7 @@
 #define DIS_NZRA	(dis_RegLhs(ra))
 #define DIS_NZRB	(dis_RegLhs(rb))
 #define DIS_ADDR	(new Const(addr))
-#define DIS_RELADDR (new Const(pc + reladdr))
+#define DIS_RELADDR (new Const(reladdr - delta))
 
 // MVE: Used any more?
 #define DIS_INDEX   (new Binary(opPlus, \
@@ -137,16 +137,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		}
 		::unused(name);
 	| bl (reladdr) [name] =>
-		//stmts = instantiate(pc, name, DIS_RELADDR);
-		stmts = instantiate(pc,	 "bl", DIS_RELADDR);
+		Exp* dest = DIS_RELADDR;
+		stmts = instantiate(pc, name, dest);
 		CallStatement* newCall = new CallStatement;
 		// Record the fact that this is a computed call
 		newCall->setIsComputed(false);
 		// Set the destination expression
-		newCall->setDest(DIS_RELADDR);
+		newCall->setDest(dest);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
-		::unused(name);	// FIXME: Needed?
 
 	| Xcmp_ (crfd, l, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);
