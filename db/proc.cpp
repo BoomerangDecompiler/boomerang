@@ -1119,7 +1119,18 @@ void UserProc::removeRedundantPhis()
             // equal values then we can replace the phi with any one of 
             // the values, but there's not much point if they're all calls
             PhiExp *p = (PhiExp*)s->getRight();
+            bool hasphi = false;
             StatementVec::iterator it;
+            for (it = p->begin(); it != p->end(); it++)
+                if (*it && (*it)->isPhi()) {
+                    hasphi = true;
+                }
+            if (hasphi) {
+                if (VERBOSE)
+                    std::cerr << "contains a ref to a phi statement (skipping)" 
+                              << std::endl;
+                continue;
+            }
             bool allsame = true;
             it = p->begin();
             assert(it != p->end());
@@ -1128,8 +1139,10 @@ void UserProc::removeRedundantPhis()
             if (it != p->end())
                 for (it++; it != p->end(); it++) {
                     Statement* s2 = *it;
-                    if (noncall && noncall->isCall() && s2 && !s2->isCall() &&
-                          s2 != s)
+                    if (noncall && s2 && 
+                        (noncall->isCall()
+                                || s2->getNumber() < noncall->getNumber()) && 
+                        !s2->isCall() && s2 != s)
                         noncall = s2;
                     Exp *e = new Binary(opEquals, 
                                  new RefExp(s->getLeft()->clone(), s1),
@@ -2147,9 +2160,15 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
         change = false;
         if (query->getOper() == opEquals) {
 
+            // same left and right means true
+            if (*query->getSubExp1() == *query->getSubExp2()) {
+                query = new Terminal(opTrue);
+                change = true;
+            }
+
             // move constants to the right
             Exp *plus = query->getSubExp1();
-            Exp *s1s2 = plus->getSubExp2();
+            Exp *s1s2 = plus ? plus->getSubExp2() : NULL;
             if (!change && plus->getOper() == opPlus && s1s2->isIntConst()) {
                 query->refSubExp2() = new Binary(opPlus, query->getSubExp2(),
                                         new Unary(opNeg, s1s2->clone()));
@@ -2236,19 +2255,21 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                     } else {
                         bool refloop = false;
                         Statement *s1 = s;
+                        std::set<Statement*> seen;
+                        seen.insert(s1);
                         while (s1 &&
                                s1->getRight() && 
                                s1->getRight()->isSubscript()) {
                             s1 = ((RefExp*)s1->getRight())->getRef();
-                            if (s1 == s) {
+                            if (seen.find(s1) != seen.end()) {
                                 refloop = true;
                                 break;
                             }
+                            seen.insert(s1);
                         }
                         if (refloop) {
-                            std::cerr << "ignoring ref loop to " << s 
+                            std::cerr << "detected ref loop " << s 
                                       << std::endl;
-                            assert(false);
                         } else {
                             query->setSubExp1(s->getRight()->clone());
                             change = true;

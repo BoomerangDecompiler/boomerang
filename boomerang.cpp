@@ -240,6 +240,12 @@ void* operator new(size_t n) {
 #endif
 }
 
+//#define NO_DELETE 1
+
+#if NO_DELETE
+void operator delete(void* p) { }
+#else
+
 void operator delete(void* p) {
 #ifdef DONT_COLLECT_STL
     GC_free(p); // Important to call this if you call GC_malloc_uncollectable
@@ -247,3 +253,4 @@ void operator delete(void* p) {
 #endif
 }
 
+#endif
