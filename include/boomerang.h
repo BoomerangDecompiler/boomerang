@@ -53,6 +53,7 @@ public:
     bool noRemoveInternal;
     bool noLocals;
     bool noRemoveLabels;
+    bool traceDecoder;
     const char *dotFile;
 };
 

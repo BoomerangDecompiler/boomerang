@@ -10,7 +10,7 @@ Boomerang *Boomerang::boomerang = NULL;
 
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
-    noLocals(false), noRemoveLabels(false), dotFile(NULL)
+    noLocals(false), noRemoveLabels(false), traceDecoder(false), dotFile(NULL)
 {
 }
 
@@ -30,6 +30,7 @@ void Boomerang::help() {
     std::cerr << "-v: verbose\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation\n";
+    std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-nb: no simplications for branches\n";
     std::cerr << "-ni: no removal of internal statements\n";
     std::cerr << "-nl: no creation of local variables\n";
@@ -64,6 +65,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
             case 'r': printRtl = true; break;
+            case 't': traceDecoder = true; break;
             case 'g': 
                 dotFile = argv[++i];
                 break;

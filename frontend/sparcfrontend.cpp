@@ -42,13 +42,13 @@
 #include "cfg.h"
 #include "proc.h"
 #include "prog.h"
-//#include "options.h"
 #include "decoder.h"
 #include "sparcdecoder.h"
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "sparcfrontend.h"
 #include "BinaryFile.h"     // E.g. IsDynamicallyLinkedProc
+#include "boomerang.h"
 
 /*==============================================================================
  * FUNCTION:         warnDCTcouple
@@ -198,8 +198,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock* callBB,
         // We don't want to call prog.visitProc just yet, in case this is
         // a speculative decode that failed. Instead, we use the set of
         // HLCalls (not in this procedure) that is needed by CSR
-        //if (progOptions.trace)
-if (0)      // SETTINGS!
+        if (Boomerang::get()->traceDecoder)
             std::cout << "p" << std::hex << dest << "\t";
     }
 
@@ -840,8 +839,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
         DecodeResult inst;
         while (sequentialDecode) {
 
-            //if (progOptions.trace)
-if (0)          // SETTINGS!
+            if (Boomerang::get()->traceDecoder)
                 std::cout << "*" << std::hex << address << "\t" << std::flush;
 
             inst = decodeInstruction(address);
@@ -966,6 +964,9 @@ if (0)          // SETTINGS!
                         // be a move_call_move idiom, or a call to .stret4
             {
                 DecodeResult delay_inst = decodeInstruction(address+4);
+                if (Boomerang::get()->traceDecoder)
+                    std::cerr << "*" << std::hex << address+4 << "\t" <<
+                      std::flush;
                 if (rtl->getKind() == CALL_RTL) {
                     // Check the delay slot of this call. First case of interest
                     // is when the instruction is a restore, e.g.
