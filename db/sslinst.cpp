@@ -419,8 +419,7 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty)
  *					 actuals - the actual values
  * RETURNS:			 the instantiated list of Exps
  *============================================================================*/
-std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name,
-  ADDRESS natPC, std::vector<Exp*>& actuals) {
+std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name, ADDRESS natPC, std::vector<Exp*>& actuals) {
 	// If -f is in force, use the fast (but not as precise) name instead
 	const std::string* lname = &name;
 	// FIXME: settings
