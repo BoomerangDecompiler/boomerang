@@ -367,8 +367,8 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 /*
 // Finite state machine for recognising code handling floating point CCs
 //
-//            test_45 or          Start=0
-//          ___and_45____________/ |  \  \______sahf____________
+//            test_45/41 or       Start=0
+//          ___and_45/41_________/ |  \  \______sahf____________
 //        /                        |   \_____and_5__________    \     ___ 
 //       [1]__________cmp_1_      and 44                    \    \   /   |jp
 //cmp_40/||\\___dec_[10]      \    [2]                     [3]   [23]____|
@@ -432,7 +432,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
                 if (e->isIntConst()) {
                     if (op == opBitAnd) {
                         int mask = ((Const*)e)->getInt();
-                        if (state == 0 && mask == 0x45) {
+                        if (state == 0 && (mask == 0x45 || mask == 0x41)) {
                             state = 1;
                             liIt.push_front(rit2);
                         }
