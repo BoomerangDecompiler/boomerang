@@ -10,8 +10,8 @@
  */
 
 /*==============================================================================
- * FILE:	   basicblock.cc
- * OVERVIEW:   Implementation of the BasicBlock class.
+ * FILE:	 basicblock.cc
+ * OVERVIEW: Implementation of the BasicBlock class.
  *============================================================================*/
 
 /*
@@ -294,9 +294,9 @@ bool BasicBlock::isJumpReqd() {
  * RETURNS:			Address of the static buffer
  *============================================================================*/
 char debug_buffer[5000];
-char* BasicBlock::prints() {   
+char* BasicBlock::prints() { 
 	std::ostringstream ost; 
-	print(ost);		  
+	print(ost);	
 	// Static buffer might have overflowed if we used it directly, hence we
 	// just copy and print the first 4999 bytes
 	strncpy(debug_buffer, ost.str().c_str(), 4999);
@@ -360,7 +360,7 @@ void printBB(PBB bb) {
  *					it is not always so. For example, if the BB contains just a
  *					delayed branch, and the delay instruction for the branch
  *					does not affect the branch, so the delay instruction is
- *					copied in  front of the branch instruction. It's address
+ *					copied in front of the branch instruction. It's address
  *					will be UpdateAddress()d to 0, since it is "not really
  *					there", so the low address for this BB will be the address
  *					of the branch.
@@ -508,7 +508,7 @@ void BasicBlock::addInEdge(PBB pNewInEdge) {
  * PARAMETERS:		it: iterator to BB that will no longer be a parent
  * SIDE EFFECTS:	The iterator argument is incremented.
  * USAGE:			It should be used like this:
- *					  if (pred) deleteInEdge(it) else it++;
+ *						if (pred) deleteInEdge(it) else it++;
  * RETURNS:			<nothing>
  *============================================================================*/
 void BasicBlock::deleteInEdge(std::vector<PBB>::iterator& it) {
@@ -545,7 +545,7 @@ void BasicBlock::deleteEdge(PBB edge) {
  *					visited and last visited
  * PARAMETERS:		first - the number of nodes that have been visited
  *					last - the number of nodes that have been visited for the
- *					  last time during this traversal
+ *						last time during this traversal
  * RETURNS:			the number of nodes (including this one) that were traversed
  *					from this node
  *============================================================================*/
@@ -556,9 +556,7 @@ unsigned BasicBlock::DFTOrder(int& first, int& last) {
 	unsigned numTraversed = 1;
 	m_iTraversed = true;
 
-	for (std::vector<PBB>::iterator it = m_OutEdges.begin();
-	  it != m_OutEdges.end(); it++) {
-
+	for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
 		PBB child = *it;
 		if (child->m_iTraversed == false)
 			numTraversed = numTraversed + child->DFTOrder(first,last);
@@ -571,15 +569,12 @@ unsigned BasicBlock::DFTOrder(int& first, int& last) {
 }
 
 /*==============================================================================
- * FUNCTION:	  BasicBlock::RevDFTOrder
- * OVERVIEW:	  Traverse this node and recurse on its parents in a reverse 
- *					depth first manner. Records the times at which this node was 
- *					first visited and last visited
- * PARAMETERS:	  first - the number of nodes that have been visited
- *				  last - the number of nodes that have been visited for the
- *					last time during this traversal
- * RETURNS:		  the number of nodes (including this one) that were traversed
- *				  from this node
+ * FUNCTION:	BasicBlock::RevDFTOrder
+ * OVERVIEW:	Traverse this node and recurse on its parents in a reverse depth first manner.
+ *					Records the times at which this node was first visited and last visited
+ * PARAMETERS:	first - the number of nodes that have been visited
+ *				last - the number of nodes that have been visited for the last time during this traversal
+ * RETURNS:		the number of nodes (including this one) that were traversed from this node
  *============================================================================*/
 unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
 	first++;
@@ -642,7 +637,7 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
 /*==============================================================================
  * FUNCTION:		BasicBlock::getCallDest
  * OVERVIEW:		Get the destination of the call, if this is a CALL BB with
- *					  a fixed dest. Otherwise, return -1
+ *						a fixed dest. Otherwise, return -1
  * PARAMETERS:		<none>
  * RETURNS:			Native destination of the call, or -1
  *============================================================================*/
@@ -708,8 +703,8 @@ Statement* BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit) {
 /*
  * Structuring and code generation.
  *
- * This code is whole heartly based on AST by Doug Simon.  Portions may be
- * copyright to him and are available under a BSD style license.  
+ * This code is whole heartly based on AST by Doug Simon. Portions may be
+ * copyright to him and are available under a BSD style license.
  *
  * Adapted for Boomerang by Trent Waddington, 20 June 2002.
  *
@@ -772,8 +767,7 @@ bool BasicBlock::isJmpZ(PBB dest) {
 
 /* Get the loop body */
 BasicBlock *BasicBlock::getLoopBody() {
-	assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP ||
-	  m_structType == ENDLESSLOOP);
+	assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
 	assert(m_iNumOutEdges == 2);
 	if (m_OutEdges[0] != m_loopFollow)
 		return m_OutEdges[0];
@@ -785,9 +779,9 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
 			 loopStamps[1] > other->loopStamps[1]) ||
 			(revLoopStamps[0] < other->revLoopStamps[0] && 
 			 revLoopStamps[1] > other->revLoopStamps[1]));
-/*	  return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
-	  (m_DFTrevlast < other->m_DFTrevlast &&
-	   m_DFTrevfirst > other->m_DFTrevfirst);*/
+/*	return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
+	(m_DFTrevlast < other->m_DFTrevlast &&
+	 m_DFTrevfirst > other->m_DFTrevfirst);*/
 }
 
 void BasicBlock::simplify() {
@@ -920,7 +914,7 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 // the block.
 void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 {
-	if (Boomerang::get()->debugGen)
+	if (DEBUG_GEN)
 		LOG << "Generating code for BB at " << getLowAddr() << "\n";
 
 	// Allocate space for a label to be generated for this node and add this to
@@ -929,13 +923,12 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 	hll->AddLabel(indLevel, ord);
 
 	if (m_pRtls) {
-		for (std::list<RTL*>::iterator it = m_pRtls->begin();
-		  it != m_pRtls->end(); it++)  {
-			if (Boomerang::get()->debugGen)
+		for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
+			if (DEBUG_GEN)
 				LOG << (*it)->getAddress() << "\t";
 			(*it)->generateCode(hll, this, indLevel);
 		}
-		if (Boomerang::get()->debugGen)
+		if (DEBUG_GEN)
 			LOG << "\n";
 	}
 
@@ -1288,8 +1281,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					assert(m_pRtls->size());
 					RTL* lastRTL = m_pRtls->back();
 					assert(lastRTL->getNumStmt());
-					GotoStatement* gs = (GotoStatement*)
-					  lastRTL->elementAt(lastRTL->getNumStmt()-1);
+					GotoStatement* gs = (GotoStatement*)lastRTL->elementAt(lastRTL->getNumStmt()-1);
 					ost << "goto " << gs->getDest();
 					hll->AddLineComment((char*)ost.str().c_str());
 				}
@@ -1303,16 +1295,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			// it is only reached from this node
 			PBB child = m_OutEdges[0];
 			if (child->traversed == DFS_CODEGEN || 
-				((child->loopHead != loopHead) && 
-				 (!child->allParentsGenerated() || 
-				  isIn(followSet, child))) ||
-				(latch && latch->loopHead->loopFollow == child) ||
-				!(caseHead == child->caseHead || 
-				  (caseHead && child == caseHead->condFollow)))
+					((child->loopHead != loopHead) && (!child->allParentsGenerated() || 
+					isIn(followSet, child))) ||
+					(latch && latch->loopHead->loopFollow == child) ||
+					!(caseHead == child->caseHead || 
+					(caseHead && child == caseHead->condFollow)))
 				emitGotoAndLabel(hll, indLevel, m_OutEdges[0]);
 			else
-				m_OutEdges[0]->generateCode(hll, indLevel, latch,
-					 followSet, gotoSet);
+				m_OutEdges[0]->generateCode(hll, indLevel, latch, followSet, gotoSet);
 			break;
 	}
 }
@@ -1321,8 +1311,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 // Note: this must be a call BB!
 Proc* BasicBlock::getDestProc() {
 	// The last Statement of the last RTL should be a CallStatement
-	CallStatement* call = (CallStatement*)
-	  (m_pRtls->back()->getHlStmt());
+	CallStatement* call = (CallStatement*)(m_pRtls->back()->getHlStmt());
 	assert(call->getKind() == STMT_CALL);
 	Proc* proc = call->getDestProc();
 	if (proc == NULL) {
@@ -1473,26 +1462,20 @@ condType BasicBlock::getCondType() {
 }
 
 bool BasicBlock::inLoop(PBB header, PBB latch) {
-   assert(header->latchNode == latch);
-   assert(header == latch || 
-		  ((header->loopStamps[0] > latch->loopStamps[0] && 
-			latch->loopStamps[1] > header->loopStamps[1]) ||
-		  (header->loopStamps[0] < latch->loopStamps[0] && 
-		   latch->loopStamps[1] < header->loopStamps[1])));
-   // this node is in the loop if it is the latch node OR
-   // this node is within the header and the latch is within this when using 
-   // the forward loop stamps OR
-   // this node is within the header and the latch is within this when using 
-   // the reverse loop stamps 
-   return this == latch ||
-		  (header->loopStamps[0] < loopStamps[0] && 
-		   loopStamps[1] < header->loopStamps[1] &&
-		   loopStamps[0] < latch->loopStamps[0] && 
-		   latch->loopStamps[1] < loopStamps[1]) ||
-		  (header->revLoopStamps[0] < revLoopStamps[0] && 
-		   revLoopStamps[1] < header->revLoopStamps[1] &&
-		   revLoopStamps[0] < latch->revLoopStamps[0] && 
-		   latch->revLoopStamps[1] < revLoopStamps[1]);
+	assert(header->latchNode == latch);
+	assert(header == latch || 
+		((header->loopStamps[0] > latch->loopStamps[0] && latch->loopStamps[1] > header->loopStamps[1]) ||
+		(header->loopStamps[0] < latch->loopStamps[0] && latch->loopStamps[1] < header->loopStamps[1])));
+	// this node is in the loop if it is the latch node OR
+	// this node is within the header and the latch is within this when using 
+	// the forward loop stamps OR
+	// this node is within the header and the latch is within this when using 
+	// the reverse loop stamps 
+	return this == latch ||
+		(header->loopStamps[0] < loopStamps[0] && loopStamps[1] < header->loopStamps[1] &&
+		loopStamps[0] < latch->loopStamps[0] && latch->loopStamps[1] < loopStamps[1]) ||
+		(header->revLoopStamps[0] < revLoopStamps[0] && revLoopStamps[1] < header->revLoopStamps[1] &&
+		revLoopStamps[0] < latch->revLoopStamps[0] && latch->revLoopStamps[1] < revLoopStamps[1]);
 }
 
 // Return the first statement number as a string.
@@ -1553,7 +1536,7 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, int& lo
 				if (ty)
 					proc->setLocalType(local.c_str(), ty);
 				proc->setLocalExp(local.c_str(), u);
-				if (VERBOSE || Boomerang::get()->debugLiveness) {
+				if (VERBOSE || DEBUG_LIVENESS) {
 					LOG << "Interference of " << dr << " with " << u << ", assigned " << local.c_str();
 					if (ty)
 						LOG << " with type " << ty->getCtype();
@@ -1603,7 +1586,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
 			LocationSet uses;
 			s->addUsedLocs(uses);
 			checkForOverlap(liveLocs, uses, ig, localNum, myProc);
-			if (Boomerang::get()->debugLiveness)
+			if (DEBUG_LIVENESS)
 				LOG << " ## Liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
 		}
 	}
@@ -1643,9 +1626,9 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 			RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
 			liveout.insert(r);
 			phiLocs.insert(r);
-			if (Boomerang::get()->debugLiveness)
-				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " << 
-				  getLowAddr() << "\n";
+			if (DEBUG_LIVENESS)
+				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " <<
+					getLowAddr() << "\n";
 		}
 	}
 }
@@ -1668,8 +1651,6 @@ int BasicBlock::whichPred(PBB pred) {
 //		 Indirect jump and call analyses		//
 //												//
 //	//	//	//	//	//	//	//	//	//	//	//	//
-
-#define DEBUG_SWITCH Boomerang::get()->debugSwitch
 
 // Switch High Level patterns
 
@@ -1705,7 +1686,7 @@ static Unary* formo = new RefExp(
 		(Statement*)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
-static Exp* formO  = new Binary(opPlus,
+static Exp* formO = new Binary(opPlus,
 	Location::memOf(
 		new Binary(opPlus,
 			new Binary(opMult,
@@ -1807,7 +1788,7 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
 			expr = b->getSubExp1();
 			break;
 		}
-		case 'O': {	  // Form O
+		case 'O': {		// Form O
 			// Pattern: m[<expr> * 4 + T ] + T
 			T = ((Const*)((Binary*)e)->getSubExp2())->getInt();
 			// l = m[<expr> * 4 + T ]:
@@ -1886,8 +1867,7 @@ int BasicBlock::findNumCases() {
 		if (op == opLessEq || op == opLessEqUns)
 			return k+1;
 	}
-	std::cerr << "Could not find number of cases for n-way at address " <<
-	  std::hex << getLowAddr() << "\n";
+	std::cerr << "Could not find number of cases for n-way at address " << std::hex << getLowAddr() << "\n";
 	return 3;		 // Bald faced guess if all else fails
 }
 
@@ -1899,15 +1879,15 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		RTL* lastRtl = m_pRtls->back();
 		if (DEBUG_SWITCH)
 			LOG << "decodeIndirectJmp: " << lastRtl->prints();
-#if 0
-std::cerr << "In edges: " << m_InEdges.size() << "\n";
-if (m_InEdges.size())
-  std::cerr << "In edge 1: " << m_InEdges[0]->prints() << "\n";
-#endif
 		assert(lastRtl->getNumStmt() >= 1);
-		CaseStatement* lastStmt = (CaseStatement*)lastRtl->elementAt(
-			lastRtl->getNumStmt()-1);
+		CaseStatement* lastStmt = (CaseStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
+		// Note: some programs can have the case expression not propagated, because of Mike's heuristic to
+		// "not propagate too much". Example: argc = m[argc * 4 + K] would not be propagated. So do the
+		// propagation again with the "limit" flag set to flase
+		StatementSet exclude;
 		Exp* e = lastStmt->getDest();
+		lastStmt->propagateTo(-1, exclude, e->getMemDepth(), false);
+		e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;
 		for (int i=0; i < n; i++) {
@@ -1927,8 +1907,7 @@ if (m_InEdges.size())
 			swi->uTable = T;
 			swi->iNumTable = findNumCases();
 			swi->iUpper = swi->iNumTable-1;
-			if (expr->getOper() == opMinus && 
-			  ((Binary*)expr)->getSubExp2()->isIntConst()) {
+			if (expr->getOper() == opMinus && ((Binary*)expr)->getSubExp2()->isIntConst()) {
 				swi->iLower = ((Const*)((Binary*)expr)->getSubExp2())->getInt();
 				swi->iUpper += swi->iLower;
 				expr = ((Binary*)expr)->getSubExp1();
@@ -1946,18 +1925,16 @@ if (m_InEdges.size())
 		std::cerr << lastRtl->prints() << "\n";
 
 		assert(lastRtl->getNumStmt() >= 1);
-		CallStatement* lastStmt = (CallStatement*)lastRtl->elementAt(
-			lastRtl->getNumStmt()-1);
+		CallStatement* lastStmt = (CallStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
 		Exp* e = lastStmt->getDest();
 		int n = sizeof(hlVfc) / sizeof(Exp*);
 		bool recognised = false;
 		int i;
 		for (i=0; i < n; i++) {
-			if (*e *= *hlVfc[i]) {		  // *= compare ignores subscripts
+			if (*e *= *hlVfc[i]) {			// *= compare ignores subscripts
 				recognised = true;
 				if (DEBUG_SWITCH)
 					LOG << "Indirect call matches form " << i << "\n";
-std::cerr << "Indirect call matches form " << i << "\n";
 				break;
 			}
 		}
@@ -1972,18 +1949,17 @@ std::cerr << "Indirect call matches form " << i << "\n";
 			Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
 			Prog* prog = proc->getProg();
 			Global* glo = prog->getGlobal(con->getStr());
-assert(glo);
+			assert(glo);
 			// Set the type to pointer to function, if not already
 			Type* ty = glo->getType();
-			if (!ty->isPointer() &&
-			  !((PointerType*)ty)->getPointsTo()->isFunc())
+			if (!ty->isPointer() && !((PointerType*)ty)->getPointsTo()->isFunc())
 				glo->setType(new PointerType(new FuncType()));
 			Exp* init = glo->getInitialValue(prog);
 			// Danger. For now, only do if -ic given
 			bool decodeThru = Boomerang::get()->decodeThruIndCall;
 			if (init && decodeThru) {
 				ADDRESS aglo = glo->getAddress();
-				ADDRESS pfunc = prog->readNative4(aglo);  
+				ADDRESS pfunc = prog->readNative4(aglo);
 				bool newFunc =	prog->findProc(pfunc) == NULL;
 				if (Boomerang::get()->noDecodeChildren)
 					return false;
@@ -2001,12 +1977,12 @@ assert(glo);
 }
 
 /*==============================================================================
- * FUNCTION:	  processSwitch
- * OVERVIEW:	  Called when a switch has been identified. Visits the
+ * FUNCTION:	processSwitch
+ * OVERVIEW:	Called when a switch has been identified. Visits the
  *					destinations of the switch, adds out edges to the BB, etc
- * PARAMETERS:	  proc - Pointer to the UserProc object for this code
- *				  swi - Pointer to the SWITCH_INFO struct
- * RETURNS:		  <nothing>
+ * PARAMETERS:	proc - Pointer to the UserProc object for this code
+ *				swi - Pointer to the SWITCH_INFO struct
+ * RETURNS:		<nothing>
  *============================================================================*/
 void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 
@@ -2017,8 +1993,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 	SWITCH_INFO* si = lastStmt->getSwitchInfo();
 
 	if (Boomerang::get()->debugSwitch) {
-		LOG << "Found switch statement type " << si->chForm <<
-		  " with table at 0x" << si->uTable << ", ";
+		LOG << "Found switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
 		if (si->iNumTable)
 			LOG << si->iNumTable << " entries, ";
 		LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
