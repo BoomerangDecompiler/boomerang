@@ -209,6 +209,7 @@ public:
 
     bool        operator==(Statement& o);
     void        setProc(UserProc *p) { proc = p; }
+    UserProc*   getProc() {return proc;}
 
     virtual Statement*  clone() = 0;            // Make copy of self
 

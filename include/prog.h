@@ -158,9 +158,6 @@ public:
     // Initialise and number all statements globally
     void initStatements();
 
-    // Convert to SSA form
-    void toSSAform();
-
     // Do decompilation
     void decompile();
 
@@ -177,8 +174,11 @@ public:
     // Process constants
     void processConstants();
 
-    // Repair dataflow... a hack
-    void repairDataflow(StatementSet& rs);
+    // Remove unused return locations
+    void removeUnusedReturns();
+
+    // Convert from SSA form
+    void fromSSAform();
 
     // Generate dotty file
     void generateDotFile();

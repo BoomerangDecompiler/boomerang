@@ -302,8 +302,7 @@ bool Statement::isFlagAssgn() {
 bool Statement::isPhi() {
     if (kind != STMT_ASSIGN)
         return false;
-    OPER op = ((Assign*)this)->getRight()->getOper();
-    return (op == opPhi);
+    return ((Assign*)this)->getRight()->isPhi();
 }
     
 

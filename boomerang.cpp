@@ -14,9 +14,10 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     noDataflow(false), noDecompile(false), noDecompileUp(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
-    debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
+    debugDataflow(false), debugPrintSSA(false),
     noPropMult(false), maxMemDepth(99), debugSwitch(false),
-    prove(false), noParameterNames(false), debugLiveness(false)
+    prove(false), noParameterNames(false), debugLiveness(false),
+    debugUnusedRets(false)
 {
 }
 
@@ -34,7 +35,7 @@ void Boomerang::help() {
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
     std::cerr << "-dd: debug - debug global dataflow\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
-    std::cerr << "-dr: debug - print reaching and available definitions\n";
+    std::cerr << "-dr: debug - debug unused Returns\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
@@ -86,11 +87,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         switch (argv[i][1]) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
-            case 'r':
-                if (argv[1][2] == 'b')
-                    recursionBust = true;
-                else
-                    printRtl = true; break;
+            case 'r': printRtl = true; break;
             case 't': traceDecoder = true; break;
             case 'g': 
                 dotFile = argv[++i];
@@ -168,8 +165,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'l':
                         debugLiveness = true;
                         break;
-                    case 'r':       // debug print reaching and avail defs
-                        debugPrintReach = true;
+                    case 'r':       // debug counting unused Returns
+                        debugUnusedRets = true;
                         break;
                     case 's':       // debug print SSA form
                         debugPrintSSA = true;

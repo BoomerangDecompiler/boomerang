@@ -753,5 +753,87 @@ void Prog::decompile() {
         if (proc->isLib()) continue;
         proc->decompile();
     }
+
+    // A final pass to remove return locations not used by any caller
+    removeUnusedReturns();
+
+    // Now it is OK to transform out of SSA form
+    fromSSAform();
 }
 
+void Prog::removeUnusedReturns() {
+    // The counter
+    UserProc::ReturnCounter rc;
+    // Two worksets; one of procs whose return sets have changed, and
+    // one of their callers
+    std::set<UserProc*> calleeSet, callerSet, newCalleeSet;
+
+    // First count (globally) the used returns
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        UserProc* proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        calleeSet.insert(proc);
+        callerSet.insert(proc);
+    }
+
+    bool change;
+    do {
+        rc.clear();
+        // Iterate through the workset, looking for uses of returns
+        // from calls in these procs (initially, all procs; later, callers
+        // of procs whose returns set has been reduced
+        std::set<UserProc*>::iterator it;
+        for (it = callerSet.begin(); it != callerSet.end(); it++)
+            (*it)->countUsedReturns(rc);
+
+        // Count a return reference for main. Looking for the name "main" is
+        // good, becuase if it's not a C program, then it won't have a main,
+        // and it probably (?) won't return an int
+        UserProc* m = (UserProc*) findProc("main");
+        Exp* r = m->getSignature()->getReturnExp(0);
+        rc[m].insert(r);
+
+        newCalleeSet.clear();
+        callerSet.clear();
+        change = false;
+
+        // Having globally counted the returns, remove the unused ones
+        // Note: after the first pass, we have only counted those callers which
+        // call procs in calleeSet, so only consider those procs
+        for (it = calleeSet.begin(); it != calleeSet.end(); it++) {
+            UserProc* proc = *it;
+            if (proc->isLib()) continue;
+            bool thisChange = proc->removeUnusedReturns(rc);
+            change |= thisChange;
+            if (thisChange) {
+                std::set<UserProc*> thisProcCallees;
+                proc->addCallees(thisProcCallees);
+                newCalleeSet.insert(thisProcCallees.begin(),
+                  thisProcCallees.end());
+                std::set<UserProc*>::iterator cc;
+                for (cc = thisProcCallees.begin(); cc != thisProcCallees.end();
+                      cc++)
+                    (*cc)->addCallers(callerSet);
+            }
+        }
+        calleeSet = newCalleeSet;
+    } while (change);
+}
+
+// Have to transform out of SSA form after the above final pass
+void Prog::fromSSAform() {
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        UserProc* proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->fromSSAform();
+        if (Boomerang::get()->vFlag) {
+            std::cerr << "===== After transformation from SSA form for " <<
+              proc->getName() << " =====\n";
+            print(std::cerr, true);
+            std::cerr << "===== End after transformation from SSA for " <<
+              proc->getName() << " =====\n\n";
+        }
+    }
+}

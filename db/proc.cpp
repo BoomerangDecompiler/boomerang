@@ -1116,15 +1116,8 @@ std::set<UserProc*>* UserProc::decompile() {
         }
     }
 
-    fromSSAform();
-
-    if (Boomerang::get()->vFlag) {
-        std::cerr << "===== After transformation from SSA form =====\n";
-        print(std::cerr, true);
-        std::cerr << "===== End after transformation from SSA =====\n\n";
-    }
-
-    decompiled = true;          // Now fully decompiled
+    decompiled = true;          // Now fully decompiled (apart from one final
+                                // pass, and transforming out of SSA form)
     return cycleSet;
 }
 
@@ -1294,6 +1287,7 @@ void UserProc::trimReturns() {
         }
     }
     if (stdsp)
+        // FIXME: Pentium specific
         removeReturn(new Unary(opRegOf, new Const(28)));
     if (stdret)
         removeReturn(new Terminal(opPC));
@@ -1372,7 +1366,7 @@ void UserProc::addNewParameters() {
             bool allZero;
             Exp *e = result->clone()->removeSubscripts(allZero);
             if (allZero && signature->findParam(e) == -1) {
-                int sp = signature->getStackRegister(prog);
+                //int sp = signature->getStackRegister(prog);
                 if (signature->isStackLocal(prog, e) ||
                     e->getOper() == opLocal)  {
                     if (VERBOSE)
@@ -2315,3 +2309,85 @@ void UserProc::getDefinitions(LocationSet& ls) {
         ls.insert(signature->getReturnExp(j));
     }
 }
+
+// "Local" member function, used below
+void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
+{
+    if (def == NULL) return;
+    CallStatement* call = dynamic_cast<CallStatement*>(def);
+    if (call == NULL) return;
+    // We have a reference to a return of the call statement
+    UserProc* proc = (UserProc*) call->getDestProc();
+    if (proc->isLib()) return;
+    if (Boomerang::get()->debugUnusedRets)
+        std::cerr << "Counted use of return location " << loc <<
+          " for call to " << proc->getName() << " at " << def->getNumber() <<
+          " in " << getName() << "\n";
+    rc[proc].insert(loc);
+}
+
+void UserProc::countUsedReturns(ReturnCounter& rc) {
+    if (Boomerang::get()->debugUnusedRets)
+        std::cerr << " @@ Counting used returns in " << getName() << "\n";
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter ss;
+    // For each statement this proc
+    for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
+        LocationSet used;
+        s->addUsedLocs(used);
+        LocSetIter ll;
+        // For each use this statement
+        for (Exp* l = used.getFirst(ll); l; l = used.getNext(ll)) {
+            Statement* def;
+            if (l->isSubscript()) {
+                // for this one reference
+                def = ((RefExp*)l)->getRef();
+                doCountReturns(def, rc, ((RefExp*)l)->getSubExp1());
+            } else if (l->isPhi()) {
+                StmtVecIter rr;
+                PhiExp& pe = (PhiExp&)*l;
+                // for each reference this phi expression
+                for (def = pe.getFirstRef(rr); !pe.isLastRef(rr);
+                      def = pe.getNextRef(rr))
+                    doCountReturns(def, rc, pe.getSubExp1());
+            }
+        }
+    }
+}
+
+bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
+    std::set<Exp*, lessExpStar> removes;    // Else iterators confused
+    std::set<Exp*, lessExpStar>& useSet = rc[this];
+    for (int i = 0; i < signature->getNumReturns(); i++) {
+        Exp *ret = signature->getReturnExp(i);
+        if (useSet.find(ret) == useSet.end())
+            removes.insert(ret);
+    }
+    std::set<Exp*, lessExpStar>::iterator it;
+    for (it = removes.begin(); it != removes.end(); it++) {
+        if (Boomerang::get()->debugUnusedRets)
+            std::cerr << " @@ Removing unused return " << *it <<
+            " in " << getName() << "\n";
+        removeReturn(*it);
+    }
+    return removes.size();
+}
+
+void Proc::addCallers(std::set<UserProc*>& callers) {
+    std::set<CallStatement*>::iterator it;
+    for (it = callerSet.begin(); it != callerSet.end(); it++) {
+        UserProc* callerProc = (*it)->getProc();
+        callers.insert(callerProc);
+    }
+}
+
+void UserProc::addCallees(std::set<UserProc*>& callees) {
+    std::set<Proc*>::iterator it;
+    for (it = calleeSet.begin(); it != calleeSet.end(); it++) {
+        UserProc* callee = (UserProc*)(*it);
+        if (callee->isLib()) continue;
+        callees.insert(callee);
+    }
+}
+
