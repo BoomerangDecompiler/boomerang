@@ -70,6 +70,7 @@ BinaryFile *BinaryFile::Load( const char *sName )
         delete pBF;
         return NULL;
     }
+    pBF->getTextLimits();
     return pBF;
 }
 
@@ -320,4 +321,33 @@ ADDRESS* BinaryFile::GetImportStubs(int& numExports)
 {
     numExports = 0;
     return NULL;
+}
+
+void BinaryFile::getTextLimits()
+{
+    int n = GetNumSections();
+    limitTextLow = 0xFFFFFFFF;
+    limitTextHigh = 0;
+    textDelta = 0;
+    for (int i=0; i < n; i++) {
+        SectionInfo* pSect = GetSectionInfo(i);
+        if (pSect->bCode) {
+            // The .plt section is an anomaly. It's code, but we never want to
+            // decode it, and in Sparc ELF files, it's actually in the data
+            // segment (so it can be modified). For now, we make this ugly
+            // exception
+            if (strcmp(".plt", pSect->pSectionName) == 0)
+                continue;
+            if (pSect->uNativeAddr < limitTextLow)
+                limitTextLow = pSect->uNativeAddr;
+            ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
+            if (hiAddress > limitTextHigh)
+                limitTextHigh = hiAddress;
+            if (textDelta == 0)
+                textDelta = pSect->uHostAddr - pSect->uNativeAddr;
+            else
+                assert(textDelta ==
+                    (int) (pSect->uHostAddr - pSect->uNativeAddr));
+        }
+    }
 }

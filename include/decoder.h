@@ -101,7 +101,7 @@ public:
     /*
      * Constructor
      */
-    NJMCDecoder(Prog *prog);
+    NJMCDecoder();
 
     /*
      * Decodes the machine instruction at pc and returns an RTL instance for
@@ -119,11 +119,6 @@ virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
 protected:
 
-    /*
-     * The program being decoded
-     */
-    Prog *prog;
-    
     /*
      * Given an instruction name and a variable list of Exps
      * representing the actual operands of the instruction, use the

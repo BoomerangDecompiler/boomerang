@@ -522,7 +522,7 @@ LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) :
         std::cerr << "Could not find parameters for library function " << name <<
           std::endl;
         // Get a default library signature
-	if (prog->pBF->GetFormat() == LOADFMT_PE)
+	if (prog->isWin32())
 		signature = Signature::instantiate("-win32-pentium", name.c_str());
 	else {
 		std::string s = "-stdc-";

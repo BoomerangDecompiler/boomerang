@@ -31,6 +31,7 @@
 
 #include <queue>
 #include <stdarg.h>         // For varargs
+#include <sstream>
 #ifndef WIN32
 #include <dlfcn.h>          // dlopen, dlsym
 #endif
@@ -59,23 +60,29 @@
 /*==============================================================================
  * FUNCTION:      FrontEnd::FrontEnd
  * OVERVIEW:      Construct the FrontEnd object
- * PARAMETERS:    delta: host - native address difference
- *                uUpper: highest+1 address in the text segment
+ * PARAMETERS:    prog: program being decoded
  * RETURNS:       <N/a>
  *============================================================================*/
-FrontEnd::FrontEnd(Prog *prog, int delta, ADDRESS uUpper)
- : prog(prog), delta(delta), uUpper(uUpper)
+FrontEnd::FrontEnd(BinaryFile *pBF)
+ : pBF(pBF), m_iNumberedProc(1)
 {}
 
-FrontEnd* FrontEnd::instantiate(MACHINE machine, Prog *prog, int delta, ADDRESS uUpper)
+FrontEnd* FrontEnd::instantiate(BinaryFile *pBF)
 {
-    switch(machine) {
+    switch(pBF->GetMachine()) {
 	case MACHINE_PENTIUM:
-		return new PentiumFrontEnd(prog, delta, uUpper);
+		return new PentiumFrontEnd(pBF);
 	case MACHINE_SPARC:
-		return new SparcFrontEnd(prog, delta, uUpper);
+		return new SparcFrontEnd(pBF);
     }
     return NULL;
+}
+
+FrontEnd* FrontEnd::Load(const char *fname)
+{
+    BinaryFile *pBF = BinaryFile::Load(fname);
+    if (pBF == NULL) return NULL;
+    return instantiate(pBF);
 }
 
 // destructor
@@ -83,14 +90,91 @@ FrontEnd::~FrontEnd()
 {
 }
 
-FrontEnd *FrontEnd::createById(std::string &str, Prog *prog, int delta, ADDRESS uUpper)
+FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF)
 {
 	if (str == "pentium")
-		return new PentiumFrontEnd(prog, delta, uUpper);
+		return new PentiumFrontEnd(pBF);
 	if (str == "sparc")
-		return new SparcFrontEnd(prog, delta, uUpper);
+		return new SparcFrontEnd(pBF);
 	return NULL;
 }
+
+Prog *FrontEnd::decode() {
+    Prog *prog = new Prog;
+    prog->pBF = pBF;
+    prog->pFE = this;
+    prog->readLibParams();
+
+    bool gotMain;
+    ADDRESS a = getMainEntryPoint(gotMain);
+    if (a == NO_ADDRESS) return false;
+
+    newProc(prog, a);
+
+    bool change = true;
+    while (change) {
+        change = false;
+	PROGMAP::const_iterator it;
+	for (Proc *pProc = prog->getFirstProc(it); 
+		   pProc != NULL; 
+		   pProc = prog->getNextProc(it)) {
+            if (pProc->isLib()) continue;
+	    UserProc *p = (UserProc*)pProc;
+	    if (p->isDecoded()) continue;
+
+	    // undecoded userproc.. decode it			
+	    change = true;
+	    std::ofstream os;
+	    int res = processProc(p->getNativeAddress(), p, os);
+	    if (res == 1)
+	        p->setDecoded();
+	    else
+	        break;
+        }
+    }
+    return prog;
+}
+
+DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
+	return decoder->decodeInstruction(pc, pBF->getTextDelta());
+}
+
+/*==============================================================================
+ * FUNCTION:    FrontEnd::newProc
+ * OVERVIEW:    Call this function when a procedure is discovered (usually by
+ *                decoding a call instruction). That way, it is given a name
+ *                that can be displayed in the dot file, etc. If we assign it
+ *                a number now, then it will retain this number always
+ * PARAMETERS:  prog  - program to add the new procedure to
+ *              uAddr - Native address of the procedure entry point
+ * RETURNS:     Pointer to the Proc object, or 0 if this is a deleted (not to
+ *                be decoded) address
+ *============================================================================*/
+Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr)
+{
+    // this test fails when decoding sparc, why?  Please investigate - trent
+    //assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
+    // Check if we already have this proc
+    Proc* pProc = prog->findProc(uAddr);
+    if (pProc == (Proc*)-1)         // Already decoded and deleted?
+        return 0;                   // Yes, exit with 0
+    if (pProc)
+        // Yes, we are done
+        return pProc;
+    char* pName = pBF->SymbolByAddress(uAddr);
+    bool bLib = pBF->IsDynamicLinkedProc(uAddr);
+    if (pName == 0)
+    {
+        // No name. Give it a numbered name
+        std::ostringstream ost;
+        ost << "proc" << m_iNumberedProc++;
+        pName = strdup(ost.str().c_str());
+    }
+    pProc = prog->newProc(pName, uAddr, bLib);
+    return pProc;
+}
+
+
 
 /*==============================================================================
  * FUNCTION:      FrontEnd::processProc
@@ -119,7 +203,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     // Similarly, we have a set of HLCall pointers. These may be disregarded
     // if this is a speculative decode that fails (i.e. an illegal instruction
     // is found). If not, this set will be used to add to the set of calls to
-    // be analysed in the cfg, and also to call prog.visitProc()
+    // be analysed in the cfg, and also to call newProc()
     std::set<HLCall*> callSet;
 
     // Indicates whether or not the next instruction to be decoded is the
@@ -162,9 +246,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             // procedure out edge
             if (processed[uAddr] != NULL) {
                 // Alert the watcher to the problem
-                ProgWatcher *w = prog->getWatcher();
-                if (w)
-                    w->alert_baddecode(uAddr);
+                //ProgWatcher *w = prog->getWatcher();
+                //if (w)
+                //    w->alert_baddecode(uAddr);
 
                 Proc *p = processed[uAddr];
 
@@ -183,7 +267,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
             processed[uAddr] = pProc;
             // Decode the inst at uAddr.
-            inst = getDecoder()->decodeInstruction(uAddr, delta);
+            inst = decodeInstruction(uAddr);
 
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid)
@@ -199,9 +283,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             if (inst.valid == false)
             {
                 // Alert the watcher to the problem
-                ProgWatcher *w = prog->getWatcher();
-                if (w)
-                    w->alert_baddecode(uAddr);
+                //ProgWatcher *w = prog->getWatcher();
+                //if (w)
+                //    w->alert_baddecode(uAddr);
 
                 // An invalid instruction. Most likely because a call did
                 // not return (e.g. call _exit()), etc. Best thing is to
@@ -216,9 +300,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             }
 
             // alert the watcher that we have decoded an instruction
-            ProgWatcher *w = prog->getWatcher();
-            if (w)
-                w->alert_decode(uAddr, inst.numBytes);
+            //ProgWatcher *w = prog->getWatcher();
+            //if (w)
+            //    w->alert_decode(uAddr, inst.numBytes);
             nTotalBytes += inst.numBytes;           
     
             if (pRtl == 0) {
@@ -289,7 +373,7 @@ if (1) {
 
                     // Add the out edge if it is to a destination within the
                     // procedure
-                    if (uDest < uUpper) {
+                    if (uDest < pBF->getLimitTextHigh()) {
                         targetQueue.visit(pCfg, uDest, pBB);
                         pCfg->addOutEdge(pBB, uDest, true);
                     }
@@ -306,13 +390,13 @@ if (1) {
             {
                 if (rtl_jump->getDest()->getOper() == opMemOf &&
                     rtl_jump->getDest()->getSubExp1()->getOper() == opAddrConst && 
-					prog->pBF->IsDynamicLinkedProcPointer(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr())) {
+					pBF->IsDynamicLinkedProcPointer(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr())) {
                     // jump to a library function
                     // replace with a call ret
-		    std::string func = prog->pBF->GetDynamicProcName(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr());
+		    std::string func = pBF->GetDynamicProcName(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr());
                     HLCall *call = new HLCall(rtl_jump->getAddress());
                     call->setDest(rtl_jump->getDest()->clone());
-					LibProc *lp = prog->getLibraryProc(func.c_str());
+					LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
 					assert(lp);
 					call->setDestProc(lp);
                     BB_rtls->push_back(call);
@@ -342,7 +426,7 @@ if (1) {
                 // FIXME: This needs to call a new register branch processing
                 // function
                 if (isSwitch(pBB, rtl_jump->getDest(), pProc)) {
-                    processSwitch(pBB, delta, pCfg, targetQueue, pProc);
+                    processSwitch(pBB, pBF->getTextDelta(), pCfg, targetQueue, pProc);
                 }
                 else { // Computed jump
                     // Not a switch statement
@@ -372,7 +456,7 @@ if (1) {
 
                     // Add the out edge if it is to a destination within the
                     // procedure
-                    if (uDest < uUpper) {
+                    if (uDest < pBF->getLimitTextHigh()) {
                         targetQueue.visit(pCfg, uDest, pBB);
                         pCfg->addOutEdge(pBB, uDest, true);
                     }
@@ -398,10 +482,10 @@ if (1) {
 
 				if (call->getDest()->getOper() == opMemOf &&
 					call->getDest()->getSubExp1()->getOper() == opAddrConst &&
-					prog->pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
+					pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
 					// dynamic linked proc pointers are assumed to be static.
-					const char *nam = prog->pBF->GetDynamicProcName(((Const*)call->getDest()->getSubExp1())->getAddr());
-					Proc *p = prog->getLibraryProc(nam); // get the proc
+					const char *nam = pBF->GetDynamicProcName(((Const*)call->getDest()->getSubExp1())->getAddr());
+					Proc *p = pProc->getProg()->getLibraryProc(nam); // get the proc
 					call->setDestProc(p);
 				}
 
@@ -447,7 +531,7 @@ if (1) {
 
                     // Record the called address as the start of a new
                     // procedure if it didn't already exist.
-                    if (uNewAddr && prog->findProc(uNewAddr) == NULL) {
+                    if (uNewAddr && pProc->getProg()->findProc(uNewAddr) == NULL) {
                         callSet.insert(call);
                         if (processed[uNewAddr] != NULL) {
                             // PROBLEM: A procedure for this address has not been
@@ -465,8 +549,8 @@ if (1) {
                                     l.push_back((*it).first);
                             for (std::list<ADDRESS>::iterator itl = l.begin(); itl != l.end(); itl++)
                                 processed[*itl] = NULL;
-                            // visit the new procedure
-                            prog->visitProc(uNewAddr);
+                            // create a new procedure in the same program
+                            newProc(pProc->getProg(), uNewAddr);
                             // undecode the old procedure
                             p->unDecode();
                             if (p == pProc) {
@@ -478,7 +562,7 @@ if (1) {
                                 return false;
                             }
                         }
-                        //prog->visitProc(uNewAddr);
+                        //newProc(pProc->getProg(), uNewAddr);
                         // FIXME: settings
 //                        if (progOptions.trace)
 //                            std::cout << "p" << std::hex << uNewAddr << "\t" << std::flush; 
@@ -487,7 +571,7 @@ if (1) {
                     // Check if this is the _exit or exit function. May prevent
                     // us from attempting to decode invalid instructions, and
                     // getting invalid stack height errors
-                    const char* name = prog->pBF->SymbolByAddress(uNewAddr);
+                    const char* name = pBF->SymbolByAddress(uNewAddr);
                     if (name && ((strcmp(name, "_exit") == 0) ||
                                  (strcmp(name,  "exit") == 0))) {
                         // Create the new basic block
@@ -622,7 +706,7 @@ if (1) {
             if (gap < 8) {
                 bool allNops = true;
                 for (int i=0; i < gap; i+= NOP_SIZE) {
-                    if (getInst(a1+i+delta) != NOP_INST) {
+                    if (getInst(a1+i+pBF->getTextDelta()) != NOP_INST) {
                         allNops = false;
                         break;
                     }
@@ -642,9 +726,9 @@ if (1) {
     // Add the resultant coverage to the program's coverage
 //    pProc->addProcCoverage();
 
-    ProgWatcher *w = prog->getWatcher();
-    if (w)
-        w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
+    //ProgWatcher *w = prog->getWatcher();
+    //if (w)
+    //    w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
 
     // Add the callees to the set of HLCalls to proces for CSR, and also
     // to the Prog object
@@ -653,13 +737,12 @@ if (1) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
-        if (prog->pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
+        if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
 			Proc *np = (*it)->getDestProc();
             if (np == NULL && dest != NO_ADDRESS) {
-				prog->visitProc(dest);
-				np = prog->findProc(dest);
+				np = newProc(pProc->getProg(), dest);
 			}
 			if (np != NULL) {
 				np->setFirstCaller(pProc);
@@ -867,8 +950,7 @@ void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq, UserProc* p)
  *                load the library and return an instance of FrontEnd
  * PARAMETERS:  sName: name of the binary file
  *              dlHandle: ref to a void* needed for closeInstance
- *              delta: difference between host and native addresses
- *              ADDRESS uUpper: one past end of code segment (native addr)
+ *              prog: the program to decode
  *              decoder: ref to ptr to decoder object
  * RETURNS:     Pointer to a FrontEnd* object, or 0 if not successful
  *============================================================================*/
@@ -877,7 +959,7 @@ typedef FrontEnd* (*constructFcn)(int, ADDRESS, NJMCDecoder**);
 #define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
                                      buf[off+2] == c && buf[off+3] == d)
 FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
-  Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder*& decoder) {
+  BinaryFile *pBF, NJMCDecoder*& decoder) {
     FILE *f;
     char buf[64];
     std::string libName, machName;
@@ -898,7 +980,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
             machName = "sparc"; 
 #ifndef DYNAMIC
             {
-                SparcFrontEnd *fe = new SparcFrontEnd(prog, delta, uUpper);
+                SparcFrontEnd *fe = new SparcFrontEnd(pBF);
                 decoder = fe->getDecoder();
                 return fe;
             }
@@ -908,7 +990,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
             machName = "pentium"; 
 #ifndef DYNAMIC
             {
-                PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
+                PentiumFrontEnd *fe = new PentiumFrontEnd(pBF);
                 decoder = fe->getDecoder();
                 return fe;
             }
@@ -922,7 +1004,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
         // This test could be strengthened a bit!
         machName = "pentium";
 #ifndef DYNAMIC
-        PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
+        PentiumFrontEnd *fe = new PentiumFrontEnd(pBF);
         decoder = fe->getDecoder();
         return fe;
 #endif
@@ -959,7 +1041,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
     }
 
     // Call the construct function
-    return (*pFcn)(delta, uUpper, &decoder);
+    return (*pFcn)(pBF, &decoder);
 #endif
 
 	return 0;

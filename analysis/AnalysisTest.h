@@ -14,11 +14,10 @@ class SparcFrontEnd;
 class Prog;
 
 class AnalysisTest : public CppUnit::TestCase {
+    // the frontend
+    FrontEnd *pFE;
     // the program
     Prog *prog;
-    // The decoder object
-    NJMCDecoder* decoder;
-
 
   public:
     AnalysisTest(std::string name) : CppUnit::TestCase (name)

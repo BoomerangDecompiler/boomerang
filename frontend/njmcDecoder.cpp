@@ -44,7 +44,7 @@
  * PARAMETERS:     None
  * RETURNS:        N/A
  *============================================================================*/
-NJMCDecoder::NJMCDecoder(Prog *prog) : prog(prog)
+NJMCDecoder::NJMCDecoder()
 {}
 
 /*==============================================================================
@@ -225,28 +225,11 @@ Exp* NJMCDecoder::dis_Num(unsigned num)
 void NJMCDecoder::unconditionalJump(const char* name, int size,
   ADDRESS relocd, /*UserProc* proc,*/ int delta, ADDRESS pc, std::list<Exp*>* Exps,
   DecodeResult& result) {
-    ADDRESS dest = relocd-delta;
-    // Check for a pointer to a label, but not a branch that happens to be
-    // to the top of this function (this would a rare function with no
-    // prologue).
-    const char* fname = prog->pBF->SymbolByAddress(dest);
-    // FIXME: The test for a branch to the top of a function (recursive call
-    // followed by a return) has to be done somewhere else
-    if ((fname == 0) /*|| (proc == 0) || (proc->getNativeAddress() == dest)*/) {
         HLJump* jump = new HLJump(pc, Exps);
         result.rtl = jump;
         result.numBytes = size;
-        jump->setDest(dest);
+        jump->setDest(relocd-delta);
         SHOW_ASM(name<<" "<<relocd)
-    } else {
-        // The jump is to another function. Handle this as a call/return pair
-        HLCall* call = new HLCall(pc, 0, Exps);
-        result.rtl = call;
-        result.numBytes = size;
-        call->setDest(dest);
-        call->setReturnAfterCall(true);
-        SHOW_ASM(name<<" "<<fname)
-    }
 }
 
 #if 0       // HACK!

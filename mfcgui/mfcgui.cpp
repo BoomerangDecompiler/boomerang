@@ -62,8 +62,6 @@ CBoomerangApp::CBoomerangApp()
 // The one and only CBoomerangApp object
 
 CBoomerangApp theApp;
-// the super ugly global
-Prog prog;
 
 
 /////////////////////////////////////////////////////////////////////////////

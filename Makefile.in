@@ -82,7 +82,7 @@ distclean: clean
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
-	analysis/AnalysisTest.o 
+	analysis/AnalysisTest.o loader/BinaryFileStub.o
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \

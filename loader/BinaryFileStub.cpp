@@ -205,6 +205,7 @@ BinaryFileStub::BinaryFileStub()
     text->bBss = 0;
     text->bReadOnly = 1;
     m_pSections = text;
+    getTextLimits();
 }
 
 LOAD_FMT BinaryFileStub::GetFormat() const

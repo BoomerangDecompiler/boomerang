@@ -71,6 +71,7 @@ public:
 			~Prog();
             Prog(const char* name);     // Constructor with name
     void    setName(const char *name);      // Set the name of this program
+    bool    isWin32();                  // Is this a win32 program?
     Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
                                         // Returns a pointer to a new proc
     void    remProc(UserProc* proc);    // Remove the given UserProc
@@ -83,8 +84,6 @@ public:
     bool    isProcLabel (ADDRESS addr); // Checks if addr is a label or not
     // Create a dot file for all CFGs
     bool    createDotFile(const char*, bool bMainOnly = false) const;
-    // Call the following when a proc is discovered
-    Proc*   visitProc(ADDRESS uAddr);
     void    setArgv0(const char* p);    // Set the argv[0] pointer
     std::string& getProgPath();        // Get path to the translator executable
     void    readLibParams();            // Read the common.hs file
@@ -93,11 +92,6 @@ public:
     // The procs will appear in order of native address
     Proc*   getFirstProc(PROGMAP::const_iterator& it);
     Proc*   getNextProc(PROGMAP::const_iterator& it);
-    // Get the lower and upper limits of the text segment
-    void    getTextLimits();
-
-	// load a given binary file
-	bool LoadBinary(const char *fname);
 
 	// load/save the current program, project/location must be set.
 	void	load();
@@ -125,9 +119,6 @@ public:
 
 	// Well form all the procedures/cfgs in this program
 	bool wellForm();
-
-	// Decode any undecoded procedures
-	void decode();
 
 	// Analyse any decoded procedures
 	void analyse();
@@ -171,25 +162,12 @@ public:
     bool        bRegisterJump;
     bool        bRegisterCall;
 
-    // Public addresses being the lowest used native address (inclusive), and
-    // the highest used address (not inclusive) in the text segment
-    ADDRESS     limitTextLow;
-    ADDRESS     limitTextHigh;
-    // Also the difference between the host and native addresses (host - native)
-    // At this stage, we are assuming that the difference is the same for all
-    // text sections of the BinaryFile image
-    int         textDelta;
-
 protected:
     std::string      m_name;                 // name of the executable
     std::list<Proc*> m_procs;                // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*
-    int         m_iNumberedProc;        // Next numbered proc will use this
     std::string      m_progPath;             // String with the path to this exec
 	ProgWatcher *m_watcher;				// used for status updates
 }; 
-
-// Declare the global Prog object
-//extern Prog *prog;
 
 #endif

@@ -1205,7 +1205,7 @@ void HLCall::print(std::ostream& os /*= cout*/)
     else if (pDest == NULL)
             os << "*no dest*";
     else {
-        os << pDest << std::endl;
+        pDest->print(os);
     }
 
     // Print the actual arguments of the call

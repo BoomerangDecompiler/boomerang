@@ -49,13 +49,14 @@ int ProcTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void ProcTest::setUp () {
+    BinaryFile *pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    CPPUNIT_ASSERT(pFE != 0);
     m_prog = new Prog();
-    m_prog->pBF = new BinaryFileStub();
-    CPPUNIT_ASSERT(m_prog->pBF != 0);
-    // Set the text limits
-    m_prog->getTextLimits();
-    m_prog->pFE = new PentiumFrontEnd(m_prog, m_prog->textDelta, m_prog->limitTextHigh);
-    m_prog->readLibParams();
+    CPPUNIT_ASSERT(m_prog != 0);
+    m_prog->pBF = pBF;
+    m_prog->pFE = pFE;
 }
 
 /*==============================================================================

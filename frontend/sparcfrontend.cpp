@@ -181,7 +181,7 @@ void SparcFrontEnd::handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& n
  *                      be added.
  * RETURNS:           <nothing>
  *============================================================================*/
-void SparcFrontEnd::handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
+void SparcFrontEnd::handleCall(UserProc *proc, ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
     int offset/* = 0*/)
 {
     if (callBB == NULL)
@@ -190,7 +190,7 @@ void SparcFrontEnd::handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRE
     // If the destination address is the same as this very instruction,
     // we have a call with iDisp30 == 0. Don't treat this as the start
     // of a real procedure.
-    if ((dest != address) && prog->findProc(dest) == 0) {
+    if ((dest != address) && proc->getProg()->findProc(dest) == 0) {
         // We don't want to call prog.visitProc just yet, in case this is
         // a speculative decode that failed. Instead, we use the set of
         // HLCalls (not in this procedure) that is needed by CSR
@@ -290,8 +290,8 @@ if (0)      // SETTINGS!
         // First check for helper functions
         ADDRESS dest = call_rtl->getFixedDest();
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((prog->pBF->IsDynamicLinkedProc(dest)) && 
-          (prog->pBF->SymbolByAddress(dest) == NULL)) {
+        if ((pBF->IsDynamicLinkedProc(dest)) && 
+          (pBF->SymbolByAddress(dest) == NULL)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -316,7 +316,7 @@ if (0)      // SETTINGS!
 
         if (returnBB) {
             // Handle the call but don't add any outedges from it just yet.
-            handleCall(call_rtl->getFixedDest(), callBB, cfg, address);
+            handleCall(proc, call_rtl->getFixedDest(), callBB, cfg, address);
 
             // Now add the out edge
             cfg->addOutEdge(callBB, returnBB);
@@ -355,7 +355,7 @@ if (0)      // SETTINGS!
             bool ret = true;
             // Check for _exit; probably should check for other "never return"
             // functions
-            const char* name = prog->pBF->SymbolByAddress(dest);
+            const char* name = pBF->SymbolByAddress(dest);
             if (name && strcmp(name, "_exit") == 0) {
                 // Don't keep decoding after this call
                 ret = false;
@@ -367,7 +367,7 @@ if (0)      // SETTINGS!
 
             // Handle the call (register the destination as a proc)
             // and possibly set the outedge.
-            handleCall(dest, callBB, cfg, address, offset);
+            handleCall(proc, dest, callBB, cfg, address, offset);
 
             if (inst.forceOutEdge) {
                 // There is no need to force a goto to the new out-edge, since
@@ -810,9 +810,6 @@ bool SparcFrontEnd::case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddres
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &os,
     bool spec /* = false */, PHELPER helperFunc /* = NULL */)
 {
-    // cache the program being decoded
-    this->prog = prog;
-
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;
@@ -858,7 +855,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 if (0)          // SETTINGS!
                 std::cout << "*" << std::hex << address << "\t" << std::flush;
 
-            inst = decoder->decodeInstruction(address, delta);
+            inst = decodeInstruction(address);
 
             // If invalid and we are speculating, just exit
             if (spec && !inst.valid)
@@ -890,7 +887,7 @@ if (0)          // SETTINGS!
                 (rtl->getKind() == RET_RTL)) {
                 ADDRESS dest = rtl_jump->getFixedDest();
                 if ((dest != NO_ADDRESS) && (dest < hiAddress)){
-                    unsigned inst_before_dest = *((unsigned*)(dest-4+delta));
+                    unsigned inst_before_dest = *((unsigned*)(dest-4+pBF->getTextDelta()));
 
                     unsigned bits31_30 = inst_before_dest >> 30;
                     unsigned bits23_22 = (inst_before_dest >> 22) & 3;
@@ -940,7 +937,7 @@ if (0)          // SETTINGS!
                 // Construct the new basic block and save its destination
                 // address if it hasn't been visited already
                 PBB pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
-                handleBranch(address+8, uUpper, pBB, cfg, targetQueue);
+                handleBranch(address+8, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -954,7 +951,7 @@ if (0)          // SETTINGS!
                 BB_rtls->push_back(rtl_jump);
 
                 PBB pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
-                handleBranch(rtl_jump->getFixedDest(), uUpper, pBB,
+                handleBranch(rtl_jump->getFixedDest(), pBF->getLimitTextHigh(), pBB,
                     cfg, targetQueue);
 
                 // There is no fall through branch.
@@ -966,12 +963,11 @@ if (0)          // SETTINGS!
             case SD:    // This includes "call" and "ba". If a "call", it might
                         // be a move_call_move idiom, or a call to .stret4
             {
-                DecodeResult delay_inst = 
-                    decoder->decodeInstruction(address+4, delta);
+                DecodeResult delay_inst = decodeInstruction(address+4);
                 if (rtl->getKind() == CALL_RTL) {
                     // Check the delay slot of this call. First case of interest
                     // is when the instruction is a restore
-                    if (((SparcDecoder*)decoder)->isRestore(address+4+delta)) {
+                    if (((SparcDecoder*)decoder)->isRestore(address+4+pBF->getTextDelta())) {
                         // Give the address of the call; I think that this is
                         // actually important, if faintly annoying
                         delay_inst.rtl->updateAddress(address);
@@ -1044,7 +1040,7 @@ if (0)          // SETTINGS!
                     }
                     else {
                         // This is a non-call followed by an NCT/NOP
-                        case_SD_NCT(address, delta, uUpper, inst, delay_inst,
+                        case_SD_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(), inst, delay_inst,
                             BB_rtls, cfg, targetQueue, os);
 
                         // There is no fall through branch.
@@ -1083,7 +1079,7 @@ if (0)          // SETTINGS!
 
                     // Create the appropriate BB
                     if (rtl->getKind() == CALL_RTL) {
-                        handleCall(dest, cfg->newBB(BB_rtls,CALL, 1), cfg,
+                        handleCall(proc, dest, cfg->newBB(BB_rtls,CALL, 1), cfg,
                             address, 8);
                         
                         // Set the address of the lexical successor of the
@@ -1099,7 +1095,7 @@ if (0)          // SETTINGS!
                     }
                     else {
                         PBB pBB = cfg->newBB(BB_rtls,ONEWAY, 1);
-                        handleBranch(dest, uUpper, pBB, cfg, targetQueue);
+                        handleBranch(dest, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -1119,7 +1115,7 @@ if (0)          // SETTINGS!
                 DecodeResult delay_inst; 
                 if (inst.numBytes == 4) {
                     // Ordinary instruction. Look at the delay slot
-                    delay_inst = decoder->decodeInstruction(address+4, delta);
+                    delay_inst = decodeInstruction(address+4);
                     delay_inst.rtl->updateNumBytes(delay_inst.numBytes);
                 }
                 else {
@@ -1140,7 +1136,7 @@ if (0)              // SETTINGS!
                 case NOP:
                 case NCT:
                 {
-                    sequentialDecode = case_DD_NCT(address, delta, inst,
+                    sequentialDecode = case_DD_NCT(address, pBF->getTextDelta(), inst,
                         delay_inst, BB_rtls, cfg, targetQueue, proc, callSet);
                     break;
                 }
@@ -1166,8 +1162,7 @@ if (0)              // SETTINGS!
                 // We do just a binary comparison; that may fail to make this
                 // optimisation if the instr has relative fields.
 
-                DecodeResult delay_inst = 
-                    decoder->decodeInstruction(address+4,delta);
+                DecodeResult delay_inst = decodeInstruction(address+4);
                 RTL* delay_rtl = delay_inst.rtl;
                 delay_rtl->updateNumBytes(delay_inst.numBytes);
 
@@ -1180,15 +1175,15 @@ if (0)              // SETTINGS!
                 case NOP:
                 case NCT:
                 {
-                    sequentialDecode = case_SCD_NCT(address, delta, uUpper,
+                    sequentialDecode = case_SCD_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(),
                         inst, delay_inst, BB_rtls, cfg, targetQueue);
                     break;
                 }
                 default:
                     if (delay_inst.rtl->getKind() == CALL_RTL) {
                         // Assume it's the move/call/move pattern
-                        sequentialDecode = case_SCD_NCT(address, delta,
-                            uUpper, inst, delay_inst, BB_rtls, cfg,
+                        sequentialDecode = case_SCD_NCT(address, pBF->getTextDelta(),
+                            pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
                             targetQueue);
                         break;
                     }
@@ -1202,8 +1197,7 @@ if (0)              // SETTINGS!
             {
                 // Execute the delay instruction if the branch is taken;
                 // skip (anull) the delay instruction if branch not taken.
-                DecodeResult delay_inst = 
-                    decoder->decodeInstruction(address+4,delta);
+                DecodeResult delay_inst = decodeInstruction(address+4);
                 RTL* delay_rtl = delay_inst.rtl;
                 delay_rtl->updateNumBytes(delay_inst.numBytes);
 
@@ -1225,7 +1219,7 @@ if (0)              // SETTINGS!
                     }
                     // Visit the destination of the branch; add "true" leg
                     ADDRESS uDest = rtl_jump->getFixedDest();
-                    handleBranch(uDest, uUpper, pBB, cfg, targetQueue);
+                    handleBranch(uDest, pBF->getLimitTextHigh(), pBB, cfg, targetQueue);
                     // Add the "false" leg: point past the delay inst
                     cfg->addOutEdge(pBB, address+8);
                     address += 8;           // Skip branch and delay
@@ -1235,7 +1229,7 @@ if (0)              // SETTINGS!
 
                 case NCT:
                 {
-                    sequentialDecode = case_SCDAN_NCT(address, delta, uUpper,
+                    sequentialDecode = case_SCDAN_NCT(address, pBF->getTextDelta(), pBF->getLimitTextHigh(),
                         inst, delay_inst, BB_rtls, cfg, targetQueue);
                     break;
                 }
@@ -1302,7 +1296,7 @@ if (0)          // SETTINGS
                 bool allNops = true;
                 for (int i=0; i < gap; i+= 4) {
                     // Beware endianness! getDword will work properly
-                    if (getDword(a1+i+delta) != 0x01000000) {
+                    if (getDword(a1+i+pBF->getTextDelta()) != 0x01000000) {
                         allNops = false;
                         break;
                     }
@@ -1329,10 +1323,10 @@ if (0)          // SETTINGS
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
-        if (prog->pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
+        if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
-            if (dest != NO_ADDRESS) prog->visitProc(dest);
+            if (dest != NO_ADDRESS) newProc(proc->getProg(), dest);
         }
     }
 
@@ -1441,8 +1435,8 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
 // appropriate RTLs to lrtl, and return true
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
-    if (!prog->pBF->IsDynamicLinkedProc(dest)) return false;
-    const char* p = prog->pBF->SymbolByAddress(dest);
+    if (!pBF->IsDynamicLinkedProc(dest)) return false;
+    const char* p = pBF->SymbolByAddress(dest);
     if (p == NULL) {
         std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest <<
           std::endl;
@@ -1684,8 +1678,8 @@ void SparcFrontEnd::setReturnLocations(CalleeEpilogue* epilogue, int iReg)
  *============================================================================*/
 #ifdef DYNAMIC
 extern "C" {
-    SparcFrontEnd* construct(Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
-        SparcFrontEnd *fe = new SparcFrontEnd(prog, delta, uUpper);
+    SparcFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
+        SparcFrontEnd *fe = new SparcFrontEnd(prog);
         *decoder = fe->getDecoder();
         return fe;
     }
@@ -1700,10 +1694,10 @@ extern "C" {
  * PARAMETERS:    Same as the FrontEnd constructor
  * RETURNS:       <N/A>
  *============================================================================*/
-SparcFrontEnd::SparcFrontEnd(Prog *prog, int delta, ADDRESS uUpper)
-  : FrontEnd(prog, delta, uUpper)
+SparcFrontEnd::SparcFrontEnd(BinaryFile *pBF)
+  : FrontEnd(pBF)
 {
-    decoder = new SparcDecoder(prog);
+    decoder = new SparcDecoder();
     nop_inst.numBytes = 0;          // So won't disturb coverage
     nop_inst.type = NOP;
     nop_inst.valid = true;
@@ -1723,10 +1717,10 @@ SparcFrontEnd::~SparcFrontEnd()
  *============================================================================*/
 ADDRESS SparcFrontEnd::getMainEntryPoint( bool &gotMain ) 
 {
-    ADDRESS start = prog->pBF->GetMainEntryPoint();
+    ADDRESS start = pBF->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
-    start = prog->pBF->GetEntryPoint();
+    start = pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
 	return start;

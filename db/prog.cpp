@@ -55,7 +55,6 @@
 Prog::Prog()
     : pBF(NULL),
       pFE(NULL),
-      m_iNumberedProc(1),
       m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
 {
     // Default constructor
@@ -79,7 +78,7 @@ Prog::Prog(const char* name)
       filename(""),
       project(""),
       location(""),
-      m_name(name), m_iNumberedProc(1),
+      m_name(name),
       m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
 {
     // Constructor taking a name. Technically, the allocation of the
@@ -96,6 +95,11 @@ char* Prog::getName()
     return (char*) m_name.c_str();
 }
 
+bool Prog::isWin32()
+{
+    return pBF->GetFormat() == LOADFMT_PE;
+}
+
 // well form the entire program
 bool Prog::wellForm()
 {
@@ -109,31 +113,7 @@ bool Prog::wellForm()
 	return wellformed;
 }
 
-void analysis(UserProc *p);
-
-// Decode any procedures that are not decoded
-void Prog::decode()
-{
-	bool change = true;
-	while (change) {
-		change = false;
-		for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-			Proc *pProc = *it;
-			if (pProc->isLib()) continue;
-			UserProc *p = (UserProc*)pProc;
-			if (p->isDecoded()) continue;
-
-			// undecoded userproc.. decode it			
-			change = true;
-			std::ofstream os;
-			int res = pFE->processProc(p->getNativeAddress(), p, os);
-			if (res == 1)
-				p->setDecoded();
-			else
-				break;
-		}
-	}
-}
+void analysis(UserProc *proc);
 
 // Analyse any procedures that are decoded
 void Prog::analyse()
@@ -205,13 +185,13 @@ void Prog::deserialize(std::istream &inf)
 					len = loadLen(inf);
                     std::streampos pos = inf.tellg();
 
-					loadValue(inf, limitTextLow, false);
-					loadValue(inf, limitTextHigh, false);
-					loadValue(inf, textDelta, false);
+					//loadValue(inf, limitTextLow, false);
+					//loadValue(inf, limitTextHigh, false);
+					//loadValue(inf, textDelta, false);
 
 					std::string frontend;
 					loadString(inf, frontend);
-					pFE = FrontEnd::createById(frontend, this, textDelta, limitTextHigh);
+					pFE = FrontEnd::createById(frontend, pBF);
 					assert(pFE);
 
                     assert((int)(inf.tellg() - pos) == len);
@@ -265,9 +245,9 @@ bool Prog::serialize(std::ostream &ouf, int &len)
 		saveLen(ouf, -1, true);
 		std::streampos posa = ouf.tellp();
 
-		saveValue(ouf, limitTextLow, false);
-		saveValue(ouf, limitTextHigh, false);
-		saveValue(ouf, textDelta, false);
+		//saveValue(ouf, limitTextLow, false);
+		//saveValue(ouf, limitTextHigh, false);
+		//saveValue(ouf, textDelta, false);
 
 		std::string frontend(pFE->getFrontEndId());
 		saveString(ouf, frontend);
@@ -351,7 +331,6 @@ void Prog::clear()
     if (pFE)
         delete pFE;
     pFE = NULL;
-    m_iNumberedProc = 1;
 	symbols.clear();
 
 	for (std::map<std::string, Signature*>::iterator it1 = mapLibParam.begin(); it1 != mapLibParam.end(); it1++)
@@ -501,40 +480,6 @@ bool Prog::isProcLabel (ADDRESS addr)
     if (m_procLabels[addr] == 0)
         return false;
     return true;
-}
-
-/*==============================================================================
- * FUNCTION:    Prog::visitProc
- * OVERVIEW:    Call this function when a procedure is discovered (usually by
- *                decoding a call instruction). That way, it is given a name
- *                that can be displayed in the dot file, etc. If we assign it
- *                a number now, then it will retain this number always
- * PARAMETERS:  Native address of the procedure entry point
- * RETURNS:     Pointer to the Proc object, or 0 if this is a deleted (not to
- *                be decoded) address
- *============================================================================*/
-Proc* Prog::visitProc(ADDRESS uAddr)
-{
-    // this test fails when decoding sparc, why?  Please investigate - trent
-    //assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
-    // Check if we already have this proc
-    Proc* pProc = findProc(uAddr);
-    if (pProc == (Proc*)-1)         // Already decoded and deleted?
-        return 0;                   // Yes, exit with 0
-    if (pProc)
-        // Yes, we are done
-        return pProc;
-    char* pName = pBF->SymbolByAddress(uAddr);
-    bool bLib = pBF->IsDynamicLinkedProc(uAddr);
-    if (pName == 0)
-    {
-        // No name. Give it a numbered name
-        std::ostringstream ost;
-        ost << "proc" << m_iNumberedProc++;
-        pName = strdup(ost.str().c_str());
-    }
-    pProc = newProc(pName, uAddr, bLib);
-    return pProc;
 }
 
 /*==============================================================================
@@ -745,63 +690,6 @@ Proc* Prog::getNextProc(PROGMAP::const_iterator& it)
     if (it == m_procLabels.end())
         return 0;
     return it->second;
-}
-
-/*==============================================================================
- * FUNCTION:    Prog::getTextLimits
- * OVERVIEW:    Set the limitTextLow and limitTextHigh members; also textDelta
- * NOTE:        The binary file must already be loaded
- * PARAMETERS:  <none>
- * RETURNS:     <nothing>
- *============================================================================*/
-void Prog::getTextLimits()
-{
-    int n = pBF->GetNumSections();
-    limitTextLow = 0xFFFFFFFF;
-    limitTextHigh = 0;
-    textDelta = 0;
-    for (int i=0; i < n; i++) {
-        SectionInfo* pSect = pBF->GetSectionInfo(i);
-        if (pSect->bCode) {
-            // The .plt section is an anomaly. It's code, but we never want to
-            // decode it, and in Sparc ELF files, it's actually in the data
-            // segment (so it can be modified). For now, we make this ugly
-            // exception
-            if (strcmp(".plt", pSect->pSectionName) == 0)
-                continue;
-            if (pSect->uNativeAddr < limitTextLow)
-                limitTextLow = pSect->uNativeAddr;
-            ADDRESS hiAddress = pSect->uNativeAddr + pSect->uSectionSize;
-            if (hiAddress > limitTextHigh)
-                limitTextHigh = hiAddress;
-            if (textDelta == 0)
-                textDelta = pSect->uHostAddr - pSect->uNativeAddr;
-            else
-                assert(textDelta ==
-                    (int) (pSect->uHostAddr - pSect->uNativeAddr));
-        }
-    }
-}
-
-bool Prog::LoadBinary(const char *fname)
-{
-    clear();
-    pBF = BinaryFile::Load(fname);
-    if (pBF == NULL) return false;
-
-    getTextLimits();
-
-
-	pFE = FrontEnd::instantiate(pBF->GetMachine(), this, textDelta, limitTextHigh);
-	if (pFE == NULL) return false;
-
-	readLibParams();
-
-        bool gotMain;
-        ADDRESS a = pFE->getMainEntryPoint(gotMain);
-        if (a == NO_ADDRESS) return false;
-
-	visitProc(a);
 }
 
 /*==============================================================================

@@ -15,7 +15,7 @@
 #include "FrontSparcTest.h"
 #include "FrontPentTest.h"
 //#include "FrontendTest.h"
-#include "prog.h"           // For the global prog (ugh)
+#include "prog.h"
 #include <iostream>
 
 int main(int argc, char** argv)

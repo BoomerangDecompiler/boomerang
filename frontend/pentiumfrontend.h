@@ -11,15 +11,11 @@ class PentiumDecoder;
 
 class PentiumFrontEnd : public FrontEnd
 {
-private:
-	// the decoder
-	PentiumDecoder *decoder;
-
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    PentiumFrontEnd(Prog *prog, int delta, ADDRESS uUpper);
+    PentiumFrontEnd(BinaryFile *pBF);
 
 virtual ~PentiumFrontEnd();
 
@@ -38,8 +34,6 @@ virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 bool spec = false, PHELPER helperFunc = NULL);
 
 virtual ADDRESS getMainEntryPoint( bool &gotMain );
-
-virtual NJMCDecoder *getDecoder();
 
 private:
 

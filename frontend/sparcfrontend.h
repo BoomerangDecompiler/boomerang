@@ -17,15 +17,11 @@ class HLCall;
 
 class SparcFrontEnd : public FrontEnd
 {
-private:
-	// the decoder
-	SparcDecoder *decoder;
-	
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    SparcFrontEnd(Prog *prog, int delta, ADDRESS uUpper);
+    SparcFrontEnd(BinaryFile *pBF);
 
     /**
      * Virtual destructor.
@@ -45,8 +41,6 @@ virtual const char *getFrontEndId() { return "sparc"; }
      */
 virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
 
-virtual NJMCDecoder *getDecoder() { return (NJMCDecoder*)decoder; }
-
 virtual ADDRESS getMainEntryPoint( bool &gotMain );
 
 private:
@@ -57,7 +51,7 @@ private:
 
 	void 	handleBranch(ADDRESS dest, ADDRESS hiAddress, BasicBlock*& newBB, Cfg* cfg,
 			     TargetQueue& tq);
-	void 	handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
+	void 	handleCall(UserProc *proc, ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRESS address,
 			   int offset = 0);
 
 	void 	case_unhandled_stub(ADDRESS addr);

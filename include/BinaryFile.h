@@ -223,6 +223,12 @@ virtual ~BinaryFile() {}			// Virtual destructor
     virtual bool    RealLoad(const char* sName) = 0;
 
 	virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
+
+    ADDRESS getLimitTextLow() { return limitTextLow; }
+    ADDRESS getLimitTextHigh() { return limitTextHigh; }
+
+    int getTextDelta() { return textDelta; }
+
 //
 //  --  --  --  --  --  --  --  --  --  --  --
 //
@@ -230,8 +236,9 @@ virtual ~BinaryFile() {}			// Virtual destructor
   protected:
     // Special load function for archive members
     virtual bool    PostLoad(void* handle) = 0;     // Called after loading archive member
-    // Load the file. Pure virtual function
 
+    // Get the lower and upper limits of the text segment
+    void    getTextLimits();
 
     // Data
     bool        m_bArchive;                 // True if archive member
@@ -239,6 +246,15 @@ virtual ~BinaryFile() {}			// Virtual destructor
     PSectionInfo m_pSections;               // The section info
     ADDRESS     m_uInitPC;                  // Initial program counter
     ADDRESS     m_uInitSP;                  // Initial stack pointer
+
+    // Public addresses being the lowest used native address (inclusive), and
+    // the highest used address (not inclusive) in the text segment
+    ADDRESS     limitTextLow;
+    ADDRESS     limitTextHigh;
+    // Also the difference between the host and native addresses (host - native)
+    // At this stage, we are assuming that the difference is the same for all
+    // text sections of the BinaryFile image
+    int         textDelta;
 
 };
 

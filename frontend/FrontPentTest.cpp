@@ -16,7 +16,6 @@
 
 #define HELLO_PENT     BOOMDIR "/test/pentium/hello"
 #define BRANCH_PENT    BOOMDIR "/test/pentium/branch"
-#define SSL_PATH       BOOMDIR "/frontend/machine/pentium/pentium.ssl"
 
 #include "types.h"
 #include "rtl.h"
@@ -56,13 +55,6 @@ int FrontPentTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontPentTest::setUp () {
-    prog = new Prog();
-    prog->pBF = new BinaryFileStub();
-    CPPUNIT_ASSERT(prog->pBF != 0);
-    // Set the text limits
-    prog->getTextLimits();
-    prog->pFE = new PentiumFrontEnd(prog, prog->textDelta, prog->limitTextHigh); 
-    decoder = prog->pFE->getDecoder();
 }
 
 /*==============================================================================
@@ -73,9 +65,6 @@ void FrontPentTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontPentTest::tearDown () {
-    prog->pBF->UnLoad();
-	delete prog->pFE; prog->pFE = 0;
-    delete decoder;
 }
 
 /*==============================================================================
@@ -85,12 +74,19 @@ void FrontPentTest::tearDown () {
 void FrontPentTest::test1 () {
     std::ostringstream ost;
 
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+    if (pBF == NULL)
+	    pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF); 
+
     bool gotMain;
-    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     // Decode first instruction
-    DecodeResult inst = decoder->decodeInstruction(addr, prog->textDelta);
+    DecodeResult inst = pFE->decodeInstruction(addr);
     inst.rtl->print(ost);
     
     std::string expected(
@@ -100,28 +96,37 @@ void FrontPentTest::test1 () {
 
     std::ostringstream o2;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog->textDelta);
+    inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
     expected = std::string("08048919 *32* r[29] := r[28]\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog->textDelta);
+    inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
     expected = std::string(
         "0804891b *32* r[28] := r[28] - 4\n"
         "         *32* m[r[28]] := 0x80493f8\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
+    delete pFE;
+    delete pBF;
 }
 
 void FrontPentTest::test2() {
     DecodeResult inst;
     std::string expected;
 
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+    if (pBF == NULL)
+	    pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF); 
+
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x8048925, prog->textDelta);
+    inst = pFE->decodeInstruction(0x8048925);
     inst.rtl->print(o1);
     expected = std::string(
         "08048925 *32* r[tmp1] := r[28]\n"
@@ -130,7 +135,7 @@ void FrontPentTest::test2() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x8048928, prog->textDelta);
+    inst = pFE->decodeInstruction(0x8048928);
     inst.rtl->print(o2);
     expected = std::string(
         "08048928 *32* r[24] := r[24] ^ r[24]\n"
@@ -138,19 +143,28 @@ void FrontPentTest::test2() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x804892a, prog->textDelta);
+    inst = pFE->decodeInstruction(0x804892a);
     inst.rtl->print(o3);
     expected = std::string("0804892a JUMP 0x804892c\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
+    delete pFE;
+    delete pBF;
 }
 
 void FrontPentTest::test3() {
     DecodeResult inst;
     std::string expected;
 
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+    if (pBF == NULL)
+	    pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF); 
+
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x804892c, prog->textDelta);
+    inst = pFE->decodeInstruction(0x804892c);
     inst.rtl->print(o1);
     expected = std::string(
         "0804892c *32* r[28] := r[29]\n"
@@ -159,7 +173,7 @@ void FrontPentTest::test3() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x804892d, prog->textDelta);
+    inst = pFE->decodeInstruction(0x804892d);
     inst.rtl->print(o2);
     expected = std::string(
 	  "0804892d *32* %pc := m[r[28]]\n"
@@ -167,28 +181,31 @@ void FrontPentTest::test3() {
 	  "0804892d RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
+    delete pFE;
+    delete pBF;
 }
 
 void FrontPentTest::testBranch() {
     DecodeResult inst;
     std::string expected;
 
-/*    prog->pBF->UnLoad();
-    prog->pBF = BinaryFile::Load(BRANCH_PENT);
-    CPPUNIT_ASSERT(prog->pBF != 0); */
-    // Set the text limits
-    prog->getTextLimits();
+    BinaryFile *pBF = BinaryFile::Load(BRANCH_PENT);
+    if (pBF == NULL)
+	    pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
+    FrontEnd *pFE = new PentiumFrontEnd(pBF); 
 
     // jne
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x8048979, prog->textDelta);
+    inst = pFE->decodeInstruction(0x8048979);
     inst.rtl->print(o1);
     expected = std::string("08048979 JCOND 0x8048988, condition not equals\n");
     CPPUNIT_ASSERT_EQUAL(expected, o1.str());
 
     // jg
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x80489c1, prog->textDelta);
+    inst = pFE->decodeInstruction(0x80489c1);
     inst.rtl->print(o2);
     expected = std::string(
 	  "080489c1 JCOND 0x80489d5, condition signed greater\n");
@@ -196,10 +213,13 @@ void FrontPentTest::testBranch() {
 
     // jbe
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x8048a1b, prog->textDelta);
+    inst = pFE->decodeInstruction(0x8048a1b);
     inst.rtl->print(o3);
     expected = std::string(
         "08048a1b JCOND 0x8048a2a, condition unsigned less or equals\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
+
+    delete pFE;
+    delete pBF;
 }
 

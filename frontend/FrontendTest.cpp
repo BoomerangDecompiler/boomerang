@@ -16,7 +16,7 @@
 #define STARTER_PALM    BOOMDIR"/test/mc68328/Starter.prc"
 
 #include "FrontendTest.h"
-#include "prog.h"       // For global prog
+#include "prog.h"
 #include <sstream>
 
 /*==============================================================================

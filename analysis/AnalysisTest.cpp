@@ -16,7 +16,6 @@
 #include "BinaryFileStub.h"
 
 #define CCX_SPARC       BOOMDIR "/test/sparc/condcodexform_gcc"
-#define SSL_PATH        BOOMDIR "/frontend/machine/sparc/sparc.ssl"
 
 // There is no .h file for analysis; there is just this prototype
 void analysis(UserProc* proc);
@@ -47,17 +46,17 @@ int AnalysisTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::setUp () {
-    prog = new Prog();
-    prog->pBF = new BinaryFileStub();
-    CPPUNIT_ASSERT(prog->pBF != 0);
+    BinaryFile *pBF = BinaryFile::Load(CCX_SPARC);
+    if (pBF == NULL) 
+	   pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT (pBF->GetMachine() == MACHINE_SPARC);
 
-    // Set the text limits
-    prog->getTextLimits();
+    // Set up the front-end object
+    pFE = new SparcFrontEnd(pBF);
 
-	// Set up the front-end object
-	prog->pFE = new SparcFrontEnd(prog,  prog->textDelta, prog->limitTextHigh);
-	decoder = prog->pFE->getDecoder();
-
+    // Set up the prog
+    prog = pFE->decode();
 }
 
 /*==============================================================================
@@ -68,8 +67,7 @@ void AnalysisTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::tearDown () {
-    prog->pBF->UnLoad();
-    delete prog->pFE; prog->pFE = 0;
+    delete pFE;
 }
 
 /*==============================================================================
@@ -79,17 +77,15 @@ void AnalysisTest::tearDown () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::testFlags () {
-    
-    CPPUNIT_ASSERT (prog->pBF->GetMachine() == MACHINE_SPARC);
 
     bool gotMain;
-    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     std::string name("main");
     UserProc* pProc = new UserProc(prog, name, addr);
     std::ofstream dummy;
-    bool res = prog->pFE->processProc(addr, pProc, dummy, false);
+    bool res = pFE->processProc(addr, pProc, dummy, false);
 	CPPUNIT_ASSERT(res);
 
     // Call analysis
@@ -110,9 +106,6 @@ void AnalysisTest::testFlags () {
     CPPUNIT_ASSERT_EQUAL(1, found);
 
 //bb->print();		// It hasn't done anything, because the flag calls are expanded!
-
-    // FIXME: Last test should delete decoder
-    delete decoder;
 
 }
 

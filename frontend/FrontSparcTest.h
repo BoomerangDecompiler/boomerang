@@ -11,10 +11,6 @@ class Prog;
 
 class FrontSparcTest : public CppUnit::TestCase {
   protected:
-    // program
-    Prog *prog;
-    // The decoder object
-    NJMCDecoder* decoder;
 
   public:
     FrontSparcTest(std::string name) : CppUnit::TestCase (name)

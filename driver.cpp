@@ -1,9 +1,9 @@
 #include <iostream>
 #include "prog.h"
+#include "BinaryFile.h"
+#include "frontend.h"
 #include "hllcode.h"
 #include "codegen/chllcode.h"
-
-//Prog *prog = new Prog();		// The dreaded global
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
@@ -11,13 +11,13 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	std::cerr << "loading..." << std::endl;
-	Prog *prog = new Prog();
-	if (!prog->LoadBinary(argv[1])) {
+	FrontEnd *fe = FrontEnd::Load(argv[1]);
+	if (fe == NULL) {
 		std::cerr << "failed." << std::endl;
 		return 1;
 	}
 	std::cerr << "decoding..." << std::endl;
-	prog->decode();
+	Prog *prog = fe->decode();
 	std::cerr << "analysing..." << std::endl;
 	prog->analyse();
 	std::cerr << "generating code..." << std::endl;

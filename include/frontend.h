@@ -45,6 +45,7 @@ class Exp;
 class TypedExp;
 class Cfg;
 class Prog;
+struct DecodeResult;
 
 // Control flow types
 enum INSTTYPE {
@@ -61,21 +62,25 @@ typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl);
 
 class FrontEnd {
 protected:
-    int delta;                  // Text host address - native address difference
-    ADDRESS uUpper;             // Upper address for the text segment
 //    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
 //    const int NOP_INST;         // No-op pattern
 	std::map<ADDRESS, Proc *> processed;
-    // program being decoded
-    Prog *prog;
+    // decoder
+    NJMCDecoder *decoder;
+    // The binary file
+    BinaryFile *pBF;
+    // Next numbered proc will use this
+    int m_iNumberedProc;        
 
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    FrontEnd(Prog *prog, int delta, ADDRESS uUpper);
-    // If you know which machine you want.
-    static FrontEnd* instantiate(MACHINE machine, Prog *prog, int delta, ADDRESS uUpper);
+    FrontEnd(BinaryFile *pBF);
+    // Create from a binary file
+    static FrontEnd* instantiate(BinaryFile *pBF);
+    // Load a binary
+    static FrontEnd* Load(const char *fname);
 
     /**
      * Destructor. Virtual to mute a warning
@@ -86,17 +91,31 @@ virtual ~FrontEnd();
 virtual const char *getFrontEndId() = 0;
 
 // returns a frontend given a string
-static FrontEnd *createById(std::string &str, Prog *prog, int delta, ADDRESS uUpper);
+static FrontEnd *createById(std::string &str, BinaryFile *pBF);
 
     /*
      * Function to fetch the smallest machine instruction
      */
 virtual int     getInst(int addr);
 
+    DecodeResult& decodeInstruction(ADDRESS pc);
+
     /*
      * Accessor function to get the decoder.
      */
-virtual NJMCDecoder *getDecoder() = 0;
+    NJMCDecoder *getDecoder() { return decoder; }
+
+    /*
+     * Decode all undecoded procedures and return a new program containing
+     * them.
+     */
+    Prog *decode();
+
+    /*
+     * create a new procedure of the appropriate type in a program at
+     * the given address.
+     */
+    Proc* newProc(Prog *prog, ADDRESS uAddr);
 
     /*
      * processProc. This is the main function for decoding a procedure.
@@ -120,7 +139,7 @@ virtual ADDRESS getMainEntryPoint( bool &gotMain ) = 0;
      * the "construct" function in that library, and returning the result.
      */
 static FrontEnd* getInstanceFor( const char* sName, void*& dlHandle,
-  Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder*& decoder);
+  BinaryFile *pBF, NJMCDecoder*& decoder);
 
     /*
      * Close the library opened by getInstanceFor

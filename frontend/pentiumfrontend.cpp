@@ -834,7 +834,7 @@ void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls,
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
     if (dest == NO_ADDRESS) return false;
-    const char* p = prog->pBF->SymbolByAddress(dest);
+    const char* p = pBF->SymbolByAddress(dest);
     if (p == NULL) return false;
     std::string name(p);
     if (name == "__xtol") {
@@ -892,8 +892,8 @@ unsigned PentiumFrontEnd::fetch4(unsigned char* ptr)
  *============================================================================*/
 #ifdef DYNAMIC
 extern "C" {
-    PentiumFrontEnd* construct(Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
-        PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
+    PentiumFrontEnd* construct(Prog *prog, NJMCDecoder** decoder) {
+        PentiumFrontEnd *fe = new PentiumFrontEnd(prog);
         *decoder = fe->getDecoder();
         return fe;
     }
@@ -908,10 +908,10 @@ extern "C" {
  * PARAMETERS:    Same as the FrontEnd constructor
  * RETURNS:       <N/A>
  *============================================================================*/
-PentiumFrontEnd::PentiumFrontEnd(Prog *prog, int delta, ADDRESS uUpper)
-  : FrontEnd(prog, delta, uUpper), idPF(-1)
+PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF)
+  : FrontEnd(pBF), idPF(-1)
 {
-	decoder = new PentiumDecoder(prog);
+	decoder = new PentiumDecoder();
 /*	for (std::map<int, Register, std::less<int> >::iterator it = prog->RTLDict.DetRegMap.begin(); 
 		 it != prog->RTLDict.DetRegMap.end(); it++) {
 		int i = (*it).first;
@@ -928,12 +928,6 @@ PentiumFrontEnd::~PentiumFrontEnd()
 {
 }
 
-
-NJMCDecoder *PentiumFrontEnd::getDecoder() 
-{ 
-	return (NJMCDecoder*)decoder; 
-}
-
 /*==============================================================================
  * FUNCTION:    GetMainEntryPoint
  * OVERVIEW:    Locate the starting address of "main" in the code section
@@ -943,17 +937,17 @@ NJMCDecoder *PentiumFrontEnd::getDecoder()
 ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain ) 
 {
 	gotMain = true;
-    ADDRESS start = prog->pBF->GetMainEntryPoint();
+    ADDRESS start = pBF->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
 	gotMain = false;
-    start = prog->pBF->GetEntryPoint();
+    start = pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
 	return start;  // dont use this pattern
 
-    if ((prog->pBF->GetFormat() == LOADFMT_PE ) ||
-      (prog->pBF->GetFormat() == LOADFMT_EXE)) {
+    if ((pBF->GetFormat() == LOADFMT_PE ) ||
+      (pBF->GetFormat() == LOADFMT_EXE)) {
         int instCount = 100;
         int conseq = 0;
         ADDRESS addr = start;
@@ -961,8 +955,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         // Look for 3 calls in a row in the first 100 instructions, with
         // no other instructions between them. This is the "windows" pattern
         do {
-            DecodeResult inst =
-              decoder->decodeInstruction(addr, prog->textDelta);
+            DecodeResult inst = decodeInstruction(addr);
             if ((inst.rtl->getKind() == CALL_RTL) &&
                 ((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
                 if (++conseq == 3) {
@@ -981,7 +974,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         // will be setting up envp, argv, and argc
         instCount = 120; addr = start; conseq = 0;
         do {
-            DecodeResult inst = getDecoder()->decodeInstruction(addr, prog->textDelta);
+            DecodeResult inst = decodeInstruction(addr);
             if ((conseq >= 3) && (inst.rtl->getKind() == CALL_HRTL) &&
                 ((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
                     // Success. Return the target of the call					

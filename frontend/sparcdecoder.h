@@ -31,7 +31,7 @@ class SparcDecoder : public NJMCDecoder
 public:
     /* Default constructor
      */
-	SparcDecoder(Prog *prog);
+	SparcDecoder();
 
 
     /*
