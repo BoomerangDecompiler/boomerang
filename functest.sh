@@ -1,4 +1,4 @@
-#   !/bin/bash
+#!/bin/bash
 rm -rf functest
 mkdir functest
 rm -rf functests.out
