@@ -2974,39 +2974,6 @@ std::ostream& operator<<(std::ostream& os, Exp* p)
     return os;
 }
 
-// Replace all e in this Exp with e{def}
-Exp* Unary::expSubscriptVar(Exp* e, Statement* def) {
-    subExp1 = subExp1->expSubscriptVar(e, def);
-    if (*e == *this || e->getOper() == opWild)
-        return new RefExp(this, def);
-    return this;
-}
-Exp* Terminal::expSubscriptVar(Exp* e, Statement* def) {
-    if (*e == *this || e->getOper() == opWild)
-        return new RefExp(this, def);
-    return this;
-}
-Exp* Binary::expSubscriptVar(Exp* e, Statement* def) {
-    subExp1 = subExp1->expSubscriptVar(e, def);
-    subExp2 = subExp2->expSubscriptVar(e, def);
-    return this;
-}
-Exp* Ternary::expSubscriptVar(Exp* e, Statement* def) {
-    subExp1 = subExp1->expSubscriptVar(e, def);
-    subExp2 = subExp2->expSubscriptVar(e, def);
-    subExp3 = subExp3->expSubscriptVar(e, def);
-    return this;
-}
-Exp* RefExp::expSubscriptVar(Exp* e, Statement* def) {
-    if (*e == *subExp1 || e->getOper() == opWild)
-        this->def = def;
-    else
-        // Need the else, otherwise in changing r28{3} to r28{4} will
-        // change again to r28{4}{4}
-        subExp1 = subExp1->expSubscriptVar(e, def);
-    return this;
-}
-
 /*==============================================================================
  * FUNCTION:        Unary::fixSuccessor
  * OVERVIEW:        Replace succ(r[k]) by r[k+1]
@@ -3924,75 +3891,83 @@ void Exp::setConscripts(int n) {
 // Strip references from an Exp
 Exp* Exp::stripRefs() {
     StripRefs sr;
-    return acceptMod(&sr);
+    return accept(&sr);
 }
 
-Exp* Unary::acceptMod(ExpModifier* v) {
+Exp* Unary::accept(ExpModifier* v) {
     // This Unary will be changed in *either* the pre or the post visit
     // If it's changed in the preVisit step, then postVisit doesn't care
     // about the type of ret. So let's call it a Unary, and the type system
     // is happy
-    Unary* ret = (Unary*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+    bool norecur;
+    Unary* ret = (Unary*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
-Exp* Binary::acceptMod(ExpModifier* v) {
-    Binary* ret = (Binary*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
-    subExp2 = subExp2->acceptMod(v);
+Exp* Binary::accept(ExpModifier* v) {
+    bool norecur;
+    Binary* ret = (Binary*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
+    if (!norecur) subExp2 = subExp2->accept(v);
     return v->postVisit(ret);
 }
-Exp* Ternary::acceptMod(ExpModifier* v) {
-    Ternary* ret = (Ternary*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
-    subExp2 = subExp2->acceptMod(v);
-    subExp3 = subExp3->acceptMod(v);
+Exp* Ternary::accept(ExpModifier* v) {
+    bool norecur;
+    Ternary* ret = (Ternary*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
+    if (!norecur) subExp2 = subExp2->accept(v);
+    if (!norecur) subExp3 = subExp3->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* Location::acceptMod(ExpModifier* v) {
-    // This looks to be the same source code as Unary::acceptMod, but the
+Exp* Location::accept(ExpModifier* v) {
+    // This looks to be the same source code as Unary::accept, but the
     // type of "this" is different, which is all important here!
     // (it makes a call to a different visitor member function).
-    Location* ret = (Location*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+    bool norecur;
+    Location* ret = (Location*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* PhiExp::acceptMod(ExpModifier* v) {
-    PhiExp* ret = (PhiExp*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+Exp* PhiExp::accept(ExpModifier* v) {
+    bool norecur;
+    PhiExp* ret = (PhiExp*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* RefExp::acceptMod(ExpModifier* v) {
-    RefExp* ret = (RefExp*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+Exp* RefExp::accept(ExpModifier* v) {
+    bool norecur;
+    RefExp* ret = (RefExp*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* FlagDef::acceptMod(ExpModifier* v) {
-    FlagDef* ret = (FlagDef*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+Exp* FlagDef::accept(ExpModifier* v) {
+    bool norecur;
+    FlagDef* ret = (FlagDef*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* TypedExp::acceptMod(ExpModifier* v) {
-    TypedExp* ret = (TypedExp*)v->preVisit(this);
-    subExp1 = subExp1->acceptMod(v);
+Exp* TypedExp::accept(ExpModifier* v) {
+    bool norecur;
+    TypedExp* ret = (TypedExp*)v->preVisit(this, norecur);
+    if (!norecur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
-Exp* Terminal::acceptMod(ExpModifier* v) {
+Exp* Terminal::accept(ExpModifier* v) {
     // This is important if we need to modify terminals
     return v->postVisit((Terminal*)v->preVisit(this));
 }
 
-Exp* Const::acceptMod(ExpModifier* v) {
+Exp* Const::accept(ExpModifier* v) {
     return v->postVisit((Const*)v->preVisit(this));
 }
 
-Exp* TypeVal::acceptMod(ExpModifier* v) {
+Exp* TypeVal::accept(ExpModifier* v) {
     return v->postVisit((TypeVal*)v->preVisit(this));
 }
 
@@ -4086,4 +4061,10 @@ char* Exp::getAnyStrConst() {
 void Exp::addUsedLocs(LocationSet& used) {
     UsedLocsFinder ulf(used);
     accept(&ulf);
+}
+
+// Subscript any occurrences of e with e{def} in this expression
+Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
+    ExpSubscripter es(e, def);
+    return accept(&es);
 }
