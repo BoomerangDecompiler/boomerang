@@ -357,17 +357,23 @@ public:
     void replaceExpressionsWithSymbols();
     bool removeNullStatements();
     bool removeDeadStatements();
-    void removeUnusedStatements();
+    typedef std::map<Statement*, int> RefCounter;
+    void countRefs(RefCounter& refCounts);
+    void removeUnusedStatements(RefCounter& refCounts);
     bool propagateAndRemoveStatements();
     void propagateStatements(int memDepth);
     int  findMaxDepth();                    // Find max memory nesting depth
-    void repairDataflow(int memDepth);      // Recalculate dataflow
+    // Recalculate dataflow
+    void repairDataflow(int memDepth, StatementSet& rs);
+    void findRestoreSet(StatementSet& rs);  // Find set of restoring statements
+    void removeRestoreRefs(StatementSet& rs);  // Remove refs to resore stmts
 
-    void toSSAform(int memDepth);
+    void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform(igraph& ig);
 
     void recoverParameters();       // Find formal parameters
-    void insertArguments();         // Insert actual arguments to match formals
+    // Insert actual arguments to match formals
+    void insertArguments(StatementSet& rs);
     void recoverReturnLocs();       // Find return locations
 
     // promote the signature if possible

@@ -1548,27 +1548,31 @@ void UserProc::getReturnSet(LocationSet &ret) {
     }
 }
 
-void UserProc::removeUnusedStatements() {
+void UserProc::countRefs(RefCounter& refCounts) {
     StatementList stmts;
     getStatements(stmts);
     StmtListIter ll;
-    std::map<Statement*, int> useCounts;
-    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll))
-        useCounts[s] = 0;
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
-        LocationSet uses;
-        s->addUsedLocs(uses);
-        LocSetIter uu;
-        for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
-            if (u->isSubscript()) {
-                RefsExp* re = (RefsExp*)u;
+        LocationSet refs;
+        s->addUsedLocs(refs);
+        LocSetIter rr;
+        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
+            if (r->isSubscript()) {
+                RefsExp* re = (RefsExp*)r;
                 StmtSetIter xx;
                 for (Statement* def = re->getFirstRef(xx); def;
-                      def = re->getNextRef(xx))
-                    useCounts[def]++;
+                      def = re->getNextRef(xx)) {
+                    refCounts[def]++;
+                }
             }
         }
     }
+}
+
+void UserProc::removeUnusedStatements(RefCounter& refCounts) {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter ll;
     bool change;
     do {
         change = false;
@@ -1580,9 +1584,9 @@ void UserProc::removeUnusedStatements() {
                 s = stmts.getNext(ll);
                 continue;
             }
-            if (useCounts[s] == 0) {
+            if (refCounts[s] == 0) {
                 // First adjust the counts. Need to be careful not to count
-                // two refs as two; useCounts is a count of the number of
+                // two refs as two; refCounts is a count of the number of
                 // statements that use a definition, not the number of refs
                 StatementSet refs;
                 LocationSet comps;
@@ -1595,7 +1599,7 @@ void UserProc::removeUnusedStatements() {
                 StmtSetIter dd;
                 for (Statement* def = refs.getFirst(dd); def;
                   def = refs.getNext(dd))
-                    useCounts[def]--;
+                    refCounts[def]--;
                 if (VERBOSE)
                     std::cerr << "Removing unused statement " <<
                       s->getNumber() << " " << s << std::endl;
@@ -1613,8 +1617,8 @@ void UserProc::removeUnusedStatements() {
 //  SSA code
 //
 
-void UserProc::toSSAform(int memDepth) {
-    cfg->toSSAform(memDepth);
+void UserProc::toSSAform(int memDepth, StatementSet& rs) {
+    cfg->toSSAform(memDepth, rs);
 }
 
 void UserProc::fromSSAform(igraph& ig) {
@@ -1626,14 +1630,14 @@ void UserProc::fromSSAform(igraph& ig) {
     }
 }
 
-void UserProc::repairDataflow(int memDepth) {
+void UserProc::repairDataflow(int memDepth, StatementSet& rs) {
     // FIXME: This should be done in an incremental way!
     // This should be solid, but very slow
     if (VERBOSE)
         std::cerr << "Repairing dataflow\n";
     Prog* prog = getProg();
     prog->forwardGlobalDataflow();
-    toSSAform(memDepth);
+    toSSAform(memDepth, rs);
 }
 
 void UserProc::recoverParameters() {
@@ -1659,10 +1663,48 @@ void UserProc::recoverParameters() {
 //    }
 }
 
-void UserProc::insertArguments() {
-    cfg->insertArguments();
+void UserProc::insertArguments(StatementSet& rs) {
+    cfg->insertArguments(rs);
 }
 
 void UserProc::recoverReturnLocs() {
     cfg->recoverReturnLocs();
+}
+
+void UserProc::findRestoreSet(StatementSet& restoreSet) {
+    // Set up a map from location to set of definitions reaching the entry
+    std::map<Exp*, StatementSet, lessExpStar> reachEntryDefs;
+    StatementSet reachEntry;
+    cfg->getReachEntry(reachEntry);
+    StmtSetIter rr;
+    for (Statement* s = reachEntry.getFirst(rr); s; s = reachEntry.getNext(rr))
+    {
+        Exp* def = s->getLeft();
+        if (def)
+            reachEntryDefs[def].insert(s);
+    }
+
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        Exp* left = s->getLeft();
+        if (left == NULL) continue;
+        Exp* right = s->getRight();
+        if (!right->isSubscript()) continue;
+        if (!(*left == *((RefsExp*)right)->getSubExp1())) continue;
+        // It is of the form x = x{refs}
+        if (reachEntryDefs[left] == ((RefsExp*)right)->getRefs())
+            // We have a restore location
+            restoreSet.insert(s);
+    }
+}
+
+void UserProc::removeRestoreRefs(StatementSet& restoreSet) {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        s->removeRestoreRefs(restoreSet);
+    }
 }

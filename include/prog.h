@@ -154,7 +154,7 @@ public:
 
     // Insert arguments. Assumes all procedures have their formal parameters
     // recovered
-    void insertArguments();
+    void insertArguments(StatementSet& rs);
 
     // Recover return locations
     void recoverReturnLocs();
@@ -174,15 +174,24 @@ void decompile1();
     // process constants, promote signature, simplify a[m[]].
     void decompileProcs();
 
-    // Remove null and unused statements
+    // Remove null, unused, and restored statements
     void removeNullStmts();
     void removeUnusedStmts();
+    void removeRestoreStmts(StatementSet& rs);
 
     // Process constants
     void processConstants();
 
     // Repair dataflow... a hack
-    void repairDataflow();
+    void repairDataflow(StatementSet& rs);
+
+    // Find the restoredSet: the set of definitions that restores the effect
+    // of a save. These definitions are not considered in subsequent dataflow
+    void findRestoreSet(StatementSet& restoreSet);
+
+    // Remove the restored references. Repairing the dataflow does not (at
+    // present) remove any references, so we need this extra pass.
+    void removeRestoreRefs(StatementSet& restoreSet);
 
     // Generate dotty file
     void generateDotFile();

@@ -193,7 +193,8 @@ void Prog::decompile() {
 
         // Put this proc into implicit SSA form
         // For now, memory depth 0
-        p->toSSAform(0);
+        StatementSet empty;
+        p->toSSAform(0, empty);
         if (Boomerang::get()->debugPrintSSA)
             p->print(std::cerr, true);
     }
@@ -211,19 +212,39 @@ void Prog::decompile() {
         generateDotFile();
     }
 
+    // Find the "restore set". This is the list of definitions that are
+    // restored after being saved (popped after a push, loaded after a store,
+    // etc)
+    StatementSet restoreSet;
+    findRestoreSet(restoreSet);
+    removeRestoreRefs(restoreSet);
+    if (VERBOSE) {
+        std::cerr << "Restore set: "; restoreSet.printNums(std::cerr);
+        std::cerr << "\n";
+        restoreSet.prints();
+        std::cerr << "\n";
+        std::cerr << "=== After repair, following find restore set ===\n";
+        print(std::cerr, true);
+        std::cerr << "=== End after repair, following find restore set ===\n";
+    }
+ 
     removeNullStmts();          // Remove null statements
     // Put unused statements before recovery of parameters, so we don't
     // get excess parameters. Arguments of calls should be used in the callee.
     removeUnusedStmts();        // Remove unused statements
+    // Remove the restore statements
+    removeRestoreStmts(restoreSet);
+    restoreSet.clear();
 
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
     reverseGlobalDataflow();
     recoverParameters();
-    insertArguments();
+    insertArguments(restoreSet);
     recoverReturnLocs();
-    repairDataflow();   // HACK! Do it ALL again, with params and return locs
-    if (VERBOSE)
-        std::cerr << "After HACK repair, before remove unused statements\n";
+    repairDataflow(restoreSet);   // HACK! Do it ALL again, with params and return locs (and the restore set)
+    if (VERBOSE) {
+        std::cerr << "==After HACK repair, before convert from SSA form===\n";
+    }
     fromSSAform();
 
     // Remove interprocedural edges for structuring algorithms
@@ -941,12 +962,12 @@ void Prog::recoverParameters() {
     }
 }
 
-void Prog::insertArguments() {
+void Prog::insertArguments(StatementSet& rs) {
     PROGMAP::iterator pp;
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
         UserProc* proc = (UserProc*)pp->second;
         if (proc->isLib()) continue;
-        proc->insertArguments();
+        proc->insertArguments(rs);
     }
 }
 
@@ -1058,8 +1079,10 @@ void Prog::decompileProcs() {
         for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
             proc = (UserProc*)(*pp);
             if (proc->isLib()) continue;
-            if (depth <= depths[i])
-                proc->repairDataflow(depth);
+            if (depth <= depths[i]) {
+                StatementSet empty;
+                proc->repairDataflow(depth, empty);
+            }
         }
         if (VERBOSE) {
             std::cerr << "===== After dataflow repair at memory depth " <<
@@ -1095,15 +1118,25 @@ void Prog::removeNullStmts() {
     }
 }
 
+// Remove unused statements
+typedef std::map<Statement*, int> RefCounter;
 void Prog::removeUnusedStmts() {
-    // Remove unused statements
+    RefCounter refCounts;           // The map
     UserProc* proc;
     std::list<Proc*>::iterator pp;
+    // Count the references globally first
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
         if (!Boomerang::get()->noRemoveNull)
-            proc->removeUnusedStatements();
+            proc->countRefs(refCounts);
+    }
+    // Now remove any that have no used (globally)
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        if (!Boomerang::get()->noRemoveNull)
+            proc->removeUnusedStatements(refCounts);
     }
 
     if (VERBOSE) {
@@ -1143,7 +1176,7 @@ void Prog::processConstants() {
     }
 }
 
-void Prog::repairDataflow() {
+void Prog::repairDataflow(StatementSet& rs) {
     // A hell of a hack!!
     if (VERBOSE) std::cerr << "Repairing dataflow\n";
     UserProc* proc;
@@ -1151,7 +1184,30 @@ void Prog::repairDataflow() {
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
-        proc->repairDataflow(1);
+        proc->repairDataflow(1, rs);
     }
 }
 
+void Prog::findRestoreSet(StatementSet& restoreSet) {
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->findRestoreSet(restoreSet);
+    }
+}
+
+void Prog::removeRestoreRefs(StatementSet& restoredSet) {
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->removeRestoreRefs(restoredSet);
+    }
+
+}
+void Prog::removeRestoreStmts(StatementSet& restoredSet) {
+    // To be completed
+}
