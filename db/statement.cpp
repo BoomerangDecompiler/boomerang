@@ -3260,8 +3260,6 @@ void Assign::addUsedLocs(LocationSet& used) {
 }
 
 void Assign::fixCallRefs() {
-if (number == 28 && strcmp(proc->getName(), "main") == 0)
-  std::cerr << "HACK!\n";
     rhs = rhs->fixCallRefs();
     if (lhs->isMemOf()) {
         ((Unary*)lhs)->refSubExp1() =
