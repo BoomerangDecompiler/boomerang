@@ -25,7 +25,7 @@
 class Boomerang {
 private:
     static Boomerang *boomerang;
-    std::string progPath; // String with the path to this exec
+    std::string progPath;   // String with the path to this exec
 
     Boomerang();
 public:
@@ -38,6 +38,9 @@ public:
     int commandLine(int argc, const char **argv);
     void setProgPath(const char* p) { progPath = p; }
     const std::string& getProgPath() { return progPath; }
+
+    // Command line flags
+    bool        vFlag;      // -v given on commang line
 };
 
 #endif
