@@ -41,6 +41,9 @@ all:    $(ALLLIB) testLoader
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
+# LDL is -ldl if needed (Cygwin does not)
+LDL = -ldl
+
 BOOMDIR="$(shell pwd)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 LIBDIR=$(BOOMDIR)/lib
@@ -64,11 +67,12 @@ microX86dis.o: microX86dis.c
 	$(C) -c -o $@ -fPIC $<
 
 # Extra object files, etc
-# Only ElfBinaryFile needs libelf. These are target specific variables.
-../lib/libElfBinaryFile.so: EXTRAS = SymTab.o
-../lib/libHpSomBinaryFile.so: EXTRAS = SymTab.o
-../lib/libBinaryFile.so: EXTRAS = -ldl
-../lib/libWin32BinaryFile.so: EXTRAS = microX86dis.o
+# These are target specific variables.
+../lib/libElfBinaryFile.so:     EXTRAS = BinaryFile.o SymTab.o
+../lib/libHpSomBinaryFile.so:   EXTRAS = BinaryFile.o SymTab.o
+../lib/libBinaryFile.so:        EXTRAS =              $(LDL)
+../lib/libWin32BinaryFile.so:   EXTRAS = BinaryFile.o microX86dis.o
+../lib/libExeBinaryFile.so:     EXTRAS = BinaryFile.o
 
 # This pattern generates all the main dependencies
 $(ALLLIB): ../lib/lib%.so : %.o
