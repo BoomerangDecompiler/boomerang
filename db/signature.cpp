@@ -334,9 +334,11 @@ Signature *CallingConvention::Win32Signature::promote(UserProc *p)
 }
 
 Exp *CallingConvention::Win32Signature::getStackWildcard() {
-	// Note: m[esp + -8] is simnplified to m[esp - 8] now
-	return Location::memOf(new Binary(opMinus, Location::regOf(28), 
-											   new Terminal(opWild)));
+	// Note: m[esp + -8] is simplified to m[esp - 8] now
+	return Location::memOf(
+		new Binary(opMinus,
+			Location::regOf(28),
+			new Terminal(opWild)));
 }
 
 Exp *CallingConvention::Win32Signature::getProven(Exp *left)
@@ -345,12 +347,11 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
 	if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
 		nparams--;
 	}
-	if (left->getOper() == opRegOf && 
-		left->getSubExp1()->getOper() == opIntConst) {
+	if (left->getOper() == opRegOf && left->getSubExp1()->getOper() == opIntConst) {
 		switch (((Const*)left->getSubExp1())->getInt()) {
 			case 28:
 				return new Binary(opPlus, Location::regOf(28), 
-										  new Const(4 + nparams*4));
+					new Const(4 + nparams*4));
 			case 26:
 				return Location::regOf(26);
 			case 27:
@@ -456,24 +457,22 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
 		if (e == NULL) continue;
 		if (e->getLeft()->getOper() == opPC) {
 			if (e->getRight()->isMemOf() && 
-			  e->getRight()->getSubExp1()->isRegOf() &&
-			  e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-			  ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
-			  == 28) {
+					e->getRight()->getSubExp1()->isRegOf() &&
+					e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+					((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28) {
 				if (VERBOSE)
 					std::cerr << "got pc = m[r[28]]" << std::endl;
 				gotcorrectret1 = true;
 			}
 		} else if (e->getLeft()->isRegOf() && 
-		  e->getLeft()->getSubExp1()->isIntConst() &&
-		  ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
+				e->getLeft()->getSubExp1()->isIntConst() &&
+				((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
 			if (e->getRight()->getOper() == opPlus &&
-			  e->getRight()->getSubExp1()->isRegOf() &&
-			  e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-			  ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
-			  == 28 &&
-			  e->getRight()->getSubExp2()->isIntConst() &&
-			  ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
+					e->getRight()->getSubExp1()->isRegOf() &&
+					e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+					((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+					e->getRight()->getSubExp2()->isIntConst() &&
+					((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
 				if (VERBOSE)
 					std::cerr << "got r[28] = r[28] + 4" << std::endl;
 				gotcorrectret2 = true;
@@ -524,8 +523,10 @@ Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
 
 Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 	// Note: m[esp + -8] is simplified to m[esp - 8] now
-	return Location::memOf(new Binary(opMinus, Location::regOf(28),
-												   new Terminal(opWild)));
+	return Location::memOf(
+		new Binary(opMinus,
+			Location::regOf(28),
+			new Terminal(opWild)));
 }
 
 Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
@@ -897,6 +898,7 @@ void Signature::setParamExp(int n, Exp *e)
 	params[n]->setExp(e);
 }
 
+// Return the index for the given expression, or -1 if not found
 int Signature::findParam(Exp *e) {
 	for (int i = 0; i < getNumParams(); i++)
 		if (*getParamExp(i) == *e)
@@ -992,7 +994,7 @@ Type *Signature::getReturnType(int n) {
 }
 
 void Signature::setReturnType(int n, Type *ty) {
-	if (n < returns.size())
+	if (n < (int)returns.size())
 		returns[n]->setType(ty);
 }
 
@@ -1098,67 +1100,6 @@ void Signature::getInternalStatements(StatementList &stmts)
 {
 }
 
-// No longer used; may be used again in future
-#if 0
-void Signature::analyse(UserProc *p) {
-	if (VERBOSE) {
-		std::cerr << "accepted promotion" << std::endl;
-		std::cerr << "searching for creation of return value" << std::endl;
-	}
-	StatementList internal;
-	//p->getInternalStatements(internal);
-	StmtListIter it;
-	for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
-		if (s->getLeft() && *s->getLeft() == *getReturnExp() &&
-			s->getRight() && !(*s->getLeft() == *s->getRight())) {
-			if (VERBOSE) {
-				std::cerr << "found: ";
-				s->printAsUse(std::cerr);
-				std::cerr << std::endl;
-			}
-			//p->eraseInternalStatement(s);
-			p->getCFG()->setReturnVal(s->getRight()->clone());
-			updateParams(p, s);
-			setReturnType(new IntegerType());
-		}
-	}
-	StmtSetIter ll;
-	StatementSet& lout = *p->getCFG()->getReachExit();
-	for (Statement* s = lout.getFirst(ll); s; s = lout.getNext(ll)) {
-		if (s->getLeft() && *s->getLeft() == *getReturnExp()) {
-			if (VERBOSE) {
-				std::cerr << "found: ";
-				s->printAsUse(std::cerr);
-				std::cerr << std::endl;
-			}
-			p->getCFG()->setReturnVal(s->getLeft()->clone());
-			CallStatement *call = dynamic_cast<CallStatement*>(s);
-			Type *ty = NULL;
-			if (call)
-				ty = call->getLeftType();
-			if (call && ty)
-				setReturnType(ty->clone());
-			else
-				setReturnType(new IntegerType());
-		}
-	}
-	if (VERBOSE)
-		std::cerr << "searching for parameters in statements" << std::endl;
-	StatementList stmts;
-	p->getStatements(stmts);
-	StmtListIter si;
-	for (Statement* s = stmts.getFirst(si); s; s = stmts.getNext(si)) {
-		if (VERBOSE) std::cerr << "updateParameters for " << s << std::endl;
-		updateParams(p, s);
-	}
-/*	  std::cerr << "searching for parameters in internals" << std::endl;
-	internal.clear();
-	p->getInternalStatements(internal);
-	for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
-	updateParams(p, s, false); */
-}
-#endif
-
 // Note: the below few functions require reaching definitions.
 // Likely can't be used
 void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
@@ -1255,8 +1196,7 @@ void Signature::removeImplicitParameter(int i)
 	implicitParams.resize(implicitParams.size()-1);
 }
 
-// Special for Mike: find the location where the first outgoing (actual)
-// parameter is conventionally held
+// Special for Mike: find the location where the first outgoing (actual) parameter is conventionally held
 Exp* Signature::getFirstArgLoc(Prog* prog) {
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
@@ -1328,8 +1268,7 @@ std::list<Exp*> *Signature::getCallerSave(Prog* prog) {
 	return NULL;
 }
 
-// Get the expected argument location, based solely on the machine of the
-// input program
+// Get the expected argument location, based solely on the machine of the input program
 Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
@@ -1398,22 +1337,25 @@ bool Signature::isStackLocal(Prog* prog, Exp *e) {
 
 bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	OPER op = e->getOper();
-	// e must be ... - ...
-	if (op != opMinus && op != opPlus) return false;
+	// e must be sp -/+ K or just sp
+	static Exp *sp = Location::regOf(getStackRegister(prog));
+	if (op != opMinus && op != opPlus) {
+		// Matches if e is sp or sp{0}
+		return (*e == *sp ||
+			e->isSubscript() && ((RefExp*)e)->isImplicitDef() && *((RefExp*)e)->getSubExp1() == *sp);
+	}
 	if (op == opMinus && !isLocalOffsetNegative()) return false;
 	if (op == opPlus  && !isLocalOffsetPositive()) return false;
 	Exp* sub1 = ((Binary*)e)->getSubExp1();
 	Exp* sub2 = ((Binary*)e)->getSubExp2();
 	// e must be <sub1> - K
 	if (!sub2->isIntConst()) return false;
-	static Exp *sp = Location::regOf(getStackRegister(prog));
 	// first operand must be sp or sp{0}
 	if (sub1->isSubscript()) {
-		Statement* ref = ((RefExp*)sub1)->getRef();
-		Exp* left = ((RefExp*)sub1)->getSubExp1();
-		return *left == *sp && ref == NULL;
-	} else
-		return *sub1 == *sp;
+		if (!((RefExp*)sub1)->isImplicitDef()) return false;
+		sub1 = ((RefExp*)sub1)->getSubExp1();
+	}
+	return *sub1 == *sp;
 }
 
 bool Parameter::operator==(Parameter& other) {
@@ -1600,3 +1542,10 @@ void Return::readMemo(Memo *mm, bool dec)
 	type->restoreMemo(m->mId, dec);
 	exp->restoreMemo(m->mId, dec);
 }
+
+bool Signature::isOpCompatStackLocal(OPER op) {
+	if (op == opMinus) return isLocalOffsetNegative();
+	if (op == opPlus) return isLocalOffsetPositive();
+	return false;
+}
+

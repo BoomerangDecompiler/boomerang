@@ -597,6 +597,13 @@ class Cfg {
 	 */
 	int lastLabel;
 
+	/*
+	 * Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for
+	 * the same location.
+	 */
+
+	std::map<Exp*, Statement*, lessExpStar> implicitMap;
+
 	/******************** Dominance Frontier Data *******************/
 
 	/* These first two are not from Appel; they map PBBs to indices */
@@ -629,8 +636,7 @@ class Cfg {
 	std::map<Exp*, std::set<int>, lessExpStar > defsites;
 	// Array of sets of BBs needing phis
 	std::map<Exp*, std::set<int>, lessExpStar> A_phi;
-	// A Boomerang requirement: Statements defining particular subscripted
-	// locations
+	// A Boomerang requirement: Statements defining particular subscripted locations
 	std::map<Exp*, Statement*, lessExpStar> defStmts;
 
 	/*
@@ -1027,36 +1033,41 @@ public:
 	 */
 	bool decodeIndirectJmp(UserProc* proc);
 
+		/*
+		 * Implicit assignments
+		 */
+		Statement* findImplicitAssign(Exp* x);			// Find or create an implicit assign for x
+		Statement* findTheImplicitAssign(Exp* x);		// Find the existing implicit assign for x (if any)
 
-	/*
-	 * Domonator frontier code
-	 */
-	void DFS(int p, int n);
-	void dominators();
-	int	 ancestorWithLowestSemi(int v);
-	void Link(int p, int n);
-	void computeDF(int n);
-	void placePhiFunctions(int memDepth, UserProc* proc);
-	void renameBlockVars(int n, int memDepth, bool clearStack = false);
-	bool doesDominate(int n, int w);
+		/*
+	 	 * Dominance frontier and SSA code
+	 	 */
+		void	DFS(int p, int n);
+		void	dominators();
+		int		ancestorWithLowestSemi(int v);
+		void	Link(int p, int n);
+		void	computeDF(int n);
+		void	placePhiFunctions(int memDepth, UserProc* proc);
+		void 	renameBlockVars(int n, int memDepth, bool clearStack = false);
+		bool 	doesDominate(int n, int w);
 
 
-	// For testing:
-	int pbbToNode(PBB bb) {return indices[bb];}
-	std::set<int>& getDF(int node) {return DF[node];}
-	PBB nodeToBB(int node) {return BBs[node];} 
-	int getIdom(int node) {return idom[node];}
-	int getSemi(int node) {return semi[node];}
-	std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
+		// For testing:
+		int		pbbToNode(PBB bb) {return indices[bb];}
+		std::set<int>& getDF(int node) {return DF[node];}
+		PBB		nodeToBB(int node) {return BBs[node];} 
+		int		getIdom(int node) {return idom[node];}
+		int		getSemi(int node) {return semi[node];}
+		std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
 
-	void findInterferences(igraph& ig, int& tempNum);
-	void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
+		void	findInterferences(igraph& ig, int& tempNum);
+		void	appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
 
-	void removeUsedGlobals(std::set<Global*> &unusedGlobals);
+		void removeUsedGlobals(std::set<Global*> &unusedGlobals);
 
 protected:
-	friend class XMLProgParser;
-	void addBB(PBB bb) { m_listBB.push_back(bb); }
+		void	addBB(PBB bb) { m_listBB.push_back(bb); }
+		friend class XMLProgParser;
 };				/* Cfg */
 
 #endif

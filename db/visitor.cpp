@@ -17,6 +17,8 @@
 #include "statement.h"
 #include "log.h"
 #include "boomerang.h"		// For VERBOSE
+#include "proc.h"
+#include "signature.h"
 
 
 // FixProcVisitor class
@@ -103,7 +105,7 @@ bool StmtConscriptSetter::visit(CallStatement* stmt) {
 	n = stmt->getNumReturns();
 	for (i=0; i < n; i++) {
 		Exp* r = stmt->getReturnExp(i);
-		r->accept(&sc);
+		if (r) r->accept(&sc);
 	}
 	curConscript = sc.getLast();
 	return true;
@@ -164,13 +166,14 @@ Exp* CallRefsFixer::postVisit(RefExp* r) {
 	Statement* def = r->getRef();
 	CallStatement *call = dynamic_cast<CallStatement*>(def);
 	if (call) {
+		// Get the left had side of the proven expression (e.g. from r28 = r28 + 4, get r28)
 		Exp *e = call->getProven(r->getSubExp1());
 		if (e) {
-			e = call->substituteParams(e->clone());
+			// Express e in terms of the arguments passed to this call
+			e = call->substituteParams(e);
 			assert(e);
 			if (VERBOSE)
-				LOG << "fixcall refs replacing " << r << " with " << e
-					<< "\n";
+				LOG << "fixcall refs replacing " << r << " with " << e << "\n";
 			// e = e->simplify();	// No: simplify the parent
 			unchanged &= ~mask;
 			mod = true;
@@ -179,10 +182,8 @@ Exp* CallRefsFixer::postVisit(RefExp* r) {
 			Exp* subExp1 = r->getSubExp1();
 			if (call->findReturn(subExp1) == -1) {
 				if (VERBOSE && !subExp1->isPC()) {
-					LOG << "nothing proven about " << subExp1 <<
-						" and yet it is referenced by " << r <<
-						", and not in returns of " << "\n" <<
-						"	" << call << "\n";
+					LOG << "nothing proven about " << subExp1 << " and yet it is referenced by " << r <<
+						", and not in returns of " << "\n" << "	" << call << "\n";
 				}
 			}
 		}
@@ -470,6 +471,29 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 	return true;				// Continue the recursion
 }
 
+bool UsedLocsVisitor::visit(ReturnStatement* s, bool& override) {
+	// For the final pass, only consider the first return
+	int n = s->getNumReturns();
+	if (final) {
+		if (n != 0) {
+			Exp* r = NULL;
+			// Find the first non null return
+			for (int i = 0; r == NULL && i < n; i++) {
+				r = s->getReturnExp(i);			
+				r->accept(ev);
+			}
+		}
+	} else {
+		// Otherwise, consider all returns. If of form m[x] then x is used
+		for (int i=0; i < n; i++) {
+			Exp* r = s->getReturnExp(i);
+			if (r) r->accept(ev);
+		} 
+	}
+	override = true;			// Don't do the normal accept logic
+	return true;				// Continue the recursion
+}
+
 bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	Exp* pCond = s->getCondExpr();
 	if (pCond)
@@ -492,15 +516,37 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 // Expression subscripter
 //
 Exp* ExpSubscripter::preVisit(Location* e, bool& recur) {
-	if (*e == *search) {
-		recur = e->isMemOf();	// Don't double subscript unless m[...]
-		return new RefExp(e, def);
+	if (/* search == NULL || */ *e == *search) {
+		recur = e->isMemOf();			// Don't double subscript unless m[...]
+		return new RefExp(e, def);		// Was replaced by postVisit below
 	}
 	recur = true;
 	return e;
 }
 
+#if 0
+Exp* ExpSubscripter::postVisit(Location* e) {
+	Exp* ret;
+	if (search == NULL || *e == *search) {
+		Statement* oldDef = cfg->preUpdate(e);
+		if (search == NULL)
+			ret = new RefExp(e, cfg->findImplicitAssign(e));
+		else
+			ret = new RefExp(e, def);
+		cfg->postUpdate(ret, oldDef);
+	}
+	else
+		ret = e;
+	return ret;
+}
+#endif
+
 Exp* ExpSubscripter::preVisit(Terminal* e) {
+#if 0
+	if (search == NULL)
+		return new RefExp(e, cfg->findImplicitAssign(e));
+	else
+#endif
 	if (*e == *search)
 		return new RefExp(e, def);
 	return e;
@@ -591,86 +637,26 @@ Exp* ExpConstCaster::preVisit(Const* c) {
 	return c;
 }
 
-bool StmtConstCaster::visit(Assign *stmt) {
-	Exp* e = stmt->getLeft();
-	stmt->setLeft(e->accept(ecc));
-	if (ecc->isChanged()) return false;
-	e = stmt->getRight();
-	stmt->setRight(e->accept(ecc));
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(PhiAssign *stmt) {
-	Exp* e = stmt->getLeft();
-	stmt->setLeft(e->accept(ecc));
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(ImplicitAssign *stmt) {
-	Exp* e = stmt->getLeft();
-	stmt->setLeft(e->accept(ecc));
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(GotoStatement *stmt) {
-	Exp* e = stmt->getDest();
-	stmt->setDest(e->accept(ecc));
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(BranchStatement *stmt) {
-	Exp* e = stmt->getDest();
-	stmt->setDest(e->accept(ecc));
-	if (ecc->isChanged()) return false;
-	e = stmt->getCondExpr();
-	stmt->setCondExpr(e->accept(ecc));
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(CaseStatement *stmt) {
-	SWITCH_INFO* si = stmt->getSwitchInfo();
-	if (si) {
-		si->pSwitchVar = si->pSwitchVar->accept(ecc);
-	}
-	return !ecc->isChanged();
-}
-bool StmtConstCaster::visit(CallStatement *stmt) {
-	std::vector<Exp*> args;
-	args = stmt->getArguments();
-	int i, n = args.size();
-	for (i=0; i < n; i++) {
-		args[i] = args[i]->accept(ecc);
-		if (ecc->isChanged()) return true;
-	}
-	std::vector<Exp*>& impargs = stmt->getImplicitArguments();
-	n = impargs.size();
-	for (i=0; i < n; i++) {
-		impargs[i] = impargs[i]->accept(ecc);
-		if (ecc->isChanged()) return true;
-	}
-	std::vector<Exp*>& returns = stmt->getReturns();
-	n = returns.size();
-	for (i=0; i < n; i++) {
-		returns[i] = returns[i]->accept(ecc);
-		if (ecc->isChanged()) return true;
-	}
-	return true;
-}
-bool StmtConstCaster::visit(ReturnStatement *stmt) {
-	std::vector<Exp*>& returns = stmt->getReturns();
-	int i, n = returns.size();
-	for (i=0; i < n; i++) {
-		returns[i] = returns[i]->accept(ecc);
-		if (ecc->isChanged()) return true;
-	}
-	return true;
-}
-bool StmtConstCaster::visit(BoolAssign *stmt) {
-	Exp* e = stmt->getLeft();
-	stmt->setLeft(e->accept(ecc));
-	if (ecc->isChanged()) return false;
-	e = stmt->getCondExpr();
-	stmt->setCondExpr(e->accept(ecc));
-	return !ecc->isChanged();
-}
 
 // This is the code (apart from definitions) to find all constants in a Statement
 bool ConstFinder::visit(Const* e) {
 	lc.push_back(e);
 	return true;
 }
+bool ConstFinder::visit(Location* e, bool& override) {
+	if (e->isMemOf())
+		override = false;		// We DO want to see constants in memofs
+	else
+		override = true;		// Don't consider register numbers, global names, etc
+	return true;			
+}
+
+// This is in the POST visit function, because it's important to process any child expressions first.
+// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a NULL definition
+// for r28.
+Exp* ImplicitConverter::postVisit(RefExp* e) {
+	if (e->getRef() == NULL)
+		e->setDef(cfg->findImplicitAssign(e->getSubExp1()));
+	return e;
+}
+

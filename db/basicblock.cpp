@@ -1508,7 +1508,7 @@ char* BasicBlock::getStmtNumber() {
 	return ret;
 } 
 
-// Prepend an expression (usually an assignment representing a phi function)
+// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
 // Proc is the enclosing Proc
 void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 	// Check the first RTL (if any)
@@ -1522,7 +1522,7 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 			return;
 		}
 	}
-	// Otherwise, prepent a new RTL
+	// Otherwise, prepend a new RTL
 	std::list<Statement*> listStmt;
 	listStmt.push_back(s);
 	RTL* rtl = new RTL(0, &listStmt);
@@ -1588,7 +1588,7 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
 			LocationSet defs;
 			s->getDefinitions(defs);
 			// The definitions don't have refs yet
-			defs.addSubscript(s);
+			defs.addSubscript(s /* , myProc->getCFG() */);
 			// Definitions kill uses
 			liveLocs.makeDiff(defs);
 			// Phi functions are a special case. The operands of phi functions

@@ -1760,12 +1760,10 @@ void Cfg::checkConds() {
 		// consider only conditional headers that have a follow and aren't 
 		// case headers
 		if ((curNode->getStructType() == Cond || 
-			 curNode->getStructType() == LoopCond) &&
-			curNode->getCondFollow() && curNode->getCondType() != Case) {
+			 curNode->getStructType() == LoopCond) && curNode->getCondFollow() && curNode->getCondType() != Case) {
 			// define convenient aliases for the relevant loop and case heads 
 			// and the out edges
-		PBB myLoopHead = (curNode->getStructType() == LoopCond ? 
-							  curNode : curNode->getLoopHead());
+		PBB myLoopHead = (curNode->getStructType() == LoopCond ?  curNode : curNode->getLoopHead());
 			PBB follLoopHead = curNode->getCondFollow()->getLoopHead();
 
 			// analyse whether this is a jump into/outof a loop
@@ -1776,14 +1774,12 @@ void Cfg::checkConds() {
 					PBB myLoopLatch = myLoopHead->getLatchNode();
 
 					// does the then branch goto the loop latch?
-					if (oEdges[BTHEN]->isAncestorOf(myLoopLatch) || 
-						oEdges[BTHEN] == myLoopLatch) {
+					if (oEdges[BTHEN]->isAncestorOf(myLoopLatch) || oEdges[BTHEN] == myLoopLatch) {
 						curNode->setUnstructType(JumpInOutLoop);
 						curNode->setCondType(IfElse);
 					}
 			// does the else branch goto the loop latch?
-			else if (oEdges[BELSE]->isAncestorOf(myLoopLatch) || 
-							 oEdges[BELSE] == myLoopLatch) {
+			else if (oEdges[BELSE]->isAncestorOf(myLoopLatch) || oEdges[BELSE] == myLoopLatch) {
 						curNode->setUnstructType(JumpInOutLoop);
 						curNode->setCondType(IfThen);
 					}
@@ -1795,15 +1791,13 @@ void Cfg::checkConds() {
 					// then it will match this one anyway
 
 					// does the else branch goto the loop head?
-					if (oEdges[BTHEN]->isAncestorOf(follLoopHead) || 
-						oEdges[BTHEN] == follLoopHead) {
+					if (oEdges[BTHEN]->isAncestorOf(follLoopHead) || oEdges[BTHEN] == follLoopHead) {
 						curNode->setUnstructType(JumpInOutLoop);
 						curNode->setCondType(IfElse);
 					}
 
 					// does the else branch goto the loop head?
-					else if (oEdges[BELSE]->isAncestorOf(follLoopHead) || 
-							 oEdges[BELSE] == follLoopHead) {
+					else if (oEdges[BELSE]->isAncestorOf(follLoopHead) || oEdges[BELSE] == follLoopHead) {
 						curNode->setUnstructType(JumpInOutLoop);
 						curNode->setCondType(IfThen);
 					}
@@ -1813,22 +1807,18 @@ void Cfg::checkConds() {
 			// this is a jump into a case body if either of its children don't 
 			// have the same same case header as itself
 			if (curNode->getUnstructType() == Structured &&
-				(curNode->getCaseHead() != 
-					 curNode->getOutEdges()[BTHEN]->getCaseHead() ||
-				 curNode->getCaseHead() != 
-					 curNode->getOutEdges()[BELSE]->getCaseHead())) {
+				(curNode->getCaseHead() != curNode->getOutEdges()[BTHEN]->getCaseHead() ||
+				 curNode->getCaseHead() != curNode->getOutEdges()[BELSE]->getCaseHead())) {
 				PBB myCaseHead = curNode->getCaseHead();
 				PBB thenCaseHead = curNode->getOutEdges()[BTHEN]->getCaseHead();
 				PBB elseCaseHead = curNode->getOutEdges()[BELSE]->getCaseHead();
 
-				if (thenCaseHead == myCaseHead && 
-					(!myCaseHead || 
-					 elseCaseHead != myCaseHead->getCondFollow())) {
+				if (thenCaseHead == myCaseHead &&
+						(!myCaseHead || elseCaseHead != myCaseHead->getCondFollow())) {
 					curNode->setUnstructType(JumpIntoCase);
 					curNode->setCondType(IfElse);
 				} else if (elseCaseHead == myCaseHead && 
-						   (!myCaseHead || 
-							thenCaseHead != myCaseHead->getCondFollow())) {
+						(!myCaseHead || thenCaseHead != myCaseHead->getCondFollow())) {
 					curNode->setUnstructType(JumpIntoCase);
 					curNode->setCondType(IfThen);
 				}
@@ -1878,10 +1868,8 @@ void Cfg::generateDotFile(std::ofstream& of) {
 	ADDRESS aret = NO_ADDRESS;
 	// The nodes
 	std::list<PBB>::iterator it;
-	for (it = m_listBB.begin(); it != m_listBB.end();
-	  it++) {
-		of << "	   " << "bb" << std::hex << (*it)->getLowAddr() << " [";
-		of << "label=\"";
+	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+		of << "	   " << "bb" << std::hex << (*it)->getLowAddr() << " [" << "label=\"";
 		char* p = (*it)->getStmtNumber();
 		of << std::dec << indices[*it];
 		if (p[0] != 'b')
@@ -2022,8 +2010,7 @@ void Cfg::dominators() {
 	int i;
 	for (i=N-1; i >= 1; i--) {
 		int n = vertex[i]; int p = parent[n]; int s = p;
-		/* These lines calculate the semi-dominator of n, based on the
-			Semidominator Theorem */
+		/* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
 		// for each predecessor v of n
 		PBB bb = BBs[n];
 		std::vector<PBB>::iterator it;
@@ -2226,36 +2213,37 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 	BasicBlock::rtlit rit; StatementList::iterator sit;
 	PBB bb = BBs[n];
 	Statement* S;
-	for (S = bb->getFirstStmt(rit, sit); S;
-		 S = bb->getNextStmt(rit, sit)) {
+	for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
 		// if S is not a phi function
 		if (1) { //!S->isPhi()) 
 			// For each use of some variable x in S (not just assignments)
 			LocationSet locs;
 			if (S->isPhi()) {
-				// The below, plus a similar hack a page down,	seems to
-				// indicate the need for a PhiStatement:
 				if (S->getLeft()->getOper() == opMemOf)
 					S->getLeft()->getSubExp1()->addUsedLocs(locs);
-			} else S->addUsedLocs(locs);
+			}
+			else
+				S->addUsedLocs(locs);
 			LocationSet::iterator xx;
 			for (xx = locs.begin(); xx != locs.end(); xx++) {
 				Exp* x = *xx;
-				if (x->getMemDepth() == memDepth) {
-					// If the stack is empty, assume NULL (statement "0")
-					// This avoids having to initialise the stack for ALL
-					// variables (not just those that need phi functions)
-					Statement* def;
-					if (Stack[x].empty())
-						def = NULL;
-					else
-						def = Stack[x].top();
-					// Replace the use of x with x{def} in S
-					if (S->isPhi())
-						S->getLeft()->refSubExp1() = 
-							S->getLeft()->getSubExp1()->expSubscriptVar(x, def);
-					else S->subscriptVar(x, def);
+				// Ignore variables of the wrong memory depth
+				if (x->getMemDepth() != memDepth) continue;
+				// Ignore variables that have already been subscripted
+				if (x->isSubscript()) continue;
+				Statement* def;
+				if (Stack[x].empty()) {
+					// If the stack is empty, use a NULL definition. This will be changed into a pointer
+					// to an implicit definition at the start of type analysis, but not until all the m[...]
+					// have stopped changing their expressions (complicates implicit assignments considerably).
+					def = NULL;
 				}
+				else
+					def = Stack[x].top();
+				// Replace the use of x with x{def} in S
+				if (S->isPhi())
+					S->getLeft()->refSubExp1() = S->getLeft()->getSubExp1()->expSubscriptVar(x, def /*, this*/);
+				else S->subscriptVar(x, def /*, this */);
 			}
 		}
 		// For each definition of some variable a in S
@@ -2268,21 +2256,21 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 				// Push i onto Stack[a]
 				// Note: we clone a because otherwise it could be an expression
 				// that gets deleted through various modifications
-				// This is necessary because we do several passes of this alg
+				// This is necessary because we do several passes of this algorithm
 				// with various memory depths
 				Stack[a->clone()].push(S);
 				// Replace definition of a with definition of a_i in S
 				// (we don't do this)
 			}
+			// MVE: do we need this awful hack?
 			if (a->getOper() == opLocal) {
-				a = S->getProc()->getLocalExp(((Const*)a->getSubExp1())->
-				  getStr());
+				a = S->getProc()->getLocalExp(((Const*)a->getSubExp1())->getStr());
 				// Note: used to assert(a) here. However, with switch
 				// statements and in other cases, a local may be created which
 				// does not represent memory at all (created with
 				// UserProc::newLocal()), and so there is no entry in symbolMap,
-				// and so d becomes NULL. This is not an error.
-				// Stack already has a definition for d (as just the bare local)
+				// and so a becomes NULL. This is not an error.
+				// Stack already has a definition for a (as just the bare local)
 				if (a && a->getMemDepth() == memDepth)
 					Stack[a->clone()].push(S);
 			}
@@ -2296,22 +2284,20 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 		int j = Ybb->whichPred(bb);
 		// For each phi-function in Y
 		Statement* S;
-		for (S = Ybb->getFirstStmt(rit, sit); S;
-			 S = Ybb->getNextStmt(rit, sit)) {
+		for (S = Ybb->getFirstStmt(rit, sit); S; S = Ybb->getNextStmt(rit, sit)) {
 			PhiAssign* pa = dynamic_cast<PhiAssign*>(S);
 			// if S is not a phi function, then quit the loop (no more phi's)
-			// wrong: do not quit the loop, there's an optimisation that 
-			// turns phis with a single param into refs.
+			// Wrong: do not quit the loop: there's an optimisation that turns a PhiAssign into
+			// an ordinary Assign. So continue, not break.
 			if (!pa) continue;
-			// Suppose the jth operand of the phi is a; we just get the LHS
+			// Suppose the jth operand of the phi is a
+			// For now, just get the LHS
 			Exp* a = pa->getLeft();
 			// Only consider variables of the current memory depth
-			// (since we only have reaching defs for these)
 			if (a->getMemDepth() != memDepth) continue;
 			Statement* def;
-			if (Stack[a].empty()) {
-				def = NULL;
-			}
+			if (Stack[a].empty())
+				def = NULL;				// See comment above
 			else
 				def = Stack[a].top();
 			// "Replace jth operand with a_i"
@@ -2326,8 +2312,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 			renameBlockVars(X, memDepth);
 	}
 	// For each statement S in block n
-	for (S = bb->getFirstStmt(rit, sit); S;
-		 S = bb->getNextStmt(rit, sit)) {
+	for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
 		// For each definition of some variable a in S
 		LocationSet defs;
 		S->getDefinitions(defs);
@@ -2625,5 +2610,31 @@ void Cfg::undoComputedBB(Statement* stmt) {
 		if ((*it)->undoComputedBB(stmt))
 			break;
 	}
-
 }
+
+Statement* Cfg::findImplicitAssign(Exp* x) {
+	Statement* def;
+	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+	if (it == implicitMap.end()) {
+		// A use with no explicit definition. Create a new implicit assignment
+		def = new ImplicitAssign(x->clone());
+		entryBB->prependStmt(def, myProc);
+		// Remember it for later so we don't insert more than one implicit assignment for any one location
+		// We don't clone the copy in the map. So if the location is a m[...], the same type information is
+		// available in the definition as at all uses
+		implicitMap[x] = def;
+	} else {
+		// Use an existing implicit assignment
+		def = it->second;
+	}
+	return def;
+}
+
+Statement* Cfg::findTheImplicitAssign(Exp* x) {
+	// As per the below, but don't create an implicit if it doesn't already exist
+	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+	if (it == implicitMap.end())
+		return NULL;
+	return it->second;
+}
+

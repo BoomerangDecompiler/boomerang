@@ -28,8 +28,8 @@
 # 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
 # 20 Jul 04 - Mike: Removed BOOMDIR (paths relative now)
 
-C = gcc -Wall -g -O4
-CC = g++ -Wall -g -O4
+C = gcc -Wall -g -O0
+CC = g++ -Wall -g -O0
 CXX=$(CC)
 
 ALLLIBSRC =  $(wildcard *BinaryFile.cpp)

@@ -148,7 +148,7 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
 	Exp* exp = e;
 	// Use doSearch, which is normally an internal method of Exp, to avoid
 	// problems of replacing the wrong subexpression (in some odd cases)
-	e->doSearch(Location::regOf(new Terminal(opWild)), exp, li, false);
+	Exp::doSearch(Location::regOf(new Terminal(opWild)), exp, li, false);
 	for (it = li.begin(); it != li.end(); it++) {
 		int reg = ((Const*)((Unary*)**it)->getSubExp1())->getInt();
 		if ((min <= reg) && (reg <= max)) {

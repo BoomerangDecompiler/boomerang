@@ -2,7 +2,7 @@
 # functest.sh functional test script $Revision$
 # Note: to test with data flow based type analysis, define environment variable BOOMSW to be -Td
 if [ -z $BOOMSW ]; then BOOMSW="--"; fi
-echo Boomerang switch is $BOOMSW
+echo Boomerang switch BOOMSW is $BOOMSW
 rm -rf functest
 mkdir functest
 rm -rf functests.out

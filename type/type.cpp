@@ -581,8 +581,7 @@ bool SizeType::operator<(const Type& other) const {
 Exp *Type::match(Type *pattern)
 {
 	if (pattern->isNamed()) {
-		LOG << "type match: " << this->getCtype() << " to " <<
-		  pattern->getCtype() << "\n";
+		LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
 		return new Binary(opList, 
 			new Binary(opEquals, 
 				new Unary(opVar,
@@ -626,8 +625,7 @@ Exp *FuncType::match(Type *pattern)
 Exp *PointerType::match(Type *pattern)
 {
 	if (pattern->isPointer()) {
-		LOG << "got pointer match: " << this->getCtype() << " to " <<
-		  pattern->getCtype() << "\n";
+		LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
 		return points_to->match(pattern->asPointer()->getPointsTo());
 	}
 	return Type::match(pattern);
@@ -1127,7 +1125,6 @@ void Type::starPrint(std::ostream& os) {
 std::ostream& operator<<(std::ostream& os, Type* t) {
 	if (t == NULL) return os << '0';
 	switch (t->getId()) {
-		case eVoid:	os << 'v'; break;
 		case eInteger: {
 			int sg = ((IntegerType*)t)->getSignedness();
 			// 'j' for either i or u, don't know which
@@ -1135,16 +1132,17 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 			os << std::dec << t->asInteger()->getSize();
 			break;
 		}
-		case eFloat:
-			os << 'f';
-			os << std::dec << t->asFloat()->getSize();
-			break;
-		case eChar: os << 'c'; break;
-		case ePointer: os << t->asPointer()->getPointsTo() << '*'; break;
-		case eBoolean: os << 'b'; break;
-		case eSize: os << std::dec << t->getSize(); break;
-		default:
-			os << "?type?";
+		case eFloat:	os << 'f'; os << std::dec << t->asFloat()->getSize(); break;
+		case ePointer:	os << t->asPointer()->getPointsTo() << '*'; break;
+		case eSize:		os << std::dec << t->getSize(); break;
+		case eChar:		os << 'c'; break;
+		case eVoid:		os << 'v'; break;
+		case eBoolean:	os << 'b'; break;
+		case eCompound:	os << "struct"; break; 
+		case eUnion:	os << "union"; break;
+		case eFunc:		os << "func"; break;
+		case eArray:	os << '[' << t->asArray()->getBaseType() << ']'; break;
+		case eNamed:	os << t->asNamed()->getName(); break;
 	}
 	return os;
 }
@@ -1394,4 +1392,12 @@ bool CompoundType::isSubStructOf(Type* other) {
 	return true;
 }
 
-
+// Return true if this type is already in the union. Note: linear search, but number of types is usually small
+bool UnionType::findType(Type* ty) {
+	std::vector<Type*>::iterator it;
+	for (it = types.begin(); it != types.end(); it++) {
+		if (**it == *ty)
+			return true;
+	}
+	return false;
+}

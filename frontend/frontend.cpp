@@ -362,23 +362,20 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  *					sometimes calling this function to do most of the work
  * RETURNS:		  true for a good decode (no illegal instructions)
  *============================================================================*/
-bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-  bool frag /* = false */, bool spec /* = false */) {
+bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
+		bool spec /* = false */) {
 	PBB pBB;					// Pointer to the current basic block
 
 	// if (!frag && !pProc->getSignature()->isPromoted()) {
 	if (!frag) {
 		if (VERBOSE)
-			LOG << "adding default params and returns for " <<
-			  pProc->getName() << "\n";
+			LOG << "adding default params and returns for " << pProc->getName() << "\n";
 		std::vector<Exp*> &params = getDefaultParams();
 		std::vector<Exp*>::iterator it;
-		for (it = params.begin(); 
-			 it != params.end(); it++)
+		for (it = params.begin(); it != params.end(); it++)
 			pProc->getSignature()->addImplicitParameter((*it)->clone());
 		std::vector<Exp*> &returns = getDefaultReturns();
-		for (it = returns.begin(); 
-			 it != returns.end(); it++)
+		for (it = returns.begin(); it != returns.end(); it++)
 			pProc->getSignature()->addReturn((*it)->clone());
 	}
 	
@@ -530,8 +527,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 							pCfg->addOutEdge(pBB, uDest, true);
 						}
 						else {
-							LOG << "Error: Instruction at " << 
-							  uAddr << " branches beyond end of section, to "
+							LOG << "Error: Instruction at " << uAddr << " branches beyond end of section, to "
 							  << uDest << "\n";
 						}
 					}
@@ -541,19 +537,15 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 				case STMT_CASE: {
 					// MVE: check if this can happen any more
 					if (stmt_jump->getDest()->getOper() == opMemOf &&
-						stmt_jump->getDest()->getSubExp1()->getOper() ==
-						  opIntConst && 
-						pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->
-						  getDest()->getSubExp1())->getAddr())) {
+							stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst && 
+							pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->getAddr())) {
 						// jump to a library function
 						// replace with a call ret
 						std::string func = pBF->GetDynamicProcName(
-						  ((Const*)stmt_jump->getDest()->getSubExp1())->
-						  getAddr());
+							((Const*)stmt_jump->getDest()->getSubExp1())->getAddr());
 						CallStatement *call = new CallStatement(pRtl->getAddress());
 						call->setDest(stmt_jump->getDest()->clone());
-						LibProc *lp = pProc->getProg()->getLibraryProc(
-						  func.c_str());
+						LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
 						assert(lp);
 						call->setDestProc(lp);
 						std::list<Statement*>* stmt_list = new std::list<Statement*>;
@@ -564,8 +556,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 						std::list<RTL*> *ret_rtls = new std::list<RTL*>();
 						stmt_list = new std::list<Statement*>;
 						stmt_list->push_back(ret);
-						ret_rtls->push_back(new RTL(pRtl->getAddress()+1,
-						  stmt_list));
+						ret_rtls->push_back(new RTL(pRtl->getAddress()+1, stmt_list));
 						PBB pret = pCfg->newBB(ret_rtls, RET, 0);
 						pret->addInEdge(pBB);
 						pBB->setOutEdge(0, pret);
@@ -644,12 +635,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 					CallStatement* call = static_cast<CallStatement*>(s);
 					
 					if (call->getDest()->getOper() == opMemOf &&
-					  call->getDest()->getSubExp1()->getOper() == opIntConst &&
-					  pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()
-					  ->getSubExp1())->getAddr())) {
+							call->getDest()->getSubExp1()->getOper() == opIntConst &&
+							pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
 						// dynamic linked proc pointers are assumed to be static.
 						const char *nam = pBF->GetDynamicProcName(
-						  ((Const*)call->getDest()->getSubExp1())->getAddr());
+							((Const*)call->getDest()->getSubExp1())->getAddr());
 						Proc *p = pProc->getProg()->getLibraryProc(nam);
 						call->setDestProc(p);
 						call->setIsComputed(false);
@@ -697,8 +687,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
 						// Record the called address as the start of a new
 						// procedure if it didn't already exist.
-						if (uNewAddr && pProc->getProg()->findProc(uNewAddr) ==
-						  NULL) {
+						if (uNewAddr && pProc->getProg()->findProc(uNewAddr) == NULL) {
 							callSet.insert(call);
 							//newProc(pProc->getProg(), uNewAddr);
 							if (Boomerang::get()->traceDecoder)
@@ -724,16 +713,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 							if (call->isReturnAfterCall()) {
 								// Constuct the RTLs for the new basic block
 								std::list<RTL*>* rtls = new std::list<RTL*>();
-								// The only RTL in the basic block is one with a
-								// ReturnStatement
-								std::list<Statement*>* sl =
-								  new std::list<Statement*>;
+								// The only RTL in the basic block is one with a ReturnStatement
+								std::list<Statement*>* sl = new std::list<Statement*>;
 								sl->push_back(new ReturnStatement());
-								rtls->push_back(new RTL(pRtl->getAddress()+1,
-								  sl));
+								rtls->push_back(new RTL(pRtl->getAddress()+1, sl));
 		
-								BasicBlock* returnBB =
-								  pCfg->newBB(rtls, RET, 0);
+								BasicBlock* returnBB = pCfg->newBB(rtls, RET, 0);
 								// Add out edge from call to return
 								pCfg->addOutEdge(pBB, returnBB);
 								// Put a label on the return BB (since it's an
@@ -783,8 +768,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 							; //pProc->setBytesPopped(popped);
 					} else {
 						ADDRESS retAddr = pProc->getTheReturnAddr();
-						std::list<Statement*> *stmt_list =
-							new std::list<Statement*>;
+						std::list<Statement*> *stmt_list = new std::list<Statement*>;
 						stmt_list->push_back(new GotoStatement(retAddr));
 						BB_rtls->push_back(new RTL(uAddr, stmt_list));
 						targetQueue.visit(pCfg, retAddr, pBB);
@@ -866,8 +850,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 		ADDRESS dest = (*it)->getFixedDest();
 		// Don't speculatively decode procs that are outside of the main text
 		// section, apart from dynamically linked ones (in the .plt)
-		if (pBF->IsDynamicLinkedProc(dest) || !spec ||
-		  (dest < pBF->getLimitTextHigh())) {
+		if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
 			pCfg->addCall(*it);
 			// Don't visit the destination of a register call
 			Proc *np = (*it)->getDestProc();

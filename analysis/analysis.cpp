@@ -88,7 +88,7 @@ void Analysis::analyse(UserProc* proc) {
 	while (pBB)
 	{
 		// Perform final simplifications
-	   finalSimplify(pBB);
+		finalSimplify(pBB);
 
 		// analyse calls
 		analyseCalls(pBB, proc);

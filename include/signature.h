@@ -220,9 +220,11 @@ public:
 	// sp{0} -/+ K)
 	bool isAddrOfStackLocal(Prog* prog, Exp* e);
 	// For most machines, local variables are always NEGATIVE offsets from sp
-	virtual bool isLocalOffsetNegative() {return true;}
+virtual bool isLocalOffsetNegative() {return true;}
 	// For most machines, local variables are not POSITIVE offsets from sp
-	virtual bool isLocalOffsetPositive() {return false;}
+virtual bool isLocalOffsetPositive() {return false;}
+	// Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
+	bool	isOpCompatStackLocal(OPER op);	
 
 	// Quick and dirty hack
 static Exp* getReturnExp2(BinaryFile* pBF);
@@ -257,7 +259,7 @@ protected:
 	void appendParameter(Parameter *p) { params.push_back(p); }
 	void appendImplicitParameter(ImplicitParameter *p) { implicitParams.push_back(p); }
 	void appendReturn(Return *r) { returns.push_back(r); }
-};
+};	// class Signature
 
 class CustomSignature : public Signature {
 protected:

@@ -1403,15 +1403,15 @@ Exp* TypeVal::match(Exp *pattern) {
  * NOTE:			Caller must free the list li after use, but not the
  *					  Exp objects that they point to
  * NOTE:			If the top level expression matches, li will contain search
+ * NOTE:			Now a static function. Searches pSrc, not this
  * PARAMETERS:		search: ptr to Exp we are searching for 
- *					pSrc: ref to ptr to Exp to search. Reason is that we can
- *					  then overwrite that pointer to effect a replacement
+ *					pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
+ *					to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
  *					li: list of Exp** where pointers to the matches are found
  *					once: true if not all occurrences to be found, false for all
  * RETURNS:			<nothing>
  *============================================================================*/
-void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
-  bool once) {
+void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
 	bool compare;
 	compare = (*search == *pSrc);
 	if (compare) {
@@ -1421,7 +1421,7 @@ void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
 	}
 	// Either want to find all occurrences, or did not match at this level
 	// Recurse into children, unless a matching opSubscript
-	if (op != opSubscript || !compare)
+	if (!compare || pSrc->op != opSubscript)
 		pSrc->doSearchChildren(search, li, once);
 }
 
@@ -1440,19 +1440,19 @@ void Exp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
 	return;			// Const and Terminal do not override this
 }
 void Unary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
-	subExp1->doSearch(search, subExp1, li, once);
+	doSearch(search, subExp1, li, once);
 }
 void Binary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
-	getSubExp1()->doSearch(search, subExp1, li, once);
+	doSearch(search, subExp1, li, once);
 	if (once && li.size()) return;
-	subExp2->doSearch(search, subExp2, li, once);
+	doSearch(search, subExp2, li, once);
 }
 void Ternary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
-	getSubExp1()->doSearch(search, subExp1, li, once);
+	doSearch(search, subExp1, li, once);
 	if (once && li.size()) return;
-	getSubExp2()->doSearch(search, subExp2, li, once);
+	doSearch(search, subExp2, li, once);
 	if (once && li.size()) return;
-	subExp3->doSearch(search, subExp3, li, once);
+	doSearch(search, subExp3, li, once);
 }
 
 
@@ -1473,13 +1473,10 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
 
 /*==============================================================================
  * FUNCTION:		Exp::searchReplaceAll
- * OVERVIEW:		Search for the given subexpression, and replace wherever
- *					  found
- * NOTE:			If the top level expression matches, something other than
- *					 "this" will be returned
- * NOTE:			It is possible with wildcards that in very unusual
- *					circumstances a replacement will be made to something that
- *					is already ;//deleted.
+ * OVERVIEW:		Search for the given subexpression, and replace wherever found
+ * NOTE:			If the top level expression matches, something other than "this" will be returned
+ * NOTE:			It is possible with wildcards that in very unusual circumstances a replacement will
+ *					be made to something that is already deleted.
  * NOTE:			Replacements are cloned. Caller to delete search and replace
  * PARAMETERS:		search:	 ptr to ptr to Exp we are searching for
  *					replace: ptr to Exp to replace it with
@@ -1487,15 +1484,14 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * NOTE:			change is ALWAYS assigned. No need to clear beforehand.
  * RETURNS:			the result (often this, but possibly changed)
  *============================================================================*/
-Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
-  bool once /* = false */ ) {
+Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change, bool once /* = false */ ) {
 	std::list<Exp**> li;
 	Exp* top = this;		// top may change; that's why we have to return it
 	doSearch(search, top, li, false);
 	std::list<Exp**>::iterator it;
 	for (it = li.begin(); it != li.end(); it++) {
 		Exp** pp = *it;
-		//if (*pp) ;//delete *pp;		 // Delete any existing
+		//if (*pp) //delete *pp;		 // Delete any existing
 		*pp = replace->clone();		// Do the replacement
 		if (once) {
 			change = true;
@@ -3735,10 +3731,11 @@ bool  FlagDef::accept(ExpVisitor* v) {
 	if (ret) ret = subExp1->accept(v);
 	return ret;
 }
-bool   RefExp::accept(ExpVisitor* v) {
+bool RefExp::accept(ExpVisitor* v) {
 	bool override, ret = v->visit(this, override);
 	if (override) return ret;
-	if (ret) ret = subExp1->accept(v); return ret;
+	if (ret) ret = subExp1->accept(v);
+	return ret;
 }
 bool Location::accept(ExpVisitor* v) {
 	bool override, ret = v->visit(this, override);
@@ -3929,8 +3926,10 @@ void Terminal::printx(int ind) {
 
 void RefExp::printx(int ind) {
 	std::cerr << std::setw(ind) << " " << operStrings[op] << " ";
-	std::cerr << "{" << std::dec << ((def == 0) ? 0 : def->getNumber()) <<
-	  "}\n" << std::flush;
+	std::cerr << "{";
+	if (def == 0) std::cerr << "NULL";
+	else std::cerr << std::hex << (unsigned)def << "=" << std::dec << def->getNumber();
+	std::cerr << "}\n" << std::flush;
 	child(subExp1, ind);
 }
 
@@ -3958,6 +3957,17 @@ void Exp::addUsedLocs(LocationSet& used) {
 Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
 	ExpSubscripter es(e, def);
 	return accept(&es);
+}
+
+// Subscript any occurrences of e with e{0} in this expression
+// Note: subscript with NULL, not implicit assignments as above
+Exp* Exp::expSubscriptValNull(Exp* e) {
+	return expSubscriptVar(e, NULL);
+}
+
+// Subscript all locations in this expression with their implicit assignments
+Exp* Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
+	return expSubscriptVar(new Terminal(opWild), NULL /* was NULL, NULL, cfg */);
 }
 
 class ConstMemo : public Memo {

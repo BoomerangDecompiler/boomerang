@@ -174,7 +174,7 @@ static Boomerang *get() {
     bool debugSwitch;
     bool noParameterNames;
     bool debugLiveness;
-    bool debugUnusedRets;
+    bool debugUnusedRetsAndParams;
     bool debugTA;
     std::vector<ADDRESS> entrypoints;
     std::vector<std::string> symbolFiles;

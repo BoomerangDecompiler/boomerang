@@ -49,5 +49,6 @@ class StatementTest : public CppUnit::TestCase {
 	void testSubscriptVars();
 	void testCallRefsFixer();
 	void testStripSizes();
+	void testFindConstants();
 };
 

@@ -91,52 +91,52 @@ virtual bool isSize()		const { return false; }
 // Return false if some info is missing, e.g. unknown sign, size or basic type
 virtual bool isComplete() {return true;}
 
-	// These replace type casts
-	VoidType	*asVoid();
-	FuncType	*asFunc();
-	BooleanType	*asBoolean();
-	CharType	*asChar();
-	IntegerType	*asInteger();
-	FloatType	*asFloat();
-	NamedType	*asNamed();
-	PointerType	*asPointer();
-	ArrayType	*asArray();
-	CompoundType *asCompound();
-	UnionType	*asUnion();
+		// These replace type casts
+		VoidType	*asVoid();
+		FuncType	*asFunc();
+		BooleanType	*asBoolean();
+		CharType	*asChar();
+		IntegerType	*asInteger();
+		FloatType	*asFloat();
+		NamedType	*asNamed();
+		PointerType	*asPointer();
+		ArrayType	*asArray();
+		CompoundType *asCompound();
+		UnionType	*asUnion();
 
-	// These replace calls to isNamed() and resolvesTo()
-	bool resolvesToVoid();
-	bool resolvesToFunc();
-	bool resolvesToBoolean();
-	bool resolvesToChar();
-	bool resolvesToInteger();
-	bool resolvesToFloat();
-	bool resolvesToPointer();
-	bool resolvesToArray();
-	bool resolvesToCompound();
-	bool resolvesToUnion();
+		// These replace calls to isNamed() and resolvesTo()
+		bool	resolvesToVoid();
+		bool	resolvesToFunc();
+		bool	resolvesToBoolean();
+		bool	resolvesToChar();
+		bool	resolvesToInteger();
+		bool	resolvesToFloat();
+		bool	resolvesToPointer();
+		bool	resolvesToArray();
+		bool	resolvesToCompound();
+		bool	resolvesToUnion();
 
-	// cloning
-virtual Type* clone() const = 0;
+		// cloning
+virtual Type*	clone() const = 0;
 
-	// Comparisons
+		// Comparisons
 virtual bool	operator==(const Type& other) const = 0;	// Considers sign
 virtual bool	operator!=(const Type& other) const;		// Considers sign
-//virtual bool	  operator-=(const Type& other) const = 0;	// Ignores sign
+//virtual bool	operator-=(const Type& other) const = 0;	// Ignores sign
 virtual bool	operator< (const Type& other) const = 0;	// Considers sign
 		bool	operator*=(const Type& other) const {		// Consider only
 					return id == other.id;}				 	// broad type
 virtual Exp		*match(Type *pattern);
-	// Merge one type with another, e.g. size16 with integer-of-size-0 -> int16
+		// Merge one type with another, e.g. size16 with integer-of-size-0 -> int16
 virtual Type*	mergeWith(Type* other) { assert(0); return 0; }
 
-	// Acccess functions
+		// Acccess functions
 virtual int		getSize() const = 0;
 virtual void	setSize(int sz) {assert(0);}
 
-	// Print and format functions
-	// Get the C type, e.g. "unsigned int". If not final, include comment
-	// for lack of sign information. When final, choose a signedness etc
+		// Print and format functions
+		// Get the C type, e.g. "unsigned int". If not final, include comment
+		// for lack of sign information. When final, choose a signedness etc
 virtual const char *getCtype(bool final = false) const = 0;
 		// Print in *i32* format
 		void	starPrint(std::ostream& os);
@@ -144,8 +144,8 @@ virtual const char *getCtype(bool final = false) const = 0;
 
 virtual std::string getTempName() const; // Get a temporary name for the type
 
-	// Clear the named type map. This is necessary when testing; the
-	// type for the first parameter to 'main' is different for sparc and pentium
+		// Clear the named type map. This is necessary when testing; the
+		// type for the first parameter to 'main' is different for sparc and pentium
 static	void	clearNamedTypes() { namedTypes.clear(); }
 
 		bool	isPointerToAlpha();
@@ -153,9 +153,10 @@ static	void	clearNamedTypes() { namedTypes.clear(); }
 		virtual Memo *makeMemo(int mId) { return new Memo(mId); }
 		virtual void readMemo(Memo *m, bool dec) { }
 
-				// For data-flow-based type analysis only: implement the meet operator
+		// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
 virtual Type*	meetWith(Type* other, bool& ch) = 0;
-		Type*	createUnion(Type* other);		// Create a union of this Type and other
+		// Create a union of this Type and other. Set ch true if any change
+		Type*	createUnion(Type* other, bool& ch);
 
 protected:
 	friend class XMLProgParser;
@@ -475,9 +476,9 @@ virtual bool	isCompound() const { return true; }
 virtual Type* clone() const;
 
 virtual bool	operator==(const Type& other) const;
-//virtual bool	  operator-=(const Type& other) const;
+//virtual bool	operator-=(const Type& other) const;
 virtual bool	operator< (const Type& other) const;
-virtual Exp *match(Type *pattern);
+virtual Exp		*match(Type *pattern);
 
 virtual int		getSize() const;
 
@@ -508,6 +509,7 @@ virtual bool isUnion() const { return true; }
 
 	void	addType(Type *n, const char *str);
 	int		getNumTypes() const { return types.size(); }
+	bool	findType(Type* ty);			// Return true if ty is already in the union
 	Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
 	Type	*getType(const char *nam);
 	const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
@@ -515,16 +517,16 @@ virtual bool isUnion() const { return true; }
 virtual Type* clone() const;
 
 virtual bool	operator==(const Type& other) const;
-//virtual bool	  operator-=(const Type& other) const;
+//virtual bool	operator-=(const Type& other) const;
 virtual bool	operator< (const Type& other) const;
-virtual Exp *match(Type *pattern);
+virtual Exp		*match(Type *pattern);
 
 virtual int		getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
-		virtual Memo *makeMemo(int mId);
-		virtual void readMemo(Memo *m, bool dec);
+virtual Memo	*makeMemo(int mId);
+virtual void	readMemo(Memo *m, bool dec);
 
 virtual Type*	meetWith(Type* other, bool& ch);
 

@@ -63,6 +63,7 @@ void StatementTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(testSubscriptVars);
 	MYTEST(testCallRefsFixer);
 	MYTEST(testStripSizes);
+	MYTEST(testFindConstants);
 }
 
 int StatementTest::countTestCases () const
@@ -1038,6 +1039,21 @@ void StatementTest::testAddUsedLocs () {
 	actual = ost8.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
+	// m[r28{0} - 4] := -
+	l.clear();
+	ImplicitAssign* ia = new ImplicitAssign(Location::memOf(
+		new Binary(opMinus,
+			new RefExp(
+				Location::regOf(28),
+				NULL),
+			new Const(4))));
+	std::ostringstream ost9;
+	ia->addUsedLocs(l);
+	l.print(ost9);
+	actual = ost9.str();
+	expected = "r28{0}\n";
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
 }
 
 /*==============================================================================
@@ -1232,9 +1248,9 @@ void StatementTest::testCallRefsFixer () {
 	// Find various needed statements
 	StatementList stmts;
 	proc->getStatements(stmts);
-	StatementList::iterator it;
-	it = stmts.begin();							// Statement 1
-	advance(it, 20-1);
+	StatementList::iterator it = stmts.begin();
+	while (!(*it)->isCall())
+		it++;
 	CallStatement* call = (CallStatement*)*it;	// Statement 20
 	call->setDestProc(proc);					// A recursive call
 	// std::cerr << "Call is " << call << "\n";
@@ -1288,5 +1304,29 @@ void StatementTest::testStripSizes () {
 	std::ostringstream ost;
 	ost << s;
 	actual = ost.str();
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+
+/*==============================================================================
+ * FUNCTION:		StatementTest::testFindConstants
+ * OVERVIEW:		Test the visitor code that finds constants
+ *============================================================================*/
+void StatementTest::testFindConstants () {
+	Statement* a = new Assign(
+		Location::regOf(24),
+		new Binary(opPlus,
+			new Const(3),
+			new Const(4)));
+	std::list<Const*> lc;
+	a->findConstants(lc);
+	std::list<Const*>::iterator it;
+	std::ostringstream ost1;
+	for (it = lc.begin(); it != lc.end(); ) {
+		ost1 << *it;
+		if (++it != lc.end())
+			ost1 << ", ";
+	}
+	std::string actual = ost1.str();
+	std::string expected("3, 4");
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 }

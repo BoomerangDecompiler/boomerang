@@ -224,42 +224,39 @@ virtual int getArity() {return 0;}		// Overridden for Unary, Binary, etc
 	// a list of variable bindings, otherwise returns NULL
 	virtual Exp *match(Exp *pattern);
 
-	//	//	//	//	//	//	//
-	//	Search and Replace	//
-	//	//	//	//	//	//	//
+		//	//	//	//	//	//	//
+		//	Search and Replace	//
+		//	//	//	//	//	//	//
 	
-	// Search for Exp *search in this Exp. If found, return true and return
-	// a ref to the matching expression in result (useful with wildcards).
-	virtual bool search(Exp* search, Exp*& result);
+		// Search for Exp *search in this Exp. If found, return true and return
+		// a ptr to the matching expression in result (useful with wildcards).
+virtual bool	search(Exp* search, Exp*& result);
 
-	// Search for Exp search in this Exp. For each found, add
-	// a ptr to the matching expression in result (useful with wildcards).	  
-	// Does NOT clear result on entry
-	bool	searchAll(Exp* search, std::list<Exp*>& result);
+		// Search for Exp search in this Exp. For each found, add
+		// a ptr to the matching expression in result (useful with wildcards).	  
+		// Does NOT clear result on entry
+		bool	searchAll(Exp* search, std::list<Exp*>& result);
 
-	// Search this Exp for *search; if found, replace with *replace
-	Exp* searchReplace (Exp* search, Exp* replace, bool& change);
+		// Search this Exp for *search; if found, replace with *replace
+		Exp*	searchReplace (Exp* search, Exp* replace, bool& change);
 
-	// Search *pSrc for *search; for all occurrences, replace with *replace
-	Exp* searchReplaceAll(Exp* search, Exp* replace, bool& change,
-		bool once = false);
+		// Search *pSrc for *search; for all occurrences, replace with *replace
+		Exp*	searchReplaceAll(Exp* search, Exp* replace, bool& change, bool once = false);
 
-	// Not for public use. Search for subexpression matches.
-		void doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
+		// Mostly not for public use. Search for subexpression matches.
+static	void	doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 
-	// As above.
-virtual void doSearchChildren(Exp* search, std::list<Exp**>& li,
-		  bool once);
+		// As above.
+virtual void	doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
-	//	//	//	//	//	//	//
-	//	  Sub expressions	//
-	//	//	//	//	//	//	//
+		//	//	//	//	//	//	//
+		//	  Sub expressions	//
+		//	//	//	//	//	//	//
 	
-	// These are here so we can (optionally) prevent code clutter.
-	// Using a *Exp (that is known to be a Binary* say), you can just
-	// directly call getSubExp2.
-	// However, you can still choose to cast from Exp* to Binary* etc.
-	// and avoid the virtual call
+		// These are here so we can (optionally) prevent code clutter.
+		// Using a *Exp (that is known to be a Binary* say), you can just
+		// directly call getSubExp2.
+		// However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
 virtual Exp*	getSubExp1() {return 0;}
 virtual Exp*	getSubExp2() {return 0;}
 virtual Exp*	getSubExp3() {return 0;}
@@ -270,8 +267,8 @@ virtual void	setSubExp1(Exp* e) {};
 virtual void	setSubExp2(Exp* e) {};
 virtual void	setSubExp3(Exp* e) {};
 
-	// Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
-virtual int getMemDepth() {return 0;}
+		// Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
+virtual int		getMemDepth() {return 0;}
 
 		//	//	//	//	//	//	//
 		//	Guarded assignment	//
@@ -338,7 +335,11 @@ virtual Exp*	accept(ExpModifier* v) = 0;
 		Exp*	stripRefs();			// Strip all references
 		Exp*	stripSizes();			// Strip all size casts
 		// Subscript all e in this Exp with statement def:
-		Exp*	expSubscriptVar(Exp* e, Statement* def);
+		Exp*	expSubscriptVar(Exp* e, Statement* def /*, Cfg* cfg */ );
+		// Subscript all e in this Exp with 0 (implicit assignments)
+		Exp*	expSubscriptValNull(Exp* e /*, Cfg* cfg */);
+		// Subscript all locations in this expression with their implicit assignments
+		Exp*	expSubscriptAllNull(/*Cfg* cfg*/);
 virtual Memo	*makeMemo(int mId) = 0;
 virtual void	readMemo(Memo *m, bool dec) = 0;
 
@@ -350,7 +351,7 @@ virtual	void	descendType(Type* parentType, bool& ch) {assert(0);}
 
 protected:
 		friend class XMLProgParser;
-};		// Class Exp
+};		// class Exp
 
 // Not part of the Exp class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Exp* p);	 // Print the Exp poited to by p
@@ -795,7 +796,7 @@ protected:
  * printed as the statement number for compactness
  *============================================================================*/
 class RefExp : public Unary {
-	Statement* def;				// The defining statement
+		Statement* def;				// The defining statement
 
 public:
 				// Constructor with expression (e) and statement defining it (def)
@@ -809,16 +810,19 @@ virtual bool	operator*=(Exp& o);
 
 virtual void	print(std::ostream& os);
 virtual void	printx(int ind);
-virtual int		getNumRefs() {return 1;}
-	Statement*	getRef() {return def;}
-	Exp*		addSubscript(Statement* def) {this->def = def; return this;}
-	void		setDef(Statement* def) {this->def = def;}
+//virtual int		getNumRefs() {return 1;}
+	Statement*	getRef() {return def;}		// Ugh should be called getDef()
+		Exp*	addSubscript(Statement* def) {this->def = def; return this;}
+		void	setDef(Statement* def) {this->def = def;}
 virtual Exp*	genConstraints(Exp* restrictTo);
 virtual Exp*	fromSSA(igraph& ig);
 	bool		references(Statement* s) {return def == s;}
 virtual Exp*	polySimplify(bool& bMod);
 virtual Type*	getType();
 virtual Exp		*match(Exp *pattern);
+		// Before type analysis, implicit definitions are NULL.
+		// During and after TA, they point to an implicit assignment statement.
+		bool	isImplicitDef() {return def == NULL || def->getKind() == STMT_IMPASSIGN;}
 
 	// Visitation
 virtual bool accept(ExpVisitor* v);
@@ -833,7 +837,7 @@ virtual void	descendType(Type* parentType, bool& ch);
 protected:
 	RefExp() : Unary(opSubscript), def(NULL) { }
 	friend class XMLProgParser;
-};	// Class RefExp
+};	// class RefExp
 
 #if 0
 /*==============================================================================
@@ -973,6 +977,6 @@ virtual void	readMemo(Memo *m, bool dec);
 protected:
 	friend class XMLProgParser;
 				Location(OPER op) : Unary(op), proc(NULL), ty(NULL) { }
-};	// Class Location
+};	// class Location
 	
 #endif // __EXP_H__

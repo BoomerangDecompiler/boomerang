@@ -38,12 +38,9 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "type.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "rtl.h"
-#endif
-
 #include <sstream>
+
+#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
 
 extern char *operStrings[];
 
@@ -71,8 +68,7 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel)
 // expression if necessary
 // uns = cast operands to unsigned if necessary
 
-void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
-	bool uns /* = false */ ) {
+void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns /* = false */ ) {
 
 	if (exp == NULL) return;
 
@@ -83,7 +79,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
 	
 	OPER op = exp->getOper();
 	// First, a crude cast if unsigned
-	if (uns && op != opIntConst) {
+	if (uns && op != opIntConst && !DFA_TYPE_ANALYSIS) {
 		str << "(unsigned)";
 		curPrec = PREC_UNARY;
 	}
@@ -1154,7 +1150,8 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last)
 	appendTypeIdent(s, type, name);
 	Exp *e = m_proc->getLocalExp(name);
 	if (e) {
-		if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
+	  //if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
+		if (e->getOper() == opSubscript && ((RefExp*)e)->getRef()->isImplicit() &&
 			(e->getSubExp1()->getOper() == opParam ||
 			 e->getSubExp1()->getOper() == opGlobal)) {
 			s << " = ";

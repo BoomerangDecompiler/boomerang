@@ -29,7 +29,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugGen(false),
     maxMemDepth(99), debugSwitch(false),
-    noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
+    noParameterNames(false), debugLiveness(false), debugUnusedRetsAndParams(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
@@ -79,48 +79,47 @@ void Boomerang::helpcmd() {
 
 void Boomerang::help() {
 	std::cerr << "--: no effect (used for testing)\n";
-	std::cerr << "-da: debug - print AST before code generation\n";
-	std::cerr << "-dc: debug - debug switch (case) analysis\n";
-	std::cerr << "-dd: debug - debug decoder to stdout\n";
-	std::cerr << "-dg: debug - debug code generation\n";
-	std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
-	std::cerr << "-dp: debug - debug proof engine\n";
-	std::cerr << "-dr: debug - debug removing unused Returns\n";
-	std::cerr << "-dt: debug - debug type analysis\n";
-	std::cerr << "-du: debug - debug removing unused statements\n";
+	std::cerr << "-da: Debug - print AST before code generation\n";
+	std::cerr << "-dc: debug - Debug switch (Case) analysis\n";
+	std::cerr << "-dd: debug - Debug Decoder to stdout\n";
+	std::cerr << "-dg: debug - Debug code Generation\n";
+	std::cerr << "-dl: debug - Debug Liveness (from SSA) code\n";
+	std::cerr << "-dp: debug - Debug proof engine\n";
+	std::cerr << "-dr: debug - Debug Removing unused returns and parameters\n";
+	std::cerr << "-dt: debug - Debug Type analysis\n";
+	std::cerr << "-du: debug - Debug removing Unused statements\n";
 	std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
 	std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
-	std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
-	std::cerr << "-h: this help\n";
-	std::cerr << "-ic: decode through type 0 indirect calls\n";
-	std::cerr << "-m <num>: max memory depth\n";
-	std::cerr << "-nb: no simplifications for branches\n";
-	std::cerr << "-nd: no (reduced) dataflow analysis\n";
-	std::cerr << "-nD: no decompilation (at all!)\n";
-	std::cerr << "-nl: no creation of local variables\n";
+	std::cerr << "-g <dot file>: Generate a dotty graph of the program's CFG\n";
+	std::cerr << "-h: this Help\n";
+	std::cerr << "-ic: decode through type 0 Indirect Calls\n";
+	std::cerr << "-m <num>: max Memory depth\n";
+	std::cerr << "-nb: No simplifications for Branches\n";
+	std::cerr << "-nd: No (reduced) Dataflow analysis\n";
+	std::cerr << "-nD: No Decompilation (at all!)\n";
+	std::cerr << "-nl: No creation of Local variables\n";
 	std::cerr << "-nm: don't decode the 'main' procedure\n";
-	std::cerr << "-nn: no removal of null and unused statements\n";
-	std::cerr << "-np: no replacement of expressions with parameter names\n";
-	std::cerr << "-nr: no removal of unnedded labels\n";
-	std::cerr << "-nP: no promotion of signatures (at all!)\n";
-	std::cerr << "-nR: no removal of unused returns\n";
-	std::cerr << "-o <output path>: where to generate output (defaults to "
-		"./output/)\n";
+	std::cerr << "-nn: No removal of Null and unused statements\n";
+	std::cerr << "-np: No replacement of expressions with Parameter names\n";
+	std::cerr << "-nr: No Removal of unnedded labels\n";
+	std::cerr << "-nP: No Promotion of signatures (at all!)\n";
+	std::cerr << "-nR: No removal of unused Returns\n";
+	std::cerr << "-o <Output path>: where to generate output (defaults to ./output/)\n";
 	std::cerr << "-O: handle Overlapped registers (for X86 only)\n";
-	std::cerr << "-p <num>: only do num propogations\n";
+	std::cerr << "-p <num>: only do num Propogations\n";
 //	std::cerr << "-pa: only propagate if can propagate to all\n";
-	std::cerr << "-r: print rtl for each proc to log before code generation\n";
-	std::cerr << "-s <addr> <name>: define a symbol\n";
-	std::cerr << "-sf <filename>: read a symbol/signature file\n";
-	std::cerr << "-t: trace every instruction decoded\n";
+	std::cerr << "-r: print Rtl for each proc to log before code generation\n";
+	std::cerr << "-s <addr> <name>: define a Symbol\n";
+	std::cerr << "-sf <filename>: read a Symbol/signature File\n";
+	std::cerr << "-t: Trace every instruction decoded\n";
 	std::cerr << "-Tc: use old constraint-based Type analysis\n";
-	std::cerr << "-Td: use data-flow-based Type analysis\n";
-	std::cerr << "-x: dump xml files\n";
-	std::cerr << "-LD: load before decompile (<program> becomes xml input file)\n";
-	std::cerr << "-SD: save before decompile\n";
+	std::cerr << "-Td: use Data-flow-based type analysis\n";
+	std::cerr << "-x: dump Xml files\n";
+	std::cerr << "-LD: Load before Decompile (<program> becomes xml input file)\n";
+	std::cerr << "-SD: Save before Decompile\n";
 	std::cerr << "-k: command mode, for available commands see -h cmd\n";
 	std::cerr << "-P <path>: Path to Boomerang files, defaults to where you run Boomerang from\n";
-	std::cerr << "-v: verbose\n";
+	std::cerr << "-v: Verbose\n";
 	exit(1);
 }
 		
@@ -696,7 +695,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 						debugProof = true;
 						break;
 					case 'r':		// debug counting unused Returns
-						debugUnusedRets = true;
+						debugUnusedRetsAndParams = true;
 						break;
 					case 't':		// debug type analysis
 						debugTA = true;

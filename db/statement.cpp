@@ -268,13 +268,12 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 			LocationSet::iterator rl;
 			for (rl = refs.begin(); rl != refs.end(); rl++) {
 				Exp* e = *rl;
-				if (!e->getNumRefs() == 1) continue;
+				if (!e->isSubscript()) continue;
 				// Can propagate TO this (if memory depths are suitable)
-				Statement* def;
-				def = ((RefExp*)e)->getRef();
-				if (def == NULL)
-					// Can't propagate statement "0"
+				if (((RefExp*)e)->isImplicitDef())
+					// Can't propagate statement "0" (implicit assignments)
 					continue;
+				Statement* def = ((RefExp*)e)->getRef();
 				if (def == this)
 					// Don't propagate to self! Can happen with %pc's
 					continue;
@@ -362,10 +361,8 @@ bool Statement::doPropagateTo(int memDepth, Statement* def, bool& convert) {
             Boomerang::get()->numToPropagate--;
     }
 
-    if (VERBOSE) {
-        LOG << "Propagating " << def << "\n"
-            << "       into " << this << "\n";
-    }
+    if (VERBOSE)
+        LOG << "Propagating " << def << "\n" << "       into " << this << "\n";
     convert |= replaceRef(def);
     // simplify is costly... done once above
     // simplify();
@@ -902,7 +899,7 @@ Statement* BranchStatement::clone() {
 	return ret;
 }
 
-// visit this rtl
+// visit this stmt
 bool BranchStatement::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
@@ -1244,7 +1241,7 @@ Statement* CaseStatement::clone() {
 	return ret;
 }
 
-// visit this rtl
+// visit this stmt
 bool CaseStatement::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
@@ -1388,14 +1385,18 @@ Exp *CallStatement::getProven(Exp *e) {
 	return NULL;
 }
 
+// Substitute the various components of expression e with the appropriate actual arguments
+// Used in fixCallRefs (via the CallRefsFixer). Locations defined in this call are replaced with
+// their proven values, which are in terms of the initial values at the start of the call, which
+// are the actual arguments.
 Exp *CallStatement::substituteParams(Exp *e)
 {
 	e = e->clone();
 	LocationSet locs;
 	e->addUsedLocs(locs);
 	LocationSet::iterator xx;
-	for (xx = locs.begin(); xx != locs.end(); xx++) {
-		Exp *r = findArgument(*xx);
+	for (xx = locs.begin(); xx != locs.end(); xx++) {		// For each used location in e
+		Exp *r = findArgument(*xx);							// See if it is an argument of the call
 		if (r == NULL) continue;
 		bool change;
 		e = e->searchReplaceAll(*xx, r, change);
@@ -1403,9 +1404,11 @@ Exp *CallStatement::substituteParams(Exp *e)
 	return e->simplifyArith()->simplify();
 }
 
+// Look up e in the signature of the caller.
+// Return the actual argument, or failing that the implicit actual argument, or NULL.
 Exp *CallStatement::findArgument(Exp *e) {
 	int n = -1;
-	if (!m_isComputed && procDest) {
+	if (!m_isComputed && procDest) {			// ? What if we find a destination for a computed call?
 		n = procDest->getSignature()->findParam(e);
 		if (n != -1)
 			return arguments[n];
@@ -1418,8 +1421,7 @@ Exp *CallStatement::findArgument(Exp *e) {
 			LOG << "eep. " << implicitArguments.size() << " args ";
 			if (procDest) {
 				LOG << procDest->getName() << " ";
-				LOG << "(" << procDest->getSignature()->getNumParams()
-						  << " params) ";
+				LOG << "(" << procDest->getSignature()->getNumParams() << " params) ";
 			} else
 				LOG << "(no dest) ";
 			for (int i = 0; i < (int)implicitArguments.size(); i++)
@@ -1564,11 +1566,6 @@ Exp* CallStatement::getReturnLoc() {
 	return NULL;
 }
 
-Type* CallStatement::getLeftType() {
-	if (procDest == NULL)
-		return new VoidType();
-	return procDest->getSignature()->getReturnType();
-}
 #endif
 
 /*==============================================================================
@@ -1675,6 +1672,7 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  *============================================================================*/
 void CallStatement::print(std::ostream& os /*= cout*/) {
 	os << std::setw(4) << std::dec << number << " ";
+	// os << "*" << returnType << "* ";
  
 	os << "CALL ";
 	if (procDest)
@@ -1767,7 +1765,7 @@ Statement* CallStatement::clone() {
 	return ret;
 }
 
-// visit this rtl
+// visit this stmt
 bool CallStatement::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
@@ -1817,6 +1815,8 @@ void CallStatement::simplify() {
 	for (i = 0; i < implicitArguments.size(); i++) {
 		implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
 	}
+
+	if (DFA_TYPE_ANALYSIS) return;
 	for (i = 0; i < returns.size(); i++) {
 		
 		if (returns[i] == NULL)
@@ -2376,7 +2376,20 @@ void CallStatement::processConstants(Prog *prog) {
 		}
 	}
 
-	// hack
+	ellipsisProcessing(prog);
+}
+
+void setSigParam(Signature* sig, Type* ty, bool isScanf) {
+	if (isScanf) ty = new PointerType(ty);
+	sig->addParameter(ty);
+}
+
+// This function has two jobs. One is to truncate the list of arguments based on the format string.
+// The second is to add parameter types to the signature.
+// If -Td is used, type analysis will be rerun with these changes.
+bool CallStatement::ellipsisProcessing(Prog* prog) {
+
+	// Hack to remove locals that really aren't used
 	if (getDestProc() && getDestProc()->isLib()) {
 		int sp = proc->getSignature()->getStackRegister(prog);
 		ignoreReturn(Location::regOf(sp));
@@ -2395,19 +2408,6 @@ void CallStatement::processConstants(Prog *prog) {
 		}
 	}
 
-	ellipsisProcessing();
-}
-
-void setSigParam(Signature* sig, Type* ty, bool isScanf) {
-	if (isScanf) ty = new PointerType(ty);
-	sig->addParameter(ty);
-}
-
-// This function has two jobs. One is to truncate the list of arguments based on the format string.
-// The second is to add parameter types to the signature.
-// If -Td is used, type analysis will be rerun with these changes.
-bool CallStatement::ellipsisProcessing() {
-	// This code was in CallStatement::doReplaceRef()
 	if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
 		return false;
 	// functions like printf almost always have too many args
@@ -2454,6 +2454,7 @@ if (def == NULL) continue;
 	char *p = formatStr;
 	while ((p = strchr(p, '%'))) {
 		p++;				// Point past the %
+		bool veryLong = false;			// %lld or %L
 		do {
 			ch = *p++;		// Skip size and precisionA
 			switch (ch) {
@@ -2467,13 +2468,20 @@ if (def == NULL) continue;
 					// flag. Ignore
 					continue;
 				case 'h': case 'l':
-					// size of half or long. Argument is still one word. Ignore.
+					// size of half or long. Argument is usually still one word. Ignore.
+					// Exception: %llx
 					// TODO: handle architectures where l implies two words
 					// TODO: at least h has implications for scanf
+					if (*p == 'l') {
+						// %llx
+						p++;		// Skip second l
+						veryLong = true;
+					}
 					continue;
 				case 'L':
 					// long. TODO: handle L for long doubles.
 					// n++;		// At least chew up one more parameter so later types are correct
+					veryLong = true;
 					continue;
 				default:
 					if ('0' <= ch && ch <= '9') continue;	// width or precision
@@ -2485,13 +2493,13 @@ if (def == NULL) continue;
 			n++;
 		switch (ch) {
 			case 'd': case 'i':							// Signed integer
-				setSigParam(sig, new IntegerType(), isScanf);
+				setSigParam(sig, new IntegerType(veryLong ? 64 : 32), isScanf);
 				break;
 			case 'u': case 'x': case 'X': case 'o':		// Unsigned integer
 				setSigParam(sig, new IntegerType(32, -1), isScanf);
 				break;
 			case 'f': case 'g': case 'G': case 'e': case 'E':	// Various floating point formats
-				setSigParam(sig, new FloatType(64), isScanf);	// Note: may not be 64 bits for some archs
+				setSigParam(sig, new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits for some archs
 				break;
 			case 's':									// String
 				setSigParam(sig, new PointerType(new CharType), isScanf);
@@ -2520,7 +2528,7 @@ if (def == NULL) continue;
  * PARAMETERS:		 None
  * RETURNS:			 <nothing>
  *============================================================================*/
-ReturnStatement::ReturnStatement() : nBytesPopped(0), retAddr(NO_ADDRESS) {
+ReturnStatement::ReturnStatement() : nBytesPopped(0), type(new VoidType), retAddr(NO_ADDRESS) {
 	kind = STMT_RET;
 }
 
@@ -2550,7 +2558,7 @@ Statement* ReturnStatement::clone() {
 	return ret;
 }
 
-// visit this rtl
+// visit this stmt
 bool ReturnStatement::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
@@ -2595,6 +2603,7 @@ void ReturnStatement::fromSSAform(igraph& ig) {
 
 void ReturnStatement::print(std::ostream& os /*= cout*/) {
 	os << std::setw(4) << std::dec << number << " ";
+	// os << "*" << type << "* ";
 	os << "RET ";
 	for (unsigned i = 0; i < returns.size(); i++) {
 		if (i != 0)
@@ -2903,6 +2912,9 @@ Assign::Assign(Assign& o) : Assignment(lhs->clone()) {
 	if (o.type)	 type  = o.type->clone();  else type  = NULL;
 	if (o.guard) guard = o.guard->clone(); else guard = NULL;
 }
+ImplicitAssign::ImplicitAssign(ImplicitAssign& o) : Assignment(lhs->clone()) {kind = STMT_IMPASSIGN;}
+// The first virtual function (here the destructor) can't be in statement.h file for gcc
+ImplicitAssign::~ImplicitAssign() { }
 
 Statement* Assign::clone() {
 	Assign* a = new Assign(type == NULL ? NULL : type->clone(),
@@ -2920,11 +2932,19 @@ Statement* PhiAssign::clone() {
 	return pa;
 }
 
+Statement* ImplicitAssign::clone() {
+	ImplicitAssign* ia = new ImplicitAssign(type, lhs);
+	return ia;
+}
+
 // visit this Statement
 bool Assign::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
 bool PhiAssign::accept(StmtVisitor* visitor) {
+	return visitor->visit(this);
+}
+bool ImplicitAssign::accept(StmtVisitor* visitor) {
 	return visitor->visit(this);
 }
 
@@ -3233,7 +3253,7 @@ bool Assign::doReplaceRef(Exp* from, Exp* to) {
 		Exp* subsub1 = ((Unary*)lhs)->getSubExp1();
 		((Unary*)lhs)->setSubExp1ND(subsub1->searchReplaceAll(from, to, changeleft));
 	}
-	//assert(changeright || changeleft);	// HACK!
+	//assert(changeright || changeleft);	// Check this
 	if (!changeright && !changeleft) {
 		// Could be propagating %flags into %CF
 		Exp* baseFrom = ((RefExp*)from)->getSubExp1();
@@ -3541,7 +3561,7 @@ void Statement::clearConscripts() {
 // Cast the constant num to be of type ty. Return true if a change made
 bool Statement::castConst(int num, Type* ty) {
 	ExpConstCaster ecc(num, ty);
-	StmtConstCaster scc(&ecc);
+	StmtModifier scc(&ecc);
 	accept(&scc);
 	return ecc.isChanged();
 }
@@ -3575,6 +3595,14 @@ bool Assign::accept(StmtExpVisitor* v) {
 }
 
 bool PhiAssign::accept(StmtExpVisitor* v) {
+	bool override;
+	bool ret = v->visit(this, override);
+	if (override) return ret;
+	if (ret && lhs) ret = lhs->accept(v->ev);
+	return ret;
+}
+
+bool ImplicitAssign::accept(StmtExpVisitor* v) {
 	bool override;
 	bool ret = v->visit(this, override);
 	if (override) return ret;
@@ -3629,7 +3657,8 @@ bool CallStatement::accept(StmtExpVisitor* v) {
 	  it++)
 		ret = (*it)->accept(v->ev);
 	for (it = returns.begin(); ret && it != returns.end(); it++)
-		ret = (*it)->accept(v->ev);
+		if (*it)			// Can be NULL now to line up with other returns
+			ret = (*it)->accept(v->ev);
 	return ret;
 }
 
@@ -3674,6 +3703,16 @@ bool PhiAssign::accept(StmtModifier* v) {
 	return true;
 }
 
+bool ImplicitAssign::accept(StmtModifier* v) {
+	bool recur;
+	v->visit(this, recur);
+	v->mod->clearMod();
+	if (recur) lhs = lhs->accept(v->mod);
+	if (VERBOSE && v->mod->isMod())
+		LOG << "ImplicitAssign changed: now " << this << "\n";
+	return true;
+}
+
 
 bool GotoStatement::accept(StmtModifier* v) {
 	bool recur;
@@ -3715,7 +3754,7 @@ bool CallStatement::accept(StmtModifier* v) {
 	  it++)
 		*it = (*it)->accept(v->mod);
 	for (it = returns.begin(); recur && it != returns.end(); it++)
-		if (*it)
+		if (*it)			// Can be NULL now; just ignore
 			*it = (*it)->accept(v->mod);
 	return true;
 }
@@ -3725,7 +3764,7 @@ bool ReturnStatement::accept(StmtModifier* v) {
 	v->visit(this, recur);
 	std::vector<Exp*>::iterator it;
 	for (it = returns.begin(); recur && it != returns.end(); it++)
-		*it = (*it)->accept(v->mod);
+		if (*it) *it = (*it)->accept(v->mod);
 	return true;
 }
 
@@ -3755,8 +3794,8 @@ void Statement::addUsedLocs(LocationSet& used, bool final /* = false */) {
 }
 
 // For all expressions in this Statement, replace any e with e{def}
-void Statement::subscriptVar(Exp* e, Statement* def) {
-	ExpSubscripter es(e, def);
+void Statement::subscriptVar(Exp* e, Statement* def /*, Cfg* cfg */) {
+	ExpSubscripter es(e, def /*, cfg*/);
 	StmtSubscripter ss(&es);
 	accept(&ss);
 }
@@ -3852,7 +3891,7 @@ void PhiAssign::simplify() {
 		bool onlyOneNotThis = true;
 		Statement *notthis = (Statement*)-1;
 		for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-			if (*uu == NULL || !(*uu)->isPhi() || (*uu) != this)
+			if (*uu == NULL || (*uu)->isImplicit() || !(*uu)->isPhi() || (*uu) != this)
 				if (notthis != (Statement*)-1) {
 					onlyOneNotThis = false;
 					break;
@@ -3881,8 +3920,7 @@ void PhiAssign::simplifyRefs() {
 			if (((RefExp*)(*uu)->getRight())->getRef() == this) {
 				// ... then *uu can be removed
 				if (VERBOSE)
-					LOG << "removing statement " << *uu << " from phi at " 
-						<< number << "\n";
+					LOG << "removing statement " << *uu << " from phi at " << number << "\n";
 				uu = stmtVec.remove(uu);
 				continue;
 			}
@@ -3902,4 +3940,65 @@ void PhiAssign::simplifyRefs() {
 	}
 }
 
+static Exp* regOfWild = Location::regOf(new Terminal(opWild));
+static Exp* regOfWildRef = new RefExp(regOfWild, (Statement*)-1);
 
+void Assignment::regReplace(UserProc* proc) {
+	if (! (*lhs == *regOfWild)) return;
+	std::list<Exp**> li;
+	Exp* tmp = new RefExp(lhs, this);
+	// Make a temporary reference for the LHS
+	li.push_front(&tmp);
+	proc->regReplaceList(li);
+	lhs = tmp;
+}
+void Assign::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, rhs, li, false);
+	proc->regReplaceList(li);
+	// Now process the LHS
+	Assignment::regReplace(proc);
+}
+void GotoStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, pDest, li, false);
+	proc->regReplaceList(li);
+}
+void BranchStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, pDest, li, false);
+	Exp::doSearch(regOfWildRef, pCond, li, false);
+	proc->regReplaceList(li);
+}
+void CaseStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, pSwitchInfo->pSwitchVar, li, false);
+	proc->regReplaceList(li);
+}
+void CallStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, pDest, li, false);
+	std::vector<Exp*>::iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++)
+		Exp::doSearch(regOfWildRef, *it, li, false);
+	for (it = implicitArguments.begin(); it != implicitArguments.end(); it++)
+		Exp::doSearch(regOfWildRef, *it, li, false);
+	proc->regReplaceList(li);
+	// Note: returns are "on the left hand side", and hence are never subscripted. So wrap in a RefExp
+	for (it = returns.begin(); it != returns.end(); it++) {
+		if (*it && **it == *regOfWild) {
+			std::list<Exp**> rli;
+			Exp* tmp = new RefExp(*it, this);
+			rli.push_front(&tmp);
+			proc->regReplaceList(rli);
+			*it = tmp;
+		}
+	}
+}
+void ReturnStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	std::vector<Exp*>::iterator it;
+	for (it = returns.begin(); it != returns.end(); it++)
+		Exp::doSearch(regOfWildRef, *it, li, false);
+	proc->regReplaceList(li);
+}

@@ -21,6 +21,7 @@ public:
 	virtual Log &operator<<(double d);
 	virtual Log &operator<<(ADDRESS a);
 	virtual Log &operator<<(LocationSet *l);
+			Log &operator<<(std::string& s) {return operator<<(s.c_str());}
 	virtual ~Log() {};
 };
 
