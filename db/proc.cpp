@@ -2249,10 +2249,11 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
+                // If a pointer type and e is of the form m[sp{0} - K]:
                 if (ty && ty->resolvesToPointer() && 
-                    e->getOper() == opMinus && 
-                    *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
-                    e->getSubExp2()->getOper() == opIntConst) {
+                      e->getOper() == opMinus && 
+                      *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL)
+                      && e->getSubExp2()->getOper() == opIntConst) {
                     Exp *olde = e->clone();
                     Type *pty = ty->asPointer()->getPointsTo();
                     if (pty->resolvesToArray() && 
@@ -2283,11 +2284,12 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
         }
 
     // look for array locals
+    // l = m[(sp{0} + WILD1) - K2]
     Exp *l = Location::memOf(new Binary(opMinus, 
                 new Binary(opPlus,
                    new RefExp(Location::regOf(sp), NULL),
                    new Terminal(opWild)),
-                new Terminal(opWild)));
+                new Terminal(opWildIntConst)));
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
@@ -2295,31 +2297,31 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
         for (std::list<Exp*>::iterator it1 = results.begin(); 
                                        it1 != results.end(); it1++) {
             Exp *result = *it1;
-            if (result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-                Location *arr = Location::memOf(new Binary(opMinus, 
-                              new RefExp(Location::regOf(sp), NULL),
-                              result->getSubExp1()->getSubExp2()->clone()));
-                int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
-                arr->setProc(this);
-                arr->setType(new ArrayType(new IntegerType(), n/4));
-                if (VERBOSE)
-                    LOG << "found a local array using " << n << " bytes\n";
-                Exp *replace = Location::memOf(new Binary(opPlus,
-                    new Unary(opAddrOf, arr),
-                    result->getSubExp1()->getSubExp1()->getSubExp2()->clone()),
-                      this);
-                if (VERBOSE)
-                    LOG << "replacing " << result << " with " << replace <<
-                        " in " << s << "\n";
-                s->searchAndReplace(result->clone(), replace);
-            }
+            // arr = m[sp{0} - K2]
+            Location *arr = Location::memOf(new Binary(opMinus, 
+                          new RefExp(Location::regOf(sp), NULL),
+                          result->getSubExp1()->getSubExp2()->clone()));
+            int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
+            arr->setProc(this);
+            arr->setType(new ArrayType(new IntegerType(), n/4));
+            if (VERBOSE)
+                LOG << "found a local array using " << n << " bytes\n";
+            Exp *replace = Location::memOf(new Binary(opPlus,
+                new Unary(opAddrOf, arr),
+                result->getSubExp1()->getSubExp1()->getSubExp2()->clone()),
+                  this);
+            if (VERBOSE)
+                LOG << "replacing " << result << " with " << replace <<
+                    " in " << s << "\n";
+            s->searchAndReplace(result->clone(), replace);
         }
     }
 
     // replace expressions in regular statements with locals
+    // l = m[sp{0} - K]
     l = Location::memOf(new Binary(opMinus, 
                 new RefExp(Location::regOf(sp), NULL),
-                new Terminal(opWild)));
+                new Terminal(opWildIntConst)));
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;
@@ -2327,18 +2329,16 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
         for (std::list<Exp*>::iterator it1 = results.begin(); 
                                        it1 != results.end(); it1++) {
             Exp *result = *it1;
-            if (result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-                Type *ty = result->getType();
-                if (ty == NULL && lastPass)
-                    ty = new IntegerType();
-                Exp *e = getLocalExp(result, ty);
-                if (e) {
-                    Exp* search = result->clone();
-                    if (VERBOSE)
-                        LOG << "replacing " << search << " with " << e << " in " 
-                            << s << "\n";
-                    s->searchAndReplace(search, e);
-                }
+            Type *ty = result->getType();
+            if (ty == NULL && lastPass)
+                ty = new IntegerType();
+            Exp *e = getLocalExp(result, ty);
+            if (e) {
+                Exp* search = result->clone();
+                if (VERBOSE)
+                    LOG << "replacing " << search << " with " << e << " in " 
+                        << s << "\n";
+                s->searchAndReplace(search, e);
             }
         }
         s->simplify();
