@@ -3175,6 +3175,7 @@ void UserProc::typeAnalysis(Prog* prog) {
                 if (ty->isFloat()) {
                     // Need heavy duty cast here
                     con->setFlt(*(float*)&val);
+                    con->setOper(opFltConst);
                 } else if (ty->isPointer() &&
                   ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
                     // Convert to a string

@@ -3332,9 +3332,10 @@ Exp* Const::genConstraints(Exp* result) {
         }
         if (match) {
             // This constant may require a cast or a change of format.
-            // So we generate a constraint
+            // So we generate a constraint.
+            // Don't clone 'this', so it can be co-erced after type analysis
             return new Binary(opEquals,
-                new Unary(opTypeOf, this->clone()),
+                new Unary(opTypeOf, this),
                 result->clone());
         } else
             // Doesn't match
