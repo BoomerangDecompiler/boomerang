@@ -116,8 +116,6 @@ CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
     ${TYPEOBJS}
-#EXPAT_INCLUDE = ../../expat-1.95.7/lib     # See other reference
-EXPAT_LIB = ../../expat-1.95.7/.libs/libexpat.a
 
 lib/libBinaryFile.so:
 	cd loader && make
@@ -128,7 +126,7 @@ bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 
 boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 	# mv lib/libBinaryFile.so lib/BinaryFile.dll    # Cygwin only
-	$(CC) -o $@ driver.o $(STATIC_OBJS) ${EXPAT_LIB} -lBinaryFile $(RUNPATH) \
+	$(CC) -o $@ driver.o $(STATIC_OBJS) -lexpat -lBinaryFile $(RUNPATH) \
 	  -Llib -lgc -ldl
 	# mv lib/BinaryFile.dll libBinaryFile.so        # Cygwin only
 
@@ -176,8 +174,6 @@ db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 db/StatementTest.o:			EXTRA = $(BOOMSET) -Ifrontend
 db/CfgTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 type/TypeTest.o:            EXTRA = $(BOOMSET) -Ifrontend
-# expat.h is installed into /usr/include, so the below is not needed
-#db/xmlprogparser.o:			EXTRA = -I$(EXPAT_INCLUDE)
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
