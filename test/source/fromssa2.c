@@ -1,3 +1,6 @@
+/* Compile with
+gcc -O4 -o fromssa2 -fno-unroll-loops test/source/fromssa2.c
+*/
 void main() {
 int a, x;
 a = 0;
