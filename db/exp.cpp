@@ -2583,8 +2583,6 @@ void AssignExp::doReplaceRef(Exp* from, Exp* to) {
         std::cerr << "Exp::doReplaceRef: could not change " << from << " to " <<
           to << " in " << (Exp*)this << " !!\n";
     // simplify the expression
-if (number == 27)
-  std::cerr << "HACK!\n";
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
     simplify();
