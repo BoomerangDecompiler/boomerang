@@ -1052,8 +1052,11 @@ std::set<UserProc*>* UserProc::decompile() {
     if (!Boomerang::get()->noParameterNames) {
         for (int i = maxDepth; i >= 0; i--) {
             replaceExpressionsWithParameters(i);
+            replaceExpressionsWithLocals();
             trimParameters();
         }
+        if (signature->getNumReturns() == 1)
+            cfg->setReturnVal(signature->getReturnExp(0)->clone());
         if (VERBOSE) {
             std::cerr << "===== After replacing params =====\n";
             print(std::cerr, true);
@@ -1311,8 +1314,9 @@ void UserProc::replaceExpressionsWithGlobals() {
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
         bool change;
-        Exp *e = cfg->getReturnVal()->clone();
+        Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
+        e = e->clone();
         if (VERBOSE) {
             std::cerr << "return value: ";
             e->print(std::cerr);
@@ -1352,9 +1356,8 @@ void UserProc::replaceExpressionsWithSymbols() {
           it1 != symbolMap.end(); it1++) {
             bool ch = s->searchAndReplace((*it1).first, (*it1).second);
             if (ch && VERBOSE) {
-                Exp* ee = dynamic_cast<Exp*>(s);
-                if (ee) std::cerr << "Std stmt: replace " << (*it1).first <<
-                  " with " << (*it1).second << " result " << ee << std::endl;
+                std::cerr << "std stmt: replace " << (*it1).first <<
+                  " with " << (*it1).second << " result " << s << std::endl;
             }
         }
     }
@@ -1362,7 +1365,7 @@ void UserProc::replaceExpressionsWithSymbols() {
     // replace expressions with symbols in the return value
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
-#if 0
+#if 1
         Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
         e = e->clone();
@@ -1375,7 +1378,7 @@ void UserProc::replaceExpressionsWithSymbols() {
             std::cerr << "  after: " << e << std::endl;
         }
         if (change) cfg->setReturnVal(e->clone());
-#endif
+#else
         int n = signature->getNumReturns();
         for (int j=0; j < n; j++) {
             Exp* e = signature->getReturnExp(j)->clone();
@@ -1388,6 +1391,7 @@ void UserProc::replaceExpressionsWithSymbols() {
             }
             if (change) signature->setReturnExp(j, e);
         }
+#endif
     }
 }
 
@@ -1406,25 +1410,33 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                          new Const((char*)signature->getParamName(i))));
         }
     }
+}
 
-#if 0
-    // replace expressions with parameters in the return value
-    for (int i = 0; i < signature->getNumParams(); i++) { 
-        Exp *e = cfg->getReturnVal();
-        if (e == NULL) break;
-        e = e->clone();
-        bool change = false;
-        RefExp *r = new RefExp(signature->getParamExp(i), NULL);
-        e = e->searchReplaceAll(r, new Unary(opParam, 
-                         new Const((char*)signature->getParamName(i))), change);
-        if (change) cfg->setReturnVal(e->clone());
+void UserProc::replaceExpressionsWithLocals() {
+    StatementList stmts;
+    getStatements(stmts);
+
+    // replace expressions in regular statements with locals
+    StmtListIter it;
+    int sp = signature->getStackRegister(prog);
+    Exp *l = new Unary(opMemOf, new Binary(opMinus, 
+                new RefExp(Unary::regOf(sp), NULL),
+                new Terminal(opWild)));
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        Exp *result;
+        bool ch = s->search(l, result);
+        if (ch && 
+            result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+            Exp *e;
+            if (symbolMap.find(result) == symbolMap.end()) {
+                e = newLocal(new IntegerType());
+                symbolMap[result->clone()] = e;
+            } else {
+                e = symbolMap[result];
+            }
+            s->searchAndReplace(result, e);
+        }
     }
-#else
-    // replace expressions with parameters in the return values. This may be
-    // needed if a return location is say m[esi] and esi is a parameter
-    // Or of course if something (e.g. a register) is a parameter and returned
-    signature->fixReturnsWithParameters();
-#endif
 }
 
 bool UserProc::nameStackLocations() {
@@ -1445,12 +1457,7 @@ bool UserProc::nameStackLocations() {
                     memref->print(std::cerr);
                     std::cerr << std::endl;
                 }
-                std::ostringstream os;
-                os << "local" << locals.size();
-                std::string name = os.str();
-                symbolMap[memref->clone()] = 
-                    new Unary(opLocal, new Const(strdup(name.c_str())));
-                locals[name] = new IntegerType();
+                symbolMap[memref->clone()] = newLocal(new IntegerType());
             }
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())
@@ -1478,12 +1485,7 @@ bool UserProc::nameRegisters() {
             if (symbolMap.find(memref) == symbolMap.end()) {
                 if (VERBOSE)
                     std::cerr << "register found: " << memref << std::endl;
-                std::ostringstream os;
-                os << "local" << locals.size();
-                std::string name = os.str();
-                symbolMap[memref->clone()] = 
-                  new Unary(opLocal, new Const(strdup(name.c_str())));
-                locals[name] = new IntegerType();
+                symbolMap[memref->clone()] = newLocal(new IntegerType());
             }
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())->

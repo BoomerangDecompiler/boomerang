@@ -465,6 +465,7 @@ public:
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters(int depth);   // must be in SSA form
+    void replaceExpressionsWithLocals();
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Statement*, int> RefCounter;

@@ -1874,6 +1874,8 @@ void CallStatement::setSigArguments() {
  * RETURNS:       ptr to the location that will be used to hold the return value
  *============================================================================*/
 Exp* CallStatement::getReturnLoc() {
+    if (returnLoc == NULL && returns.size() == 1)
+        returnLoc = returns[0]->clone();
     return returnLoc;
 }
 
@@ -1906,9 +1908,18 @@ bool CallStatement::returnsStruct() {
 
 bool CallStatement::search(Exp* search, Exp*& result) {
     result = NULL;
+    if (returnLoc && *returnLoc == *search) {
+        result = returnLoc;
+        return true;
+    }
     if (returnLoc && returnLoc->search(search, result)) return true;
-    for (unsigned i = 0; i < arguments.size(); i++)
+    for (unsigned i = 0; i < arguments.size(); i++) {
+        if (*arguments[i] == *search) {
+            result = arguments[i];
+            return true;
+        }
         if (arguments[i]->search(search, result)) return true;
+    }
     return false;
 }
 
@@ -1921,7 +1932,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-    if (returnLoc != NULL)
+    if (getReturnLoc() != NULL)
         returnLoc = returnLoc->searchReplaceAll(search, replace, change);
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
