@@ -1446,9 +1446,8 @@ void CallStatement::addArgument(Exp *e)
 
 Type *CallStatement::getArgumentType(int i) {
 	assert(i < (int)arguments.size());
-	if (procDest)
-		return procDest->getSignature()->getParamType(i);
-	return NULL;
+	if (signature == NULL) return NULL;
+	return signature->getParamType(i);
 }
 
 /*==============================================================================
