@@ -712,8 +712,9 @@ void Prog::insertArguments(StatementSet& rs) {
 }
 
 void Prog::decodeExtraEntrypoint(ADDRESS a) { 
-    if (findProc(a) == NULL) {
-        pFE->decode(this, a);
+    Proc* p = findProc(a);
+    if (p == NULL || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
+        pFE->decodeOnly(this, a);
         analyse();
     }
 }
@@ -730,6 +731,8 @@ void Prog::decompile() {
         entryProc = (UserProc*) *pp;
         if (entryProc == NULL) continue;    // Probably not needed
         if (entryProc->isLib()) continue;
+        if (!entryProc->isDecoded())
+            continue;       // Can happen with -E
         if (VERBOSE)
             LOG << "Starting with " << entryProc->getName() << "\n";
         entryProc->decompile();

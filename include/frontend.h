@@ -144,8 +144,11 @@ virtual int     getInst(int addr);
      */
     Prog *decode(bool decodeMain = true);
 
-    /* Decode starting at a given address in a given program. */
+    /* Decode all procs starting at a given address in a given program. */
     void decode(Prog *prog, ADDRESS a);
+
+    /* Decode one proc starting at a given address in a given program. */
+    void decodeOnly(Prog *prog, ADDRESS a);
 
     /* Decode a fragment of a procedure, e.g. for each destination of a
       switch statement */

@@ -280,6 +280,7 @@ int Boomerang::decompile(const char *fname)
         return 1;
     }
 
+    // Add symbols from -s switches
     for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
          it != symbols.end(); it++) {
         fe->AddSymbol((*it).first, (*it).second.c_str());
@@ -289,21 +290,23 @@ int Boomerang::decompile(const char *fname)
         std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);
 
+    // Delay symbol files to now, since need Prog* prog
     for (unsigned i = 0; i < symbolFiles.size(); i++) {
         std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
         prog->readSymbolFile(symbolFiles[i].c_str());
     }
     
-    // this causes any undecoded userprocs to be decoded
-    std::cerr << "decoding anything undecoded...\n";
-    fe->decode(prog, NO_ADDRESS);
+    if (!noDecodeChildren) {   // MVE: Not sure if this is right...
+        // this causes any undecoded userprocs to be decoded
+        std::cerr << "decoding anything undecoded...\n";
+        fe->decode(prog, NO_ADDRESS);
+    }
 
-    if (entrypoints.size()) {
-        for (unsigned i = 0; i < entrypoints.size(); i++) {
-            std::cerr<< "decoding extra entrypoint " << std::hex <<
-              entrypoints[i] << "\n";
-            prog->decodeExtraEntrypoint(entrypoints[i]);
-        }
+    // Entry points from -e (and -E) switch(es)
+    for (unsigned i = 0; i < entrypoints.size(); i++) {
+        std::cerr<< "decoding extra entrypoint " << std::hex <<
+          entrypoints[i] << "\n";
+        prog->decodeExtraEntrypoint(entrypoints[i]);
     }
 
     std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";

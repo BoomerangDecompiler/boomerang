@@ -227,6 +227,17 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
     prog->wellForm();
 }
 
+// a should be the address of a UserProc
+void FrontEnd::decodeOnly(Prog *prog, ADDRESS a) {
+    UserProc* p = (UserProc*)prog->setNewProc(a);
+    assert(!p->isLib());
+    std::ofstream os;
+    if (processProc(p->getNativeAddress(), p, os))
+        p->setDecoded();
+    prog->wellForm();
+}
+
+
 void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a) {
     std::ofstream os;
     processProc(a, proc, os, true);
