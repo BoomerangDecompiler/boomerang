@@ -1514,52 +1514,63 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 
 ////////////////////////////////////////////////////
 
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, int& localNum, UserProc* proc) {
-	// For each new use
+// Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
+// Also check for type conflicts if DFA_TYPE_ANALYSIS
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserProc* proc) {
+	// For each location to be considered
 	LocationSet::iterator uu;
 	for (uu = ls.begin(); uu != ls.end(); uu++) {
 		Exp* u = (Exp*)*uu;
-		// Only interested in subscripted vars
-		if (!u->isSubscript()) continue;
-		// Interference if we can find a live variable which differs
-		// only in the reference
+		if (!u->isSubscript()) continue;			// Only interested in subscripted vars
+		RefExp* r = (RefExp*)u;
+		// Interference if we can find a live variable which differs only in the reference
 		Exp *dr;
-		if (liveLocs.findDifferentRef((RefExp*)u, dr)) {
+		if (liveLocs.findDifferentRef(r, dr)) {
 			// We have an interference. Record it, but only if new
 			igraph::iterator gg = ig.find(u);
 			if (gg == ig.end()) {
-				ig[u->clone()] = localNum++;
-				std::ostringstream sto;
-				sto << "local" << localNum-1;
-				std::string local = sto.str();
-				Type *ty = u->getType();
-				if (ty)
-					proc->setLocalType(local.c_str(), ty);
-				proc->setLocalExp(local.c_str(), u);
+				// The interference is between dr (from liveLocs) and u. If it happens that u is implicit, then
+				// swap u and dr (so u{0} is the thing that is live now, and dr gets the new variable)
+				if (r->isImplicitDef()) {
+					if (DEBUG_LIVENESS)
+						LOG << "Swapping " << dr << " and " << u << " so as not to rename an implicit\n";
+					liveLocs.remove(dr);
+					liveLocs.insert(u);
+					Exp* temp = dr;
+					dr = u;
+					u = temp;
+					r = (RefExp*)u;
+				}
+				Type *ty;
+				if (ADHOC_TYPE_ANALYSIS)
+					ty = u->getType();
+				else
+					ty = r->getDef()->getTypeFor(r->getSubExp1());
+				Exp* local = proc->newLocal(ty);
+				ig[u->clone()] = local;
+				// We could make this new local a symbol and get rid of all the fromSSA[form] functions!
+				// proc->setLocalExp(((Const*)local->getSubExp1())->getStr(), u);
 				if (VERBOSE || DEBUG_LIVENESS) {
-					LOG << "Interference of " << dr << " with " << u << ", assigned " << local.c_str();
+					LOG << "Interference of " << dr << " with " << u << ", assigned " << local;
 					if (ty)
 						LOG << " with type " << ty->getCtype();
 					LOG << "\n";
 				}
 			}
-		// Don't add the interfering variable to liveLocs, otherwise
-		// we could register other interferences that will not exist
-		// once this one is renamed
+		// Don't add the interfering variable to liveLocs, otherwise we could register other interferences that
+		// will not exist once this one is renamed
 		} else
-			// Add the uses one at a time. Note: don't use makeUnion,
-			// because then we don't discover interferences from the
-			// same statement, e.g.
-			// blah := r24{2} + r24{3}
+			// Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
+			// from the same statement, e.g.  blah := r24{2} + r24{3}
 			liveLocs.insert(u);
 	}
 }
 
-bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
+bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 	// Start with the liveness at the bottom of the BB
 	LocationSet liveLocs, phiLocs;
 	getLiveOut(liveLocs, phiLocs);
-	checkForOverlap(liveLocs, phiLocs, ig, localNum, myProc);
+	checkForOverlap(liveLocs, phiLocs, ig, myProc);
 	// For each RTL in this BB
 	std::list<RTL*>::reverse_iterator rit;
 	for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
@@ -1574,18 +1585,15 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
 			defs.addSubscript(s /* , myProc->getCFG() */);
 			// Definitions kill uses
 			liveLocs.makeDiff(defs);
-			// Phi functions are a special case. The operands of phi functions
-			// are uses, but they don't interfere with each other (since they
-			// come via different BBs). However, we don't want to put these
-			// uses into liveLocs, because then the livenesses will flow to
-			// all predecessors. Only the appropriate livenesses from the
-			// appropriate phi parameter should flow to the predecessor.
-			// This is done in getLiveOut()
+			// Phi functions are a special case. The operands of phi functions are uses, but they don't interfere
+			// with each other (since they come via different BBs). However, we don't want to put these uses into
+			// liveLocs, because then the livenesses will flow to all predecessors. Only the appropriate livenesses
+			// from the appropriate phi parameter should flow to the predecessor. This is done in getLiveOut()
 			if (s->isPhi()) continue;
 			// Check for livenesses that overlap
 			LocationSet uses;
 			s->addUsedLocs(uses);
-			checkForOverlap(liveLocs, uses, ig, localNum, myProc);
+			checkForOverlap(liveLocs, uses, ig, myProc);
 			if (DEBUG_LIVENESS)
 				LOG << " ## Liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
 		}
@@ -1599,8 +1607,8 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum, UserProc* myProc) {
 		return false;
 }
 
-// Locations that are live at the end of this BB are the union of the
-// locations that are live at the start of its successors
+// Locations that are live at the end of this BB are the union of the locations that are live at the start of its
+// successors
 void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 	liveout.clear();
 	for (unsigned i = 0; i < m_OutEdges.size(); i++) {
@@ -1615,20 +1623,17 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 		std::list<Statement*>& stmts = phiRtl->getList();
 		std::list<Statement*>::iterator it;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
-			// Only interested in phi assignments. Note that it is possible
-			// that some phi assignments have been converted to ordinary
-			// assignments. So the below is a continue, not a break.
+			// Only interested in phi assignments. Note that it is possible that some phi assignments have been
+			// converted to ordinary assignments. So the below is a continue, not a break.
 			if (!(*it)->isPhi()) continue;
 			PhiAssign* pa = (PhiAssign*)*it;
-			// Get the jth operand to the phi function; it has a use
-			// from BB *this
-			Statement* def = pa->getAt(j);
+			// Get the jth operand to the phi function; it has a use from BB *this
+			Statement* def = pa->getStmtAt(j);
 			RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
 			liveout.insert(r);
 			phiLocs.insert(r);
 			if (DEBUG_LIVENESS)
-				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " <<
-					getLowAddr() << "\n";
+				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " << getLowAddr() << "\n";
 		}
 	}
 }
