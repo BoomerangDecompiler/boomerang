@@ -61,6 +61,8 @@ public:
     const char *dotFile;
     int numToPropagate;
     bool noPromote;
+    bool propOnlyToAll;
+    bool recursionBust;
     bool debugDataflow;
     bool debugPrintReach;
     bool debugPrintSSA;

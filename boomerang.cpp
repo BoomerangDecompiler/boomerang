@@ -13,7 +13,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
     noDataflow(false), noDecompile(false), noDecompileUp(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
-    noPromote(false),
+    noPromote(false), propOnlyToAll(false), recursionBust(false),
     debugDataflow(false), debugPrintReach(false), debugPrintSSA(false)
 {
 }
@@ -32,7 +32,9 @@ void Boomerang::help() {
     std::cerr << "-h: this help\n";
     std::cerr << "-v: verbose\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
-    std::cerr << "-r: print rtl for each proc to stderr before code generation\n";
+    std::cerr << "-r: print rtl for each proc to stderr before code generation"
+                    "\n";
+    std::cerr << "-rb: attempt Mike's \"recursion buster\" hack\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-nb: no simplications for branches\n";
     std::cerr << "-nn: no removal of null and dead statements\n";
@@ -43,6 +45,7 @@ void Boomerang::help() {
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-p num: only do num propogations\n";
+    std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-dd: debug - debug global dataflow\n";
     std::cerr << "-dr: debug - print reaching and available definitions\n";
@@ -77,13 +80,22 @@ int Boomerang::commandLine(int argc, const char **argv) {
         switch (argv[i][1]) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
-            case 'r': printRtl = true; break;
+            case 'r':
+                if (argv[1][2] == 'b')
+                    recursionBust = true;
+                else
+                    printRtl = true; break;
             case 't': traceDecoder = true; break;
             case 'g': 
                 dotFile = argv[++i];
                 break;
             case 'p':
-                sscanf(argv[++i], "%i", &numToPropagate);
+                if (argv[i][2] == 'a') {
+                    propOnlyToAll = true;
+                    std::cerr << " * * Warning! -pa is not implemented yet!\n";
+                }
+                else
+                    sscanf(argv[++i], "%i", &numToPropagate);
                 break;
             case 'n':
                 switch(argv[i][2]) {
