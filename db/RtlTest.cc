@@ -71,7 +71,10 @@ void RtlTest::testAppend () {
     std::string actual(str(ost));
     std::string expected("00000000 *32* r[8] := r[9] + 99\n");
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-    delete e;
+    // No! appendExp does not copy the expression, so deleting the RTL will
+    // delete the expression(s) in it.
+    // Not sure if that's what we want...
+    // delete e;
 }
 
 /*==============================================================================
