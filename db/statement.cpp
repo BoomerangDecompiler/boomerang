@@ -2678,7 +2678,7 @@ void BoolStatement::setDest(std::list<Statement*>* stmts) {
 // Assign //
 //  //  //  //
 
-Assign::Assign() {
+Assign::Assign() : lhs(NULL), rhs(NULL), type(NULL), guard(NULL) {
     setKind(STMT_ASSIGN);
 }
 Assign::Assign(Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), type(NULL), guard(NULL)
