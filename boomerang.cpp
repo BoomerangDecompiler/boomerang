@@ -175,16 +175,11 @@ int Boomerang::commandLine(int argc, const char **argv) {
         prog->decompile();
     }
 
+    // Note: printing of dotty file has been moved into Prog::decompile()
+    // (want global edges, and no stmts deleted yet)
+
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
-
-    if (dotFile) {
-        // Note: relies on interprocedural edges and Cfg->Ordering
-        // So this must come after decompilation and after code generation
-        // (or at least after the call to Cfg::setTimeStamps)
-        std::cerr << "generating dot file..." << std::endl;
-        prog->generateDotFile();
-    }
 
     return 0;
 }
