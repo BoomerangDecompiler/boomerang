@@ -120,8 +120,10 @@ bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 	  $(RUNPATH) -Llib -ldl -lcppunit -lgc
 
 boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
+	# mv lib/libBinaryFile.so lib/BinaryFile.dll    # Cygwin only
 	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) \
-	  -Llib -ldl -lgc
+	  -Llib -lgc -ldl
+	# mv lib/BinaryFile.dll libBinaryFile.so        # Cygwin only
 
 db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
