@@ -982,16 +982,14 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     start = pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
     
-    return start; 
-
-    // this pattern sux
-
     int instCount = 100;
     int conseq = 0;
     ADDRESS addr = start;
         
     // Look for 3 calls in a row in the first 100 instructions, with
     // no other instructions between them. This is the "windows" pattern
+    // Another windows pattern: call to GetModuleHandleA followed by
+    // a push of eax and then the call to main.
     // Or a call to __libc_start_main
     ADDRESS dest;
     do {
@@ -999,11 +997,58 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         CallStatement* cs = NULL;
         if (inst.rtl->getList().size())
             cs = (CallStatement*)(inst.rtl->getList().back());
+        if (cs && cs->getKind() == STMT_CALL &&
+            cs->getDest()->getOper() == opMemOf &&
+            cs->getDest()->getSubExp1()->getOper() == opIntConst &&
+            pBF->IsDynamicLinkedProcPointer(((Const*)cs->getDest()
+                      ->getSubExp1())->getAddr()) &&
+            !strcmp(pBF->GetDynamicProcName(((Const*)cs->getDest()
+                        ->getSubExp1())->getAddr()), "GetModuleHandleA")) {
+#if 0
+            std::cerr << "consider " << std::hex << addr << " " <<
+                pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())
+                      ->getAddr()) << std::endl;
+#endif
+            int oNumBytes = inst.numBytes;
+            inst = decodeInstruction(addr-2);  // should be 6a 00
+            if (inst.valid && inst.rtl->getNumStmt() == 2) {
+                Assign* a = dynamic_cast<Assign*>(inst.rtl->elementAt(1));
+                if (a && a->getRight()->isIntConst() && 
+                    ((Const*)a->getRight())->getInt() == 0) {
+#if 0
+                    std::cerr << "param is 0.. good" << std::endl;
+#endif
+                    inst = decodeInstruction(addr + oNumBytes);
+                    if (inst.valid && inst.rtl->getNumStmt() == 2) {
+                        Assign* a = dynamic_cast<Assign*>
+                                        (inst.rtl->elementAt(1));
+                        if (a && *a->getRight() == *Unary::regOf(24)) {
+#if 0
+                            std::cerr << "is followed by push eax.. "
+                                      << "good" << std::endl;
+#endif
+                            inst = decodeInstruction(addr + oNumBytes + 
+                                                  inst.numBytes);
+                            if (inst.rtl->getList().size()) {
+                                CallStatement *toMain = 
+                                    dynamic_cast<CallStatement*>(inst.rtl
+                                                            ->getList().back());
+                                if (toMain && toMain->getFixedDest() 
+                                                            != NO_ADDRESS) {
+                                    gotMain = true;
+                                    return toMain->getFixedDest();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if ((cs && cs->getKind() == STMT_CALL) &&
           ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
-            if (++conseq == 3) {
+            if (++conseq == 3 && 0) { // this isn't working
                 // Success. Return the target of the last call
-	            gotMain = true;
+	        gotMain = true;
                 return cs->getFixedDest();
             }
             if (pBF->SymbolByAddress(dest) &&
