@@ -206,10 +206,8 @@ Xd_ is any of  [ mfcr mfmsr ],
 
 mfsr is ab_dx & B = 0 & Rc = 0 & SRz = 0 & Xo1 = 595
 
-Xsabx_ is any of [ and andc eqv nand nor  or orc sld slw srad sraw srd srw
-xor ],
- which is Xo1 = [   28  60  284  476 124 444 412  27  24  794  792 539 536 316 ]
- & ab_dx
+Xsabx_ is any of [ and andc eqv nand nor  or orc sld slw srad sraw srd srw xor ],
+ which is Xo1 = [   28  60  284  476 124 444 412  27  24  794  792 539 536 316 ] & ab_dx
 
 Xsab0_ is any of [ ecowx stbux stbx stdux stdx
                     sthbrx sthux sthx stswx stwbrx stwux stwx ],
@@ -333,10 +331,8 @@ sradi is  ab_dx  & Xo2 = 413 # split sh field
 
 ## XO-Form
 
-XO_ is any of   [ add addc adde divd divdu divw divwu mulld mullw subf
-subfc subfe ],
- which is Xo9 = [ 266  10   138  489  457   491  459   233   235   40    8
-136  ]
+XO_ is any of   [ add addc adde divd divdu divw divwu mulld mullw subf subfc subfe ],
+ which is Xo9 = [ 266  10   138  489  457   491  459   233   235   40    8   136  ]
  & ab_dx
 
 XOo_ is any of  [ mulhd mulhdu mulhw mulhwu ],

@@ -705,35 +705,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					// Stop decoding sequentially
 					sequentialDecode = false;
 
-#if 0
-					if (pProc->getTheReturnAddr() == NO_ADDRESS) {
-
-						// Add the RTL to the list
-						BB_rtls->push_back(pRtl);
-						// Create the basic block
-						pBB = pCfg->newBB(BB_rtls, RET, 0);
-
-						pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
-
-						// If this ret pops anything other than the return
-						// address, this information can be useful in the proc
-						int popped = ((ReturnStatement*)s)->getNumBytesPopped(); 
-						if (popped != 0)
-							// This also gives us information about the calling
-							// convention
-							; //pProc->setBytesPopped(popped);
-					} else {
-						ADDRESS retAddr = pProc->getTheReturnAddr();
-						std::list<Statement*> *stmt_list = new std::list<Statement*>;
-						stmt_list->push_back(new GotoStatement(retAddr));
-						BB_rtls->push_back(new RTL(uAddr, stmt_list));
-						targetQueue.visit(pCfg, retAddr, pBB);
-						pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
-						pCfg->addOutEdge(pBB, retAddr, true);
-					}
-#else
 					pBB = createReturnBlock(pProc, BB_rtls, pRtl);
-#endif
 
 					// Create the list of RTLs for the next basic block and
 					// continue with the next instruction.

@@ -71,12 +71,30 @@ SUBFLAGSX(result, op1, op2) {
 	*1*  %XER@[29:29] := %XERCA
 };
 
+SUBFLAGS0(result) {
+	*1* %CR0@[0:0] := %XERSO
+	*1* %CR0@[1:1] := [result = 0?1:0]	
+	*1* %CR0@[2:2] := [result > 0?1:0]
+	*1* %CR0@[3:3] := [result < 0?1:0]
+};
+
+SUBFLAGSX0(result, op1, op2) {
+	*1*  %XERCA := (~(op1@[31:31]) & (op2@[31:31])) | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+	*1*  %XER@[29:29] := %XERCA
+	*1* %CR0@[0:0] := %XERSO
+	*1* %CR0@[1:1] := [result = 0?1:0]	
+	*1* %CR0@[2:2] := [result > 0?1:0]
+	*1* %CR0@[3:3] := [result < 0?1:0]
+};
+
 SETFLAGS0(rd) {
 	*1* %CR0@[0:0] := %XERSO			# Note: these are non IBM bit numbers; LT is most significant bit (PPC bit 0)
 	*1* %CR0@[1:1] := [rd = 0?1:0]	
 	*1* %CR0@[2:2] := [rd > 0?1:0]
 	*1* %CR0@[3:3] := [rd < 0?1:0]
 };
+
+
 
 SUBFLAGSNL(op1, op2, crfd) {
 	# Set flags in Logical (unsigned) fashion
@@ -191,6 +209,18 @@ SUBFE	 	rd, ra, rb						*32* rd := rb + %XERCA - ra;
 SUBFIC		rd, ra, simm					*32* rd := simm - ra
 											SUBFLAGSX(rd, simm, ra);
 
+SUBFC		rd, ra, rb						*32* rd := rb - ra
+											SUBFLAGSX(rd, rb, ra);
+
+SUBFCQ		rd, ra, rb						*32* rd := rb - ra
+											SUBFLAGSX0(rd);
+
+SUBFCO		rd, ra, rb						*32* rd := rb - ra
+											SUBFLAGSX(rd, rb, ra);		# Also supposed to set overflow bits
+
+SUBFCOQ		rd, ra, rb						*32* rd := rb - ra
+											SUBFLAGSX0(rd, rb, ra);		# Also supposed to set overflow bits
+
 NOP											_;
 
 
@@ -234,6 +264,15 @@ NLOGDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 LOGC[IDX]		rd, ra, rb				*32* rd := ra LOGCOP[IDX] (~rb);
 LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
+
+# Shifts
+SHIFTS_DOT	:= {"SLWq", "SRWq"};
+SHIFTS		:= {"SLW",	"SRW", SHIFTS_DOT};
+SHIFT_OP	:= {"<<", ">>", "<<", ">>"};
+
+SHIFTS[IDX]		Rd, Rs, uimm			*32* Rd := Rs SHIFT_OP[IDX] uimm;
+
+SHIFTS_DOT[IDX]	Rd, Rs, uimm			SETFLAGS0(Rd);
 
 
 
