@@ -173,7 +173,9 @@ db/prog.o: include/prog.h
 db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
 db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
-db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h
+db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h \
+    include\exp.h include\types.h include\rtl.h include\proc.h include\prog.h \
+    include\util.h
 db/rtl.o: include/rtl.h include/exp.h include/operator.h
 db/hrtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
     include/cfg.h include/signature.h
