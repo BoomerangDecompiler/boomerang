@@ -41,6 +41,7 @@
 #include "proc.h"           // For Proc::setTailCaller()
 #include "prog.h"           // For findProc()
 #include "util.h"
+#include "hllcode.h"
 
 void delete_lrtls(std::list<RTL*>* pLrtl);
 void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
@@ -649,12 +650,7 @@ bool Cfg::isIncomplete(ADDRESS uAddr)
 
 void Cfg::sortByAddress()
 {
-#ifndef WIN32
     m_listBB.sort(BasicBlock::lessAddress);
-#else
-	// dont want to implement this yet.
-	assert(false);
-#endif
 }
 
 /*==============================================================================
@@ -2051,5 +2047,12 @@ void Cfg::structure()
     structConds();
     structLoops();
     checkConds();
+}
+
+void Cfg::removeUnneededLabels(HLLCode *hll)
+{
+    for (unsigned int i = 0; i < Ordering.size(); i++)
+        if (!Ordering[i]->hllLabel)
+            hll->RemoveLabel(Ordering[i]->ord);
 }
 

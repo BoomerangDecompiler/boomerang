@@ -72,7 +72,7 @@ BasicBlock::BasicBlock()
     m_returnVal(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
-traversed(UNTRAVERSED), hllLabel(false), labelStr(0), 
+traversed(UNTRAVERSED), hllLabel(false),
 indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
 condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
 usType(Structured) 
@@ -132,7 +132,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 // From Doug's code
 ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), 
 numForwardInEdges(bb.numForwardInEdges), traversed(bb.traversed), 
-hllLabel(bb.hllLabel), labelStr(bb.labelStr), indentLevel(bb.indentLevel), 
+hllLabel(bb.hllLabel), indentLevel(bb.indentLevel), 
 immPDom(bb.immPDom), loopHead(bb.loopHead), caseHead(bb.caseHead), 
 condFollow(bb.condFollow), loopFollow(bb.loopFollow), 
 latchNode(bb.latchNode), sType(bb.sType), usType(bb.usType) 
@@ -166,7 +166,7 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
     m_returnVal(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
-traversed(UNTRAVERSED), hllLabel(false), labelStr(0), 
+traversed(UNTRAVERSED), hllLabel(false),
 indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
 condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
 usType(Structured) 
@@ -1021,352 +1021,6 @@ bool BasicBlock::hasBackEdgeTo(BasicBlock* dest) {
     return dest == this || dest->isAncestorOf(this);
 }
 
-bool BasicBlock::allParentsTraversed() {
-    for (int i = 0; i < m_iNumInEdges; i++)
-        if (!m_InEdges[i]->m_iTraversed && m_InEdges[i]->hasBackEdgeTo(this))
-            return false;
-    return true;
-}
-
-// generate code for the body of this BB
-void BasicBlock::generateBodyCode(HLLCode &hll, bool dup) {
-    if (!dup)
-        hll.AddLabel(this); 
-    if (m_pRtls)
-        for (std::list<RTL*>::iterator it = m_pRtls->begin();
-          it != m_pRtls->end(); it++) 
-            (*it)->generateCode(hll, this);
-}
-
-
-// Generate code for this BB, belonging to the loop specified by latch
-// (initially NULL) 
-void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond) {
-    if (hll.gotoSetContains(this) && !isLatchNode() && 
-      ((latch && this == latch->m_loopHead->m_loopFollow) ||
-        !allParentsTraversed())
-    ) {
-        hll.AddGoto(this, this);
-        return;
-    } else if (hll.followSetContains(this)) {
-        if (this != hll.getEnclFollow()) {
-            hll.AddGoto(this, this);
-        }
-        return;
-    }
-
-    if (m_iTraversed) {
-//      assert(m_sType == Loop && m_lType == PostTested && m_latchNode == this);
-        return;
-    }
-    m_iTraversed = true;
-
-    if (isLatchNode()) {
-        // Some stuff about indentation level.. this is a little too language
-        // specific, so I need to abstract this - trent.
-        generateBodyCode(hll); // or generate a goto
-        return;
-    }
-
-    if (m_structType == NONE && m_iNumOutEdges > 1) {
-        // we know it has to be a conditional
-        m_structType = IFGOTO;
-        m_condFollow = m_OutEdges[1];
-    }
-
-    switch(loopCond ? m_loopCondType : m_structType) {
-        case PRETESTLOOP:
-            // add the follow of the loop (if it exists) to the follow set
-            if (m_loopFollow)
-                hll.addtoFollowSet(m_loopFollow);
-
-            assert(m_latchNode->m_OutEdges.size() == 1);
-            // add anything before the loop test
-            generateBodyCode(hll);
-            // add the header
-            hll.AddPretestedLoopHeader(this, getCond());
-            // add the code for the body of the loop
-            getLoopBody()->generateCode(hll, m_latchNode);
-            // add the code for the latch if not already added
-            if (!m_latchNode->isTraversed()) {
-                m_latchNode->setTraversed(true);
-                m_latchNode->generateBodyCode(hll);
-            }
-            // add the stuff before the loop again (code duplication, yum)
-            generateBodyCode(hll, true);
-            // close the loop
-            hll.AddPretestedLoopEnd(this);
-
-            // write the code for the follow of the loop (if it exists)
-            if (m_loopFollow) {
-                // remove the follow from the follow set
-                hll.removeLastFollow();
-
-                if (!m_loopFollow->isTraversed())
-                    m_loopFollow->generateCode(hll, latch);
-                else
-                    hll.AddGoto(this, m_loopFollow);
-            }
-            break;
-        case POSTTESTLOOP:
-            // add the follow of the loop (if it exists) to the follow set
-            if (m_loopFollow)
-                hll.addtoFollowSet(m_loopFollow);
-
-            // add the header
-            hll.AddPosttestedLoopHeader(this);
-            // ensure there is a conditional if more than one out edge
-            if (m_OutEdges.size() == 2 && m_loopCondType == NONE) {
-                m_loopCondType = IFGOTO;
-            }
-            // add code for the conditional (if any)
-            if (m_loopCondType != NONE) {
-                // a conditional inside a loop is a pain
-                setTraversed(false);
-                generateCode(hll, m_latchNode, true);
-            } else {
-                // add code for loop body
-                generateBodyCode(hll);
-                getLoopBody()->generateCode(hll, m_latchNode);
-            }
-
-            // add the code for the latch if not already added
-            if (!m_latchNode->isTraversed()) {
-                m_latchNode->setTraversed(true);
-                m_latchNode->generateBodyCode(hll);
-            }
-            // close the loop
-            hll.AddPosttestedLoopEnd(this, getCond());              
-
-            // write the code for the follow of the loop (if it exists)
-            if (m_loopFollow) {
-                // remove the follow from the follow set
-                hll.removeLastFollow();
-
-                if (!m_loopFollow->isTraversed())
-                    m_loopFollow->generateCode(hll, latch);
-                else
-                    hll.AddGoto(this, m_loopFollow);
-            }
-            break;
-        case ENDLESSLOOP:
-            // add the follow of the loop (if it exists) to the follow set
-            if (m_loopFollow)
-                hll.addtoFollowSet(m_loopFollow);
-            // add the header
-            hll.AddEndlessLoopHeader(this);
-            // add code for the conditional (if any)
-            if (m_loopCondType != NONE) {
-                // a conditional inside a loop is a pain
-                setTraversed(false);
-                generateCode(hll, m_latchNode, true);
-            } else {
-                // add code for loop body
-                generateBodyCode(hll);
-                getLoopBody()->generateCode(hll, m_latchNode);
-            }
-            // add the code for the latch if not already added
-            if (!m_latchNode->isTraversed()) {
-                m_latchNode->setTraversed(true);
-                m_latchNode->generateBodyCode(hll);
-            }
-            // close the loop
-            hll.AddEndlessLoopEnd(this);
-
-            // write the code for the follow of the loop (if it exists)
-            if (m_loopFollow) {
-                // remove the follow from the follow set
-                hll.removeLastFollow();
-
-                if (!m_loopFollow->isTraversed())
-                    m_loopFollow->generateCode(hll, latch);
-                else
-                    hll.AddGoto(this, m_loopFollow);
-            }
-            break;
-        case JUMPINOUTLOOP:
-            break;
-        case JUMPINTOCASE:
-            break;
-        case IFGOTO:
-            // add code for the header
-            generateBodyCode(hll);
-            // add the if header
-            hll.AddIfCondHeader(this, getCond());
-            // ensure that the follow is one of the out edges
-            if (m_condFollow != m_OutEdges[0] && m_condFollow != m_OutEdges[1])
-                // Hopefully the condition hasn't been incorrectly flipped.
-                m_condFollow = m_OutEdges[1];
-            // ensure out edge 0 is not the follow
-            if (m_condFollow == m_OutEdges[0]) {
-                // swap the condition and the out edges
-                Exp *e = new Unary(opLNot, getCond()->clone());
-                e = e->simplify();
-                setCond(e);
-                PBB tmp = m_OutEdges[0];
-                m_OutEdges[0] = m_OutEdges[1];
-                m_OutEdges[1] = tmp;
-            }
-            // add a goto for the body
-            hll.AddGoto(this, m_OutEdges[0]);
-            // add if end
-            hll.AddIfCondEnd(this);
-            // add code for the follow
-            m_condFollow->generateCode(hll, latch);
-            break;
-        case IFTHEN:
-            // add code for the header
-            generateBodyCode(hll);      
-            // ensure out edge 0 is not the follow
-            if (m_condFollow == m_OutEdges[0]) {
-                // swap the condition and the out edges
-                Exp *e = new Unary(opLNot, getCond()->clone());
-                e = e->simplify();
-                setCond(e);
-                PBB tmp = m_OutEdges[0];
-                m_OutEdges[0] = m_OutEdges[1];
-                m_OutEdges[1] = tmp;
-            }
-            // add the if header
-            hll.AddIfCondHeader(this, getCond());
-            // add code or goto for the body of the if
-            hll.addtoFollowSet(m_condFollow);
-            assert(m_condFollow != m_OutEdges[0]);
-            if (m_OutEdges[0]->isTraversed() ||
-              (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
-                hll.AddGoto(this, m_OutEdges[0]);
-            else {
-                m_OutEdges[0]->generateCode(hll, latch);
-            }
-            // add if end
-            hll.AddIfCondEnd(this);
-            // remove the follow
-            assert(hll.getEnclFollow() == m_condFollow);
-            hll.removeLastFollow();
-            // add code for the follow
-            m_condFollow->generateCode(hll, latch);
-            break;
-        case IFTHENELSE:
-            // add code for the header
-            generateBodyCode(hll);
-            // add the if header
-            hll.AddIfElseCondHeader(this, getCond());
-            // add code or goto for the then body of the if
-            assert(m_condFollow != m_OutEdges[0]);
-            hll.addtoFollowSet(m_condFollow);
-            if (m_OutEdges[0]->isTraversed() ||
-              (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
-                hll.AddGoto(this, m_OutEdges[0]);
-            else {
-                m_OutEdges[0]->generateCode(hll, latch);
-            }
-            // add if else
-            hll.AddIfElseCondOption(this);
-            // add code or goto for the then body of the if
-            assert(m_condFollow != m_OutEdges[1]);
-            if (m_OutEdges[1]->isTraversed() ||
-              (m_loopHead && m_OutEdges[1] == m_loopHead->m_loopFollow))
-                hll.AddGoto(this, m_OutEdges[1]);
-            else {
-                m_OutEdges[1]->generateCode(hll, latch);
-            }
-            // add if end
-            hll.AddIfElseCondEnd(this);
-            // remove the follow
-            assert(hll.getEnclFollow() == m_condFollow);
-            hll.removeLastFollow();
-            // add code for the follow
-            m_condFollow->generateCode(hll, latch);
-            break;
-        case IFELSE:
-            assert(false);
-            break;
-        case CASE:
-            assert(false);
-            hll.addtoFollowSet(m_condFollow);
-
-            break;
-        case NONE:
-            // add code for the body
-            generateBodyCode(hll);
-
-            // generate a ret if this is one
-            if (m_nodeType == RET) {
-                hll.AddReturnStatement(this, m_returnVal);
-                return;
-            }
-
-            // get child
-            BasicBlock *child = getOutEdge(0);
-            if (!child) return;
-
-            // if the child has already been traversed
-            if (child->isTraversed()) {
-                hll.AddGoto(this, child);
-                return;
-            }
-
-            // or the child is the latch
-            if (latch && latch->m_loopHead->m_loopFollow == child) {
-                hll.AddGoto(this, child);
-                return;
-            }
-
-            // or the child is not in the same loop
-            if (child->m_loopHead != m_loopHead) {
-                // but has more than one untraversed parent or is a follow
-                if (!child->allParentsTraversed() ||
-                  hll.followSetContains(child)) {
-                    hll.AddGoto(this, child);
-                    return;
-                }
-            }
-
-            // or the child is not in the same case
-            if (child->m_caseHead != m_caseHead) {
-                hll.AddGoto(this, child);
-                return;
-            }
-
-            // or the child is the follow of this case, add a goto
-            if (m_caseHead && child == m_caseHead->m_condFollow) {
-                hll.AddGoto(this, child);
-                return;
-            }
-
-            // otherwise, add the code
-            child->generateCode(hll, latch);
-            
-            break;
-    }   
-}
-
-// some constants required to indicate extra code to be added
-#define CLOSE_BRACKET 2		// length of "}\n"
-#define DO_HEADER 5			// length of "do {\n"
-#define ENDLESS_HEADER 11	// langth of "for (;;) {\n"
-
-// Return the string containing indLevel tabstops. 
-// If extra = CLOSE_BRACKET then append "}\n" to the returned string
-// If extra = DO_HEADER then append "do {\n" to the returned string
-char* BasicBlock::indent(int indLevel, int extra/* = 0*/)
-{
-    char* retStr = new char[indLevel + extra + 1];
-    memset(retStr,'\t',indLevel);
-
-    retStr[indLevel] = '\0';
-
-    // add the extra stuff in necessary
-    if (extra == CLOSE_BRACKET)
-        strcat(retStr,"}\n");
-    else if (extra == DO_HEADER)
-        strcat(retStr,"do {\n");
-    else if (extra == ENDLESS_HEADER)
-        strcat(retStr,"for (;;) {\n");
-
-    return retStr;
-}
-
 // Return true if every parent (i.e. forward in edge source) of this node has 
 // had its code generated
 bool BasicBlock::allParentsGenerated()
@@ -1383,60 +1037,45 @@ bool BasicBlock::allParentsGenerated()
 // destination code if it isn't already there.  If the goto is to the return 
 // block, emit a 'return' instead.  Also, 'continue' and 'break' statements 
 // are used instead if possible
-void BasicBlock::emitGotoAndLabel(std::list<char*> &lines, int indLevel, 
-    PBB dest)
+void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 {
     // is this a goto to the ret block?
     if (dest->getType() == RET) { // WAS: check about size of ret bb
-        char* retStmt = new char[indLevel * 2 + strlen("return;\n\n") + 1];
-
-        sprintf(retStmt, "%sreturn;\n", indent(indLevel));
-	lines.push_back(retStmt);
+	hll->AddReturnStatement(indLevel, dest->getReturnVal());
     } else { 
-        char* gotoStmt;
-
         if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
-            gotoStmt = new char[indLevel + strlen("continue;\n") + 1];
-            sprintf(gotoStmt, "%s%s\n", indent(indLevel),
-                    (loopHead == dest ? "continue;" : "break;"));
+            if (loopHead == dest)
+                hll->AddContinue(indLevel);
+            else
+                hll->AddBreak(indLevel);
         } else {
-            gotoStmt = new char[indLevel + strlen("goto L;\n") + 
-                                1024 + 1];
-            sprintf(gotoStmt, "%sgoto L%d;\n", indent(indLevel), dest->ord);
-
-            // don't emit the label if it already has been emitted or the code 
-            // for the destination has not yet been generated
-            if (!dest->hllLabel && dest->traversed == DFS_CODEGEN)
-                sprintf(dest->labelStr,"L%d:\n",dest->ord);
+            hll->AddGoto(indLevel, dest->ord);
 
             dest->hllLabel = true;
         }
-        lines.push_back(gotoStmt);
     }
 }
 
 // Generates code for each non CTI (except procedure calls) statement within 
 // the block.
-void BasicBlock::WriteBB(std::list<char*> &lines, int indLevel)
+void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 {
     // allocate space for a label to be generated for this node and add this to
     // the generated code. The actual label can then be generated now or back 
     // patched later
-    labelStr = new char[1024];
-    lines.push_back(labelStr);
-    if (hllLabel)
-	sprintf(labelStr,"L%d:\n",ord);
-    else
-        strcpy(labelStr,"");
+    hll->AddLabel(indLevel, ord);
 
-    lines.push_back("BB\n");
-	
+    if (m_pRtls)
+        for (std::list<RTL*>::iterator it = m_pRtls->begin();
+          it != m_pRtls->end(); it++) 
+            (*it)->generateCode(hll, this, indLevel);
+
     // save the indentation level that this node was written at
     indentLevel = indLevel;
 }
 
-void BasicBlock::generateCode(std::list<char*> &lines, int indLevel, 
-    PBB latch, std::list<PBB> &followSet, std::list<PBB> &gotoSet)
+void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch, 
+    std::list<PBB> &followSet, std::list<PBB> &gotoSet)
 {
     // If this is the follow for the most nested enclosing conditional, then
     // don't generate anything. Otherwise if it is in the follow set
@@ -1447,11 +1086,11 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
     if (isIn(gotoSet, this) && !isLatchNode() && 
         ((latch && this == latch->loopHead->loopFollow) || 
         !allParentsGenerated())) {
-        emitGotoAndLabel(lines, indLevel, this);
+        emitGotoAndLabel(hll, indLevel, this);
         return;
     } else if (isIn(followSet, this)) {
         if (this != enclFollow) {
-            emitGotoAndLabel(lines, indLevel, this);
+            emitGotoAndLabel(hll, indLevel, this);
             return;
         } else return;
     }
@@ -1470,22 +1109,16 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
     if (isLatchNode())
         if (indLevel == latch->loopHead->indentLevel + 
                         (latch->loopHead->lType == PreTested ? 1 : 0)) {
-            WriteBB(lines, indLevel);
+            WriteBB(hll, indLevel);
             return;
         } else {
 	    // unset its traversed flag
 	    traversed = UNTRAVERSED;
 
-	    emitGotoAndLabel(lines, indLevel, this);
+	    emitGotoAndLabel(hll, indLevel, this);
 	    return;
         }
 	
-    // declare some strings that can't be initialised in the body of the switch
-    char* condPred;
-    char* predString;
-    char* opCode;
-    char* retStmt;
-
     switch(sType) {
         case Loop:
         case LoopCond:
@@ -1497,7 +1130,7 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                 assert(latchNode->m_OutEdges.size() == 1);
 
                 // write the body of the block (excluding the predicate)
-                WriteBB(lines, indLevel);
+                WriteBB(hll, indLevel);
 
                 // write the 'while' predicate
                 Exp *cond = getCond();
@@ -1505,43 +1138,35 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                     cond = new Unary(opNot, cond);
                     cond = cond->simplify();
                 }
-                std::ostringstream str;
-                cond->print(str);
-                opCode = (char*)str.str().c_str();
-                predString = new char[(indLevel * 2) + 1 + strlen("while (") + 
-                                      1024 + strlen(")\n") + 
-                                      strlen("{\n") + 1];
-                sprintf(predString, "%swhile (%s)\n%s{\n", 
-                        indent(indLevel), opCode, indent(indLevel));
-                lines.push_back(predString);
+                hll->AddPretestedLoopHeader(indLevel, cond);
 
 		// write the code for the body of the loop
 		PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? 
                                 m_OutEdges[BTHEN] : m_OutEdges[BELSE];
-                loopBody->generateCode(lines, indLevel + 1, latchNode, 
+                loopBody->generateCode(hll, indLevel + 1, latchNode, 
                     followSet, gotoSet);
 
                 // if code has not been generated for the latch node, generate 
                 // it now
                 if (latchNode->traversed != DFS_CODEGEN) {
                     latchNode->traversed = DFS_CODEGEN;
-                    latchNode->WriteBB(lines, indLevel+1);
+                    latchNode->WriteBB(hll, indLevel+1);
                 }
 
                 // rewrite the body of the block (excluding the predicate) at 
                 // the next nesting level after making sure another label 
                 // won't be generated
                 hllLabel = false;
-                WriteBB(lines, indLevel+1);
+                WriteBB(hll, indLevel+1);
 
                 // write the loop tail
-                lines.push_back(indent(indLevel, CLOSE_BRACKET));
+                hll->AddPretestedLoopEnd(indLevel);
             } else {
                 // write the loop header
                 if (lType == Endless)
-                    lines.push_back(indent(indLevel,ENDLESS_HEADER));
+                    hll->AddEndlessLoopHeader(indLevel);
                 else
-                    lines.push_back(indent(indLevel,DO_HEADER));
+                    hll->AddPosttestedLoopHeader(indLevel);
 
                 // if this is also a conditional header, then generate code 
                 // for the conditional. Otherwise generate code for the loop 
@@ -1551,13 +1176,13 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                     // successfully be called again on this node
                     sType = Cond;
                     traversed = UNTRAVERSED;
-                    generateCode(lines, indLevel + 1, latchNode, followSet, 
+                    generateCode(hll, indLevel + 1, latchNode, followSet, 
                                  gotoSet);
                 } else {
-                    WriteBB(lines, indLevel+1);
+                    WriteBB(hll, indLevel+1);
 
                     // write the code for the body of the loop
-                    m_OutEdges[0]->generateCode(lines, indLevel + 1, latchNode, 
+                    m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, 
                                              followSet, gotoSet);
                 }
 
@@ -1566,20 +1191,10 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                     // generate it now
                     if (latchNode->traversed != DFS_CODEGEN) {
                         latchNode->traversed = DFS_CODEGEN;
-                        latchNode->WriteBB(lines, indLevel+1);
+                        latchNode->WriteBB(hll, indLevel+1);
                     }
 			
-                    // string for the repeat loop predicate.
-                    predString = new char[indLevel + strlen("} while (") + 
-                                          1024 + strlen(")\n") + 2];
-
-                    // write the repeat loop predicate
-                    std::ostringstream str;
-                    getCond()->print(str);
-                    opCode = (char*)str.str().c_str();
-                    sprintf(predString,"%s} while (%s);\n", indent(indLevel),
-                            opCode);
-                    lines.push_back(predString);
+                    hll->AddPosttestedLoopEnd(indLevel, getCond());
                 } else {
                     assert(lType == Endless);
 
@@ -1587,11 +1202,11 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                     // generate it now
                     if (latchNode->traversed != DFS_CODEGEN) {
                         latchNode->traversed = DFS_CODEGEN;
-                        latchNode->WriteBB(lines, indLevel+1);
+                        latchNode->WriteBB(hll, indLevel+1);
                     }
 
                     // write the closing bracket for an endless loop
-                    lines.push_back(indent(indLevel,CLOSE_BRACKET));
+                    hll->AddEndlessLoopEnd(indLevel);
                 }
             }
 
@@ -1601,10 +1216,10 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                 followSet.resize(followSet.size()-1);
 
                 if (loopFollow->traversed != DFS_CODEGEN)
-                    loopFollow->generateCode(lines, indLevel, latch, followSet,
+                    loopFollow->generateCode(hll, indLevel, latch, followSet,
                                              gotoSet);
                 else
-                    emitGotoAndLabel(lines, indLevel, loopFollow);
+                    emitGotoAndLabel(hll, indLevel, loopFollow);
             }
             break;
 
@@ -1671,27 +1286,22 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
             }
 
             // write the body of the block (excluding the predicate)
-            WriteBB(lines, indLevel);
+            WriteBB(hll, indLevel);
 
             // write the conditional header 
             if (cType == Case) {
-                condPred = new char[indLevel * 2 + strlen("switch (!") + 
-                                    1024 + 4 + 1];
-                sprintf(condPred, "%sswitch (%s) {\n", indent(indLevel), "Reg0");
+                hll->AddCaseCondHeader(indLevel, getCond());
             } else {
                 Exp *cond = getCond();
                 if (cType == IfElse) {
                     cond = new Unary(opNot, cond);
                     cond = cond->simplify();
                 }
-                std::ostringstream str;
-                cond->print(str);
-                opCode = (char*)str.str().c_str();
-                condPred = new char[indLevel * 2 + strlen("if (") + 
-                                    1024 + 4 + 1];
-                sprintf(condPred, "%sif (%s) {\n", indent(indLevel), opCode);
+                if (cType == IfThenElse)
+                    hll->AddIfElseCondHeader(indLevel, cond);
+                else
+                    hll->AddIfCondHeader(indLevel, cond);
             }
-            lines.push_back(condPred);
 
             // write code for the body of the conditional
             if (cType != Case) {
@@ -1702,57 +1312,54 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                 // generated or it is the follow of this node's enclosing loop
                 if (succ->traversed == DFS_CODEGEN || 
                     (loopHead && succ == loopHead->loopFollow))
-                    emitGotoAndLabel(lines, indLevel + 1, succ);
+                    emitGotoAndLabel(hll, indLevel + 1, succ);
                 else	
-                    succ->generateCode(lines, indLevel + 1, latch, followSet, 
+                    succ->generateCode(hll, indLevel + 1, latch, followSet, 
                                     gotoSet);
 
                 // generate the else clause if necessary
                 if (cType == IfThenElse) {
                     // generate the 'else' keyword and matching brackets
-                    char* elseStr = new char[indLevel * 2 + 
-                                             strlen("} else\n{\n") + 1];
-                    sprintf(elseStr, "%s} else\n%s{\n", indent(indLevel),
-                            indent(indLevel));
-                    lines.push_back(elseStr);
+                    hll->AddIfElseCondOption(indLevel);
 
                     succ = m_OutEdges[BELSE];
 
                     // emit a goto statement if the second clause has already 
                     // been generated
                     if (succ->traversed == DFS_CODEGEN)
-                        emitGotoAndLabel(lines, indLevel + 1, succ);
+                        emitGotoAndLabel(hll, indLevel + 1, succ);
                     else
-                        succ->generateCode(lines, indLevel + 1, latch, 
+                        succ->generateCode(hll, indLevel + 1, latch, 
                                         followSet, gotoSet);
-                }	
+
+                    // generate the closing bracket
+                    hll->AddIfElseCondEnd(indLevel);
+               	} else {
+                    // generate the closing bracket
+                    hll->AddIfCondEnd(indLevel);
+                }
             } else { // case header
                 // generate code for each out branch
                 for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
                     // emit a case label
-                    char* caseStr = new char[indLevel + strlen("cond_:\n") + 
-                          1024 + 1];
-                    sprintf(caseStr, "%scase cond_%d:\n", indent(indLevel), i);
-                    lines.push_back(caseStr);
+                    hll->AddCaseCondOption(indLevel, NULL); // TODO
 
                     // generate code for the current outedge
                     PBB succ = m_OutEdges[i];
 //assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
                     if (succ->traversed == DFS_CODEGEN)
-                        emitGotoAndLabel(lines, indLevel + 1, succ);
+                        emitGotoAndLabel(hll, indLevel + 1, succ);
                     else
-                        succ->generateCode(lines, indLevel + 1, latch, 
+                        succ->generateCode(hll, indLevel + 1, latch, 
                             followSet, gotoSet);
 
                     // generate the 'break' statement
-                    caseStr = new char[indLevel + 1 + strlen("break;\n") + 1];
-                    sprintf(caseStr,"%sbreak;\n",indent(indLevel + 1));
-                    lines.push_back(caseStr);
+                    hll->AddCaseCondOptionEnd(indLevel);
                 }
+                // generate the closing bracket
+                hll->AddCaseCondEnd(indLevel);
             }
 
-            // generate the closing bracket
-            lines.push_back(indent(indLevel,CLOSE_BRACKET));
 
             // do all the follow stuff if this conditional had one
             if (condFollow) {
@@ -1772,23 +1379,21 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
                     tmpCondFollow = condFollow;
 			
                 if (tmpCondFollow->traversed == DFS_CODEGEN)
-                    emitGotoAndLabel(lines, indLevel, tmpCondFollow);
+                    emitGotoAndLabel(hll, indLevel, tmpCondFollow);
                 else
-                    tmpCondFollow->generateCode(lines, indLevel, latch,
+                    tmpCondFollow->generateCode(hll, indLevel, latch,
                         followSet, gotoSet);
             }
             break;
 	} 
 	case Seq:
             // generate code for the body of this block
-            WriteBB(lines, indLevel);
+            WriteBB(hll, indLevel);
 
             // return if this is the 'return' block (i.e. has no out edges)
             // after emmitting a 'return' statement
             if (getType() == RET) {
-                retStmt = new char[indLevel * 2 + strlen("return;\n") + 1];
-                sprintf(retStmt, "%sreturn;\n", indent(indLevel));
-                lines.push_back(retStmt);
+                hll->AddReturnStatement(indLevel, getReturnVal());
                 return;
             }
 
@@ -1805,9 +1410,9 @@ void BasicBlock::generateCode(std::list<char*> &lines, int indLevel,
 	        (latch && latch->loopHead->loopFollow == child) ||
 		!(caseHead == child->caseHead || 
                   (caseHead && child == caseHead->condFollow)))
-                emitGotoAndLabel(lines, indLevel, m_OutEdges[0]);
+                emitGotoAndLabel(hll, indLevel, m_OutEdges[0]);
             else
-                m_OutEdges[0]->generateCode(lines, indLevel, latch,
+                m_OutEdges[0]->generateCode(hll, indLevel, latch,
                      followSet, gotoSet);
 	    break;
     }

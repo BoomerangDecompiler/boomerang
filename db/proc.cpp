@@ -902,47 +902,23 @@ bool UserProc::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-bool UserProc::generateCode(HLLCode &hll)
+void UserProc::generateCode(HLLCode *hll)
 {
     assert(cfg);
-    cfg->establishDFTOrder();
-    cfg->establishRevDFTOrder();
     assert(getEntryBB());
 
-    hll.AddProcStart(signature);
+    hll->AddProcStart(signature);
     
     for (std::map<std::string, Type*>::iterator it = locals.begin();
          it != locals.end(); it++)
-        hll.AddLocal((*it).first.c_str(), (*it).second);
+        hll->AddLocal((*it).first.c_str(), (*it).second);
 
-    cfg->unTraverse();
-    BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-        bb->setLabelNeeded(false);
-    }
-    getEntryBB()->generateCode(hll, NULL);
-
-    // generate any BBs that are left
-    bool change = true;
-    while (change) {
-        change = false;
-        for (PBB left = cfg->getFirstBB(it); left; left = cfg->getNextBB(it)) 
-            if (!left->isTraversed()) {
-                left->generateCode(hll, NULL);
-                change = true;
-                break;
-            }
-    }
-    
-    hll.AddProcEnd();
-
-    return true;
-}
-
-void UserProc::generateCode(std::list<char*> &lines)
-{
     std::list<PBB> followSet, gotoSet;
-    getEntryBB()->generateCode(lines, 1, NULL, followSet, gotoSet);
+    getEntryBB()->generateCode(hll, 1, NULL, followSet, gotoSet);
+    
+    hll->AddProcEnd();
+  
+    cfg->removeUnneededLabels(hll);
 }
 
 // print this userproc, maining for debugging
@@ -1049,7 +1025,7 @@ void UserProc::decompile() {
 #endif
 
     if (VERBOSE) {
-        print(std::cout /*,true*/);
+        print(std::cerr /*,true*/);
     }
     bool change = true;
     while (change) {
@@ -1064,12 +1040,12 @@ void UserProc::decompile() {
     inlineConstants();
     fixCalls();
     promoteSignature();
-    nameStackLocations();
-    replaceExpressionsWithSymbols();
-    //nameRegisters();
-//    replaceExpressionsWithSymbols();
+    while (nameStackLocations())
+        replaceExpressionsWithSymbols();
+    while (nameRegisters())
+        replaceExpressionsWithSymbols();
     if (VERBOSE) {
-        print(std::cout /*,true*/);
+        print(std::cerr /*,true*/);
     }
     cfg->structure();
 }
@@ -1132,33 +1108,6 @@ void UserProc::fixCalls()
     }
 }
 
-void UserProc::nameStatementLefts()
-{
-    std::set<Statement*> stmts;
-    getStatements(stmts);
-    // create a symbol for everything on the left of an assign
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++) {
-        if ((*it)->getLeft() && 
-            symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
-            if (VERBOSE) {
-                std::cerr << "new local: ";
-                (*it)->getLeft()->print(std::cerr);
-                std::cerr << std::endl;
-            }
-            std::ostringstream os;
-            os << "local" << locals.size();
-            std::string name = os.str();
-            symbolMap[(*it)->getLeft()->clone()] = 
-              new Unary(opLocal, new Const(strdup(name.c_str())));
-            if ((*it)->getLeftType())
-                locals[name] = (*it)->getLeftType();
-            else
-                locals[name] = new IntegerType();
-        } 
-    }
-}
-
 void UserProc::replaceExpressionsWithSymbols()
 {
     std::set<Statement*> stmts;
@@ -1197,23 +1146,26 @@ void UserProc::replaceExpressionsWithSymbols()
     }
 }
 
-void UserProc::nameStackLocations()
+bool UserProc::nameStackLocations()
 {
+    bool found = false;
     std::set<Statement*> stmts;
     getStatements(stmts);
     // create a symbol for every memory reference
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
+        Exp *left = (*it)->getLeft();
         Exp *right = (*it)->getRight();
         if (right == NULL) continue;
         Exp *memref, *match = signature->getStackWildcard();
         if (match == NULL) break;
-        if (right->search(match, memref)) {
+        if ((left && left->search(match, memref)) ||
+            (right && right->search(match, memref))) {
             if (symbolMap.find(memref) == symbolMap.end()) {
                 if (VERBOSE) {
-                    std::cout << "stack location found: ";
-                    memref->print(std::cout);
-                    std::cout << std::endl;
+                    std::cerr << "stack location found: ";
+                    memref->print(std::cerr);
+                    std::cerr << std::endl;
                 }
                 std::ostringstream os;
                 os << "local" << locals.size();
@@ -1226,9 +1178,49 @@ void UserProc::nameStackLocations()
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())
 					->getStr();
             locals[name] = (*it)->updateType(memref, locals[name]);
+            found = true;
         }
         delete match;
     }
+    return found;
+}
+
+bool UserProc::nameRegisters()
+{
+    bool found = false;
+    std::set<Statement*> stmts;
+    getStatements(stmts);
+    // create a symbol for every register
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+      it++) {
+        Exp *left = (*it)->getLeft();
+        Exp *right = (*it)->getRight();
+        Exp *memref, *match = new Unary(opRegOf, new Terminal(opWild));
+        if (match == NULL) break;
+        if ((left && left->search(match, memref)) ||
+            (right && right->search(match, memref))) {
+            if (symbolMap.find(memref) == symbolMap.end()) {
+                if (VERBOSE) {
+                    std::cerr << "register found: ";
+                    memref->print(std::cerr);
+                    std::cerr << std::endl;
+                }
+                std::ostringstream os;
+                os << "local" << locals.size();
+                std::string name = os.str();
+                symbolMap[memref->clone()] = 
+                    new Unary(opLocal, new Const(strdup(name.c_str())));
+                locals[name] = new IntegerType();
+            }
+            assert(symbolMap.find(memref) != symbolMap.end());
+            std::string name = ((Const*)symbolMap[memref]->getSubExp1())
+					->getStr();
+            locals[name] = (*it)->updateType(memref, locals[name]);
+            found = true;
+        }
+        delete match;
+    }
+    return found;
 }
 
 bool UserProc::removeNullStatements()
@@ -1397,7 +1389,7 @@ bool UserProc::propagateAndRemoveStatements()
             }
             if (VERBOSE) {
                 // debug: print
-                print(std::cout,true);
+                print(std::cerr, true);
             }
             change = true;
         }

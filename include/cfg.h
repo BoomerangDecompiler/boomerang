@@ -402,13 +402,9 @@ private:
 	std::vector<int> m_nOutEdges;     // numerical outedges
 	int m_nindex;					// numerical index of this bb in list of bbs in CFG.
 
-	// establish that all "parents" - ie. inedges that are not back edges - have been traversed
-	bool allParentsTraversed();
-
 public:
 
 	// code generation
-	void generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond = false);
 	void generateBodyCode(HLLCode &hll, bool dup = false);
 
 /* high level structuring */
@@ -546,11 +542,11 @@ protected:
 
     char* indent(int indLevel, int extra = 0);
     bool allParentsGenerated();
-    void emitGotoAndLabel(std::list<char*> &lines, int indLevel, PBB dest);
-    void WriteBB(std::list<char*> &lines, int indLevel);
+    void emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest);
+    void WriteBB(HLLCode *hll, int indLevel);
 
 public:
-    void generateCode(std::list<char*> &lines, int indLevel, PBB latch, 
+    void generateCode(HLLCode *hll, int indLevel, PBB latch, 
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
 };
 
@@ -934,6 +930,10 @@ private:
     void determineLoopType(PBB header, bool* &loopNodes);
     void findLoopFollow(PBB header, bool* &loopNodes);
     void tagNodesInLoop(PBB header, bool* &loopNodes);
+
+public:
+
+    void removeUnneededLabels(HLLCode *hll);
 
 protected:
 

@@ -21,11 +21,16 @@
 
 #include <iostream>
 #include <string>
+#include "proc.h"
+#include "hllcode.h"
 
 class Boomerang {
 private:
     static Boomerang *boomerang;
     std::string progPath;   // String with the path to this exec
+
+    void usage();
+    void help();
 
     Boomerang();
 public:
@@ -34,13 +39,16 @@ public:
 	return boomerang;
     }
 
+    static HLLCode *getHLLCode(UserProc *p);
+
     // performs command line operation
     int commandLine(int argc, const char **argv);
     void setProgPath(const char* p) { progPath = p; }
     const std::string& getProgPath() { return progPath; }
 
     // Command line flags
-    bool        vFlag;      // -v given on commang line
+    bool vFlag;
+    bool noBranchSimplify;
 };
 
 #endif

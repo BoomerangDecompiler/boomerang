@@ -43,6 +43,7 @@
 #include "hllcode.h"
 #include "util.h"
 #include "signature.h"
+#include "boomerang.h"
 
 /******************************************************************************
  * HLJump methods
@@ -344,7 +345,7 @@ bool HLJump::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLJump::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
     // dont generate any code for jumps, they will be handled by the BB
 }
@@ -407,6 +408,7 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
 
     // set pCond to a high level representation of this type
     Exp* p = NULL;
+#if 0
     switch(cond) {
         case HLJCOND_JE:
             p = new Terminal(opZF);
@@ -478,6 +480,9 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
             assert(false);
             break;
     }
+#else
+    p = new Terminal(opFlags);
+#endif
     assert(p);
     setCondExpr(p);
 }
@@ -687,7 +692,7 @@ bool HLJcond::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLJcond::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLJcond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
     // dont generate any code for jconds, they will be handled by the bb
 }
@@ -735,7 +740,7 @@ void HLJcond::doReplaceUse(Statement *use)
 
 void HLJcond::simplify()
 {
-    if (pCond) {
+    if (pCond && !Boomerang::get()->noBranchSimplify) {
         Exp *e = pCond->simplifyArith()->clone();
         delete pCond;
         pCond = e->simplify();
@@ -744,122 +749,77 @@ void HLJcond::simplify()
         pCond->print(os);
         std::string s = os.str();
 
-        // special simplifications
-        switch(jtCond) {
-            case HLJCOND_JE:    // Jump if equals               
-                break;
-            case HLJCOND_JNE:   // Jump if not equals
-                break;
-            case HLJCOND_JSL:   // Jump if signed less
-                if (pCond->getOper() == opNotEqual &&
-                    pCond->getSubExp1()->getOper() == opAt &&
-                    pCond->getSubExp1()->getSubExp1()->getOper() == opPlus) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->getSubExp1()->clone();
+        if (pCond->getOper() == opFlagCall && 
+            !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+                    "SUBFLAGS", 8)) {
+            Exp *e = pCond;
+            OPER op = opWild;
+            switch (jtCond) {
+                case HLJCOND_JE:    op = opEquals; break;
+                case HLJCOND_JNE:   op = opNotEqual; break;
+                case HLJCOND_JSL:   op = opLess; break;
+                case HLJCOND_JSLE:  op = opLessEq; break;
+                case HLJCOND_JSGE:  op = opGtrEq; break;
+                case HLJCOND_JSG:   op = opGtr; break;
+                case HLJCOND_JUL:   op = opLessUns; break;
+                case HLJCOND_JULE:  op = opLessEqUns; break;
+                case HLJCOND_JUGE:  op = opGtrEqUns; break;
+                case HLJCOND_JUG:   op = opGtrUns; break;
+                case HLJCOND_JMI:
+                    pCond = new Binary(opLess,
+                        pCond->getSubExp2()->getSubExp2()->getSubExp2()
+                            ->getSubExp1()->clone(), new Const(0));
                     delete e;
-                    pCond->setOper(opLess);
-                    Exp *tmp = pCond->getSubExp2()->clone();
-                    pCond->setSubExp2(new Unary(opNeg, tmp));
-                }
-                break;
-            case HLJCOND_JSLE:  // Jump if signed less or equal
-                if (pCond->getOper() == opOr && 
-                    pCond->getSubExp1()->getOper() == opEquals) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->clone();
+                    break;
+                case HLJCOND_JPOS:
+                    pCond = new Binary(opGtrEq,
+                        pCond->getSubExp2()->getSubExp2()->getSubExp2()
+                            ->getSubExp1()->clone(), new Const(0));
                     delete e;
-                    pCond->setOper(opLessEq);
-                }
-                break;
-            case HLJCOND_JSGE:  // Jump if signed greater or equal
-                if (pCond->getOper() == opEquals &&
-                    pCond->getSubExp1()->getOper() == opAt &&
-                    pCond->getSubExp1()->getSubExp1()->getOper() == opPlus) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->getSubExp1()->clone();
+                    break;
+                case HLJCOND_JOF:
+                case HLJCOND_JNOF:
+                case HLJCOND_JPAR:
+                    break;
+            }
+            if (op != opWild) {
+                pCond = new Binary(op,
+                    pCond->getSubExp2()->getSubExp1()->clone(), 
+                    pCond->getSubExp2()->getSubExp2()->getSubExp1()
+                        ->clone());
+                delete e;
+            }
+        }
+        if (pCond->getOper() == opFlagCall && 
+            !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+                    "LOGICALFLAGS", 12)) {
+            Exp *e = pCond;
+            switch (jtCond) {
+                case HLJCOND_JE:
+                    pCond = new Binary(opEquals,
+                        pCond->getSubExp2()->getSubExp1()->clone(), 
+                        new Const(0));
+                    break;
+                case HLJCOND_JNE:
+                    pCond = new Binary(opNotEqual,
+                        pCond->getSubExp2()->getSubExp1()->clone(), 
+                        new Const(0));
+                    break;
+                case HLJCOND_JMI:
+                    pCond = new Binary(opLess,
+                        pCond->getSubExp2()->getSubExp1()->clone(), 
+                        new Const(0));
                     delete e;
-                    pCond->setOper(opGtrEq);
-                    Exp *tmp = pCond->getSubExp2()->clone();
-                    pCond->setSubExp2(new Unary(opNeg, tmp));
-                }
-                break;
-            case HLJCOND_JSG:   // Jump if signed greater
-                if (pCond->getOper() == opNot &&
-                    pCond->getSubExp1()->getOper() == opOr &&
-                    pCond->getSubExp1()->getSubExp1()->getOper() == opEquals) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->getSubExp1()->clone();
+                    break;
+                case HLJCOND_JPOS:
+                    pCond = new Binary(opGtrEq,
+                        pCond->getSubExp2()->getSubExp1()->clone(), 
+                        new Const(0));
                     delete e;
-                    pCond->setOper(opGtr);
-                }
-                break;
-            case HLJCOND_JUL:   // Jump if unsigned less
-                if (pCond->getOper() == opBitOr &&
-                    pCond->getSubExp2()->getOper() == opBitAnd &&
-                    pCond->getSubExp2()->getSubExp1()->getOper() == opAt &&
-                    pCond->getSubExp2()->getSubExp1()->getSubExp1()->getOper() == opPlus) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp2()->getSubExp1()->getSubExp1()->clone();
-                    delete e;
-                    pCond->setOper(opLessUns);
-                    Exp *tmp = pCond->getSubExp2()->clone();
-                    pCond->setSubExp2(new Unary(opNeg, tmp));
-                }
-                break;
-            case HLJCOND_JULE:  // Jump if unsigned less or equal
-                if (pCond->getOper() == opOr &&
-                    pCond->getSubExp2()->getOper() == opEquals) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp2()->clone();
-                    delete e;
-                    pCond->setOper(opLessEqUns);
-                }
-                break;
-            case HLJCOND_JUGE:  // Jump if unsigned greater or equal
-                if (pCond->getOper() == opNot && 
-                    pCond->getSubExp1()->getOper() == opBitOr &&
-                    pCond->getSubExp1()->getSubExp2()->getOper() == opBitAnd &&
-                    pCond->getSubExp1()->getSubExp2()->getSubExp1()->getOper() == opAt &&
-                    pCond->getSubExp1()->getSubExp2()->getSubExp1()->getSubExp1()->getOper() == opPlus) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->getSubExp2()->getSubExp1()->getSubExp1()->clone();
-                    delete e;
-                    pCond->setOper(opGtrEqUns);
-                    Exp *tmp = pCond->getSubExp2()->clone();
-                    pCond->setSubExp2(new Unary(opNeg, tmp));
-                }
-                break;
-            case HLJCOND_JUG:   // Jump if unsigned greater
-                if (pCond->getOper() == opNot &&
-                    pCond->getSubExp1()->getOper() == opOr &
-                    pCond->getSubExp1()->getSubExp2()->getOper() == opEquals) {
-                    Exp *e = pCond;
-                    pCond = e->getSubExp1()->getSubExp2()->clone();
-                    delete e;
-                    pCond->setOper(opGtrUns);
-                }
-                break;
-            case HLJCOND_JMI:   // Jump if result is minus
-                if (pCond->getOper() == opAt) {
-                    Exp *e = pCond;
-                    pCond = new Binary(opLess, e->getSubExp1()->clone(), new Const(0));
-                    delete e;
-                }
-                break;
-            case HLJCOND_JPOS:  // Jump if result is positive
-                if (pCond->getOper() == opNot && 
-                    pCond->getSubExp1()->getOper() == opAt) {
-                    Exp *e = pCond;
-                    pCond = new Binary(opGtrEq, e->getSubExp1()->getSubExp1()->clone(), new Const(0));
-                    delete e;
-                }
-                break;
-            case HLJCOND_JOF:   // Jump if overflow
-                break;
-            case HLJCOND_JNOF:  // Jump if no overflow
-                break;
-            case HLJCOND_JPAR:  // Jump if parity even (Intel only)
-                break;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
@@ -1011,7 +971,7 @@ bool HLNwayJump::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLNwayJump::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLNwayJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
     // dont generate any code for switches, they will be handled by the bb
 }
@@ -1397,18 +1357,19 @@ void HLCall::setDestProc(Proc* dest)
     destStr = procDest->getName();
 }
 
-void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
     Proc *p = getDestProc();
 
     if (p == NULL && isComputed()) {
-        hll.AddCallStatement(pbb, getReturnLoc(), pDest, arguments);
+        assert(false);
+        //hll.AddCallStatement(indLevel, getReturnLoc(), pDest, arguments);
         return;
     }
 
     assert(p);
 
-    hll.AddCallStatement(pbb, getReturnLoc(), p, arguments);
+    hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments);
 }
 
 void HLCall::simplify()
@@ -1706,12 +1667,12 @@ bool HLReturn::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLReturn::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLReturn::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
     // There could be semantics, e.g. SPARC RETURN instruction
     // Most of the time, the list of RTs will be empty, and the
     // below does nothing
-    RTL::generateCode(hll, pbb);
+    RTL::generateCode(hll, pbb, indLevel);
 }
 
 void HLReturn::simplify()
@@ -1923,9 +1884,9 @@ bool HLScond::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLScond::generateCode(HLLCode &hll, BasicBlock *pbb)
+void HLScond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
-    RTL::generateCode(hll, pbb);
+    RTL::generateCode(hll, pbb, indLevel);
 }
 
 void HLScond::simplify()

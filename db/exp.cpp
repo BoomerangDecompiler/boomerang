@@ -1847,6 +1847,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+/*
     // Check for -x compare y, becomes x compare -y
     // doesn't count as a change
     if (isComparison() && opSub1 == opNeg) {
@@ -1871,7 +1872,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         bMod = true;
         return res;
     }
-
+*/
     // Check for (x == y) == 1, becomes x == y
     if (op == opEquals && opSub2 == opIntConst &&
         ((Const*)subExp2)->getInt() == 1 && opSub1 == opEquals) {
@@ -2048,15 +2049,23 @@ Exp* Ternary::polySimplify(bool& bMod) {
     subExp2 = subExp2->polySimplify(bMod);
     subExp3 = subExp3->polySimplify(bMod);
 
-    if (subExp2->getOper() == opIntConst && subExp3->getOper() == opIntConst) {
+    if (op == opTern && subExp2->getOper() == opIntConst && 
+        subExp3->getOper() == opIntConst) {
         Const *s2 = (Const*)subExp2;
         Const *s3 = (Const*)subExp3;
 
         if (s2->getInt() == 1 && s3->getInt() == 0) {
             res = this->becomeSubExp1();
             bMod = true;
+            return res;
         }
     }   
+
+    if (op == opSgnEx && subExp3->getOper() == opIntConst) {
+        res = this->becomeSubExp3();
+        bMod = true;
+        return res;
+    }
     return res;
 }
 

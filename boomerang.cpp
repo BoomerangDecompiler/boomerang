@@ -8,18 +8,26 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-Boomerang::Boomerang() : vFlag(false) {
+Boomerang::Boomerang() : vFlag(false), noBranchSimplify(false) 
+{
 }
 
-void usage() {
+HLLCode *Boomerang::getHLLCode(UserProc *p)
+{
+    return new CHLLCode(p);
+}
+
+void Boomerang::usage() {
     std::cerr << "usage: boomerang [ switches ] <program>" << std::endl;
     std::cerr << "boomerang -h for switch help" << std::endl;
     exit(1);
 }
 
-void help() {
+void Boomerang::help() {
     std::cerr << "-h: this help\n";
     std::cerr << "-v: verbose\n";
+    std::cerr << "-nb: no simplications for branches\n";
+    exit(1);
 }
         
 int Boomerang::commandLine(int argc, const char **argv) {
@@ -48,6 +56,15 @@ int Boomerang::commandLine(int argc, const char **argv) {
         switch (argv[i][1]) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
+            case 'n':
+                switch(argv[i][2]) {
+                    case 'b':
+                        noBranchSimplify = true;
+                        break;
+                    default:
+                        help();
+                }
+                break;
             default:
                 help();
         }
@@ -65,11 +82,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
     prog->analyse();
     std::cerr << "decompiling..." << std::endl;
     prog->decompile();
-    std::cerr << "printing..." << std::endl;
-    prog->print(std::cout, true);
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
 
-	return 0;
+    return 0;
 }
 

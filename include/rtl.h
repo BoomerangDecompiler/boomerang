@@ -200,7 +200,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();
@@ -286,7 +286,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();
@@ -355,7 +355,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // new dataflow analysis
     virtual void killLive(std::set<Statement*> &live) { }
@@ -453,7 +453,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
     
     // simplify all the uses/defs in this RTL
     virtual void simplify();
@@ -531,7 +531,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // new dataflow analysis
     virtual void killLive(std::set<Statement*> &live);
@@ -628,7 +628,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();
@@ -697,7 +697,7 @@ public:
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
     // code generation
-    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();

@@ -41,6 +41,7 @@
 #include "prog.h"
 #include "hllcode.h"
 #include "util.h"
+#include "boomerang.h"
 
 /******************************************************************************
  * RTL methods.
@@ -827,12 +828,12 @@ bool RTL::deserialize_fid(std::istream &inf, int fid)
 	return true;
 }
 
-void RTL::generateCode(HLLCode &hll, BasicBlock *pbb)
+void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 {
 	for (std::list<Exp*>::iterator it = expList.begin(); it != expList.end(); it++) {
 		AssignExp *e = dynamic_cast<AssignExp*>(*it);
 		if (e != NULL)
-	            hll.AddAssignmentStatement(pbb, e);
+	            hll->AddAssignmentStatement(indLevel, e);
 	}
 }
 
@@ -842,6 +843,13 @@ void RTL::simplify()
 		// simplify arithmetic of assignment
 		Exp *e = *it;
 		if (!e->isAssign()) continue;
+                if (Boomerang::get()->noBranchSimplify) {
+                    if (e->getSubExp1()->getOper() == opZF ||
+                        e->getSubExp1()->getOper() == opCF ||
+                        e->getSubExp1()->getOper() == opOF ||
+                        e->getSubExp1()->getOper() == opNF)
+                        return;
+                }
 		Exp *e1 = e->getSubExp1()->simplifyArith()->clone();
 		Exp *e2 = e->getSubExp2()->simplifyArith()->clone();
 		e->setSubExp1(e1);

@@ -21,7 +21,7 @@
 #ifndef _HLLCODE_H_
 #define _HLLCODE_H_
 
-#include <string>
+#include <iostream>
 
 class BasicBlock;
 class Exp;
@@ -33,92 +33,69 @@ class Signature;
 class HLLCode {
 protected:
 	UserProc *m_proc;
-	std::list<BasicBlock*> m_followSet;
-	std::set<BasicBlock*> m_gotoSet;
 
 public:
 	// constructors
 	HLLCode() { }
-	HLLCode(UserProc *p) : m_proc(p), showAllLabels(false) { }
+	HLLCode(UserProc *p) : m_proc(p) { }
 
 	// destructor
 	virtual ~HLLCode() { }
 
 	// clear the hllcode object (derived classes should call the base)
 	virtual void reset() {
-		m_followSet.clear();
-		m_gotoSet.clear();
 	}
-
-	// should we show all labels?
-	bool showAllLabels;
 
 	// access to proc
 	UserProc *getProc() { return m_proc; }
 	void setProc(UserProc *p) { m_proc = p; }
 
-	// access to followSet
-	void addtoFollowSet(BasicBlock *bb) { m_followSet.push_back(bb); }
-	bool followSetContains(BasicBlock *bb) { 
-		std::list<BasicBlock*>::iterator it;
-		for (it = m_followSet.begin(); it != m_followSet.end(); it++)
-			if (*it == bb) return true;
-		return false; 
-	}
-	BasicBlock *getEnclFollow() { return m_followSet.back(); }
-	void removeLastFollow() { m_followSet.pop_back(); }
-
-	// access to gotoSet
-	void addtoGotoSet(BasicBlock *bb) { m_gotoSet.insert(bb); }
-	bool gotoSetContains(BasicBlock *bb) { return m_gotoSet.find(bb) != m_gotoSet.end(); }
-
 	/*
 	 * Functions to add new code, pure virtual.
 	 */
 
-	// pretested loops (cond is optional because it is in the bb [somewhere])
-	virtual void AddPretestedLoopHeader(BasicBlock *bb, Exp *cond = NULL) = 0;
-	virtual void AddPretestedLoopEnd(BasicBlock *bb) = 0;
+	// pretested loops
+	virtual void AddPretestedLoopHeader(int indLevel, Exp *cond) = 0;
+	virtual void AddPretestedLoopEnd(int indLevel) = 0;
 
 	// endless loops
-	virtual void AddEndlessLoopHeader(BasicBlock *bb) = 0;
-	virtual void AddEndlessLoopEnd(BasicBlock *bb) = 0;
+	virtual void AddEndlessLoopHeader(int indLevel) = 0;
+	virtual void AddEndlessLoopEnd(int indLevel) = 0;
 
 	// posttested loops
-	virtual void AddPosttestedLoopHeader(BasicBlock *bb) = 0;
-	virtual void AddPosttestedLoopEnd(BasicBlock *bb, Exp *cond = NULL) = 0;
+	virtual void AddPosttestedLoopHeader(int indLevel) = 0;
+	virtual void AddPosttestedLoopEnd(int indLevel, Exp *cond) = 0;
 
 	// case conditionals "nways"
-	virtual void AddCaseCondHeader(BasicBlock *bb, Exp *cond = NULL) = 0;
-	virtual void AddCaseCondOption(BasicBlock *bb, Exp *opt = NULL) = 0;
-	virtual void AddCaseCondOptionEnd(BasicBlock *bb) = 0;
-	virtual void AddCaseCondElse(BasicBlock *bb) = 0;
-	virtual void AddCaseCondEnd(BasicBlock *bb) = 0;
+	virtual void AddCaseCondHeader(int indLevel, Exp *cond) = 0;
+	virtual void AddCaseCondOption(int indLevel, Exp *opt) = 0;
+	virtual void AddCaseCondOptionEnd(int indLevel) = 0;
+	virtual void AddCaseCondElse(int indLevel) = 0;
+	virtual void AddCaseCondEnd(int indLevel) = 0;
 
 	// if conditions
-	virtual void AddIfCondHeader(BasicBlock *bb, Exp *cond = NULL) = 0;
-	virtual void AddIfCondEnd(BasicBlock *bb) = 0;
+	virtual void AddIfCondHeader(int indLevel, Exp *cond) = 0;
+	virtual void AddIfCondEnd(int indLevel) = 0;
 
 	// if else conditions
-	virtual void AddIfElseCondHeader(BasicBlock *bb, Exp *cond = NULL) = 0;
-	virtual void AddIfElseCondOption(BasicBlock *bb) = 0;
-	virtual void AddIfElseCondEnd(BasicBlock *bb) = 0;
-
-	// else conditions
-	virtual void AddElseCondHeader(BasicBlock *bb, Exp *cond = NULL) = 0;
-	virtual void AddElseCondEnd(BasicBlock *bb) = 0;
+	virtual void AddIfElseCondHeader(int indLevel, Exp *cond) = 0;
+	virtual void AddIfElseCondOption(int indLevel) = 0;
+	virtual void AddIfElseCondEnd(int indLevel) = 0;
 
 	// goto, break, continue, etc
-	virtual void AddGoto(BasicBlock *bb, BasicBlock *dest = NULL) = 0;
+	virtual void AddGoto(int indLevel, int ord) = 0;
+        virtual void AddBreak(int indLevel) = 0;
+        virtual void AddContinue(int indLevel) = 0;
 
 	// labels
-	virtual void AddLabel(BasicBlock *bb) = 0;
+	virtual void AddLabel(int indLevel, int ord) = 0;
+        virtual void RemoveLabel(int ord) = 0;
 
 	// sequential statements
-	virtual void AddAssignmentStatement(BasicBlock *bb, Exp *exp) = 0;
-	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Proc *proc, std::vector<Exp*> &args) = 0;
-	virtual void AddCallStatement(BasicBlock *bb, Exp *retloc, Exp *dest, std::vector<Exp*> &args) = 0;
-	virtual void AddReturnStatement(BasicBlock *bb, Exp *ret) = 0;
+	virtual void AddAssignmentStatement(int indLevel, AssignExp *exp) = 0;
+	virtual void AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
+            std::vector<Exp*> &args) = 0;
+	virtual void AddReturnStatement(int indLevel, Exp *ret) = 0;
 	virtual void AddProcStart(Signature *signature) = 0;
 	virtual void AddProcEnd() = 0;
 	virtual void AddLocal(const char *name, Type *type) = 0;
@@ -126,12 +103,7 @@ public:
 	/*
 	 * output functions, pure virtual.
 	 */
-	virtual void toString(std::string &s) = 0;
-	virtual bool isLabelAt(int nCharIndex) = 0;
-	virtual BasicBlock *getBlockAt(int nCharIndex) = 0;
-	virtual Exp *getExpAt(int nCharIndex) = 0;
-	virtual Proc *getCallAt(int nCharIndex) = 0;
-	virtual void addFormating(int nCharIndex, const char *str) = 0;
+	virtual void print(std::ostream &os) = 0;
 };
 
 #endif

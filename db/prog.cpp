@@ -53,8 +53,7 @@
 #include "prog.h"
 #include "signature.h"
 #include "analysis.h"
-#include "hllcode.h"
-#include "chllcode.h"
+#include "boomerang.h"
 
 Prog::Prog()
     : pBF(NULL),
@@ -116,6 +115,9 @@ void Prog::analyse() {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
 
+        // need to do this somewhere
+        p->getCFG()->sortByAddress();
+
         // decoded userproc.. analyse it
         analysis->analyse(p);
     }
@@ -142,18 +144,10 @@ void Prog::generateCode(std::ostream &os) {
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-/*        CHLLCode code(p);
-        if (p->generateCode(code)) {
-            std::string str;
-            code.toString(str);
-        os << str << std::endl;
-        } */
-        std::list<char*> code;
+        HLLCode *code = Boomerang::getHLLCode(p);
         p->generateCode(code);
-        for (std::list<char*>::iterator it1 = code.begin(); it1 != code.end();
-             it1++) {
-            os << *it1; 
-        }
+        code->print(os);
+        delete code;
     }
 }
 

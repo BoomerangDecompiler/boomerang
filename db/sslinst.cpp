@@ -427,7 +427,8 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
 
     Exp* e;
     if (newList->size() && (e = newList->back()) && e && e->isFlagCall()) {
-    // remove the flag call
+        // remove the flag call
+#if 0
         Exp *f = newList->back();
         newList->erase(--newList->end());
         // look up the flagdef
@@ -455,7 +456,12 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
           it != def_list->end(); it++)
             newList->push_back(*it);
         delete def_list;
+#else
+        *(--newList->end()) = new AssignExp(new Terminal(opFlags), 
+            newList->back());
+#endif
     }
+    
 
     // Iterate through each Exp of the new list of Exps
     for (std::list<Exp*>::iterator rt = newList->begin();

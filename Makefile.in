@@ -152,7 +152,7 @@ $(TEST_OBJS): %.o : %.cpp
 	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
 
 driver.o: driver.cpp include/boomerang.h
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
+	$(CC) -c -o $@ -Iinclude -Icodegen $(EXTRA) $<
 
 testAll.o: testAll.cpp
 	$(CC) -c -o $@ -Iinclude $(EXTRA) $< -Idb -Ifrontend -Ianalysis -Ic

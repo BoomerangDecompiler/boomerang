@@ -335,16 +335,15 @@ public:
 	virtual bool deserialize_fid(std::istream &inf, int fid);
 
 	// code generation
-	bool generateCode(HLLCode &hll);
-        void generateCode(std::list<char*> &lines);
+	void generateCode(HLLCode *hll);
 
     // print this proc, mainly for debugging
     void print(std::ostream &out, bool withDF = false);
 
 	// decompile this proc
 	void decompile();
-	void nameStackLocations();
-	void nameStatementLefts();
+	bool nameStackLocations();
+	bool nameRegisters();
         void replaceExpressionsWithSymbols();
 	bool removeNullStatements();
 	bool removeDeadStatements();
