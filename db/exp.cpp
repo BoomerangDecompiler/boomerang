@@ -2726,8 +2726,15 @@ Exp* RefExp::polySimplify(bool& bMod) {
             LOG << "attempting to simplify ref to " << phi << " with base "
                 << base << "\n";
         }
-        for (uu = phi->begin(); allProven && uu != phi->end(); uu++) {
-            Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), *uu), base->clone());
+        // Experiment MVE: compare 1 to 2, 1 to 3 ... 1 to n instead of
+        // base to 1, base to 2, ... base to n
+        // Seems to work
+        Exp* first = new RefExp(subExp1->clone(), *phi->begin());
+        //for (uu = phi->begin(); allProven && uu != phi->end(); uu++) {
+        for (uu = ++phi->begin(); allProven && uu != phi->end(); uu++) {
+            //Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), *uu), base->clone());
+            Exp* query = new Binary(opEquals, first,
+              new RefExp(subExp1->clone(), *uu));
             LOG << "attempting to prove " << query << " for ref to phi\n";
             if (!def->getProc()->prove(query)) {
                 LOG << "not proven\n";
@@ -2737,7 +2744,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
         }
         if (allProven) {
             bMod = true;
-            res = base->clone();
+            //res = base->clone();
+            res = first;
             LOG << "replacing ref to phi " << def << " with " << res << "\n";
             return res;
         }
