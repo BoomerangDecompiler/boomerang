@@ -537,7 +537,22 @@ void ExpTest::testSimplifyArith() {
     expected = "m[r28 + 4]";
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
     delete mm;
-    
+   
+    // r24 + m[(r28 - 4) - 4] 
+    mm = new Binary(opPlus,
+        new Unary(opRegOf, new Const(24)),
+        new Unary(opMemOf,
+            new Binary(opMinus,
+                new Binary(opMinus,
+                    new Unary(opRegOf, new Const(28)),
+                    new Const(4)),
+                new Const(4))));
+    mm = mm->simplifyArith();
+    std::ostringstream ost3;
+    mm->print(ost3);
+    expected = "r24 + m[r28 - 8]";
+    CPPUNIT_ASSERT_EQUAL(expected, std::string(ost3.str()));
+    delete mm;
 }
 
 /*==============================================================================

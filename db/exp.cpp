@@ -28,6 +28,8 @@
  * 03 Feb 03 - Mike: Mods for cached dataflow
  * 25 Mar 03 - Mike: Print new operators (opWildIntConst, etc)
  * 10 Jun 03 - Mike: Swapped simplification of a - K -> a + -K
+ * 16 Jun 03 - Mike: Binary::simplifyArith simplifies subexpressions first;
+ *              returns a - K now (was a + -K)
  */
 
 #include <assert.h>
@@ -1446,7 +1448,7 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
  *============================================================================*/
 Exp* Unary::simplifyArith()
 {
-    if (op == opMemOf || op == opRegOf) {
+    if (op == opMemOf || op == opRegOf || op == opAddrOf) {
         // assume we want to simplify the subexpression
         subExp1 = subExp1->simplifyArith();
     }
@@ -1467,11 +1469,10 @@ Exp* Ternary::simplifyArith() {
 }
 
 Exp* Binary::simplifyArith() {
-    if ((op != opPlus) && (op != opMinus)) {
-        subExp1 = subExp1->simplifyArith();
-        subExp2 = subExp2->simplifyArith();
+    subExp1 = subExp1->simplifyArith();
+    subExp2 = subExp2->simplifyArith();
+    if ((op != opPlus) && (op != opMinus))
         return this;
-    }
 
     // Partition this expression into positive non-integer terms, negative
     // non-integer terms and integer terms.
@@ -1522,8 +1523,12 @@ Exp* Binary::simplifyArith() {
             // Just positives
             return Exp::Accumulate(positives);
         } else {
-            return new Binary(opPlus,
-                Exp::Accumulate(positives), new Const(sum));
+            OPER op = opPlus;
+            if (sum < 0) {
+                op = opMinus;
+                sum = -sum;
+            }
+            return new Binary(op, Exp::Accumulate(positives), new Const(sum));
         }
     }
     // Some positives, some negatives
@@ -1533,7 +1538,12 @@ Exp* Binary::simplifyArith() {
             Exp::Accumulate(negatives));
     }
     // General case: some positives, some negatives, a sum
-    return new Binary(opPlus,
+    OPER op = opPlus;
+    if (sum < 0) {
+        op = opMinus;       // Return (pos - negs) - sum
+        sum = -sum;
+    }
+    return new Binary(op,
         new Binary(opMinus,
             Exp::Accumulate(positives),
             Exp::Accumulate(negatives)),
@@ -2561,14 +2571,19 @@ void AssignExp::doReplaceRef(Exp* from, Exp* to) {
     bool changeright = false;
     subExp2 = subExp2->searchReplaceAll(from, to, changeright);
     bool changeleft = false;
-    // If LHS is a memof, substitute it's subexpression as well
+    // If LHS is a memof, substitute its subexpression as well
     if (subExp1->isMemOf()) {
         Exp* subsub1 = ((Unary*)subExp1)->getSubExp1();
         ((Unary*)subExp1)->setSubExp1ND(
           subsub1->searchReplaceAll(from, to, changeleft));
     }
     //assert(changeright || changeleft);    // HACK!
+    if (!changeright && !changeleft)
+        std::cerr << "Exp::doReplaceRef: could not change " << from << " to " <<
+          to << " in " << (Exp*)this << " !!\n";
     // simplify the expression
+if (number == 27)
+  std::cerr << "HACK!\n";
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
     simplify();
