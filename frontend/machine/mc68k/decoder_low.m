@@ -666,8 +666,10 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
                 sslName[3] = '\0';
                 strcat(sslName, "qa");     // addqw -> addqa
             }
-            if (!b)                         // Can't use else
+            //if (!b)                       // Can't use else
+            } else {                        // Can use else if not at start
                 chop2ndLast(name);          // addqw -> addw
+            }
             RTs = instantiate (pc, sslName, DIS_I8, dst); 
             ADDBUMP;
         } 
@@ -694,8 +696,10 @@ list<RT*>* NJMCDecoder::decodeLowLevelInstruction (ADDRESS hostPC, ADDRESS pc,
                 sslName[3] = '\0';
                 strcat(sslName, "qa");      // subl -> subqa
             }
-            if (!b)                         // Can't use else
+            //if (!b)                         // Can't use else
+            } else {
                 chop2ndLast(name);          // addqw -> addw
+            }
             RTs = instantiate (pc, sslName, DIS_I8, dst); 
             ADDBUMP;
         }   

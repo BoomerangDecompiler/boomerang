@@ -1271,6 +1271,14 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | CALL.Jvod(relocd) =>
         stmts = instantiate(pc,  "CALL.Jvod", dis_Num(relocd));
+        // Fix the last assignment, which is %pc := %pc + K + reloc
+        Assign* last = (Assign*)stmts->back();
+        Const*& reloc = (Const*&)((Binary*)last->getRight())->refSubExp2();
+        assert(reloc->isIntConst());
+        assert(reloc->getInt() == (int)relocd);
+        // Subtract off the host pc
+        reloc->setInt(reloc->getInt() - hostPC);
+        
         if (relocd-delta == pc+5) {
             // This is a call $+5
             // Use the standard semantics, except for the last statement
