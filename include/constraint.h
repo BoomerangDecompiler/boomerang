@@ -63,6 +63,13 @@ typedef std::map<Exp*, Exp*, lessExpStar>::iterator iterator;
     void print(std::ostream& os);
     // Print to the debug buffer, and return that buffer
     char* prints();
+    // Substitute the given constraints into this map
+    void    substitute(ConstraintMap& other);
+    // For this solution, we need to find disjunctions of the form
+    // <alphaN> = <type>      or
+    // <type>   = <alphaN>
+    // and substitute these into each part of the solution
+    void    substAlpha();
 };
 
 // A class used for fast location of a constraint
@@ -100,6 +107,11 @@ public:
 
     LocationSet& getConstraints() {return conSet;}
     void    addConstraints(LocationSet& con) {conSet.makeUnion(con);}
+    // Substitute the given constraintMap into the disjuncts
+    void    substIntoDisjuncts(ConstraintMap& in);
+    // Substitute the given constraintMap into the equates
+    void    substIntoEquates(ConstraintMap& in);
+
     // Solve the constraints. If they can be solved, return true and put
     // a copy of the solution (in the form of a set of T<location> = <type>)
     // into solns

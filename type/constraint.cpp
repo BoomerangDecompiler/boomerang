@@ -68,6 +68,65 @@ char* EquateMap::prints() {
     return debug_buffer;
 }
 
+// Substitute the given constraints into this map
+void ConstraintMap::substitute(ConstraintMap& other) {
+    std::map<Exp*, Exp*, lessExpStar>::iterator oo, cc;
+    for (oo = other.cmap.begin(); oo != other.cmap.end(); oo++) {
+        bool ch;
+        for (cc = cmap.begin(); cc != cmap.end(); cc++) {
+            Exp* newVal =
+              cc->second->searchReplaceAll(oo->first, oo->second, ch);
+            if (ch) {
+                if (*cc->first == *newVal)
+                    // e.g. was <char*> = <alpha6> now <char*> = <char*>
+                    cmap.erase(cc);
+                else
+                    cmap[cc->first] = newVal;
+            } else
+                // The existing value
+                newVal = cc->second;
+            Exp* newKey =
+              cc->first-> searchReplaceAll(oo->first, oo->second, ch);
+            if (ch) {
+                cmap.erase(cc->first);
+                // Often end up with <char*> = <char*>
+                if (!(*newKey == *newVal))
+                    cmap[newKey] = newVal;
+            }
+        }
+    }
+}
+
+void ConstraintMap::substAlpha() {
+    ConstraintMap alphaDefs;
+    std::map<Exp*, Exp*, lessExpStar>::iterator cc;
+    for (cc = cmap.begin(); cc != cmap.end(); cc++) {
+        // Looking for entries with two TypeVals, where exactly one is an alpha
+        if (!cc->first->isTypeVal() || !cc->second->isTypeVal())
+            continue;
+        Type *t1, *t2;
+        t1 = ((TypeVal*)cc->first )->getType();
+        t2 = ((TypeVal*)cc->second)->getType();
+        int numAlpha = 0;
+        if (t1->isPointerToAlpha()) numAlpha++;
+        if (t2->isPointerToAlpha()) numAlpha++;
+        if (numAlpha != 1)
+            continue;
+        // This is such an equality. Copy it to alphaDefs
+        if (t1->isPointerToAlpha())
+            alphaDefs.cmap[cc->first] = cc->second;
+        else
+            alphaDefs.cmap[cc->second] = cc->first;
+    }
+
+    // Remove these from the solution
+    for (cc = alphaDefs.begin(); cc != alphaDefs.end(); cc++)
+        cmap.erase(cc->first);
+
+    // Now substitute into the remainder
+    substitute(alphaDefs);
+}
+
 
 
 Constraints::~Constraints() {
@@ -75,6 +134,65 @@ Constraints::~Constraints() {
     for (cc = conSet.begin(); cc != conSet.end(); cc++) {
         delete *cc;
     }
+}
+
+
+void Constraints::substIntoDisjuncts(ConstraintMap& in) {
+    ConstraintMap::iterator kk;
+    for (kk = in.begin(); kk != in.end(); kk++) {
+        Exp* from = kk->first;
+        Exp* to = kk->second;
+        bool ch;
+        std::list<Exp*>::iterator dd;
+        for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) {
+            (*dd)->searchReplaceAll(from, to, ch);
+            *dd = (*dd)->simplifyConstraint();
+        }
+    }
+}
+
+void Constraints::substIntoEquates(ConstraintMap& in) {
+    // Substitute the fixed types into the equates. This may generate more
+    // fixed types
+    ConstraintMap extra;
+    ConstraintMap cur = in;
+    while (cur.size()) {
+        extra.clear();
+        ConstraintMap::iterator kk;
+        for (kk = cur.begin(); kk != cur.end(); kk++) {
+            Exp* lhs = kk->first;
+            std::map<Exp*, LocationSet, lessExpStar>::iterator it =
+              equates.find(lhs);
+            if (it != equates.end()) {
+                // Possibly new constraints that
+                // typeof(elements in it->second) == val
+                Exp* val = kk->second;
+                LocationSet& ls = it->second;
+                LocationSet::iterator ll;
+                for (ll = ls.begin(); ll != ls.end(); ll++) {
+                    ConstraintMap::iterator ff;
+                    ff = fixed.find(*ll);
+                    if (ff != fixed.end()) {
+                        if (!unify(val, ff->second, extra)) {
+                            if (VERBOSE || DEBUG_TA)
+                                std::cerr << "Constraint failure: " <<
+                                  *ll << " constrained to be " <<
+                                  ((TypeVal*)val)->getType()->getCtype() <<
+                                  " and " <<
+                                  ((TypeVal*)ff->second)->getType()->getCtype()
+                                  << "\n";
+                            return;
+                        }
+                    } else
+                        extra[*ll] = val;   // A new constant constraint
+                }
+                // Remove the equate
+                equates.erase(it);
+            }
+        }
+        fixed.makeUnion(extra);
+        cur = extra;    // Take care of any "ripple effect"
+    }                   // Repeat until no ripples
 }
 
 // Get the next disjunct from this disjunction
@@ -190,67 +308,42 @@ conSet.print(std::cerr);
         }
     }
 
-{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ", "; std::cerr << "\n";}
+{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
 std::cerr << fixed.size() << " fixed: " << fixed.prints();
 std::cerr << equates.size() << " equates: " << equates.prints();
 
     // Substitute the fixed types into the disjunctions
-    ConstraintMap::iterator kk;
-    for (kk = fixed.begin(); kk != fixed.end(); kk++) {
-        Exp* from = kk->first;
-        Exp* to = kk->second;
-        bool ch;
-        std::list<Exp*>::iterator dd;
-        for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++)
-            (*dd)->searchReplaceAll(from, to, ch);
-    }
+    substIntoDisjuncts(fixed);
 
     // Substitute the fixed types into the equates. This may generate more
     // fixed types
-    ConstraintMap extra;
-    ConstraintMap in = fixed;
-    while (in.size()) {
-        extra.clear();
-        for (kk = in.begin(); kk != in.end(); kk++) {
-            Exp* lhs = kk->first;
-            std::map<Exp*, LocationSet, lessExpStar>::iterator it =
-              equates.find(lhs);
-            if (it != equates.end()) {
-                // Possibly new constraints that 
-                // typeof(elements in it->second) == val
-                Exp* val = kk->second;
-                LocationSet& ls = it->second;
-                LocationSet::iterator ll;
-                for (ll = ls.begin(); ll != ls.end(); ll++) {
-                    ConstraintMap::iterator ff;
-                    ff = fixed.find(*ll);
-                    if (ff != fixed.end()) {
-                        if (!unify(val, ff->second, extra)) {
-                            if (VERBOSE || DEBUG_TA)
-                                std::cerr << "Constraint failure: " <<
-                                  *ll << " constrained to be " <<
-                                  ((TypeVal*)val)->getType()->getCtype() <<
-                                  " and " <<
-                                  ((TypeVal*)ff->second)->getType()->getCtype()
-                                  << "\n";
-                            return false;
-                        }
-                    } else
-                        extra[*ll] = val;   // A new constant constraint
-                }
-                // Remove the equate
-                equates.erase(it);
-            }
-        }
-        fixed.makeUnion(extra);
-        in = extra;     // Take care of any "ripple effect"
-    }                   // Repeat until no ripples
+    substIntoEquates(fixed);
 
-std::cerr << "\n" << fixed.size() << " fixed: " << fixed.prints();
+std::cerr << "\nAfter substitute fixed into equates:\n";
+{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
+std::cerr << fixed.size() << " fixed: " << fixed.prints();
+std::cerr << equates.size() << " equates: " << equates.prints();
+    // Substitute again the fixed types into the disjunctions
+    // (since there may be more fixed types from the above)
+    substIntoDisjuncts(fixed);
+
+std::cerr << "\nAfter second substitute fixed into equates:\n";
+{std::cerr << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) std::cerr << *dd << ",\n"; std::cerr << "\n";}
+std::cerr << fixed.size() << " fixed: " << fixed.prints();
 std::cerr << equates.size() << " equates: " << equates.prints();
 
     ConstraintMap soln;
-    return doSolve(disjunctions.begin(), soln, solns);
+    bool ret = doSolve(disjunctions.begin(), soln, solns);
+    if (ret) {
+        // For each solution, we need to find disjunctions of the form
+        // <alphaN> = <type>      or
+        // <type>   = <alphaN>
+        // and substitute these into each part of the solution
+        std::list<ConstraintMap>::iterator it;
+        for (it = solns.begin(); it != solns.end(); it++)
+            it->substAlpha();
+    }
+    return ret;
 }
 
 static int level = 0;
@@ -315,6 +408,8 @@ std::cerr << "Unified now " << unified << "; extra now " << extra.prints() << "\
         soln.makeUnion(extra);
         doSolve(++it, soln, solns);
         // Revert to the previous soln (whether doSolve returned true or not)
+        // If this recursion did any good, it will have gotten to the end and
+        // added the resultant soln to solns
         soln = oldSoln;
 std::cerr << "After doSolve returned: soln back to: " << soln.prints() << "\n";
         // Back to the current disjunction
