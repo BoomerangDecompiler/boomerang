@@ -9,15 +9,13 @@
 Boomerang *Boomerang::boomerang = NULL;
 
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
-    noBranchSimplify(false), 
-    noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
-    noDataflow(false), noDecompile(false), noDecompileUp(false),
-    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
-    noPromote(false), propOnlyToAll(false), recursionBust(false),
-    debugDataflow(false), debugPrintSSA(false),
-    noPropMult(false), maxMemDepth(99), debugSwitch(false),
-    prove(false), noParameterNames(false), debugLiveness(false),
-    debugUnusedRets(false)
+    noBranchSimplify(false), noRemoveNull(false), noLocals(false),
+    noRemoveLabels(false), noDataflow(false), noDecompile(false),
+    noDecompileUp(false), traceDecoder(false), dotFile(NULL),
+    numToPropagate(-1), noPromote(false), propOnlyToAll(false),
+    debugDataflow(false), debugPrintSSA(false), noPropMult(false),
+    maxMemDepth(99), debugSwitch(false), noParameterNames(false),
+    debugLiveness(false), debugUnusedRets(false)
 {
 }
 
@@ -172,9 +170,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         debugPrintSSA = true;
                         break;
                 }
-                break;
-            case 'P':
-                prove = true;
                 break;
             case 'm':
                 sscanf(argv[++i], "%i", &maxMemDepth);

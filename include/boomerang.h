@@ -62,14 +62,12 @@ public:
     int numToPropagate;
     bool noPromote;
     bool propOnlyToAll;
-    bool recursionBust;
     bool debugDataflow;
     bool debugPrintReach;
     bool debugPrintSSA;
     bool noPropMult;
     int maxMemDepth;
     bool debugSwitch;
-    bool prove;
     bool noParameterNames;
     bool debugLiveness;
     bool debugUnusedRets;
