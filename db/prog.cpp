@@ -182,6 +182,7 @@ void Prog::generateCode(std::ostream &os) {
     HLLCode *code = Boomerang::getHLLCode();
     for (std::vector<Global*>::iterator it1 = globals.begin(); 
          it1 != globals.end(); it1++) {
+        // Check for an initial value
         Exp *e = NULL;
         ADDRESS uaddr = (*it1)->getAddress();
         Type *ty = (*it1)->getType();
@@ -193,11 +194,13 @@ void Prog::generateCode(std::ostream &os) {
                 n = *(char*)(uaddr + si->uHostAddr - si->uNativeAddr);
                 break;
             case 16:
-                n = *(short*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                // Note: must respect endianness
+                n = pBF->readNative2(uaddr);
                 break;
             case 32:
             default:
-                n = *(int*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                // Note: must respect endianness
+                n = pBF->readNative4(uaddr);
             }
             e = new Const(n);
         } 
