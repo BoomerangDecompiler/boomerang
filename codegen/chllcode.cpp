@@ -384,7 +384,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " + ";
             appendExp(str, b->getSubExp2(), PREC_ADD);
-            openParen(str, curPrec, PREC_ADD);
+            closeParen(str, curPrec, PREC_ADD);
             break;
         case opFMinus:
         case opFMinusd:
@@ -393,7 +393,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " - ";
             appendExp(str, b->getSubExp2(), PREC_ADD);
-            openParen(str, curPrec, PREC_ADD);
+            closeParen(str, curPrec, PREC_ADD);
             break;
         case opFMult:
         case opFMultd:
@@ -414,12 +414,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             closeParen(str, curPrec, PREC_MULT);
             break;
         case opFround:
-            str << "fround(";
+            // Note: we need roundf or roundl depending on size of operands
+            str << "round(";        // Note: math.h required
             appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opFtrunc:
-            str << "ftrunc(";
+            // Note: we need truncf or truncl depending on size of operands
+            str << "trunc(";        // Note: math.h required
             appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
