@@ -69,6 +69,8 @@ MYTEST(testFixSuccessor);
     MYTEST(testSubscriptVar);
     MYTEST(testTypeOf);
     MYTEST(testSetConscripts);
+    MYTEST(testAddUsedLocs);
+    MYTEST(testSubscriptVars);
 }
 
 int ExpTest::countTestCases () const
@@ -1136,8 +1138,7 @@ void ExpTest::testSubscriptVar() {
     CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
 
     // Subtest 3: change to a different definition
-    Statement* def3 = dynamic_cast<Statement*>(new Assign(Location::regOf(29),
-        new Const(0)));
+    Statement* def3 = new Assign(Location::regOf(28), new Const(0));
     def3->setNumber(99);
     s->subscriptVar(r28, def3);
     std::string expected3("   0 ** m[r28{99} - 4] := r28{99} + r29");
@@ -1206,4 +1207,203 @@ void ExpTest::testSetConscripts() {
     std::ostringstream act2;
     act2 << e;
     CPPUNIT_ASSERT_EQUAL(expected, act2.str());
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testAddUsedLocs
+ * OVERVIEW:        Test finding the locations used by an expression
+ *============================================================================*/
+void ExpTest::testAddUsedLocs() {
+    // Null case
+    Exp* e = new Terminal(opNil);
+    LocationSet l;
+    e->addUsedLocs(l);
+    CPPUNIT_ASSERT(l.size() == 0);
+
+    // Const: "foo"
+    e = new Const("foo");
+    e->addUsedLocs(l);
+    CPPUNIT_ASSERT(l.size() == 0);
+
+    // Simple terminal: %pc
+    e = new Terminal(opPC);
+    e->addUsedLocs(l);
+    std::string expected = "%pc\n";
+    std::ostringstream ost1;
+    l.print(ost1);
+    std::string actual = ost1.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Simple location: r28
+    l.clear();
+    e = Location::regOf(28);
+    e->addUsedLocs(l);
+    expected = "r28\n";
+    std::ostringstream ost2;
+    l.print(ost2);
+    actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Memory location: m[r28-4]
+    l.clear();
+    e = Location::memOf(
+        new Binary(opMinus,
+            Location::regOf(28),
+            new Const(4)));
+    e->addUsedLocs(l);
+    expected = "m[r28 - 4],\tr28\n";
+    std::ostringstream ost3;
+    l.print(ost3);
+    actual = ost3.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Unary: a[m[r28-4]]
+    l.clear();
+    e = new Unary(opAddrOf, e);
+    e->addUsedLocs(l);
+    expected = "m[r28 - 4],\tr28\n";
+    std::ostringstream ost4;
+    l.print(ost4);
+    actual = ost4.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Binary: r24 + r25
+    l.clear();
+    e = new Binary(opPlus,
+        Location::regOf(24),
+        Location::regOf(25));
+    e->addUsedLocs(l);
+    expected = "r24,\tr25\n";
+    std::ostringstream ost5;
+    l.print(ost5);
+    actual = ost5.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Ternary: r24@r25:r26
+    l.clear();
+    e = new Ternary(opAt,
+        Location::regOf(24),
+        Location::regOf(25),
+        Location::regOf(26));
+    e->addUsedLocs(l);
+    expected = "r24,\tr25,\tr26\n";
+    std::ostringstream ost6;
+    l.print(ost6);
+    actual = ost6.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Simple RefExp: r28{2}
+    l.clear();
+    Assign a(e, e);
+    a.setNumber(2);
+    e = new RefExp(Location::regOf(28), &a);
+    e->addUsedLocs(l);
+    expected = "r28{2}\n";
+    std::ostringstream ost7;
+    l.print(ost7);
+    actual = ost7.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // RefExp: m[r28{2} - 4]{3}
+    Assign t(e, e);
+    t.setNumber(3);
+    e = new RefExp(
+        Location::memOf(
+            new Binary(opMinus,
+                new RefExp(
+                    Location::regOf(28), &a),
+                new Const(4))), &t);
+    e->addUsedLocs(l);
+    expected = "m[r28{2} - 4]{3},\tr28{2}\n";
+    std::ostringstream ost8;
+    l.print(ost8);
+    actual = ost8.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testSubscriptVars
+ * OVERVIEW:        Test the subscripting of variables (locations)
+ *============================================================================*/
+void ExpTest::testSubscriptVars() {
+    // Null case: %pc
+    Assign s9(new Terminal(opNil), new Terminal(opNil));
+    s9.setNumber(9);
+    Exp* search = Location::regOf(28);
+    Exp* e = new Terminal(opPC);
+    e = e->expSubscriptVar(search, &s9);
+    std::string expected("%pc");
+    std::ostringstream ost1;
+    ost1 << e;
+    std::string actual = ost1.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Simple case: r28
+    e = search->clone();
+    e = e->expSubscriptVar(search, &s9);
+    expected = "r28{9}";
+    std::ostringstream ost2;
+    ost2 << e;
+    actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // A temp
+    e = Location::tempOf(new Const("tmp1"));
+    e = e->expSubscriptVar(e->clone(), &s9);
+    expected = "tmp1{9}";
+    std::ostringstream ost3;
+    ost3 << e;
+    actual = ost3.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // m[r28] + r28
+    e = new Binary(opPlus,
+        Location::memOf(Location::regOf(28)),
+        Location::regOf(28));
+    e = e->expSubscriptVar(search, &s9);
+    expected = "m[r28{9}] + r28{9}";
+    std::ostringstream ost4;
+    ost4 << e;
+    actual = ost4.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // RefExp: r28{7} -> r28{9}
+    Assign s7(new Terminal(opNil), new Terminal(opNil));
+    s7.setNumber(7);
+    e = new RefExp(search->clone(), &s7);
+    e = e->expSubscriptVar(search, &s9);
+    expected = "r28{9}";
+    std::ostringstream ost5;
+    ost5 << e;
+    actual = ost5.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // m[r28{7} + 4]{8}
+    Assign s8(new Terminal(opNil), new Terminal(opNil));
+    s8.setNumber(8);
+    e = new RefExp(
+        Location::memOf(
+            new Binary(opPlus,
+                new RefExp(
+                    Location::regOf(28), &s7),
+                new Const(4))), &s8);
+    e = e->expSubscriptVar(search, &s9);
+    expected = "m[r28{9} + 4]{8}";
+    std::ostringstream ost6;
+    ost6 << e;
+    actual = ost6.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // r24{7} with r24{7} and 0: should not change: RefExps should not compare
+    // at the top level, only with their base expression (here r24, not r24{7})
+    e = new RefExp(Location::regOf(24), &s7);
+    e = e->expSubscriptVar(e->clone(), NULL);
+    expected = "r24{7}";
+    std::ostringstream ost7;
+    ost7 << e;
+    actual = ost7.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+
 }
