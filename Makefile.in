@@ -62,7 +62,7 @@ testDyn: lib
 	cd frontend && ${MAKE} test
 
 test:	lib bigtest
-#	cd loader   && ${MAKE} test
+	cd loader   && ${MAKE} test
 	./bigtest
 
 clean:
