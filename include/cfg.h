@@ -583,7 +583,7 @@ public:
     void generateCode(HLLCode *hll, int indLevel, PBB latch, 
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
     // For prepending phi functions
-    void prependStmt(Statement* s);
+    void prependStmt(Statement* s, UserProc* proc);
 };  // class BasicBlock
 
     // A type for the ADDRESS to BB map
@@ -1069,7 +1069,7 @@ public:
     int  ancestorWithLowestSemi(DOM* d, int v);
     void Link(DOM* d, int p, int n);
     void computeDF(DOM* d, int n);
-    void placePhiFunctions(DOM* d, int memDepth);
+    void placePhiFunctions(DOM* d, int memDepth, UserProc* proc);
     void renameBlockVars(DOM* d, int n, int memDepth);
 
 };              /* Cfg */

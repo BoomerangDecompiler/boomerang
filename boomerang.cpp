@@ -15,7 +15,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
     debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
-    noPropMult(false), impSSA(false)
+    noPropMult(false), impSSA(false), maxMemDepth(99)
 {
 }
 
@@ -30,29 +30,29 @@ void Boomerang::usage() {
 }
 
 void Boomerang::help() {
-    std::cerr << "-h: this help\n";
-    std::cerr << "-v: verbose\n";
+    std::cerr << "-dd: debug - debug global dataflow\n";
+    std::cerr << "-dr: debug - print reaching and available definitions\n";
+    std::cerr << "-ds: debug - print after conversion to SSA form\n";
+    std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
-    std::cerr << "-r: print rtl for each proc to stderr before code generation"
-                    "\n";
-    std::cerr << "-rb: attempt Mike's \"recursion buster\" hack\n";
-    std::cerr << "-t: trace every instruction decoded\n";
-    std::cerr << "-m num: max memory depth\n";
+    std::cerr << "-h: this help\n";
+    std::cerr << "-issa: use Implicit SSA form (TEMPORARY)\n";
+    std::cerr << "-m <num>: max memory depth\n";
     std::cerr << "-nb: no simplications for branches\n";
-    std::cerr << "-nn: no removal of null and dead statements\n";
+    std::cerr << "-nn: no removal of null and unused statements\n";
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-npm: no propagation if multiple defs of same expression\n";
-    std::cerr << "-p num: only do num propogations\n";
+    std::cerr << "-p <num>: only do num propogations\n";
     std::cerr << "-pa: only propagate if can propagate to all\n";
-    std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
-    std::cerr << "-dd: debug - debug global dataflow\n";
-    std::cerr << "-dr: debug - print reaching and available definitions\n";
-    std::cerr << "-ds: debug - print after conversion to SSA form\n";
-    std::cerr << "-issa: use Implicit SSA form (TEMPORARY)\n";
+    std::cerr << "-r: print rtl for each proc to stderr before code generation"
+                    "\n";
+    std::cerr << "-rb: attempt Mike's \"recursion buster\" hack\n";
+    std::cerr << "-t: trace every instruction decoded\n";
+    std::cerr << "-v: verbose\n";
     exit(1);
 }
         

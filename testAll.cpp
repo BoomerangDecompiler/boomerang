@@ -36,19 +36,19 @@ int main(int argc, char** argv)
 //std::cerr << "Prog at " << std::hex << &prog << std::endl;
     CppUnit::TestSuite suite;
 
-    ExpTest  expt("ExpTest");
-    ProgTest progt("ProgTest");
-    ProcTest proct("ProcTest");
-    RtlTest rtlt("RtlTest");
-    ParserTest parsert("ParserTest");
-    TypeTest typet("TypeTest");
-    FrontSparcTest fst("FrontSparcTest");
+    ExpTest  expt("Exp Test");
+    ProgTest progt("Prog Test");
+    ProcTest proct("Proc Test");
+    RtlTest rtlt("Rtl Test");
+    ParserTest parsert("SSL Parser Test");
+    TypeTest typet("Type Test");
+    FrontSparcTest fst("SPARC Frontend Test");
 //    FrontendTest fet("FrontendTest");
-    FrontPentTest fpt("FrontPentTest");
-    AnalysisTest ant("AnalysisTest");
-    CTest c("CTest");
-    StatementTest dft("StatementTest");
-    CfgTest cfgt("CfgTest");
+    FrontPentTest fpt("Pentium Frontend Test");
+    AnalysisTest ant("Analysis Test");
+    CTest ct("C Parser Test");
+    StatementTest stt("Statement Test");
+    CfgTest cfgt("Cfg Test");
 
     expt.registerTests(&suite);
     progt.registerTests(&suite);
@@ -59,8 +59,8 @@ int main(int argc, char** argv)
     fst.registerTests(&suite);
     fpt.registerTests(&suite);
     ant.registerTests(&suite);
-    c.registerTests(&suite);
-    dft.registerTests(&suite);
+    ct.registerTests(&suite);
+    stt.registerTests(&suite);
     cfgt.registerTests(&suite);
 
     CppUnit::TextTestResult res;

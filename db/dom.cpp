@@ -148,7 +148,7 @@ void Cfg::computeDF(DOM* d, int n) {
     d->DF[n] = S;
 }
 
-void Cfg::placePhiFunctions(DOM* d, int memDepth) {
+void Cfg::placePhiFunctions(DOM* d, int memDepth, UserProc* proc) {
     // First free some memory no longer needed
     d->dfnum.resize(0);
     d->semi.resize(0);
@@ -218,7 +218,7 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
                     // a := phi{}
                     Statement* as = new Assign(a, new PhiExp);
                     PBB Ybb = d->BBs[y];
-                    Ybb->prependStmt(as);
+                    Ybb->prependStmt(as, proc);
                     // A_phi[a] <- A_phi[a] U {y}
                     s.insert(y);
                     // if a !elementof A_orig[y]

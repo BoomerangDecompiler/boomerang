@@ -201,6 +201,7 @@ db/ProgTest.o: db/ProgTest.h include/prog.h
 db/ProcTest.o: db/ProcTest.h include/proc.h
 db/TypeTest.o: db/TypeTest.h include/util.h include/type.h
 db/StaementTest.o: db/StaementTest.h include/statement.h
+db/CfgTest.o: db/CfgTest.h include/statement.h include/exp.h include/dom.h
 db/table.o: include/types.h db/table.h include/statement.h include/exp.h \
     include/statement.h
 db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h \

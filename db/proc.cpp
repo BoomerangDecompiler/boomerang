@@ -1534,12 +1534,15 @@ void UserProc::countRefs(RefCounter& refCounts) {
         LocSetIter rr;
         for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
             if (r->isSubscript()) {
-                RefsExp* re = (RefsExp*)r;
-                StmtSetIter xx;
-                for (Statement* def = re->getFirstRef(xx); def;
-                      def = re->getNextRef(xx)) {
-                    refCounts[def]++;
-                }
+                if (Boomerang::get()->impSSA) {
+                    RefsExp* re = (RefsExp*)r;
+                    StmtSetIter xx;
+                    for (Statement* def = re->getFirstRef(xx); def;
+                          def = re->getNextRef(xx)) {
+                        refCounts[def]++;
+                    }
+                } else
+                    refCounts[((RefExp*)r)->getRef()]++;
             }
         }
     }
@@ -1565,12 +1568,17 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
                 // two refs as two; refCounts is a count of the number of
                 // statements that use a definition, not the number of refs
                 StatementSet refs;
-                LocationSet comps;
-                s->addUsedLocs(comps);
+                LocationSet components;
+                s->addUsedLocs(components);
                 LocSetIter cc;
-                for (Exp* c = comps.getFirst(cc); c; c = comps.getNext(cc)) {
-                    if (c->isSubscript())
-                        refs.makeUnion(((RefsExp*)c)->getRefs());
+                for (Exp* c = components.getFirst(cc); c;
+                  c = components.getNext(cc)) {
+                    if (c->isSubscript()) {
+                        if (Boomerang::get()->impSSA)
+                            refs.makeUnion(((RefsExp*)c)->getRefs());
+                        else
+                            refs.insert(((RefExp*)c)->getRef());
+                    }
                 }
                 StmtSetIter dd;
                 for (Statement* def = refs.getFirst(dd); def;
@@ -1878,3 +1886,4 @@ void UserProc::removeRestoreRefs(StatementSet& restoreSet) {
         s->removeRestoreRefs(restoreSet);
     }
 }
+

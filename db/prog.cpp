@@ -1293,7 +1293,7 @@ void Prog::decompile() {
         for (int depth = 0; depth <= maxDepth; depth++) {
 
             // Place the phi functions for this memory depth
-            cfg->placePhiFunctions(d, depth);
+            cfg->placePhiFunctions(d, depth, proc);
 
             // Number the statements
             int stmtNumber = 0;
@@ -1323,6 +1323,10 @@ void Prog::decompile() {
             }
         }
 
+        // Now all the other things that were in UserProc::decompile()
+        proc->complete();
+
+#if 0
         // Find the "restore set"
         StatementSet restoreSet;
         proc->findRestoreSet(restoreSet);
@@ -1334,9 +1338,36 @@ void Prog::decompile() {
                 std::cerr << std::dec << r->getNumber() << " ";
             std::cerr << "\n\n";
         }
+#endif
+
+        // Remove null statements
+        if (!Boomerang::get()->noRemoveNull)
+            proc->removeNullStatements();
+
+        // Remove unused statements
+        // FIXME: refCounts doesn't have to be parameter when remove global
+        typedef std::map<Statement*, int> RefCounter;
+        RefCounter refCounts;           // The map
+        // Count the references first
+        proc->countRefs(refCounts);
+        // Now remove any that have no used (globally)
+        if (!Boomerang::get()->noRemoveNull)
+            proc->removeUnusedStatements(refCounts);
+
+        if (VERBOSE && !Boomerang::get()->noRemoveNull) {
+            std::cerr << "===== After removing null and unused statements "
+              "=====\n";
+            for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+                proc = (UserProc*)(*pp);
+                if (proc->isLib()) continue;
+                    proc->print(std::cerr, true);
+            }
+            std::cerr << "===== End after removing unused "
+              "statements =====\n\n";
+        }
 
         igraph ig;      // FIXME: need to make an attempt to calculate this!
-        //proc->fromSSAform(ig);
+        proc->fromSSAform(ig);
 
         if (Boomerang::get()->vFlag) {
             std::cerr << "===== After transformation from SSA form =====\n";

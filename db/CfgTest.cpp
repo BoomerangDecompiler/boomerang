@@ -185,7 +185,7 @@ void CfgTest::testPlacePhi () {
 
     DOM* d = new DOM;
     cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1);
+    cfg->placePhiFunctions(d, 1, pProc);
 
     // m[r29 - 8] (x for this program)
     Exp* e = new Unary(opMemOf,
@@ -220,7 +220,7 @@ void CfgTest::testPlacePhi2 () {
 
     DOM* d = new DOM;
     cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1);
+    cfg->placePhiFunctions(d, 1, pProc);
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
     // b at [ebp-12]
@@ -275,7 +275,7 @@ void CfgTest::testRenameVars () {
 
     DOM* d = new DOM;
     cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1);
+    cfg->placePhiFunctions(d, 1, pProc);
     int stmtNumber = 0;
     pProc->numberStatements(stmtNumber);// After placing phi functions!
     cfg->renameBlockVars(d, 0, 1);      // Block 0, mem depth 1
