@@ -38,6 +38,7 @@
 
 #include <sstream>
 
+#define BUFSIZE 1024
 extern char *operStrings[];
 
 CHLLCode::CHLLCode() : HLLCode()
@@ -62,7 +63,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
 {
     if (exp == NULL) return;
 
-    char s[1024];
+    char s[BUFSIZE];
     Const   *c = (Const*)exp;
     Unary   *u = (Unary*)exp;
     Binary  *b = (Binary*)exp;
@@ -328,6 +329,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, u->getSubExp1());
             strcat(str, ")");
             break;
+        case opFabs:
+            strcat(str, "fabs(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
@@ -521,6 +527,8 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 std::endl;
             assert(false);
     }
+    assert(strlen(s) < BUFSIZE);
+    assert(strlen(str) < BUFSIZE);
 }
 
 void CHLLCode::appendType(char *str, Type *typ)
@@ -539,7 +547,7 @@ void CHLLCode::reset()
 
 void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "while (");
     appendExp(s, cond);
@@ -549,7 +557,7 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond)
 
 void CHLLCode::AddPretestedLoopEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "}");
     lines.push_back(strdup(s));
@@ -557,7 +565,7 @@ void CHLLCode::AddPretestedLoopEnd(int indLevel)
 
 void CHLLCode::AddEndlessLoopHeader(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "for (;;) {");
     lines.push_back(strdup(s));
@@ -565,7 +573,7 @@ void CHLLCode::AddEndlessLoopHeader(int indLevel)
 
 void CHLLCode::AddEndlessLoopEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "}");
     lines.push_back(strdup(s));
@@ -573,7 +581,7 @@ void CHLLCode::AddEndlessLoopEnd(int indLevel)
 
 void CHLLCode::AddPosttestedLoopHeader(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "do {");
     lines.push_back(strdup(s));
@@ -581,7 +589,7 @@ void CHLLCode::AddPosttestedLoopHeader(int indLevel)
 
 void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "} while (");
     appendExp(s, cond);
@@ -591,7 +599,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
 
 void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "switch(");
     appendExp(s, cond);
@@ -601,7 +609,7 @@ void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
 
 void CHLLCode::AddCaseCondOption(int indLevel, Exp *opt)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "case ");
     appendExp(s, opt);
@@ -611,7 +619,7 @@ void CHLLCode::AddCaseCondOption(int indLevel, Exp *opt)
 
 void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "break;");
     lines.push_back(strdup(s));
@@ -619,7 +627,7 @@ void CHLLCode::AddCaseCondOptionEnd(int indLevel)
 
 void CHLLCode::AddCaseCondElse(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "default:");
     lines.push_back(strdup(s));
@@ -627,7 +635,7 @@ void CHLLCode::AddCaseCondElse(int indLevel)
 
 void CHLLCode::AddCaseCondEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "}");
     lines.push_back(strdup(s));
@@ -635,7 +643,7 @@ void CHLLCode::AddCaseCondEnd(int indLevel)
 
 void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "if (");
     appendExp(s, cond);
@@ -645,7 +653,7 @@ void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond)
 
 void CHLLCode::AddIfCondEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "}");
     lines.push_back(strdup(s));
@@ -653,7 +661,7 @@ void CHLLCode::AddIfCondEnd(int indLevel)
 
 void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "if (");
     appendExp(s, cond);
@@ -663,7 +671,7 @@ void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond)
 
 void CHLLCode::AddIfElseCondOption(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "} else {");
     lines.push_back(strdup(s));
@@ -671,7 +679,7 @@ void CHLLCode::AddIfElseCondOption(int indLevel)
 
 void CHLLCode::AddIfElseCondEnd(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "}");
     lines.push_back(strdup(s));
@@ -679,7 +687,7 @@ void CHLLCode::AddIfElseCondEnd(int indLevel)
 
 void CHLLCode::AddGoto(int indLevel, int ord)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     sprintf(s + strlen(s), "goto L%d;", ord);
     lines.push_back(strdup(s));
@@ -687,7 +695,7 @@ void CHLLCode::AddGoto(int indLevel, int ord)
 
 void CHLLCode::AddContinue(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "continue;");
     lines.push_back(strdup(s));
@@ -695,7 +703,7 @@ void CHLLCode::AddContinue(int indLevel)
 
 void CHLLCode::AddBreak(int indLevel)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "break;");
     lines.push_back(strdup(s));
@@ -703,14 +711,14 @@ void CHLLCode::AddBreak(int indLevel)
 
 void CHLLCode::AddLabel(int indLevel, int ord)
 {
-    char s[1024];
+    char s[BUFSIZE];
     sprintf(s, "L%d:", ord);
     lines.push_back(strdup(s));     // See below
 }
 
 void CHLLCode::RemoveLabel(int ord)
 {
-    char s[1024];
+    char s[BUFSIZE];
     sprintf(s, "L%d:", ord);
     for (std::list<char*>::iterator it = lines.begin();
          it != lines.end(); it++)
@@ -723,7 +731,7 @@ void CHLLCode::RemoveLabel(int ord)
 
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     if (asgn->getLeft()->getOper() == opMemOf && asgn->getSize() != 32) 
         appendExp(s, new TypedExp(new IntegerType(asgn->getSize()), asgn->getLeft()));
@@ -741,7 +749,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
     std::vector<Exp*> &args, LocationSet &defs)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     if (defs.size() >= 1) {
         LocationSet::iterator it = defs.begin();
@@ -785,7 +793,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
     std::vector<Exp*> &args)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "(*");
     appendExp(s, exp);
@@ -801,7 +809,7 @@ void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
 
 void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns)
 {
-    char s[1024];
+    char s[BUFSIZE];
     indent(s, indLevel);
     strcat(s, "return");
     if (returns.size() >= 1) {
@@ -825,7 +833,7 @@ void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns)
 
 void CHLLCode::AddProcStart(Signature *signature)
 {
-    char s[1024];
+    char s[BUFSIZE];
     s[0] = 0;
     if (signature->getNumReturns() == 0) {
         strcat(s, "void");
@@ -870,7 +878,7 @@ void CHLLCode::AddProcEnd()
 
 void CHLLCode::AddLocal(const char *name, Type *type)
 {
-    char s[1024];
+    char s[BUFSIZE];
     s[0] = 0;
     appendType(s, type);
     strcat(s, " ");
@@ -896,7 +904,7 @@ void CHLLCode::AddLocal(const char *name, Type *type)
 
 void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
 {
-    char s[1024];
+    char s[BUFSIZE];
     s[0] = 0;
     appendType(s, type);
     strcat(s, " ");
@@ -918,7 +926,7 @@ void CHLLCode::print(std::ostream &os)
 }
 
 void CHLLCode::AddLineComment(char* cmt) {
-    char s[1024];
+    char s[BUFSIZE];
     s[0] = '/'; s[1] = '*';
     strcat(&s[2], cmt);
     strcat(s, "*/");
