@@ -148,13 +148,6 @@ public:
   virtual ADDRESS getImageBase();
   virtual size_t getImageSize();
 
-#if 0
-                // Elf specific functions
-    Elf32_Phdr* GetProgHeader(int idx);         // Get the indicated prog hdr
-    Elf32_Shdr* GetSectionHeader(int idx);      // Get indicated section hdr
-// Mike: deprecated! Remove when possible!
-    Elf_Scn*    GetElfScn(int idx);             // Do a elf_getscn()
-#endif
 
                 // Header functions
 //virtual ADDRESS GetFirstHeaderAddress();      // Get ADDRESS of main header

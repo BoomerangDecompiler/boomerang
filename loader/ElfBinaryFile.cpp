@@ -32,12 +32,13 @@
 
 //#include "global.h"
 #include "ElfBinaryFile.h"
-#include <values.h>
+//#include <values.h>
 #include <sys/types.h>      // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>         // Close()
 #include <iostream>
+#include <assert.h>
 #include "config.h"
 
 typedef std::map<std::string, int, std::less<std::string> >     StrIntMap;
@@ -227,13 +228,13 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     if (pRel) {
         m_bAddend = true;               // Remember its a relA table
         m_pReloc = pRel->uHostAddr;     // Save pointer to reloc table
-        SetRelocInfo(pRel);
+        //SetRelocInfo(pRel);
     }
     else {
         m_bAddend = false;
         pRel = GetSectionInfoByName(".rel.text");
         if (pRel) {
-            SetRelocInfo(pRel);
+            //SetRelocInfo(pRel);
             m_pReloc = pRel->uHostAddr;     // Save pointer to reloc table
         }
     }
@@ -331,15 +332,6 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
     }
     return;
 }
-
-#if 0
-// This function will be required only by very low level applocations,
-// such as the elfSparc executable file dumper
-Elf_Scn* ElfBinaryFile::GetElfScn(int idx)
-{
-    return elf_getscn(m_elf, idx);
-}
-#endif
 
 // Note: this function overrides a simple "return 0" function in the
 // base class (i.e. BinaryFile::SymbolByAddress())
@@ -554,24 +546,6 @@ int ElfBinaryFile::GetDistanceByName(const char* sName)
 ADDRESS ElfBinaryFile::GetFirstHeaderAddress()
 {
     return (ADDRESS) elf32_getehdr (m_elf);
-}
-
-Elf32_Phdr* ElfBinaryFile::GetProgHeader(int idx)
-{
-    // Get the indicated prog hdr
-    if (idx < 0) return 0;          // Index out of bounds
-    if (m_pImage == 0) return 0;   // No file loaded
-    if (idx > m_pImage->e_phnum) return 0;
-    return elf32_getphdr(m_elf) + idx;
-}
-
-Elf32_Shdr* ElfBinaryFile::GetSectionHeader(int idx)
-{
-    // Get indicated section hdr
-    if (idx < 0) return 0;          // Index out of bounds
-    if (m_pImage == 0) return 0;   // No file loaded
-    if (idx > m_pImage->e_shnum) return 0;
-    return elf32_getshdr(elf_getscn(m_elf, idx));
 }
 
 void ElfBinaryFile::SetRelocInfo(PSectionInfo pSect)
