@@ -22,6 +22,7 @@
  * 22 Nov 02 - Mike: Support 32 bit V9 branches
  * 04 Dec 02 - Mike: r[0] -> 0 automatically (rhs only)
  * 30 May 02 - Mike: Also fixed r[0] -> 0 for store instructions
+ * 03 Nov 04 - Mike: DIS_FDS was returning numbers for the double precision registers
 */
 
 /*==============================================================================
@@ -51,7 +52,7 @@
 #define DIS_FS2S	(dis_RegRhs(fs2s+32))
 // Note: Sparc V9 has a second set of double precision registers that have an
 // odd index. So far we only support V8
-#define DIS_FDS		(dis_RegLhs((fds>>1)+64))
+#define DIS_FDS		(dis_RegLhs(fds+32))
 #define DIS_FS1D	(dis_RegRhs((fs1d>>1)+64))
 #define DIS_FS2D	(dis_RegRhs((fs2d>>1)+64))
 #define DIS_FDD		(dis_RegLhs((fdd>>1)+64))
