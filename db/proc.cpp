@@ -989,11 +989,6 @@ std::set<UserProc*>* UserProc::decompile() {
     // Remove self from the cycle list
     cycleSet->erase(this);
 
-    if (Boomerang::get()->noDecompileUp) {
-        decompiled = true;
-        return cycleSet;
-    }
-
     if (VERBOSE) {
         std::cerr << "decompiling: " << getName() << std::endl;
     }

@@ -11,11 +11,10 @@ Boomerang *Boomerang::boomerang = NULL;
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveNull(false), noLocals(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false),
-    noDecompileUp(false), traceDecoder(false), dotFile(NULL),
-    numToPropagate(-1), noPromote(false), propOnlyToAll(false),
-    debugDataflow(false), debugPrintSSA(false), noPropMult(false),
-    maxMemDepth(99), debugSwitch(false), noParameterNames(false),
-    debugLiveness(false), debugUnusedRets(false)
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1),
+    noPromote(false), propOnlyToAll(false), debugDataflow(false),
+    debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
+    noParameterNames(false), debugLiveness(false), debugUnusedRets(false)
 {
 }
 
@@ -47,7 +46,6 @@ void Boomerang::help() {
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
-    std::cerr << "-npm: no propagation if multiple defs of same expression\n";
     std::cerr << "-p <num>: only do num propogations\n";
     std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
@@ -116,19 +114,12 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         noDataflow = true;
                         break;
                     case 'D':
-                        if (argv[i][3] == 'u')
-                            noDecompileUp = true;
-                        else
-                            noDecompile = true;
+                        noDecompile = true;
                         break;
                     case 'P':
                         noPromote = true;
                         break;
                     case 'p':
-                        if (argv[i][3] == 'm') {
-                            noPropMult = true;
-                            break;
-                        }
                         noParameterNames = true;
                         break;
                     default:

@@ -65,7 +65,6 @@ public:
     bool debugDataflow;
     bool debugPrintReach;
     bool debugPrintSSA;
-    bool noPropMult;
     int maxMemDepth;
     bool debugSwitch;
     bool noParameterNames;
