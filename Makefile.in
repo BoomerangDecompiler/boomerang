@@ -114,11 +114,9 @@ clean:
 	cd transform && ${MAKE} clean
 	rm -f *.o codegen/*.o log.o boomerang.o driver.o boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o c/*.o type/*.o
 
-#20 Aug 02 icer
-#added config.h config.log config.status and analysis/Makefile
 distclean: clean
-	rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile include/config.h config.log \
-		config.status 
+	rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile transform/Makefile include/config.h \
+		config.log config.status frontend/mltk.sh
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTest.o db/RtlTest.o \
 	db/StatementTest.o db/CfgTest.o db/DfaTest.o frontend/FrontSparcTest.o frontend/FrontPentTest.o \
