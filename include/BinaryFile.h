@@ -122,8 +122,9 @@ private:
 	static BinaryFile *getInstanceFor(const char *sName);
 };
 
+
 #ifdef _WIN32
-#ifdef BUILDING_LIBBINARYFILE
+#ifdef _MSC_VER			// If don't use dllexport, get Vtable undefined!
 #define IMPORT_BINARYFILE __declspec(dllexport)
 #else
 #define IMPORT_BINARYFILE __declspec(dllimport)
@@ -139,35 +140,35 @@ class IMPORT_BINARYFILE BinaryFile {
  
   public:
 
-virtual ~BinaryFile() {}			// Virtual destructor
+virtual			~BinaryFile() {}
 	
-// General loader functions
-	BinaryFile(bool bArchive = false);	// Constructor
-	// Unload the file. Pure virtual
-	virtual void	UnLoad() = 0;
-	// Open the file for r/w; pure virt
-	virtual bool	Open(const char* sName) = 0;
-	// Close file opened with Open()
-	virtual void	Close() = 0;
-	// Get the format (e.g. LOADFMT_ELF)
-	virtual LOAD_FMT GetFormat() const = 0;
-	// Get the expected machine (e.g. MACHINE_PENTIUM)
-	virtual MACHINE GetMachine() const = 0;
-	virtual const char *getFilename() const = 0;
+		// General loader functions
+				BinaryFile(bool bArchive = false);	// Constructor
+		// Unload the file. Pure virtual
+virtual void	UnLoad() = 0;
+		// Open the file for r/w; pure virt
+virtual bool	Open(const char* sName) = 0;
+		// Close file opened with Open()
+virtual void	Close() = 0;
+		// Get the format (e.g. LOADFMT_ELF)
+virtual LOAD_FMT GetFormat() const = 0;
+		// Get the expected machine (e.g. MACHINE_PENTIUM)
+virtual MACHINE GetMachine() const = 0;
+virtual const char *getFilename() const = 0;
 
-	// Return whether or not the object is a library file.
-	virtual bool isLibrary() const = 0;
-	// Return whether the object can be relocated if necessary
-	// (ie if it is not tied to a particular base address). If not, the object
-	// must be loaded at the address given by getImageBase()
-	virtual bool isRelocatable() const { return isLibrary(); }
-	// Return a list of library names which the binary file depends on
-	virtual std::list<const char *> getDependencyList() = 0;	
-	// Return the virtual address at which the binary expects to be loaded.
-	// For position independent / relocatable code this should be NO_ADDDRESS
-	virtual ADDRESS getImageBase() = 0;
-	// Return the total size of the loaded image
-	virtual size_t getImageSize() = 0;
+		// Return whether or not the object is a library file.
+virtual bool	isLibrary() const = 0;
+		// Return whether the object can be relocated if necessary
+		// (ie if it is not tied to a particular base address). If not, the object
+		// must be loaded at the address given by getImageBase()
+virtual bool	isRelocatable() const { return isLibrary(); }
+		// Return a list of library names which the binary file depends on
+virtual std::list<const char *> getDependencyList() = 0;	
+		// Return the virtual address at which the binary expects to be loaded.
+		// For position independent / relocatable code this should be NO_ADDDRESS
+virtual ADDRESS getImageBase() = 0;
+		// Return the total size of the loaded image
+virtual size_t	getImageSize() = 0;
 
 // Section functions
 	int			GetNumSections() const;		// Return number of sections
