@@ -286,42 +286,12 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 //		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
     | bal(BIcr, reladdr) =>
 		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
+		unused(BIcr);
 
-	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
-	| bltctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSL, BIcr);
-
-	| blectr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
-
-	| beqctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JE, BIcr);
-
-	| bgectr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSGE, BIcr);
-
-	| bgtctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSG, BIcr);
-
-	| bnectr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JNE, BIcr);
-
-	| bsoctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
-
-	| bnsctr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
 
 	| balctr(BIcr) [name] =>
 		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
+		unused(BIcr);
 		
 	// b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
 	// statement.
@@ -361,29 +331,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(new ReturnStatement);
 		SHOW_ASM(name<<"\n");
-
-	// Link versions of the above. For now, only handle unconditional case
-	| ballrl(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-
-	// Conditional calls (bcl)
-	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul | ball
-	| bltl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| blel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| beql(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bgel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bgtl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bnel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bsol(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-	| bnsl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK " << name << "\n";
+		unused(BIcr);
 
 	// Shift right arithmetic
 	| srawi(ra, rs, uimm) [name] =>
