@@ -64,16 +64,16 @@
 
 // Derived class constructors
 
-Const::Const(int i)     : Exp(opIntConst)   {u.i = i;}
-Const::Const(long long ll): Exp(opLongConst){u.ll= ll;}
-Const::Const(double d)  : Exp(opFltConst)   {u.d = d;}
-Const::Const(char* p)   : Exp(opStrConst)   {u.p = p;}
-Const::Const(Proc* p)   : Exp(opFuncConst)  {u.pp = p;}
+Const::Const(int i)     : Exp(opIntConst),    conscript(0) {u.i = i;}
+Const::Const(long long ll): Exp(opLongConst), conscript(0) {u.ll= ll;}
+Const::Const(double d)  : Exp(opFltConst),    conscript(0) {u.d = d;}
+Const::Const(char* p)   : Exp(opStrConst),    conscript(0) {u.p = p;}
+Const::Const(Proc* p)   : Exp(opFuncConst),   conscript(0) {u.pp = p;}
 // Note: this is bad. We need a way of constructing true unsigned constants
-Const::Const(ADDRESS a)     : Exp(opIntConst)   {u.a = a;}
+Const::Const(ADDRESS a)  : Exp(opIntConst),   conscript(0) {u.a = a;}
 
 // Copy constructor
-Const::Const(Const& o) : Exp(o.op) {u = o.u;}
+Const::Const(Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript;}
 
 Terminal::Terminal(OPER op) : Exp(op) {}
 Terminal::Terminal(Terminal& o) : Exp(o.op) {}      // Copy constructor
@@ -695,6 +695,8 @@ void Const::print(std::ostream& os, bool withUses) {
               "\n";
             assert(0);
     }
+    if (conscript)
+        os << "\\" << std::dec << conscript << "\\";
 }
 
 void Const::printNoQuotes(std::ostream& os, bool withUses) {
@@ -903,9 +905,11 @@ void Unary::print(std::ostream& os, bool withUses) {
             // Use print, not printr, because this is effectively the top
             // level again (because the [] act as parentheses)
             else {
+#if 0       // Problem when attempt to print with conscripts
                 if (op == opMemOf && p1->getOper() == opIntConst)
                     os << std::hex << ((Const*)p1)->getInt();
-                else 
+                else
+#endif
                     p1->print(os, withUses);
             }
             os << "]";
@@ -3840,4 +3844,24 @@ void Exp::fixLocationProc(UserProc* p) {
     fpv.setProc(p);
     accept(&fpv);
 }
+
+bool SetConscripts::visit(Const* c) {
+    if (!bInLocalGlobal)
+        c->setConscript(++curConscript);
+    bInLocalGlobal = false;
+    return true;       // Continue recursion
+}
+
+bool SetConscripts::visit(Location* l) {
+    if (l->getOper() == opLocal || l->getOper() == opGlobal)
+        bInLocalGlobal = true;
+    return true;       // Continue recursion
+}
+
+
+void Exp::setConscripts(int n) {
+    SetConscripts sc(n);
+    accept(&sc);
+}
+
 

@@ -66,5 +66,6 @@ class ExpTest : public CppUnit::TestCase {
 
     void testSubscriptVar();
     void testTypeOf();
+    void testSetConscripts();
 };
 

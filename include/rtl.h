@@ -49,7 +49,6 @@ class UseSet;
 class Type;
 class Register;
 class Proc;
-class RTLVisitor;
 
 
 /*==============================================================================
@@ -166,6 +165,9 @@ public:
 
     // Print to std::cerr (mainly for debugging)
     char* prints();
+
+    // Set all the "constant subscripts" (conscripts) in this RTL
+    void    setConscripts();
 
 };
 

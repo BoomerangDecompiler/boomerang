@@ -18,6 +18,8 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "decoder.h"
+#include "proc.h"
+#include "prog.h"
 
 
 #ifndef BOOMDIR
@@ -42,6 +44,7 @@ void RtlTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testClone);
     MYTEST(testVisitor);
     MYTEST(testIsCompare);
+    MYTEST(testSetConscripts);
 }
 
 int RtlTest::countTestCases () const
@@ -258,4 +261,45 @@ void RtlTest::testIsCompare () {
     CPPUNIT_ASSERT(inst.rtl != NULL);
     CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
     
+}
+
+void RtlTest::testSetConscripts() {
+    // m[1000] = m[1000] + 1000
+    Statement* s1 = new Assign(
+        Location::memOf(
+            new Const(1000), 0),
+        new Binary(opPlus,
+        Location::memOf(
+            new Const(1000), NULL),
+        new Const(1000)));
+    
+    // "printf("max is %d", (local0 > 0) ? local0 : global1)
+    CallStatement* s2 = new CallStatement();
+    std::string name("printf");
+    Proc* proc = new UserProc(new Prog(), name, 0x2000);
+    s2->setDestProc(proc);
+    Exp* e1 = new Const("max is %d");
+    Exp* e2 = new Ternary(opTern,
+        new Binary(opGtr,
+            Location::local("local0", NULL),
+            new Const(0)),
+        Location::local("local0", NULL),
+        Location::global("global1", NULL));
+    std::vector<Exp*> args;
+    args.push_back(e1);
+    args.push_back(e2);
+    s2->setArguments(args);
+
+    std::list<Statement*> list;
+    list.push_back(s1);
+    list.push_back(s2);
+    RTL* rtl = new RTL(0x1000, &list);
+    rtl->setConscripts();
+    std::string expected(
+        "00001000    0 *32* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+"            0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");
+    std::ostringstream ost;
+    rtl->print(ost);
+    std::string actual = ost.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
 }

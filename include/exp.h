@@ -316,6 +316,7 @@ virtual Exp* simplifyConstraint() {return this;}
     // implement it for new functions
     virtual bool accept(ExpVisitor* v) = 0;
     void         fixLocationProc(UserProc* p);
+    void         setConscripts(int n);  // Set the constant subscripts
 
 };  // Class Exp
 
@@ -338,6 +339,7 @@ class Const : public Exp {
                         // Don't store string: function could be renamed
         Proc* pp;       // Pointer to function
     } u;
+    int conscript;      // like a subscript for constants
 public:
     // Special constructors overloaded for the various constants
             Const(int i);
@@ -349,6 +351,8 @@ public:
     // Copy constructor
             Const(Const& o);
             
+    // Nothing to destruct: Don't deallocate the string passed to constructor
+
     // Clone
     virtual Exp* clone();
 
@@ -382,8 +386,9 @@ const char* getFuncName();
     // Visitation
     virtual bool accept(ExpVisitor* v);
 
-    // Nothing to destruct: Don't deallocate the string passed to constructor
-};
+    void    setConscript(int cs) {conscript = cs;}
+
+};  // class Const
 
 /*==============================================================================
  * Terminal is a subclass of Exp, and holds special zero arity items such
@@ -416,7 +421,7 @@ virtual bool operator*=(Exp& o);
 
     // Visitation
     bool accept(ExpVisitor* v);
-};
+};  // class Terminal
 
 /*==============================================================================
  * Unary is a subclass of Exp, holding one subexpression
@@ -897,8 +902,20 @@ class FixProcVisitor : public ExpVisitor {
 public:
     void setProc(UserProc* p) { proc = p; }
     virtual bool visit(Location *e);
-    // All other virtual functions derive from ExpVisitor, i.e. they just
+    // All other virtual functions inherit from ExpVisitor, i.e. they just
     // visit their children recursively
 };
 
+// This class visits subexpressions, and if a Const, sets a new conscript
+class SetConscripts : public ExpVisitor {
+    int     curConscript;
+    bool    bInLocalGlobal;     // True when inside a local or global
+public:
+            SetConscripts(int n) : bInLocalGlobal(false)
+                {curConscript = n;}
+    int     getLast() {return curConscript;}
+    virtual bool visit(Const* e);
+    virtual bool visit(Location* e);
+    // All other virtual functions inherit from ExpVisitor: just recurse
+};
 #endif // __EXP_H__

@@ -628,4 +628,8 @@ Statement* RTL::getHlStmt() {
     }
     return NULL;
 }
-    
+
+void RTL::setConscripts() {
+    StmtSetConscripts ssc;
+    accept(&ssc);
+}

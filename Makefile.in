@@ -197,7 +197,8 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h \
     include/prog.h
 db/managed.o: include/managed.h include/statement.h include/exp.h
-db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
+db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h include/prog.h \
+    include/proc.h include/statement.h
 db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
 db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h \
     include/operator.h

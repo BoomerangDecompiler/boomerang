@@ -68,6 +68,7 @@ MYTEST(testFixSuccessor);
 	MYTEST(testAssociativity);
     MYTEST(testSubscriptVar);
     MYTEST(testTypeOf);
+    MYTEST(testSetConscripts);
 }
 
 int ExpTest::countTestCases () const
@@ -1155,4 +1156,20 @@ void ExpTest::testTypeOf() {
     std::ostringstream actual2;
     actual2 << e;
     CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
+}
+/*==============================================================================
+ * FUNCTION:        ExpTest::testSetConscript
+ * OVERVIEW:        Test setting and printing of constant "subscripts"
+ *============================================================================*/
+void ExpTest::testSetConscripts() {
+    // m[1000] + 1000
+    Exp* e = new Binary(opPlus,
+        Location::memOf(
+            new Const(1000), NULL),
+        new Const(1000));
+    e->setConscripts(0);
+    std::string expected("m[1000\\1\\] + 1000\\2\\");
+    std::ostringstream actual;
+    actual << e;
+    CPPUNIT_ASSERT_EQUAL(expected, actual.str());
 }

@@ -948,7 +948,7 @@ public:
 
     // visitor functions, 
     // returns true to continue iteratoring the container
-    virtual bool visit(RTL *rtl) = 0;
+    virtual bool visit(RTL *rtl);   // By default, visits all statements
     virtual bool visit(Assign *stmt) = 0;
     virtual bool visit(GotoStatement *stmt) = 0;
     virtual bool visit(BranchStatement *stmt) = 0;
@@ -956,6 +956,19 @@ public:
     virtual bool visit(CallStatement *stmt) = 0;
     virtual bool visit(ReturnStatement *stmt) = 0;
     virtual bool visit(BoolStatement *stmt) = 0;
+};
+
+class StmtSetConscripts : public StmtVisitor {
+    int     curConscript;
+public:
+                 StmtSetConscripts() {curConscript = 0;}
+    virtual bool visit(Assign *stmt);
+    virtual bool visit(GotoStatement *stmt) {return true;}
+    virtual bool visit(BranchStatement *stmt) {return true;}
+    virtual bool visit(CaseStatement *stmt);
+    virtual bool visit(CallStatement *stmt);
+    virtual bool visit(ReturnStatement *stmt);
+    virtual bool visit(BoolStatement *stmt);
 };
 
 

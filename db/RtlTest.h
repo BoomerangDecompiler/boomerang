@@ -22,5 +22,6 @@ class RtlTest : public CppUnit::TestCase {
     void testClone ();
     void testVisitor();
     void testIsCompare();
+    void testSetConscripts();
 };
 
