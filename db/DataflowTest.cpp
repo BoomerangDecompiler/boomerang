@@ -116,6 +116,7 @@ void DataflowTest::testFlow () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);     // Also sets exitBB; important!
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -164,6 +165,7 @@ void DataflowTest::testKill () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -213,6 +215,7 @@ void DataflowTest::testUse () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -266,6 +269,7 @@ void DataflowTest::testUseOverKill () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -322,6 +326,7 @@ void DataflowTest::testUseOverBB () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -373,6 +378,7 @@ void DataflowTest::testUseKill () {
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
     ret->addInEdge(first);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
@@ -407,6 +413,7 @@ void DataflowTest::testEndlessLoop () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
+    // r[24] := 5
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
                      new Const(5));
     e->setProc(proc);
@@ -415,6 +422,7 @@ void DataflowTest::testEndlessLoop () {
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL();
+    // r[24] := r[24] + 1
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
               new Binary(opPlus, new Unary(opRegOf, new Const(24)),
                              new Const(1)));
@@ -426,6 +434,7 @@ void DataflowTest::testEndlessLoop () {
     body->addInEdge(first);
     body->setOutEdge(0, body);
     body->addInEdge(body);
+    cfg->setEntryBB(first);
     // compute dataflow
     cfg->computeDataflow();
     // print cfg to a string
