@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <time.h>
 #include "prog.h"
 #include "BinaryFile.h"
 #include "frontend.h"
