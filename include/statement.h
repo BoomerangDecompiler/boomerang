@@ -228,8 +228,8 @@ virtual void		print(std::ostream &os) = 0;
 		void		printNum(std::ostream &os)	   {os << std::dec << number;}
 		char*		prints();	   // For use in a debugger
 
-		// inline / decode any constants in the statement
-virtual void		processConstants(Prog *prog) = 0;
+		// inline / decode any constants in the statement. Return true if need to redo dataflow
+virtual bool		processConstants(Prog *prog) = 0;
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result) = 0;
@@ -460,7 +460,7 @@ virtual bool	usesExp(Exp *e);
 virtual bool	isDefinition() { return true; }
 		
 	// inline any constants in the statement
-virtual void	processConstants(Prog *prog);
+virtual bool	processConstants(Prog *prog);
 
 	// general search
 virtual bool	search(Exp* search, Exp*& result);
@@ -552,7 +552,7 @@ virtual bool	accept(StmtModifier* visitor);
 virtual void	print(std::ostream& os);
 
 	// inline any constants in the statement
-virtual void	processConstants(Prog *prog);
+virtual bool	processConstants(Prog *prog);
 
 	// general search
 virtual bool	search(Exp* search, Exp*& result);
@@ -616,7 +616,7 @@ virtual			~ImplicitAssign();
 virtual Statement* clone();
 
 		// inline any constants in the statement
-virtual void	processConstants(Prog *prog);
+virtual bool	processConstants(Prog *prog);
 
 		// general search
 virtual bool	search(Exp* search, Exp*& result);
@@ -690,7 +690,7 @@ virtual bool	isDefinition() { return true; }
 virtual void	getDefinitions(LocationSet &def);
 virtual Exp*	getRight() { return getCondExpr(); }
 virtual bool	usesExp(Exp *e);
-virtual void	processConstants(Prog *prog);
+virtual bool	processConstants(Prog *prog);
 virtual bool	search(Exp *search, Exp *&result);
 virtual bool	searchAll(Exp* search, std::list<Exp*>& result);
 virtual bool	searchAndReplace(Exp *search, Exp *replace);
@@ -777,7 +777,7 @@ virtual bool	isDefinition() { return false;}
 virtual Exp*	getLeft() {return NULL;}
 virtual Exp*	getRight() {return NULL;}
 virtual bool	usesExp(Exp*) {return false;}
-virtual void	processConstants(Prog*) {}
+virtual bool	processConstants(Prog*) {return false;}
 virtual void	fromSSAform(igraph&) {}
 virtual bool	doReplaceRef(Exp*, Exp*) {return false;}
 
@@ -1086,7 +1086,7 @@ virtual void	setLeftFor(Exp* forExp, Exp* newExp);
 virtual Exp*	getRight() { return NULL; }
 
 		// inline any constants in the statement
-virtual void	processConstants(Prog *prog);
+virtual bool	processConstants(Prog *prog);
 
 		// simplify all the uses/defs in this RTL
 virtual void	simplify();
@@ -1105,6 +1105,9 @@ virtual void	setTypeFor(Exp* e, Type* ty);	// Set the type for this location, de
 		// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the
 		// number of parameters if needed, and return true if any signature parameters added
 		bool	ellipsisProcessing(Prog* prog);
+private:
+		// Private helper function for the above
+		void	setSigParam(Type* ty, bool isScanf);
 
 protected:
 virtual bool	doReplaceRef(Exp* from, Exp* to);
