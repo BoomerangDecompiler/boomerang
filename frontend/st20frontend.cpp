@@ -75,7 +75,7 @@ std::vector<Exp*> &ST20FrontEnd::getDefaultReturns()
 	if (returns.size() == 0) {
 		returns.push_back(Location::regOf(0));
 		returns.push_back(Location::regOf(3));
-		returns.push_back(new Terminal(opPC));
+//		returns.push_back(new Terminal(opPC));
 	}
 	return returns;
 }
