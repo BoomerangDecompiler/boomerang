@@ -174,11 +174,11 @@ LRESULT CALLBACK	Decoding(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	ProcProperties(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+					 HINSTANCE hPrevInstance,
+					 LPTSTR	   lpCmdLine,
+					 int	   nCmdShow)
 {
- 	// TODO: Place code here.
+	// TODO: Place code here.
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -222,8 +222,8 @@ char log[LOG_SIZE], *plog = log;
 
 class WindowLogger : public Log {
 public:
-    WindowLogger() : Log() { }
-    virtual Log &operator<<(const char *pstr) {
+	WindowLogger() : Log() { }
+	virtual Log &operator<<(const char *pstr) {
 		if (pstr == NULL)
 			return *this;
 		char *str = new char[strlen(pstr) + 1024], *p2 = str;
@@ -249,9 +249,9 @@ public:
 		}
 		SetWindowText(hLogView, log);
 		SendMessage(hLogView, WM_VSCROLL, SB_BOTTOM, 0);
-        return *this;
-    }
-    virtual ~WindowLogger() {};
+		return *this;
+	}
+	virtual ~WindowLogger() {};
 };
 
 void OpenProject();
@@ -259,17 +259,17 @@ void SaveProject();
 void CloseProject();
 
 //
-//  FUNCTION: MyRegisterClass()
+//	FUNCTION: MyRegisterClass()
 //
-//  PURPOSE: Registers the window class.
+//	PURPOSE: Registers the window class.
 //
-//  COMMENTS:
+//	COMMENTS:
 //
-//    This function and its usage are only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-//    function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
+//	  This function and its usage are only necessary if you want this code
+//	  to be compatible with Win32 systems prior to the 'RegisterClassEx'
+//	  function that was added to Windows 95. It is important to call this function
+//	  so that the application will get 'well formed' small icons associated
+//	  with it.
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -296,62 +296,62 @@ void addNewTab(Cluster *cluster);
 
 HFONT MyCreateFont( void ) 
 { 
-    CHOOSEFONT cf; 
-    LOGFONT lf; 
-    HFONT hfont; 
+	CHOOSEFONT cf; 
+	LOGFONT lf; 
+	HFONT hfont; 
  
-    // Initialize members of the CHOOSEFONT structure. 
+	// Initialize members of the CHOOSEFONT structure. 
  
-    cf.lStructSize = sizeof(CHOOSEFONT); 
-    cf.hwndOwner = (HWND)NULL; 
-    cf.hDC = (HDC)NULL; 
-    cf.lpLogFont = &lf; 
-    cf.iPointSize = 0; 
-    cf.Flags = CF_SCREENFONTS; 
-    cf.rgbColors = RGB(0,0,0); 
-    cf.lCustData = 0L; 
-    cf.lpfnHook = (LPCFHOOKPROC)NULL; 
-    cf.lpTemplateName = (LPSTR)NULL; 
-    cf.hInstance = (HINSTANCE) NULL; 
-    cf.lpszStyle = (LPSTR)NULL; 
-    cf.nFontType = SCREEN_FONTTYPE; 
-    cf.nSizeMin = 0; 
-    cf.nSizeMax = 0; 
+	cf.lStructSize = sizeof(CHOOSEFONT); 
+	cf.hwndOwner = (HWND)NULL; 
+	cf.hDC = (HDC)NULL; 
+	cf.lpLogFont = &lf; 
+	cf.iPointSize = 0; 
+	cf.Flags = CF_SCREENFONTS; 
+	cf.rgbColors = RGB(0,0,0); 
+	cf.lCustData = 0L; 
+	cf.lpfnHook = (LPCFHOOKPROC)NULL; 
+	cf.lpTemplateName = (LPSTR)NULL; 
+	cf.hInstance = (HINSTANCE) NULL; 
+	cf.lpszStyle = (LPSTR)NULL; 
+	cf.nFontType = SCREEN_FONTTYPE; 
+	cf.nSizeMin = 0; 
+	cf.nSizeMax = 0; 
  
-    // Display the CHOOSEFONT common-dialog box. 
+	// Display the CHOOSEFONT common-dialog box. 
  
-    ChooseFont(&cf); 
+	ChooseFont(&cf); 
  
-    // Create a logical font based on the user's 
-    // selection and return a handle identifying 
-    // that font. 
+	// Create a logical font based on the user's 
+	// selection and return a handle identifying 
+	// that font. 
  
-    OpenClipboard(hTopWnd);
-    EmptyClipboard(); 
-    HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, 8192);
-    char *buf = (char*)GlobalLock(hglbCopy); 
+	OpenClipboard(hTopWnd);
+	EmptyClipboard(); 
+	HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, 8192);
+	char *buf = (char*)GlobalLock(hglbCopy); 
 	buf[0] = 0;
 	for (unsigned i = 0; i < sizeof(lf); i++)
 		sprintf(buf + strlen(buf), "0x%02X, ", ((unsigned char*)&lf)[i]);
-    GlobalUnlock(hglbCopy); 
-    SetClipboardData(CF_TEXT, hglbCopy); 
+	GlobalUnlock(hglbCopy); 
+	SetClipboardData(CF_TEXT, hglbCopy); 
 	CloseClipboard();
-    hfont = CreateFontIndirect(cf.lpLogFont);
+	hfont = CreateFontIndirect(cf.lpLogFont);
 
-    return (hfont); 
+	return (hfont); 
 } 
 
 void setupDecompiler();
 
 //
-//   FUNCTION: InitInstance(HANDLE, int)
+//	 FUNCTION: InitInstance(HANDLE, int)
 //
-//   PURPOSE: Saves instance handle and creates main window
+//	 PURPOSE: Saves instance handle and creates main window
 //
-//   COMMENTS:
+//	 COMMENTS:
 //
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
+//		  In this function, we save the instance handle in a global variable and
+//		  create and display the main program window.
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
@@ -391,7 +391,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	unsigned char lf_bits[] = { 0xF3, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x02, 0x01, 0x22, 0x41, 0x72, 0x69, 0x61, 0x6C, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, };
 	hTabBarFont = CreateFontIndirect((LOGFONT*)lf_bits);
 
-	hLogView = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL  | WS_DLGFRAME
+	hLogView = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL	| WS_DLGFRAME
 		| ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY, 
 		0, r.bottom - rsb.bottom - 200, r.right - 200, 200, hTopWnd, NULL, hInst, NULL);
 
@@ -532,7 +532,7 @@ void addNewTab(Cluster *cluster)
 	GetClientRect(hTopWnd, &r);
 	GetClientRect(hStatusBar, &rsb);
 	
-	tab.edit = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL  | WS_DLGFRAME
+	tab.edit = CreateWindowEx(0, WC_EDIT, NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL	| WS_DLGFRAME
 		| ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 
 		0, tabBarRect.bottom, r.right - 200, r.bottom - rsb.bottom - tabBarRect.bottom - 200, hTopWnd, NULL, hInst, NULL);
 	tabWithName[name] = tab;
@@ -729,13 +729,13 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 //
-//  FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
+//	FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
 //
-//  PURPOSE:  Processes messages for the main window.
+//	PURPOSE:  Processes messages for the main window.
 //
-//  WM_COMMAND	- process the application menu
-//  WM_PAINT	- Paint the main window
-//  WM_DESTROY	- post a quit message and return
+//	WM_COMMAND	- process the application menu
+//	WM_PAINT	- Paint the main window
+//	WM_DESTROY	- post a quit message and return
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -764,7 +764,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam); 
+		wmId	= LOWORD(wParam); 
 		wmEvent = HIWORD(wParam); 
 		if (selectedTab && wmEvent == EN_CHANGE && (HWND)lParam == tabWithName[selectedTab].edit) {
 			updateTab(selectedTab);
@@ -1052,8 +1052,8 @@ class MyWatcher : public Watcher
 public:
 	MyWatcher() { }
 
-    virtual void alert_decode(ADDRESS pc, int nBytes);
-    virtual void alert_baddecode(ADDRESS pc);
+	virtual void alert_decode(ADDRESS pc, int nBytes);
+	virtual void alert_baddecode(ADDRESS pc);
 	virtual void alert_start_decode(ADDRESS start, int nBytes);
 	virtual void alert_end_decode();
 	virtual void alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes);
@@ -1328,7 +1328,7 @@ void MyWatcher::alert_end_decode()
 	SendMessage(decodeDlg, WM_COMMAND, IDOK, 0);
 	if (someUnknown) {
 		MessageBox(NULL, "Some library procedures were found that do not have known signatures. "
-							"The decompiler has been suspended.  To ensure the best possible decompilation, please take "
+							"The decompiler has been suspended.	 To ensure the best possible decompilation, please take "
 							"this opportunity to update the signature files.  Select the Tools -> Decompiler -> Resume menu "
 							"option when you are ready to continue decompiling.", "Decompile suspended", MB_OK);
 		suspendDecompiler();

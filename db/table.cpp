@@ -9,9 +9,9 @@
  */
 
 /*==============================================================================
- * FILE:       table.cc
+ * FILE:	   table.cc
  * OVERVIEW:   Provides the implementation of classes Table, OpTable, and
- *             ExprTable
+ *			   ExprTable
  *============================================================================*/
 
 /*
@@ -31,24 +31,24 @@
 #include "exp.h"
 
 Table::Table(TABLE_TYPE t) :
-    type(t)
+	type(t)
 {
 }
 
 Table::Table(std::deque<std::string>& recs, TABLE_TYPE t /* = NAMETABLE */) :
-    records(recs),type(t)
+	records(recs),type(t)
 {
 }
 
 TABLE_TYPE Table::getType() const { return type; }
 
 OpTable::OpTable(std::deque<std::string>& ops) :
-    Table(ops, OPTABLE)
+	Table(ops, OPTABLE)
 {
 }
 
 ExprTable::ExprTable(std::deque<Exp*>& exprs) :
-    Table(EXPRTABLE),expressions(exprs)
+	Table(EXPRTABLE),expressions(exprs)
 {
 }
 

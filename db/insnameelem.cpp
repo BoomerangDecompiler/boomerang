@@ -33,141 +33,141 @@
 
 InsNameElem::InsNameElem(const char *name)
 {
-    elemname = name;
-    value = 0;
-    nextelem = NULL;
+	elemname = name;
+	value = 0;
+	nextelem = NULL;
 }
 
 InsNameElem::~InsNameElem(void)
 {
-//    delete nextelem;
+//	  delete nextelem;
 }
 
 int InsNameElem::ntokens(void)
 {
-    return 1;
+	return 1;
 }
 
 std::string InsNameElem::getinstruction(void)
 {
-    return (nextelem != NULL)? (elemname + nextelem->getinstruction()): elemname;
+	return (nextelem != NULL)? (elemname + nextelem->getinstruction()): elemname;
 }
 
 std::string InsNameElem::getinspattern(void)
 {
-    return (nextelem != NULL)? (elemname + nextelem->getinspattern()): elemname;
+	return (nextelem != NULL)? (elemname + nextelem->getinspattern()): elemname;
 }
 
 void InsNameElem::getrefmap(std::map<std::string, InsNameElem*> &m)
 {
 	if (nextelem != NULL)
-        nextelem->getrefmap(m);
-    else
-        m.erase(m.begin(), m.end());
+		nextelem->getrefmap(m);
+	else
+		m.erase(m.begin(), m.end());
 }
 
 int InsNameElem::ninstructions(void)
 {
-    return (nextelem != NULL)? (nextelem->ninstructions() * ntokens()): ntokens();
+	return (nextelem != NULL)? (nextelem->ninstructions() * ntokens()): ntokens();
 }
 
 void InsNameElem::append(InsNameElem* next)
 {
-    if (nextelem == NULL)
-        nextelem = next;
-    else
-        nextelem->append(next);
+	if (nextelem == NULL)
+		nextelem = next;
+	else
+		nextelem->append(next);
 }
 
 bool InsNameElem::increment(void)
 {
-    if ((nextelem == NULL) || nextelem->increment())
-        value++;
-    if (value >= ntokens()) {
-        value = 0;
-        return true;
-    }
-    return false;
+	if ((nextelem == NULL) || nextelem->increment())
+		value++;
+	if (value >= ntokens()) {
+		value = 0;
+		return true;
+	}
+	return false;
 }
 
 void InsNameElem::reset(void)
 {
-    value = 0;
-    if (nextelem != NULL) nextelem->reset();
+	value = 0;
+	if (nextelem != NULL) nextelem->reset();
 }
 
 int InsNameElem::getvalue(void)
 {
-    return value;
+	return value;
 }
 
 InsOptionElem::InsOptionElem(const char *name):
-    InsNameElem(name)
+	InsNameElem(name)
 {
 }
 
 int InsOptionElem::ntokens(void)
 {
-    return 2;
+	return 2;
 }
 
 std::string InsOptionElem::getinstruction(void)
 {
-    std::string s = (nextelem != NULL)
-        ? ((getvalue() == 0)
-            ? (elemname + nextelem->getinstruction())
-            : nextelem->getinstruction())
-        : ((getvalue() == 0)
-            ? elemname
-            : "");
-    return s;
+	std::string s = (nextelem != NULL)
+		? ((getvalue() == 0)
+			? (elemname + nextelem->getinstruction())
+			: nextelem->getinstruction())
+		: ((getvalue() == 0)
+			? elemname
+			: "");
+	return s;
 }
 
 std::string InsOptionElem::getinspattern(void)
 {
-    return (nextelem != NULL)
-        ? ('\'' + elemname + '\'' + nextelem->getinspattern())
-        : ('\'' + elemname + '\'');
+	return (nextelem != NULL)
+		? ('\'' + elemname + '\'' + nextelem->getinspattern())
+		: ('\'' + elemname + '\'');
 }
 
 InsListElem::InsListElem(const char *name, Table* t, const char *idx):
-    InsNameElem(name)
+	InsNameElem(name)
 {
-    indexname = idx;
-    thetable = t;
+	indexname = idx;
+	thetable = t;
 }
 
 int InsListElem::ntokens(void)
 {
-    return thetable->records.size();
+	return thetable->records.size();
 }
 
 std::string InsListElem::getinstruction(void)
 {
-    return (nextelem != NULL)
-        ? (thetable->records[getvalue()] + nextelem->getinstruction())
-        : thetable->records[getvalue()];
+	return (nextelem != NULL)
+		? (thetable->records[getvalue()] + nextelem->getinstruction())
+		: thetable->records[getvalue()];
 }
 
 std::string InsListElem::getinspattern(void)
 {
-    return (nextelem != NULL)
-        ? (elemname + '[' + indexname + ']' + nextelem->getinspattern())
-        : (elemname + '[' + indexname + ']');
+	return (nextelem != NULL)
+		? (elemname + '[' + indexname + ']' + nextelem->getinspattern())
+		: (elemname + '[' + indexname + ']');
 }
 
 void InsListElem::getrefmap(std::map<std::string, InsNameElem*> &m)
 {
 	if (nextelem != NULL)
 		nextelem->getrefmap(m);
-    else
+	else
 		m.erase(m.begin(), m.end());
 	m[indexname] = this;
-    // of course, we're assuming that we've already checked (try in the parser)
-    // that indexname hasn't been used more than once on this line ..
+	// of course, we're assuming that we've already checked (try in the parser)
+	// that indexname hasn't been used more than once on this line ..
 }
 
 std::string InsListElem::getindex(void)
 {
-    return indexname;
+	return indexname;
 }
