@@ -83,7 +83,8 @@ void DataflowTest::testEmpty () {
     cfg->print(st, true);
     std::string s = st.str();
     // compare it to expected
-    std::string expected = "Ret BB: live in: \n00000123 RET\n";
+    std::string expected = "Ret BB: live in: \n00000123 RET\n"
+        "cfg liveout: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -104,7 +105,7 @@ void DataflowTest::testFlow () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+        new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -122,10 +123,12 @@ void DataflowTest::testFlow () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
-    expected += "Ret BB: live in: *32* r[24] := 5, \n";
-    expected += "00000123 RET\n";
+    expected =
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: \n"
+      "Ret BB: live in: *32* r[24] := 5, \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := 5, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -146,11 +149,11 @@ void DataflowTest::testKill () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
-	              new Const(6));
+                  new Const(6));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -168,11 +171,13 @@ void DataflowTest::testKill () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
-    expected += "         *32* r[24] := 6   uses:    used by: \n";
-    expected += "Ret BB: live in: *32* r[24] := 6, \n";
-    expected += "00000123 RET\n";
+    expected =
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: \n"
+      "         *32* r[24] := 6   uses:    used by: \n"
+      "Ret BB: live in: *32* r[24] := 6, \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := 6, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -193,11 +198,11 @@ void DataflowTest::testUse () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(28)),
-	              new Unary(opRegOf, new Const(24)));
+                  new Unary(opRegOf, new Const(24)));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -215,11 +220,13 @@ void DataflowTest::testUse () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24], \n";
-    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by: \n";
-    expected += "Ret BB: live in: *32* r[24] := 5, *32* r[28] := r[24], \n";
-    expected += "00000123 RET\n";
+    expected =
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24], \n"
+      "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by: \n"
+      "Ret BB: live in: *32* r[24] := 5, *32* r[28] := r[24], \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := 5, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -240,15 +247,15 @@ void DataflowTest::testUseOverKill () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(6));
+                     new Const(6));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(28)),
-	              new Unary(opRegOf, new Const(24)));
+                  new Unary(opRegOf, new Const(24)));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -266,12 +273,14 @@ void DataflowTest::testUseOverKill () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
-    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n";
-    expected += "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n";
-    expected += "Ret BB: live in: *32* r[24] := 6, *32* r[28] := r[24], \n";
-    expected += "00000123 RET\n";
+    expected = 
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: \n"
+      "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
+      "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
+      "Ret BB: live in: *32* r[24] := 6, *32* r[28] := r[24], \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := 6, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -292,11 +301,11 @@ void DataflowTest::testUseOverBB () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(6));
+                     new Const(6));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -304,7 +313,7 @@ void DataflowTest::testUseOverBB () {
     pRtls = new std::list<RTL*>();
     rtl = new RTL();
     e = new AssignExp(new Unary(opRegOf, new Const(28)),
-	              new Unary(opRegOf, new Const(24)));
+                  new Unary(opRegOf, new Const(24)));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -320,12 +329,14 @@ void DataflowTest::testUseOverBB () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: \n";
-    expected += "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n";
-    expected += "Ret BB: live in: *32* r[24] := 6, \n";
-    expected += "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n";
-    expected += "00000123 RET\n";
+    expected =
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: \n"
+      "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
+      "Ret BB: live in: *32* r[24] := 6, \n"
+      "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := 6, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -346,12 +357,12 @@ void DataflowTest::testUseKill () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
-		      new Binary(opPlus, new Unary(opRegOf, new Const(24)),
-			                 new Const(1)));
+              new Binary(opPlus, new Unary(opRegOf, new Const(24)),
+                             new Const(1)));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -369,11 +380,13 @@ void DataflowTest::testUseKill () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n";
-    expected += "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by: \n";
-    expected += "Ret BB: live in: *32* r[24] := r[24] + 1, \n";
-    expected += "00000123 RET\n";
+    expected  = 
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
+      "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by: \n"
+      "Ret BB: live in: *32* r[24] := r[24] + 1, \n"
+      "00000123 RET\n"
+      "cfg liveout: *32* r[24] := r[24] + 1, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -394,7 +407,7 @@ void DataflowTest::testEndlessLoop () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(24)),
-			         new Const(5));
+                     new Const(5));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -402,8 +415,8 @@ void DataflowTest::testEndlessLoop () {
     pRtls = new std::list<RTL*>();
     rtl = new RTL();
     e = new AssignExp(new Unary(opRegOf, new Const(24)),
-		      new Binary(opPlus, new Unary(opRegOf, new Const(24)),
-			                 new Const(1)));
+              new Binary(opPlus, new Unary(opRegOf, new Const(24)),
+                             new Const(1)));
     e->setProc(proc);
     rtl->appendExp(e);
     pRtls->push_back(rtl);
@@ -420,10 +433,13 @@ void DataflowTest::testEndlessLoop () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
-    expected += "Fall BB: live in: \n";
-    expected += "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n";
-    expected += "Oneway BB: live in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n";
-    expected += "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, *32* r[24] := r[24] + 1,    used by: \n";
+    expected =
+      "Fall BB: live in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
+      "Oneway BB: live in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
+      "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
+      "*32* r[24] := r[24] + 1,    used by: \n"
+      "cfg liveout: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
