@@ -191,6 +191,6 @@ frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h
-analysis.o: db/rtl.o db/hrtl.o db/cfg.o db/basicblock.o db/proc.o db/prog.o \
+analysis/analysis.o: db/rtl.o db/hrtl.o db/cfg.o db/basicblock.o db/proc.o db/prog.o \
     frontend/frontend.o include/analysis.h db/exp.o
 
