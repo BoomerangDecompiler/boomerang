@@ -59,7 +59,8 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_INDEX   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
 #define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
-#define DIS_S		(new Const(rs))
+#define DIS_RS_NUM	(new Const(rs))
+#define DIS_RD_NUM	(new Const(rd))
 
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
 	result.rtl = new RTL(pc, stmts); \
@@ -118,7 +119,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| Dsad_ (rs, d, ra) [name] =>
 		if (strcmp(name, "stmw") == 0) {
 			// Needs the fourth param s, which is the register number from rs
-			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA, DIS_S);
+			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA, DIS_RS_NUM);
 		} else
 			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
 		
@@ -136,7 +137,11 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc, name, DIS_RD, DIS_DISP);
 	// Load instructions
 	| Ddad_ (rd, d, ra) [name] =>
-		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
+		if (strcmp(name, "lmw") == 0) {
+			// Needs the third param d, which is the register number from rd
+			stmts = instantiate(pc, name, DIS_RD, DIS_INDEX, DIS_RD_NUM);
+		} else
+			stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
 	| XLb_ (b0, b1) [name] =>
 		/*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring control registers) */
 		stmts = instantiate(pc,	 name);
