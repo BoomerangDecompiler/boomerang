@@ -24,6 +24,7 @@
  * 17 Jul 02 - Mike: readSSLFile resets internal state as well
  * 04 Feb 03 - Mike: Fixed a bug with instantiating NOP (could cause bus error?)
  * 22 May 03 - Mike: Fixed a small memory leak (char* opcode)
+ * 16 Jul 04 - Mike: Simplify decoded semantics
  */
 
 /*==============================================================================
@@ -439,23 +440,28 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl,
     rtl.deepCopyList(*newList);
 
     // Iterate through each Statement of the new list of stmts
-    for (std::list<Statement*>::iterator rt = newList->begin();
-      rt != newList->end(); rt++) {
+    std::list<Statement*>::iterator ss;
+    for (ss = newList->begin(); ss != newList->end(); ss++) {
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
             Exp* formal = Location::param(param->c_str());
-            (*rt)->searchAndReplace(formal, *actual);
+            (*ss)->searchAndReplace(formal, *actual);
             //delete formal;
         }
-        (*rt)->fixSuccessor();
+        (*ss)->fixSuccessor();
         if (Boomerang::get()->debugDecoder)
-            std::cout << "          " << *rt << "\n";
+            std::cout << "          " << *ss << "\n";
     }
 
     transformPostVars( newList, true );
+
+    // Perform simplifications, e.g. *1 in Pentium addressing modes
+    for (ss = newList->begin(); ss != newList->end(); ss++)
+        (*ss)->simplify();
+
     return newList;
 }
 
