@@ -101,11 +101,12 @@ void StatementTest::testEmpty () {
 	// Force "verbose" flag (-v)
 	Boomerang* boo = Boomerang::get();
 	boo->vFlag = true;
+	boo->setOutputDirectory("./unit_test/");
+	boo->setLogger(new FileLogger());
 
 	// create Prog
 	BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);	// Don't actually use it
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
-	// We need a Prog object with a pBF (for getEarlyParamExp())
 	Prog* prog = new Prog(pBF, pFE);
 	// create UserProc
 	std::string name = "test";
@@ -118,14 +119,17 @@ void StatementTest::testEmpty () {
 	pRtls->push_back(new RTL(0x123));
 	PBB bb = cfg->newBB(pRtls, RET, 0);
 	cfg->setEntryBB(bb);
+	proc->setDecoded();		// We manually "decoded"
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
 	std::string s = st.str();
 	// compare it to expected
-	std::string expected = "Ret BB:\n00000123\n\n";
+	std::string expected = 
+		"Ret BB:\n"
+		"00000123\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -140,7 +144,7 @@ void StatementTest::testFlow () {
 	BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);	// Don't actually use it
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+ 	Prog* prog = new Prog(pBF, pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -166,8 +170,9 @@ void StatementTest::testFlow () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);		// Also sets exitBB; important!
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -177,10 +182,10 @@ void StatementTest::testFlow () {
 	// The assignment to 5 gets propagated into the return, and the assignment
 	// to r24 is removed
 	expected =
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000123    2 RET 5\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000123    2 RET 5\n\n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -226,8 +231,9 @@ void StatementTest::testKill () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -284,8 +290,9 @@ void StatementTest::testUse () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -347,8 +354,9 @@ void StatementTest::testUseOverKill () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -412,8 +420,9 @@ void StatementTest::testUseOverBB () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -472,8 +481,9 @@ void StatementTest::testUseKill () {
 	first->setOutEdge(0, ret);
 	ret->addInEdge(first);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -529,8 +539,9 @@ void StatementTest::testEndlessLoop () {
 	body->setOutEdge(0, body);
 	body->addInEdge(body);
 	cfg->setEntryBB(first);
+	proc->setDecoded();
 	// compute dataflow
-	prog->decompile();
+	proc->decompile();
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
