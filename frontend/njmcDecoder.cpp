@@ -222,18 +222,40 @@ Exp* NJMCDecoder::dis_Num(unsigned num)
 /*==============================================================================
  * FUNCTION:		NJMCDecoder::unconditionalJump
  * OVERVIEW:		Process an unconditional jump instruction
- *					Also check if the destination is a label
- * PARAMETERS:		<none>
- * RETURNS:			the reference to the RTLInstDict object
+ *					Also check if the destination is a label (MVE: is this done?)
+ * PARAMETERS:		
+ * RETURNS:			<none>
  *============================================================================*/
-void NJMCDecoder::unconditionalJump(const char* name, int size,
-  ADDRESS relocd, /*UserProc* proc,*/ int delta, ADDRESS pc, std::list<Statement*>* stmts,
-  DecodeResult& result) {
+void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
+		std::list<Statement*>* stmts, DecodeResult& result) {
 	result.rtl = new RTL(pc, stmts);
 	result.numBytes = size;
 	GotoStatement* jump = new GotoStatement();
 	jump->setDest(relocd-delta);
 	result.rtl->appendStmt(jump);
 	SHOW_ASM(name<<" "<<relocd)
+}
+
+/*==============================================================================
+ * FUNCTION:		NJMCDecoder::computedJump
+ * OVERVIEW:		Process an unconditional jump instruction
+ *					Also check if the destination is a label (MVE: is this done?)
+ * PARAMETERS:		name: name of instruction (for debugging)
+ *					size: size of instruction in bytes
+ *					dest: destination Exp*
+ *					pc: native pc
+ *					stmts: list of statements (?)
+ *					result: ref to decoder result object
+ * RETURNS:			<none>
+ *============================================================================*/
+void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc,
+		std::list<Statement*>* stmts, DecodeResult& result) {
+	result.rtl = new RTL(pc, stmts);
+	result.numBytes = size;
+	GotoStatement* jump = new GotoStatement();
+	jump->setDest(dest);
+	jump->setIsComputed(true);
+	result.rtl->appendStmt(jump);
+	SHOW_ASM(name<<" "<<dest)
 }
 

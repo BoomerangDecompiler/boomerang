@@ -220,7 +220,7 @@ LOGDOT[IDX]		rd, ra, rb				SETFLAGS0(rd);
 
 LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] uimm;
 
-ANDI			rd, rs, uimm			*32* rd := rs & uimm
+ANDIq			rd, rs, uimm			*32* rd := rs & uimm
 										SETFLAGS0(rd);				# Only ANDIq sets flags
 
 LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] (uimm << 16);
@@ -388,7 +388,7 @@ STMW	rs, eaddr, s					*32* tmp := 0
                                         *32* s <= 30 => tmp := tmp + 1
                                         *32* s <= 31 => m[eaddr + (tmp*4)] := r[s + tmp];
 
-BCLR   	   								*32* %pc := %LR;
+BALLR  	   								*32* %pc := %LR;
 
 MFSPR	rd, spr							*32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
 
@@ -428,8 +428,19 @@ CRLOGC[IDX]	d, a, b			*1* d :=   a CR_OP[IDX] (~b);
 CONDBR := { "%CR0@[3:3]",	"~%CR0@[2:2]",	"%CR0@[1:1]",	"~%CR0@[3:3]",
 			"%CR0@[2:2]",	"~%CR0@[3:3]",	"~%CR0@[1:1]",	"~%CR0@[2:2]",
 			"%CR0@[0:0]",	"~%CR0@[0:0]",	"%CR0@[0:0]",	"~%CR0@[0:0]"};
-BRCONDS := { "blt", "ble", "beq", "bge", "bgt", "bnl", "bne", "bng", "bso", "bns", "bun", "bnu"};
+BRCONDS := {"blt",		"ble",		"beq",		"bge",		"bgt",		"bnl",
+			"bne",		"bng",		"bso",		"bns",		"bun",		"bnu"};
+BRCONDSCTR:={"bltctr",	"blectr",	"beqctr",	"bgectr",	"bgtctr",	"bnlctr",	
+			"bnectr",	"bngctr",	"bsoctr",	"bnsctr",	"bunctr",	"bnuctr"};
+BRCONDSLR:= {"bltlr",	"blelr",	"beqlr",	"bgelr",	"bgtlr",	"bnllr",	
+			"bnelr",	"bnglr",	"bsolr",	"bnslr",	"bunlr",	"bnulr"};
 
-BRCONDS[IDX]   BIcr, reloc 
-            *32* %pc := [(CONDBR[IDX] = 1)?%pc + reloc:%pc];
+BRCONDS[IDX]   	BIcr, reloc 
+            	*32* %pc := [(CONDBR[IDX] = 1) ? %pc+reloc : %pc];
+
+BRCONDSCTR[IDX]   BIcr 
+            	*32* %pc := [(CONDBR[IDX] = 1) ? %CTR : %pc];
+
+BRCONDSLR[IDX]   BIcr 
+            	*32* %pc := [(CONDBR[IDX] = 1) ? %LR : %pc];
 

@@ -145,13 +145,16 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			stmts = instantiate(pc, name, DIS_RD, DIS_DISP, DIS_RD_NUM);
 		} else
 			stmts = instantiate(pc, name, DIS_RD, DIS_DISP, DIS_NZRA);
-	| XLb_ (b0, b1) [name] =>
+//	| XLb_ (b0, b1) [name] =>
+#if BCCTR_LONG	// Prefer to see bltctr instead of bcctr 12,0
+				// But also affects return instructions (bclr)
 		/*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring control registers) */
 		stmts = instantiate(pc,	 name);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(new ReturnStatement);
 		unused(b0);
 		unused(b1);
+#endif
 	| XLc_ (crbD, crbA, crbB) [name] =>
 		stmts = instantiate(pc, name, DIS_CRBD, DIS_CRBA, DIS_CRBB);
 		
@@ -182,7 +185,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| b (reladdr) =>
 		unconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
 
-	| buul (BIcr, reladdr) [name] =>		// Unconditional "conditional" branch with link, test/OSX/hello has this
+	| ball (BIcr, reladdr) [name] =>		// Always "conditional" branch with link, test/OSX/hello has this
 		if (reladdr - delta - pc == 4) {	// Branch to next instr?
 			// Effectively %LR = %pc+4, but give the actual value for %pc
 			Assign* as = new Assign(
@@ -216,7 +219,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		unused(l);
 
 	// Conditional branches
-	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu
+	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal (branch always)
 	| blt(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
 	| ble(BIcr, reladdr) [name] =>
@@ -233,7 +236,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JNE, BIcr);
 	| bng(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
-	| bso(BIcr, reladdr) [name] =>
+	| bso(BIcr, reladdr) [name] =>								// Branch on summary overflow
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
 	| bns(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
@@ -241,33 +244,146 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
 	| bnu(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+    | bal(BIcr, reladdr) =>
+		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
+
+	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
+	| bltctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSL, BIcr);
+
+	| blectr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
+
+	| beqctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JE, BIcr);
+
+	| bgectr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSGE, BIcr);
+
+	| bgtctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSG, BIcr);
+
+	| bnlctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSGE, BIcr);
+
+	| bnectr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JNE, BIcr);
+
+	| bngctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), BRANCH_JSLE, BIcr);
+
+	| bsoctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
+
+	| bnsctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
+
+	| bunctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
+
+	| bnuctr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
+
+	| balctr(BIcr) =>
+		computedJump("balctr", 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
+		
+	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
+	| bltlr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSL, BIcr);
+
+	| blelr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSLE, BIcr);
+
+	| beqlr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JE, BIcr);
+
+	| bgelr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSGE, BIcr);
+
+	| bgtlr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSG, BIcr);
+
+	| bnllr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSGE, BIcr);
+
+	| bnelr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JNE, BIcr);
+
+	| bnglr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSLE, BIcr);
+
+	| bsolr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
+
+	| bnslr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+
+	| bunlr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		 PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+
+	| bnulr(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
+//		 PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+
+	| ballr(BIcr) [name] =>
+		// Jump to %LR. Assume this is always a return statement
+		stmts = instantiate(pc,	 name);
+		result.rtl = new RTL(pc, stmts);
+		result.rtl->appendStmt(new ReturnStatement);
+
+	// Link versions of the above. For now, only handle unconditional case
+	| ballrl(BIcr) [name] =>
+		std::cerr << "HACK " << name << "\n";
 
 	// Conditional calls (bcl)
-	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul
+	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul | ball
 	| bltl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bltl\n";
+		std::cerr << "HACK " << name << "\n";
 	| blel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK blel\n";
+		std::cerr << "HACK " << name << "\n";
 	| beql(BIcr, reladdr) [name] =>
-		std::cerr << "HACK beql\n";
+		std::cerr << "HACK " << name << "\n";
 	| bgel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bgel\n";
+		std::cerr << "HACK " << name << "\n";
 	| bgtl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bgtl\n";
+		std::cerr << "HACK " << name << "\n";
 	| bnll(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bnll\n";
+		std::cerr << "HACK " << name << "\n";
 	| bnel(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bnel\n";
+		std::cerr << "HACK " << name << "\n";
 	| bngl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bngl\n";
+		std::cerr << "HACK " << name << "\n";
 	| bsol(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bsol\n";
+		std::cerr << "HACK " << name << "\n";
 	| bnsl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bnsl\n";
+		std::cerr << "HACK " << name << "\n";
 	| bunl(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bunl\n";
+		std::cerr << "HACK " << name << "\n";
 	| bnul(BIcr, reladdr) [name] =>
-		std::cerr << "HACK bnul\n";
+		std::cerr << "HACK " << name << "\n";
 	else
 		stmts = NULL;
 		result.valid = false;

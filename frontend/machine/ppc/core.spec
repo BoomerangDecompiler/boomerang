@@ -300,9 +300,9 @@ X_ is any of  [ eieio slbia sync tlbia tlbsync ],
 
 ## XL-Form
 
-XLb_ is any of [ bcctr bclr ],
- which is Xo1 = [ 528   16  ]
- & cr_dx & crbB = 0
+#XLb_ is any of [ bcctr bclr ],
+# which is Xo1 = [ 528   16  ]
+# & cr_dx & crbB = 0
 
 XLc_ is any of [ crand crandc creqv crnand crnor cror crorc crxor ],
  which is Xo1 = [ 257    129   289    225    33   449  417   193  ]
@@ -499,7 +499,7 @@ constructors
 
 ## XL-Form
 
-   XLb_^LK  BO, BI
+#   XLb_^LK  BO, BI			# bcctr, bclr: prefer bltctr to bcctr 12, 0
    XLc_  crbD, crbA, crbB
    mcrf  crfD, crfS
    isync ()
@@ -622,7 +622,7 @@ constructors
 
 ## branches
 
-fieldinfo BIcc is [ sparse [ lt = 0, gt = 1, eq = 2, so = 3, un = 3 ] ]
+fieldinfo BIcc is [ sparse [ lt = 0, gt = 1, eq = 2, so = 3, un = 3 ] ]		# un = unordered?
 
 # BO[4] ( 1) branch prediction
 # BO[3] ( 2) zero/nz
@@ -665,11 +665,11 @@ patterns
  bng is BO = 4  & BIcc = 1		# f, gt
  bso is BO = 12 & BIcc = 3		# t, so
  bns is BO = 4  & BIcc = 3		# f, so
- bun is BO = 12 & BIcc = 3		# t, un
- bnu is BO = 4  & BIcc = 3		# f, un
- buu is BO = 20 & BIcc = 3      # un, un
+ bun is BO = 12 & BIcc = 3		# t, un		Note: branch if UNordered (not unconditional)
+ bnu is BO = 4  & BIcc = 3		# f, un		Note: branch if not unordered
+ bal is BO = 20     			# always, any
 
-bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | buu
+bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
 
 constructors
 
@@ -695,6 +695,12 @@ bcc_^LK     BIcr, reloc { reloc = L + BD * 4 }
 bcc_^LK^"a" BIcr, reloc { reloc =     BD * 4 }
                         is    bc & LK & BIcr & bcc_ & BD & AA = 1
 
-  bcc_^"lr"^LK  BIcr     is bclr    & LK & BIcr & bcc_
-  bcc_^"ctr"^LK BIcr     is bcctr   & LK & BIcr & bcc_
+#bcc_^"lr"^LK  BIcr     is bclr    & LK & BIcr & bcc_
+#bcc_^"ctr"^LK BIcr     is bcctr   & LK & BIcr & bcc_
+
+bcc_^"lr"^LK  BIcr     is Xo1 =  16 & cr_dx & crbB = 0   & LK & BIcr & bcc_
+bcc_^"ctr"^LK BIcr     is Xo1 = 528 & cr_dx & crbB = 0   & LK & BIcr & bcc_
+#XLb_ is any of [ bcctr bclr ],
+# which is Xo1 = [ 528   16  ]
+# & cr_dx & crbB = 0
 
