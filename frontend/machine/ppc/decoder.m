@@ -56,13 +56,17 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-#define DIS_DISP   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
-#define DIS_INDEX    (new Binary(opPlus, DIS_RA, DIS_NZRB))
+#define DIS_DISP    (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
+#define DIS_INDEX   (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 #define DIS_RS_NUM	(new Const(rs))
 #define DIS_RD_NUM	(new Const(rd))
 #define DIS_BEG		(new Const(beg))
 #define DIS_END		(new Const(end))
+#define DIS_FD		(dis_Reg(fd+32))
+#define DIS_FS		(dis_Reg(fs+32))
+#define DIS_FA		(dis_Reg(fa+32))
+#define DIS_FB		(dis_Reg(fb+32))
 
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
 	result.rtl = new RTL(pc, stmts); \
@@ -228,6 +232,31 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| cmpli (crfd, l, ra, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
 		unused(l);
+
+	| Ddaf_(fd, d, ra) [name] =>									// Floating point loads (non indexed)
+		stmts = instantiate(pc, name, DIS_FD, DIS_DISP, DIS_RA);	// Pass RA twice (needed for update)
+
+	| Xdaf_(fd, ra, rb) [name] =>									// Floating point loads (indexed)
+		stmts = instantiate(pc, name, DIS_FD, DIS_INDEX, DIS_RA);	// Pass RA twice (needed for update)
+
+	| Dsaf_(fs, d, ra) [name] =>									// Floating point stores (non indexed)
+		stmts = instantiate(pc, name, DIS_FS, DIS_DISP, DIS_RA);	// Pass RA twice (needed for update)
+
+	| Xsaf_(fs, ra, rb) [name] =>									// Floating point stores (indexed)
+		stmts = instantiate(pc, name, DIS_FS, DIS_INDEX, DIS_RA);	// Pass RA twice (needed for update)
+
+
+	| Xcab_(crfd, fa, fb) [name] =>									// Floating point compare
+		stmts = instantiate(pc, name, DIS_CRFD, DIS_FA, DIS_FB);
+
+	| Xdbx_^Rc(fd, fb) [name] =>									// Floating point unary
+		stmts = instantiate(pc, name, DIS_FD, DIS_FB);
+
+	| A2c_^Rc(fd, fa, fb) [name] =>									// Floating point binary
+		stmts = instantiate(pc, name, DIS_FD, DIS_FA, DIS_FB);
+
+
+		
 
 	// Conditional branches
 	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal (branch always)

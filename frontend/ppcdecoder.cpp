@@ -60,13 +60,17 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-#define DIS_DISP   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
-#define DIS_INDEX    (new Binary(opPlus, DIS_RA, DIS_NZRB))
+#define DIS_DISP    (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
+#define DIS_INDEX   (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 #define DIS_RS_NUM	(new Const(rs))
 #define DIS_RD_NUM	(new Const(rd))
 #define DIS_BEG		(new Const(beg))
 #define DIS_END		(new Const(end))
+#define DIS_FD		(dis_Reg(fd+32))
+#define DIS_FS		(dis_Reg(fs+32))
+#define DIS_FA		(dis_Reg(fa+32))
+#define DIS_FB		(dis_Reg(fb+32))
 
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
 	result.rtl = new RTL(pc, stmts); \
@@ -119,11 +123,11 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
 
 
-#line 115 "frontend/machine/ppc/decoder.m"
+#line 119 "frontend/machine/ppc/decoder.m"
 { 
   dword MATCH_p = 
     
-#line 115 "frontend/machine/ppc/decoder.m"
+#line 119 "frontend/machine/ppc/decoder.m"
     hostPC
     ;
   char *MATCH_name;
@@ -134,7 +138,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, "ori", "oris", "xori", 
     "xoris", "andiq", "andisq", (char *)0, (char *)0, "lwz", "lwzu", "lbz", 
     "lbzu", "stw", "stwu", "stb", "stbu", "lhz", "lhzu", "lha", "lhau", 
-    "sth", "sthu", "lmw", "stmw", 
+    "sth", "sthu", "lmw", "stmw", "lfs", "lfsu", "lfd", "lfdu", "stfs", 
+    "stfsu", "stfd", "stfdu", 
   };
   char *MATCH_name_BO4_3[] = {
     (char *)0, (char *)0, "bge", (char *)0, (char *)0, (char *)0, "blt", 
@@ -182,30 +187,27 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
   char *MATCH_name_Rc_29[] = {"rlwimi", "rlwimiq", };
   char *MATCH_name_Rc_30[] = {"rlwinm", "rlwinmq", };
   char *MATCH_name_Xo1_33[] = {
+    "fcmpu", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "frsp", 
+    (char *)0, "fctiw", "fctiwz", (char *)0, (char *)0, (char *)0, (char *)0, 
+    "lwarx", "ldx", (char *)0, "lwzx", "slw", (char *)0, (char *)0, "sld", 
+    "and", (char *)0, (char *)0, (char *)0, "fcmpo", (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fneg", (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "ldux", (char *)0, 
+    "lwzux", (char *)0, (char *)0, (char *)0, (char *)0, "andc", (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "fmr", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "lwarx", "ldx", (char *)0, "lwzx", "slw", 
-    (char *)0, (char *)0, "sld", "and", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, "ldux", (char *)0, "lwzux", (char *)0, 
-    (char *)0, (char *)0, (char *)0, "andc", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "ldarx", (char *)0, (char *)0, "lbzx", (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    "lbzux", (char *)0, (char *)0, (char *)0, (char *)0, "nor", (char *)0, 
+    (char *)0, (char *)0, (char *)0, "ldarx", (char *)0, (char *)0, "lbzx", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "lbzux", (char *)0, (char *)0, (char *)0, (char *)0, "nor", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fnabs", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -226,6 +228,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "fabs", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, "lhzx", (char *)0, (char *)0, (char *)0, 
     (char *)0, "eqv", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -268,11 +272,58 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "lswx", "lwbrx", (char *)0, "srw", (char *)0, 
+    (char *)0, (char *)0, "lswx", "lwbrx", "lfsx", "srw", (char *)0, 
     (char *)0, "srd", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "lfsux", (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "lfdx", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "lfdux", (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "stfsx", (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "stfsux", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "stfdx", (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "stfdux", (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "lhbrx", (char *)0, "sraw", 
+    (char *)0, "srad", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, "fctid", "fctidz", (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srawi", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "fcfid", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -295,28 +346,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "lhbrx", 
-    (char *)0, "sraw", (char *)0, "srad", (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "srawi", 
+    (char *)0, (char *)0, "stfiwx", 
   };
   char *MATCH_name_Xo9_36[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -404,25 +434,29 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
   char *MATCH_name_Xo1_42[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    "frspq", (char *)0, "fctiwq", "fctiwzq", (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "slwq", (char *)0, 
+    (char *)0, "sldq", "andq", (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "slwq", 
-    (char *)0, (char *)0, "sldq", "andq", (char *)0, (char *)0, (char *)0, 
+    (char *)0, "fnegq", (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "andcq", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "fmrq", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "andcq", (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "norq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fnabsq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, "norq", (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -441,19 +475,20 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "fabsq", (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "eqvq", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "xorq", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "eqvq", (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "xorq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -464,33 +499,34 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, "orcq", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "orq", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "orcq", (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "nandq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "orq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "nandq", (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srwq", (char *)0, 
+    (char *)0, "srdq", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, "srwq", (char *)0, (char *)0, "srdq", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -526,18 +562,22 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, "srawq", (char *)0, "sradq", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, (char *)0, (char *)0, "fctidq", "fctidzq", 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
+    (char *)0, (char *)0, "srawiq", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, "srawq", (char *)0, "sradq", 
+    "fcfidq", 
+  };
+  char *MATCH_name_Xo5_44[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
-    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "srawiq", 
+    (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fdiv", 
+    (char *)0, "fsub", "fadd", 
   };
   unsigned MATCH_w_32_0;
   { 
@@ -545,9 +585,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     
       switch((MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */) {
         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 9: 
-        case 17: case 22: case 23: case 30: case 48: case 49: case 50: 
-        case 51: case 52: case 53: case 54: case 55: case 56: case 57: 
-        case 58: case 59: case 60: case 61: case 62: case 63: 
+        case 17: case 22: case 23: case 30: case 56: case 57: case 58: 
+        case 59: case 60: case 61: case 62: 
           goto MATCH_label_a0; break;
         case 7: case 8: case 12: case 13: case 14: case 15: 
           MATCH_name = 
@@ -560,7 +599,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               sign_extend((MATCH_w_32_0 & 0xffff) /* SIMM at 0 */, 16);
             nextPC = 4 + MATCH_p; 
             
-#line 133 "frontend/machine/ppc/decoder.m"
+#line 137 "frontend/machine/ppc/decoder.m"
             
 
             		if (strcmp(name, "addi") == 0 || strcmp(name, "addis") == 0) {
@@ -590,7 +629,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               unsigned uimm = (MATCH_w_32_0 & 0xffff) /* UIMM at 0 */;
               nextPC = 4 + MATCH_p; 
               
-#line 228 "frontend/machine/ppc/decoder.m"
+#line 232 "frontend/machine/ppc/decoder.m"
               
 
               		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
@@ -598,10 +637,6 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               		unused(l);
 
               
-
-              	// Conditional branches
-
-              	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal (branch always)
 
               
               
@@ -625,7 +660,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 sign_extend((MATCH_w_32_0 & 0xffff) /* SIMM at 0 */, 16);
               nextPC = 4 + MATCH_p; 
               
-#line 225 "frontend/machine/ppc/decoder.m"
+#line 229 "frontend/machine/ppc/decoder.m"
               
 
               		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_SIMM);
@@ -657,7 +692,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     addressToPC(MATCH_p);
                   nextPC = 4 + MATCH_p; 
                   
-#line 199 "frontend/machine/ppc/decoder.m"
+#line 203 "frontend/machine/ppc/decoder.m"
                   		// Always "conditional" branch with link, test/OSX/hello has this
 
                   		if (reladdr - delta - pc == 4) {	// Branch to next instr?
@@ -733,7 +768,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 347 "frontend/machine/ppc/decoder.m"
+#line 376 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -757,7 +792,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 343 "frontend/machine/ppc/decoder.m"
+#line 372 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -781,7 +816,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 351 "frontend/machine/ppc/decoder.m"
+#line 380 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -805,7 +840,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 356 "frontend/machine/ppc/decoder.m"
+#line 385 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -839,7 +874,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 341 "frontend/machine/ppc/decoder.m"
+#line 370 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -863,7 +898,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 349 "frontend/machine/ppc/decoder.m"
+#line 378 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -887,7 +922,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 345 "frontend/machine/ppc/decoder.m"
+#line 374 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -911,7 +946,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                       /* BD at 0 */ + addressToPC(MATCH_p);
                               nextPC = 4 + MATCH_p; 
                               
-#line 353 "frontend/machine/ppc/decoder.m"
+#line 382 "frontend/machine/ppc/decoder.m"
                               
 
                               		std::cerr << "HACK " << name << "\n";
@@ -956,7 +991,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 239 "frontend/machine/ppc/decoder.m"
+#line 268 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
@@ -980,7 +1015,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 233 "frontend/machine/ppc/decoder.m"
+#line 262 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
@@ -1020,7 +1055,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 235 "frontend/machine/ppc/decoder.m"
+#line 264 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
@@ -1044,7 +1079,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 242 "frontend/machine/ppc/decoder.m"
+#line 271 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
@@ -1088,7 +1123,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 246 "frontend/machine/ppc/decoder.m"
+#line 275 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JNE, BIcr);
@@ -1116,7 +1151,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 237 "frontend/machine/ppc/decoder.m"
+#line 266 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JE, BIcr);
@@ -1156,7 +1191,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 252 "frontend/machine/ppc/decoder.m"
+#line 281 "frontend/machine/ppc/decoder.m"
                             
 
                             		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
@@ -1188,7 +1223,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* BD at 0 */ + addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
                             
-#line 249 "frontend/machine/ppc/decoder.m"
+#line 278 "frontend/machine/ppc/decoder.m"
                             								// Branch on summary overflow
 
                             		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
@@ -1219,7 +1254,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                     /* LI at 0 */, 24) + addressToPC(MATCH_p);
                 nextPC = 4 + MATCH_p; 
                 
-#line 185 "frontend/machine/ppc/decoder.m"
+#line 189 "frontend/machine/ppc/decoder.m"
                 
 
                 		Exp* dest = DIS_RELADDR;
@@ -1254,7 +1289,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             24) + addressToPC(MATCH_p);
               nextPC = 4 + MATCH_p; 
               
-#line 196 "frontend/machine/ppc/decoder.m"
+#line 200 "frontend/machine/ppc/decoder.m"
               
 
               		unconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
@@ -1318,7 +1353,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
                         nextPC = 4 + MATCH_p; 
                         
-#line 337 "frontend/machine/ppc/decoder.m"
+#line 366 "frontend/machine/ppc/decoder.m"
                         
 
                         		std::cerr << "HACK " << name << "\n";
@@ -1368,7 +1403,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 311 "frontend/machine/ppc/decoder.m"
+#line 340 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSL, BIcr);
@@ -1394,7 +1429,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 299 "frontend/machine/ppc/decoder.m"
+#line 328 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSGE, BIcr);
@@ -1440,7 +1475,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 303 "frontend/machine/ppc/decoder.m"
+#line 332 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
@@ -1466,7 +1501,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 315 "frontend/machine/ppc/decoder.m"
+#line 344 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSLE, BIcr);
@@ -1512,7 +1547,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 319 "frontend/machine/ppc/decoder.m"
+#line 348 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JE, BIcr);
@@ -1538,7 +1573,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 307 "frontend/machine/ppc/decoder.m"
+#line 336 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JNE, BIcr);
@@ -1584,7 +1619,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 327 "frontend/machine/ppc/decoder.m"
+#line 356 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
@@ -1610,7 +1645,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 323 "frontend/machine/ppc/decoder.m"
+#line 352 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
@@ -1749,7 +1784,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 274 "frontend/machine/ppc/decoder.m"
+#line 303 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1775,7 +1810,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 262 "frontend/machine/ppc/decoder.m"
+#line 291 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1821,7 +1856,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 266 "frontend/machine/ppc/decoder.m"
+#line 295 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1847,7 +1882,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 278 "frontend/machine/ppc/decoder.m"
+#line 307 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1893,7 +1928,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 282 "frontend/machine/ppc/decoder.m"
+#line 311 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1919,7 +1954,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 270 "frontend/machine/ppc/decoder.m"
+#line 299 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1965,7 +2000,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 290 "frontend/machine/ppc/decoder.m"
+#line 319 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -1991,7 +2026,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                                           /* BIcr at 0 */;
                                   nextPC = 4 + MATCH_p; 
                                   
-#line 286 "frontend/machine/ppc/decoder.m"
+#line 315 "frontend/machine/ppc/decoder.m"
                                   
 
                                   		std::cerr << "HACK " << name << "\n";
@@ -2037,7 +2072,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
             unsigned uimm = (MATCH_w_32_0 & 0xffff) /* UIMM at 0 */;
             nextPC = 4 + MATCH_p; 
             
-#line 130 "frontend/machine/ppc/decoder.m"
+#line 134 "frontend/machine/ppc/decoder.m"
             
 
             		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_UIMM);
@@ -2114,7 +2149,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
                     nextPC = 4 + MATCH_p; 
                     
-#line 362 "frontend/machine/ppc/decoder.m"
+#line 391 "frontend/machine/ppc/decoder.m"
                     
 
                     		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
@@ -2137,9 +2172,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                 477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                 (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                 825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                 (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                 goto MATCH_label_a0;  /*opt-block+*/
               else 
@@ -2196,13 +2231,53 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 454: case 455: case 456: case 457: case 458: case 459: 
                   case 460: case 461: case 462: case 463: case 464: case 465: 
                   case 466: case 468: case 469: case 470: case 471: case 472: 
-                  case 473: case 474: case 475: case 535: case 537: case 538: 
-                  case 791: case 793: case 795: case 796: case 797: case 798: 
-                  case 799: case 800: case 801: case 802: case 803: case 804: 
-                  case 805: case 806: case 807: case 808: case 809: case 810: 
-                  case 811: case 812: case 813: case 814: case 815: case 816: 
-                  case 817: case 818: case 819: case 820: case 821: case 822: 
-                  case 823: 
+                  case 473: case 474: case 475: case 537: case 538: case 540: 
+                  case 541: case 542: case 543: case 544: case 545: case 546: 
+                  case 547: case 548: case 549: case 550: case 551: case 552: 
+                  case 553: case 554: case 555: case 556: case 557: case 558: 
+                  case 559: case 560: case 561: case 562: case 563: case 564: 
+                  case 565: case 566: case 568: case 569: case 570: case 571: 
+                  case 572: case 573: case 574: case 575: case 576: case 577: 
+                  case 578: case 579: case 580: case 581: case 582: case 583: 
+                  case 584: case 585: case 586: case 587: case 588: case 589: 
+                  case 590: case 591: case 592: case 593: case 594: case 595: 
+                  case 596: case 597: case 598: case 600: case 601: case 602: 
+                  case 603: case 604: case 605: case 606: case 607: case 608: 
+                  case 609: case 610: case 611: case 612: case 613: case 614: 
+                  case 615: case 616: case 617: case 618: case 619: case 620: 
+                  case 621: case 622: case 623: case 624: case 625: case 626: 
+                  case 627: case 628: case 629: case 630: case 632: case 633: 
+                  case 634: case 635: case 636: case 637: case 638: case 639: 
+                  case 640: case 641: case 642: case 643: case 644: case 645: 
+                  case 646: case 647: case 648: case 649: case 650: case 651: 
+                  case 652: case 653: case 654: case 655: case 656: case 657: 
+                  case 658: case 659: case 660: case 661: case 662: case 664: 
+                  case 665: case 666: case 667: case 668: case 669: case 670: 
+                  case 671: case 672: case 673: case 674: case 675: case 676: 
+                  case 677: case 678: case 679: case 680: case 681: case 682: 
+                  case 683: case 684: case 685: case 686: case 687: case 688: 
+                  case 689: case 690: case 691: case 692: case 693: case 694: 
+                  case 696: case 697: case 698: case 699: case 700: case 701: 
+                  case 702: case 703: case 704: case 705: case 706: case 707: 
+                  case 708: case 709: case 710: case 711: case 712: case 713: 
+                  case 714: case 715: case 716: case 717: case 718: case 719: 
+                  case 720: case 721: case 722: case 723: case 724: case 725: 
+                  case 726: case 728: case 729: case 730: case 731: case 732: 
+                  case 733: case 734: case 735: case 736: case 737: case 738: 
+                  case 739: case 740: case 741: case 742: case 743: case 744: 
+                  case 745: case 746: case 747: case 748: case 749: case 750: 
+                  case 751: case 752: case 753: case 754: case 755: case 756: 
+                  case 757: case 758: case 760: case 761: case 762: case 763: 
+                  case 764: case 765: case 766: case 767: case 768: case 769: 
+                  case 770: case 771: case 772: case 773: case 774: case 775: 
+                  case 776: case 777: case 778: case 779: case 780: case 781: 
+                  case 782: case 783: case 784: case 785: case 786: case 787: 
+                  case 788: case 789: case 791: case 793: case 795: case 796: 
+                  case 797: case 798: case 799: case 800: case 801: case 802: 
+                  case 803: case 804: case 805: case 806: case 807: case 808: 
+                  case 809: case 810: case 811: case 812: case 813: case 814: 
+                  case 815: case 816: case 817: case 818: case 819: case 820: 
+                  case 821: case 822: case 823: 
                     goto MATCH_label_a0; break;
                   case 19: 
                     if ((MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */ == 0 && 
@@ -2268,11 +2343,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     goto MATCH_label_a11; 
                     
                     break;
-                  case 824: 
+                  case 535: case 567: case 599: case 631: 
                     MATCH_name = 
                       MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                           /* Xo1 at 0 */]; 
                     goto MATCH_label_a12; 
+                    
+                    break;
+                  case 663: case 695: case 727: case 759: case 983: 
+                    MATCH_name = 
+                      MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                          /* Xo1 at 0 */]; 
+                    goto MATCH_label_a13; 
+                    
+                    break;
+                  case 824: 
+                    MATCH_name = 
+                      MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                          /* Xo1 at 0 */]; 
+                    goto MATCH_label_a14; 
                     
                     break;
                   default: assert(0);
@@ -2290,9 +2379,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                   477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                   (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                  540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                  (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                   825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                  (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                  984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                   (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                   goto MATCH_label_a0;  /*opt-block+*/
                 else 
@@ -2355,13 +2444,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     case 459: case 460: case 461: case 462: case 463: 
                     case 464: case 465: case 466: case 468: case 469: 
                     case 470: case 471: case 472: case 473: case 474: 
-                    case 475: case 535: case 537: case 538: case 791: 
-                    case 793: case 795: case 796: case 797: case 798: 
-                    case 799: case 800: case 801: case 802: case 803: 
-                    case 804: case 805: case 806: case 807: case 808: 
-                    case 809: case 810: case 811: case 812: case 813: 
-                    case 814: case 815: case 816: case 817: case 818: 
-                    case 819: case 820: case 821: case 822: case 823: 
+                    case 475: case 537: case 538: case 540: case 541: 
+                    case 542: case 543: case 544: case 545: case 546: 
+                    case 547: case 548: case 549: case 550: case 551: 
+                    case 552: case 553: case 554: case 555: case 556: 
+                    case 557: case 558: case 559: case 560: case 561: 
+                    case 562: case 563: case 564: case 565: case 566: 
+                    case 568: case 569: case 570: case 571: case 572: 
+                    case 573: case 574: case 575: case 576: case 577: 
+                    case 578: case 579: case 580: case 581: case 582: 
+                    case 583: case 584: case 585: case 586: case 587: 
+                    case 588: case 589: case 590: case 591: case 592: 
+                    case 593: case 594: case 595: case 596: case 597: 
+                    case 598: case 600: case 601: case 602: case 603: 
+                    case 604: case 605: case 606: case 607: case 608: 
+                    case 609: case 610: case 611: case 612: case 613: 
+                    case 614: case 615: case 616: case 617: case 618: 
+                    case 619: case 620: case 621: case 622: case 623: 
+                    case 624: case 625: case 626: case 627: case 628: 
+                    case 629: case 630: case 632: case 633: case 634: 
+                    case 635: case 636: case 637: case 638: case 639: 
+                    case 640: case 641: case 642: case 643: case 644: 
+                    case 645: case 646: case 647: case 648: case 649: 
+                    case 650: case 651: case 652: case 653: case 654: 
+                    case 655: case 656: case 657: case 658: case 659: 
+                    case 660: case 661: case 662: case 664: case 665: 
+                    case 666: case 667: case 668: case 669: case 670: 
+                    case 671: case 672: case 673: case 674: case 675: 
+                    case 676: case 677: case 678: case 679: case 680: 
+                    case 681: case 682: case 683: case 684: case 685: 
+                    case 686: case 687: case 688: case 689: case 690: 
+                    case 691: case 692: case 693: case 694: case 696: 
+                    case 697: case 698: case 699: case 700: case 701: 
+                    case 702: case 703: case 704: case 705: case 706: 
+                    case 707: case 708: case 709: case 710: case 711: 
+                    case 712: case 713: case 714: case 715: case 716: 
+                    case 717: case 718: case 719: case 720: case 721: 
+                    case 722: case 723: case 724: case 725: case 726: 
+                    case 728: case 729: case 730: case 731: case 732: 
+                    case 733: case 734: case 735: case 736: case 737: 
+                    case 738: case 739: case 740: case 741: case 742: 
+                    case 743: case 744: case 745: case 746: case 747: 
+                    case 748: case 749: case 750: case 751: case 752: 
+                    case 753: case 754: case 755: case 756: case 757: 
+                    case 758: case 760: case 761: case 762: case 763: 
+                    case 764: case 765: case 766: case 767: case 768: 
+                    case 769: case 770: case 771: case 772: case 773: 
+                    case 774: case 775: case 776: case 777: case 778: 
+                    case 779: case 780: case 781: case 782: case 783: 
+                    case 784: case 785: case 786: case 787: case 788: 
+                    case 789: case 791: case 793: case 795: case 796: 
+                    case 797: case 798: case 799: case 800: case 801: 
+                    case 802: case 803: case 804: case 805: case 806: 
+                    case 807: case 808: case 809: case 810: case 811: 
+                    case 812: case 813: case 814: case 815: case 816: 
+                    case 817: case 818: case 819: case 820: case 821: 
+                    case 822: case 823: 
                       goto MATCH_label_a0; break;
                     case 19: 
                       if ((MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */ == 0 && 
@@ -2428,11 +2566,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       goto MATCH_label_a11; 
                       
                       break;
-                    case 824: 
+                    case 535: case 567: case 599: case 631: 
                       MATCH_name = 
                         MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                             /* Xo1 at 0 */]; 
                       goto MATCH_label_a12; 
+                      
+                      break;
+                    case 663: case 695: case 727: case 759: case 983: 
+                      MATCH_name = 
+                        MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            /* Xo1 at 0 */]; 
+                      goto MATCH_label_a13; 
+                      
+                      break;
+                    case 824: 
+                      MATCH_name = 
+                        MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                            /* Xo1 at 0 */]; 
+                      goto MATCH_label_a14; 
                       
                       break;
                     default: assert(0);
@@ -2475,9 +2627,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                       477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                       (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                      540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                      (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                       825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                      (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                      984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                       (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                       goto MATCH_label_a0;  /*opt-block+*/
                     else 
@@ -2541,14 +2693,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         case 458: case 459: case 460: case 461: case 462: 
                         case 463: case 464: case 465: case 466: case 468: 
                         case 469: case 470: case 471: case 472: case 473: 
-                        case 474: case 475: case 535: case 537: case 538: 
-                        case 791: case 793: case 795: case 796: case 797: 
-                        case 798: case 799: case 800: case 801: case 802: 
-                        case 803: case 804: case 805: case 806: case 807: 
-                        case 808: case 809: case 810: case 811: case 812: 
-                        case 813: case 814: case 815: case 816: case 817: 
-                        case 818: case 819: case 820: case 821: case 822: 
-                        case 823: 
+                        case 474: case 475: case 537: case 538: case 540: 
+                        case 541: case 542: case 543: case 544: case 545: 
+                        case 546: case 547: case 548: case 549: case 550: 
+                        case 551: case 552: case 553: case 554: case 555: 
+                        case 556: case 557: case 558: case 559: case 560: 
+                        case 561: case 562: case 563: case 564: case 565: 
+                        case 566: case 568: case 569: case 570: case 571: 
+                        case 572: case 573: case 574: case 575: case 576: 
+                        case 577: case 578: case 579: case 580: case 581: 
+                        case 582: case 583: case 584: case 585: case 586: 
+                        case 587: case 588: case 589: case 590: case 591: 
+                        case 592: case 593: case 594: case 595: case 596: 
+                        case 597: case 598: case 600: case 601: case 602: 
+                        case 603: case 604: case 605: case 606: case 607: 
+                        case 608: case 609: case 610: case 611: case 612: 
+                        case 613: case 614: case 615: case 616: case 617: 
+                        case 618: case 619: case 620: case 621: case 622: 
+                        case 623: case 624: case 625: case 626: case 627: 
+                        case 628: case 629: case 630: case 632: case 633: 
+                        case 634: case 635: case 636: case 637: case 638: 
+                        case 639: case 640: case 641: case 642: case 643: 
+                        case 644: case 645: case 646: case 647: case 648: 
+                        case 649: case 650: case 651: case 652: case 653: 
+                        case 654: case 655: case 656: case 657: case 658: 
+                        case 659: case 660: case 661: case 662: case 664: 
+                        case 665: case 666: case 667: case 668: case 669: 
+                        case 670: case 671: case 672: case 673: case 674: 
+                        case 675: case 676: case 677: case 678: case 679: 
+                        case 680: case 681: case 682: case 683: case 684: 
+                        case 685: case 686: case 687: case 688: case 689: 
+                        case 690: case 691: case 692: case 693: case 694: 
+                        case 696: case 697: case 698: case 699: case 700: 
+                        case 701: case 702: case 703: case 704: case 705: 
+                        case 706: case 707: case 708: case 709: case 710: 
+                        case 711: case 712: case 713: case 714: case 715: 
+                        case 716: case 717: case 718: case 719: case 720: 
+                        case 721: case 722: case 723: case 724: case 725: 
+                        case 726: case 728: case 729: case 730: case 731: 
+                        case 732: case 733: case 734: case 735: case 736: 
+                        case 737: case 738: case 739: case 740: case 741: 
+                        case 742: case 743: case 744: case 745: case 746: 
+                        case 747: case 748: case 749: case 750: case 751: 
+                        case 752: case 753: case 754: case 755: case 756: 
+                        case 757: case 758: case 760: case 761: case 762: 
+                        case 763: case 764: case 765: case 766: case 767: 
+                        case 768: case 769: case 770: case 771: case 772: 
+                        case 773: case 774: case 775: case 776: case 777: 
+                        case 778: case 779: case 780: case 781: case 782: 
+                        case 783: case 784: case 785: case 786: case 787: 
+                        case 788: case 789: case 791: case 793: case 795: 
+                        case 796: case 797: case 798: case 799: case 800: 
+                        case 801: case 802: case 803: case 804: case 805: 
+                        case 806: case 807: case 808: case 809: case 810: 
+                        case 811: case 812: case 813: case 814: case 815: 
+                        case 816: case 817: case 818: case 819: case 820: 
+                        case 821: case 822: case 823: 
                           goto MATCH_label_a0; break;
                         case 19: 
                           if ((MATCH_w_32_0 >> 16 & 0x1f) 
@@ -2618,11 +2818,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           goto MATCH_label_a11; 
                           
                           break;
-                        case 824: 
+                        case 535: case 567: case 599: case 631: 
                           MATCH_name = 
                             MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                 /* Xo1 at 0 */]; 
                           goto MATCH_label_a12; 
+                          
+                          break;
+                        case 663: case 695: case 727: case 759: case 983: 
+                          MATCH_name = 
+                            MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                /* Xo1 at 0 */]; 
+                          goto MATCH_label_a13; 
+                          
+                          break;
+                        case 824: 
+                          MATCH_name = 
+                            MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                /* Xo1 at 0 */]; 
+                          goto MATCH_label_a14; 
                           
                           break;
                         default: assert(0);
@@ -2640,7 +2854,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
                       nextPC = 4 + MATCH_p; 
                       
-#line 116 "frontend/machine/ppc/decoder.m"
+#line 120 "frontend/machine/ppc/decoder.m"
                       
 
                       		stmts = instantiate(pc,	 name, DIS_RD, DIS_RA, DIS_RB);
@@ -2654,7 +2868,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 104: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "neg"; 
-                      goto MATCH_label_a13; 
+                      goto MATCH_label_a15; 
                       
                     } /*opt-block*/
                     else 
@@ -2665,9 +2879,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                         477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                        540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                         825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                        984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                         goto MATCH_label_a0;  /*opt-block+*/
                       else 
@@ -2734,13 +2948,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 459: case 460: case 461: case 462: case 463: 
                           case 464: case 465: case 466: case 468: case 469: 
                           case 470: case 471: case 472: case 473: case 474: 
-                          case 475: case 535: case 537: case 538: case 791: 
-                          case 793: case 795: case 796: case 797: case 798: 
-                          case 799: case 800: case 801: case 802: case 803: 
-                          case 804: case 805: case 806: case 807: case 808: 
-                          case 809: case 810: case 811: case 812: case 813: 
-                          case 814: case 815: case 816: case 817: case 818: 
-                          case 819: case 820: case 821: case 822: case 823: 
+                          case 475: case 537: case 538: case 540: case 541: 
+                          case 542: case 543: case 544: case 545: case 546: 
+                          case 547: case 548: case 549: case 550: case 551: 
+                          case 552: case 553: case 554: case 555: case 556: 
+                          case 557: case 558: case 559: case 560: case 561: 
+                          case 562: case 563: case 564: case 565: case 566: 
+                          case 568: case 569: case 570: case 571: case 572: 
+                          case 573: case 574: case 575: case 576: case 577: 
+                          case 578: case 579: case 580: case 581: case 582: 
+                          case 583: case 584: case 585: case 586: case 587: 
+                          case 588: case 589: case 590: case 591: case 592: 
+                          case 593: case 594: case 595: case 596: case 597: 
+                          case 598: case 600: case 601: case 602: case 603: 
+                          case 604: case 605: case 606: case 607: case 608: 
+                          case 609: case 610: case 611: case 612: case 613: 
+                          case 614: case 615: case 616: case 617: case 618: 
+                          case 619: case 620: case 621: case 622: case 623: 
+                          case 624: case 625: case 626: case 627: case 628: 
+                          case 629: case 630: case 632: case 633: case 634: 
+                          case 635: case 636: case 637: case 638: case 639: 
+                          case 640: case 641: case 642: case 643: case 644: 
+                          case 645: case 646: case 647: case 648: case 649: 
+                          case 650: case 651: case 652: case 653: case 654: 
+                          case 655: case 656: case 657: case 658: case 659: 
+                          case 660: case 661: case 662: case 664: case 665: 
+                          case 666: case 667: case 668: case 669: case 670: 
+                          case 671: case 672: case 673: case 674: case 675: 
+                          case 676: case 677: case 678: case 679: case 680: 
+                          case 681: case 682: case 683: case 684: case 685: 
+                          case 686: case 687: case 688: case 689: case 690: 
+                          case 691: case 692: case 693: case 694: case 696: 
+                          case 697: case 698: case 699: case 700: case 701: 
+                          case 702: case 703: case 704: case 705: case 706: 
+                          case 707: case 708: case 709: case 710: case 711: 
+                          case 712: case 713: case 714: case 715: case 716: 
+                          case 717: case 718: case 719: case 720: case 721: 
+                          case 722: case 723: case 724: case 725: case 726: 
+                          case 728: case 729: case 730: case 731: case 732: 
+                          case 733: case 734: case 735: case 736: case 737: 
+                          case 738: case 739: case 740: case 741: case 742: 
+                          case 743: case 744: case 745: case 746: case 747: 
+                          case 748: case 749: case 750: case 751: case 752: 
+                          case 753: case 754: case 755: case 756: case 757: 
+                          case 758: case 760: case 761: case 762: case 763: 
+                          case 764: case 765: case 766: case 767: case 768: 
+                          case 769: case 770: case 771: case 772: case 773: 
+                          case 774: case 775: case 776: case 777: case 778: 
+                          case 779: case 780: case 781: case 782: case 783: 
+                          case 784: case 785: case 786: case 787: case 788: 
+                          case 789: case 791: case 793: case 795: case 796: 
+                          case 797: case 798: case 799: case 800: case 801: 
+                          case 802: case 803: case 804: case 805: case 806: 
+                          case 807: case 808: case 809: case 810: case 811: 
+                          case 812: case 813: case 814: case 815: case 816: 
+                          case 817: case 818: case 819: case 820: case 821: 
+                          case 822: case 823: 
                             goto MATCH_label_a0; break;
                           case 20: case 21: case 23: case 53: case 55: 
                           case 84: case 87: case 119: case 279: case 310: 
@@ -2786,11 +3049,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             goto MATCH_label_a11; 
                             
                             break;
-                          case 824: 
+                          case 535: case 567: case 599: case 631: 
                             MATCH_name = 
                               MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
                             goto MATCH_label_a12; 
+                            
+                            break;
+                          case 663: case 695: case 727: case 759: case 983: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a13; 
+                            
+                            break;
+                          case 824: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a14; 
                             
                             break;
                           default: assert(0);
@@ -2799,7 +3076,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 200: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "subfze"; 
-                      goto MATCH_label_a13; 
+                      goto MATCH_label_a15; 
                       
                     } /*opt-block*/
                     else 
@@ -2810,9 +3087,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                         477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                        540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                         825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                        984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                         goto MATCH_label_a0;  /*opt-block+*/
                       else 
@@ -2879,13 +3156,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 459: case 460: case 461: case 462: case 463: 
                           case 464: case 465: case 466: case 468: case 469: 
                           case 470: case 471: case 472: case 473: case 474: 
-                          case 475: case 535: case 537: case 538: case 791: 
-                          case 793: case 795: case 796: case 797: case 798: 
-                          case 799: case 800: case 801: case 802: case 803: 
-                          case 804: case 805: case 806: case 807: case 808: 
-                          case 809: case 810: case 811: case 812: case 813: 
-                          case 814: case 815: case 816: case 817: case 818: 
-                          case 819: case 820: case 821: case 822: case 823: 
+                          case 475: case 537: case 538: case 540: case 541: 
+                          case 542: case 543: case 544: case 545: case 546: 
+                          case 547: case 548: case 549: case 550: case 551: 
+                          case 552: case 553: case 554: case 555: case 556: 
+                          case 557: case 558: case 559: case 560: case 561: 
+                          case 562: case 563: case 564: case 565: case 566: 
+                          case 568: case 569: case 570: case 571: case 572: 
+                          case 573: case 574: case 575: case 576: case 577: 
+                          case 578: case 579: case 580: case 581: case 582: 
+                          case 583: case 584: case 585: case 586: case 587: 
+                          case 588: case 589: case 590: case 591: case 592: 
+                          case 593: case 594: case 595: case 596: case 597: 
+                          case 598: case 600: case 601: case 602: case 603: 
+                          case 604: case 605: case 606: case 607: case 608: 
+                          case 609: case 610: case 611: case 612: case 613: 
+                          case 614: case 615: case 616: case 617: case 618: 
+                          case 619: case 620: case 621: case 622: case 623: 
+                          case 624: case 625: case 626: case 627: case 628: 
+                          case 629: case 630: case 632: case 633: case 634: 
+                          case 635: case 636: case 637: case 638: case 639: 
+                          case 640: case 641: case 642: case 643: case 644: 
+                          case 645: case 646: case 647: case 648: case 649: 
+                          case 650: case 651: case 652: case 653: case 654: 
+                          case 655: case 656: case 657: case 658: case 659: 
+                          case 660: case 661: case 662: case 664: case 665: 
+                          case 666: case 667: case 668: case 669: case 670: 
+                          case 671: case 672: case 673: case 674: case 675: 
+                          case 676: case 677: case 678: case 679: case 680: 
+                          case 681: case 682: case 683: case 684: case 685: 
+                          case 686: case 687: case 688: case 689: case 690: 
+                          case 691: case 692: case 693: case 694: case 696: 
+                          case 697: case 698: case 699: case 700: case 701: 
+                          case 702: case 703: case 704: case 705: case 706: 
+                          case 707: case 708: case 709: case 710: case 711: 
+                          case 712: case 713: case 714: case 715: case 716: 
+                          case 717: case 718: case 719: case 720: case 721: 
+                          case 722: case 723: case 724: case 725: case 726: 
+                          case 728: case 729: case 730: case 731: case 732: 
+                          case 733: case 734: case 735: case 736: case 737: 
+                          case 738: case 739: case 740: case 741: case 742: 
+                          case 743: case 744: case 745: case 746: case 747: 
+                          case 748: case 749: case 750: case 751: case 752: 
+                          case 753: case 754: case 755: case 756: case 757: 
+                          case 758: case 760: case 761: case 762: case 763: 
+                          case 764: case 765: case 766: case 767: case 768: 
+                          case 769: case 770: case 771: case 772: case 773: 
+                          case 774: case 775: case 776: case 777: case 778: 
+                          case 779: case 780: case 781: case 782: case 783: 
+                          case 784: case 785: case 786: case 787: case 788: 
+                          case 789: case 791: case 793: case 795: case 796: 
+                          case 797: case 798: case 799: case 800: case 801: 
+                          case 802: case 803: case 804: case 805: case 806: 
+                          case 807: case 808: case 809: case 810: case 811: 
+                          case 812: case 813: case 814: case 815: case 816: 
+                          case 817: case 818: case 819: case 820: case 821: 
+                          case 822: case 823: 
                             goto MATCH_label_a0; break;
                           case 20: case 21: case 23: case 53: case 55: 
                           case 84: case 87: case 119: case 279: case 310: 
@@ -2931,11 +3257,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             goto MATCH_label_a11; 
                             
                             break;
-                          case 824: 
+                          case 535: case 567: case 599: case 631: 
                             MATCH_name = 
                               MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
                             goto MATCH_label_a12; 
+                            
+                            break;
+                          case 663: case 695: case 727: case 759: case 983: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a13; 
+                            
+                            break;
+                          case 824: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a14; 
                             
                             break;
                           default: assert(0);
@@ -2944,7 +3284,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 202: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "addze"; 
-                      goto MATCH_label_a13; 
+                      goto MATCH_label_a15; 
                       
                     } /*opt-block*/
                     else 
@@ -2955,9 +3295,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                         477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                        540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                         825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                        984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                         goto MATCH_label_a0;  /*opt-block+*/
                       else 
@@ -3024,13 +3364,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 459: case 460: case 461: case 462: case 463: 
                           case 464: case 465: case 466: case 468: case 469: 
                           case 470: case 471: case 472: case 473: case 474: 
-                          case 475: case 535: case 537: case 538: case 791: 
-                          case 793: case 795: case 796: case 797: case 798: 
-                          case 799: case 800: case 801: case 802: case 803: 
-                          case 804: case 805: case 806: case 807: case 808: 
-                          case 809: case 810: case 811: case 812: case 813: 
-                          case 814: case 815: case 816: case 817: case 818: 
-                          case 819: case 820: case 821: case 822: case 823: 
+                          case 475: case 537: case 538: case 540: case 541: 
+                          case 542: case 543: case 544: case 545: case 546: 
+                          case 547: case 548: case 549: case 550: case 551: 
+                          case 552: case 553: case 554: case 555: case 556: 
+                          case 557: case 558: case 559: case 560: case 561: 
+                          case 562: case 563: case 564: case 565: case 566: 
+                          case 568: case 569: case 570: case 571: case 572: 
+                          case 573: case 574: case 575: case 576: case 577: 
+                          case 578: case 579: case 580: case 581: case 582: 
+                          case 583: case 584: case 585: case 586: case 587: 
+                          case 588: case 589: case 590: case 591: case 592: 
+                          case 593: case 594: case 595: case 596: case 597: 
+                          case 598: case 600: case 601: case 602: case 603: 
+                          case 604: case 605: case 606: case 607: case 608: 
+                          case 609: case 610: case 611: case 612: case 613: 
+                          case 614: case 615: case 616: case 617: case 618: 
+                          case 619: case 620: case 621: case 622: case 623: 
+                          case 624: case 625: case 626: case 627: case 628: 
+                          case 629: case 630: case 632: case 633: case 634: 
+                          case 635: case 636: case 637: case 638: case 639: 
+                          case 640: case 641: case 642: case 643: case 644: 
+                          case 645: case 646: case 647: case 648: case 649: 
+                          case 650: case 651: case 652: case 653: case 654: 
+                          case 655: case 656: case 657: case 658: case 659: 
+                          case 660: case 661: case 662: case 664: case 665: 
+                          case 666: case 667: case 668: case 669: case 670: 
+                          case 671: case 672: case 673: case 674: case 675: 
+                          case 676: case 677: case 678: case 679: case 680: 
+                          case 681: case 682: case 683: case 684: case 685: 
+                          case 686: case 687: case 688: case 689: case 690: 
+                          case 691: case 692: case 693: case 694: case 696: 
+                          case 697: case 698: case 699: case 700: case 701: 
+                          case 702: case 703: case 704: case 705: case 706: 
+                          case 707: case 708: case 709: case 710: case 711: 
+                          case 712: case 713: case 714: case 715: case 716: 
+                          case 717: case 718: case 719: case 720: case 721: 
+                          case 722: case 723: case 724: case 725: case 726: 
+                          case 728: case 729: case 730: case 731: case 732: 
+                          case 733: case 734: case 735: case 736: case 737: 
+                          case 738: case 739: case 740: case 741: case 742: 
+                          case 743: case 744: case 745: case 746: case 747: 
+                          case 748: case 749: case 750: case 751: case 752: 
+                          case 753: case 754: case 755: case 756: case 757: 
+                          case 758: case 760: case 761: case 762: case 763: 
+                          case 764: case 765: case 766: case 767: case 768: 
+                          case 769: case 770: case 771: case 772: case 773: 
+                          case 774: case 775: case 776: case 777: case 778: 
+                          case 779: case 780: case 781: case 782: case 783: 
+                          case 784: case 785: case 786: case 787: case 788: 
+                          case 789: case 791: case 793: case 795: case 796: 
+                          case 797: case 798: case 799: case 800: case 801: 
+                          case 802: case 803: case 804: case 805: case 806: 
+                          case 807: case 808: case 809: case 810: case 811: 
+                          case 812: case 813: case 814: case 815: case 816: 
+                          case 817: case 818: case 819: case 820: case 821: 
+                          case 822: case 823: 
                             goto MATCH_label_a0; break;
                           case 20: case 21: case 23: case 53: case 55: 
                           case 84: case 87: case 119: case 279: case 310: 
@@ -3076,11 +3465,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             goto MATCH_label_a11; 
                             
                             break;
-                          case 824: 
+                          case 535: case 567: case 599: case 631: 
                             MATCH_name = 
                               MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
                             goto MATCH_label_a12; 
+                            
+                            break;
+                          case 663: case 695: case 727: case 759: case 983: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a13; 
+                            
+                            break;
+                          case 824: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a14; 
                             
                             break;
                           default: assert(0);
@@ -3089,7 +3492,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 232: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "subfme"; 
-                      goto MATCH_label_a13; 
+                      goto MATCH_label_a15; 
                       
                     } /*opt-block*/
                     else 
@@ -3100,9 +3503,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                         477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                        540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                         825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                        984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                         goto MATCH_label_a0;  /*opt-block+*/
                       else 
@@ -3169,13 +3572,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 459: case 460: case 461: case 462: case 463: 
                           case 464: case 465: case 466: case 468: case 469: 
                           case 470: case 471: case 472: case 473: case 474: 
-                          case 475: case 535: case 537: case 538: case 791: 
-                          case 793: case 795: case 796: case 797: case 798: 
-                          case 799: case 800: case 801: case 802: case 803: 
-                          case 804: case 805: case 806: case 807: case 808: 
-                          case 809: case 810: case 811: case 812: case 813: 
-                          case 814: case 815: case 816: case 817: case 818: 
-                          case 819: case 820: case 821: case 822: case 823: 
+                          case 475: case 537: case 538: case 540: case 541: 
+                          case 542: case 543: case 544: case 545: case 546: 
+                          case 547: case 548: case 549: case 550: case 551: 
+                          case 552: case 553: case 554: case 555: case 556: 
+                          case 557: case 558: case 559: case 560: case 561: 
+                          case 562: case 563: case 564: case 565: case 566: 
+                          case 568: case 569: case 570: case 571: case 572: 
+                          case 573: case 574: case 575: case 576: case 577: 
+                          case 578: case 579: case 580: case 581: case 582: 
+                          case 583: case 584: case 585: case 586: case 587: 
+                          case 588: case 589: case 590: case 591: case 592: 
+                          case 593: case 594: case 595: case 596: case 597: 
+                          case 598: case 600: case 601: case 602: case 603: 
+                          case 604: case 605: case 606: case 607: case 608: 
+                          case 609: case 610: case 611: case 612: case 613: 
+                          case 614: case 615: case 616: case 617: case 618: 
+                          case 619: case 620: case 621: case 622: case 623: 
+                          case 624: case 625: case 626: case 627: case 628: 
+                          case 629: case 630: case 632: case 633: case 634: 
+                          case 635: case 636: case 637: case 638: case 639: 
+                          case 640: case 641: case 642: case 643: case 644: 
+                          case 645: case 646: case 647: case 648: case 649: 
+                          case 650: case 651: case 652: case 653: case 654: 
+                          case 655: case 656: case 657: case 658: case 659: 
+                          case 660: case 661: case 662: case 664: case 665: 
+                          case 666: case 667: case 668: case 669: case 670: 
+                          case 671: case 672: case 673: case 674: case 675: 
+                          case 676: case 677: case 678: case 679: case 680: 
+                          case 681: case 682: case 683: case 684: case 685: 
+                          case 686: case 687: case 688: case 689: case 690: 
+                          case 691: case 692: case 693: case 694: case 696: 
+                          case 697: case 698: case 699: case 700: case 701: 
+                          case 702: case 703: case 704: case 705: case 706: 
+                          case 707: case 708: case 709: case 710: case 711: 
+                          case 712: case 713: case 714: case 715: case 716: 
+                          case 717: case 718: case 719: case 720: case 721: 
+                          case 722: case 723: case 724: case 725: case 726: 
+                          case 728: case 729: case 730: case 731: case 732: 
+                          case 733: case 734: case 735: case 736: case 737: 
+                          case 738: case 739: case 740: case 741: case 742: 
+                          case 743: case 744: case 745: case 746: case 747: 
+                          case 748: case 749: case 750: case 751: case 752: 
+                          case 753: case 754: case 755: case 756: case 757: 
+                          case 758: case 760: case 761: case 762: case 763: 
+                          case 764: case 765: case 766: case 767: case 768: 
+                          case 769: case 770: case 771: case 772: case 773: 
+                          case 774: case 775: case 776: case 777: case 778: 
+                          case 779: case 780: case 781: case 782: case 783: 
+                          case 784: case 785: case 786: case 787: case 788: 
+                          case 789: case 791: case 793: case 795: case 796: 
+                          case 797: case 798: case 799: case 800: case 801: 
+                          case 802: case 803: case 804: case 805: case 806: 
+                          case 807: case 808: case 809: case 810: case 811: 
+                          case 812: case 813: case 814: case 815: case 816: 
+                          case 817: case 818: case 819: case 820: case 821: 
+                          case 822: case 823: 
                             goto MATCH_label_a0; break;
                           case 20: case 21: case 23: case 53: case 55: 
                           case 84: case 87: case 119: case 279: case 310: 
@@ -3221,11 +3673,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             goto MATCH_label_a11; 
                             
                             break;
-                          case 824: 
+                          case 535: case 567: case 599: case 631: 
                             MATCH_name = 
                               MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
                             goto MATCH_label_a12; 
+                            
+                            break;
+                          case 663: case 695: case 727: case 759: case 983: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a13; 
+                            
+                            break;
+                          case 824: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a14; 
                             
                             break;
                           default: assert(0);
@@ -3234,7 +3700,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                   case 234: 
                     if ((MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */ == 0) { 
                       MATCH_name = "addme"; 
-                      goto MATCH_label_a13; 
+                      goto MATCH_label_a15; 
                       
                     } /*opt-block*/
                     else 
@@ -3245,9 +3711,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 412 || 
                         477 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 533 || 
-                        540 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
-                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 790 || 
                         825 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 983 || 
+                        984 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
                         (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
                         goto MATCH_label_a0;  /*opt-block+*/
                       else 
@@ -3314,13 +3780,62 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                           case 459: case 460: case 461: case 462: case 463: 
                           case 464: case 465: case 466: case 468: case 469: 
                           case 470: case 471: case 472: case 473: case 474: 
-                          case 475: case 535: case 537: case 538: case 791: 
-                          case 793: case 795: case 796: case 797: case 798: 
-                          case 799: case 800: case 801: case 802: case 803: 
-                          case 804: case 805: case 806: case 807: case 808: 
-                          case 809: case 810: case 811: case 812: case 813: 
-                          case 814: case 815: case 816: case 817: case 818: 
-                          case 819: case 820: case 821: case 822: case 823: 
+                          case 475: case 537: case 538: case 540: case 541: 
+                          case 542: case 543: case 544: case 545: case 546: 
+                          case 547: case 548: case 549: case 550: case 551: 
+                          case 552: case 553: case 554: case 555: case 556: 
+                          case 557: case 558: case 559: case 560: case 561: 
+                          case 562: case 563: case 564: case 565: case 566: 
+                          case 568: case 569: case 570: case 571: case 572: 
+                          case 573: case 574: case 575: case 576: case 577: 
+                          case 578: case 579: case 580: case 581: case 582: 
+                          case 583: case 584: case 585: case 586: case 587: 
+                          case 588: case 589: case 590: case 591: case 592: 
+                          case 593: case 594: case 595: case 596: case 597: 
+                          case 598: case 600: case 601: case 602: case 603: 
+                          case 604: case 605: case 606: case 607: case 608: 
+                          case 609: case 610: case 611: case 612: case 613: 
+                          case 614: case 615: case 616: case 617: case 618: 
+                          case 619: case 620: case 621: case 622: case 623: 
+                          case 624: case 625: case 626: case 627: case 628: 
+                          case 629: case 630: case 632: case 633: case 634: 
+                          case 635: case 636: case 637: case 638: case 639: 
+                          case 640: case 641: case 642: case 643: case 644: 
+                          case 645: case 646: case 647: case 648: case 649: 
+                          case 650: case 651: case 652: case 653: case 654: 
+                          case 655: case 656: case 657: case 658: case 659: 
+                          case 660: case 661: case 662: case 664: case 665: 
+                          case 666: case 667: case 668: case 669: case 670: 
+                          case 671: case 672: case 673: case 674: case 675: 
+                          case 676: case 677: case 678: case 679: case 680: 
+                          case 681: case 682: case 683: case 684: case 685: 
+                          case 686: case 687: case 688: case 689: case 690: 
+                          case 691: case 692: case 693: case 694: case 696: 
+                          case 697: case 698: case 699: case 700: case 701: 
+                          case 702: case 703: case 704: case 705: case 706: 
+                          case 707: case 708: case 709: case 710: case 711: 
+                          case 712: case 713: case 714: case 715: case 716: 
+                          case 717: case 718: case 719: case 720: case 721: 
+                          case 722: case 723: case 724: case 725: case 726: 
+                          case 728: case 729: case 730: case 731: case 732: 
+                          case 733: case 734: case 735: case 736: case 737: 
+                          case 738: case 739: case 740: case 741: case 742: 
+                          case 743: case 744: case 745: case 746: case 747: 
+                          case 748: case 749: case 750: case 751: case 752: 
+                          case 753: case 754: case 755: case 756: case 757: 
+                          case 758: case 760: case 761: case 762: case 763: 
+                          case 764: case 765: case 766: case 767: case 768: 
+                          case 769: case 770: case 771: case 772: case 773: 
+                          case 774: case 775: case 776: case 777: case 778: 
+                          case 779: case 780: case 781: case 782: case 783: 
+                          case 784: case 785: case 786: case 787: case 788: 
+                          case 789: case 791: case 793: case 795: case 796: 
+                          case 797: case 798: case 799: case 800: case 801: 
+                          case 802: case 803: case 804: case 805: case 806: 
+                          case 807: case 808: case 809: case 810: case 811: 
+                          case 812: case 813: case 814: case 815: case 816: 
+                          case 817: case 818: case 819: case 820: case 821: 
+                          case 822: case 823: 
                             goto MATCH_label_a0; break;
                           case 20: case 21: case 23: case 53: case 55: 
                           case 84: case 87: case 119: case 279: case 310: 
@@ -3366,11 +3881,25 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                             goto MATCH_label_a11; 
                             
                             break;
-                          case 824: 
+                          case 535: case 567: case 599: case 631: 
                             MATCH_name = 
                               MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
                                   /* Xo1 at 0 */]; 
                             goto MATCH_label_a12; 
+                            
+                            break;
+                          case 663: case 695: case 727: case 759: case 983: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a13; 
+                            
+                            break;
+                          case 824: 
+                            MATCH_name = 
+                              MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                  /* Xo1 at 0 */]; 
+                            goto MATCH_label_a14; 
                             
                             break;
                           default: assert(0);
@@ -3391,7 +3920,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
             unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
             nextPC = 4 + MATCH_p; 
             
-#line 144 "frontend/machine/ppc/decoder.m"
+#line 148 "frontend/machine/ppc/decoder.m"
             
 
             		if (strcmp(name, "lmw") == 0) {
@@ -3441,7 +3970,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
             unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
             nextPC = 4 + MATCH_p; 
             
-#line 124 "frontend/machine/ppc/decoder.m"
+#line 128 "frontend/machine/ppc/decoder.m"
             
 
             		if (strcmp(name, "stmw") == 0) {
@@ -3462,6 +3991,537 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
           }
           
           break;
+        case 48: case 49: case 50: case 51: 
+          MATCH_name = 
+            MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
+          { 
+            char *name = MATCH_name;
+            int /* [~32768..32767] */ d = 
+              sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
+            unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
+            unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
+            nextPC = 4 + MATCH_p; 
+            
+#line 236 "frontend/machine/ppc/decoder.m"
+            									// Floating point loads (non indexed)
+
+            		stmts = instantiate(pc, name, DIS_FD, DIS_DISP, DIS_RA);	// Pass RA twice (needed for update)
+
+            
+
+            
+            
+            
+          }
+          
+          break;
+        case 52: case 53: case 54: case 55: 
+          MATCH_name = 
+            MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f) /* OPCD at 0 */]; 
+          { 
+            char *name = MATCH_name;
+            int /* [~32768..32767] */ d = 
+              sign_extend((MATCH_w_32_0 & 0xffff) /* d at 0 */, 16);
+            unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f) /* fS at 0 */;
+            unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
+            nextPC = 4 + MATCH_p; 
+            
+#line 242 "frontend/machine/ppc/decoder.m"
+            									// Floating point stores (non indexed)
+
+            		stmts = instantiate(pc, name, DIS_FS, DIS_DISP, DIS_RA);	// Pass RA twice (needed for update)
+
+            
+
+            
+            
+            
+          }
+          
+          break;
+        case 63: 
+          if ((MATCH_w_32_0 & 0x1) /* Rc at 0 */ == 1) 
+            if ((MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */ == 0) 
+              if (73 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 136 || 
+                137 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 264 || 
+                265 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 814 || 
+                847 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
+                
+                  switch((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */) {
+                    case 0: case 1: case 2: case 3: case 4: case 5: case 6: 
+                    case 7: case 8: case 9: case 10: case 11: case 12: 
+                    case 13: case 14: case 15: case 16: case 17: case 19: 
+                    case 22: case 23: case 24: case 25: case 26: case 27: 
+                    case 28: case 29: case 30: case 31: 
+                      goto MATCH_label_a0; break;
+                    case 18: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "fdivq"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    case 20: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "fsubq"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    case 21: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "faddq"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    default: assert(0);
+                  } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/  
+              else 
+                switch((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */) {
+                  case 0: case 1: case 2: case 3: case 4: case 5: case 6: 
+                  case 7: case 8: case 9: case 10: case 11: case 13: case 16: 
+                  case 17: case 18: case 19: case 20: case 21: case 22: 
+                  case 23: case 24: case 25: case 26: case 27: case 28: 
+                  case 29: case 30: case 31: case 32: case 33: case 34: 
+                  case 35: case 36: case 37: case 38: case 39: case 41: 
+                  case 42: case 43: case 44: case 45: case 46: case 47: 
+                  case 48: case 49: case 50: case 51: case 52: case 53: 
+                  case 54: case 55: case 56: case 57: case 58: case 59: 
+                  case 60: case 61: case 62: case 63: case 64: case 65: 
+                  case 66: case 67: case 68: case 69: case 70: case 71: 
+                  case 816: case 817: case 818: case 819: case 820: case 821: 
+                  case 822: case 823: case 824: case 825: case 826: case 827: 
+                  case 828: case 829: case 830: case 831: case 832: case 833: 
+                  case 834: case 835: case 836: case 837: case 838: case 839: 
+                  case 840: case 841: case 842: case 843: case 844: case 845: 
+                    
+                      switch((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */) {
+                        case 0: case 1: case 2: case 3: case 4: case 5: 
+                        case 6: case 7: case 8: case 9: case 10: case 11: 
+                        case 12: case 13: case 14: case 15: case 16: case 17: 
+                        case 19: case 22: case 23: case 24: case 25: case 26: 
+                        case 27: case 28: case 29: case 30: case 31: 
+                          goto MATCH_label_a0; break;
+                        case 18: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "fdivq"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 20: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "fsubq"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 21: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "faddq"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/ 
+                    break;
+                  case 12: case 14: case 15: case 40: case 72: case 136: 
+                  case 264: case 814: case 815: case 846: 
+                    MATCH_name = 
+                      MATCH_name_Xo1_42[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                          /* Xo1 at 0 */]; 
+                    goto MATCH_label_a18; 
+                    
+                    break;
+                  default: assert(0);
+                } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/  
+            else 
+              
+                switch((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */) {
+                  case 0: case 1: case 2: case 3: case 4: case 5: case 6: 
+                  case 7: case 8: case 9: case 10: case 11: case 12: case 13: 
+                  case 14: case 15: case 16: case 17: case 19: case 22: 
+                  case 23: case 24: case 25: case 26: case 27: case 28: 
+                  case 29: case 30: case 31: 
+                    goto MATCH_label_a0; break;
+                  case 18: 
+                    if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                      MATCH_name = "fdivq"; 
+                      goto MATCH_label_a17; 
+                      
+                    } /*opt-block*/
+                    else 
+                      goto MATCH_label_a0;  /*opt-block+*/
+                    
+                    break;
+                  case 20: 
+                    if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                      MATCH_name = "fsubq"; 
+                      goto MATCH_label_a17; 
+                      
+                    } /*opt-block*/
+                    else 
+                      goto MATCH_label_a0;  /*opt-block+*/
+                    
+                    break;
+                  case 21: 
+                    if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                      MATCH_name = "faddq"; 
+                      goto MATCH_label_a17; 
+                      
+                    } /*opt-block*/
+                    else 
+                      goto MATCH_label_a0;  /*opt-block+*/
+                    
+                    break;
+                  default: assert(0);
+                } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/   
+          else 
+            if ((MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */ == 0) 
+              if (73 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 136 || 
+                137 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 264 || 
+                265 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 814 || 
+                847 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
+                
+                  switch((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */) {
+                    case 0: case 1: case 2: case 3: case 4: case 5: case 6: 
+                    case 7: case 8: case 9: case 10: case 11: case 12: 
+                    case 13: case 14: case 15: case 16: case 17: case 19: 
+                    case 22: case 23: case 24: case 25: case 26: case 27: 
+                    case 28: case 29: case 30: case 31: 
+                      goto MATCH_label_a0; break;
+                    case 18: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "fdiv"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    case 20: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "fsub"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    case 21: 
+                      if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                        MATCH_name = "fadd"; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      
+                      break;
+                    default: assert(0);
+                  } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/  
+              else 
+                switch((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */) {
+                  case 0: 
+                    if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        if ((MATCH_w_32_0 >> 1 & 0x1f) 
+                                /* Xo5 at 0 */ == 18 || 
+                          20 <= (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ && 
+                          (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                          MATCH_name = 
+                            MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                                /* Xo5 at 0 */]; 
+                          goto MATCH_label_a17; 
+                          
+                        } /*opt-block*/
+                        else 
+                          goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                      else 
+                        if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1) 
+                          if ((MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ == 18 || 
+                            20 <= (MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ && 
+                            (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                            MATCH_name = 
+                              MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */]; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                        else { 
+                          MATCH_name = "fcmpu"; 
+                          goto MATCH_label_a16; 
+                          
+                        } /*opt-block*/  
+                    else 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 0 && 
+                        (MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1 || 
+                        (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      else { 
+                        MATCH_name = "fcmpu"; 
+                        goto MATCH_label_a16; 
+                        
+                      } /*opt-block*/ /*opt-block+*/
+                    break;
+                  case 1: case 2: case 3: case 4: case 5: case 6: case 7: 
+                  case 8: case 9: case 10: case 11: case 13: case 16: 
+                  case 17: case 18: case 19: case 20: case 21: case 22: 
+                  case 23: case 24: case 25: case 26: case 27: case 28: 
+                  case 29: case 30: case 31: case 33: case 34: case 35: 
+                  case 36: case 37: case 38: case 39: case 41: case 42: 
+                  case 43: case 44: case 45: case 46: case 47: case 48: 
+                  case 49: case 50: case 51: case 52: case 53: case 54: 
+                  case 55: case 56: case 57: case 58: case 59: case 60: 
+                  case 61: case 62: case 63: case 64: case 65: case 66: 
+                  case 67: case 68: case 69: case 70: case 71: case 816: 
+                  case 817: case 818: case 819: case 820: case 821: case 822: 
+                  case 823: case 824: case 825: case 826: case 827: case 828: 
+                  case 829: case 830: case 831: case 832: case 833: case 834: 
+                  case 835: case 836: case 837: case 838: case 839: case 840: 
+                  case 841: case 842: case 843: case 844: case 845: 
+                    
+                      switch((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */) {
+                        case 0: case 1: case 2: case 3: case 4: case 5: 
+                        case 6: case 7: case 8: case 9: case 10: case 11: 
+                        case 12: case 13: case 14: case 15: case 16: case 17: 
+                        case 19: case 22: case 23: case 24: case 25: case 26: 
+                        case 27: case 28: case 29: case 30: case 31: 
+                          goto MATCH_label_a0; break;
+                        case 18: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "fdiv"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 20: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "fsub"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        case 21: 
+                          if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) { 
+                            MATCH_name = "fadd"; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/ 
+                    break;
+                  case 12: case 14: case 15: case 40: case 72: case 136: 
+                  case 264: case 814: case 815: case 846: 
+                    MATCH_name = 
+                      MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                          /* Xo1 at 0 */]; 
+                    goto MATCH_label_a18; 
+                    
+                    break;
+                  case 32: 
+                    if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        if ((MATCH_w_32_0 >> 1 & 0x1f) 
+                                /* Xo5 at 0 */ == 18 || 
+                          20 <= (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ && 
+                          (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                          MATCH_name = 
+                            MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                                /* Xo5 at 0 */]; 
+                          goto MATCH_label_a17; 
+                          
+                        } /*opt-block*/
+                        else 
+                          goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                      else 
+                        if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1) 
+                          if ((MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ == 18 || 
+                            20 <= (MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ && 
+                            (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                            MATCH_name = 
+                              MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */]; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                        else { 
+                          MATCH_name = "fcmpo"; 
+                          goto MATCH_label_a16; 
+                          
+                        } /*opt-block*/  
+                    else 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 0 && 
+                        (MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1 || 
+                        (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      else { 
+                        MATCH_name = "fcmpo"; 
+                        goto MATCH_label_a16; 
+                        
+                      } /*opt-block*/ /*opt-block+*/
+                    break;
+                  default: assert(0);
+                } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/  
+            else 
+              if ((MATCH_w_32_0 >> 6 & 0x1f) /* C at 0 */ == 0) 
+                if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                  if ((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ == 18 || 
+                    20 <= (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ && 
+                    (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                    MATCH_name = MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                          /* Xo5 at 0 */]; 
+                    goto MATCH_label_a17; 
+                    
+                  } /*opt-block*/
+                  else 
+                    goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                else 
+                  if ((MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1) 
+                    if ((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ == 18 || 
+                      20 <= (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ && 
+                      (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                      MATCH_name = 
+                        MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                            /* Xo5 at 0 */]; 
+                      goto MATCH_label_a17; 
+                      
+                    } /*opt-block*/
+                    else 
+                      goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                  else 
+                    if (33 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                      (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
+                      if ((MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ == 18 || 
+                        20 <= (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ && 
+                        (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                        MATCH_name = 
+                          MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                              /* Xo5 at 0 */]; 
+                        goto MATCH_label_a17; 
+                        
+                      } /*opt-block*/
+                      else 
+                        goto MATCH_label_a0;  /*opt-block+*/ /*opt-block+*/
+                    else 
+                      switch((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */) {
+                        case 0: case 32: 
+                          MATCH_name = 
+                            MATCH_name_Xo1_33[(MATCH_w_32_0 >> 1 & 0x3ff) 
+                                /* Xo1 at 0 */]; 
+                          goto MATCH_label_a16; 
+                          
+                          break;
+                        case 1: case 2: case 3: case 4: case 5: case 6: 
+                        case 7: case 8: case 9: case 10: case 11: case 12: 
+                        case 13: case 14: case 15: case 16: case 17: case 18: 
+                        case 19: case 20: case 21: case 22: case 23: case 24: 
+                        case 25: case 26: case 27: case 28: case 29: case 30: 
+                        case 31: 
+                          if ((MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ == 18 || 
+                            20 <= (MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */ && 
+                            (MATCH_w_32_0 >> 1 & 0x1f) /* Xo5 at 0 */ < 22) { 
+                            MATCH_name = 
+                              MATCH_name_Xo5_44[(MATCH_w_32_0 >> 1 & 0x1f) 
+                                  /* Xo5 at 0 */]; 
+                            goto MATCH_label_a17; 
+                            
+                          } /*opt-block*/
+                          else 
+                            goto MATCH_label_a0;  /*opt-block+*/
+                          
+                          break;
+                        default: assert(0);
+                      } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/    
+              else 
+                if (33 <= (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ && 
+                  (MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */ < 1024) 
+                  goto MATCH_label_a0;  /*opt-block+*/
+                else 
+                  switch((MATCH_w_32_0 >> 1 & 0x3ff) /* Xo1 at 0 */) {
+                    case 0: 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 0 && 
+                        (MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1 || 
+                        (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      else { 
+                        MATCH_name = "fcmpu"; 
+                        goto MATCH_label_a16; 
+                        
+                      } /*opt-block*/
+                      
+                      break;
+                    case 1: case 2: case 3: case 4: case 5: case 6: case 7: 
+                    case 8: case 9: case 10: case 11: case 12: case 13: 
+                    case 14: case 15: case 16: case 17: case 18: case 19: 
+                    case 20: case 21: case 22: case 23: case 24: case 25: 
+                    case 26: case 27: case 28: case 29: case 30: case 31: 
+                      goto MATCH_label_a0; break;
+                    case 32: 
+                      if ((MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 0 && 
+                        (MATCH_w_32_0 >> 22 & 0x1) /* Lz at 0 */ == 1 || 
+                        (MATCH_w_32_0 >> 21 & 0x1) /* L at 0 */ == 1) 
+                        goto MATCH_label_a0;  /*opt-block+*/
+                      else { 
+                        MATCH_name = "fcmpo"; 
+                        goto MATCH_label_a16; 
+                        
+                      } /*opt-block*/
+                      
+                      break;
+                    default: assert(0);
+                  } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/    
+          break;
         default: assert(0);
       } /* (MATCH_w_32_0 >> 26 & 0x3f) -- OPCD at 0 --*/ 
     
@@ -3471,7 +4531,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     { 
       nextPC = MATCH_p; 
       
-#line 365 "frontend/machine/ppc/decoder.m"
+#line 394 "frontend/machine/ppc/decoder.m"
       
       		stmts = NULL;
 
@@ -3492,7 +4552,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
         4 * (MATCH_w_32_0 >> 2 & 0x3fff) /* BD at 0 */ + addressToPC(MATCH_p);
       nextPC = 4 + MATCH_p; 
       
-#line 258 "frontend/machine/ppc/decoder.m"
+#line 287 "frontend/machine/ppc/decoder.m"
       
 
       		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
@@ -3513,7 +4573,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 331 "frontend/machine/ppc/decoder.m"
+#line 360 "frontend/machine/ppc/decoder.m"
       
 
       		result.rtl = new RTL(pc, stmts);
@@ -3540,7 +4600,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned crbD = (MATCH_w_32_0 >> 21 & 0x1f) /* crbD at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 160 "frontend/machine/ppc/decoder.m"
+#line 164 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_CRBD, DIS_CRBA, DIS_CRBB);
@@ -3559,7 +4619,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned BIcr = (MATCH_w_32_0 >> 18 & 0x7) /* BIcr at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 294 "frontend/machine/ppc/decoder.m"
+#line 323 "frontend/machine/ppc/decoder.m"
       
 
       		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
@@ -3586,7 +4646,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 181 "frontend/machine/ppc/decoder.m"
+#line 185 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RA, DIS_RS, DIS_UIMM, DIS_BEG, DIS_END);
@@ -3610,7 +4670,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 222 "frontend/machine/ppc/decoder.m"
+#line 226 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);
@@ -3629,7 +4689,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 178 "frontend/machine/ppc/decoder.m"
+#line 182 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RD);
@@ -3650,7 +4710,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 141 "frontend/machine/ppc/decoder.m"
+#line 145 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
@@ -3671,7 +4731,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned rd = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 138 "frontend/machine/ppc/decoder.m"
+#line 142 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_RB);
@@ -3691,7 +4751,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
         (MATCH_w_32_0 >> 16 & 0x1f) /* sprL at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 162 "frontend/machine/ppc/decoder.m"
+#line 166 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RD, DIS_UIMM);
@@ -3711,7 +4771,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
         (MATCH_w_32_0 >> 16 & 0x1f) /* sprL at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 165 "frontend/machine/ppc/decoder.m"
+#line 169 "frontend/machine/ppc/decoder.m"
       
 
       		switch (uimm) {
@@ -3747,15 +4807,17 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
   MATCH_label_a12: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
+      unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
-      unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
-      unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
+      unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 359 "frontend/machine/ppc/decoder.m"
-      
+#line 239 "frontend/machine/ppc/decoder.m"
+      									// Floating point loads (indexed)
 
-      		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
+      		stmts = instantiate(pc, name, DIS_FD, DIS_INDEX, DIS_RA);	// Pass RA twice (needed for update)
+
+      
 
       
       
@@ -3766,11 +4828,53 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
   MATCH_label_a13: (void)0; /*placeholder for label*/ 
     { 
       char *name = MATCH_name;
+      unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f) /* fS at 0 */;
+      unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
+      unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 245 "frontend/machine/ppc/decoder.m"
+      									// Floating point stores (indexed)
+
+      		stmts = instantiate(pc, name, DIS_FS, DIS_INDEX, DIS_RA);	// Pass RA twice (needed for update)
+
+      
+
+      
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a14: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
+      unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f) /* S at 0 */;
+      unsigned uimm = (MATCH_w_32_0 >> 11 & 0x1f) /* SH at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 388 "frontend/machine/ppc/decoder.m"
+      
+
+      		stmts = instantiate(pc,	 name, DIS_RA, DIS_RS, DIS_UIMM);
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a15: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
       unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f) /* A at 0 */;
       unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f) /* D at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 119 "frontend/machine/ppc/decoder.m"
+#line 123 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
@@ -3787,11 +4891,83 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     } 
     goto MATCH_finished_a; 
     
+  MATCH_label_a16: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned crfd = (MATCH_w_32_0 >> 23 & 0x7) /* crfD at 0 */;
+      unsigned fa = (MATCH_w_32_0 >> 16 & 0x1f) /* fA at 0 */;
+      unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 249 "frontend/machine/ppc/decoder.m"
+      									// Floating point compare
+
+      		stmts = instantiate(pc, name, DIS_CRFD, DIS_FA, DIS_FB);
+
+      
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a17: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned fa = (MATCH_w_32_0 >> 16 & 0x1f) /* fA at 0 */;
+      unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
+      unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 255 "frontend/machine/ppc/decoder.m"
+      									// Floating point binary
+
+      		stmts = instantiate(pc, name, DIS_FD, DIS_FA, DIS_FB);
+
+      
+
+      
+
+      		
+
+      
+
+      	// Conditional branches
+
+      	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal (branch always)
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
+  MATCH_label_a18: (void)0; /*placeholder for label*/ 
+    { 
+      char *name = MATCH_name;
+      unsigned fb = (MATCH_w_32_0 >> 11 & 0x1f) /* fB at 0 */;
+      unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f) /* fD at 0 */;
+      nextPC = 4 + MATCH_p; 
+      
+#line 252 "frontend/machine/ppc/decoder.m"
+      									// Floating point unary
+
+      		stmts = instantiate(pc, name, DIS_FD, DIS_FB);
+
+      
+
+      
+      
+      
+    } 
+    goto MATCH_finished_a; 
+    
   MATCH_finished_a: (void)0; /*placeholder for label*/
   
 }
 
-#line 370 "frontend/machine/ppc/decoder.m"
+#line 399 "frontend/machine/ppc/decoder.m"
 
 	result.numBytes = nextPC - hostPC;
 	if (result.valid && result.rtl == 0)	// Don't override higher level res

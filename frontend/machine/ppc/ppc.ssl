@@ -152,6 +152,34 @@ SUBFLAGSNS(op1, op2, crfd) {
    *32* crfd = 7 => %CR7@[1:1] := op1 = op2
 };
 
+SETFFLAGSN(op1, op2, crfd) {
+	# Set flags according to floating point compare
+   *32* crfd = 0 => %CR0@[3:3] := op1 < op2
+   *32* crfd = 0 => %CR0@[2:2] := op1 > op2
+   *32* crfd = 0 => %CR0@[1:1] := op1 = op2
+   *32* crfd = 1 => %CR1@[3:3] := op1 < op2
+   *32* crfd = 1 => %CR1@[2:2] := op1 > op2
+   *32* crfd = 1 => %CR1@[1:1] := op1 = op2
+   *32* crfd = 2 => %CR2@[3:3] := op1 < op2
+   *32* crfd = 2 => %CR2@[2:2] := op1 > op2
+   *32* crfd = 2 => %CR2@[1:1] := op1 = op2
+   *32* crfd = 3 => %CR3@[3:3] := op1 < op2
+   *32* crfd = 3 => %CR3@[2:2] := op1 > op2
+   *32* crfd = 3 => %CR3@[1:1] := op1 = op2
+   *32* crfd = 4 => %CR4@[3:3] := op1 < op2
+   *32* crfd = 4 => %CR4@[2:2] := op1 > op2
+   *32* crfd = 4 => %CR4@[1:1] := op1 = op2
+   *32* crfd = 5 => %CR5@[3:3] := op1 < op2
+   *32* crfd = 5 => %CR5@[2:2] := op1 > op2
+   *32* crfd = 5 => %CR5@[1:1] := op1 = op2
+   *32* crfd = 6 => %CR6@[3:3] := op1 < op2
+   *32* crfd = 6 => %CR6@[2:2] := op1 > op2
+   *32* crfd = 6 => %CR6@[1:1] := op1 = op2
+   *32* crfd = 7 => %CR7@[3:3] := op1 < op2
+   *32* crfd = 7 => %CR7@[2:2] := op1 > op2
+   *32* crfd = 7 => %CR7@[1:1] := op1 = op2
+};
+
 
 #Arithmetic operations
 
@@ -429,6 +457,50 @@ STMW	rs, eaddr, s					*32* tmp := 0
                                         *32* s <= 30 => tmp := tmp + 1
                                         *32* s <= 31 => m[eaddr + (tmp*4)] := r[s + tmp];
 
+# Floating point loads
+LFD		fd, eaddr, ra					*64* fd := m[eaddr];
+
+LFDU	fd, eaddr, ra					*64* fd := m[eaddr]
+										*32* ra := eaddr;
+
+LFDX	fd, eaddr, ra					*64* fd := m[eaddr];
+
+LFDUX	fd, eaddr, ra					*64* fd := m[eaddr]
+										*32* ra := eaddr;
+
+LFS		fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr]);
+
+LFSU	fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr])
+										*32* ra := eaddr;
+
+LFSX	fd, eaddr, ra					*64* fd := fsize(32, 64, m[eaddr]);
+
+LFSUX	fd, eaddr, ra					*32* fd := fsize(32, 64, m[eaddr])
+										*32* ra := eaddr;
+
+# Floating point stores
+STFD	fd, eaddr, ra					*64* m[eaddr] := fd;
+
+STFDU	fd, eaddr, ra					*64* m[eaddr] := fd
+										*32* ra := eaddr;
+
+STFDX	fd, eaddr, ra					*64* m[eaddr] := fd;
+
+STFDUX	fd, eaddr, ra					*64* m[eaddr] := fd
+										*32* ra := eaddr;
+
+STFS	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd);
+
+STFSU	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd)
+										*32* ra := eaddr;
+
+STFSX	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd);
+
+STFSUX	fd, eaddr, ra					*32* m[eaddr] := fsize(64, 32, fd)
+										*32* ra := eaddr;
+
+
+
 BALLR  	   								*32* %pc := %LR;
 
 MFCR	rd								*32* rd :=	(%CR0 << 28) + (%CR1 << 24) + (%CR2 << 20) + (%CR3 << 16) +
@@ -468,6 +540,9 @@ CMP			crfd, ra, rb				SUBFLAGSNS(ra, rb, crfd);
 
 CMPL		crfd, ra, rb				SUBFLAGSNL(ra, rb, crfd);
 
+FCMPO		crfd, fa, fb				SETFFLAGSN(fa, fb,crfd);	# Difference between O and U forms is
+FCMPU		crfd, fa, fb				SETFFLAGSN(fa, fb,crfd);	# in exception handling
+
 #condition register manipulation
 
 CRLOG	:= {"CRAND",	"CROR",		"CRXOR"};
@@ -479,9 +554,35 @@ CRLOG[IDX]	d, a, b			*1* d :=   a CR_OP[IDX]  b;
 CRNLOG[IDX]	d, a, b			*1* d := ~(a CR_OP[IDX]  b);
 CRLOGC[IDX]	d, a, b			*1* d :=   a CR_OP[IDX] (~b);
 
+# Floating point operations
+
+FMR			fd, fb			*64* fd := fb;
+FMRq		fd, fb			*64* fd := fb;
+
+FNEG		fd, fb			*64* fd := 0.0 -f fb;
+FNEGq		fd, fb			*64* fd := 0.0 -f fb;
+
+FRSP		fd, fb			*32* tmpf := fsize(64, 32, fb)
+							*64* fd := fsize(32, 64, tmpf);
+FRSPq		fd, fb			*32* tmpf := fsize(64, 32, fb)
+							*64* fd := fsize(32, 64, tmpf);
+
+FCTIW		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
+FCTIWq		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
+# The following are supposed to round towards 0 as well
+FCTIWZ		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
+FCTIWZq		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
+
+FADD		fd, fa, fb		*64* fd := fa +f fb;
+FADDq		fd, fa, fb		*64* fd := fa +f fb;
+
+FSUB		fd, fa, fb		*64* fd := fa -f fb;
+FSUBq		fd, fa, fb		*64* fd := fa -f fb;
+
+FDIV		fd, fa, fb		*64* fd := fa /f fb;
+FDIVq		fd, fa, fb		*64* fd := fa /f fb;
+
 # conditional branch
-
-
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)
 CONDBR := { "%CR0@[3:3]",	"~%CR0@[2:2]",	"%CR0@[1:1]",	"~%CR0@[3:3]",
 			"%CR0@[2:2]",	"~%CR0@[3:3]",	"~%CR0@[1:1]",	"~%CR0@[2:2]",
