@@ -627,6 +627,11 @@ LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare 
         if (expBound &&
           (expBound->getOper() == opUpper || expBound->getOper() == opLower)) {
             int iReg;
+            // NOTE! The below is screwing up pentium switch tests.
+            // The subtract looks like a compare, and so it is processed here
+            // instread of elsewhere, with the result that iLower is not set.
+            // So the switch statements have the wrong values.
+            // This is noted rather than fixed; this crufted code has to go!
             if ((*itCurRtl)->isCompare(iReg, expCompare)) {
                 // It is a compare instruction. But it should be a comparison
                 // to a register of interest
