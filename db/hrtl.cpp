@@ -20,7 +20,7 @@
  * 17 May 02 - Mike: Split off from rtl.cc (was getting too large)
  * 26 Nov 02 - Mike: Generate code for HlReturn with semantics (eg SPARC RETURN)
  * 26 Nov 02 - Mike: In getReturnLoc test for null procDest
- * 03 Dec 02 - Mike: Made a small mod to HLCall::killLive for indirect calls
+ * 03 Dec 02 - Mike: Made a small mod to HLCall::killReach for indirect calls
  * 19 Dec 02 - Mike: Fixed the expressions in HLJcond::setCondType()
  */
 
@@ -991,7 +991,7 @@ Type *HLCall::getArgumentType(int i) {
 /*==============================================================================
  * FUNCTION:      HLCall::setArguments
  * OVERVIEW:      Set the arguments of this call.
- * PARAMETERS:    arguments - the list of locations live at this call
+ * PARAMETERS:    arguments - the list of locations that reach this call
  * RETURNS:       <nothing>
  *============================================================================*/
 void HLCall::setArguments(std::vector<Exp*>& arguments) {
@@ -1181,17 +1181,14 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
     os << ")";
     if (withDF) {
         os << "   uses: ";
-        updateUses();
-        for (std::set<Statement*>::iterator it = uses->begin(); 
-             it != uses->end(); it++) {
-            (*it)->printAsUse(os);
+        StmtSetIter it;
+        for (Statement* s = uses.getFirst(it); s; s = uses.getNext(it)) {
+            s->printAsUse(os);
             os << ", ";
         }
         os << "   used by: ";
-        updateUsedBy();
-        for (std::set<Statement*>::iterator it = usedBy->begin();
-             it != usedBy->end(); it++) {
-            (*it)->printAsUseBy(os);
+        for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
+            s->printAsUseBy(os);
             os << ", ";
         }
     }
@@ -1199,8 +1196,8 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
 
     // Print the post call RTLs, if any
     if (postCallExpList) {
-        for (std::list<Exp*>::iterator it = postCallExpList->begin(); it != postCallExpList->end(); it++)
-        {
+        for (std::list<Exp*>::iterator it = postCallExpList->begin();
+          it != postCallExpList->end(); it++) {
             os << " ";
             (*it)->print(os);
             os << "\n";
@@ -1208,11 +1205,12 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
     }
     
     if (withDF) {
-        std::list<Statement*> &internal = getInternalStatements();
-        for (std::list<Statement*>::iterator it = internal.begin(); 
-             it != internal.end(); it++) {
+        StatementList &internal = getInternalStatements();
+        StmtListIter it;
+        for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it))
+        {
             os << "internal ";
-            (*it)->printWithUses(os);
+            s->printWithUses(os);
             os << std::endl;
         }
     }
@@ -1399,53 +1397,52 @@ void HLCall::printAsUseBy(std::ostream &os) {
 }
 
 
-void HLCall::killLive(std::set<Statement*> &live) {
+void HLCall::killReach(StatementSet &reach) {
     if (procDest == NULL) {
         // Will always be null for indirect calls
         // MVE: we may have a "candidate" callee in the future
         // Kills everything. Not clear that this is always "conservative"
-        live.clear();
+        reach.clear();
         return;
     }
-    std::set<Statement*> kills;
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end();
-      it++) {
+    StatementSet kills;
+    StmtSetIter it;
+    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
         bool isKilled = false;
-        if (getReturnLoc() && (*it)->getLeft() && 
-          *(*it)->getLeft() == *getReturnLoc())
+        if (getReturnLoc() && s->getLeft() && 
+          *s->getLeft() == *getReturnLoc())
             isKilled = true;
-        if (getReturnLoc() && (*it)->getLeft() &&
-          (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+        if (getReturnLoc() && s->getLeft() &&
+          s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
             isKilled = true; // might alias, very conservative
         if (isKilled)
-            kills.insert(*it);
+            kills.insert(s);
     }
-    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end();
-      it++)
-        live.erase(*it);
+    for (Statement* s = kills.getFirst(it); s; s = kills.getNext(it))
+        reach.remove(s);
 }
 
-void HLCall::getDeadStatements(std::set<Statement*> &dead) {
-    std::set<Statement*> live;
-    getLiveIn(live);
+void HLCall::getDeadStatements(StatementSet &dead) {
+    StatementSet reach;
+    getReachIn(reach);
+    StmtSetIter it;
     if (procDest && procDest->isLib()) {
-        for (std::set<Statement*>::iterator it = live.begin(); 
-         it != live.end(); it++) {
+        for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
             bool isKilled = false;
-            if (getReturnLoc() && (*it)->getLeft() &&
-            *(*it)->getLeft() == *getReturnLoc())
+            if (getReturnLoc() && s->getLeft() &&
+            *s->getLeft() == *getReturnLoc())
                 isKilled = true;
-            if ((*it)->getLeft() && getReturnLoc() && 
-                (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+            if (s->getLeft() && getReturnLoc() && 
+                s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
                 isKilled = true; // might alias, very conservative
-            if (isKilled && (*it)->getNumUseBy() == 0)
-            dead.insert(*it);
+            if (isKilled && s->getNumUseBy() == 0)
+            dead.insert(s);
         }
     } else  {
-        for (std::set<Statement*>::iterator it = live.begin(); 
-         it != live.end(); it++) 
-        if ((*it)->getNumUseBy() == 0)
-            dead.insert(*it);
+        for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
+            if (s->getNumUseBy() == 0)
+                dead.insert(s);
+        }
     }
 }
 
@@ -1457,7 +1454,7 @@ Type *HLCall::updateType(Exp *e, Type *curType) {
 bool HLCall::usesExp(Exp *e) {
     Exp *where = 0;
     for (unsigned i = 0; i < arguments.size(); i++)
-        if (*arguments[i] == *e || arguments[i]->search(e, where))
+        if (arguments[i]->search(e, where))
             return true;
     return false;
 }

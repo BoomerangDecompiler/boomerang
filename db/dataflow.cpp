@@ -38,61 +38,57 @@
 
 
 
-// Flush the cached dataflow
-void Statement::flushDataFlow() {
-    if (uses) delete uses;
-    uses = NULL;
-    if (usedBy) delete usedBy;
-    usedBy = NULL;
-}
-
-// Finds a use for a given location
-Statement *Statement::findUse(Exp *e) {
-    updateUses();
-    for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
-      it++) {
-        if ((*it)->getLeft() && *(*it)->getLeft() == *e)
-            return *it;
+// Finds a definition for a given location
+// MVE: Is this useful?
+Statement *Statement::findDef(Exp *e) {
+    StmtSetIter it;
+    for (Statement* s = uses.getFirst(it); s; s = uses.getNext(it)) {
+        if (s->getLeft() && *s->getLeft() == *e)
+            return s;
     }
     return NULL;
 }
 
-// From the set of live statements, find those which assign to a location
-// that I use (i.e. are in my RHS, or in a m[] on my LHS)
+// From the set of reaching statements, find those which assign to a location
+// that I use (i.e. are in my RHS, or in a m[] on my LHS), parameter, etc
 // This is the set of statements that this statement uses (relies on)
-void Statement::calcUses(std::set<Statement*> &uses) {
-    std::set<Statement*> liveIn;
-    getLiveIn(liveIn);
-    for (std::set<Statement*>::iterator it = liveIn.begin(); it != liveIn.end();
-      it++) {
-        assert(*it);
-        Exp *left = (*it)->getLeft();
+// Also calculates usedBy
+void Statement::calcUses(StatementSet &uses) {
+    StatementSet reachIn;
+    getReachIn(reachIn);
+    StmtSetIter it;
+    for (Statement* s = reachIn.getFirst(it); s; s = reachIn.getNext(it)) {
+        assert(s);
+        Exp *left = s->getLeft();
         if (left == NULL) continue;     // E.g. HLCall with no return value
         if (usesExp(left)) {
-            uses.insert(*it);
+            uses.insert(s);             // This statement uses s
+            s->usedBy.insert(this);     // s is usedBy this Statement
         }
     }
 }
 
 // From all statements in this proc, find those which use my LHS
 // These statements rely on my assignment; this statement is usedBy these
-void Statement::calcUsedBy(std::set<Statement*> &useBy) {
+void Statement::calcUsedBy(StatementSet &usedBy) {
+#if 0       // Done in calcUses now
     if (getLeft() == NULL) return;
-    std::set<Statement*> stmts;
+    StatementList stmts;
     proc->getStatements(stmts);
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++) 
-        if ((*it)->findUse(getLeft()) == this)
-            useBy.insert(*it);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        if (s->findDef(getLeft()) == this)
+            usedBy.insert(s);
+    }
+#endif
 }
 
-/* Goes through the definitions live at this expression and creates a
+/* Goes through the definitions which reach this expression and creates a
    link from any definition that is used by this expression to this 
    expression.
  */
 void Statement::calcUseLinks() {
-    updateUses();
-    updateUsedBy();
+    calcUses(uses);             // Does both uses and usedBy now
 }
 
 // replace a use in this statement
@@ -115,27 +111,19 @@ void Statement::replaceUse(Statement *use) {
     // uses| v             | v
     //     (3) = this      (3)
     // Fix my ud chain; no longer using *use
-    updateUses();
-    std::set<Statement*>::iterator pos;
-    pos = uses->find(use);
-    if (pos != uses->end())
-        uses->erase(pos);
+    uses.remove(use);
     // However, we are now using whatever *use was using
     // Actually, it's possible *use had uses on it's left that will not be
     // propogated in the replacement, we have to remove these later - trent
-    std::set<Statement*>::iterator ii;
-    for (ii=use->uses->begin(); ii != use->uses->end(); ii++)
-        uses->insert(*ii);
+    uses.make_union(use->uses);
     // Fix the du chains that pointed in to the statement that will
     // be removed; they now point to this 
-    use->updateUses();
-    for (ii=use->uses->begin(); ii!= use->uses->end(); ii++) {
-        (*ii)->updateUsedBy();
-        pos = (*ii)->usedBy->find(use);
-        if (pos != (*ii)->usedBy->end())
-            (*ii)->usedBy->erase(pos);
+    StmtSetIter ii;
+    StatementSet& useUses = use->uses;
+    for (Statement* s = useUses.getFirst(ii); s; s = useUses.getNext(ii)) {
+        s->usedBy.remove(use);
         // They now point to this
-        (*ii)->usedBy->insert(this);
+        s->usedBy.insert(this);
     }
 
     // do the replacement
@@ -145,15 +133,11 @@ void Statement::replaceUse(Statement *use) {
     bool change = true;
     while (change) {
         change = false;
-        for (ii = uses->begin(); ii != uses->end(); ii++) {
-            if (!(*ii)->getLeft() || !usesExp((*ii)->getLeft())) {
-                assert(*ii); 
-                if ((*ii)->usedBy) {
-                    pos = (*ii)->usedBy->find(this);
-                    if (pos != (*ii)->usedBy->end())
-                        (*ii)->usedBy->erase(pos);
-                }
-                uses->erase(ii);
+        for (Statement* s = uses.getFirst(ii); s; s = uses.getNext(ii)) {
+            if (!s->getLeft() || !usesExp(s->getLeft())) {
+                assert(s); 
+                s->usedBy.remove(this);
+                uses.remove(s);
                 change = true; 
                 break;
             }
@@ -166,12 +150,12 @@ void Statement::replaceUse(Statement *use) {
     }
 }
 
-/* Get everything that is live before this assignment.
-   To get the liveout, use getLiveIn(liveset), calcLiveOut(liveset).
+/* Get everything that reaches this assignment.
+   To get the reachout, use getReachIn(reachset), calcReachOut(reachset).
  */
-void Statement::getLiveIn(std::set<Statement*> &livein) {
+void Statement::getReachIn(StatementSet &reachin) {
     assert(pbb);
-    pbb->getLiveInAt(this, livein);
+    pbb->getReachInAt(this, reachin);
 }
 
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
@@ -234,17 +218,17 @@ bool Statement::calcAlias(Exp *e1, Exp *e2, int size) {
     return true;
 }
 
-/* calculates the definitions that are "live" after this assignment.
-   If the live set is empty, it will contain anything this assignment defines.
-   If the live set is not empty, then it will not contain anything this
+/* calculates the definitions that are not killed by this assignment.
+   If the reach set is empty, it will contain anything this assignment defines.
+   If the reach set is not empty, then it will not contain anything this
       assignment kills.
  */
-void Statement::calcLiveOut(std::set<Statement*> &live) {
+void Statement::calcReachOut(StatementSet &reach) {
     // calculate kills
-    killLive(live);
+    killReach(reach);
     // add this def
     if (getLeft() != NULL)
-        live.insert(this);
+        reach.insert(this);
 }
 
 /* 
@@ -252,14 +236,14 @@ void Statement::calcLiveOut(std::set<Statement*> &live) {
  * therefore can be removed).
  * Returns false otherwise.
  *
- * To completely propagate a statement which does not kill any of it's
+ * To completely propagate a statement which does not kill any of its
  * own uses it is sufficient to show that all the uses of the statement
- * are still live at the expression to be propagated to.
+ * are still available at the expression to be propagated to.
  *
- * A statement that kills one or more of it's own uses is slightly more 
- * complicated.  All the uses that are not killed must still be live at
+ * A statement that kills one or more of its own uses is slightly more 
+ * complicated.  All the uses that are not killed must still be available at
  * the expression to be propagated to, but the uses that were killed must
- * be live at the expression to be propagated to after the statement is 
+ * be available at the expression to be propagated to after the statement is 
  * removed.  This is clearly the case if the only use killed by a 
  * statement is the same as the left hand side, however, if multiple uses
  * are killed a search must be conducted to ensure that no statement between
@@ -267,11 +251,10 @@ void Statement::calcLiveOut(std::set<Statement*> &live) {
  * too complex a task and is therefore defered for later experimentation.
  */
 bool Statement::canPropagateToAll() {
-    std::set<Statement*> tmp_uses;
-    updateUses();
-    tmp_uses = *uses;
+    StatementSet tmp_uses;
+    tmp_uses = uses;
     int nold = tmp_uses.size();
-    killLive(tmp_uses);
+    killReach(tmp_uses);
     if (nold - tmp_uses.size() > 1) {
         // See comment above.
         if (VERBOSE) {
@@ -282,25 +265,35 @@ bool Statement::canPropagateToAll() {
         return false;
     }
 
-    updateUsedBy();
-    if (usedBy->size() == 0) return false;
+    if (usedBy.size() == 0) {
+        return false;
+    }
 
-    for (std::set<Statement*>::iterator it = usedBy->begin();
-      it != usedBy->end(); it++) {
-        std::set<Statement*> in;
-        (*it)->getLiveIn(in);
-        // all uses must be live at the destination
-        for (std::set<Statement*>::iterator iuse = tmp_uses.begin();
-             iuse != tmp_uses.end(); iuse++) {
-            if (in.find(*iuse) == in.end()) return false;
+    StmtSetIter it;
+    for (Statement* sdest = usedBy.getFirst(it); sdest;
+      sdest = usedBy.getNext(it)) {
+        StatementSet destIn;
+        sdest->getAvailIn(destIn);
+        // all uses must be available at the destination
+        StmtSetIter ituse;
+        for (Statement* tuse = tmp_uses.getFirst(ituse); tuse;
+          tuse = tmp_uses.getNext(ituse)) {
+            if (!destIn.exists(tuse)) {
+                return false;
+            }
         }
         // no false uses must be created
-        for (std::set<Statement*>::iterator ilive = in.begin();
-             ilive != in.end(); ilive++) {
-            if (*ilive == this) continue;
-            Exp *left = (*ilive)->getLeft();
-            if (left == NULL) return false;
-            if (usesExp(left) && findUse(left) == NULL) return false;
+        StmtSetIter iav;
+        for (Statement* savail = destIn.getFirst(iav); savail;
+          savail = destIn.getNext(iav)) {
+            if (savail == this) continue;
+            Exp *left = savail->getLeft();
+            if (left == NULL) {
+                return false;
+            }
+            if (usesExp(left) && findDef(left) == NULL) {
+                return false;
+            }
         }
     }
     return true;
@@ -309,11 +302,9 @@ bool Statement::canPropagateToAll() {
 // assumes canPropagateToAll has returned true
 // assumes this statement will be removed by the caller
 void Statement::propagateToAll() {
-    updateUsedBy();
-    for (std::set<Statement*>::iterator it = usedBy->begin();
-      it != usedBy->end(); it++) {
-        Statement *e = *it;
-        e->replaceUse(this);
+    StmtSetIter it;
+    for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
+        s->replaceUse(this);
     }
 }
 
@@ -331,74 +322,49 @@ void Statement::propagateToAll() {
 //     (3)             (3)
 //
 void Statement::updateDfForErase() {
-    std::set<Statement*>::iterator it, uu;
-    updateUses();
-    updateUsedBy();
     // First fix the down arrows (usedBy)
-    for (it = uses->begin(); it != uses->end(); it++) {
-        Statement* ss = *it;
+    StmtSetIter it, uu;
+    for (Statement* ss = uses.getFirst(it); ss; ss = uses.getNext(it)) {
         // it is iterating through the (1) set
-        ss->updateUsedBy();
-        std::set<Statement*>::iterator pos;
-        pos = ss->usedBy->find(this);
-        if (pos != ss->usedBy->end())
-            // This is the usedBy entry from this (1) to (2)
-            // Erase this use of my definition, since I'm about to be deleted
-            ss->usedBy->erase(pos);
-            // The use from this (1) to each (3) comes next
-        for (uu = usedBy->begin(); uu != usedBy->end(); uu++)
-            ss->usedBy->insert(*uu);        // This (3) usedby this (1)
+        // This is the usedBy entry from this (1) to (2)
+        // Erase this use of my definition, since I'm about to be deleted
+        ss->usedBy.remove(this);
+        // The use from this (1) to each (3) comes next
+        for (Statement* su = usedBy.getFirst(uu); su;
+          su = usedBy.getNext(uu))
+            ss->usedBy.insert(su);        // This (3) usedby this (1)
     }
     // Next, fix the up arrows (uses)
-    for (it = usedBy->begin(); it != usedBy->end(); it++) {
-        Statement* ss = *it;
+    for (Statement* ss = usedBy.getFirst(it); ss; ss = usedBy.getNext(it)) {
         // it is iterating through the (3) set
-        ss->updateUses();
-        std::set<Statement*>::iterator pos;
-        pos = ss->uses->find(this);
-        if (pos != ss->uses->end())
-            // This is the uses entry from this (3) to (2)
-            // Erase this def of my rhs, since I'm about to be deleted
-            ss->uses->erase(pos);
-            // The uses from this (3) to each (1) comes next
-        for (uu = uses->begin(); uu != uses->end(); uu++)
-            ss->uses->insert(*uu);        // This (3) uses this (1)
-    }
-}
-
-// Flush all dataflow for the whole procedure
-void Statement::flushProc() {
-    std::set<Statement*> stmts;
-    proc->getStatements(stmts);
-    std::set<Statement*>::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        (*it)->flushDataFlow();
+        // This is the uses entry from this (3) to (2)
+        // Erase this def of my rhs, since I'm about to be deleted
+        ss->uses.remove(this);
+        // The uses from this (3) to each (1) comes next
+        for (Statement* suu = uses.getFirst(uu); suu; suu = uses.getNext(uu))
+            ss->uses.insert(suu);        // This (3) uses this (1)
     }
 }
 
 void Statement::printWithUses(std::ostream& os) {
     print(os);
     os << "   uses: ";
-    updateUses();
-    for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
-      it++) {
-        (*it)->printAsUse(os);
+    StmtSetIter it;
+    for (Statement* s = uses.getFirst(it); s; s = uses.getNext(it)) {
+        s->printAsUse(os);
         os << ", ";
     }
     os << "   used by: ";
-    updateUsedBy();
-    for (std::set<Statement*>::iterator it = usedBy->begin();
-      it != usedBy->end(); it++) {
-        (*it)->printAsUseBy(os);
+    for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
+        s->printAsUseBy(os);
         os << ", ";
     }
 #if 0       // Note: if you change this, you need to update DataflowTest.cpp!
-    os << "   live: ";
-    std::set<Statement*> liveIn;
-    getLiveIn(liveIn);
-    for (std::set<Statement*>::iterator it = liveIn.begin(); it != liveIn.end();
-      it++) {
-        (*it)->print(os);
+    os << "   reach: ";
+    StatementSet reachIn;
+    getReachIn(reachIn);
+    for (Statement* s = reachIn.getFirst(it); s; s = reachIn.getNext(it)) {
+        s->print(os);
         os << ", ";
     }
 #endif
@@ -416,3 +382,109 @@ std::ostream& operator<<(std::ostream& os, Statement* s) {
     s->print(os);
     return os;
 }
+
+//
+// StatementSet methods
+//
+
+// Make this set the union of itself and other
+void StatementSet::make_union(StatementSet& other) {
+    StmtSetIter it;
+    for (it = other.sset.begin(); it != other.sset.end(); it++) {
+        sset.insert(*it);
+    }
+}
+
+// Make this set the difference of itself and other
+void StatementSet::make_diff(StatementSet& other) {
+    StmtSetIter it;
+    for (it = other.sset.begin(); it != other.sset.end(); it++) {
+        sset.erase(*it);
+    }
+}
+
+// Make this set the intersection of itself and other
+void StatementSet::make_isect(StatementSet& other) {
+    StmtSetIter it, ff;
+    for (it = sset.begin(); it != sset.end(); it++) {
+        ff = other.sset.find(*it);
+        if (ff == other.sset.end())
+            // Not in both sets
+            sset.erase(it);
+    }
+}
+
+Statement* StatementSet::getFirst(StmtSetIter& it) {
+    it = sset.begin();
+    if (it == sset.end())
+        // No elements
+        return NULL;
+    return *it;         // Else return the first element
+}
+
+Statement* StatementSet::getNext(StmtSetIter& it) {
+    if (++it == sset.end())
+        // No more elements
+        return NULL;
+    return *it;         // Else return the next element
+}
+
+// Remove this set. Return false if it was not found
+bool StatementSet::remove(Statement* s) {
+    if (sset.find(s) != sset.end()) {
+        sset.erase(s);
+        return true;
+    }
+    return false;
+}
+
+// Find s in this Statement set. Return true if found
+bool StatementSet::exists(Statement* s) {
+    StmtSetIter it = sset.find(s);
+    return (it != sset.end());
+}
+
+
+
+//
+// StatementList methods
+//
+
+bool StatementList::remove(Statement* s) {
+    for (StmtListIter it = slist.begin(); it != slist.end(); it++) {
+        if (*it == s) {
+            slist.erase(it);
+            return true;
+        }
+    }
+    return false;
+}
+
+void StatementList::append(StatementList& sl) {
+    for (StmtListIter it = sl.slist.begin(); it != sl.slist.end(); it++) {
+        slist.push_back(*it);
+    }
+}
+
+void StatementList::append(StatementSet& ss) {
+    StmtSetIter it;
+    for (Statement* s  = ss.getFirst(it); s; s = ss.getNext(it)) {
+        slist.push_back(s);
+    }
+}
+
+Statement* StatementList::getFirst(StmtListIter& it) {
+    it = slist.begin();
+    if (it == slist.end())
+        // No elements
+        return NULL;
+    return *it;         // Else return the first element
+}
+
+Statement* StatementList::getNext(StmtListIter& it) {
+    if (++it == slist.end())
+        // No more elements
+        return NULL;
+    return *it;         // Else return the next element
+}
+

@@ -61,7 +61,7 @@ namespace CallingConvention {
         virtual Exp *getArgumentExp(int n);
 
         virtual Signature *promote(UserProc *p);
-        virtual void getInternalStatements(std::list<Statement*> &stmts);
+        virtual void getInternalStatements(StatementList &stmts);
 	virtual Exp *getStackWildcard();
     };
 
@@ -84,7 +84,7 @@ namespace CallingConvention {
             virtual Exp *getArgumentExp(int n);
 
             virtual Signature *promote(UserProc *p);
-            virtual void getInternalStatements(std::list<Statement*> &stmts);
+            virtual void getInternalStatements(StatementList &stmts);
 	    virtual Exp *getStackWildcard();
         };      
 
@@ -147,11 +147,11 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 
     bool gotcorrectret1 = false;
     bool gotcorrectret2 = false;
-    std::list<Statement*> internal;
+    StatementList internal;
     p->getInternalStatements(internal);
-    for (std::list<Statement*>::iterator it = internal.begin();
-         it != internal.end(); it++) {
-        AssignExp *e = dynamic_cast<AssignExp*>(*it);
+    StmtListIter it;
+    for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
+        AssignExp *e = dynamic_cast<AssignExp*>(s);
         if (e == NULL) continue;
         if (VERBOSE) {
             std::cerr << "internal: ";
@@ -160,9 +160,10 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
         }
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && 
-                e->getRight()->getSubExp1()->isRegOf() &&
-                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28) {
+              e->getRight()->getSubExp1()->isRegOf() &&
+              e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
+              == 28) {
                 if (VERBOSE)
                     std::cerr << "got pc = m[r[28]]" << std::endl;
                 gotcorrectret1 = true;
@@ -171,11 +172,12 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
                    e->getLeft()->getSubExp1()->isIntConst() &&
                    ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
             if (e->getRight()->getOper() == opPlus &&
-                e->getRight()->getSubExp1()->isRegOf() &&
-                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28 &&
-                e->getRight()->getSubExp2()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
+              e->getRight()->getSubExp1()->isRegOf() &&
+              e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
+              == 28 &&
+              e->getRight()->getSubExp2()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
                 if (VERBOSE)
                     std::cerr << "got r[28] = r[28] + 4" << std::endl;
                 gotcorrectret2 = true;
@@ -269,15 +271,15 @@ Exp *CallingConvention::Win32Signature::getStackWildcard()
                new Const(28)), new Terminal(opWild)));
 }
 
-void CallingConvention::Win32Signature::getInternalStatements(std::list<Statement*> &stmts)
+void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
 {
     static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
             new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
     static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
             new Binary(opPlus, new Unary(opRegOf, new Const(28)),
                 new Const(4 + params.size()*4)));
-    stmts.push_back((AssignExp*)fixpc->clone());
-    stmts.push_back((AssignExp*)fixesp->clone());
+    stmts.append((AssignExp*)fixpc->clone());
+    stmts.append((AssignExp*)fixesp->clone());
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
@@ -316,34 +318,33 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 
     bool gotcorrectret1 = false;
     bool gotcorrectret2 = false;
-    std::list<Statement*> internal;
+    StatementList internal;
     p->getInternalStatements(internal);
-    for (std::set<Statement*>::iterator it1 = 
-            p->getCFG()->getLiveOut().begin(); 
-         it1 != p->getCFG()->getLiveOut().end(); it1++)
-        internal.push_back(*it1);
-    for (std::list<Statement*>::iterator it = internal.begin();
-         it != internal.end(); it++) {
-        AssignExp *e = dynamic_cast<AssignExp*>(*it);
+    internal.append(p->getCFG()->getReachExit());
+    StmtListIter it;
+    for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
+        AssignExp *e = dynamic_cast<AssignExp*>(s);
         if (e == NULL) continue;
         if (e->getLeft()->getOper() == opPC) {
             if (e->getRight()->isMemOf() && 
-                e->getRight()->getSubExp1()->isRegOf() &&
-                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28) {
+              e->getRight()->getSubExp1()->isRegOf() &&
+              e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
+              == 28) {
                 if (VERBOSE)
                     std::cerr << "got pc = m[r[28]]" << std::endl;
                 gotcorrectret1 = true;
             }
         } else if (e->getLeft()->isRegOf() && 
-                   e->getLeft()->getSubExp1()->isIntConst() &&
-                   ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
+          e->getLeft()->getSubExp1()->isIntConst() &&
+          ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
             if (e->getRight()->getOper() == opPlus &&
-                e->getRight()->getSubExp1()->isRegOf() &&
-                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28 &&
-                e->getRight()->getSubExp2()->isIntConst() &&
-                ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
+              e->getRight()->getSubExp1()->isRegOf() &&
+              e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt()
+              == 28 &&
+              e->getRight()->getSubExp2()->isIntConst() &&
+              ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
                 if (VERBOSE)
                     std::cerr << "got r[28] = r[28] + 4" << std::endl;
                 gotcorrectret2 = true;
@@ -440,29 +441,26 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard()
 }
 
 
-void CallingConvention::StdC::PentiumSignature::getInternalStatements(std::list<Statement*> &stmts)
-{
+void CallingConvention::StdC::PentiumSignature::getInternalStatements(
+  StatementList &stmts) {
     static AssignExp *fixpc = new AssignExp(new Terminal(opPC),
             new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
     static AssignExp *fixesp = new AssignExp(new Unary(opRegOf, new Const(28)),
             new Binary(opPlus, new Unary(opRegOf, new Const(28)),
                 new Const(4)));
-    stmts.push_back((AssignExp*)fixpc->clone());
-    stmts.push_back((AssignExp*)fixesp->clone());
+    stmts.append((AssignExp*)fixpc->clone());
+    stmts.append((AssignExp*)fixesp->clone());
 }
 
-CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam)
-{
-
+CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) :
+  Signature(nam) {
 }
 
-CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signature(old)
-{
-
+CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) :
+  Signature(old) {
 }
 
-Signature *CallingConvention::StdC::SparcSignature::clone()
-{
+Signature *CallingConvention::StdC::SparcSignature::clone() {
     SparcSignature *n = new SparcSignature(name.c_str());
     n->params = params;
     n->ellipsis = ellipsis;
@@ -470,14 +468,14 @@ Signature *CallingConvention::StdC::SparcSignature::clone()
     return n;
 }
 
-bool CallingConvention::StdC::SparcSignature::operator==(const Signature& other) const
-{
+bool CallingConvention::StdC::SparcSignature::operator==(const Signature&
+  other) const {
     // TODO
     return false;
 }
 
-bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature &candidate)
-{
+bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
+  Signature &candidate) {
     std::string feid(p->getProg()->getFrontEndId());
     if (feid != "sparc") return false;
 
@@ -486,8 +484,8 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature &
     return true;
 }
 
-bool CallingConvention::StdC::SparcSignature::serialize(std::ostream &ouf, int len)
-{
+bool CallingConvention::StdC::SparcSignature::serialize(std::ostream &ouf,
+  int len) {
     std::streampos st = ouf.tellp();
 
     char type = 0;
@@ -847,7 +845,7 @@ void Signature::print(std::ostream &out)
     out << ")" << std::endl;
 }
 
-void Signature::getInternalStatements(std::list<Statement*> &stmts)
+void Signature::getInternalStatements(StatementList &stmts)
 {
 }
 
@@ -857,33 +855,34 @@ void Signature::analyse(UserProc *p)
         std::cerr << "accepted promotion" << std::endl;
         std::cerr << "searching for creation of return value" << std::endl;
     }
-    std::list<Statement*> internal;
+    StatementList internal;
     p->getInternalStatements(internal);
-    for (std::list<Statement*>::iterator it = internal.begin();
-         it != internal.end(); it++) {
-        if ((*it)->getLeft() && *(*it)->getLeft() == *getReturnExp() &&
-            (*it)->getRight() && !(*(*it)->getLeft() == *(*it)->getRight())) {
+    StmtListIter it;
+    for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
+        if (s->getLeft() && *s->getLeft() == *getReturnExp() &&
+            s->getRight() && !(*s->getLeft() == *s->getRight())) {
             if (VERBOSE) {
                 std::cerr << "found: ";
-                (*it)->printAsUse(std::cerr);
+                s->printAsUse(std::cerr);
                 std::cerr << std::endl;
             }
-            p->eraseInternalStatement(*it);
-            p->getCFG()->setReturnVal((*it)->getRight()->clone());
-            updateParams(p, *it);
+            p->eraseInternalStatement(s);
+            p->getCFG()->setReturnVal(s->getRight()->clone());
+            updateParams(p, s);
             setReturnType(new IntegerType());
         }
     }
-    for (std::set<Statement*>::iterator it = p->getCFG()->getLiveOut().begin();
-      it != p->getCFG()->getLiveOut().end(); it++) {
-        if ((*it)->getLeft() && *(*it)->getLeft() == *getReturnExp()) {
+    StmtSetIter ll;
+    StatementSet& lout = p->getCFG()->getReachExit();
+    for (Statement* s = lout.getFirst(ll); s; s = lout.getNext(ll)) {
+        if (s->getLeft() && *s->getLeft() == *getReturnExp()) {
             if (VERBOSE) {
                 std::cerr << "found: ";
-                (*it)->printAsUse(std::cerr);
+                s->printAsUse(std::cerr);
                 std::cerr << std::endl;
             }
-            p->getCFG()->setReturnVal((*it)->getLeft()->clone());
-            HLCall *call = dynamic_cast<HLCall*>(*it);
+            p->getCFG()->setReturnVal(s->getLeft()->clone());
+            HLCall *call = dynamic_cast<HLCall*>(s);
             Type *ty = NULL;
             if (call)
                 ty = call->getLeftType();
@@ -895,25 +894,24 @@ void Signature::analyse(UserProc *p)
     }
     if (VERBOSE)
         std::cerr << "searching for arguments in statements" << std::endl;
-    std::set<Statement*> stmts;
+    StatementList stmts;
     p->getStatements(stmts);
-    for (std::set<Statement*>::iterator it = stmts.begin();
-      it != stmts.end(); it++) {
+    StmtListIter si;
+    for (Statement* s = stmts.getFirst(si); s; s = stmts.getNext(si)) {
         if (VERBOSE) std::cerr << "updateParameters for " << *it << std::endl;
-        updateParams(p, *it);
+        updateParams(p, s);
     }
 /*    std::cerr << "searching for arguments in internals" << std::endl;
     internal.clear();
     p->getInternalStatements(internal);
-    for (std::list<Statement*>::iterator it = internal.begin();
-         it != internal.end(); it++)
-    updateParams(p, *it, false); */
+    for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
+    updateParams(p, s, false); */
 }
 
-void Signature::updateParams(UserProc *p, Statement *stmt, bool checklive)
+void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach)
 {
     int i;
-    if (usesNewParam(p, stmt, checklive, i)) {
+    if (usesNewParam(p, stmt, checkreach, i)) {
         int n = getNumParams();
             setNumParams(i+1);
         for (; n < getNumParams(); n++) {
@@ -924,7 +922,7 @@ void Signature::updateParams(UserProc *p, Statement *stmt, bool checklive)
     }
 }
 
-bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive,
+bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach,
   int &n) {
     n = getNumParams() - 1;
     if (VERBOSE) {
@@ -932,18 +930,20 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive,
         stmt->printAsUse(std::cerr);
         std::cerr << std::endl;
     }
-    std::set<Statement*> livein;
-    stmt->getLiveIn(livein);
+    StatementSet reachin;
+    stmt->getReachIn(reachin);
     for (int i = getNumParams(); i < 10; i++)
         if (stmt->usesExp(getParamExp(i))) {
             bool ok = true;
-            if (checklive) {
+            if (checkreach) {
                 bool hasDef = false;
-                    for (std::set<Statement*>::iterator it1 = livein.begin();
-                      it1 != livein.end(); it1++)
-                        if (*(*it1)->getLeft() == *getParamExp(i)) {
+                    StmtSetIter it1;
+                    for (Statement* s1 = reachin.getFirst(it1); s1;
+                      s1 = reachin.getNext(it1)) {
+                        if (*s1->getLeft() == *getParamExp(i)) {
                             hasDef = true; break; 
                         }
+                    }
                     if (hasDef) ok = false;
             }
             if (ok) {

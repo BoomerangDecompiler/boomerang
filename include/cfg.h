@@ -388,10 +388,10 @@ private:
 
 #if 0
     /*
-     * Build the sets of locations that are live into and out of this basic
-     * block. Returns true if there was a change in the live out set.
+     * Build the sets of locations that reach to and propagate through this
+     * basic block. Returns true if there was a change in the reach out set.
      */
-    bool buildLiveInOutSets(const BITSET* callDefines = NULL);
+    bool buildReachInOutSets(const BITSET* callDefines = NULL);
 #endif
 
 	// serialize the basic block
@@ -440,17 +440,17 @@ protected:
 public:
 
 	/* stuff for new data flow analysis */
-	void getLiveInAt(Statement *stmt, std::set<Statement*> &livein);
-	void getLiveIn(std::set<Statement*> &livein);
-	void calcLiveOut(std::set<Statement*> &live);
-        std::set<Statement*> &getLiveOut() { return liveout; }
+	void getReachInAt(Statement *stmt, StatementSet &reachin);
+	void getReachIn(StatementSet &reachin);
+	void calcReachOut(StatementSet &reach);
+        StatementSet &getReachOut() { return reachout; }
 
     /* set the return value */
     void setReturnVal(Exp *e);
     Exp *getReturnVal() { return m_returnVal; }
 
 protected:
-    std::set<Statement*> liveout;
+    StatementSet reachout;
 
     Exp* m_returnVal;
 
@@ -849,11 +849,11 @@ public:
     void computePostDominators();
 
     /*
-     * Compute liveness/use information
+     * Compute reaches/use information
      */
     void computeDataflow();
-    void updateLiveness();
-    std::set<Statement*> &getLiveOut() { return liveout; }
+    void updateReaches();
+    StatementSet &getReachExit() { return reachExit; }
 
     /*
      * Virtual Function Call analysis
@@ -946,9 +946,9 @@ protected:
     std::vector<PBB> revOrdering;
 
     /*
-     * Intersection of all statements live at the end of all the ret bbs.
+     * Intersection of all statements which reach the end of the ret bb.
      */
-    std::set<Statement*> liveout;
+    StatementSet reachExit;
 
     /*
      * The ADDRESS to PBB map.

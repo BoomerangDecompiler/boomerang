@@ -116,7 +116,7 @@ public:
     virtual Signature *promote(UserProc *p);
     void print(std::ostream &out);
 
-    virtual void getInternalStatements(std::list<Statement*> &stmts);
+    virtual void getInternalStatements(StatementList &stmts);
 
     // Special for Mike: find the location that conventionall holds
     // the first outgoing (actual) parameter

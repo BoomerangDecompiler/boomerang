@@ -17,12 +17,14 @@
  * 25 Nov 02 - Trent: appropriated for use by new dataflow.
  * 3 July 02 - Trent: created.
  * 03 Feb 03 - Mike: cached dataflow (uses and usedBy)
+ * 03 Apr 03 - Mike: Added StatementSet
  */
 
 #ifndef _DATAFLOW_H_
 #define _DATAFLOW_H_
 
 #include <set>
+#include <list>
 
 class Exp;
 class BasicBlock;
@@ -30,6 +32,48 @@ typedef BasicBlock *PBB;
 class Prog;
 class UserProc;
 class Type;
+class Statement;
+
+// A class to implement sets of statements
+// We may choose to implement these very differently one day
+typedef std::set<Statement*>::iterator StmtSetIter;
+class StatementSet {
+    std::set<Statement*> sset;          // For now, use use standard sets
+
+public:
+    void make_union(StatementSet& other);    // Set union
+    void make_diff (StatementSet& other);    // Set difference
+    void make_isect(StatementSet& other);    // Set intersection
+
+    int size() {return sset.size();}        // Number of elements
+    Statement* getFirst(StmtSetIter& it);   // Get the first Statement
+    Statement* getNext (StmtSetIter& it);   // Get next
+    void insert(Statement* s) {sset.insert(s);} // Insertion
+    bool remove(Statement* s);             // Removal; rets false if not found
+    bool exists(Statement* s);             // Search; returns false if not found
+    void clear() {sset.clear();}           // Clear the set
+    bool operator==(const StatementSet& o) const // Compare
+        { return sset == o.sset;}
+    bool operator!=(const StatementSet& o) const // Compare
+        { return sset != o.sset;}
+};
+
+// Ugh - we also need lists of Statements for the internal statements
+typedef std::list<Statement*>::iterator StmtListIter;
+class StatementList {
+    std::list<Statement*> slist;          // For now, use use standard list
+
+public:
+    int size() {return slist.size();}        // Number of elements
+    Statement* getFirst(StmtListIter& it);   // Get the first Statement
+    Statement* getNext (StmtListIter& it);   // Get next
+    void append(Statement* s) {slist.push_back(s);} // Insert at end
+    void append(StatementList& sl);         // Append whole StatementList
+    void append(StatementSet& sl);          // Append whole StatementSet
+    bool remove(Statement* s);              // Removal; rets false if not found
+    bool exists(Statement* s);  // Find; returns false if not found
+};
+
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
@@ -40,31 +84,34 @@ protected:
     UserProc *proc; // procedure containing this statement
     // The following pointers are initially null, but if non null are
     // considered valid
-    std::set<Statement*>* uses;          // ud chain: my uses' defs
-    std::set<Statement*>* usedBy;        // du chain: my def's uses
+    StatementSet uses;          // ud chain: my uses' defs
+    StatementSet usedBy;        // du chain: my def's uses
 public:
 
-    Statement() : pbb(NULL), proc(NULL), uses(NULL), usedBy(NULL) { }
+    Statement() : pbb(NULL), proc(NULL) { }
     virtual ~Statement() {
-        if (uses) delete uses;
-        if (usedBy) delete usedBy;
     }
 
     void setProc(UserProc *p) { proc = p; }
 
-    // calculates the live set after this statement
-    virtual void calcLiveOut(std::set<Statement*> &liveout);
+    // calculates the reaching definitions set after this statement
+    virtual void calcReachOut(StatementSet &reachout);
 
-    // gets the live set before this statement
-    virtual void getLiveIn(std::set<Statement*> &livein);
+    // gets the reaching definitions set before this statement
+    virtual void getReachIn(StatementSet &reachin);
 
-    // removes any statement from the live set which is killed by this 
-    // statement
-    virtual void killLive(std::set<Statement*> &live) = 0;
+    // removes any statement from the reaching definitions set which is
+    // killed by this statement
+    virtual void killReach(StatementSet &reach) = 0;
+
+    // get the available definitions (not reassigned on any path) before
+    // this statement
+    // NOTE: needs separate calculation! For now, use Trent's approximation
+    virtual void getAvailIn(StatementSet& availin) {getReachIn(availin);}
 
     // creates a set of statements that are killed by this statement
     // and have no uses
-    virtual void getDeadStatements(std::set<Statement*> &dead) = 0;
+    virtual void getDeadStatements(StatementSet &dead) = 0;
 
     // calculates the uses/usedBy links for this statement
     virtual void calcUseLinks();
@@ -85,32 +132,22 @@ public:
 
     // returns the statement which is used by this statement and has a
     // left like the given expression
-    virtual Statement *findUse(Exp *e);
+    // MVE: is this useful?
+    virtual Statement *findDef(Exp *e);
 
     // 
     // get my uses' definitions (ud chain)
     // 
-    void updateUses() {
-        if (uses == NULL) {
-            uses = new std::set<Statement*>; calcUses(*uses); 
-        } 
-    }
-    void calcUses(std::set<Statement*> &uses);
-    int getNumUses() { 
-        updateUses();
-        return uses->size(); 
-    }
-    std::set<Statement*> *getUses() { return uses; }
+    void calcUses(StatementSet &uses);
+    int getNumUses() { return uses.size(); }
+    StatementSet &getUses() { return uses; }
+    void clearUses() {uses.clear(); usedBy.clear();}
  
     // 
     // usedBy: du chain (my def's uses)
     //
-    void updateUsedBy() {
-        if (usedBy == NULL) {
-            usedBy = new std::set<Statement*>; calcUsedBy(*usedBy); } }
-    void calcUsedBy(std::set<Statement*> &usedBy);
-    int getNumUseBy() {
-        updateUsedBy(); return usedBy->size(); }
+    void calcUsedBy(StatementSet &usedBy);
+    int getNumUseBy() { return usedBy.size(); }
 
     // update my data flow (I'm about to be deleted)
     void updateDfForErase();
@@ -119,21 +156,15 @@ public:
     PBB getBB() { return pbb; }
     void setBB(PBB bb) { pbb = bb; }
 
-    // returns true if this statement can be propagated to all it's
+    // returns true if this statement can be propagated to all its
     // uses and removed
     virtual bool canPropagateToAll();
 
-    // propagates this statement to all it's uses, caller must remove
+    // propagates this statement to all its uses, caller must remove
     virtual void propagateToAll();
 
     // replaces a use of the given statement with an expression
     virtual void replaceUse(Statement *use);
-
-    // Flush the cached dataflow
-    void flushDataFlow();
-
-    // flush all cached ud/du chains for the whole procedure
-    void flushProc();
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os) = 0;

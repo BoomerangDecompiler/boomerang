@@ -361,8 +361,8 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // new dataflow analysis
-    virtual void killLive(std::set<Statement*> &live) { }
-    virtual void getDeadStatements(std::set<Statement*> &dead) { }
+    virtual void killReach(StatementSet &reach) { }
+    virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
 
     // dataflow related functions
@@ -537,8 +537,8 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // new dataflow analysis
-    virtual void killLive(std::set<Statement*> &live);
-    virtual void getDeadStatements(std::set<Statement*> &dead);
+    virtual void killReach(StatementSet &reach);
+    virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
 
     // dataflow related functions
@@ -567,11 +567,14 @@ public:
 
     // add statements internal to the called procedure
     // for interprocedural analysis
-    std::list<Statement*> &getInternalStatements() { return internal; }
+    StatementList &getInternalStatements() { return internal; }
 
     void setIgnoreReturnLoc(bool b);
 
     void decompile();
+
+    // Find a definition for a given location. Need to include parameters
+    //virtual Statement *findDef(Exp *e);
 
 protected:
     virtual void doReplaceUse(Statement *use);
@@ -582,7 +585,7 @@ private:
     bool returnAfterCall;       // True if call is effectively followed by
                                 // a return.
     
-    // The list of locations that are live at this call. This list may be
+    // The list of locations that reach this call. This list may be
     // refined at a later stage to match the number of parameters declared
     // for the called procedure.
     std::vector<Exp*> arguments;
@@ -596,7 +599,7 @@ private:
     std::string destStr;
 
     Exp *returnLoc;
-    std::list<Statement*> internal;
+    StatementList internal;
 };
 
 

@@ -2481,38 +2481,35 @@ bool FlagDef::serialize(std::ostream &ouf, int &len)
     return true;
 }
 
-void AssignExp::killLive(std::set<Statement*> &live)
-{
-    std::set<Statement*> kills;
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
-            it++) {
-    if ((*it)->getLeft() == NULL) continue;
+void AssignExp::killReach(StatementSet &reach) {
+    StatementSet kills;
+    StmtSetIter it;
+    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
+        if (s->getLeft() == NULL) continue;
         bool isKilled = false;
-        if (*(*it)->getLeft() == *subExp1)
+        if (*s->getLeft() == *subExp1)
             isKilled = true;
-    isKilled |= mayAlias((*it)->getLeft(), subExp1, getSize());
+        isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
         if (isKilled)
-        kills.insert(*it);
+        kills.insert(s);
     }
-    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); 
-         it++)
-        live.erase(*it);
+    reach.make_diff(kills);
 }
 
-void AssignExp::getDeadStatements(std::set<Statement*> &dead)
+void AssignExp::getDeadStatements(StatementSet &dead)
 {
-    std::set<Statement*> live;
-    getLiveIn(live);
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); 
-     it++) {
-    if ((*it)->getLeft() == NULL) continue;
+    StatementSet reach;
+    getReachIn(reach);
+    StmtSetIter it;
+    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
+    if (s->getLeft() == NULL) continue;
         bool isKilled = false;
-        if (*(*it)->getLeft() == *subExp1)
+        if (*s->getLeft() == *subExp1)
             isKilled = true;
-        if ((*it)->getLeft()->isMemOf() && subExp1->isMemOf())
+        if (s->getLeft()->isMemOf() && subExp1->isMemOf())
             isKilled = true; // might alias, very conservative
-        if (isKilled && (*it)->getNumUseBy() == 0)
-        dead.insert(*it);
+        if (isKilled && s->getNumUseBy() == 0)
+        dead.insert(s);
     }
 }
 

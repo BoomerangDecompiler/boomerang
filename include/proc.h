@@ -196,7 +196,7 @@ public:
     static Proc *deserialize(Prog *prog, std::istream &inf);
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
-    virtual void getInternalStatements(std::list<Statement*> &internal) = 0;
+    virtual void getInternalStatements(StatementList &internal) = 0;
 
 protected:
 
@@ -274,7 +274,7 @@ public:
     // deserialize the subclass specific portion of this procedure
     virtual bool deserialize_fid(std::istream &inf, int fid);
 
-    virtual void getInternalStatements(std::list<Statement*> &internal);
+    virtual void getInternalStatements(StatementList &internal);
 };
 
 /*==============================================================================
@@ -349,13 +349,13 @@ public:
 	bool removeNullStatements();
 	bool removeDeadStatements();
     bool propagateAndRemoveStatements();
-    void flushProc();       // Flush dataflow
+    void recalcDataFlow();       // Recalculate dataflow
 
 	// promote the signature if possible
 	void promoteSignature();
 
 	// get all the statements
-	void getStatements(std::set<Statement*> &stmts);
+	void getStatements(StatementList &stmts);
 
 	// remove a statement
 	void removeStatement(Statement *stmt);
@@ -370,7 +370,8 @@ public:
 	void inlineConstants();
 
 	// get internal statements
-    virtual void getInternalStatements(std::list<Statement*> &internal);
+    // Note: assignment causes shallow copy of list
+    virtual void getInternalStatements(StatementList &sl) {sl = internal;}
 
 private:
     /*
@@ -606,7 +607,7 @@ private:
      * removed by the dataflow process all end up here!
      * See Proc::removeInternalStatements
      */
-    std::list<Statement*> internal;
+    StatementList internal;
 
 };      /* UserProc */
 #endif

@@ -441,17 +441,19 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
     //os << " (0x" << std::hex << (unsigned int)this << "):\n";
     os << ":";
     if (withDF) {
-        os << " live in: ";
-        std::set<Statement*> livein;
-        getLiveIn(livein);
-        for (std::set<Statement*>::iterator it = livein.begin(); it != livein.end(); it++) {
-            (*it)->printAsUse(os);
+        os << " reach in: ";
+        StatementSet reachin;
+        getReachIn(reachin);
+        StmtSetIter it;
+        Statement* s = reachin.getFirst(it);
+        while (s) {
+            s->printAsUse(os);
             os << ", ";
+            s = reachin.getNext(it);
         }
     }
     os << std::endl;
-    if (m_pRtls)                    // Can be zero if e.g. INVALID
-    {
+    if (m_pRtls) {                  // Can be zero if e.g. INVALID
         std::list<RTL*>::iterator rit;
         for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
             (*rit)->print(os, withDF);
@@ -808,7 +810,7 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
  * RETURNS:         <nothing>
  *============================================================================*/
 void BasicBlock::resetDFASets() {
-    liveOut.reset();
+    reachOut.reset();
     defSet.reset();
     useSet.reset();
     useUndefSet.reset();
@@ -1265,7 +1267,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             else if (cType != Case && condFollow) {
                 // For a structured two conditional header, its follow is 
                 // added to the follow set
-                PBB myLoopHead = (sType == LoopCond ? this : loopHead);
+                //myLoopHead = (sType == LoopCond ? this : loopHead);
 
                 if (usType == Structured)
                     followSet.push_back(condFollow);
@@ -1440,8 +1442,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
     }
 }
 
-void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein) {
-    getLiveIn(livein);
+void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin) {
+    getReachIn(reachin);
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
@@ -1451,49 +1453,45 @@ void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein) {
             Statement *e = dynamic_cast<Statement*>(*it);
             if (e == NULL) continue;
             e->setBB(this);
-            e->calcLiveOut(livein);
+            e->calcReachOut(reachin);
         }
         if (rtl->getKind() == CALL_RTL) {
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->setBB(this);
-            call->calcLiveOut(livein);
-            std::list<Statement*> &stmts = call->getInternalStatements();
-            for (std::list<Statement*>::iterator it1 = stmts.begin();
-              it1 != stmts.end(); it1++) {
+            call->calcReachOut(reachin);
+            StatementList &internals = call->getInternalStatements();
+            StmtListIter it1;
+            for (Statement* s1 = internals.getFirst(it1); s1;
+              s1 = internals.getNext(it1)) {
                 // MVE: I think this next statement is wrong. The only way
                 // stmt can be == to *it1 is in a recursive function; it is
                 // affected by assignments to any part of the procedure, not
                 // just up to this recursive call
-                if (stmt == *it1) return;
-                (*it1)->setBB(this);            // ??
-                (*it1)->calcLiveOut(livein);
+                if (stmt == s1) return;
+                s1->setBB(this);            // ??
+                s1->calcReachOut(reachin);
             } 
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
             if (jcond == stmt) return;
             jcond->setBB(this);
-            jcond->calcLiveOut(livein);
+            jcond->calcReachOut(reachin);
         }
     }
 }
 
-void BasicBlock::calcLiveOut(std::set<Statement*> &live) {
+void BasicBlock::calcReachOut(StatementSet &reach) {
     /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the live set after every assignment */
-    getLiveInAt(NULL, live);
+       so this will calculate the reach set after every assignment */
+    getReachInAt(NULL, reach);
 }
 
-void BasicBlock::getLiveIn(std::set<Statement*> &livein) {
+void BasicBlock::getReachIn(StatementSet &reachin) {
     for (unsigned i = 0; i < m_InEdges.size(); i++) {
-        std::set<Statement*> &in = m_InEdges[i]->getLiveOut();
-        // set union, C++ doesn't have one!
-        for (std::set<Statement*>::iterator it = in.begin(); 
-          it != in.end(); it++) {
-            assert(*it);
-            livein.insert(*it);
-        }
+        StatementSet &in = m_InEdges[i]->reachout;
+        reachin.make_union(in);
     }
 }
 

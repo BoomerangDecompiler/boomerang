@@ -566,8 +566,8 @@ public:
 	virtual bool serialize(std::ostream &ouf, int &len);
 
 	// new dataflow analysis
-        virtual void killLive(std::set<Statement*> &live);
-        virtual void getDeadStatements(std::set<Statement*> &dead);
+        virtual void killReach(StatementSet &reach);
+        virtual void getDeadStatements(StatementSet &dead);
 	virtual bool usesExp(Exp *e);
 
         // get how to access this value

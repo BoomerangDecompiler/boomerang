@@ -954,13 +954,19 @@ bool Cfg::compressCfg()
                 HLJcond *jcond = dynamic_cast<HLJcond*>((*it)->m_pRtls->back());
                 HLJcond *prior = dynamic_cast<HLJcond*>(bb->m_pRtls->back());
                 assert(jcond && prior);
-                std::set<Statement*> live;
-                jcond->getLiveIn(live);
-                bool allLive = true;
-                for (std::set<Statement*>::iterator sit = prior->getUses()->begin();
-                     sit != prior->getUses()->end(); sit++) 
-                    if (live.find(*sit) == live.end()) { allLive = false; break; }
-                if (!allLive) continue;
+                StatementSet reach;
+                jcond->getReachIn(reach);
+                bool allReach = true;
+                StmtSetIter sit;
+                StatementSet& priorUses = prior->getUses();
+                for (Statement* s = priorUses.getFirst(sit); s;
+                  s = priorUses.getNext(sit)) {
+                    if (!reach.exists(s)) {
+                        allReach = false;
+                        break;
+                    }
+                }
+                if (!allReach) continue;
                 Exp *priorcond = prior->getCondExpr()->clone();
                 Exp *revpriorcond = new Unary(opNot, prior->getCondExpr()->clone());
                 Exp *cond = jcond->getCondExpr();
@@ -1028,10 +1034,11 @@ bool Cfg::compressCfg()
               pSucc->m_pRtls->size()==1 &&
               pSucc->m_pRtls->front()->getKind()==JUMP_RTL) {
                 // Found an out-edge to an only-jump BB
-                /* cout << "outedge to jump detected at " << std::hex <<
+                /* std::cout << "outedge to jump detected at " << std::hex <<
                     bb->getLowAddr() << " to ";
-                    cout << pSucc->getLowAddr() << " to " <<
-                    pSucc->m_OutEdges.front()->getLowAddr() << dec << std::endl; */
+                    std::cout << pSucc->getLowAddr() << " to " <<
+                    pSucc->m_OutEdges.front()->getLowAddr() << std::dec <<
+                      std::endl; */
                 // Point this outedge of A to the dest of the jump (B)
                 *it1=pSucc->m_OutEdges.front();
                 // Now pSucc still points to J; *it1 points to B.
@@ -1391,7 +1398,7 @@ void Cfg::computePostDominators() {
 
 /*==============================================================================
  * FUNCTION:        Cfg::computeDataflow
- * OVERVIEW:        Computes the liveness/use information for every bb.
+ * OVERVIEW:        Computes the reaches/use information for every bb.
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
@@ -1399,28 +1406,28 @@ void Cfg::computeDataflow()
 {
     for (std::list<PBB>::iterator it = m_listBB.begin(); 
         it != m_listBB.end(); it++)
-	    (*it)->liveout.clear();
-    updateLiveness();
+	    (*it)->reachout.clear();
+    updateReaches();
 }
 
-void Cfg::updateLiveness()
-{
+void Cfg::updateReaches() {
     bool change = true;
     while(change) {
         change = false;
         for (std::list<PBB>::iterator it = m_listBB.begin(); 
-             it != m_listBB.end(); it++) {
-            std::set<Statement*> out;
-            (*it)->calcLiveOut(out);
-            if (out != (*it)->liveout) {
-                (*it)->liveout.clear();
-		if ((*it)->getType() == RET)
-		    liveout.clear();
-                for (std::set<Statement*>::iterator it1 = out.begin();
-                     it1 != out.end(); it1++) {
-                    (*it)->liveout.insert(*it1);
+          it != m_listBB.end(); it++) {
+            StatementSet out;
+            (*it)->calcReachOut(out);
+            if (out != (*it)->reachout) {
+                (*it)->reachout.clear();
 		    if ((*it)->getType() == RET)
-		        liveout.insert(*it1);
+		        reachExit.clear();
+                StmtSetIter it1;
+                for (Statement* s1 = out.getFirst(it1); s1;
+                  s1 = out.getNext(it1)) {
+                    (*it)->reachout.insert(s1);
+		            if ((*it)->getType() == RET)
+		                reachExit.insert(s1);
                 }
                 change = true;
             }
@@ -1651,12 +1658,13 @@ void Cfg::simplify()
 
 // print this cfg, mainly for debugging
 void Cfg::print(std::ostream &out, bool withDF) {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) 
         (*it)->print(out, withDF);
-    out << "cfg liveout: ";
-    for (std::set<Statement*>::iterator it = liveout.begin(); 
-         it != liveout.end(); it++) {
-        (*it)->printAsUse(out);
+    out << "cfg reachExit: ";
+    StmtSetIter it;
+    for (Statement* s = reachExit.getFirst(it); s; s = reachExit.getNext(it)) {
+        s->printAsUse(out);
         out << ", ";
     }
     out << std::endl;
