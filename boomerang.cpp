@@ -8,20 +8,26 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-Boomerang::Boomerang()
-{
+Boomerang::Boomerang() : vFlag(false) {
 }
 
-int Boomerang::commandLine(int argc, const char **argv)
-{
-    if (argc < 2) {
-        std::cerr << "usage: Boomerang <program>" << std::endl;
-	return 1;
-    }
+void usage() {
+    std::cerr << "usage: boomerang [ switches ] <program>" << std::endl;
+    std::cerr << "boomerang -h for switch help" << std::endl;
+    exit(1);
+}
+
+void help() {
+    std::cerr << "-h: this help\n";
+    std::cerr << "-v: verbose\n";
+}
+        
+int Boomerang::commandLine(int argc, const char **argv) {
+    if (argc < 2) usage();
     progPath = argv[0];
     // Chop off after the last slash
     size_t j = progPath.rfind("/");
-    if (j != -1)
+    if (j != (size_t)-1)
     {
         // Do the chop; keep the trailing slash
         progPath = progPath.substr(0, j+1);
@@ -30,8 +36,25 @@ int Boomerang::commandLine(int argc, const char **argv)
         std::cerr << "? No slash in argv[0]!" << std::endl;
         return 1;
     }
+
+    // Parse switches on command line
+    if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
+        help();
+        return 1;
+    }
+    for (int i=1; i < argc-1; i++) {
+        if (argv[i][0] != '-')
+            usage();
+        switch (argv[i][1]) {
+            case 'h': help(); break;
+            case 'v': vFlag = true; break;
+            default:
+                help();
+        }
+    }
+    
     std::cerr << "loading..." << std::endl;
-    FrontEnd *fe = FrontEnd::Load(argv[1]);
+    FrontEnd *fe = FrontEnd::Load(argv[argc-1]);
     if (fe == NULL) {
         std::cerr << "failed." << std::endl;
         return 1;
