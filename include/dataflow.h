@@ -159,4 +159,7 @@ protected:
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };
 
+// Print the Statement poited to by p
+std::ostream& operator<<(std::ostream& os, Statement* s);
+
 #endif // DATAFLOW
