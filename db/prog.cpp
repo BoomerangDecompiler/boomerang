@@ -831,6 +831,8 @@ void Prog::removeUnusedReturns() {
         // Iterate through the workset, looking for uses of returns
         // from calls in these procs (initially, all procs; later, callers
         // of procs whose returns set has been reduced
+        // FIXME: the ordering is not consistent; it is affecting
+        // whether output is correct or not!! (so worksets not working)
         std::set<UserProc*>::iterator it;
         for (it = callerSet.begin(); it != callerSet.end(); it++)
             (*it)->countUsedReturns(rc);

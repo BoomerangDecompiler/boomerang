@@ -80,28 +80,6 @@ bool StatementSet::isSubSetOf(StatementSet& other) {
 }
 
 
-#if 0
-Statement* StatementSet::getFirst(StmtSetIter& it) {
-    it = sset.begin();
-    if (it == sset.end())
-        // No elements
-        return NULL;
-    return *it;         // Else return the first element
-}
-
-Statement* StatementSet::getNext(StmtSetIter& it) {
-    if (++it == sset.end())
-        // No more elements
-        return NULL;
-    return *it;         // Else return the next element
-}
-
-bool StatementSet::isLast(StmtSetIter& it) {
-    return it == sset.end();
-}
- 
-#endif
-
 // Remove this Statement. Return false if it was not found
 bool StatementSet::remove(Statement* s) {
     if (sset.find(s) != sset.end()) {
@@ -486,39 +464,9 @@ void StatementVec::putAt(int idx, Statement* s) {
     svec[idx] = s;
 }
 
-Statement* StatementVec::getFirst(StmtVecIter& it) {
-    it = svec.begin();
-    if (it == svec.end())
-        // No elements
-        return NULL;
-    return *it;         // Else return the first element
-}
-
-Statement* StatementVec::getNext(StmtVecIter& it) {
-    if (++it == svec.end())
-        // No more elements
-        return NULL;
-    return *it;         // Else return the next element
-}
-
-Statement* StatementVec::getLast(StmtVecRevIter& it) {
-    it = svec.rbegin();
-    if (it == svec.rend())
-        // No elements
-        return NULL;
-    return *it;         // Else return the last element
-}
-
-Statement* StatementVec::getPrev(StmtVecRevIter& it) {
-    if (++it == svec.rend())
-        // No more elements
-        return NULL;
-    return *it;         // Else return the previous element
-}
-
 char* StatementVec::prints() {
     std::ostringstream ost;
-    StmtVecIter it;
+    iterator it;
     for (it = svec.begin(); it != svec.end(); it++) {
         ost << *it << ",\t";
     }
@@ -529,7 +477,7 @@ char* StatementVec::prints() {
 
 // Print just the numbers to stream os
 void StatementVec::printNums(std::ostream& os) {
-    StmtVecIter it;
+    iterator it;
     os << std::dec;
     for (it = svec.begin(); it != svec.end(); ) {
         if (*it)

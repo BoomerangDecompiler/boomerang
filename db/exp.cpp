@@ -2683,10 +2683,9 @@ void PhiExp::addUsedLocs(LocationSet& used) {
       30: r1 := phi{10 20}
       That means we effectively use r1{10} and r1{20}
     */
-    StmtVecIter uu;
-    for (Statement* u = stmtVec.getFirst(uu); !stmtVec.isLast(uu); 
-         u = stmtVec.getNext(uu)) {
-        Exp* temp = new RefExp(subExp1->clone(), u);
+    StatementVec::iterator uu;
+    for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+        Exp* temp = new RefExp(subExp1->clone(), *uu);
         used.insert(temp);
     }
 }

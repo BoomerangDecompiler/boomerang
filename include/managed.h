@@ -32,7 +32,6 @@ class RefExp;
 
 // A class to implement sets of statements
 // We may choose to implement these very differently one day
-//typedef std::set<Statement*>::iterator StmtSetIter;
 class StatementSet {
     std::set<Statement*> sset;          // For now, use use standard sets
 
@@ -68,8 +67,6 @@ typedef std::set<Statement*>::iterator iterator;
     //bool isLast(StmtSetIter& it);           // returns true if it is at end
 };  // class StatementSet
 
-//typedef std::list<Statement*>::iterator StmtListIter;
-//typedef std::list<Statement*>::reverse_iterator StmtListRevIter;
 class StatementList {
     std::list<Statement*> slist;          // For now, use use standard list
 
@@ -99,22 +96,19 @@ typedef std::list<Statement*>::reverse_iterator reverse_iterator;
     void clear() { slist.clear(); }
 };  // class StatementList
 
-typedef std::vector<Statement*>::iterator StmtVecIter;
-typedef std::vector<Statement*>::reverse_iterator StmtVecRevIter;
-// FIXME: remove this class. No need to "manage" it.
 class StatementVec {
     std::vector<Statement*> svec;           // For now, use use standard vector
 
 public:
+typedef std::vector<Statement*>::iterator iterator;
+typedef std::vector<Statement*>::reverse_iterator reverse_iterator;
     int size() {return svec.size();}         // Number of elements
-    Statement* getFirst(StmtVecIter& it);    // Get the first Statement
-    Statement* getNext (StmtVecIter& it);    // Get next
-    Statement* getLast (StmtVecRevIter& it); // Get the last Statement
-    Statement* getPrev (StmtVecRevIter& it); // Get previous
-     // returns true if it is at end
-    bool isLast(StmtVecIter& it) {return it == svec.end();}
+            iterator begin() { return svec.begin();}
+            iterator end()   { return svec.end();}
+    reverse_iterator rbegin() { return svec.rbegin();}
+    reverse_iterator rend()   { return svec.rend();}
+    // Get/put at position idx (0 based)
     Statement* getAt(int idx) {return svec[idx];}
-    // Put at position idx (0 based)
     void   putAt(int idx, Statement* s);
     char*  prints();                        // Print to string (for debugging)
     void   printNums(std::ostream& os);
@@ -126,7 +120,6 @@ public:
 };  // class StatementVec
 
 // For liveness, we need sets of locations (registers or memory)
-//typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
 class LocationSet {
     // We use a standard set, but with a special "less than" operator
     // so that the sets are ordered by expression value. If this is not done,

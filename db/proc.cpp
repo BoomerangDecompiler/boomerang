@@ -1290,12 +1290,13 @@ void UserProc::removeRedundantPhis()
                 PhiExp *p = (PhiExp*)s->getRight();
                 if (usedInRet) {
                     bool allZeroOrSelfCall = true;
-                    StmtVecIter it1;
-                    for (Statement *s1 = p->getFirstRef(it1); 
-                         !p->isLastRef(it1); s1 = p->getNextRef(it1))
-                        if (s1 != NULL && (!s1->isCall() || 
-                            ((CallStatement*)s1)->getDestProc() != this))
+                    StatementVec::iterator it1;
+                    for (it1 = p->begin(); it1 != p->end(); it1++) {
+                        Statement* s1 = *it1;
+                        if (s1 && (!s1->isCall() || 
+                              ((CallStatement*)s1)->getDestProc() != this))
                             allZeroOrSelfCall = false;
+                    }
                     if (allZeroOrSelfCall) {
                         if (VERBOSE)
                             std::cerr << "removing using shakey hack:"  
@@ -1325,15 +1326,16 @@ void UserProc::removeRedundantPhis()
             // equal values then we can replace the phi with any one of 
             // the values, but there's not much point if they're all calls
             PhiExp *p = (PhiExp*)s->getRight();
-            StmtVecIter it;
+            StatementVec::iterator it;
             bool allsame = true;
-            Statement *s1 = p->getFirstRef(it);  
-            Statement *noncall = s1;
-            if (!p->isLastRef(it))
-                for (Statement *s2 = p->getNextRef(it); !p->isLastRef(it); 
-                     s2 = p->getNextRef(it)) {
+            it = p->begin();
+            Statement* s1 = *it;
+            Statement* noncall = s1;
+            if (it != p->end())
+                for (it++; it != p->end(); it++) {
+                    Statement* s2 = *it;
                     if (noncall && noncall->isCall() && s2 && !s2->isCall() &&
-                        s2 != s)
+                          s2 != s)
                         noncall = s2;
                     Exp *e = new Binary(opEquals, 
                                  new RefExp(s->getLeft()->clone(), s1),
@@ -1545,19 +1547,18 @@ void UserProc::trimParameters(int depth) {
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
             for (int i = 0; i < nparams; i++) {
                 Exp *p = new Unary(opParam, 
-                             new Const((char*)signature->getParamName(i)));
+                            new Const((char*)signature->getParamName(i)));
                 if (!referenced[i] && (s->usesExp(params[i]) || s->usesExp(p)))
                     referenced[i] = true;
                 if (!referenced[i] && s->isPhi() && 
-                    *s->getLeft() == *signature->getParamExp(i)) {
+                      *s->getLeft() == *signature->getParamExp(i)) {
                     if (VERBOSE)
                         std::cerr << "searching " << s << " for uses of " 
                                   << params[i] << std::endl;
                     PhiExp *ph = (PhiExp*)s->getRight();
-                    StmtVecIter it1;
-                    for (Statement *s1 = ph->getFirstRef(it1);
-                         !ph->isLastRef(it1); s1 = ph->getNextRef(it1))
-                        if (s1 == NULL) {
+                    StatementVec::iterator it1;
+                    for (it1 = ph->begin(); it1 != ph->end(); it1++)
+                        if (*it1 == NULL) {
                             referenced[i] = true;
                             break;
                         }
@@ -2236,15 +2237,13 @@ void UserProc::fromSSAform() {
                 std::cerr << "Phi statement " << s <<
                   " requires copies, using temp" << tempNum << "\n";
             // For each definition ref'd in the phi
-            StmtVecIter rr;
-            Statement* def;
-            for (def = p->getFirstRef(rr); !p->isLastRef(rr);
-                  def = p->getNextRef(rr)) {
+            StatementVec::iterator rr;
+            for (rr = p->begin(); rr != p->end(); p++) {
                 // Start with the original name, in the left of the phi
                 // (note: this has not been renamed above)
                 Exp* right = p->getSubExp1()->clone();
-                // Wrap it in a ref to def
-                right = new RefExp(right, def);
+                // Wrap it in a ref to *rr
+                right = new RefExp(right, *rr);
                 // Check the interference graph for a new name
                 if (ig.find(right) != ig.end()) {
                     std::ostringstream os;
@@ -2260,7 +2259,7 @@ void UserProc::fromSSAform() {
                     delete old;
                 }
                 // Insert a new assignment, to local<tempNum>, from right
-                insertAssignAfter(def, tempNum, right);
+                insertAssignAfter(*rr, tempNum, right);
             }
             // Replace the RHS of the phi with the new temp
             std::ostringstream os;
@@ -2397,10 +2396,10 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                         // for a phi, we have to prove the query for every 
                         // statement
                         PhiExp *p = (PhiExp*)s->getRight();
-                        StmtVecIter it;
+                        StatementVec::iterator it;
                         bool ok = true;
-                        if (lastPhis.find(p) != lastPhis.end() ||
-                            p == lastPhi) {
+                        if (lastPhis.find(p) != lastPhis.end() || p == lastPhi)
+                        {
                             if (VERBOSE)
                                 std::cerr << "phi loop detected ";
                             ok = //(p == lastPhi && 
@@ -2416,12 +2415,10 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                             if (VERBOSE)
                                 std::cerr << "found " << s << " prove for each" 
                                           << std::endl;
-                            for (Statement *s1 = p->getFirstRef(it); 
-                                            !p->isLastRef(it);
-                                            s1 = p->getNextRef(it)) {
+                            for (it = p->begin(); it != p->end(); it++) {
                                 Exp *e = query->clone();
                                 RefExp *r1 = (RefExp*)e->getSubExp1();
-                                r1->setDef(s1);
+                                r1->setDef(*it);
                                 if (VERBOSE)
                                     std::cerr << "proving for " << e 
                                               << std::endl;
@@ -2565,12 +2562,11 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
                 def = ((RefExp*)*ll)->getRef();
                 doCountReturns(def, rc, ((RefExp*)*ll)->getSubExp1());
             } else if ((*ll)->isPhi()) {
-                StmtVecIter rr;
+                StatementVec::iterator rr;
                 PhiExp& pe = (PhiExp&)**ll;
                 // for each reference this phi expression
-                for (def = pe.getFirstRef(rr); !pe.isLastRef(rr);
-                      def = pe.getNextRef(rr))
-                    doCountReturns(def, rc, pe.getSubExp1());
+                for (rr = pe.begin(); rr != pe.end(); rr++)
+                    doCountReturns(*rr, rc, pe.getSubExp1());
             }
         }
     }
