@@ -1551,7 +1551,7 @@ void UserProc::addNewParameters() {
     StatementList stmts;
     getStatements(stmts);
 
-    RefExp *r = new RefExp(Location::memOf(new Terminal(opWild)), NULL);
+    RefExp *r = new RefExp(Location::memOf(new Terminal(opWild), this), NULL);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
@@ -1894,13 +1894,17 @@ void UserProc::replaceExpressionsWithGlobals() {
                     Exp *ne;
                     if (r) {
                         Location *g = Location::global(strdup(global), this);
-                        ne = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, g), new Const(r)));
+                        ne = Location::memOf(
+                            new Binary(opPlus,
+                                new Unary(opAddrOf, g),
+                                new Const(r)), this);
                     } else {
                         Type *ty = prog->getGlobalType((char*)global);
                         if (s->isAssign()) {
                             int bits = ((Assign*)s)->getSize();
                             if (ty == NULL || ty->getSize() == 0)
-                                prog->setGlobalType((char*)global, new IntegerType(bits));
+                                prog->setGlobalType((char*)global,
+                                    new IntegerType(bits));
                         }
                         ty = prog->getGlobalType((char*)global);
                         Location *g = Location::global(strdup(global), this);
@@ -1931,7 +1935,10 @@ void UserProc::replaceExpressionsWithGlobals() {
                         Exp *ne;
                         if (r) {
                             Unary *g = Location::global(strdup(global), this);
-                            ne = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, g), new Const(r)));
+                            ne = Location::memOf(
+                                new Binary(opPlus,
+                                    new Unary(opAddrOf, g),
+                                    new Const(r)), this);
                         } else {
                             Type *ty = prog->getGlobalType((char*)global);
                             Unary *g = Location::global(strdup(global), this);
@@ -1996,7 +2003,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                         // don't do locals here!
                         continue;
                     }
-                    Location *pe = Location::memOf(e);
+                    Location *pe = Location::memOf(e, this);
                     pe->setProc(this);
                     Exp *ne = new Unary(opAddrOf, pe);
                     if (VERBOSE)
@@ -2066,17 +2073,20 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
                                                             ->getInt();
                     if (le_n <= base_n && le_n > base_n-size) {
                         if (VERBOSE)
-                            LOG << "found alias to " << name.c_str() << ": " << le << "\n";
+                            LOG << "found alias to " << name.c_str() << ": "
+                                << le << "\n";
                         int n = base_n - le_n;
-                        return Location::memOf(new Binary(opPlus, 
-                                                new Unary(opAddrOf, 
-                                                    local->clone()),
-                                                new Const(n)));
+                        return Location::memOf(
+                            new Binary(opPlus, 
+                                new Unary(opAddrOf, 
+                                    local->clone()),
+                                new Const(n)), this);
 #if 0
                         if (ty->resolvesToCompound()) {
                             CompoundType *compound = ty->asCompound();
                             return new Binary(opMemberAccess, local->clone(), 
-                                                new Const((char*)compound->getNameAtOffset((base_n - le_n)*8)));
+                               new Const((char*)compound->getNameAtOffset(
+                               (base_n - le_n)*8)));
                         } else
                             assert(false);
 #endif
@@ -2156,15 +2166,18 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
                                 nt = ((NamedType*)nt)->resolvesTo();
-                            if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
-                                a->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                            if (nt->isInteger() && call->getArgumentExp(i+1)->
+                              isIntConst())
+                                a->setLength(((Const*)call->getArgumentExp(i+1))
+                                  ->getInt());
                         }
                     }
-                    e = getLocalExp(Location::memOf(e->clone()), pty);
+                    e = getLocalExp(Location::memOf(e->clone(), this), pty);
                     if (e) {
                         Exp *ne = new Unary(opAddrOf, e);
                         if (VERBOSE)
-                            LOG << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                            LOG << "replacing argument " << olde << " with "
+                                << ne << " in " << call << "\n";
                         call->setArgumentExp(i, ne);
                     }
                 }
@@ -2194,11 +2207,12 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
                 if (VERBOSE)
                     LOG << "found a local array using " << n << " bytes\n";
                 Exp *replace = Location::memOf(new Binary(opPlus,
-                                  new Unary(opAddrOf, arr),
-                                  result->getSubExp1()->getSubExp1()->getSubExp2()->clone()));
+                    new Unary(opAddrOf, arr),
+                    result->getSubExp1()->getSubExp1()->getSubExp2()->clone()),
+                      this);
                 if (VERBOSE)
-                    LOG << "replacing " << result << " with " << replace << " in " 
-                        << s << "\n";
+                    LOG << "replacing " << result << " with " << replace <<
+                        " in " << s << "\n";
                 s->searchAndReplace(result->clone(), replace);
             }
         }

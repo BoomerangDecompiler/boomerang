@@ -847,7 +847,7 @@ void CHLLCode::AddProcStart(Signature *signature)
             Exp *foo = new Const("foo123412341234");
             m_proc->searchAndReplace(Location::memOf(
                                         Location::param(
-                                          signature->getParamName(i))), 
+                                          signature->getParamName(i)), NULL), 
                                      foo);
             m_proc->searchAndReplace(Location::param(
                                        signature->getParamName(i)), 
