@@ -45,5 +45,6 @@ class StatementTest : public CppUnit::TestCase {
     void testClone();
     void testIsAssign();
     void testIsFlagAssgn();
+    void testAddUsedLocs();
 };
 

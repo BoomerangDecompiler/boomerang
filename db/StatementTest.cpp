@@ -28,6 +28,14 @@
 #include <sstream>
 #include <map>
 
+class NullLogger : public Log {
+public:
+    virtual Log &operator<<(const char *str) {
+        //std::cerr << str;
+        return *this;
+    }
+    virtual ~NullLogger() {};
+};
 /*==============================================================================
  * FUNCTION:        StatementTest::registerTests
  * OVERVIEW:        Register the test functions in the given suite
@@ -42,7 +50,6 @@ void StatementTest::registerTests(CppUnit::TestSuite* suite) {
 
     MYTEST(testLocationSet);
     MYTEST(testWildLocationSet);
-#if 0               // Needs to be updated for global dataflow
     MYTEST(testEmpty);
     MYTEST(testFlow);
     MYTEST(testKill);
@@ -50,13 +57,13 @@ void StatementTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testUseOverKill);
     MYTEST(testUseOverBB);
     MYTEST(testUseKill);
-    MYTEST(testEndlessLoop);
-#endif
+    //MYTEST(testEndlessLoop);
     //MYTEST(testRecursion);
     //MYTEST(testExpand);
     MYTEST(testClone);
     MYTEST(testIsAssign);
     MYTEST(testIsFlagAssgn);
+    MYTEST(testAddUsedLocs);
 }
 
 int StatementTest::countTestCases () const
@@ -69,7 +76,12 @@ int StatementTest::countTestCases () const
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
+static bool logset = false;
 void StatementTest::setUp () {
+    if (!logset) {
+        logset = true;
+        Boomerang::get()->setLogger(new NullLogger());
+    }
 }
 
 /*==============================================================================
@@ -88,17 +100,21 @@ void StatementTest::tearDown () {
  *============================================================================*/
 void StatementTest::testEmpty () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0x123);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     std::list<Statement*>* ls = new std::list<Statement*>;
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(0x123));
-    cfg->newBB(pRtls, RET, 0);
+    PBB bb = cfg->newBB(pRtls, RET, 0);
+    cfg->setEntryBB(bb);
     // compute dataflow
     prog->decompile();
     // print cfg to a string
@@ -106,8 +122,7 @@ void StatementTest::testEmpty () {
     cfg->print(st, true);
     std::string s = st.str();
     // compare it to expected
-    std::string expected = "Ret BB: reach in: \n00000123 RET\n"
-        "cfg reachExit: \n";
+    std::string expected = "Ret BB:\n00000123\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -119,10 +134,13 @@ void StatementTest::testEmpty () {
  *============================================================================*/
 void StatementTest::testFlow () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0x123);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -130,12 +148,16 @@ void StatementTest::testFlow () {
     Assign *a = new Assign(Location::regOf(24),
         new Const(5));
     a->setProc(proc);
+    a->setNumber(1);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(2);
+    rs->addReturn(Location::regOf(24));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -149,12 +171,13 @@ void StatementTest::testFlow () {
     std::string s = st.str();
     // compare it to expected
     std::string expected;
+    // The assignment to 5 gets propagated into the return, and the assignment
+    // to r24 is removed
     expected =
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: \n"
-      "Ret BB: reach in: ** r[24] := 5, \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := 5, \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000123    2 RET 5\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -166,27 +189,35 @@ void StatementTest::testFlow () {
  *============================================================================*/
 void StatementTest::testKill () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0x123);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     Assign *e = new Assign(Location::regOf(24),
                      new Const(5));
+    e->setNumber(1);
     e->setProc(proc);
     rtl->appendStmt(e);
     e = new Assign(Location::regOf(24),
                   new Const(6));
+    e->setNumber(2);
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(3);
+    rs->addReturn(Location::regOf(24));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -201,12 +232,10 @@ void StatementTest::testKill () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: \n"
-      "         ** r[24] := 6   uses:    used by: \n"
-      "Ret BB: reach in: ** r[24] := 6, \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := 6, \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000123    3 RET 6\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -218,27 +247,35 @@ void StatementTest::testKill () {
  *============================================================================*/
 void StatementTest::testUse () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
+    a->setNumber(1);
     a->setProc(proc);
     rtl->appendStmt(a);
     a = new Assign(Location::regOf(28),
                   Location::regOf(24));
+    a->setNumber(2);
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(3);
+    rs->addReturn(Location::regOf(28));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -253,12 +290,10 @@ void StatementTest::testUse () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: ** r[28] := r[24], \n"
-      "         ** r[28] := r[24]   uses: ** r[24] := 5,    used by: \n"
-      "Ret BB: reach in: ** r[24] := 5, ** r[28] := r[24], \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := 5, ** r[28] := r[24], \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000123    3 RET 5\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -270,31 +305,40 @@ void StatementTest::testUse () {
  *============================================================================*/
 void StatementTest::testUseOverKill () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     Assign *e = new Assign(Location::regOf(24),
                      new Const(5));
+    e->setNumber(1);
     e->setProc(proc);
     rtl->appendStmt(e);
     e = new Assign(Location::regOf(24),
                      new Const(6));
+    e->setNumber(2);
     e->setProc(proc);
     rtl->appendStmt(e);
     e = new Assign(Location::regOf(28),
                   Location::regOf(24));
+    e->setNumber(3);
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(2);
+    rs->addReturn(Location::regOf(24));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -309,13 +353,10 @@ void StatementTest::testUseOverKill () {
     // compare it to expected
     std::string expected;
     expected = 
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: \n"
-      "         ** r[24] := 6   uses:    used by: ** r[28] := r[24], \n"
-      "         ** r[28] := r[24]   uses: ** r[24] := 6,    used by: \n"
-      "Ret BB: reach in: ** r[24] := 6, ** r[28] := r[24], \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := 6, ** r[28] := r[24], \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000123    4 RET 6\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -327,20 +368,25 @@ void StatementTest::testUseOverKill () {
  *============================================================================*/
 void StatementTest::testUseOverBB () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
+    a->setNumber(1);
     a->setProc(proc);
     rtl->appendStmt(a);
     a = new Assign(Location::regOf(24),
                      new Const(6));
+    a->setNumber(2);
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
@@ -349,11 +395,15 @@ void StatementTest::testUseOverBB () {
     rtl = new RTL();
     a = new Assign(Location::regOf(28),
                   Location::regOf(24));
+    a->setNumber(3);
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(4);
+    rs->addReturn(Location::regOf(24));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -368,13 +418,11 @@ void StatementTest::testUseOverBB () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: \n"
-      "         ** r[24] := 6   uses:    used by: ** r[28] := r[24], \n"
-      "Ret BB: reach in: ** r[24] := 6, \n"
-      "00000000 ** r[28] := r[24]   uses: ** r[24] := 6,    used by: \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := 6, ** r[28] := r[24], \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000000\n"
+      "00000123    4 RET 6\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -386,28 +434,36 @@ void StatementTest::testUseOverBB () {
  *============================================================================*/
 void StatementTest::testUseKill () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
+    a->setNumber(1);
     a->setProc(proc);
     rtl->appendStmt(a);
     a = new Assign(Location::regOf(24),
               new Binary(opPlus, Location::regOf(24),
                              new Const(1)));
+    a->setNumber(2);
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL(0x123);
-    rtl->appendStmt(new ReturnStatement);
+    ReturnStatement* rs = new ReturnStatement;
+    rs->setNumber(3);
+    rs->addReturn(Location::regOf(24));
+    rtl->appendStmt(rs);
     pRtls->push_back(rtl);
     PBB ret = cfg->newBB(pRtls, RET, 0);
     first->setOutEdge(0, ret);
@@ -422,12 +478,10 @@ void StatementTest::testUseKill () {
     // compare it to expected
     std::string expected;
     expected  = 
-      "Fall BB: reach in: \n"
-      "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-      "         ** r[24] := r[24] + 1   uses: ** r[24] := 5,    used by: \n"
-      "Ret BB: reach in: ** r[24] := r[24] + 1, \n"
-      "00000123 RET\n"
-      "cfg reachExit: ** r[24] := r[24] + 1, \n";
+      "Fall BB:\n"
+      "00000000\n"
+      "Ret BB:\n"
+      "00000123    3 RET 6\n\n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -439,10 +493,13 @@ void StatementTest::testUseKill () {
  *============================================================================*/
 void StatementTest::testEndlessLoop () {
     // create Prog
-    Prog *prog = new Prog();
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
     // create UserProc
     std::string name = "test";
-    UserProc *proc = new UserProc(prog, name, 0);
+    UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
     // create CFG
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
@@ -805,5 +862,145 @@ void StatementTest::testIsFlagAssgn () {
     CPPUNIT_ASSERT (!  br->isFlagAssgn());
     CPPUNIT_ASSERT (!  as->isFlagAssgn());
     delete call; delete br;
+}
+
+/*==============================================================================
+ * FUNCTION:        StatementTest::testAddUsedLocs
+ * OVERVIEW:        
+ *============================================================================*/
+void StatementTest::testAddUsedLocs () {
+    // m[r28-4] := m[r28-8] * r26
+    Assign* a = new Assign(
+        Location::memOf(
+            new Binary(opMinus,
+                Location::regOf(28),
+                new Const(4))),
+        new Binary(opMult,
+            Location::memOf(
+                new Binary(opMinus,
+                    Location::regOf(28),
+                    new Const(8))),
+                Location::regOf(26)));
+    a->setNumber(1);
+    LocationSet l;
+    a->addUsedLocs(l);
+    std::ostringstream ost1;
+    l.print(ost1);
+    std::string expected = "m[r28 - 8],\tr26,\tr28\n";
+    std::string actual = ost1.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    l.clear();
+    GotoStatement* g = new GotoStatement();
+    g->setNumber(55);
+    g->setDest(Location::memOf(Location::regOf(26)));
+    g->addUsedLocs(l);
+    std::ostringstream ost2;
+    l.print(ost2);
+    expected = "m[r26],\tr26\n";
+    actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // BranchStatement with dest m[r26{99}]{55}, condition %flags
+    l.clear();
+    BranchStatement* b = new BranchStatement;
+    b->setNumber(99);
+    b->setDest(
+        new RefExp(
+            Location::memOf(
+                new RefExp(
+                    Location::regOf(26),
+                    b)),
+            g));
+    b->setCondExpr(new Terminal(opFlags));
+    b->addUsedLocs(l);
+    std::ostringstream ost3;
+    l.print(ost3);
+    expected = "m[r26{99}]{55},\tr26{99},\t%flags\n";
+    actual = ost3.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // CaseStatement with pDest = m[r26], switchVar = m[r28 - 12]
+    l.clear();
+    CaseStatement* c = new CaseStatement;
+    c->setDest(Location::memOf(Location::regOf(26)));
+    SWITCH_INFO si;
+    si.pSwitchVar = Location::memOf(
+        new Binary(opMinus,
+            Location::regOf(28),
+            new Const(12)));
+    c->setSwitchInfo(&si);
+    c->addUsedLocs(l);
+    std::ostringstream ost4;
+    l.print(ost4);
+    expected = "m[r28 - 12],\tm[r26],\tr26,\tr28\n";
+    actual = ost4.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    
+    // CallStatement with pDest = m[r26], params = m[r27], r28{55},
+    //   implicit params m[r29], r30, returns r31, m[r24]
+    l.clear();
+    CallStatement* ca = new CallStatement;
+    ca->setDest(Location::memOf(Location::regOf(26)));
+    std::vector<Exp*> argl;
+    argl.push_back(Location::memOf(Location::regOf(27)));
+    argl.push_back(new RefExp(Location::regOf(28), g));
+    ca->setArguments(argl);
+    argl.clear();
+    argl.push_back(Location::memOf(Location::regOf(29)));
+    argl.push_back(Location::regOf(30));
+    ca->setImpArguments(argl);
+    ca->addReturn(Location::regOf(31));
+    ca->addReturn(Location::memOf(Location::regOf(24)));
+    ca->addUsedLocs(l);
+    std::ostringstream ost5;
+    l.print(ost5);
+    expected =
+      "m[r26],\tm[r27],\tm[r29],\tr24,\tr26,\tr27,\tr29,\tr30,\tr28{55}\n";
+    actual = ost5.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Now with final
+    l.clear();
+    ca->addUsedLocs(l, true);
+    std::ostringstream ost5f;
+    l.print(ost5f);
+    expected = "m[r26],\tm[r27],\tr26,\tr27,\tr28{55}\n";
+    actual = ost5f.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    
+    // ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
+    l.clear();
+    ReturnStatement* r = new ReturnStatement;
+    r->setDest(Location::memOf(Location::regOf(26)));
+    r->addReturn(Location::regOf(31));
+    r->addReturn(Location::memOf(Location::regOf(24)));
+    r->addReturn(Location::memOf(
+        new Binary(opPlus,
+            new RefExp(Location::regOf(25), g),
+            new RefExp(Location::regOf(26), b))));
+    r->addUsedLocs(l);
+    std::ostringstream ost6;
+    l.print(ost6);
+    expected="m[r25{55} + r26{99}],\tm[r24],\tr24,\tr31,\tr25{55},\tr26{99}\n";
+    actual = ost6.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Boolstatement with condition m[r24] = r25, dest m[r26]
+    l.clear();
+    BoolStatement* bs = new BoolStatement(8);
+    bs->setCondExpr(new Binary(opEquals,
+        Location::memOf(Location::regOf(24)),
+        Location::regOf(25)));
+    std::list<Statement*> stmts;
+    a = new Assign(Location::memOf(Location::regOf(26)), new Terminal(opNil));
+    stmts.push_back(a);
+    bs->setDest(&stmts);
+    bs->addUsedLocs(l);
+    std::ostringstream ost7;
+    l.print(ost7);
+    expected="m[r24],\tr24,\tr25,\tr26\n";
+    actual = ost7.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
