@@ -10,8 +10,9 @@ dnl nightmare of elf include files, for one thing
 dnl
 dnl $Revision$
 dnl
-dnl 15 Oct 02 - Sebastian Apel: checks for libelf, libcppunit and AC_PREREQ inserted
 dnl 12 Apr 02 - Mike: Created
+dnl 15 Oct 02 - Sebastian Apel: checks for libelf, libcppunit and AC_PREREQ inserted
+dnl 06 Mar 03 - Mike: Removed need for libelf
 
 AC_PREREQ(2.52)
 AC_INIT(LICENSE.TERMS)
@@ -68,7 +69,7 @@ AC_MSG_RESULT( $HOST_GNU_LD )
 
 
 dnl Checks for libraries.       
-AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
+dnl AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
 AC_CHECK_LIB(stdc++, main)
 
 dnl Checks for cppunit library
@@ -81,9 +82,9 @@ AC_LANG_POP(C++)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h malloc.h sys/time.h unistd.h byteswap.h)
-AC_CHECK_HEADERS(libelf.h libelf/libelf.h, break)
-AC_CHECK_HEADERS(link.h sys/link.h, break)
-AC_CHECK_HEADERS(elf.h sys/elf_SPARC.h sys/auxv.h)
+dnl AC_CHECK_HEADERS(libelf.h libelf/libelf.h, break)
+dnl AC_CHECK_HEADERS(link.h sys/link.h, break)
+dnl AC_CHECK_HEADERS(elf.h sys/elf_SPARC.h sys/auxv.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
