@@ -481,6 +481,10 @@ public:
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters(int depth);   // must be in SSA form
     void replaceExpressionsWithLocals(bool lastPass = false);
+private:
+    void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp,
+        StatementList& stmts);
+public:
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Statement*, int> RefCounter;

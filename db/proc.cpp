@@ -1417,15 +1417,15 @@ void UserProc::trimReturns() {
         // Special case for 32-bit stack-based machines (e.g. Pentium).
         // RISC machines generally preserve the stack pointer (so no special
         // case required)
-        for (int p = 0; !stdsp && p < 7; p++) {
+        for (int p = 0; !stdsp && p < 8; p++) {
             if (DEBUG_PROOF)
-                LOG << "attempting to prove sp = sp + " << 4 + p*4 << 
+                LOG << "attempting to prove sp = sp + " << p*4 << 
                              " for " << getName() << "\n";
             stdsp = prove(new Binary(opEquals,
                           Location::regOf(sp),
                           new Binary(opPlus,
                               Location::regOf(sp),
-                              new Const(4 + p * 4))));
+                              new Const(p * 4))));
         }
 
         // Prove that pc is set to the return value
@@ -1582,7 +1582,8 @@ void UserProc::addNewParameters() {
         if (s->search(r, result)) {
             bool allZero;
             Exp *e = result->clone()->removeSubscripts(allZero);
-            if (allZero && signature->findParam(e) == -1 && signature->findImplicitParam(e) == -1) {
+            if (allZero && signature->findParam(e) == -1 &&
+                  signature->findImplicitParam(e) == -1) {
                 //int sp = signature->getStackRegister(prog);
                 if (signature->isStackLocal(prog, e) ||
                     e->getOper() == opLocal)  {
@@ -2317,11 +2318,34 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
         }
     }
 
+    // Stack offsets for local variables could be negative (most machines),
+    // positive (PA/RISC), or both (SPARC)
+    if (signature->isLocalOffsetNegative())
+        searchRegularLocals(opMinus, lastPass, sp, stmts);
+    if (signature->isLocalOffsetPositive())
+        searchRegularLocals(opPlus, lastPass, sp, stmts);
+    // Ugh - m[sp] is a special case: neither positive or negative.
+    // SPARC uses this to save %i0
+    if (signature->isLocalOffsetPositive() &&
+      signature->isLocalOffsetNegative())
+        searchRegularLocals(opWild, lastPass, sp, stmts);
+
+}
+
+void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp,
+      StatementList& stmts) {
     // replace expressions in regular statements with locals
-    // l = m[sp{0} - K]
-    l = Location::memOf(new Binary(opMinus, 
-                new RefExp(Location::regOf(sp), NULL),
-                new Terminal(opWildIntConst)));
+    Location* l;
+    if (minusOrPlus == opWild)
+        // l = m[sp{0}]
+        l = Location::memOf(
+            new RefExp(Location::regOf(sp), NULL));
+    else
+        // l = m[sp{0} +/- K]
+        l = Location::memOf(new Binary(minusOrPlus, 
+            new RefExp(Location::regOf(sp), NULL),
+            new Terminal(opWildIntConst)));
+    StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         std::list<Exp*> results;

@@ -144,6 +144,8 @@ namespace CallingConvention {
             virtual Signature *promote(UserProc *p);
             virtual Exp *getStackWildcard();
             virtual int  getStackRegister() {return 14; }
+            // Stack offsets can be negative (inherited) or positive:
+            virtual bool  isLocalOffsetPositive() {return true;}
             virtual bool isPromoted() { return true; }
         };
     };
@@ -538,6 +540,9 @@ void CallingConvention::StdC::PentiumSignature::getInternalStatements(
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) :
   Signature(nam) {
+    Signature::addReturn(Location::regOf(14));
+    Signature::addImplicitParameter(new PointerType(new IntegerType()), "sp",
+                                    Location::regOf(14), NULL);
 }
 
 CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) :
@@ -561,6 +566,7 @@ bool CallingConvention::StdC::SparcSignature::operator==(Signature&
   other) {
     return Signature::operator==(other);
 }
+
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
   Signature &candidate) {
@@ -1293,15 +1299,28 @@ int Signature::getStackRegister(Prog* prog) {
     }
 }
 
-bool Signature::isStackLocal(Prog* prog, Exp *e)
-{
+bool Signature::isStackLocal(Prog* prog, Exp *e) {
+    // e must me m[...]
+    if (!e->isMemOf()) return false;
+    Exp* addr = ((Location*)e)->getSubExp1();
+    OPER op = addr->getOper();
+    // e must be m[... - ...]
+    if (op != opMinus && op != opPlus) return false;
+    if (op == opMinus && !isLocalOffsetNegative()) return false;
+    if (op == opPlus  && !isLocalOffsetPositive()) return false;
+    Exp* sub1 = ((Binary*)addr)->getSubExp1();
+    Exp* sub2 = ((Binary*)addr)->getSubExp2();
+    // e must be m[<sub1> - K]
+    if (!sub2->isIntConst()) return false;
     static Exp *sp = Location::regOf(getStackRegister(prog));
-    return e->getOper() == opMemOf && 
-           e->getSubExp1()->getOper() == opMinus &&
-           *e->getSubExp1()->getSubExp1() == *sp &&
-           e->getSubExp1()->getSubExp2()->getOper() == opIntConst;
+    // first operand must be sp or sp{0}
+    if (sub1->isSubscript()) {
+        Statement* ref = ((RefExp*)sub1)->getRef();
+        Exp* left = ((RefExp*)sub1)->getSubExp1();
+        return *left == *sp && ref == NULL;
+    } else
+        return *sub1 == *sp;
 }
-
 
 bool Parameter::operator==(Parameter& other) {
     if (!(*type == *other.type)) return false;
@@ -1317,3 +1336,7 @@ bool Return::operator==(Return& other) {
     return true;
 }
     
+//bool CallingConvention::StdC::HppaSignature::isLocalOffsetPositive() {
+//    return true;
+//}
+
