@@ -187,7 +187,10 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isTypeVal() { return op == opTypeVal;}
     // True if this is a machine feature
     bool isMachFtr() {return op == opMachFtr;}
-           
+    // True if this is a location
+    bool isLocation() { return op == opMemOf || op == opRegOf ||
+                               op == opGlobal || op == opLocal ||
+                               op == opParam; }
                  
 
     //  //  //  //  //  //  //
@@ -742,6 +745,7 @@ virtual Exp* clone();
 class Location : public Unary {
 protected:
     UserProc *proc;
+    Type *ty;
 
     // Constructor, with ID and subexpression
             Location(OPER op, Exp* e, UserProc *proc = NULL);
@@ -754,8 +758,7 @@ public:
     static Location* memOf(Exp *e) {return new Location(opMemOf, e);}
     static Location* global(const char *nam, UserProc *p) {return new Location(opGlobal, new Const((char*)nam), p);}
     static Location* local(const char *nam, UserProc *p) {return new Location(opLocal, new Const((char*)nam), p);}
-    static Location* param(const char *nam) {return new Location(opParam, 
-                                                        new Const((char*)nam));}
+    static Location* param(const char *nam, UserProc *p = NULL) {return new Location(opParam, new Const((char*)nam), p);}
     // Clone
     virtual Exp* clone();
 
@@ -765,6 +768,9 @@ public:
     virtual Exp* polySimplify(bool& bMod);
     virtual void addUsedLocs(LocationSet& used);
     virtual void getDefinitions(LocationSet& defs);
+
+    Type *getType();
+    void setType(Type *t) { ty = t; }
 };
     
 #endif // __EXP_H__

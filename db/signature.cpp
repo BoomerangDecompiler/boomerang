@@ -624,9 +624,20 @@ Type *Signature::getParamType(int n) {
     return params[n]->getType();
 }
 
+void Signature::setParamType(int n, Type *ty) {
+    params[n]->setType(ty);
+}
+
 int Signature::findParam(Exp *e) {
     for (int i = 0; i < getNumParams(); i++)
         if (*getParamExp(i) == *e)
+            return i;
+    return -1;
+}
+
+int Signature::findParam(const char *nam) {
+    for (int i = 0; i < getNumParams(); i++)
+        if (!strcmp(getParamName(i), nam))
             return i;
     return -1;
 }

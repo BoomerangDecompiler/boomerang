@@ -449,6 +449,10 @@ const char *Prog::getGlobal(ADDRESS uaddr)
     for (unsigned i = 0; i < globals.size(); i++)
         if (globals[i]->getAddress() == uaddr)
             return globals[i]->getName();
+        else if (globals[i]->getAddress() < uaddr &&
+                 globals[i]->getAddress() + 
+                    globals[i]->getType()->getSize() / 8 > uaddr)
+            return globals[i]->getName();
     return pBF->SymbolByAddress(uaddr);
 }
 
@@ -464,6 +468,10 @@ void Prog::globalUsed(ADDRESS uaddr)
 {
     for (unsigned i = 0; i < globals.size(); i++)
         if (globals[i]->getAddress() == uaddr)
+            return;
+        else if (globals[i]->getAddress() < uaddr &&
+                 globals[i]->getAddress() + 
+                    globals[i]->getType()->getSize() / 8 > uaddr)
             return;
     if (uaddr < 0x10000) {
         // This happens in windows code because you can pass a low value integer instead 
@@ -711,10 +719,11 @@ void Prog::decompile() {
         LOG << "Decompiling " << m_procs.size() << " procedures\n";
 
     UserProc* entryProc = (UserProc*) m_procs.front();
-    assert(!entryProc->isLib());
-    if (VERBOSE)
-        LOG << "starting with " << entryProc->getName() << "\n";
-    entryProc->decompile();
+    if (entryProc && !entryProc->isLib()) {
+        if (VERBOSE)
+            LOG << "starting with " << entryProc->getName() << "\n";
+        entryProc->decompile();
+    }
 
     // Just in case there are any Procs not in the call graph
     std::list<Proc*>::iterator pp;
@@ -932,10 +941,12 @@ void Prog::printCallGraphXML() {
     std::ofstream f(fname);
     f << "<prog name=\"" << getName() << "\">\n";
     f << "   <callgraph>\n";
-    getEntryProc()->printCallGraphXML(f, 2);
+    Proc *entry = getEntryProc();
+    if (!entry->isLib())
+        entry->printCallGraphXML(f, 2);
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
          it++)
-        if (!(*it)->isVisited()) {
+        if (!(*it)->isVisited() && !(*it)->isLib()) {
             (*it)->printCallGraphXML(f, 2);
         }
     f << "   </callgraph>\n";
@@ -965,6 +976,9 @@ void Prog::readSymbolFile(const char *fname)
          it != p->symbols.end(); it++) {
         if ((*it)->sig) {
             // probably wanna do something with this
+            Proc *p = newProc((*it)->sig->getName(), (*it)->addr, (*it)->mods->noDecode);
+            if (!(*it)->mods->incomplete)
+                p->setSignature((*it)->sig->clone());
         } else {
             const char *nam = (*it)->nam.c_str();
             if (strlen(nam) == 0) {
@@ -976,6 +990,11 @@ void Prog::readSymbolFile(const char *fname)
             }
             globals.push_back(new Global(ty, (*it)->addr, nam));
         }
+    }
+
+    for (std::list<SymbolRef*>::iterator it = p->refs.begin();
+         it != p->refs.end(); it++) {
+        pFE->addRefHint((*it)->addr, (*it)->nam.c_str());
     }
 
     delete p;

@@ -252,15 +252,19 @@ int Boomerang::decompile(const char *fname)
 
     std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);
+
+    for (unsigned i = 0; i < symbolFiles.size(); i++)
+        prog->readSymbolFile(symbolFiles[i].c_str());
+    
+    // this causes any undecoded userprocs to be decoded
+    fe->decode(prog, NO_ADDRESS);
+
     if (entrypoints.size()) {
         for (unsigned i = 0; i < entrypoints.size(); i++) {
             std::cerr<< "decoding extra entrypoint " << std::hex << entrypoints[i] << "\n";
             prog->decode(entrypoints[i]);
         }
     }
-
-    for (unsigned i = 0; i < symbolFiles.size(); i++)
-        prog->readSymbolFile(symbolFiles[i].c_str());
 
     std::cerr << "analysing...\n";
     prog->analyse();

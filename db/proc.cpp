@@ -1012,7 +1012,6 @@ std::set<UserProc*>* UserProc::decompile() {
     // Compute dominance frontier
     cfg->dominators();
 
-
     // Number the statements
     int stmtNumber = 0;
     numberStatements(stmtNumber); 
@@ -1516,6 +1515,26 @@ void UserProc::addNewParameters() {
                         LOG << "ignoring complex " << e << "\n";
                     continue;
                 }
+                if (e->getOper() == opMemOf && 
+                    e->getSubExp1()->getOper() == opGlobal) {
+                    if (VERBOSE)
+                        LOG << "ignoring m[global] " << e << "\n";
+                    continue;
+                }
+                if (e->getOper() == opMemOf &&
+                    e->getSubExp1()->getOper() == opParam) {
+                    if (VERBOSE)
+                        LOG << "ignoring m[param] " << e << "\n";
+                    continue;
+                }
+                if (e->getOper() == opMemOf &&
+                    e->getSubExp1()->getOper() == opPlus &&
+                    e->getSubExp1()->getSubExp1()->getOper() == opGlobal &&
+                    e->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+                    if (VERBOSE)
+                        LOG << "ignoring m[global + int] " << e << "\n";
+                    continue;
+                }
                 if (VERBOSE)
                     LOG << "Found new parameter " << e << "\n";
                 addParameter(e);
@@ -1571,13 +1590,11 @@ void UserProc::trimParameters(int depth) {
             for (int i = 0; i < nparams; i++) {
                 Exp *p, *pe;
                 if (i < signature->getNumParams()) {
-                    p = new Unary(opParam, 
-                                new Const((char*)signature->getParamName(i)));
+                    p = Location::param(signature->getParamName(i), this);
                     pe = signature->getParamExp(i);
                 } else {
-                    p = new Unary(opParam, 
-                                new Const((char*)signature->getImplicitParamName(
-                                                i - signature->getNumParams())));
+                    p = Location::param(signature->getImplicitParamName(
+                                i - signature->getNumParams()), this);
                     pe = signature->getImplicitParamExp(i - signature->getNumParams());
                 }
                 if (!referenced[i] && excluded.find(s) == excluded.end() && 
@@ -1764,12 +1781,19 @@ void UserProc::replaceExpressionsWithGlobals() {
                     prog->globalUsed(u);
                     const char *global = prog->getGlobal(u);
                     if (global) {
-                        prog->setGlobalType((char*)global, pty);
-                        Unary *g = Location::global(strdup(global), this);
-                        Exp *ne = new Unary(opAddrOf, g);
+                        int r = u - prog->getGlobal((char*)global);
+                        Exp *ne;
+                        if (r) {
+                            Location *g = Location::global(strdup(global), this);
+                            ne = new Binary(opPlus, new Unary(opAddrOf, g), new Const(r));
+                        } else {
+                            prog->setGlobalType((char*)global, pty);
+                            Location *g = Location::global(strdup(global), this);
+                            ne = new Unary(opAddrOf, g);
+                        }
                         call->setArgumentExp(i, ne);
                         if (VERBOSE)
-                            LOG << "replacing param " << e << " with " << ne << " in " << call << "\n";
+                            LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
                     }
                 }
             }
@@ -1791,16 +1815,25 @@ void UserProc::replaceExpressionsWithGlobals() {
                 prog->globalUsed(u);
                 const char *global = prog->getGlobal(u);
                 if (global) {
-                    if (s->isAssign()) {
+                    int r = u - prog->getGlobal((char*)global);
+                    Exp *ne;
+                    if (r) {
+                        Location *g = Location::global(strdup(global), this);
+                        ne = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, g), new Const(r)));
+                    } else {
                         Type *ty = prog->getGlobalType((char*)global);
-                        int bits = ((Assign*)s)->getSize();
-                        if (ty == NULL || ty->getSize() != bits)
-                            prog->setGlobalType((char*)global, new IntegerType(bits));
+                        if (s->isAssign()) {
+                            int bits = ((Assign*)s)->getSize();
+                            if (ty == NULL || ty->getSize() == 0)
+                                prog->setGlobalType((char*)global, new IntegerType(bits));
+                        }
+                        Location *g = Location::global(strdup(global), this);
+                        if (ty && ty->isArray()) 
+                            ne = new Binary(opArraySubscript, g, new Const(0));
+                        else 
+                            ne = g;
                     }
-                    Unary *g = Location::global(global, this);
-                    Exp* memofCopy = memof->clone();
-                    s->searchAndReplace(memofCopy, g);
-                    delete memofCopy; delete g;
+                    s->searchAndReplace(memof->clone(), ne);
                 }
             }
         }
@@ -1818,10 +1851,20 @@ void UserProc::replaceExpressionsWithGlobals() {
                     prog->globalUsed(u);
                     const char *global = prog->getGlobal(u);
                     if (global) {
-                        Unary *g = Location::global(strdup(global), this);
-                        Exp* memofCopy = memof->clone();
-                        s->searchAndReplace(memofCopy, g);
-                        delete memofCopy; delete g;
+                        int r = u - prog->getGlobal((char*)global);
+                        Exp *ne;
+                        if (r) {
+                            Unary *g = Location::global(strdup(global), this);
+                            ne = Location::memOf(new Binary(opPlus, new Unary(opAddrOf, g), new Const(r)));
+                        } else {
+                            Type *ty = prog->getGlobalType((char*)global);
+                            Unary *g = Location::global(strdup(global), this);
+                            if (ty && ty->isArray()) 
+                                ne = new Binary(opArraySubscript, g, new Const(0));
+                            else 
+                                ne = g;
+                        }
+                        s->searchAndReplace(memof->clone(), ne);
                     }
                 }
             }
@@ -1862,8 +1905,8 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
             if (signature->getParamExp(i)->getMemDepth() == depth) {
                 Exp *r = signature->getParamExp(i)->clone();
                 r = r->expSubscriptVar(new Terminal(opWild), NULL);
-                Exp* replace = new Unary(opParam, 
-                    new Const(strdup((char*)signature->getParamName(i))));
+                Exp* replace = Location::param(
+                            strdup((char*)signature->getParamName(i)), this);
                 if (VERBOSE)
                     LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
                 s->searchAndReplace(r, replace);
@@ -2284,6 +2327,12 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
             if (s->getLeft()->getOper() == opMemOf &&
                 !(*new RefExp(s->getLeft(), NULL) == *s->getRight())) {
                 // assignments to memof anything must always be kept
+                ll++;
+                continue;
+            }
+            if (s->getLeft()->getOper() == opMemberAccess ||
+                s->getLeft()->getOper() == opArraySubscript) {
+                // can't say with these
                 ll++;
                 continue;
             }

@@ -31,6 +31,7 @@ public:
     ~Parameter() { delete type; delete exp; }
 
     Type *getType() { return type; }
+    void setType(Type *ty) { type = ty; }
     const char *getName() { return name.c_str(); }
     Exp *getExp()       { return exp; }
 };
@@ -122,7 +123,9 @@ public:
     virtual const char *getParamName(int n);
     virtual Exp *getParamExp(int n);
     virtual Type *getParamType(int n);
+    virtual void setParamType(int n, Type *ty);
     virtual int findParam(Exp *e);
+    virtual int findParam(const char *nam);
     // accessor for argument expressions
     virtual Exp *getArgumentExp(int n);
     virtual bool hasEllipsis() { return ellipsis; }

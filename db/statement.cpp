@@ -1931,8 +1931,13 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
         if (tsubexp1 && tsubexp1->isNamed())
             tsubexp1 = ((NamedType*)tsubexp1)->resolvesTo();
         CompoundType *compound = dynamic_cast<CompoundType*>(tsubexp1);
-        const char *nam = ((Const*)e->getSubExp2())->getStr();
-        ty = compound->getType((char*)nam);
+        if (compound) {
+            const char *nam = ((Const*)e->getSubExp2())->getStr();
+            ty = compound->getType((char*)nam);
+        }
+    }
+    if (e->getOper() == opSubscript) {
+        ty = getTypeFor(e->getSubExp1(), prog);
     }
     return ty;
 }
@@ -2506,6 +2511,24 @@ void Assign::simplify() {
                     }
                 }
             }
+    }
+
+    // let's gather some more accurate type information
+    if (lhs->isLocation() && rhs->isLocation()) {
+        Location *llhs = (Location*)lhs;
+        Location *lrhs = (Location*)rhs;
+        if (lrhs->getType())
+            llhs->setType(lrhs->getType());
+    }
+
+    if (lhs->isLocation() && rhs->getOper() == opSubscript &&
+        ((RefExp*)rhs)->getRef() &&
+        ((RefExp*)rhs)->getRef()->isAssign() &&
+        ((Assign*)((RefExp*)rhs)->getRef())->lhs->isLocation()) {
+        Location *llhs = (Location*)lhs;
+        Location *lrhs = (Location*)((Assign*)((RefExp*)rhs)->getRef())->lhs;
+        if (lrhs->getType())
+            llhs->setType(lrhs->getType());
     }
 
 }

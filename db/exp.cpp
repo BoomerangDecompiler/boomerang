@@ -48,6 +48,7 @@
 #include "register.h"
 #include "rtl.h"        // E.g. class ParamEntry in decideType()
 #include "proc.h"
+#include "signature.h"
 #include "prog.h"
 #include "operstrings.h"// Defines a large array of strings for the
                         // createDotFile functions. Needs -I. to find it
@@ -153,13 +154,13 @@ TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty)
 { }
 
 Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), 
-                                                        proc(proc)
+                                                        proc(proc), ty(NULL)
 {
     assert(op == opRegOf || op == opMemOf || op == opLocal ||
            op == opGlobal || op == opParam);
 }
 
-Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc)
+Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc), ty(o.ty)
 {
 }
 
@@ -341,6 +342,8 @@ Exp* TypeVal::clone() {
 
 Exp* Location::clone() {
     Location* c = new Location(op, subExp1->clone(), proc);
+    if (ty)
+        c->ty = ty->clone();
     return c;
 }
 
@@ -2178,6 +2181,37 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+    // check for loc + n where loc is a pointer to a compound type
+    // becomes &loc.m + r where m is the member at offset n and 
+    // r is n - the offset to member m
+    if (op == opPlus && subExp1->getOper() == opSubscript &&
+        ((RefExp*)subExp1)->getRef() == NULL &&
+        subExp1->getSubExp1()->isLocation() && opSub2 == opIntConst) {
+        int n = ((Const*)subExp2)->getInt();
+        Location *l = (Location*)subExp1->getSubExp1();
+        Type *ty = l->getType();
+        if (ty && ty->isPointer()) { 
+            Type *pty = ((PointerType*)ty)->getPointsTo();
+            if (pty->isNamed())
+                pty = ((NamedType*)pty)->resolvesTo();
+            if (pty->isCompound()) {
+                CompoundType *c = (CompoundType*)pty;
+                if (n*8 < c->getSize()) {
+                    int r = c->getOffsetRemainder(n*8);
+                    assert((r % 8) == 0);
+                    const char *nam = c->getNameAtOffset(n*8);
+                    subExp1 = new Unary(opAddrOf, 
+                                new Binary(opMemberAccess, 
+                                    subExp1,
+                                    new Const((char*)nam)));
+                    subExp2 = new Const(r / 8);
+                    bMod = true;
+                    return res;
+                }
+            }
+        }
+    }
+
     return res;
 }
 
@@ -3218,6 +3252,50 @@ Exp* Location::polySimplify(bool& bMod) {
         }
     }
 
+    // check for m[a[loc.x]] becomes loc.x
+    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opAddrOf &&
+        res->getSubExp1()->getSubExp1()->getOper() == opMemberAccess) {
+        res = subExp1->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // check for m[a[loc] + n] where loc is an array and n is an int,
+    // becomes loc[n / b] where b is the size of the base type in bytes
+    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp1()->getOper() == opAddrOf &&
+        res->getSubExp1()->getSubExp1()->getSubExp1()->isLocation() &&
+        res->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
+        Location *l = (Location*)res->getSubExp1()->getSubExp1()->getSubExp1();
+        Type *ty = l->getType();
+        if (ty->isNamed())
+            ty = ((NamedType*)ty)->resolvesTo();
+        if (ty->isArray()) {
+            res = new Binary(opArraySubscript, l, 
+                            new Const(n / (((ArrayType*)ty)->getBaseType()->getSize()/8)));
+            bMod = true;
+            return res;
+        }
+    }
+
+    // this is a bit of a Cism.. turn m[loc + n] into loc[n/b] where loc
+    // is a pointer and b is the size of the base type of the pointer
+    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp1()->isLocation() &&
+        res->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
+        Location *l = (Location*)res->getSubExp1()->getSubExp1();
+        Type *ty = l->getType();
+        if (ty && ty->isNamed())
+            ty = ((NamedType*)ty)->resolvesTo();
+        if (ty && ty->isPointer()) {
+            res = new Binary(opArraySubscript, l, 
+                            new Const(n / (((PointerType*)ty)->getPointsTo()->getSize()/8)));
+            bMod = true;
+        }
+    }
+
     return res;
 }
 
@@ -3234,5 +3312,49 @@ void Location::getDefinitions(LocationSet& defs) {
     if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
         defs.insert(Location::regOf(0));
     }
+}
+
+Type *Location::getType()
+{
+    if (proc == NULL)
+        return NULL;
+    char *nam = NULL;
+    if (subExp1->getOper() == opStrConst)
+        nam = ((Const*)subExp1)->getStr();
+    
+    switch(op) {
+        case opGlobal:
+            return proc->getProg()->getGlobalType(nam);
+            break;
+        case opLocal:
+            return proc->getLocalType(nam);
+            break;
+        case opParam:
+            {
+                int n = proc->getSignature()->findParam(nam);
+                if (n != -1) {
+                    return proc->getSignature()->getParamType(n);
+                }
+            }
+            break;
+        case opMemOf:
+        case opRegOf:
+            {
+                bool allZero = true;
+                Exp *e = clone()->removeSubscripts(allZero);
+                if (allZero) {
+                    int n = proc->getSignature()->findParam(e);
+                    if (n != -1) {
+                        return proc->getSignature()->getParamType(n);
+                    }
+                }
+                if (ty)
+                    return ty;
+            }
+            break;
+        default:
+            break;
+    }
+    return NULL;
 }
 

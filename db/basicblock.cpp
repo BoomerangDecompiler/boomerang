@@ -1514,10 +1514,24 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                     igraph::iterator gg = ig.find(u);
                     if (gg == ig.end()) {
                         ig[u] = localNum++;
-                        if (VERBOSE || Boomerang::get()->debugLiveness)
+                        std::ostringstream sto;
+                        sto << "local" << localNum-1;
+                        std::string local = sto.str();
+                        Type *ty = NULL;
+                        if (((RefExp*)u)->getRef() &&
+                            ((RefExp*)u)->getRef()->getLeft() &&
+                            ((RefExp*)u)->getRef()->getLeft()->isLocation())
+                            ty = ((Location*)((RefExp*)u)->getRef()->
+                                                        getLeft())->getType();
+                        if (ty)
+                            s->getProc()->setLocalType(local.c_str(), ty);
+                        if (VERBOSE || Boomerang::get()->debugLiveness) {
                             LOG << "Interference of " << u <<
-                            ", assigned local" << localNum-1
-                            << "\n";
+                            ", assigned " << local.c_str();
+                            if (ty)
+                                LOG << " with type " << ty->getCtype();
+                            LOG << "\n";
+                        }
                     }
                 // Don't add the interfering variable to liveLocs, otherwise
                 // we could register other interferences that will not exist

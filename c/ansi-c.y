@@ -29,7 +29,8 @@ private:        \
     AnsiCScanner *theScanner; \
 public: \
     std::list<Signature*> signatures; \
-    std::list<Symbol*> symbols; 
+    std::list<Symbol*> symbols; \
+    std::list<SymbolRef*> refs;
 
 
 %header{
@@ -48,14 +49,34 @@ public: \
       std::string nam;
   };
 
+  class SymbolMods;
+
   class Symbol {
   public:
       ADDRESS addr;
       std::string nam;
       Type *ty;
       Signature *sig;
+      SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL) { }
+      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL), 
+                          mods(NULL) { }
+  };
+    
+  class SymbolMods {
+  public:
+      bool noDecode;
+      bool incomplete;
+
+      SymbolMods() : noDecode(false), incomplete(false) { }
+  };
+
+  class SymbolRef {
+  public:
+      ADDRESS addr;
+      std::string nam;
+
+      SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
   };
 
 %}
@@ -63,6 +84,10 @@ public: \
 %token<str> IDENTIFIER STRING_LITERAL
 %token<ival> CONSTANT 
 %token SIZEOF
+%token NODECODE
+%token INCOMPLETE
+%token SYMBOLREF
+%token CDECL
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
@@ -84,6 +109,7 @@ public: \
    Signature *sig;
    TypeIdent *type_ident;
    std::list<TypeIdent*> *type_ident_list;
+   SymbolMods *mods;
 }
 
 %{
@@ -96,6 +122,7 @@ public: \
 %type<type_ident> type_ident;
 %type<type_ident_list> type_ident_list;
 %type<sig> signature;
+%type<mods> symbol_mods;
 
 %start translation_unit
 %%
@@ -115,6 +142,8 @@ decl: type_decl
     | func_decl
     { }
     | symbol_decl
+    { }
+    | symbol_ref_decl
     { }
     ;
 
@@ -218,7 +247,32 @@ signature: type_ident '(' param_list ')'
            delete $3;
            $$ = sig;
          }
+         | CDECL type_ident '(' param_list ')'
+         { std::string str = sigstr;
+           if (!strncmp(sigstr, "-win32", 6)) {
+              str = "-stdc";
+              str += sigstr + 6;
+           }
+           Signature *sig = Signature::instantiate(str.c_str(), $2->nam.c_str()); 
+           sig->addReturn($2->ty);
+           for (std::list<Parameter*>::iterator it = $4->begin();
+                it != $4->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete $4;
+           $$ = sig;
+         }
          ;
+
+symbol_ref_decl: SYMBOLREF CONSTANT IDENTIFIER ';'
+            { SymbolRef *ref = new SymbolRef($2, $3);
+              refs.push_back(ref);
+            }
+            ;
 
 symbol_decl: CONSTANT type_ident ';'
            { Symbol *sym = new Symbol($1);
@@ -226,12 +280,24 @@ symbol_decl: CONSTANT type_ident ';'
              sym->ty = $2->ty;
              symbols.push_back(sym);
            }
-           | CONSTANT signature ';'
+           | CONSTANT symbol_mods signature ';'
            { Symbol *sym = new Symbol($1);
-             sym->sig = $2;
+             sym->sig = $3;
+             sym->mods = $2;
              symbols.push_back(sym);
            }
            ; 
+
+symbol_mods: NODECODE symbol_mods
+           { $$ = $2;
+             $$->noDecode = true;
+           }
+           | INCOMPLETE symbol_mods
+           { $$ = $2;
+             $$->incomplete = true;
+           } 
+           | /* */
+           { $$ = new SymbolMods(); }
 
 type_ident: type IDENTIFIER
           { $$ = new TypeIdent();

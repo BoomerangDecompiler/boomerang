@@ -78,8 +78,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, s);
             break;
         case opFltConst:
-            sprintf(s, "%f", c->getFlt());
-            strcat(str, s);
+            {
+                std::ostringstream os;
+                os << c->getFlt();
+                strcat(str, os.str().c_str());
+            }
             break;
         case opStrConst:
             sprintf(s, "\"%s\"", c->getStr());
@@ -198,6 +201,23 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, b->getSubExp2());
             break;
         case opMemOf:
+            if (u->getSubExp1()->isLocation()) {
+                Location *l = (Location*)u->getSubExp1();
+                Type *ty = l->getType();
+                if (ty) {
+                    if (ty->isPointer()) {
+                        strcat(str, "*");
+                        appendExp(str, l);
+                        break;
+                    }
+                    strcat(str, "*(");
+                    appendType(str, ty);
+                    strcat(str, "*)(");
+                    appendExp(str, u->getSubExp1());
+                    strcat(str, ")");
+                    break;
+                }
+            }
             strcat(str, "*(int*)(");
             appendExp(str, u->getSubExp1());
             strcat(str, ")");
@@ -331,10 +351,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opForceFlt:
         case opFpush:
         case opFpop:
-        case opSin:
-        case opCos:
-        case opTan:
-        case opArcTan:
         case opLoge:
         case opSqrt:
         case opExecute:
@@ -435,16 +451,34 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, u->getSubExp1());
             strcat(str, ")");
             break;
+        case opSin:
+            strcat(str, "sin(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
+        case opCos:
+            strcat(str, "cos(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
+        case opTan:
+            strcat(str, "tan(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
+        case opArcTan:
+            strcat(str, "atan(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
         case opSubscript:
             appendExp(str, u->getSubExp1());
             std::cerr << "subscript in code generation of proc " << m_proc->getName() << " exp (without subscript): " << str << std::endl;
             assert(false);
             break;
         case opMemberAccess:
-            if (b->getSubExp1()->getOper() == opGlobal) {
-                const char *nam = ((Const*)b->getSubExp1()->getSubExp1())->
-                                              getStr();
-                Type *ty = m_proc->getProg()->getGlobalType((char*)nam);
+            if (b->getSubExp1()->isLocation()) {
+                Type *ty = ((Location*)b->getSubExp1())->getType();
                 if (ty) {
                     if (ty->isNamed())
                         ty = ((NamedType*)ty)->resolvesTo();
@@ -690,6 +724,9 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
     indent(s, indLevel);
     if (asgn->getLeft()->getOper() == opMemOf && asgn->getSize() != 32) 
         appendExp(s, new TypedExp(new IntegerType(asgn->getSize()), asgn->getLeft()));
+    else if (asgn->getLeft()->getOper() == opGlobal &&
+             ((Location*)asgn->getLeft())->getType()->isArray())
+        appendExp(s, new Binary(opArraySubscript, asgn->getLeft(), new Const(0)));
     else
         appendExp(s, asgn->getLeft());
     strcat(s, " = ");

@@ -196,7 +196,8 @@ Prog *FrontEnd::decode(bool decodeMain)
 
 void FrontEnd::decode(Prog *prog, ADDRESS a) 
 {
-    prog->setNewProc(a);
+    if (a != NO_ADDRESS)
+        prog->setNewProc(a);
 
     bool change = true;
     while (change) {
@@ -461,6 +462,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             for (ss = sl.begin(); ss != sl.end(); ss++) {
                 Statement* s = *ss;
                 s->setProc(pProc); // let's do this really early!
+                if (refHints.find(pRtl->getAddress()) != refHints.end()) {
+                    const char *nam = refHints[pRtl->getAddress()].c_str();
+                    ADDRESS gu = pProc->getProg()->getGlobal((char*)nam);
+                    if (gu != NO_ADDRESS) {
+                        s->searchAndReplace(new Const((int)gu), 
+                            new Unary(opAddrOf, Location::global(nam, pProc)));
+                    }
+                }
                 s->simplify();
                 GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
 
