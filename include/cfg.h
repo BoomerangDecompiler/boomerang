@@ -525,6 +525,12 @@ public:
     void processSwitch(UserProc* proc, SWITCH_INFO* swi);
     int  findNumCases();
 
+    /*
+     * Change the BB enclosing stmt to be CALL, not COMPCALL
+     */
+    bool undoComputedBB(Statement* stmt);
+
+
 };  // class BasicBlock
 
 
@@ -913,6 +919,11 @@ public:
      * Insert actual arguments to match formal parameters
      */
     void insertArguments(StatementSet& rs);
+
+    /*
+     * Change the BB enclosing stmt to be CALL, not COMPCALL
+     */
+    void undoComputedBB(Statement* stmt);
 
 private:
 

@@ -2518,3 +2518,12 @@ bool Cfg::decodeIndirectJmp(UserProc* proc) {
     }
     return res;
 }
+
+void Cfg::undoComputedBB(Statement* stmt) {
+    std::list<PBB>::iterator it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        if ((*it)->undoComputedBB(stmt))
+            break;
+    }
+
+}

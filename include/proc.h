@@ -664,6 +664,12 @@ public:
     bool containsAddr(ADDRESS uAddr);
 
     /*
+     * Change BB containing this statement from a COMPCALL to a CALL
+     */
+    void undoComputedBB(Statement* stmt) {
+        cfg->undoComputedBB(stmt); }
+
+    /*
      * Return true if this proc uses the special aggregate pointer as the
      * first parameter
      */

@@ -2025,14 +2025,14 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 std::vector<Exp*> newimpargs;
                 newimpargs.resize(sig->getNumImplicitParams());
                 for (i = 0; i < sig->getNumImplicitParams(); i++) {
-                    bool gotsup = false;
+                    bool gotsub = false;
                     for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getImplicitParamExp(i)) {
                             newimpargs[i] = oldargs[j];
-                            gotsup = true;
+                            gotsub = true;
                             break;
                         }
-                    if (!gotsup) {
+                    if (!gotsub) {
                         newimpargs[i] = sig->getImplicitParamExp(i)->clone();
                         if (newimpargs[i]->getOper() == opMemOf) {
                             newimpargs[i]->refSubExp1() = 
@@ -2045,14 +2045,15 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 std::vector<Exp*> newargs;
                 newargs.resize(sig->getNumParams());
                 for (i = 0; i < sig->getNumParams(); i++) {
-                    bool gotsup = false;
+                    bool gotsub = false;
                     for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getParamExp(i)) {
                             newargs[i] = oldargs[j];
-                            gotsup = true;
+                            // Got something to substitute
+                            gotsub = true;
                             break;
                         }
-                    if (!gotsup) {
+                    if (!gotsub) {
 						Exp* parami = sig->getParamExp(i);
                         newargs[i] = parami->clone();
                         if (newargs[i]->getOper() == opMemOf) {
@@ -2070,6 +2071,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 // 4
                 //LOG << "4\n";
                 m_isComputed = false;
+                proc->undoComputedBB(this);
                 proc->addCallee(procDest);
                 procDest->printDetailsXML();
             }
