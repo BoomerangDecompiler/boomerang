@@ -55,6 +55,7 @@
 #include "util.h"
 #include "boomerang.h"
 #include "transformer.h"
+#include "visitor.h"
 #include <iomanip>          // For std::setw etc
 
 /*==============================================================================
@@ -4056,11 +4057,6 @@ bool  TypeVal::accept(ExpVisitor* v) {return v->visit(this);}
 
 // FixProcVisitor class
 
-bool FixProcVisitor::visit(Location* l) {
-    l->setProc(proc);       // Set the proc, but only for Locations
-    return true;
-}
-
 void Exp::fixLocationProc(UserProc* p) {
     // All locations are supposed to have a pointer to the enclosing
     // UserProc that they are a location of. Sometimes, you have an
@@ -4073,29 +4069,10 @@ void Exp::fixLocationProc(UserProc* p) {
 
 // GetProcVisitor class
 
-bool GetProcVisitor::visit(Location* l) {
-    proc = l->getProc();
-    return proc == NULL;        // Continue recursion only if failed so far
-}
-
 UserProc* Exp::findProc() {
     GetProcVisitor gpv;
     accept(&gpv);
     return gpv.getProc();
-}
-
-bool SetConscripts::visit(Const* c) {
-    if (!bInLocalGlobal)
-        c->setConscript(++curConscript);
-    bInLocalGlobal = false;
-    return true;       // Continue recursion
-}
-
-bool SetConscripts::visit(Location* l) {
-    OPER op = l->getOper();
-    if (op == opLocal || op == opGlobal || op == opRegOf || op == opParam)
-        bInLocalGlobal = true;
-    return true;       // Continue recursion
 }
 
 void Exp::setConscripts(int n) {
@@ -4103,38 +4080,75 @@ void Exp::setConscripts(int n) {
     accept(&sc);
 }
 
-//
-// Strip References class
-//
+// Strip references from an Exp
 Exp* Exp::stripRefs() {
     StripRefs sr;
-    return accept(&sr);
+    return acceptMod(&sr);
 }
 
-Exp* Unary::accept(ExpModifier* v) {
-    v->visit(this);
-    subExp1 = subExp1->accept(v);
-    return this;
+Exp* Unary::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
 }
-Exp* Binary::accept(ExpModifier* v) {
-    v->visit(this);
-    subExp1 = subExp1->accept(v);
-    v->visit(this);
-    subExp2 = subExp2->accept(v);
-    return this;
+Exp* Binary::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    subExp2 = subExp2->acceptMod(v);
+    return ret;
 }
-Exp* Ternary::accept(ExpModifier* v) {
-    v->visit(this);
-    subExp1 = subExp1->accept(v);
-    v->visit(this);
-    subExp2 = subExp2->accept(v);
-    v->visit(this);
-    subExp3 = subExp3->accept(v);
-    return this;
+Exp* Ternary::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    subExp2 = subExp2->acceptMod(v);
+    subExp3 = subExp3->acceptMod(v);
+    return ret;
 }
 
-Exp* RefExp::accept(ExpModifier* re) {
-    return subExp1;     // The actual stripping!
+Exp* Location::acceptMod(ExpModifier* v) {
+    // This looks to be the same source code as Unary::acceptMod, but the
+    // type of "this" is different, which is all important here!
+    // (it makes a call to a different visitor member function).
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
+}
+
+Exp* PhiExp::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
+}
+
+Exp* RefExp::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
+}
+
+Exp* FlagDef::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
+}
+
+Exp* TypedExp::acceptMod(ExpModifier* v) {
+    Exp* ret = v->visit(this);
+    subExp1 = subExp1->acceptMod(v);
+    return ret;
+}
+
+Exp* Terminal::acceptMod(ExpModifier* v) {
+    // This is important if we need to modify terminals
+    return v->visit(this);
+}
+
+Exp* Const::acceptMod(ExpModifier* v) {
+    return v->visit(this);
+}
+
+Exp* TypeVal::acceptMod(ExpModifier* v) {
+    return v->visit(this);
 }
 
 void child(Exp* e, int ind) {
