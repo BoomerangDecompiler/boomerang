@@ -19,6 +19,8 @@
  *
  * 28 Apr 02 - Mike: getTempType() returns a Type* now
  * 26 Aug 03 - Mike: Fixed operator< (had to re-introduce an enum... ugh)
+ * 17 Jul 04 - Mike: Fixed some functions that were returning the buffers
+ *             of std::strings allocated on the stack (affected Windows)
  */
 
 #include <assert.h>
@@ -705,9 +707,9 @@ const char *CharType::getCtype() const
 
 const char *PointerType::getCtype() const
 {
-     std::string s = points_to->getCtype();
+     std::string s(points_to->getCtype());
      s += "*";
-     return s.c_str(); // memory..
+     return strdup(s.c_str()); // memory..
 }
 
 const char *ArrayType::getCtype() const
@@ -716,7 +718,7 @@ const char *ArrayType::getCtype() const
     std::ostringstream ost;
     ost << "[" << length << "]";
     s += ost.str().c_str();
-    return s.c_str(); // memory..
+    return strdup(s.c_str()); // memory..
 }
 
 const char *NamedType::getCtype() const
@@ -736,7 +738,7 @@ const char *CompoundType::getCtype() const
         tmp += "; ";
     }
     tmp += "}";
-    return tmp.c_str();
+    return strdup(tmp.c_str());
 }
 
 std::map<std::string, Type*> Type::namedTypes;
