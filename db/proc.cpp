@@ -2835,8 +2835,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
 				ll++;
 				continue;
 			}
-			if (s->getKind() != STMT_ASSIGN && s->getKind() != STMT_BOOL) {
-				// Never delete a statement other than an assignment or setstmt
+			if (!s->isAssignment()) {
+				// Never delete a statement other than an assignment
 				// (e.g. nothing "uses" a Jcond)
 				ll++;
 				continue;
