@@ -19,6 +19,8 @@
  * $Revision$
  * 21 Oct 98 - Mike: converted from frontsparc.cc
  * 21 May 02 - Mike: Mods for boomerang
+ * 27 Nov 02 - Mike: Fixed a bug in the floating point fixup code, which was
+ *                  screwing up registers in flag calls
 */
 
 #include <assert.h>
@@ -286,7 +288,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
                 Binary* cur;
                 for (cur = (Binary*)exp->getSubExp2(); !cur->isNil();
                   cur = (Binary*)cur->getSubExp2()) {
-// I dont understand why we wamt typed exps in the flag calls so much.
+// I dont understand why we want typed exps in the flag calls so much.
 // If we're going to replace opSize with TypedExps then we need to do it
 // for everything, not just the flag calls.. so that should be in the 
 // sslparser.  If that is the case then we cant assume that opLists of
@@ -297,8 +299,9 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
                     if (s->isRegOfK()) {
                         Const* c = (Const*)((Unary*)s)->getSubExp1();
                         int K = c->getInt();        // Old register number
-                        // Change to new register number
-                        s->setSubExp1(new Const(32 + (K - 32 + tos & 7)));
+                        // Change to new register number, if in range
+						if ((K >= 32) && (K <= 39))
+                        	s->setSubExp1(new Const(32 + (K - 32 + tos & 7)));
                     }
                 }
                         
