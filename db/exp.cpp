@@ -1572,8 +1572,11 @@ Exp* Exp::Accumulate(std::list<Exp*> exprs)
  * something powerful, but until then, dont rely on this code to do anything
  * critical. - trent 8/7/2002
  *============================================================================*/
+#define DEBUG_SIMP 0            // Set to 1 to print every change
 Exp* Exp::simplify() {
-Exp* save = clone();
+#if DEBUG_SIMP
+    Exp* save = clone();
+#endif
     bool bMod;                  // True if simplified at this or lower level
     Exp* res = this;
     do {
@@ -1582,15 +1585,15 @@ Exp* save = clone();
     } while (bMod);             // If modified at this (or a lower) level, redo
     // The below is still important. E.g. want to canonicalise sums, so we
     // know that a + K + b is the same as a + b + K
-#if 0
-    res = res->simplifyArith();
+    // No! This slows everything down, and it's slow enough as it is. Call
+    // only where needed:
+    // res = res->simplifyArith();
+#if DEBUG_SIMP
     if (!(*res == *save)) std::cout << "simplified " << save << " to " << res
       << "\n";
     delete save;
-    return res;
-#else
-    return res->simplifyArith();
 #endif
+    return res;
 }
 
 /*==============================================================================
