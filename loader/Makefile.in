@@ -18,13 +18,14 @@
 # a lib%.so file is made for each of these
 # You should be able to add a simple loader without any changes to this
 # Makefile, as long as you follow the naming convention <type>BinaryFile.*
-# 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
-#		    testLoader is broken due to missing code.
+
 # 10 Apr 02 - Mike: interface -> include; use util.so for str()
 # 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
 # 17 Apr 02 - Mike: Use $(shell pwd) to get an absolute path for BOOMDIR
 # 26 Apr 02 - Mike: Make .so from .o files now
 # 16 Jul 02 - Mike: Removed prog again; no longer needed for serialise code
+# 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
+# 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
 
 C = gcc -g -Wall
 CC = g++ -g -Wall
@@ -33,12 +34,9 @@ CXX=$(CC)
 ALLLIBSRC =  $(wildcard *BinaryFile.cpp)
 ALLLIB =  $(patsubst %.cpp,../lib/lib%.so,$(ALLLIBSRC))
 ALLOBJS = $(patsubst %.cpp, %.o, $(ALLLIBSRC))
-ALLOBJS += ElfDetails.o SymTab.o
+ALLOBJS += SymTab.o
 
-#testloader was commented out becasue it does not work yet, it
-#relies on $BOOMDIR/cppunit, which isn't there
-#all:    $(ALLLIB) testLoader
-all: $(ALLLIB)
+all:    $(ALLLIB) testLoader
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -67,7 +65,7 @@ microX86dis.o: microX86dis.c
 
 # Extra object files, etc
 # Only ElfBinaryFile needs libelf. These are target specific variables.
-../lib/libElfBinaryFile.so: EXTRAS = -lelf SymTab.o ElfDetails.o
+../lib/libElfBinaryFile.so: EXTRAS = -lelf SymTab.o
 ../lib/libHpSomBinaryFile.so: EXTRAS = SymTab.o
 ../lib/libBinaryFile.so: EXTRAS = -ldl
 ../lib/libWin32BinaryFile.so: EXTRAS = microX86dis.o
@@ -81,9 +79,8 @@ $(ALLOBJS): %.o : %.cpp
 	$(CC) -c -fPIC -I../include $(BOOMSET) -o $@ $<
 
 # Dependencies
-../lib/libElfBinaryFile.so: SymTab.o ElfDetails.o
+../lib/libElfBinaryFile.so: SymTab.o
 ../lib/libWin32BinaryFile.so: microX86dis.o
-ElfDetails.o: ElfDetails.h
 SymTab.o:   SymTab.h
 
 
