@@ -1555,58 +1555,12 @@ void HLCall::doReplaceUse(Statement *use) {
     assert(right);
     bool change = false;
 
-#if 0       // Arrgh! These are separate statements, and have already been
-            // substituted. Also, this is not the way to do it (don't sub the
-            // left, e.g. consider esp = esp-32
-    std::list<Exp*>::iterator p;
-    for (p = expList.begin(); p != expList.end(); p++) {
-        *p = (*p)->searchReplaceAll(left, right, change);
-        *p = (*p)->simplifyArith();
-        *p = (*p)->simplify();
-    }
-#endif
-
     for (unsigned i = 0; i < arguments.size(); i++) {
-        if (*arguments[i] == *left) {
-            arguments[i] = right->clone();
-            change = true;
-        } else {
-            bool changeright = false;
-            arguments[i]->searchReplaceAll(left, right->clone(), changeright);
-            change |= changeright;
-        }
-    }
-
-    // Also substitute our copy of the liveEntry info (which is what we use
-    // by virtue of the call)
-    LocSetIter ll;
-    for (Exp* l = liveEntry.getFirst(ll); l; l = liveEntry.getNext(ll)) {
-        if (*l == *left) {
-            liveEntry.remove(ll);
-            liveEntry.insert(right->clone());
-            change = true;
-        } else {
-            bool changeLoc;
-            Exp* res = l->searchReplaceAll(left, right->clone(), changeLoc);
-            res = res->simplifyArith();
-            res = res->simplify();
-            if (l != res) {         // Note: comparing pointers
-                liveEntry.remove(ll);
-                liveEntry.insert(res);
-            }
-            change |= changeLoc;
-        }
-    }
-
-//    assert(change);
-
-    // simplify the arguments
-    for (unsigned i = 0; i < arguments.size(); i++) {
+        arguments[i] = arguments[i]->searchReplaceAll(left, right, change);
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
-    // Note: relies on types of parameters, which is not available when there 
-    // are cycles in the call graph
+#if 0       // Call later
     processConstants(proc->getProg());
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
@@ -1636,6 +1590,7 @@ void HLCall::doReplaceUse(Statement *use) {
             setNumArguments(n);
         }
     }
+#endif
 }
 
 // MVE: is this needed after the merge?
@@ -1649,10 +1604,10 @@ void HLCall::setNumArguments(int n) {
 }
 
 // Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})
-void HLCall::toSSAform(StatementSet& reachin) {
+void HLCall::toSSAform(StatementSet& reachin, int memDepth) {
     int n = arguments.size();
     for (int i = 0; i < n; i++) {
-        arguments[i] = arguments[i]->updateUses(reachin);
+        arguments[i] = arguments[i]->updateRefs(reachin, memDepth);
     }
 }
 
@@ -1688,11 +1643,44 @@ void HLCall::processConstants(Prog *prog) {
                 arguments[i]->setOper(opFltConst);
             }
         }
+#if 0
         if (t->isPointer() && arguments[i]->getOper() != opAddrOf) {
             arguments[i] = new Unary(opAddrOf, 
                                      new Unary(opMemOf, arguments[i]));
         }
+#endif
     }
+
+    // This code was in HLCall:doReplaceUse()
+    if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
+        // functions like printf almost always have too many args
+        std::string name(getDestProc()->getName());
+        if ((name == "printf" || name == "scanf") &&
+          getArgumentExp(0)->isStrConst()) {
+            char *str = ((Const*)getArgumentExp(0))->getStr();
+            // actually have to parse it
+            int n = 1;      // Number of %s plus 1 = number of args
+            char *p = str;
+            while ((p = strchr(p, '%'))) {
+                // special hack for scanf
+                if (name == "scanf") {
+                    setArgumentExp(n, new Unary(opAddrOf,
+                        new Unary(opMemOf, getArgumentExp(n))));
+                }
+                p++;
+                switch(*p) {
+                    case '%':
+                        break;
+                        // TODO: there's type information here
+                    default:
+                        n++;
+                }
+                p++;
+            }
+            setNumArguments(n);
+        }
+    }
+
 }
 
 /**********************************

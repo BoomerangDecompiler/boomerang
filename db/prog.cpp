@@ -193,15 +193,15 @@ void Prog::decompile() {
         if (!p->isDecoded()) continue;
 
         // Put this proc into implicit SSA form
-        p->toSSAform();
+        // For now, memory depth 0
+        p->toSSAform(0);
         if (Boomerang::get()->debugPrintSSA)
             p->print(std::cerr, true);
     }
-
     if (Boomerang::get()->debugPrintSSA)
         std::cerr << "====== End Debug Print SSA Form ======\n\n";
 
-    // usedby analysis goes about here
+    // usedby analysis goes about here (if needed)
 
     // Decompile
     if (Boomerang::get()->noDecompile) return;

@@ -903,7 +903,6 @@ void UserProc::print(std::ostream &out, bool withDF) {
 void UserProc::initStatements(int& stmtNum) {
     if (stmts_init)
         return;         // Already done
-    Prog* prog = getProg();         // Ptr to the Prog object
     stmts_init = true;  // Only do this once
     BB_IT it;
     BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
@@ -999,144 +998,13 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
-#if 0
-// Perform "on the way down" decompilation processing
-// This is for coping with cycles in the call graph
-// At present, we summarise the dataflow (so that call statements which call
-// this proc can have dataflow accurately propagated through them), and
-// find the use-before-define locations (formal parameters) for later use
-void UserProc::decompile_down() {
-    initStatements();           // Ensure all statements have proc field set
-    // Summarise the data flow. Note that this is not the final dataflow;
-    // it assumes no uses or kills in call statements.
-    // When we perform "on the way back" processing, we will have the full
-    // dataflow
-
-    // Summary will be in cfg->getReachExit(), getAvailExit(), and 
-    // getLiveEntry()
-    cfg->computeReaches();
-    cfg->computeAvailable();
-    cfg->computeLiveness();
-
-    // Make parameters for this procedure
-    LocationSet *live = cfg->getLiveEntry();
-    LocSetIter liveit;
-    for (Exp *e = live->getFirst(liveit); e; e = live->getNext(liveit)) {
-        signature->addParameter(e->clone());
-    }
-
-    // Determine returnSet for this procedure
-    StatementSet *reach = cfg->getReachExit();
-    StmtSetIter reachit;
-    for (Statement *stmt = reach->getFirst(reachit); stmt; 
-         stmt = reach->getNext(reachit)) {
-        Exp *left = stmt->getLeft();
-        if (left == NULL) continue;
-        if (left->getOper() == opMemOf) {
-            /* consider:
-             *     %esp = %esp - 4
-             *     m[%esp] = 5;
-             *     ret
-             *
-             * we want m[%esp - 4] but we get m[%esp]
-             */
-            left = left->clone();
-            StatementSet reachin;
-            StmtSetIter it;
-            stmt->getReachIn(reachin);
-            bool found, found2;
-            Statement *prop = NULL;
-            found = found2 = false;
-            for (Statement *s = reachin.getFirst(it); s; 
-                 s = reachin.getNext(it)) {
-                Exp *find;
-                if (s->getLeft() && 
-                    left->getSubExp1()->search(s->getLeft(), find)) {
-#if 0
-                    std::cerr << "found: ";
-                    s->print(std::cerr);
-                    std::cerr << " as use of ";
-                    stmt->print(std::cerr);
-                    std::cerr << " which now has left " << left;
-                    std::cerr << std::endl;
-#endif
-                    if (found) 
-                        found2 = true;
-                    else {
-                        found = true;
-                        prop = s;
-                    }
-                }
-            }
-            if (found && !found2 && prop->getRight()) {
-                bool change;
-                left = left->searchReplace(prop->getLeft(), 
-                                           prop->getRight(), change);
-                assert(change);
-            }
-            if (!found2) {
-                returnSet.insert(left);
-            } else delete left;
-        } else {
-            returnSet.insert(left->clone());
-        }
-    }
-    
-    if (VERBOSE) {
-        StmtSetIter oo;
-        StatementSet* reachExit = cfg->getReachExit();
-        if (reachExit) {
-            std::cerr << "reachExit for proc " << getName() <<
-            " (on way down):\n";
-            for (Statement* s = reachExit->getFirst(oo); s;
-              s = reachExit->getNext(oo)) {
-                s->printAsUse(std::cerr); std::cerr << ", ";
-            }
-        }
-        else std::cerr << "No reach exit!";
-        StatementSet* availExit = cfg->getAvailExit();
-        if (availExit) {
-            std::cerr << "\navailExit for proc " << getName() <<
-              " (on way down):\n";
-            for (Statement* s = availExit->getFirst(oo); s;
-              s = availExit->getNext(oo)) {
-                s->printAsUse(std::cerr); std::cerr << ", ";
-            }
-        }
-        else std::cerr << "No avail exit!";
-        LocationSet* liveEntry = cfg->getLiveEntry();
-        if (liveEntry) {
-            std::cerr << "\nliveEntry for proc " << getName() <<
-              " (on way down):\n";
-            LocSetIter ll;
-            for (Exp* loc = liveEntry->getFirst(ll); loc;
-              loc = liveEntry->getNext(ll)) {
-                std::cerr << loc << ", ";
-            }
-        }
-        else std::cerr << "No live entry!";
-        std::cerr << "\n--\n";
-    }
-}
-#endif
-
 // decompile this userproc
 void UserProc::decompile() {
     // Prevent infinite loops when there are cycles in the call graph
     if (decompiled_down) return;
 
-#if 0
-    if (VERBOSE)
-        std::cerr << "decompiling (down): " << getName() << std::endl;
-    // This is code that we can perform "on the way down" to the bottom
-    // of the call tree. It should not depend on information from further
-    // down, or if it does, it should assume nothing about callees
-    // and add to the information that it finds.
-    // This solves problems with recursion and other cycles in the call graph
-    decompile_down();
-
-#endif
-    // Done "on the way down" processing for this proc
+    // Done "on the way down" processing (there is none any more)
+    // for this proc
     decompiled_down = true;
 
     // Look at each call, to perform a depth first search.
@@ -1158,20 +1026,35 @@ void UserProc::decompile() {
         std::cerr << "decompiling: " << getName() << std::endl;
     }
 
-    // compute uses/usedby info
-    //computeUses();        // No, now in initStatements and "repaired"
-
-    bool change = true;
     if (!Boomerang::get()->noDataflow) {
-        while (change) {
-            change = false;
-            //recalcDataflow();
-            propagateStatements();
-            if (VERBOSE) print(std::cerr, true);
-            if (!Boomerang::get()->noRemoveNull) {
-                change |= removeNullStatements();
-                //change |= removeDeadStatements(); // Broken now
-                removeUnusedStatements();
+        int maxDepth = findMaxDepth();
+        int memDepth = 0;
+        while (1) {
+            propagateStatements(memDepth);
+            if (VERBOSE) {
+                std::cerr << "===== After propagate with memory depth " <<
+                  memDepth << " =====\n";
+                print(std::cerr, true);
+                std::cerr << "===== End propagate with memory depth " <<
+                  memDepth << " =====\n\n";
+            }
+            if (++memDepth > maxDepth) break;
+            repairDataflow(memDepth);
+            if (VERBOSE) {
+                std::cerr << "===== After repair dataflow =====\n";
+                print(std::cerr, true);
+                std::cerr << "===== End after repair dataflow =====\n\n";
+            }
+        }
+        if (!Boomerang::get()->noRemoveNull) {
+            removeNullStatements();
+            removeUnusedStatements();
+            if (VERBOSE) {
+                std::cerr << "===== After removing null and unused statements "
+                  "=====\n";
+                print(std::cerr, true);
+                std::cerr << "===== End after removing null and unused "
+                  "statements =====\n\n";
             }
         }
     }
@@ -1208,6 +1091,22 @@ void UserProc::decompile() {
     }
 
     decompiled = true;          // Now fully decompiled
+}
+
+int UserProc::findMaxDepth() {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    int maxDepth = 0;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        // Assume only need to check assignments
+        AssignExp* ae = dynamic_cast<AssignExp*>(s);
+        if (ae) {
+            int depth = ae->getMemDepth();
+            maxDepth = std::max(maxDepth, depth);
+        }
+    }
+    return maxDepth;
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
@@ -1589,7 +1488,10 @@ bool UserProc::propagateAndRemoveStatements() {
     return change;
 }
 
-void UserProc::propagateStatements() {
+// Propagate statements, but don't remove
+// Respect the memory depth (don't propagate statements that have components
+// of a higher memory depth than memDepth)
+void UserProc::propagateStatements(int memDepth) {
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
@@ -1603,17 +1505,23 @@ void UserProc::propagateStatements() {
             s->addUsedLocs(exps);
             LocSetIter ll;
             for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-                if (e->getNumUses() == 1) {
-                    // Can propagate TO this statement
-                    StmtSetIter dummy;
-                    Statement* def = ((UsesExp*)e)->getFirstUses(dummy);
-                    s->replaceUse(def);
-                    numProp++;
-                    if (VERBOSE) {
-                        std::cerr << "Propagating " << def->getNumber() <<
-                          " into " << s->getNumber() <<
-                          ", result is " << s << "\n";
-                    }
+                if (e->getNumUses() != 1) continue;
+                // Can propagate TO s (if memory depths are suitable)
+                StmtSetIter dummy;
+                Statement* def = ((UsesExp*)e)->getFirstUses(dummy);
+                // Check the depth of the definition (an assignment)
+                // This checks the depth for the left and right sides, and
+                // gives the max for both. Example: can't propagate
+                // tmp := m[x] to foo := tmp if memDepth == 0
+                int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
+                if (depth > memDepth)
+                    continue;
+                s->replaceUse(def);
+                numProp++;
+                if (VERBOSE) {
+                    std::cerr << "Propagating " << def->getNumber() <<
+                      " into " << s->getNumber() <<
+                      ", result is " << s << "\n";
                 }
             }
         }
@@ -1676,24 +1584,21 @@ void UserProc::removeUnusedStatements() {
         s->addUsedLocs(uses);
         LocSetIter uu;
         for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
-            if (!u->isSubscript()) {
-                std::cerr << "removeUnusedStatements: " << u <<
-                  " is not subscripted!\n";
-                continue;
-            }
-            UsesExp* ue = (UsesExp*)u;
-            StmtSetIter xx;
-            for (Statement* def = ue->getFirstUses(xx); def;
-                  def = ue->getNextUses(xx)) {
-std::cerr << "Updating count for " << def << "\n";
-                useCounts[def]++;
+            if (u->isSubscript()) {
+                UsesExp* ue = (UsesExp*)u;
+                StmtSetIter xx;
+                for (Statement* def = ue->getFirstUses(xx); def;
+                      def = ue->getNextUses(xx)) {
+//std::cerr << "Updating count for " << def << "\n";
+                    useCounts[def]++;
+                }
             }
         }
     }
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
         if (useCounts[s] == 0) {
             if (VERBOSE)
-                std::cerr << "Removing unused statement " << s;
+                std::cerr << "Removing unused statement " << s << "\n";
             removeStatement(s);
         }
     }
@@ -1703,8 +1608,8 @@ std::cerr << "Updating count for " << def << "\n";
 //  SSA code
 //
 
-void UserProc::toSSAform() {
-    cfg->toSSAform();
+void UserProc::toSSAform(int memDepth) {
+    cfg->toSSAform(memDepth);
 }
 
 void UserProc::fromSSAform(igraph& ig) {
@@ -1714,4 +1619,14 @@ void UserProc::fromSSAform(igraph& ig) {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         s->fromSSAform(ig);
     }
+}
+
+void UserProc::repairDataflow(int memDepth) {
+    // FIXME: This should be done in an incremental way!
+    // This should be solid, but very slow
+    if (VERBOSE)
+        std::cerr << "Repairing dataflow\n";
+    Prog* prog = getProg();
+    prog->forwardGlobalDataflow();
+    toSSAform(memDepth);
 }

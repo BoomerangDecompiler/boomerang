@@ -2279,10 +2279,10 @@ void Cfg::generateDotFile(const char *str) {
     of.close();
 }
 
-void Cfg::toSSAform() {
+void Cfg::toSSAform(int memDepth) {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        (*it)->toSSAform();
+        (*it)->toSSAform(memDepth);
     }
 }
 

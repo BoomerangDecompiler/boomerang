@@ -2180,7 +2180,7 @@ bool BasicBlock::inLoop(PBB header, PBB latch) {
            latch->revLoopStamps[1] < revLoopStamps[1]);
 }
 
-void BasicBlock::toSSAform() {
+void BasicBlock::toSSAform(int memDepth) {
     // This set will be the set of reaching definitions before the current
     // statement
     StatementSet reachin;
@@ -2189,7 +2189,7 @@ void BasicBlock::toSSAform() {
     for (Statement* s = getFirstStmt(rit, it, cit); s;
           s = getNextStmt(rit, it, cit)) {
         // Call the polymorphic function to update used expressions
-        s->toSSAform(reachin);
+        s->toSSAform(reachin, memDepth);
         // Update reachin to be the input for the next statement in this BB
         s->calcReachOut(reachin);
     }

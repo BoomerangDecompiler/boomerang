@@ -489,7 +489,7 @@ public:
     /**
      * Transform the CFG to/from SSA form.
      */
-    void toSSAform();
+    void toSSAform(int memDepth);
     void fromSSAform();
 
     // FIXME: Some moved to prog.h now
@@ -980,7 +980,7 @@ public:
     /**
      * Transform the CFG to/from SSA form.
      */
-    void toSSAform();
+    void toSSAform(int memDepth);
 
 private:
 

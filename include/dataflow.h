@@ -280,7 +280,7 @@ public:
     void    setNumber(int num) {number = num;}
 
     // To/from SSA form
-    virtual void   toSSAform(StatementSet& reachin) = 0;
+    virtual void   toSSAform(StatementSet& reachin, int memDepth) = 0;
     virtual void fromSSAform(igraph& igm) = 0;
 protected:
     virtual void doReplaceUse(Statement *use) = 0;

@@ -35,6 +35,7 @@
 #endif 
 
 #include <numeric>      // For accumulate
+#include <algorithm>    // For std::max()
 #include <map>          // In decideType()
 #include <sstream>      // Yes, you need gcc 3.0 or better
 #include "types.h"
@@ -2519,8 +2520,10 @@ void AssignExp::killDef(StatementSet &reach) {
         // redo global dataflow in SSA form, may need to change this
         if (*s->getLeft() *= *subExp1)
             isKilled = true;
-        // MVE: Check this for conservatism
-        isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
+        // The below is NOT necessarily conservative!
+        // In fact, it prevents hello world from working, so is commmented
+        // out for now:
+        //isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
         if (isKilled)
             kills.insert(s);
     }
@@ -2735,105 +2738,88 @@ Exp* Exp::addSubscript(Statement* def) {
 }
 
 /*==============================================================================
- * FUNCTION:        Unary::updateUses etc
- * OVERVIEW:        Update the "uses" information inherent in each Exp
+ * FUNCTION:        Unary::updateRefs etc
+ * OVERVIEW:        Update the references ("uses" (rhymes with "fuses"))
+ *                    information inherent in each component of an expression
  * PARAMETERS:      defs: ref to a StatementSet of statements reaching this
  * RETURNS:         <nothing>
  *============================================================================*/
 //  //  //  //
 //  Unary   //
 //  //  //  //
-Exp* Unary::updateUses(StatementSet& defs) {
-    StmtSetIter it;
-    // Note have to do the subexpressions first.
-    // Consider this is m[b], and there is a definition for bare m[b]
-    // (unsubscripted, because b is defined later on) in defs.
-    // Suppose m[b] appears before b in defs. Then we have trouble,
-    // because when b is subscripted, the subscripting for m[b]
-    // becomes invalid!
-    if (op == opMemOf)
-        subExp1 = subExp1->updateUses(defs);
-    Exp* res = this;
-    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
-        Exp* left = s->getLeft();
-        assert(left);           // A definition must have a left
-        if (*left == *this)
-            // Need to subscript
-            res = res->addSubscript(s);
+Exp* Unary::updateRefs(StatementSet& defs, int memDepth) {
+    // Only consider expressions that are of the correct "memory nesting depth"
+    if (getMemDepth() == memDepth) {
+        StmtSetIter it;
+        for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+            Exp* left = s->getLeft();
+            assert(left);           // A definition must have a left
+            if (*left == *this)
+                // Need to subscript
+                return addSubscript(s);
+        }
     }
-    // Could check if res == this, and put an empty UsesExp here
-    return res;
+    // Did not match at the top level. Recurse (in case a memof, addrof etd)
+    // (recurse even if memory depths don't match; we want to subscript all
+    // the addresses)
+    subExp1 = subExp1->updateRefs(defs, memDepth);
+    return this;
 }
 
 //  //  //  //
 //  Binary  //
 //  //  //  //
-Exp* Binary::updateUses(StatementSet& defs) {
-    StmtSetIter it;
-    Exp* res = this;
-    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
-        Exp* left = s->getLeft();
-        assert(left);           // A definition must have a left
-        if (*left == *this)
-            res = res->addSubscript(s);
-    }
-    subExp1 = subExp1->updateUses(defs);
-    subExp2 = subExp2->updateUses(defs);
-    return res;
+Exp* Binary::updateRefs(StatementSet& defs, int memDepth) {
+    subExp1 = subExp1->updateRefs(defs, memDepth);
+    subExp2 = subExp2->updateRefs(defs, memDepth);
+    return this;
 }
 
 //  //  //  //  //
 //  AssignExp   //
 //  //  //  //  //
-Exp* AssignExp::updateUses(StatementSet& defs) {
+Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth) {
     // No need to test for equality to left
     // However, need to update aa iff LHS is m[aa]
     if (subExp1->isMemOf())
         // Beware. Consider left == m[r[28]]; subExp1 is the same.
-        // If we call subExp1->updateUses, we will double subscript our
+        // If we call subExp1->updateRefs, we will double subscript our
         // LHS (violating a basic property of SSA form)
-        // If we call left->updateUses, we would get a
+        // If we call left->updateRefs, we would get a
         // subscript of a subscript, also not what we want!
         // Don't call setSubExp1 either, since it deletes the old
         // expression (old expression is always needed)
         ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateUses(defs));
-    subExp2 = subExp2->updateUses(defs);
+          updateRefs(defs, memDepth));
+    subExp2 = subExp2->updateRefs(defs, memDepth);
     return this;
 }
 
 //  //  //  //
 //  UsesExp //
 //  //  //  //
-Exp* UsesExp::updateUses(StatementSet& defs) {
+Exp* UsesExp::updateRefs(StatementSet& defs, int memDepth) {
     // The left of any definition can't be a UsesExp
     // (LHS not subscripted any more)
-    subExp1 = subExp1->updateUses(defs);
+    subExp1 = subExp1->updateRefs(defs, memDepth);
     return this;
 }
 
 //  //  //  //
 // Ternary  //
 //  //  //  //
-Exp* Ternary::updateUses(StatementSet& defs) {
-    StmtSetIter it;
-    Exp* res = this;
-    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
-        Exp* left = s->getLeft();
-        assert(left);           // A definition must have a left
-        if (*left == *this)
-            res = res->addSubscript(s);
-    }
-    subExp1 = subExp1->updateUses(defs);
-    subExp2 = subExp2->updateUses(defs);
-    subExp3 = subExp3->updateUses(defs);
-    return res;
+Exp* Ternary::updateRefs(StatementSet& defs, int memDepth) {
+    subExp1 = subExp1->updateRefs(defs, memDepth);
+    subExp2 = subExp2->updateRefs(defs, memDepth);
+    subExp3 = subExp3->updateRefs(defs, memDepth);
+    return this;
 }
 
 //  //  //  //
 // Terminal //
 //  //  //  //
-Exp* Terminal::updateUses(StatementSet& defs) {
+Exp* Terminal::updateRefs(StatementSet& defs, int memDepth) {
+    if (memDepth != 0) return this;
     StmtSetIter it;
     Exp* res = this;
     for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
@@ -2891,6 +2877,29 @@ void AssignExp::fromSSAform(igraph& ig) {
     subExp2 = subExp2->fromSSA(ig);
 }
 
+// Return the memory nesting depth
+// Examples: r[24] returns 0; m[r[24 + m[r[25]] + 4] returns 2
+int Unary::getMemDepth() {
+    if (op == opMemOf)
+        return subExp1->getMemDepth() + 1;
+    else
+        return subExp1->getMemDepth();
+}
+
+int Binary::getMemDepth() {
+    int d1 = subExp1->getMemDepth();
+    int d2 = subExp2->getMemDepth();
+    return std::max(d1, d2);
+}
+
+int Ternary::getMemDepth() {
+    int d1 = subExp1->getMemDepth();
+    int d2 = subExp2->getMemDepth();
+    int d3 = subExp2->getMemDepth();
+    return std::max(std::max(d1, d2), d3);
+}
+
+    
 
 // Might be a useful framework for various tests one day
 void Exp::check() {

@@ -122,7 +122,7 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isRegOfK();
     // True if this is a specific numeric register
     bool isRegN(int n);
-    // True if this is a memory location
+    // True if this is a memory location (any memory nesting depth)
     bool isMemOf() {return op == opMemOf;}
     // True if this is an address of
     bool isAddrOf() {return op == opAddrOf;}
@@ -208,6 +208,9 @@ virtual void  setSubExp1(Exp* e) {};
 virtual void  setSubExp2(Exp* e) {};
 virtual void  setSubExp4(Exp* e) {};
 
+    // Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
+virtual int getMemDepth() {return 0;}
+
     //  //  //  //  //  //  //
     //  Guarded assignment  //
     //  //  //  //  //  //  //
@@ -235,7 +238,7 @@ virtual Exp* fixSuccessor() {return this;}
 
     // Update the "uses" information implicit in expressions
     // defs is a StatementSet of definitions reaching this statement
-    virtual Exp* updateUses(StatementSet& defs) {return this;}
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth) {return this;}
     // Add a subscript to this; may return a new Exp
     virtual Exp* addSubscript(Statement* def);
 
@@ -328,7 +331,7 @@ public:
     void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
-    Exp*    updateUses(StatementSet& defs);
+    Exp*    updateRefs(StatementSet& defs, int memDepth);
     
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
@@ -379,6 +382,7 @@ virtual     ~Unary();
     Exp*    becomeSubExp1();
     // Get a reference to subexpression 1
     Exp*&   refSubExp1();
+virtual int getMemDepth();
 virtual Exp* fixSuccessor();
 
     // Search children
@@ -393,7 +397,7 @@ virtual Exp* fixSuccessor();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    virtual Exp* updateUses(StatementSet& defs);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -445,6 +449,7 @@ virtual     ~Binary();
     void    commute();
     // Get a reference to subexpression 2
     Exp*&   refSubExp2();
+virtual int getMemDepth();
 
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -458,7 +463,7 @@ virtual     ~Binary();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    virtual Exp* updateUses(StatementSet& defs);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -507,6 +512,7 @@ virtual     ~Ternary();
     Exp*    becomeSubExp3();
     // Get a reference to subexpression 3
     Exp*&   refSubExp3();
+virtual int getMemDepth();
 
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -520,7 +526,7 @@ virtual     ~Ternary();
 
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(StatementSet& defs);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -620,7 +626,7 @@ public:
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(StatementSet& defs);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
@@ -655,7 +661,8 @@ public:
     virtual Type *updateType(Exp *e, Type *curType);
 
     // to/from SSA form
-    virtual void   toSSAform(StatementSet& reachin) {updateUses(reachin);}
+    virtual void   toSSAform(StatementSet& reachin, int memDepth)
+        {updateRefs(reachin, memDepth);}
     virtual void fromSSAform(igraph& ig);
 
 protected:
@@ -699,7 +706,7 @@ public:
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    Exp*    updateUses(StatementSet& defs);
+    Exp*    updateRefs(StatementSet& defs, int memDepth);
 virtual int getNumUses() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
