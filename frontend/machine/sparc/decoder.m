@@ -19,6 +19,7 @@
  * 19 May 02 - Mike: Added many (int) casts: variables from toolkit are unsgnd
  * 21 May 02 - Mike: SAVE and RESTORE have full semantics now
  * 30 Oct 02 - Mike: dis_Eaddr mode indirectA had extra memof
+ * 22 Nov 02 - Mike: Support 32 bit V9 branches
 */
 
 /*==============================================================================
@@ -55,7 +56,6 @@
 #define DIS_FDQ     (dis_Num((fdq>>2)+80))
 #define DIS_FS1Q    (dis_Num((fs1q>>2)+80))
 #define DIS_FS2Q    (dis_Num((fs2q>>2)+80))
-
 
 /*==============================================================================
  * FUNCTION:       unused
@@ -162,8 +162,19 @@ HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char
             res->setCondType(HLJCOND_JSG);      // BG
         break;
     case 'P':   
-        res->setCondType(HLJCOND_JPOS);         // BG
-        break;
+		if (name[2] == 'O') {
+        	res->setCondType(HLJCOND_JPOS);         // BPOS
+        	break;
+		}
+		// Else, it's a BPXX; remove the P (for predicted) and try again
+		// (recurse)
+		// B P P O S ...
+		// 0 1 2 3 4 ...
+		char temp[8];
+		temp[0] = 'B';
+		strcpy(temp+1, name+2);
+		delete res;
+		return createJcond(pc, exps, temp);
     default:
         std::cerr << "unknown non-float branch " << name << std::endl;
     }   
@@ -217,7 +228,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | call_(addr) =>
         /*
-         * A jmpl with rd == %o7, i.e. a register call
+         * A JMPL with rd == %o7, i.e. a register call
          */
         HLCall* newCall = new HLCall(pc, 0, 0);
 
@@ -228,12 +239,13 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         newCall->setDest(dis_Eaddr(addr));
         result.rtl = newCall;
         result.type = DD;
+
         SHOW_ASM("call_ ")
 
 
     | ret() =>
         /*
-         * Just a ret, no restore
+         * Just a ret, no restore (? not sure now)
          */
         result.rtl = new HLReturn(pc, exps);
         result.type = DD;
@@ -323,10 +335,50 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         jump->setDest(tgt - delta);
         SHOW_ASM(name << " " << hex << tgt-delta)
 
+	| BPA (cc01, tgt) =>			/* Can see bpa xcc,tgt in 32 bit code */
+		unused(cc01);				// Does not matter because is unconditional
+        HLJump* jump = 0;
+        jump = new HLJump(pc, exps);
+
+        result.type = SD;
+        result.rtl = jump;
+        jump->setDest(tgt - delta);
+        SHOW_ASM("BPA " << hex << tgt-delta)
+
+	| pbranch (cc01, tgt) [name] =>
+        if (cc01 != 0) {		/* If 64 bit cc used, can't handle */
+            result.valid = false;
+            result.rtl = new RTL;
+            result.numBytes = 4;
+            return result;
+        }
+        HLJump* jump = 0;
+        if (strcmp(name,"BPN") == 0)
+            jump = new HLJump(pc, exps);
+        if ((jump == 0) &&
+          (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0))
+            jump = new HLJump(pc, exps);
+        if (jump == 0)
+            jump = createJcond(pc, exps, name);
+
+        // The class of this instruction depends on whether or not
+        // it is one of the 'unconditional' conditional branches
+        // "BPN" (or the pseudo unconditionals BPVx)
+        result.type = SCD;
+        if (strcmp(name, "BPVC") == 0)
+            result.type = SD;
+        if ((strcmp(name,"BPN") == 0) || (strcmp(name, "BPVS") == 0))
+            result.type = NCT;
+
+        result.rtl = jump;
+        jump->setDest(tgt - delta);
+        SHOW_ASM(name << " " << hex << tgt-delta)
+
 
     | JMPL (addr, rd) =>
         /*
          * JMPL, with rd != %o7, i.e. register jump
+		 * Note: if rd==%o7, then would be handled with the call_ arm
          */
         HLNwayJump* jump = new HLNwayJump(pc, exps);
         // Record the fact that it is a computed jump
@@ -493,13 +545,12 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
         exps = instantiate(pc, name, DIS_FS2Q, DIS_FDQ);
 
 
-	| JMPL (addr, rd) [name] => 
-		result.type = DD;
-		exps = instantiate(pc,  name, DIS_ADDR, DIS_RD);
-
-	| RETT (addr) [name] => 
-        unused(addr);
-		exps = instantiate(pc,  name);
+	// In V9, the privileged RETT becomes user-mode RETURN
+	// It has the semantics of "ret restore" without the add part of the restore
+	| RETURN (addr) [name] => 
+		exps = instantiate(pc, name, DIS_ADDR);
+        result.rtl = new HLReturn(pc, exps);
+        result.type = DD;
 
 	| trap (addr) [name] => 
 		exps = instantiate(pc,  name, DIS_ADDR);
@@ -518,6 +569,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
     else
 		exps = NULL;
         result.valid = false;
+        result.numBytes = 4;
     endmatch
 
     result.numBytes = nextPC - hostPC;
