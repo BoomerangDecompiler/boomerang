@@ -6,6 +6,7 @@
 ######################################################
 
 # $Revision$
+# 23 Nov 04 - Mike: Added PPC files
 # 20 Jul 04 - Mike: Removed BOOMDIR
 # 21 Aug 02 - Icer: added codegen/chllcode.cpp to the build process
 #		    by adding it in STATIC_OBJ
@@ -13,12 +14,12 @@
 #		    Added more to distclean
 # 19 Aug 02 - Icer: changed make distclean delete toplevel makefile
 #		    changed all: to read lib static test
-# 20 May 02 - Trent: Created
 # 31 May 02 - Mike: Make lib directory if needed
+# 20 May 02 - Trent: Created
 # 15 Jul 01 - Mike: Added static target
 
 # Front end
-MACHS     = sparc pentium
+MACHS     = sparc pentium ppc
 MACH_LIBS = $(patsubst %, lib/libfront%.so, $(MACHS))
 MACH_OBJS = $(patsubst %, frontend/%decoder.o, $(MACHS))
 MACH_SRC  = $(patsubst %, frontend/%decoder.cpp, $(MACHS))
@@ -106,7 +107,7 @@ TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o \
   transform/transformation-parser.o transform/transformation-scanner.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
-	frontend/pentiumfrontend.o
+	frontend/pentiumfrontend.o frontend/ppcdecoder.o frontend/ppcfrontend.o
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o

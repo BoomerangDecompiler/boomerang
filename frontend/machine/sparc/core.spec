@@ -230,12 +230,10 @@ constructors
 placeholder for instruction is UNIMP & imm22 = 0xbad
 relocatable reloc
 constructors
-  branch^",a" reloc  { reloc = L + 4 * disp22! } is L: branch & a = 1 & disp22
-  branch reloc  { reloc = L + 4 * disp22! } is L: branch & a = 0 & disp22
-  pbranch^",a" cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=1 &
-							cc01 & disp19
-  pbranch      cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=0 &
-							cc01 & disp19
+  branch^",a"       reloc { reloc = L + 4 * disp22! } is L: branch & a = 1 & disp22
+  branch            reloc { reloc = L + 4 * disp22! } is L: branch & a = 0 & disp22
+  pbranch^",a" cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=1 & cc01 & disp19
+  pbranch      cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=0 & cc01 & disp19
 constructors
   call__  reloc   { reloc = L + 4 * disp30! } is L: CALL & disp30
 constructors

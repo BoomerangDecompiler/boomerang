@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1996-2001, The University of Queensland
+ * Copyright (C) 2004, The University of Queensland
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -9,11 +9,12 @@
 
 /*==============================================================================
  * FILE:	   decoder.m
- * OVERVIEW:   Implementation of the PPC specific parts of the
- *			   PPCDecoder class.
+ * OVERVIEW:   Implementation of the PPC specific parts of the PPCDecoder class.
  *============================================================================*/
 
 /* $Revision$
+ *
+ * 23/Nov/04 - Jay Sweeney and Alajandro Dubrovsky: Created
  **/
 
 /*==============================================================================
@@ -45,11 +46,13 @@
 #define DIS_RDR		(dis_RegRhs(rd))
 #define DIS_RA		(dis_RegRhs(ra))
 #define DIS_RB		(dis_RegRhs(rb))
-#define DIS_NZRA		(dis_RegLhs(ra))
-#define DIS_NZRB		(dis_RegLhs(rb))
+#define DIS_D		(new Const(d))
+#define DIS_NZRA	(dis_RegLhs(ra))
+#define DIS_NZRB	(dis_RegLhs(rb))
 #define DIS_ADDR	(new Const(addr))
 #define DIS_RELADDR (new Const(pc + reladdr))
 
+// MVE: Used any more?
 #define DIS_INDEX   (new Binary(opPlus, \
 					dis_Reg(ra), \
 					  new Const(d)))
@@ -64,6 +67,7 @@
  *============================================================================*/
 void PPCDecoder::unused(int x)
 {}
+void unused(char* x) {}
 
 
 /*==============================================================================
@@ -101,7 +105,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| XOb_ ( rd, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
 	| Dsad_ (rs, d, ra) [name] =>
-		stmts = instantiate(pc, name, DIS_RS, DIS_INDEX);
+		stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
 	| Dsaui_ (rd, ra, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_UIMM);
 	| Ddasi_ (rd, ra, simm) [name] =>
@@ -122,7 +126,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| mfspr (rd, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_UIMM);
 	| mtspr (uimm, rs) [name] =>
-		if ((uimm >> 5) &1) {
+		if ((uimm >> 5) &1) {		// FIXME: Fix shift amounts
 		  if ((uimm >> 8) & 1) {
 			stmts = instantiate(pc, "MTCTR" , DIS_RS);
 		  } else {
@@ -131,6 +135,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		} else {
 			stmts = instantiate(pc, "MTLR" , DIS_RS);
 		}
+		::unused(name);
 	| bl (reladdr) [name] =>
 		//stmts = instantiate(pc, name, DIS_RELADDR);
 		stmts = instantiate(pc,	 "bl", DIS_RELADDR);
@@ -141,6 +146,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		newCall->setDest(DIS_RELADDR);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
+		::unused(name);	// FIXME: Needed?
 
 	| Xcmp_ (crfd, l, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);

@@ -1,18 +1,16 @@
 #
-# Copyright (C) 1997, Shane Sendall
-# Copyright (C) 1998-2001, The University of Queensland
-# Copyright (C) 2001, Sun Microsystems, Inc
+# Copyright (C) 2004, The University of Queensland
 #
 # See the file "LICENSE.TERMS" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL
 # WARRANTIES.
 #
 
-# File: sparc.ssl
+# File: ppc.ssl
 # Desc: This file contains a semantic description of the SPARC V8 processor.
 
 # --------------------------------------------------------------------------
-# SPARC RTL
+# PPC RTL
 # --------------------------------------------------------------------------
  
 
@@ -65,7 +63,7 @@ SETCR0(rd) {
 
 #Arithmetic operations
 
-ADD		 rd, ra, rb						*32* rd := ra + rb;
+ADD			 rd, ra, rb						*32* rd := ra + rb;
 
 ADD.		 rd, ra, rb						*32* rd := ra + rb
 			 	 	 						SETCR0(rd);
@@ -75,7 +73,7 @@ ADDE		 rd, ra, rb						*32* rd := ra + rb + %XERCA;
 ADDE.		 rd, ra, rb						*32* rd := ra + rb + %XERCA
 			 	 	 						SETCR0(rd);
 
-ADDI		 rd, rs, simm					*32* rd := rs + sgnex(16,32,simm);
+ADDI		 rd, rs, simm					*32* rd := rs + simm;
 
 ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
 
@@ -110,15 +108,15 @@ SUBF	 	 rd, ra, rb						*32* rd := rb - ra;
 
 SUBFE	 	 rd, ra, rb						*32* rd := rb + %XERCA - ra;
 
-NOP                                    _;
+NOP											_;
 
 
 #Logical ops
 
 NEG			 rd, ra							*32* rd := 0 - ra;
 
-NEG.			 rd, ra							*32* rd := 0 - ra
-				 	 							SETCR0(rd);
+NEG.		 rd, ra							*32* rd := 0 - ra
+			 	 							SETCR0(rd);
 
 LOG :=  {"AND","OR"};
 LOGC :=  {"ANDC","ORC"};
