@@ -35,6 +35,7 @@
 #include <sstream>
 #include "types.h"
 #include "statement.h"
+#include "signature.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
@@ -2628,8 +2629,20 @@ Statement* Cfg::findImplicitAssign(Exp* x) {
 }
 
 Statement* Cfg::findTheImplicitAssign(Exp* x) {
-	// As per the below, but don't create an implicit if it doesn't already exist
+	// As per the above, but don't create an implicit if it doesn't already exist
 	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
+	if (it == implicitMap.end())
+		return NULL;
+	return it->second;
+}
+
+Statement* Cfg::findImplicitParamAssign(Parameter* param) {
+	// As per the above, but for parameters (signatures don't get updated with opParams)
+	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(param->getExp());
+	if (it == implicitMap.end()) {
+		Exp* eParam = Location::param(param->getName());
+		it = implicitMap.find(eParam);
+	}
 	if (it == implicitMap.end())
 		return NULL;
 	return it->second;
