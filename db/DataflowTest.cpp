@@ -448,7 +448,7 @@ void DataflowTest::testEndlessLoop () {
       "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
       "Oneway BB: reach in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
       "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
-      "*32* r[24] := r[24] + 1,    used by: \n"
+      "*32* r[24] := r[24] + 1,    used by: *32* r[24] := r[24] + 1, \n"
       "cfg reachExit: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
