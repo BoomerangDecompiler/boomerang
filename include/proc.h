@@ -31,6 +31,7 @@
 #include <string>
 #include "coverage.h"           // For Coverage class
 #include "exp.h"                // For lessExpStar
+#include "cfg.h"                // For cfg->simplify()
 
 class Prog;
 class UserProc;
