@@ -18,6 +18,8 @@
 /*
  * $Revision$
  * 17 May 02 - Mike: Split off from rtl.cc (was getting too large)
+ * 26 Nov 02 - Mike: Generate code for HlReturn with semantics (eg SPARC RETURN)
+ * 26 Nov 02 - Mike: In getReturnLoc test for null procDest
  */
 
 #include <assert.h>
@@ -1066,7 +1068,9 @@ void HLCall::setArguments(std::vector<Exp*>& arguments)
  *============================================================================*/
 Exp* HLCall::getReturnLoc() 
 {
-    return procDest->getSignature()->getReturnExp();
+	if (procDest)
+    	return procDest->getSignature()->getReturnExp();
+	return NULL;
 }
 
 #if 0
@@ -1342,7 +1346,7 @@ void HLCall::initArguments()
 {
     assert(arguments.size() == 0);
     arguments.resize(getDestProc()->getSignature()->getNumParams());
-    for (int i = 0; i < getDestProc()->getSignature()->getNumParams(); i++)
+    for (unsigned i = 0; i < getDestProc()->getSignature()->getNumParams(); i++)
         arguments[i] = getDestProc()->getSignature()->getArgumentExp(i)->clone();
 }
 
@@ -1582,6 +1586,10 @@ bool HLReturn::deserialize_fid(std::istream &inf, int fid)
 
 void HLReturn::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
+	// There could be semantics, e.g. SPARC RETURN instruction
+	// Most of the time, the list of RTs will be empty, and the
+	// below does nothing
+	RTL::generateCode(hll, pbb);
 }
 
 bool HLReturn::getSSADefs(DefSet &defs, bool ssa)
