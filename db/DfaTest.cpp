@@ -10,7 +10,18 @@
  */
 
 #include "DfaTest.h"
+#include <iostream>		// For std::cerr
+#include <log.h>
+#include <boomerang.h>
 
+class ErrLogger : public Log {
+public:
+	virtual Log &operator<<(const char *str) {
+	 std::cerr << str;
+		return *this;
+	}
+	virtual ~ErrLogger() {};
+};
 /*==============================================================================
  * FUNCTION:		DfaTest::registerTests
  * OVERVIEW:		Register the test functions in the given suite
@@ -164,6 +175,9 @@ void DfaTest::testMeetSize () {
 	ch = false;
 	res = s32.meetWith(&s16, ch);
 	CPPUNIT_ASSERT(ch == false);
+
+	// There is a known failure here; to show the warning, use ErrLogger
+	Boomerang::get()->setLogger(new ErrLogger);
 
 	res = s16.meetWith(&flt, ch);
 	CPPUNIT_ASSERT(ch == true);
