@@ -25,6 +25,7 @@
 #include <list>
 #include "types.h"
 #include "rtl.h"
+#include "gc_cpp.h"
 
 class Exp;
 class RTL;
@@ -96,7 +97,7 @@ struct DecodeResult {
  * The NJMCDecoder class is a class that contains NJMC generated decoding
  * methods.
  *============================================================================*/
-class NJMCDecoder {
+class NJMCDecoder : public gc {
 public:
     /*
      * Constructor and destructor
