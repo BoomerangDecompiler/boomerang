@@ -25,11 +25,11 @@ General decompilation Wiki pages:
 page<br>
         </li>
         <li><a
- href="http://www.program-transformation.org/twiki/bin/view/Transform/DecompilationPossible">
-Is it Possible?</a> (for those in denial)</li>
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/DecompilationPossible">Is
+it Possible?</a> (for those in denial)</li>
         <li><a
- href="http://www.program-transformation.org/twiki/bin/view/Transform/WhyDecompilation">
-Why Decompilation?</a><br>
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/WhyDecompilation">Why
+Decompilation?</a><br>
         </li>
         <li>The <a
  href="http://www.program-transformation.org/twiki/bin/view/Transform/EthicsOfDecompilation">
@@ -50,6 +50,14 @@ Ethics</a> of decompilation<br>
 <a href="#making">Making Boomerang</a><br>
 <a href="FAQ.html">FAQ</a><br>
 <h2><a name="News"></a>News</h2>
+<b>12/Aug/03: </b>Boomerang is working well enough now to correctly
+decompile most of the simple test programs in the test/ directory
+(including the frustrating recursive fibonacci programs). To those that
+have been waiting for Boomerang to settle down and become usable again,
+the long wait is over. It's still being changed rapidly, but the design
+should remain fairly stable now. There is still a long way to go before
+Boomerang is useful for real-world programs.<br>
+<br>
 <b>5/Aug/03:</b> The combination of global dataflow analysis and SSA
 didn't work out. (That paper was not accepted.) We've decided that SSA
 by itself has enough power to do what we need, at least in terms of
