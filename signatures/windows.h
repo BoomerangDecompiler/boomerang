@@ -394,4 +394,4 @@ int wsprintfA(
 );
 
 char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
-
+int MulDiv(int number, int numerator, int denominator);
