@@ -916,10 +916,6 @@ public:
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
 
-    // add statements internal to the called procedure
-    // for interprocedural analysis
-    StatementList &getInternalStatements() { return internal; }
-
     void setIgnoreReturnLoc(bool b);
 
     void decompile();
@@ -957,10 +953,8 @@ private:
     // to standard ("phase 0")
     PBB returnBlock;
 
-    // For old code
-    Exp *returnLoc;
+    Exp *returnLoc;             // For old code
     std::vector<Exp*> returnLocs;
-    StatementList internal;
 
     // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
     // substitute it as needed
