@@ -178,7 +178,7 @@ void Prog::generateCode(std::ostream &os) {
         ADDRESS uaddr = (*it1)->getAddress();
         Type *ty = (*it1)->getType();
         PSectionInfo si = pBF->GetSectionInfoByAddr(uaddr);
-        if (!si->bBss) {
+        if (si && !si->bBss) {
             if (ty->isPointer() &&
               ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
                 char* str = getStringConstant((*it1)->getAddress(), true);
