@@ -735,6 +735,7 @@ void Terminal::print(std::ostream& os, bool withUses) {
         case opZF:      os << "%ZF";   break;
         case opOF:      os << "%OF";   break;
         case opNF:      os << "%NF";   break;
+        case opDF:      os << "%DF";   break;
         case opAFP:     os << "%afp";  break;
         case opAGP:     os << "%agp";  break;
         case opWild:    os << "WILD";  break;
