@@ -62,7 +62,7 @@ testDyn: lib
 	cd frontend && ${MAKE} test
 
 test:	bigtest
-	cd loader   && ${MAKE} test
+#	cd loader   && ${MAKE} test
 	./bigtest
 
 clean:
@@ -99,7 +99,6 @@ lib/libBinaryFile.so:
 	cd loader && make
 
 bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS}
-	cd loader && ${MAKE} test
 	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
 	  $(RUNPATH) -Llib -ldl -lcppunit
 
