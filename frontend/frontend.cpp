@@ -1064,17 +1064,17 @@ Prog* FrontEnd::getProg() {
 PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
 	Cfg* pCfg = pProc->getCFG();
 	PBB pBB;
-	// Add the RTL to the list; this has the semantics for the return statement as well as the ReturnStatement
+	// Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
 	// The last Statement may get replaced with a GotoStatement
 	if (BB_rtls == NULL) BB_rtls = new std::list<RTL*>;		// In case no other semantics
 	BB_rtls->push_back(pRtl);
-	if (pProc->getTheReturnAddr() == NO_ADDRESS) {
+	ADDRESS retAddr = pProc->getTheReturnAddr();
+	if (retAddr == NO_ADDRESS) {
 		// Create the basic block
 		pBB = pCfg->newBB(BB_rtls, RET, 0);
 		Statement* s = pRtl->getList().back();		// The last statement should be the ReturnStatement
 		pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
 	} else {
-		ADDRESS retAddr = pProc->getTheReturnAddr();
 		// Must beware of modifying *pRtl, since there is an outer loop iterating through each statement.
 		// It's fine to overwrite the last Statement* though, which replaceLastStmt does
 		pRtl->replaceLastStmt(new GotoStatement(retAddr));
