@@ -145,8 +145,15 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 				return dest + LMMH(m_pPEHeader->Imagebase);
 			} else
 				pushes = 0;			// Assume pushes don't accumulate over calls
-		} else if (op1 >= 0x50 && op1 <= 0x57)	// PUSH opcode
+		}
+		else if (op1 >= 0x50 && op1 <= 0x57)	// PUSH opcode
 			pushes++;
+		else if (op1 == 0xFF) {
+			// FF 35 is push m[K]
+			op2 = *(unsigned char*)(p + 1 + base);
+			if (op2 == 0x35)
+				pushes++;
+		}
 		else if (op1 == 0xE9) {
 			// Follow the jump
 			int off = LMMH(*(p + base + 1));
