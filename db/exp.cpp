@@ -20,6 +20,7 @@
  *              variable was used after "this" had been deleted
  * 10 Jul 02 - Mike: Added simplifyAddr() methods
  * 16 Jul 02 - Mike: Fixed memory issues with operator==
+ * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
  */
 
 #include <assert.h>
@@ -866,6 +867,21 @@ void AssignExp::print(std::ostream& os) {
     os << " := ";
     Exp* p2 = ((Binary*)this)->getSubExp2();
     p2->print(os);
+}
+
+/*==============================================================================
+ * FUNCTION:        Exp::prints
+ * OVERVIEW:        Print to a static string (for debugging)
+ * PARAMETERS:      <none>
+ * RETURNS:         Address of the static buffer
+ *============================================================================*/
+static char debug_buffer[200];
+char* Exp::prints() {
+      std::ostringstream ost;
+      print(ost);
+      strncpy(debug_buffer, ost.str().c_str(), 199);
+      debug_buffer[199] = '\0';
+      return debug_buffer;
 }
 
 /*==============================================================================

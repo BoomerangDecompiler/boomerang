@@ -68,6 +68,7 @@ virtual void print(std::ostream& os) = 0;
 	void	 print() {print(std::cout);}
     void     printt(std::ostream& os = std::cout);    // Print with <type>
     void     printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
+    char*    prints();      // Print to string (for debugging)
              // Recursive print: don't want parens at the top level
 virtual void printr(std::ostream& os) = 0;    // Recursive print
 
