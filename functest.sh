@@ -1,8 +1,8 @@
 #!/bin/bash
 # functest.sh functional test script $Revision$
-# Note: to test with data flow based type analysis, define environment variable BOOMSW to be -Td
-if [ -z $BOOMSW ]; then BOOMSW="--"; fi
-echo Boomerang switch BOOMSW is $BOOMSW
+# Note: to test with data flow based type analysis, pass a parameter of -Td
+if [ -z $1 ]; then BOOMSW="--"; else BOOMSW=$1; fi
+echo Boomerang switch is $BOOMSW
 rm -rf functest
 mkdir functest
 rm -rf functests.out
