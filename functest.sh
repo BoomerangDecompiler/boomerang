@@ -34,4 +34,5 @@ rm -rf functests.out
 ./testOne.sh sparc   uns 2 3
 ./testOne.sh pentium fromssa2
 ./testOne.sh sparc   fromssa2
+./testOne.sh pentium bswap
 echo === Done ===

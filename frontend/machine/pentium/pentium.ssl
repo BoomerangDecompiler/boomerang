@@ -378,6 +378,13 @@ ARIT[IDX]^"RMOD" reg32, modrm
 ADD.RMOD   reg32, modrm ADDFLAGS32(tmp1, modrm, reg32);
 SUB.RMOD   reg32, modrm SUBFLAGS32(tmp1, modrm, reg32);
 
+BSWAP       reg32
+            *32* tmp1 := zfill(8, 32, reg32@[31:24])
+            *32* tmp2 := zfill(8, 32, reg32@[23:16])
+            *32* tmp3 := zfill(8, 32, reg32@[15: 8])
+            *32* tmp4 := reg32 & 0xFF
+            *32* reg32 := (tmp4 << 24) + (tmp3 << 16) + (tmp2 << 8) + tmp1;
+
 CMP.IAL   i8 
             *8* tmpb := %al - i8
             SUBFLAGS8(%al, i8, tmpb);
