@@ -118,40 +118,34 @@ NEG			 rd, ra							*32* rd := 0 - ra;
 NEG.		 rd, ra							*32* rd := 0 - ra
 			 	 							SETCR0(rd);
 
-LOG :=  {"AND","OR"};
-LOGC :=  {"ANDC","ORC"};
-LOGCDOT :=  {"ANDC.","ORC."};
-LOGX := {"AND","OR","XOR"};
-LOGXDOT := {"AND.","OR.","XOR."};
-LOGOR := {"OR","XOR"};
-LOGORI := {"ORI","XORI"};
-LOGORIS := {"ORIS","XORIS"};
-NLOG := {"NAND","NOR","EQV"};
-LOGOP := {"&","|","^"};
+# Note: the "and." instruction comes out as "AND"^"Rc" or "ANDRc" here. However, "andi." comes out as "ANDI"
+LOGDOT	:= {"ANDRc",	"ORRc",		"XORRc"};			# Logicals that set flags as well
+LOG		:= {"AND",		"OR",		"XOR",	LOGDOT};	# All logicals with uncomplemented operands
+LOGI	:= {"ANDI",		"ORI",		"XORI"};			# Immediate with dot
+LOGIS	:= {"ANDIS",	"ORIS",		"XORIS"};			# Immediate with operand B shifted left 16 bits, and dot
+NLOGDOT	:= {"NANDRc",	"NORRc",	"EQVRc"};			# Negated logicals that set flags
+														# Note: NXOR is called EQV
+NLOG	:= {"NAND",		"NOR",		"EQV", NLOGDOT};	# All negated logicals
+LOGOP	:= {  "&","|", "^",	"&", "|", "^"};
+LOGC	:= {"ANDC",	"ORC", "ANDCRc","ORCRc"};			# Note: no XORC
+LOGCOP	:= {  "&",	 "|",	 "&",	  "|"};
+LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORC.
 
 
-LOGX[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] rb;
-LOGXDOT[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] rb
-				   	   	   						   SETCR0(rd);
-LOGORI[IDX]	   rd, rs, uimm					   *32* rd := rs LOGOP[IDX] zfill(16,32,uimm);
+LOG[IDX]		rd, ra, rb				*32* rd := ra LOGOP[IDX] rb;
+LOGDOT[IDX]		rd, ra, rb				SETCR0(rd);
 
-LOGC[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] (0 - rb - 1);
+LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] uimm
+										SETCR0(rd);				# All immediates set flags
 
-LOGORIS[IDX]	   rd, rs, uimm					   *32* rd := rs LOGOP[IDX] (uimm << 16);
+LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] (uimm << 16)
+										SETCR0(rd);				# All immediates set flags
 
-ANDI			   rd, rs, uimm					   *32* rd := rs & zfill(16,32,uimm)
-				   	   	   						   SETCR0(rd);
-ANDIS. 			   rd, rs, uimm    				   *32* rd := rs & (uimm << 16)
-				   	   	   						   SETCR0(rd);
+NLOG[IDX]		rd, ra, rb				*32* rd := ~(ra LOGOP[IDX] rb);
+NLOGDOT[IDX]	rd, ra, rb				SETCR0(rd);
 
-LOGCDOT[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] (0 - rb - 1)
-				   	   	   						   SETCR0(rd);
-
-
-NLOG[IDX]	   rd, ra, rb					   *32* rd := 0 - (ra LOGOP[IDX] rb) - 1;
-
-NLOG[IDX].	   rd, ra, rb					   *32* rd := 0 - (ra LOGOP[IDX] rb) - 1
-		   	   	   						   SETCR0(rd);
+LOGC[IDX]		rd, ra, rb				*32* rd := ra LOGCOP[IDX] (~rb);
+LOGCDOT[IDX]	rd, ra, rb				SETCR0(rd);
 
 
 
