@@ -44,6 +44,7 @@
 #include "hllcode.h"
 #include "util.h"
 #include "boomerang.h"
+#include "visitor.h"
 // For some reason, MSVC 5.00 complains about use of undefined types a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"		// For MSVC 5.00
@@ -144,9 +145,15 @@ RTL* RTL::clone() {
     return ret;
 }
 
-// visit this RTL
+// visit this RTL, and all its Statements
 bool RTL::accept(StmtVisitor* visitor) {
-    return visitor->visit(this);
+    // Might want to do something at the RTL level:
+    if (!visitor->visit(this)) return false;
+    std::list<Statement*>::iterator it;
+    for (it = stmtList.begin(); it != stmtList.end(); it++) {
+        if (! (*it)->accept(visitor)) return false;
+    }
+    return true;
 }
 
 /*==============================================================================
