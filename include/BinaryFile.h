@@ -222,7 +222,6 @@ virtual ~BinaryFile() {}			// Virtual destructor
     virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
     // Analysis functions
-    virtual std::list<RegAddr>& GetInitialState();
     virtual bool    IsDynamicLinkedProc(ADDRESS uNative);
 	virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
 	virtual const char *GetDynamicProcName(ADDRESS uNative);

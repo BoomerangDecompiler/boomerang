@@ -283,15 +283,6 @@ const char *BinaryFile::GetDynamicProcName(ADDRESS uNative)
 	return "dynamic";
 }
 
-std::list<RegAddr> Empty(0);
-std::list<RegAddr>& BinaryFile::GetInitialState()
-{
-    // Trivial function to return an empty list
-    // Note: don't return a list<RegAddr>(0) since this is generated
-    // on the stack!
-    return Empty;
-}
-
 bool BinaryFile::DisplayDetails(const char* fileName, FILE* f /* = stdout */)
 {
     return false;           // Should always be overridden
