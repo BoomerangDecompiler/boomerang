@@ -23,6 +23,9 @@ HBRUSH yellowBrush, buttonBrush;
 HFONT hTabBarFont;
 static Prog *prog = NULL;
 std::map<Proc*,HTREEITEM> procItems;
+HTREEITEM treeDragging = NULL;
+HMENU clusterMenu = NULL, procMenu = NULL, callersMenu = NULL, callsMenu = NULL;
+bool someUnknown = false;
 
 enum { V_CODE, V_RTL, V_MIXED } view_as = V_CODE;
 
@@ -34,7 +37,7 @@ struct my_tab {
 std::map<std::string, my_tab> tabWithName;
 char *selectedTab = NULL;
 RECT tabBarRect;
-int iCluster, iProc, iDProc;
+int iCluster, iProc, iDProc, iLProc, iULProc;
 
 
 class MyLParam {
@@ -60,6 +63,100 @@ void updateDecompilerMenu()
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_TERMINATE, MF_ENABLED);
 		EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_START, MF_GRAYED);
 	}
+}
+
+void updateAllTabs()
+{
+	for (std::map<std::string, my_tab>::iterator it = tabWithName.begin(); it != tabWithName.end(); )
+		if ((*it).first != (*it).second.cluster->getName()) {
+			struct my_tab t = (*it).second;
+			if ((*it).first == selectedTab)
+				selectedTab = strdup(t.cluster->getName());
+			tabWithName.erase(it);
+			t.name = strdup(t.cluster->getName());
+			tabWithName[t.cluster->getName()] = t;
+			it = tabWithName.begin();
+		} else 
+			it++;
+	InvalidateRect(hTopWnd, &tabBarRect, TRUE);
+}
+
+void updateTreeView()
+{
+	HTREEITEM h = TreeView_GetRoot(hTreeView);
+	while (h) {
+		TVITEM i;
+		i.hItem = h;
+		i.mask = TVIF_TEXT | TVIF_HANDLE | TVIF_PARAM;
+		char buf[1024];
+		i.pszText = buf;
+		i.cchTextMax = sizeof(buf);
+		TreeView_GetItem(hTreeView, &i);
+		if (strcmp(i.pszText, ((MyLParam*)i.lParam)->c->getName())) {
+			i.mask = TVIF_TEXT;
+			strcpy(buf, ((MyLParam*)i.lParam)->c->getName());
+			TreeView_SetItem(hTreeView, &i);
+		}
+		h = TreeView_GetNextSibling(hTreeView, h);
+	}
+	for (std::map<Proc*,HTREEITEM>::iterator it = procItems.begin(); it != procItems.end(); it++) {
+		TVITEM i;
+		i.hItem = (*it).second;
+		i.mask = TVIF_TEXT;
+		i.pszText = strdup((*it).first->getName());
+		TreeView_SetItem(hTreeView, &i);
+	}
+}
+
+void suspendDecompiler()
+{
+	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_GRAYED);
+	EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_ENABLED);
+	SuspendThread(hDecompilerThread);
+}
+
+void generateCodeForCluster(Cluster *c);
+void generateCodeForUserProc(UserProc *p);
+
+void updateCodeView()
+{
+	HTREEITEM h = TreeView_GetSelection(hTreeView);
+	TVITEM i;
+	i.hItem = h;
+	i.mask = TVIF_PARAM;
+	TreeView_GetItem(hTreeView, &i);
+	MyLParam *lp = (MyLParam*)i.lParam;
+	if (lp->isCluster) {
+		generateCodeForCluster(lp->c);
+		if (lp->c->getNumChildren() == 0) {
+			PROGMAP::const_iterator it;
+			bool found = false;
+			for (Proc *proc = prog->getFirstProc(it); proc; proc = prog->getNextProc(it))
+				if (proc->getCluster() == lp->c) {
+					found = true;
+					break;
+				}
+			if (!found) {
+				EnableMenuItem(GetMenu(hTopWnd), ID_VIEW_DELETECLUSTER, MF_ENABLED);
+				if (clusterMenu)
+					EnableMenuItem(clusterMenu, ID_VIEW_DELETECLUSTER, MF_ENABLED);
+			}
+		}
+	} else {
+		UserProc *u = dynamic_cast<UserProc*>(lp->p);
+		if (u)
+			generateCodeForUserProc(u);
+	}
+}
+
+void saveUndoPoint()
+{
+	prog->takeMemo();
+	if (prog->canRestore())
+		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
+	else
+		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
+	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
 }
 
 // Forward declarations of functions included in this code module:
@@ -280,10 +377,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hTreeView = CreateWindowEx(0, WC_TREEVIEW, NULL, WS_CHILD | WS_DLGFRAME | WS_VISIBLE | TVS_EDITLABELS | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS, r.right - 200, 0, 200, r.bottom - rsb.bottom, hWnd, NULL, hInstance, NULL);
 
 	oldTreeViewProc = (WNDPROC)SetWindowLongPtr (hTreeView, GWLP_WNDPROC, (LONG_PTR)TreeView);
-	HIMAGELIST himglist = ImageList_Create(16, 16, ILC_COLOR4, 3, 1);
+	HIMAGELIST himglist = ImageList_Create(16, 16, ILC_COLOR4, 5, 1);
 	iCluster = ImageList_AddIcon(himglist, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CLUSTER)));
 	iProc = ImageList_AddIcon(himglist, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PROC)));
 	iDProc = ImageList_AddIcon(himglist, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DPROC)));
+	iLProc = ImageList_AddIcon(himglist, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_LPROC)));
+	iULProc = ImageList_AddIcon(himglist, LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ULPROC)));
 	TreeView_SetImageList(hTreeView, himglist, TVSIL_NORMAL);
 
 	yellowBrush = CreateSolidBrush(RGB(255, 255, 200));
@@ -301,40 +400,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
   
 	setupDecompiler();
 	return TRUE;
-}
-
-void startUndoPoint()
-{
-	std::string outputPath = Boomerang::get()->getOutputPath();
-	std::string undoPath = outputPath + "undo/";
-	Boomerang::get()->setOutputDirectory(undoPath.c_str());
-	Boomerang::get()->persistToXML(prog);
-	Boomerang::get()->setOutputDirectory(outputPath.c_str());
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
-}
-
-void restoreUndoPoint()
-{
-	std::string outputPath = Boomerang::get()->getOutputPath();
-	std::string undoPath = outputPath + "redo/";
-	Boomerang::get()->setOutputDirectory(undoPath.c_str());
-	Boomerang::get()->persistToXML(prog);
-	Boomerang::get()->setOutputDirectory(outputPath.c_str());
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_ENABLED);
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
-	undoPath = outputPath + "undo/";
-	prog = Boomerang::get()->loadFromXML(undoPath.c_str());
-}
-
-void restoreRedoPoint()
-{
-	std::string outputPath = Boomerang::get()->getOutputPath();
-	std::string undoPath = outputPath + "redo/";
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
-	EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
-	undoPath = outputPath + "redo/";
-	prog = Boomerang::get()->loadFromXML(undoPath.c_str());
 }
 
 void selectTab(const char *name)
@@ -429,23 +494,6 @@ void generateCodeForUserProc(UserProc *proc)
 	addNewTab(proc->getCluster());
 	DWORD id;
 	HANDLE h = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)generateCodeForUserProcThread, (LPVOID)proc, 0, &id);
-}
-
-void redoCodeGen()
-{
-	HTREEITEM h = TreeView_GetSelection(hTreeView);
-	TVITEM it;
-	it.hItem = h;
-	it.mask = TVIF_HANDLE;
-	TreeView_GetItem(hTreeView, &it);
-	MyLParam *lp = (MyLParam*)it.lParam;
-	if (lp->isCluster)
-		generateCodeForCluster(lp->c);
-	else {
-		UserProc *u = dynamic_cast<UserProc*>(lp->p);
-		if (u)
-			generateCodeForUserProc(u);
-	}
 }
 
 void closeTab(const char *name)
@@ -557,9 +605,6 @@ Proc *selectedProc()
 		return NULL;
 	return lp->p;
 }
-
-HTREEITEM treeDragging = NULL;
-HMENU clusterMenu = NULL, procMenu = NULL, callersMenu = NULL, callsMenu = NULL;
 
 LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -704,6 +749,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message) 
 	{
+	case WM_SIZE:
+		{
+			RECT r;
+			RECT rsb;
+			GetClientRect(hTopWnd, &r);
+			GetClientRect(hStatusBar, &rsb);
+			SetWindowPos(hTreeView, 0, r.right - 200, 0, 200, r.bottom - rsb.bottom, SWP_NOZORDER);
+			SetWindowPos(hStatusBar, 0, 0, r.bottom - rsb.bottom, r.right, rsb.bottom, SWP_NOZORDER);
+			SetWindowPos(hLogView, 0, 0, r.bottom - rsb.bottom - 200, r.right - 200, 200, SWP_NOZORDER);
+			for (std::map<std::string, my_tab>::iterator it = tabWithName.begin(); it != tabWithName.end(); it++) {
+				SetWindowPos((*it).second.edit, 0, 0, tabBarRect.bottom, r.right - 200, r.bottom - rsb.bottom - tabBarRect.bottom - 200, SWP_NOZORDER);
+			}
+		}
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam); 
 		wmEvent = HIWORD(wParam); 
@@ -757,15 +816,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_DECOMPILER_START:
 			if (hDecompilerThread == NULL) {
-				startUndoPoint();
+				saveUndoPoint();
 				prog->decompile();
 			}
 			break;
 		case ID_DECOMPILER_SUSPEND:
 			if (hDecompilerThread) {
-				SuspendThread(hDecompilerThread);
-				EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_SUSPEND, MF_GRAYED);
-				EnableMenuItem(GetMenu(hTopWnd), ID_DECOMPILER_RESUME, MF_ENABLED);
+				suspendDecompiler();
 			}
 			break;
 		case ID_DECOMPILER_RESUME:
@@ -799,19 +856,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_VIEW_CODE:
 			if (view_as != V_CODE) {
 				view_as = V_CODE;
-				redoCodeGen();
+				updateCodeView();
 			}
 			break;
 		case ID_VIEW_RTL:
 			if (view_as != V_RTL) {
 				view_as = V_RTL;
-				redoCodeGen();
+				updateCodeView();
 			}
 			break;
 		case ID_VIEW_MIXED:
 			if (view_as != V_MIXED) {
 				view_as = V_MIXED;
-				redoCodeGen();
+				updateCodeView();
 			}
 			break;
 		case ID_VIEW_RENAME:
@@ -848,8 +905,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		case ID_VIEW_PROPERTIES:
-			if (selectedProc()) {
-				DialogBox(hInst, (LPCTSTR)IDD_PROCPROPERTIES, hWnd, (DLGPROC)ProcProperties);
+			{
+				Proc *p = selectedProc();
+				if (p)
+					if (p->isLib())
+						DialogBox(hInst, (LPCTSTR)IDD_LPROCPROPERTIES, hWnd, (DLGPROC)ProcProperties);
+					else
+						DialogBox(hInst, (LPCTSTR)IDD_PROCPROPERTIES, hWnd, (DLGPROC)ProcProperties);
 			}
 			break;
 		case ID_DECODER_OPTIONS:
@@ -862,10 +924,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			generateCodeForAll();
 			break;
 		case ID_EDIT_UNDO:
-			restoreUndoPoint();
+			prog->restoreMemo();
+			if (!prog->canRestore())
+				EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
+			EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_ENABLED);
+			updateAllTabs();
+			updateTreeView();
+			updateCodeView();
 			break;
 		case ID_EDIT_REDO:
-			restoreRedoPoint();
+			prog->restoreMemo(true);
+			if (!prog->canRestore(true))
+				EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
+			EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_ENABLED);
+			updateAllTabs();
+			updateTreeView();
+			updateCodeView();
 			break;
 		case ID_EDIT_COPY:
 			if (selectedTab)
@@ -907,28 +981,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			EnableMenuItem(GetMenu(hTopWnd), ID_VIEW_DELETECLUSTER, MF_GRAYED);
 			if (clusterMenu)
 				EnableMenuItem(clusterMenu, ID_VIEW_DELETECLUSTER, MF_GRAYED);
-			MyLParam *lp = (MyLParam*)pnmtv->itemNew.lParam;
-			if (lp->isCluster) {
-				generateCodeForCluster(lp->c);
-				if (lp->c->getNumChildren() == 0) {
-					PROGMAP::const_iterator it;
-					bool found = false;
-					for (Proc *proc = prog->getFirstProc(it); proc; proc = prog->getNextProc(it))
-						if (proc->getCluster() == lp->c) {
-							found = true;
-							break;
-						}
-					if (!found) {
-						EnableMenuItem(GetMenu(hTopWnd), ID_VIEW_DELETECLUSTER, MF_ENABLED);
-						if (clusterMenu)
-							EnableMenuItem(clusterMenu, ID_VIEW_DELETECLUSTER, MF_ENABLED);
-					}
-				}
-			} else {
-				UserProc *u = dynamic_cast<UserProc*>(lp->p);
-				if (u)
-					generateCodeForUserProc(u);
-			}
+			updateCodeView();
 		}
 		ptvdi = (LPNMTVDISPINFO) lParam;
 		if (ptvdi->hdr.code == TVN_ENDLABELEDIT && ptvdi->item.pszText) {
@@ -946,6 +999,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					tabWithName[ptvdi->item.pszText] = t;
 				}				
 				lp->c->setName(ptvdi->item.pszText);
+				if (lp->c == prog->getRootCluster())
+					prog->setName(ptvdi->item.pszText);
 				generateCodeForCluster(lp->c);
 			} else {
 				lp->p->setName(ptvdi->item.pszText);
@@ -954,6 +1009,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					generateCodeForUserProc(u);
 			}
 			InvalidateRect(hTopWnd, &tabBarRect, TRUE);
+			saveUndoPoint();
 		}
 		if (pnmtv->hdr.code == TVN_BEGINDRAG) {
 			treeDragging = pnmtv->itemNew.hItem;
@@ -1004,6 +1060,8 @@ public:
 	virtual void alert_start_decompile(UserProc *p);
 	virtual void alert_end_decompile(UserProc *p);
 	virtual void alert_load(Proc *p);
+	virtual void alert_new(Proc *p);
+	virtual void alert_update_signature(Proc *p);
 };
 
 typedef enum { UNDECODED, INSTRUCTION, BAD_INSTRUCTION, PROCEDURE } blk_color;
@@ -1027,6 +1085,7 @@ void LoadProjectThread(const char *fname)
 	prog = Boomerang::get()->loadFromXML(fname);
 	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)"Done");
 	hLoadThread = NULL;
+	saveUndoPoint();
 	ExitThread(0);
 }
 
@@ -1193,6 +1252,13 @@ void addProcToTree(Proc *p)
 	tvi.item.pszText = (LPSTR)p->getName();
 	tvi.item.lParam = (LPARAM)new MyLParam(p);
 	tvi.item.iImage = tvi.item.iSelectedImage = iProc;
+	if (p->isLib()) {
+		tvi.item.iImage = tvi.item.iSelectedImage = iLProc;
+		if (p->getSignature()->isUnknown()) {
+			tvi.item.iImage = tvi.item.iSelectedImage = iULProc;
+			someUnknown = true;
+		}
+	}
 	HTREEITEM hi = TreeView_InsertItem(hTreeView, &tvi);
 	procItems[p] = hi;
 }
@@ -1204,8 +1270,34 @@ void MyWatcher::alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes)
 	if (pc < lowest)
 		lowest = pc;
 	drawBlk(pc, last - pc, PROCEDURE);
-	
+}
+
+void MyWatcher::alert_new(Proc *p)
+{
 	addProcToTree(p);
+}
+
+void MyWatcher::alert_update_signature(Proc *p)
+{
+	for (std::map<Proc*,HTREEITEM>::iterator it = procItems.begin(); it != procItems.end(); it++)
+		if ((*it).first == p) {
+			TVITEM tvi;
+			tvi.hItem = (*it).second;
+			tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+			tvi.pszText = (LPSTR)p->getName();
+			tvi.iImage = tvi.iSelectedImage = iProc;
+			if (p->isLib()) {
+				tvi.iImage = tvi.iSelectedImage = iLProc;
+				if (p->getSignature()->isUnknown())
+					tvi.iImage = tvi.iSelectedImage = iULProc;
+			} else {
+				UserProc *u = dynamic_cast<UserProc*>(p);
+				if (u->isDecompiled())
+					tvi.iImage = tvi.iSelectedImage = iDProc;
+			}
+			TreeView_SetItem(hTreeView, &tvi);
+			break;
+		}
 }
 
 void MyWatcher::alert_load(Proc *p)
@@ -1232,8 +1324,16 @@ void MyWatcher::alert_start_decode(ADDRESS start, int nBytes)
 
 void MyWatcher::alert_end_decode()
 {
-	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)"Analysing...");
+	saveUndoPoint();
 	SendMessage(decodeDlg, WM_COMMAND, IDOK, 0);
+	if (someUnknown) {
+		MessageBox(NULL, "Some library procedures were found that do not have known signatures. "
+							"The decompiler has been suspended.  To ensure the best possible decompilation, please take "
+							"this opportunity to update the signature files.  Select the Tools -> Decompiler -> Resume menu "
+							"option when you are ready to continue decompiling.", "Decompile suspended", MB_OK);
+		suspendDecompiler();
+	}
+	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)"Analysing...");
 }
 
 void MyWatcher::alert_start_decompile(UserProc *p)
@@ -1245,6 +1345,7 @@ void MyWatcher::alert_start_decompile(UserProc *p)
 
 void MyWatcher::alert_end_decompile(UserProc *p)
 {
+	saveUndoPoint();
 	completedProcs++;
 	char buf[1024];
 	sprintf(buf, "Done. %i of %i complete.", completedProcs, p->getProg()->getNumUserProcs());
@@ -1265,9 +1366,11 @@ void setupDecompiler()
 
 void doDecompile(struct decompile_params *params)
 {
+	someUnknown = false;
 	Boomerang::get()->decompile(params->target, params->name);
 	hDecompilerThread = NULL;
 	updateDecompilerMenu();
+	saveUndoPoint();
 	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)"Done");
 	ExitThread(0);
 }
@@ -1495,6 +1598,41 @@ LRESULT CALLBACK DecompileOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+void addReturnsToList(Proc *proc, HWND hReturns)
+{
+	LVITEM lvi;
+	lvi.mask = LVIF_TEXT;
+	lvi.iSubItem = 0;
+
+	for (int i = 0; i < proc->getSignature()->getNumReturns(); i++) {
+		lvi.iItem = i;
+		lvi.pszText = (LPSTR)proc->getSignature()->getReturnType(i)->getCtype();
+		ListView_InsertItem(hReturns, &lvi);
+		std::ostringstream st;
+		proc->getSignature()->getReturnExp(i)->print(st);
+		std::string s = st.str();
+		ListView_SetItemText(hReturns, i, 1, (LPSTR)s.c_str());
+	}
+}
+
+void addParamsToList(Proc *proc, HWND hParams)
+{
+	LVITEM lvi;
+	lvi.mask = LVIF_TEXT;
+	lvi.iSubItem = 0;
+
+	for (int i = 0; i < proc->getSignature()->getNumParams(); i++) {
+		lvi.iItem = i;
+		lvi.pszText = (LPSTR)proc->getSignature()->getParamName(i);
+		ListView_InsertItem(hParams, &lvi);
+		ListView_SetItemText(hParams, i, 1, (LPSTR)proc->getSignature()->getParamType(i)->getCtype());
+		std::ostringstream st;
+		proc->getSignature()->getParamExp(i)->print(st);
+		std::string s = st.str();
+		ListView_SetItemText(hParams, i, 2, (LPSTR)s.c_str());
+	}
+}
+
 LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hReturns, hParams, hLocals;
@@ -1529,25 +1667,10 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			LVITEM lvi;
 			lvi.mask = LVIF_TEXT;
 			lvi.iSubItem = 0;
-			for (int i = 0; i < proc->getSignature()->getNumReturns(); i++) {
-				lvi.iItem = i;
-				lvi.pszText = (LPSTR)proc->getSignature()->getReturnType(i)->getCtype();
-				ListView_InsertItem(hReturns, &lvi);
-				std::ostringstream st;
-				proc->getSignature()->getReturnExp(i)->print(st);
-				std::string s = st.str();
-				ListView_SetItemText(hReturns, i, 1, (LPSTR)s.c_str());
-			}
-			for (int i = 0; i < proc->getSignature()->getNumParams(); i++) {
-				lvi.iItem = i;
-				lvi.pszText = (LPSTR)proc->getSignature()->getParamName(i);
-				ListView_InsertItem(hParams, &lvi);
-				ListView_SetItemText(hParams, i, 1, (LPSTR)proc->getSignature()->getParamType(i)->getCtype());
-				std::ostringstream st;
-				proc->getSignature()->getParamExp(i)->print(st);
-				std::string s = st.str();
-				ListView_SetItemText(hParams, i, 2, (LPSTR)s.c_str());
-			}
+
+			addReturnsToList(proc, hReturns);
+			addParamsToList(proc, hParams);
+
 			UserProc *u = dynamic_cast<UserProc*>(proc);
 			if (u) {
 				for (int i = 0; i < u->getNumLocals(); i++) {
@@ -1561,8 +1684,6 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 					std::string s = st.str();
 					ListView_SetItemText(hLocals, i, 2, (LPSTR)s.c_str());
 				}				
-			} else {
-				EnableWindow(hLocals, FALSE);
 			}
 		}
 		return TRUE;
@@ -1576,6 +1697,18 @@ LRESULT CALLBACK ProcProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 		{
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
+		}
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDC_REREADSIGS)) {
+			prog->rereadLibSignatures();
+			ListView_DeleteAllItems(hReturns);
+			ListView_DeleteAllItems(hParams);
+			addReturnsToList(proc, hReturns);
+			addParamsToList(proc, hParams);
+		}
+		if (lParam == (LPARAM)GetDlgItem(hDlg, IDC_MSDN)) {
+			char buf[1024];
+			sprintf(buf, "http://search.microsoft.com/search/results.aspx?qu=%s", proc->getName());
+			ShellExecute(NULL, "open", buf, NULL, NULL, SW_SHOW);
 		}
 		if (HIWORD(wParam) == EN_KILLFOCUS && LOWORD(wParam) == IDC_SIGNATURE_NAME) {
 			char str[1024];

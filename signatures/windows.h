@@ -5,6 +5,7 @@ typedef unsigned int UINT;
 typedef int INT;
 typedef unsigned int SIZE_T;
 typedef unsigned int LONG;
+typedef unsigned char BYTE;
 typedef const void *LPCVOID;
 typedef void *LPVOID;
 typedef void *PVOID;
@@ -29,6 +30,7 @@ typedef int LPARAM;
 typedef int LRESULT;
 typedef int ATOM;
 typedef int BOOL;
+typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef char CHAR;
 typedef LRESULT WndProc(      
@@ -535,3 +537,25 @@ int FillRect(
   RECT *lprc,       // rectangle
   HBRUSH hbr        // handle to brush
 );
+
+struct SLIST_ENTRY {
+  SLIST_ENTRY *Next;
+};
+
+typedef SLIST_ENTRY *PSLIST_ENTRY;
+
+PSLIST_ENTRY InterlockedPushEntrySList(
+  PSLIST_HEADER ListHead,
+  PSLIST_ENTRY ListEntry
+);
+
+PSLIST_ENTRY InterlockedPopEntrySList(
+  PSLIST_HEADER ListHead
+);
+
+ULONGLONG VerSetConditionMask(
+  ULONGLONG dwlConditionMask,
+  DWORD dwTypeBitMask,
+  BYTE dwConditionMask
+);
+

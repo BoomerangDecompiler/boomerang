@@ -50,8 +50,8 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",                       ID_EDIT_UNDO, GRAYED
-        MENUITEM "&Redo",                       ID_EDIT_REDO, GRAYED
+        MENUITEM "&Undo",                       ID_EDIT_UNDO
+        MENUITEM "&Redo",                       ID_EDIT_REDO
         MENUITEM SEPARATOR
         MENUITEM "&Copy",                       ID_EDIT_COPY
         MENUITEM "&Paste",                      ID_EDIT_PASTE
@@ -200,9 +200,11 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_PROC                ICON                    "proc1.ico"
 IDI_CLUSTER             ICON                    "icon1.ico"
 IDI_DPROC               ICON                    "ico00001.ico"
-IDI_PROC                ICON                    "ico00002.ico"
+IDI_ULPROC              ICON                    "ico00002.ico"
+IDI_LPROC               ICON                    "id_lproc.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -361,6 +363,26 @@ BEGIN
     LTEXT           "Parameters:",IDC_STATIC,18,101,42,8
 END
 
+IDD_LPROCPROPERTIES DIALOGEX 0, 0, 255, 200
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Signature",-1,7,7,241,160
+    CONTROL         "",IDC_SIGNATURE_RETURNS,"SysListView32",LVS_REPORT | 
+                    LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,19,47,220,50
+    CONTROL         "",IDC_SIGNATURE_PARAMS,"SysListView32",LVS_REPORT | 
+                    LVS_EDITLABELS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,
+                    19,111,220,50
+    LTEXT           "Name:",-1,19,21,23,8
+    EDITTEXT        IDC_SIGNATURE_NAME,46,18,193,14,ES_AUTOHSCROLL
+    LTEXT           "Returns:",-1,19,37,29,8
+    LTEXT           "Parameters:",-1,18,101,42,8
+    PUSHBUTTON      "Reread Signature files",IDC_REREADSIGS,14,171,95,14
+    PUSHBUTTON      "Lookup on MSDN",IDC_MSDN,117,171,68,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -416,6 +438,14 @@ BEGIN
         RIGHTMARGIN, 248
         TOPMARGIN, 7
         BOTTOMMARGIN, 257
+    END
+
+    IDD_LPROCPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -17,12 +17,13 @@
 #include "exp.h"
 #include "type.h"
 #include "sigenum.h"   // For enums platform and cc
+#include "memo.h"
 
 class Statement;
 class BinaryFile;
 class XMLProgParser;
 
-class Parameter { 
+class Parameter : public Memoisable { 
 private:
     Type *type;
     std::string name;
@@ -40,6 +41,10 @@ public:
     void setName(const char *nam) { name = nam; }
     Exp *getExp()       { return exp; }
     void setExp(Exp *e) { exp = e; }
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
     Parameter() : type(NULL), name(""), exp(NULL) { }
@@ -56,12 +61,16 @@ public:
 
     void setParent(Parameter *p) { parent = p; }
     Parameter *getParent() { return parent; }
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
     ImplicitParameter() : Parameter(), parent(NULL) { }
 };
 
-class Return {
+class Return : public Memoisable {
 private:
     Type *type;
     Exp *exp;
@@ -76,12 +85,16 @@ public:
     Exp *getExp() { return exp; }
     Exp*& getRefExp() {return exp;}
     void setExp(Exp* e) { exp = e; }
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
     Return() : type(NULL), exp(NULL) { }
 };
 
-class Signature {
+class Signature : public Memoisable {
 protected:
     std::string name;       // name of procedure
     std::vector<Parameter*> params;
@@ -92,6 +105,7 @@ protected:
     Type *preferedReturn;
     std::string preferedName;
     std::vector<int> preferedParams;
+	bool unknown;
 
     void updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
     bool usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
@@ -110,6 +124,9 @@ public:
 
     // clone this signature
     virtual Signature *clone();
+
+	bool isUnknown() { return unknown; }
+	void setUnknown(bool b) { unknown = b; }
 
     // get the return location
     virtual void addReturn(Type *type, Exp *e = NULL);
@@ -229,6 +246,10 @@ virtual callconv getConvention() { return CONV_NONE; }
     const char *getPreferedName() { return preferedName.c_str(); }
     unsigned int getNumPreferedParams() { return preferedParams.size(); }
     int getPreferedParam(int n) { return preferedParams[n]; }
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
     Signature() : name(""), rettype(NULL), ellipsis(false), preferedReturn(NULL), preferedName("") { }

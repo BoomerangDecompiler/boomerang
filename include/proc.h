@@ -34,6 +34,7 @@
 #include "exp.h"                // For lessExpStar
 #include "cfg.h"                // For cfg->simplify()
 #include "hllcode.h"
+#include "memo.h"
 
 class Prog;
 class UserProc;
@@ -56,7 +57,7 @@ class XMLProgParser;
 /*==============================================================================
  * Procedure class.
  *============================================================================*/
-class Proc {
+class Proc : public Memoisable {
 public:
 
     /*
@@ -217,6 +218,9 @@ public:
     Cluster *getCluster() { return cluster; }
     void setCluster(Cluster *c) { cluster = c; }
 
+	virtual Memo *makeMemo(int mId) = 0;
+	virtual void readMemo(Memo *m, bool dec) = 0;
+
 protected:
 
     bool visited;
@@ -276,6 +280,9 @@ public:
      * Prints this procedure to an output stream.
      */
     std::ostream& put(std::ostream& os);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
     void getInternalStatements(StatementList &internal);
 protected:
@@ -402,6 +409,7 @@ public:
      * it already been decoded).
      */
     bool isDecoded();
+	bool isDecompiled() { return decompiled; }
 
     bool isAnalysed() { return analysed; }
     void setAnalysed() { analysed = true; }
@@ -528,6 +536,9 @@ public:
 #endif
 
     void getDefinitions(LocationSet &defs);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
 private:
     /*

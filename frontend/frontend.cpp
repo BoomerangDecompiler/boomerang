@@ -135,6 +135,7 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
 }
 
 void FrontEnd::readLibraryCatalog() {
+	librarySignatures.clear();
     std::string sList = Boomerang::get()->getProgPath() +
       "signatures/common.hs";
     readLibraryCatalog(sList.c_str());
@@ -304,6 +305,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     }
     else {
         signature = (*it).second->clone();
+		signature->setUnknown(false);
     }
     return signature;
 }
@@ -568,10 +570,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         if (pRtl->getAddress() == pProc->getNativeAddress()) {
                             // it's a thunk
                             // Proc *lp = prog->findProc(func.c_str());
-                            pProc->setName(func.c_str());
                             func = std::string("__imp_") + func;
-
-                            lp->setName(func.c_str());
+                            pProc->setName(func.c_str());
+                            //lp->setName(func.c_str());
+							Boomerang::get()->alert_update_signature(pProc);
                         }
                         callSet.insert(call);
                         ss = sl.end(); ss--;  // get out of the loop

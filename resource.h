@@ -6,6 +6,7 @@
 #define IDC_ADDBUTTON                   3
 #define IDC_REMOVEBUTTON                4
 #define IDC_CLEARBUTTON                 5
+#define IDI_PROC                        5
 #define IDD_BOOMERANG_DIALOG            102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
@@ -20,9 +21,11 @@
 #define IDD_DECODEOPTIONS               132
 #define IDD_DECODING                    133
 #define IDD_PROCPROPERTIES              136
+#define IDD_LPROCPROPERTIES             137
 #define IDI_CLUSTER                     138
 #define IDI_DPROC                       140
-#define IDI_PROC                        141
+#define IDI_ULPROC                      141
+#define IDI_LPROC                       142
 #define IDC_NAME                        1000
 #define IDC_TARGET                      1001
 #define IDC_BROWSEBUTTON                1002
@@ -64,6 +67,8 @@
 #define IDC_SIGNATURE_RETURNS           1042
 #define IDC_SIGNATURE_PARAMS            1043
 #define IDC_SIGNATURE_NAME              1044
+#define IDC_REREADSIGS                  1045
+#define IDC_MSDN                        1046
 #define ID_FILE_NEW                     32771
 #define ID_FILE_OPEN                    32773
 #define ID_FILE_CLOSE                   32775
@@ -109,7 +114,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32815
-#define _APS_NEXT_CONTROL_VALUE         1045
+#define _APS_NEXT_CONTROL_VALUE         1047
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

@@ -4080,3 +4080,192 @@ Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
     ExpSubscripter es(e, def);
     return accept(&es);
 }
+
+class PhiExpMemo : public Memo {
+public:
+	PhiExpMemo(int m) : Memo(m) { }
+};
+
+Memo *PhiExp::makeMemo(int mId)
+{
+	PhiExpMemo *m = new PhiExpMemo(mId);
+	return m;
+}
+
+void PhiExp::readMemo(Memo *m, bool dec)
+{
+}
+
+class ConstMemo : public Memo {
+public:
+	ConstMemo(int m) : Memo(m) { }
+
+    union {
+        int i;
+        ADDRESS a;
+        QWord ll;
+        double d;
+        char* p;
+        Proc* pp;
+    } u;
+    int conscript;
+};
+
+Memo *Const::makeMemo(int mId)
+{
+	ConstMemo *m = new ConstMemo(mId);
+	memcpy(&m->u, &u, sizeof(u));
+	m->conscript = conscript;
+	return m;
+}
+
+void Const::readMemo(Memo *mm, bool dec)
+{
+	ConstMemo *m = dynamic_cast<ConstMemo*>(mm);
+	memcpy(&u, &m->u, sizeof(u));
+	conscript = m->conscript;	
+}
+
+class TerminalMemo : public Memo {
+public:
+	TerminalMemo(int m) : Memo(m) { }
+};
+
+Memo *Terminal::makeMemo(int mId)
+{
+	TerminalMemo *m = new TerminalMemo(mId);
+	return m;
+}
+
+void Terminal::readMemo(Memo *mm, bool dec)
+{
+	TerminalMemo *m = dynamic_cast<TerminalMemo*>(mm);
+}
+
+class UnaryMemo : public Memo {
+public:
+	UnaryMemo(int m) : Memo(m) { }
+};
+
+Memo *Unary::makeMemo(int mId)
+{
+	UnaryMemo *m = new UnaryMemo(mId);
+	return m;
+}
+
+void Unary::readMemo(Memo *mm, bool dec)
+{
+	UnaryMemo *m = dynamic_cast<UnaryMemo*>(mm);
+}
+
+class BinaryMemo : public Memo {
+public:
+	BinaryMemo(int m) : Memo(m) { }
+};
+
+Memo *Binary::makeMemo(int mId)
+{
+	BinaryMemo *m = new BinaryMemo(mId);
+	return m;
+}
+
+void Binary::readMemo(Memo *mm, bool dec)
+{
+	BinaryMemo *m = dynamic_cast<BinaryMemo*>(mm);
+}
+
+class TernaryMemo : public Memo {
+public:
+	TernaryMemo(int m) : Memo(m) { }
+};
+
+Memo *Ternary::makeMemo(int mId)
+{
+	TernaryMemo *m = new TernaryMemo(mId);
+	return m;
+}
+
+void Ternary::readMemo(Memo *mm, bool dec)
+{
+	TernaryMemo *m = dynamic_cast<TernaryMemo*>(mm);
+}
+
+class TypedExpMemo : public Memo {
+public:
+	TypedExpMemo(int m) : Memo(m) { }
+};
+
+Memo *TypedExp::makeMemo(int mId)
+{
+	TypedExpMemo *m = new TypedExpMemo(mId);
+	return m;
+}
+
+void TypedExp::readMemo(Memo *mm, bool dec)
+{
+	TypedExpMemo *m = dynamic_cast<TypedExpMemo*>(mm);
+}
+
+class FlagDefMemo : public Memo {
+public:
+	FlagDefMemo(int m) : Memo(m) { }
+};
+
+Memo *FlagDef::makeMemo(int mId)
+{
+	FlagDefMemo *m = new FlagDefMemo(mId);
+	return m;
+}
+
+void FlagDef::readMemo(Memo *mm, bool dec)
+{
+	FlagDefMemo *m = dynamic_cast<FlagDefMemo*>(mm);
+}
+
+class RefExpMemo : public Memo {
+public:
+	RefExpMemo(int m) : Memo(m) { }
+};
+
+Memo *RefExp::makeMemo(int mId)
+{
+	RefExpMemo *m = new RefExpMemo(mId);
+	return m;
+}
+
+void RefExp::readMemo(Memo *mm, bool dec)
+{
+	RefExpMemo *m = dynamic_cast<RefExpMemo*>(mm);
+}
+
+class TypeValMemo : public Memo {
+public:
+	TypeValMemo(int m) : Memo(m) { }
+};
+
+Memo *TypeVal::makeMemo(int mId)
+{
+	TypeValMemo *m = new TypeValMemo(mId);
+	return m;
+}
+
+void TypeVal::readMemo(Memo *mm, bool dec)
+{
+	TypeValMemo *m = dynamic_cast<TypeValMemo*>(mm);
+}
+
+class LocationMemo : public Memo {
+public:
+	LocationMemo(int m) : Memo(m) { }
+};
+
+Memo *Location::makeMemo(int mId)
+{
+	LocationMemo *m = new LocationMemo(mId);
+	return m;
+}
+
+void Location::readMemo(Memo *mm, bool dec)
+{
+	LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
+}

@@ -693,7 +693,7 @@ Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp* left) {
 
 
 
-Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
+Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false), unknown(true)
 {
     if (nam == NULL) 
         name = "<ANON>";
@@ -726,6 +726,7 @@ Signature *Signature::clone()
     n->preferedName = preferedName;
     n->preferedReturn = preferedReturn;
     n->preferedParams = preferedParams;
+	n->unknown = unknown;
     return n;
 }
 
@@ -1427,3 +1428,169 @@ bool Return::operator==(Return& other) {
 //    return true;
 //}
 
+class SignatureMemo : public Memo {
+public:
+	SignatureMemo(int m) : Memo(m) { }
+
+	std::string name;       // name of procedure
+    std::vector<Parameter*> params;
+    std::vector<ImplicitParameter*> implicitParams;
+    std::vector<Return*> returns;
+    Type *rettype;
+    bool ellipsis;
+    Type *preferedReturn;
+    std::string preferedName;
+    std::vector<int> preferedParams;
+};
+
+Memo *Signature::makeMemo(int mId)
+{
+	SignatureMemo *m = new SignatureMemo(mId);
+	m->name = name;
+	m->params = params;
+	m->implicitParams = implicitParams;
+	m->returns = returns;
+	m->rettype = rettype;
+	m->ellipsis = ellipsis;
+	m->preferedReturn = preferedReturn;
+	m->preferedName = preferedName;
+	m->preferedParams = preferedParams;
+
+	for (std::vector<Parameter*>::iterator it = params.begin(); it != params.end(); it++)
+		(*it)->takeMemo(mId);
+	for (std::vector<ImplicitParameter*>::iterator it = implicitParams.begin(); it != implicitParams.end(); it++)
+		(*it)->takeMemo(mId);
+	for (std::vector<Return*>::iterator it = returns.begin(); it != returns.end(); it++)
+		(*it)->takeMemo(mId);
+	if (rettype)
+		rettype->takeMemo(mId);
+	if (preferedReturn)
+		preferedReturn->takeMemo(mId);
+	return m;
+}
+
+void Signature::readMemo(Memo *mm, bool dec)
+{
+	SignatureMemo *m = dynamic_cast<SignatureMemo*>(mm);
+
+	name = m->name;
+	params = m->params;
+	implicitParams = m->implicitParams;
+	returns = m->returns;
+	rettype = m->rettype;
+	ellipsis = m->ellipsis;
+	preferedReturn = m->preferedReturn;
+	preferedName = m->preferedName;
+	preferedParams = m->preferedParams;
+
+	for (std::vector<Parameter*>::iterator it = params.begin(); it != params.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+	for (std::vector<ImplicitParameter*>::iterator it = implicitParams.begin(); it != implicitParams.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+	for (std::vector<Return*>::iterator it = returns.begin(); it != returns.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+	if (rettype)
+		rettype->restoreMemo(m->mId, dec);
+	if (preferedReturn)
+		preferedReturn->restoreMemo(m->mId, dec);
+}
+
+class ParameterMemo : public Memo {
+public:
+	ParameterMemo(int m) : Memo(m) { }
+
+	Type *type;
+    std::string name;
+    Exp *exp;
+};
+
+Memo *Parameter::makeMemo(int mId)
+{
+	ParameterMemo *m = new ParameterMemo(mId);
+
+	m->type = type;
+	m->name = name;
+	m->exp = exp;
+
+	type->takeMemo(mId);
+	exp->takeMemo(mId);
+
+	return m;
+}
+
+void Parameter::readMemo(Memo *mm, bool dec)
+{
+	ParameterMemo *m = dynamic_cast<ParameterMemo*>(mm);
+	type = m->type;
+	name = m->name;
+	exp = m->exp;
+
+	type->restoreMemo(m->mId, dec);
+	exp->restoreMemo(m->mId, dec);
+}
+
+
+class ImplicitParameterMemo : public ParameterMemo {
+public:
+	ImplicitParameterMemo(int m) : ParameterMemo(m) { }
+
+    Parameter *parent;
+};
+
+Memo *ImplicitParameter::makeMemo(int mId)
+{
+	ImplicitParameterMemo *m = new ImplicitParameterMemo(mId);
+
+	m->type = getType();
+	m->name = getName();
+	m->exp = getExp();
+	m->parent = parent;
+
+	m->type->takeMemo(mId);
+	m->exp->takeMemo(mId);
+
+	return m;
+}
+
+void ImplicitParameter::readMemo(Memo *mm, bool dec)
+{
+	ImplicitParameterMemo *m = dynamic_cast<ImplicitParameterMemo*>(mm);
+	setType(m->type);
+	setName(m->name.c_str());
+	setExp(m->exp);
+	parent = m->parent;
+
+	m->type->restoreMemo(m->mId, dec);
+	m->exp->restoreMemo(m->mId, dec);
+}
+
+class ReturnMemo : public Memo {
+public:
+	ReturnMemo(int m) : Memo(m) { }
+
+	Type *type;
+    Exp *exp;
+};
+
+Memo *Return::makeMemo(int mId)
+{
+	ReturnMemo *m = new ReturnMemo(mId);
+
+	m->type = type;
+	m->exp = exp;
+
+	type->takeMemo(mId);
+	exp->takeMemo(mId);
+
+	return m;
+}
+
+void Return::readMemo(Memo *mm, bool dec)
+{
+	ReturnMemo *m = dynamic_cast<ReturnMemo*>(mm);
+	type = m->type;
+	exp = m->exp;
+
+	type->restoreMemo(m->mId, dec);
+	exp->restoreMemo(m->mId, dec);
+}

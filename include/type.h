@@ -32,6 +32,8 @@
 #include <functional>       // For binary_function
 #include <vector>
 #include <assert.h>
+#include <list>
+#include "memo.h"
 
 class Signature;
 class VoidType;
@@ -50,7 +52,7 @@ class XMLProgParser;
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed, eCompound};    // For operator< only
 
-class Type {
+class Type : public Memoisable {
 protected:
     eType id;
 private:
@@ -130,6 +132,9 @@ static  void    clearNamedTypes() { namedTypes.clear(); }
 
         bool    isPointerToAlpha();
 
+		virtual Memo *makeMemo(int mId) { return new Memo(mId); }
+		virtual void readMemo(Memo *m, bool dec) { }
+
 protected:
 	friend class XMLProgParser;
 };
@@ -179,6 +184,9 @@ virtual const char *getCtype() const;
 // Split the C type into return and parameter parts
         void    getReturnAndParam(const char*& ret, const char*& param);
 
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
+
 protected:
 	friend class XMLProgParser;
 };
@@ -208,6 +216,9 @@ virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
+
 protected:
 	friend class XMLProgParser;
 };
@@ -233,6 +244,9 @@ virtual int     getSize() const;
 virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
+
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -280,7 +294,6 @@ protected:
 	friend class XMLProgParser;
 };
 
-
 class PointerType : public Type {
 private:
     Type *points_to;
@@ -304,6 +317,9 @@ virtual Exp *match(Type *pattern);
 virtual int     getSize() const;
 
 virtual const char *getCtype() const;
+
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -337,6 +353,9 @@ virtual int     getSize() const;
 
 virtual const char *getCtype() const;
 
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
+
 protected:
 	friend class XMLProgParser;
 	ArrayType() : Type(eArray), base_type(NULL), length(0) { }
@@ -366,6 +385,9 @@ virtual Exp *match(Type *pattern);
 virtual int     getSize() const;
 
 virtual const char *getCtype() const;
+
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;
@@ -405,6 +427,9 @@ virtual Exp *match(Type *pattern);
 virtual int     getSize() const;
 
 virtual const char *getCtype() const;
+
+		virtual Memo *makeMemo(int mId);
+		virtual void readMemo(Memo *m, bool dec);
 
 protected:
 	friend class XMLProgParser;

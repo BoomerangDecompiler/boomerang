@@ -559,6 +559,9 @@
 				RelativePath=".\include\managed.h">
 			</File>
 			<File
+				RelativePath=".\include\memo.h">
+			</File>
+			<File
 				RelativePath=".\include\operator.h">
 			</File>
 			<File
@@ -646,6 +649,12 @@
 			</File>
 			<File
 				RelativePath=".\icon2.ico">
+			</File>
+			<File
+				RelativePath=".\id_lproc.ico">
+			</File>
+			<File
+				RelativePath=".\proc1.ico">
 			</File>
 			<File
 				RelativePath=".\small.ico">

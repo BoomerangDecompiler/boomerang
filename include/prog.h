@@ -26,6 +26,7 @@
 #include "frontend.h"
 #include "type.h"
 #include "cluster.h"
+#include "memo.h"
 
 class RTLInstDict;
 class Proc;
@@ -35,10 +36,12 @@ class Signature;
 class StatementSet;
 class Cluster;
 class XMLProgParser;
+class ProgMemo;
+class GlobalMemo;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
-class Global {
+class Global : public Memoisable {
 private:
     Type *type;
     ADDRESS uaddr;
@@ -59,12 +62,16 @@ public:
     const char *getName() { return nam.c_str(); }
     Exp* getInitialValue(Prog* prog); // Get the initial value as an expression
                                       // (or NULL if not initialised)
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     Global() : type(NULL), uaddr(0), nam("") { }
     friend class XMLProgParser;
 };  // class Global
 
-class Prog {
+class Prog : public Memoisable {
 public:
             Prog();                     // Default constructor
             Prog(BinaryFile *pBF, FrontEnd *pFE);
@@ -180,6 +187,7 @@ public:
     // Get a library signature for a given name (used when creating a new
     // library proc.
     Signature *getLibSignature(const char *name);
+	void rereadLibSignatures();
 
     // Get the front end id used to make this prog
     platform getFrontEndId();
@@ -250,6 +258,9 @@ public:
     Cluster *findCluster(const char *name) { return m_rootCluster->find(name); }
     bool clusterUsed(Cluster *c);
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     BinaryFile* pBF;                    // Pointer to the BinaryFile object for the program
     FrontEnd *pFE;                      // Pointer to the FrontEnd object for the project
@@ -266,7 +277,6 @@ protected:
     friend class XMLProgParser;
     void setFrontEnd(FrontEnd *p) { pFE = p; }
     void setBinaryFile(BinaryFile *p) { pBF = p; }
- 
 };  // class Prog
 
 #endif

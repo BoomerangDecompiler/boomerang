@@ -43,6 +43,7 @@
 #include "type.h"       // The Type class for typed expressions
 #include "statement.h"  // For StmtSet etc
 #include "exphelp.h"
+#include "memo.h"
 
 class UseSet;
 class DefSet;
@@ -70,7 +71,7 @@ typedef std::map<Exp*, int, lessExpStar> igraph;
 // Class Exp is abstract. However, the constructor can be called from the 
 // the constructors of derived classes, and virtual functions not overridden
 // by derived classes can be called
-class Exp {
+class Exp : public Memoisable {
 protected:
     OPER   op;             // The operator (e.g. opPlus)
 
@@ -329,6 +330,10 @@ virtual Exp* simplifyConstraint() {return this;}
     Exp*         stripRefs();           // Strip all references
     // Subscript all e in this Exp with statement def:
     Exp*         expSubscriptVar(Exp* e, Statement* def);
+
+	virtual Memo *makeMemo(int mId) = 0;
+	virtual void readMemo(Memo *m, bool dec) = 0;
+
 protected:
     friend class XMLProgParser;
 };  // Class Exp
@@ -404,6 +409,9 @@ virtual Exp*    genConstraints(Exp* restrictTo);
 
     void    setConscript(int cs) {conscript = cs;}
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
 };  // class Const
@@ -435,6 +443,10 @@ virtual bool    isTerminal() { return true; }
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
 };  // class Terminal
@@ -505,6 +517,9 @@ virtual Exp* simplifyConstraint();
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
 protected:
     friend class XMLProgParser;
@@ -579,6 +594,9 @@ virtual Exp* simplifyConstraint();
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
@@ -648,6 +666,9 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
 };  // class Ternary
@@ -696,6 +717,9 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     friend class XMLProgParser;
 };  // class TypedExp
@@ -716,6 +740,9 @@ virtual void    appendDotFile(std::ofstream& of);
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
 protected:
     friend class XMLProgParser;
@@ -758,6 +785,10 @@ virtual Exp* polySimplify(bool& bMod);
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     RefExp() : Unary(opSubscript), def(NULL) { }
     friend class XMLProgParser;
@@ -818,6 +849,9 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
+
 protected:
     PhiExp() : Unary(opPhi) { }
     friend class XMLProgParser;
@@ -848,6 +882,9 @@ virtual void    printx(int ind);
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
 protected:
     friend class XMLProgParser;
@@ -892,6 +929,9 @@ virtual int getMemDepth();
     // Visitation
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
+
+	virtual Memo *makeMemo(int mId);
+	virtual void readMemo(Memo *m, bool dec);
 
 protected:
     friend class XMLProgParser;

@@ -506,6 +506,19 @@ Signature* Prog::getLibSignature(const char *nam) {
     return pFE->getLibSignature(nam);
 }
 
+void Prog::rereadLibSignatures()
+{
+	pFE->readLibraryCatalog();
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+		if ((*it)->isLib()) {
+			(*it)->setSignature(getLibSignature((*it)->getName()));
+			std::set<CallStatement*> &callers = (*it)->getCallers();
+			for (std::set<CallStatement*>::iterator it1 = callers.begin(); it1 != callers.end(); it1++)
+				(*it1)->setSigArguments();
+			Boomerang::get()->alert_update_signature(*it);
+		}
+}
+
 platform Prog::getFrontEndId() {
     return pFE->getFrontEndId();
 }
@@ -1251,4 +1264,225 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
     return e;
 }
 
+class ClusterMemo : public Memo {
+public:
+	ClusterMemo(int mId) : Memo(mId) { }
 
+	std::string name;
+    std::vector<Cluster*> children;
+    Cluster *parent;
+};
+
+Memo *Cluster::makeMemo(int mId)
+{
+	ClusterMemo *m = new ClusterMemo(mId);
+	m->name = name;
+	m->children = children;
+	m->parent = parent;
+	return m;
+}
+
+void Cluster::readMemo(Memo *mm, bool dec)
+{
+	ClusterMemo *m = dynamic_cast<ClusterMemo*>(mm);
+
+	name = m->name;
+	children = m->children;
+	parent = m->parent;
+
+	for (std::vector<Cluster*>::iterator it = children.begin(); it != children.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+}
+
+class GlobalMemo : public Memo {
+public:
+	GlobalMemo(int mId) : Memo(mId) { }
+
+	Type *type;
+	ADDRESS uaddr;
+	std::string nam;
+};
+
+Memo *Global::makeMemo(int mId)
+{
+	GlobalMemo *m = new GlobalMemo(mId);
+	m->type = type;
+	m->uaddr = uaddr;
+	m->nam = nam;
+
+	type->takeMemo(mId);
+	return m;
+}
+
+void Global::readMemo(Memo *mm, bool dec)
+{
+	GlobalMemo *m = dynamic_cast<GlobalMemo*>(mm);
+
+	type = m->type;
+	uaddr = m->uaddr;
+	nam = m->nam;
+
+	type->restoreMemo(m->mId, dec);
+}
+
+class ProgMemo : public Memo {
+public:
+	ProgMemo(int m) : Memo(m) { }
+
+	std::string m_name, m_path;
+	std::list<Proc*> m_procs;
+	PROGMAP m_procLabels;
+	std::vector<Global*> globals;
+	std::map<ADDRESS, const char*> *globalMap;
+	int m_iNumberedProc;
+	Cluster *m_rootCluster;
+};
+
+Memo *Prog::makeMemo(int mId)
+{
+	ProgMemo *m = new ProgMemo(mId);
+	m->m_name = m_name;
+	m->m_path = m_path;
+	m->m_procs = m_procs;
+	m->m_procLabels = m_procLabels;
+	m->globals = globals;
+	m->globalMap = globalMap;
+	m->m_iNumberedProc = m_iNumberedProc;
+	m->m_rootCluster = m_rootCluster;
+
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+		(*it)->takeMemo(m->mId);
+	m_rootCluster->takeMemo(m->mId);
+	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		(*it)->takeMemo(m->mId);
+
+	return m;
+}
+
+void Prog::readMemo(Memo *mm, bool dec)
+{
+	ProgMemo *m = dynamic_cast<ProgMemo*>(mm);
+	m_name = m->m_name;
+	m_path = m->m_path;
+	m_procs = m->m_procs;
+	m_procLabels = m->m_procLabels;
+	globals = m->globals;
+	globalMap = m->globalMap;
+	m_iNumberedProc = m->m_iNumberedProc;
+	m_rootCluster = m->m_rootCluster;
+
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+	m_rootCluster->restoreMemo(m->mId, dec);
+	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+}
+
+/*
+
+	After every undoable operation:
+		
+		                                 ? ||
+		prog->takeMemo();                1 |.1|
+
+		always deletes any memos before the cursor, adds new memo leaving cursor pointing to new memo
+
+
+	For first undo:
+
+	                                     ? |.4321|
+		prog->restoreMemo(inc);          4 |5.4321|
+
+		takes a memo of previous state, always leaves cursor pointing at current state
+
+	For second undo:
+										 4 |5.4321|
+		prog->restoreMemo(inc);          3 |54.321|
+
+	To redo:
+
+										 3	|54.321|
+		prog->restoreMemo(dec);			 4	|5.4321|
+		
+ */
+
+void Memoisable::takeMemo(int mId)
+{
+	if (cur_memo != memos.end() && (*cur_memo)->mId == mId && mId != -1)
+		return;
+
+	if (cur_memo != memos.begin()) {
+		std::list<Memo*>::iterator it = memos.begin();
+		while (it != cur_memo)
+			it = memos.erase(it);
+	}
+
+	if (mId == -1) {
+		if (cur_memo == memos.end())
+			mId = 1;
+		else
+			mId = memos.front()->mId + 1;
+	}
+
+	Memo *m = makeMemo(mId);
+
+	memos.push_front(m);
+	cur_memo = memos.begin();
+}
+
+void Memoisable::restoreMemo(int mId, bool dec)
+{
+	if (memos.begin() == memos.end())
+		return;
+
+	if ((*cur_memo)->mId == mId && mId != -1)
+		return;
+
+	if (dec) {
+		if (cur_memo == memos.begin())
+			return;
+		cur_memo--;
+	} else {
+		cur_memo++;
+		if (cur_memo == memos.end()) {
+			cur_memo--;
+			return;
+		}
+	}
+
+	Memo *m = *cur_memo;
+	if (m->mId != mId && mId != -1)
+		return;
+
+	readMemo(m, dec);
+}
+
+
+bool Memoisable::canRestore(bool dec)
+{
+	if (memos.begin() == memos.end())
+		return false;
+
+	if (dec) {
+		if (cur_memo == memos.begin())
+			return false;
+	} else {
+		cur_memo++;
+		if (cur_memo == memos.end()) {
+			cur_memo--;
+			return false;
+		}
+		cur_memo--;
+	}
+	return true;
+}
+
+void Memoisable::takeMemo()
+{
+	takeMemo(-1);
+}
+
+void Memoisable::restoreMemo(bool dec)
+{
+	restoreMemo(-1, dec);
+}

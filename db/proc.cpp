@@ -3543,3 +3543,164 @@ Exp *UserProc::getProven(Exp *left)
     return NULL;
 }
 
+class LibProcMemo : public Memo {
+public:
+	LibProcMemo(int mId) : Memo(mId) { }
+
+    bool visited;
+    Prog *prog;
+    Signature *signature;						// r
+    ADDRESS address;
+    Proc *m_firstCaller;
+    ADDRESS m_firstCallerAddr;
+    std::set<Exp*, lessExpStar> proven;			// r
+    std::set<CallStatement*> callerSet;
+    Cluster *cluster;
+};
+
+Memo *LibProc::makeMemo(int mId)
+{
+	LibProcMemo *m = new LibProcMemo(mId);
+    m->visited = visited;
+    m->prog = prog;
+    m->signature = signature;
+    m->address = address;
+    m->m_firstCaller = m_firstCaller;
+    m->m_firstCallerAddr = m_firstCallerAddr;
+    m->proven = proven;
+    m->callerSet = callerSet;
+    m->cluster = cluster;
+
+//	signature->takeMemo(mId);
+//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//		(*it)->takeMemo(mId);
+
+	return m;
+}
+
+void LibProc::readMemo(Memo *mm, bool dec)
+{
+	LibProcMemo *m = dynamic_cast<LibProcMemo*>(mm);
+    visited = m->visited;
+    prog = m->prog;
+    signature = m->signature;
+    address = m->address;
+    m_firstCaller = m->m_firstCaller;
+    m_firstCallerAddr = m->m_firstCallerAddr;
+    proven = m->proven;
+    callerSet = m->callerSet;
+    cluster = m->cluster;
+
+//	signature->restoreMemo(m->mId, dec);
+//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//		(*it)->restoreMemo(m->mId, dec);
+}
+
+class UserProcMemo : public Memo {
+public:
+	UserProcMemo(int mId) : Memo(mId) { }
+
+    bool visited;
+    Prog *prog;
+    Signature *signature;						// r
+    ADDRESS address;
+    Proc *m_firstCaller;
+    ADDRESS m_firstCallerAddr;
+    std::set<Exp*, lessExpStar> proven;			// r
+    std::set<CallStatement*> callerSet;
+    Cluster *cluster;
+
+    Cfg* cfg;
+    bool decoded;
+    bool analysed;
+    bool aggregateUsed;
+    std::map<std::string, Type*> locals;		// r
+    std::map<Exp*,Exp*,lessExpStar> symbolMap;	// r
+    std::set<Proc*> calleeSet;
+    bool decompileSeen;
+    bool decompiled;
+    bool isRecursive;
+    LocationSet definesSet;
+    LocationSet returnsSet;
+};
+
+Memo *UserProc::makeMemo(int mId)
+{
+	UserProcMemo *m = new UserProcMemo(mId);
+    m->visited = visited;
+    m->prog = prog;
+    m->signature = signature;
+    m->address = address;
+    m->m_firstCaller = m_firstCaller;
+    m->m_firstCallerAddr = m_firstCallerAddr;
+    m->proven = proven;
+    m->callerSet = callerSet;
+    m->cluster = cluster;
+
+	m->cfg = cfg;
+	m->decoded = decoded;
+	m->analysed = analysed;
+	m->aggregateUsed = aggregateUsed;
+	m->locals = locals;
+	m->symbolMap = symbolMap;
+	m->calleeSet = calleeSet;
+	m->decompileSeen = decompileSeen;
+	m->decompiled = decompiled;
+	m->isRecursive = isRecursive;
+	m->definesSet = definesSet;
+	m->returnsSet = returnsSet;
+
+	signature->takeMemo(mId);
+	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+		(*it)->takeMemo(mId);
+
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
+		(*it).second->takeMemo(mId);
+
+	for (std::map<Exp*,Exp*,lessExpStar>::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		(*it).first->takeMemo(mId);
+		(*it).second->takeMemo(mId);
+	}
+
+	return m;
+}
+
+void UserProc::readMemo(Memo *mm, bool dec)
+{
+	UserProcMemo *m = dynamic_cast<UserProcMemo*>(mm);
+    visited = m->visited;
+    prog = m->prog;
+    signature = m->signature;
+    address = m->address;
+    m_firstCaller = m->m_firstCaller;
+    m_firstCallerAddr = m->m_firstCallerAddr;
+    proven = m->proven;
+    callerSet = m->callerSet;
+    cluster = m->cluster;
+
+	cfg = m->cfg;
+	decoded = m->decoded;
+	analysed = m->analysed;
+	aggregateUsed = m->aggregateUsed;
+	locals = m->locals;
+	symbolMap = m->symbolMap;
+	calleeSet = m->calleeSet;
+	decompileSeen = m->decompileSeen;
+	decompiled = m->decompiled;
+	isRecursive = m->isRecursive;
+	definesSet = m->definesSet;
+	returnsSet = m->returnsSet;
+
+	signature->restoreMemo(m->mId, dec);
+	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
+		(*it).second->restoreMemo(m->mId, dec);
+
+	for (std::map<Exp*,Exp*,lessExpStar>::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		(*it).first->restoreMemo(m->mId, dec);
+		(*it).second->restoreMemo(m->mId, dec);
+	}
+}
+
