@@ -2702,7 +2702,7 @@ Exp* RefExp::fromSSA(igraph& ig) {
         // It is not in the map. Remove the opSubscript
         Exp* ret = becomeSubExp1();
         // ret could be a memof, etc, which could need subscripts removed from
-        ret->fromSSA(ig);
+        ret = ret->fromSSA(ig);
         return ret;
     }
     else {
@@ -2717,7 +2717,15 @@ Exp* RefExp::fromSSA(igraph& ig) {
 }
 
 Exp* PhiExp::fromSSA(igraph& ig) {
-    // Nothing to be done yet; see UserProc::fromSSAform()
+    // Almost nothing to be done yet; see UserProc::fromSSAform()
+    // Don't rename the top level, but if it's a unary (esp m[]),
+    // transform the grandchild
+    if (subExp1->getArity() == 1) {
+        Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
+        Exp* newG = grandChild->fromSSA(ig);
+        if (newG != grandChild)
+            ((Unary*)subExp1)->setSubExp1ND(newG);
+    }
     return this;
 }
 
