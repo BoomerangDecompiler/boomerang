@@ -1794,6 +1794,11 @@ void BranchStatement::addUsedLocs(LocationSet& used) {
         pCond->addUsedLocs(used);
 }
 
+void BranchStatement::fixCallRefs() {
+    if (pCond)
+        pCond = pCond->fixCallRefs();
+}
+
 void BranchStatement::subscriptVar(Exp* e, Statement* def) {
     if (pCond)
         pCond = pCond->expSubscriptVar(e, def);
@@ -1986,15 +1991,31 @@ std::vector<Exp*>& CallStatement::getArguments() {
     return arguments;
 }
 
-/*==============================================================================
- * FUNCTION:      CallStatement::getReturns
- * OVERVIEW:      Return a copy of the locations that have been determined
- *                as the return locations for this call.
- * PARAMETERS:    <none>
- * RETURNS:       A reference to the list of returns
- *============================================================================*/
-std::vector<Exp*>& CallStatement::getReturns() {
-    return returnLocs;
+int CallStatement::getNumReturns() {
+    assert(procDest);
+    return procDest->getSignature()->getNumReturns();
+}
+
+Exp *CallStatement::getReturnExp(int i) {
+    assert(procDest);
+    return procDest->getSignature()->getReturnExp(i);
+}
+
+int CallStatement::findReturn(Exp *e) {
+    assert(procDest);
+    return procDest->getSignature()->findReturn(e);
+}
+
+Exp *CallStatement::getProven(Exp *e) {
+    assert(procDest);
+    return procDest->getProven(e);
+}
+
+Exp *CallStatement::findArgument(Exp *e) {
+    assert(procDest);
+    int n = procDest->getSignature()->findParam(e);
+    if (n == -1) return NULL;
+    return arguments[n];
 }
 
 Type *CallStatement::getArgumentType(int i) {
@@ -2011,16 +2032,6 @@ Type *CallStatement::getArgumentType(int i) {
  *============================================================================*/
 void CallStatement::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
-}
-
-/*==============================================================================
- * FUNCTION:      CallStatement::setReturns
- * OVERVIEW:      Set the return locs of this call.
- * PARAMETERS:    returns - the list of locations that this call defines
- * RETURNS:       <nothing>
- *============================================================================*/
-void CallStatement::setReturns(std::vector<Exp*>& returns) {
-    this->returnLocs = returns;
 }
 
 /*==============================================================================
@@ -2043,13 +2054,6 @@ void CallStatement::setSigArguments() {
         for (int i = 0; i < 4; i++)
             arguments.push_back(procDest->getSignature()->
                             getArgumentExp(arguments.size())->clone());
-    }
-    n = procDest->getSignature()->getNumReturns();
-    returnLocs.resize(n);
-    for (int i = 0; i < n; i++) {
-        Exp *e = procDest->getSignature()->getReturnExp(i);
-        assert(e);
-        returnLocs[i] = e->clone();
     }
 }
 
@@ -2169,10 +2173,10 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         os << arguments[i];
     }
     os << ")    {";
-    for (unsigned i = 0; i < returnLocs.size(); i++) {
+    for (unsigned i = 0; i < getNumReturns(); i++) {
         if (i != 0)
             os << ", ";
-        os << returnLocs[i];
+        os << getReturnExp(i);
     }
     os << "}";
 }
@@ -2439,6 +2443,13 @@ void CallStatement::addUsedLocs(LocationSet& used) {
         arguments[i]->addUsedLocs(used);
     if (returnLoc && returnLoc->isMemOf())
         ((Unary*)returnLoc)->getSubExp1()->addUsedLocs(used);
+}
+
+void CallStatement::fixCallRefs() {
+    for (unsigned i = 0; i < arguments.size(); i++)
+        arguments[i] = arguments[i]->fixCallRefs();
+    if (returnLoc && returnLoc->isMemOf())
+        ((Unary*)returnLoc)->refSubExp1() = ((Unary*)returnLoc)->getSubExp1()->fixCallRefs();
 }
 
 bool CallStatement::isDefinition() 
@@ -2987,6 +2998,11 @@ void BoolStatement::addUsedLocs(LocationSet& used) {
         pCond->addUsedLocs(used);
 }
 
+void BoolStatement::fixCallRefs() {
+    if (pCond)
+        pCond = pCond->fixCallRefs();
+}
+
 void BoolStatement::subscriptVar(Exp* e, Statement* def) {
     if (pCond) pCond = pCond->expSubscriptVar(e, def);
     if (pDest) pDest = pDest->expSubscriptVar(e, def);
@@ -3305,6 +3321,32 @@ void Assign::addUsedLocs(LocationSet& used) {
         // We also use any expr like m[exp] on the LHS (but not the outer m[])
         Exp* leftChild = ((Unary*)lhs)->getSubExp1();
         leftChild->addUsedLocs(used);
+    }
+}
+
+void Assign::fixCallRefs() {
+    rhs = rhs->fixCallRefs();
+    if (lhs->isMemOf()) {
+        ((Unary*)lhs)->refSubExp1() = ((Unary*)lhs)->getSubExp1()->fixCallRefs();
+    }
+    if (rhs->getOper() == opPhi) {
+        PhiExp *p = (PhiExp*)rhs;
+        StmtSetIter it;
+        std::vector<Statement*> from, to;
+        for (Statement* s = p->getFirstRef(it); !p->isLastRef(it); s = p->getNextRef(it)) {
+            CallStatement *call = dynamic_cast<CallStatement*>(s);
+            if (call && call->findReturn(lhs) == -1) {
+                assert(*call->getProven(lhs) == *lhs);
+                Exp *e = call->findArgument(lhs);
+                assert(e && e->getOper() == opSubscript && *e->getSubExp1() == *lhs);
+                from.push_back(call);
+                to.push_back(((RefExp*)e)->getRef());
+            }
+            for (int i = 0; i < from.size(); i++) {
+                p->addSubscript(to[i]);
+                p->removeSubscript(from[i]);
+            }
+        }
     }
 }
 

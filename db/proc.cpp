@@ -1004,27 +1004,45 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
             std::cerr << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
         }
-
-        if (depth == 0 && Boomerang::get()->prove) {
-            std::cerr << "proving esp = esp + 4 for " << getName() << ": ";
-            if (prove(new Binary(opEquals,
+        
+        if (depth == 0) {
+            if (VERBOSE)
+                std::cerr << "attempting to prove esp = esp + 4 for " << getName() << std::endl;
+            prove(new Binary(opEquals,
                           new Unary(opRegOf, new Const(28)),
                           new Binary(opPlus,
                               new Unary(opRegOf, new Const(28)),
-                              new Const(4)))))
-                std::cerr << "proven" << std::endl;
-            else
-                std::cerr << "not proven" << std::endl;
-            std::cerr << "proving ebp = ebp for " << getName() << ": ";
-            if (prove(new Binary(opEquals,
-                          new Unary(opRegOf, new Const(29)),
-                          new Unary(opRegOf, new Const(29)))))
-                std::cerr << "proven" << std::endl;
-            else
-                std::cerr << "not proven" << std::endl;
+                              new Const(4))));
+            std::set<Exp*> preserved;
+            for (int i = 0; i < signature->getNumReturns(); i++) {
+                Exp *p = signature->getReturnExp(i);
+                Exp *e = new Binary(opEquals, p->clone(), p->clone());
+                if (VERBOSE)
+                    std::cerr << "attempting to prove " << p << " is preserved by " 
+                              << getName() << std::endl;
+                if (prove(e)) {
+                    preserved.insert(p);    
+                }
+            }
+            for (std::set<Exp*>::iterator it = preserved.begin(); it != preserved.end(); it++)
+                signature->removeReturn(*it);
+            StatementList stmts;
+            getStatements(stmts);
+            StmtListIter it;
+            for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+                s->fixCallRefs();
         }
 
-        // Propagate at this memory depth
+        // Print if requested
+        if (Boomerang::get()->debugPrintSSA && depth == 0) {
+            std::cerr << "=== Debug Print SSA for " << getName()
+              << " at memory depth " << depth << " (after removing preserved registers) ===\n";
+            print(std::cerr, true);
+            std::cerr << "=== End Debug Print SSA for " <<
+              getName() << " at depth " << depth << " ===\n\n";
+        }
+
+         // Propagate at this memory depth
         propagateStatements(depth);
         if (VERBOSE) {
             std::cerr << "=== After propagate for " << getName() <<
@@ -1736,8 +1754,10 @@ bool UserProc::prover(Exp *query)
     query = query->clone();
     bool change = true;
     while (change) {
-        query->print(std::cerr, true);
-        std::cerr << std::endl;
+        if (VERBOSE) {
+            query->print(std::cerr, true);
+            std::cerr << std::endl;
+        }
     
         change = false;
         if (query->getOper() == opEquals) {
@@ -1770,9 +1790,10 @@ bool UserProc::prover(Exp *query)
                         Exp *right = dest->getProven(r->getSubExp1());
                         if (right) {
                             right = right->clone();
-                            std::cerr << "using proven (or induction) for " 
-                                      << dest->getName() << " " << r->getSubExp1() 
-                                      << " = " << right << std::endl;
+                            if (VERBOSE)
+                                std::cerr << "using proven (or induction) for " 
+                                          << dest->getName() << " " << r->getSubExp1() 
+                                          << " = " << right << std::endl;
                             LocationSet locs;
                             right->addUsedLocs(locs);
                             LocSetIter xx;
@@ -1793,8 +1814,9 @@ bool UserProc::prover(Exp *query)
                         // for a phi, we have to prove the query for every 
                         // statement
                         PhiExp *p = (PhiExp*)s->getRight();
-                        std::cerr << "found " << p << " prove for each" 
-                                  << std::endl;
+                        if (VERBOSE)
+                            std::cerr << "found " << p << " prove for each" 
+                                      << std::endl;
                         StmtSetIter it;
                         bool ok = true;
                         for (Statement *s1 = p->getFirstRef(it); 
@@ -1803,7 +1825,8 @@ bool UserProc::prover(Exp *query)
                             Exp *e = query->clone();
                             RefExp *r1 = (RefExp*)e->getSubExp1();
                             r1->setDef(s1);
-                            std::cerr << "proving for " << e << std::endl;
+                            if (VERBOSE)
+                                std::cerr << "proving for " << e << std::endl;
                             if (!prover(e)) { 
                                 ok = false; 
                                 delete e; 
@@ -1849,7 +1872,7 @@ bool UserProc::prover(Exp *query)
 
         query = query->simplify();
 
-        if (change && !(*old == *query)) {
+        if (change && !(*old == *query) && VERBOSE) {
             old->print(std::cerr, true);
             std::cerr << std::endl;
         }

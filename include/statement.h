@@ -279,6 +279,8 @@ public:
     // statement
     virtual void addUsedLocs(LocationSet& used) = 0;
 
+    virtual void fixCallRefs() = 0;
+
     // Subscript all occurrences of e with definition def (except for top level
     // of LHS of assignment)
     virtual void subscriptVar(Exp* e, Statement* def) = 0;
@@ -463,6 +465,7 @@ public:
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    virtual void fixCallRefs();
     // Remove refs to statements defining restored locations
     virtual void removeRestoreRefs(StatementSet& rs) {
         doRemoveRestoreRefs(rs);}
@@ -603,6 +606,7 @@ public:
     virtual Exp* getRight() {return NULL;}
     virtual bool usesExp(Exp*) {return false;}
     virtual void addUsedLocs(LocationSet&) {}
+    virtual void fixCallRefs() { }
     virtual void subscriptVar(Exp*, Statement*) {}
     virtual void removeRestoreRefs(StatementSet&) {}
     virtual void processConstants(Prog*) {}
@@ -706,6 +710,7 @@ public:
     //virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
@@ -837,7 +842,11 @@ public:
     void setReturns(std::vector<Exp*>& returns); // Set call's return locs
     void setSigArguments();         // Set arguments based on signature
     std::vector<Exp*>& getArguments();            // Return call's arguments
-    std::vector<Exp*>& getReturns();            // Return call's returns
+    int getNumReturns();
+    Exp *getReturnExp(int i);
+    int findReturn(Exp *e);
+    Exp *getProven(Exp *e);
+    Exp *findArgument(Exp *e);
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int  getNumArguments() { return arguments.size(); }
@@ -890,6 +899,7 @@ public:
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
             void setPhase1();       // Set up for phase 1 of SW93
 
@@ -954,7 +964,6 @@ private:
     PBB returnBlock;
 
     Exp *returnLoc;             // For old code
-    std::vector<Exp*> returnLocs;
 
     // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
     // substitute it as needed
@@ -1073,6 +1082,7 @@ public:
     virtual void killLive (LocationSet &kill );
     virtual void killDead (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
+    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }

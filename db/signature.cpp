@@ -828,6 +828,14 @@ int Signature::findParam(Exp *e)
     return -1;
 }
 
+int Signature::findReturn(Exp *e)
+{
+    for (int i = 0; i < getNumReturns(); i++)
+        if (*getReturnExp(i) == *e)
+            return i;
+    return -1;
+}
+
 void Signature::addReturn(Type *type, Exp *exp)
 {
     addReturn(new Return(type, exp));
@@ -836,6 +844,17 @@ void Signature::addReturn(Type *type, Exp *exp)
 void Signature::addReturn(Exp *exp)
 {
     addReturn(new IntegerType(), exp);
+}
+
+void Signature::removeReturn(Exp *exp)
+{
+    for (int i = 0; i < returns.size(); i++)
+        if (*returns[i]->getExp() == *exp) {
+            for (int j = i+1; j < returns.size(); j++)
+                returns[j-1] = returns[j];
+            returns.resize(returns.size()-1);
+            break;
+        }
 }
 
 int Signature::getNumReturns()

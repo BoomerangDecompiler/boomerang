@@ -240,6 +240,8 @@ virtual Exp* simplifyAddr() {return this;}
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used) {}
 
+    virtual Exp *fixCallRefs() { return this; }
+
     // Update the "uses" information implicit in expressions
     // defs is a StatementSet of definitions reaching this statement
     virtual Exp* updateRefs(StatementSet& defs, int memDepth,
@@ -410,6 +412,8 @@ virtual int getMemDepth();
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
+    virtual Exp *fixCallRefs();
+
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
@@ -483,6 +487,8 @@ virtual int getMemDepth();
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
+    virtual Exp *fixCallRefs();
+
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
@@ -551,6 +557,8 @@ virtual int getMemDepth();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    virtual Exp *fixCallRefs();
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
@@ -689,6 +697,7 @@ virtual void print(std::ostream& os, bool withUses = false);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
     void    addUsedLocs(LocationSet& used);
+    virtual Exp *fixCallRefs();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 virtual Exp* addSubscript(Statement* def) {this->def = def; return this;}
     void    setDef(Statement* def) {this->def = def;}
@@ -724,6 +733,7 @@ virtual int getNumRefs() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
+    void removeSubscript(Statement* def) { stmtSet.remove(def); }
     Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
     Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
     bool isLastRef(StmtSetIter& it) {return stmtSet.isLast(it);}

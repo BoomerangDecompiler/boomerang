@@ -2628,6 +2628,39 @@ void PhiExp::addUsedLocs(LocationSet& used) {
     // Not sure if we need to see these "uses"
 }
 
+Exp *Unary::fixCallRefs()
+{
+    subExp1 = subExp1->fixCallRefs();
+    return this;
+}
+
+Exp *Binary::fixCallRefs()
+{
+    subExp1 = subExp1->fixCallRefs();
+    subExp2 = subExp2->fixCallRefs();
+    return this;
+}
+
+Exp *Ternary::fixCallRefs()
+{
+    subExp1 = subExp1->fixCallRefs();
+    subExp2 = subExp2->fixCallRefs();
+    subExp3 = subExp3->fixCallRefs();
+    return this;
+}
+
+Exp *RefExp::fixCallRefs() {
+    CallStatement *call = dynamic_cast<CallStatement*>(def);
+    if (call && call->findReturn(subExp1) == -1) { 
+        assert(*call->getProven(subExp1) == *subExp1);
+        Exp *e = call->findArgument(subExp1);
+        assert(e);
+        delete this;
+        return e->clone();
+    }
+    return this;
+}
+
 Exp* Exp::addSubscript(Statement* def) {
         return new RefsExp(this, def);
 }

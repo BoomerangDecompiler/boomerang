@@ -173,10 +173,9 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth, UserProc* proc) {
                         s = bb->getNextStmt(rit, sit)) {
             CallStatement *call = dynamic_cast<CallStatement*>(s);
             if (call) {
-                for (std::vector<Exp*>::iterator it = call->getReturns().begin(); 
-                     it != call->getReturns().end(); it++) 
-                    if (*it && (*it)->getMemDepth() == memDepth)
-                        d->A_orig[n].insert(*it);
+                for (int i = 0; i < call->getNumReturns(); i++)
+                    if (call->getReturnExp(i)->getMemDepth() == memDepth)
+                        d->A_orig[n].insert(call->getReturnExp(i));
             } else {
                 Exp* lhs = s->getLeft();
                 if (lhs != NULL && lhs->getMemDepth() == memDepth)
@@ -262,9 +261,8 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
         // For each definition of some variable a in S
         CallStatement *call = dynamic_cast<CallStatement*>(S);
         if (call) {
-            for (std::vector<Exp*>::iterator it = call->getReturns().begin();
-                 it != call->getReturns().end(); it++) {
-                Exp* a = *it;
+            for (int i = 0; i < call->getNumReturns(); i++) {
+                Exp* a = call->getReturnExp(i);
                 if (a != NULL && a->getMemDepth() == memDepth) {
                     // Push i onto Stack[a]
                     d->Stack[a].push(S);
@@ -319,9 +317,8 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
         // For each definition of some variable a in S
         CallStatement *call = dynamic_cast<CallStatement*>(S);
         if (call) {
-            for (std::vector<Exp*>::iterator it = call->getReturns().begin();
-                 it != call->getReturns().end(); it++) {
-                Exp* a = *it;
+            for (int i = 0; i < call->getNumReturns(); i++) {
+                Exp* a = call->getReturnExp(i);
                 if (a == NULL || a->getMemDepth() != memDepth) continue;
                 d->Stack[a].pop();
             }
