@@ -162,6 +162,18 @@ namespace CallingConvention {
 			virtual Signature *clone();
 			virtual Exp* getProven(Exp* left);
 		};	// class SparcLibSignature
+
+		class PPCSignature : public Signature {
+		public:
+			PPCSignature(const char *name);
+			virtual ~PPCSignature() { }
+			Signature *clone();
+			virtual void addReturn(Type *type, Exp *e = NULL);
+			Exp *getArgumentExp(int n);
+			void addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
+			virtual Exp *getStackWildcard();
+			virtual int	 getStackRegister() {return 1; }
+		};
 	};	// namespace StdC
 };	// namespace CallingConvention
 
@@ -528,6 +540,68 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
 	}
 	return NULL;
 }
+
+
+CallingConvention::StdC::PPCSignature::PPCSignature(const char *nam) : Signature(nam) {
+  //Signature::addReturn(Location::regOf(3));
+}
+
+Signature *CallingConvention::StdC::PPCSignature::clone() {
+	PPCSignature *n = new PPCSignature(name.c_str());
+	n->params = params;
+	n->implicitParams = implicitParams;
+	n->returns = returns;
+	n->ellipsis = ellipsis;
+	n->rettype = rettype;
+	n->preferedName = preferedName;
+	n->preferedReturn = preferedReturn;
+	n->preferedParams = preferedParams;
+	n->unknown = unknown;
+	return n;
+}
+
+
+Exp *CallingConvention::StdC::PPCSignature::getArgumentExp(int n) {
+	if (n < (int)params.size())
+		return Signature::getArgumentExp(n);
+	Exp *e;
+	if (n >= 8) {
+		// PPCs pass the ninth and subsequent parameters at m[%r1+8],
+		// m[%r1+12], etc.
+		e = Location::memOf(new Binary(opPlus,
+			Location::regOf(1),
+			new Const(8 + (n-8)*4)));
+	} else
+		e = Location::regOf((int)(3 + n));
+	return e;
+}
+
+void CallingConvention::StdC::PPCSignature::addReturn(Type *type, Exp *e)
+{
+	if (type->isVoid())
+		return;
+	if (e == NULL) {
+		e = Location::regOf(3);
+	}
+	Signature::addReturn(type, e);
+}
+
+
+void CallingConvention::StdC::PPCSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/) {
+	if (e == NULL) {
+		e = getArgumentExp(params.size());
+	}
+	Signature::addParameter(type, nam, e);
+}
+
+Exp* CallingConvention::StdC::PPCSignature::getStackWildcard() {
+	// m[r1 - WILD]
+	return Location::memOf(
+		new Binary(opMinus,
+			Location::regOf(1),
+			new Terminal(opWild)));
+}
+
 
 CallingConvention::StdC::SparcSignature::SparcSignature(const char *nam) : Signature(nam) {
 	Signature::addReturn(Location::regOf(14));
@@ -1022,8 +1096,7 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 	switch (plat) {
 		case PLAT_PENTIUM:
 			if (cc == CONV_PASCAL)
-				// For now, assume the only pascal calling convention pentium
-				// signatures will be Windows
+				// For now, assume the only pascal calling convention pentium signatures will be Windows
 				return new CallingConvention::Win32Signature(nam);
 			else if (cc == CONV_THISCALL)
 				return new CallingConvention::Win32TcSignature(nam);
@@ -1032,11 +1105,12 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 		case PLAT_SPARC:
 			assert(cc == CONV_C);
 			return new CallingConvention::StdC::SparcSignature(nam);
+		case PLAT_PPC:
+			return new CallingConvention::StdC::PPCSignature(nam);
 		// insert other conventions here
-		default:
-			std::cerr << "unknown signature: " << conventionName(cc) << " " <<
-				platformName(plat) << "\n";
-			assert(false);
+	default:
+		std::cerr << "unknown signature: " << conventionName(cc) << " " << platformName(plat) << "\n";
+		assert(false);
 	}
 	return NULL;
 }
