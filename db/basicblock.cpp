@@ -20,6 +20,7 @@
  * 18 Apr 02 - Mike: Changes for boomerang
  * 04 Dec 02 - Mike: Added isJmpZ
  * 09 Jan 02 - Mike: Untabbed, reformatted
+ * 17 Jun 03 - Mike: Fixed an apparent error in generateCode (getCond)
 */
 
 
@@ -1236,7 +1237,11 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                         latchNode->WriteBB(hll, indLevel+1);
                     }
                         
-                    hll->AddPosttestedLoopEnd(indLevel, getCond());
+                    //hll->AddPosttestedLoopEnd(indLevel, getCond());
+                    // MVE: the above seems to fail when there is a call in
+                    // the middle of the loop (so loop is 2 BBs)
+                    // Just a wild stab:
+                    hll->AddPosttestedLoopEnd(indLevel, latchNode->getCond());
                 } else {
                     assert(lType == Endless);
 
