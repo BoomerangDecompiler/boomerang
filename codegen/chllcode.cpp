@@ -245,9 +245,29 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             break;
         case opAt:
         {
+            // General form:
+            //  s1 >> last & (1 << first-last+1)-1
+            // When first == last:
+            //  s1 >> last & 1
             openParen(str, curPrec, PREC_BIT_AND);
-            str << "(";         // Since >> lower than &
             appendExp(str, t->getSubExp1(), PREC_BIT_SHIFT);
+            Exp* first = t->getSubExp2();
+            Exp* last  = t->getSubExp3();
+            str << " >> ";
+            appendExp(str, last, PREC_BIT_SHIFT);
+            str << " & ";
+            if (*first == *last)
+                // Can use a much shorter form; just and with 1
+                str << "1";
+            else {
+                str << "(1 << ";
+                appendExp(str, first, PREC_ADD);
+                str << "-";
+                appendExp(str, last, PREC_ADD);
+                str << "+1)-1";
+            }
+            closeParen(str, curPrec, PREC_BIT_AND);
+#if 0
             c = dynamic_cast<Const*>(t->getSubExp3());
             assert(c && c->getOper() == opIntConst);
             int last = c->getInt();
@@ -257,6 +277,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
             unsigned int mask = (1 << (c->getInt() - last + 1)) - 1;
             str << "&0x" << std::hex << mask;
             closeParen(str, curPrec, PREC_BIT_AND);
+#endif
             break;
         }
         case opPlus:
@@ -801,7 +822,7 @@ void CHLLCode::AddGoto(int indLevel, int ord)
 {
     std::ostringstream s;
     indent(s, indLevel);
-    s << "goto L" << std::dec << ord;
+    s << "goto L" << std::dec << ord << ";";
     lines.push_back(strdup(s.str().c_str()));
 }
 
@@ -852,6 +873,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
                 asgnType,
                 asgn->getLeft()), PREC_ASSIGN);
     else if (asgn->getLeft()->getOper() == opGlobal &&
+             ((Location*)asgn->getLeft())->getType() && 
              ((Location*)asgn->getLeft())->getType()->isArray())
         appendExp(s, new Binary(opArraySubscript, asgn->getLeft(),
             new Const(0)), PREC_ASSIGN);
