@@ -3,7 +3,7 @@
 
 #include <signal.h>
 
-//#define SPARC_DEBUG
+#define SPARC_DEBUG
 
 #ifdef SPARC_DEBUG
 

@@ -36,6 +36,7 @@
 #include "frontend.h"
 #include "decoder.h"
 #include "analysis.h"
+#include "boomerang.h"
 
 #define DEBUG_ANALYSIS 0        // Non zero for debugging
 
@@ -399,7 +400,12 @@ void Analysis::analyseCalls(PBB pBB, UserProc *proc)
         CallStatement* call = (CallStatement*)(*it)->getList().back();
         if (call->getDestProc() == NULL && !call->isComputed()) {
             Proc *p = proc->getProg()->findProc(call->getFixedDest());
-            assert(p);
+            if (p == NULL) {
+                LOG << "cannot find proc for dest " 
+                    << call->getFixedDest() << " in call at " 
+                    << (*it)->getAddress() << "\n";
+                assert(p);
+            }
             call->setDestProc(p);
         }
         call->setSigArguments();

@@ -652,6 +652,21 @@ ADDRESS BasicBlock::getCallDest() {
     return (ADDRESS)-1;
 }
 
+Proc *BasicBlock::getCallDestProc() {
+    if (m_nodeType != CALL)
+        return 0;
+    if (m_pRtls->size() == 0)
+        return 0;
+    RTL* lastRtl = m_pRtls->back();
+    std::list<Statement*>::reverse_iterator it;
+    std::list<Statement*>& sl = lastRtl->getList();
+    for (it = sl.rbegin(); it != sl.rend(); it++) {
+        if ((*it)->getKind() == STMT_CALL)
+            return ((CallStatement*)(*it))->getDestProc();
+    }
+    return 0;
+}
+
 //
 // Get First/Next Statement in a BB
 //

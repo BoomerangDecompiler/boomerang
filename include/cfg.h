@@ -271,6 +271,7 @@ public:
      * Returns -1 otherwise
      */
     ADDRESS getCallDest();
+    Proc *getCallDestProc();
 
     /*
      * Traverse this node and recurse on its children in a depth first manner.
