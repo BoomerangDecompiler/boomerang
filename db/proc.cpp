@@ -1564,7 +1564,6 @@ void UserProc::removeUnusedStatements() {
         }
     }
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
-std::cerr << "Statement " << s->getNumber() << " used " << useCounts[s] << " times\n";
         if (useCounts[s] == 0) {
             if (VERBOSE)
                 std::cerr << "Removing unused statement " << s->getNumber() <<
