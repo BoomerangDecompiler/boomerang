@@ -13,8 +13,9 @@
 # under Linux.
 #
 # 19 Mar 02 - Mike: Added proper dependencies
+# 24 Mar 02 - Mike: CXX now "g++ -g" for final Solaris link and debug
 
-CC = gcc
+CC = g++ -g
 
 PROGRAM = TestPlugin/TestPlugin boomerang
 all:    $(PROGRAM)
