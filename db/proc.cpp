@@ -1122,6 +1122,7 @@ void UserProc::removeRedundantPhis()
             StatementVec::iterator it;
             bool allsame = true;
             it = p->begin();
+            assert(it != p->end());
             Statement* s1 = *it;
             Statement* noncall = s1;
             if (it != p->end())
