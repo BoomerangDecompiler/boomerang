@@ -17,8 +17,8 @@
 #define HELLO_PENTIUM		BOOMDIR "/test/pentium/hello"
 
 #include "ProgTest.h"
-//#include "BinaryFile.h"
-//#include "pentiumfrontend.h"
+#include "BinaryFile.h"
+#include "pentiumfrontend.h"
 #include <map>
 #include <sstream>
 
@@ -34,7 +34,6 @@ suite->addTest(new CppUnit::TestCaller<ProgTest> ("ProgTest", \
 
 void ProgTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testName);
-    MYTEST(testLibParams);
 }
 
 int ProgTest::countTestCases () const
@@ -66,37 +65,18 @@ void ProgTest::tearDown () {
  * OVERVIEW:        Test setting and reading name
  *============================================================================*/
 void ProgTest::testName () {
-/*    std::string actual(prog.getName());
-    CPPUNIT_ASSERT_EQUAL(std::string("default name"), actual);
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
+    std::string actual(prog->getName());
+    std::string expected(HELLO_PENTIUM);
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
     std::string name("Happy prog");
-    prog.setName(name.c_str());
-    actual =  prog.getName();
-    CPPUNIT_ASSERT_EQUAL(name, actual); */
+    prog->setName(name.c_str());
+    actual =  prog->getName();
+    CPPUNIT_ASSERT_EQUAL(name, actual);
 }
 
-/*==============================================================================
- * FUNCTION:        ProgTest::testLibParams
- * OVERVIEW:        Test loading of the library parameters
- *============================================================================*/
-void ProgTest::testLibParams () {
-	// Read the library parameter information
-	// Oops - now have to set up a frontend before calling this
-/*    prog.clear();
-    prog.pBF = BinaryFile::Load(HELLO_PENTIUM);
-    CPPUNIT_ASSERT(prog.pBF != 0);
-    // Set the text limits
-    prog.getTextLimits();
-
-	prog.pFE = new PentiumFrontEnd(prog.textDelta, prog.limitTextHigh);
-
-    prog.readLibParams();        // Read library signatures
-	// The test is that it doesn't fall over, really
-	CPPUNIT_ASSERT(prog.mapLibParam.size() != 0);
-
-	prog.pBF->UnLoad();
-	delete prog.pBF;
-	prog.pBF = NULL;
-	delete prog.pFE;
-	prog.pFE = NULL; */
-}
-
+// Pathetic: the second test we had (for readLibraryParams) is now obsolete;
+// the front end does this now.
