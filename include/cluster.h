@@ -61,6 +61,7 @@ public:
 	const char *makeDirs();
 	const char *getOutPath(const char *ext);
 	Cluster *find(const char *nam);
+    virtual bool isAggregate() { return false; }
 
 	virtual Memo *makeMemo(int mId);
 	virtual void readMemo(Memo *m, bool dec);
@@ -69,6 +70,25 @@ public:
 protected:
 
 	friend class XMLProgParser;
+};
+
+class Module : public Cluster
+{
+public:
+    Module(const char *name) : Cluster(name) { }
+};
+
+class Class : public Cluster
+{
+protected:
+    CompoundType *type;
+
+public:
+    Class(const char *name) : Cluster(name) { type = new CompoundType(); }
+
+    // A Class tends to be aggregated into the parent Module, 
+    // this isn't the case with Java, but hey, we're not doing that yet.
+    virtual bool isAggregate() { return true; }
 };
 
 #endif /*__CLUSTER_H__*/

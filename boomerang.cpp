@@ -778,24 +778,34 @@ bool Boomerang::setOutputDirectory(const char *path)
 
 void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog)
 {
+    if (VERBOSE)
+        LOG << "Adding Objective-C information to Prog.\n";
     Cluster *root = prog->getRootCluster();
     for (std::map<std::string, ObjcModule>::iterator it = modules.begin(); it != modules.end(); it++) {
         ObjcModule &mod = (*it).second;
-        Cluster *module = new Cluster(mod.name.c_str());
+        Module *module = new Module(mod.name.c_str());
         root->addChild(module);
+        if (VERBOSE)
+            LOG << "\tModule: " << mod.name.c_str() << "\n";
         for (std::map<std::string, ObjcClass>::iterator it1 = mod.classes.begin(); it1 != mod.classes.end(); it1++) {
             ObjcClass &c = (*it1).second;
-            Cluster *cl = new Cluster(c.name.c_str());
+            Class *cl = new Class(c.name.c_str());
             root->addChild(cl);
+            if (VERBOSE)
+                LOG << "\t\tClass: " << c.name.c_str() << "\n";
             for (std::map<std::string, ObjcMethod>::iterator it2 = c.methods.begin(); it2 != c.methods.end(); it2++) {
                 ObjcMethod &m = (*it2).second;
                 // TODO: parse :'s in names
                 Proc *p = prog->newProc(m.name.c_str(), m.addr);
                 p->setCluster(cl);
                 // TODO: decode types in m.types
+                if (VERBOSE)
+                    LOG << "\t\t\tMethod: " << m.name.c_str() << "\n";
             }
         }
     }
+    if (VERBOSE)
+        LOG << "\n";
 }
 
 Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)

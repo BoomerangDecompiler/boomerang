@@ -37,8 +37,8 @@
 #include "objc/objc-class.h"
 #include "objc/objc-runtime.h"
 
-#define DEBUG_MACHO_LOADER
-#define DEBUG_MACHO_LOADER_OBJC
+//#define DEBUG_MACHO_LOADER
+//#define DEBUG_MACHO_LOADER_OBJC
 
 MachOBinaryFile::MachOBinaryFile() : m_pFileName(0)
 { }

@@ -41,6 +41,7 @@
 #include <direct.h>					// For Windows mkdir()
 #endif
 
+#include "type.h"
 #include "cluster.h"
 #include "types.h"
 #include "statement.h"

@@ -35,12 +35,12 @@
 #include <types.h>
 #include <sstream>
 #include <algorithm>		// For find()
+#include "type.h"
 #include "cluster.h"
 #include "statement.h"
 #include "exp.h"
 #include "cfg.h"
 #include "register.h"
-#include "type.h"
 #include "rtl.h"
 #include "proc.h"
 #include "prog.h"

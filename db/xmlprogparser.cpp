@@ -15,6 +15,7 @@
 extern "C" {
 #include "expat.h"
 }
+#include "type.h"
 #include "cluster.h"
 #include "prog.h"
 #include "proc.h"
