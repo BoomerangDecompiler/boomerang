@@ -251,6 +251,8 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 	bool change;
 	bool convert = false;
 	int changes = 0;
+	int sp = proc->getSignature()->getStackRegister(proc->getProg());
+	Exp* regSp = Location::regOf(sp);
 	// Repeat substituting into this statement while there is a single reference
 	// component in it
 	// But all RefExps will have just one component. Maybe calls (later) will
@@ -324,6 +326,15 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 				if (def->getLeft()->getType() && def->getLeft()->getType()->isArray()) {
 					// Assigning to an array, don't propagate
 					continue;
+				}
+				if (! (*def->getLeft() == *regSp)) {
+					// Try to prevent too much propagation, e.g. fromSSA, sumarray
+					LocationSet used;
+					def->addUsedLocs(used);
+					RefExp left(def->getLeft(), (Statement*)-1);
+					if (used.find(&left))
+						// We have something like eax = eax + 1
+						continue;
 				}
 				change = doPropagateTo(memDepth, def, convert);
 			}
@@ -2269,8 +2280,7 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
 #endif
 					
 		}
-		// MVE: a BoolAssign should be an Assign, or something close
-		case STMT_BOOL:
+		case STMT_BOOLASSIGN:
 			return new BooleanType;
 			break;
 		default:
@@ -2504,7 +2514,7 @@ bool ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
  *============================================================================*/
 BoolAssign::BoolAssign(int sz): Assignment(NULL), jtCond((BRANCH_TYPE)0),
   pCond(NULL), bFloat(false), size(sz) {
-	kind = STMT_BOOL;
+	kind = STMT_BOOLASSIGN;
 }
 
 /*==============================================================================
@@ -2914,9 +2924,34 @@ void PhiAssign::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
 	os << "*" << type << "* ";
 	if (lhs) lhs->print(os);
-	os << " := phi{";
-	stmtVec.printNums(os);
-	os << "}";
+	os << " := phi";
+	// Print as lhs := phi{9 17} for the common case where the lhs is the same location as all the referenced
+	// locations. When not, print as local4 := phi(r24{9} r24{17})
+	bool simple = true;
+	int n = stmtVec.size();
+	if (n != 0) {
+		StatementVec::iterator it;
+		for (int i = 0; i < n; i++) {
+			Statement* def = stmtVec.getAt(i);
+			if (def == NULL) continue;
+			Exp* left = def->getLeft();
+			if (left == NULL) continue;
+			if (! (*left *= *lhs)) {
+				// One of the phi parameters has a different base expression to lhs. Use non simple print.
+				simple = false;
+				break;
+			}
+		}
+	}
+	if (simple) {
+		os << "{";
+		stmtVec.printNums(os);
+		os << "}";
+	} else {
+		os << "(";
+		stmtVec.printLefts(os);
+		os << ")";
+	}
 }
 void ImplicitAssign::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
