@@ -97,6 +97,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	int gap;			// Number of instructions from the last ordinary call
 
 	SectionInfo* si = GetSectionInfoByName(".text");
+	if (si == NULL) si = GetSectionInfoByName("CODE");
 	assert(si);
 	unsigned textSize = si->uSectionSize;
 	if (textSize < 0x200)
@@ -327,6 +328,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 void Win32BinaryFile::findJumps(ADDRESS curr) {
 	int cnt = 0;			// Count of bytes with no match
 	SectionInfo* sec = GetSectionInfoByName(".text");
+	if (sec == NULL) sec = GetSectionInfoByName("CODE");
+	assert(sec);
 	// Add to native addr to get host:
 	int delta = sec->uHostAddr - sec->uNativeAddr;
 	while (cnt < 0x60) {	// Max of 0x60 bytes without a match
