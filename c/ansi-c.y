@@ -14,7 +14,7 @@
 %define DEBUG 1
 
 %define CONSTRUCTOR_PARAM \
-    std::istream &in, bool trace = false
+    std::istream &in, bool trace
 
 %define CONSTRUCTOR_INIT
 
