@@ -329,7 +329,9 @@ func_decl: signature ';'
          ;
 
 signature: type_ident '(' param_list ')'
-         { Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str()); 
+         { 
+           /* Use the passed calling convention (cc) */
+           Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str()); 
            sig->addReturn($1->ty);
            for (std::list<Parameter*>::iterator it = $3->begin();
                 it != $3->end(); it++)
@@ -388,6 +390,11 @@ symbol_decl: CONSTANT type_ident ';'
              sym->ty = $2->ty;
              symbols.push_back(sym);
            }
+             /* Note: in practice, a function signature needs either a
+               "symbolmods" (__nodecode or __incomplete), or a calling
+               convention (__cdecl, __pascal, __thiscall, etc).
+               This is because of the one-symbol lookahead limitation;
+               the parser can't distinguish 123 int foo from 123 int foo() */
            | CONSTANT symbol_mods signature ';'
            { Symbol *sym = new Symbol($1);
              sym->sig = $3;
@@ -404,7 +411,7 @@ symbol_mods: NODECODE symbol_mods
            { $$ = $2;
              $$->incomplete = true;
            } 
-           | /* */
+           | /* empty */
            { $$ = new SymbolMods(); }
            ;
 

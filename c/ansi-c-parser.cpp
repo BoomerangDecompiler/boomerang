@@ -873,11 +873,11 @@ static const short yyrline[] = { 0,
    157,   161,   163,   167,   169,   171,   173,   177,   180,   182,
    186,   190,   194,   199,   203,   207,   209,   213,   217,   222,
    225,   228,   231,   234,   239,   255,   269,   273,   275,   289,
-   303,   315,   319,   331,   345,   360,   379,   385,   391,   399,
-   403,   407,   411,   414,   417,   421,   424,   427,   430,   435,
-   440,   448,   452,   458,   460,   462,   464,   466,   468,   470,
-   472,   474,   476,   478,   480,   482,   484,   488,   492,   497,
-   499,   505
+   303,   315,   319,   331,   347,   362,   381,   387,   398,   406,
+   410,   414,   418,   421,   424,   428,   431,   434,   437,   442,
+   447,   455,   459,   465,   467,   469,   471,   473,   475,   477,
+   479,   481,   483,   485,   487,   489,   491,   495,   499,   504,
+   506,   512
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
@@ -1735,7 +1735,9 @@ case 33:
     break;}
 case 34:
 #line 332 "ansi-c.y"
-{ Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
+{ 
+           /* Use the passed calling convention (cc) */
+           Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
                 it != yyvsp[-1].param_list->end(); it++)
@@ -1750,7 +1752,7 @@ case 34:
          ;
     break;}
 case 35:
-#line 346 "ansi-c.y"
+#line 348 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc,
               yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
@@ -1767,7 +1769,7 @@ case 35:
          ;
     break;}
 case 36:
-#line 361 "ansi-c.y"
+#line 363 "ansi-c.y"
 { CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam.c_str()); 
            if (yyvsp[-4].custom_options->exp)
                sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
@@ -1786,13 +1788,13 @@ case 36:
          ;
     break;}
 case 37:
-#line 380 "ansi-c.y"
+#line 382 "ansi-c.y"
 { SymbolRef *ref = new SymbolRef(yyvsp[-2].ival, yyvsp[-1].str);
               refs.push_back(ref);
             ;
     break;}
 case 38:
-#line 386 "ansi-c.y"
+#line 388 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-2].ival);
              sym->nam = yyvsp[-1].type_ident->nam;
              sym->ty = yyvsp[-1].type_ident->ty;
@@ -1800,7 +1802,7 @@ case 38:
            ;
     break;}
 case 39:
-#line 392 "ansi-c.y"
+#line 399 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-3].ival);
              sym->sig = yyvsp[-1].sig;
              sym->mods = yyvsp[-2].mods;
@@ -1808,64 +1810,64 @@ case 39:
            ;
     break;}
 case 40:
-#line 400 "ansi-c.y"
+#line 407 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->noDecode = true;
            ;
     break;}
 case 41:
-#line 404 "ansi-c.y"
+#line 411 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->incomplete = true;
            ;
     break;}
 case 42:
-#line 408 "ansi-c.y"
+#line 415 "ansi-c.y"
 { yyval.mods = new SymbolMods(); ;
     break;}
 case 43:
-#line 412 "ansi-c.y"
+#line 419 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->exp = yyvsp[-1].exp;
            ;
     break;}
 case 44:
-#line 415 "ansi-c.y"
+#line 422 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->sp = yyvsp[-1].ival;
            ;
     break;}
 case 45:
-#line 418 "ansi-c.y"
+#line 425 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); ;
     break;}
 case 46:
-#line 422 "ansi-c.y"
+#line 429 "ansi-c.y"
 { yyval.type = new ArrayType(NULL, yyvsp[-1].ival);
           ;
     break;}
 case 47:
-#line 425 "ansi-c.y"
+#line 432 "ansi-c.y"
 { yyval.type = new ArrayType(NULL);
           ;
     break;}
 case 48:
-#line 428 "ansi-c.y"
+#line 435 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
           ;
     break;}
 case 49:
-#line 431 "ansi-c.y"
+#line 438 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-2].type);
           ;
     break;}
 case 50:
-#line 436 "ansi-c.y"
+#line 443 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-1].type;
             yyval.type_ident->nam = yyvsp[0].str;
           ;
     break;}
 case 51:
-#line 441 "ansi-c.y"
+#line 448 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             ((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
             yyval.type_ident->ty = yyvsp[0].type;
@@ -1873,94 +1875,94 @@ case 51:
           ;
     break;}
 case 52:
-#line 449 "ansi-c.y"
+#line 456 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
           ;
     break;}
 case 53:
-#line 453 "ansi-c.y"
+#line 460 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
             yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
           ;
     break;}
 case 54:
-#line 459 "ansi-c.y"
+#line 466 "ansi-c.y"
 { yyval.type = new CharType(); ;
     break;}
 case 55:
-#line 461 "ansi-c.y"
+#line 468 "ansi-c.y"
 { yyval.type = new IntegerType(16); ;
     break;}
 case 56:
-#line 463 "ansi-c.y"
+#line 470 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 57:
-#line 465 "ansi-c.y"
+#line 472 "ansi-c.y"
 { yyval.type = new IntegerType(8, false); ;
     break;}
 case 58:
-#line 467 "ansi-c.y"
+#line 474 "ansi-c.y"
 { yyval.type = new IntegerType(16, false); ;
     break;}
 case 59:
-#line 469 "ansi-c.y"
+#line 476 "ansi-c.y"
 { yyval.type = new IntegerType(32, false); ;
     break;}
 case 60:
-#line 471 "ansi-c.y"
+#line 478 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 61:
-#line 473 "ansi-c.y"
+#line 480 "ansi-c.y"
 { yyval.type = new IntegerType(64); ;
     break;}
 case 62:
-#line 475 "ansi-c.y"
+#line 482 "ansi-c.y"
 { yyval.type = new IntegerType(64, false); ;
     break;}
 case 63:
-#line 477 "ansi-c.y"
+#line 484 "ansi-c.y"
 { yyval.type = new FloatType(32); ;
     break;}
 case 64:
-#line 479 "ansi-c.y"
+#line 486 "ansi-c.y"
 { yyval.type = new FloatType(64); ;
     break;}
 case 65:
-#line 481 "ansi-c.y"
+#line 488 "ansi-c.y"
 { yyval.type = new VoidType(); ;
     break;}
 case 66:
-#line 483 "ansi-c.y"
+#line 490 "ansi-c.y"
 { yyval.type = new PointerType(yyvsp[-1].type); ;
     break;}
 case 67:
-#line 485 "ansi-c.y"
+#line 492 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival); 
     ;
     break;}
 case 68:
-#line 489 "ansi-c.y"
+#line 496 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-2].type); 
     ;
     break;}
 case 69:
-#line 493 "ansi-c.y"
+#line 500 "ansi-c.y"
 { //$$ = Type::getNamedType($1); 
       //if ($$ == NULL)
       yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
 case 70:
-#line 498 "ansi-c.y"
+#line 505 "ansi-c.y"
 { yyval.type = yyvsp[0].type; ;
     break;}
 case 71:
-#line 500 "ansi-c.y"
+#line 507 "ansi-c.y"
 {
       char tmp[1024];
       sprintf(tmp, "struct %s", yyvsp[0].str);
@@ -1968,7 +1970,7 @@ case 71:
     ;
     break;}
 case 72:
-#line 506 "ansi-c.y"
+#line 513 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
            it != yyvsp[-1].type_ident_list->end(); it++) {
@@ -2181,8 +2183,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 1010 "/usr/local/lib/bison.cc" */
-#line 2185 "ansi-c-parser.cpp"
-#line 515 "ansi-c.y"
+#line 2187 "ansi-c-parser.cpp"
+#line 522 "ansi-c.y"
 
 #include <stdio.h>
 

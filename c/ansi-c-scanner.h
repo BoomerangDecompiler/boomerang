@@ -87,10 +87,11 @@ public: \
 private: \
     void count(); \
     void comment(); \
+    void commentEOL(); \
     int check_type();
-#line 53 "ansi-c.l"
+#line 54 "ansi-c.l"
 #define YY_AnsiCScanner_LEX_PARAM  YY_AnsiCParser_STYPE &yylval
-#line 55 "ansi-c.l"
+#line 56 "ansi-c.l"
 #line 52 "//usr/local/lib/flexskel.h"
 
 #ifdef YY_USE_CLASS
@@ -415,7 +416,7 @@ class YY_AnsiCScanner_CLASS YY_AnsiCScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 174 "ansi-c.l"
+#line 176 "ansi-c.l"
 #endif
 #line 375 "//usr/local/lib/flexskel.h"
 
