@@ -150,7 +150,7 @@ private:
 
 
 #ifdef _WIN32
-#ifdef _MSC_VER			// If don't use dllexport, get Vtable undefined!
+#if defined _MSC_VER || defined BUILDING_LIBBINARYFILE			// If don't use dllexport, get Vtable undefined!
 #define IMPORT_BINARYFILE __declspec(dllexport)
 #else
 #define IMPORT_BINARYFILE __declspec(dllimport)
