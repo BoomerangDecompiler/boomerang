@@ -186,7 +186,6 @@ public:
  * This class plus ParamEntry and RTLInstDict should be moved to a separate
  * header file...
  *============================================================================*/
-
 class TableEntry : public gc {
 public:
     TableEntry();
@@ -241,8 +240,6 @@ class ParamEntry : public gc {
     int mark;                   /* Traversal mark. (free temporary use,
                                    basically) */
 };
-
-class PartialType;
 
 
 /*==============================================================================
