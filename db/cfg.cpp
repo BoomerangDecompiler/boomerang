@@ -60,7 +60,7 @@ void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
  * RETURNS:			<nothing>
  *============================================================================*/
 Cfg::Cfg()
-  : entryBB(NULL), exitBB(NULL), m_bWellFormed(false), lastLabel(0), structured(false)
+  : entryBB(NULL), exitBB(NULL), m_bWellFormed(false), structured(false), lastLabel(0)
 {}
 
 /*==============================================================================
