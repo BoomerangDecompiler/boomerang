@@ -15,6 +15,7 @@
 #define __SIGNATURE_H_
 
 class Statement;
+class BinaryFile;
 
 // Used to represent local variables (registers, stack locations, etc)
 class Local {
