@@ -144,7 +144,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
         return;
     bool wasVisited = visited;
     visited = true;
-	int i;
+    int i;
     for (i = 0; i < depth; i++)
         os << "   ";
     os << "<proc name=\"" << getName() << "\">\n";
@@ -167,7 +167,7 @@ void Proc::printDetailsXML()
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-details.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
-	int i;
+    int i;
     for (i = 0; i < signature->getNumParams(); i++) {
         out << "   <param name=\"" << signature->getParamName(i) << "\" "
             << "exp=\"" << signature->getParamExp(i) << "\" "
@@ -575,16 +575,6 @@ Proc *Proc::getFirstCaller() {
     return m_firstCaller; 
 }
 
-Exp *Proc::getProven(Exp *left)
-{
-    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
-         it != proven.end(); it++) 
-        if (*(*it)->getSubExp1() == *left)
-            return (*it)->getSubExp2();
-    // not found, try the signature
-    return signature->getProven(left);
-}
-
 /**********************
  * LibProc methods.
  *********************/
@@ -617,6 +607,17 @@ void LibProc::getInternalStatements(StatementList &internal) {
 std::ostream& LibProc::put(std::ostream& os) {
     os << "library procedure `" << signature->getName() << "' resides at 0x";
     return os << std::hex << address << std::endl;
+}
+
+Exp *LibProc::getProven(Exp *left)
+{
+    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
+         it != proven.end(); it++) 
+        if (*(*it)->getSubExp1() == *left)
+            return (*it)->getSubExp2();
+    // not found, try the signature
+    // Shouldn't this only be for library functions?
+    return signature->getProven(left);
 }
 
 /**********************
@@ -966,20 +967,20 @@ void UserProc::removeStatement(Statement *stmt) {
         LocationSet refs;
         (*it)->addUsedLocs(refs);
         LocationSet::iterator rr;
-	bool usesIt = false;
+    bool usesIt = false;
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             Exp* r = *rr;
             if (r->isSubscript() && ((RefExp*)r)->getRef() == stmt) {
-		usesIt = true;
-		break;
-	    }
-	}
-	if (usesIt) {
-	    LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
-	    proven.erase(it);
-	    it = proven.begin();
-	    continue;
-	}
+        usesIt = true;
+        break;
+        }
+    }
+    if (usesIt) {
+        LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
+        proven.erase(it);
+        it = proven.begin();
+        continue;
+    }
     }
 
     // remove from BB/RTL
@@ -1337,7 +1338,7 @@ int UserProc::findMaxDepth() {
         // Assume only need to check assignments
         if (s->getKind() == STMT_ASSIGN) {
             int depth = ((Assign*)s)->getMemDepth();
-			if (depth > maxDepth) maxDepth = depth;
+            if (depth > maxDepth) maxDepth = depth;
         }
     }
     return maxDepth;
@@ -1645,6 +1646,13 @@ void UserProc::addNewReturns(int depth) {
     }
 }
 
+// m[WILD]{0}
+static RefExp *memOfWild = new RefExp(
+    Location::memOf(new Terminal(opWild)), NULL);
+// r[WILD INT]{0}
+static RefExp* regOfWild = new RefExp(
+    Location::regOf(new Terminal(opWildIntConst)), NULL);
+
 void UserProc::addNewParameters() {
 
     if (signature->isPromoted())
@@ -1656,19 +1664,24 @@ void UserProc::addNewParameters() {
     StatementList stmts;
     getStatements(stmts);
 
-    RefExp *r = new RefExp(Location::memOf(new Terminal(opWild), this), NULL);
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        Exp *result;
-        if (s->search(r, result)) {
+        // For now, assume that all parameters will be m[]{0} or r[]{0}
+        // (Seems pretty reasonable)
+        std::list<Exp*> results;
+        s->searchAll(memOfWild, results);
+        s->searchAll(regOfWild, results);
+        while (results.size()) {
             bool allZero;
-            Exp *e = result->clone()->removeSubscripts(allZero);
-            if (allZero && signature->findParam(e) == -1 &&
-                  signature->findImplicitParam(e) == -1) {
-                //int sp = signature->getStackRegister(prog);
+            Exp *e = results.front()->clone()->removeSubscripts(allZero);
+            results.erase(results.begin());     // Remove first result
+            if (allZero && signature->findParam(e) == -1
+                  // ? Often need to transfer from implit to explicit:
+                  // && signature->findImplicitParam(e) == -1
+                  ) {
                 if (signature->isStackLocal(prog, e) ||
-                    e->getOper() == opLocal)  {
+                      e->getOper() == opLocal)  {
                     if (VERBOSE)
                         LOG << "ignoring local " << e << "\n";
                     continue;
@@ -1707,7 +1720,8 @@ void UserProc::addNewParameters() {
                 if ((e->getOper() != opMemOf ||
                     e->getSubExp1()->getOper() != opPlus ||
                     !(*e->getSubExp1()->getSubExp1() == *Location::regOf(28)) ||
-                    e->getSubExp1()->getSubExp2()->getOper() != opIntConst) && e->getOper() != opRegOf) {
+                    e->getSubExp1()->getSubExp2()->getOper() != opIntConst)
+                    && e->getOper() != opRegOf) {
                     if (VERBOSE)
                         LOG << "ignoring non pentium " << e << "\n";
                     continue;
@@ -1733,18 +1747,20 @@ void UserProc::trimParameters(int depth) {
     getStatements(stmts);
 
     // find parameters that are referenced (ignore calls to this)
-    int nparams = signature->getNumParams() + signature->getNumImplicitParams();
+    int nparams = signature->getNumParams();
+    int totparams = nparams + signature->getNumImplicitParams();
     std::vector<Exp*> params;
-    bool referenced[32];
-		assert(nparams < (int)(sizeof(referenced)/sizeof(bool)));
-	int i;
-    for (i = 0; i < signature->getNumParams(); i++) {
+    bool referenced[64];
+    assert(totparams <= (int)(sizeof(referenced)/sizeof(bool)));
+    int i;
+    for (i = 0; i < nparams; i++) {
         referenced[i] = false;
+        // We want the 
         params.push_back(signature->getParamExp(i)->clone()->
                             expSubscriptVar(new Terminal(opWild), NULL));
     }
     for (i = 0; i < signature->getNumImplicitParams(); i++) {
-        referenced[i + signature->getNumParams()] = false;
+        referenced[i + nparams] = false;
         params.push_back(signature->getImplicitParamExp(i)->clone()->
                             expSubscriptVar(new Terminal(opWild), NULL));
     }
@@ -1770,18 +1786,20 @@ void UserProc::trimParameters(int depth) {
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
-            for (int i = 0; i < nparams; i++) {
+            for (int i = 0; i < totparams; i++) {
                 Exp *p, *pe;
-                if (i < signature->getNumParams()) {
+                if (i < nparams) {
                     p = Location::param(signature->getParamName(i), this);
                     pe = signature->getParamExp(i);
                 } else {
                     p = Location::param(signature->getImplicitParamName(
-                                i - signature->getNumParams()), this);
-                    pe = signature->getImplicitParamExp(i - signature->getNumParams());
+                                i - nparams), this);
+                    pe = signature->getImplicitParamExp(i - nparams);
                 }
                 if (!referenced[i] && excluded.find(s) == excluded.end() && 
-                    (s->usesExp(params[i]) || s->usesExp(p)))
+                    // Search for the named parameter (e.g. param1), and just
+                    // in case, also for the expression (e.g. r8{0})
+                    (s->usesExp(p) || s->usesExp(params[i])))
                     referenced[i] = true;
                 if (!referenced[i] && excluded.find(s) == excluded.end() &&
                     s->isPhi() && *s->getLeft() == *pe) {
@@ -1801,7 +1819,7 @@ void UserProc::trimParameters(int depth) {
         }
     }
 
-    for (i = 0; i < nparams; i++) {
+    for (i = 0; i < totparams; i++) {
         if (!referenced[i] && (depth == -1 || 
               params[i]->getMemDepth() == depth)) {
             bool allZero;
@@ -1883,6 +1901,9 @@ void UserProc::addReturn(Exp *e)
 
 void Proc::addParameter(Exp *e)
 {
+    // In case it's already an implicit argument:
+    removeParameter(e);
+
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
          it != callerSet.end(); it++)
             (*it)->addArgument(e);
@@ -2211,7 +2232,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
         Statement* s = *it;
         for (int i = 0; i < signature->getNumParams(); i++) {
             if (signature->getParamExp(i)->getMemDepth() == depth ||
-                depth < 0) {
+                  depth < 0) {
                 Exp *r = signature->getParamExp(i)->clone();
                 r = r->expSubscriptVar(new Terminal(opWild), NULL);
                 if (r->getOper() == opSubscript)
@@ -2337,8 +2358,11 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
     }
 
     int sp = signature->getStackRegister(prog);
-    if (getProven(Location::regOf(sp)) == NULL)
+    if (getProven(Location::regOf(sp)) == NULL) {
+        if (VERBOSE)
+            LOG << "Can't replace locals since sp unproven\n";
         return;    // can't replace if nothing proven about sp
+    }
 
     // start with calls because that's where we have the most types
     StatementList::iterator it;
@@ -2487,7 +2511,7 @@ bool UserProc::nameStackLocations() {
             }
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())
-					->getStr();
+                    ->getStr();
             if (memref->getType() != NULL)
                 locals[name] = memref->getType();
             locals[name] = s->updateType(memref, locals[name]);
@@ -2768,7 +2792,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                     LOG << "clearing return set of unused call " << s << "\n";
                 CallStatement *call = (CallStatement*)s;
                 std::vector<Exp*> returns;
-				int i;
+                int i;
                 for (i = 0; i < call->getNumReturns(); i++)
                     returns.push_back(call->getReturnExp(i));
                 for (i = 0; i < (int)returns.size(); i++)
@@ -3451,5 +3475,17 @@ void UserProc::stripRefs() {
     // Now delete the phis; somewhat inefficient at present
     for (it = delList.begin(); it != delList.end(); it++)
         removeStatement(*it);
+}
+
+Exp *UserProc::getProven(Exp *left)
+{
+    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
+         it != proven.end(); it++) 
+        if (*(*it)->getSubExp1() == *left)
+            return (*it)->getSubExp2();
+    // not found, try the signature
+    // Shouldn't this only be for library functions?
+    //return signature->getProven(left);
+    return NULL;
 }
 
