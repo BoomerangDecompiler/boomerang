@@ -3,8 +3,6 @@
 
 #include <signal.h>
 
-#define SPARC_DEBUG
-
 #ifdef SPARC_DEBUG
 
 void segv_handler(int a, siginfo_t *b, void *c)
