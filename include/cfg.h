@@ -245,6 +245,11 @@ public:
     PBB getOutEdge(unsigned int i);
 
     /*
+     * Get the index of my in-edges is BB pred
+     */
+    int whichPred(PBB pred);
+
+    /*
      * Add an in-edge
      */
     void addInEdge(PBB newInEdge);

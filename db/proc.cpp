@@ -1057,7 +1057,7 @@ std::set<UserProc*>* UserProc::decompile() {
             trimReturns();
             trimParameters();
         }
-        if (signature->getNumReturns() == 1)
+        if (signature->getNumReturns() >= 1)
             cfg->setReturnVal(signature->getReturnExp(0)->clone());
         if (VERBOSE) {
             std::cerr << "===== After replacing params =====\n";
@@ -1139,7 +1139,7 @@ void UserProc::removeRedundantPhis()
             // equal values then we can replace the phi with any one of 
             // the values, but there's not much point if they're all calls
             PhiExp *p = (PhiExp*)s->getRight();
-            StmtSetIter it;
+            StmtVecIter it;
             bool allsame = true;
             Statement *s1 = p->getFirstRef(it);  
             Statement *noncall = s1;
@@ -2004,7 +2004,7 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                         if (VERBOSE)
                             std::cerr << "found " << p << " prove for each" 
                                       << std::endl;
-                        StmtSetIter it;
+                        StmtVecIter it;
                         bool ok = true;
                         if (p == lastPhi) {
                             if (VERBOSE)

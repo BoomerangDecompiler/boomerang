@@ -726,6 +726,74 @@ char* StatementList::prints() {
     return debug_buffer;
 }
 
+//
+// StatementVec methods
+//
+
+void StatementVec::putAt(int idx, Statement* s) {
+    if (idx >= (int)svec.size())
+        svec.resize(idx+1, NULL);
+    svec[idx] = s;
+}
+
+Statement* StatementVec::getFirst(StmtVecIter& it) {
+    it = svec.begin();
+    if (it == svec.end())
+        // No elements
+        return NULL;
+    return *it;         // Else return the first element
+}
+
+Statement* StatementVec::getNext(StmtVecIter& it) {
+    if (++it == svec.end())
+        // No more elements
+        return NULL;
+    return *it;         // Else return the next element
+}
+
+Statement* StatementVec::getLast(StmtVecRevIter& it) {
+    it = svec.rbegin();
+    if (it == svec.rend())
+        // No elements
+        return NULL;
+    return *it;         // Else return the last element
+}
+
+Statement* StatementVec::getPrev(StmtVecRevIter& it) {
+    if (++it == svec.rend())
+        // No more elements
+        return NULL;
+    return *it;         // Else return the previous element
+}
+
+char* StatementVec::prints() {
+    std::ostringstream ost;
+    StmtVecIter it;
+    for (it = svec.begin(); it != svec.end(); it++) {
+        ost << *it << ",\t";
+    }
+    strncpy(debug_buffer, ost.str().c_str(), 199);
+    debug_buffer[199] = '\0';
+    return debug_buffer;
+}
+
+// Print just the numbers to stream os
+void StatementVec::printNums(std::ostream& os) {
+    StmtVecIter it;
+    os << std::dec;
+    for (it = svec.begin(); it != svec.end(); ) {
+        if (*it)
+            (*it)->printNum(os);
+        else
+            os << "0";              // Special case for no definition
+        if (++it != svec.end())
+            os << " ";
+    }
+}
+
+
+
+
 char* Statement::prints() {
     std::ostringstream ost;
     print(ost, true);
@@ -1940,7 +2008,7 @@ bool CallStatement::returnsStruct() {
 
 bool CallStatement::search(Exp* search, Exp*& result) {
     result = NULL;
-    for (int i = 0; i < returns.size(); i++) {
+    for (unsigned i = 0; i < returns.size(); i++) {
         if (*returns[i] == *search) {
             result = returns[i];
             return true;
@@ -2783,50 +2851,6 @@ Statement* Assign::clone() {
 bool Assign::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
-
-#if 0
-bool Assign::operator==(const Exp& o) const {
-    if (op == opWild) return true;
-    if (((Assign&)o).op == opWild) return true;
-    if (((Assign&)o).op != opAssign) return false;
-    if (size != ((Assign&)o).size) return false;
-    return *((Binary*)this)->getSubExp1() == *((Binary&)o).getSubExp1() &&
-           *((Binary*)this)->getSubExp2() == *((Binary&)o).getSubExp2();
-}
-bool Assign::operator<  (const Exp& o) const {        // Type sensitive
-    if (op < o.getOper()) return true;
-    if (op > o.getOper()) return false;
-    if (size < ((Assign&)o).size) return true;
-    if (((Assign&)o).size < size) return false;
-    if (*subExp1 < *((Binary&)o).getSubExp1()) return true;
-    if (*((Binary&)o).getSubExp1() < *subExp1) return false;
-    return *subExp2 < *((Binary&)o).getSubExp2();
-}
-
-void Assign::appendDotFile(std::ofstream& of) {
-    of << "e" << std::hex << (int)this << " [shape=record,label=\"{";
-    of << "opAssign\\n0x" << std::hex << (int)this << " | ";
-    of << size << " | <p1>";
-    of << " }\"];\n";
-    subExp1->appendDotFile(of);
-    of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp1 << ";\n";
-    subExp2->appendDotFile(of);
-    of << "e" << std::hex << (int)this << ":p1->e" << (int)subExp2 << ";\n";
-}
-
-Exp* Assign::simplifyArith() {
-    subExp1 = subExp1->simplifyArith();
-    subExp2 = subExp2->simplifyArith();
-    return this;
-}
-
-Exp* Assign::polySimplify(bool& bMod) {
-    subExp1 = subExp1->polySimplify(bMod);
-    subExp2 = subExp2->polySimplify(bMod);
-    return this;
-}
-
-#endif
 
 void Assign::simplify() {
     // simplify arithmetic of assignment

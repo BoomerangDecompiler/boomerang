@@ -851,6 +851,7 @@ bool BasicBlock::isJmpZ(PBB dest) {
         }
     }
     assert(0);
+    return false;
 }
 
 /* Get the loop body */
@@ -1533,41 +1534,41 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
             defs.addSubscript(s);
             // Definitions kill uses
             liveLocs.makeDiff(defs);
+            // Phi functions are a special case. The operands of phi functions
+            // are uses, but they don't interfere with each other (since they
+            // come via different BBs). However, we don't want to put these
+            // uses into liveLocs, because then the livenesses will flow to
+            // all predecessors. Only the appropriate livenesses from the
+            // appropriate phi parameter should flow to the predecessor.
+            // This is done in getLiveOut()
+            if (s->isPhi()) continue;
+            // Check for livenesses that overlap
             LocationSet uses;
             s->addUsedLocs(uses);
-            // Phi functions are a special case. The operands of phi functions
-            // are uses (to be put into liveLocs) but they don't interfere with
-            // each other (since they come via different BBs)
-            if (s->isPhi())
-                liveLocs.makeUnion(uses);
-            else {
-                // Check for livenesses that overlap
-                // For each new use
-                LocSetIter uu;  
-                for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
-                    // Only interested in subscripted vars
-                    if (!u->isSubscript()) continue;
-                    // Interference if we can find a live variable which differs
-                    // only in the reference
-                    if (liveLocs.findDifferentRef((RefExp*)u)) {
-                        // We have an interference. Record it, but only if new
-                        igraph::iterator gg = ig.find(u);
-                        if (gg == ig.end()) {
-                            ig[u] = localNum++;
-                            if (VERBOSE)
-                                std::cerr << "Interference with " << u <<
-                                ", assigned local" << std::dec << localNum-1
-                                << "\n";
-                        }
+            LocSetIter uu;  
+            // For each new use
+            for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
+                // Only interested in subscripted vars
+                if (!u->isSubscript()) continue;
+                // Interference if we can find a live variable which differs
+                // only in the reference
+                if (liveLocs.findDifferentRef((RefExp*)u)) {
+                    // We have an interference. Record it, but only if new
+                    igraph::iterator gg = ig.find(u);
+                    if (gg == ig.end()) {
+                        ig[u] = localNum++;
+                        if (VERBOSE)
+                            std::cerr << "Interference with " << u <<
+                            ", assigned local" << std::dec << localNum-1
+                            << "\n";
                     }
-                    // Add the uses one at a time. Note: don't use makeUnion,
-                    // because then we don't discover interferences from the
-                    // same statement, e.g.
-                    // blah := r24{2} + r24{3}
-                    liveLocs.insert(u);
                 }
+                // Add the uses one at a time. Note: don't use makeUnion,
+                // because then we don't discover interferences from the
+                // same statement, e.g.
+                // blah := r24{2} + r24{3}
+                liveLocs.insert(u);
             }
-std::cerr << "At top of " << s << " liveLocs is " << liveLocs.prints() << "\n";
         }
     }
     // liveIn is what we calculated last time
@@ -1584,7 +1585,41 @@ std::cerr << "At top of " << s << " liveLocs is " << liveLocs.prints() << "\n";
 void BasicBlock::getLiveOut(LocationSet &liveout) {
     liveout.clear();
     for (unsigned i = 0; i < m_OutEdges.size(); i++) {
-        LocationSet &out = m_OutEdges[i]->liveIn;
-        liveout.makeUnion(out);
+        PBB currBB = m_OutEdges[i];
+        // First add the non-phi liveness
+        liveout.makeUnion(currBB->liveIn);
+        int j = currBB->whichPred(this);
+        // The first RTL will have the phi functions, if any
+        if (currBB->m_pRtls->size() == 0)
+            continue;
+        RTL* phiRtl = currBB->m_pRtls->front();
+        std::list<Statement*>& stmts = phiRtl->getList();
+        std::list<Statement*>::iterator it;
+        for (it = stmts.begin(); it != stmts.end(); it++) {
+            // Only interested in phi assignments. Note that it is possible
+            // that some phi assignments have been converted to ordinary
+            // assignments. So the below is a continue, not a break.
+            if (!(*it)->isPhi()) continue;
+            PhiExp* phi = (PhiExp*)((Assign*)(*it))->getRight();
+            // Get the jth operand to the phi function; it has a use
+            // from BB *this
+            Statement* def = phi->getAt(j);
+            // This will leak
+            RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
+            liveout.insert(r);
+        }
     }
+}
+
+// Basically the "whichPred" function as per Briggs, Cooper, et al
+// (and presumably "Cryton, Ferante, Rosen, Wegman, and Zadek").
+// Return -1 if not found
+int BasicBlock::whichPred(PBB pred) {
+    int n = m_InEdges.size();
+    for (int i=0; i < n; i++) {
+        if (m_InEdges[i] == pred)
+            return i;
+    }
+    assert(0);
+    return -1;
 }

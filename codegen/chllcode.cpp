@@ -594,7 +594,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 {
     char s[1024];
     indent(s, indLevel);
-    if (defs.size() == 1) {
+    if (defs.size() >= 1) {
         LocSetIter it;
         appendExp(s, defs.getFirst(it));
         strcat(s, " = ");

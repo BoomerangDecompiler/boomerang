@@ -139,11 +139,11 @@ RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
 }
 
 PhiExp::PhiExp(Exp* e, Statement* d) : Unary(opPhi, e)
-{   stmtSet.insert(d);
+{   stmtVec.putAt(0, d);
 }
 
 PhiExp::PhiExp(PhiExp& o) : Unary(opPhi, subExp1)
-{   stmtSet = o.stmtSet;
+{   stmtVec = o.stmtVec;      // No need to clone: statements never move
 }
 
 /*==============================================================================
@@ -306,7 +306,7 @@ Exp* TypedExp::clone() {
 }
 Exp* PhiExp::clone() {
     PhiExp* c = new PhiExp(subExp1->clone());
-    c->stmtSet = stmtSet;
+    c->stmtVec = stmtVec;
     return c;
 }
 Exp* RefExp::clone() {
@@ -396,7 +396,7 @@ bool PhiExp::operator==(const Exp& o) const {
     if (((PhiExp&)o).op == opWild) return true;
     if (((PhiExp&)o).op != opPhi) return false;
     if (!( *subExp1 == *((PhiExp&)o).subExp1)) return false;
-    return stmtSet == ((PhiExp&)o).stmtSet;
+    return stmtVec == ((PhiExp&)o).stmtVec;
 }
 
 // Compare, ignoring subscripts
@@ -531,7 +531,7 @@ bool PhiExp::operator< (const Exp& o) const {
     if (opPhi > o.getOper()) return false;
     if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
     if (*((Unary&)o).getSubExp1() < *subExp1) return false;
-    return stmtSet < ((PhiExp&)o).stmtSet;
+    return stmtVec < ((PhiExp&)o).stmtVec;
 }
 
 
@@ -929,7 +929,7 @@ void PhiExp::print(std::ostream& os, bool withUses) {
     os << "phi";
     if (withUses) {
         os << "{";
-        stmtSet.printNums(os);
+        stmtVec.printNums(os);
         os << "}";
     }
 }
@@ -2595,8 +2595,8 @@ void PhiExp::addUsedLocs(LocationSet& used) {
       30: r1 := phi{10 20}
       That means we effectively use r1{10} and r1{20}
     */
-    StmtSetIter uu;
-    for (Statement* u = stmtSet.getFirst(uu); u; u = stmtSet.getNext(uu)) {
+    StmtVecIter uu;
+    for (Statement* u = stmtVec.getFirst(uu); u; u = stmtVec.getNext(uu)) {
         Exp* temp = new RefExp(subExp1->clone(), u);
         used.insert(temp);
     }
@@ -2663,8 +2663,9 @@ Exp *RefExp::fixCallRefs() {
 Exp *PhiExp::fixCallRefs() {
     std::vector<Statement*> remove;
     std::vector<Statement*> insert;
-    StmtSetIter uu;
-    for (Statement* u = stmtSet.getFirst(uu); u; u = stmtSet.getNext(uu)) {
+    unsigned n = stmtVec.size();
+    for (unsigned i=0; i < n; i++) {
+        Statement* u = stmtVec.getAt(i);
         CallStatement *call = dynamic_cast<CallStatement*>(u);
         if (call) {
             Exp *e = call->getProven(subExp1);
@@ -2672,8 +2673,7 @@ Exp *PhiExp::fixCallRefs() {
                 e = call->substituteParams(e);
                 if (e && e->getOper() == opSubscript &&
                     *e->getSubExp1() == *subExp1) {
-                    remove.push_back(u);
-                    insert.push_back(((RefExp*)e)->getRef());
+                    stmtVec.putAt(i, ((RefExp*)e)->getRef());
                 } else {
                     std::cerr << "cant update phi ref to " << e << std::endl;
                 }
@@ -2682,12 +2682,6 @@ Exp *PhiExp::fixCallRefs() {
             }
         }
     }
-    for (std::vector<Statement*>::iterator it = remove.begin(); 
-         it != remove.end(); it++)
-        stmtSet.remove(*it);
-    for (std::vector<Statement*>::iterator it = insert.begin(); 
-         it != insert.end(); it++)
-        stmtSet.insert(*it);
     return this;
 }
 

@@ -643,7 +643,7 @@ virtual int getNumRefs() {return 1;}
 
 /*==============================================================================
  * PhiExp is a subclass of Unary, holding an operator (opPhi), the expression
- * that is being phi'd (in subExp1), and a StatementSet
+ * that is being phi'd (in subExp1), and a StatementVec
  * This is used for phi functions. For example:
  * m[1000] := phi{3 7 10} if defined at statements 3, 7, and 10
  * m[r28{3}+4] := phi{2 8} if the memof is defined at 2 and 8, and
@@ -654,7 +654,12 @@ virtual int getNumRefs() {return 1;}
  * the reference is to a CallStatement returning multiple locations.
  *============================================================================*/
 class PhiExp : public Unary {
-    StatementSet    stmtSet;            // A set of pointers to statements
+    // A vector is used below so that it can be determined which in-edge
+    // corresponds to each phi parameter (member of stmtVec)
+    // The first entry is for the first in-edge, and so on
+    // If the last few in-edges have no definitions, there need not be
+    // members of stmtVec for them
+    StatementVec    stmtVec;        // A vector of pointers to statements
 
 public:
             PhiExp(Exp* e) : Unary(opPhi, e) {};
@@ -665,18 +670,18 @@ virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-virtual int getNumRefs() {return stmtSet.size();}
+virtual int getNumRefs() {return stmtVec.size();}
     void    addUsedLocs(LocationSet& used);
     virtual Exp *fixCallRefs();
-virtual Exp* addSubscript(Statement* def) {
-                stmtSet.insert(def); return this;}
-    void removeSubscript(Statement* def) { stmtSet.remove(def); }
-    Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
-    Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
-    bool isLastRef(StmtSetIter& it) {return stmtSet.isLast(it);}
+virtual Exp*   addSubscript(Statement* def) {assert(0);}
+    Statement* getAt(int idx) {return stmtVec.getAt(idx);}
+    void       putAt(int idx, Statement* d) {stmtVec.putAt(idx, d);}
+    Statement* getFirstRef(StmtVecIter& it) {return stmtVec.getFirst(it);}
+    Statement* getNextRef (StmtVecIter& it) {return stmtVec.getNext (it);}
+    bool       isLastRef(StmtVecIter& it) {return stmtVec.isLast(it);}
     virtual Exp* fromSSA(igraph& ig);
-    bool    references(Statement* s) {return stmtSet.exists(s);}
-    StatementSet& getRefs() {return stmtSet;}
+    //bool    references(Statement* s) {return stmtVec.exists(s);}
+    StatementVec& getRefs() {return stmtVec;}
 };
     
 #endif // __EXP_H__

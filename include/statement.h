@@ -115,6 +115,31 @@ public:
     void clear() { slist.clear(); }
 };  // class StatementList
 
+typedef std::vector<Statement*>::iterator StmtVecIter;
+typedef std::vector<Statement*>::reverse_iterator StmtVecRevIter;
+class StatementVec {
+    std::vector<Statement*> svec;           // For now, use use standard vector
+
+public:
+    int size() {return svec.size();}         // Number of elements
+    Statement* getFirst(StmtVecIter& it);    // Get the first Statement
+    Statement* getNext (StmtVecIter& it);    // Get next
+    Statement* getLast (StmtVecRevIter& it); // Get the last Statement
+    Statement* getPrev (StmtVecRevIter& it); // Get previous
+    // returns true if it is at end
+    bool isLast(StmtVecIter& it) {return it == svec.end();}
+    Statement* getAt(int idx) {return svec[idx];}
+    // Put at position idx (0 based)
+    void   putAt(int idx, Statement* s);
+    char*  prints();                        // Print to string (for debugging)
+    void   printNums(std::ostream& os);
+    void   clear() { svec.clear(); }
+    bool operator==(const StatementVec& o) const    // Compare if equal
+        { return svec == o.svec;}
+    bool operator<(const StatementVec& o) const     // Compare if less
+        { return svec < o.svec;}
+};  // class StatementVec
+
 // For liveness, we need sets of locations (registers or memory)
 typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
 class LocationSet {
@@ -657,8 +682,8 @@ private:
 };      // class BranchStatement
 
 /*==============================================================================
- * CaseStatement is derived from GotoStatement. In addition to the destination of the
- * jump, it has a switch variable Exp.
+ * CaseStatement is derived from GotoStatement. In addition to the destination
+ * of the jump, it has a switch variable Exp.
  *============================================================================*/
 typedef struct {
     Exp* pSwitchVar;         // Ptr to Exp repres switch var, e.g. v[7]
@@ -825,6 +850,9 @@ public:
     virtual bool isDefinition();
     virtual void getDefinitions(LocationSet &defs);
 
+    // Note: CallStatement inherits getLeft() from GotoStatement (returns NULL)
+    // Still called from (e.g.) UserProc::prover()
+    //virtual Exp* getLeft() {assert(0);}
     // get how to replace this statement in a use
     virtual Exp* getRight() { return NULL; }
 

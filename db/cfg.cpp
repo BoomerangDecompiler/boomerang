@@ -2045,19 +2045,6 @@ void Cfg::generateDotFile(std::ofstream& of) {
                     of << " [label=\"true\"]";
                 else
                     of << " [label=\"false\"]";
-            } else if ((*it)->getType() == CALL) {
-                if (j > 0)
-                    // A call interprocedural edge
-                    of << " [color=blue style=dashed]";
-                else {
-                    Proc* dest = (*it)->getDestProc();
-                    if (!dest->isLib())
-                        // A call-to-postcall edge; these don't really exist
-                        of << " [style=dotted]";
-                }
-            } else if ((*it)->getType() == RET) {
-                // A return interprocedural edge
-                    of << " [color=green style=dashed]";
             }
             of << ";\n";
         }
@@ -2350,12 +2337,15 @@ void Cfg::renameBlockVars(int n, int memDepth) {
     int numSucc = bb->m_OutEdges.size();
     for (int succ = 0; succ < numSucc; succ++) {
         PBB Ybb = bb->m_OutEdges[succ];
+        // Suppose n is the jth predecessor of Y
+        int j = Ybb->whichPred(bb);
         // For each phi-function in Y
         for (Statement* S = Ybb->getFirstStmt(rit, sit); S;
                         S = Ybb->getNextStmt(rit, sit)) {
             Assign* ae = dynamic_cast<Assign*>(S);
             // if S is not a phi function, then quit the loop (no more phi's)
             if (!ae || !ae->isPhi()) break;
+            // Suppose the jth operand of the phi is a; we just get the LHS
             Exp* a = ae->getLeft();
             // Only consider variables of the current memory depth
             // (since we only have reaching defs for these)
@@ -2367,7 +2357,7 @@ void Cfg::renameBlockVars(int n, int memDepth) {
             else
                 def = Stack[a].top();
             // "Replace jth operand with a_i"
-            ((PhiExp*)ae->getRight())->addSubscript(def);
+            ((PhiExp*)ae->getRight())->putAt(j, def);
         }
     }
     // For each child X of n
@@ -2430,9 +2420,7 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
 
 void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
     // Append my list of BBs to the worklist
-    // It will be best to do this in reverse order (more children before
-    // parents in the CFG)
-    worklist.insert(worklist.end(), m_listBB.rbegin(), m_listBB.rend());
+    worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
     // Do the same for the workset
     std::list<PBB>::iterator it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++)
