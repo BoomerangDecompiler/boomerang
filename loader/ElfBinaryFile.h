@@ -12,51 +12,20 @@
 */
 
 /* $Revision$
- * This object provides 3 pseudo-sections:
- *  $HEADER is the main (elf) header of the file (Elf32_Ehdr)
- *  $PHEADER is the program header of the file (array of Elf32_Phdr structs)
- *  This is as per the file's program header, so the first enrty here
- *  corresponds to the all zeroes first section. The second entry here
- *  corresponds to the first real section of the file, which is the
- *  fourth section presented in the SECTION_INFO array.
- *  $SHEADER is an array of Elf32_Shdr structs; the first element
- *  corresponds to the first real section of the elf file (which
- *  is the fourth section presented in the SECTION_INFO array).
- *
- * 3 Mar 98 - Cristina
- *  changed ADDR for ADDRESS for consistency with other tools.
- * 11 Mar 98 - Cristina  
- *  replaced BOOL for bool type (C++'s), same for TRUE and FALSE.
- * 27 Mar 98 - Cristina
- *  added GetMainEntryPoint().
- * 27 May 98 - Mike
- *  Mods for BinaryFile
- * 6th Aug 98 - Mike
- *  GetEntryPoints returns list of SectionInfo* now
- * 21 Aug 98 - Mike
- *  Added bNoTypeOK to ValueByName(), GetAddressByName(), GetSizeByName
- * 14th Jan 99 - Mike
- *  Added functions like dumpVerneed() to dump these section types
- * 20 Apr 99 - Mike: Added GetDistanceByName()
- * 26 Sep 99 - Mike: Made GetStrPtr() public
- * 10 Aug 01 - Mike: Added GetDynamicGlobalMap(); define ELF32_R_SYM if nec
  * 12 Sep 01 - Mike: Replaced SymTab object with map from ADDRESS to string
  * 09 Mar 02 - Mike: Changes for stand alone compilation
+ * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
 */
 
 #ifndef __ELFBINARYFILE_H__
 #define __ELFBINARYFILE_H__
 
-// In case the below is not found in sys/elf.h
-#ifndef  ELF32_R_SYM
 #define  ELF32_R_SYM(info)       ((info)>>8)
-#endif
 
 /*==============================================================================
  * Dependencies.
  *============================================================================*/
 
-#include "syself.h"
 #include "BinaryFile.h"
 #include "SymTab.h"                 // For SymTab (probably unused)
 typedef std::map<ADDRESS,std::string,std::less<ADDRESS> >  RelocMap;
@@ -67,12 +36,103 @@ typedef struct
     int         iSymSize;           // Size associated with symbol
 } SymValue;
 
+// Internal elf info
+typedef struct {
+        char  e_ident[4]; 
+        char  e_class;
+        char  endianness;
+        char  version;
+        char  osAbi;
+        char  pad[8];
+        short e_type;
+        short e_machine;
+        int   e_version;
+        int   e_entry;
+        int   e_phoff;
+        int   e_shoff;
+        int   e_flags;
+        short e_ehsize;
+        short e_phentsize;
+        short e_phnum;
+        short e_shentsize;
+        short e_shnum;
+        short e_shstrndx;
+} Elf32_Ehdr;
+
+#define EM_SPARC         2              // Sun SPARC
+#define EM_386           3              // Intel 80386 or higher
+
+#define ET_DYN  3       // Elf type (dynamic library)
+
+// Program header
+typedef struct {
+    int  p_type;     /* entry type */
+    int  p_offset;   /* file offset */
+    int  p_vaddr;    /* virtual address */
+    int  p_paddr;    /* physical address */
+    int  p_filesz;   /* file size */
+    int  p_memsz;    /* memory size */
+    int  p_flags;    /* entry flags */
+    int  p_align;    /* memory/file alignment */
+} Elf32_Phdr;
+
+// Section header
+typedef struct {
+  int   sh_name;
+  int   sh_type;
+  int   sh_flags;
+  int   sh_addr;
+  int   sh_offset;
+  int   sh_size;
+  int   sh_link;
+  int   sh_info;
+  int   sh_addralign;
+  int   sh_entsize;
+} Elf32_Shdr;
+
+#define SHF_WRITE		1		// Writeable
+#define SHF_ALLOC		2		// Consumes memory in exe
+#define SHF_EXECINSTR	4		// Executable
+
+#define SHT_NOBITS		8		// Bss
+
+typedef struct {
+   int      st_name;
+   unsigned st_value;
+   int      st_size;
+unsigned char st_info;
+unsigned char st_other;
+   short    st_shndx;
+} Elf32_Sym;
+
+#define ELF32_ST_BIND(i)             ((i) >> 4)
+#define ELF32_ST_TYPE(i)             ((i) & 0xf)
+#define ELF32_ST_INFO(b, t)          (((b)<<4)+((t)&0xf))
+#define STT_NOTYPE 0    // Symbol table type: none
+#define STT_FUNC 2      // Symbol table type: function
+
+typedef struct {
+    short d_tag;              /* how to interpret value */
+    union {
+        int  d_val;
+        int  d_ptr;
+        int  d_off;
+    } d_un;
+} Elf32_Dyn;
+
+// Tag values
+#define DT_NULL     0       // Last entry in list
+#define DT_STRTAB   5       // String table
+#define DT_NEEDED   1       // A needed link-type object
+
+
+
 class ElfBinaryFile : public BinaryFile
 {
 public:
                 ElfBinaryFile(bool bArchive = false);   // Constructor
-  virtual       ~ElfBinaryFile();
   virtual void  UnLoad();                       // Unload the image
+  virtual       ~ElfBinaryFile();               // Destructor
     bool        GetNextMember();                // Load next member of archive
   virtual bool  Open(const char* sName);        // Open the file for r/w; pv
   virtual void  Close();                        // Close file opened with Open()
@@ -83,15 +143,17 @@ public:
   virtual ADDRESS getImageBase();
   virtual size_t getImageSize();
 
+#if 0
                 // Elf specific functions
     Elf32_Phdr* GetProgHeader(int idx);         // Get the indicated prog hdr
     Elf32_Shdr* GetSectionHeader(int idx);      // Get indicated section hdr
 // Mike: deprecated! Remove when possible!
-//    Elf_Scn*    GetElfScn(int idx);             // Do a elf_getscn()
+    Elf_Scn*    GetElfScn(int idx);             // Do a elf_getscn()
+#endif
 
                 // Header functions
-virtual ADDRESS GetFirstHeaderAddress();        // Get ADDRESS of main header
-    ADDRESS     GetNextHeaderAddress();         // Get any other headers
+//virtual ADDRESS GetFirstHeaderAddress();        // Get ADDRESS of main header
+//    ADDRESS     GetNextHeaderAddress();         // Get any other headers
 
                 // Symbol functions
     char*       SymbolByAddress(ADDRESS uAddr); // Get name of symbol
@@ -119,7 +181,7 @@ virtual ADDRESS* GetImportStubs(int& numImports);
 //
                 // Internal information
     // Dump headers, etc
-virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
+//virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
 
                 // Analysis functions
@@ -163,27 +225,19 @@ virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
                     const char* pSectName, const char* pStrName);
     bool        PostLoad(void* handle); // Called after archive member loaded
 
-    // For DisplayDetail()
-    void        dumpShdr(Elf32_Shdr *pShdr, int idxElf, FILE* f);
-    void        dumpSymtab(char* sSymName, char* sStrName,
-                    Elf32_Shdr* pShdr, FILE* f);
-//    void        dumpDynTab(Elf_Scn *scn, const char* name, FILE* f);
-//    void        dumpPLT(Elf_Scn *scn, Elf32_Shdr *shdr, Elf32_Addr sh_addr,
-//                    FILE* f);
-//    void        dumpVerdef(Elf_Scn *scn, const char* scn_name,
-//                    Elf32_Shdr* pShdr, FILE* f);
-//    void        dumpVerneed(Elf_Scn *scn, const char* scn_name,
-//                    Elf32_Shdr* pShdr, FILE* f);
-//    void        dumpVersym(Elf_Scn *scn, const char* scn_name,
-//                    Elf32_Shdr* pShdr, FILE* f);
+    // Internal elf reading methods
+    int         elfRead2(short* ps);    // Read a short with endianness care
+    int         elfRead4(int*   pi);    // Read an int with endianness care
 
-    int         m_fd;                   // File descriptor
-//    Elf*        m_arf;                  // Archive pointer
-//    Elf*        m_elf;                  // Pointer to main elf info
+    FILE*       m_fd;                   // File stream
+	long		m_lImageSize;			// Size of image in bytes
+    char*       m_pImage;               // Pointer to the loaded image
+    Elf32_Phdr* m_pPhdrs;               // Pointer to program headers
     Elf32_Shdr* m_pShdrs;               // Array of section header structs
-    std::map<ADDRESS, std::string> m_SymA;        // Map from address to symbol name
+    char*       m_pStrings;             // Pointer to the string section
+    char        m_elfEndianness;        // 1 = Big Endian
+    std::map<ADDRESS, std::string> m_SymA; // Map from address to symbol name
     SymTab      m_Reloc;                // Object to store the reloc syms
-    Elf32_Ehdr* m_pHeader;              // Pointer to header
     ADDRESS     m_pReloc;               // Pointer to the relocation section
     Elf32_Sym*  m_pSym;                 // Pointer to loaded symbol section
     bool        m_bAddend;              // true if reloc table has addend
