@@ -150,6 +150,7 @@ namespace CallingConvention {
             virtual Signature *promote(UserProc *p);
             virtual Exp *getStackWildcard();
             virtual int  getStackRegister() {return 14; }
+            virtual Exp *getProven(Exp *left);
             // Stack offsets can be negative (inherited) or positive:
             virtual bool  isLocalOffsetPositive() {return true;}
             virtual bool isPromoted() { return true; }
@@ -520,8 +521,7 @@ Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard() {
 
 Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left)
 {
-    if (left->getOper() == opRegOf && 
-        left->getSubExp1()->getOper() == opIntConst) {
+    if (left->isRegOfK()) {
         switch (((Const*)left->getSubExp1())->getInt()) {
             case 28:
                 return new Binary(opPlus, Location::regOf(28), new Const(4));
@@ -631,6 +631,21 @@ Exp *CallingConvention::StdC::SparcSignature::getStackWildcard()
     return Location::memOf(new Binary(opPlus, Location::regOf(14),
                new Terminal(opWild)));
 }
+
+Exp *CallingConvention::StdC::SparcSignature::getProven(Exp* left) {
+    if (left->isRegOfK()) {
+        int r = ((Const*)((Location*)left)->getSubExp1())->getInt();
+        switch (r) {
+            // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
+            case 14:
+            case 24: case 25: case 26: case 27:
+            case 28: case 29: case 30: case 31:
+                return left;
+        }
+    }
+    return NULL; 
+}
+
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)
 {
