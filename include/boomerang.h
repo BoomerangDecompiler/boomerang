@@ -52,45 +52,45 @@ public:
 
 class Boomerang {
 private:
-	static Boomerang *boomerang;
+static Boomerang *boomerang;
 	std::string progPath;	// String with the path to this exec
 	std::string outputPath;
-	Log *logger;
+	Log		*logger;
 	std::set<Watcher*> watchers;
 
-	void usage();
-	void help();
-	void helpcmd();
-	int splitLine(char *line, char ***pargv);
-	int parseCmd(int argc, const char **argv);
-	int cmdLine();
+	void	usage();
+	void	help();
+	void	helpcmd();
+	int		splitLine(char *line, char ***pargv);
+	int		parseCmd(int argc, const char **argv);
+	int		cmdLine();
 
 
 	Boomerang();
 virtual ~Boomerang() {}
 public:
-	static Boomerang *get() { 
-		if (!boomerang) boomerang = new Boomerang(); 
-	return boomerang;
-	}
+static Boomerang *get() { 
+			if (!boomerang) boomerang = new Boomerang(); 
+			return boomerang;
+		}
 
-	Log &log();
-	void setLogger(Log *l) { logger = l; }
-	bool setOutputDirectory(const char *path);
+	Log		&log();
+	void	setLogger(Log *l) { logger = l; }
+	bool	setOutputDirectory(const char *path);
 
 	HLLCode *getHLLCode(UserProc *p = NULL);
 
 	// performs command line operation
-	int commandLine(int argc, const char **argv);
-	void setProgPath(const char* p) { progPath = p; }
-	const std::string& getProgPath() { return progPath; }
-	void setOutputPath(const char* p) { outputPath = p; }
-	const std::string& getOutputPath() { return outputPath; }
-	Prog *loadAndDecode(const char *fname, const char *pname = NULL);
-	int decompile(const char *fname, const char *pname = NULL);
-	void addWatcher(Watcher *watcher) { watchers.insert(watcher); }
-	void persistToXML(Prog *prog);
-	Prog *loadFromXML(const char *fname);
+	int		commandLine(int argc, const char **argv);
+	void	setProgPath(const char* p) { progPath = p; }
+	const	std::string& getProgPath() { return progPath; }
+	void	setOutputPath(const char* p) { outputPath = p; }
+	const	std::string& getOutputPath() { return outputPath; }
+	Prog	*loadAndDecode(const char *fname, const char *pname = NULL);
+	int		decompile(const char *fname, const char *pname = NULL);
+	void	addWatcher(Watcher *watcher) { watchers.insert(watcher); }
+	void	persistToXML(Prog *prog);
+	Prog	*loadFromXML(const char *fname);
 
 	// call the watchers
 	void alert_complete() {
