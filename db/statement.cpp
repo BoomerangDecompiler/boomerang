@@ -3259,6 +3259,10 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace) {
 bool PhiAssign::searchAndReplace(Exp* search, Exp* replace) {
 	bool change = false;
 	lhs = lhs->searchReplaceAll(search, replace, change);
+	std::vector<PhiInfo>::iterator it;
+	for (it = defVec.begin(); it != defVec.end(); it++)
+		// Assume that the definitions will also be replaced
+		it->e = it->e->searchReplaceAll(search, replace, change);
 	return change;
 }
 bool ImplicitAssign::searchAndReplace(Exp* search, Exp* replace) {
