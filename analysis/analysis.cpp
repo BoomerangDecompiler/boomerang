@@ -35,34 +35,9 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "decoder.h"
+#include "analysis.h"
 
 #define DEBUG_ANALYSIS 0        // Non zero for debugging
-
-typedef void (*ACTION_FUNC)(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
-  std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
-  std::list<RTL*>::iterator rit, int ty);
-// A map from register to constant address value. In the UQBT code, we needed
-//  the comparisons to be sign insensitive
-typedef std::map<Exp*, ADDRESS, lessExpStar> KMAP;
-
-OPER anyFlagsUsed(Exp* s);
-void findDefs(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg, UserProc* proc,
-  int ty, bool flt, std::list<RTL*>::iterator rit, ACTION_FUNC f);
-void analyse_assign(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg,
-  std::list<RTL*>::iterator rit);
-void matchJScond(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
-  std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
-  std::list<RTL*>::iterator rit, int ty);
-void matchAssign(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
-  std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
-  std::list<RTL*>::iterator rit, int flagUsed);
-void processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
-  UserProc* proc, RTL_KIND kd);
-void processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
-  UserProc* proc, RTL_KIND kd);
-void checkBBconst(PBB pBB);
-bool isFlagFloat(Exp* rt, UserProc* proc);
-void analyseCalls(PBB pBB, UserProc *proc);
 
 // A global array for initialising the below
 int memXinit[] = {opMemOf, -1};
@@ -79,7 +54,7 @@ int memXinit[] = {opMemOf, -1};
  *                  proc: Ptr to UserProc object for the current procedure
  * RETURNS:         <none>
  *============================================================================*/
-void checkBBflags(PBB pBB, UserProc* proc)
+void Analysis::checkBBflags(PBB pBB, UserProc* proc)
 {
     Cfg* cfg = proc->getCFG();
     std::list<RTL*>* pRtls = pBB->getRTLs();
@@ -92,21 +67,21 @@ void checkBBflags(PBB pBB, UserProc* proc)
         // in certain kinds of arithmetic instructions, and in SET instrs
         RTL_KIND kd = (*rit)->getKind();
 //        if ((kd == JCOND_RTL) || (kd == SCOND_RTL))
-//            findDefs(pBB, pRtls, cfg, proc, (int)kd, rit, matchJScond);
+//            findDefs(pBB, proc, (int)kd, rit, false);
         if (kd == JCOND_RTL) {
             HLJcond* pj = (HLJcond*)(*rit);
             // Only find a definition if doesn't already have a high level
             // expression. (This can happen with all the recursion and gnarly
             // branches in some code, especially SPARC)
             if (pj->getCondExpr() == NULL)
-                findDefs(pBB, pRtls, cfg, proc, JCOND_RTL, pj->isFloat(),
-                rit, matchJScond);
+                findDefs(pBB, proc, JCOND_RTL, pj->isFloat(),
+                rit, false);
         }
         else if (kd == SCOND_RTL) {
             HLScond* pj = (HLScond*)(*rit);
             if (pj->getCondExpr() == NULL)
-                findDefs(pBB, pRtls, cfg, proc, SCOND_RTL, pj->isFloat(),
-                rit, matchJScond);
+                findDefs(pBB, proc, SCOND_RTL, pj->isFloat(),
+                rit, false);
         }
         else if (kd == HL_NONE) {
             // Check this ordinary RTL for assignments that use flags
@@ -120,8 +95,8 @@ void checkBBflags(PBB pBB, UserProc* proc)
                 	int flagUsed = anyFlagsUsed(pRHS);
                 	if (flagUsed)
                     	// We have a use of a flag
-                    	findDefs(pBB, pRtls, cfg, proc, flagUsed, false, rit,
-                        	matchAssign);
+                    	findDefs(pBB, proc, flagUsed, false, rit,
+                        	true);
 				}
            }
        }
@@ -135,7 +110,7 @@ void checkBBflags(PBB pBB, UserProc* proc)
  * PARAMETERS:      pBB: pointer to the BB to be simplified
  * RETURNS:         <none>
  *============================================================================*/
-void finalSimplify(PBB pBB)
+void Analysis::finalSimplify(PBB pBB)
 {
     std::list<RTL*>* pRtls = pBB->getRTLs();
     std::list<RTL*>::iterator rit;
@@ -149,7 +124,7 @@ void finalSimplify(PBB pBB)
 }
 
 /*==============================================================================
- * FUNCTION:        analysis
+ * FUNCTION:        analyse
  * OVERVIEW:        Perform any higher level analysis on a procedure. At
  *                  present, this is the removal of uses of flags (checkBBflags)
  *                  and a pass looking for constants in the text section
@@ -158,7 +133,7 @@ void finalSimplify(PBB pBB)
  *                  analysed
  * RETURNS:         <none>
  *============================================================================*/
-void analysis(UserProc* proc)
+void Analysis::analyse(UserProc* proc)
 {
     Cfg* cfg = proc->getCFG();
     std::list<PBB>::iterator it;
@@ -201,9 +176,11 @@ static int findDefsCallDepth = 0;
  *                  f: pointer to function to actually match def and use
  * RETURNS:         <nothing>
  *===========================================================================*/
-void findDefs(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg, UserProc* proc, int kd, bool flt,
-    std::list<RTL*>::iterator rit, ACTION_FUNC f)
+void Analysis::findDefs(PBB pBB, UserProc* proc, int flagId, bool flt,
+    std::list<RTL*>::iterator rit, bool withAssign)
 {
+    std::list<RTL*>* pRtls = pBB->getRTLs();
+    Cfg *cfg = proc->getCFG();
     // We may follow a chain of BBs if there is only one in-edge, so keep
     // pointers to the original BB and list of RTLs
     PBB   pOrigBB   = pBB;
@@ -293,7 +270,10 @@ void findDefs(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg, UserProc* proc, int kd,
         // Call the action function. This is either matchJScond (for
         // HLJconds or HLSconds) or matchAssign (for assignments that use
         // individual flags)
-        (*f)(pOrigRtls, pOrigBB, rrit, proc, rit, kd);
+        if (withAssign)
+            matchAssign(pOrigRtls, pOrigBB, rrit, proc, rit, flagId);
+        else
+            matchJScond(pOrigRtls, pOrigBB, rrit, proc, rit, (*rit)->getKind());
 #if DEBUG_ANALYSIS
     findDefsCallDepth--;
 #endif
@@ -541,7 +521,7 @@ void findDefs(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg, UserProc* proc, int kd,
         vit++;
     }
     // Recurse to handle the original jcond, which by now has only one in-edge
-    findDefs(pOrigBB, pOrigRtls, cfg, proc, kd, flt, rit, f);
+    findDefs(pOrigBB, proc, flagId, flt, rit, withAssign);
 #if DEBUG_ANALYSIS
     findDefsCallDepth--;
 #endif
@@ -569,7 +549,7 @@ void findDefs(PBB pBB, std::list<RTL*>* pRtls, Cfg* cfg, UserProc* proc, int kd,
  *                    SCOND_RTL (as an integer)
  * RETURNS:         <nothing>
  *============================================================================*/
-void matchJScond(std::list<RTL*>* pOrigRtls, PBB pOrigBB, std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
+void Analysis::matchJScond(std::list<RTL*>* pOrigRtls, PBB pOrigBB, std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
     std::list<RTL*>::iterator rit, int kd)
 {
 #if DEBUG_ANALYSIS
@@ -615,7 +595,7 @@ void matchJScond(std::list<RTL*>* pOrigRtls, PBB pOrigBB, std::list<RTL*>::rever
  * RETURNS:         If no flags used, returns opWild. Otherwise, returns the op
  *                  (e.g. opCF) of the first flag found
  *============================================================================*/
-OPER anyFlagsUsed(Exp* s)
+OPER Analysis::anyFlagsUsed(Exp* s)
 {
     Exp* res;
     Exp* srch = new Terminal(opCF);
@@ -660,7 +640,7 @@ OPER anyFlagsUsed(Exp* s)
  *                    SCOND_RTL
  * RETURNS:         <nothing>
  *============================================================================*/
-void processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
+void Analysis::processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
     UserProc* proc, RTL_KIND kd)
 {
     HLJcond* jc = (HLJcond*)rtl;
@@ -746,7 +726,7 @@ void processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
  *                    SCOND_RTL
  * RETURNS:         <nothing>
  *============================================================================*/
-void processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
+void Analysis::processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
     UserProc* proc, RTL_KIND kd)
 {
     HLJcond* jc = (HLJcond*)rtl;
@@ -800,7 +780,7 @@ void processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
  *                    SCOND_RTL
  * RETURNS:         <nothing>
  *============================================================================*/
-void matchAssign(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
+void Analysis::matchAssign(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
   std::list<RTL*>::reverse_iterator rrit, UserProc* proc,
   std::list<RTL*>::iterator rit, int flag)
 {
@@ -917,7 +897,7 @@ void matchAssign(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
  * PARAMETERS:      w: Pointer to source word
  * RETURNS:         The source word as an integer
  *============================================================================*/
-int copySwap4(int* w)
+int Analysis::copySwap4(int* w)
 {
     char* p = (char*)w;
     int ret;
@@ -935,7 +915,7 @@ int copySwap4(int* w)
  * PARAMETERS:      w: Pointer to source short word
  * RETURNS:         The source short word as an integer
  *============================================================================*/
-int copySwap2(short* h)
+int Analysis::copySwap2(short* h)
 {
     char* p = (char*)h;
     short ret;
@@ -957,7 +937,7 @@ int copySwap2(short* h)
  *                RHS: pointer to the RHS to be changed
  * RETURNS:       <nothing>; note that the RHS Exp* gets changed
  *============================================================================*/
-void processConst(Prog *prog, ADDRESS addr, Exp*& memExp, Exp* RHS)
+void Analysis::processConst(Prog *prog, ADDRESS addr, Exp*& memExp, Exp* RHS)
 {
     const void* p;
     const char* last;
@@ -1037,7 +1017,7 @@ void processConst(Prog *prog, ADDRESS addr, Exp*& memExp, Exp* RHS)
  * PARAMETERS:      exp: pointer to the expression to be checked
  * RETURNS:         True if matched
  *============================================================================*/
-bool isRegister(const Exp* exp)
+bool Analysis::isRegister(const Exp* exp)
 {
     if (exp->getFirstIdx() == idRegOf)
         return exp->getSecondIdx() == idIntConst;
@@ -1058,7 +1038,7 @@ bool isRegister(const Exp* exp)
  *                    value of the constant
  * RETURNS:         True if matched, and value is set
  *============================================================================*/
-bool isConstTerm(const Exp* exp, const KMAP& constMap, ADDRESS& value)
+bool Analysis::isConstTerm(const Exp* exp, const KMAP& constMap, ADDRESS& value)
 {
     if (exp->getFirstIdx() == idIntConst) {
         value = exp->getSecondIdx();
@@ -1087,7 +1067,7 @@ bool isConstTerm(const Exp* exp, const KMAP& constMap, ADDRESS& value)
  *                      of the constant
  * RETURNS:         True if matched, and value is set
  *============================================================================*/
-bool isConst(const Exp* exp, const KMAP& constMap, ADDRESS& value)
+bool Analysis::isConst(const Exp* exp, const KMAP& constMap, ADDRESS& value)
 {
     if (isConstTerm(exp, constMap, value))
         return true;
@@ -1132,7 +1112,7 @@ bool isConst(const Exp* exp, const KMAP& constMap, ADDRESS& value)
  *                  proc: Ptr to UserProc object for the current procedure
  * RETURNS:         <nothing>
  *============================================================================*/
-void checkBBconst(Prog *prog, PBB pBB)
+void Analysis::checkBBconst(Prog *prog, PBB pBB)
 {
     std::list<RTL*>* pRtls = pBB->getRTLs();
     if (pRtls == 0)
@@ -1199,7 +1179,7 @@ void checkBBconst(Prog *prog, PBB pBB)
  *                  proc: points to the UserProc for the proc containing rt
  * RETURNS:         True if floating point (see overview)
  *============================================================================*/
-bool isFlagFloat(Exp* rt, UserProc* proc)
+bool Analysis::isFlagFloat(Exp* rt, UserProc* proc)
 {
     Binary* b = (Binary*)rt;
     Exp* li = b->getSubExp2();
@@ -1240,7 +1220,7 @@ bool isFlagFloat(Exp* rt, UserProc* proc)
 }
 
 	// analyse calls
-void analyseCalls(PBB pBB, UserProc *proc)
+void Analysis::analyseCalls(PBB pBB, UserProc *proc)
 {
 	std::list<RTL*>* rtls = pBB->getRTLs();
 	for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 

@@ -265,6 +265,11 @@ RTL* HLJump::clone()
     return ret;
 }
 
+// visit this rtl
+bool HLJump::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
+}
+
 #if 0
 /*==============================================================================
  * FUNCTION:        HLJump::getUseDefLocations
@@ -639,6 +644,11 @@ RTL* HLJcond::clone()
     return ret;
 }
 
+// visit this rtl
+bool HLJcond::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
+}
+
 // serialize this rtl
 bool HLJcond::serialize_rest(std::ostream &ouf)
 {
@@ -896,6 +906,11 @@ RTL* HLNwayJump::clone()
     *ret->pSwitchInfo = *pSwitchInfo;
     ret->pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->clone();
     return ret;
+}
+
+// visit this rtl
+bool HLNwayJump::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
 }
 
 // serialize this rtl
@@ -1298,6 +1313,11 @@ RTL* HLCall::clone()
     return ret;
 }
 
+// visit this rtl
+bool HLCall::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
+}
+
 // serialize this rtl
 bool HLCall::serialize_rest(std::ostream &ouf)
 {
@@ -1496,6 +1516,11 @@ RTL* HLReturn::clone()
     ret->m_isComputed = m_isComputed;
     ret->numNativeBytes = numNativeBytes;
     return ret;
+}
+
+// visit this rtl
+bool HLReturn::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
 }
 
 
@@ -1776,6 +1801,11 @@ RTL* HLScond::clone()
     ret->bFloat = bFloat;
     ret->numNativeBytes = numNativeBytes;
     return ret;
+}
+
+// visit this rtl
+bool HLScond::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
 }
 
 // serialize this rtl

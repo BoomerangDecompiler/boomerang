@@ -26,6 +26,7 @@ suite->addTest(new CppUnit::TestCaller<RtlTest> ("RtlTest", \
 void RtlTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testAppend);
     MYTEST(testClone);
+    MYTEST(testVisitor);
 }
 
 int RtlTest::countTestCases () const
@@ -102,4 +103,82 @@ void RtlTest::testClone () {
     std::string a2(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, a1);
     CPPUNIT_ASSERT_EQUAL(expected, a2);
+}
+
+/*==============================================================================
+ * FUNCTION:        RtlTest::testVisitor
+ * OVERVIEW:        Test the accept function for correct visiting behaviour.
+ * NOTES:           Stub class to test.
+ *============================================================================*/
+
+class RTLVisitorStub : public RTLVisitor {
+public:
+    bool a, b, c, d, e, f, g; 
+
+    void clear() { a = b = c = d = e = f = false; }
+    RTLVisitorStub() { clear(); }
+    virtual ~RTLVisitorStub() { }
+    virtual bool visit(RTL *rtl)        { a = true; return false; }
+    virtual bool visit(HLJump *rtl)     { b = true; return false; }
+    virtual bool visit(HLJcond *rtl)    { c = true; return false; }
+    virtual bool visit(HLNwayJump *rtl) { d = true; return false; }
+    virtual bool visit(HLCall *rtl)     { e = true; return false; }
+    virtual bool visit(HLReturn *rtl)   { f = true; return false; }
+    virtual bool visit(HLScond *rtl)    { g = true; return false; }
+};
+
+void RtlTest::testVisitor()
+{
+    RTLVisitorStub* visitor = new RTLVisitorStub();
+
+    /* simple rtl */
+    RTL *rtl = new RTL();
+    rtl->accept(visitor);
+    CPPUNIT_ASSERT(visitor->a);
+    delete rtl;
+
+    /* jump rtl */
+    HLJump *jump = new HLJump(0);
+    jump->accept(visitor);
+    CPPUNIT_ASSERT(visitor->b);
+    delete jump;
+
+    /* jcond rtl */
+    HLJcond *jcond = new HLJcond(0);
+    jcond->accept(visitor);
+    CPPUNIT_ASSERT(visitor->c);
+    delete jcond;
+
+    /* nway jump rtl */
+    HLNwayJump *nwayjump = new HLNwayJump(0);
+    nwayjump->accept(visitor);
+    CPPUNIT_ASSERT(visitor->d);
+    delete nwayjump;
+
+    /* call rtl */
+    HLCall *call = new HLCall(0);
+    call->accept(visitor);
+    CPPUNIT_ASSERT(visitor->e);
+    delete call;
+
+    /* return rtl */
+    HLReturn *ret = new HLReturn(0);
+    ret->accept(visitor);
+    CPPUNIT_ASSERT(visitor->f);
+    delete ret;
+
+    /* scond rtl */
+    HLScond *scond = new HLScond(0);
+    scond->accept(visitor);
+    CPPUNIT_ASSERT(visitor->g);
+    delete scond;
+
+    /* polymorphic */
+    rtl = new HLCall(0);
+    rtl->accept(visitor);
+    CPPUNIT_ASSERT(visitor->e);
+    delete rtl;
+
+    /* cleanup */
+    delete visitor;
 }

@@ -248,12 +248,12 @@ ADDRESS* BinaryFileStub::GetImportStubs(int& numImports)
 	assert(false);
 }
 
-bool    BinaryFileStub::DisplayDetails(const char* fileName, FILE* f = stdout)
+bool    BinaryFileStub::DisplayDetails(const char* fileName, FILE* f)
 {
 	assert(false);
 }
 
-std::list<SectionInfo*>& BinaryFileStub::GetEntryPoints(const char* pEntry = "main")
+std::list<SectionInfo*>& BinaryFileStub::GetEntryPoints(const char* pEntry)
 {
 	assert(false);
 }

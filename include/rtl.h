@@ -48,6 +48,7 @@ class SSACounts;
 class Type;
 class Register;
 class Proc;
+class RTLVisitor;
 
 /*==============================================================================
  * Kinds of RTLs, or high-level register transfer lists.
@@ -105,6 +106,9 @@ public:
 
     // Assignment copy: set this RTL to a deep copy of "other".
     RTL& operator=(RTL &other);
+
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
 
     // Common enquiry methods
     RTL_KIND getKind() { return kind; };
@@ -260,6 +264,9 @@ public:
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
 
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
+
     // Set and return the destination of the jump. The destination is either
     // a Exp, or an ADDRESS that is converted to a Exp.
     void setDest(Exp* pd);
@@ -337,6 +344,9 @@ public:
 
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
+
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
 
     // Set and return the JCOND_TYPE of this jcond as well as whether the
     // floating point condition codes are used.
@@ -422,6 +432,9 @@ public:
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
 
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
+
     // Set and return the Exp representing the switch variable
     SWITCH_INFO* getSwitchInfo(); 
     void setSwitchInfo(SWITCH_INFO* pss);
@@ -481,6 +494,9 @@ public:
 
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
+
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
 
     // Return true if the called function returns an aggregate: i.e., a
     // struct, union or quad floating point value.
@@ -581,6 +597,9 @@ public:
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
 
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
+
 #if 0
     // Used for type analysis. Stores type information that
     // can be gathered from the RTL instruction inside a
@@ -639,6 +658,9 @@ public:
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
 
+    // Accept a visitor to this RTL
+    virtual bool accept(RTLVisitor* visitor);
+
     // Set and return the JCOND_TYPE of this scond as well as whether the
     // floating point condition codes are used.
     void setCondType(JCOND_TYPE cond, bool usesFloat = false);
@@ -693,6 +715,34 @@ private:
     bool bFloat;                   // True if condition uses floating point CC
 };
 
+/* 
+ * The RTLVisitor class is used to iterate over all rtls in a basic 
+ * block. It contains methods for each kind of RTL and can be used 
+ * to eliminate switch statements.
+ */
+class RTLVisitor {
+private:
+    // the enclosing basic block
+    PBB pBB;
+
+public:
+    RTLVisitor() { pBB = NULL; }
+    virtual ~RTLVisitor() { }
+
+    // allows the container being iteratorated over to identify itself
+    PBB getBasicBlock() { return pBB; }
+    void setBasicBlock(PBB bb) { pBB = bb; }
+
+    // visitor functions, 
+    // returns true to continue iteratoring the container
+    virtual bool visit(RTL *rtl) = 0;
+    virtual bool visit(HLJump *rtl) = 0;
+    virtual bool visit(HLJcond *rtl) = 0;
+    virtual bool visit(HLNwayJump *rtl) = 0;
+    virtual bool visit(HLCall *rtl) = 0;
+    virtual bool visit(HLReturn *rtl) = 0;
+    virtual bool visit(HLScond *rtl) = 0;
+};
 
 /*==============================================================================
  * The TableEntry class represents a single instruction - a string/RTL pair.

@@ -126,6 +126,11 @@ RTL& RTL::operator=(RTL& other) {
     return *this;
 }
 
+// visit this rtl
+bool RTL::accept(RTLVisitor* visitor) {
+    return visitor->visit(this);
+}
+
 /*==============================================================================
  * FUNCTION:        RTL:clone
  * OVERVIEW:        Deep copy clone; deleting the clone will not affect this

@@ -20,5 +20,6 @@ class RtlTest : public CppUnit::TestCase {
 
     void testAppend ();
     void testClone ();
+    void testVisitor();
 };
 
