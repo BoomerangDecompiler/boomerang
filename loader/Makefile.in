@@ -45,6 +45,7 @@ FPIC=
 EXEEXT=.exe
 DLLEXT=.dll
 OUTIMPLIB=-Wl,--out-implib,$@.a
+BASEIMPLIB=../lib/libBinaryFile.dll.a
 RUNPATH=
 COPYDLL=../libBinaryFile.dll
 else # Non-Windows
@@ -53,6 +54,7 @@ FPIC=-fPIC
 EXEEXT=
 DLLEXT=.so
 OUTIMPLIB=
+BASEIMPLIB=
 COPYDLL=
 endif
 
@@ -62,14 +64,15 @@ else # Assume Solaris
 RUNPATH=-R"lib"
 endif
 
-LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
-LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
+LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile
 LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
-
+BASEDLL=../lib/libBinaryFile$(DLLEXT)
+ALLDLLS=$(LOADERDLLS) $(BASEDLL)
+ALLLIBS=$(patsubst %,-l%,$(LOADERS)) -lBinaryFile
 ALLOBJS = $(patsubst %, %.o, $(LOADERS))
-ALLOBJS += SymTab.o
+ALLOBJS += BinaryFile.o SymTab.o
 
-all:    $(LOADERDLLS) $(COPYDLL)
+all:    $(ALLDLLS) $(COPYDLL)
 
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -77,7 +80,7 @@ HOST_GNU_LD = @HOST_GNU_LD@
 
 
 testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o
-	$(CC) -o $@ $^  -lcppunit $(LOADERLIBS) $(RUNPATH) -L../lib
+	$(CC) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) -L../lib
 
 testLoader.o: testLoader.cpp
 	$(CC) -c -o $@ -I../include $<
@@ -90,21 +93,21 @@ microX86dis.o: microX86dis.c
 
 # Extra object files, etc
 # These are target specific variables.
-../lib/libBinaryFile$(DLLEXT):        EXTRAS = $(LDL) $(OUTIMPLIB)
-../lib/libElfBinaryFile$(DLLEXT):     EXTRAS = SymTab.o -lBinaryFile
-../lib/libHpSomBinaryFile$(DLLEXT):   EXTRAS = SymTab.o -lBinaryFile
-../lib/libWin32BinaryFile$(DLLEXT):   EXTRAS = microX86dis.o -lBinaryFile
-../lib/libExeBinaryFile$(DLLEXT):     EXTRAS = -lBinaryFile
-../lib/libPalmBinaryFile$(DLLEXT):    EXTRAS = -lBinaryFile
+../lib/libElfBinaryFile$(DLLEXT):     EXTRAS = SymTab.o
+../lib/libHpSomBinaryFile$(DLLEXT):   EXTRAS = SymTab.o
+../lib/libWin32BinaryFile$(DLLEXT):   EXTRAS = microX86dis.o
 
 ../libBinaryFile$(DLLEXT): ../lib/libBinaryFile$(DLLEXT)
 	cp $< $@
 
 BinaryFile.o: CCEXTRAS = -DBUILDING_LIBBINARYFILE
 
+$(BASEDLL) : BinaryFile.o
+	$(CC) -o $@ -shared BinaryFile.o $(OUTIMPLIB)
+
 # This pattern generates all the main dependencies
-$(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o
-	$(CC) -o $@ -shared $< $(EXTRAS) $(RUNPATH) -L../lib
+$(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
+	$(CC) -o $@ -shared $< $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
@@ -120,7 +123,7 @@ ElfBinaryFile.o: ElfBinaryFile.h ../include/BinaryFile.h
 
 
 clean:
-	rm -f *.o $(LOADERDLLS) $(COPYDLL) testLoader$(EXEEXT)
+	rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
 
 # Because of the relative paths, testLoader will only work from the parent
 # directory...
