@@ -2223,14 +2223,6 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
 }
 
 void Cfg::generateDotFile(std::ofstream& of) {
-    // The caller has put "procname ->" into of; we need to complete that
-    // line first
-    if (m_listBB.size())
-        of << m_listBB.front()->getStmtNumber();
-    else
-        of << "none";
-    of << ";\n";
-
     // The nodes
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) {
@@ -2271,6 +2263,9 @@ void Cfg::generateDotFile(std::ofstream& of) {
         of << "\"];\n";
     }
 
+    // Close the subgraph
+    of << "}\n";
+
     // Now the edges
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) {
@@ -2287,6 +2282,12 @@ void Cfg::generateDotFile(std::ofstream& of) {
                 if (j > 0)
                     // A call interprocedural edge
                     of << " [color=blue]";
+                else {
+                    Proc* dest = (*it)->getDestProc();
+                    if (!dest->isLib())
+                        // A call-to-postcall edge; these don't really exist
+                        of << " [style=dotted]";
+                }
             } else if ((*it)->getType() == RET) {
                 // A return interprocedural edge
                     of << " [color=green]";

@@ -200,10 +200,16 @@ void Prog::decompile() {
     if (Boomerang::get()->debugPrintSSA)
         std::cerr << "====== End Debug Print SSA Form ======\n\n";
 
-    // usedby analysis goes about here (if needed)
-
     // What used to be done in UserProc::decompile
     decompileProcs();
+
+    if (Boomerang::get()->dotFile) {
+        // Note: relies on interprocedural edges
+        // Also, we don't want statements deleted (because we like to use
+        // statement numbers in the graph)
+        std::cerr << "generating dot file..." << std::endl;
+        generateDotFile();
+    }
 
     removeNullStmts();          // Remove null statements
     // Put unused statements before recovery of parameters, so we don't
@@ -230,13 +236,14 @@ void Prog::generateDotFile() {
     of << "digraph Cfg {" << std::endl;
 
     // For now, add all the interprocedural edges
+    // It is assumed that the call interprocedural edges are still active
+    // from phase 2 of the global DFA
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-        p->getCFG()->setCallInterprocEdges();
         p->getCFG()->setReturnInterprocEdges();
     }
 
@@ -246,16 +253,25 @@ void Prog::generateDotFile() {
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-        // Box for the proc name
-        of << "    \"" << p->getName() <<
-          "\" [shape=box,style=filled,color=yellow];\n    " <<
-          p->getName() << " -> ";
-        // Note: Cfg::generateDotFile will complete this line
+        // Subgraph for the proc name
+        of << "\nsubgraph cluster_" << p->getName() << " {\n" <<
+          "    color=gray;\n    label=" << p->getName() << ";\n";
         // Generate dotty CFG for this proc
         p->getCFG()->generateDotFile(of);
     }
     of << "}";
     of.close();
+
+    // Remove the return interprocedural edges (in case the dataflow is redone)
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+      it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+        p->getCFG()->clearReturnInterprocEdges();
+    }
+
 }
 
 void Prog::generateCode(std::ostream &os) {
