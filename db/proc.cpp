@@ -1109,15 +1109,15 @@ std::set<UserProc*>* UserProc::decompile() {
             //trimParameters(depth);
         }
 
-        // if we've added new parameters, need to do propagations up to this depth
-        // it's a recursive function thing.
+        // if we've added new parameters, need to do propagations up to this
+        // depth.  it's a recursive function thing.
         if (nparams != signature->getNumParams()) {
             for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
                 // Propagate at this memory depth
                 for (int td = maxDepth; td >= 0; td--) {
                     if (VERBOSE)
-                        LOG << "propagating at depth " << depth_tmp << " to depth " 
-                                  << td << "\n";
+                        LOG << "parameter propagating at depth " << depth_tmp <<
+                            " to depth " << td << "\n";
                     propagateStatements(depth_tmp, td);
                     for (int i = 0; i <= depth_tmp; i++)
                         cfg->renameBlockVars(0, i, true);
@@ -1136,7 +1136,7 @@ std::set<UserProc*>* UserProc::decompile() {
         }
         // replacing expressions with Parameters as we go
         if (!Boomerang::get()->noParameterNames) {
-            replaceExpressionsWithParameters(-1);
+            replaceExpressionsWithParameters(depth);
             cfg->renameBlockVars(0, depth, true);
         }
 
@@ -2092,9 +2092,11 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                 }
             }
         }
-    if (found)
+    if (found) {
         // Must redo all the subscripting!
-        cfg->renameBlockVars(0, 1, true);
+        for (int d=0; d <= depth; d++)
+            cfg->renameBlockVars(0, d /* Memory depth */, true);
+    }
 
     // replace expressions in regular statements with parameters
     for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -2437,8 +2439,10 @@ void UserProc::processConstants() {
 }
 
 // Propagate statements, but don't remove
-// Respect the memory depth (don't propagate statements that have components
-// of a higher memory depth than memDepth)
+// Respect the memory depth (don't propagate FROM statements that have
+// components of a higher memory depth than memDepth)
+// Also don't propagate TO expressions of depth other than toDepth
+// (unless toDepth == -1)
 void UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList stmts;
     getStatements(stmts);
@@ -2535,7 +2539,12 @@ void UserProc::countRefs(RefCounter& refCounts) {
         if (s->isReturn())
             LOG << "counting references in " << s << "\n";
         LocationSet refs;
+#define IGNORE_IMPLICITS 1
+#if IGNORE_IMPLICITS
+        s->addUsedLocsFinal(refs);
+#else
         s->addUsedLocs(refs);
+#endif
         LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             if (((Exp*)*rr)->isSubscript()) {
@@ -2650,13 +2659,13 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 ll++;
                 continue;
             }
-            if (s->getLeft()->getOper() == opParam) {
+            // if (s->getLeft()->getOper() == opParam) {
                 // we actually want to remove this if no-one is using it
                 // otherwise we'll create an interference that we can't
                 // handle
                 //ll++;
                 //continue;
-            }
+            // }
             if (s->getLeft()->getOper() == opMemberAccess ||
                 s->getLeft()->getOper() == opArraySubscript) {
                 // can't say with these
