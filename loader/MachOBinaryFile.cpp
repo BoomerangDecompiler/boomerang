@@ -31,6 +31,15 @@
 #include <sstream>
 #include <assert.h>
 
+#include "nlist.h"
+#include "macho-apple.h"
+
+#include "objc/objc-class.h"
+#include "objc/objc-runtime.h"
+
+#define DEBUG_MACHO_LOADER
+#define DEBUG_MACHO_LOADER_OBJC
+
 MachOBinaryFile::MachOBinaryFile() : m_pFileName(0)
 { }
 
@@ -83,9 +92,10 @@ bool MachOBinaryFile::RealLoad(const char* sName)
 	m_pFileName = sName;
 	FILE *fp = fopen(sName,"rb");
 
-	fread(&header, sizeof(header), 1, fp);
+    header = new struct mach_header;
+	fread(header, sizeof(*header), 1, fp);
 
-	if (BMMH(header.magic) != MH_MAGIC) {
+	if (BMMH(header->magic) != MH_MAGIC) {
         fclose(fp);
 		fprintf(stderr,"error loading file %s, bad Mach-O magic\n", sName);
 		return false;
@@ -97,9 +107,11 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     std::vector<struct section> stubs_sects;
     char *strtbl;
     unsigned *indirectsymtbl;
+    ADDRESS objc_symbols = NO_ADDRESS, objc_modules = NO_ADDRESS, objc_strings = NO_ADDRESS, objc_refs = NO_ADDRESS;
+    unsigned objc_modules_size;
 
-	fseek(fp, sizeof(header), SEEK_SET);
-    for (unsigned i = 0; i < BMMH(header.ncmds); i++) {
+	fseek(fp, sizeof(*header), SEEK_SET);
+    for (unsigned i = 0; i < BMMH(header->ncmds); i++) {
         struct load_command cmd;
         long pos = ftell(fp);
         fread(&cmd, 1, sizeof(struct load_command), fp);
@@ -111,14 +123,37 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                     struct segment_command seg;
                     fread(&seg, 1, sizeof(seg), fp);
                     segments.push_back(seg);
+#ifdef DEBUG_MACHO_LOADER
                     fprintf(stdout, "seg addr %x size %i fileoff %x filesize %i flags %x\n", BMMH(seg.vmaddr), BMMH(seg.vmsize), BMMH(seg.fileoff), BMMH(seg.filesize), BMMH(seg.flags));
+#endif
                     for (unsigned n = 0; n < BMMH(seg.nsects); n++) {
                         struct section sect;
                         fread(&sect, 1, sizeof(sect), fp);
+#ifdef DEBUG_MACHO_LOADER
                         fprintf(stdout, "    sectname %s segname %s addr %x size %i flags %x\n", sect.sectname, sect.segname, BMMH(sect.addr), BMMH(sect.size), BMMH(sect.flags));
+#endif
                         if ((BMMH(sect.flags) & SECTION_TYPE) == S_SYMBOL_STUBS) {
                             stubs_sects.push_back(sect);
+#ifdef DEBUG_MACHO_LOADER
                             fprintf(stdout, "        symbol stubs section, start index %i, stub size %i\n", BMMH(sect.reserved1), BMMH(sect.reserved2));
+#endif
+                        }
+                        if (!strcmp(sect.sectname, SECT_OBJC_SYMBOLS)) {
+                            assert(objc_symbols == NO_ADDRESS);
+                            objc_symbols = BMMH(sect.addr);
+                        }
+                        if (!strcmp(sect.sectname, SECT_OBJC_MODULES)) {
+                            assert(objc_modules == NO_ADDRESS);
+                            objc_modules = BMMH(sect.addr);
+                            objc_modules_size = BMMH(sect.size);
+                        }
+                        if (!strcmp(sect.sectname, SECT_OBJC_STRINGS)) {
+                            assert(objc_strings == NO_ADDRESS);
+                            objc_strings = BMMH(sect.addr);
+                        }
+                        if (!strcmp(sect.sectname, SECT_OBJC_REFS)) {
+                            assert(objc_refs == NO_ADDRESS);
+                            objc_refs = BMMH(sect.addr);
                         }
                     }
                 }
@@ -135,19 +170,25 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                         struct nlist sym;
                         fread(&sym, 1, sizeof(sym), fp);
                         symbols.push_back(sym);
+#ifdef DEBUG_MACHO_LOADER
                         //fprintf(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
+#endif
                     }
+#ifdef DEBUG_MACHO_LOADER
                     fprintf(stdout, "symtab contains %i symbols\n", BMMH(syms.nsyms));
+#endif
                 }
                 break;
             case LC_DYSYMTAB:
                 {
                     struct dysymtab_command syms;
                     fread(&syms, 1, sizeof(syms), fp);
+#ifdef DEBUG_MACHO_LOADER
                     fprintf(stdout, "dysymtab local %i %i defext %i %i undef %i %i\n", 
                         BMMH(syms.ilocalsym), BMMH(syms.nlocalsym), 
                         BMMH(syms.iextdefsym), BMMH(syms.nextdefsym),
                         BMMH(syms.iundefsym), BMMH(syms.nundefsym));
+#endif
                     startlocal = BMMH(syms.ilocalsym);
                     nlocal = BMMH(syms.nlocalsym);
                     startdef = BMMH(syms.iextdefsym);
@@ -155,18 +196,24 @@ bool MachOBinaryFile::RealLoad(const char* sName)
                     startundef = BMMH(syms.iundefsym);
                     nundef = BMMH(syms.nundefsym);
 
+#ifdef DEBUG_MACHO_LOADER
                     fprintf(stdout, "dysymtab has %i indirect symbols: ", BMMH(syms.nindirectsyms));
+#endif
                     indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
                     fseek(fp, BMMH(syms.indirectsymoff), SEEK_SET);
                     fread(indirectsymtbl, 1, BMMH(syms.nindirectsyms)*sizeof(unsigned), fp);
+#ifdef DEBUG_MACHO_LOADER
                     for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
                         fprintf(stdout, "%i ", BMMH(indirectsymtbl[j]));
                     }
                     fprintf(stdout, "\n");
+#endif
                 }
                 break;
             default:
+#ifdef DEBUG_MACHO_LOADER
                 fprintf(stderr, "not handled load command %x\n", BMMH(cmd.cmd));
+#endif
                 // yep, there's lots of em
                 break;
         }
@@ -203,8 +250,9 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         unsigned fsz = BMMH(segments[i].filesize);
         memset(base + a - loaded_addr, 0, sz);
         fread(base + a - loaded_addr, 1, fsz, fp);
+#ifdef DEBUG_MACHO_LOADER
         fprintf(stderr, "loaded segment %x %i in mem %i in file\n", a, sz, fsz);
-
+#endif
 
 		m_pSections[i].pSectionName = new char[17];
 		strncpy(m_pSections[i].pSectionName, segments[i].segname, 16);
@@ -226,8 +274,12 @@ bool MachOBinaryFile::RealLoad(const char* sName)
             unsigned startidx = BMMH(stubs_sects[j].reserved1);
             unsigned symbol = BMMH(indirectsymtbl[startidx + i]);
             ADDRESS addr = BMMH(stubs_sects[j].addr) + i * BMMH(stubs_sects[j].reserved2);
+#ifdef DEBUG_MACHO_LOADER
             fprintf(stdout, "stub for %s at %x\n", strtbl + BMMH(symbols[symbol].n_un.n_strx), addr);
+#endif
             char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
+            if (*name == '_')  // we want printf not _printf
+                name++;
             m_SymA[addr] = name;
             dlprocs[addr] = name;
         }
@@ -238,10 +290,68 @@ bool MachOBinaryFile::RealLoad(const char* sName)
         char *name = strtbl + BMMH(symbols[i].n_un.n_strx);
         if (BMMH(symbols[i].n_un.n_strx) != 0 && BMMH(symbols[i].n_value) != 0 && *name != 0) {
             
+#ifdef DEBUG_MACHO_LOADER
             fprintf(stdout, "symbol %s at %x type %x\n", name, 
                                                     BMMH(symbols[i].n_value), 
                                                     BMMH(symbols[i].n_type) & N_TYPE);
+#endif
+            if (*name == '_')  // we want main not _main
+                name++;
             m_SymA[BMMH(symbols[i].n_value)] = name;
+        }
+    }
+
+    // process objective-c section
+    if (objc_modules != NO_ADDRESS) {
+#ifdef DEBUG_MACHO_LOADER_OBJC
+        fprintf(stdout, "processing objective-c section\n");
+#endif
+        for (unsigned i = 0; i < objc_modules_size; ) {
+            struct objc_module *module = (struct objc_module *)((ADDRESS)base + objc_modules - loaded_addr + i);
+            char *name = (char *)((ADDRESS)base + BMMH(module->name) - loaded_addr);
+            Symtab symtab = (Symtab)((ADDRESS)base + BMMH(module->symtab) - loaded_addr);
+#ifdef DEBUG_MACHO_LOADER_OBJC
+            fprintf(stdout, "module %s (%i classes)\n", name, BMMHW(symtab->cls_def_cnt));
+#endif
+            ObjcModule *m = &modules[name];
+            m->name = name;
+            for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
+                struct objc_class *def = (struct objc_class *)((ADDRESS)base + BMMH(symtab->defs[j]) - loaded_addr);
+                char *name = (char *)((ADDRESS)base + BMMH(def->name) - loaded_addr);
+#ifdef DEBUG_MACHO_LOADER_OBJC
+                fprintf(stdout, "  class %s\n", name);
+#endif
+                ObjcClass *cl = &m->classes[name];
+                cl->name = name;
+                struct objc_ivar_list *ivars = (struct objc_ivar_list *)((ADDRESS)base + BMMH(def->ivars) - loaded_addr);
+                for (unsigned k = 0; k < BMMH(ivars->ivar_count); k++) {
+                    struct objc_ivar *ivar = &ivars->ivar_list[k];
+                    char *name = (char*)((ADDRESS)base + BMMH(ivar->ivar_name) - loaded_addr);
+                    char *types = (char*)((ADDRESS)base + BMMH(ivar->ivar_type) - loaded_addr);
+#ifdef DEBUG_MACHO_LOADER_OBJC
+                    fprintf(stdout, "    ivar %s %s %x\n", name, types, BMMH(ivar->ivar_offset));
+#endif
+                    ObjcIvar *iv = &cl->ivars[name];
+                    iv->name = name;
+                    iv->type = types;
+                    iv->offset = BMMH(ivar->ivar_offset);
+                }
+                // this is weird, why is it defined as a ** in the struct but used as a * in otool?
+                struct objc_method_list *methods = (struct objc_method_list *)((ADDRESS)base + BMMH(def->methodLists) - loaded_addr);
+                for (unsigned k = 0; k < BMMH(methods->method_count); k++) {
+                    struct objc_method *method = &methods->method_list[k];
+                    char *name = (char*)((ADDRESS)base + BMMH(method->method_name) - loaded_addr);
+                    char *types = (char*)((ADDRESS)base + BMMH(method->method_types) - loaded_addr);
+#ifdef DEBUG_MACHO_LOADER_OBJC
+                    fprintf(stdout, "    method %s %s %x\n", name, types, BMMH(method->method_imp));
+#endif
+                    ObjcMethod *me = &cl->methods[name];
+                    me->name = name;
+                    me->types = types;
+                    me->addr = BMMH(method->method_imp);
+                }
+            }
+            i += BMMH(module->size);
         }
     }
 

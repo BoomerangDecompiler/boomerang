@@ -1,11 +1,4 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boomerang", "boomerang.vcproj", "{6423B982-BD86-49D9-B4B4-834697281351}"
-	ProjectSection(ProjectDependencies) = postProject
-		{CB76191E-3435-45C6-9436-ECB0E6CE014D} = {CB76191E-3435-45C6-9436-ECB0E6CE014D}
-		{A785802D-00A3-4B87-B60B-464AF962BB2C} = {A785802D-00A3-4B87-B60B-464AF962BB2C}
-		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2} = {EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BinaryFile", "win32make\BinaryFile\BinaryFile.vcproj", "{A785802D-00A3-4B87-B60B-464AF962BB2C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -27,15 +20,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "console", "win32make\consol
 		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2} = {EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MachOBinaryFile", "win32make\MachOBinaryFile\MachOBinaryFile.vcproj", "{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{6423B982-BD86-49D9-B4B4-834697281351}.Debug.ActiveCfg = Debug|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Release.ActiveCfg = Release|Win32
-		{6423B982-BD86-49D9-B4B4-834697281351}.Release.Build.0 = Release|Win32
 		{A785802D-00A3-4B87-B60B-464AF962BB2C}.Debug.ActiveCfg = Debug|Win32
 		{A785802D-00A3-4B87-B60B-464AF962BB2C}.Debug.Build.0 = Debug|Win32
 		{A785802D-00A3-4B87-B60B-464AF962BB2C}.Release.ActiveCfg = Release|Win32
@@ -52,6 +46,10 @@ Global
 		{61F02837-79AE-4841-939D-77233F4F35BC}.Debug.Build.0 = Debug|Win32
 		{61F02837-79AE-4841-939D-77233F4F35BC}.Release.ActiveCfg = Release|Win32
 		{61F02837-79AE-4841-939D-77233F4F35BC}.Release.Build.0 = Release|Win32
+		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Debug.ActiveCfg = Debug|Win32
+		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Debug.Build.0 = Debug|Win32
+		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Release.ActiveCfg = Release|Win32
+		{EDD5A43B-22DE-4C53-BF4C-8FCEFA7503C2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

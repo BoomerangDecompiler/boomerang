@@ -98,6 +98,32 @@ typedef struct reg_addr_tag
 	ADDRESS		uValue;				// Its initial value
 } RegAddr;
 
+// Objective-C stuff
+class ObjcIvar {
+public:
+    std::string name, type;
+    unsigned offset;
+};
+
+class ObjcMethod {
+public:
+    std::string name, types;
+    ADDRESS addr;
+};
+
+class ObjcClass {
+public:
+    std::string name;
+    std::map<std::string, ObjcIvar> ivars;
+    std::map<std::string, ObjcMethod> methods;
+};
+
+class ObjcModule {
+public:
+    std::string name;
+    std::map<std::string, ObjcClass> classes;
+};
+
 /*
  * callback function, which when given the name of a library, should return
  * a pointer to an opened BinaryFile, or NULL if the name cannot be resolved.
@@ -259,6 +285,8 @@ virtual size_t	getImageSize() = 0;
 	virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
 
 	virtual std::map<ADDRESS, std::string> &getSymbols() { return *new std::map<ADDRESS, std::string>(); }
+
+    virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::map<std::string, ObjcModule>(); }
 
     ADDRESS getLimitTextLow() { return limitTextLow; }
     ADDRESS getLimitTextHigh() { return limitTextHigh; }

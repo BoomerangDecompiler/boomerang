@@ -26,6 +26,7 @@
 #include "proc.h"
 #include "hllcode.h"
 #include "log.h"
+#include "BinaryFile.h"
 
 #define LOG Boomerang::get()->log()
 
@@ -91,6 +92,9 @@ static Boomerang *get() {
 	void	addWatcher(Watcher *watcher) { watchers.insert(watcher); }
 	void	persistToXML(Prog *prog);
 	Prog	*loadFromXML(const char *fname);
+
+    // special decoder for Objective-C
+    void    objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog);
 
 	// call the watchers
 	void alert_complete() {

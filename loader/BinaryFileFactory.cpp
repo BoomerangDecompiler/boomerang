@@ -20,7 +20,6 @@
 #include <windows.h>
 #endif
 
-
 BinaryFile *BinaryFileFactory::Load( const char *sName )
 {
 	BinaryFile *pBF = getInstanceFor( sName );

@@ -36,6 +36,9 @@
 #define BMMH2(x) ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + \
 	((unsigned)((Byte *)(x))[1] << 16) + ((unsigned)((Byte *)(x))[0] << 24))
 
+
+#define BMMHW(x) (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
+
 //#ifdef WIN32
 #pragma pack(1)
 //#endif
@@ -44,12 +47,11 @@ typedef unsigned long cpu_type_t;     // I guessed
 typedef unsigned long cpu_subtype_t;  // I guessed
 typedef unsigned long vm_prot_t;   // I guessed
 
-#include "nlist.h"
-#include "macho-apple.h"
-
 //#ifdef WIN32
 #pragma pack(4)
 //#endif
+
+struct mach_header;
 
 class MachOBinaryFile : public BinaryFile
 {
@@ -99,9 +101,11 @@ virtual QWord readNative8(ADDRESS a);	// Read 8 bytes from native addr
 virtual float readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
 virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
+virtual bool	IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
 virtual const char *GetDynamicProcName(ADDRESS uNative);
 
 	virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
+    virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
 
   protected:
 	virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
@@ -111,12 +115,13 @@ virtual const char *GetDynamicProcName(ADDRESS uNative);
 		bool	PostLoad(void* handle); // Called after archive member loaded
 		void	findJumps(ADDRESS curr);// Find names for jumps to IATs
 
-		struct mach_header header;      // The Mach-O header
+		struct mach_header *header;      // The Mach-O header
 		char *	base;					// Beginning of the loaded image
 		const char *m_pFileName;
         ADDRESS entrypoint, loaded_addr;
         unsigned loaded_size;
         std::map<ADDRESS, std::string> m_SymA, dlprocs;
+        std::map<std::string, ObjcModule> modules;
 };
 
 //#ifdef WIN32

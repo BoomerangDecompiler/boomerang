@@ -776,6 +776,28 @@ bool Boomerang::setOutputDirectory(const char *path)
 	return true;
 }
 
+void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog)
+{
+    Cluster *root = prog->getRootCluster();
+    for (std::map<std::string, ObjcModule>::iterator it = modules.begin(); it != modules.end(); it++) {
+        ObjcModule &mod = (*it).second;
+        Cluster *module = new Cluster(mod.name.c_str());
+        root->addChild(module);
+        for (std::map<std::string, ObjcClass>::iterator it1 = mod.classes.begin(); it1 != mod.classes.end(); it1++) {
+            ObjcClass &c = (*it1).second;
+            Cluster *cl = new Cluster(c.name.c_str());
+            root->addChild(cl);
+            for (std::map<std::string, ObjcMethod>::iterator it2 = c.methods.begin(); it2 != c.methods.end(); it2++) {
+                ObjcMethod &m = (*it2).second;
+                // TODO: parse :'s in names
+                Proc *p = prog->newProc(m.name.c_str(), m.addr);
+                p->setCluster(cl);
+                // TODO: decode types in m.types
+            }
+        }
+    }
+}
+
 Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 {
 	std::cerr << "loading...\n";
@@ -797,6 +819,10 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 		std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
 		prog->readSymbolFile(symbolFiles[i].c_str());
 	}
+
+    std::map<std::string, ObjcModule> &objcmodules = fe->getBinaryFile()->getObjcModules();
+    if (objcmodules.size())
+        objcDecode(objcmodules, prog);
 
 	prog->setNextIsEntry();			// The next proc created will be designated the "entry point"
 	
