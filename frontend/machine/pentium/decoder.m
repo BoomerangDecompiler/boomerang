@@ -108,7 +108,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     std::list<Statement*>* stmts = NULL;
 
 
-    ADDRESS nextPC = NO_ADDR;
+    ADDRESS nextPC = NO_ADDRESS;
     match [nextPC] hostPC to
     
     | CALL.Evod(Eaddr) =>

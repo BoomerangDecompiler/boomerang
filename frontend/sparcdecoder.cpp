@@ -217,7 +217,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     // The actual list of instantiated statements
     std::list<Statement*>* stmts = NULL;
 
-    ADDRESS nextPC = NO_ADDR;
+    ADDRESS nextPC = NO_ADDRESS;
 
 
 
