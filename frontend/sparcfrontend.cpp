@@ -1719,11 +1719,14 @@ SparcFrontEnd::~SparcFrontEnd()
  *============================================================================*/
 ADDRESS SparcFrontEnd::getMainEntryPoint( bool &gotMain ) 
 {
+    gotMain = true;
     ADDRESS start = pBF->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
     start = pBF->GetEntryPoint();
+    gotMain = false;
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
+    gotMain = true;
     return start;
 }
