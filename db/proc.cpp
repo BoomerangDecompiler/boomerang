@@ -1017,9 +1017,11 @@ std::set<UserProc*>* UserProc::decompile() {
 		if (depth == maxDepth)		// Else Sparc problems... MVE
 			replaceExpressionsWithGlobals();
 		int nparams = signature->getNumParams();
-		if (depth > 0 && !Boomerang::get()->noChangeSignatures) {
-			addNewParameters();
-			//trimParameters(depth);
+		if (!signature->isForced()) {
+			if (depth > 0 && !Boomerang::get()->noChangeSignatures) {
+				addNewParameters();
+				//trimParameters(depth);
+			}
 		}
 
 		// if we've added new parameters, need to do propagations up to this depth.  it's a recursive function thing.

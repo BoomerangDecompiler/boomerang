@@ -1382,13 +1382,14 @@ void Prog::readSymbolFile(const char *fname) {
 
 	for (std::list<Symbol*>::iterator it = par->symbols.begin(); it != par->symbols.end(); it++) {
 		if ((*it)->sig) {
-			Proc* p = newProc((*it)->sig->getName(), (*it)->addr,
-				  pBF->IsDynamicLinkedProcPointer((*it)->addr) ||
+			Proc* p = newProc((*it)->sig->getName(), (*it)->addr, pBF->IsDynamicLinkedProcPointer((*it)->addr) ||
 				// NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
 				// to specifically specify that this function obeys library calling conventions
 				(*it)->mods->noDecode);
-			if (!(*it)->mods->incomplete)
+			if (!(*it)->mods->incomplete) {
 				p->setSignature((*it)->sig->clone());
+				p->getSignature()->setForced(true);
+			}
 		} else {
 			const char *nam = (*it)->nam.c_str();
 			if (strlen(nam) == 0) {

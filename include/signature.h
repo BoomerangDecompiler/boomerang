@@ -105,11 +105,12 @@ protected:
 		std::vector<Return*> returns;
 		Type		*rettype;
 		bool		ellipsis;
+		bool		unknown;
+		bool		bFullSig;			// True if have a full signature from a signature file etc
+		bool		forced;				// True if the signature is forced with a -sf entry
 		Type		*preferedReturn;
 		std::string	preferedName;
 		std::vector<int> preferedParams;
-		bool		unknown;
-		bool		bFullSig;			// True if have a full signature from a signature file etc
 
 		void		updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
 		bool		usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
@@ -132,6 +133,8 @@ virtual	Signature	*clone();
 		bool		isUnknown() { return unknown; }
 		void		setUnknown(bool b) { unknown = b; }
 		void		setFullSig(bool full) {bFullSig = full;}
+		bool		isForced() {return forced; }
+		void		setForced(bool f) {forced = f; }
 
 		// get the return location
 virtual void		addReturn(Type *type, Exp *e = NULL);

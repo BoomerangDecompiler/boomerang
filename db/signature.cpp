@@ -914,7 +914,8 @@ Exp *CallingConvention::StdC::SparcLibSignature::getProven(Exp* left) {
 
 
 
-Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false), preferedReturn(NULL), unknown(true), bFullSig(false) {
+Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false), unknown(true), bFullSig(false),
+		forced(false), preferedReturn(NULL) {
 	if (nam == NULL) 
 		name = "<ANON>";
 	else
