@@ -2053,7 +2053,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 	}
 	unsigned int i;
 	for (i = 0; i < returns.size(); i++)
-		if (returns[i]->getOper() == opMemOf) {
+		if (returns[i] && returns[i]->getOper() == opMemOf) {
 			Exp *e = findArgument(returns[i]->getSubExp1());
 			if (e)
 				returns[i]->refSubExp1() = e->clone();

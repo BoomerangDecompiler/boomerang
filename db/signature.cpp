@@ -992,7 +992,8 @@ Type *Signature::getReturnType(int n) {
 }
 
 void Signature::setReturnType(int n, Type *ty) {
-	returns[n]->setType(ty);
+	if (n < returns.size())
+		returns[n]->setType(ty);
 }
 
 void Signature::fixReturnsWithParameters() {

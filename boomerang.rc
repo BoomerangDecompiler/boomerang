@@ -31,6 +31,14 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_BOOMERANG           ICON                    "boomerang.ico"
+IDI_PROC                ICON                    "proc1.ico"
+IDI_CLUSTER             ICON                    "icon1.ico"
+IDI_DPROC               ICON                    "ico00001.ico"
+IDI_ULPROC              ICON                    "ico00002.ico"
+IDI_LPROC               ICON                    "id_lproc.ico"
+IDI_RESUME              ICON                    "resume.ico"
+IDI_SUSPEND             ICON                    "suspend.ico"
+IDI_RESUME1             ICON                    "resume1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -109,6 +117,7 @@ BEGIN
     BEGIN
         MENUITEM "Boomerang &Web Site",         ID_HELP_BOOMERANGWEBSITE
         MENUITEM "Boomerang &FAQ",              ID_HELP_BOOMERANGFAQ
+        MENUITEM SEPARATOR
         MENUITEM "&About ...",                  IDM_ABOUT
     END
 END
@@ -144,80 +153,6 @@ BEGIN
     LTEXT           "You are using the Win32 GUI to Boomerang, an Open Source decompiler.  For details see the Boomerang Web Site available from the Help menu.",
                     IDC_STATIC,12,33,196,35
 END
-
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""windows.h""\r\n"
-    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE 
-BEGIN
-    IDS_APP_TITLE           "Boomerang"
-    IDC_BOOMERANG           "BOOMERANG"
-END
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (Australia) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_PROC                ICON                    "proc1.ico"
-IDI_CLUSTER             ICON                    "icon1.ico"
-IDI_DPROC               ICON                    "ico00001.ico"
-IDI_ULPROC              ICON                    "ico00002.ico"
-IDI_LPROC               ICON                    "id_lproc.ico"
-IDI_RESUME              ICON                    "resume.ico"
-IDI_SUSPEND             ICON                    "suspend.ico"
-IDI_RESUME1             ICON                    "resume1.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_NEWPROJECT DIALOGEX 0, 0, 247, 106
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
@@ -422,6 +357,34 @@ BEGIN
 END
 
 
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
@@ -504,7 +467,19 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (Australia) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_APP_TITLE           "Boomerang"
+    IDC_BOOMERANG           "BOOMERANG"
+END
+
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

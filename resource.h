@@ -6,13 +6,14 @@
 #define IDC_ADDBUTTON                   3
 #define IDC_REMOVEBUTTON                4
 #define IDC_CLEARBUTTON                 5
-#define IDI_PROC                        5
+
 #define IDD_BOOMERANG_DIALOG            102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
-#define IDI_BOOMERANG                   107
+#define IDI_BOOMERANG                   106
+#define IDI_PROC                        107
 #define IDC_BOOMERANG                   109
 #define IDR_MAINFRAME                   128
 #define IDD_NEWPROJECT                  129

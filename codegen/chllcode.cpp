@@ -977,6 +977,9 @@ void CHLLCode::RemoveLabel(int ord)
 
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 {
+	if (asgn->getLeft()->getOper() == opPC)
+		return;
+
 	std::ostringstream s;
 	indent(s, indLevel);
 	Type* asgnType = asgn->getType();
@@ -1015,7 +1018,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
 {
 	std::ostringstream s;
 	indent(s, indLevel);
-	unsigned n;
+	unsigned n = 0;
 	if (rets.size() >= 1) {
 		for (n = 0; n < rets.size(); n++)
 			if (rets[n]) {
@@ -1105,10 +1108,13 @@ void CHLLCode::AddProcStart(Signature *signature)
 {
 	std::ostringstream s;
 	if (signature->getNumReturns() == 0) {
-		s << "void";
-	}  else 
+		s << "void ";
+	}  else {
 		appendType(s, signature->getReturnType(0));
-	s << " " << signature->getName() << "(";
+		if (!signature->getReturnType(0)->isPointer())
+			s << " ";
+	}
+	s << signature->getName() << "(";
 	for (int i = 0; i < signature->getNumParams(); i++) {
 		Type *ty = signature->getParamType(i); 
 		if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isArray()) {
@@ -1155,7 +1161,7 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last)
 			appendExp(s, e->getSubExp1(), PREC_NONE);
 			s << ";";
 		} else {
-			s << "; // ";
+			s << "; \t\t// ";
 			e->print(s);
 		}
 	} else

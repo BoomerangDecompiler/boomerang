@@ -399,14 +399,15 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
 		// Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
 		// Use the actual left from Statement **uu
-		Exp* temp;
+		Exp* temp = NULL;
 		if (*uu == NULL) {
 			// Special case: a null PhiAssign reference means the lhs at "statement 0"
 			// MVE: check if it's possible that there is a null AND the LHS has been renamed
 			temp = new RefExp(lhs, NULL);
-		} else
+		} else if ((*uu)->getLeft())
 			temp = new RefExp((*uu)->getLeft(), *uu);
-		temp->accept(ev);
+		if (temp)
+			temp->accept(ev);
 	}
 
 	override = true;				// Don't do the usual accept logic
