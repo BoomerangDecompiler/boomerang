@@ -707,7 +707,7 @@ void UserProc::removeStatement(Statement *stmt) {
 			if (VERBOSE)
 				LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
 			proven.erase(it);
-			it = proven.begin();
+			// it = proven.begin();
 			continue;
 		}
 	}
@@ -959,15 +959,16 @@ std::set<UserProc*>* UserProc::decompile() {
 				for (int i = 0; i <= depth; i++)
 					cfg->renameBlockVars(0, i, true);
 			}
-			// If you have an indirect to direct call conversion, some
-			// propagations that were blocked by the indirect call might now
-			// succeed, and may be needed to prevent alias problems
+			// If you have an indirect to direct call conversion, some propagations that were blocked by
+			// the indirect call might now succeed, and may be needed to prevent alias problems
 			if (VERBOSE && convert)
-				LOG << "\nAbout to restart propagations and dataflow at depth "
-					<< depth << " due to conversion of indirect to direct call(s)\n\n";
+				LOG << "\nAbout to restart propagations and dataflow at depth " << depth <<
+					" due to conversion of indirect to direct call(s)\n\n";
 #if RESTART_DATAFLOW
 			if (convert) {
 				depth = 0;		// Start again from depth 0
+				// No no no! Just stripping references after propagations just yields totally wrong results.
+				// Hence we set RESTART_DATAFLOW to 0 above. Ugh.
 				stripRefs();
 				LOG << "\nAfter strip:\n";
 				printToLog();
@@ -1690,8 +1691,7 @@ void UserProc::addReturn(Exp *e)
 	Proc::addReturn(e);
 }
 
-void Proc::addParameter(Exp *e)
-{
+void Proc::addParameter(Exp *e) {
 	// In case it's already an implicit argument:
 	removeParameter(e);
 
@@ -1700,13 +1700,11 @@ void Proc::addParameter(Exp *e)
 	signature->addParameter(e);
 }
 
-void Proc::sortParameters()
-{
+void Proc::sortParameters() {
 	// yes, this is a bubble sort
-	for (int i = 0; i < signature->getNumParams() - 1; i++)
-		for (int j = 0; j < signature->getNumParams() - 1; j++)
-			for (int n = 0; n < signature->getNumParams() - 1; n++)
-			{
+	for (int i = 0; i < signature->getNumParams() - 1; i++) {
+		for (int j = 0; j < signature->getNumParams() - 1; j++) {
+			for (int n = 0; n < signature->getNumParams() - 1; n++) {
 				bool swapem = false;
 				Exp *e = signature->getParamExp(n);
 				Exp *f = signature->getParamExp(n + 1);
@@ -1717,7 +1715,8 @@ void Proc::sortParameters()
 				else if (e->getOper() == opMemOf && f->getOper() == opMemOf) {
 					if (e->getSubExp1()->getOper() == opPlus && f->getSubExp1()->getOper() == opPlus)
 						if (e->getSubExp1()->getSubExp2()->isIntConst() && f->getSubExp1()->getSubExp2()->isIntConst())
-							if (((Const*)e->getSubExp1()->getSubExp2())->getInt() > ((Const*)f->getSubExp1()->getSubExp2())->getInt())
+							if (((Const*)e->getSubExp1()->getSubExp2())->getInt() >
+									((Const*)f->getSubExp1()->getSubExp2())->getInt())
 								swapem = true;
 				}
 				if (swapem) {
@@ -1736,6 +1735,8 @@ void Proc::sortParameters()
 					}
 				}
 			}
+		}
+	}
 }
 
 void UserProc::processFloatConstants()
@@ -1786,7 +1787,7 @@ void UserProc::replaceExpressionsWithGlobals() {
 
 	// start with calls because that's where we have the most types
 	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) 
+	for (it = stmts.begin(); it != stmts.end(); it++) {
 		if ((*it)->isCall()) {
 			CallStatement *call = (CallStatement*)*it;
 			for (int i = 0; i < call->getNumArguments(); i++) {
@@ -1830,9 +1831,10 @@ void UserProc::replaceExpressionsWithGlobals() {
 				}
 			}
 		}
+	}
 
 
-	// replace expressions with symbols
+	// replace expressions with globals
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 
@@ -1884,10 +1886,10 @@ void UserProc::replaceExpressionsWithGlobals() {
 				// look for m[exp + K]{0}, replace it with m[exp * 1 + K]{0} in the hope that it will get picked 
 				// up as a global array.
 				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
-					r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
 					r1->getSubExp1()->setSubExp1(new Binary(opMult, r1->getSubExp1()->getSubExp1(), new Const(1)));
 				}
-				// Is it m[CONSTANT]{0}
+				// Is it m[CONSTANT]{-}
 				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opIntConst) {
 					Exp *memof = r1;
 					ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
@@ -1948,8 +1950,8 @@ void UserProc::replaceExpressionsWithGlobals() {
 							if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() != stride*8) {
 								if (VERBOSE)
 									LOG << "forcing array base type size to stride\n";
-								ty->asArray()->setLength(ty->asArray()->getLength() * ty->asArray()->getBaseType()->getSize() /
-									(stride * 8));
+								ty->asArray()->setLength(ty->asArray()->getLength() *
+									ty->asArray()->getBaseType()->getSize() / (stride * 8));
 								ty->asArray()->setBaseType(new IntegerType(stride*8));
 								prog->setGlobalType((char*)gloName, ty);
 							}
@@ -2783,8 +2785,8 @@ void UserProc::fromSSAform() {
 			LOG << "  ig " << ii->first << " -> " << ii->second << "\n";
 	}
 
-	// First rename the variables (including phi's, but don't remove)
-	// The below could be replaced by replaceExpressionsWithSymbols() now, except that then references don't get removed
+	// First rename the variables (including phi's, but don't remove).  The below could be replaced by
+	// replaceExpressionsWithSymbols() now, except that then references don't get removed
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		s->fromSSAform(ig);
@@ -3385,18 +3387,6 @@ bool UserProc::searchAndReplace(Exp *search, Exp *replace)
 unsigned fudge(StatementList::iterator x) {
 	StatementList::iterator y = x;
 	return *(unsigned*)&y;
-}
-void UserProc::stripRefs() {
-	StatementList stmts, delList;
-	getStatements(stmts);
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		if ((*it)->stripRefs())
-			delList.append(*it);
-	}
-	// Now delete the phis; somewhat inefficient at present
-	for (it = delList.begin(); it != delList.end(); it++)
-		removeStatement(*it);
 }
 
 Exp *UserProc::getProven(Exp *left) {
