@@ -967,6 +967,15 @@ void Signature::setParamType(int n, Type *ty) {
 	params[n]->setType(ty);
 }
 
+void Signature::setParamType(const char* nam, Type* ty) {
+	int idx = findParam(nam);
+	if (idx == -1) {
+		LOG << "Could not set type for unknown parameter " << nam << "\n";
+		return;
+	}
+	params[idx]->setType(ty);
+}
+
 void Signature::setParamName(int n, const char *name)
 {
 	params[n]->setName(name);

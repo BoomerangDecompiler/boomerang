@@ -598,8 +598,8 @@ public:
 
 
 	/*
-	 * Sets the parameters that have been recovered for this procedure through
-	 * analysis.
+	 * Sets the parameters that have been recovered for this procedure through analysis.
+     * Not currently implemented or called. Probably needed to deal with the Sparc aggregate pointer.
 	 */
 	void setParams(std::list<TypedExp*>& params, bool aggUsed = false);
 
@@ -628,6 +628,8 @@ public:
 	char *getSymbolName(Exp* e);		// As above, but look for expression e
 	void renameLocal(const char *oldName, const char *newName);
 	virtual void renameParam(const char *oldName, const char *newName);
+
+	void setParamType(const char* nam, Type* ty);
 
 	/*
 	 * Print the locals declaration in C style.

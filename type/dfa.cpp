@@ -110,9 +110,10 @@ void UserProc::dfaTypeAnalysis() {
 	}
 	if (DEBUG_TA)
 		LOG << " *** End converting expressions to local variables for " << getName() << " ***\n";
+
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		// First constants
+		// 1) constants
 		std::list<Const*>lc;
 		s->findConstants(lc);
 		std::list<Const*>::iterator cc;
@@ -175,12 +176,8 @@ void UserProc::dfaTypeAnalysis() {
 				prog->globalUsed(val, t);
 			}
 		}
-	}
 
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		// Locations
-		// Search for the array pattern and replace it with an array use
+		// 2) Search for the array pattern and replace it with an array use
 		// m[e*K1 + K2]
 		std::list<Exp*> result;
 		s->searchAll(arrayPat, result);
@@ -199,6 +196,13 @@ void UserProc::dfaTypeAnalysis() {
 				e);
 			s->searchAndReplace(arrayPat, arr);
 		}
+
+		// 3) Change the type of any parameters. The types for these will be stored in an ImplicitAssign
+		Exp* lhs;
+		if (s->isImplicit() && (lhs = ((ImplicitAssign*)s)->getLeft()), lhs->isParam()) {
+			// setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), ((ImplicitAssign*)s)->getType());
+		}
+
 	}
 
 	if (VERBOSE) {
@@ -881,7 +885,6 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 		}
 		case opGtr:	case opLess:
 		case opGtrEq:case opLessEq: {
-			int parentSize = parentType->getSize();
 			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
 			ta = ta->meetWith(new IntegerType(ta->getSize(), +1), ch);	// Must be signed
 			subExp1->descendType(ta, ch, proc);
