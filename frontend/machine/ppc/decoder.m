@@ -47,6 +47,7 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_CRFB	(dis_Reg(64/* condition registers start*/ + crfb))
 #define DIS_RDR		(dis_Reg(rd))
 #define DIS_RA		(dis_Reg(ra))
+#define DIS_RAZ     (dis_RAmbz(ra))		// As above, but May Be constant Zero
 #define DIS_RB		(dis_Reg(rb))
 #define DIS_D		(new Const(d))
 #define DIS_NZRA	(dis_Reg(ra))
@@ -56,7 +57,7 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-#define DIS_INDEX   (new Binary(opPlus, dis_Reg(ra), new Const(d)))
+#define DIS_INDEX   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
 #define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 
@@ -101,7 +102,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	ADDRESS nextPC = NO_ADDRESS;
 
 	match [nextPC] hostPC to
-	  | XO_ ( rd, ra, rb) [name] =>
+	| XO_ ( rd, ra, rb) [name] =>
 		stmts = instantiate(pc,	 name, DIS_RD, DIS_RA, DIS_RB);
 	| XOb_ ( rd, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
@@ -109,12 +110,27 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
 	| Dsaui_ (rd, ra, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_UIMM);
-	| Ddasi_ (rd, ra, simm) [name] =>
-		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_SIMM);
+	// Ddasi includes ADDI and ADDIS, which have special semantics for RA
+	// Ddasi_ is mulli | subfic | addic | addicq | addi | addis
+	| mulli  (rd, ra, simm) =>
+		stmts = instantiate(pc, "MULLI",	DIS_RD, DIS_RA, DIS_SIMM);
+	| subfic  (rd, ra, simm) =>
+		stmts = instantiate(pc, "SUBFIC",	DIS_RD, DIS_RA, DIS_SIMM);
+	| addic  (rd, ra, simm) =>
+		stmts = instantiate(pc, "ADDIC",	DIS_RD, DIS_RA, DIS_SIMM);
+	| addicq  (rd, ra, simm) =>
+		stmts = instantiate(pc, "ADDICQ",	DIS_RD, DIS_RA, DIS_SIMM);
+	| addi   (rd, ra, simm) =>
+		stmts = instantiate(pc, "ADDI",		DIS_RD, DIS_RAZ, DIS_SIMM);
+	| addis  (rd, ra, simm) =>
+		stmts = instantiate(pc, "ADDIS",	DIS_RD, DIS_RAZ, DIS_SIMM);
+	//| Ddasi_ (rd, ra, simm) [name] =>
+	//	stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_SIMM);
 	| Xsabx_ (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_RB);
 	| Xdab_ (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_DISP);
+	// Load instructions
 	| Ddad_ (rd, d, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
 	| XLb_ (b0, b1) [name] =>
@@ -191,6 +207,19 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
  *============================================================================*/
 Exp* PPCDecoder::dis_Reg(unsigned r)
 {
+	return Location::regOf(r);
+}
+
+/*==============================================================================
+ * FUNCTION:		PPCDecoder::dis_RAmbz
+ * OVERVIEW:		Decode the register rA when rA represents constant 0 if r == 0
+ * PARAMETERS:		r - register (0-31)
+ * RETURNS:			the expression representing the register
+ *============================================================================*/
+Exp* PPCDecoder::dis_RAmbz(unsigned r)
+{
+	if (r == 0)
+		return new Const(0);
 	return Location::regOf(r);
 }
 
