@@ -832,9 +832,9 @@ static const short yyrline[] = { 0,
    823,   833,   839,   844,   851,   856,   861,   865,   869,   873,
    877,   887,   893,   898,   903,   908,   911,   916,   922,   950,
    977,   982,   992,  1000,  1004,  1008,  1012,  1016,  1020,  1024,
-  1028,  1035,  1061,  1066,  1097,  1101,  1107,  1111,  1129,  1133,
-  1138,  1141,  1146,  1152,  1157,  1161,  1166,  1194,  1198,  1201,
-  1205
+  1028,  1035,  1061,  1066,  1097,  1101,  1107,  1111,  1130,  1134,
+  1139,  1142,  1147,  1153,  1158,  1162,  1167,  1195,  1199,  1202,
+  1206
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
@@ -2621,60 +2621,61 @@ case 128:
                 ost << "`" << yyvsp[0].str << "' is not a constant, definition or a";
                 ost << " parameter of this instruction\n";
                 yyerror(STR(ost));
+                s = new Const(0);
             }
             yyval.exp = s;
         ;
     break;}
 case 129:
-#line 1129 "sslparser.y"
+#line 1130 "sslparser.y"
 {
             yyval.exp = new Ternary(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
     break;}
 case 130:
-#line 1133 "sslparser.y"
+#line 1134 "sslparser.y"
 {
             yyval.exp = Location::tempOf(new Const(yyvsp[0].str));
         ;
     break;}
 case 131:
-#line 1138 "sslparser.y"
+#line 1139 "sslparser.y"
 {
             yyval.exp = new Unary(opPostVar, yyvsp[-1].exp);
         ;
     break;}
 case 132:
-#line 1141 "sslparser.y"
+#line 1142 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 133:
-#line 1147 "sslparser.y"
+#line 1148 "sslparser.y"
 {
             yyval.num = yyvsp[-1].num;
         ;
     break;}
 case 134:
-#line 1153 "sslparser.y"
+#line 1154 "sslparser.y"
 {
             Dict.bigEndian = (strcmp(yyvsp[0].str, "BIG") == 0);
         ;
     break;}
 case 135:
-#line 1158 "sslparser.y"
+#line 1159 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 136:
-#line 1161 "sslparser.y"
+#line 1162 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 137:
-#line 1167 "sslparser.y"
+#line 1168 "sslparser.y"
 {
             char c = yyvsp[0].str[1];
             if (c == '*') yyval.typ = new IntegerType;
@@ -2701,7 +2702,7 @@ case 137:
         ;
     break;}
 case 141:
-#line 1206 "sslparser.y"
+#line 1207 "sslparser.y"
 {
             Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
         ;
@@ -2910,8 +2911,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 1010 "/usr/local/lib/bison.cc" */
-#line 2914 "sslparser.cpp"
-#line 1209 "sslparser.y"
+#line 2915 "sslparser.cpp"
+#line 1210 "sslparser.y"
 
 
 /*==============================================================================

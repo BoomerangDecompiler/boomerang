@@ -108,7 +108,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     std::list<Statement*>* stmts = NULL;
 
 
-    ADDRESS nextPC;
+    ADDRESS nextPC = NO_ADDR;
     match [nextPC] hostPC to
     
     | CALL.Evod(Eaddr) =>
@@ -2121,7 +2121,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
  *============================================================================*/
 Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
-    Exp* expr;
+    Exp* expr = NULL;
 
     match pc to 
     | Abs32 (a) =>
@@ -2210,9 +2210,10 @@ Exp* PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
     | Reg (reg) =>
         Exp* e;
         switch(size) {
-            case 32: e = dis_Reg(24+reg); break;
-            case 16: e = dis_Reg(0+reg); break;
             case  8: e = dis_Reg(8+reg); break;
+            case 16: e = dis_Reg(0+reg); break;
+            default:
+            case 32: e = dis_Reg(24+reg); break;
         }
         return e;
     endmatch

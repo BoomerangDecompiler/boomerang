@@ -1122,6 +1122,7 @@ location:
                 ost << "`" << $1 << "' is not a constant, definition or a";
                 ost << " parameter of this instruction\n";
                 yyerror(STR(ost));
+                s = new Const(0);
             }
             $$ = s;
         }

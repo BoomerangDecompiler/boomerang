@@ -213,7 +213,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     // The actual list of instantiated statements
     std::list<Statement*>* stmts = NULL;
 
-    ADDRESS nextPC;
+    ADDRESS nextPC = NO_ADDR;
 
     match [nextPC] hostPC to
 
@@ -305,10 +305,11 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         // it is one of the 'unconditional' conditional branches
         // "BA,A" or "BN,A"
         result.type = SCDAN;
-        if ((strcmp(name,"BA,a") == 0) || (strcmp(name, "BVC,a") == 0))
+        if ((strcmp(name,"BA,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
             result.type = SU;
-        if ((strcmp(name,"BN,a") == 0) || (strcmp(name, "BVS,a") == 0))
+        } else {
             result.type = SKIP;
+        }
 
         result.rtl = rtl;
         jump->setDest(tgt - delta);
@@ -331,7 +332,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         // BranchStatement for the rest
         // NOTE: NJMC toolkit cannot handle embedded else statements!
         GotoStatement* jump = 0;
-        RTL* rtl;
+        RTL* rtl = NULL;
         if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0) {
             jump = new GotoStatement;
             rtl = new RTL(pc, stmts);
@@ -379,7 +380,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
             return result;
         }
         GotoStatement* jump = 0;
-        RTL* rtl;
+        RTL* rtl = NULL;
         if (strcmp(name,"BPN") == 0) {
             jump = new GotoStatement;
             rtl = new RTL(pc, stmts);
