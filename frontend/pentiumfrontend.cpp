@@ -1093,7 +1093,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 
 void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB pBB) {
     BranchStatement* br1 = new BranchStatement;
-    assert(rtl->getList().size() == 6);
+    assert(rtl->getList().size() >= 4);     // They vary; at least 5 or 6
     Statement* s1 = *rtl->getList().begin();
     Statement* s6 = *(--rtl->getList().end());
     br1->setCondExpr(s1->getRight());
@@ -1101,10 +1101,7 @@ void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB pBB) {
     BranchStatement* br2 = new BranchStatement;
     br2->setCondExpr(s6->getRight());
     br2->setDest(a);
-    if (!lastRtl) {
-        cfg->splitForBranch(pBB, rtl, br1, br2);
-    }
-else std::cerr << "Did not expect to get here!\n";
+    cfg->splitForBranch(pBB, rtl, br1, br2);
 }
 
 void PentiumFrontEnd::processStringInst(UserProc* proc) {
