@@ -8,8 +8,10 @@ mkdir functest
 rm -rf functests.out
 ./testOne.sh pentium hello $BOOMSW
 ./testOne.sh sparc   hello $BOOMSW
+./testOne.sh ppc	 hello $BOOMSW
 ./testOne.sh pentium twoproc $BOOMSW
 ./testOne.sh sparc   twoproc $BOOMSW
+./testOne.sh ppc	 twoproc $BOOMSW
 ./testOne.sh pentium fib $BOOMSW
 ./testOne.sh sparc   fib $BOOMSW
 ./testOne.sh pentium fibo-O4 $BOOMSW < test/source/fibo-O4.in
@@ -42,4 +44,6 @@ rm -rf functests.out
 ./testOne.sh pentium bswap $BOOMSW
 ./testOne.sh pentium testset -O 2 3 4
 ./testOne.sh sparc   andn $BOOMSW
+#./testOne.sh pentium line1 $BOOMSW test/source/line1.c
+#./testOne.sh sparc   line1 $BOOMSW test/source/line1.c
 echo === Done ===
