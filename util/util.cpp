@@ -46,7 +46,7 @@
 #include <stdio.h>
 #include "util.h"
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <unistd.h>
 #define _FLOCK_
 #else
