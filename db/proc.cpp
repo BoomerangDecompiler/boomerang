@@ -882,10 +882,15 @@ void UserProc::print(std::ostream &out, bool withDF) {
 void UserProc::printToLog(bool withDF)
 {
     signature->printToLog();
-    for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
+    for (std::map<std::string, Type*>::iterator it = locals.begin();
+      it != locals.end(); it++) {
         LOG << (*it).second->getCtype() << " " << (*it).first.c_str() << " ";
         Exp *e = getLocalExp((*it).first.c_str());
-        LOG << e << "\n";
+        // Beware: for some locals, getLocalExp() returns NULL
+        if (e)
+            LOG << e << "\n";
+        else
+            LOG << "-\n";
     }
     cfg->printToLog(withDF);
     LOG << "\n";
@@ -2360,6 +2365,8 @@ Exp* UserProc::newLocal(Type* ty) {
     if (VERBOSE)
         LOG << "assigning type " << ty->getCtype() << " to " << name.c_str()
             << "\n";
+    // Note: this type of local (not representing memory) does not appear
+    // in symbolMap
     return Location::local(strdup(name.c_str()), this);
 }
 
