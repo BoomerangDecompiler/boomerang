@@ -673,9 +673,11 @@ Exp* ImplicitConverter::postVisit(RefExp* e) {
 void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
 	int n = s->getNumRefs();
 	StatementVec& refs = s->getRefs();
+	// The LHS could be a m[x] where x has a null subscript; must do first
+	s->setLeft(s->getLeft()->accept(mod));
 	for (int i=0; i < n; i++) {
 		if (refs[i] == NULL)
 			refs.putAt(i, cfg->findImplicitAssign(s->getLeft()));
 	}
-	recur = true;
+	recur = false;		// Already done LHS
 }

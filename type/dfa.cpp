@@ -365,6 +365,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 		curr = curr->meetWith(other, thisCh);
 		if (!curr->isUnion()) {
 			// These types met successfully. Replace the current union type with this one
+std::cerr << "$*$ replacing " << *it << " with " << curr << " (at " << (unsigned)curr << ")\n";
 			*it = curr;
 			ch = thisCh;
 			return this;
