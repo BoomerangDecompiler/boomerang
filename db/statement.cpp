@@ -486,8 +486,6 @@ ADDRESS GotoStatement::getFixedDest() {
  * RETURNS:         Nothing
  *============================================================================*/
 void GotoStatement::setDest(Exp* pd) {
-    if (pDest != NULL)
-        ;//delete pDest;
     pDest = pd;
 }
 
