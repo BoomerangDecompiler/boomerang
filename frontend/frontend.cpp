@@ -23,7 +23,7 @@
  * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness rather than machine type)
  * 22 Nov 02 - Mike: Quelched warnings
  * 16 Apr 03 - Mike: trace (-t) to cerr not cout now
- * 28 Jan 05 - G. Krol: Check for thunks to library functions and don't create procs for these
+ * 02 Feb 05 - Gerard: Check for thunks to library functions and don't create procs for these
  */
 
 #include <assert.h>
@@ -608,6 +608,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				case STMT_CALL: {
 					CallStatement* call = static_cast<CallStatement*>(s);
 					
+					// Check for a dynamic linked library function
 					if (call->getDest()->getOper() == opMemOf &&
 							call->getDest()->getSubExp1()->getOper() == opIntConst &&
 							pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
@@ -618,33 +619,38 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						call->setIsComputed(false);
 					}
 
-#if 0
+					// Is the called function a thunk calling a library function?
+					// A "thunk" is a function which only consists of: "GOTO library_function"
 					if(	call &&	call->getFixedDest() != NO_ADDRESS ) {
+						// Get the address of the called function.
 						ADDRESS callAddr=call->getFixedDest();
-						DecodeResult res=decodeInstruction(callAddr);
-						if (res.valid == false) {
-							LOG << "invalid instruction at called address!\n";
-							break;
+						// Decode it.
+						DecodeResult decoded=decodeInstruction(callAddr);
+						if (decoded.valid) { // is the instruction decoded succesfully?
+							// Yes, it is. Create a Statement from it.
+							RTL *rtl = decoded.rtl;
+							Statement* first_statement = *rtl->getList().begin();
+							first_statement->setProc(pProc);
+							first_statement->simplify();
+							GotoStatement* stmt_jump = static_cast<GotoStatement*>(first_statement);
+							// In fact it's a computed (looked up) jump, so the jump seems to be a case statement.
+							if ( first_statement->getKind() == STMT_CASE &&
+								stmt_jump->getDest()->getOper() == opMemOf &&
+								stmt_jump->getDest()->getSubExp1()->getOper() == opIntConst &&
+								pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump->getDest()->getSubExp1())->
+									getAddr())) // Is it an "DynamicLinkedProcPointer"?
+							{
+								LOG << "Lib function found in thunk\n";
+								// Yes, it's a library function. Look up it's name.
+								const char *nam = pBF->GetDynamicProcName(((Const*)stmt_jump->getDest()->getSubExp1())->
+									getAddr());
+								// Assign the proc to the call
+								Proc *p = pProc->getProg()->getLibraryProc(nam);
+								call->setDestProc(p);
+								call->setIsComputed(false);
+							}
 						}
-						RTL *rtl = res.rtl;
-						Statement* s2 = *rtl->getList().begin();
-						s2->setProc(pProc);
-						s2->simplify();
-						GotoStatement* stmt_jump2 = static_cast<GotoStatement*>(s2);
-						if ( s2->getKind() == STMT_CASE &&		// Appears to be case stmt due to indirect branch
-								stmt_jump2->getDest()->getOper() == opMemOf &&
-								stmt_jump2->getDest()->getSubExp1()->getOper() == opIntConst && 
-								pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump2->getDest()->getSubExp1())->
-									getAddr())) {
-							LOG << "Lib function found in thunk\n";
-							const char *nam = pBF->GetDynamicProcName(((Const*)stmt_jump2->getDest()->getSubExp1())->
-								getAddr());
-							Proc *p = pProc->getProg()->getLibraryProc(nam);
-							call->setDestProc(p);
-							call->setIsComputed(false);
-						}
-   					}
-#endif
+					}
 
 					// Treat computed and static calls separately
 					if (call->isComputed()) {
