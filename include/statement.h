@@ -62,6 +62,7 @@ class RefExp;
 class Cfg;
 class Type;
 class Statement;
+class Signature;
 class StmtVisitor;
 class StmtExpVisitor;
 class StmtModifier;
@@ -983,53 +984,58 @@ class CallStatement: public GotoStatement {
 		// Destination of call
 		Proc*		procDest;
 
-public:
-				CallStatement();
-virtual			~CallStatement();
+		// The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
+		// the proc happens to have varargs
+		Signature*	signature;
 
-	// Make a deep copy, and make the copy a derived object if needed.
+public:
+					CallStatement();
+virtual				~CallStatement();
+
+		// Make a deep copy, and make the copy a derived object if needed.
 virtual Statement*	clone();
 
-	// Accept a visitor to this stmt
-virtual bool	accept(StmtVisitor* visitor);
-virtual bool	accept(StmtExpVisitor* visitor);
-virtual bool	accept(StmtModifier* visitor);
+		// Accept a visitor to this stmt
+virtual bool		accept(StmtVisitor* visitor);
+virtual bool		accept(StmtExpVisitor* visitor);
+virtual bool		accept(StmtModifier* visitor);
 
-		void	setArguments(std::vector<Exp*>& arguments);
+		void		setArguments(std::vector<Exp*>& arguments);
 		// Set implicit arguments: so far, for testing only:
-		void	setImpArguments(std::vector<Exp*>& arguments);
-		void	setReturns(std::vector<Exp*>& returns);// Set call's return locs
-		void	setSigArguments();			// Set arguments based on signature
+		void		setImpArguments(std::vector<Exp*>& arguments);
+		void		setReturns(std::vector<Exp*>& returns);// Set call's return locs
+		void		setSigArguments();			// Set arguments based on signature
 		std::vector<Exp*>& getArguments();		// Return call's arguments
-		int		getNumReturns();
-		Exp		*getReturnExp(int i);
-		int		findReturn(Exp *e);
-		void	removeReturn(Exp *e);
-		void	ignoreReturn(Exp *e);
-		void	ignoreReturn(int n);
-		void	addReturn(Exp *e, Type* ty = NULL);
+		int			getNumReturns();
+		Exp			*getReturnExp(int i);
+		int			findReturn(Exp *e);
+		void		removeReturn(Exp *e);
+		void		ignoreReturn(Exp *e);
+		void		ignoreReturn(int n);
+		void		addReturn(Exp *e, Type* ty = NULL);
 		std::vector<ReturnInfo>& getReturns() {return returns;}
-		Exp		*getProven(Exp *e);
+		Exp			*getProven(Exp *e);
+		Signature*	getSignature() {return signature;}
 		// Substitute the various components of expression e with the appropriate actual arguments
-		Exp		*substituteParams(Exp *e);
+		Exp			*substituteParams(Exp *e);
 		void	addArgument(Exp *e);
 		// Treat e as the expression for a parameter, and return the actual, or failing that, the implicit parameter
-		Exp*	findArgument(Exp* e);
-		Exp*	getArgumentExp(int i);
-		Exp*	getImplicitArgumentExp(int i);
+		Exp*		findArgument(Exp* e);
+		Exp*		getArgumentExp(int i);
+		Exp*		getImplicitArgumentExp(int i);
 		std::vector<Exp*>& getImplicitArguments() {return implicitArguments;}
-		int		getNumImplicitArguments() {return implicitArguments.size();}
-		void	setArgumentExp(int i, Exp *e);
-		void	setNumArguments(int i);
-		int		getNumArguments();
-		void	removeArgument(int i);
-		void	removeImplicitArgument(int i);
-		Type	*getArgumentType(int i);
-		void	truncateArguments();
-		void	clearLiveEntry();
+		int			getNumImplicitArguments() {return implicitArguments.size();}
+		void		setArgumentExp(int i, Exp *e);
+		void		setNumArguments(int i);
+		int			getNumArguments();
+		void		removeArgument(int i);
+		void		removeImplicitArgument(int i);
+		Type		*getArgumentType(int i);
+		void		truncateArguments();
+		void		clearLiveEntry();
 
 
-virtual void	print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout);
 
 		// general search
 virtual bool	search(Exp *search, Exp *&result);

@@ -588,11 +588,15 @@ Global* Prog::getGlobal(char *nam) {
 void Prog::globalUsed(ADDRESS uaddr, Type* knownType)
 {
     for (unsigned i = 0; i < globals.size(); i++)
-        if (globals[i]->getAddress() == uaddr)
+        if (globals[i]->getAddress() == uaddr) {
+			if (knownType) globals[i]->meetType(knownType);
             return;
+		}
         else if (globals[i]->getAddress() < uaddr &&
-				globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr)
+				globals[i]->getAddress() + globals[i]->getType()->getSize() / 8 > uaddr) {
+			if (knownType) globals[i]->meetType(knownType);
             return;
+		}
 #if 0
     if (uaddr < 0x10000) {
         // This happens in windows code because you can pass a low value integer instead 
@@ -609,14 +613,28 @@ void Prog::globalUsed(ADDRESS uaddr, Type* knownType)
 	else
 		ty = guessGlobalType(nam, uaddr);
     globals.push_back(new Global(ty, uaddr, nam));
-    if (VERBOSE)
-        LOG << "globalUsed: name " << nam << ", address " << 
-          uaddr << ", guessed type " << ty->getCtype() << "\n";
+    if (VERBOSE) {
+        LOG << "globalUsed: name " << nam << ", address " << uaddr;
+		if (knownType)
+			LOG << ", known type " << ty->getCtype() << "\n";
+		else
+			LOG << ", guessed type " << ty->getCtype() << "\n";
+	}
 }
 
 std::map<ADDRESS, std::string> &Prog::getSymbols()
 {
 	return pBF->getSymbols();
+}
+
+ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
+	const char* nam = newGlobal(u);
+	int sz = pBF->GetSizeByName(nam);
+	if (sz == 0)
+		return new ArrayType(t);		// An "unbounded" array
+	int n = t->getSize()/8;
+	if (n == 0) n = 1;
+	return new ArrayType(t, sz/n);
 }
 
 Type *Prog::guessGlobalType(const char *nam, ADDRESS u)
@@ -956,6 +974,8 @@ void Prog::decompile() {
 }
 
 void Prog::removeUnusedGlobals() {
+	if (VERBOSE)
+		LOG << "Removing unused globals\n";
 	std::list<Exp*> result;
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if ((*it)->isLib())
@@ -963,17 +983,22 @@ void Prog::removeUnusedGlobals() {
 		UserProc *u = (UserProc*)(*it);
 		u->searchAll(new Location(opGlobal, new Terminal(opWild), u), result);
 	}
+	// MVE: The following seems incredibly round about
 	std::map<std::string, Global*> unusedGlobals, usedGlobals;
 	for (std::vector<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
 		unusedGlobals[(*it)->getName()] = *it;
 	usedGlobals = unusedGlobals;
 	for (std::list<Exp*>::iterator it = result.begin(); it != result.end(); it++)
 		unusedGlobals.erase(((Const*)(*it)->getSubExp1())->getStr());
-	for (std::map<std::string, Global*>::iterator it = unusedGlobals.begin(); it != unusedGlobals.end(); it++)
+	for (std::map<std::string, Global*>::iterator it = unusedGlobals.begin(); it != unusedGlobals.end(); it++) {
+		if (VERBOSE)
+			LOG << "Unused global " << it->first.c_str() << " at address " << it->second->getAddress() << "\n";
 		usedGlobals.erase((*it).first);
+	}
 	globals.clear();
-	for (std::map<std::string, Global*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++)
+	for (std::map<std::string, Global*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++) {
 		globals.push_back((*it).second);
+	}
 }
 
 void Prog::removeUnusedReturns() {
@@ -1311,6 +1336,14 @@ Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
 	}
 	return e;
 }
+
+void Global::meetType(Type* ty) {
+	bool ch;
+	type = type->meetWith(ty, ch);
+}
+
+
+
 
 class ClusterMemo : public Memo {
 public:

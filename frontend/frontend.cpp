@@ -294,11 +294,12 @@ Signature *FrontEnd::getLibSignature(const char *name) {
 	std::map<std::string, Signature*>::iterator it;
 	it = librarySignatures.find(name);
 	if (it == librarySignatures.end()) {
-		LOG << "unknown library function " << name << "\n";
+		LOG << "Unknown library function " << name << "\n";
 		signature = getDefaultSignature(name);
 	}
 	else {
-		signature = (*it).second->clone();
+		// Don't clone here; cloned in CallStatement::setSigArguments
+		signature = (*it).second;
 		signature->setUnknown(false);
 	}
 	return signature;

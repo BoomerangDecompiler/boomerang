@@ -83,26 +83,36 @@ void PointerType::setPointsTo(Type* p) {
 PointerType::PointerType(Type *p) : Type(ePointer) {
 	setPointsTo(p);
 }
-
-ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p),
-  length(length)
+ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p), length(length)
 {
 }
 
 // we actually want unbounded arrays to still work correctly when
 // computing aliases.. as such, we give them a very large bound
 // and hope that no-one tries to alias beyond them
-#define NO_BOUND 8*1024*1024
+#define NO_BOUND 9999999
 
-ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p),
-  length(NO_BOUND)
+ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p), length(NO_BOUND)
 {
 }
 
-bool ArrayType::isUnbounded() const
-{
+bool ArrayType::isUnbounded() const {
 	return length == NO_BOUND;
 }
+
+void ArrayType::setBaseType(Type* b) {
+	// MVE: not sure if this is always the right thing to do
+	if (length != NO_BOUND) {
+		int baseSize = base_type->getSize()/8;		// Old base size (one element) in bytes
+		if (baseSize == 0) baseSize = 1;			// Count void as size 1
+		baseSize *= length;							// Old base size (length elements) in bytes
+		int newSize = b->getSize()/8;
+		if (newSize == 0) newSize = 1;
+		length = baseSize / newSize;				// Preserve same byte size for array
+	}
+	base_type = b;
+}
+		
 
 NamedType::NamedType(const char *name) : Type(eNamed), name(name)
 {
@@ -801,10 +811,6 @@ void Type::addNamedType(const char *name, Type *type)
 			assert(false);
 		}
 	} else {
-#if 0
-		std::cerr << "Added named type" << name << " as " << type->getCtype()
-		  << "\n";
-#endif
 		namedTypes[name] = type->clone();
 	}
 }
@@ -931,7 +937,7 @@ void ArrayType::fixBaseType(Type *b)
 		base_type = b;
 	else {
 		assert(base_type->isArray());
-		((ArrayType*)base_type)->fixBaseType(b);
+		base_type->asArray()->fixBaseType(b);
 	}
 }
 
@@ -1043,6 +1049,24 @@ UnionType *Type::asUnion()
 	return res;
 }
 
+UpperType *Type::asUpper() {
+	Type* ty = this;
+	if (isNamed())
+		ty = ((NamedType*)ty)->resolvesTo();
+	UpperType* res = dynamic_cast<UpperType*>(ty);
+	assert(res);
+	return res;
+}
+
+LowerType *Type::asLower() {
+	Type* ty = this;
+	if (isNamed())
+		ty = ((NamedType*)ty)->resolvesTo();
+	LowerType* res = dynamic_cast<LowerType*>(ty);
+	assert(res);
+	return res;
+}
+
 bool Type::resolvesToVoid()
 {
 	Type *ty = this;
@@ -1145,6 +1169,8 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 		case eFunc:		os << "func"; break;
 		case eArray:	os << '[' << t->asArray()->getBaseType() << ']'; break;
 		case eNamed:	os << t->asNamed()->getName(); break;
+		case eUpper:	os << "U(" << t->asUpper()->getBaseType() << ')'; break;
+		case eLower:	os << "L(" << t->asLower()->getBaseType() << ')'; break;
 	}
 	return os;
 }
@@ -1358,8 +1384,6 @@ void UnionType::readMemo(Memo *mm, bool dec)
 }
 
 void UnionType::addType(Type *n, const char *str) {
-if (n->isFloat() && isCompatibleWith(n))
- std::cerr << "HACK!\n";
 	if (n->isUnion()) {
 		UnionType* utp = (UnionType*)n;
 		// Note: need to check for name clashes eventually

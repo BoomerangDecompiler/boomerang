@@ -1290,6 +1290,7 @@ void CaseStatement::simplify() {
 CallStatement::CallStatement(): returnAfterCall(false) {
 	kind = STMT_CALL;
 	procDest = NULL;
+	signature = NULL;
 }
 
 /*==============================================================================
@@ -1485,7 +1486,6 @@ void CallStatement::setImpArguments(std::vector<Exp*>& arguments) {
  * RETURNS:		  <nothing>
  *============================================================================*/
 void CallStatement::setSigArguments() {
-	Signature *sig;
 	if (procDest == NULL) {
 		if (proc == NULL) return; // do it later
 		// computed calls must have their arguments initialized to something 
@@ -1507,13 +1507,14 @@ void CallStatement::setSigArguments() {
 		}
 		return;
 	} else 
-		sig = procDest->getSignature();
+		// Clone here because each call to procDest could have a different signature, modified by ellipsisProcessing
+		signature = procDest->getSignature()->clone();
 	
-	int n = sig->getNumParams();
+	int n = signature->getNumParams();
 	arguments.resize(n, NULL);
 	int i;
 	for (i = 0; i < n; i++) {
-		Exp *e = sig->getArgumentExp(i);
+		Exp *e = signature->getArgumentExp(i);
 		assert(e);
 		arguments[i] = e->clone();
 		Location *l = dynamic_cast<Location*>(e);
@@ -1521,18 +1522,18 @@ void CallStatement::setSigArguments() {
 			l->setProc(proc);
 		}
 	}
-	if (sig->hasEllipsis()) {
+	if (signature->hasEllipsis()) {
 		// Just guess 4 parameters for now
 		for (int i = 0; i < 4; i++)
-			arguments.push_back(sig->getArgumentExp(arguments.size())->clone());
+			arguments.push_back(signature->getArgumentExp(arguments.size())->clone());
 	}
 	if (procDest)
 		procDest->addCaller(this);
 
-	n = sig->getNumImplicitParams();
+	n = signature->getNumImplicitParams();
 	implicitArguments.resize(n, NULL);
 	for (i = 0; i < n; i++) {
-		Exp *e = sig->getImplicitParamExp(i);
+		Exp *e = signature->getImplicitParamExp(i);
 		assert(e);
 		implicitArguments[i] = e->clone();
 		implicitArguments[i]->fixLocationProc(proc);
@@ -1540,14 +1541,12 @@ void CallStatement::setSigArguments() {
  
 	// initialize returns
 	returns.clear();
-	for (i = 0; i < sig->getNumReturns(); i++) {
+	for (i = 0; i < signature->getNumReturns(); i++) {
 		ReturnInfo ri;
-		ri.e = sig->getReturnExp(i)->clone();
-		ri.type = sig->getReturnType(i)->clone();
+		ri.e = signature->getReturnExp(i)->clone();
+		ri.type = signature->getReturnType(i)->clone();
 		returns.push_back(ri);
 	}
-	if (procDest == NULL)
-		;//delete sig;
 }
 
 #if 0
@@ -2396,24 +2395,28 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 
 	// Hack to remove locals that really aren't used
 	if (getDestProc() && getDestProc()->isLib()) {
-		int sp = proc->getSignature()->getStackRegister(prog);
+		// int sp = proc->getSignature()->getStackRegister(prog);
+		int sp = signature->getStackRegister(prog);
 		ignoreReturn(Location::regOf(sp));
 		unsigned int i;
 		for (i = 0; i < implicitArguments.size(); i++) {
-			if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) {
+			// if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) { // }
+			if (*signature->getImplicitParamExp(i) == *Location::regOf(sp)) {
 				implicitArguments[i] = new Const(0);
 				break;
 			}
 		}
 		for (i = 0; i < implicitArguments.size(); i++) {
-			if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::memOf(Location::regOf(sp))) {
+			// if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::memOf(Location::regOf(sp))) {//}
+			if (*signature->getImplicitParamExp(i) == *Location::memOf(Location::regOf(sp))) {
 				implicitArguments[i] = new Const(0);
 				break;
 			}
 		}
 	}
 
-	if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
+	// if (getDestProc() == NULL || !getDestProc()->getSignature()->hasEllipsis())
+	if (getDestProc() == NULL || !signature->hasEllipsis())
 		return false;
 	// functions like printf almost always have too many args
 	std::string name(getDestProc()->getName());
@@ -2455,7 +2458,6 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 	// Format string is: % [flags] [width] [.precision] [size] type
 	int n = 1;		// Count the format string itself (may also be "format" more arguments)
 	char ch;
-	Signature* sig = getDestProc()->getSignature();
 	// Set a flag if the name of the function is scanf/sscanf/fscanf
 	bool isScanf = name == "scanf" || name.substr(1, 5) == "scanf";
 	char *p = formatStr;
@@ -2469,7 +2471,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 					// Example: printf("Val: %*.*f\n", width, precision, val);
 					n++;		// There is an extra parameter for the width or precision
 					// This extra parameter is of type integer, never int* (so pass false as last argument)
-					setSigParam(sig, new IntegerType(), false);
+					setSigParam(signature, new IntegerType(), false);
 					continue;
 				case '-': case '+': case '#': case ' ':
 					// Flag. Ignore
@@ -2503,19 +2505,20 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 			n++;
 		switch (ch) {
 			case 'd': case 'i':							// Signed integer
-				setSigParam(sig, new IntegerType(veryLong ? 64 : 32), isScanf);
+				setSigParam(signature, new IntegerType(veryLong ? 64 : 32), isScanf);
 				break;
 			case 'u': case 'x': case 'X': case 'o':		// Unsigned integer
-				setSigParam(sig, new IntegerType(32, -1), isScanf);
+				setSigParam(signature, new IntegerType(32, -1), isScanf);
 				break;
 			case 'f': case 'g': case 'G': case 'e': case 'E':	// Various floating point formats
-				setSigParam(sig, new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits for some archs
+				setSigParam(signature, new FloatType(veryLong ? 128 : 64), isScanf);	// Note: may not be 64 bits
+																						// for some archs
 				break;
 			case 's':									// String
-				setSigParam(sig, new PointerType(new CharType), isScanf);
+				setSigParam(signature, new PointerType(new CharType), isScanf);
 				break;
 			case 'c':									// Char
-				setSigParam(sig, new CharType, isScanf);
+				setSigParam(signature, new CharType, isScanf);
 				break;
 			case '%':
 				break;			// Ignore %% (emits 1 percent char)
@@ -2524,7 +2527,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 		}
 	}
 	setNumArguments(format + n);
-	sig->killEllipsis();	// So we don't do this again
+	signature->killEllipsis();	// So we don't do this again
 	return true;
 }
 

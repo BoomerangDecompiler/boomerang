@@ -2,8 +2,7 @@
  * Copyright (C) 2004, Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
- * redistribution of this file, and for a DISCLAIMER OF ALL
- * WARRANTIES.
+ * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
 
@@ -35,6 +34,14 @@ int max(int a, int b) {		// Faster to write than to find the #include for
 }
 
 #define DFA_ITER_LIMIT 20
+
+// m[e*K1 + K2]
+static Exp* arrayPat = Location::memOf(
+	new Binary(opPlus,
+		new Binary(opMult,
+			new Terminal(opWild),
+		new Terminal(opWildIntConst)),
+	new Terminal(opWildIntConst)));
 
 void UserProc::dfaTypeAnalysis() {
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
@@ -105,10 +112,7 @@ void UserProc::dfaTypeAnalysis() {
 		LOG << " *** End converting expressions to local variables for " << getName() << " ***\n";
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		//Type* t = s->getType();
-		// Locations
-		// ...
-		// Constants
+		// First constants
 		std::list<Const*>lc;
 		s->findConstants(lc);
 		std::list<Const*>::iterator cc;
@@ -167,7 +171,33 @@ void UserProc::dfaTypeAnalysis() {
 				}
 				// MVE: more work if double?
 				con->setOper(opFltConst);
+			} else /* if (t->isArray()) */ {
+				prog->globalUsed(val, t);
 			}
+		}
+	}
+
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		// Locations
+		// Search for the array pattern and replace it with an array use
+		// m[e*K1 + K2]
+		std::list<Exp*> result;
+		s->searchAll(arrayPat, result);
+		for (std::list<Exp*>::iterator rr = result.begin(); rr != result.end(); rr++) {
+			Type* ty = s->getTypeFor(*rr);
+			// FIXME: should check that we use with array type...
+			// Find e and K2
+			Exp* t = ((Unary*)(*rr)->getSubExp1());
+			Exp* l = ((Binary*)t)->getSubExp1();
+			Exp* r = ((Binary*)t)->getSubExp2();
+			ADDRESS K2 = (ADDRESS)((Const*)r)->getInt();
+			Exp* e = ((Binary*)l)->getSubExp1();
+			// Replace with the array expression
+			Exp* arr = new Binary(opArraySubscript,
+				Location::global(prog->getGlobalName(K2), this),
+				e);
+			s->searchAndReplace(arrayPat, arr);
 		}
 	}
 
@@ -321,7 +351,8 @@ Type* ArrayType::meetWith(Type* other, bool& ch) {
 		Type* newBase = base_type->clone()->meetWith(otherArr->base_type, ch);
 		if (*newBase != *base_type) {
 			ch = true;
-			base_type = newBase;
+			// base_type = newBase;		// No: call setBaseType to adjust length
+			setBaseType(newBase);
 		}
 		return this;
 	}
@@ -437,12 +468,12 @@ Type* Type::createUnion(Type* other, bool& ch) {
 
 
 void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
-	Signature* sig = procDest->getSignature();
 	// Iterate through the arguments
-	int n = sig->getNumParams();
+	int n = signature->getNumParams();
 	for (int i=0; i < n; i++) {
 		Exp* e = getArgumentExp(i);
-		Type* t = sig->getParamType(i);
+		// Type* t = signature->getParamType(i);
+		Type* t = signature->getParamType(i);
 		e->descendType(t, ch, proc);
 #if 0
 		Const* c;
@@ -465,7 +496,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 			Type* oldConType = c->getType();
 			c->setType(t);
 			ch |= (t != oldConType);
-		} else if (t->isPointer() && sig->isAddrOfStackLocal(prog, e)) {
+		} else if (t->isPointer() && signature->isAddrOfStackLocal(prog, e)) {
 			// e is probably the address of some local
 			Exp* localExp = Location::memOf(e);
 			char* name = proc->getSymbolName(localExp);
@@ -480,12 +511,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	}
 	// The destination is a pointer to a function with this function's signature (if any)
 	if (pDest) {
-		Signature* sig;
-		if (procDest)
-			sig = procDest->getSignature();
-		else
-			sig = NULL;
-		pDest->descendType(new FuncType(sig), ch, proc);
+		pDest->descendType(new FuncType(signature), ch, proc);
 	}
 }
 
@@ -785,7 +811,7 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, this)) {
 		// this is the address of some local
 		Exp* localExp = Location::memOf(this);
-		// Note there is a theory problem here; there is currently no reliable way to find the definion for
+		// FIXME: Note there is a theory problem here; there is currently no reliable way to find the definition for
 		// localExp. For now, ignore all but implicit assignments...
 		Cfg* cfg = proc->getCFG();
 		Statement* impDef = cfg->findImplicitAssign(localExp);
@@ -867,8 +893,10 @@ void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 				Exp* x = ((Binary*)leftOfPlus)->getSubExp1();
 				x->descendType(new IntegerType(parentType->getSize(), 0), ch, proc);
 				// K2 is of type <array of parentType>
-				Exp* K2 = ((Binary*)subExp1)->getSubExp2();
-				K2->descendType(new ArrayType(parentType), ch, proc);
+				Const* constK2 = (Const*)((Binary*)subExp1)->getSubExp2();
+				ADDRESS intK2 = (ADDRESS)constK2->getInt();
+				Prog* prog = proc->getProg();
+				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, proc);
 			}
 			// Other cases, e.g. struct reference m[x + K1] or m[x + p] where p is a pointer
 			else
@@ -948,13 +976,10 @@ void StmtDfaLocalConverter::visit(ReturnStatement* s, bool& recur) {
 }
 void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
 	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
-	Signature* sig = NULL;
 	Exp* pDest = s->getDest();
+	Signature* sig = s->getSignature();
 	if (pDest) {
 		FuncType* ft = new FuncType;
-		Proc* destProc = s->getDestProc();
-		if (destProc)
-			sig = destProc->getSignature();
 		if (sig)
 			ft->setSignature(sig);
 		((DfaLocalConverter*)mod)->setType(ft);
@@ -993,7 +1018,7 @@ void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
 
 // Convert expressions to locals
 DfaLocalConverter::DfaLocalConverter(UserProc* proc) : parentType(NULL), proc(proc) {
-	sig = proc->getSignature();
+	sig = proc->getSignature();		// MVE: is this used?
 	prog = proc->getProg();
 }
 
@@ -1119,7 +1144,11 @@ bool PointerType::isCompatibleWith(Type* other) {
 }
 
 bool NamedType::isCompatibleWith(Type* other) {
-	return resolvesTo()->isCompatibleWith(other);
+	Type* resTo = resolvesTo();
+	if (resTo)
+		return resolvesTo()->isCompatibleWith(other);
+	if (other->isVoid()) return true;
+	return (*this == *other);
 }
 
 bool ArrayType::isCompatibleWith(Type* other) {

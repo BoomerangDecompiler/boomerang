@@ -228,6 +228,9 @@ protected:
 	/*
 	 * The formal signature of this procedure. This information is determined
 	 * either by the common.hs file (for a library function) or by analysis.
+	 *
+	 * NOTE: This belongs in the CALL, because the same procedure can have different signatures if it happens to
+	 * have varargs. Temporarily here till it can be permanently moved.
 	 */
 	Signature *signature;
 
@@ -483,14 +486,13 @@ public:
 	void removeUnusedStatements(RefCounter& refCounts, int depth);
 	void removeUnusedLocals();
 	bool propagateAndRemoveStatements();
-	// Propagate statemtents; return true if an indirect call is converted
-	// to direct
+	// Propagate statemtents; return true if an indirect call is converted to direct
 	bool propagateStatements(int memDepth, int toDepth = -1);
 	int	 findMaxDepth();					// Find max memory nesting depth
 
 	void toSSAform(int memDepth, StatementSet& rs);
 	void fromSSAform();
-	void insertAssignAfter(Statement* s, int tempNum, Exp* right);
+	void insertAssignAfter(Statement* s, Exp* left, Exp* right);
 	// Insert statement a after statement s
 	void insertStatementAfter(Statement* s, Statement* a);
 	void conTypeAnalysis();

@@ -18,6 +18,7 @@
  * 15 Jul 02 - Trent: Created.
  * 18 Jul 02 - Mike: Changed addParameter's last param to deflt to "", not NULL
  * 02 Jan 03 - Mike: Fixed SPARC getParamExp and getArgExp
+ * 09 Nov 04 - Mike: Fixed clone() functions
  */
 
 #include <assert.h>
@@ -182,16 +183,52 @@ CallingConvention::Win32TcSignature::Win32TcSignature(const char *nam) : Win32Si
 CallingConvention::Win32TcSignature::Win32TcSignature(Signature &old) : Win32Signature(old) {
 }
 
+static void cloneVec(std::vector<Parameter*>& from, std::vector<Parameter*>& to) {
+	unsigned n = from.size();
+	to.resize(n);
+	for (unsigned i=0; i < n; i++)
+		to[i] = from[i]->clone();
+}
+
+static void cloneVec(std::vector<ImplicitParameter*>& from, std::vector<ImplicitParameter*>& to) {
+	unsigned n = from.size();
+	to.resize(n);
+	for (unsigned i=0; i < n; i++)
+		to[i] = from[i]->clone();
+}
+
+static void cloneVec(std::vector<Return*>& from, std::vector<Return*>& to) {
+	unsigned n = from.size();
+	to.resize(n);
+	for (unsigned i=0; i < n; i++)
+		to[i] = from[i]->clone();
+}
+
+Parameter* Parameter::clone() {
+	return new Parameter(type->clone(), name.c_str(), exp->clone());
+}
+
+ImplicitParameter* ImplicitParameter::clone() {
+	Parameter* par = parent;
+	if (par) par = par->clone();	// Do we really need to clone the parent pointer? MVE
+	return new ImplicitParameter(getType()->clone(), getName(), getExp()->clone(), par);
+}
+
+Return* Return::clone() {
+	return new Return(type->clone(), exp->clone());
+}
+
 Signature *CallingConvention::Win32Signature::clone()
 {
 	Win32Signature *n = new Win32Signature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	return n;
 }
@@ -199,13 +236,14 @@ Signature *CallingConvention::Win32Signature::clone()
 Signature *CallingConvention::Win32TcSignature::clone()
 {
 	Win32TcSignature *n = new Win32TcSignature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	return n;
 }
@@ -364,13 +402,14 @@ CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Si
 Signature *CallingConvention::StdC::PentiumSignature::clone()
 {
 	PentiumSignature *n = new PentiumSignature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	n->unknown = unknown;
 	return n;
@@ -500,13 +539,14 @@ CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) : Signat
 
 Signature *CallingConvention::StdC::SparcSignature::clone() {
 	SparcSignature *n = new SparcSignature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	n->unknown = unknown;
 	return n;
@@ -514,13 +554,14 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
 
 Signature *CallingConvention::StdC::SparcLibSignature::clone() {
 	SparcLibSignature *n = new SparcLibSignature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	return n;
 }
@@ -655,13 +696,14 @@ void CustomSignature::setSP(int nsp)
 Signature *Signature::clone()
 {
 	Signature *n = new Signature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	n->unknown = unknown;
 	return n;
@@ -670,14 +712,15 @@ Signature *Signature::clone()
 Signature *CustomSignature::clone()
 {
 	CustomSignature *n = new CustomSignature(name.c_str());
-	n->params = params;
-	n->implicitParams = implicitParams;
-	n->returns = returns;
+	cloneVec(params, n->params);
+	cloneVec(implicitParams, n->implicitParams);
+	cloneVec(returns, n->returns);
 	n->ellipsis = ellipsis;
-	n->rettype = rettype;
+	n->rettype = rettype->clone();
 	n->sp = sp;
 	n->preferedName = preferedName;
-	n->preferedReturn = preferedReturn;
+	if (preferedReturn) n->preferedReturn = preferedReturn->clone(); 
+	else n->preferedReturn = NULL;
 	n->preferedParams = preferedParams;
 	return n;
 }

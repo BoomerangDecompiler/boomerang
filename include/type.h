@@ -410,7 +410,7 @@ public:
 virtual 			~ArrayType();
 virtual bool		isArray() const { return true; }
 		Type		*getBaseType() { return base_type; }
-		void		setBaseType(Type *b) { base_type = b; }
+		void		setBaseType(Type *b);
 		void		fixBaseType(Type *b);
 		unsigned	getLength() { return length; }
 		void		setLength(unsigned n) { length = n; }
@@ -471,7 +471,7 @@ virtual bool		isCompatibleWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
-};
+};		// class NamedType
 
 // The compound type represents structures, not unions
 class CompoundType : public Type {
@@ -604,6 +604,8 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 //virtual Exp     	*match(Type *pattern);
 virtual Type*		mergeWith(Type* other);
+		Type		*getBaseType() { return base_type; }
+		void		setBaseType(Type *b) { base_type = b; }
 
 virtual int			getSize() const {return base_type->getSize()/2;}
 virtual void		setSize(int sz);		// Does this make sense?
@@ -627,6 +629,8 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 //virtual Exp     	*match(Type *pattern);
 virtual Type*		mergeWith(Type* other);
+		Type		*getBaseType() { return base_type; }
+		void		setBaseType(Type *b) { base_type = b; }
 
 virtual int			getSize() const {return base_type->getSize()/2;}
 virtual void		setSize(int sz);		// Does this make sense?

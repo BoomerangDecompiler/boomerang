@@ -323,12 +323,7 @@ Proc *Proc::getFirstCaller() {
  *============================================================================*/
 LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uNative, NULL) {
 	Signature* sig = prog->getLibSignature(name.c_str());
-	if (sig->hasEllipsis())
-		// Clone the signature, since every call could have a different signature.
-		// Important when killEllipsis called, for example, or more parameters are added to a signature
-		signature = sig->clone();
-	else
-		signature = sig;			// OK to use the library signature... I hope
+	signature = sig;
 }
 
 LibProc::~LibProc()
@@ -742,13 +737,12 @@ void UserProc::removeStatement(Statement *stmt) {
 	}
 }
 
-#if 0
-void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
+#if 1
+void UserProc::insertAssignAfter(Statement* s, Exp* left, Exp* right) {
 	std::list<Statement*>::iterator it;
 	std::list<Statement*>* stmts;
 	if (s == NULL) {
-		// This means right is supposed to be a parameter. We can insert the
-		// assignment at the start of the entryBB
+		// This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
 		PBB entryBB = cfg->getEntryBB();
 		std::list<RTL*> *rtls = entryBB->getRTLs();
 		assert(rtls->size());		// Entry BB should have at least 1 RTL
@@ -763,11 +757,7 @@ void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
 		stmts = &rtls->back()->getList();
 		it = stmts->end();			// Insert before the end
 	}
-	std::ostringstream os;
-	os << "local" << tempNum;
-	Assign* as = new Assign(
-		Location::local(strdup(os.str().c_str()), this),
-		right);
+	Assign* as = new Assign( left, right);
 	stmts->insert(it, as);
 	return;
 }
@@ -2865,17 +2855,23 @@ void UserProc::fromSSAform() {
 			// times that just creates more locals than is necessary.
 			// TODO: find a safe way of doing the "optimisation" below
 #if 1
-			// Just replace all the definitions the phi statement refers to with tempLoc
+			// Just replace all the definitions the phi statement refers to with tempLoc.
+			// WRONG! There can be other uses of those definitions. Even if these are changed, what if we have to
+			// change definition to two or more new variables? So really need copies, unless something clever is done.
 			// Exp* tempLoc = newLocal(pa->getType());
 			Exp* tempLoc = getLocalExp(new RefExp(pa->getLeft(), pa), pa->getType());
 			if (DEBUG_LIVENESS)
-				LOG << "Phi statement " << s << " requires local, using local" << tempLoc << "\n";
+				LOG << "Phi statement " << s << " requires local, using " << tempLoc << "\n";
 			// For each definition ref'd in the phi
 			PhiAssign::iterator rr;
 			for (rr = pa->begin(); rr != pa->end(); rr++) {
+#if 0
 				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one
 				// return) with the new temporary
 				rr->def->setLeftFor(rr->e, tempLoc);
+#else
+				insertAssignAfter(rr->def, tempLoc, rr->e);
+#endif
 			}
 			// Replace the RHS of the phi with tempLoc
 			pa->convertToAssign(tempLoc);

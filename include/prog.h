@@ -59,6 +59,7 @@ public:
 
 	Type *getType() { return type; }
 	void  setType(Type* ty) { type = ty; }
+	void  meetType(Type* ty);
 	ADDRESS getAddress() { return uaddr; }
 	const char *getName() { return nam.c_str(); }
 	Exp* getInitialValue(Prog* prog); // Get the initial value as an expression
@@ -217,6 +218,9 @@ public:
 
 	// Guess a global's type based on its name and address
 	Type *guessGlobalType(const char *nam, ADDRESS u);
+
+	// Make an array type for the global array at u. Mainly, set the length sensibly
+	ArrayType*	makeArrayType(ADDRESS u, Type* t);
 
 	// Indicate that a given global has been seen used in the program.
 	void globalUsed(ADDRESS uaddr, Type* knownType = NULL);
