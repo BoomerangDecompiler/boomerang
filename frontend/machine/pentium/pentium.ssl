@@ -1595,7 +1595,8 @@ FDIV.STi.ST   i
             *80* i := %st /f i;
 
 FDIVP.STi.ST   i 
-            *80* i := %st /f i;
+            *80* i := %st /f i
+            FPOP;
 
 FIDIV.i32   modrm 
             *80* %st := %st /f itof(32,80,modrm);
@@ -1755,7 +1756,8 @@ FIMUL.i64   modrm
 FNOP    _ ;
 
 FPATAN    
-            *80* %st1 := arctan(%st1 /f %st);
+            *80* %st1 := arctan(%st1 /f %st)
+            FPOP;
 
 FPTAN    
             *80* %st := tan(%st)
@@ -1765,10 +1767,9 @@ FPTAN
 FRNDINT    
             *80* %st := fround(80,80,%st);
 
-FSCALE
-            # Not 100% sure that %st1 is in floating point form (used as an
-            # integer, though)
-            *80* %st := %st * (2.0 pow %st1);
+FSCALE      # Raise 2 to an integer power and multiply
+            # Note that st1 is "chopped" before use
+            *80* %st := %st * (2.0 pow ftrunc(%st1));
 
 FSIN    
             *80* %st := sin(%st);
