@@ -269,7 +269,8 @@ public:
 
 	void	setNextIsEntry() {nextIsEntry = true;}
 
-	void 	printCallGraph();
+	void 	printSymbols();
+    void 	printCallGraph();
 	void	printCallGraphXML();
 
 	Cluster *getRootCluster() { return m_rootCluster; }

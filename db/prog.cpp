@@ -948,6 +948,10 @@ void Prog::decompile() {
 		LOG << (int)m_procs.size() << " procedures\n";
 
 	std::list<Proc*>::iterator pp;
+	
+#if 1
+    // what use has the entryProc member variable if we just use the first proc we find?
+	// Certainly, shadowing the member variable was not the right idea.
 	UserProc* entryProc;
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		entryProc = (UserProc*) *pp;
@@ -960,6 +964,16 @@ void Prog::decompile() {
 		entryProc->decompile();
 		break;			// Only decompile top function in this loop
 	}
+#else
+    // this should do the job equally well
+    UserProc* entryUserProc = (UserProc*)entryProc;
+	if (entryUserProc != NULL && !entryUserProc->isLib() && entryUserProc->isDecoded()) {
+		if (VERBOSE)
+			LOG << "Starting with " << entryUserProc->getName() << "\n";
+		entryUserProc->decompile();
+    }
+#endif
+
 
 	// Just in case there are any Procs not in the call graph
 	if (!Boomerang::get()->noDecodeChildren) {
@@ -1213,6 +1227,57 @@ void Prog::printCallGraph() {
 	}
 	f.close();
 	unlockFile(fd);
+}
+
+void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*> &seen)
+{
+    bool fisttime=false;
+	if (seen.find(proc) == seen.end()) {
+		seen.insert(proc);
+		fisttime=true;
+	}
+	for (int i = 0; i < indent; i++)
+		f << "	 ";
+
+	if(!proc->isLib() && fisttime) // geen lib proc
+	{
+		f << "0x" << std::hex << proc->getNativeAddress();
+		f << " __nodecode __incomplete void " << proc->getName() << "();\n";
+
+    	UserProc *u = (UserProc*)proc;
+    	std::set<Proc*> &calleeSet = u->getCallees();
+    	for (std::set<Proc*>::iterator it1 = calleeSet.begin(); it1 != calleeSet.end(); it1++) {
+            printProcsRecursive(*it1,indent+1,f,seen);
+        }
+       	for (int i = 0; i < indent; i++)
+   			f << "	 ";
+		f << "// End of " << proc->getName() << "\n";
+    } else {
+        f << "// " << proc->getName() << "();\n";
+    }
+}
+
+void Prog::printSymbols() {
+    std::cerr << "entering Prog::printSymbols\n";
+	std::string fname = Boomerang::get()->getOutputPath() + "symbols.h";
+	int fd = lockFileWrite(fname.c_str());
+	std::ofstream f(fname.c_str());
+
+	/* Print procs */
+    f << "/* Functions: */\n";
+    std::set<Proc*> seen;
+    printProcsRecursive(getEntryProc(),0,f,seen);
+
+    f << "/* Leftovers: */\n";
+	std::list<Proc*>::iterator it; // don't forget the rest
+	for (it = m_procs.begin(); it != m_procs.end(); it++)
+		if (!(*it)->isLib() && seen.find(*it) == seen.end()) {
+      		printProcsRecursive(*it,0,f,seen);
+		}
+
+	f.close();
+	unlockFile(fd);
+    std::cerr << "leaving Prog::printSymbols\n";
 }
 
 void Prog::printCallGraphXML() {

@@ -201,6 +201,8 @@ static Boomerang *get() {
 	bool dfaTypeAnalysis;
 	bool noLimitPropagations;
     bool fastx86;
+    bool generateCallGraph;
+	bool generateSymbols;
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

@@ -42,7 +42,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false), fastx86(false)
+	noLimitPropagations(false), fastx86(false),  generateCallGraph(false), generateSymbols(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -111,7 +111,9 @@ void Boomerang::help() {
 	std::cout << "  -o <output path> : Where to generate output (defaults to ./output/)\n";
 	std::cout << "  -x               : Dump XML files\n";
 	std::cout << "  -r               : Print RTL for each proc to log before code generation\n";
-	std::cout << "  -g <dot file>    : Generate a dotty graph of the program's CFG\n";
+	std::cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG\n";
+	std::cout << "  -gc              : Generate a call graph (callgraph.out)\n";
+	std::cout << "  -gs              : Generate a symbol file (symbols.h)\n";
 	std::cout << "Misc.\n";
 	std::cout << "  -k               : Command mode, for available commands see -h cmd\n";
 	std::cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
@@ -611,7 +613,14 @@ int Boomerang::commandLine(int argc, const char **argv)
 					dfaTypeAnalysis = true;		// -Td: use data-flow-based type analysis
 				break;
 			case 'g': 
-				dotFile = argv[++i];
+				if(argv[i][2]=='d')
+					dotFile = argv[++i];
+				else if(argv[i][2]=='c')
+					generateCallGraph=true;
+				else if(argv[i][2]=='s') {
+					generateSymbols=true;
+					stopBeforeDecompile=true;
+				}
 				break;
 			case 'o':
 				outputPath = argv[++i];
@@ -880,8 +889,13 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	std::cerr << "analysing...\n";
 	prog->analyse();
 
-	prog->printCallGraph();
-	prog->printCallGraphXML();
+	if (generateSymbols) {
+		prog->printSymbols();
+	}
+	if (generateCallGraph) {
+		prog->printCallGraph();
+		prog->printCallGraphXML();
+	}
 	return prog;
 }
 
