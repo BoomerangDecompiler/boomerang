@@ -505,6 +505,7 @@ void XMLProgParser::start_signature(const char **attr)
 	else {
 	    std::cerr << "unknown platform: " << plat << "\n";
 	    assert(false);
+        p = PLAT_PENTIUM;
 	}
 	if (!strcmp(convention, "stdc"))
 	    c = CONV_C;
@@ -515,6 +516,7 @@ void XMLProgParser::start_signature(const char **attr)
 	else {
 	    std::cerr << "unknown convention: " << convention << "\n";
 	    assert(false);
+	    c = CONV_C;
 	}
 	sig = Signature::instantiate(p, c, name);
     } else
