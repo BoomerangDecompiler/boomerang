@@ -2118,7 +2118,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
     bool found = false;
     // start with calls because that's where we have the most types
     StatementList::iterator it;
-    for (it = stmts.begin(); it != stmts.end(); it++) 
+    for (it = stmts.begin(); it != stmts.end(); it++) {
         if ((*it)->isCall()) {
             CallStatement *call = (CallStatement*)*it;
             for (int i = 0; i < call->getNumArguments(); i++) {
@@ -2143,6 +2143,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                 }
             }
         }
+    }
     if (found) {
         // Must redo all the subscripting!
         for (int d=0; d <= depth; d++)
@@ -2152,7 +2153,7 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
     // replace expressions in regular statements with parameters
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        for (int i = 0; i < signature->getNumParams(); i++) 
+        for (int i = 0; i < signature->getNumParams(); i++) {
             if (signature->getParamExp(i)->getMemDepth() == depth ||
                 depth < 0) {
                 Exp *r = signature->getParamExp(i)->clone();
@@ -2164,12 +2165,14 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                 Exp *n;
                 if (s->search(r, n)) {
                     if (VERBOSE)
-                        LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
+                        LOG << "replacing " << r << " with " << replace << 
+                          " in " << s << "\n";
                     s->searchAndReplace(r, replace);
                     if (VERBOSE)
                         LOG << "after: " << s << "\n";
                 }
             }
+        }
     }
 }
 
@@ -2177,15 +2180,16 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
 {
     Exp *e = NULL;
     if (symbolMap.find(le) == symbolMap.end()) {
-        if (le->getOper() == opMemOf && le->getSubExp1()->getOper() == opMinus &&
-            *le->getSubExp1()->getSubExp1() == *new RefExp(Location::regOf(signature->getStackRegister(prog)), NULL) &&
-            le->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+        if (le->getOper() == opMemOf && le->getSubExp1()->getOper() == opMinus
+              && *le->getSubExp1()->getSubExp1() == *new 
+              RefExp(Location::regOf(signature->getStackRegister(prog)), NULL)
+              && le->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
             int le_n = ((Const*)le->getSubExp1()->getSubExp2())->getInt();
             // now test all the locals to see if this expression 
             // is an alias to one of them (for example, a member
             // of a compound typed local)
-            for (std::map<Exp*, Exp*,lessExpStar>::iterator it = symbolMap.begin();
-                 it != symbolMap.end(); it++) {
+            for (std::map<Exp*, Exp*,lessExpStar>::iterator it =
+                 symbolMap.begin(); it != symbolMap.end(); it++) {
                 Exp *base = (*it).first;
                 assert(base);
                 Exp *local = (*it).second;
@@ -2238,7 +2242,8 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
         }
     } else {
         e = symbolMap[le]->clone();
-        if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
+        if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst)
+        {
             std::string name = ((Const*)e->getSubExp1())->getStr();
             Type *nty = ty;
             Type *ty = locals[name];
