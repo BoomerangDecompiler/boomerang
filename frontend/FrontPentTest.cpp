@@ -10,8 +10,11 @@
  * 21 May 02 - Mike: Mods for gcc 3.1
  */
 
-#define HELLO_PENT	   "test/pentium/hello"
-#define BRANCH_PENT	   "test/pentium/branch"
+#define HELLO_PENT		"test/pentium/hello"
+#define BRANCH_PENT		"test/pentium/branch"
+#define FEDORA2_TRUE	"test/pentium/fedora2_true"
+#define FEDORA3_TRUE	"test/pentium/fedora3_true"
+#define SUSE_TRUE		"test/pentium/suse_true"
 
 #include "types.h"
 #include "rtl.h"
@@ -37,6 +40,7 @@ void FrontPentTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(test2);
 	MYTEST(test3);
 	MYTEST(testBranch);
+	MYTEST(testFindMain);
 }
 
 int FrontPentTest::countTestCases () const
@@ -222,3 +226,35 @@ void FrontPentTest::testBranch() {
 	delete pBF;
 }
 
+void FrontPentTest::testFindMain() {
+	// Test the algorithm for finding main, when there is a call to __libc_start_main
+	// Also tests the loader hack
+    BinaryFile* pBF = BinaryFile::Load(FEDORA2_TRUE);
+    CPPUNIT_ASSERT(pBF != NULL);
+	FrontEnd* pFE = new PentiumFrontEnd(pBF); 
+    CPPUNIT_ASSERT(pFE != NULL);
+	bool found;
+    ADDRESS addr = pFE->getMainEntryPoint(found);
+	ADDRESS expected = 0x8048b10;
+    CPPUNIT_ASSERT_EQUAL(expected, addr);
+	pBF->Close();
+
+    pBF = BinaryFile::Load(FEDORA3_TRUE);
+    CPPUNIT_ASSERT(pBF != NULL);
+	pFE = new PentiumFrontEnd(pBF); 
+    CPPUNIT_ASSERT(pFE != NULL);
+    addr = pFE->getMainEntryPoint(found);
+	expected = 0x8048c4a;
+    CPPUNIT_ASSERT_EQUAL(expected, addr);
+	pBF->Close();
+
+    pBF = BinaryFile::Load(SUSE_TRUE);
+    CPPUNIT_ASSERT(pBF != NULL);
+	pFE = new PentiumFrontEnd(pBF); 
+    CPPUNIT_ASSERT(pFE != NULL);
+    addr = pFE->getMainEntryPoint(found);
+	expected = 0x8048b60;
+    CPPUNIT_ASSERT_EQUAL(expected, addr);
+	pBF->Close();
+
+}

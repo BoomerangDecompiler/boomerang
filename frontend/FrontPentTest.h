@@ -25,5 +25,6 @@ class FrontPentTest : public CppUnit::TestCase {
 	void test2 ();
 	void test3 ();
 	void testBranch();
+	void testFindMain();
 };
 
