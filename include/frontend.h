@@ -171,7 +171,16 @@ virtual int     getInst(int addr);
      * Returns true on a good decode
      */
 virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-    bool frag = false, bool spec = false, PHELPER helperFunc = NULL);
+    bool frag = false, bool spec = false);
+
+    /*
+     * Given the dest of a call, determine if this is a machine specific
+     * helper function with special semantics. If so, return true and set the
+     * semantics in lrtl.
+     * addr is the native address of the call instruction
+     */
+virtual bool    helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {
+        return false; }
 
     /*
      * Locate the starting address of "main", returning a native address

@@ -166,19 +166,13 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
  *                os - output stream for rtl output
  *                frag - true if decoding only a fragment of the proc
  *                spec - true if a speculative decode
- *                helperFunc - this parameter is only here to agree with the
- *                  base class definition (so the virtual function mechanism
- *                  will work). Do not use
  * RETURNS:       True if successful decode
  *============================================================================*/
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc,
-    std::ofstream &os, bool frag /* = false */, bool spec /* = false */,
-    PHELPER helperFunc /* = NULL */) {
+    std::ofstream &os, bool frag /* = false */, bool spec /* = false */) {
 
     // Call the base class to do most of the work
-    // Pass the address of our helperFunc function, to check for pentium
-    // specific helper functions
-    if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec, helperFunc))
+    if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec))
         return false;
 
     // Need a post-cfg pass to remove the FPUSH and FPOP instructions,
@@ -1015,7 +1009,9 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
     const char* p = pBF->SymbolByAddress(dest);
     if (p == NULL) return false;
     std::string name(p);
-    if (name == "__xtol") {
+    // I believe that __xtol is for gcc, _ftol for earlier MSVC compilers,
+    // _ftol2 for MSVC V7
+    if (name == "__xtol" || name == "_ftol" || name == "_ftol2") {
         // This appears to pop the top of stack, and converts the result to
         // a 64 bit integer in edx:eax. Truncates towards zero
         // r[tmpl] = ftoi(80, 64, r[32])

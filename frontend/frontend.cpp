@@ -353,8 +353,6 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  *                pProc - the procedure object
  *                frag - if true, this is just a fragment of a procedure
  *                spec - if true, this is a speculative decode
- *                helperFunc - pointer to a function to call (if not null) to
- *                  do a processor specific test for helper functions
  *                os - the output stream for .rtl output
  * NOTE:          This is a sort of generic front end. For many processors,
  *                  this will be overridden in the FrontEnd derived class,
@@ -362,8 +360,7 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  * RETURNS:       true for a good decode (no illegal instructions)
  *============================================================================*/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-  bool frag /* = false */, bool spec /* = false */,
-  PHELPER helperFunc /* = NULL */) {
+  bool frag /* = false */, bool spec /* = false */) {
     PBB pBB;                    // Pointer to the current basic block
 
     if (!frag && !pProc->getSignature()->isPromoted()) {
@@ -679,12 +676,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         if (uNewAddr == uAddr + inst.numBytes)
                             break;
 
-                        // Check for a helper function, if the caller provided one)
-                        if (helperFunc != NULL) {
-                            if ((*helperFunc)(uNewAddr, uAddr, BB_rtls)) {
-                                // We have already added to BB_rtls
-                                break;
-                            }
+                        // Call the virtual helper function. If implemented,
+                        // will check for machine specific func calls
+                        if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
+                            // We have already added to BB_rtls
+                            break;
                         }
 
                         BB_rtls->push_back(pRtl);

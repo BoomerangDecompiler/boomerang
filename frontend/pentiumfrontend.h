@@ -32,8 +32,7 @@ virtual platform getFrontEndId() { return PLAT_PENTIUM; }
      * Returns true on a good decode
      */
 virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-                bool frag = false, bool spec = false,
-                PHELPER helperFunc = NULL);
+                bool frag = false, bool spec = false);
 
 virtual std::vector<Exp*> &getDefaultParams();
 virtual std::vector<Exp*> &getDefaultReturns();

@@ -831,14 +831,10 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
  *                   proc - the procedure object
  *                   os - output stream for rtl output
  *                   spec - if true, this is a speculative decode
- *                   helperFunc - This parameter is here only to agree with
- *                    the parameters for the base class (else the virtual
- *                    function mechanism won't work). Do not use.
  * RETURNS:          True if a good decode
  *============================================================================*/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
-  std::ofstream &os, bool fragment /* = false */, bool spec /* = false */,
-    PHELPER helperFunc /* = NULL */) {
+  std::ofstream &os, bool fragment /* = false */, bool spec /* = false */) {
 
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
