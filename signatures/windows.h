@@ -49,9 +49,21 @@ int LoadStringA(
     int nBufferMax
 );
 
+int LoadStringW(      
+    HINSTANCE hInstance,
+    UINT uID,
+    LPWSTR lpBuffer,
+    int nBufferMax
+);
+
 HACCEL LoadAcceleratorsA(      
     HINSTANCE hInstance,
     LPCSTR lpTableName
+);
+
+HACCEL LoadAcceleratorsW(      
+    HINSTANCE hInstance,
+    LPCWSTR lpTableName
 );
 
 typedef struct {
@@ -77,12 +89,32 @@ int TranslateAcceleratorA(
     LPMSG lpMsg
 );
 
+int TranslateAcceleratorW(      
+    HWND hWnd,
+    HACCEL hAccTable,
+    LPMSG lpMsg
+);
+
 BOOL TranslateMessage(      
     const MSG *lpMsg
 );
 
 LRESULT DispatchMessageA(      
     const MSG *lpmsg
+);
+
+LRESULT DispatchMessageW(      
+    const MSG *lpmsg
+);
+
+HICON LoadIconW(      
+    HINSTANCE hInstance,
+    LPCWSTR lpIconName
+);
+
+HCURSOR LoadCursorW(      
+    HINSTANCE hInstance,
+    LPCWSTR lpCursorName
 );
 
 HICON LoadIconA(      
@@ -110,6 +142,21 @@ HWND CreateWindowExA(
     LPVOID lpParam
 );
 
+HWND CreateWindowExW(      
+    DWORD dwExStyle,
+    LPCWSTR lpClassName,
+    LPCWSTR lpWindowName,
+    DWORD dwStyle,
+    int x,
+    int y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam
+);
+
 BOOL ShowWindow(      
     HWND hWnd,
     int nCmdShow
@@ -117,4 +164,67 @@ BOOL ShowWindow(
 
 BOOL UpdateWindow(
   HWND hWnd
+);
+
+int MessageBoxA(      
+    HWND hWnd,
+    LPCSTR lpText,
+    LPCSTR lpCaption,
+    UINT uType
+);
+
+int MessageBoxW(      
+    HWND hWnd,
+    LPCWSTR lpText,
+    LPCWSTR lpCaption,
+    UINT uType
+);
+
+BOOL GetProcessDefaultLayout(DWORD *pdwDefaultLayout);
+BOOL SetProcessDefaultLayout(DWORD dwDefaultLayout);
+
+HLOCAL LocalAlloc(
+  UINT uFlags,
+  SIZE_T uBytes
+);
+
+BOOL IsDialogMessageA(HWND hDlg, LPMSG lpMsg);
+BOOL IsDialogMessageW(HWND hDlg, LPMSG lpMsg);
+
+BOOL IsChild(HWND hWndParent, HWND hWnd);
+
+HBRUSH GetSysColorBrush(int nIndex);
+
+BOOL SystemParametersInfoA(
+  UINT uiAction,
+  UINT uiParam,
+  PVOID pvParam,
+  UINT fWinIni
+);
+
+BOOL SystemParametersInfoW(
+  UINT uiAction,
+  UINT uiParam,
+  PVOID pvParam,
+  UINT fWinIni
+);
+
+BOOL SetMenu(HWND hWnd, HMENU hMenu);
+BOOL DestroyWindow(HWND hWnd);
+BOOL DestroyMenu(HMENU hMenu);
+
+HWND CreateDialogParamA(      
+    HINSTANCE hInstance,
+    LPCSTR lpTemplateName,
+    HWND hWndParent,
+    DLGPROC lpDialogFunc,
+    LPARAM dwInitParam
+);
+
+HWND CreateDialogParamW(      
+    HINSTANCE hInstance,
+    LPCWSTR lpTemplateName,
+    HWND hWndParent,
+    DLGPROC lpDialogFunc,
+    LPARAM dwInitParam
 );

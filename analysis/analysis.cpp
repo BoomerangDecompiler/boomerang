@@ -402,6 +402,7 @@ void Analysis::analyseCalls(PBB pBB, UserProc *proc)
             assert(p);
             call->setDestProc(p);
         }
+        call->setSigArguments();
     }
 }
 

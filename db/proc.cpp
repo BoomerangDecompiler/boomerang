@@ -197,6 +197,24 @@ void UserProc::printDecodedXML()
     out.close();
 }
 
+void UserProc::printAnalysedXML()
+{
+    if (!Boomerang::get()->dumpXML)
+        return;
+    std::ofstream out((Boomerang::get()->getOutputPath() + 
+                      getName() + "-analysed.xml").c_str());
+    out << "<proc name=\"" << getName() << "\">\n";
+    out << "    <analysed>\n";
+    std::ostringstream os;
+    print(os, false);
+    std::string s = os.str();
+    escapeXMLChars(s);
+    out << s;
+    out << "    </analysed>\n";
+    out << "</proc>\n";
+    out.close();
+}
+
 void UserProc::printSSAXML()
 {
     if (!Boomerang::get()->dumpXML)
@@ -843,6 +861,7 @@ void UserProc::initStatements() {
             s->setBB(bb);
             CallStatement* call = dynamic_cast<CallStatement*>(s);
             if (call) {
+                // I think this should be done in analysis
                 call->setSigArguments();
             }
             ReturnStatement *ret = dynamic_cast<ReturnStatement*>(s);

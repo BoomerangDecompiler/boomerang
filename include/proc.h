@@ -662,6 +662,7 @@ public:
 
     virtual void printCallGraphXML(std::ostream &os, int depth);
     void printDecodedXML();
+    void printAnalysedXML();
     void printSSAXML();
     void printXML();
 

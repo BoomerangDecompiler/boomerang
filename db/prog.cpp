@@ -135,6 +135,7 @@ void Prog::analyse() {
 
         // decoded userproc.. analyse it
         analysis->analyse(p);
+        p->printAnalysedXML();
     }
     delete analysis;
 }

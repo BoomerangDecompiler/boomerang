@@ -1213,6 +1213,7 @@ void CallStatement::setArguments(std::vector<Exp*>& arguments) {
 void CallStatement::setSigArguments() {
     Signature *sig;
     if (procDest == NULL) {
+        if (proc == NULL) return; // do it later
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
         arguments.resize(params.size());
