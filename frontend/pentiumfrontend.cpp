@@ -263,8 +263,9 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                 // Get the current Exp
                 st = (*rit)->elementAt(i);
                 if (st->isFpush()) {
-                    (*rit)->insertStmt(new Assign(80, new Unary(opTemp, 
-                                                          new Const("tmpD9")), 
+                    (*rit)->insertStmt(new Assign(80, new Unary(opRegOf, 
+                                                        new Unary(opTemp, 
+                                                          new Const("tmpD9"))), 
                                                       Unary::regOf(39)), i++);
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
                                                       Unary::regOf(38)), i++);
@@ -281,8 +282,9 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(33), 
                                                       Unary::regOf(32)), i++);
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
-                                                      new Unary(opTemp, 
-                                                          new Const("tmpD9"))), 
+                                                      new Unary(opRegOf,
+                                                        new Unary(opTemp, 
+                                                         new Const("tmpD9")))), 
                                                       i++);
                     // Remove the FPUSH
                     (*rit)->deleteStmt(i);
@@ -290,8 +292,9 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                     continue;
                 }
                 else if (st->isFpop()) {
-                    (*rit)->insertStmt(new Assign(80, new Unary(opTemp, 
-                                                          new Const("tmpD9")), 
+                    (*rit)->insertStmt(new Assign(80, new Unary(opRegOf, 
+                                                        new Unary(opTemp, 
+                                                          new Const("tmpD9"))), 
                                                       Unary::regOf(32)), i++);
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
                                                       Unary::regOf(33)), i++);
@@ -308,8 +311,9 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(38), 
                                                       Unary::regOf(39)), i++);
                     (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
-                                                      new Unary(opTemp, 
-                                                          new Const("tmpD9"))), 
+                                                      new Unary(opRegOf,
+                                                        new Unary(opTemp, 
+                                                         new Const("tmpD9")))), 
                                                       i++);
                     // Remove the FPOP
                     (*rit)->deleteStmt(i);
