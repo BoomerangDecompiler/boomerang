@@ -193,6 +193,7 @@ db/RtlTest.o:               EXTRA = -Ifrontend
 db/StatementTest.o:			EXTRA = -Ifrontend
 db/CfgTest.o:               EXTRA = -Ifrontend
 type/TypeTest.o:            EXTRA = -Ifrontend
+frontend/pentiumdecoder.o:	EXTRA = -fno-exceptions
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
