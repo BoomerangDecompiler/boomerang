@@ -2451,3 +2451,27 @@ void AssignExp::inlineConstants(Prog *prog)
     // TODO
 }
 
+/*==============================================================================
+ * FUNCTION:        Exp::killFill
+ * OVERVIEW:        Remove size operations such as zero fill, sign extend
+ * NOTE:			Could change top level expression
+ * NOTE:			Does not handle truncation at present
+ * PARAMETERS:      None
+ * RETURNS:         Fixed expression
+ *============================================================================*/
+static Ternary srch1(opZfill, new Ternary(opWild), new Ternary(opWild),
+	new Ternary(opWild));
+static Ternary srch2(opSgnEx, new Ternary(opWild), new Ternary(opWild),
+	new Ternary(opWild));
+Exp* Exp::killFill() {
+	Exp* res = this;
+	std::list<Exp**> result;
+	doSearch(&srch1, res, result, false);
+	doSearch(&srch2, res, result, false);
+	std::list<Exp**>::iterator it;
+	for (it = result.begin(); it != result.end(); it++) {
+		// Kill the sign extend bits
+		**it = ((Ternary*)(**it))->becomeSubExp3();
+	}
+	return res;
+}
