@@ -161,14 +161,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| mfspr (rd, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_UIMM);
 	| mtspr (uimm, rs) [name] =>
-		if ((uimm >> 5) &1) {		// FIXME: Fix shift amounts
-		  if ((uimm >> 8) & 1) {
-			stmts = instantiate(pc, "MTCTR" , DIS_RS);
-		  } else {
-			stmts = instantiate(pc, "MTXER" , DIS_RS);
-		  }
-		} else {
-			stmts = instantiate(pc, "MTLR" , DIS_RS);
+		switch (uimm) {
+			case 1:
+				stmts = instantiate(pc, "MTXER" , DIS_RS); break;
+			case 8:
+				stmts = instantiate(pc, "MTLR" , DIS_RS); break;
+			case 9:
+				stmts = instantiate(pc, "MTCTR" , DIS_RS); break;
+			default:
+				std::cerr << "ERROR: MTSPR instruction with invalid S field: " << uimm << "\n";
 		}
 		::unused(name);
 	| bl (reladdr) [name] =>
@@ -296,8 +297,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		std::cerr << "HACK " << name << "\n";
 //		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%CTR")), (BRANCH_TYPE)0, BIcr);
 
-	| balctr(BIcr) =>
-		computedJump("balctr", 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
+	| balctr(BIcr) [name] =>
+		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
 		
 	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
 	| bltlr(BIcr) [name] =>
