@@ -2195,7 +2195,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc) {
 				ADDRESS u = ((Const*)e)->getAddr();
 				char *str = prog->getStringConstant(u, true);
 				if (str) {
-					e = new Const(escapeStr(str));
+					e = new Const(str);
 					// Check if we may have guessed this global incorrectly (usually as an array of char)
 					const char* nam = prog->getGlobalName(u);
 					if (nam) prog->setGlobalType(nam,

@@ -1382,7 +1382,7 @@ Exp* Global::getInitialValue(Prog* prog) {
 		char* str = prog->getStringConstant(uaddr, true);
 		if (str) {
 			// Make a global string
-			return new Const(escapeStr(str));
+			return new Const(str);
 		}
 	} else if (type->isPointer() && ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
 		ADDRESS init = prog->readNative4(uaddr);	

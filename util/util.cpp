@@ -222,6 +222,7 @@ void escapeXMLChars(std::string &s)
 // Note: assumes a C or C++ back end...
 char* escapeStr(char* str) {
     std::ostringstream out;
+#if 0
     for (char* p = str; *p; p++) {
         char c = *p;
         if (c < ' ') {
@@ -235,6 +236,33 @@ char* escapeStr(char* str) {
             }
         } else out << c;
     }
+#endif
+	char unescaped[]="ntvbrfa\"";
+	char escaped[]="\n\t\v\b\r\f\a\"";
+	bool escapedSucessfully;
+
+	// test each character
+	for(;*str;str++)
+	{
+		if( isprint(*str) && *str != '\"' ) {
+    		// it's printable, so just print it
+    		out << *str;
+		} else { // in fact, this shouldn't happen, except for "
+			// maybe it's a known escape sequence
+			escapedSucessfully=false;
+			for(int i=0;escaped[i] && !escapedSucessfully ;i++) {
+				if(*str == escaped[i]) {
+					out << "\\" << unescaped[i];
+					escapedSucessfully=true;
+      			}
+			}
+			if(!escapedSucessfully) {
+ 				// it isn't so just use the \xhh escape
+ 				out << "\\x" << std::hex << std::setw(2) << (int)*str;
+			}
+		}
+    }
+
     char* ret = new char[out.str().size()+1];
     strcpy(ret, out.str().c_str());
     return ret;

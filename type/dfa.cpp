@@ -129,7 +129,7 @@ void UserProc::dfaTypeAnalysis() {
 					char* str = prog->getStringConstant(val, true);
 					if (str) {
 						// Make a string
-						con->setStr(escapeStr(str));
+						con->setStr(str);
 						con->setOper(opStrConst);
 					}
 				} else if (baseType->resolvesToInteger() || baseType->resolvesToFloat()) {
