@@ -326,8 +326,7 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth, bo
 // Return true if a change made
 bool Statement::doPropagateTo(int memDepth, Statement* def, bool& convert) {
     // Check the depth of the definition (an assignment)
-    // This checks the depth for the left and right sides, and
-    // gives the max for both. Example: can't propagate
+    // This checks the depth for the left and right sides, and gives the max for both. Example: can't propagate
     // tmp := m[x] to foo := tmp if memDepth == 0
     Assign* assignDef = dynamic_cast<Assign*>(def);
     if (assignDef) {
@@ -3304,12 +3303,12 @@ void PhiAssign::fromSSAform(igraph& ig) {
 // PhiExp and ImplicitExp:
 bool Assignment::usesExp(Exp* e) {
 	Exp *where = 0;
-	return lhs->isMemOf() && ((Unary*)lhs)->getSubExp1()->search(e, where);
+	return (lhs->isMemOf() || lhs->isRegOf()) && ((Unary*)lhs)->getSubExp1()->search(e, where);
 }
 
 bool Assign::usesExp(Exp *e) {
 	Exp *where = 0;
-	return (rhs->search(e, where) || (lhs->isMemOf() && 
+	return (rhs->search(e, where) || ((lhs->isMemOf() || lhs->isRegOf()) && 
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
@@ -3317,8 +3316,8 @@ bool Assign::doReplaceRef(Exp* from, Exp* to) {
 	bool changeright = false;
 	rhs = rhs->searchReplaceAll(from, to, changeright);
 	bool changeleft = false;
-	// If LHS is a memof, substitute its subexpression as well
-	if (lhs->isMemOf()) {
+	// If LHS is a memof or regof, substitute its subexpression as well
+	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp* subsub1 = ((Unary*)lhs)->getSubExp1();
 		((Unary*)lhs)->setSubExp1ND(subsub1->searchReplaceAll(from, to, changeleft));
 	}
@@ -3372,8 +3371,8 @@ bool Assign::doReplaceRef(Exp* from, Exp* to) {
 
 bool Assignment::doReplaceRef(Exp* from, Exp* to) {
 	bool change = false;
-	// If LHS is a memof, substitute its subexpression
-	if (lhs->isMemOf()) {
+	// If LHS is a memof or regof, substitute its subexpression
+	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp* subsub1 = ((Unary*)lhs)->getSubExp1();
 		((Unary*)lhs)->setSubExp1ND(subsub1->searchReplaceAll(from, to, change));
 	}

@@ -346,8 +346,8 @@ bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	Exp* rhs = s->getRight();
 	if (rhs) rhs->accept(ev);
-	// Special logic for the LHS
-	if (lhs->isMemOf()) {
+	// Special logic for the LHS. Note: PPC can have r[tmp + 30] on LHS
+	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
 	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
@@ -537,7 +537,7 @@ void StmtSubscripter::visit(Assign* s, bool& recur) {
 	s->setRight(rhs->accept(mod));
 	// Don't subscript the LHS of an assign, ever
 	Exp* lhs = s->getLeft();
-	if (lhs->isMemOf()) {
+	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp*& child = ((Location*)lhs)->refSubExp1();
 		child = child->accept(mod);
 	}
