@@ -3,28 +3,106 @@
 # Desc: Makefile for the db (database) directory
 #       Makes and tests all object files in this directory
 #
+# Prerequisite libraries: util, BinaryFile, cppunit
+#
 ######################################################
 
 # $Revision$
 # 05 Apr 02 - Mike: Created. Added "test" target
+# 10 Apr 02 - Mike: More dependencies; interface -> include
+# 26 Apr 02 - Mike: Create the libdb.so library, from .o files
+# 29 Apr 02 - Mike: Added sslparser etc
+# 13 May 02 - Mike: Added RtlTest and ParserTest
 
-CC = g++ -g -I../interface -L../bin
+BISONPP=bison++
+FLEXPP=flex++
+
+DB_LIB=../lib/libdb.so
+TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o
+LIB_OBJS = exp.o prog.o proc.o rtl.o hrtl.o cfg.o basicblock.o register.o \
+           sslparser.o sslscanner.o insnameelem.o sslinst.o table.o
+
+BOOMDIR="$(shell pwd)/.."
+LIBDIR=$(BOOMDIR)/lib
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+
+CC = g++ -g -Wall
 CXX = $(CC)
 
-all: testExp
+GENFILES = sslparser.cc sslparser.h sslscanner.cc sslscanner.h
 
-testExp: testExp.o exp.o ExpTest.o 
-	$(CC) -o $@ $^ -lcppunit
+all: $(DB_LIB) testDbase
 
-ExpTest.o: ExpTest.h
 
-exp.o: ../interface/exp.h
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = yes
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+
+$(DB_LIB): $(LIB_OBJS)
+	$(CC) -shared -o $@ $(LIB_OBJS) -lBinaryFile -lcppunit -lutil \
+      $(RUNPATH) -L../lib
+
+testDbase: testDbase.o $(DB_LIB) $(TEST_OBJS)
+	$(CC) -o $@ testDbase.o $(TEST_OBJS) -ldb -lcppunit -lutil -lBinaryFile \
+      $(RUNPATH) -L../lib
+
+TEST_HDRS = $(patsubst %.o,  %.h, $(TEST_OBJS))
+testDbase: $(TEST_HDRS)
+
+ExpTest.o: ExpTest.h ../include/exp.h ../include/operator.h
+ProgTest.o: ProgTest.h ../include/prog.h
+
+exp.o: ../include/exp.h ../include/operator.h
+prog.o: ../include/prog.h
+cfg.o: ../include/cfg.h
+basicblock.o: ../include/cfg.h
+rtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
+hrtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
+register.o: ../include/register.h
+sslparser.o: sslparser.cc sslparser.h sslscanner.h
+sslscanner.o: sslscanner.cc sslscanner.h
+insnameelem.o: insnameelem.h
+
+# prog.cc needs BOOMDIR set
+prog.o: EXTRAS = $(BOOMSET)
+# exp.cc needs -I.
+exp.o: EXTRAS = -I.
+
+# Make these objects with -fPIC
+$(LIB_OBJS): %.o : %.cc
+	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
+
+# Others without -fPIC
+.cc.o:
+	$(CC) -c -I../include -o $@ $<
+
+sslparser.cc sslparser.h: sslparser.y sslscanner.l
+	${BISONPP} -d -v -osslparser.cc -hsslparser.h $<
+
+sslscanner.cc sslscanner.h: sslscanner.l sslparser.y
+	${FLEXPP} -osslscanner.cc -hsslscanner.h $<
+
 
 clean:
-	rm testExp *.o
+	rm -f testDbase *.o $(DB_LIB)
 
-test: testExp
-	./testExp
+# Clean up generated files
+cleangen:
+	rm -f $(GENFILES)
 
-install:
-	@echo Nothing to install
+# Remote: for when making remotely from bison++/flex++ facilities, or just
+# can't be bothered installing these.
+remote:
+	touch $(GENFILES)
+
+test: testDbase
+	./testDbase
