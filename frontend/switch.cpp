@@ -52,6 +52,7 @@
  */
 
 /* 24 Mar 03 - Mike: Converted from UQBT code
+ * 27 Mar 03 - Mike: Fixed lack of clone() calls
  */
 
 #define DEBUG_SWITCH 1            // Uncomment to debug this module
@@ -437,7 +438,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
     pRtl = *--itCurRtl;
     ADDRESS uJump = pRtl->getAddress();     // Needed for type R
 
-    ssJmp = pDest;             // Copy the desintation of the jump
+    ssJmp = pDest->clone();                 // Copy the desintation of the jump
 
 #if DEBUG_SWITCH
     std::cout << std::hex << uJump << ":ssJmp begins with "; ssJmp->print();
@@ -861,23 +862,24 @@ forcedCheck:
             // Pattern: m[<expr> * 4 + T ]
             if (*ssJmp == formA) {
                 chForm = 'A';
-                ssJmp = ((Unary*) ssJmp)->getSubExp1();     // <expr> * 4 + T
+                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();     // <expr> * 4 + T
                 uTable = (ADDRESS)
                   ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->getSubExp1();     // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->getSubExp1();     // <expr>
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr> * 4
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();  // <expr>
             }
 
             // Check for form O (offsets)
             // Pattern: m[<expr> * 4 + T ] + T
             else if (*ssJmp == formO) {
                 chForm = 'O';
-                ssJmp = ((Binary*)ssJmp)->getSubExp1();     // m[<expr>*4 + T]
-                ssJmp = ((Unary*) ssJmp)->getSubExp1();     // <expr> * 4 + T
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                // m[<expr> * 4 + T]
+                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();     // <expr> * 4 + T
                 uTable = (ADDRESS)
                   ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->getSubExp1();     // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->getSubExp1();     // <expr>
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr> * 4
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr>
             }
 
             // Check for form H (hash table)
@@ -887,12 +889,14 @@ forcedCheck:
             // Simplifies to m[((<expr> & 63) * 8) + 12344]
             else if (*ssJmp == formH) {
                 chForm = 'H';
-                ssJmp = ((Unary*) ssJmp)->getSubExp1(); //((<expr> & K) * 8) + T
+                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                //((<expr> & K) * 8) + T
                 uTable = (ADDRESS)
                   ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // ((<expr> & K) * 8)
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr> & K
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr>
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                // ((<expr> & K) * 8)
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> & K
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
             }
 
             // Check for form O1 (one of the relocatable versions of O)
@@ -901,13 +905,15 @@ forcedCheck:
             // where k is a small constant, typically 28
             else if (*ssJmp == formO1) {
                 chForm = 'R';
-                ssJmp = ((Binary*)ssJmp)->getSubExp2(); // m[%pc+((<expr>*4)+k)]
-                ssJmp = ((Unary*) ssJmp)->getSubExp1(); // %pc+((<expr>*4)+k)
-                ssJmp = ((Binary*)ssJmp)->getSubExp2(); // (<expr>*4) + k
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
+                // m[%pc + ((<expr> * 4) + k)]
+                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                // %pc + ((<expr> * 4) + k)
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp2(); // (<expr>*4) + k
                 // iOffset needed to figure correct out edges
                 iOffset = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr>
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> * 4
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
                 uTable = uJump + 8;         // Set way earlier
             }
 
@@ -917,16 +923,19 @@ forcedCheck:
             // where k is a smallish constant, e.g. 288
             else if (*ssJmp == formO2) {
                 chForm = 'r';
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
                 // m[%pc  + ((<expr> * 4) - k)] - k
-                ssJmp = ((Binary*)ssJmp)->getSubExp2();
                 int k1 = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // m[%pc+((<expr>*4)-k)]
-                ssJmp = ((Unary*) ssJmp)->getSubExp1(); // %pc+((<expr>*4)-k)
-                ssJmp = ((Binary*)ssJmp)->getSubExp2(); // (<expr>*4) - k
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                // m[%pc + ((<expr> * 4) - k)]
+                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                // %pc + ((<expr> * 4) - k)
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
+                // (<expr> * 4) - k
                 int k2 = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
                 assert(k1 == k2);
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->getSubExp1(); // <expr>
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> * 4
+                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
                 uTable = uCopyPC - k1;           // uCopyPC set way earlier
             }
 
@@ -1102,20 +1111,23 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     if (rhs->getOper() == opMinus) {
         // We want to insert the var assignment before the defining assignment,
         // and from the first subexpression
-        insertAfterTemps(*itDefinesSw, new AssignExp(pLHS, rhs->getSubExp1()));
+        insertAfterTemps(*itDefinesSw, new AssignExp(
+          pLHS->clone(), rhs->getSubExp1()->clone()));
     }
     // Check if it's adding a negative constant to a register. If so,
     // assume it's just like the subtract above
     else if ((*rhs == expRegPlusNegConst) &&
       (((Binary*)rhs)->getSubExp2()->isIntConst()) &&
       (((Const*)((Binary*)rhs)->getSubExp2())->getInt() < 0)) {
-        insertAfterTemps(*itDefinesSw, new AssignExp(pLHS, rhs->getSubExp1()));
+        insertAfterTemps(*itDefinesSw, new AssignExp(
+          pLHS->clone(), rhs->getSubExp1()->clone()));
     }
     else {
         // We assume that this assign is a load (or something) that defines the
         // switch variable
         Exp* lhs = pRT->getSubExp1();
-        (*itDefinesSw)->appendExp(new AssignExp(pLHS, lhs));
+        (*itDefinesSw)->appendExp(new AssignExp(
+          pLHS->clone(), lhs->clone()));
     }
     pSwitchInfo->pSwitchVar = pLHS;
 }
