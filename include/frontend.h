@@ -165,6 +165,11 @@ static FrontEnd* getInstanceFor( const char* sName, void*& dlHandle,
      */
 static void closeInstance(void* dlHandle);
 
+	/*
+	 * Get a Prog object (for testing and not decoding)
+	 */
+	Prog* getProg();
+
 };
 
 
