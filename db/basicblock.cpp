@@ -225,11 +225,8 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
     // should we delete old ones here?  breaks some things - trent
     m_pRtls = rtls;
 
-    // Set the link between the last instruction (a call) and this BB
+    // Used to set the link between the last instruction (a call) and this BB
     // if this is a call BB
-    CallStatement* call = (CallStatement*)*(m_pRtls->rbegin());
-    if (call->getKind() == STMT_CALL)
-        call->setBB(this);
 }
 
 void BasicBlock::setReturnVal(Exp *e) {
