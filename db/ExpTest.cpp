@@ -1195,4 +1195,15 @@ void ExpTest::testSetConscripts() {
     std::ostringstream actual;
     actual << e;
     CPPUNIT_ASSERT_EQUAL(expected, actual.str());
+
+    // m[r28 + 1000]
+    e = Location::memOf(
+        new Binary(opPlus,
+            Location::regOf(28),
+            new Const(1000)));
+    e->setConscripts(0);
+    expected = "m[r28 + 1000\\1\\]";
+    std::ostringstream act2;
+    act2 << e;
+    CPPUNIT_ASSERT_EQUAL(expected, act2.str());
 }
