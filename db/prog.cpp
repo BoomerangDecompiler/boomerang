@@ -199,7 +199,15 @@ void Prog::generateCode(std::ostream &os) {
         Type *ty = (*it1)->getType();
         PSectionInfo si = pBF->GetSectionInfoByAddr(uaddr);
         if (!si->bBss) {
-            switch(ty->getSize()) {
+            if (ty->isPointer() &&
+              ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
+                char* str = getStringConstant((*it1)->getAddress());
+                if (str) {
+                    // Make a global string
+                    e = new Const(str);
+                }
+            }
+            if (e == NULL) switch(ty->getSize()) {
             case 8:
                 e = new Const(
                     (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
@@ -481,13 +489,20 @@ void Prog::globalUsed(ADDRESS uaddr)
         return;
     }
     const char *nam = newGlobal(uaddr); 
-    Type *ty = guessGlobalType(nam);
+    Type *ty = guessGlobalType(nam, uaddr);
     globals.push_back(new Global(ty, uaddr, nam));
 }
 
-Type *Prog::guessGlobalType(const char *nam)
+Type *Prog::guessGlobalType(const char *nam, ADDRESS u)
 {
     int sz = pBF->GetSizeByName(nam);
+    if (sz == 0) {
+        // Check if it might be a string
+        char* str = getStringConstant(u);
+        if (str)
+            // return char* and hope it is dealt with properly
+            return new PointerType(new CharType());
+    }
     Type *ty;
     switch(sz) {
         case 1:
@@ -532,8 +547,23 @@ void Prog::setGlobalType(char* nam, Type* ty) {
 // get a string constant at a given address if appropriate
 char *Prog::getStringConstant(ADDRESS uaddr) {
     SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
-    if (si && si->bReadOnly)
-        return (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+    // Too many compilers put constants, including string constants, into
+    // read/write sections
+    //if (si && si->bReadOnly)
+    if (si && !si->bBss) {
+        // At this stage, only support ascii, null terminated, non unicode
+        // strings.
+        // At least 4 of the first 6 chars should be printable ascii
+        char* p = (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+        int printable = 0;
+        for (int i=0; i < 6; i++) {
+            char c = p[i];
+            if (c == 0) break;
+            if (c >= ' ' && c < '\x7F') printable++;
+        }
+        if (printable >= 4)
+            return p;
+    }
     return NULL;
 }
 
@@ -997,7 +1027,7 @@ void Prog::readSymbolFile(const char *fname)
             }
             Type *ty = (*it)->ty;
             if (ty == NULL) {
-                ty = guessGlobalType(nam);
+                ty = guessGlobalType(nam, (*it)->addr);
             }
             globals.push_back(new Global(ty, (*it)->addr, nam));
         }

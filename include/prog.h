@@ -216,8 +216,8 @@ public:
     // (or return an existing name if address already used)
     const char *newGlobal(ADDRESS uaddr);
 
-    // Guess a global's type based on its name
-    Type *guessGlobalType(const char *nam);
+    // Guess a global's type based on its name and address
+    Type *guessGlobalType(const char *nam, ADDRESS u);
 
     // Indicate that a given global has been seen used in the program.
     void globalUsed(ADDRESS uaddr);
