@@ -257,9 +257,6 @@ int Boomerang::commandLine(int argc, const char **argv)
                 outputPath = argv[++i];
                 if (outputPath[outputPath.size()-1] != '/')
                     outputPath += '/';
-                if (!createDirectory(outputPath))
-                    std::cerr << "Warning! Could not create path " <<
-                      outputPath << "!\n";
                 break;
             case 'p':
                 if (argv[i][2] == 'a') {
@@ -408,6 +405,11 @@ int Boomerang::commandLine(int argc, const char **argv)
                 help();
         }
     }
+
+    // Create the output directory, if needed
+    if (!createDirectory(outputPath))
+        std::cerr << "Warning! Could not create path " <<
+          outputPath << "!\n";
     setLogger(new FileLogger());
     
     if (kmd)
