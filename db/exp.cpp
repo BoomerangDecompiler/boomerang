@@ -3899,24 +3899,24 @@ Exp* Unary::accept(ExpModifier* v) {
     // If it's changed in the preVisit step, then postVisit doesn't care
     // about the type of ret. So let's call it a Unary, and the type system
     // is happy
-    bool norecur;
-    Unary* ret = (Unary*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    Unary* ret = (Unary*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 Exp* Binary::accept(ExpModifier* v) {
-    bool norecur;
-    Binary* ret = (Binary*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
-    if (!norecur) subExp2 = subExp2->accept(v);
+    bool recur;
+    Binary* ret = (Binary*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
+    if (recur) subExp2 = subExp2->accept(v);
     return v->postVisit(ret);
 }
 Exp* Ternary::accept(ExpModifier* v) {
-    bool norecur;
-    Ternary* ret = (Ternary*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
-    if (!norecur) subExp2 = subExp2->accept(v);
-    if (!norecur) subExp3 = subExp3->accept(v);
+    bool recur;
+    Ternary* ret = (Ternary*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
+    if (recur) subExp2 = subExp2->accept(v);
+    if (recur) subExp3 = subExp3->accept(v);
     return v->postVisit(ret);
 }
 
@@ -3924,37 +3924,37 @@ Exp* Location::accept(ExpModifier* v) {
     // This looks to be the same source code as Unary::accept, but the
     // type of "this" is different, which is all important here!
     // (it makes a call to a different visitor member function).
-    bool norecur;
-    Location* ret = (Location*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    Location* ret = (Location*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
 Exp* PhiExp::accept(ExpModifier* v) {
-    bool norecur;
-    PhiExp* ret = (PhiExp*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    PhiExp* ret = (PhiExp*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
 Exp* RefExp::accept(ExpModifier* v) {
-    bool norecur;
-    RefExp* ret = (RefExp*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    RefExp* ret = (RefExp*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
 Exp* FlagDef::accept(ExpModifier* v) {
-    bool norecur;
-    FlagDef* ret = (FlagDef*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    FlagDef* ret = (FlagDef*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
 Exp* TypedExp::accept(ExpModifier* v) {
-    bool norecur;
-    TypedExp* ret = (TypedExp*)v->preVisit(this, norecur);
-    if (!norecur) subExp1 = subExp1->accept(v);
+    bool recur;
+    TypedExp* ret = (TypedExp*)v->preVisit(this, recur);
+    if (recur) subExp1 = subExp1->accept(v);
     return v->postVisit(ret);
 }
 
