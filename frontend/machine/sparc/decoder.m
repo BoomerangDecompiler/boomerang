@@ -18,6 +18,7 @@
  * 26 Apr 02 - Mike: Mods for boomerang
  * 19 May 02 - Mike: Added many (int) casts: variables from toolkit are unsgnd
  * 21 May 02 - Mike: SAVE and RESTORE have full semantics now
+ * 30 Oct 02 - Mike: dis_Eaddr mode indirectA had extra memof
 */
 
 /*==============================================================================
@@ -568,7 +569,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 
     match pc to
     | indirectA(rs1) =>
-        expr = new Unary(opMemOf, new Unary(opRegOf, new Const((int)rs1)));
+        expr = new new Unary(opRegOf, new Const((int)rs1));
     | indexA(rs1, rs2) =>
         expr = new Binary(opPlus,
             new Unary(opRegOf, new Const((int)rs1)),
