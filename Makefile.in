@@ -186,7 +186,7 @@ db/rtl.o: include/rtl.h include/exp.h include/operator.h include/statement.h \
     include/cfg.h include/proc.h include/prog.h include/boomerang.h
 db/register.o: include/register.h
 db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h include/rtl.h \
-    db/table.h db/insnameelem.h include/util.h include/statement.h
+    db/table.h db/insnameelem.h include/util.h include/statement.h include/exp.h
 db/sslscanner.o: db/sslscanner.cpp db/sslscanner.h
 c/ansi-c-parser.o: c/ansi-c-parser.cpp c/ansi-c-parser.h c/ansi-c-scanner.h
 c/ansi-c-scanner.o: c/ansi-c-scanner.cpp c/ansi-c-scanner.h
