@@ -597,6 +597,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                           ((Const*)call->getDest()->getSubExp1())->getAddr());
                         Proc *p = pProc->getProg()->getLibraryProc(nam);
                         call->setDestProc(p);
+                        call->setIsComputed(false);
                     }
 
                     // Treat computed and static calls seperately

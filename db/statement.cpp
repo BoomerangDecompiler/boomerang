@@ -1281,12 +1281,22 @@ Exp *CallStatement::substituteParams(Exp *e)
 
 Exp *CallStatement::findArgument(Exp *e) {
     int n = -1;
-    if (procDest && 
-            (procDest->getSignature()->hasEllipsis() ||
-            (int)arguments.size() == procDest->getSignature()->getNumParams()))
+    if (!m_isComputed && procDest)
         n = procDest->getSignature()->findParam(e);
     else {
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
+        if (params.size() != arguments.size()) {
+            std::cerr << "eep. " << arguments.size() << " args ";
+            if (procDest) {
+                std::cerr << procDest->getName() << " ";
+                std::cerr << "(" << procDest->getSignature()->getNumParams()
+                          << " params) ";
+            } else
+                std::cerr << "(no dest) ";
+            for (int i = 0; i < (int)arguments.size(); i++)
+                std::cerr << arguments[i] << " ";
+            std::cerr << std::endl;
+        }
         assert(params.size() == arguments.size());
         for (unsigned i = 0; i < params.size(); i++)
             if (*params[i] == *e) {
@@ -1686,7 +1696,8 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
     if (procDest == NULL && pDest) {
         pDest = pDest->searchReplaceAll(from, to, change);
-        std::cerr << "propagated into call dest " << pDest << std::endl;
+        if (VERBOSE)
+            std::cerr << "propagated into call dest " << pDest << std::endl;
         if (pDest->getOper() == opGlobal || 
             (pDest->getOper() == opSubscript && 
              pDest->getSubExp1()->getOper() == opGlobal)) {
@@ -1695,42 +1706,54 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 e = pDest->getSubExp1();
             char *nam = ((Const*)e->getSubExp1())->getStr();
             Proc *p = proc->getProg()->findProc(nam);
-            std::cerr << "this is a global " << nam << std::endl;
+            if (VERBOSE)
+                std::cerr << "this is a global " << nam << std::endl;
             if (p) {
-                std::cerr << "this is a proc " << p->getName() << std::endl;
+                if (VERBOSE)
+                    std::cerr << "this is a proc " << p->getName() << std::endl;
                 // we need to:
                 // 1) replace the current return set with the return set
                 //    of the new procDest
                 // 2) call fixCallRefs on the enclosing procedure
                 // 3) fix the arguments
+                // 4) change this to a non-indirect call
                 procDest = p;
                 Signature *sig = p->getSignature();
                 // 1
+                //std::cerr << "1" << std::endl;
                 returns.resize(sig->getNumReturns());
                 for (int i = 0; i < sig->getNumReturns(); i++)
                     returns[i] = sig->getReturnExp(i)->clone();
                 // 2
+                //std::cerr << "2" << std::endl;
                 proc->fixCallRefs();
                 // 3
+                //std::cerr << "3" << std::endl;
                 std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
                 std::vector<Exp*> oldargs = arguments;
-                arguments.resize(sig->getNumParams());
+                std::vector<Exp*> newargs;
+                newargs.resize(sig->getNumParams());
                 for (int i = 0; i < sig->getNumParams(); i++) {
                     bool gotsup = false;
                     for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getParamExp(i)) {
-                            arguments[i] = oldargs[j];
+                            newargs[i] = oldargs[j];
                             gotsup = true;
                             break;
                         }
                     if (!gotsup) {
-                        arguments[i] = sig->getParamExp(i)->clone();
-                        if (arguments[i]->getOper() == opMemOf) {
-                            arguments[i]->refSubExp1() = 
-                                substituteParams(arguments[i]->getSubExp1());
+                        newargs[i] = sig->getParamExp(i)->clone();
+                        if (newargs[i]->getOper() == opMemOf) {
+                            newargs[i]->refSubExp1() = 
+                                substituteParams(newargs[i]->getSubExp1());
                         }
                     }
                 }
+                arguments = newargs;
+                assert((int)arguments.size() == sig->getNumParams());
+                // 4
+                //std::cerr << "4" << std::endl;
+                m_isComputed = false;
             }
         }
     }

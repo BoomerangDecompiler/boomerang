@@ -2499,9 +2499,11 @@ Exp *RefExp::fixCallRefs() {
             return e;
         } else {
             if (call->findReturn(subExp1) == -1) {
-                std::cerr << "nothing proven about " << subExp1 << 
-                    " and yet it is referenced, and not in returns of " << 
-                    std::endl << "   " << call << std::endl;
+                if (VERBOSE) {
+                    std::cerr << "nothing proven about " << subExp1 << 
+                        " and yet it is referenced, and not in returns of " << 
+                        std::endl << "   " << call << std::endl;
+                }
             }
         }
     }
@@ -2527,9 +2529,11 @@ Exp *PhiExp::fixCallRefs() {
                 }
             } else {
                 if (call->findReturn(subExp1) == -1) {
-                    std::cerr << "nothing proven about " << subExp1 << 
-                        " and yet it is referenced, and not in returns of " << 
-                        std::endl << "   " << call << std::endl;
+                    if (VERBOSE) {
+                        std::cerr << "nothing proven about " << subExp1 << 
+                            " and yet it is referenced, and not in returns of " 
+                            << std::endl << "   " << call << std::endl;
+                    }
                 }
             }
         }
