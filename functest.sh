@@ -1,4 +1,4 @@
-#!/bin/bash
+#   !/bin/bash
 rm -rf functest
 mkdir functest
 rm -rf functests.out
@@ -7,8 +7,8 @@ rm -rf functests.out
 ./testOne.sh pentium  twoproc
 ./testOne.sh sparc twoproc
 ./testOne.sh pentium  fib
-./testOne.sh pentium fibo-O4 < test/pentium/fibo-O4.in
-./testOne.sh sparc fibo-O4 < test/sparc/fibo-O4.in
+./testOne.sh pentium fibo-O4 < test/source/fibo-O4.in
+./testOne.sh sparc fibo-O4 < test/source/fibo-O4.in
 ./testOne.sh pentium global1
 ./testOne.sh sparc global1
 ./testOne.sh pentium  global2
