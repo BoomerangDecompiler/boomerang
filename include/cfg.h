@@ -943,6 +943,13 @@ private:
     bool checkEntryBB();
 
 public:
+    /*
+     * Split the given BB at the RTL given, and turn it into the BranchStatement
+     * given. Sort out all the in and out edges.
+     */
+    PBB splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
+      BranchStatement* br2);
+
     /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
      */
     void setTimeStamps();

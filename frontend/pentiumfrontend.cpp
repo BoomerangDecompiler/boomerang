@@ -45,6 +45,7 @@
 #include "signature.h"
 #include "prog.h"           // For findProc()
 #include "BinaryFile.h"     // For SymbolByAddress()
+#include "boomerang.h"
 
 /*==============================================================================
  * Forward declarations.
@@ -189,6 +190,9 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
     pProc->setEntryBB();
 	int tos = 0;
     processFloatCode(pProc->getEntryBB(), tos, pCfg); 
+
+    // Process away %rpt and %skip
+    processStringInst(pProc);
 
     return true;
 }
@@ -1085,4 +1089,54 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     // Not ideal; we must return start
     std::cerr << "main function not found\n";
     return start;
+}
+
+void toBranches(ADDRESS a, bool lastRtl, Cfg* cfg, RTL* rtl, PBB pBB) {
+    BranchStatement* br1 = new BranchStatement;
+    assert(rtl->getList().size() == 6);
+    Statement* s1 = *rtl->getList().begin();
+    Statement* s6 = *(--rtl->getList().end());
+    br1->setCondExpr(s1->getRight());
+    br1->setDest(a+2);
+    BranchStatement* br2 = new BranchStatement;
+    br2->setCondExpr(s6->getRight());
+    br2->setDest(a);
+    if (!lastRtl) {
+        cfg->splitForBranch(pBB, rtl, br1, br2);
+    }
+else std::cerr << "Did not expect to get here!\n";
+}
+
+void PentiumFrontEnd::processStringInst(UserProc* proc) {
+    BB_IT it;
+    Cfg* cfg = proc->getCFG();
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        std::list<RTL*> *rtls = bb->getRTLs();
+        ADDRESS prev, addr = 0;
+        bool lastRtl = true;
+        for (std::list<RTL*>::reverse_iterator rit = rtls->rbegin();
+              rit != rtls->rend(); rit++) {
+            RTL *rtl = *rit;
+            prev = addr;
+            addr = rtl->getAddress();
+            if (rtl->getList().size()) {
+                Statement* firstStmt = *rtl->getList().begin();
+                if (firstStmt->isAssign()) {
+                    Exp* lhs = firstStmt->getLeft();
+                    if (lhs->isMachFtr()) {
+                        Const* sub = (Const*)((Unary*)lhs)->getSubExp1();
+                        char* str = sub->getStr();
+                        if (strncmp(str, "%SKIP", 5) == 0) {
+                            toBranches(addr, lastRtl, cfg, rtl, bb);
+                            break;  // Next BB NOTE: assumes one string instr
+                                    // per BB!
+                        }
+                        else
+                            LOG << "Unhandled machine feature " << str << "\n";
+                    }
+                }
+            }
+            lastRtl = false;
+        }
+    }
 }

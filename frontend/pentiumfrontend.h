@@ -66,6 +66,11 @@ private:
 	void 	processFloatCode(PBB pBB, int& tos, Cfg* pCfg);
 
     /*
+     * Process away %rpt and %skip in string instructions
+     */
+    void    processStringInst(UserProc* proc);
+
+    /*
      * Check a HLCall for a helper function, and replace with appropriate
      *  semantics if possible
      */

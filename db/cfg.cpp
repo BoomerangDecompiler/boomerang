@@ -2296,3 +2296,101 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
         workset.insert(*it);
 }
 
+/*  pBB-> +----+    +----+ <-pBB
+ * Change | A  | to | A  | where A and B could be empty. S is the string
+ *        |    |    |    | instruction (with will branch to itself and to the
+ *        +----+    +----+ start of the next instruction, i.e. the start of B,
+ *        | S  |      |    if B is non empty).
+ *        +----+      V
+ *        | B  |    +----+ <-skipBB
+ *        |    |    +-b1-+            b1 is just a branch for the skip part
+ *        +----+      |
+ *                    V
+ *                  +----+ <-rptBB
+ *                  | S' |            S' = S less the skip and repeat parts
+ *                  +-b2-+            b2 is a branch for the repeat part
+ *                    |
+ *                    V
+ *                  +----+ <-newBb
+ *                  | B  |
+ *                  |    |
+ *                  +----+
+ * S is an RTL with 6 statements representing one string instruction
+ * (so this function is highly specialised for the job of replacing the
+ * %SKIP and %RPT parts of string instructions)
+ */
+PBB Cfg::splitForBranch(PBB pBB, RTL* rtl, BranchStatement* br1,
+  BranchStatement* br2) {
+    std::list<RTL*>::iterator ri;
+    // First find which RTL has the split address
+    for (ri = pBB->m_pRtls->begin(); ri != pBB->m_pRtls->end(); ri++) {
+        if ((*ri) == rtl)
+            break;
+    }
+    assert(ri != pBB->m_pRtls->end());
+
+    // Make a BB for the br1 instruction
+    std::list<RTL*>* pRtls = new std::list<RTL*>;
+    std::list<Statement*>* ls = new std::list<Statement*>;
+    ls->push_back(br1);
+    // Don't give this "instruction" the same address as the rest of the
+    // string instruction (causes problems when creating the rptBB)
+    RTL* skipRtl = new RTL(rtl->getAddress(), ls);
+    pRtls->push_back(skipRtl);
+    PBB skipBB = newBB(pRtls, TWOWAY, 2);
+    rtl->updateAddress(rtl->getAddress()+1);
+
+    // Remove the SKIP from the start of the string instruction RTL
+    std::list<Statement*>& li = rtl->getList();
+    assert(li.size() == 6);
+    li.erase(li.begin());
+    // Replace the last statement with br2
+    std::list<Statement*>::iterator ll = --li.end();
+    li.erase(ll);
+    li.push_back(br2);
+    
+    // Move the string RTL into a new BB
+    pRtls = new std::list<RTL*>;
+    pRtls->push_back(*ri);
+    PBB rptBB = newBB(pRtls, TWOWAY, 2);
+    ri = pBB->m_pRtls->erase(ri);
+
+    // Move the remaining RTLs to a new list of RTLs
+    pRtls = new std::list<RTL*>;
+    while (ri != pBB->m_pRtls->end()) {
+        pRtls->push_back(*ri);
+        ri = pBB->m_pRtls->erase(ri);
+    }
+    int oldOutEdges = pBB->getNumOutEdges();
+    PBB newBb = newBB(pRtls, pBB->getType(), oldOutEdges);
+
+    // Transfer the out edges from A to B (pBB to newBb)
+    for (int i=0; i < oldOutEdges; i++)
+        addOutEdge(newBb, pBB->getOutEdge(i));
+    // Change pBB to a FALL bb
+    pBB->updateType(FALL, 1);
+    // Set the first out-edge to be skipBB
+    pBB->m_OutEdges.erase(pBB->m_OutEdges.begin(), pBB->m_OutEdges.end());
+    addOutEdge(pBB, skipBB);
+    // Set the out edges for skipBB
+    addOutEdge(skipBB, rptBB);
+    addOutEdge(skipBB, newBb);
+    // Set the out edges for the rptBB
+    addOutEdge(rptBB, newBb);
+    addOutEdge(rptBB, skipBB);
+
+    // For each out edge of newBb, change any in-edges to pBB to instead point
+    // to newBb
+    for (int i=0; i < oldOutEdges; i++) {
+        PBB succ = newBb->m_OutEdges[i];
+        for (unsigned j=0; j < succ->m_InEdges.size(); j++) {
+            PBB pred = succ->m_InEdges[j];
+            if (pred == pBB) {
+                succ->m_InEdges[j] = newBb;
+                break;
+            }
+        }
+    }
+
+    return newBb;
+}
