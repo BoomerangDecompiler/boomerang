@@ -61,7 +61,7 @@ testDyn: lib
 	cd db       && ${MAKE} test
 	cd frontend && ${MAKE} test
 
-test:	bigtest
+test:	lib bigtest
 #	cd loader   && ${MAKE} test
 	./bigtest
 
@@ -105,7 +105,7 @@ bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
 	  $(RUNPATH) -Llib -ldl -lcppunit
 
-boomerang: driver.o ${STATIC_OBJS} lib/libBinaryFile.so
+boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ driver.o $(STATIC_OBJS) lib/libBinaryFile.so $(RUNPATH) \
 	  -Llib -ldl
 
