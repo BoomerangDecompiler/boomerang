@@ -302,28 +302,31 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #define	COVERS	282
 #define	INDEX	283
 #define	NOT	284
-#define	THEN	285
-#define	LOOKUP_RDC	286
-#define	BOGUS	287
-#define	ASSIGN	288
-#define	TO	289
-#define	COLON	290
-#define	S_E	291
-#define	AT	292
-#define	ADDR	293
-#define	REG_IDX	294
-#define	EQUATE	295
-#define	MEM_IDX	296
-#define	TOK_INTEGER	297
-#define	TOK_FLOAT	298
-#define	FAST	299
-#define	OPERAND	300
-#define	FETCHEXEC	301
-#define	CAST_OP	302
-#define	FLAGMACRO	303
-#define	SUCCESSOR	304
-#define	NUM	305
-#define	FLOATNUM	306
+#define	LNOT	285
+#define	FNEG	286
+#define	THEN	287
+#define	LOOKUP_RDC	288
+#define	BOGUS	289
+#define	ASSIGN	290
+#define	TO	291
+#define	COLON	292
+#define	S_E	293
+#define	AT	294
+#define	ADDR	295
+#define	REG_IDX	296
+#define	EQUATE	297
+#define	MEM_IDX	298
+#define	TOK_INTEGER	299
+#define	TOK_FLOAT	300
+#define	FAST	301
+#define	OPERAND	302
+#define	FETCHEXEC	303
+#define	CAST_OP	304
+#define	FLAGMACRO	305
+#define	SUCCESSOR	306
+#define	NUM	307
+#define	FLOATNUM	308
+#define	FCHS	309
 
 
 #line 143 "/usr/local/lib/bison.h"
@@ -368,7 +371,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/usr/local/lib/bison.h" */
-#line 372 "sslparser.h"
+#line 375 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -396,6 +399,8 @@ static const int ENDIANNESS;
 static const int COVERS;
 static const int INDEX;
 static const int NOT;
+static const int LNOT;
+static const int FNEG;
 static const int THEN;
 static const int LOOKUP_RDC;
 static const int BOGUS;
@@ -418,6 +423,7 @@ static const int FLAGMACRO;
 static const int SUCCESSOR;
 static const int NUM;
 static const int FLOATNUM;
+static const int FCHS;
 
 
 #line 182 "/usr/local/lib/bison.h"
@@ -426,7 +432,7 @@ static const int FLOATNUM;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-#line 430 "sslparser.h"
+#line 436 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -454,28 +460,31 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,COVERS=282
 	,INDEX=283
 	,NOT=284
-	,THEN=285
-	,LOOKUP_RDC=286
-	,BOGUS=287
-	,ASSIGN=288
-	,TO=289
-	,COLON=290
-	,S_E=291
-	,AT=292
-	,ADDR=293
-	,REG_IDX=294
-	,EQUATE=295
-	,MEM_IDX=296
-	,TOK_INTEGER=297
-	,TOK_FLOAT=298
-	,FAST=299
-	,OPERAND=300
-	,FETCHEXEC=301
-	,CAST_OP=302
-	,FLAGMACRO=303
-	,SUCCESSOR=304
-	,NUM=305
-	,FLOATNUM=306
+	,LNOT=285
+	,FNEG=286
+	,THEN=287
+	,LOOKUP_RDC=288
+	,BOGUS=289
+	,ASSIGN=290
+	,TO=291
+	,COLON=292
+	,S_E=293
+	,AT=294
+	,ADDR=295
+	,REG_IDX=296
+	,EQUATE=297
+	,MEM_IDX=298
+	,TOK_INTEGER=299
+	,TOK_FLOAT=300
+	,FAST=301
+	,OPERAND=302
+	,FETCHEXEC=303
+	,CAST_OP=304
+	,FLAGMACRO=305
+	,SUCCESSOR=306
+	,NUM=307
+	,FLOATNUM=308
+	,FCHS=309
 
 
 #line 185 "/usr/local/lib/bison.h"
@@ -532,5 +541,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-#line 536 "sslparser.h"
+#line 545 "sslparser.h"
 #endif

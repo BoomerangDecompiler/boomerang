@@ -171,7 +171,7 @@ protected: \
 %token <str> NAME_CALL NAME_LOOKUP
 
 %token       ENDIANNESS COVERS INDEX
-%token       SHARES NOT THEN LOOKUP_RDC BOGUS
+%token       SHARES NOT LNOT FNEG THEN LOOKUP_RDC BOGUS
 %token       ASSIGN TO COLON S_E AT ADDR REG_IDX EQUATE
 %token       MEM_IDX TOK_INTEGER TOK_FLOAT FAST OPERAND
 %token       FETCHEXEC CAST_OP FLAGMACRO SUCCESSOR
@@ -186,7 +186,7 @@ protected: \
 %left BIT_OP
 %left ARITH_OP
 %left FARITH_OP
-%right NOT
+%right NOT LNOT FCHS
 %left CAST_OP
 %left LOOKUP_RDC
 %left S_E               // Sign extend. Note it effectively has low precedence,
@@ -1003,6 +1003,14 @@ exp:
     
     |   NOT exp {
             $$ = new Unary(opNot, $2);
+        }
+
+    |   LNOT exp {
+            $$ = new Unary(opLNot, $2);
+        }
+
+    |   FNEG exp {
+            $$ = new Unary(opFNeg, $2);
         }
 
     |   exp FARITH_OP exp {

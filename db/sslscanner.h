@@ -404,7 +404,7 @@ class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 321 "sslscanner.l"
+#line 327 "sslscanner.l"
 #endif
 #line 375 "//usr/local/lib/flexskel.h"
 

@@ -156,6 +156,12 @@ public: \
 "~"   {
         return SSLParser::NOT;
       }
+"L~"  {
+        return SSLParser::LNOT;
+      }
+"~f"  {
+        return SSLParser::FNEG;
+      }
 "=>"  {
         return SSLParser::THEN;
       }
