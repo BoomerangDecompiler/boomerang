@@ -370,11 +370,14 @@ Exp *CallingConvention::StdC::PentiumSignature::getParamExp(int n)
 
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n)
 {
+    // MVE: I have no idea what this was supposed to be.
+    // If it was for the actual parameters, then I suggest it
+    // should be as follows:
 	Exp *esp = new Unary(opRegOf, new Const(28));
-        //if (n == 0)
-	//    return new Unary(opMemOf, esp);
+    if (n == 0)
+	    return new Unary(opMemOf, esp);
 	return new Unary(opMemOf, new Binary(opPlus, esp, 
-				new Const((int)((n+1) * 4))));
+				new Const((int)(n * 4))));
 }
 
 Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
