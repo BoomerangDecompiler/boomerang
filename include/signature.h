@@ -115,6 +115,10 @@ public:
     void print(std::ostream &out);
 
     virtual void getInternalStatements(std::list<Statement*> &stmts);
+
+	// Special for Mike: find the location that conventionall holds
+	// the first outgoing (actual) parameter
+	Exp* getFirstArgLoc(BinaryFile* pBF);
 };
 
 #endif

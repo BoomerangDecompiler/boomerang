@@ -167,7 +167,7 @@ bool CallingConvention::Win32Signature::serialize(std::ostream &ouf, int len)
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (int i = 0; i < params.size(); i++) {
+	for (unsigned i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
@@ -311,7 +311,7 @@ bool CallingConvention::StdC::PentiumSignature::serialize(std::ostream &ouf, int
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (int i = 0; i < params.size(); i++) {
+	for (unsigned i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
@@ -437,7 +437,7 @@ bool CallingConvention::StdC::SparcSignature::serialize(std::ostream &ouf, int l
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (int i = 0; i < params.size(); i++) {
+	for (unsigned i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
@@ -539,7 +539,7 @@ bool Signature::serialize(std::ostream &ouf, int len)
 	saveValue(ouf, type, false);
 	saveString(ouf, name);
 
-	for (int i = 0; i < params.size(); i++) {
+	for (unsigned i = 0; i < params.size(); i++) {
 		saveFID(ouf, FID_SIGNATURE_PARAM);
 		std::streampos pos = ouf.tellp();
 		int len = -1;
@@ -665,7 +665,7 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/)
 
 void Signature::setNumParams(int n)
 {
-	if (n < params.size()) {
+	if (n < (int)params.size()) {
 		// truncate
 		params.erase(params.begin() + n, params.end());
 	} else {
@@ -681,7 +681,7 @@ int Signature::getNumParams()
 
 const char *Signature::getParamName(int n)
 {
-	assert(n < params.size());
+	assert(n < (int)params.size());
 	return params[n]->getName();
 }
 
@@ -693,8 +693,8 @@ Exp *Signature::getParamExp(int n)
 Type *Signature::getParamType(int n)
 {
         static IntegerType def;
-	assert(n < params.size() || ellipsis);
-	if (n >= params.size()) return &def;
+	assert(n < (int)params.size() || ellipsis);
+	if (n >= (int)params.size()) return &def;
 	return params[n]->getType();
 }
 
@@ -755,7 +755,7 @@ Signature *Signature::instantiate(const char *str, const char *nam)
 void Signature::print(std::ostream &out)
 {
     out << rettype->getCtype() << " " << name << "(";
-    for (int i = 0; i < params.size(); i++) {
+    for (unsigned i = 0; i < params.size(); i++) {
         out << params[i]->getType()->getCtype() << " " << params[i]->getName();
         if (i != params.size()-1) out << ", ";
     }
@@ -848,4 +848,24 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive, int &
 	return n > (getNumParams() - 1);
 }
 
-
+// Special for Mike: find the location where the first outgoing (actual)
+// parameter is conventionally held
+Exp* Signature::getFirstArgLoc(BinaryFile* pBF) {
+	MACHINE mach = pBF->GetMachine();
+	switch (mach) {
+		case MACHINE_SPARC:
+		{
+			CallingConvention::StdC::SparcSignature sig("");
+			return sig.getArgumentExp(0);
+		}
+		case MACHINE_PENTIUM:
+		{
+			CallingConvention::StdC::PentiumSignature sig("");
+			return sig.getArgumentExp(0);
+		}
+		default:
+			std::cerr << "Signature::getFirstArgLoc: machine not handled\n";
+			assert(0);
+	}
+	return 0;
+}
