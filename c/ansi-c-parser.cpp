@@ -6,7 +6,7 @@
   */
 
 
-#line 1 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 1 "/usr/local/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -80,7 +80,7 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 73 "/usr/local/lib/bison.cc" */
 #line 85 "ansi-c-parser.cpp"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
@@ -181,7 +181,7 @@ typedef union {
 
 #include "ansi-c-scanner.h"
 
-#line 73 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 73 "/usr/local/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_AnsiCParser_BISON 1
 #ifndef YY_AnsiCParser_COMPATIBILITY
@@ -227,36 +227,36 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 117 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 117 "/usr/local/lib/bison.cc" */
 #line 232 "ansi-c-parser.cpp"
 
-#line 117 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 117 "/usr/local/lib/bison.cc"
 /*  YY_AnsiCParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 121 "/usr/local/lib/bison.cc" */
 #line 241 "ansi-c-parser.cpp"
 
-#line 121 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 121 "/usr/local/lib/bison.cc"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 123 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 123 "/usr/local/lib/bison.cc" */
 #line 248 "ansi-c-parser.cpp"
 
-#line 123 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 123 "/usr/local/lib/bison.cc"
 /* YY_AnsiCParser_DEBUG */
 #endif
 
 
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 128 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 128 "/usr/local/lib/bison.cc" */
 #line 258 "ansi-c-parser.cpp"
 
-#line 128 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 128 "/usr/local/lib/bison.cc"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 
@@ -366,7 +366,7 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 236 "/usr/local/lib/bison.cc" */
 #line 371 "ansi-c-parser.cpp"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
@@ -383,68 +383,69 @@ typedef
 #define	SYMBOLREF	270
 #define	CDECL	271
 #define	PASCAL	272
-#define	REGOF	273
-#define	MEMOF	274
-#define	CUSTOM	275
-#define	PREFER	276
-#define	WITHSTACK	277
-#define	PTR_OP	278
-#define	INC_OP	279
-#define	DEC_OP	280
-#define	LEFT_OP	281
-#define	RIGHT_OP	282
-#define	LE_OP	283
-#define	GE_OP	284
-#define	EQ_OP	285
-#define	NE_OP	286
-#define	AND_OP	287
-#define	OR_OP	288
-#define	MUL_ASSIGN	289
-#define	DIV_ASSIGN	290
-#define	MOD_ASSIGN	291
-#define	ADD_ASSIGN	292
-#define	SUB_ASSIGN	293
-#define	LEFT_ASSIGN	294
-#define	RIGHT_ASSIGN	295
-#define	AND_ASSIGN	296
-#define	XOR_ASSIGN	297
-#define	OR_ASSIGN	298
-#define	TYPE_NAME	299
-#define	TYPEDEF	300
-#define	EXTERN	301
-#define	STATIC	302
-#define	AUTO	303
-#define	REGISTER	304
-#define	CHAR	305
-#define	SHORT	306
-#define	INT	307
-#define	LONG	308
-#define	SIGNED	309
-#define	UNSIGNED	310
-#define	FLOAT	311
-#define	DOUBLE	312
-#define	CONST	313
-#define	VOLATILE	314
-#define	VOID	315
-#define	STRUCT	316
-#define	UNION	317
-#define	ENUM	318
-#define	ELLIPSIS	319
-#define	CASE	320
-#define	DEFAULT	321
-#define	IF	322
-#define	ELSE	323
-#define	SWITCH	324
-#define	WHILE	325
-#define	DO	326
-#define	FOR	327
-#define	GOTO	328
-#define	CONTINUE	329
-#define	BREAK	330
-#define	RETURN	331
+#define	THISCALL	273
+#define	REGOF	274
+#define	MEMOF	275
+#define	CUSTOM	276
+#define	PREFER	277
+#define	WITHSTACK	278
+#define	PTR_OP	279
+#define	INC_OP	280
+#define	DEC_OP	281
+#define	LEFT_OP	282
+#define	RIGHT_OP	283
+#define	LE_OP	284
+#define	GE_OP	285
+#define	EQ_OP	286
+#define	NE_OP	287
+#define	AND_OP	288
+#define	OR_OP	289
+#define	MUL_ASSIGN	290
+#define	DIV_ASSIGN	291
+#define	MOD_ASSIGN	292
+#define	ADD_ASSIGN	293
+#define	SUB_ASSIGN	294
+#define	LEFT_ASSIGN	295
+#define	RIGHT_ASSIGN	296
+#define	AND_ASSIGN	297
+#define	XOR_ASSIGN	298
+#define	OR_ASSIGN	299
+#define	TYPE_NAME	300
+#define	TYPEDEF	301
+#define	EXTERN	302
+#define	STATIC	303
+#define	AUTO	304
+#define	REGISTER	305
+#define	CHAR	306
+#define	SHORT	307
+#define	INT	308
+#define	LONG	309
+#define	SIGNED	310
+#define	UNSIGNED	311
+#define	FLOAT	312
+#define	DOUBLE	313
+#define	CONST	314
+#define	VOLATILE	315
+#define	VOID	316
+#define	STRUCT	317
+#define	UNION	318
+#define	ENUM	319
+#define	ELLIPSIS	320
+#define	CASE	321
+#define	DEFAULT	322
+#define	IF	323
+#define	ELSE	324
+#define	SWITCH	325
+#define	WHILE	326
+#define	DO	327
+#define	FOR	328
+#define	GOTO	329
+#define	CONTINUE	330
+#define	BREAK	331
+#define	RETURN	332
 
 
-#line 236 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 236 "/usr/local/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -490,8 +491,8 @@ public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 495 "ansi-c-parser.cpp"
+/* #line 280 "/usr/local/lib/bison.cc" */
+#line 496 "ansi-c-parser.cpp"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -507,6 +508,7 @@ static const int INCOMPLETE;
 static const int SYMBOLREF;
 static const int CDECL;
 static const int PASCAL;
+static const int THISCALL;
 static const int REGOF;
 static const int MEMOF;
 static const int CUSTOM;
@@ -568,13 +570,13 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 280 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 280 "/usr/local/lib/bison.cc"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 283 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 578 "ansi-c-parser.cpp"
+/* #line 283 "/usr/local/lib/bison.cc" */
+#line 580 "ansi-c-parser.cpp"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -590,68 +592,69 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,SYMBOLREF=270
 	,CDECL=271
 	,PASCAL=272
-	,REGOF=273
-	,MEMOF=274
-	,CUSTOM=275
-	,PREFER=276
-	,WITHSTACK=277
-	,PTR_OP=278
-	,INC_OP=279
-	,DEC_OP=280
-	,LEFT_OP=281
-	,RIGHT_OP=282
-	,LE_OP=283
-	,GE_OP=284
-	,EQ_OP=285
-	,NE_OP=286
-	,AND_OP=287
-	,OR_OP=288
-	,MUL_ASSIGN=289
-	,DIV_ASSIGN=290
-	,MOD_ASSIGN=291
-	,ADD_ASSIGN=292
-	,SUB_ASSIGN=293
-	,LEFT_ASSIGN=294
-	,RIGHT_ASSIGN=295
-	,AND_ASSIGN=296
-	,XOR_ASSIGN=297
-	,OR_ASSIGN=298
-	,TYPE_NAME=299
-	,TYPEDEF=300
-	,EXTERN=301
-	,STATIC=302
-	,AUTO=303
-	,REGISTER=304
-	,CHAR=305
-	,SHORT=306
-	,INT=307
-	,LONG=308
-	,SIGNED=309
-	,UNSIGNED=310
-	,FLOAT=311
-	,DOUBLE=312
-	,CONST=313
-	,VOLATILE=314
-	,VOID=315
-	,STRUCT=316
-	,UNION=317
-	,ENUM=318
-	,ELLIPSIS=319
-	,CASE=320
-	,DEFAULT=321
-	,IF=322
-	,ELSE=323
-	,SWITCH=324
-	,WHILE=325
-	,DO=326
-	,FOR=327
-	,GOTO=328
-	,CONTINUE=329
-	,BREAK=330
-	,RETURN=331
+	,THISCALL=273
+	,REGOF=274
+	,MEMOF=275
+	,CUSTOM=276
+	,PREFER=277
+	,WITHSTACK=278
+	,PTR_OP=279
+	,INC_OP=280
+	,DEC_OP=281
+	,LEFT_OP=282
+	,RIGHT_OP=283
+	,LE_OP=284
+	,GE_OP=285
+	,EQ_OP=286
+	,NE_OP=287
+	,AND_OP=288
+	,OR_OP=289
+	,MUL_ASSIGN=290
+	,DIV_ASSIGN=291
+	,MOD_ASSIGN=292
+	,ADD_ASSIGN=293
+	,SUB_ASSIGN=294
+	,LEFT_ASSIGN=295
+	,RIGHT_ASSIGN=296
+	,AND_ASSIGN=297
+	,XOR_ASSIGN=298
+	,OR_ASSIGN=299
+	,TYPE_NAME=300
+	,TYPEDEF=301
+	,EXTERN=302
+	,STATIC=303
+	,AUTO=304
+	,REGISTER=305
+	,CHAR=306
+	,SHORT=307
+	,INT=308
+	,LONG=309
+	,SIGNED=310
+	,UNSIGNED=311
+	,FLOAT=312
+	,DOUBLE=313
+	,CONST=314
+	,VOLATILE=315
+	,VOID=316
+	,STRUCT=317
+	,UNION=318
+	,ENUM=319
+	,ELLIPSIS=320
+	,CASE=321
+	,DEFAULT=322
+	,IF=323
+	,ELSE=324
+	,SWITCH=325
+	,WHILE=326
+	,DO=327
+	,FOR=328
+	,GOTO=329
+	,CONTINUE=330
+	,BREAK=331
+	,RETURN=332
 
 
-#line 283 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 283 "/usr/local/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -684,8 +687,8 @@ public:
 /* other declare folow */
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 689 "ansi-c-parser.cpp"
+/* #line 314 "/usr/local/lib/bison.cc" */
+#line 692 "ansi-c-parser.cpp"
 const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
 const int YY_AnsiCParser_CLASS::PREDEFINE=259;
 const int YY_AnsiCParser_CLASS::PREIF=260;
@@ -701,68 +704,69 @@ const int YY_AnsiCParser_CLASS::INCOMPLETE=269;
 const int YY_AnsiCParser_CLASS::SYMBOLREF=270;
 const int YY_AnsiCParser_CLASS::CDECL=271;
 const int YY_AnsiCParser_CLASS::PASCAL=272;
-const int YY_AnsiCParser_CLASS::REGOF=273;
-const int YY_AnsiCParser_CLASS::MEMOF=274;
-const int YY_AnsiCParser_CLASS::CUSTOM=275;
-const int YY_AnsiCParser_CLASS::PREFER=276;
-const int YY_AnsiCParser_CLASS::WITHSTACK=277;
-const int YY_AnsiCParser_CLASS::PTR_OP=278;
-const int YY_AnsiCParser_CLASS::INC_OP=279;
-const int YY_AnsiCParser_CLASS::DEC_OP=280;
-const int YY_AnsiCParser_CLASS::LEFT_OP=281;
-const int YY_AnsiCParser_CLASS::RIGHT_OP=282;
-const int YY_AnsiCParser_CLASS::LE_OP=283;
-const int YY_AnsiCParser_CLASS::GE_OP=284;
-const int YY_AnsiCParser_CLASS::EQ_OP=285;
-const int YY_AnsiCParser_CLASS::NE_OP=286;
-const int YY_AnsiCParser_CLASS::AND_OP=287;
-const int YY_AnsiCParser_CLASS::OR_OP=288;
-const int YY_AnsiCParser_CLASS::MUL_ASSIGN=289;
-const int YY_AnsiCParser_CLASS::DIV_ASSIGN=290;
-const int YY_AnsiCParser_CLASS::MOD_ASSIGN=291;
-const int YY_AnsiCParser_CLASS::ADD_ASSIGN=292;
-const int YY_AnsiCParser_CLASS::SUB_ASSIGN=293;
-const int YY_AnsiCParser_CLASS::LEFT_ASSIGN=294;
-const int YY_AnsiCParser_CLASS::RIGHT_ASSIGN=295;
-const int YY_AnsiCParser_CLASS::AND_ASSIGN=296;
-const int YY_AnsiCParser_CLASS::XOR_ASSIGN=297;
-const int YY_AnsiCParser_CLASS::OR_ASSIGN=298;
-const int YY_AnsiCParser_CLASS::TYPE_NAME=299;
-const int YY_AnsiCParser_CLASS::TYPEDEF=300;
-const int YY_AnsiCParser_CLASS::EXTERN=301;
-const int YY_AnsiCParser_CLASS::STATIC=302;
-const int YY_AnsiCParser_CLASS::AUTO=303;
-const int YY_AnsiCParser_CLASS::REGISTER=304;
-const int YY_AnsiCParser_CLASS::CHAR=305;
-const int YY_AnsiCParser_CLASS::SHORT=306;
-const int YY_AnsiCParser_CLASS::INT=307;
-const int YY_AnsiCParser_CLASS::LONG=308;
-const int YY_AnsiCParser_CLASS::SIGNED=309;
-const int YY_AnsiCParser_CLASS::UNSIGNED=310;
-const int YY_AnsiCParser_CLASS::FLOAT=311;
-const int YY_AnsiCParser_CLASS::DOUBLE=312;
-const int YY_AnsiCParser_CLASS::CONST=313;
-const int YY_AnsiCParser_CLASS::VOLATILE=314;
-const int YY_AnsiCParser_CLASS::VOID=315;
-const int YY_AnsiCParser_CLASS::STRUCT=316;
-const int YY_AnsiCParser_CLASS::UNION=317;
-const int YY_AnsiCParser_CLASS::ENUM=318;
-const int YY_AnsiCParser_CLASS::ELLIPSIS=319;
-const int YY_AnsiCParser_CLASS::CASE=320;
-const int YY_AnsiCParser_CLASS::DEFAULT=321;
-const int YY_AnsiCParser_CLASS::IF=322;
-const int YY_AnsiCParser_CLASS::ELSE=323;
-const int YY_AnsiCParser_CLASS::SWITCH=324;
-const int YY_AnsiCParser_CLASS::WHILE=325;
-const int YY_AnsiCParser_CLASS::DO=326;
-const int YY_AnsiCParser_CLASS::FOR=327;
-const int YY_AnsiCParser_CLASS::GOTO=328;
-const int YY_AnsiCParser_CLASS::CONTINUE=329;
-const int YY_AnsiCParser_CLASS::BREAK=330;
-const int YY_AnsiCParser_CLASS::RETURN=331;
+const int YY_AnsiCParser_CLASS::THISCALL=273;
+const int YY_AnsiCParser_CLASS::REGOF=274;
+const int YY_AnsiCParser_CLASS::MEMOF=275;
+const int YY_AnsiCParser_CLASS::CUSTOM=276;
+const int YY_AnsiCParser_CLASS::PREFER=277;
+const int YY_AnsiCParser_CLASS::WITHSTACK=278;
+const int YY_AnsiCParser_CLASS::PTR_OP=279;
+const int YY_AnsiCParser_CLASS::INC_OP=280;
+const int YY_AnsiCParser_CLASS::DEC_OP=281;
+const int YY_AnsiCParser_CLASS::LEFT_OP=282;
+const int YY_AnsiCParser_CLASS::RIGHT_OP=283;
+const int YY_AnsiCParser_CLASS::LE_OP=284;
+const int YY_AnsiCParser_CLASS::GE_OP=285;
+const int YY_AnsiCParser_CLASS::EQ_OP=286;
+const int YY_AnsiCParser_CLASS::NE_OP=287;
+const int YY_AnsiCParser_CLASS::AND_OP=288;
+const int YY_AnsiCParser_CLASS::OR_OP=289;
+const int YY_AnsiCParser_CLASS::MUL_ASSIGN=290;
+const int YY_AnsiCParser_CLASS::DIV_ASSIGN=291;
+const int YY_AnsiCParser_CLASS::MOD_ASSIGN=292;
+const int YY_AnsiCParser_CLASS::ADD_ASSIGN=293;
+const int YY_AnsiCParser_CLASS::SUB_ASSIGN=294;
+const int YY_AnsiCParser_CLASS::LEFT_ASSIGN=295;
+const int YY_AnsiCParser_CLASS::RIGHT_ASSIGN=296;
+const int YY_AnsiCParser_CLASS::AND_ASSIGN=297;
+const int YY_AnsiCParser_CLASS::XOR_ASSIGN=298;
+const int YY_AnsiCParser_CLASS::OR_ASSIGN=299;
+const int YY_AnsiCParser_CLASS::TYPE_NAME=300;
+const int YY_AnsiCParser_CLASS::TYPEDEF=301;
+const int YY_AnsiCParser_CLASS::EXTERN=302;
+const int YY_AnsiCParser_CLASS::STATIC=303;
+const int YY_AnsiCParser_CLASS::AUTO=304;
+const int YY_AnsiCParser_CLASS::REGISTER=305;
+const int YY_AnsiCParser_CLASS::CHAR=306;
+const int YY_AnsiCParser_CLASS::SHORT=307;
+const int YY_AnsiCParser_CLASS::INT=308;
+const int YY_AnsiCParser_CLASS::LONG=309;
+const int YY_AnsiCParser_CLASS::SIGNED=310;
+const int YY_AnsiCParser_CLASS::UNSIGNED=311;
+const int YY_AnsiCParser_CLASS::FLOAT=312;
+const int YY_AnsiCParser_CLASS::DOUBLE=313;
+const int YY_AnsiCParser_CLASS::CONST=314;
+const int YY_AnsiCParser_CLASS::VOLATILE=315;
+const int YY_AnsiCParser_CLASS::VOID=316;
+const int YY_AnsiCParser_CLASS::STRUCT=317;
+const int YY_AnsiCParser_CLASS::UNION=318;
+const int YY_AnsiCParser_CLASS::ENUM=319;
+const int YY_AnsiCParser_CLASS::ELLIPSIS=320;
+const int YY_AnsiCParser_CLASS::CASE=321;
+const int YY_AnsiCParser_CLASS::DEFAULT=322;
+const int YY_AnsiCParser_CLASS::IF=323;
+const int YY_AnsiCParser_CLASS::ELSE=324;
+const int YY_AnsiCParser_CLASS::SWITCH=325;
+const int YY_AnsiCParser_CLASS::WHILE=326;
+const int YY_AnsiCParser_CLASS::DO=327;
+const int YY_AnsiCParser_CLASS::FOR=328;
+const int YY_AnsiCParser_CLASS::GOTO=329;
+const int YY_AnsiCParser_CLASS::CONTINUE=330;
+const int YY_AnsiCParser_CLASS::BREAK=331;
+const int YY_AnsiCParser_CLASS::RETURN=332;
 
 
-#line 314 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 314 "/usr/local/lib/bison.cc"
  /* const YY_AnsiCParser_CLASS::token */
 #endif
 /*apres const  */
@@ -775,30 +779,30 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 780 "ansi-c-parser.cpp"
+/* #line 325 "/usr/local/lib/bison.cc" */
+#line 784 "ansi-c-parser.cpp"
 
 
-#define	YYFINAL		149
+#define	YYFINAL		150
 #define	YYFLAG		-32768
-#define	YYNTBASE	89
+#define	YYNTBASE	90
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 331 ? yytranslate[x] : 109)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 332 ? yytranslate[x] : 110)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,    82,
-    84,    83,    80,    77,    81,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,    78,    85,     2,
+     2,     2,     2,     2,     2,     2,     2,     2,     2,    83,
+    85,    84,    81,    78,    82,     2,     2,     2,     2,     2,
+     2,     2,     2,     2,     2,     2,     2,    79,    86,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-    88,     2,    79,     2,     2,     2,     2,     2,     2,     2,
+    89,     2,    80,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    86,     2,    87,     2,     2,     2,     2,     2,
+     2,     2,    87,     2,    88,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -819,71 +823,71 @@ static const char yytranslate[] = {     0,
     46,    47,    48,    49,    50,    51,    52,    53,    54,    55,
     56,    57,    58,    59,    60,    61,    62,    63,    64,    65,
     66,    67,    68,    69,    70,    71,    72,    73,    74,    75,
-    76
+    76,    77
 };
 
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyprhs[] = {     0,
      0,     2,     5,     6,     8,    10,    12,    14,    16,    18,
-    22,    24,    25,    29,    31,    33,    34,    38,    40,    44,
-    48,    52,    56,    58,    60,    69,    71,    75,    86,    93,
-   100,   103,   111,   116,   122,   129,   134,   138,   143,   146,
-   149,   150,   153,   157,   158,   162,   165,   170,   174,   177,
-   181,   185,   188,   190,   192,   194,   197,   200,   203,   205,
-   208,   212,   214,   216,   218,   221,   226,   230,   232,   235,
-   238
+    20,    24,    26,    27,    31,    33,    35,    36,    40,    42,
+    46,    50,    54,    58,    60,    62,    71,    73,    77,    88,
+    95,   102,   105,   113,   118,   124,   131,   136,   140,   145,
+   148,   151,   152,   155,   159,   160,   164,   167,   172,   176,
+   179,   183,   187,   190,   192,   194,   196,   199,   202,   205,
+   207,   210,   214,   216,   218,   220,   223,   228,   232,   234,
+   237,   240
 };
 
-static const short yyrhs[] = {    90,
-     0,    91,    90,     0,     0,    98,     0,    99,     0,   102,
-     0,   101,     0,    16,     0,    17,     0,    11,    77,    93,
-     0,    11,     0,     0,    95,    77,    94,     0,    95,     0,
-    60,     0,     0,    96,    78,    97,     0,    97,     0,    18,
-    11,    79,     0,    19,    96,    79,     0,    96,    80,    96,
-     0,    96,    81,    96,     0,    11,     0,   106,     0,   108,
-    82,    83,     9,    84,    82,    94,    84,     0,    64,     0,
-    45,   106,    85,     0,    45,   108,    82,    83,     9,    84,
-    82,    94,    84,    85,     0,    45,   106,    82,    94,    84,
-    85,     0,    61,     9,    86,   107,    87,    85,     0,   100,
-    85,     0,   100,    21,   106,    82,    93,    84,    85,     0,
-   106,    82,    94,    84,     0,    92,   106,    82,    94,    84,
-     0,    20,   104,   106,    82,    94,    84,     0,    15,    11,
-     9,    85,     0,    11,   106,    85,     0,    11,   103,   100,
-    85,     0,    13,   103,     0,    14,   103,     0,     0,    96,
-    78,     0,    22,    11,    84,     0,     0,    88,    11,    79,
-     0,    88,    79,     0,   105,    88,    11,    79,     0,   105,
-    88,    79,     0,   108,     9,     0,   108,     9,   105,     0,
-   106,    85,   107,     0,   106,    85,     0,    50,     0,    51,
-     0,    52,     0,    55,    50,     0,    55,    51,     0,    55,
-    52,     0,    53,     0,    53,    53,     0,    55,    53,    53,
-     0,    56,     0,    57,     0,    60,     0,   108,    83,     0,
-   108,    88,    11,    79,     0,   108,    88,    79,     0,     9,
-     0,    58,   108,     0,    61,     9,     0,    61,    86,   107,
-    87,     0
+static const short yyrhs[] = {    91,
+     0,    92,    91,     0,     0,    99,     0,   100,     0,   103,
+     0,   102,     0,    16,     0,    17,     0,    18,     0,    11,
+    78,    94,     0,    11,     0,     0,    96,    78,    95,     0,
+    96,     0,    61,     0,     0,    97,    79,    98,     0,    98,
+     0,    19,    11,    80,     0,    20,    97,    80,     0,    97,
+    81,    97,     0,    97,    82,    97,     0,    11,     0,   107,
+     0,   109,    83,    84,     9,    85,    83,    95,    85,     0,
+    65,     0,    46,   107,    86,     0,    46,   109,    83,    84,
+     9,    85,    83,    95,    85,    86,     0,    46,   107,    83,
+    95,    85,    86,     0,    62,     9,    87,   108,    88,    86,
+     0,   101,    86,     0,   101,    22,   107,    83,    94,    85,
+    86,     0,   107,    83,    95,    85,     0,    93,   107,    83,
+    95,    85,     0,    21,   105,   107,    83,    95,    85,     0,
+    15,    11,     9,    86,     0,    11,   107,    86,     0,    11,
+   104,   101,    86,     0,    13,   104,     0,    14,   104,     0,
+     0,    97,    79,     0,    23,    11,    85,     0,     0,    89,
+    11,    80,     0,    89,    80,     0,   106,    89,    11,    80,
+     0,   106,    89,    80,     0,   109,     9,     0,   109,     9,
+   106,     0,   107,    86,   108,     0,   107,    86,     0,    51,
+     0,    52,     0,    53,     0,    56,    51,     0,    56,    52,
+     0,    56,    53,     0,    54,     0,    54,    54,     0,    56,
+    54,    54,     0,    57,     0,    58,     0,    61,     0,   109,
+    84,     0,   109,    89,    11,    80,     0,   109,    89,    80,
+     0,     9,     0,    59,   109,     0,    62,     9,     0,    62,
+    87,   108,    88,     0
 };
 
 #endif
 
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyrline[] = { 0,
-   157,   161,   163,   167,   169,   171,   173,   177,   180,   184,
-   188,   192,   197,   201,   205,   207,   211,   215,   220,   223,
-   226,   229,   232,   237,   253,   267,   271,   273,   287,   301,
-   313,   317,   329,   343,   358,   377,   383,   389,   397,   401,
-   405,   409,   412,   415,   419,   422,   425,   428,   433,   438,
-   446,   450,   456,   458,   460,   462,   464,   466,   468,   470,
-   472,   474,   476,   478,   480,   482,   486,   490,   495,   497,
-   503
+   157,   161,   163,   167,   169,   171,   173,   177,   180,   182,
+   186,   190,   194,   199,   203,   207,   209,   213,   217,   222,
+   225,   228,   231,   234,   239,   255,   269,   273,   275,   289,
+   303,   315,   319,   331,   345,   360,   379,   385,   391,   399,
+   403,   407,   411,   414,   417,   421,   424,   427,   430,   435,
+   440,   448,   452,   458,   460,   462,   464,   466,   468,   470,
+   472,   474,   476,   478,   480,   482,   484,   488,   492,   497,
+   499,   505
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
 "PREDEFINE","PREIF","PREIFDEF","PREENDIF","PRELINE","IDENTIFIER","STRING_LITERAL",
-"CONSTANT","SIZEOF","NODECODE","INCOMPLETE","SYMBOLREF","CDECL","PASCAL","REGOF",
-"MEMOF","CUSTOM","PREFER","WITHSTACK","PTR_OP","INC_OP","DEC_OP","LEFT_OP","RIGHT_OP",
-"LE_OP","GE_OP","EQ_OP","NE_OP","AND_OP","OR_OP","MUL_ASSIGN","DIV_ASSIGN","MOD_ASSIGN",
-"ADD_ASSIGN","SUB_ASSIGN","LEFT_ASSIGN","RIGHT_ASSIGN","AND_ASSIGN","XOR_ASSIGN",
-"OR_ASSIGN","TYPE_NAME","TYPEDEF","EXTERN","STATIC","AUTO","REGISTER","CHAR",
-"SHORT","INT","LONG","SIGNED","UNSIGNED","FLOAT","DOUBLE","CONST","VOLATILE",
+"CONSTANT","SIZEOF","NODECODE","INCOMPLETE","SYMBOLREF","CDECL","PASCAL","THISCALL",
+"REGOF","MEMOF","CUSTOM","PREFER","WITHSTACK","PTR_OP","INC_OP","DEC_OP","LEFT_OP",
+"RIGHT_OP","LE_OP","GE_OP","EQ_OP","NE_OP","AND_OP","OR_OP","MUL_ASSIGN","DIV_ASSIGN",
+"MOD_ASSIGN","ADD_ASSIGN","SUB_ASSIGN","LEFT_ASSIGN","RIGHT_ASSIGN","AND_ASSIGN",
+"XOR_ASSIGN","OR_ASSIGN","TYPE_NAME","TYPEDEF","EXTERN","STATIC","AUTO","REGISTER",
+"CHAR","SHORT","INT","LONG","SIGNED","UNSIGNED","FLOAT","DOUBLE","CONST","VOLATILE",
 "VOID","STRUCT","UNION","ENUM","ELLIPSIS","CASE","DEFAULT","IF","ELSE","SWITCH",
 "WHILE","DO","FOR","GOTO","CONTINUE","BREAK","RETURN","','","':'","']'","'+'",
 "'-'","'('","'*'","')'","';'","'{'","'}'","'['","translation_unit","decls","decl",
@@ -894,132 +898,132 @@ static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
 #endif
 
 static const short yyr1[] = {     0,
-    89,    90,    90,    91,    91,    91,    91,    92,    92,    93,
-    93,    93,    94,    94,    94,    94,    95,    95,    96,    96,
-    96,    96,    96,    97,    97,    97,    98,    98,    98,    98,
-    99,    99,   100,   100,   100,   101,   102,   102,   103,   103,
-   103,   104,   104,   104,   105,   105,   105,   105,   106,   106,
-   107,   107,   108,   108,   108,   108,   108,   108,   108,   108,
-   108,   108,   108,   108,   108,   108,   108,   108,   108,   108,
-   108
+    90,    91,    91,    92,    92,    92,    92,    93,    93,    93,
+    94,    94,    94,    95,    95,    95,    95,    96,    96,    97,
+    97,    97,    97,    97,    98,    98,    98,    99,    99,    99,
+    99,   100,   100,   101,   101,   101,   102,   103,   103,   104,
+   104,   104,   105,   105,   105,   106,   106,   106,   106,   107,
+   107,   108,   108,   109,   109,   109,   109,   109,   109,   109,
+   109,   109,   109,   109,   109,   109,   109,   109,   109,   109,
+   109,   109
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     0,     1,     1,     1,     1,     1,     1,     3,
-     1,     0,     3,     1,     1,     0,     3,     1,     3,     3,
-     3,     3,     1,     1,     8,     1,     3,    10,     6,     6,
-     2,     7,     4,     5,     6,     4,     3,     4,     2,     2,
-     0,     2,     3,     0,     3,     2,     4,     3,     2,     3,
-     3,     2,     1,     1,     1,     2,     2,     2,     1,     2,
-     3,     1,     1,     1,     2,     4,     3,     1,     2,     2,
-     4
+     1,     2,     0,     1,     1,     1,     1,     1,     1,     1,
+     3,     1,     0,     3,     1,     1,     0,     3,     1,     3,
+     3,     3,     3,     1,     1,     8,     1,     3,    10,     6,
+     6,     2,     7,     4,     5,     6,     4,     3,     4,     2,
+     2,     0,     2,     3,     0,     3,     2,     4,     3,     2,
+     3,     3,     2,     1,     1,     1,     2,     2,     2,     1,
+     2,     3,     1,     1,     1,     2,     4,     3,     1,     2,
+     2,     4
 };
 
 static const short yydefact[] = {     3,
-    68,    41,     0,     8,     9,    44,     0,    53,    54,    55,
-    59,     0,    62,    63,     0,    64,     0,     1,     3,     0,
-     4,     5,     0,     7,     6,     0,     0,    41,    41,     0,
-     0,     0,     0,    23,     0,     0,     0,     0,     0,     0,
-     0,    60,    56,    57,    58,     0,    69,    70,     0,     2,
-     0,     0,    31,    16,    49,    65,     0,    39,    40,    70,
-     0,    37,     0,     0,     0,     0,    42,     0,     0,     0,
-    16,    27,     0,    61,     0,     0,     0,    16,     0,    64,
-    26,     0,    14,     0,    18,    24,     0,     0,    50,     0,
-    67,    38,    36,    19,    20,    43,    21,    22,    16,     0,
-     0,     0,    52,    71,     0,    12,    33,    16,     0,     0,
-     0,    46,     0,    66,     0,     0,     0,     0,    51,    34,
-    11,     0,    13,    17,     0,    45,     0,    48,    35,    29,
-     0,    30,    12,     0,     0,    47,    16,    10,    32,     0,
-     0,    16,     0,     0,    28,    25,     0,     0,     0
+    69,    42,     0,     8,     9,    10,    45,     0,    54,    55,
+    56,    60,     0,    63,    64,     0,    65,     0,     1,     3,
+     0,     4,     5,     0,     7,     6,     0,     0,    42,    42,
+     0,     0,     0,     0,    24,     0,     0,     0,     0,     0,
+     0,     0,    61,    57,    58,    59,     0,    70,    71,     0,
+     2,     0,     0,    32,    17,    50,    66,     0,    40,    41,
+    71,     0,    38,     0,     0,     0,     0,    43,     0,     0,
+     0,    17,    28,     0,    62,     0,     0,     0,    17,     0,
+    65,    27,     0,    15,     0,    19,    25,     0,     0,    51,
+     0,    68,    39,    37,    20,    21,    44,    22,    23,    17,
+     0,     0,     0,    53,    72,     0,    13,    34,    17,     0,
+     0,     0,    47,     0,    67,     0,     0,     0,     0,    52,
+    35,    12,     0,    14,    18,     0,    46,     0,    49,    36,
+    30,     0,    31,    13,     0,     0,    48,    17,    11,    33,
+     0,     0,    17,     0,     0,    29,    26,     0,     0,     0
 };
 
-static const short yydefgoto[] = {   147,
-    18,    19,    20,   122,    82,    83,    84,    85,    21,    22,
-    23,    24,    25,    31,    39,    89,    86,    77,    27
+static const short yydefgoto[] = {   148,
+    19,    20,    21,   123,    83,    84,    85,    86,    22,    23,
+    24,    25,    26,    32,    40,    90,    87,    78,    28
 };
 
-static const short yypact[] = {   123,
--32768,   157,     8,-32768,-32768,     7,   173,-32768,-32768,-32768,
-   -41,     5,-32768,-32768,   173,-32768,    -3,-32768,   123,   173,
--32768,-32768,   -18,-32768,-32768,   -55,    -2,    36,    36,     1,
-   145,   -53,    25,-32768,    33,    19,    35,   -65,   173,   -37,
-    -8,-32768,-32768,-32768,-32768,   -17,   -60,   -33,   173,-32768,
-   -16,   173,-32768,    95,   -15,-32768,     3,-32768,-32768,-32768,
-   -13,-32768,     4,    12,   -11,    10,-32768,    19,    19,    11,
-    95,-32768,    13,-32768,   173,    14,    16,    95,    18,    23,
--32768,    24,    32,   -38,-32768,-32768,    -4,     6,    22,    37,
--32768,-32768,-32768,-32768,-32768,-32768,   -21,   -21,    95,    27,
-   103,    28,   173,-32768,    42,   110,-32768,    95,    67,    46,
-    54,-32768,     9,-32768,    52,    56,    53,    57,-32768,-32768,
-    72,    60,-32768,-32768,   148,-32768,    79,-32768,-32768,-32768,
-    78,-32768,   110,    82,    80,-32768,    95,-32768,-32768,    81,
-    85,    95,    87,    93,-32768,-32768,   185,   186,-32768
+static const short yypact[] = {   111,
+-32768,   162,     4,-32768,-32768,-32768,     7,   174,-32768,-32768,
+-32768,   -41,   -17,-32768,-32768,   174,-32768,    -4,-32768,   111,
+   174,-32768,-32768,   -20,-32768,-32768,   -60,    -2,    25,    25,
+     2,   138,   -54,    35,-32768,    49,     9,    52,   -36,   174,
+   -24,    -5,-32768,-32768,-32768,-32768,    16,   -72,     6,   174,
+-32768,    -9,   174,-32768,    56,    10,-32768,     5,-32768,-32768,
+-32768,    11,-32768,    12,    20,   -32,    18,-32768,     9,     9,
+    21,    56,-32768,    22,-32768,   174,    30,    23,    56,    36,
+    38,-32768,    39,    13,   -26,-32768,-32768,    -3,     8,    42,
+    45,-32768,-32768,-32768,-32768,-32768,-32768,   -13,   -13,    56,
+    48,   125,    54,   174,-32768,    51,   126,-32768,    56,    87,
+    66,    71,-32768,    14,-32768,    68,    72,    75,    80,-32768,
+-32768,    83,    89,-32768,-32768,   168,-32768,    98,-32768,-32768,
+-32768,    96,-32768,   126,    94,    97,-32768,    56,-32768,-32768,
+   101,   100,    56,    95,   102,-32768,-32768,   186,   188,-32768
 };
 
 static const short yypgoto[] = {-32768,
-   168,-32768,-32768,    55,   -47,-32768,    29,    83,-32768,-32768,
-   158,-32768,-32768,    34,-32768,-32768,     2,   -64,    -7
+   173,-32768,-32768,    64,   -48,-32768,     3,    91,-32768,-32768,
+   170,-32768,-32768,    28,-32768,-32768,     1,   -62,    -8
 };
 
 
-#define	YYLAST		234
+#define	YYLAST		236
 
 
-static const short yytable[] = {    41,
-    55,    26,    52,    32,    55,    48,    55,    47,    40,    60,
-   102,    42,    67,    90,    68,    69,   111,    34,    33,   127,
-    26,    51,    56,   100,    35,    36,    54,    57,    37,    34,
-   105,    62,    26,    63,    38,    74,    35,    36,   119,   109,
-    70,    68,    69,    64,    71,    66,    87,    72,    28,    29,
-    76,   115,    75,    79,    43,    44,    45,    46,    68,    69,
-   123,    58,    59,    87,    65,    78,    53,    95,    68,    69,
-    87,    92,    88,    73,    56,     1,    76,   110,    56,    57,
-    56,    91,    49,    57,   112,    57,    49,   128,    93,   141,
-    94,    87,    99,    96,   144,   101,    97,    98,   103,   106,
-    87,    87,   104,     1,    76,    34,   -15,   107,   108,   113,
-   116,   117,    35,    36,   118,   114,     8,     9,    10,    11,
-   121,    12,    13,    14,    15,   120,    16,    30,   125,    87,
-    81,     1,   126,     2,    87,   129,   131,     3,     4,     5,
-   130,   132,     6,   134,     8,     9,    10,    11,   133,    12,
-    13,    14,    15,     1,    80,    30,   135,   136,    81,   137,
-     4,     5,   142,   140,     6,     1,   139,     7,   143,    28,
-    29,   145,     8,     9,    10,    11,   146,    12,    13,    14,
-    15,     1,    16,    17,   148,   149,    50,   138,    61,     0,
-     0,   124,     0,     0,     8,     9,    10,    11,     0,    12,
-    13,    14,    15,     0,    16,    30,     8,     9,    10,    11,
-     0,    12,    13,    14,    15,     0,    16,    30,     0,     0,
-     0,     0,     8,     9,    10,    11,     0,    12,    13,    14,
-    15,     0,    16,    30
+static const short yytable[] = {    42,
+    27,    53,    33,    56,    49,    56,    56,    48,    41,    39,
+    61,    57,    43,   103,    34,    91,    58,    35,   112,    35,
+    27,    52,    55,   101,   128,    36,    37,    36,    37,    38,
+   106,    63,    27,    44,    45,    46,    47,    29,    30,    66,
+    71,   120,    68,    64,    69,    70,    88,    96,    69,    70,
+    77,   116,   110,    80,    69,    70,    59,    60,    72,    65,
+   124,    73,    67,    88,     1,    54,    35,    69,    70,    75,
+    88,    98,    99,    79,    36,    37,    77,    74,    57,   111,
+    57,    57,    50,    58,    92,    58,    58,   113,    50,   142,
+   109,    88,    76,   129,   145,     1,    93,    94,    89,    95,
+    88,    88,    97,   100,    77,   102,     9,    10,    11,    12,
+   105,    13,    14,    15,    16,   104,    81,    31,   107,     1,
+    82,     2,   -16,   108,   115,     3,     4,     5,     6,    88,
+   114,     7,   117,   118,    88,   121,   122,     9,    10,    11,
+    12,   119,    13,    14,    15,    16,     1,    17,    31,   126,
+   127,    82,   130,     4,     5,     6,     8,   131,     7,   132,
+   134,     9,    10,    11,    12,   133,    13,    14,    15,    16,
+     1,    17,    18,   135,    29,    30,   136,   137,   138,   140,
+   146,   141,     1,   143,   144,   149,   147,   150,     9,    10,
+    11,    12,    51,    13,    14,    15,    16,   139,    17,    31,
+   125,    62,     0,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,     9,    10,    11,    12,     0,    13,    14,    15,
+    16,     0,    17,    31,     9,    10,    11,    12,     0,    13,
+    14,    15,    16,     0,    17,    31
 };
 
-static const short yycheck[] = {     7,
-     9,     0,    21,     2,     9,     9,     9,    15,     7,     9,
-    75,    53,    78,    11,    80,    81,    11,    11,    11,    11,
-    19,    20,    83,    71,    18,    19,    82,    88,    22,    11,
-    78,    85,    31,     9,     6,    53,    18,    19,   103,    78,
-    39,    80,    81,    11,    82,    11,    54,    85,    13,    14,
-    49,    99,    86,    52,    50,    51,    52,    53,    80,    81,
-   108,    28,    29,    71,    36,    82,    85,    79,    80,    81,
-    78,    85,    88,    82,    83,     9,    75,    82,    83,    88,
-    83,    79,    86,    88,    79,    88,    86,    79,    85,   137,
-    79,    99,    82,    84,   142,    83,    68,    69,    85,    82,
-   108,   109,    87,     9,   103,    11,    84,    84,    77,    88,
-    84,     9,    18,    19,    87,    79,    50,    51,    52,    53,
-    11,    55,    56,    57,    58,    84,    60,    61,    83,   137,
-    64,     9,    79,    11,   142,    84,    84,    15,    16,    17,
-    85,    85,    20,    84,    50,    51,    52,    53,    77,    55,
-    56,    57,    58,     9,    60,    61,     9,    79,    64,    82,
-    16,    17,    82,    84,    20,     9,    85,    45,    84,    13,
-    14,    85,    50,    51,    52,    53,    84,    55,    56,    57,
-    58,     9,    60,    61,     0,     0,    19,   133,    31,    -1,
-    -1,   109,    -1,    -1,    50,    51,    52,    53,    -1,    55,
-    56,    57,    58,    -1,    60,    61,    50,    51,    52,    53,
-    -1,    55,    56,    57,    58,    -1,    60,    61,    -1,    -1,
-    -1,    -1,    50,    51,    52,    53,    -1,    55,    56,    57,
-    58,    -1,    60,    61
+static const short yycheck[] = {     8,
+     0,    22,     2,     9,     9,     9,     9,    16,     8,     7,
+     9,    84,    54,    76,    11,    11,    89,    11,    11,    11,
+    20,    21,    83,    72,    11,    19,    20,    19,    20,    23,
+    79,    86,    32,    51,    52,    53,    54,    13,    14,    37,
+    40,   104,    79,     9,    81,    82,    55,    80,    81,    82,
+    50,   100,    79,    53,    81,    82,    29,    30,    83,    11,
+   109,    86,    11,    72,     9,    86,    11,    81,    82,    54,
+    79,    69,    70,    83,    19,    20,    76,    83,    84,    83,
+    84,    84,    87,    89,    80,    89,    89,    80,    87,   138,
+    78,   100,    87,    80,   143,     9,    86,    86,    89,    80,
+   109,   110,    85,    83,   104,    84,    51,    52,    53,    54,
+    88,    56,    57,    58,    59,    86,    61,    62,    83,     9,
+    65,    11,    85,    85,    80,    15,    16,    17,    18,   138,
+    89,    21,    85,     9,   143,    85,    11,    51,    52,    53,
+    54,    88,    56,    57,    58,    59,     9,    61,    62,    84,
+    80,    65,    85,    16,    17,    18,    46,    86,    21,    85,
+    78,    51,    52,    53,    54,    86,    56,    57,    58,    59,
+     9,    61,    62,    85,    13,    14,     9,    80,    83,    86,
+    86,    85,     9,    83,    85,     0,    85,     0,    51,    52,
+    53,    54,    20,    56,    57,    58,    59,   134,    61,    62,
+   110,    32,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+    -1,    -1,    51,    52,    53,    54,    -1,    56,    57,    58,
+    59,    -1,    61,    62,    51,    52,    53,    54,    -1,    56,
+    57,    58,    59,    -1,    61,    62
 };
 
-#line 325 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 325 "/usr/local/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -1507,8 +1511,8 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 1512 "ansi-c-parser.cpp"
+/* #line 811 "/usr/local/lib/bison.cc" */
+#line 1516 "ansi-c-parser.cpp"
 
   switch (yyn) {
 
@@ -1549,80 +1553,84 @@ case 9:
 { yyval.cc = CONV_PASCAL; ;
     break;}
 case 10:
-#line 185 "ansi-c.y"
+#line 183 "ansi-c.y"
+{ yyval.cc = CONV_THISCALL; ;
+    break;}
+case 11:
+#line 187 "ansi-c.y"
 { yyval.num_list = yyvsp[0].num_list;
           yyval.num_list->push_front(yyvsp[-2].ival);
         ;
     break;}
-case 11:
-#line 189 "ansi-c.y"
+case 12:
+#line 191 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
           yyval.num_list->push_back(yyvsp[0].ival);
         ;
     break;}
-case 12:
-#line 193 "ansi-c.y"
+case 13:
+#line 195 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
         ;
     break;}
-case 13:
-#line 198 "ansi-c.y"
+case 14:
+#line 200 "ansi-c.y"
 { yyval.param_list = yyvsp[0].param_list;
             yyval.param_list->push_front(yyvsp[-2].param);
           ;
     break;}
-case 14:
-#line 202 "ansi-c.y"
+case 15:
+#line 204 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>(); 
             yyval.param_list->push_back(yyvsp[0].param);
           ;
-    break;}
-case 15:
-#line 206 "ansi-c.y"
-{ yyval.param_list = new std::list<Parameter*>();
     break;}
 case 16:
 #line 208 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>();
     break;}
 case 17:
-#line 212 "ansi-c.y"
+#line 210 "ansi-c.y"
+{ yyval.param_list = new std::list<Parameter*>();
+    break;}
+case 18:
+#line 214 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
       yyval.param->setExp(yyvsp[-2].exp);
     ;
     break;}
-case 18:
-#line 216 "ansi-c.y"
+case 19:
+#line 218 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
     ;
     break;}
-case 19:
-#line 221 "ansi-c.y"
+case 20:
+#line 223 "ansi-c.y"
 { yyval.exp = Location::regOf(yyvsp[-1].ival);
     ;
     break;}
-case 20:
-#line 224 "ansi-c.y"
+case 21:
+#line 226 "ansi-c.y"
 { yyval.exp = Location::memOf(yyvsp[-1].exp);
     ;
     break;}
-case 21:
-#line 227 "ansi-c.y"
+case 22:
+#line 229 "ansi-c.y"
 { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
-case 22:
-#line 230 "ansi-c.y"
+case 23:
+#line 232 "ansi-c.y"
 { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
-case 23:
-#line 233 "ansi-c.y"
+case 24:
+#line 235 "ansi-c.y"
 { yyval.exp = new Const(yyvsp[0].ival);
     ;
     break;}
-case 24:
-#line 238 "ansi-c.y"
+case 25:
+#line 240 "ansi-c.y"
 {  if (yyvsp[0].type_ident->ty->isArray() || 
             (yyvsp[0].type_ident->ty->isNamed() && 
              ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo() &&
@@ -1639,8 +1647,8 @@ case 24:
         yyval.param = new Parameter(yyvsp[0].type_ident->ty, yyvsp[0].type_ident->nam.c_str()); 
      ;
     break;}
-case 25:
-#line 254 "ansi-c.y"
+case 26:
+#line 256 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
        sig->addReturn(yyvsp[-7].type);
        for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1655,16 +1663,16 @@ case 25:
        yyval.param = new Parameter(new PointerType(new FuncType(sig)), yyvsp[-4].str); 
      ;
     break;}
-case 26:
-#line 268 "ansi-c.y"
-{ yyval.param = new Parameter(new VoidType, "..."); ;
-    break;}
 case 27:
-#line 272 "ansi-c.y"
-{ Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty); ;
+#line 270 "ansi-c.y"
+{ yyval.param = new Parameter(new VoidType, "..."); ;
     break;}
 case 28:
 #line 274 "ansi-c.y"
+{ Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty); ;
+    break;}
+case 29:
+#line 276 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
            sig->addReturn(yyvsp[-8].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1679,8 +1687,8 @@ case 28:
            Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig))); 
          ;
     break;}
-case 29:
-#line 288 "ansi-c.y"
+case 30:
+#line 290 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
            sig->addReturn(yyvsp[-4].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1695,8 +1703,8 @@ case 29:
            Type::addNamedType(yyvsp[-4].type_ident->nam.c_str(), new FuncType(sig)); 
          ;
     break;}
-case 30:
-#line 302 "ansi-c.y"
+case 31:
+#line 304 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
            for (std::list<TypeIdent*>::iterator it = yyvsp[-2].type_ident_list->begin();
                    it != yyvsp[-2].type_ident_list->end(); it++) {
@@ -1707,14 +1715,14 @@ case 30:
            Type::addNamedType(tmp, t); 
          ;
     break;}
-case 31:
-#line 314 "ansi-c.y"
+case 32:
+#line 316 "ansi-c.y"
 {
            signatures.push_back(yyvsp[-1].sig);
          ;
     break;}
-case 32:
-#line 318 "ansi-c.y"
+case 33:
+#line 320 "ansi-c.y"
 {
            yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
            yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam.c_str());
@@ -1725,8 +1733,8 @@ case 32:
            signatures.push_back(yyvsp[-6].sig);
          ;
     break;}
-case 33:
-#line 330 "ansi-c.y"
+case 34:
+#line 332 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1741,8 +1749,8 @@ case 33:
            yyval.sig = sig;
          ;
     break;}
-case 34:
-#line 344 "ansi-c.y"
+case 35:
+#line 346 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc,
               yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
@@ -1758,8 +1766,8 @@ case 34:
            yyval.sig = sig;
          ;
     break;}
-case 35:
-#line 359 "ansi-c.y"
+case 36:
+#line 361 "ansi-c.y"
 { CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam.c_str()); 
            if (yyvsp[-4].custom_options->exp)
                sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
@@ -1777,190 +1785,190 @@ case 35:
            yyval.sig = sig;
          ;
     break;}
-case 36:
-#line 378 "ansi-c.y"
+case 37:
+#line 380 "ansi-c.y"
 { SymbolRef *ref = new SymbolRef(yyvsp[-2].ival, yyvsp[-1].str);
               refs.push_back(ref);
             ;
     break;}
-case 37:
-#line 384 "ansi-c.y"
+case 38:
+#line 386 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-2].ival);
              sym->nam = yyvsp[-1].type_ident->nam;
              sym->ty = yyvsp[-1].type_ident->ty;
              symbols.push_back(sym);
            ;
     break;}
-case 38:
-#line 390 "ansi-c.y"
+case 39:
+#line 392 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-3].ival);
              sym->sig = yyvsp[-1].sig;
              sym->mods = yyvsp[-2].mods;
              symbols.push_back(sym);
            ;
     break;}
-case 39:
-#line 398 "ansi-c.y"
+case 40:
+#line 400 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->noDecode = true;
            ;
     break;}
-case 40:
-#line 402 "ansi-c.y"
+case 41:
+#line 404 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->incomplete = true;
            ;
     break;}
-case 41:
-#line 406 "ansi-c.y"
+case 42:
+#line 408 "ansi-c.y"
 { yyval.mods = new SymbolMods(); ;
     break;}
-case 42:
-#line 410 "ansi-c.y"
+case 43:
+#line 412 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->exp = yyvsp[-1].exp;
            ;
     break;}
-case 43:
-#line 413 "ansi-c.y"
+case 44:
+#line 415 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->sp = yyvsp[-1].ival;
            ;
     break;}
-case 44:
-#line 416 "ansi-c.y"
+case 45:
+#line 418 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); ;
     break;}
-case 45:
-#line 420 "ansi-c.y"
+case 46:
+#line 422 "ansi-c.y"
 { yyval.type = new ArrayType(NULL, yyvsp[-1].ival);
           ;
     break;}
-case 46:
-#line 423 "ansi-c.y"
+case 47:
+#line 425 "ansi-c.y"
 { yyval.type = new ArrayType(NULL);
           ;
     break;}
-case 47:
-#line 426 "ansi-c.y"
+case 48:
+#line 428 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
           ;
     break;}
-case 48:
-#line 429 "ansi-c.y"
+case 49:
+#line 431 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-2].type);
           ;
     break;}
-case 49:
-#line 434 "ansi-c.y"
+case 50:
+#line 436 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-1].type;
             yyval.type_ident->nam = yyvsp[0].str;
           ;
     break;}
-case 50:
-#line 439 "ansi-c.y"
+case 51:
+#line 441 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             ((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
             yyval.type_ident->ty = yyvsp[0].type;
             yyval.type_ident->nam = yyvsp[-1].str;
           ;
     break;}
-case 51:
-#line 447 "ansi-c.y"
+case 52:
+#line 449 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
           ;
     break;}
-case 52:
-#line 451 "ansi-c.y"
+case 53:
+#line 453 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
             yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
           ;
     break;}
-case 53:
-#line 457 "ansi-c.y"
-{ yyval.type = new CharType(); ;
-    break;}
 case 54:
 #line 459 "ansi-c.y"
-{ yyval.type = new IntegerType(16); ;
+{ yyval.type = new CharType(); ;
     break;}
 case 55:
 #line 461 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
+{ yyval.type = new IntegerType(16); ;
     break;}
 case 56:
 #line 463 "ansi-c.y"
-{ yyval.type = new IntegerType(8, false); ;
+{ yyval.type = new IntegerType(); ;
     break;}
 case 57:
 #line 465 "ansi-c.y"
-{ yyval.type = new IntegerType(16, false); ;
+{ yyval.type = new IntegerType(8, false); ;
     break;}
 case 58:
 #line 467 "ansi-c.y"
-{ yyval.type = new IntegerType(32, false); ;
+{ yyval.type = new IntegerType(16, false); ;
     break;}
 case 59:
 #line 469 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
+{ yyval.type = new IntegerType(32, false); ;
     break;}
 case 60:
 #line 471 "ansi-c.y"
-{ yyval.type = new IntegerType(64); ;
+{ yyval.type = new IntegerType(); ;
     break;}
 case 61:
 #line 473 "ansi-c.y"
-{ yyval.type = new IntegerType(64, false); ;
+{ yyval.type = new IntegerType(64); ;
     break;}
 case 62:
 #line 475 "ansi-c.y"
-{ yyval.type = new FloatType(32); ;
+{ yyval.type = new IntegerType(64, false); ;
     break;}
 case 63:
 #line 477 "ansi-c.y"
-{ yyval.type = new FloatType(64); ;
+{ yyval.type = new FloatType(32); ;
     break;}
 case 64:
 #line 479 "ansi-c.y"
-{ yyval.type = new VoidType(); ;
+{ yyval.type = new FloatType(64); ;
     break;}
 case 65:
 #line 481 "ansi-c.y"
-{ yyval.type = new PointerType(yyvsp[-1].type); ;
+{ yyval.type = new VoidType(); ;
     break;}
 case 66:
 #line 483 "ansi-c.y"
+{ yyval.type = new PointerType(yyvsp[-1].type); ;
+    break;}
+case 67:
+#line 485 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival); 
     ;
     break;}
-case 67:
-#line 487 "ansi-c.y"
+case 68:
+#line 489 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-2].type); 
     ;
     break;}
-case 68:
-#line 491 "ansi-c.y"
+case 69:
+#line 493 "ansi-c.y"
 { //$$ = Type::getNamedType($1); 
       //if ($$ == NULL)
       yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
-case 69:
-#line 496 "ansi-c.y"
-{ yyval.type = yyvsp[0].type; ;
-    break;}
 case 70:
 #line 498 "ansi-c.y"
+{ yyval.type = yyvsp[0].type; ;
+    break;}
+case 71:
+#line 500 "ansi-c.y"
 {
       char tmp[1024];
       sprintf(tmp, "struct %s", yyvsp[0].str);
       yyval.type = new NamedType(tmp);
     ;
     break;}
-case 71:
-#line 504 "ansi-c.y"
+case 72:
+#line 506 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
            it != yyvsp[-1].type_ident_list->end(); it++) {
@@ -1971,7 +1979,7 @@ case 71:
     break;}
 }
 
-#line 811 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 811 "/usr/local/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2172,9 +2180,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 2177 "ansi-c-parser.cpp"
-#line 513 "ansi-c.y"
+/* #line 1010 "/usr/local/lib/bison.cc" */
+#line 2185 "ansi-c-parser.cpp"
+#line 515 "ansi-c.y"
 
 #include <stdio.h>
 

@@ -101,7 +101,7 @@ public: \
 %token NODECODE
 %token INCOMPLETE
 %token SYMBOLREF
-%token CDECL PASCAL
+%token CDECL PASCAL THISCALL
 %token REGOF
 %token MEMOF
 %token CUSTOM PREFER
@@ -179,6 +179,8 @@ convention:
         { $$ = CONV_C; }
         | PASCAL
         { $$ = CONV_PASCAL; }
+        | THISCALL
+        { $$ = CONV_THISCALL; }
         ;
 
 num_list: CONSTANT ',' num_list 

@@ -1,7 +1,7 @@
 #ifndef YY_AnsiCParser_h_included
 #define YY_AnsiCParser_h_included
 
-#line 1 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 1 "/usr/local/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "ansi-c-parser.h"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
@@ -114,7 +114,7 @@ typedef union {
 } yy_AnsiCParser_stype;
 #define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
 
-#line 14 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 14 "/usr/local/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_AnsiCParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -165,32 +165,32 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 63 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 63 "/usr/local/lib/bison.h" */
 #line 170 "ansi-c-parser.h"
 
-#line 63 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 63 "/usr/local/lib/bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
-/* #line 65 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 65 "/usr/local/lib/bison.h" */
 #line 177 "ansi-c-parser.h"
 
-#line 65 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 67 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 67 "/usr/local/lib/bison.h" */
 #line 184 "ansi-c-parser.h"
 
-#line 67 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 67 "/usr/local/lib/bison.h"
 /* YY_AnsiCParser_DEBUG */
 #endif
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 70 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 70 "/usr/local/lib/bison.h" */
 #line 192 "ansi-c-parser.h"
 
-#line 70 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 70 "/usr/local/lib/bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -265,7 +265,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #endif
 
 
-/* #line 143 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 143 "/usr/local/lib/bison.h" */
 #line 270 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
@@ -282,68 +282,69 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #define	SYMBOLREF	270
 #define	CDECL	271
 #define	PASCAL	272
-#define	REGOF	273
-#define	MEMOF	274
-#define	CUSTOM	275
-#define	PREFER	276
-#define	WITHSTACK	277
-#define	PTR_OP	278
-#define	INC_OP	279
-#define	DEC_OP	280
-#define	LEFT_OP	281
-#define	RIGHT_OP	282
-#define	LE_OP	283
-#define	GE_OP	284
-#define	EQ_OP	285
-#define	NE_OP	286
-#define	AND_OP	287
-#define	OR_OP	288
-#define	MUL_ASSIGN	289
-#define	DIV_ASSIGN	290
-#define	MOD_ASSIGN	291
-#define	ADD_ASSIGN	292
-#define	SUB_ASSIGN	293
-#define	LEFT_ASSIGN	294
-#define	RIGHT_ASSIGN	295
-#define	AND_ASSIGN	296
-#define	XOR_ASSIGN	297
-#define	OR_ASSIGN	298
-#define	TYPE_NAME	299
-#define	TYPEDEF	300
-#define	EXTERN	301
-#define	STATIC	302
-#define	AUTO	303
-#define	REGISTER	304
-#define	CHAR	305
-#define	SHORT	306
-#define	INT	307
-#define	LONG	308
-#define	SIGNED	309
-#define	UNSIGNED	310
-#define	FLOAT	311
-#define	DOUBLE	312
-#define	CONST	313
-#define	VOLATILE	314
-#define	VOID	315
-#define	STRUCT	316
-#define	UNION	317
-#define	ENUM	318
-#define	ELLIPSIS	319
-#define	CASE	320
-#define	DEFAULT	321
-#define	IF	322
-#define	ELSE	323
-#define	SWITCH	324
-#define	WHILE	325
-#define	DO	326
-#define	FOR	327
-#define	GOTO	328
-#define	CONTINUE	329
-#define	BREAK	330
-#define	RETURN	331
+#define	THISCALL	273
+#define	REGOF	274
+#define	MEMOF	275
+#define	CUSTOM	276
+#define	PREFER	277
+#define	WITHSTACK	278
+#define	PTR_OP	279
+#define	INC_OP	280
+#define	DEC_OP	281
+#define	LEFT_OP	282
+#define	RIGHT_OP	283
+#define	LE_OP	284
+#define	GE_OP	285
+#define	EQ_OP	286
+#define	NE_OP	287
+#define	AND_OP	288
+#define	OR_OP	289
+#define	MUL_ASSIGN	290
+#define	DIV_ASSIGN	291
+#define	MOD_ASSIGN	292
+#define	ADD_ASSIGN	293
+#define	SUB_ASSIGN	294
+#define	LEFT_ASSIGN	295
+#define	RIGHT_ASSIGN	296
+#define	AND_ASSIGN	297
+#define	XOR_ASSIGN	298
+#define	OR_ASSIGN	299
+#define	TYPE_NAME	300
+#define	TYPEDEF	301
+#define	EXTERN	302
+#define	STATIC	303
+#define	AUTO	304
+#define	REGISTER	305
+#define	CHAR	306
+#define	SHORT	307
+#define	INT	308
+#define	LONG	309
+#define	SIGNED	310
+#define	UNSIGNED	311
+#define	FLOAT	312
+#define	DOUBLE	313
+#define	CONST	314
+#define	VOLATILE	315
+#define	VOID	316
+#define	STRUCT	317
+#define	UNION	318
+#define	ENUM	319
+#define	ELLIPSIS	320
+#define	CASE	321
+#define	DEFAULT	322
+#define	IF	323
+#define	ELSE	324
+#define	SWITCH	325
+#define	WHILE	326
+#define	DO	327
+#define	FOR	328
+#define	GOTO	329
+#define	CONTINUE	330
+#define	BREAK	331
+#define	RETURN	332
 
 
-#line 143 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 143 "/usr/local/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -384,8 +385,8 @@ public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 389 "ansi-c-parser.h"
+/* #line 182 "/usr/local/lib/bison.h" */
+#line 390 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -401,6 +402,7 @@ static const int INCOMPLETE;
 static const int SYMBOLREF;
 static const int CDECL;
 static const int PASCAL;
+static const int THISCALL;
 static const int REGOF;
 static const int MEMOF;
 static const int CUSTOM;
@@ -462,13 +464,13 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 182 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 182 "/usr/local/lib/bison.h"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 185 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 472 "ansi-c-parser.h"
+/* #line 185 "/usr/local/lib/bison.h" */
+#line 474 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -484,68 +486,69 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,SYMBOLREF=270
 	,CDECL=271
 	,PASCAL=272
-	,REGOF=273
-	,MEMOF=274
-	,CUSTOM=275
-	,PREFER=276
-	,WITHSTACK=277
-	,PTR_OP=278
-	,INC_OP=279
-	,DEC_OP=280
-	,LEFT_OP=281
-	,RIGHT_OP=282
-	,LE_OP=283
-	,GE_OP=284
-	,EQ_OP=285
-	,NE_OP=286
-	,AND_OP=287
-	,OR_OP=288
-	,MUL_ASSIGN=289
-	,DIV_ASSIGN=290
-	,MOD_ASSIGN=291
-	,ADD_ASSIGN=292
-	,SUB_ASSIGN=293
-	,LEFT_ASSIGN=294
-	,RIGHT_ASSIGN=295
-	,AND_ASSIGN=296
-	,XOR_ASSIGN=297
-	,OR_ASSIGN=298
-	,TYPE_NAME=299
-	,TYPEDEF=300
-	,EXTERN=301
-	,STATIC=302
-	,AUTO=303
-	,REGISTER=304
-	,CHAR=305
-	,SHORT=306
-	,INT=307
-	,LONG=308
-	,SIGNED=309
-	,UNSIGNED=310
-	,FLOAT=311
-	,DOUBLE=312
-	,CONST=313
-	,VOLATILE=314
-	,VOID=315
-	,STRUCT=316
-	,UNION=317
-	,ENUM=318
-	,ELLIPSIS=319
-	,CASE=320
-	,DEFAULT=321
-	,IF=322
-	,ELSE=323
-	,SWITCH=324
-	,WHILE=325
-	,DO=326
-	,FOR=327
-	,GOTO=328
-	,CONTINUE=329
-	,BREAK=330
-	,RETURN=331
+	,THISCALL=273
+	,REGOF=274
+	,MEMOF=275
+	,CUSTOM=276
+	,PREFER=277
+	,WITHSTACK=278
+	,PTR_OP=279
+	,INC_OP=280
+	,DEC_OP=281
+	,LEFT_OP=282
+	,RIGHT_OP=283
+	,LE_OP=284
+	,GE_OP=285
+	,EQ_OP=286
+	,NE_OP=287
+	,AND_OP=288
+	,OR_OP=289
+	,MUL_ASSIGN=290
+	,DIV_ASSIGN=291
+	,MOD_ASSIGN=292
+	,ADD_ASSIGN=293
+	,SUB_ASSIGN=294
+	,LEFT_ASSIGN=295
+	,RIGHT_ASSIGN=296
+	,AND_ASSIGN=297
+	,XOR_ASSIGN=298
+	,OR_ASSIGN=299
+	,TYPE_NAME=300
+	,TYPEDEF=301
+	,EXTERN=302
+	,STATIC=303
+	,AUTO=304
+	,REGISTER=305
+	,CHAR=306
+	,SHORT=307
+	,INT=308
+	,LONG=309
+	,SIGNED=310
+	,UNSIGNED=311
+	,FLOAT=312
+	,DOUBLE=313
+	,CONST=314
+	,VOLATILE=315
+	,VOID=316
+	,STRUCT=317
+	,UNION=318
+	,ENUM=319
+	,ELLIPSIS=320
+	,CASE=321
+	,DEFAULT=322
+	,IF=323
+	,ELSE=324
+	,SWITCH=325
+	,WHILE=326
+	,DO=327
+	,FOR=328
+	,GOTO=329
+	,CONTINUE=330
+	,BREAK=331
+	,RETURN=332
 
 
-#line 185 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 185 "/usr/local/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -598,6 +601,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 603 "ansi-c-parser.h"
+/* #line 236 "/usr/local/lib/bison.h" */
+#line 606 "ansi-c-parser.h"
 #endif
