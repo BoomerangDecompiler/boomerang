@@ -888,7 +888,8 @@ std::list<const char *> ElfBinaryFile::getDependencyList()
     if( dynsect == NULL )
         return result; /* no dynamic section = statically linked */
 
-    for( Elf32_Dyn *dyn = (Elf32_Dyn *)dynsect->uHostAddr;
+	Elf32_Dyn *dyn;
+    for( dyn = (Elf32_Dyn *)dynsect->uHostAddr;
          dyn->d_tag != DT_NULL; dyn++ ) {
         if( dyn->d_tag == DT_STRTAB ) {
             stringtab = (ADDRESS)dyn->d_un.d_ptr;
@@ -900,7 +901,7 @@ std::list<const char *> ElfBinaryFile::getDependencyList()
         return result;
     stringtab = NativeToHostAddress( stringtab );
     
-    for( Elf32_Dyn *dyn = (Elf32_Dyn *)dynsect->uHostAddr;
+    for( dyn = (Elf32_Dyn *)dynsect->uHostAddr;
          dyn->d_tag != DT_NULL; dyn++ ) {
         if( dyn->d_tag == DT_NEEDED ) {
             const char *need = (char *)stringtab + dyn->d_un.d_val;

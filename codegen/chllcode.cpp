@@ -37,6 +37,10 @@
 #include "signature.h"
 #include "boomerang.h"
 #include "type.h"
+// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "rtl.h"
+#endif
 
 #include <sstream>
 
