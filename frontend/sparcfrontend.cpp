@@ -972,8 +972,6 @@ if (0)          // SETTINGS!
                     // is when the instruction is a restore, e.g.
 					// 142c8:  40 00 5b 91        call         exit
     				// 142cc:  91 e8 3f ff        restore      %g0, -1, %o0
-if (address == 0x1a4bc)
-  std::cerr << "HACK!\n";
                     if (((SparcDecoder*)decoder)->
 					  isRestore(address+4+pBF->getTextDelta())) {
                         // Give the address of the call; I think that this is
