@@ -26,6 +26,10 @@
 #include <map>
 #include "types.h"
 #include "insnameelem.h"
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "exp.h"
+#endif
+
 
 InsNameElem::InsNameElem(const char *name)
 {

@@ -20,6 +20,7 @@
 
 #include <sstream>
 
+#include "types.h"
 #include "managed.h"
 #include "statement.h"
 #include "exp.h"
