@@ -1,7 +1,0 @@
-
-int main()
-{
-    printf("hello from Pentium!\n");
-    return 0;
-}
-
