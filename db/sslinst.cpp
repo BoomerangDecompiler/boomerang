@@ -22,6 +22,7 @@
  *
  * 27 Apr 02 - Mike: Mods for boomerang
  * 17 Jul 02 - Mike: readSSLFile resets internal state as well
+ * 04 Feb 03 - Mike: Fixed a bug with instantiating NOP (could cause bus error?)
  */
 
 /*==============================================================================
@@ -165,8 +166,8 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName, bool bPrint /*= fa
 {
     // emptying the rtl dictionary
     idict.erase(idict.begin(),idict.end());
-	// Clear all state
-	reset();
+    // Clear all state
+    reset();
     
     // Attempt to Parse the SSL file
     SSLParser theParser(SSLFileName,
@@ -177,7 +178,7 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName, bool bPrint /*= fa
 #endif
 );
     if (theParser.theScanner == NULL)
-	return false;
+    return false;
     addRegister( "%CTI", -1, 1, false );
     addRegister( "%NEXT", -1, 32, false );
     
@@ -416,7 +417,7 @@ if (0) {
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
 std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl, 
-		std::list<std::string>& params, std::vector<Exp*>& actuals)
+        std::list<std::string>& params, std::vector<Exp*>& actuals)
 {
     assert(params.size() == actuals.size());
 
@@ -424,53 +425,53 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
     std::list<Exp*>* newList = new std::list<Exp*>();
     rtl.deepCopyList(*newList);
 
-	Exp* e;
-    if ((e = newList->back()) && e && e->isFlagCall()) {
-	// remove the flag call
+    Exp* e;
+    if (newList->size() && (e = newList->back()) && e && e->isFlagCall()) {
+    // remove the flag call
         Exp *f = newList->back();
         newList->erase(--newList->end());
-		// look up the flagdef
-		std::string name((const char*)((Const*)f->getSubExp1())->getStr());
-		assert(FlagFuncs.find(name) != FlagFuncs.end());
-		FlagDef *def = (FlagDef*)FlagFuncs[name];
-		// convert the opList to a std::list for both params and actuals
-		std::list<std::string> def_params;
-		std::vector<Exp*> args;
-		for (Exp *l = def->getSubExp1(); l->getOper() == opList &&
-	      l->getSubExp1()->getOper() == opParam; l = l->getSubExp2()) {
-	     	std::string param((const char *)
-			  ((Const*)l->getSubExp1()->getSubExp1())->getStr());
-	     	def_params.push_back(param);
-		}
-		for (Exp *l = f->getSubExp2(); 
-	    	 l && l->getOper() == opList;
-            	 l = l->getSubExp2())
-			args.push_back(l->getSubExp1());
-		// instantiate the flag rtl
-		std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
-			def_params, args);
-		// append this list onto the list of exps for this rtl
-		for (std::list<Exp*>::iterator it = def_list->begin(); 
-		  it != def_list->end(); it++)
-	    	newList->push_back(*it);
-		delete def_list;
+        // look up the flagdef
+        std::string name((const char*)((Const*)f->getSubExp1())->getStr());
+        assert(FlagFuncs.find(name) != FlagFuncs.end());
+        FlagDef *def = (FlagDef*)FlagFuncs[name];
+        // convert the opList to a std::list for both params and actuals
+        std::list<std::string> def_params;
+        std::vector<Exp*> args;
+        for (Exp *l = def->getSubExp1(); l->getOper() == opList &&
+          l->getSubExp1()->getOper() == opParam; l = l->getSubExp2()) {
+            std::string param((const char *)
+              ((Const*)l->getSubExp1()->getSubExp1())->getStr());
+            def_params.push_back(param);
+        }
+        for (Exp *l = f->getSubExp2(); 
+             l && l->getOper() == opList;
+                 l = l->getSubExp2())
+            args.push_back(l->getSubExp1());
+        // instantiate the flag rtl
+        std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
+            def_params, args);
+        // append this list onto the list of exps for this rtl
+        for (std::list<Exp*>::iterator it = def_list->begin(); 
+          it != def_list->end(); it++)
+            newList->push_back(*it);
+        delete def_list;
     }
 
     // Iterate through each Exp of the new list of Exps
     for (std::list<Exp*>::iterator rt = newList->begin();
       rt != newList->end(); rt++) {
-		assert(!(*rt)->isFlagCall());
+        assert(!(*rt)->isFlagCall());
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
             Exp* formal = new Unary(opParam, 
-			new Const((char*)(param->c_str())));
+            new Const((char*)(param->c_str())));
                 
             bool ch;        // Result of search: unused
             *rt = (*rt)->searchReplaceAll(formal, *actual, ch);
-			*rt = (*rt)->fixSuccessor();
+            *rt = (*rt)->fixSuccessor();
             delete formal;
         }
     }
