@@ -1499,3 +1499,10 @@ void LowerType::setSize(int size) {
 	assert(0);
 }
 
+Type* Type::newIntegerLikeType(int size, int signedness) {
+	if (size == 1)
+		return new BooleanType();
+	if (size == 8 && signedness >= 0)
+		return new CharType();
+	return new IntegerType(size, signedness);
+}

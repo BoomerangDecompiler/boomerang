@@ -18,8 +18,7 @@
 /*
  * $Revision$
  *
- * 20 Mar 01 - Mike: Added operator*= (compare, ignore sign, and consider all
- *					floats > 64 bits to be the same
+ * 20 Mar 01 - Mike: Added operator*= (compare, ignore sign, and consider all floats > 64 bits to be the same
  * 26 Apr 01 - Mike: Added class typeLessSI
  * 08 Apr 02 - Mike: Changes for boomerang
  * 25 Sep 04 - Mike: Added UnionType; beginnings of data-flow based type analysis
@@ -56,8 +55,8 @@ class LowerType;
 class Exp;
 class XMLProgParser;
 
-enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
-	eArray, eNamed, eCompound, eUnion, eSize, eUpper, eLower};	  // For operator< mostly
+enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer, eArray, eNamed, eCompound, eUnion, eSize,
+		eUpper, eLower};	  // For operator< mostly
 
 class Type : public Memoisable {
 protected:
@@ -66,38 +65,38 @@ private:
 static	std::map<std::string, Type*> namedTypes;
 
 public:
-	// Constructors
+					// Constructors
 					Type(eType id);
 virtual				~Type();
 		eType		getId() const {return id;}
 
-	static void addNamedType(const char *name, Type *type);
-	static Type *getNamedType(const char *name);
+static void			addNamedType(const char *name, Type *type);
+static Type			*getNamedType(const char *name);
 
-	// Return type for given temporary variable name
-	static Type* getTempType(const std::string &name);
-	static Type* parseType(const char *str); // parse a C type
+					// Return type for given temporary variable name
+static Type*		getTempType(const std::string &name);
+static Type*		parseType(const char *str); // parse a C type
 
-	// runtime type information
-virtual bool isVoid()		const { return false; }
-virtual bool isFunc()		const { return false; }
-virtual bool isBoolean()	const { return false; }
-virtual bool isChar()		const { return false; }
-virtual bool isInteger() 	const { return false; }
-virtual bool isFloat()		const { return false; }
-virtual bool isPointer()	const { return false; }
-virtual bool isArray()		const { return false; }
-virtual bool isNamed()		const { return false; }
-virtual bool isCompound()	const { return false; }
-virtual bool isUnion()		const { return false; }
-virtual bool isSize()		const { return false; }
-virtual bool isUpper()		const { return false; }
-virtual bool isLower()		const { return false; }
+					// runtime type information
+virtual bool		isVoid()		const { return false; }
+virtual bool		isFunc()		const { return false; }
+virtual bool		isBoolean()		const { return false; }
+virtual bool		isChar()		const { return false; }
+virtual bool		isInteger() 	const { return false; }
+virtual bool		isFloat()		const { return false; }
+virtual bool		isPointer()		const { return false; }
+virtual bool		isArray()		const { return false; }
+virtual bool		isNamed()		const { return false; }
+virtual bool		isCompound()	const { return false; }
+virtual bool		isUnion()		const { return false; }
+virtual bool		isSize()		const { return false; }
+virtual bool		isUpper()		const { return false; }
+virtual bool		isLower()		const { return false; }
 
 // Return false if some info is missing, e.g. unknown sign, size or basic type
-virtual bool isComplete() {return true;}
+virtual bool		isComplete() {return true;}
 
-		// These replace type casts
+					// These replace type casts
 		VoidType	*asVoid();
 		FuncType	*asFunc();
 		BooleanType	*asBoolean();
@@ -113,7 +112,7 @@ virtual bool isComplete() {return true;}
 		UpperType	*asUpper();
 		LowerType	*asLower();
 
-		// These replace calls to isNamed() and resolvesTo()
+					// These replace calls to isNamed() and resolvesTo()
 		bool		resolvesToVoid();
 		bool		resolvesToFunc();
 		bool		resolvesToBoolean();
@@ -128,10 +127,10 @@ virtual bool isComplete() {return true;}
 		bool		resolvesToUpper();
 		bool		resolvesToLower();
 
-		// cloning
-virtual Type*	clone() const = 0;
+					// cloning
+virtual Type*		clone() const = 0;
 
-		// Comparisons
+					// Comparisons
 virtual bool		operator==(const Type& other) const = 0;	// Considers sign
 virtual bool		operator!=(const Type& other) const;		// Considers sign
 //virtual bool		operator-=(const Type& other) const = 0;	// Ignores sign
@@ -139,25 +138,25 @@ virtual bool		operator< (const Type& other) const = 0;	// Considers sign
 		bool		operator*=(const Type& other) const {		// Consider only
 						return id == other.id;}				 	// broad type
 virtual Exp			*match(Type *pattern);
-		// Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
+					// Constraint-based TA: merge one type with another, e.g. size16 with integer-of-size-0 -> int16
 virtual Type*		mergeWith(Type* other) { assert(0); return 0; }
 
-		// Acccess functions
+					// Acccess functions
 virtual int			getSize() const = 0;
 virtual void		setSize(int sz) {assert(0);}
 
-		// Print and format functions
-		// Get the C type, e.g. "unsigned int". If not final, include comment
-		// for lack of sign information. When final, choose a signedness etc
+					// Print and format functions
+					// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
+					// When final, choose a signedness etc
 virtual const char	*getCtype(bool final = false) const = 0;
-		// Print in *i32* format
+					// Print in *i32* format
 		void		starPrint(std::ostream& os);
 		const char*	prints();			// For debugging
 
 virtual std::string getTempName() const; // Get a temporary name for the type
 
-		// Clear the named type map. This is necessary when testing; the
-		// type for the first parameter to 'main' is different for sparc and pentium
+					// Clear the named type map. This is necessary when testing; the
+					// type for the first parameter to 'main' is different for sparc and pentium
 static	void		clearNamedTypes() { namedTypes.clear(); }
 
 		bool		isPointerToAlpha();
@@ -165,11 +164,12 @@ static	void		clearNamedTypes() { namedTypes.clear(); }
 virtual Memo 		*makeMemo(int mId) { return new Memo(mId); }
 virtual void 		readMemo(Memo *m, bool dec) { }
 
-		// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
+					// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
 virtual Type*		meetWith(Type* other, bool& ch) = 0;
 virtual bool		isCompatibleWith(Type* other) = 0;
-		// Create a union of this Type and other. Set ch true if any change
+					// Create a union of this Type and other. Set ch true if any change
 		Type*		createUnion(Type* other, bool& ch);
+static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool/Char/Int
 
 protected:
 	friend class XMLProgParser;
@@ -201,13 +201,13 @@ protected:
 
 class FuncType : public Type {
 private:
-	Signature *signature;
+	Signature		*signature;
 public:
-	FuncType(Signature *sig = NULL);
-virtual ~FuncType();
-virtual bool isFunc() const { return true; }
+					FuncType(Signature *sig = NULL);
+virtual 			~FuncType();
+virtual bool		isFunc() const { return true; }
 
-virtual Type *clone() const;
+virtual Type		*clone() const;
 
 		Signature	*getSignature() { return signature; }
 		void		setSignature(Signature* sig) {signature = sig;}
@@ -221,7 +221,7 @@ virtual int			getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
-// Split the C type into return and parameter parts
+					// Split the C type into return and parameter parts
 		void		getReturnAndParam(const char*& ret, const char*& param);
 
 virtual Memo		*makeMemo(int mId);
@@ -236,12 +236,11 @@ protected:
 
 class IntegerType : public Type {
 private:
-		int			size;				// Size in bits, e.g. 16
-		int			signedness;			// pos=signed, neg=unsigned, 0=unknown or
-									// evenly matched
+		int			size;			// Size in bits, e.g. 16
+		int			signedness;		// pos=signed, neg=unsigned, 0=unknown or evenly matched
 
 public:
-	IntegerType(int sz = 32, int sign = 0);
+					IntegerType(int sz = 32, int sign = 0);
 virtual 			~IntegerType();
 virtual bool		isInteger() const { return true; }
 virtual bool		isComplete() {return signedness != 0 && size != 0;}
@@ -256,17 +255,16 @@ virtual Exp			*match(Type *pattern);
 
 virtual int			getSize() const;
 virtual void		setSize(int sz) {size = sz;}
-		// Is it signed? 0=no, 1=yes, -1 = don't know
+					// Is it signed? 0=no, 1=yes, -1 = don't know
 		bool		isSigned() { return signedness >= 0; }
-		// A hint for signedness
+					// A hint for signedness
 		void		bumpSigned(int sg) { signedness += sg; }
-		// Do we need this? Set absolute signedness
+					// Do we need this? Set absolute signedness
 		void		setSigned(int sg) {signedness = sg; }
-		// Get the signedness
+					// Get the signedness
 		int			getSignedness() {return signedness;}
 
-// Get the C type as a string. If full, output comments re the lack of sign
-// information (in IntegerTypes).
+// Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
 virtual const char	*getCtype(bool final = false) const;
 
 virtual std::string	getTempName() const;
@@ -372,7 +370,7 @@ virtual				~PointerType();
 virtual bool		isPointer() const { return true; }
 		void		setPointsTo(Type *p);
 		Type		*getPointsTo() { return points_to; }
-static PointerType*	newPtrAlpha();
+static	PointerType *newPtrAlpha();
 		bool		pointsToAlpha();
 		int			pointerDepth();		// Return 2 for **x
 		Type*		getFinalPointsTo();	// Return x for **x
@@ -435,13 +433,13 @@ virtual bool		isCompatibleWith(Type* other);
 
 protected:
 	friend class XMLProgParser;
-	ArrayType() : Type(eArray), base_type(NULL), length(0) { }
+					ArrayType() : Type(eArray), base_type(NULL), length(0) { }
 };	// class ArrayType
 
 class NamedType : public Type {
 private:
 		std::string name;
-static	int nextAlpha;
+static	int			nextAlpha;
 
 public:
 					NamedType(const char *name);
@@ -449,7 +447,7 @@ virtual 			~NamedType();
 virtual bool		isNamed() const { return true; }
 		const char	*getName() { return name.c_str(); }
 		Type		*resolvesTo() const;
-		// Get a new type variable, e.g. alpha0, alpha55
+					// Get a new type variable, e.g. alpha0, alpha55
 static	NamedType	*getAlpha();
 
 virtual Type*		clone() const;
@@ -566,8 +564,8 @@ protected:
 	friend class XMLProgParser;
 };	// class UnionType
 
-// This class is for before type analysis. Typically, you have no info at
-// all, or only know the size (e.g. width of a register or memory transfer)
+// This class is for before type analysis. Typically, you have no info at all, or only know the size (e.g.
+// width of a register or memory transfer)
 class SizeType : public Type {
 private:
 	int				size;				// Size in bits, e.g. 16
