@@ -2456,7 +2456,7 @@ bool ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
  * RETURNS:          <N/a>
  *============================================================================*/
 BoolStatement::BoolStatement(int sz): jtCond((BRANCH_TYPE)0), pCond(NULL),
-  pDest(NULL), size(sz) {
+  bFloat(false), pDest(NULL), size(sz) {
     kind = STMT_BOOL;
 }
 
