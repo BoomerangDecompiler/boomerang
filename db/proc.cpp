@@ -2861,12 +2861,11 @@ void UserProc::fromSSAform() {
 				pa->convertToAssign(first->clone());
 		}
 		else {
-			// Need new local. Used to think we needed a copy statement, but that just creates too many locals.
+			// Need new local. Under certain circumstances (e.g. sparc/fromssa2) we needed a copy statement, but most
+			// times that just creates more locals than is necessary.
+			// TODO: find a safe way of doing the "optimisation" below
+#if 1
 			// Just replace all the definitions the phi statement refers to with tempLoc
-			// We should be able to just use the LHS of the phiassign. I thought the problem was that
-			// the variable at the left of the phiassign might overlap with other versions of the same named variable,
-			// but if that happens, then it will already be assigned a new variable. So no problem.
-#if 0
 			// Exp* tempLoc = newLocal(pa->getType());
 			Exp* tempLoc = getLocalExp(new RefExp(pa->getLeft(), pa), pa->getType());
 			if (DEBUG_LIVENESS)
@@ -2881,6 +2880,10 @@ void UserProc::fromSSAform() {
 			// Replace the RHS of the phi with tempLoc
 			pa->convertToAssign(tempLoc);
 #else
+			// We can often just use the LHS of the phiassign. The problem is that the variable at the left of the
+			// phiassign can overlap with other versions of the same named variable. It may have something to do
+			// with one of the arguments of the phi statement being in the interference graph.
+			// The proper solution would be to change the igraph so it is obvious what interferes with what.
 			// Replace the LHS of the definitions with the left of the PhiAssign
 			Exp* left = pa->getLeft();
 			if (DEBUG_LIVENESS)
