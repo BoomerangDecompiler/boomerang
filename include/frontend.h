@@ -46,6 +46,7 @@ class TypedExp;
 class Cfg;
 class Prog;
 struct DecodeResult;
+class Signature;
 
 // Control flow types
 enum INSTTYPE {
@@ -64,13 +65,18 @@ class FrontEnd {
 protected:
 //    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
 //    const int NOP_INST;         // No-op pattern
-	std::map<ADDRESS, Proc *> processed;
+    // Map of addresses and the procedure they are mapped to.
+    std::map<ADDRESS, Proc *> processed;
     // decoder
     NJMCDecoder *decoder;
     // The binary file
     BinaryFile *pBF;
     // Next numbered proc will use this
     int m_iNumberedProc;        
+    // Public map from function name (string) to signature (list of Types).
+    // One day we may named library parameters).
+    std::map<std::string, Signature* > mapLibParam;
+
 
 public:
     /*
@@ -93,6 +99,8 @@ virtual const char *getFrontEndId() = 0;
 // returns a frontend given a string
 static FrontEnd *createById(std::string &str, BinaryFile *pBF);
 
+    bool    isWin32();                  // Is this a win32 frontend?
+
     /*
      * Function to fetch the smallest machine instruction
      */
@@ -104,6 +112,14 @@ virtual int     getInst(int addr);
      * Accessor function to get the decoder.
      */
     NJMCDecoder *getDecoder() { return decoder; }
+
+    /*
+     * Read library signatures from a file.
+     */
+    void readLibParams(const char *sPath);
+
+    // lookup a library signature by name
+    Signature *getLibSignature(const char *name);
 
     /*
      * Decode all undecoded procedures and return a new program containing

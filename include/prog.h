@@ -71,7 +71,6 @@ public:
 			~Prog();
             Prog(const char* name);     // Constructor with name
     void    setName(const char *name);      // Set the name of this program
-    bool    isWin32();                  // Is this a win32 program?
     Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
                                         // Returns a pointer to a new proc
     void    remProc(UserProc* proc);    // Remove the given UserProc
@@ -86,7 +85,6 @@ public:
     bool    createDotFile(const char*, bool bMainOnly = false) const;
     void    setArgv0(const char* p);    // Set the argv[0] pointer
     std::string& getProgPath();        // Get path to the translator executable
-    void    readLibParams();            // Read the common.hs file
     std::string  getNameNoPath() const;      // Get the program name with no path
     // This pair of functions allows the user to iterate through all the procs
     // The procs will appear in order of native address
@@ -129,12 +127,8 @@ public:
 	// search for a symbol which matches an expression
 	bool findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp);
 
-	// lookup a library procedure by name
-	LibProc *getLibraryProc(const char *nam);
-
-    // Public map from function name (string) to signature (list of Types).
-    // One day we may named library parameters).
-    std::map<std::string, Signature* > mapLibParam;
+    // lookup a library procedure by name
+    LibProc *getLibraryProc(const char *nam);
 
     // Pointer to the BinaryFile object for the program, which contains the
     // program image. Created in main()

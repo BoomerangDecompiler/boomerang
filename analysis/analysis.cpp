@@ -1214,7 +1214,10 @@ bool isFlagFloat(Exp* rt, UserProc* proc)
         if (firstSub->getOper() == opIntConst) {
             int regNum = ((Const*)firstSub)->getInt();
             // Get the register's intrinsic type (note how ugly this is).
-	    Register &reg = proc->getProg()->pFE->getDecoder()->getRTLDict().DetRegMap[regNum];
+	    RTLInstDict &dict = proc->getProg()->pFE->getDecoder()->getRTLDict();
+	    if (dict.DetRegMap.find(regNum) == dict.DetRegMap.end())
+		    return false;
+	    Register &reg = dict.DetRegMap[regNum];
             Type* rType = reg.g_type();
             bool ret = rType->isFloat();
 	    delete rType;

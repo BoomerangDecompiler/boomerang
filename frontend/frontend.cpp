@@ -48,6 +48,7 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "prog.h"
+#include "signature.h"
 
 // Check that BOOMDIR is set
 #ifndef WIN32
@@ -90,6 +91,11 @@ FrontEnd::~FrontEnd()
 {
 }
 
+bool FrontEnd::isWin32()
+{
+    return pBF->GetFormat() == LOADFMT_PE;
+}
+
 FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF)
 {
 	if (str == "pentium")
@@ -103,7 +109,8 @@ Prog *FrontEnd::decode() {
     Prog *prog = new Prog;
     prog->pBF = pBF;
     prog->pFE = this;
-    prog->readLibParams();
+    std::string sPath = prog->getProgPath() + "include/common.hs";
+    readLibParams(sPath.c_str());
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -137,6 +144,145 @@ Prog *FrontEnd::decode() {
 
 DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 	return decoder->decodeInstruction(pc, pBF->getTextDelta());
+}
+
+/*==============================================================================
+ * FUNCTION:       FrontEnd::readLibParams
+ * OVERVIEW:       Read the include/common.hs file, and store the results in a
+ *                 map from string (function name) to signature
+ * PARAMETERS:     None
+ * RETURNS:        <nothing>
+ *============================================================================*/
+void FrontEnd::readLibParams(const char *sPath)
+{
+    std::ifstream ifs;
+
+    ifs.open(sPath);
+
+    if (!ifs.good())
+    {
+        std::cerr << "can't open `" << sPath << "'" << std::endl;
+        exit(1);
+    }
+
+    std::string fname;
+    std::string s;
+
+    while (!ifs.eof())
+    {
+        ifs >> fname;
+        if (ifs.eof()) break;
+        while (fname[0] == '#')
+        {
+            // Comment. Ignore till end of line
+            ifs.ignore(100, '\n');
+            ifs >> fname;
+            continue;
+        }
+
+	Signature *sig = NULL;
+	std::string signame = fname;
+	if (signame[0] != '-') {
+	    signame = "-stdc";
+	} else {
+	    ifs >> fname;
+	    if (ifs.eof()) break;
+	}
+	signame += "-";
+	signame += getFrontEndId();
+	sig = Signature::instantiate(signame.c_str(), fname.c_str());
+	assert(sig);
+
+        if (mapLibParam.find(fname) != mapLibParam.end()) {
+
+            std::cerr << "entry for `" << fname << "' already read from `";
+            std::cerr << sPath << "'\n";
+	    *((char *)0) = 1;
+        }
+
+        mapLibParam[fname] = sig;
+
+	bool isret = true;
+
+        while (!ifs.eof()) {
+            char c;
+            ifs.get(c);
+            while (((c == ' ') || (c == '\t')) && !ifs.eof()) {
+                ifs.get(c);
+            }
+            if (c == '\n' || ifs.eof()) {
+                break;
+            }
+            // last char (c) was not white space or a newline
+            ifs.putback(c);
+            ifs >> s;
+			if (s == "")   // EOF does this
+				break;
+            Type* ty;
+            switch(s[0]) {
+                case 'i':
+                    ty = new IntegerType(32, true); break;
+                case 's':
+                    ty = new IntegerType(16, true); break;
+                case 'b':
+                    ty = new IntegerType(8, true); break;
+                case 'p':
+                    if (s[1] == 'd')
+                        ty = new PointerType(new VoidType());
+                    else
+                        // Must be pf, pointer to function
+                        ty = new PointerType(new FuncType());
+                    break;
+                case 'f':
+                    if (s[1] == 's')
+                        // fs: floating point, single precision
+                        ty = new FloatType(32);
+                    else
+                        // fd: floating point, double precision
+                        ty = new FloatType(64);
+                    break;
+                case '.':
+                    // FIX
+     		    break;
+                case 'v':
+                    ty = new VoidType(); break;
+                default:
+		    assert(false);
+            }
+	    if (isret) {
+	        sig->setReturnType(ty);
+	        isret = false;
+	    } else {
+	        sig->addParameter(ty);
+	    }
+        }
+    }
+}
+
+// get a library signature by name
+Signature *FrontEnd::getLibSignature(const char *name)
+{
+    Signature *signature;
+    // Look up the name in the mapLibParam map
+    std::map<std::string, Signature* >::iterator it;
+    it = mapLibParam.find(name);
+    if (it == mapLibParam.end()) {
+#if 0
+        std::cerr << "Could not find parameters for library function " << name << std::endl;
+#endif
+        // Get a default library signature
+	if (isWin32())
+		signature = Signature::instantiate("-win32-pentium", name);
+	else {
+		std::string s = "-stdc-";
+		s += getFrontEndId();
+		signature = Signature::instantiate(s.c_str(), name);
+	} 
+    }
+    else {
+		signature = (*it).second->clone();
+    }
+    return signature;
 }
 
 /*==============================================================================
@@ -396,9 +542,9 @@ if (1) {
 		    std::string func = pBF->GetDynamicProcName(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr());
                     HLCall *call = new HLCall(rtl_jump->getAddress());
                     call->setDest(rtl_jump->getDest()->clone());
-					LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
-					assert(lp);
-					call->setDestProc(lp);
+		    LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
+		    assert(lp);
+		    call->setDestProc(lp);
                     BB_rtls->push_back(call);
                     pBB = pCfg->newBB(BB_rtls, CALL, 1);
                     HLReturn *ret = new HLReturn(rtl_jump->getAddress()+1);
@@ -485,7 +631,7 @@ if (1) {
 					pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
 					// dynamic linked proc pointers are assumed to be static.
 					const char *nam = pBF->GetDynamicProcName(((Const*)call->getDest()->getSubExp1())->getAddr());
-					Proc *p = pProc->getProg()->getLibraryProc(nam); // get the proc
+					Proc *p = pProc->getProg()->getLibraryProc(nam);
 					call->setDestProc(p);
 				}
 
@@ -1058,4 +1204,5 @@ void FrontEnd::closeInstance(void* dlHandle) {
     if (dlHandle) dlclose(dlHandle);
 #endif
 }
+
 

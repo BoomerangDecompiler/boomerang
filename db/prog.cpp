@@ -95,11 +95,6 @@ char* Prog::getName()
     return (char*) m_name.c_str();
 }
 
-bool Prog::isWin32()
-{
-    return pBF->GetFormat() == LOADFMT_PE;
-}
-
 // well form the entire program
 bool Prog::wellForm()
 {
@@ -143,14 +138,6 @@ bool Prog::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
 			return true;
 		}
 	return false;
-}
-
-LibProc *Prog::getLibraryProc(const char *nam)
-{
-	Proc *p = findProc(nam);
-	if (p && p->isLib())
-		return (LibProc*)p;
-	return (LibProc*)newProc(nam, NO_ADDRESS, true);
 }
 
 void Prog::deserialize(std::istream &inf)
@@ -332,11 +319,6 @@ void Prog::clear()
         delete pFE;
     pFE = NULL;
 	symbols.clear();
-
-	for (std::map<std::string, Signature*>::iterator it1 = mapLibParam.begin(); it1 != mapLibParam.end(); it1++)
-		if ((*it1).second)
-			delete (*it1).second;
-	mapLibParam.clear();
 }
 
 
@@ -447,6 +429,16 @@ Proc* Prog::findProc(const char *name) const
 	return NULL;
 }
 
+// get a library procedure by name
+LibProc *Prog::getLibraryProc(const char *nam)
+{
+	Proc *p = findProc(nam);
+	if (p && p->isLib())
+		return (LibProc*)p;
+	return (LibProc*)newProc(nam, NO_ADDRESS, true);
+}
+
+
 /*==============================================================================
  * FUNCTION:    Prog::findContainingProc
  * OVERVIEW:    Return a pointer to the Proc object containing uAddr, or 0 if none
@@ -521,125 +513,7 @@ std::string& Prog::getProgPath()
     return m_progPath;
 }
 
-/*==============================================================================
- * FUNCTION:       Prog::readLibParams
- * OVERVIEW:       Read the include/common.hs file, and store the results in a
- *                 map from string (function name) to integer (compressed type
- *                 information)
- * PARAMETERS:     None
- * RETURNS:        <nothing>
- *============================================================================*/
-void Prog::readLibParams()
-{
-    std::ifstream ifs;
 
-
-#ifdef WIN32
-    std::string sPath = getProgPath() + "..\\include\\common.hs";
-#else
-    std::string sPath = BOOMDIR"/include/common.hs";
-#endif
-    ifs.open(sPath.c_str());
-
-    if (!ifs.good())
-    {
-        std::cerr << "can't open `" << sPath << "'" << std::endl;
-        exit(1);
-    }
-
-    std::string fname;
-    std::string s;
-
-    while (!ifs.eof())
-    {
-        ifs >> fname;
-        if (ifs.eof()) break;
-        while (fname[0] == '#')
-        {
-            // Comment. Ignore till end of line
-            ifs.ignore(100, '\n');
-            ifs >> fname;
-            continue;
-        }
-
-		Signature *sig = NULL;
-		std::string signame = fname;
-		if (signame[0] != '-') {
-			signame = "-stdc";
-		} else {
-			ifs >> fname;
-	        	if (ifs.eof()) break;
-		}
-		signame += "-";
-		signame += pFE->getFrontEndId();
-		sig = Signature::instantiate(signame.c_str(), fname.c_str());
-		assert(sig);
-
-        if (mapLibParam.find(fname) != mapLibParam.end()) {
-
-            std::cerr << "entry for `" << fname << "' already read from `";
-            std::cerr << sPath << "'\n";
-	    *((char *)0) = 1;
-        }
-
-        mapLibParam[fname] = sig;
-
-		bool isret = true;
-
-        while (!ifs.eof()) {
-            char c;
-            ifs.get(c);
-            while (((c == ' ') || (c == '\t')) && !ifs.eof()) {
-                ifs.get(c);
-            }
-            if (c == '\n' || ifs.eof()) {
-                break;
-            }
-            // last char (c) was not white space or a newline
-            ifs.putback(c);
-            ifs >> s;
-			if (s == "")   // EOF does this
-				break;
-            Type* ty;
-            switch(s[0]) {
-                case 'i':
-                    ty = new IntegerType(32, true); break;
-                case 's':
-                    ty = new IntegerType(16, true); break;
-                case 'b':
-                    ty = new IntegerType(8, true); break;
-                case 'p':
-                    if (s[1] == 'd')
-                        ty = new PointerType(new VoidType());
-                    else
-                        // Must be pf, pointer to function
-                        ty = new PointerType(new FuncType());
-                    break;
-                case 'f':
-                    if (s[1] == 's')
-                        // fs: floating point, single precision
-                        ty = new FloatType(32);
-                    else
-                        // fd: floating point, double precision
-                        ty = new FloatType(64);
-                    break;
-                case '.':
-                    // FIX
-     		    break;
-                case 'v':
-                    ty = new VoidType(); break;
-                default:
-		    assert(false);
-            }
-			if (isret) {
-				sig->setReturnType(ty);
-				isret = false;
-			} else {
-		        sig->addParameter(ty);
-			}
-        }
-    }
-}
 
 /*==============================================================================
  * FUNCTION:    Prog::getNameNoPath
