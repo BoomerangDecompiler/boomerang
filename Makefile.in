@@ -128,7 +128,7 @@ boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
 
-db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y db/sslparser.h
+db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y
 	cd db ; ${FLEXPP} -osslscanner.cpp -hsslscanner.h sslscanner.l
 
 c/ansi-c-parser.cpp c/ansi-c-parser.h: c/ansi-c.y c/ansi-c.l
