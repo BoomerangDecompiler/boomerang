@@ -48,7 +48,7 @@ void UserProc::dfaTypeAnalysis() {
 		ch = false;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
 			bool thisCh = false;
-			(*it)->dfaTypeAnalysis(thisCh);
+			(*it)->dfaTypeAnalysis(thisCh, this);
 			if (thisCh) {
 				ch = true;
 				if (DEBUG_TA)
@@ -362,6 +362,8 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
 	std::list<UnionElement>::iterator it;
 	if (other->isUnion()) {
+		if (this == other)				// Note: pointer comparison
+			return this;				// Avoid infinite recursion
 		ch = true;
 		UnionType* otherUnion = (UnionType*)other;
 		// Always return this, never other, (even if other is larger than this) because otherwise iterators can become
@@ -373,11 +375,14 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	}
 
 	// Other is a non union type
+	if (other->isPointer() && other->asPointer()->getPointsTo() == this) {
+		LOG << "Warning! Attempt to union " << getCtype() << " with pointer to self!\n";
+		return this;
+	}
 	for (it = li.begin(); it != li.end(); it++) {
 		Type* curr = it->type->clone();
 		if (curr->isCompatibleWith(other)) {
 			it->type = curr->meetWith(other, ch);
-assert(!it->type->isUnion());
 			return this;
 		}
 	}
@@ -431,15 +436,14 @@ Type* Type::createUnion(Type* other, bool& ch) {
 }
 
 
-void CallStatement::dfaTypeAnalysis(bool& ch) {
+void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	Signature* sig = procDest->getSignature();
-	//Prog* prog = procDest->getProg();
 	// Iterate through the arguments
 	int n = sig->getNumParams();
 	for (int i=0; i < n; i++) {
 		Exp* e = getArgumentExp(i);
 		Type* t = sig->getParamType(i);
-		e->descendType(t, ch);
+		e->descendType(t, ch, proc);
 #if 0
 		Const* c;
 		if (e->isSubscript()) {
@@ -452,7 +456,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 			Type* oldTparam = tParam;
 			tParam = tParam->meetWith(t, ch);
 			// Set the type of def, and if r is a memof, handle the memof operand
-			r->descendType(tParam, ch);
+			r->descendType(tParam, ch, proc);
 			if (DEBUG_TA && tParam != oldTparam)
 				LOG << "Type of " << r << " changed from " << oldTparam->getCtype() << " to " <<
 					tParam->getCtype() << "\n";
@@ -481,7 +485,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 			sig = procDest->getSignature();
 		else
 			sig = NULL;
-		pDest->descendType(new FuncType(sig), ch);
+		pDest->descendType(new FuncType(sig), ch, proc);
 	}
 }
 
@@ -490,7 +494,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 // Ex1 := Ex1 meet Ex0
 // Ex2 := Ex1 meet Ex0
 // ...
-void PhiAssign::dfaTypeAnalysis(bool& ch) {
+void PhiAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	iterator it;
 	Type* meetOfArgs = defVec[0].def->getTypeFor(lhs);
 	for (it = ++defVec.begin(); it != defVec.end(); it++) {
@@ -501,32 +505,32 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	type = type->meetWith(meetOfArgs, ch);
 	for (it = defVec.begin(); it != defVec.end(); it++)
 		it->def->meetWithFor(type, it->e, ch);
-	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
+	Assignment::dfaTypeAnalysis(ch, proc);		// Handle the LHS
 }
 
-void Assign::dfaTypeAnalysis(bool& ch) {
+void Assign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	Type* tr = rhs->ascendType();
 	type = type->meetWith(tr, ch);
-	rhs->descendType(type, ch);
-	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
+	rhs->descendType(type, ch, proc);
+	Assignment::dfaTypeAnalysis(ch, proc);		// Handle the LHS
 }
 
-void Assignment::dfaTypeAnalysis(bool& ch) {
+void Assignment::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	if (lhs->isMemOf())
 		// Push down the fact that the memof is a pointer to the assignment type
-		lhs->descendType(type, ch);
+		lhs->descendType(type, ch, proc);
 }
 
-void BranchStatement::dfaTypeAnalysis(bool& ch) {
-	pCond->descendType(new BooleanType(), ch);
+void BranchStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+	pCond->descendType(new BooleanType(), ch, proc);
 	// Not fully implemented yet?
 }
 
-void BoolAssign::dfaTypeAnalysis(bool& ch) {
+void BoolAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	// Not implemented yet
 }
 
-void ReturnStatement::dfaTypeAnalysis(bool& ch) {
+void ReturnStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	// Not implemented yet
 }
 
@@ -759,46 +763,59 @@ Type* TypedExp::ascendType() {
 //										//
 //	//	//	//	//	//	//	//	//	//	//
 
-void Binary::descendType(Type* parentType, bool& ch) {
+void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	if (op == opFlagCall) return;
 	Type* ta = subExp1->ascendType();
 	Type* tb = subExp2->ascendType();
+	Signature* sig = proc->getSignature();
+	Prog* prog = proc->getProg();
+	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, this)) {
+		// this is the address of some local
+		Exp* localExp = Location::memOf(this);
+		// Note there is a theory problem here; there is currently no reliable way to find the definion for
+		// localExp. For now, ignore all but implicit assignments...
+		Cfg* cfg = proc->getCFG();
+		Statement* impDef = cfg->findImplicitAssign(localExp);
+		if (impDef)
+			impDef->meetWithFor(parentType->asPointer()->getPointsTo(), localExp, ch);
+			return;
+	}
 	switch (op) {
 		case opPlus:
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
-			subExp1->descendType(ta, ch);
+			subExp1->descendType(ta, ch, proc);
 			tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
-			subExp2->descendType(tb, ch);
+			subExp2->descendType(tb, ch, proc);
 			break;
 		case opMinus:
 			ta = ta->meetWith(deltaMinuend(parentType, tb), ch);
-			subExp1->descendType(ta, ch);
+			subExp1->descendType(ta, ch, proc);
 			tb = tb->meetWith(deltaSubtrahend(parentType, ta), ch);
-			subExp2->descendType(tb, ch);
+			subExp2->descendType(tb, ch, proc);
 			break;
 		case opGtrUns:	case opLessUns:
 		case opGtrEqUns:case opLessEqUns:
 			ta = ta->meetWith(new IntegerType(32, -1), ch);
-			subExp1->descendType(ta, ch);
+			subExp1->descendType(ta, ch, proc);
 			tb = tb->meetWith(new IntegerType(32, -1), ch);
-			subExp2->descendType(tb, ch);
+			subExp2->descendType(tb, ch, proc);
 		default:
 			// Many more cases to implement
 			break;
 	}
 }
 
-void RefExp::descendType(Type* parentType, bool& ch) {
+void RefExp::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	Type* newType = def->meetWithFor(parentType, subExp1, ch);
 	// In case subExp1 is a m[...]
-	subExp1->descendType(newType, ch);
+	subExp1->descendType(newType, ch, proc);
 }
 
-void Const::descendType(Type* parentType, bool& ch) {
+void Const::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	type = type->meetWith(parentType, ch);
 }
 
-void Unary::descendType(Type* parentType, bool& ch) {
+void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	switch (op) {
 		case opMemOf:
 			// Check for m[x*K1 + K2]: array with base K2 and stride K1
@@ -815,34 +832,34 @@ void Unary::descendType(Type* parentType, bool& ch) {
 						parentType->getSize() << "\n";
 				// The index is integer type
 				Exp* x = ((Binary*)leftOfPlus)->getSubExp1();
-				x->descendType(new IntegerType(parentType->getSize(), 0), ch);
+				x->descendType(new IntegerType(parentType->getSize(), 0), ch, proc);
 				// K2 is of type <array of parentType>
 				Exp* K2 = ((Binary*)subExp1)->getSubExp2();
-				K2->descendType(new ArrayType(parentType), ch);
+				K2->descendType(new ArrayType(parentType), ch, proc);
 			}
 			// Other cases, e.g. struct reference m[x + K1] or m[x + p] where p is a pointer
 			else
-				subExp1->descendType(new PointerType(parentType), ch);
+				subExp1->descendType(new PointerType(parentType), ch, proc);
 			break;
 		default:
 			break;
 	}
 }
 
-void Ternary::descendType(Type* parentType, bool& ch) {
+void Ternary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	switch (op) {
 		case opFsize:
-			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch);
+			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, proc);
 			break;
 		default:
 			break;
 	}
 }
 
-void TypedExp::descendType(Type* parentType, bool& ch) {
+void TypedExp::descendType(Type* parentType, bool& ch, UserProc* proc) {
 }
 
-void Terminal::descendType(Type* parentType, bool& ch) {
+void Terminal::descendType(Type* parentType, bool& ch, UserProc* proc) {
 }
 
 // Convert expressions to locals, using the (so far DFA based) type analysis information
@@ -888,29 +905,38 @@ void StmtDfaLocalConverter::visit(ReturnStatement* s, bool& recur) {
 }
 void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
 	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
+	Signature* sig = NULL;
 	Exp* pDest = s->getDest();
 	if (pDest) {
 		FuncType* ft = new FuncType;
 		Proc* destProc = s->getDestProc();
-		if (destProc && destProc->getSignature())
-			ft->setSignature(destProc->getSignature());
+		if (destProc)
+			sig = destProc->getSignature();
+		if (sig)
+			ft->setSignature(sig);
 		((DfaLocalConverter*)mod)->setType(ft);
 		s->setDest(pDest->accept(mod));
 	}
 	std::vector<Exp*>::iterator it;
 	std::vector<Exp*>& arguments = s->getArguments();
-	for (it = arguments.begin(); recur && it != arguments.end(); it++) {
-		// MVE: Should we get argument types from the signature, or ascend from the argument expression?
-		// Should come to the same thing, and the signature is presumably more efficient
-		// But is it always available?
-		((DfaLocalConverter*)mod)->setType((*it)->ascendType());
-		*it = (*it)->accept(mod);
+	// Should we get argument types from the signature, or ascend from the argument expression?
+	// Ideally, it should come to the same thing, but consider if the argument is sp-K... sp essentially
+	// always becomes void*, and so the type is lost
+	unsigned n = arguments.size();
+	for (unsigned u=0; u < n; u++) {
+		if (sig)
+			((DfaLocalConverter*)mod)->setType(sig->getParamType(u));
+		else
+			((DfaLocalConverter*)mod)->setType(arguments[u]->ascendType());
+		arguments[u] = arguments[u]->accept(mod);
 	}
+#if 0
 	std::vector<Exp*>& implicitArguments = s->getImplicitArguments();
 	for (it = implicitArguments.begin(); recur && it != implicitArguments.end(); it++) {
 		((DfaLocalConverter*)mod)->setType((*it)->ascendType());
 		*it = (*it)->accept(mod);
 	}
+#endif
 	std::vector<ReturnInfo>::iterator rr;
 	std::vector<ReturnInfo>& returns = s->getReturns();
 	for (rr = returns.begin(); recur && rr != returns.end(); rr++) {
@@ -1044,6 +1070,7 @@ bool FuncType::isCompatibleWith(Type* other) {
 bool PointerType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isSize() && other->getSize() == STD_SIZE) return true;
 	if (!other->isPointer()) return false;
 	return points_to->isCompatibleWith(other->asPointer()->points_to);
 }
@@ -1063,6 +1090,8 @@ bool UnionType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	std::list<UnionElement>::iterator it;
 	if (other->isUnion()) {
+		if (this == other)				// Note: pointer comparison
+			return true;				// Avoid infinite recursion
 		UnionType* otherUnion = (UnionType*)other;
 		for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
 			if (isCompatibleWith(it->type)) return true;

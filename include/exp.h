@@ -347,7 +347,7 @@ virtual void	readMemo(Memo *m, bool dec) = 0;
 		// Pull type information up the expression tree
 virtual	Type*	ascendType() {assert(0); return 0;}
 		// Push type information down the expression tree
-virtual	void	descendType(Type* parentType, bool& ch) {assert(0);}
+virtual	void	descendType(Type* parentType, bool& ch, UserProc* proc) {assert(0);}
 
 protected:
 		friend class XMLProgParser;
@@ -434,7 +434,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 		friend class XMLProgParser;
@@ -472,7 +472,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 		friend class XMLProgParser;
@@ -549,7 +549,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 	friend class XMLProgParser;
@@ -628,7 +628,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 private:
 	Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
@@ -703,7 +703,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 	friend class XMLProgParser;
@@ -757,7 +757,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 	friend class XMLProgParser;
@@ -832,7 +832,7 @@ virtual Memo	*makeMemo(int mId);
 virtual void	readMemo(Memo *m, bool dec);
 
 virtual	Type*	ascendType();
-virtual void	descendType(Type* parentType, bool& ch);
+virtual void	descendType(Type* parentType, bool& ch, UserProc* proc);
 
 protected:
 	RefExp() : Unary(opSubscript), def(NULL) { }

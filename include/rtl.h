@@ -53,16 +53,16 @@ class XMLProgParser;
 
 
 /*==============================================================================
- * Class RTL: describes low level register transfer lists (actually lists of
- * expressions)
+ * Class RTL: describes low level register transfer lists (actually lists of expressions)
+ * NOTE: when time permits, this class could be removed, replaced with new Statements that mark the current
+ * native address
  *============================================================================*/
 class RTL {
 	ADDRESS nativeAddr;				// RTL's source program instruction address
 	std::list<Statement*> stmtList; // List of expressions in this RTL.
 public:
 	RTL();
-	RTL(ADDRESS instNativeAddr,
-	  std::list<Statement*>* listStmt = NULL);
+	RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt = NULL);
 	RTL(const RTL& other);					// Makes deep copy of "other"
 	virtual ~RTL();
 
@@ -85,15 +85,17 @@ public:
 	Statement* elementAt(unsigned i);	// Return the i'th element in RTL.
 	
 	// Statement list editing methods
-	void appendStmt(Statement *s);		// Add s to end of RTL.
-	void prependStmt(Statement *s);		// Add s to start of RTL.
-	void insertStmt(Statement *s, unsigned i); // Insert s before expression at position i
-	void updateStmt(Statement *s, unsigned i); // Change stmt at position i.
-	void deleteStmt(unsigned int);		 // Delete expression at position i.
-	void clear();						// Remove all statements from this RTL.
+	void appendStmt(Statement *s);				// Add s to end of RTL.
+	void prependStmt(Statement *s);				// Add s to start of RTL.
+	void insertStmt(Statement *s, unsigned i);	// Insert s before expression at position i
+	void updateStmt(Statement *s, unsigned i);	// Change stmt at position i.
+	void deleteStmt(unsigned int);				// Delete expression at position i.
+	void deleteLastStmt();						// Delete the last statement
+	void replaceLastStmt(Statement* repl);		// Replace the last Statement
+	void clear();								// Remove all statements from this RTL.
 	// Append list of exps to end.
 	void appendListStmt(std::list<Statement*>& le); 
-	void appendRTL(RTL& rtl);			// Append Statements from other RTL to end
+	void appendRTL(RTL& rtl);					// Append Statements from other RTL to end
 	// Make a deep copy of the list of Exp*
 	void deepCopyList(std::list<Statement*>& dest);
 	// direct access to the list of expressions

@@ -284,6 +284,18 @@ void RTL::deleteStmt(unsigned i) {
 	// do the delete
 	stmtList.erase(pp);
 }
+
+void RTL::deleteLastStmt() {
+	assert(stmtList.size());
+	stmtList.erase(--stmtList.end());
+}
+
+void RTL::replaceLastStmt(Statement* repl) {
+	assert(stmtList.size());
+	Statement* last = stmtList.back();
+	last = repl;
+}
+
 	
 /*==============================================================================
  * FUNCTION:		RTL::getNumStmt

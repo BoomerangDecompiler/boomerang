@@ -348,16 +348,15 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  *				  frag - if true, this is just a fragment of a procedure
  *				  spec - if true, this is a speculative decode
  *				  os - the output stream for .rtl output
- * NOTE:		  This is a sort of generic front end. For many processors,
- *					this will be overridden in the FrontEnd derived class,
- *					sometimes calling this function to do most of the work
+ * NOTE:		  This is a sort of generic front end. For many processors, this will be overridden
+ *					in the FrontEnd derived class, sometimes calling this function to do most of the work
  * RETURNS:		  true for a good decode (no illegal instructions)
  *============================================================================*/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
 		bool spec /* = false */) {
 	PBB pBB;					// Pointer to the current basic block
 
-	// if (!frag && !pProc->getSignature()->isPromoted()) {
+	// if (!frag && !pProc->getSignature()->isPromoted()) {	// }
 	if (!frag) {
 		if (VERBOSE)
 			LOG << "adding default params and returns for " << pProc->getName() << "\n";
@@ -370,25 +369,18 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			pProc->getSignature()->addReturn((*it)->clone());
 	}
 	
-	// Declare a queue of targets not yet processed yet. This has to be
-	// individual to the procedure!
-	TargetQueue targetQueue;
-
-	// Similarly, we have a set of CallStatement pointers. These may be
-	// disregarded if this is a speculative decode that fails (i.e. an illegal
-	// instruction is found). If not, this set will be used to add to the set
-	// of calls to be analysed in the cfg, and also to call newProc()
+	// We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
+	// that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
+	// to be analysed in the cfg, and also to call newProc()
 	std::set<CallStatement*> callSet;
 
-	// Indicates whether or not the next instruction to be decoded is the
-	// lexical successor of the current one. Will be true for all NCTs and for
-	// CTIs with a fall through branch.
+	// Indicates whether or not the next instruction to be decoded is the lexical successor of the current one.
+	// Will be true for all NCTs and for CTIs with a fall through branch.
 	bool sequentialDecode = true;
 
 	Cfg* pCfg = pProc->getCFG();
 
-	// If this is a speculative decode, the second time we decode the same
-	// address, we get no cfg. Else an error.
+	// If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
 	if (spec && (pCfg == 0))
 		return false;
 	assert(pCfg);
@@ -396,8 +388,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 	// Initialise the queue of control flow targets that have yet to be decoded.
 	targetQueue.initial(uAddr);
 
-	// Clear the pointer used by the caller prologue code to access the last
-	// call rtl of this procedure
+	// Clear the pointer used by the caller prologue code to access the last call rtl of this procedure
 	//decoder.resetLastCall();
 
 	// ADDRESS initAddr = uAddr;
@@ -410,8 +401,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 		// The list of RTLs for the current basic block
 		std::list<RTL*>* BB_rtls = new std::list<RTL*>();
 
-		// Keep decoding sequentially until a CTI without a fall through branch
-		// is decoded
+		// Keep decoding sequentially until a CTI without a fall through branch is decoded
 		//ADDRESS start = uAddr;
 		DecodeResult inst;
 		while (sequentialDecode) {
@@ -428,9 +418,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			if (spec && !inst.valid)
 				return false;
 
-			// Need to construct a new list of RTLs if a basic block has just
-			// been finished but decoding is continuing from its lexical
-			// successor
+			// Need to construct a new list of RTLs if a basic block has just been finished but decoding is
+			// continuing from its lexical successor
 			if (BB_rtls == NULL)
 				BB_rtls = new std::list<RTL*>();
 
@@ -439,12 +428,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				// Alert the watchers to the problem
 				Boomerang::get()->alert_baddecode(uAddr);
 
-				// An invalid instruction. Most likely because a call did
-				// not return (e.g. call _exit()), etc. Best thing is to
-				// emit a INVALID BB, and continue with valid instructions
+				// An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
+				// Best thing is to emit a INVALID BB, and continue with valid instructions
 				LOG << "Warning: invalid instruction at " << uAddr << "\n";
-				// Emit the RTL anyway, so we have the address and maybe
-				// some other clues
+				// Emit the RTL anyway, so we have the address and maybe some other clues
 				BB_rtls->push_back(new RTL(uAddr));	 
 				pBB = pCfg->newBB(BB_rtls, INVALID, 0);
 				sequentialDecode = false; BB_rtls = NULL; continue;
@@ -455,8 +442,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			nTotalBytes += inst.numBytes;			
 	
 			if (pRtl == 0) {
-				// This can happen if an instruction is "cancelled", e.g.
-				// call to __main in a hppa program
+				// This can happen if an instruction is "cancelled", e.g. call to __main in a hppa program
 				// Just ignore the whole instruction
 				if (inst.numBytes > 0)
 					uAddr += inst.numBytes;
@@ -465,7 +451,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 			// Display RTL representation if asked
 			if (Boomerang::get()->printRtl) {
-				//pRtl->print(os);
 				std::ostringstream st;
 				pRtl->print(st);
 				LOG << st.str().c_str();
@@ -478,13 +463,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			std::list<Statement*>::iterator ss;
 			for (ss = sl.begin(); ss != sl.end(); ss++) {
 				Statement* s = *ss;
-				s->setProc(pProc); // let's do this really early!
+				s->setProc(pProc);		// let's do this really early!
 				if (refHints.find(pRtl->getAddress()) != refHints.end()) {
 					const char *nam = refHints[pRtl->getAddress()].c_str();
 					ADDRESS gu = pProc->getProg()->getGlobalAddr((char*)nam);
 					if (gu != NO_ADDRESS) {
-						s->searchAndReplace(new Const((int)gu), 
-							new Unary(opAddrOf, Location::global(nam, pProc)));
+						s->searchAndReplace(new Const((int)gu), new Unary(opAddrOf, Location::global(nam, pProc)));
 					}
 				}
 				s->simplify();
@@ -505,8 +489,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						pBB = pCfg->newBB(BB_rtls,ONEWAY,1);
 						BB_rtls = NULL;		// Clear when make new BB
 
-						// Exit the switch now if the basic block already
-						// existed
+						// Exit the switch now if the basic block already existed
 						if (pBB == 0) {
 							break;
 						}
@@ -569,20 +552,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					// We create the BB as a COMPJUMP type, then change
 					// to an NWAY if it turns out to be a switch stmt
 					pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
-					// FIXME: This needs to call a new register branch
-					// processing function
-					#if 0
-					if (isSwitch(pBB, stmt_jump->getDest(), pProc, pBF)) {
-						processSwitch(pBB, pBF->getTextDelta(), pCfg,
-						targetQueue, pBF);
-					}
-					else // Computed jump
-					#endif
-					{
-						// Not a switch statement
-						// Note: a computed call is handled as a CallStatement
-						LOG << "Warning: COMPUTED JUMP at " << uAddr << "\n";
-					}
+					LOG << "COMPUTED JUMP at " << uAddr << "\n";
 					sequentialDecode = false;
 					BB_rtls = NULL;		// New RTLList for next BB
 					break;
@@ -654,14 +624,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						// Find the address of the callee.
 						ADDRESS uNewAddr = call->getFixedDest();
 
-						// Calls with 0 offset (i.e. call the next instruction) are
-						// simply pushing the PC to the stack. Treat these as
-						// non-control flow instructions and continue.
+						// Calls with 0 offset (i.e. call the next instruction) are simply pushing the PC to the
+						// stack. Treat these as non-control flow instructions and continue.
 						if (uNewAddr == uAddr + inst.numBytes)
 							break;
 
-						// Call the virtual helper function. If implemented,
-						// will check for machine specific func calls
+						// Call the virtual helper function. If implemented, will check for machine specific funcion
+						// calls
 						if (helperFunc(uNewAddr, uAddr, BB_rtls)) {
 							// We have already added to BB_rtls
 							pRtl = NULL;		// Discard the call semantics
@@ -670,13 +639,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 						BB_rtls->push_back(pRtl);
 
-						// Add this non computed call site to the set of call
-						// sites which need to be analysed later.
+						// Add this non computed call site to the set of call sites which need to be analysed later.
 						//pCfg->addCall(call);
 						callSet.insert(call);
 
-						// Record the called address as the start of a new
-						// procedure if it didn't already exist.
+						// Record the called address as the start of a new procedure if it didn't already exist.
 						if (uNewAddr && pProc->getProg()->findProc(uNewAddr) == NULL) {
 							callSet.insert(call);
 							//newProc(pProc->getProg(), uNewAddr);
@@ -684,12 +651,10 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 								LOG << "p" << uNewAddr << "\t";
 						}
 
-						// Check if this is the _exit or exit function. May prevent
-						// us from attempting to decode invalid instructions, and
-						// getting invalid stack height errors
+						// Check if this is the _exit or exit function. May prevent us from attempting to decode
+						// invalid instructions, and getting invalid stack height errors
 						const char* name = pBF->SymbolByAddress(uNewAddr);
-						if (name && ((strcmp(name, "_exit") == 0) ||
-									 (strcmp(name,	"exit") == 0))) {
+						if (name && ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0))) {
 							// Create the new basic block
 							pBB = pCfg->newBB(BB_rtls, CALL, 0);
 
@@ -711,16 +676,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 								BasicBlock* returnBB = pCfg->newBB(rtls, RET, 0);
 								// Add out edge from call to return
 								pCfg->addOutEdge(pBB, returnBB);
-								// Put a label on the return BB (since it's an
-								// orphan); a jump will be reqd
+								// Put a label on the return BB (since it's an orphan); a jump will be reqd
 								pCfg->setLabel(returnBB);
 								pBB->setJumpReqd();
 								// Mike: do we need to set return locations?
 								// This ends the function
 								sequentialDecode = false;
 							}
-							else
-							{
+							else {
 								// Add the fall through edge if the block didn't
 								// already exist
 								if (pBB != NULL)
@@ -729,8 +692,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						}
 					}
 
-					// Create the list of RTLs for the next basic block and
-					// continue with the next instruction.
+					// Create the list of RTLs for the next basic block and continue with the next instruction.
 					BB_rtls = NULL;
 					break;	
 				}
@@ -739,6 +701,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					// Stop decoding sequentially
 					sequentialDecode = false;
 
+#if 0
 					if (pProc->getTheReturnAddr() == NO_ADDRESS) {
 
 						// Add the RTL to the list
@@ -764,6 +727,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
 						pCfg->addOutEdge(pBB, retAddr, true);
 					}
+#else
+					pBB = createReturnBlock(pProc, BB_rtls, pRtl);
+#endif
 
 					// Create the list of RTLs for the next basic block and
 					// continue with the next instruction.
@@ -783,13 +749,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				} // switch (s->getKind())
 			}
 			if (BB_rtls && pRtl)
-				// If non null, we haven't put this RTL into a the current BB
-				// as yet
+				// If non null, we haven't put this RTL into a the current BB as yet
 				BB_rtls->push_back(pRtl);
 
 			if (inst.reDecode)
-				// Special case: redecode the last instruction, without
-				// advancing uAddr by numBytes
+				// Special case: redecode the last instruction, without advancing uAddr by numBytes
 				continue;
 			uAddr += inst.numBytes;
 			if (uAddr > lastAddr)
@@ -832,13 +796,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 	//if (w)
 	//	  w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
 
-	// Add the callees to the set of CallStatements to proces for CSR, and also
-	// to the Prog object
+	// Add the callees to the set of CallStatements to process for CSR, and also to the Prog object
 	std::set<CallStatement*>::iterator it;
 	for (it = callSet.begin(); it != callSet.end(); it++) {
 		ADDRESS dest = (*it)->getFixedDest();
-		// Don't speculatively decode procs that are outside of the main text
-		// section, apart from dynamically linked ones (in the .plt)
+		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically
+		// linked ones (in the .plt)
 		if (pBF->IsDynamicLinkedProc(dest) || !spec || (dest < pBF->getLimitTextHigh())) {
 			pCfg->addCall(*it);
 			// Don't visit the destination of a register call
@@ -874,15 +837,11 @@ int FrontEnd::getInst(int addr)
 
 /*==============================================================================
  * FUNCTION:	TargetQueue::visit
- * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to
- *				queue it as a new BB to create later.
- *				Note: at present, it is important to visit an address BEFORE
- *				an out edge is added to that address. This is because adding
- *				an out edge enters the address into the Cfg's BB map, and it
- *				looks like the BB has already been visited, and it gets
- *				overlooked. It would be better to have a scheme whereby the
- *				order of calling these functions (i.e. visit() and
- *				AddOutEdge()) did not matter.
+ * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
+ *				Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
+ *				This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
+ *				BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
+ *				the order of calling these functions (i.e. visit() and AddOutEdge()) did not matter.
  * PARAMETERS:	pCfg - the enclosing CFG
  *				uNewAddr - the address to be checked
  *				pNewBB - set to the lower part of the BB if the address
@@ -908,6 +867,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
  * RETURNS:		<nothing>
  *============================================================================*/
 void TargetQueue::initial(ADDRESS uAddr) {
+	assert(targets.empty());			// Ensure no residue from previous procedures
 	targets.push(uAddr);
 }
 
@@ -953,9 +913,6 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
 	return rtl;
 }
 
-
-bool isSwitch(PBB pbb, Exp* e, UserProc* p);
-void processSwitch(PBB pbb, int delta, Cfg* cfg, TargetQueue& tq, BinaryFile* pBF);
 
 /*==============================================================================
  * FUNCTION:	getInstanceFor
@@ -1061,6 +1018,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle, BinaryFi
  * FUNCTION:	FrontEnd::closeInstance
  * OVERVIEW:	Close the library opened by getInstanceFor
  * PARAMETERS:	dlHandle: a void* from getInstanceFor
+ * NOTE:		static function
  * RETURNS:		Nothing
  *============================================================================*/
 void FrontEnd::closeInstance(void* dlHandle) {
@@ -1081,3 +1039,38 @@ Prog* FrontEnd::getProg() {
 	return prog;
 }
 
+/*==============================================================================
+ * FUNCTION:	createReturnBlock
+ * OVERVIEW:	Create a Return or a Oneway BB if a return statement already exists
+ * PARAMETERS:	pProc: pointer to enclosing UserProc
+ *				BB_rtls: list of RTLs for the current BB (not including pRtl)
+ *				pRtl: pointer to the current RTL with the semantics for the return statement (including a
+ *					ReturnStatement as the last statement)
+ * RETURNS:		Pointer to the newly created BB
+ *============================================================================*/
+PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl) {
+	Cfg* pCfg = pProc->getCFG();
+	PBB pBB;
+	// Add the RTL to the list; this has the semantics for the return statement as well as the ReturnStatement
+	// The last Statement may get replaced with a GotoStatement
+	if (BB_rtls == NULL) BB_rtls = new std::list<RTL*>;		// In case no other semantics
+	BB_rtls->push_back(pRtl);
+	if (pProc->getTheReturnAddr() == NO_ADDRESS) {
+		// Create the basic block
+		pBB = pCfg->newBB(BB_rtls, RET, 0);
+		Statement* s = pRtl->getList().back();		// The last statement should be the ReturnStatement
+		pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
+	} else {
+		ADDRESS retAddr = pProc->getTheReturnAddr();
+		// Must beware of modifying *pRtl, since there is an outer loop iterating through each statement.
+		// It's fine to overwrite the last Statement* though, which replaceLastStmt does
+		pRtl->replaceLastStmt(new GotoStatement(retAddr));
+		pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
+		if (pBB)									// Can be NULL if BB already exists but is incomplete
+			pCfg->addOutEdge(pBB, retAddr, true);
+		// Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
+		// instructions before the return instruction).
+		targetQueue.visit(pCfg, retAddr, pBB);
+	}
+	return pBB;
+}

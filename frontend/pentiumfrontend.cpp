@@ -169,18 +169,16 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
  *				  spec - true if a speculative decode
  * RETURNS:		  True if successful decode
  *============================================================================*/
-bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc,
-	std::ofstream &os, bool frag /* = false */, bool spec /* = false */) {
+bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
+		bool spec /* = false */) {
 
 	// Call the base class to do most of the work
 	if (!FrontEnd::processProc(uAddr, pProc, os, frag, spec))
 		return false;
 
-	// Need a post-cfg pass to remove the FPUSH and FPOP instructions,
-	// and to transform various code after floating point compares to
-	// generate floating point branches.
-	// processFloatCode() will recurse to process its out-edge BBs (if not
-	// already processed)
+	// Need a post-cfg pass to remove the FPUSH and FPOP instructions, and to transform various code after floating
+	//  point compares to generate floating point branches.
+	// processFloatCode() will recurse to process its out-edge BBs (if not already processed)
 	Cfg* pCfg = pProc->getCFG();
 	pCfg->unTraverse();
 	// This will get done twice; no harm
@@ -335,17 +333,15 @@ void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
 
 /*==============================================================================
  * FUNCTION:	  processFloatCode
- * OVERVIEW:	  Process a basic block, and all its successors, for floating
- *					point code. Remove FPUSH/FPOP, instead decrementing or
- *					incrementing respectively the tos value to be used from
- *					here down. Note: tos has to be a parameter, not a global,
+ * OVERVIEW:	  Process a basic block, and all its successors, for floating point code.
+ *					Remove FPUSH/FPOP, instead decrementing or incrementing respectively the
+ *					tos value to be used from here down. Note: tos has to be a parameter, not a global,
  *					to get the right value at any point in the call tree
  * PARAMETERS:	  pBB: pointer to the current BB
  *				  tos: reference to the value of the "top of stack" pointer
- *				  currently. Starts at zero, and is decremented to 7 with
- *				  the first load, so r[39] should be used first, then r[38]
- *		  etc. However, it is reset to 0 for calls, so that if a
- *				  function returns a float, the it will always appear in r[32]
+ *				  	currently. Starts at zero, and is decremented to 7 with the first load, so r[39] should be
+ *					used first, then r[38] etc. However, it is reset to 0 for calls, so that if a function returns
+ *					a float, the it will always appear in r[32]
  * RETURNS:		  <nothing>
  *============================================================================*/
 void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)

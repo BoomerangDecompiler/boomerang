@@ -2019,7 +2019,7 @@ void UserProc::replaceExpressionsWithSymbols() {
 
 	// replace expressions in regular statements with symbols
 	// Note: O(MN) where M is the number of symbols, and N is the number of statements
-	// Should really use the map properly
+	// FIXME: Should use the map properly
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
@@ -2779,6 +2779,13 @@ void UserProc::fromSSAform() {
 	StatementList::iterator it;
 	std::map<Exp*, Type*, lessExpStar> firstTypes;
 	std::map<Exp*, Type*, lessExpStar>::iterator ff;
+	// Start with the parameters. There is not always a use of every parameter, yet that location may be used with
+	// a different type (e.g. envp used as int in test/sparc/fibo-O4)
+	int n = signature->getNumParams();
+	for (int i=0; i < n; i++) {
+		Exp* namedParam = Location::param(signature->getParamName(i));
+		firstTypes[namedParam] = signature->getParamType(i);
+	}
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		LocationSet defs;
@@ -2795,7 +2802,8 @@ void UserProc::fromSSAform() {
 				// There already is a type for base, and it is different to the type for this definition.
 				// Record an "interference" so it will get a new variable
 				RefExp* ref = new RefExp(base, s);
-				ig[ref] = newLocal(ty);
+				//ig[ref] = newLocal(ty);
+				ig[ref] = getLocalExp(ref, ty);
 			}
 		}
 	}
@@ -2811,6 +2819,7 @@ void UserProc::fromSSAform() {
 	}
 
 	// First rename the variables (including phi's, but don't remove)
+	// The below could be replaced by replaceExpressionsWithSymbols() now, except that then references don't get removed
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		s->fromSSAform(ig);
@@ -2854,21 +2863,36 @@ void UserProc::fromSSAform() {
 		else {
 			// Need new local. Used to think we needed a copy statement, but that just creates too many locals.
 			// Just replace all the definitions the phi statement refers to with tempLoc
-			// Many times we could just use the LHS of the phiassign... maybe implement later. The problem is that
-			// the variable at the left of the phiassign might overlap with other versions of the same named variable
-			Exp* tempLoc = newLocal(pa->getType());
+			// We should be able to just use the LHS of the phiassign. I thought the problem was that
+			// the variable at the left of the phiassign might overlap with other versions of the same named variable,
+			// but if that happens, then it will already be assigned a new variable. So no problem.
+#if 0
+			// Exp* tempLoc = newLocal(pa->getType());
+			Exp* tempLoc = getLocalExp(new RefExp(pa->getLeft(), pa), pa->getType());
 			if (DEBUG_LIVENESS)
 				LOG << "Phi statement " << s << " requires local, using local" << tempLoc << "\n";
 			// For each definition ref'd in the phi
 			PhiAssign::iterator rr;
 			for (rr = pa->begin(); rr != pa->end(); rr++) {
-				std::ostringstream ost;
-				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one return)
-				// with the new temporary
+				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one
+				// return) with the new temporary
 				rr->def->setLeftFor(rr->e, tempLoc);
 			}
 			// Replace the RHS of the phi with tempLoc
 			pa->convertToAssign(tempLoc);
+#else
+			// Replace the LHS of the definitions with the left of the PhiAssign
+			Exp* left = pa->getLeft();
+			if (DEBUG_LIVENESS)
+				LOG << "Phi statement " << s << " requires back substitution, using " << left << "\n";
+			// For each definition ref'd in the phi
+			PhiAssign::iterator rr;
+			for (rr = pa->begin(); rr != pa->end(); rr++) {
+				// Replace the LHS of the definitions (use setLeftFor, since some could be calls with more than one
+				// return) with left
+				rr->def->setLeftFor(rr->e, left);
+			}
+#endif
 		}
 	}
 

@@ -37,7 +37,6 @@
 
 class UserProc;
 class Proc;
-class TargetQueue;
 class RTL;
 class NJMCDecoder;
 class BasicBlock;
@@ -48,6 +47,7 @@ class Cfg;
 class Prog;
 struct DecodeResult;
 class Signature;
+class Statement;
 
 // Control flow types
 enum INSTTYPE {
@@ -59,6 +59,44 @@ enum INSTTYPE {
 	I_COMPJUMP,				 // computed jump
 	I_COMPCALL				 // computed call
 };
+
+// Put the target queue logic into this small class
+class TargetQueue {
+	std::queue<ADDRESS>	 targets;
+
+public:
+
+/*
+ * FUNCTION:	visit
+ * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to
+ *				queue it as a new BB to create later.
+ *				Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
+ *				This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
+ *				BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
+ *				the order of calling these functions (i.e. visit() and AddOutEdge()) did not matter.
+ * PARAMETERS:	pCfg - the enclosing CFG
+ *				uNewAddr - the address to be checked
+ *				pNewBB - set to the lower part of the BB if the address already exists as a non explicit label
+ *					(BB has to be split)
+ * RETURNS:		<nothing>
+ */
+	void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
+/*
+ * Provide an initial address (can call several times if there are several entry points)
+ */
+	void initial(ADDRESS uAddr);
+
+
+/*
+ * FUNCTION:	  nextAddress
+ * OVERVIEW:	  Return the next target from the queue of non-processed targets.
+ * PARAMETERS:	  cfg - the enclosing CFG
+ * RETURNS:		  The next address to process, or 0 if none (queue is empty)
+ */
+	ADDRESS nextAddress(Cfg* cfg);
+
+};	// class TargetQueue
+
 
 typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl); 
 
@@ -73,7 +111,8 @@ protected:
 	// Public map from function name (string) to signature.
 	std::map<std::string, Signature*> librarySignatures;
 	std::map<ADDRESS, std::string> refHints;
-
+	// The queue of addresses still to be processed
+	TargetQueue	targetQueue;
 public:
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
@@ -108,137 +147,102 @@ public:
 
 	bool	isWin32();					// Is this a win32 frontend?
 
-	BinaryFile *getBinaryFile() { return pBF; }
+		BinaryFile 	*getBinaryFile() { return pBF; }
 
-	/*
-	 * Function to fetch the smallest machine instruction
-	 */
-virtual int		getInst(int addr);
+		/*
+		 * Function to fetch the smallest machine instruction
+		 */
+virtual	int			getInst(int addr);
 
-	DecodeResult& decodeInstruction(ADDRESS pc);
+		DecodeResult& decodeInstruction(ADDRESS pc);
 
-	/*
-	 * Accessor function to get the decoder.
-	 */
-	NJMCDecoder *getDecoder() { return decoder; }
+		/*
+		 * Accessor function to get the decoder.
+		 */
+		NJMCDecoder *getDecoder() { return decoder; }
 
-	/*
-	 * Read library signatures from a file.
-	 */
-	void readLibrarySignatures(const char *sPath, callconv cc);
-	// read from a catalog
-	void readLibraryCatalog(const char *sPath);
-	// read from default catalog
-	void readLibraryCatalog();
+		/*
+		 * Read library signatures from a file.
+		 */
+		void		readLibrarySignatures(const char *sPath, callconv cc);
+		// read from a catalog
+		void		readLibraryCatalog(const char *sPath);
+		// read from default catalog
+		void		readLibraryCatalog();
 
-	// lookup a library signature by name
-	Signature *getLibSignature(const char *name);
+		// lookup a library signature by name
+		Signature	*getLibSignature(const char *name);
 
-	// return a signature that matches the architecture best
-	Signature *getDefaultSignature(const char *name);
+		// return a signature that matches the architecture best
+		Signature	*getDefaultSignature(const char *name);
 
-	virtual std::vector<Exp*> &getDefaultParams() = 0;
-	virtual std::vector<Exp*> &getDefaultReturns() = 0;
+virtual std::vector<Exp*> &getDefaultParams() = 0;
+virtual std::vector<Exp*> &getDefaultReturns() = 0;
 
-	/*
-	 * Decode all undecoded procedures and return a new program containing
-	 * them.
-	 */
-	Prog *decode(bool decodeMain = true, const char *pname = NULL);
+		/*
+		 * Decode all undecoded procedures and return a new program containing
+		 * them.
+		 */
+		Prog		*decode(bool decodeMain = true, const char *pname = NULL);
 
-	/* Decode all procs starting at a given address in a given program. */
-	void decode(Prog *prog, ADDRESS a);
+		/* Decode all procs starting at a given address in a given program. */
+		void		decode(Prog *prog, ADDRESS a);
 
-	/* Decode one proc starting at a given address in a given program. */
-	void decodeOnly(Prog *prog, ADDRESS a);
+		/* Decode one proc starting at a given address in a given program. */
+		void		decodeOnly(Prog *prog, ADDRESS a);
 
-	/* Decode a fragment of a procedure, e.g. for each destination of a
-	  switch statement */
-	void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a);
+		/* Decode a fragment of a procedure, e.g. for each destination of a
+		  switch statement */
+		void		decodeFragment(UserProc* proc, ADDRESS a);
 
-	/*
-	 * create a new procedure of the appropriate type in a program at
-	 * the given address.
-	 * Note: moved to Prog::setNewProc(ADDRESS);
-	 */
-	//Proc* newProc(Prog *prog, ADDRESS uAddr);
+		/*
+		 * processProc. This is the main function for decoding a procedure. It is usually overridden in the derived
+		 * class to do source machine specific things.  If frag is set, we are decoding just a fragment of the proc
+		 * (e.g. each arm of a switch statement is decoded). If spec is set, this is a speculative decode.
+		 * Returns true on a good decode
+		 */
+virtual bool		processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag = false,
+						bool spec = false);
 
-	/*
-	 * processProc. This is the main function for decoding a procedure.
-	 * It is usually overridden in the derived class to do
-	 * source machine specific things.
-	 * If frag is set, we are decoding just a fragment of the proc
-	 *	(e.g. each arm of a switch statement is decoded)
-	 * If spec is set, this is a speculative decode
-	 * Returns true on a good decode
-	 */
-virtual bool	processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-	bool frag = false, bool spec = false);
+		/*
+		 * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
+		 * If so, return true and set the semantics in lrtl.  addr is the native address of the call instruction
+		 */
+virtual bool		helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {return false; }
 
-	/*
-	 * Given the dest of a call, determine if this is a machine specific
-	 * helper function with special semantics. If so, return true and set the
-	 * semantics in lrtl.
-	 * addr is the native address of the call instruction
-	 */
-virtual bool	helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {
-		return false; }
+		/*
+		 * Locate the starting address of "main", returning a native address
+		 */
+virtual	ADDRESS		getMainEntryPoint( bool &gotMain ) = 0;
 
-	/*
-	 * Locate the starting address of "main", returning a native address
-	 */
-virtual ADDRESS getMainEntryPoint( bool &gotMain ) = 0;
+		/*
+		 * getInstanceFor. Get an instance of a class derived from FrontEnd, returning a pointer to the object of
+		 * that class. Do this by guessing the machine for the binary file whose name is sName, loading the
+		 * appropriate library using dlopen/dlsym, running the "construct" function in that library, and returning
+		 * the result.
+		 */
+static	FrontEnd*	getInstanceFor( const char* sName, void*& dlHandle, BinaryFile *pBF, NJMCDecoder*& decoder);
 
-	/*
-	 * getInstanceFor. Get an instance of a class derived from FrontEnd,
-	 * returning a pointer to the object of that class.
-	 * Do this by guessing the machine for the binary file whose name is
-	 * sName, loading the appropriate library using dlopen/dlsym, running
-	 * the "construct" function in that library, and returning the result.
-	 */
-static FrontEnd* getInstanceFor( const char* sName, void*& dlHandle,
-  BinaryFile *pBF, NJMCDecoder*& decoder);
+		/*
+		 * Close the library opened by getInstanceFor
+		 */
+static	void		closeInstance(void* dlHandle);
 
-	/*
-	 * Close the library opened by getInstanceFor
-	 */
-static void closeInstance(void* dlHandle);
+		/*
+		 * Get a Prog object (for testing and not decoding)
+		 */
+		Prog*		getProg();
 
-	/*
-	 * Get a Prog object (for testing and not decoding)
-	 */
-	Prog* getProg();
+		/*
+		 * Create a Return or a Oneway BB if a return statement already exists
+		 * PARAMETERS:	pProc: pointer to enclosing UserProc
+		 *				BB_rtls: list of RTLs for the current BB
+		 *				pRtl: pointer to the current RTL with the semantics for the return statement (including a
+		 *					ReturnStatement as the last statement)
+		 */
+		PBB			createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
 
-};
-
-
-/*==============================================================================
- * These functions do the analysis required to see if a register jump
- * is actually a switch table.
- *============================================================================*/
-
-/*
- * Initialise the switch analyser.
- */
-void initSwitch();
-
-/*
- * Attempt to determine whether this DD instruction is a switch
- * statement. If so, return true, and set iLower, uUpper to the
- * switch range, and set uTable to the native address of the
- * table. If it is form O (the table is an array of offsets from
- * the start of the table), then chForm will be 'O', etc.
- * If it is form H (hash table), then iNumTable will be the
- * number of entries in the table (not the number of cases,
- * or max-min).
- */
-bool isSwitch(PBB pBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF);
-
-/*
- * Make use of the switch info. Should arguably be incorporated into isSwitch.
- */
-void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& targetQueue,
-	BinaryFile* pBF);
+};	// class FrontEnd
 
 
 /*==============================================================================
@@ -260,63 +264,13 @@ void initFront();
 RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder);
 
 /*
- * This decodes a given procedure. It performs the
- * analysis to recover switch statements, call
+ * This decodes a given procedure. It performs the analysis to recover switch statements, call
  * parameters and return types etc.
- * If keep is false, discard the decoded procedure (only need this to find code
- *	other than main that is reachable from _start, for coverage and speculative
- *	decoding)
- * If spec is true, then we are speculatively decoding (i.e. if there is an
- *	illegal instruction, we just bail out)
+ * If keep is false, discard the decoded procedure (only need this to find code other than main that is reachable
+ * from _start, for coverage and speculative decoding)
+ * If spec is true, then we are speculatively decoding (i.e. if there is an illegal instruction, we just bail out)
  */
-bool decodeProc(ADDRESS uAddr, FrontEnd& fe, bool keep = true,
-	bool spec = false);
-
-// Put the target queue logic into this small class
-class TargetQueue {
-	std::queue<ADDRESS>	 targets;
-
-public:
-
-/*
- * FUNCTION:	visit
- * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to
- *				queue it as a new BB to create later.
- *				Note: at present, it is important to visit an address BEFORE
- *				an out edge is added to that address. This is because adding
- *				an out edge enters the address into the Cfg's BB map, and it
- *				looks like the BB has already been visited, and it gets
- *				overlooked. It would be better to have a scheme whereby the
- *				order of calling these functions (i.e. visit() and
- *				AddOutEdge()) did not matter.
- * PARAMETERS:	pCfg - the enclosing CFG
- *				uNewAddr - the address to be checked
- *				pNewBB - set to the lower part of the BB if the address
- *				  already exists as a non explicit label (BB has to be split)
- * RETURNS:		<nothing>
- */
-	void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
-/*
- * Provide an initial address (can call several times if there are several
- *	entry points)
- */
-	void initial(ADDRESS uAddr);
-
-
-/*
- * FUNCTION:	  nextAddress
- * OVERVIEW:	  Return the next target from the queue of non-processed
- *				  targets.
- * PARAMETERS:	  cfg - the enclosing CFG
- * RETURNS:		  The next address to process, or 0 if none (queue is empty)
- */
-	ADDRESS nextAddress(Cfg* cfg);
-
-};
-
-
-
-
+bool decodeProc(ADDRESS uAddr, FrontEnd& fe, bool keep = true, bool spec = false);
 
 
 #endif		// #ifndef __FRONTEND_H__

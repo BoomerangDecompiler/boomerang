@@ -261,7 +261,7 @@ virtual void		fixSuccessor() {}
 virtual void		genConstraints(LocationSet& cons) {}
 
 		// Data flow based type analysis
-virtual	void		dfaTypeAnalysis(bool& ch) {}			// Use the type information in this Statement
+virtual	void		dfaTypeAnalysis(bool& ch, UserProc* proc) {}	// Use the type information in this Statement
 		Type*		meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
 
 		// Replace registers with locals
@@ -407,7 +407,7 @@ virtual void	simplify() = 0;
 virtual void	genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
-		void	dfaTypeAnalysis(bool& ch);
+		void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
@@ -494,7 +494,7 @@ virtual void	fixSuccessor();
 virtual void	genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
-		void	dfaTypeAnalysis(bool& ch);
+		void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
@@ -525,14 +525,14 @@ struct PhiInfo {
 };
 class PhiAssign : public Assignment {
 public:
-		typedef std::vector<PhiInfo> Definitions;
-		typedef Definitions::iterator iterator;
+		typedef		std::vector<PhiInfo> Definitions;
+		typedef		Definitions::iterator iterator;
 private:
 	Definitions	defVec;		// A vector of information about definitions
 public:
 		// Constructor, subexpression
-				PhiAssign(Exp* lhs)
-				  : Assignment(lhs) {kind = STMT_PHIASSIGN;}
+					PhiAssign(Exp* lhs)
+						: Assignment(lhs) {kind = STMT_PHIASSIGN;}
 		// Constructor, type and subexpression
 				PhiAssign(Type* ty, Exp* lhs)
 				  : Assignment(ty, lhs) {kind = STMT_PHIASSIGN;}
@@ -574,7 +574,7 @@ virtual void	fromSSAform(igraph& ig);
 virtual void	genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
-		void	dfaTypeAnalysis(bool& ch);
+		void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 //
 //	Phi specific functions
@@ -703,7 +703,7 @@ virtual void	fromSSAform(igraph& ig);
 		// a hack for the SETS macro
 		void	setLeftFromList(std::list<Statement*>* stmts);
 
-virtual void	dfaTypeAnalysis(bool& ch);
+virtual void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 	friend class XMLProgParser;
 };	// class BoolAssign
@@ -876,7 +876,7 @@ virtual void	fromSSAform(igraph& ig);
 virtual void	genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
-		void	dfaTypeAnalysis(bool& ch);
+		void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
@@ -1059,7 +1059,7 @@ virtual bool	searchAll(Exp* search, std::list<Exp*> &result);
 virtual void	genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
-		void	dfaTypeAnalysis(bool& ch);
+		void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
@@ -1182,7 +1182,7 @@ virtual bool	doReplaceRef(Exp* from, Exp* to);
 		ADDRESS	getRetAddr() {return retAddr;}
 		void	setRetAddr(ADDRESS r) {retAddr = r;}
 
-virtual void	dfaTypeAnalysis(bool& ch);
+virtual void	dfaTypeAnalysis(bool& ch, UserProc* proc);
 
 		// Replace registers with locals
 virtual	void	regReplace(UserProc* proc);
