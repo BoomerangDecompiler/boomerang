@@ -64,6 +64,12 @@
 #define DIS_COUNT   (new Const(count))
 #define DIS_OFF     (new Const(off))
 
+
+// Function to generate statements for the BSF/BSR series (Bit Scan Forward/
+// Reverse)
+void genBSFR(ADDRESS pc, Exp* reg, Exp* modrm, int init, int size, OPER incdec,
+    int numBytes);
+
 /**********************************
  * PentiumDecoder methods.
  **********************************/   
@@ -96,9 +102,9 @@ void PentiumDecoder::unused(int x)
  * RETURNS:        a DecodeResult structure containing all the information
  *                   gathered during decoding
  *============================================================================*/
+static DecodeResult result;
 DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 {
-    static DecodeResult result;
     ADDRESS hostPC = pc + delta;
 
     // Clear the result structure;
@@ -1345,16 +1351,25 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         stmts = instantiate(pc,  "BSWAP", DIS_R32);
 
     | BSRod(reg, Eaddr) =>
-        stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
+        //stmts = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
+        // Bit Scan Forward: need helper function
+        genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, nextPC-hostPC);
+        return result;
 
     | BSRow(reg, Eaddr) =>
-        stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
+        //stmts = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
+        genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, nextPC-hostPC);
+        return result;
 
     | BSFod(reg, Eaddr) =>
-        stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
+        //stmts = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
+        genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, nextPC-hostPC);
+        return result;
 
     | BSFow(reg, Eaddr) =>
-        stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
+        //stmts = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
+        genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, nextPC-hostPC);
+        return result;
 
     // Not "user" instructions:
 //  | BOUNDod(reg, Mem) =>
@@ -2304,3 +2319,115 @@ PentiumDecoder::PentiumDecoder() : NJMCDecoder()
 int PentiumDecoder::decodeAssemblyInstruction(unsigned, int)
 { return 0; }
 
+/*==============================================================================
+ * FUNCTION:       genBSFR
+ * OVERVIEW:       Generate statements for the BSF and BSR series
+ *                 (Bit Scan Forward/Reverse)
+ * PARAMETERS:     pc: native PC address (start of the BSF/BSR instruction)
+ *                 reg: an expression for the destination register
+ *                 modrm: an expression for the operand being scanned
+ *                 init: initial value for the dest register
+ *                 size: sizeof(modrm) (in bits)
+ *                 incdec: either opPlus for Forward scans, or opMinus for
+ *                  Reverse scans
+ *                 numBytes: number of bytes this instruction
+ * RETURNS:        true if have to exit early (not in last state)
+ *============================================================================*/
+static int BSFRstate = 0;       // State number for this state machine
+void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
+  OPER incdec, int numBytes) {
+    // Note the horrible hack needed here. We need initialisation code, and
+    // an extra branch, so the %SKIP/%RPT won't work.
+    // We need to emit 6 statements, but these need to be in 3 RTLs, since the
+    // destination of a branch has to be to the start of an RTL.
+    // So we use a state machine, and set numBytes to 0 for the first two
+    // times. That way, this instruction ends up emitting three RTLs, each
+    // with the semantics we need.
+    // Note: we don't use pentium.SSL for these.
+    // BSFR1:
+    //  pc+0:   zf := 1
+    //  pc+0:   branch exit condition modrm = 0
+    // BSFR2:
+    //  pc+1:   zf := 0
+    //  pc+1:   dest := init
+    // BSFR3:
+    //  pc+2: dest := dest op 1
+    //  pc+2: branch pc+2 condition modrm@[dest:dest]=0
+    // exit:
+
+    std::list<Statement*>* stmts = new std::list<Statement*>;
+    Statement* s;
+    BranchStatement* b;
+    switch (BSFRstate) {
+        case 0:
+            s = new Assign(
+                new IntegerType(1),
+                new Terminal(opZF),
+                new Const(1));
+            stmts->push_back(s);
+            b = new BranchStatement;
+            b->setDest(pc+numBytes);
+            b->setCondType(BRANCH_JE);
+            b->setCondExpr(
+                new Binary(opEquals,
+                    modrm->clone(),
+                    new Const(0)));
+            stmts->push_back(b);
+            break;
+        case 1:
+            s = new Assign(
+                new IntegerType(1),
+                new Terminal(opZF),
+                new Const(0));
+            stmts->push_back(s);
+            s = new Assign(
+                new IntegerType(size),
+                dest->clone(),
+                new Const(init));
+            stmts->push_back(s);
+            break;
+        case 2:
+            s = new Assign(
+                new IntegerType(size),
+                dest->clone(),
+                new Binary(incdec,
+                    dest->clone(),
+                    new Const(1)));
+            stmts->push_back(s);
+            b = new BranchStatement;
+            b->setDest(pc+2);
+            b->setCondType(BRANCH_JE);
+            b->setCondExpr(
+                new Binary(opEquals,
+                    new Ternary(opAt,
+                        modrm->clone(),
+                        dest->clone(),
+                        dest->clone()),
+                    new Const(0)));
+            stmts->push_back(b);
+            break;
+        default:
+            // Should never happen
+            assert(BSFRstate - BSFRstate);
+    }
+    result.rtl = new RTL(pc + BSFRstate, stmts);
+    // Keep numBytes == 0 until the last state, so we re-decode this
+    // instruction 3 times
+    if (BSFRstate != 3-1) {
+        // Let the number of bytes be 1. This is important at least for setting
+        // the fallthrough address for the branch (in the first RTL), which
+        // should point to the next RTL
+        result.numBytes = 1;
+        result.reDecode = true;     // Decode this instuction again
+    } else {
+        result.numBytes = numBytes;
+        result.reDecode = false;
+    }
+    if (DEBUG_DECODER)
+        std::cout << std::hex << pc+BSFRstate << std::dec << ": " <<
+        "BS" << (init == -1 ? "F" : "R") << (size==32 ? ".od" : ".ow") <<
+        BSFRstate+1 << "\n";
+    if (++BSFRstate == 3)
+        BSFRstate = 0;      // Ready for next time
+        
+}
