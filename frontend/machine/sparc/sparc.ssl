@@ -22,6 +22,7 @@
 # 21 Jun 01 - Nathan: Fixed precedence problem in LDD & STD
 # 26 Nov 02 - Mike: Added RETURN (V9) instruction
 # 04 Dec 02 - Mike: r[rs1] -> rs1 (so we can make r[0] -> 0)
+# 09 Dec 02 - Mike: Use succ(rd) and succ(rs1) for LDD and STD
 
 NWINDOWS    := 8;            # Number of windows (register windows)-
                              # implementation dependent
@@ -222,10 +223,9 @@ FETCHEXEC           *32* %g0 := 0
 
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd. 
-# Note: this is fudged in sslinst.cpp now!
 #LOADD := { LDD_, LDDA_ }
-LDD      eaddr, rd                      *32* rd := m[eaddr]
-                                        *32* rd := m[eaddr + WORD]; 
+LDD      eaddr, rd                      *32* 	   rd := m[eaddr]
+                                        *32* succ(rd) := m[eaddr + WORD]; 
 # Note: the above offset (WORD) is now in bytes!
 
 #LOADU := { LD_, LDA_ }
@@ -246,10 +246,9 @@ LDSB     eaddr, rd                      *32* rd := sgnex(8, 32, m[eaddr]);
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
-# NOTE: this is fudged in sslinst.cpp now!
 #STOD := { STD_, STDA_ }
 STD      rd, eaddr                      *32* m[eaddr] := rd  
-                                        *32* m[eaddr + WORD] := rd;
+                                        *32* m[eaddr + WORD] := succ(rd);
 
 #STW := { ST_, STA_}
 ST       rd, eaddr                      *32* m[eaddr] := rd;
