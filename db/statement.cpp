@@ -873,7 +873,6 @@ Statement* BranchStatement::clone() {
 	ret->jtCond = jtCond;
 	if (pCond) ret->pCond = pCond->clone();
 	else ret->pCond = NULL;
-	ret->m_isComputed = m_isComputed;
 	ret->bFloat = bFloat;
 	// Statement members
 	ret->pbb = pbb;
@@ -1373,7 +1372,7 @@ Exp *CallStatement::getProven(Exp *e) {
 // Substitute the various components of expression e with the appropriate actual arguments
 // Used in fixCallRefs (via the CallRefsFixer). Locations defined in this call are replaced with
 // their proven values, which are in terms of the initial values at the start of the call, which
-// are the actual arguments.
+// are the actual arguments (implicit or regular)
 Exp *CallStatement::substituteParams(Exp *e)
 {
 	e = e->clone();
@@ -1858,8 +1857,7 @@ void CallStatement::getDefinitions(LocationSet &defs) {
 			defs.insert(returns[i].e);
 }
 
-bool CallStatement::convertToDirect()
-{
+bool CallStatement::convertToDirect() {
 	if (!m_isComputed)
 		return false;
 	bool convertIndirect = false;
@@ -1873,7 +1871,23 @@ bool CallStatement::convertToDirect()
 	// Can actually have name{0}[0]{0} !!
 	if (e->isSubscript())
 		e = ((RefExp*)e)->getSubExp1();
-	if (e->getOper() != opGlobal) {
+	if (e->isIntConst()) {
+		// ADDRESS u = (ADDRESS)((Const*)e)->getInt();
+		// Just convert it to a direct call!
+		// FIXME: to be completed
+	} else if (e->isMemOf()) {
+		// It might be a global that has not been processed yet
+		Exp* sub = ((Unary*)e)->getSubExp1();
+		if (sub->isIntConst()) {
+			// m[K]: convert it to a global right here
+			ADDRESS u = (ADDRESS)((Const*)sub)->getInt();
+			proc->getProg()->globalUsed(u);
+			const char *nam = proc->getProg()->getGlobalName(u);
+			e = Location::global(nam, proc);
+			pDest = new RefExp(e, NULL);
+		}
+	}
+	if (!e->isGlobal()) {
 		return false;
 	}
 	char *nam = ((Const*)e->getSubExp1())->getStr();
@@ -1895,6 +1909,7 @@ bool CallStatement::convertToDirect()
 		// 3) fix the arguments (this will only affect the implicit arguments, the regular arguments should
 		//    be empty at this point)
 		// 3a replace current arguments with those of the new proc
+		// 3b copy the signature from the new proc
 		// 4) change this to a non-indirect call
 		procDest = p;
 		Signature *sig = p->getSignature();
@@ -1956,12 +1971,16 @@ bool CallStatement::convertToDirect()
 		implicitArguments = newimpargs;
 		assert((int)implicitArguments.size() ==
 			sig->getNumImplicitParams());
+		// 3b
+		signature = p->getSignature()->clone();
 		// 4
 		m_isComputed = false;
 		proc->undoComputedBB(this);
 		proc->addCallee(procDest);
 		procDest->printDetailsXML();
 		convertIndirect = true;
+		if (VERBOSE)
+			LOG << "Result of convertToDirect: " << this << "\n";
 	}
 	return convertIndirect;
 }
@@ -2039,8 +2058,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 		if (change) {
 			arguments[i] = arguments[i]->simplifyArith()->simplify();
 			if (1 & VERBOSE)
-				LOG << "doReplaceRef: updated argument[" << i << "] with " <<
-				  arguments[i] << "\n";
+				LOG << "doReplaceRef: updated argument[" << i << "] with " << arguments[i] << "\n";
 			updateArgumentWithType(i);
 		}
 	}
@@ -2157,8 +2175,7 @@ void CallStatement::insertArguments(StatementSet& rs) {
 }
 
 // Processes each argument of a CallStatement, and the RHS of an Assign. Ad-hoc type analysis only.
-Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc)
-{
+Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc) {
 	if (t == NULL) return e;
 	NamedType *nt = NULL;
 	if (t->isNamed()) {
@@ -2178,12 +2195,10 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc)
 			Type *points_to = pt->getPointsTo();
 			if (points_to->resolvesToChar()) {
 				ADDRESS u = ((Const*)e)->getAddr();
-				char *str = 
-					prog->getStringConstant(u, true);
+				char *str = prog->getStringConstant(u, true);
 				if (str) {
 					e = new Const(escapeStr(str));
-					// Check if we may have guessed this global incorrectly
-					// (usually as an array of char)
+					// Check if we may have guessed this global incorrectly (usually as an array of char)
 					const char* nam = prog->getGlobalName(u);
 					if (nam) prog->setGlobalType(nam,
 						new PointerType(new CharType()));
@@ -2197,8 +2212,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc)
 			if (points_to->resolvesToFunc()) {
 				ADDRESS a = ((Const*)e)->getAddr();
 				if (VERBOSE)
-					LOG << "found function pointer with constant value "
-						<< "of type " << pt->getCtype() 
+					LOG << "found function pointer with constant value " << "of type " << pt->getCtype() 
 						<< ".  Decoding address " << a << "\n";
 				if (!Boomerang::get()->noDecodeChildren)
 					prog->decodeExtraEntrypoint(a);
@@ -2418,6 +2432,14 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 		LOG << "Ellipsis processing for " << name << "\n";
 	char* formatStr = NULL;
 	Exp* formatExp = getArgumentExp(format);
+	// We sometimes see a[m[blah{...}]]
+	if (formatExp->isAddrOf()) {
+		formatExp = ((Unary*)formatExp)->getSubExp1();
+		if (formatExp->isSubscript())
+			formatExp = ((RefExp*)formatExp)->getSubExp1();
+		if (formatExp->isMemOf())
+			formatExp = ((Unary*)formatExp)->getSubExp1();
+	}
 	if (formatExp->isSubscript()) {
 		// Maybe it's defined to be a Const string
 		Statement* def = ((RefExp*)formatExp)->getDef();
@@ -3594,13 +3616,6 @@ bool Statement::castConst(int num, Type* ty) {
 	StmtModifier scc(&ecc);
 	accept(&scc);
 	return ecc.isChanged();
-}
-
-bool Statement::stripRefs() {
-	RefStripper rs;
-	PhiStripper ps(&rs);
-	accept(&ps);
-	return ps.getDelete();
 }
 
 void Statement::stripSizes() {
