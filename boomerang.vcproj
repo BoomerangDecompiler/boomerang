@@ -133,17 +133,31 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="c"
 						PreprocessorDefinitions="_MSDOS"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="c"
 						PreprocessorDefinitions="_MSDOS"/>
 				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\c\ansi-c-scanner.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="c"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="c"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\db\basicblock.cpp">
@@ -211,13 +225,13 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories="win32make/include"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""/>
+						AdditionalIncludeDirectories="win32make/include"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -461,12 +475,14 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="win32make\include"
 						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="win32make\include"
 						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 			</File>

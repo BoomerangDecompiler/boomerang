@@ -534,6 +534,17 @@ int Boomerang::cmdLine()
 int Boomerang::commandLine(int argc, const char **argv) 
 {
 	if (argc < 2) usage();
+#ifdef _MSC_VER				// For the console mode version; Windows GUI will override in windows.cpp
+#ifndef MAX_PATH
+#define MAX_PATH 132
+#endif
+	char filename[MAX_PATH];
+	getcwd(filename, MAX_PATH-10);
+	strcat(filename, "\\");
+	progPath = filename;
+	strcat(filename, "output");
+	outputPath = filename;
+#else
 	progPath = argv[0];
 	// Chop off after the last slash
 	size_t j = progPath.rfind("/");
@@ -547,7 +558,8 @@ int Boomerang::commandLine(int argc, const char **argv)
 	else {
 		progPath = "./";			// Just assume the current directory
 	}
-
+#endif
+	std::cerr << "Prog path is " << progPath << "\n";	// HACK!
 	// Parse switches on command line
 	if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
 		help();
@@ -776,7 +788,6 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 		 it != symbols.end(); it++) {
 		fe->AddSymbol((*it).first, (*it).second.c_str());
 	}
-
 	fe->readLibraryCatalog();		// Needed before readSymbolFile()
 
 	for (unsigned i = 0; i < symbolFiles.size(); i++) {

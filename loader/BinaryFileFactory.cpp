@@ -33,7 +33,7 @@ BinaryFile *BinaryFileFactory::Load( const char *sName )
 		delete pBF;
 		return NULL;
 	}
-	pBF->getTextLimits();
+pBF->getTextLimits();
 	return pBF;
 }
 
@@ -94,7 +94,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	}
 	
 // Load the specific loader library
-#ifndef _WIN32
+#ifndef _MSC_VER
 	libName = std::string("lib/lib") + libName;
 #ifdef	__CYGWIN__
 	libName += ".dll";		// Cygwin wants .dll, but is otherwise like Unix
@@ -130,7 +130,6 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	}
 	// Call the construct function
 	res = (*pFcn)();
-
 	fclose(f);
 	return res;
 }

@@ -26,7 +26,7 @@
 				RuntimeLibrary="5"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -165,9 +165,33 @@
 			</File>
 			<File
 				RelativePath="..\..\db\cfg.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\codegen\chllcode.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\type\constraint.cpp">
@@ -186,6 +210,18 @@
 			</File>
 			<File
 				RelativePath="..\..\db\exp.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\frontend\frontend.cpp">
@@ -193,13 +229,15 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\c"/>
+						AdditionalIncludeDirectories="..\..\c"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\c"/>
+						AdditionalIncludeDirectories="..\..\c"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -222,6 +260,18 @@
 			</File>
 			<File
 				RelativePath="..\..\frontend\pentiumfrontend.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\frontend\ppcdecoder.cpp">
@@ -231,6 +281,18 @@
 			</File>
 			<File
 				RelativePath="..\..\db\proc.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\db\prog.cpp">
@@ -238,13 +300,15 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\c"/>
+						AdditionalIncludeDirectories="..\..\c"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\c"/>
+						AdditionalIncludeDirectories="..\..\c"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -258,6 +322,18 @@
 			</File>
 			<File
 				RelativePath="..\..\db\signature.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\frontend\sparcdecoder.cpp">
@@ -276,6 +352,18 @@
 			</File>
 			<File
 				RelativePath="..\..\db\statement.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\codegen\syntax.cpp">
@@ -300,12 +388,48 @@
 			</File>
 			<File
 				RelativePath="..\..\type\type.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\util\util.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\db\visitor.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\db\xmlprogparser.cpp">
@@ -313,13 +437,15 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\win32make\include"/>
+						AdditionalIncludeDirectories="..\..\win32make\include"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="..\..\win32make\include"/>
+						AdditionalIncludeDirectories="..\..\win32make\include"
+						RuntimeTypeInfo="TRUE"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
@@ -327,6 +453,96 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath="..\..\include\analysis.h">
+			</File>
+			<File
+				RelativePath="..\..\include\BinaryFile.h">
+			</File>
+			<File
+				RelativePath="..\..\include\BinaryFileStub.h">
+			</File>
+			<File
+				RelativePath="..\..\include\boomerang.h">
+			</File>
+			<File
+				RelativePath="..\..\include\cfg.h">
+			</File>
+			<File
+				RelativePath="..\..\include\cluster.h">
+			</File>
+			<File
+				RelativePath="..\..\include\config.h">
+			</File>
+			<File
+				RelativePath="..\..\include\constraint.h">
+			</File>
+			<File
+				RelativePath="..\..\include\decoder.h">
+			</File>
+			<File
+				RelativePath="..\..\include\exp.h">
+			</File>
+			<File
+				RelativePath="..\..\include\exphelp.h">
+			</File>
+			<File
+				RelativePath="..\..\include\frontend.h">
+			</File>
+			<File
+				RelativePath="..\..\include\hllcode.h">
+			</File>
+			<File
+				RelativePath="..\..\include\log.h">
+			</File>
+			<File
+				RelativePath="..\..\include\managed.h">
+			</File>
+			<File
+				RelativePath="..\..\include\memo.h">
+			</File>
+			<File
+				RelativePath="..\..\include\operator.h">
+			</File>
+			<File
+				RelativePath="..\..\include\proc.h">
+			</File>
+			<File
+				RelativePath="..\..\include\prog.h">
+			</File>
+			<File
+				RelativePath="..\..\include\register.h">
+			</File>
+			<File
+				RelativePath="..\..\include\rtl.h">
+			</File>
+			<File
+				RelativePath="..\..\include\sigenum.h">
+			</File>
+			<File
+				RelativePath="..\..\include\signature.h">
+			</File>
+			<File
+				RelativePath="..\..\include\statement.h">
+			</File>
+			<File
+				RelativePath="..\..\include\transformer.h">
+			</File>
+			<File
+				RelativePath="..\..\include\type.h">
+			</File>
+			<File
+				RelativePath="..\..\include\types.h">
+			</File>
+			<File
+				RelativePath="..\..\include\util.h">
+			</File>
+			<File
+				RelativePath="..\..\include\visitor.h">
+			</File>
+			<File
+				RelativePath="..\..\include\xmlprogparser.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
