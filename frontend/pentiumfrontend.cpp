@@ -994,8 +994,10 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     ADDRESS dest;
     do {
         DecodeResult inst = decodeInstruction(addr);
-        CallStatement* cs = (CallStatement*)(inst.rtl->getList().back());
-        if ((cs->getKind() == STMT_CALL) &&
+        CallStatement* cs = NULL;
+        if (inst.rtl->getList().size())
+            cs = (CallStatement*)(inst.rtl->getList().back());
+        if ((cs && cs->getKind() == STMT_CALL) &&
           ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
             if (++conseq == 3) {
                 // Success. Return the target of the last call
