@@ -1412,6 +1412,14 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin,
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->calcReachOut(reachin);
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::iterator pp;
+                for (pp = le->begin(); pp != le->end(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->calcReachOut(reachin);
+                }
+            }
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
@@ -1438,6 +1446,14 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
             call->calcAvailOut(availin);
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::iterator pp;
+                for (pp = le->begin(); pp != le->end(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->calcAvailOut(availin);
+                }
+            }
         }
         if (rtl->getKind() == JCOND_RTL) {
             HLJcond *jcond = (HLJcond*)rtl;
@@ -1452,12 +1468,17 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
     for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
          rit != m_pRtls->rend(); rit++) {
         RTL *rtl = *rit;
-        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
-             it != rtl->getList().rend(); it++) {
-            if (*it == (AssignExp*)stmt) return;
-            Statement *e = dynamic_cast<Statement*>(*it);
-            if (e == NULL) continue;
-            e->calcLiveIn(liveout);
+        // Do any post call semantics first
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::reverse_iterator pp;
+                for (pp = le->rbegin(); pp != le->rend(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->calcLiveIn(liveout);
+                }
+            }
         }
         if (rtl->getKind() == CALL_RTL) {
             HLCall *call = (HLCall*)rtl;
@@ -1468,6 +1489,13 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
             HLJcond *jcond = (HLJcond*)rtl;
             if (jcond == stmt) return;
             jcond->calcLiveIn(liveout);
+        }
+        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
+             it != rtl->getList().rend(); it++) {
+            if (*it == (AssignExp*)stmt) return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            e->calcLiveIn(liveout);
         }
     }
 }
@@ -1621,18 +1649,13 @@ void BasicBlock::doAvail(StatementSet& availSet, PBB inEdge) {
         }
         // AVAILOUT[call]
         availSet = inEdge->availOut;
-HLCall* call = (HLCall*)inEdge->getRTLs()->back();
-std::cerr << "doAvail: call to " << dest->getName() << " from ";call->print(std::cerr, true);
-std::cerr << "doAvail:  avail from call: "; availSet.printNums(std::cerr); std::cerr << "\n";
         PBB exitBlock = ((UserProc*)dest)->getCFG()->getExitBB();
         // - REACHOUT[exit]
+        // Note: the Kill part is important. Just getting the difference of the
+        // two sets does not cause one definition to kill another
         availSet.makeKillDiff(exitBlock->reachOut);
-std::cerr << "doAvail:    exit reachout: "; exitBlock->reachOut.printNums(std::cerr); std::cerr << "\n";
-std::cerr << "doAvail:after makeKillDiff:"; availSet.printNums(std::cerr); std::cerr << "\n";
         // U AVAILOUT[exit]
         availSet.makeUnion(exitBlock->availOut);
-std::cerr << "doAvail:    exit availout: "; exitBlock->availOut.printNums(std::cerr); std::cerr << "\n";
-std::cerr << "doAvail:  after makeUnion: "; availSet.printNums(std::cerr); std::cerr << "\n";
     } else {
         // Non call in-edge; just copy the available set to intersect with the
         // rest, except for return edges. These are considered with the special
@@ -1969,27 +1992,52 @@ void BasicBlock::toSSAform() {
             s->calcReachOut(reachin);
         }
 
-        for (Statement* rd = reachin.getFirst(ssi); rd;
-          rd = reachin.getNext(ssi)) {
-            Exp* left = rd->getLeft();
-            if (rtl->getKind() == CALL_RTL) {
-                HLCall *call = (HLCall*)rtl;
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            for (Statement* rd = reachin.getFirst(ssi); rd;
+              rd = reachin.getNext(ssi)) {
+                Exp* left = rd->getLeft();
                 call->updateArgUses(rd, left);
-                call->calcReachOut(reachin);
             }
-#if 0       // Note: we don't seem to use the "high level expression" any more
-            // It always seems to be "opFlags"
-            else if (rtl->getKind() == JCOND_RTL) {
-                // Fix up the HL expression
-                HLJcond* jc = (HLJcond*)rtl;
+            call->calcReachOut(reachin);        // ? Should be a NOP now
+            std::list<Exp*>* le = call->getPostCallExpList();
+            if (le) {
+                std::list<Exp*>::iterator pp;
+                for (pp = le->begin(); pp != le->end(); pp++) {
+                    Statement* s = dynamic_cast<Statement*>(*pp);
+                    s->subscriptLeft(s);
+                    for (Statement* rd = reachin.getFirst(ssi); rd;
+                      rd = reachin.getNext(ssi)) {
+                        Exp* left = rd->getLeft();
+                        assert(left);   // Definitions must have a left!
+                        // Update the expression (*pp)'s uses info
+                        (*pp)->updateUses(rd, left);
+                    }
+                    s->calcReachOut(reachin);
+                }
+            }
+call->print(std::cerr, true);
+        }
+#if 0   // Note: we don't seem to use the "high level expression" any more
+        // It always seems to be "opFlags"
+        else if (rtl->getKind() == JCOND_RTL) {
+            // Fix up the HL expression
+            HLJcond* jc = (HLJcond*)rtl;
+            for (Statement* rd = reachin.getFirst(ssi); rd;
+              rd = reachin.getNext(ssi)) {
+                Exp* left = rd->getLeft();
                 jc->setCondExpr(jc->getCondExpr()->updateUses(rd, left));
             }
-            else if (rtl->getKind() == SCOND_RTL) {
-                // HL expression
-                HLScond* sc = (HLScond*)rtl;
+        }
+        else if (rtl->getKind() == SCOND_RTL) {
+            // HL expression
+            HLScond* sc = (HLScond*)rtl;
+            for (Statement* rd = reachin.getFirst(ssi); rd;
+              rd = reachin.getNext(ssi)) {
+                Exp* left = rd->getLeft();
                 sc->setCondExpr(sc->getCondExpr()->updateUses(rd, left));
             }
-#endif
         }
+#endif
     }
 }

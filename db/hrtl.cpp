@@ -1169,7 +1169,8 @@ bool HLCall::searchAll(Exp* search, std::list<Exp *>& result) {
             found = true;
     // Also replace the postCall rtls, if any
     if (postCallExpList) {
-        for (std::list<Exp*>::iterator it = postCallExpList->begin(); it != postCallExpList->end(); it++)
+        for (std::list<Exp*>::iterator it = postCallExpList->begin();
+          it != postCallExpList->end(); it++)
             if( (*it)->searchAll(search, result) )
                 found = true;
     }
@@ -1223,8 +1224,11 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
     if (postCallExpList) {
         for (std::list<Exp*>::iterator it = postCallExpList->begin();
           it != postCallExpList->end(); it++) {
-            os << " ";
-            (*it)->print(os);
+            os << "         ";
+            // Statement number
+            os << std::dec << std::setw(4) <<
+              dynamic_cast<Statement*>(*it)->getNumber() << " "; 
+            (*it)->print(os, withDF);       // Don't use << to respect withDF
             os << "\n";
         }
     }
@@ -1491,7 +1495,7 @@ bool HLCall::usesExp(Exp *e) {
     if (procDest == NULL)
         // No destination (e.g. indirect call)
         // For now, just return true (overstating uses is safe)
-return true;
+        return true;
     if (!procDest->isLib()) {
         // Get the info that was summarised on the way down
         if (liveEntry.find(e)) return true;

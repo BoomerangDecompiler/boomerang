@@ -142,7 +142,7 @@ void Prog::analyse() {
 void Prog::decompile() {
 int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-         it++) {
+      it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;

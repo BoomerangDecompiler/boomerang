@@ -923,6 +923,23 @@ void UserProc::initStatements(int& stmtNum) {
                 call->setProc(this);   // Different statement to its assignments
                 call->setBB(bb);
                 call->setNumber(++stmtNum);
+                // FIXME: Temporary hack for lib procs!
+                Proc* dest = call->getDestProc();
+                if (dest && dest->isLib()) {
+                    StatementList sl;
+                    dest->getInternalStatements(sl);
+                    std::list<Exp*>* le = new std::list<Exp*>;
+                    // Convert to a list of Exp*; ugh
+                    StmtListIter ii;
+                    for (Statement* in = sl.getFirst(ii); in;
+                      in = sl.getNext(ii)) {
+                        in->setProc(this);
+                        in->setBB(bb);
+                        in->setNumber(++stmtNum);
+                        le->push_back(dynamic_cast<Exp*>(in));
+                    }
+                    call->setPostCallExpList(le);
+                }
             }
             if (rtl->getKind() == JCOND_RTL) {
                 HLJcond *jcond = (HLJcond*)rtl;
@@ -953,6 +970,14 @@ void UserProc::getStatements(StatementList &stmts) {
             if (rtl->getKind() == CALL_RTL) {
                 HLCall *call = (HLCall*)rtl;
                 stmts.append(call);
+                std::list<Exp*>* le = call->getPostCallExpList();
+                if (le) {
+                    std::list<Exp*>::reverse_iterator pp;
+                    for (pp = le->rbegin(); pp != le->rend(); pp++) {
+                        Statement* s = dynamic_cast<Statement*>(*pp);
+                        stmts.append(s);
+                    }
+                }
             }
             if (rtl->getKind() == JCOND_RTL) {
                 HLJcond *jcond = (HLJcond*)rtl;
@@ -1606,7 +1631,9 @@ void UserProc::propagateStatements() {
             }
         }
 std::cerr << "Propagated " << numProp << " statements\n";
+std::cerr << "(last time was " << oldNumProp << "\n";
     } while (numProp != oldNumProp);
+std::cerr << "End propagateStatements\n";
 }
 
 void UserProc::promoteSignature() {
