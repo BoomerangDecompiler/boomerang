@@ -60,14 +60,14 @@ SETFLAGS0(rd) {
 };
 
 SETFLAGSTO(crfd, mask) {
-   *32* crfd = 0 => %CR0 = mask
-   *32* crfd = 1 => %CR1 = mask
-   *32* crfd = 2 => %CR2 = mask
-   *32* crfd = 3 => %CR3 = mask
-   *32* crfd = 4 => %CR4 = mask
-   *32* crfd = 5 => %CR5 = mask
-   *32* crfd = 6 => %CR6 = mask
-   *32* crfd = 7 => %CR7 = mask
+   *32* crfd = 0 => %CR0 := mask
+   *32* crfd = 1 => %CR1 := mask
+   *32* crfd = 2 => %CR2 := mask
+   *32* crfd = 3 => %CR3 := mask
+   *32* crfd = 4 => %CR4 := mask
+   *32* crfd = 5 => %CR5 := mask
+   *32* crfd = 6 => %CR6 := mask
+   *32* crfd = 7 => %CR7 := mask
 };
 
 
