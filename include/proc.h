@@ -17,41 +17,6 @@
  *============================================================================*/
 
 /* $Revision$
- * 11 Mar 98 - Cristina  
- *  replaced BOOL for bool type (C++'s), same for TRUE and FALSE.
- * 18 Mar 98 - Cristina 
- *  added procedure iterator typedef (PROC_IT), and print() function.
- *  added GetCFG() function and changed the member Cfg to be a non pointer.
- * 24 Jul 98 - Mike
- *  Directly #include ../CFG/cfg.h now
- * 15 Dec 98 - Mike: Coverage functions
- * 16 Dec 98 - Mike: GetCFG() returns a pointer now
- * 08 Jan 99 - Mike: cfg is a pointer now, so can delete the whole CFG
- * 27 Jan 99 - Mike: Added m_bDecoded (in place of m_bIncomplete)
- * 19 Jan 99 - Mike: Removed path to "cfg.h"
- * 07 Apr 99 - Mike: Mods for HEADERS
- * 27 Apr 99 - Mike: Mods to some parameter stuff; added SetLibParams()
- * 29 Apr 99 - Mike: Added m_bDecoded and m_bDecoding, etc
- * 02 Jun 99 - Mike: Removed leading upper case on function names
- * 15 Mar 00 - Cristina: UserProc::setAFP transformed to setAXP
- * 29 Mar 00 - Mike: Removed Type class
- * 14 Jun 00 - Mike: Changes for new Coverage system
- * 21 Jun 00 - Mike: Removed setTailCaller
- * 30 Aug 00 - Sameer/Brian: Added UserProc::getFirstLocalIndex() and
- *              UserProc::getLastLocalIndex() to return the index of the first
- *              and last symbolic local of each procedure.
- * 15 Sep 00 - Mike: matchParams takes a ReturnLocations parameter now
- * 18 Sep 00 - Mike: Removed the last parametrer to matchParams; outgoing is
- *              a reference now (was pointer)
- *              setReturnType() functions now return a bool
- * 20 Nov 00 - Mike: Added getVarType()
- * 19 Dec 00 - Mike: Added checkReturnPass() and checkReturnPassBB()
- * 21 Dec 00 - Mike: Removed replaceParentStackAddresses()
- * 23 Feb 01 - Mike: Added checkMemSizes and findVarEntry for "ninths" test.
- *              Also, symbolMap is totally type insensitive now
- * 13 Aug 01 - Bernard: Added support for type analysis
- * 30 Aug 01 - Mike: Proc's parameters changed from vector to list
- *              Also, findVarEntry returns SemStr* now.
  * 20 Sep 01 - Brian: Added getSymbolicLocals() to return the list of symbolic
  *              locals for a procedure.
 */
@@ -65,6 +30,7 @@
 #include <set>
 #include <string>
 #include "coverage.h"           // For Coverage class
+#include "exp.h"				// For lessExpStar
 
 class Prog;
 class UserProc;
