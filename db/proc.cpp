@@ -1858,8 +1858,7 @@ void UserProc::propagateStatements(int memDepth) {
     StatementSet empty;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         if (s->isPhi()) continue;
-        // Note: commenting out the following causes main not to return int
-        // sometimes...
+        // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty);
     }
