@@ -3621,7 +3621,7 @@ void UserProc::addImplicitAssigns() {
 	getStatements(stmts);
 	StatementList::iterator it;
 	ImplicitConverter ic(cfg);
-	StmtModifier sm(&ic);
+	StmtImplicitConverter sm(&ic, cfg);
 	for (it = stmts.begin(); it != stmts.end(); it++)
 		(*it)->accept(&sm);
 }

@@ -1033,13 +1033,13 @@ void StatementTest::testAddUsedLocs () {
 	pa->addUsedLocs(l);
 	// Note: phis were not considered to use blah if they ref m[blah],
 	// so local21 was not considered used
-	expected = "m[local21 + 16]{0},\tm[local21 + 16]{372},\tlocal21\n";
+	expected = "m[local21 + 16]{-},\tm[local21 + 16]{372},\tlocal21\n";
 	std::ostringstream ost8;
 	l.print(ost8);
 	actual = ost8.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-	// m[r28{0} - 4] := -
+	// m[r28{-} - 4] := -
 	l.clear();
 	ImplicitAssign* ia = new ImplicitAssign(Location::memOf(
 		new Binary(opMinus,
@@ -1051,7 +1051,7 @@ void StatementTest::testAddUsedLocs () {
 	ia->addUsedLocs(l);
 	l.print(ost9);
 	actual = ost9.str();
-	expected = "r28{0}\n";
+	expected = "r28{-}\n";
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 }
@@ -1257,7 +1257,7 @@ void StatementTest::testCallRefsFixer () {
 	advance(it, 2);
 	Statement* s22 = *it;						// Statement 22
 	// Make sure it's what we expect!
-	std::string expected("  22 *32* r24 := m[r29{20} + 8]{0}");
+	std::string expected("  22 *32* r24 := m[r29{20} + 8]{-}");
 	std::string actual;
 	std::ostringstream ost1;
 	ost1 << s22;
@@ -1268,7 +1268,7 @@ void StatementTest::testCallRefsFixer () {
 	proc->setProven(new Binary(opEquals, r29, r29->clone()));
 	(*it)->fixCallRefs();
 	// Now expect r29{30} to be r29{3}
-	expected = "  22 *32* r24 := m[r29{3} + 8]{0}";
+	expected = "  22 *32* r24 := m[r29{3} + 8]{-}";
 	std::ostringstream ost2;
 	ost2 << *it;
 	actual = ost2.str();

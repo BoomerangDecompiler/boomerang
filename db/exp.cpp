@@ -1088,8 +1088,8 @@ void RefExp::print(std::ostream& os) {
 	os << "{";
 	if (def == (Statement*)-1) os << "WILD";
 	else if (def) def->printNum(os);
-	// else os << "NUL";		// When you HAVE to tell the difference
-	else os << "0";
+	// else os << "0";
+	else os << "-";			// So you can tell the difference with {0}
 	os << "}";
 }
 

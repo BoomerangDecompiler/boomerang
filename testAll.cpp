@@ -18,6 +18,7 @@
 #include "ProcTest.h"
 #include "StatementTest.h"
 #include "RtlTest.h"
+#include "DfaTest.h"
 #include "ParserTest.h"
 #include "TypeTest.h"
 #include "FrontSparcTest.h"
@@ -49,6 +50,7 @@ int main(int argc, char** argv)
 	CTest ct("C Parser Test");
 	StatementTest stt("Statement Test");
 	CfgTest cfgt("Cfg Test");
+	DfaTest dfat("Dfa Test");
 
 	expt.registerTests(&suite);
 	progt.registerTests(&suite);
@@ -62,6 +64,7 @@ int main(int argc, char** argv)
 	ct.registerTests(&suite);
 	stt.registerTests(&suite);
 	cfgt.registerTests(&suite);
+	dfat.registerTests(&suite);
 
 	CppUnit::TextTestResult res;
 

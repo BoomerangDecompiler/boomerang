@@ -424,10 +424,17 @@ virtual void	visit(ReturnStatement *s, bool& recur);
 
 // Convert any exp{0} with null definition so that the definition points instead to an implicit assignment
 class ImplicitConverter : public ExpModifier {
-		Cfg* cfg;
+		Cfg*	cfg;
 public:
 				ImplicitConverter(Cfg* cfg) : cfg(cfg) { }
 		Exp*	postVisit(RefExp* e);
+};
+
+class StmtImplicitConverter : public StmtModifier {
+		Cfg*	cfg;
+public:
+				StmtImplicitConverter(ExpModifier* em, Cfg* cfg) : StmtModifier(em), cfg(cfg) { }
+virtual void	visit(	    PhiAssign *s, bool& recur);
 };
 
 #endif	// #ifndef __VISITOR_H__

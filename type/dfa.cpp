@@ -199,7 +199,8 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 			signedness++;
 		else if (otherInt->signedness < 0)
 			signedness--;
-		ch |= (signedness >= 0 != oldSignedness >= 0);
+		ch |= (signedness > 0 != oldSignedness > 0);		// Changed from signed to not necessarily signed
+		ch |= (signedness < 0 != oldSignedness < 0);		// Changed from unsigned to not necessarily unsigned
 		// Size. Assume 0 indicates unknown size
 		int oldSize = size;
 		size = max(size, otherInt->size);
@@ -213,7 +214,9 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 		}
 		if (size == ((SizeType*)other)->getSize()) return this;
 		LOG << "Integer size " << size << " meet with SizeType size " << ((SizeType*)other)->getSize() << "!\n";
+		int oldSize = size;
 		size = max(size, ((SizeType*)other)->getSize());
+		ch = size != oldSize;
 		return this;
 	}
 	return createUnion(other, ch);
@@ -337,7 +340,43 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 Type* UnionType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
 	if (*this == *other) return this;
-	return createUnion(other, ch);
+	std::vector<Type*>::iterator it;
+	if (other->isUnion()) {
+		ch = true;
+		UnionType* otherUnion = (UnionType*)other;
+		UnionType* currUnion;
+		if (otherUnion->types.size() < types.size()) {
+			currUnion = this;
+			for (it = otherUnion->types.begin(); it != otherUnion->types.end(); it++)
+				currUnion = (UnionType*)currUnion->meetWith(*it, ch);
+			return currUnion;
+		} else {
+			currUnion = otherUnion;
+			for (it = types.begin(); it != types.end(); it++)
+				currUnion = (UnionType*)currUnion->meetWith(*it, ch);
+			return currUnion;
+		}
+	}
+
+	// Other is a non union type
+	for (it = types.begin(); it != types.end(); it++) {
+		Type* curr = (*it)->clone();
+		bool thisCh = false;
+		curr = curr->meetWith(other, thisCh);
+		if (!curr->isUnion()) {
+			// These types met successfully. Replace the current union type with this one
+			*it = curr;
+			ch = thisCh;
+			return this;
+		}
+	}
+
+	// Other did not meet with any of my component types. Add a new one
+	char name[20];
+	sprintf(name, "x%d", ++nextUnionNumber);
+	addType(other, name);
+	ch = true;
+	return this;
 }
 
 Type* SizeType::meetWith(Type* other, bool& ch) {
@@ -345,38 +384,30 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 	if (other->isSize()) {
 		if (((SizeType*)other)->size != size) {
 			LOG << "size " << size << " meet with size " << ((SizeType*)other)->size << "!\n";
+			int oldSize = size;
 			size = max(size, ((SizeType*)other)->size);
-			ch = true;
+			ch = size != oldSize;
 		}
 		return this;
 	}
-	if (other->isInteger() || other->isFloat() || other->isPointer()) {
-		other->setSize(max(size, other->getSize()));
-	}
 	ch = true;
-	return other;
+	if (other->isInteger() || other->isFloat() || other->isPointer()) {
+		if (other->getSize() == 0) {
+			other->setSize(max(size, other->getSize()));
+			return other;
+		}
+		if (other->getSize() == size)
+			return other;
+	}
+	return createUnion(other, ch);
 }
 
 Type* Type::createUnion(Type* other, bool& ch) {
+	// Note: this should not be a UnionType
+	if (other->isUnion())
+		return other->meetWith(this, ch);		// Put all the hard union logic in one place
+
 	char name[20];
-	if (isUnion()) {
-		if (((UnionType*)this)->findType(other))
-			// The type already exists; no change
-			return this;
-		ch = true;
-		sprintf(name, "x%d", ++nextUnionNumber);
-		((UnionType*)this)->addType(other, name);
-		return this;
-	}
-	if (other->isUnion()) {
-		if (((UnionType*)other)->findType(this))
-			// The type already exists in the other union
-			return other;
-		ch = true;
-		sprintf(name, "x%d", ++nextUnionNumber);
-		((UnionType*)other)->addType(this, name);
-		return other;
-	}
 	sprintf(name, "x%d", ++nextUnionNumber);
 	UnionType* u = new UnionType;
 	u->addType(this, name);
@@ -871,11 +902,12 @@ Exp* DfaLocalConverter::preVisit(Location* e, bool& recur) {
 		if (sig->isStackLocal(proc->getProg(), e)) {
 			recur = false;
 			mod = true;			// We've made a modification
-			// e is now *usually* a local so postVisit won't expect parentType changed
-			// Note: at least one of Trent's hacks can cause a m[...] to be returned
-			if (e->isMemOf())
+			Exp* ret = proc->getLocalExp(e, parentType, true);
+			// ret is now *usually* a local so postVisit won't expect parentType changed
+			// Note: at least one of Trent's hacks can cause m[a[...]] to be returned
+			if (ret->isMemOf())
 				parentType = new PointerType(parentType);
-			return proc->getLocalExp(e, parentType, true);
+			return ret;
 		}
 		// When we recurse into the m[...], the type will be changed
 		parentType = new PointerType(parentType);
