@@ -152,10 +152,13 @@ void FrontEnd::readLibraryCatalog() {
     }
 }
 
-Prog *FrontEnd::decode() 
+Prog *FrontEnd::decode(bool decodeMain) 
 {
     Prog *prog = new Prog(pBF, this);
     readLibraryCatalog();
+
+    if (!decodeMain)
+        return prog;
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);

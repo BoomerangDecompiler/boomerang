@@ -479,6 +479,7 @@ public:
     bool nameRegisters();
     void removeRedundantPhis();
     void trimReturns();
+    void fixCallRefs();
     void addNewParameters();
     void addNewReturns(int depth);
     void trimParameters(int depth = -1);

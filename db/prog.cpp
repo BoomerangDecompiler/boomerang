@@ -829,8 +829,10 @@ void Prog::removeUnusedReturns() {
         // good, becuase if it's not a C program, then it won't have a main,
         // and it probably (?) won't return an int
         UserProc* m = (UserProc*) findProc("main");
-        Exp* r = m->getSignature()->getReturnExp(0);
-        rc[m].insert(r);
+        if (m) {
+            Exp* r = m->getSignature()->getReturnExp(0);
+            rc[m].insert(r);
+        }
 
         newCalleeSet.clear();
         callerSet.clear();

@@ -1223,7 +1223,8 @@ void UserProc::removeRedundantPhis()
             if (!p->isLastRef(it))
                 for (Statement *s2 = p->getNextRef(it); !p->isLastRef(it); 
                      s2 = p->getNextRef(it)) {
-                    if (noncall && noncall->isCall() && s2 && !s2->isCall())
+                    if (noncall && noncall->isCall() && s2 && !s2->isCall() &&
+                        s2 != s)
                         noncall = s2;
                     Exp *e = new Binary(opEquals, 
                                  new RefExp(s->getLeft()->clone(), s1),
@@ -1292,6 +1293,11 @@ void UserProc::trimReturns() {
          it != preserved.end(); it++)
         removeReturn(*it);
     removeRedundantPhis();
+    fixCallRefs();
+}
+
+void UserProc::fixCallRefs()
+{
     StatementList stmts;
     getStatements(stmts);
     StmtListIter it;

@@ -46,6 +46,7 @@ void Boomerang::help() {
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
+    std::cerr << "-nm: don't decode the 'main' procedure\n";
     std::cerr << "-p <num>: only do num propogations\n";
     std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
@@ -77,6 +78,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         return 1;
     }
     std::list<ADDRESS> entrypoints;
+    bool decodeMain = true;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -121,6 +123,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                     case 'p':
                         noParameterNames = true;
+                        break;
+                    case 'm':
+                        decodeMain = false;
                         break;
                     default:
                         help();
@@ -178,7 +183,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
     }
 
     std::cerr << "decoding..." << std::endl;
-    Prog *prog = fe->decode();
+    Prog *prog = fe->decode(decodeMain);
     if (entrypoints.size()) {
         for (std::list<ADDRESS>::iterator it = entrypoints.begin();
              it != entrypoints.end(); it++) {

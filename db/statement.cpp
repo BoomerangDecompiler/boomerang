@@ -1927,8 +1927,18 @@ Exp *CallStatement::substituteParams(Exp *e)
 }
 
 Exp *CallStatement::findArgument(Exp *e) {
-    assert(procDest);
-    int n = procDest->getSignature()->findParam(e);
+    int n = -1;
+    if (procDest && 
+            arguments.size() == procDest->getSignature()->getNumParams())
+        n = procDest->getSignature()->findParam(e);
+    else {
+        std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
+        for (int i = 0; i < params.size(); i++)
+            if (*params[i] == *e) {
+                n = i;
+                break;
+            }
+    }
     if (n == -1) return NULL;
     return arguments[n];
 }
@@ -2333,6 +2343,11 @@ void CallStatement::getDefinitions(LocationSet &defs) {
 void CallStatement::subscriptVar(Exp* e, Statement* def) {
     if (procDest == NULL && pDest)
         pDest = pDest->expSubscriptVar(e, def);
+    for (unsigned i = 0; i < returns.size(); i++) 
+        if (returns[i]->getOper() == opMemOf) {
+            returns[i]->refSubExp1() = 
+                returns[i]->getSubExp1()->expSubscriptVar(e, def);
+        }
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->expSubscriptVar(e, def);
     }
@@ -2354,8 +2369,20 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
             std::cerr << "this is a global " << nam << std::endl;
             if (p) {
                 std::cerr << "this is a proc " << p->getName() << std::endl;
+                // we need to:
+                // 1) replace the current return set with the return set
+                //    of the new procDest
+                // 2) call fixCallRefs on the enclosing procedure
+                // 3) fix the arguments
                 procDest = p;
-                Signature *sig = procDest->getSignature();
+                Signature *sig = p->getSignature();
+                // 1
+                returns.resize(sig->getNumReturns());
+                for (int i = 0; i < sig->getNumReturns(); i++)
+                    returns[i] = sig->getReturnExp(i)->clone();
+                // 2
+                proc->fixCallRefs();
+                // 3
                 std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
                 std::vector<Exp*> oldargs = arguments;
                 arguments.resize(sig->getNumParams());
@@ -2375,12 +2402,18 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                         }
                     }
                 }
-                returns.resize(sig->getNumReturns());
-                for (int i = 0; i < sig->getNumReturns(); i++)
-                    returns[i] = sig->getReturnExp(i)->clone();
             }
         }
     }
+    for (unsigned i = 0; i < returns.size(); i++)
+        if (returns[i]->getOper() == opMemOf) {
+            Exp *e = findArgument(returns[i]->getSubExp1());
+            if (e)
+                returns[i]->refSubExp1() = e->clone();
+            returns[i]->refSubExp1() = 
+                returns[i]->getSubExp1()->searchReplaceAll(from, to, change);
+            returns[i] = returns[i]->simplifyArith()->simplify();
+        }    
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to,
           change);

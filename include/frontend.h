@@ -132,7 +132,7 @@ virtual int     getInst(int addr);
      * Decode all undecoded procedures and return a new program containing
      * them.
      */
-    Prog *decode();
+    Prog *decode(bool decodeMain = true);
 
     /* Decode starting at a given address in a given program. */
     void decode(Prog *prog, ADDRESS a);
