@@ -17,6 +17,7 @@
 /*
  * $Revision$
  * 18 Apr 02 - Mike: Mods for boomerang
+ * 19 Jul 04 - Mike: Changed initialisation of BBs to not rely on out edges
  */
 
 
@@ -1868,9 +1869,12 @@ void Cfg::generateDotFile(std::ofstream& of) {
         of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " [";
         of << "label=\"";
         char* p = (*it)->getStmtNumber();
+        of << std::dec << indices[*it];
         if (p[0] != 'b')
             // If starts with 'b', no statements (something like bb8101c3c).
-            of << (*it)->getStmtNumber() << ": ";
+            of << ":" << (*it)->getStmtNumber();
+        else
+            of << " ";
         switch((*it)->getType()) {
             case ONEWAY: of << "oneway"; break;
             case TWOWAY: 
@@ -1968,16 +1972,7 @@ void Cfg::DFS(int p, int n) {
         PBB bb = BBs[n];
         std::vector<PBB>::iterator oo;
         for (oo = bb->m_OutEdges.begin(); oo != bb->m_OutEdges.end(); oo++) {
-            PBB succ = *oo;
-            int w;
-            if (indices.find(succ) == indices.end()) {
-                w = indices.size();
-                indices[succ] = w;
-                BBs[w] = succ;
-            }
-            else
-                w = indices[succ];
-            DFS(n, w);
+            DFS(n, indices[*oo]);
         }
     }
 }
@@ -1998,6 +1993,17 @@ void Cfg::dominators() {
     best.resize(numBB, -1);
     bucket.resize(numBB);
     DF.resize(numBB);
+    // Set up the BBs and indices vectors. Do this here because sometimes a
+    // BB can be unreachable (so relying on in-edges doesn't work)
+    std::list<PBB>::iterator ii;
+    int idx = 1;
+    for (ii = m_listBB.begin(); ii != m_listBB.end(); ii++) {
+        PBB bb = *ii;
+        if (bb != r) {     // Entry BB r already done
+            indices[bb] = idx;
+            BBs[idx++] = bb;
+        }
+    }
     DFS(-1, 0);
     int i;
     for (i=N-1; i >= 1; i--) {
