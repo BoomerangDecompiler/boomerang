@@ -1,5 +1,5 @@
 #!/bin/bash
-# testOne.sh functional test script version $version$
+# testOne.sh functional test script version $Revision$
 # Call with test platform, test-program, arguments
 # e.g. "./testOne.sh pentium hello"
 # or   "./testOne.sh sparc fibo 10" 

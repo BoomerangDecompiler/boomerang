@@ -1,4 +1,5 @@
 #!/bin/bash
+# functest.sh functional test script version $Revision$
 rm -rf functest
 mkdir functest
 rm -rf functests.out
