@@ -36,7 +36,7 @@ ALLLIB =  $(patsubst %.cpp,../lib/lib%.so,$(ALLLIBSRC))
 ALLOBJS = $(patsubst %.cpp, %.o, $(ALLLIBSRC))
 ALLOBJS += SymTab.o
 
-all:    $(ALLLIB) testLoader
+all:    $(ALLLIB)
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -93,6 +93,6 @@ SymTab.o:   SymTab.h
 clean:
 	rm -f *.o $(ALLLIB) testLoader
 
-test: all
+test: all testLoader
 	./testLoader
 
