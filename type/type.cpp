@@ -36,6 +36,7 @@
 #include "cfg.h"
 #include "proc.h"
 #include "signature.h"
+#include "boomerang.h"
 
 /*==============================================================================
  * FUNCTION:        Type::Type
@@ -247,7 +248,7 @@ int BooleanType::getSize() const
 
 int CharType::getSize() const
 {
-    return 1;
+    return 8;
 }
 
 int VoidType::getSize() const

@@ -436,9 +436,29 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             assert(false);
             break;
         case opMemberAccess:
-            appendExp(str, b->getSubExp1());
-            strcat(str, ".");
-            strcat(str, ((Const*)b->getSubExp2())->getStr());
+            if (b->getSubExp1()->getOper() == opGlobal) {
+                const char *nam = ((Const*)b->getSubExp1()->getSubExp1())->
+                                              getStr();
+                Type *ty = m_proc->getProg()->getGlobalType((char*)nam);
+                if (ty) {
+                    if (ty->isNamed())
+                        ty = ((NamedType*)ty)->resolvesTo();
+                    if (ty->isPointer()) {
+                        appendExp(str, b->getSubExp1());
+                        strcat(str, "->");
+                        strcat(str, ((Const*)b->getSubExp2())->getStr());
+                    } else {
+                        assert(ty->isCompound());
+                        appendExp(str, b->getSubExp1());
+                        strcat(str, ".");
+                        strcat(str, ((Const*)b->getSubExp2())->getStr());
+                    }
+                }
+            } else {
+                appendExp(str, b->getSubExp1());
+                strcat(str, ".");
+                strcat(str, ((Const*)b->getSubExp2())->getStr());
+            }
             break;
         default:
             // others
