@@ -797,7 +797,13 @@ void Prog::removeUnusedReturns() {
         UserProc* m = (UserProc*) findProc("main");
         if (m) {
             // Note: it's position 1, because position 0 is the stack pointer
-            Exp* r = m->getSignature()->getReturnExp(1);
+            // Note: if it's SPARC (or perhaps other architectures), there may
+            // be only one
+            Signature* sig = m->getSignature();
+            Exp* r;
+            if (sig->getNumReturns() == 1)
+                r = sig->getReturnExp(0);
+            else r = sig->getReturnExp(1);
             rc[m].insert(r);
         }
 
