@@ -43,8 +43,6 @@
 #include "visitor.h"
 #include <sstream>
 
-#define DFA_TYPE_ANALYSIS (Boomerang::get()->dfaTypeAnalysis)
-
 
 extern char debug_buffer[];		 // For prints functions
 
@@ -216,7 +214,9 @@ bool hasSetFlags(Exp* e) {
 // exclude: a set of statements not to propagate from
 // memDepth: the max level of expressions to propagate FROM
 // toDepth: the exact level that we will propagate TO (unless toDepth == -1)
-// Reasoning is as follows: you can't safely propagate and memory expression
+// limit: if true, use a heuristic to try to limit the amount of propagation (e.g. fromSSA)
+
+// Reasoning for toDepth is supposed to be as follows: you can't safely propagate any memory expression
 // until all its subexpressions (expressions at lower memory depths) are
 // propagated. Examples:
 // 1: r28 = r28-4
@@ -231,8 +231,7 @@ bool hasSetFlags(Exp* e) {
 // example where it would matter.
 
 // Return true if an indirect call statement is converted to direct
-bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
-{
+bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth, bool limit /* = true */) {
 #if 0		// If don't propagate into flag assigns, some converting to locals
 			// doesn't happen, and errors occur
 	// don't propagate to flag assigns
@@ -303,8 +302,7 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 					if (!hasSetFlags(defRight))
 						// Allow propagation of constants
 						if (defRight->isIntConst() || defRight->isFltConst())
-							if (VERBOSE) LOG << "Allowing prop. into "
-								"branch (1) of " << def << "\n";
+							if (VERBOSE) LOG << "Allowing prop. into branch (1) of " << def << "\n";
 							else
 								;
 						// ?? Also allow any assignments to temps or assignment
@@ -320,7 +318,7 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
 					// Assigning to an array, don't propagate
 					continue;
 				}
-				if (! (*def->getLeft() == *regSp)) {
+				if (limit && ! (*def->getLeft() == *regSp)) {
 					// Try to prevent too much propagation, e.g. fromSSA, sumarray
 					LocationSet used;
 					def->addUsedLocs(used);
@@ -1994,6 +1992,7 @@ bool CallStatement::convertToDirect()
 
 void CallStatement::updateArgumentWithType(int n)
 {
+	if (!ADHOC_TYPE_ANALYSIS) return;
 	// let's set the type of arguments to the signature of the called proc
 	// both locations and constants can have a type set
 	if (procDest) {
@@ -2262,6 +2261,8 @@ Type* Assignment::getTypeFor(Exp* e) {
 void Assignment::setTypeFor(Exp* e, Type* ty) {
 	// assert(*lhs == *e);
 	type = ty;
+	if (DEBUG_TA)
+		LOG << "    Changed type of " << this << "\n";
 }
 
 // Scan the returns for e. If found, return the type associated with that return
@@ -4028,3 +4029,13 @@ void ReturnStatement::regReplace(UserProc* proc) {
 }
 
 ReturnInfo::ReturnInfo() : e(NULL), type(new VoidType) { }
+
+Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
+	bool thisCh = false;
+	Type* newType = getTypeFor(e)->meetWith(ty, thisCh);
+	if (thisCh) {
+		ch = true;
+		setTypeFor(e, newType);
+	}
+	return newType;
+}
