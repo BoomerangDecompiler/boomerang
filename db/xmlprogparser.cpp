@@ -1,6 +1,6 @@
 #include <stdio.h>
 extern "C" {
-#include <expat.h>
+#include "expat.h"
 }
 #include "cluster.h"
 #include "prog.h"
@@ -14,133 +14,91 @@ extern "C" {
 #include "frontend.h"
 
 
-typedef enum { e_prog, e_cluster, e_libproc, e_userproc, e_proven, e_callee, e_caller, e_defines,
+typedef enum { e_prog, e_global, e_cluster, e_libproc, e_userproc, e_local, e_symbol, e_secondexp,
+	       e_proven, e_callee, e_caller, e_defines,
     	       e_signature, e_param, e_implicitParam, e_return, e_rettype, 
-	       e_cfg, e_bb, e_inedge, e_outedge, e_livein,
+	       e_cfg, e_bb, e_inedge, e_outedge, e_livein, e_order, e_revorder,
 	       e_rtl, e_stmt, e_assign, e_lhs, e_rhs, 
 	       e_callstmt, e_dest, e_argument, e_implicitarg, e_returnexp,
 	       e_returnstmt,
 	       e_gotostmt, e_branchstmt, e_cond,
+	       e_casestmt,
 	       e_type, e_exp, 
-	       e_voidType, e_integerType, e_pointerType, e_charType, 
-	       e_location, e_unary, e_binary, e_ternary, e_const, e_terminal,
+	       e_voidtype, e_integertype, e_pointertype, e_chartype, e_namedtype, e_arraytype, e_basetype,
+	       e_location, e_unary, e_binary, e_ternary, e_const, e_terminal, e_typedexp, e_refexp,
 	       e_subexp1, e_subexp2, e_subexp3, e_unknown = -1 } xmlElement;
 
-const char *XMLProgParser::tags[] = { "prog", "cluster", "libproc", "userproc", "proven", "callee", "caller", "defines",
-    				      "signature", "param", "implicitparam", "return", "rettype",
-				      "cfg", "bb", "inedge", "outedge", "livein",
-				      "rtl", "stmt", "assign", "lhs", "rhs", "callstmt", "dest", "argument", "implicitarg", "returnexp",
-				      "returnstmt",
-				      "gotostmt", "branchstmt", "cond",
-    				      "type", "exp",
-    				      "voidtype", "integertype", "pointertype", "chartype",
-				      "location", "unary", "binary", "ternary", "const", "terminal",
-				      "subexp1", "subexp2", "subexp3",
-		       		      0 
-				    };
-void (XMLProgParser::*XMLProgParser::start_procs[])(const char**) = {
-		       &XMLProgParser::start_prog,
-		       &XMLProgParser::start_cluster,
-		       &XMLProgParser::start_libproc,
-		       &XMLProgParser::start_userproc,
-		       &XMLProgParser::start_proven,
-		       &XMLProgParser::start_callee,
-		       &XMLProgParser::start_caller,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_signature,
-		       &XMLProgParser::start_param,
-		       &XMLProgParser::start_implicitParam,
-		       &XMLProgParser::start_return,
-		       &XMLProgParser::start_rettype,
-		       &XMLProgParser::start_cfg,
-		       &XMLProgParser::start_bb,
-		       &XMLProgParser::start_inedge,
-		       &XMLProgParser::start_outedge,
-		       &XMLProgParser::start_livein,
-		       &XMLProgParser::start_rtl,
-		       &XMLProgParser::start_stmt,
-		       &XMLProgParser::start_assign,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_callstmt,
-		       &XMLProgParser::start_dest,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_returnstmt,
-		       &XMLProgParser::start_gotostmt,
-		       &XMLProgParser::start_branchstmt,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_type,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_voidType,
-		       &XMLProgParser::start_integerType,
-		       &XMLProgParser::start_pointerType,
-		       &XMLProgParser::start_charType,
-		       &XMLProgParser::start_location,
-		       &XMLProgParser::start_unary,
-		       &XMLProgParser::start_binary,
-		       &XMLProgParser::start_ternary,
-		       &XMLProgParser::start_const,
-		       &XMLProgParser::start_terminal,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_exp,
-		       &XMLProgParser::start_exp,
-		     };
-void (XMLProgParser::*XMLProgParser::end_procs[])(Context*,int) = { 
-    		       &XMLProgParser::addToContext_prog,
-    		       &XMLProgParser::addToContext_cluster,
-    		       &XMLProgParser::addToContext_libproc,
-    		       &XMLProgParser::addToContext_userproc,
-    		       &XMLProgParser::addToContext_proven,
-    		       &XMLProgParser::addToContext_callee,
-    		       &XMLProgParser::addToContext_caller,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_signature,
-    		       &XMLProgParser::addToContext_param,
-    		       &XMLProgParser::addToContext_implicitParam,
-    		       &XMLProgParser::addToContext_return,
-    		       &XMLProgParser::addToContext_rettype,
-    		       &XMLProgParser::addToContext_cfg,
-    		       &XMLProgParser::addToContext_bb,
-    		       &XMLProgParser::addToContext_inedge,
-    		       &XMLProgParser::addToContext_outedge,
-    		       &XMLProgParser::addToContext_livein,
-    		       &XMLProgParser::addToContext_rtl,
-    		       &XMLProgParser::addToContext_stmt,
-    		       &XMLProgParser::addToContext_assign,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_callstmt,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_returnstmt,
-    		       &XMLProgParser::addToContext_gotostmt,
-    		       &XMLProgParser::addToContext_branchstmt,
-    		       &XMLProgParser::addToContext_exp,
-		       &XMLProgParser::addToContext_type,
-		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_voidType,
-    		       &XMLProgParser::addToContext_integerType,
-    		       &XMLProgParser::addToContext_pointerType,
-    		       &XMLProgParser::addToContext_charType,
-    		       &XMLProgParser::addToContext_location,
-    		       &XMLProgParser::addToContext_unary,
-    		       &XMLProgParser::addToContext_binary,
-    		       &XMLProgParser::addToContext_ternary,
-    		       &XMLProgParser::addToContext_const,
-    		       &XMLProgParser::addToContext_terminal,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-    		       &XMLProgParser::addToContext_exp,
-		     };
+#define TAG(x) &XMLProgParser::start_ ## x, &XMLProgParser::addToContext_ ## x
+
+_tag XMLProgParser::tags[] = { 
+    { "prog", TAG(prog) },
+    { "global", TAG(global) },
+    { "cluster", TAG(cluster) },
+    { "libproc", TAG(libproc) },
+    { "userproc", TAG(userproc) },
+    { "local", TAG(local) },
+    { "symbol", TAG(symbol) },
+    { "secondexp", TAG(secondexp) },
+    { "proven", TAG(proven) },
+    { "callee", TAG(callee) },
+    { "caller", TAG(caller) },
+    { "defines", TAG(defines) },
+    { "signature", TAG(signature) },
+    { "param",  TAG(param) },
+    { "implicitparam", TAG(implicitparam) },
+    { "return", TAG(return) },
+    { "rettype", TAG(rettype) },
+    { "cfg", TAG(cfg) },
+    { "bb", TAG(bb) },
+    { "inedge", TAG(inedge) },
+    { "outedge", TAG(outedge) },
+    { "livein", TAG(livein) },
+    { "order", TAG(order) },
+    { "revorder", TAG(revorder) },
+    { "rtl", TAG(rtl) },
+    { "stmt", TAG(stmt) },
+    { "assign", TAG(assign) },
+    { "lhs", TAG(lhs) },
+    { "rhs", TAG(rhs) },
+    { "callstmt", TAG(callstmt) },
+    { "dest", TAG(dest) },
+    { "argument", TAG(argument) },
+    { "implicitarg", TAG(implicitarg) },
+    { "returnexp", TAG(returnexp) },
+    { "returnstmt", TAG(returnstmt) },
+    { "gotostmt", TAG(gotostmt) },
+    { "branchstmt", TAG(branchstmt) },
+    { "cond", TAG(cond) },
+    { "casestmt", TAG(casestmt) },
+    { "type", TAG(type) },
+    { "exp", TAG(exp) },
+    { "voidtype", TAG(voidtype) },
+    { "integertype", TAG(integertype) },
+    { "pointertype", TAG(pointertype) },
+    { "chartype", TAG(chartype) },
+    { "namedtype", TAG(namedtype) },
+    { "arraytype", TAG(arraytype) },
+    { "basetype", TAG(basetype) },
+    { "location", TAG(location) },
+    { "unary", TAG(unary) },
+    { "binary", TAG(binary) },
+    { "ternary", TAG(ternary) },
+    { "const", TAG(const) },
+    { "terminal", TAG(terminal) },
+    { "typedexp", TAG(typedexp) },
+    { "refexp", TAG(refexp) },
+    { "subexp1", TAG(subexp1) },
+    { "subexp2", TAG(subexp2) },
+    { "subexp3", TAG(subexp3) },    
+    { 0, 0, 0}
+};
 
 class Context {
 public:
 	int tag;
+	std::string str;
 	Prog *prog;
+	Global *global;
 	Cluster *cluster;
 	Proc *proc;
 	Signature *signature;
@@ -152,7 +110,7 @@ public:
 	ImplicitParameter *implicitParam;
 	Return *ret;
 	Type *type;
-	Exp *exp;
+	Exp *exp, *symbol;
 
     	Context(int tag) : tag(tag), prog(NULL), proc(NULL), signature(NULL), cfg(NULL), bb(NULL), rtl(NULL), stmt(NULL), param(NULL), implicitParam(NULL), ret(NULL), type(NULL), exp(NULL) { } 
 };
@@ -192,11 +150,11 @@ const char *XMLProgParser::getAttr(const char **attr, const char *name)
 
 void XMLProgParser::handleElementStart(const char *el, const char **attr)
 {
-    for (int i = 0; tags[i]; i++)
-	if (!strcmp(el, tags[i])) {
-	    //std::cerr << "got tag: " << tags[i] << "\n";
+    for (int i = 0; tags[i].tag; i++)
+	if (!strcmp(el, tags[i].tag)) {
+	    //std::cerr << "got tag: " << tags[i].tag << "\n";
 	    stack.push_front(new Context(i));
-	    (this->*start_procs[i])(attr);
+	    (this->*tags[i].start_proc)(attr);
 	    return;
 	}
     std::cerr << "got unknown tag: " << el << "\n";
@@ -212,7 +170,7 @@ void XMLProgParser::handleElementEnd(const char *el)
 	if (it != stack.end()) {
 	    if ((*it)->tag != e_unknown) {
 		//std::cerr << " second: " << (*it)->tag << "\n";
-		(this->*end_procs[(*it)->tag])(*it, stack.front()->tag);
+		(this->*tags[(*it)->tag].end_proc)(*it, stack.front()->tag);
 	    }
 	    stack.erase(stack.begin());
 	}
@@ -273,11 +231,47 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 	case e_cluster:
 	    c->prog->m_rootCluster = stack.front()->cluster;
 	    break;
+	case e_global:
+	    c->prog->globals.push_back(stack.front()->global);
+	    break;
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context prog\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context prog\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context prog\n";
+	    break;
+    }
+}
+
+void XMLProgParser::start_global(const char **attr)
+{
+    if (phase == 1) {
+	return;
+    }
+    stack.front()->global = new Global();
+    addId(attr, stack.front()->global);
+    const char *name = getAttr(attr, "name");
+    if (name)
+	stack.front()->global->nam = name;
+    const char *uaddr = getAttr(attr, "uaddr");
+    if (uaddr)
+	stack.front()->global->uaddr = atoi(uaddr);
+}
+
+void XMLProgParser::addToContext_global(Context *c, int e)
+{
+    if (phase == 1) {
+	return;
+    }
+    switch(e) {
+	case e_type:
+	    c->global->type = stack.front()->type;
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context global\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context global\n";
 	    break;
     }
 }
@@ -285,6 +279,7 @@ void XMLProgParser::addToContext_prog(Context *c, int e)
 void XMLProgParser::start_cluster(const char **attr)
 {
     if (phase == 1) {
+	stack.front()->cluster = (Cluster*)findId(getAttr(attr, "id"));
 	return;
     }
     stack.front()->cluster = new Cluster();
@@ -307,7 +302,7 @@ void XMLProgParser::addToContext_cluster(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context cluster\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context cluster\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context cluster\n";
 	    break;
     }
 }
@@ -359,7 +354,7 @@ void XMLProgParser::addToContext_libproc(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context libproc\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context libproc\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context libproc\n";
 	    break;
     }
 }
@@ -444,11 +439,71 @@ void XMLProgParser::addToContext_userproc(Context *c, int e)
 	case e_cfg:
 	    userproc->setCFG(stack.front()->cfg);
 	    break;
+	case e_local:
+	    userproc->locals[stack.front()->str.c_str()] = stack.front()->type;
+	    break;
+	case e_symbol:
+	    userproc->symbolMap[stack.front()->exp] = stack.front()->symbol;
+	    break;
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context userproc\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context userproc\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context userproc\n";
+	    break;
+    }
+}
+
+void XMLProgParser::start_local(const char **attr)
+{
+    if (phase == 1) {
+	return;
+    }
+    stack.front()->str = getAttr(attr, "name");
+}
+
+void XMLProgParser::addToContext_local(Context *c, int e)
+{
+    if (phase == 1) {
+	return;
+    }
+    switch(e) {
+	case e_type:
+	    c->type = stack.front()->type;
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context local\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
+	    break;
+    }
+}
+
+void XMLProgParser::start_symbol(const char **attr)
+{
+    if (phase == 1) {
+	return;
+    }
+}
+
+void XMLProgParser::addToContext_symbol(Context *c, int e)
+{
+    if (phase == 1) {
+	return;
+    }
+    switch(e) {
+	case e_exp:
+	    c->exp = stack.front()->exp;
+	    break;
+	case e_secondexp:
+	    c->symbol = stack.front()->exp;
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context local\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context local\n";
 	    break;
     }
 }
@@ -556,7 +611,7 @@ void XMLProgParser::addToContext_signature(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context signature\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context signature\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context signature\n";
 	break;
     }
 }
@@ -590,12 +645,12 @@ void XMLProgParser::addToContext_param(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context param\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context param\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context param\n";
 	break;
     }
 }
 
-void XMLProgParser::start_implicitParam(const char **attr)
+void XMLProgParser::start_implicitparam(const char **attr)
 {
     if (phase == 1) {
 	stack.front()->implicitParam = (ImplicitParameter*)findId(getAttr(attr, "id"));
@@ -611,7 +666,7 @@ void XMLProgParser::start_implicitParam(const char **attr)
 	stack.front()->implicitParam->setName(n);
 }
 
-void XMLProgParser::addToContext_implicitParam(Context *c, int e)
+void XMLProgParser::addToContext_implicitparam(Context *c, int e)
 {
     if (phase == 1) {
 	return;
@@ -627,7 +682,7 @@ void XMLProgParser::addToContext_implicitParam(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context implicitParam\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context implicitParam\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context implicitParam\n";
 	break;
     }
 }
@@ -658,7 +713,7 @@ void XMLProgParser::addToContext_return(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context return\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context return\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context return\n";
 	break;
     }
 }
@@ -699,17 +754,29 @@ void XMLProgParser::start_cfg(const char **attr)
 void XMLProgParser::addToContext_cfg(Context *c, int e)
 {
     if (phase == 1) {
+	switch(e) {
+	    case e_order:
+		c->cfg->Ordering.push_back(stack.front()->bb);
+		break;
+	    case e_revorder:
+		c->cfg->revOrdering.push_back(stack.front()->bb);
+		break;
+	}
 	return;
     }
     switch(e) {
 	case e_bb:
 	    c->cfg->addBB(stack.front()->bb);
 	    break;
+	case e_order:
+	    break;
+	case e_revorder:
+	    break;
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context cfg\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context cfg\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context cfg\n";
 	    break;
     }
 }
@@ -876,7 +943,7 @@ void XMLProgParser::addToContext_bb(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context bb\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context bb\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context bb\n";
 	break;
     }
 }
@@ -896,7 +963,7 @@ void XMLProgParser::addToContext_inedge(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context inedge\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context inedge\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context inedge\n";
 	break;
     }
 }
@@ -916,7 +983,7 @@ void XMLProgParser::addToContext_outedge(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context outedge\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context outedge\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context outedge\n";
 	break;
     }
 }
@@ -928,6 +995,46 @@ void XMLProgParser::start_livein(const char **attr)
 void XMLProgParser::addToContext_livein(Context *c, int e)
 {
     c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_order(const char **attr)
+{
+    if (phase == 1)
+	stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
+    else 
+	stack.front()->bb = NULL;
+}
+
+void XMLProgParser::addToContext_order(Context *c, int e)
+{
+    switch(e) {
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context order\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context order\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_revorder(const char **attr)
+{
+    if (phase == 1)
+	stack.front()->bb = (PBB)findId(getAttr(attr, "bb"));
+    else 
+	stack.front()->bb = NULL;
+}
+
+void XMLProgParser::addToContext_revorder(Context *c, int e)
+{
+    switch(e) {
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context revOrder\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context order\n";
+	break;
+    }
 }
 
 void XMLProgParser::start_rtl(const char **attr)
@@ -956,7 +1063,7 @@ void XMLProgParser::addToContext_rtl(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context rtl\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context rtl\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context rtl\n";
 	break;
     }
 }
@@ -1004,13 +1111,14 @@ void XMLProgParser::addToContext_assign(Context *c, int e)
 	    assign->setRight(stack.front()->exp);
 	    break;
 	case e_type:
+	    assert(stack.front()->type);
 	    assign->setType(stack.front()->type);
 	    break;
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context assign\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context assign\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context assign\n";
 	break;
     }
 }
@@ -1074,7 +1182,7 @@ void XMLProgParser::addToContext_callstmt(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context callstmt\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context callstmt\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context callstmt\n";
 	break;
     }
 }
@@ -1087,6 +1195,11 @@ void XMLProgParser::start_dest(const char **attr)
 	    stack.front()->proc = p;
 	return;
     }
+}
+
+void XMLProgParser::addToContext_dest(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
 }
 
 void XMLProgParser::start_returnstmt(const char **attr)
@@ -1123,11 +1236,14 @@ void XMLProgParser::addToContext_returnstmt(Context *c, int e)
 	return;
     }
     switch(e) {
+	case e_returnexp:
+	    ret->returns.push_back(stack.front()->exp);
+	    break;
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context returnstmt\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context returnstmt\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context returnstmt\n";
 	break;
     }
 }
@@ -1170,7 +1286,7 @@ void XMLProgParser::addToContext_gotostmt(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context gotostmt\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context gotostmt\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context gotostmt\n";
 	break;
     }
 }
@@ -1196,7 +1312,7 @@ void XMLProgParser::start_branchstmt(const char **attr)
     n = getAttr(attr, "computed");
     if (n)
 	branch->m_isComputed = atoi(n);
-    n = getAttr(attr, "jtCond");
+    n = getAttr(attr, "jtcond");
     if (n)
 	branch->jtCond = (BRANCH_TYPE)atoi(n);
     n = getAttr(attr, "float");
@@ -1214,6 +1330,7 @@ void XMLProgParser::addToContext_branchstmt(Context *c, int e)
     switch(e) {
 	case e_cond:
 	    branch->setCondExpr(stack.front()->exp);
+	    break;
 	case e_dest:
 	    branch->setDest(stack.front()->exp);
 	    break;
@@ -1221,7 +1338,50 @@ void XMLProgParser::addToContext_branchstmt(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context branchstmt\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context branchstmt\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context branchstmt\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_casestmt(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->stmt = (Statement*)findId(getAttr(attr, "id"));
+	UserProc *p = (UserProc*)findId(getAttr(attr, "proc"));
+	if (p)
+	    ((Statement*)stack.front()->stmt)->setProc(p);
+	Statement *s = (Statement*)findId(getAttr(attr, "parent"));
+	if (s)
+	    ((Statement*)stack.front()->stmt)->parent = s;
+	return;
+    }
+    CaseStatement *cas = new CaseStatement();
+    stack.front()->stmt = cas;
+    addId(attr, cas);
+    const char *n = getAttr(attr, "number");
+    if (n)
+	cas->number = atoi(n);
+    n = getAttr(attr, "computed");
+    if (n)
+	cas->m_isComputed = atoi(n);
+}
+
+void XMLProgParser::addToContext_casestmt(Context *c, int e)
+{
+    CaseStatement *cas = dynamic_cast<CaseStatement*>(c->stmt);
+    assert(cas);
+    if (phase == 1) {
+	return;
+    }
+    switch(e) {
+	case e_dest:
+	    cas->setDest(stack.front()->exp);
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context casestmt\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context casestmt\n";
 	break;
     }
 }
@@ -1235,6 +1395,15 @@ void XMLProgParser::addToContext_type(Context *c, int e)
     c->type = stack.front()->type;
 }
 
+void XMLProgParser::start_basetype(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_basetype(Context *c, int e)
+{
+    c->type = stack.front()->type;
+}
+
 void XMLProgParser::start_exp(const char **attr)
 {
 }
@@ -1244,7 +1413,106 @@ void XMLProgParser::addToContext_exp(Context *c, int e)
     c->exp = stack.front()->exp;
 }
 
-void XMLProgParser::start_voidType(const char **attr)
+void XMLProgParser::start_secondexp(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_secondexp(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_defines(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_defines(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_lhs(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_lhs(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_rhs(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_rhs(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_argument(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_argument(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_implicitarg(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_implicitarg(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_returnexp(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_returnexp(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_cond(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_cond(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_subexp1(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_subexp1(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_subexp2(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_subexp2(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_subexp3(const char **attr)
+{
+}
+
+void XMLProgParser::addToContext_subexp3(Context *c, int e)
+{
+    c->exp = stack.front()->exp;
+}
+
+void XMLProgParser::start_voidtype(const char **attr)
 {
     if (phase == 1) {
 	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
@@ -1254,19 +1522,19 @@ void XMLProgParser::start_voidType(const char **attr)
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_voidType(Context *c, int e)
+void XMLProgParser::addToContext_voidtype(Context *c, int e)
 {
     switch(e) {
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context voidType\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context voidType\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context voidType\n";
 	break;
     }
 }
 
-void XMLProgParser::start_integerType(const char **attr)
+void XMLProgParser::start_integertype(const char **attr)
 {
     if (phase == 1) {
 	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
@@ -1283,19 +1551,19 @@ void XMLProgParser::start_integerType(const char **attr)
 	ty->signd = atoi(n);
 }
 
-void XMLProgParser::addToContext_integerType(Context *c, int e)
+void XMLProgParser::addToContext_integertype(Context *c, int e)
 {
     switch(e) {
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context integerType\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context integerType\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context integerType\n";
 	break;
     }
 }
 
-void XMLProgParser::start_pointerType(const char **attr)
+void XMLProgParser::start_pointertype(const char **attr)
 {
     if (phase == 1) {
 	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
@@ -1305,7 +1573,7 @@ void XMLProgParser::start_pointerType(const char **attr)
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_pointerType(Context *c, int e)
+void XMLProgParser::addToContext_pointertype(Context *c, int e)
 {
     PointerType *p = dynamic_cast<PointerType*>(c->type);
     assert(p);
@@ -1315,7 +1583,7 @@ void XMLProgParser::addToContext_pointerType(Context *c, int e)
     p->setPointsTo(stack.front()->type);
 }
 
-void XMLProgParser::start_charType(const char **attr)
+void XMLProgParser::start_chartype(const char **attr)
 {
     if (phase == 1) {
 	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
@@ -1325,14 +1593,67 @@ void XMLProgParser::start_charType(const char **attr)
     addId(attr, stack.front()->type);
 }
 
-void XMLProgParser::addToContext_charType(Context *c, int e)
+void XMLProgParser::addToContext_chartype(Context *c, int e)
 {
     switch(e) {
 	default:
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context charType\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context charType\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context charType\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_namedtype(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
+	return;
+    }
+    stack.front()->type = new NamedType(getAttr(attr, "name"));
+    addId(attr, stack.front()->type);
+}
+
+void XMLProgParser::addToContext_namedtype(Context *c, int e)
+{
+    switch(e) {
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context namedType\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context namedType\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_arraytype(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->type = (Type*)findId(getAttr(attr, "id"));
+	return;
+    }
+    ArrayType *a = new ArrayType();
+    stack.front()->type = a;
+    addId(attr, a);
+    const char *len = getAttr(attr, "length");
+    if (len)
+	a->length = atoi(len);
+}
+
+void XMLProgParser::addToContext_arraytype(Context *c, int e)
+{
+    ArrayType *a = dynamic_cast<ArrayType*>(c->type);
+    assert(a);
+    switch(e) {
+        case e_basetype:
+	    a->base_type = stack.front()->type;
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context arrayType\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context arrayType\n";
 	break;
     }
 }
@@ -1357,7 +1678,12 @@ void XMLProgParser::addToContext_location(Context *c, int e)
     if (phase == 1) {
 	return;
     }
+    Location *l = dynamic_cast<Location*>(c->exp);
+    assert(l);
     switch(e) {
+	case e_type:
+	    l->ty = stack.front()->type;
+	    break;
 	case e_subexp1:
 	    c->exp->setSubExp1(stack.front()->exp);
 	    break;
@@ -1365,7 +1691,7 @@ void XMLProgParser::addToContext_location(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context unary\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context location\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context location\n";
 	break;
     }
 }
@@ -1395,7 +1721,7 @@ void XMLProgParser::addToContext_unary(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context unary\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context unary\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context unary\n";
 	break;
     }
 }
@@ -1428,7 +1754,7 @@ void XMLProgParser::addToContext_binary(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context binary\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context binary\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context binary\n";
 	break;
     }
 }
@@ -1464,7 +1790,7 @@ void XMLProgParser::addToContext_ternary(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context ternary\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context ternary\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context ternary\n";
 	break;
     }
 }
@@ -1511,7 +1837,7 @@ void XMLProgParser::addToContext_const(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context const\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context const\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context const\n";
 	break;
     }
 }
@@ -1535,7 +1861,65 @@ void XMLProgParser::addToContext_terminal(Context *c, int e)
 	    if (e == e_unknown)
 		std::cerr << "unknown tag " << e << " in context terminal\n";
 	    else 
-		std::cerr << "need to handle tag " << tags[e] << " in context terminal\n";
+		std::cerr << "need to handle tag " << tags[e].tag << " in context terminal\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_typedexp(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->exp = (Exp*)findId(getAttr(attr, "id"));
+	return;
+    }
+    stack.front()->exp = new TypedExp();
+    addId(attr, stack.front()->exp);
+}
+
+void XMLProgParser::addToContext_typedexp(Context *c, int e)
+{
+    TypedExp *t = dynamic_cast<TypedExp*>(c->exp);
+    assert(t);
+    switch(e) {
+	case e_type:
+	    t->type = stack.front()->type;
+	    break;
+	case e_subexp1:
+	    c->exp->setSubExp1(stack.front()->exp);
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context typedexp\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context typedexp\n";
+	break;
+    }
+}
+
+void XMLProgParser::start_refexp(const char **attr)
+{
+    if (phase == 1) {
+	stack.front()->exp = (Exp*)findId(getAttr(attr, "id"));
+	RefExp *r = dynamic_cast<RefExp*>(stack.front()->exp);
+	assert(r);
+	r->def = (Statement*)findId(getAttr(attr, "def"));
+	return;
+    }
+    stack.front()->exp = new RefExp();
+    addId(attr, stack.front()->exp);
+}
+
+void XMLProgParser::addToContext_refexp(Context *c, int e)
+{
+    switch(e) {
+	case e_subexp1:
+	    c->exp->setSubExp1(stack.front()->exp);
+	    break;
+	default:
+	    if (e == e_unknown)
+		std::cerr << "unknown tag " << e << " in context refexp\n";
+	    else 
+		std::cerr << "need to handle tag " << tags[e].tag << " in context refexp\n";
 	break;
     }
 }
@@ -1545,50 +1929,74 @@ Prog *XMLProgParser::parse(const char *filename)
   FILE *f = fopen(filename, "r");
   if (f == NULL)
       return NULL;
+  fclose(f);
 
   stack.clear();
+  Prog *prog = NULL;
   for (phase = 0; phase < 2; phase++) {
-      fseek(f, 0, SEEK_SET);
-      XML_Parser p = XML_ParserCreate(NULL);
-      if (! p) {
-	fprintf(stderr, "Couldn't allocate memory for parser\n");
-	return NULL;
-      }
-
-      XML_SetUserData(p, this);
-      XML_SetElementHandler(p, start, end);
-      XML_SetCharacterDataHandler(p, text);
-
-      char Buff[8192];
-
-      for (;;) {
-	int done;
-	int len;
-
-	len = fread(Buff, 1, sizeof(Buff), f);
-	if (ferror(f)) {
-	  fprintf(stderr, "Read error\n");
-	  return NULL;
-	}
-	done = feof(f);
-
-	if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
-	  fprintf(stderr, "Parse error at line %d:\n%s\n",
-		  XML_GetCurrentLineNumber(p),
-		  XML_ErrorString(XML_GetErrorCode(p)));
-	  return NULL;
-	}
-
-	if (done)
-	  break;
+      parseFile(filename);
+      if (stack.front()->prog) {
+	  prog = stack.front()->prog;
+	  parseChildren(prog->getRootCluster());
       }
   }
-  Prog *prog = stack.front()->prog;
-  assert(prog);
+  if (prog == NULL)
+      return NULL;
   FrontEnd *pFE = FrontEnd::Load(prog->getName());
   prog->setFrontEnd(pFE);
   prog->setBinaryFile(pFE->getBinaryFile());
   return prog;
+}
+
+void XMLProgParser::parseFile(const char *filename)
+{
+  FILE *f = fopen(filename, "r");
+  if (f == NULL)
+      return;
+  XML_Parser p = XML_ParserCreate(NULL);
+  if (! p) {
+    fprintf(stderr, "Couldn't allocate memory for parser\n");
+    return;
+  }
+
+  XML_SetUserData(p, this);
+  XML_SetElementHandler(p, start, end);
+  XML_SetCharacterDataHandler(p, text);
+
+  char Buff[8192];
+
+  for (;;) {
+    int done;
+    int len;
+
+    len = fread(Buff, 1, sizeof(Buff), f);
+    if (ferror(f)) {
+      fprintf(stderr, "Read error\n");
+      return;
+    }
+    done = feof(f);
+
+    if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
+      fprintf(stderr, "Parse error at line %d:\n%s\n",
+	      XML_GetCurrentLineNumber(p),
+	      XML_ErrorString(XML_GetErrorCode(p)));
+      return;
+    }
+
+    if (done)
+      break;
+  }
+  fclose(f);
+}
+
+void XMLProgParser::parseChildren(Cluster *c)
+{
+    std::string path = c->makeDirs();
+    for (unsigned i = 0; i < c->children.size(); i++) {
+	std::string d = path + "/" + c->children[i]->getName() + ".xml";
+	parseFile(d.c_str());
+	parseChildren(c->children[i]);
+    }
 }
 
 extern char* operStrings[];
@@ -1615,7 +2023,9 @@ void XMLProgParser::persistToXML(std::ostream &out, Cluster *c)
 void XMLProgParser::persistToXML(std::ostream &out, Global *g)
 {
     out << "<global name=\"" << g->nam << "\" uaddr=\"" << (int)g->uaddr << "\">\n";
+    out << "<type>\n";
     persistToXML(out, g->type);
+    out << "</type>\n";
     out << "</global>\n";
 }
 
@@ -1694,9 +2104,23 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 
     for (std::map<std::string, Type*>::iterator it1 = proc->locals.begin(); it1 != proc->locals.end(); it1++) {
 	out << "<local name=\"" << (*it1).first << "\">\n";
+	out << "<type>\n";
 	persistToXML(out, (*it1).second);
+	out << "</type>\n";
 	out << "</local>\n";
     }
+
+    for (std::map<Exp*, Exp*, lessExpStar>::iterator it2 = proc->symbolMap.begin(); it2 != proc->symbolMap.end(); it2++) {
+	out << "<symbol>\n";
+	out << "<exp>\n";
+	persistToXML(out, (*it2).first);
+	out << "</exp>\n";
+	out << "<secondexp>\n";
+	persistToXML(out, (*it2).second);
+	out << "</secondexp>\n";
+	out << "</symbol>\n";
+    }
+
 
     for (std::set<Proc*>::iterator it = proc->calleeSet.begin(); it != proc->calleeSet.end(); it++)
 	out << "<callee proc=\"" << (int)(*it) << "\"/>\n";
@@ -2003,7 +2427,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Cfg *cfg)
 	out << "<order bb=\"" << (int)cfg->Ordering[i] << "\"/>\n";
 
     for (unsigned i = 0; i < cfg->revOrdering.size(); i++)
-	out << "<revOrder bb=\"" << (int)cfg->revOrdering[i] << "\"/>\n";
+	out << "<revorder bb=\"" << (int)cfg->revOrdering[i] << "\"/>\n";
 
     // TODO
     // MAPBB m_mapBB;
@@ -2104,7 +2528,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 	    out << " parent=\"" << (int)b->parent << "\"";
 	if (b->proc)
 	    out << " proc=\"" << (int)b->proc << "\"";
-	out << " jtCond=\"" << b->jtCond << "\"";
+	out << " jtcond=\"" << b->jtCond << "\"";
 	out << " float=\"" << (int)b->bFloat << "\"";
 	out << " size=\"" << b->size << "\"";
 	out << ">\n";
@@ -2134,9 +2558,9 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 	out << ">\n";
 
 	for (unsigned i = 0; i < r->returns.size(); i++) {
-	    out << "<return>\n";
+	    out << "<returnexp>\n";
 	    persistToXML(out, r->returns[i]);
-	    out << "</return>\n";
+	    out << "</returnexp>\n";
 	}
 
 	out << "</returnstmt>\n";
@@ -2207,7 +2631,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
     if (br) {
 	out << "<branchstmt id=\"" << (int)stmt << "\" number=\"" << br->number 
 	    << "\" computed=\"" << (int)br->m_isComputed << "\""
-	    << " jtCond=\"" << br->jtCond << "\" float=\"" << (int)br->bFloat << "\"";
+	    << " jtcond=\"" << br->jtCond << "\" float=\"" << (int)br->bFloat << "\"";
 	if (br->parent)
 	    out << " parent=\"" << (int)br->parent << "\"";
 	if (br->proc)
@@ -2273,3 +2697,4 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
     std::cerr << "unknown stmt in persistToXML\n";
     assert(false);
 }
+

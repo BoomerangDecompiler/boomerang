@@ -339,6 +339,7 @@ virtual const char *getCtype() const;
 
 protected:
 	friend class XMLProgParser;
+	ArrayType() : Type(eArray), base_type(NULL), length(0) { }
 };
 
 class NamedType : public Type {

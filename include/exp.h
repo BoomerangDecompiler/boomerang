@@ -758,6 +758,7 @@ virtual Exp* polySimplify(bool& bMod);
     virtual bool accept(ExpVisitor* v);
     virtual Exp* accept(ExpModifier* v);
 protected:
+    RefExp() : Unary(opSubscript), def(NULL) { }
     friend class XMLProgParser;
 };  // Class RefExp
 

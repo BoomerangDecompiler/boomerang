@@ -25,6 +25,7 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "type.h"
+#include "cluster.h"
 
 class RTLInstDict;
 class Proc;
@@ -71,6 +72,7 @@ public:
     Exp* getInitialValue(Prog* prog); // Get the initial value as an expression
                                       // (or NULL if not initialised)
 protected:
+    Global() : type(NULL), uaddr(0), nam("") { }
     friend class XMLProgParser;
 };  // class Global
 
@@ -184,7 +186,7 @@ public:
 
     // Generate code
     void generateCode(std::ostream &os);
-    void generateCode();
+    void generateCode(Cluster *cluster = NULL);
 
     // Print this program (primarily for debugging)
     void print(std::ostream &out, bool withDF = false);
@@ -262,6 +264,7 @@ public:
     void printCallGraphXML();
 
     Cluster *getRootCluster() { return m_rootCluster; }
+    Cluster *findCluster(const char *name) { return m_rootCluster->find(name); }
 
 protected:
     BinaryFile* pBF;                    // Pointer to the BinaryFile object for the program

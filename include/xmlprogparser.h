@@ -37,6 +37,12 @@ class RTL;
 
 #define MAX_STACK 1024
 
+typedef struct {
+    const char *tag;
+    void (XMLProgParser::*start_proc)(const char**);
+    void (XMLProgParser::*end_proc)(Context *c, int e);
+} _tag;
+
 class XMLProgParser
 {
     public:
@@ -48,79 +54,71 @@ class XMLProgParser
 
     protected:
 
-	void start_prog(const char **attr);
-	void addToContext_prog(Context *c, int e);
-	void start_cluster(const char **attr);
-	void addToContext_cluster(Context *c, int e);
-	void start_libproc(const char **attr);
-	void addToContext_libproc(Context *c, int e);
-	void start_userproc(const char **attr);
-	void addToContext_userproc(Context *c, int e);
-	void start_proven(const char **attr);
-	void addToContext_proven(Context *c, int e);
-	void start_callee(const char **attr);
-	void addToContext_callee(Context *c, int e);
-	void start_caller(const char **attr);
-	void addToContext_caller(Context *c, int e);
-	void start_signature(const char **attr);
-	void addToContext_signature(Context *c, int e);
-	void start_param(const char **attr);
-	void addToContext_param(Context *c, int e);
-	void start_implicitParam(const char **attr);
-	void addToContext_implicitParam(Context *c, int e);
-	void start_return(const char **attr);
-	void addToContext_return(Context *c, int e);
-	void start_rettype(const char **attr);
-	void addToContext_rettype(Context *c, int e);
-	void start_cfg(const char **attr);
-	void addToContext_cfg(Context *c, int e);
-	void start_bb(const char **attr);
-	void addToContext_bb(Context *c, int e);
-	void start_inedge(const char **attr);
-	void addToContext_inedge(Context *c, int e);
-	void start_outedge(const char **attr);
-	void addToContext_outedge(Context *c, int e);
-	void start_livein(const char **attr);
-	void addToContext_livein(Context *c, int e);
-	void start_rtl(const char **attr);
-	void addToContext_rtl(Context *c, int e);
-	void start_stmt(const char **attr);
-	void addToContext_stmt(Context *c, int e);
-	void start_assign(const char **attr);
-	void addToContext_assign(Context *c, int e);
-	void start_callstmt(const char **attr);
-	void addToContext_callstmt(Context *c, int e);
-	void start_dest(const char **attr);
-	void start_returnstmt(const char **attr);
-	void addToContext_returnstmt(Context *c, int e);
-	void start_gotostmt(const char **attr);
-	void addToContext_gotostmt(Context *c, int e);
-	void start_branchstmt(const char **attr);
-	void addToContext_branchstmt(Context *c, int e);
-	void start_type(const char **attr);
-	void addToContext_type(Context *c, int e);
-	void start_exp(const char **attr);
-	void addToContext_exp(Context *c, int e);
-	void start_voidType(const char **attr);
-	void addToContext_voidType(Context *c, int e);
-	void start_integerType(const char **attr);
-	void addToContext_integerType(Context *c, int e);
-	void start_pointerType(const char **attr);
-	void addToContext_pointerType(Context *c, int e);
-	void start_charType(const char **attr);
-	void addToContext_charType(Context *c, int e);
-	void start_location(const char **attr);
-	void addToContext_location(Context *c, int e);
-	void start_unary(const char **attr);
-	void addToContext_unary(Context *c, int e);
-	void start_binary(const char **attr);
-	void addToContext_binary(Context *c, int e);
-	void start_ternary(const char **attr);
-	void addToContext_ternary(Context *c, int e);
-	void start_const(const char **attr);
-	void addToContext_const(Context *c, int e);
-	void start_terminal(const char **attr);
-	void addToContext_terminal(Context *c, int e);
+	void parseFile(const char *filename);
+	void parseChildren(Cluster *c);
+
+#define TAGD(x) void start_ ## x (const char **attr); \
+	void addToContext_ ## x (Context *c, int e);
+
+	TAGD(prog) 
+	TAGD(global) 
+	TAGD(cluster) 
+	TAGD(libproc) 
+	TAGD(userproc) 
+	TAGD(local) 
+	TAGD(symbol) 
+	TAGD(secondexp)
+	TAGD(proven) 
+	TAGD(callee) 
+	TAGD(caller) 
+	TAGD(defines)
+	TAGD(signature) 
+	TAGD(param) 
+	TAGD(implicitparam) 
+	TAGD(return) 
+	TAGD(rettype) 
+	TAGD(cfg) 
+	TAGD(bb) 
+	TAGD(inedge) 
+	TAGD(outedge) 
+	TAGD(livein) 
+	TAGD(order) 
+	TAGD(revorder)
+	TAGD(rtl) 
+	TAGD(stmt) 
+	TAGD(assign) 
+	TAGD(lhs) 
+	TAGD(rhs) 
+	TAGD(callstmt) 
+	TAGD(dest) 
+	TAGD(argument) 
+	TAGD(implicitarg) 
+	TAGD(returnexp)
+	TAGD(returnstmt)
+	TAGD(gotostmt) 
+	TAGD(branchstmt) 
+	TAGD(cond)
+	TAGD(casestmt)
+	TAGD(type) 
+	TAGD(exp) 
+	TAGD(voidtype) 
+	TAGD(integertype) 
+	TAGD(pointertype) 
+	TAGD(chartype) 
+	TAGD(namedtype) 
+	TAGD(arraytype)
+	TAGD(basetype)
+	TAGD(location) 
+	TAGD(unary) 
+	TAGD(binary) 
+	TAGD(ternary) 
+	TAGD(const) 
+	TAGD(terminal) 
+	TAGD(typedexp) 
+	TAGD(refexp)
+	TAGD(subexp1) 
+	TAGD(subexp2) 
+	TAGD(subexp3)	
 
 	void persistToXML(std::ostream &out, Global *g);
 	void persistToXML(std::ostream &out, Cluster *c);
@@ -135,9 +133,7 @@ class XMLProgParser
 	void persistToXML(std::ostream &out, RTL *rtl);
 	void persistToXML(std::ostream &out, Statement *stmt);
 
-	static const char *tags[];
-	static void (XMLProgParser::*start_procs[])(const char**);
-	static void (XMLProgParser::*end_procs[])(Context *c, int e);
+	static _tag tags[];
 
 	int operFromString(const char *s);
 	const char *getAttr(const char **attr, const char *name);

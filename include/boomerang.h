@@ -37,6 +37,8 @@ private:
 
     void usage();
     void help();
+    void helpcmd();
+    int parseCmd(int argc, const char **argv, int n);
 
     Boomerang();
 public:
@@ -56,6 +58,7 @@ public:
     const std::string& getProgPath() { return progPath; }
     void setOutputPath(const char* p) { outputPath = p; }
     const std::string& getOutputPath() { return outputPath; }
+    Prog *loadAndDecode(const char *fname);
     int decompile(const char *fname);
 
     // Command line flags
@@ -93,6 +96,7 @@ public:
     bool debugProof;
     bool debugUnusedStmt;
     bool loadBeforeDecompile;
+    bool saveBeforeDecompile;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

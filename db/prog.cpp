@@ -174,34 +174,40 @@ void Prog::generateDotFile() {
 
 }
 
-void Prog::generateCode() {
+void Prog::generateCode(Cluster *cluster) {
     std::string basedir = m_rootCluster->makeDirs();
-    std::ofstream os((basedir + "/" + getNameNoPath() + ".c").c_str());
-    HLLCode *code = Boomerang::get()->getHLLCode();
-    for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
-        // Check for an initial value
-        Exp *e = NULL;
-        e = (*it1)->getInitialValue(this);
-        if (e)
-            code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+    std::ofstream os;
+    if (cluster == NULL || cluster == m_rootCluster) {
+    	os.open((basedir + "/" + getNameNoPath() + ".c").c_str());
+	HLLCode *code = Boomerang::get()->getHLLCode();
+	for (std::vector<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
+	    // Check for an initial value
+	    Exp *e = NULL;
+	    e = (*it1)->getInitialValue(this);
+	    if (e)
+		code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+	}
+	code->print(os);
+	delete code;
     }
-    code->print(os);
-    delete code;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
         p->getCFG()->compressCfg();
-        code = Boomerang::get()->getHLLCode(p);
+        HLLCode *code = Boomerang::get()->getHLLCode(p);
         p->generateCode(code);
-	if (p->getCluster() == getRootCluster())
-	    code->print(os);
-	else {
-	    std::string path = p->getCluster()->makeDirs();
-	    std::ofstream out((path + "/" + p->getCluster()->getName() + ".c").c_str());
-	    code->print(out);
-	    out.close();
+	if (p->getCluster() == m_rootCluster) {
+	    if (cluster == NULL || cluster == m_rootCluster)
+		code->print(os);
+	} else {
+	    if (cluster == NULL || cluster == p->getCluster()) {
+		std::string path = p->getCluster()->makeDirs();
+		std::ofstream out((path + "/" + p->getCluster()->getName() + ".c").c_str());
+		code->print(out);
+		out.close();
+	    }
 	}
         delete code;
     }
@@ -215,11 +221,23 @@ const char *Cluster::makeDirs()
 	path = parent->makeDirs();
     else
 	path = Boomerang::get()->getOutputPath();	
-    if (getNumChildren() > 0) {
+    if (getNumChildren() > 0 || parent == NULL) {
 	path = path + "/" + name;
 	mkdir(path.c_str(), 0777);
     }
     return path.c_str();
+}
+
+Cluster *Cluster::find(const char *nam)
+{
+    if (name == nam)
+	return this;
+    for (unsigned i = 0; i < children.size(); i++) {
+	Cluster *c = children[i]->find(nam);
+	if (c)
+	    return c;
+    }
+    return NULL;
 }
 
 void Prog::generateCode(std::ostream &os) {

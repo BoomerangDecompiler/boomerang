@@ -961,6 +961,27 @@ void UserProc::getStatements(StatementList &stmts) {
 // whole BB for the statement. Should use iterators or other context
 // to find out how to erase "in place" (without having to linearly search)
 void UserProc::removeStatement(Statement *stmt) {
+    // remove anything proven about this statement
+    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++) {
+        LocationSet refs;
+        (*it)->addUsedLocs(refs);
+        LocationSet::iterator rr;
+	bool usesIt = false;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            Exp* r = *rr;
+            if (r->isSubscript() && ((RefExp*)r)->getRef() == stmt) {
+		usesIt = true;
+		break;
+	    }
+	}
+	if (usesIt) {
+	    LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
+	    proven.erase(it);
+	    it = proven.begin();
+	    continue;
+	}
+    }
+
     // remove from BB/RTL
     PBB bb = stmt->getBB();         // Get our enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
@@ -1993,7 +2014,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                                 new Const(r)), this);
                     } else {
                         Type *ty = prog->getGlobalType((char*)gloName);
-                        if (s->isAssign()) {
+                        if (s->isAssign() && ((Assign*)s)->getType()) {
                             int bits = ((Assign*)s)->getType()->getSize();
                             if (ty == NULL || ty->getSize() == 0)
                                 prog->setGlobalType((char*)gloName,
