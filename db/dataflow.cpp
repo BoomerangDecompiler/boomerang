@@ -625,7 +625,10 @@ void StatementSet::printNums(std::ostream& os) {
     StmtSetIter it;
     os << std::dec;
     for (it = sset.begin(); it != sset.end(); ) {
-        (*it)->printNum(os);
+        if (*it)
+            (*it)->printNum(os);
+        else
+            os << "0";              // Special case for no definition
         if (++it != sset.end())
             os << " ";
     }
