@@ -22,6 +22,7 @@
  *				SSL file we have reg32 instead of r[reg32] (compat with SPARC)
  * 07 May 03 - Mike: Fixed several arithmetic and logical "iodb" instructions
  *              that had 8 bit instead of 32 bit modrm sizes
+ * 24 Oct 03 - Mike: Fixed DIS_IDXP1: did not have +32 in macro
 */
 
 #include <assert.h>
@@ -46,7 +47,7 @@
 #define DIS_REG32 (dis_Reg(reg+24))
 #define DIS_SR16  (dis_Reg(sr16+16))
 #define DIS_IDX   (dis_Reg(idx+32))
-#define DIS_IDXP1 (dis_Reg((idx+1)%7))
+#define DIS_IDXP1 (dis_Reg((idx+1)%7+32))
 
 #define DIS_EADDR32 (dis_Eaddr(Eaddr, 32))
 #define DIS_EADDR16 (dis_Eaddr(Eaddr, 16))
