@@ -1332,11 +1332,13 @@ void Proc::removeReturn(Exp *e)
 
 void UserProc::removeReturn(Exp *e)
 {
-    Proc::removeReturn(e);
-    for (unsigned i = 0; i < returnStatements.size(); i++)
-        returnStatements[i]->removeReturn(e);
+    int n = signature->findReturn(e);
+    if (n != -1) {
+        Proc::removeReturn(e);
+        for (unsigned i = 0; i < returnStatements.size(); i++)
+            returnStatements[i]->removeReturn(n);
+    }
 }
-
 
 void Proc::removeParameter(Exp *e)
 {
@@ -1706,6 +1708,7 @@ void UserProc::propagateStatements(int memDepth) {
     StatementSet empty;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         if (s->isPhi()) continue;
+        if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty);
     }
 }
@@ -1762,7 +1765,6 @@ void UserProc::countRefs(RefCounter& refCounts) {
     StatementList stmts;
     getStatements(stmts);
     StmtListIter ll;
-    std::map<Exp*, Statement*, lessExpStar> lastDef;
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
         LocationSet refs;
         s->addUsedLocs(refs);
@@ -1773,24 +1775,6 @@ void UserProc::countRefs(RefCounter& refCounts) {
                 refCounts[ref]++;
             }
         }
-        if (s->getBB()->getType() == RET) {
-            if (s->getLeft() && signature->findReturn(s->getLeft()) != -1)
-                lastDef[s->getLeft()] = s;
-            if (s->isCall()) {
-                CallStatement *call = (CallStatement*)s;
-                for (int i = 0; i < signature->getNumReturns(); i++)
-                    for (int j = 0; j < call->getNumReturns(); j++)
-                        if (*call->getReturnExp(j) == 
-                            *signature->getReturnExp(i))
-                            lastDef[call->getReturnExp(j)] = s;
-            }
-        }
-    }
-    // Returned locations are used (outside this proc)
-    for (std::map<Exp*, Statement*>::iterator it = lastDef.begin();
-         it != lastDef.end(); it++) {
-        std::cerr << "ref " << (*it).first << " to " << (*it).second << std::endl;
-        refCounts[(*it).second]++;
     }
 }
 
@@ -1968,17 +1952,15 @@ bool UserProc::prove(Exp *query)
     StatementList stmts;
     getStatements(stmts);
     for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-        StmtListIter it;
         Statement *def = NULL;
-        for (Statement *s = stmts.getFirst(it); s; s = stmts.getNext(it))
-            if (s->getBB()->getType() == RET) {
-                if (s->getLeft() && *s->getLeft() == *x) 
-                    def = s;
-                if (s->isCall()) {
-                    CallStatement *call = (CallStatement*)s;
-                    for (int i = 0; i < call->getNumReturns(); i++)
-                        if (*call->getReturnExp(i) == *x)
-                            def = s;
+        for (unsigned j = 0; j < returnStatements.size(); j++)
+            for (int i = 0; i < returnStatements[j]->getNumReturns(); i++) {
+                Exp *e = returnStatements[j]->getReturnExp(i); 
+                RefExp *r = dynamic_cast<RefExp*>(e);
+                assert(r);
+                if (*r->getSubExp1() == *x) {
+                    def = r->getRef();
+                    break;
                 }
             }
         query->refSubExp1() = query->getSubExp1()->expSubscriptVar(x, def);

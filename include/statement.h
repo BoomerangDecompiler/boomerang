@@ -242,6 +242,8 @@ public:
     // true if this statement is a BoolStatement
     bool isBool() { return kind == STMT_BOOL; }
 
+    bool isReturn() { return kind == STMT_RET; }
+
     // true if this is a fpush/fpop
     bool isFpush();
     bool isFpop();
@@ -901,6 +903,9 @@ public:
     // print
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
+    // From SSA form
+    virtual void fromSSAform(igraph& igm);
+
     // serialize this rtl
     virtual bool serialize_rest(std::ostream &ouf);
 
@@ -923,14 +928,26 @@ public:
     // expression and adds them to a given list in reverse nesting order.    
     virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
+    // returns true if this statement uses the given expression
+    virtual bool usesExp(Exp *e);
+
+    // Adds (inserts) all locations (registers or memory) used by this
+    // statement
+    virtual void addUsedLocs(LocationSet& used);
+
+    virtual void fixCallRefs();
+
+    // Subscript all occurrences of e with definition def (except for top level
+    // of LHS of assignment)
+    virtual void subscriptVar(Exp* e, Statement* def);
+
     int getNumBytesPopped() { return nBytesPopped; }
     void setNumBytesPopped(int n) { nBytesPopped = n; }
 
     int getNumReturns() { return returns.size(); }
     Exp *getReturnExp(int n) { return returns[n]; }
     void setSigArguments();   // Set returns based on signature
-    int findReturn(Exp *e);
-    void removeReturn(Exp *e);
+    void removeReturn(int n);
 
 protected:
     // number of bytes that this return pops

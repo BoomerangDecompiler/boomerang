@@ -2558,20 +2558,21 @@ void ReturnStatement::setSigArguments() {
         returns.push_back(proc->getSignature()->getReturnExp(i));
 }
 
-int ReturnStatement::findReturn(Exp *e) {
-    for (unsigned i = 0; i < returns.size(); i++)
-        if (*returns[i] == *e)
-            return i;
-    return -1;
-}
-
-void ReturnStatement::removeReturn(Exp *e)
+void ReturnStatement::removeReturn(int n)
 {
-    int i = findReturn(e);
+    int i = n;
     if (i != -1) {
         for (unsigned j = i+1; j < returns.size(); j++)
             returns[j-1] = returns[j];
         returns.resize(returns.size()-1);
+    }
+}
+
+// Convert from SSA form
+void ReturnStatement::fromSSAform(igraph& ig) {
+    int n = returns.size();
+    for (int i=0; i < n; i++) {
+        returns[i] = returns[i]->fromSSA(ig);
     }
 }
 
@@ -2613,6 +2614,32 @@ bool ReturnStatement::searchAll(Exp* search, std::list<Exp *>& result) {
         if (returns[i]->searchAll(search, result))
             found = true;
     return found;
+}
+
+bool ReturnStatement::usesExp(Exp *e) {
+    Exp *where;
+    for (unsigned i = 0; i < returns.size(); i++) {
+        if (returns[i]->search(e, where)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ReturnStatement::subscriptVar(Exp* e, Statement* def) {
+    for (unsigned i = 0; i < returns.size(); i++) {
+        returns[i] = returns[i]->expSubscriptVar(e, def);
+    }
+}
+ 
+void ReturnStatement::addUsedLocs(LocationSet& used) {
+    for (unsigned i = 0; i < returns.size(); i++)
+            returns[i]->addUsedLocs(used);
+}
+
+void ReturnStatement::fixCallRefs() {
+    for (unsigned i = 0; i < returns.size(); i++)
+        returns[i] = returns[i]->fixCallRefs();
 }
 
 /**********************************************************************
