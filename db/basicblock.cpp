@@ -1546,7 +1546,8 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 					ty = u->getType();
 				else
 					ty = r->getDef()->getTypeFor(r->getSubExp1());
-				Exp* local = proc->getLocalExp(u, ty);
+				// Pass true as the last argument below, to ensure that a local is generated (even when ty is NULL)
+				Exp* local = proc->getLocalExp(u, ty, true);
 				ig[u->clone()] = local;
 				if (VERBOSE || DEBUG_LIVENESS) {
 					LOG << "Interference of " << dr << " with " << u << ", assigned " << local;
