@@ -372,8 +372,9 @@ bool ElfBinaryFile::ValueByName(const char* pName, SymValue* pVal,
     pChains = &pBuckets[numBucket];
 
     // Hash the symbol
-    // cast pNmae to const unsigned char * to make elf_hash happy
-    hash = elf_hash((const unsigned char *)pName) % numBucket;
+    // cast pName to const unsigned char * to make elf_hash happy
+    //hash = elf_hash((const unsigned char *)pName) % numBucket;
+    hash = elf_hash(pName) % numBucket;
     /* Now look it up in the bucket list */
     y = pBuckets[hash];
     // Beware of symbol tables with 0 in the buckets, e.g. libstdc++.
