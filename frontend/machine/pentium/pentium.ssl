@@ -1320,7 +1320,7 @@ CMPS_OR[X].VOW
 LODS_OR[X].VOW   
             *16* %eax := m[%esi]{16};
 MOVS_OR[X].VOW   
-            *16* m[%edi] := m[%esi]{8};
+            *16* m[%edi] := m[%esi]{16};
 SCAS_OR[X].VOW   
             *16* r[tmph] := %eax - m[%edi];
 STOS_OR[X].VOW   
