@@ -14,7 +14,8 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     noDataflow(false), noDecompile(false), noDecompileUp(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
-    debugDataflow(false), debugPrintReach(false), debugPrintSSA(false)
+    debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
+    noPropMult(false)
 {
 }
 
@@ -41,9 +42,9 @@ void Boomerang::help() {
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
-//    std::cerr << "-nDu: no decompilation when recursing up the call graph\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
+    std::cerr << "-npm: no propagation if multiple defs of same expression\n";
     std::cerr << "-p num: only do num propogations\n";
     std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
@@ -123,6 +124,12 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'P':
                         noPromote = true;
                         break;
+                    case 'p':
+                        if (argv[i][3] == 'm') {
+                            noPropMult = true;
+                            break;
+                        }
+                        help();
                     default:
                         help();
                 }
