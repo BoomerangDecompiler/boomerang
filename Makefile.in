@@ -6,7 +6,10 @@
 ######################################################
 
 # $Revision$
+# 21 Aug 02 - Icer: added codegen/chllcode.cpp to the build process
+#		    by adding it in STATIC_OBJ
 # 20 Aug 02 - Icer: removed test from all, test code is broken
+#		    Added more to distclean
 # 19 Aug 02 - Icer: changed make distclean delete toplevel makefile
 #		    changed all: to read lib static test
 # 20 May 02 - Trent: Created
@@ -67,15 +70,19 @@ clean:
 	cd loader   && ${MAKE} clean
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
+	rm driver.o codegen/chllcode.o boomerang
 
+#20 Aug 02 icer
+#added config.h config.log config.status and analysis/Makefile
 distclean: clean
 	rm -f Makefile util/Makefile loader/Makefile db/Makefile \
-		frontend/Makefile
+		frontend/Makefile include/config.h config.log \
+		config.status analysis/Makefile
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
-	analysis/AnalysisTest.o
+	analysis/AnalysisTest.o 
 
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
@@ -85,14 +92,15 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o
 AN_OBJS = analysis/analysis.o
-STATIC_OBJS = ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS}
+CODEGEN = codegen/chllcode.o
+STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS}
 
 lib/libBinaryFile.so:
 	cd loader && make
 
 bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS}
 	cd loader && ${MAKE} test
-	$(CC) -o $@ testAll.o $(STATIC_OBJS) ${TEST_OBJS} lib/libBinaryFile.so \
+	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
 	  $(RUNPATH) -Llib -ldl -lcppunit
 
 boomerang: driver.o ${STATIC_OBJS} lib/libBinaryFile.so
