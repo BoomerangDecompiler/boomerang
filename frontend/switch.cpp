@@ -1088,20 +1088,23 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     // r[8] = r[8] - 2
     // Otherwise, assume that there is no lower bound, so we want the result:
     // r[9] = m[r[16] + 572]
-    Exp* pLHS = pProc->newLocal(new IntegerType());
+    Exp* swLocal = pProc->newLocal(new IntegerType());
 
-    // Want the defining assignment. Assume it's the last Assign of the RTL
+    // Want the defining assignment. Assume it's the last non flags Assign
+    // of the RTL
     int n = (*itDefinesSw)->getNumStmt();
     int i=n-1;
     Statement* currStmt = (*itDefinesSw)->elementAt(i);
-    while (!currStmt->getKind() == STMT_ASSIGN)
+    while (!currStmt->getKind() == STMT_ASSIGN || currStmt->isFlagAssgn()) {
+        assert(i > 0);
         currStmt = (*itDefinesSw)->elementAt(--i);
+    }
     Exp* rhs = currStmt->getRight();
     if (rhs->getOper() == opMinus) {
         // We want to insert the var assignment before the defining assignment,
         // and from the first subexpression
         insertAfterTemps(*itDefinesSw, new Assign(
-          pLHS->clone(), rhs->getSubExp1()->clone()));
+          swLocal, rhs->getSubExp1()->clone()));
     }
     // Check if it's adding a negative constant to a register. If so,
     // assume it's just like the subtract above
@@ -1109,16 +1112,16 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
       (((Binary*)rhs)->getSubExp2()->isIntConst()) &&
       (((Const*)((Binary*)rhs)->getSubExp2())->getInt() < 0)) {
         insertAfterTemps(*itDefinesSw, new Assign(
-          pLHS->clone(), rhs->getSubExp1()->clone()));
+          swLocal, rhs->getSubExp1()->clone()));
     }
     else {
         // We assume that this assign is a load (or something) that defines the
         // switch variable
         Exp* lhs = currStmt->getLeft();
         (*itDefinesSw)->appendStmt(new Assign(
-          pLHS->clone(), lhs->clone()));
+          swLocal, lhs->clone()));
     }
-    pSwitchInfo->pSwitchVar = pLHS;
+    pSwitchInfo->pSwitchVar = swLocal;
 }
 
 /*==============================================================================
