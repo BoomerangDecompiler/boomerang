@@ -1902,9 +1902,9 @@ void UserProc::fromSSAform() {
                   " requires copies, using temp" << tempNum << "\n";
             // For each definition ref'd in the phi
             StmtVecIter rr;
-            int j; Statement* def;
-            for (j=0, def = p->getFirstRef(rr); !p->isLastRef(rr);
-                  j++, def = p->getNextRef(rr)) {
+            Statement* def;
+            for (def = p->getFirstRef(rr); !p->isLastRef(rr);
+                  def = p->getNextRef(rr)) {
                 // Start with the original name, in the left of the phi
                 // (note: this has not been renamed above)
                 Exp* right = p->getSubExp1()->clone();
