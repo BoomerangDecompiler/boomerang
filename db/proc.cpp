@@ -1137,12 +1137,15 @@ std::set<UserProc*>* UserProc::decompile() {
         for (int i = maxDepth; i >= 0; i--) {
             replaceExpressionsWithParameters(i);
             replaceExpressionsWithLocals();
-            trimReturns();
-            trimParameters();
         }
+        trimReturns();
+        trimParameters();
         if (VERBOSE) {
-            std::cerr << "===== After replacing params =====\n";
+            std::cerr << "=== After replacing expressions, trimming params "
+              "and returns ===\n";
             print(std::cerr, true);
+            std::cerr << "=== End after replacing expressions, trimming params "
+              "and returns ===\n";
             std::cerr << "===== End after replacing params =====\n\n";
         }
     }
@@ -2461,9 +2464,9 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
     if (call == NULL) return;
     // We have a reference to a return of the call statement
     UserProc* proc = (UserProc*) call->getDestProc();
-    if (proc->isLib()) return;
+    //if (proc->isLib()) return;
     if (Boomerang::get()->debugUnusedRets)
-        std::cerr << "Counted use of return location " << loc <<
+        std::cerr << " @@ Counted use of return location " << loc <<
           " for call to " << proc->getName() << " at " << def->getNumber() <<
           " in " << getName() << "\n";
     // we want to count the return that corresponds to this loc
@@ -2506,6 +2509,11 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
     std::set<Exp*, lessExpStar> removes;    // Else iterators confused
     std::set<Exp*, lessExpStar>& useSet = rc[this];
+std::cerr << "removeUnusedReturns for " << getName() << ": useSet is " ;
+std::set<Exp*, lessExpStar>::iterator zz;
+for (zz = useSet.begin(); zz != useSet.end(); zz++)
+  std::cerr << *zz << ", ";
+std::cerr << "\n";  // HACK!
     for (int i = 0; i < signature->getNumReturns(); i++) {
         Exp *ret = signature->getReturnExp(i);
         if (useSet.find(ret) == useSet.end())

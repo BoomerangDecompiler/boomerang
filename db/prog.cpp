@@ -840,7 +840,8 @@ void Prog::removeUnusedReturns() {
         // and it probably (?) won't return an int
         UserProc* m = (UserProc*) findProc("main");
         if (m) {
-            Exp* r = m->getSignature()->getReturnExp(0);
+            // Note: it's position 1, because position 0 is the stack pointer
+            Exp* r = m->getSignature()->getReturnExp(1);
             rc[m].insert(r);
         }
 
@@ -866,6 +867,9 @@ void Prog::removeUnusedReturns() {
                 proc->countRefs(refCounts);
                 // Now remove any that have no used
                 proc->removeUnusedStatements(refCounts, -1);
+                // It may also be that there are now some parameters unused,
+                // in particular esp
+                proc->trimParameters();
             }
             change |= thisChange;
             if (thisChange) {
@@ -904,7 +908,7 @@ void Prog::fromSSAform() {
         if (Boomerang::get()->vFlag) {
             std::cerr << "===== After transformation from SSA form for " <<
               proc->getName() << " =====\n";
-            print(std::cerr, true);
+            proc->print(std::cerr, true);
             std::cerr << "===== End after transformation from SSA for " <<
               proc->getName() << " =====\n\n";
         }

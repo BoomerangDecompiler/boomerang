@@ -489,6 +489,7 @@ public:
     void fixCallRefs();
     void addNewParameters();
     void addNewReturns(int depth);
+    // Trim parameters. If depth not given or == -1, perform at all depths
     void trimParameters(int depth = -1);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();

@@ -430,8 +430,10 @@ bool StatementSet::removeIfDefines(StatementSet& given) {
 char* StatementSet::prints() {
     std::ostringstream ost;
     StmtSetIter it;
-    for (it = sset.begin(); it != sset.end(); it++)
-        ost << *it << ",\t";
+    for (it = sset.begin(); it != sset.end(); it++) {
+        if (it != sset.begin()) ost << ", ";
+        ost << *it << "\t";
+    }
     ost << "\n";
     strncpy(debug_buffer, ost.str().c_str(), 199);
     debug_buffer[199] = '\0';
@@ -440,8 +442,10 @@ char* StatementSet::prints() {
 
 void StatementSet::print(std::ostream& os) {
     StmtSetIter it;
-    for (it = sset.begin(); it != sset.end(); it++)
-        os << *it << ",\t";
+    for (it = sset.begin(); it != sset.end(); it++) {
+        if (it != sset.begin()) os << ", ";
+        os << *it << "\t";
+    }
     os << "\n";
 }
 
@@ -500,8 +504,10 @@ LocationSet::LocationSet(const LocationSet& o) {
 char* LocationSet::prints() {
     std::ostringstream ost;
     LocSetIter it;
-    for (it = sset.begin(); it != sset.end(); it++)
-        ost << *it << ",\t";
+    for (it = sset.begin(); it != sset.end(); it++) {
+        if (it != sset.begin()) ost << ", ";
+        ost << *it << "\t";
+    }
     ost << "\n";
     strncpy(debug_buffer, ost.str().c_str(), 199);
     debug_buffer[199] = '\0';
@@ -510,8 +516,10 @@ char* LocationSet::prints() {
 
 void LocationSet::print(std::ostream& os) {
     LocSetIter it;
-    for (it = sset.begin(); it != sset.end(); it++)
-        os << *it << ",\t";
+    for (it = sset.begin(); it != sset.end(); it++) {
+        if (it != sset.begin()) os << ", ";
+        os << *it << "\t";
+    }
     os << "\n";
 }
 
