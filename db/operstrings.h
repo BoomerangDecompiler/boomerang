@@ -43,6 +43,8 @@ char* operStrings[] = {
     "opGtrUns",               // Logical greater than (unsigned)
     "opLessEqUns",            // Logical <= (unsigned)
     "opGtrEqUns",             // Logical >= (unsigned)
+    "opUpper",                // Greater signed or unsigned; used by switch code
+    "opLower",                // Less signed or unsigned; used by switch code
 
     "opNot",                  // Bitwise inversion
     "opLNot",                 // Logical not
@@ -78,6 +80,9 @@ char* operStrings[] = {
     "opMemOf",                // Represents m[]
     "opRegOf",                // Represents r[]
     "opAddrOf",               // Represents a[]
+    "opWildMemOf",            // m[wild],
+    "opWildRegOf",            // r[wild],
+    "opWildAddrOf",           // a[wild],
     "opVar",                  // Represents l[] (recovered locations)
     "opPhi",				  // Represents phi(a1, a2, a3) .. ie SSA form merging
 	"opSubscript",			  // Represents subscript(e, n) .. ie SSA renaming
@@ -124,6 +129,7 @@ char* operStrings[] = {
     "opStrConst",             // string constant
     //"opAddrConst",            // address constant
     "opCodeAddr",             // opAddrConst for addresses in code segment
+    "opWildIntConst",         // an integer constant whose value is wild
 
 
     "opPC",                   // program counter

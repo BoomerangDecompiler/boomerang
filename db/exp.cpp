@@ -26,6 +26,7 @@
  * 03 Dec 02 - Mike: Fixed simplification of exp AND -1 (was exp AND +1)
  * 09 Dec 02 - Mike: Print succ()
  * 03 Feb 03 - Mike: Mods for cached dataflow
+ * 25 Mar 03 - Mike: Print new operators (opWildIntConst, etc)
  */
 
 #include <assert.h>
@@ -340,8 +341,8 @@ Exp* AssignExp::clone()
  *============================================================================*/
 bool Const::operator==(const Exp& o) const
 {
-    if (op == opWild) return true;
     if (((Const&)o).op == opWild) return true;
+    if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
     if (op != ((Const&)o).op) return false;
     switch (op) {
         case opIntConst: return u.i == ((Const&)o).u.i;
@@ -355,14 +356,17 @@ bool Const::operator==(const Exp& o) const
 }
 bool Unary::operator==(const Exp& o) const
 {
-    if (op == opWild) return true;
+    //if (op == opWild) return true;
     if (((Unary&)o).op == opWild) return true;
+    if (((Unary&)o).op == opWildRegOf && op == opRegOf) return true;
+    if (((Unary&)o).op == opWildMemOf && op == opMemOf) return true;
+    if (((Unary&)o).op == opWildAddrOf && op == opAddrOf) return true;
     if (op != ((Unary&)o).op) return false;
     return *subExp1 == *((Unary&)o).getSubExp1();
 }
 bool Binary::operator==(const Exp& o) const
 {
-    if (op == opWild) return true;
+    //if (op == opWild) return true;
     if (((Binary&)o).op == opWild) return true;
     if (op != ((Binary&)o).op) return false;
     if (!( *subExp1 == *((Binary&)o).getSubExp1())) return false;
@@ -370,7 +374,7 @@ bool Binary::operator==(const Exp& o) const
 }
 bool Ternary::operator==(const Exp& o) const
 {
-    if (op == opWild) return true;
+    //if (op == opWild) return true;
     if (((Ternary&)o).op == opWild) return true;
     if (op != ((Ternary&)o).op) return false;
     if (!( *subExp1 == *((Ternary&)o).getSubExp1())) return false;
@@ -379,13 +383,17 @@ bool Ternary::operator==(const Exp& o) const
 }
 bool Terminal::operator==(const Exp& o) const
 {
+    if (op == opWildIntConst) return ((Terminal&)o).op == opIntConst;
+    if (op == opWildMemOf) return ((Terminal&)o).op == opMemOf;
+    if (op == opWildRegOf) return ((Terminal&)o).op == opRegOf;
+    if (op == opWildAddrOf) return ((Terminal&)o).op == opAddrOf;
     return ((op == opWild) ||           // Wild matches anything
       (((Terminal&)o).op == opWild) ||
       (op ==((Terminal&)o).op));
 }
 bool TypedExp::operator==(const Exp& o) const
 {
-    if (op == opWild) return true;
+    //if (op == opWild) return true;
     if (((TypedExp&)o).op == opWild) return true;
     if (((TypedExp&)o).op != opTypedExp) return false;
     // This is the strict type version
@@ -645,6 +653,8 @@ void Binary::print(std::ostream& os)
         case opGtrUns:  os << " >u "; break;
         case opLessEqUns:os << " <=u ";break;
         case opGtrEqUns: os << " >=u ";break;
+        case opUpper:   os << " GT "; break;
+        case opLower:   os << " LT "; break;
         case opShiftL:  os << " << "; break;
         case opShiftR:  os << " >> "; break;
         case opShiftRA: os << " >>A "; break;
@@ -680,6 +690,10 @@ void Terminal::print(std::ostream& os) {
         case opAnull:   os << "%anul"; break;
         case opFpush:   os << "FPUSH"; break;
         case opFpop:    os << "FPOP";  break;
+        case opWildMemOf:os<< "m[WILD]"; break;
+        case opWildRegOf:os<< "r[WILD]"; break;
+        case opWildAddrOf:os<< "a[WILD]"; break;
+        case opWildIntConst:os<<"WILDINT"; break;
         case opNil:     break;
         default:
             std::cerr << "Terminal::print invalid operator " << operStrings[op]
@@ -846,7 +860,8 @@ void Ternary::print(std::ostream& os) {
             os << ":";
             p3->printr(os);
     } else {
-        std::cerr << "Ternary::print invalid operator " << operStrings[op] << std::endl;
+        std::cerr << "Ternary::print invalid operator " << operStrings[op] <<
+          std::endl;
         assert(0);
     }
 }
@@ -1108,6 +1123,20 @@ bool Exp::isAfpTerm()
 }
 
 /*==============================================================================
+ * FUNCTION:        Exp::isFlagAssgn
+ * OVERVIEW:        Returns true if the expression is an asignment to the
+ *                    abstract flags location
+ * PARAMETERS:      None
+ * RETURNS:         True if matches
+ *============================================================================*/
+bool Exp::isFlagAssgn() {
+    if (op != opAssignExp) return false;
+    if (getSubExp1()->getOper() != opFlags) return false;
+    if (getSubExp2()->getOper() != opFlagCall) return false;
+    return true;
+}
+
+/*==============================================================================
  * FUNCTION:        Exp::getVarIndex
  * OVERVIEW:        Returns the index for this var, e.g. if v[2], return 2
  * PARAMETERS:      <none>
@@ -1334,8 +1363,7 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
  * RETURNS:         <nothing>
  *============================================================================*/
 void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
-    std::vector<int>& integers, bool negate)
-{
+  std::vector<int>& integers, bool negate) {
     Exp* p1, *p2;
     switch (op) {
         case opPlus:
@@ -2570,10 +2598,10 @@ void AssignExp::inlineConstants(Prog *prog)
  * PARAMETERS:      None
  * RETURNS:         Fixed expression
  *============================================================================*/
-static Ternary srch1(opZfill, new Ternary(opWild), new Ternary(opWild),
-    new Ternary(opWild));
-static Ternary srch2(opSgnEx, new Ternary(opWild), new Ternary(opWild),
-    new Ternary(opWild));
+static Ternary srch1(opZfill, new Terminal(opWild), new Terminal(opWild),
+    new Terminal(opWild));
+static Ternary srch2(opSgnEx, new Terminal(opWild), new Terminal(opWild),
+    new Terminal(opWild));
 Exp* Exp::killFill() {
     Exp* res = this;
     std::list<Exp**> result;
