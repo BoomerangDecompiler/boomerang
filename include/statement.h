@@ -340,7 +340,7 @@ public:
     virtual void fromSSAform(igraph& igm) = 0;
 
     // Propagate to this statement
-    void propagateTo(int memDepth, StatementSet& exclude);
+    void propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
     // Deserialise
     bool deserialize_fid(std::istream&, int);

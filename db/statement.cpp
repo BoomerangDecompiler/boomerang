@@ -802,7 +802,8 @@ char* Statement::prints() {
 }
 
 // exclude: a set of statements not to propagate from
-void Statement::propagateTo(int memDepth, StatementSet& exclude) {
+void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
+{
     bool change;
     int changes = 0;
     // Repeat substituting into s while there is a single reference
@@ -812,31 +813,38 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
         addUsedLocs(exps);
         LocSetIter ll;
         change = false;
-        for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-            if (!e->getNumRefs() == 1) continue;
-            // Can propagate TO this (if memory depths are suitable)
-            Statement* def;
-            def = ((RefExp*)e)->getRef();
-            if (def == NULL)
-                // Can't propagate statement "0"
+        for (Exp* m = exps.getFirst(ll); m; m = exps.getNext(ll)) {
+            if (toDepth != -1 && m->getMemDepth() != toDepth)
                 continue;
-            if (def == this)
-                // Don't propagate to self! Can happen with %pc's
-                continue;
-            if (def->isNullStatement())
-                // Don't propagate a null statement! Can happen with %pc's
-                // (this would have no effect, and would infinitely loop)
-                continue;
-            // Don't propagate from statements in the exclude list
-            if (exclude.exists(def)) continue;
-            if (def->isPhi())
-                // Don't propagate phi statements!
-                continue;
-            if (def->isCall())
-                continue;
-            if (def->isBool())
-                continue;
-            change = doPropagateTo(memDepth, def);
+            LocationSet refs;
+            m->addUsedLocs(refs);
+            LocSetIter rl;
+            for (Exp *e = refs.getFirst(rl); e; e = refs.getNext(rl)) {
+                if (!e->getNumRefs() == 1) continue;
+                // Can propagate TO this (if memory depths are suitable)
+                Statement* def;
+                def = ((RefExp*)e)->getRef();
+                if (def == NULL)
+                    // Can't propagate statement "0"
+                    continue;
+                if (def == this)
+                    // Don't propagate to self! Can happen with %pc's
+                    continue;
+                if (def->isNullStatement())
+                    // Don't propagate a null statement! Can happen with %pc's
+                    // (this would have no effect, and would infinitely loop)
+                    continue;
+                // Don't propagate from statements in the exclude list
+                if (exclude.exists(def)) continue;
+                if (def->isPhi())
+                    // Don't propagate phi statements!
+                    continue;
+                if (def->isCall())
+                    continue;
+                if (def->isBool())
+                    continue;
+                change = doPropagateTo(memDepth, def);
+            }
         }
     } while (change && ++changes < 20);
 }

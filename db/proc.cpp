@@ -1069,7 +1069,14 @@ std::set<UserProc*>* UserProc::decompile() {
         }
 
          // Propagate at this memory depth
-        propagateStatements(depth);
+        for (int td = maxDepth; td >= 0; td--) {
+            if (VERBOSE)
+                std::cerr << "propagating at depth " << depth << " to depth " 
+                          << td << std::endl;
+            propagateStatements(depth, td);
+            for (int i = 0; i <= depth; i++)
+                cfg->renameBlockVars(0, i);
+        }
         if (VERBOSE) {
             std::cerr << "=== After propagate for " << getName() <<
               " at memory depth " << depth << " ===\n";
@@ -1858,7 +1865,7 @@ bool UserProc::propagateAndRemoveStatements() {
 // Propagate statements, but don't remove
 // Respect the memory depth (don't propagate statements that have components
 // of a higher memory depth than memDepth)
-void UserProc::propagateStatements(int memDepth) {
+void UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
@@ -1868,7 +1875,7 @@ void UserProc::propagateStatements(int memDepth) {
         if (s->isPhi()) continue;
         // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
-        s->propagateTo(memDepth, empty);
+        s->propagateTo(memDepth, empty, toDepth);
     }
 }
 
