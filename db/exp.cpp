@@ -906,7 +906,8 @@ void Ternary::printr(std::ostream& os, bool withUses) {
         // The "function-like" ternaries
         case opTruncu:  case opTruncs:  case opZfill:
         case opSgnEx:   case opFsize:   case opItof:
-        case opFtoi:    case opFround:  case opOpTable:
+        case opFtoi:    case opFround:  case opFtrunc:
+        case opOpTable:
             // No paren case
             print(os, withUses); return;
         default:
@@ -924,7 +925,8 @@ void Ternary::print(std::ostream& os, bool withUses) {
         // The "function-like" ternaries
         case opTruncu:  case opTruncs:  case opZfill:
         case opSgnEx:   case opFsize:   case opItof:
-        case opFtoi:    case opFround:  case opOpTable:
+        case opFtoi:    case opFround:  case opFtrunc:
+        case opOpTable:
             switch (op) {
                 case opTruncu:  os << "truncu("; break;
                 case opTruncs:  os << "truncs("; break;
@@ -934,6 +936,7 @@ void Ternary::print(std::ostream& os, bool withUses) {
                 case opItof:    os << "itof(";  break;
                 case opFtoi:    os << "ftoi(";  break;
                 case opFround:  os << "fround("; break;
+                case opFtrunc:  os << "ftrunc("; break;
                 case opOpTable: os << "optable("; break;
                 default: break;         // For warning
             }

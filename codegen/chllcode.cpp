@@ -302,6 +302,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             appendExp(str, u->getSubExp1());
             strcat(str, ")");
             break;
+        case opFtrunc:
+            strcat(str, "ftrunc(");
+            appendExp(str, u->getSubExp1());
+            strcat(str, ")");
+            break;
         case opFMultsd:
         case opFMultdq:
         case opSQRTs:
