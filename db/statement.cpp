@@ -268,7 +268,7 @@ void Statement::propagateToAll() {
 
 /*==============================================================================
  * FUNCTION:        operator<<
- * OVERVIEW:        Output operator for Statement*
+ * OVERVIEW:        Output operator for Statement* etc
  *                  Just makes it easier to use e.g. std::cerr << myStmtStar
  * PARAMETERS:      os: output stream to send to
  *                  p: ptr to Statement to print to the stream
@@ -277,6 +277,16 @@ void Statement::propagateToAll() {
 std::ostream& operator<<(std::ostream& os, Statement* s) {
     if (s == NULL) {os << "NULL "; return os;}
     s->print(os, true);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, StatementSet* ss) {
+    ss->print(os);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, LocationSet* ls) {
+    ls->print(os);
     return os;
 }
 
@@ -428,6 +438,13 @@ char* StatementSet::prints() {
     return debug_buffer;
 }
 
+void StatementSet::print(std::ostream& os) {
+    StmtSetIter it;
+    for (it = sset.begin(); it != sset.end(); it++)
+        os << *it << ",\t";
+    os << "\n";
+}
+
 // Print just the numbers to stream os
 void StatementSet::printNums(std::ostream& os) {
     StmtSetIter it;
@@ -489,6 +506,13 @@ char* LocationSet::prints() {
     strncpy(debug_buffer, ost.str().c_str(), 199);
     debug_buffer[199] = '\0';
     return debug_buffer;
+}
+
+void LocationSet::print(std::ostream& os) {
+    LocSetIter it;
+    for (it = sset.begin(); it != sset.end(); it++)
+        os << *it << ",\t";
+    os << "\n";
 }
 
 void LocationSet::remove(Exp* given) {
@@ -1944,7 +1968,7 @@ Exp *CallStatement::substituteParams(Exp *e)
         Exp *r = findArgument(x);
         if (r == NULL) continue;
         bool change;
-        e = e->searchReplaceAll(x, r->clone(), change);
+        e = e->searchReplaceAll(x, r, change);
     }
     return e->simplify();
 }
@@ -1952,10 +1976,12 @@ Exp *CallStatement::substituteParams(Exp *e)
 Exp *CallStatement::findArgument(Exp *e) {
     int n = -1;
     if (procDest && 
-            (int)arguments.size() == procDest->getSignature()->getNumParams())
+            (procDest->getSignature()->hasEllipsis() ||
+            (int)arguments.size() == procDest->getSignature()->getNumParams()))
         n = procDest->getSignature()->findParam(e);
     else {
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
+        assert(params.size() == arguments.size());
         for (unsigned i = 0; i < params.size(); i++)
             if (*params[i] == *e) {
                 n = i;
@@ -3234,6 +3260,8 @@ void Assign::addUsedLocs(LocationSet& used) {
 }
 
 void Assign::fixCallRefs() {
+if (number == 28 && strcmp(proc->getName(), "main") == 0)
+  std::cerr << "HACK!\n";
     rhs = rhs->fixCallRefs();
     if (lhs->isMemOf()) {
         ((Unary*)lhs)->refSubExp1() =
@@ -3266,11 +3294,12 @@ void Assign::processConstants(Prog* prog) {
 }
 
 // generate constraints
-void Assign::generateConstraints(std::list<Exp*>& cons) {
-    rhs->constrainTo(new Unary(opTypeOf, lhs->clone()), cons);
+void Assign::generateConstraints(LocationSet& cons) {
+    Exp* con = rhs->constrainTo(new Unary(opTypeOf, lhs->clone()));
+    if (con) cons.insert(con);
 }
 
-void CallStatement::generateConstraints(std::list<Exp*>& cons) {
+void CallStatement::generateConstraints(LocationSet& cons) {
     Proc* dest = getDestProc();
     Signature* destSig = dest->getSignature();
     // Generate a constraint for the type of each actual argument to be equal
@@ -3289,7 +3318,7 @@ void CallStatement::generateConstraints(std::list<Exp*>& cons) {
             Exp* con = new Binary(opEquals,
                 new Unary(opTypeOf, arg->clone()),
                 new TypeVal(destSig->getParamType(p)->clone()));
-            cons.push_back(con);
+            cons.insert(con);
         }
     }
 
@@ -3358,7 +3387,7 @@ void CallStatement::generateConstraints(std::list<Exp*>& cons) {
                     Exp* con = new Binary(opEquals,
                         new Unary(opTypeOf, arguments[n]->clone()),
                         tv);
-                    cons.push_back(con);
+                    cons.insert(con);
                 }
                 n++;
             }
