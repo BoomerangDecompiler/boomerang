@@ -406,75 +406,75 @@ public:
 	 */ 
 	SyntaxNode *getAST();
 	// print it to a file
-	void printAST(SyntaxNode *a = NULL);
+	void	printAST(SyntaxNode *a = NULL);
 
 	/*
 	 * Returns whether or not this procedure can be decoded (i.e. has
 	 * it already been decoded).
 	 */
-	bool isDecoded();
-	bool isDecompiled() { return decompiled; }
+	bool	isDecoded();
+	bool	isDecompiled() { return decompiled; }
 
-	bool isAnalysed() { return analysed; }
-	void setAnalysed() { analysed = true; }
+	bool	isAnalysed() { return analysed; }
+	void	setAnalysed() { analysed = true; }
 
-    /*
-     * Return the number of bytes allocated for locals on the stack.
-     */
-    int getLocalsSize();
+	/*
+	 * Return the number of bytes allocated for locals on the stack.
+	 */
+	int		getLocalsSize();
 
-    /*
-     * Get the type of the given var
-     */
-//    Type getVarType(int idx);
+	/*
+	 * Get the type of the given var
+	 */
+//	Type	getVarType(int idx);
 
-    /*
-     * Set the size of the given var
-     */
-//    void setVarSize(int idx, int size);
+	/*
+	 * Set the size of the given var
+	 */
+//	void	setVarSize(int idx, int size);
 
-    // code generation
-    void generateCode(HLLCode *hll);
+	// code generation
+	void	generateCode(HLLCode *hll);
 
-    // print this proc, mainly for debugging
-    void print(std::ostream &out);
-    char *prints();
-    void printToLog();
+	// print this proc, mainly for debugging
+	void	print(std::ostream &out);
+	char	*prints();
+	void	printToLog();
 
-    // simplify the statements in this proc
-    void simplify() { cfg->simplify(); }
+	// simplify the statements in this proc
+	void	simplify() { cfg->simplify(); }
 
-    // decompile this proc
-    std::set<UserProc*>* decompile();
-	void propagateAtDepth(int depth);
-	void updateBlockVars();
+	// decompile this proc
+	std::set<UserProc*>* decompile();
+	void	propagateAtDepth(int depth);
+	void	updateBlockVars();
 
 	Statement *getStmtAtLex(unsigned int begin, unsigned int end);
 
-    // All the decompile stuff except propagation, DFA repair, and null/unused
-    // statement removal
-    void    complete(); 
+	// All the decompile stuff except propagation, DFA repair, and null/unused
+	// statement removal
+	void    complete(); 
 
-    // Initialise the statements, e.g. proc, bb pointers
-    void initStatements();
-    void numberStatements(int& stmtNum);
-    void numberPhiStatements(int& stmtNum);
-    bool nameStackLocations();
-	bool replaceReg(Exp* match, Exp* e, Statement* def);		// Helper function for nameRegisters()
-    bool nameRegisters();
-    void removeRedundantPhis();
-    void trimReturns();
-	void updateReturnTypes();
-    void fixCallRefs();
-    void addNewParameters();
-    void addNewReturns(int depth);
-    // Trim parameters. If depth not given or == -1, perform at all depths
-    void trimParameters(int depth = -1);
-    void processFloatConstants();
-    void replaceExpressionsWithGlobals();
-    void replaceExpressionsWithSymbols();
-    void replaceExpressionsWithParameters(int depth);   // must be in SSA form
-    void replaceExpressionsWithLocals(bool lastPass = false);
+	// Initialise the statements, e.g. proc, bb pointers
+	void	initStatements();
+	void	numberStatements(int& stmtNum);
+	void	numberPhiStatements(int& stmtNum);
+	bool	nameStackLocations();
+	bool	replaceReg(Exp* match, Exp* e, Statement* def);		// Helper function for nameRegisters()
+	bool	nameRegisters();
+	void	removeRedundantPhis();
+	void	trimReturns();
+	void	updateReturnTypes();
+	void	fixCallRefs();
+	void	addNewParameters();
+	void	addNewReturns(int depth);
+	// Trim parameters. If depth not given or == -1, perform at all depths
+	void	trimParameters(int depth = -1);
+	void	processFloatConstants();
+	void	replaceExpressionsWithGlobals();
+	void	replaceExpressionsWithSymbols();
+	void	replaceExpressionsWithParameters(int depth);   // must be in SSA form
+	void	replaceExpressionsWithLocals(bool lastPass = false);
 
 private:
 	void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp,
@@ -529,14 +529,19 @@ public:
 	// get all the statements
 	void getStatements(StatementList &stmts);
 
-	virtual void removeReturn(Exp *e);
-	virtual void addReturn(Exp *e);
+virtual void removeReturn(Exp *e);
+virtual void addReturn(Exp *e);
 
 	// remove a statement
 	void removeStatement(Statement *stmt);
 
+<<<<<<< proc.h
+	// inline constants / decode function pointer constants. Return true if added parameters via ellipsisProcessing
+	bool	processConstants();
+=======
 	// inline constants / decode function pointer constants
 	bool processConstants();
+>>>>>>> 1.108
 
 	// get internal statements
 	// Note: assignment causes shallow copy of list
