@@ -6,7 +6,7 @@
   */
 
 
-
+#line 1 "/usr/local/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -81,8 +81,8 @@ void *alloca ();
 #define YYBISON 1  
 
 /* #line 73 "/usr/local/lib/bison.cc" */
-
-
+#line 85 "sslparser.cpp"
+#line 37 "sslparser.y"
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -102,7 +102,7 @@ void *alloca ();
 
 class SSLScanner;
 
-
+#line 62 "sslparser.y"
 typedef union {
     Exp*            exp;
     char*           str;
@@ -121,7 +121,7 @@ typedef union {
     RTL*            rtlist;
 } yy_SSLParser_stype;
 #define YY_SSLParser_STYPE yy_SSLParser_stype
-
+#line 81 "sslparser.y"
 
 #include "sslscanner.h"
 OPER strToTerm(char* s);        // Convert string to a Terminal (if possible)
@@ -193,7 +193,7 @@ protected: \
      */ \
     bool bFloat;
 
-
+#line 73 "/usr/local/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_SSLParser_BISON 1
 #ifndef YY_SSLParser_COMPATIBILITY
@@ -240,25 +240,25 @@ protected: \
 #ifndef YY_SSLParser_PURE
 
 /* #line 117 "/usr/local/lib/bison.cc" */
+#line 244 "sslparser.cpp"
 
-
-
+#line 117 "/usr/local/lib/bison.cc"
 /*  YY_SSLParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* #line 121 "/usr/local/lib/bison.cc" */
+#line 253 "sslparser.cpp"
 
-
-
+#line 121 "/usr/local/lib/bison.cc"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
 /* #line 123 "/usr/local/lib/bison.cc" */
+#line 260 "sslparser.cpp"
 
-
-
+#line 123 "/usr/local/lib/bison.cc"
 /* YY_SSLParser_DEBUG */
 #endif
 
@@ -266,9 +266,9 @@ protected: \
 #ifndef YY_SSLParser_LSP_NEEDED
 
 /* #line 128 "/usr/local/lib/bison.cc" */
+#line 270 "sslparser.cpp"
 
-
-
+#line 128 "/usr/local/lib/bison.cc"
  /* YY_SSLParser_LSP_NEEDED*/
 #endif
 
@@ -379,7 +379,7 @@ typedef
 /* TOKEN C */
 
 /* #line 236 "/usr/local/lib/bison.cc" */
-
+#line 383 "sslparser.cpp"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -434,7 +434,7 @@ typedef
 #define	FCHS	309
 
 
-
+#line 236 "/usr/local/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -481,7 +481,7 @@ public:
 /* static const int token ... */
 
 /* #line 280 "/usr/local/lib/bison.cc" */
-
+#line 485 "sslparser.cpp"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -536,13 +536,13 @@ static const int FLOATNUM;
 static const int FCHS;
 
 
-
+#line 280 "/usr/local/lib/bison.cc"
  /* decl const */
 #else
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 283 "/usr/local/lib/bison.cc" */
-
+#line 546 "sslparser.cpp"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -597,7 +597,7 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,FCHS=309
 
 
-
+#line 283 "/usr/local/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -631,7 +631,7 @@ public:
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 
 /* #line 314 "/usr/local/lib/bison.cc" */
-
+#line 635 "sslparser.cpp"
 const int YY_SSLParser_CLASS::COND_OP=258;
 const int YY_SSLParser_CLASS::BIT_OP=259;
 const int YY_SSLParser_CLASS::ARITH_OP=260;
@@ -686,7 +686,7 @@ const int YY_SSLParser_CLASS::FLOATNUM=308;
 const int YY_SSLParser_CLASS::FCHS=309;
 
 
-
+#line 314 "/usr/local/lib/bison.cc"
  /* const YY_SSLParser_CLASS::token */
 #endif
 /*apres const  */
@@ -700,7 +700,7 @@ YY_SSLParser_CONSTRUCTOR_CODE;
 #endif
 
 /* #line 325 "/usr/local/lib/bison.cc" */
-
+#line 704 "sslparser.cpp"
 
 
 #define	YYFINAL		301
@@ -754,10 +754,10 @@ static const short yyprhs[] = {     0,
    227,   231,   232,   237,   239,   242,   244,   246,   249,   253,
    257,   261,   266,   271,   275,   278,   280,   282,   286,   290,
    293,   295,   299,   301,   305,   307,   308,   310,   314,   316,
-   317,   324,   329,   331,   333,   336,   338,   340,   342,   346,
-   348,   356,   365,   369,   377,   381,   385,   387,   389,   393,
-   397,   401,   405,   408,   411,   414,   417,   420,   424,   428,
-   432,   436,   440,   446,   448,   450,   454,   456,   460,   462,
+   317,   324,   329,   331,   333,   336,   338,   340,   344,   346,
+   354,   363,   367,   375,   379,   383,   385,   387,   391,   395,
+   399,   403,   406,   409,   412,   415,   418,   422,   426,   430,
+   434,   438,   444,   446,   448,   452,   454,   458,   460,   468,
    470,   473,   477,   481,   484,   486,   488,   490,   493,   497,
    499
 };
@@ -796,20 +796,20 @@ static const short yyrhs[] = {   104,
    101,    56,   102,     0,   102,     0,     0,     7,     0,   103,
     56,   106,     0,   106,     0,     0,   111,   106,    32,   107,
     42,   106,     0,   111,   107,    42,   106,     0,    14,     0,
-    15,     0,   111,   106,     0,    52,     0,    53,     0,    16,
-     0,    66,   106,    61,     0,   107,     0,    59,   106,    67,
-   106,    37,   106,    60,     0,    59,   106,    67,   106,    37,
-   106,    60,   108,     0,    40,   106,    61,     0,    18,    52,
-    56,    52,    56,   106,    61,     0,    19,   106,    61,     0,
-    21,   106,    61,     0,    14,     0,    15,     0,    20,   106,
-    61,     0,    25,     7,    60,     0,    24,   103,    61,     0,
-    51,   106,    61,     0,   106,    38,     0,   106,   108,     0,
-    29,   106,     0,    30,   106,     0,    31,   106,     0,   106,
-    13,   106,     0,   106,     5,   106,     0,   106,     4,   106,
-     0,   106,     3,   106,     0,   106,     6,   106,     0,   106,
-    25,     7,    60,   105,     0,   105,     0,     9,     0,    41,
-   106,    60,     0,    10,     0,    43,   106,    60,     0,     7,
-     0,   106,    39,    59,   106,    37,   106,    60,     0,   107,
+    15,     0,   111,   106,     0,    52,     0,    53,     0,    66,
+   106,    61,     0,   107,     0,    59,   106,    67,   106,    37,
+   106,    60,     0,    59,   106,    67,   106,    37,   106,    60,
+   108,     0,    40,   106,    61,     0,    18,    52,    56,    52,
+    56,   106,    61,     0,    19,   106,    61,     0,    21,   106,
+    61,     0,    14,     0,    15,     0,    20,   106,    61,     0,
+    25,     7,    60,     0,    24,   103,    61,     0,    51,   106,
+    61,     0,   106,    38,     0,   106,   108,     0,    29,   106,
+     0,    30,   106,     0,    31,   106,     0,   106,    13,   106,
+     0,   106,     5,   106,     0,   106,     4,   106,     0,   106,
+     3,   106,     0,   106,     6,   106,     0,   106,    25,     7,
+    60,   105,     0,   105,     0,     9,     0,    41,   106,    60,
+     0,    10,     0,    43,   106,    60,     0,     7,     0,   106,
+    39,    59,   106,    37,   106,    60,     0,    16,     0,   107,
     63,     0,    51,   106,    61,     0,    57,    52,    58,     0,
     26,   110,     0,    22,     0,    23,     0,     8,     0,    46,
    113,     0,   113,    56,   114,     0,   114,     0,     7,    28,
@@ -820,21 +820,21 @@ static const short yyrhs[] = {   104,
 
 #if YY_SSLParser_DEBUG != 0
 static const short yyrline[] = { 0,
-   216,   220,   225,   228,   230,   233,   236,   241,   243,   246,
-   251,   254,   258,   261,   265,   267,   270,   288,   305,   306,
-   309,   313,   313,   316,   318,   319,   322,   328,   333,   368,
-   390,   405,   416,   420,   427,   435,   442,   455,   461,   467,
+   217,   221,   226,   229,   231,   234,   237,   242,   244,   247,
+   252,   255,   259,   262,   266,   268,   271,   289,   306,   307,
+   310,   314,   314,   317,   319,   320,   323,   329,   334,   369,
+   391,   405,   416,   420,   427,   435,   442,   455,   461,   467,
    471,   477,   488,   493,   502,   505,   510,   514,   519,   525,
    528,   543,   561,   566,   570,   576,   582,   588,   595,   601,
    607,   613,   618,   625,   629,   652,   656,   659,   665,   669,
    682,   691,   702,   711,   716,   726,   733,   740,   757,   761,
    764,   769,   777,   787,   794,   798,   803,   808,   813,   818,
-   823,   833,   839,   844,   850,   856,   861,   865,   869,   873,
-   877,   881,   891,   897,   902,   907,   912,   915,   920,   926,
-   954,   981,   986,   996,  1004,  1008,  1012,  1016,  1020,  1024,
-  1028,  1032,  1039,  1065,  1070,  1101,  1105,  1111,  1115,  1133,
-  1137,  1140,  1145,  1151,  1156,  1160,  1165,  1193,  1197,  1200,
-  1204
+   823,   833,   839,   844,   851,   856,   861,   865,   869,   873,
+   877,   887,   893,   898,   903,   908,   911,   916,   922,   950,
+   977,   982,   992,  1000,  1004,  1008,  1012,  1016,  1020,  1024,
+  1028,  1035,  1061,  1066,  1097,  1101,  1107,  1111,  1129,  1133,
+  1138,  1141,  1146,  1152,  1157,  1161,  1166,  1194,  1198,  1201,
+  1205
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
@@ -850,7 +850,7 @@ static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
 "table_assign","table_expr","str_expr","str_array","str_term","name_expand",
 "bin_oper","opstr_expr","opstr_array","exprstr_expr","exprstr_array","instr",
 "@3","instr_name","instr_elem","name_contract","rt_list","rt","flag_list","list_parameter",
-"param","list_actualparameter","assign_rt","exp_term","exp","var_op","cast",
+"param","list_actualparameter","assign_rt","exp_term","exp","location","cast",
 "endianness","esize","assigntype","fastlist","fastentries","fastentry",""
 };
 #endif
@@ -867,8 +867,8 @@ static const short yyr1[] = {     0,
     99,   100,   100,   101,   101,   101,   102,   103,   103,   103,
    104,   104,   104,   104,   104,   105,   105,   105,   105,   105,
    105,   105,   105,   105,   105,   105,   105,   105,   105,   105,
-   105,   105,   106,   106,   106,   106,   106,   106,   106,   106,
-   106,   106,   106,   106,   107,   107,   107,   107,   107,   107,
+   105,   106,   106,   106,   106,   106,   106,   106,   106,   106,
+   106,   106,   106,   107,   107,   107,   107,   107,   107,   107,
    107,   107,   108,   109,   110,   110,   111,   112,   113,   113,
    114
 };
@@ -883,44 +883,44 @@ static const short yyr2[] = {     0,
      3,     0,     4,     1,     2,     1,     1,     2,     3,     3,
      3,     4,     4,     3,     2,     1,     1,     3,     3,     2,
      1,     3,     1,     3,     1,     0,     1,     3,     1,     0,
-     6,     4,     1,     1,     2,     1,     1,     1,     3,     1,
-     7,     8,     3,     7,     3,     3,     1,     1,     3,     3,
-     3,     3,     2,     2,     2,     2,     2,     3,     3,     3,
-     3,     3,     5,     1,     1,     3,     1,     3,     1,     7,
+     6,     4,     1,     1,     2,     1,     1,     3,     1,     7,
+     8,     3,     7,     3,     3,     1,     1,     3,     3,     3,
+     3,     2,     2,     2,     2,     2,     3,     3,     3,     3,
+     3,     5,     1,     1,     3,     1,     3,     1,     7,     1,
      2,     3,     3,     2,     1,     1,     1,     2,     3,     1,
      3
 };
 
 static const short yydefact[] = {     0,
-    66,   137,   125,   127,   107,   108,    98,     0,     0,     0,
+    66,   137,   124,   126,   106,   107,   130,     0,     0,     0,
      0,    86,     0,     0,     0,     0,     0,     0,     0,     0,
     21,    23,     0,     0,     0,     0,    96,    97,     0,     0,
      0,     0,     0,     3,     0,    12,    13,     8,     9,     6,
-    62,    64,    67,     1,   124,     2,   100,    10,     0,    11,
-     0,     0,   129,   107,   108,    90,     0,     0,     0,     0,
-   129,     0,    85,     0,    89,     0,     0,   135,   136,   134,
-   115,   116,   117,     0,     0,     0,     0,     0,     0,   138,
+    62,    64,    67,     1,   123,     2,    99,    10,     0,    11,
+     0,     0,   128,   106,   107,    90,     0,     0,     0,     0,
+   128,     0,    85,     0,    89,     0,     0,   135,   136,   134,
+   114,   115,   116,     0,     0,     0,     0,     0,     0,   138,
    140,    87,    14,    16,    86,    93,    94,    90,     0,    81,
      7,    76,    77,     0,     0,     0,     0,     0,     0,    66,
     86,     0,     0,     5,    65,    86,    68,     0,     0,     0,
-     0,     0,     0,   113,     0,     0,   114,   131,    95,   100,
+     0,     0,     0,   112,     0,     0,   113,   131,    95,    99,
     52,    36,     0,     0,     0,     0,    38,    39,    43,    48,
-    40,    41,     0,     0,   105,   109,   106,     0,     0,     0,
-   111,    71,    70,   103,   126,   128,     0,     0,    22,    26,
+    40,    41,     0,     0,   104,   108,   105,     0,     0,     0,
+   110,    71,    70,   102,   125,   127,     0,     0,    22,    26,
     24,     0,     0,     0,     0,    20,     0,    83,    80,     0,
-    75,   112,     0,    74,    69,     0,     0,    99,     0,     4,
-     0,   121,   120,   119,   122,   118,     0,     0,     0,     0,
+    75,   111,     0,    74,    69,     0,     0,    98,     0,     4,
+     0,   120,   119,   118,   121,   117,     0,     0,     0,     0,
      0,     0,     0,     0,    46,     0,     0,     0,     0,     0,
-    51,    42,     0,   110,    84,     0,    88,     0,     0,    34,
+    51,    42,     0,   109,    84,     0,    88,     0,     0,    34,
      0,     0,   141,   139,    15,    86,    86,     0,    78,     0,
     79,     0,    73,    72,    71,    63,     0,     0,   133,     0,
-   100,    92,    37,    53,    54,   129,    55,     0,     0,     0,
+    99,    92,    37,    53,    54,   128,    55,     0,     0,     0,
     47,     0,    56,     0,    59,    50,    49,     0,     0,    27,
-     0,     0,     0,    25,     0,     0,     0,    82,     0,   123,
+     0,     0,     0,    25,     0,     0,     0,    82,     0,   122,
      0,     0,    58,    61,     0,    44,     0,     0,     0,    35,
      0,    33,     0,    17,    19,    18,     0,     0,    91,    45,
-     0,     0,   104,     0,     0,   101,   130,    57,    60,    28,
-     0,   102,     0,     0,     0,     0,     0,    32,     0,     0,
+     0,     0,   103,     0,     0,   100,   129,    57,    60,    28,
+     0,   101,     0,     0,     0,     0,     0,    32,     0,     0,
      0,     0,    29,    31,     0,     0,     0,    30,     0,     0,
      0
 };
@@ -1026,18 +1026,18 @@ static const short yytable[] = {    46,
    112,   151,   271,   137,   157,   108,   109,   110,   111,   244,
    114,   115,   113,    44,   116,   112,   250,   204,   144,   247,
      0,   108,   109,   110,   111,   114,   115,   113,     0,   116,
-   282,   112,  -129,   162,     0,  -129,  -129,  -129,  -129,     0,
-   114,   115,     0,   113,   116,  -129,     0,     0,   168,     0,
+   282,   112,  -128,   162,     0,  -128,  -128,  -128,  -128,     0,
+   114,   115,     0,   113,   116,  -128,     0,     0,   168,     0,
    108,   109,   110,   111,     0,     0,   114,   115,     0,   116,
    112,     0,     0,   273,     0,     0,   108,   109,   110,   111,
-  -129,  -129,   113,     0,    51,   116,   112,     0,   145,     0,
-     0,   108,   109,   110,   111,   114,   115,     0,   113,  -129,
-     0,   112,  -110,     0,     0,  -110,  -110,  -110,  -110,     0,
-     0,   114,   115,   113,   116,  -110,     2,   146,     0,     0,
+  -128,  -128,   113,     0,    51,   116,   112,     0,   145,     0,
+     0,   108,   109,   110,   111,   114,   115,     0,   113,  -128,
+     0,   112,  -109,     0,     0,  -109,  -109,  -109,  -109,     0,
+     0,   114,   115,   113,   116,  -109,     2,   146,     0,     0,
      0,     0,    86,    87,     0,     0,   114,   115,     0,     0,
    116,     0,    88,   276,   108,   109,   110,   111,     0,     0,
-  -110,  -110,     0,     0,   112,   116,     0,     0,   277,     0,
-   108,   109,   110,   111,     0,     0,   113,     0,    89,  -110,
+  -109,  -109,     0,     0,   112,   116,     0,     0,   277,     0,
+   108,   109,   110,   111,     0,     0,   113,     0,    89,  -109,
    112,     0,     0,   180,     0,     0,   260,     0,     0,   114,
    115,     0,   113,    90,     0,     0,     0,   108,   109,   110,
    111,   108,   109,   110,   249,   114,   115,   112,   116,     0,
@@ -1119,7 +1119,7 @@ static const short yycheck[] = {     0,
     -1,    -1,    -1,    -1,    -1,    -1,    57
 };
 
-
+#line 325 "/usr/local/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -1608,18 +1608,18 @@ YYLABEL(yyreduce)
 
 
 /* #line 811 "/usr/local/lib/bison.cc" */
-
+#line 1612 "sslparser.cpp"
 
   switch (yyn) {
 
 case 1:
-
+#line 218 "sslparser.y"
 {
             the_asgn = yyvsp[0].regtransfer;
         ;
     break;}
 case 2:
-
+#line 221 "sslparser.y"
 {
             the_asgn = new Assign(
                 new Terminal(opNil),
@@ -1627,17 +1627,17 @@ case 2:
         ;
     break;}
 case 7:
-
+#line 237 "sslparser.y"
 {
             Dict.fetchExecCycle = yyvsp[0].rtlist;
         ;
     break;}
 case 14:
-
+#line 262 "sslparser.y"
 { Dict.fixupParams(); ;
     break;}
 case 17:
-
+#line 275 "sslparser.y"
 {
             // Note: the below copies the list of strings!
             Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
@@ -1646,7 +1646,7 @@ case 17:
         ;
     break;}
 case 18:
-
+#line 289 "sslparser.y"
 {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
@@ -1664,27 +1664,27 @@ case 18:
         ;
     break;}
 case 19:
-
+#line 306 "sslparser.y"
 { yyval.parmlist = yyvsp[-1].parmlist; ;
     break;}
 case 20:
-
+#line 307 "sslparser.y"
 { yyval.parmlist = new std::list<std::string>(); ;
     break;}
 case 21:
-
+#line 311 "sslparser.y"
 {
                     bFloat = false;
                 ;
     break;}
 case 23:
-
+#line 314 "sslparser.y"
 {
                     bFloat = true;
                 ;
     break;}
 case 27:
-
+#line 324 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
                     yyerror("Name reglist decared twice\n");
@@ -1692,7 +1692,7 @@ case 27:
             ;
     break;}
 case 28:
-
+#line 329 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1700,7 +1700,7 @@ case 28:
             ;
     break;}
 case 29:
-
+#line 334 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1738,7 +1738,7 @@ case 29:
             ;
     break;}
 case 30:
-
+#line 369 "sslparser.y"
 {
                 if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
@@ -1763,11 +1763,10 @@ case 30:
             ;
     break;}
 case 31:
-
+#line 391 "sslparser.y"
 {
                 if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
-                    std::cerr << "size of register array does not match mapping to r["
-                         << yyvsp[-2].num << ".." << yyvsp[0].num << "]\n";
+                    std::cerr << "size of register array does not match mapping"                        " to r[" << yyvsp[-2].num << ".." << yyvsp[0].num << "]\n";
                     exit(1);
                 } else {
                     std::list<std::string>::iterator loc = yyvsp[-8].strlist->begin();
@@ -1781,7 +1780,7 @@ case 31:
             ;
     break;}
 case 32:
-
+#line 405 "sslparser.y"
 {
                 std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
                 for (; loc != yyvsp[-6].strlist->end(); loc++) {
@@ -1793,27 +1792,27 @@ case 32:
             ;
     break;}
 case 33:
-
+#line 417 "sslparser.y"
 {
                 yyvsp[-2].strlist->push_back(yyvsp[0].str);
             ;
     break;}
 case 34:
-
+#line 420 "sslparser.y"
 {
                 yyval.strlist = new std::list<std::string>;
                 yyval.strlist->push_back(yyvsp[0].str);
             ;
     break;}
 case 35:
-
+#line 429 "sslparser.y"
 {
                 // Note: $2 is a list of strings
                 Dict.FlagFuncs[yyvsp[-5].str] = new FlagDef(listStrToExp(yyvsp[-4].parmlist), yyvsp[-1].rtlist);
             ;
     break;}
 case 36:
-
+#line 436 "sslparser.y"
 {
                 if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
                     yyerror("Constant declared twice");
@@ -1821,7 +1820,7 @@ case 36:
             ;
     break;}
 case 37:
-
+#line 442 "sslparser.y"
 {
                 if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
                     yyerror("Constant declared twice");
@@ -1834,34 +1833,34 @@ case 37:
             ;
     break;}
 case 38:
-
+#line 456 "sslparser.y"
 {
             TableDict[yyvsp[-2].str] = yyvsp[0].tab;
         ;
     break;}
 case 39:
-
+#line 462 "sslparser.y"
 {
             yyval.tab = new Table(*yyvsp[0].namelist);
             //delete $1;
         ;
     break;}
 case 40:
-
+#line 467 "sslparser.y"
 {
             yyval.tab = new OpTable(*yyvsp[0].namelist);
             //delete $1;
         ;
     break;}
 case 41:
-
+#line 471 "sslparser.y"
 {
             yyval.tab = new ExprTable(*yyvsp[0].exprlist);
             //delete $1;
         ;
     break;}
 case 42:
-
+#line 478 "sslparser.y"
 {
             // cross-product of two str_expr's
             std::deque<std::string>::iterator i, j;
@@ -1874,13 +1873,13 @@ case 42:
         ;
     break;}
 case 43:
-
+#line 488 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 44:
-
+#line 494 "sslparser.y"
 {
             // want to append $3 to $1
             // The following causes a massive warning message about mixing
@@ -1891,31 +1890,31 @@ case 44:
         ;
     break;}
 case 45:
-
+#line 502 "sslparser.y"
 {
             yyvsp[-3].namelist->push_back("");
         ;
     break;}
 case 46:
-
+#line 505 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 47:
-
+#line 511 "sslparser.y"
 {
             yyval.namelist = yyvsp[-1].namelist;
         ;
     break;}
 case 48:
-
+#line 514 "sslparser.y"
 {
             yyval.namelist = yyvsp[0].namelist;
         ;
     break;}
 case 49:
-
+#line 520 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>;
             yyval.namelist->push_back("");
@@ -1923,13 +1922,13 @@ case 49:
         ;
     break;}
 case 50:
-
+#line 525 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>(1, yyvsp[-1].str);
         ;
     break;}
 case 51:
-
+#line 528 "sslparser.y"
 {
             std::ostringstream o;
             // expand $2 from table of names
@@ -1947,7 +1946,7 @@ case 51:
         ;
     break;}
 case 52:
-
+#line 543 "sslparser.y"
 {
             // try and expand $1 from table of names
             // if fail, expand using '"' NAME '"' rule
@@ -1966,72 +1965,72 @@ case 52:
         ;
     break;}
 case 53:
-
+#line 562 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 54:
-
+#line 566 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 55:
-
+#line 570 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 56:
-
+#line 577 "sslparser.y"
 {
             yyval.namelist = yyvsp[-1].namelist;
         ;
     break;}
 case 57:
-
+#line 584 "sslparser.y"
 {
             yyval.namelist = yyvsp[-4].namelist;
             yyval.namelist->push_back(yyvsp[-1].str);
         ;
     break;}
 case 58:
-
+#line 588 "sslparser.y"
 {
             yyval.namelist = new std::deque<std::string>;
             yyval.namelist->push_back(yyvsp[-1].str);
         ;
     break;}
 case 59:
-
+#line 596 "sslparser.y"
 {
             yyval.exprlist = yyvsp[-1].exprlist;
         ;
     break;}
 case 60:
-
+#line 603 "sslparser.y"
 {
             yyval.exprlist = yyvsp[-4].exprlist;
             yyval.exprlist->push_back(yyvsp[-1].exp);
         ;
     break;}
 case 61:
-
+#line 607 "sslparser.y"
 {
             yyval.exprlist = new std::deque<Exp*>;
             yyval.exprlist->push_back(yyvsp[-1].exp);
         ;
     break;}
 case 62:
-
+#line 615 "sslparser.y"
 {
             yyvsp[0].insel->getrefmap(indexrefmap);
         //     $3           $4
         ;
     break;}
 case 63:
-
+#line 618 "sslparser.y"
 {
             // This function expands the tables and saves the expanded RTLs
             // to the dictionary
@@ -2039,13 +2038,13 @@ case 63:
         ;
     break;}
 case 64:
-
+#line 626 "sslparser.y"
 {
             yyval.insel = yyvsp[0].insel;
         ;
     break;}
 case 65:
-
+#line 629 "sslparser.y"
 {
             unsigned i;
             InsNameElem *temp;
@@ -2069,32 +2068,32 @@ case 65:
         ;
     break;}
 case 66:
-
+#line 653 "sslparser.y"
 {
             yyval.insel = new InsNameElem(yyvsp[0].str);
         ;
     break;}
 case 67:
-
+#line 656 "sslparser.y"
 {
             yyval.insel = yyvsp[0].insel;
         ;
     break;}
 case 68:
-
+#line 659 "sslparser.y"
 {
             yyval.insel = yyvsp[-1].insel;
             yyval.insel->append(yyvsp[0].insel);
         ;
     break;}
 case 69:
-
+#line 666 "sslparser.y"
 {
             yyval.insel = new InsOptionElem(yyvsp[-1].str);
         ;
     break;}
 case 70:
-
+#line 669 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2108,7 +2107,7 @@ case 70:
         ;
     break;}
 case 71:
-
+#line 682 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2119,7 +2118,7 @@ case 71:
         ;
     break;}
 case 72:
-
+#line 691 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2133,7 +2132,7 @@ case 72:
         ;
     break;}
 case 73:
-
+#line 702 "sslparser.y"
 {
             std::ostringstream o;
             if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2144,13 +2143,13 @@ case 73:
         ;
     break;}
 case 74:
-
+#line 711 "sslparser.y"
 {
             yyval.insel = new InsNameElem(yyvsp[-1].str);
         ;
     break;}
 case 75:
-
+#line 717 "sslparser.y"
 {
             // append any automatically generated register transfers and clear
             // the list they were stored in. Do nothing for a NOP (i.e. $2 = 0)
@@ -2161,7 +2160,7 @@ case 75:
         ;
     break;}
 case 76:
-
+#line 726 "sslparser.y"
 {
             yyval.rtlist = new RTL(STMT_ASSIGN);
             if (yyvsp[0].regtransfer != NULL)
@@ -2169,13 +2168,13 @@ case 76:
         ;
     break;}
 case 77:
-
+#line 734 "sslparser.y"
 {
             yyval.regtransfer = yyvsp[0].regtransfer;
         ;
     break;}
 case 78:
-
+#line 740 "sslparser.y"
 {
             std::ostringstream o;
             if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
@@ -2195,25 +2194,25 @@ case 78:
         ;
     break;}
 case 79:
-
+#line 757 "sslparser.y"
 {
             yyval.regtransfer = 0;
         ;
     break;}
 case 80:
-
+#line 761 "sslparser.y"
 {
             yyval.regtransfer = 0;
         ;
     break;}
 case 81:
-
+#line 764 "sslparser.y"
 {
         yyval.regtransfer = NULL;
     ;
     break;}
 case 82:
-
+#line 770 "sslparser.y"
 {
             // Not sure why the below is commented out (MVE)
 /*          Location* pFlag = Location::regOf(Dict.RegMap[$3]);
@@ -2223,7 +2222,7 @@ case 82:
         ;
     break;}
 case 83:
-
+#line 777 "sslparser.y"
 {
 /*          std::list<Exp*>* tmp = new std::list<Exp*>;
             Unary* pFlag = new Unary(opIdRegOf, Dict.RegMap[$1]);
@@ -2233,7 +2232,7 @@ case 83:
         ;
     break;}
 case 84:
-
+#line 788 "sslparser.y"
 {
             assert(yyvsp[0].str != 0);
             yyvsp[-2].parmlist->push_back(yyvsp[0].str);
@@ -2241,46 +2240,46 @@ case 84:
         ;
     break;}
 case 85:
-
+#line 794 "sslparser.y"
 {
             yyval.parmlist = new std::list<std::string>;
             yyval.parmlist->push_back(yyvsp[0].str);
         ;
     break;}
 case 86:
-
+#line 798 "sslparser.y"
 {
             yyval.parmlist = new std::list<std::string>;
         ;
     break;}
 case 87:
-
+#line 803 "sslparser.y"
 {
             Dict.ParamSet.insert(yyvsp[0].str);       // Not sure if we need this set
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 88:
-
+#line 809 "sslparser.y"
 {
             yyval.explist->push_back(yyvsp[0].exp);
         ;
     break;}
 case 89:
-
+#line 813 "sslparser.y"
 {
             yyval.explist = new std::list<Exp*>;
             yyval.explist->push_back(yyvsp[0].exp);
         ;
     break;}
 case 90:
-
+#line 818 "sslparser.y"
 {
             yyval.explist = new std::list<Exp*>;
         ;
     break;}
 case 91:
-
+#line 826 "sslparser.y"
 {
             Assign* a = new Assign(yyvsp[-5].typ, yyvsp[-2].exp, yyvsp[0].exp);
             a->setGuard(yyvsp[-4].exp);
@@ -2288,14 +2287,14 @@ case 91:
         ;
     break;}
 case 92:
-
+#line 833 "sslparser.y"
 {
             // update the size of any generated RT's
             yyval.regtransfer = new Assign(yyvsp[-3].typ, yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 93:
-
+#line 839 "sslparser.y"
 {
             yyval.regtransfer = new Assign(
                 new Terminal(opNil),
@@ -2303,7 +2302,7 @@ case 93:
         ;
     break;}
 case 94:
-
+#line 844 "sslparser.y"
 {
             yyval.regtransfer = new Assign(
                 new Terminal(opNil),
@@ -2311,50 +2310,43 @@ case 94:
         ;
     break;}
 case 95:
-
+#line 851 "sslparser.y"
 {
-        //  $1      $2
             yyval.regtransfer = new Assign(yyvsp[-1].typ, NULL, yyvsp[0].exp);
         ;
     break;}
 case 96:
-
+#line 857 "sslparser.y"
 {
             yyval.exp = new Const(yyvsp[0].num);
         ;
     break;}
 case 97:
-
+#line 861 "sslparser.y"
 {
             yyval.exp = new Const(yyvsp[0].dbl);
         ;
     break;}
 case 98:
-
-{
-            yyval.exp = Location::tempOf(new Const(yyvsp[0].str));
-        ;
-    break;}
-case 99:
-
+#line 865 "sslparser.y"
 {
             yyval.exp = yyvsp[-1].exp;
         ;
     break;}
-case 100:
-
+case 99:
+#line 869 "sslparser.y"
 {
             yyval.exp = yyvsp[0].exp;
         ;
     break;}
-case 101:
-
+case 100:
+#line 873 "sslparser.y"
 {
             yyval.exp = new Ternary(opTern, yyvsp[-5].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
     break;}
-case 102:
-
+case 101:
+#line 877 "sslparser.y"
 {
             Ternary* t = new Ternary(opTern, yyvsp[-6].exp, yyvsp[-4].exp, yyvsp[-2].exp);
             Exp* e = t;
@@ -2364,50 +2356,50 @@ case 102:
             yyval.exp = e;
         ;
     break;}
-case 103:
-
+case 102:
+#line 887 "sslparser.y"
 {
             yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
         ;
     break;}
-case 104:
-
+case 103:
+#line 893 "sslparser.y"
 {
             yyval.exp = new Ternary(strToOper(yyvsp[-6].str), new Const(yyvsp[-5].num), new Const(yyvsp[-3].num), yyvsp[-1].exp);
         ;
     break;}
-case 105:
-
+case 104:
+#line 898 "sslparser.y"
 {
             yyval.exp = new Unary(opFtrunc, yyvsp[-1].exp);
         ;
     break;}
-case 106:
-
+case 105:
+#line 903 "sslparser.y"
 {
             yyval.exp = new Unary(opFabs, yyvsp[-1].exp);
         ;
     break;}
-case 107:
-
+case 106:
+#line 908 "sslparser.y"
 {
             yyval.exp = new Terminal(opFpush);
         ;
     break;}
-case 108:
-
+case 107:
+#line 911 "sslparser.y"
 {
             yyval.exp = new Terminal(opFpop);
         ;
     break;}
-case 109:
-
+case 108:
+#line 916 "sslparser.y"
 {
             yyval.exp = new Unary(strToOper(yyvsp[-2].str), yyvsp[-1].exp);
         ;
     break;}
-case 110:
-
+case 109:
+#line 922 "sslparser.y"
 {
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
@@ -2433,8 +2425,8 @@ case 110:
             yyval.exp = new Binary(opExpTable, new Const(yyvsp[-2].str), new Const(yyvsp[-1].str));
         ;
     break;}
-case 111:
-
+case 110:
+#line 950 "sslparser.y"
 {
         std::ostringstream o;
         if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end() ) {
@@ -2462,20 +2454,20 @@ case 111:
         }
     ;
     break;}
-case 112:
-
+case 111:
+#line 977 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
-case 113:
-
+case 112:
+#line 983 "sslparser.y"
 {
             yyval.exp = new Unary(opSignExt, yyvsp[-1].exp);
         ;
     break;}
-case 114:
-
+case 113:
+#line 992 "sslparser.y"
 {
             // opSize is deprecated, but for old SSL files we'll make a TypedExp
             if (yyvsp[0].num == STD_SIZE)
@@ -2484,56 +2476,56 @@ case 114:
                 yyval.exp = new TypedExp(new IntegerType(yyvsp[0].num), yyvsp[-1].exp);
         ;
     break;}
-case 115:
-
+case 114:
+#line 1000 "sslparser.y"
 {
             yyval.exp = new Unary(opNot, yyvsp[0].exp);
         ;
     break;}
-case 116:
-
+case 115:
+#line 1004 "sslparser.y"
 {
             yyval.exp = new Unary(opLNot, yyvsp[0].exp);
         ;
     break;}
-case 117:
-
+case 116:
+#line 1008 "sslparser.y"
 {
             yyval.exp = new Unary(opFNeg, yyvsp[0].exp);
         ;
     break;}
+case 117:
+#line 1012 "sslparser.y"
+{
+            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
+        ;
+    break;}
 case 118:
-
+#line 1016 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 119:
-
+#line 1020 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 120:
-
+#line 1024 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 121:
-
+#line 1028 "sslparser.y"
 {
             yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
         ;
     break;}
 case 122:
-
-{
-            yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
-        ;
-    break;}
-case 123:
-
+#line 1035 "sslparser.y"
 {
             std::ostringstream o;
             if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
@@ -2560,14 +2552,14 @@ case 123:
                         new Terminal(opNil))));
         ;
     break;}
-case 124:
-
+case 123:
+#line 1061 "sslparser.y"
 {
             yyval.exp = yyvsp[0].exp;
         ;
     break;}
-case 125:
-
+case 124:
+#line 1072 "sslparser.y"
 {
             bool isFlag = strstr(yyvsp[0].str, "flags") != 0;
             std::map<std::string, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
@@ -2593,28 +2585,28 @@ case 125:
             }
         ;
     break;}
-case 126:
-
+case 125:
+#line 1097 "sslparser.y"
 {
             yyval.exp = Location::regOf(yyvsp[-1].exp);
         ;
     break;}
-case 127:
-
+case 126:
+#line 1101 "sslparser.y"
 {
             int regNum;
             sscanf(yyvsp[0].str, "r%d", &regNum);
             yyval.exp = Location::regOf(regNum);
         ;
     break;}
-case 128:
-
+case 127:
+#line 1107 "sslparser.y"
 {
             yyval.exp = Location::memOf(yyvsp[-1].exp);
         ;
     break;}
-case 129:
-
+case 128:
+#line 1111 "sslparser.y"
 {
         // This is a mixture of the param: PARM {} match
         // and the value_op: NAME {} match
@@ -2633,50 +2625,56 @@ case 129:
             yyval.exp = s;
         ;
     break;}
-case 130:
-
+case 129:
+#line 1129 "sslparser.y"
 {
             yyval.exp = new Ternary(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
         ;
     break;}
+case 130:
+#line 1133 "sslparser.y"
+{
+            yyval.exp = Location::tempOf(new Const(yyvsp[0].str));
+        ;
+    break;}
 case 131:
-
+#line 1138 "sslparser.y"
 {
             yyval.exp = new Unary(opPostVar, yyvsp[-1].exp);
         ;
     break;}
 case 132:
-
+#line 1141 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 133:
-
+#line 1147 "sslparser.y"
 {
             yyval.num = yyvsp[-1].num;
         ;
     break;}
 case 134:
-
+#line 1153 "sslparser.y"
 {
             Dict.bigEndian = (strcmp(yyvsp[0].str, "BIG") == 0);
         ;
     break;}
 case 135:
-
+#line 1158 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 136:
-
+#line 1161 "sslparser.y"
 {
             yyval.str = yyvsp[0].str;
         ;
     break;}
 case 137:
-
+#line 1167 "sslparser.y"
 {
             char c = yyvsp[0].str[1];
             if (c == '*') yyval.typ = new IntegerType;
@@ -2703,14 +2701,14 @@ case 137:
         ;
     break;}
 case 141:
-
+#line 1206 "sslparser.y"
 {
             Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
         ;
     break;}
 }
 
-
+#line 811 "/usr/local/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2912,8 +2910,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 1010 "/usr/local/lib/bison.cc" */
-
-
+#line 2914 "sslparser.cpp"
+#line 1209 "sslparser.y"
 
 
 /*==============================================================================

@@ -28,6 +28,7 @@
  *				doing replacements on results of searchAll
  * 09 Dec 02 - Mike: Added succ() syntax (for SPARC LDD and STD)
  * 29 Sep 03 - Mike: Parse %DF correctly
+ * 22 Jun 04 - Mike: TEMP can be a location now (location was var_op)
  */
 
 %name SSLParser     // the parser class name will be SSLParser
@@ -195,7 +196,7 @@ protected: \
                         // Another reason why ! is deprecated!
 %nonassoc AT
 
-%type <exp> exp var_op exp_term
+%type <exp> exp location exp_term
 %type <str> bin_oper param
 %type <regtransfer> rt assign_rt
 %type <typ> assigntype
@@ -389,8 +390,7 @@ a_reglist:
             }
         |   '[' reg_table ']' '[' NUM ']' INDEX NUM TO NUM {
                 if ((int)$2->size() != ($10 - $8 + 1)) {
-                    std::cerr << "size of register array does not match mapping to r["
-                         << $8 << ".." << $10 << "]\n";
+                    std::cerr << "size of register array does not match mapping"                        " to r[" << $8 << ".." << $10 << "]\n";
                     exit(1);
                 } else {
                     std::list<std::string>::iterator loc = $2->begin();
@@ -823,14 +823,14 @@ list_actualparameter:
 assign_rt:
         // Size   guard =>   lhs    :=    rhs
         //  $1     $2         $4          $6
-        assigntype exp THEN var_op EQUATE exp {
+        assigntype exp THEN location EQUATE exp {
             Assign* a = new Assign($1, $4, $6);
             a->setGuard($2);
             $$ = a;
         }
         // Size     lhs     :=   rhs
         // $1       $2      $3   $4
-    |   assigntype var_op EQUATE exp {
+    |   assigntype location EQUATE exp {
             // update the size of any generated RT's
             $$ = new Assign($1, $2, $4);
         }
@@ -847,8 +847,8 @@ assign_rt:
                 new Terminal(opFpop));
         }
         // ? Just a RHS?
-    |   assigntype exp {
         //  $1      $2
+    |   assigntype exp {
             $$ = new Assign($1, NULL, $2);
         }
     ;
@@ -862,15 +862,11 @@ exp_term:
             $$ = new Const($1);
         }
 
-    |   TEMP {
-            $$ = Location::tempOf(new Const($1));
-        }
-    
     |   '(' exp ')' {
             $$ = $2;
         }
 
-    |   var_op {
+    |   location {
             $$ = $1;
         }
     
@@ -1067,7 +1063,7 @@ exp:
         }
     ;
 
-var_op:
+location:
         // This is for constant register numbers. Often, these are special,
         // in the sense that the register mapping is -1. If so, the
         // equivalent of a special register is generated, i.e. a Terminal
@@ -1133,8 +1129,13 @@ var_op:
     |      exp AT '[' exp COLON exp ']' {
             $$ = new Ternary(opAt, $1, $4, $6);
         }
+
+    |   TEMP {
+            $$ = Location::tempOf(new Const($1));
+        }
+    
         // This indicates a post-instruction marker (var tick)
-    |      var_op '\'' {
+    |      location '\'' {
             $$ = new Unary(opPostVar, $1);
         }
 	|		SUCCESSOR exp ')' {
