@@ -80,7 +80,7 @@ patterns
    _    _      RDPSR    RETURN
    UMUL UMULcc RDWIM    Ticc
    SMUL SMULcc RDTBR    FLUSH
-   SUBX SUBXcc _        SAVE
+   SUBX SUBXcc MOVcc    SAVE
    _    _      _        RESTORE
    UDIV UDIVcc _        _
    SDIV SDIVcc _        _       ] is TABLE_F3 & op3 = {0 to 63 columns 4}
