@@ -163,7 +163,8 @@ Prog *FrontEnd::decode(bool decodeMain)
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
     if (VERBOSE)
-        std::cerr << "start: " << a << " gotmain: " << gotMain << std::endl;
+        std::cerr << "start: " << std::hex << a << std::dec 
+                  << " gotmain: " << gotMain << std::endl;
     if (a == NO_ADDRESS) return false;
 
     decode(prog, a);

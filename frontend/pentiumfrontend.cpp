@@ -981,6 +981,10 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 	gotMain = false;
     start = pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
+    
+    return start; 
+
+    // this pattern sux
 
     int instCount = 100;
     int conseq = 0;
