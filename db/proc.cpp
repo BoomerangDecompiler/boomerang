@@ -3160,14 +3160,17 @@ void UserProc::typeAnalysis(Prog* prog) {
             Exp* loc = ((Unary*)cc->first)->getSubExp1();
             assert(cc->second->isTypeVal());
             Type* ty = ((TypeVal*)cc->second)->getType();
-            if (loc->isSubscript() && (loc = ((RefExp*)loc)->getSubExp1(),
-                  loc->isGlobal())) {
+            if (loc->isSubscript())
+                loc = ((RefExp*)loc)->getSubExp1();
+            if (loc->isGlobal()) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
                 prog->setGlobalType(nam, ty->clone());
+            } else if (loc->isLocal()) {
+                char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
+                setLocalType(nam, ty);
             }
         }
     }
-
 }
 
 bool UserProc::searchAndReplace(Exp *search, Exp *replace)
