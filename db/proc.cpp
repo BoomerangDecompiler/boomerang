@@ -1010,8 +1010,8 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
         if (depth == 0) {
             trimReturns();
             removeRedundantPhis();
-            trimParameters();
         }
+        trimParameters();
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
@@ -1133,8 +1133,7 @@ void UserProc::removeRedundantPhis()
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        if (s->isPhi() && refCounts[s] == 0 && 
-            signature->findReturn(s->getLeft()) == -1) {
+        if (s->isPhi() && refCounts[s] == 0) { 
             if (VERBOSE)
                 std::cerr << "removing unused statement " << s << std::endl;
             removeStatement(s);
@@ -1685,6 +1684,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
     StatementList stmts;
     getStatements(stmts);
     StmtListIter ll;
+    std::map<Exp*, Statement*, lessExpStar> lastDef;
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
         LocationSet refs;
         s->addUsedLocs(refs);
@@ -1702,7 +1702,19 @@ void UserProc::countRefs(RefCounter& refCounts) {
                     refCounts[((RefExp*)r)->getRef()]++;
             }
         }
+        if (s->isPhi()) {
+            PhiExp *p = (PhiExp*)s->getRight();
+            StmtSetIter it;
+            for (Statement *s1 = p->getFirstRef(it); !p->isLastRef(it);
+                 s1 = p->getNextRef(it))
+                refCounts[s1]++;
+        }
+        if (s->getLeft() && signature->findReturn(s->getLeft()) != -1)
+            lastDef[s->getLeft()] = s;
     }
+    for (std::map<Exp*, Statement*>::iterator it = lastDef.begin();
+         it != lastDef.end(); it++)
+        refCounts[(*it).second]++;
 }
 
 void UserProc::removeUnusedStatements(RefCounter& refCounts) {
