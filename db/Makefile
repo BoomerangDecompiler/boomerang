@@ -14,7 +14,7 @@ CXX = $(CC)
 all: testExp
 
 testExp: testExp.o exp.o ExpTest.o 
-	$(CC) -o $@ -Wl,-R../bin $^ -lcppunit
+	$(CC) -o $@ $^ -lcppunit
 
 ExpTest.o: ExpTest.h
 
