@@ -90,7 +90,7 @@ void ExpTransformer::loadAll()
     ifs.open(sPath.c_str());
 
     if (!ifs.good()) {
-        LOG << "can't open `" << sPath.c_str() << "'\n";
+		std::cerr << "can't open `" << sPath.c_str() << "'\n";
         exit(1);
     }
 
