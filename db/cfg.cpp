@@ -172,10 +172,9 @@ bool Cfg::checkEntryBB()
  * OVERVIEW:		Add a new basic block to this cfg 
  * PARAMETERS:		pRtls: list of pointers to RTLs to initialise the BB with
  *					bbType: the type of the BB (e.g. TWOWAY)
- *					iNumOutEdges: number of out edges this BB will eventually
- *					  have
- * RETURNS:			Pointer to the newly created BB, or 0 if there is already
- *					  an incomplete BB with the same address
+ *					iNumOutEdges: number of out edges this BB will eventually have
+ * RETURNS:			Pointer to the newly created BB, or 0 if there is already an incomplete
+ *						BB with the same address
  *============================================================================*/
 PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 {
@@ -194,8 +193,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 	// Note that orphaned BBs (for which we must compute addr here to
 	// to be 0) must not be added to the map, but they have no RTLs with
 	// a non zero address.
-	if ((addr == 0) && (pRtls->size() > 1))
-	{
+	if ((addr == 0) && (pRtls->size() > 1)) {
 		std::list<RTL*>::iterator next = pRtls->begin();
 		addr = (*++next)->getAddress();
 	}
@@ -205,24 +203,20 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 	// If it is zero, this is a special BB for handling delayed
 	// branches or the like
 	bool bDone = false;
-	if (addr != 0)
-	{
+	if (addr != 0) {
 		mi = m_mapBB.find(addr);
-		if (mi != m_mapBB.end() && (*mi).second)
-		{
+		if (mi != m_mapBB.end() && (*mi).second) {
 			pBB = (*mi).second;
 			// It should be incomplete, or the pBB there should be zero
 			// (we have called Label but not yet created the BB for it).
 			// Else we have duplicated BBs. Note: this can happen with
 			// forward jumps into the middle of a loop, so not error
-			if (!pBB->m_bIncomplete)
-			{
+			if (!pBB->m_bIncomplete) {
 				// This list of RTLs is not needed now
 				delete_lrtls(pRtls);
 				return 0;
 			}
-			else
-			{
+			else {
 				// Fill in the details, and return it
 				pBB->setRTLs(pRtls);
 				pBB->m_nodeType = bbType;
@@ -232,8 +226,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 			bDone = true;
 		}
 	}
-	if (!bDone)
-	{
+	if (!bDone) {
 		// Else add a new BB to the back of the current list.
 		pBB = new BasicBlock(pRtls, bbType, iNumOutEdges);
 		m_listBB.push_back(pBB);
@@ -256,32 +249,25 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 		//	|	|	|	|		|	| Existing; rest of new discarded
 		//	+---+	+---+		+---+
 		//	
-		// Check for overlap of the just added BB with the next BB
-		// (address wise). If there is an overlap, truncate the std::list<Exp*> for
-		// the new BB to not overlap, and make this a fall through BB
-		// We still want to do this even if the new BB overlaps with an
-		// incomplete BB, though in this case, splitBB needs to fill in
-		// the details for the "bottom" BB of the split. Also, in this
-		// case, we return a pointer to the newly completed BB, so it
-		// will get out edges added (if required). In the other case
-		// (i.e. we overlap with an exising, completed BB), we want to
+		// Check for overlap of the just added BB with the next BB (address wise).
+		// If there is an overlap, truncate the std::list<Exp*> for the new BB to not overlap,
+		// and make this a fall through BB.
+		// We still want to do this even if the new BB overlaps with an incomplete BB, though in this case,
+		// splitBB needs to fill in the details for the "bottom" BB of the split.
+		// Also, in this case, we return a pointer to the newly completed BB, so it will get out edges added
+		// (if required). In the other case (i.e. we overlap with an exising, completed BB), we want to
 		// return 0, since the out edges are already created.
-		if (++mi != m_mapBB.end())
-		{
+		if (++mi != m_mapBB.end()) {
 			PBB pNextBB = (*mi).second;
 			ADDRESS uNext = (*mi).first;
 			bool bIncomplete = pNextBB->m_bIncomplete;
-			if (uNext <= pRtls->back()->getAddress())
-			{
-				// Need to truncate the current BB. We use splitBB(), but
-				// pass it pNextBB so it doesn't create a new BB for the
-				// "bottom" BB of the split pair
+			if (uNext <= pRtls->back()->getAddress()) {
+				// Need to truncate the current BB. We use splitBB(), but pass it pNextBB so it doesn't create
+				// a new BB for the "bottom" BB of the split pair
 				splitBB(pBB, uNext, pNextBB);
-				// If the overlapped BB was incomplete, return the
-				// "bottom" part of the BB, so adding out edges will work
-				// properly.
-				if (bIncomplete)
-				{
+				// If the overlapped BB was incomplete, return the "bottom" part of the BB, so adding out edges
+				// will work properly.
+				if (bIncomplete) {
 					return pNextBB;
 				}
 				// However, if the overlapping BB was already
@@ -303,8 +289,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 	return pBB;
 }
 
-// Use this function when there are outedges to BBs that are not created
-// yet. Usually used via addOutEdge()
+// Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
 /*==============================================================================
  * FUNCTION:		Cfg::newIncompleteBB
  * OVERVIEW:		
