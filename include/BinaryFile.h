@@ -172,7 +172,7 @@ virtual ~BinaryFile() {}			// Virtual destructor
 // Symbol table functions
     // Lookup the address, return the name, or 0 if not found
     virtual char* SymbolByAddress(ADDRESS uNative);
-    // Lookup the name, return the address
+    // Lookup the name, return the address. If not found, return NO_ADDRESS
     virtual ADDRESS GetAddressByName(const char* pName,
                                      bool bNoTypeOK = false);
     // Lookup the name, return the size
