@@ -364,6 +364,18 @@ int DrawTextW(
   UINT uFormat
 );
 
+BOOL GetTextExtentPointA(
+    HDC     hDC,
+    LPCSTR  lpStr,
+    int     len,
+    SIZE*   sz
+);
+
+HGDIOBJ SelectObject(
+    HDC hDC,
+    HGDIOBJ hObj
+);
+
 INT_PTR DialogBoxParamA(      
     HINSTANCE hInstance,
     LPCSTR lpTemplateName,
