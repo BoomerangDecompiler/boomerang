@@ -42,9 +42,8 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_SIMM    (new Const(simm))
 #define DIS_RS		(dis_Reg(rs))
 #define DIS_RD		(dis_Reg(rd))
-#define DIS_CRFD	(dis_Reg(64/* condition registers start*/ + crfd))
-#define DIS_CRFA	(dis_Reg(64/* condition registers start*/ + crfa))
-#define DIS_CRFB	(dis_Reg(64/* condition registers start*/ + crfb))
+//#define DIS_CRFD	(dis_Reg(64/* condition registers start*/ + crfd))
+#define DIS_CRFD	(new Const(crfd))
 #define DIS_RDR		(dis_Reg(rd))
 #define DIS_RA		(dis_Reg(ra))
 #define DIS_RAZ     (dis_RAmbz(ra))		// As above, but May Be constant Zero
@@ -61,6 +60,15 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 #define DIS_S		(new Const(rs))
+
+#define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
+	result.rtl = new RTL(pc, stmts); \
+	BranchStatement* jump = new BranchStatement; \
+	result.rtl->appendStmt(jump); \
+	result.numBytes = size; \
+	jump->setDest(relocd-delta); \
+	jump->setCondType(cond); \
+	SHOW_ASM(name<<" "<<BIcr<<", "<<std::hex<<relocd-delta)
 
 /*==============================================================================
  * FUNCTION:	   unused
@@ -173,8 +181,32 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
 		unused(l);
 
-	| bcc_(BIcr, reladdr) [name] =>
-		stmts = instantiate(pc, name, DIS_BICR, DIS_RELADDR);
+	// Conditional branches
+	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu
+	| blt(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSL, BIcr);
+	| ble(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
+	| beq(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JE, BIcr);
+	| bge(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+	| bgt(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSG, BIcr);
+	| bnl(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSGE, BIcr);
+	| bne(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JNE, BIcr);
+	| bng(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, BRANCH_JSLE, BIcr);
+	| bso(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
+	| bns(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+	| bun(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
+	| bnu(BIcr, reladdr) [name] =>
+		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
 
 	else
 		stmts = NULL;
