@@ -8,11 +8,11 @@
  */
 
 /*==============================================================================
- * FILE:       cluster.h
+ * FILE:	   cluster.h
  * OVERVIEW:   Definition of the classes that describe a Cluster, a grouping
- * 	       of functions irrespective of relationship.  For example, the
- * 	       Object Oriented Programming concept of a Class is a Cluster. 
- * 	       Clusters can contain other Clusters to form a tree.
+ *		   of functions irrespective of relationship.  For example, the
+ *		   Object Oriented Programming concept of a Class is a Cluster. 
+ *		   Clusters can contain other Clusters to form a tree.
  *============================================================================*/
 
 /*
@@ -37,38 +37,38 @@ class Cluster;
 class Cluster : public Memoisable
 {
 protected:
-    std::string name;
-    std::vector<Cluster*> children;
-    Cluster *parent;
-    std::ofstream out;
+	std::string name;
+	std::vector<Cluster*> children;
+	Cluster *parent;
+	std::ofstream out;
 	std::string stream_ext;
 
 public:
-    Cluster() : name(""), parent(NULL) { }
-    Cluster(const char *name) : name(name), parent(NULL) { }
-    const char *getName() { return name.c_str(); }
-    void setName(const char *nam) { name = nam; }
-    unsigned int getNumChildren() { return children.size(); }
-    Cluster *getChild(int n) { return children[n]; }
-    void addChild(Cluster *n);
-    void removeChild(Cluster *n);
-    Cluster *getParent() { return parent; }
-    bool hasChildren() { return children.size() > 0; }
-    void openStream(const char *ext);
-    void openStreams(const char *ext);
-    void closeStreams();
-    std::ofstream &getStream() { return out; }
-    const char *makeDirs();
-    const char *getOutPath(const char *ext);
-    Cluster *find(const char *nam);
+	Cluster() : name(""), parent(NULL) { }
+	Cluster(const char *name) : name(name), parent(NULL) { }
+	const char *getName() { return name.c_str(); }
+	void setName(const char *nam) { name = nam; }
+	unsigned int getNumChildren() { return children.size(); }
+	Cluster *getChild(int n) { return children[n]; }
+	void addChild(Cluster *n);
+	void removeChild(Cluster *n);
+	Cluster *getParent() { return parent; }
+	bool hasChildren() { return children.size() > 0; }
+	void openStream(const char *ext);
+	void openStreams(const char *ext);
+	void closeStreams();
+	std::ofstream &getStream() { return out; }
+	const char *makeDirs();
+	const char *getOutPath(const char *ext);
+	Cluster *find(const char *nam);
 
 	virtual Memo *makeMemo(int mId);
 	virtual void readMemo(Memo *m, bool dec);
 
-    void printTree(std::ostream &out);
+	void printTree(std::ostream &out);
 protected:
 
-    friend class XMLProgParser;
+	friend class XMLProgParser;
 };
 
 #endif /*__CLUSTER_H__*/

@@ -194,35 +194,35 @@ static char pent_hello_text[] = {
 
 BinaryFileStub::BinaryFileStub()
 {
-    m_iNumSections = 1;
-    SectionInfo *text = new SectionInfo();
-    text->pSectionName = ".text";
-    text->uNativeAddr = 0x8048810;
-    text->uHostAddr = (ADDRESS)pent_hello_text;
-    text->uSectionSize = sizeof(pent_hello_text);
-    text->uSectionEntrySize = 0;
-    text->uType = 0;
-    text->bCode = 1;
-    text->bData = 0;
-    text->bBss = 0;
-    text->bReadOnly = 1;
-    m_pSections = text;
-    getTextLimits();
+	m_iNumSections = 1;
+	SectionInfo *text = new SectionInfo();
+	text->pSectionName = ".text";
+	text->uNativeAddr = 0x8048810;
+	text->uHostAddr = (ADDRESS)pent_hello_text;
+	text->uSectionSize = sizeof(pent_hello_text);
+	text->uSectionEntrySize = 0;
+	text->uType = 0;
+	text->bCode = 1;
+	text->bData = 0;
+	text->bBss = 0;
+	text->bReadOnly = 1;
+	m_pSections = text;
+	getTextLimits();
 }
 
 LOAD_FMT BinaryFileStub::GetFormat() const
 {
-    return LOADFMT_ELF;
+	return LOADFMT_ELF;
 }
 
 MACHINE BinaryFileStub::GetMachine() const
 { 
-    return MACHINE_PENTIUM;
+	return MACHINE_PENTIUM;
 }
 
 bool BinaryFileStub::isLibrary() const
 {
-    return false;
+	return false;
 }
 
 std::list<const char *> BinaryFileStub::getDependencyList()
@@ -251,7 +251,7 @@ ADDRESS* BinaryFileStub::GetImportStubs(int& numImports)
 	return NULL;
 }
 
-bool    BinaryFileStub::DisplayDetails(const char* fileName, FILE* f)
+bool	BinaryFileStub::DisplayDetails(const char* fileName, FILE* f)
 {
 	return false;
 }

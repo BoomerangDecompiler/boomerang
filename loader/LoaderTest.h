@@ -8,23 +8,23 @@ class LoaderTest : public CppUnit::TestCase {
   protected:
 
   public:
-    LoaderTest(std::string name) : CppUnit::TestCase (name)
-    {}
+	LoaderTest(std::string name) : CppUnit::TestCase (name)
+	{}
 
-    virtual void registerTests(CppUnit::TestSuite* suite);
+	virtual void registerTests(CppUnit::TestSuite* suite);
 
-    int countTestCases () const;
+	int countTestCases () const;
 
-    void setUp ();
-    void tearDown ();
+	void setUp ();
+	void tearDown ();
 
-    void testSparcLoad ();
-    void testPentiumLoad ();
-    void testHppaLoad ();
-    void testPalmLoad ();
-    void testWinLoad ();
+	void testSparcLoad ();
+	void testPentiumLoad ();
+	void testHppaLoad ();
+	void testPalmLoad ();
+	void testWinLoad ();
 
-    void testMicroDis1();
-    void testMicroDis2();
+	void testMicroDis1();
+	void testMicroDis2();
 };
 

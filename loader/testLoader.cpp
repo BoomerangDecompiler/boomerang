@@ -1,10 +1,10 @@
 /*==============================================================================
- * FILE:       testLoader.cc
+ * FILE:	   testLoader.cc
  * OVERVIEW:   Command line test of the BinaryFile and related classes.
  *============================================================================*/
 /*
  * $Revision$
- *    Apr 02 - Mike: Created
+ *	  Apr 02 - Mike: Created
  * 03 Apr 02 - Mike: Modified to use CppUnit 1.6.2.
  */
 
@@ -17,17 +17,17 @@
 
 int main(int argc, char** argv)
 {
-    CppUnit::TestSuite suite;
+	CppUnit::TestSuite suite;
 
-    LoaderTest lt("ExpTest");
+	LoaderTest lt("ExpTest");
 
-    lt.registerTests(&suite);
+	lt.registerTests(&suite);
 
-    CppUnit::TextTestResult res;
+	CppUnit::TextTestResult res;
 
-    suite.run( &res );
-    std::cout << res << std::endl;
+	suite.run( &res );
+	std::cout << res << std::endl;
 
-    return 0;
+	return 0;
 }
 

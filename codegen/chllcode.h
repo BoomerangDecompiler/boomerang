@@ -11,11 +11,11 @@
  */
 
 /*==============================================================================
- * FILE:       chllcode.h
+ * FILE:	   chllcode.h
  * OVERVIEW:   Concrete class for the "C" high level language
- *             This class is provides methods which are specific for the C
- *             language binding.  I guess this will be the most popular output
- *             language unless we do C++.
+ *			   This class is provides methods which are specific for the C
+ *			   language binding.  I guess this will be the most popular output
+ *			   language unless we do C++.
  *============================================================================*/
 
 #ifndef _CHLLCODE_H_
@@ -32,47 +32,47 @@ class LocationSet;
 
 // Operator precedence
 /*
-Operator Name               Associativity   Operators
-Primary scope resolution    left to right   ::
-Primary                     left to right   ()  [ ]  .  -> dynamic_cast typeid
-Unary                       right to left   ++  --  +  -  !  ~  &  *
-                                            (type_name)  sizeof new delete
-C++ Pointer to Member       left to right   .* ->*
-Multiplicative              left to right   *  /  %
-Additive                    left to right   +  -
-Bitwise Shift               left to right   <<  >>
-Relational                  left to right   <  >  <=  >=
-Equality                    left to right   ==  !=
-Bitwise AND                 left to right   &
-Bitwise Exclusive OR        left to right   ^
-Bitwise Inclusive OR        left to right   |
-Logical AND                 left to right   &&
-Logical OR                  left to right   ||
-Conditional                 right to left   ? :
-Assignment                  right to left   =  +=  -=  *=   /=  <<=  >>=  %=
-                                            &=  ^=  |=
-Comma                       left to right   ,
+Operator Name				Associativity	Operators
+Primary scope resolution	left to right	::
+Primary						left to right	()	[ ]	 .	-> dynamic_cast typeid
+Unary						right to left	++	--	+  -  !	 ~	&  *
+											(type_name)	 sizeof new delete
+C++ Pointer to Member		left to right	.* ->*
+Multiplicative				left to right	*  /  %
+Additive					left to right	+  -
+Bitwise Shift				left to right	<<	>>
+Relational					left to right	<  >  <=  >=
+Equality					left to right	==	!=
+Bitwise AND					left to right	&
+Bitwise Exclusive OR		left to right	^
+Bitwise Inclusive OR		left to right	|
+Logical AND					left to right	&&
+Logical OR					left to right	||
+Conditional					right to left	? :
+Assignment					right to left	=  +=  -=  *=	/=	<<=	 >>=  %=
+											&=	^=	|=
+Comma						left to right	,
 */
 
 enum PREC {
-    PREC_NONE=0,            // Outer level (no parens required)
-    PREC_COMMA,             // Comma
-    PREC_ASSIGN,            // Assignment
-    PREC_COND,              // Conditional
-    PREC_LOG_OR,            // Logical OR
-    PREC_LOG_AND,           // Logical AND
-    PREC_BIT_IOR,           // Bitwise Inclusive OR
-    PREC_BIT_XOR,           // Bitwise Exclusive OR
-    PREC_BIT_AND,           // Bitwise AND
-    PREC_EQUAL,             // Equality
-    PREC_REL,               // Relational
-    PREC_BIT_SHIFT,         // Bitwise Shift
-    PREC_ADD,               // Additive
-    PREC_MULT,              // Multiplicative
-    PREC_PTR_MEM,           // C++ Pointer to Member
-    PREC_UNARY,             // Unary
-    PREC_PRIM,              // Primary
-    PREC_SCOPE              // Primary scope resolution
+	PREC_NONE=0,			// Outer level (no parens required)
+	PREC_COMMA,				// Comma
+	PREC_ASSIGN,			// Assignment
+	PREC_COND,				// Conditional
+	PREC_LOG_OR,			// Logical OR
+	PREC_LOG_AND,			// Logical AND
+	PREC_BIT_IOR,			// Bitwise Inclusive OR
+	PREC_BIT_XOR,			// Bitwise Exclusive OR
+	PREC_BIT_AND,			// Bitwise AND
+	PREC_EQUAL,				// Equality
+	PREC_REL,				// Relational
+	PREC_BIT_SHIFT,			// Bitwise Shift
+	PREC_ADD,				// Additive
+	PREC_MULT,				// Multiplicative
+	PREC_PTR_MEM,			// C++ Pointer to Member
+	PREC_UNARY,				// Unary
+	PREC_PRIM,				// Primary
+	PREC_SCOPE				// Primary scope resolution
 };
 
 
@@ -82,16 +82,16 @@ class CHLLCode : public HLLCode {
 private:
 	std::list<char *> lines;
 
-        void indent(std::ostringstream& str, int indLevel);
-        void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
-            bool uns = false);
-        void appendType(std::ostringstream& str, Type *typ);
-        void openParen(std::ostringstream& str, PREC outer, PREC inner) {
-            if (inner < outer) str << "("; }
-        void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
-            if (inner < outer) str << ")"; }
+		void indent(std::ostringstream& str, int indLevel);
+		void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
+			bool uns = false);
+		void appendType(std::ostringstream& str, Type *typ);
+		void openParen(std::ostringstream& str, PREC outer, PREC inner) {
+			if (inner < outer) str << "("; }
+		void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
+			if (inner < outer) str << ")"; }
 
-        std::map<std::string, Type*> locals;
+		std::map<std::string, Type*> locals;
 
 public:
 	// constructor
@@ -109,7 +109,7 @@ public:
 	 */
 
 	// pretested loops (cond is optional because it is in the bb 
-        // [somewhere])
+		// [somewhere])
 	virtual void AddPretestedLoopHeader(int indLevel, Exp *cond);
 	virtual void AddPretestedLoopEnd(int indLevel);
 
@@ -149,20 +149,20 @@ public:
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
 	virtual void AddCallStatement(int indLevel, Proc *proc, 
-            const char *name, std::vector<Exp*> &args, std::vector<Exp*>& rets);
+			const char *name, std::vector<Exp*> &args, std::vector<Exp*>& rets);
 	virtual void AddIndCallStatement(int indLevel, Exp *exp,
-            std::vector<Exp*> &args);
+			std::vector<Exp*> &args);
 	virtual void AddReturnStatement(int indLevel, 
-                                        std::vector<Exp*> &returns);
+										std::vector<Exp*> &returns);
 	virtual void AddProcStart(Signature *signature);
 	virtual void AddProcEnd();
 	virtual void AddLocal(const char *name, Type *type);
 
 	virtual void AddGlobal(const char *name, Type *type,
-                                Exp *init = NULL);
+								Exp *init = NULL);
 
-    // comments
-    virtual void AddLineComment(char* cmt);
+	// comments
+	virtual void AddLineComment(char* cmt);
 
 	/*
 	 * output functions

@@ -1,7 +1,7 @@
 /*==============================================================================
- * FILE:       LoaderTest.cc
+ * FILE:	   LoaderTest.cc
  * OVERVIEW:   Provides the implementation for the LoaderTest class, which
- *              tests the BinaryFile and derived classes
+ *				tests the BinaryFile and derived classes
  *============================================================================*/
 /*
  * $Revision$
@@ -14,241 +14,241 @@
  * 30 Sep 02 - Trent: remove dependancy between microDis test1 and Elf loader
  */
 
-#define HELLO_SPARC     "test/sparc/hello"
-#define HELLO_PENTIUM   "test/pentium/hello"
-#define HELLO_HPPA      "test/hppa/hello"
-#define STARTER_PALM    "test/mc68328/Starter.prc"
-#define CALC_WINDOWS    "test/windows/calc.exe"
-#define CALC_WINXP      "test/windows/calcXP.exe"
-#define CALC_WIN2000    "test/windows/calc2000.exe"
-#define LPQ_WINDOWS     "test/windows/lpq.exe"
+#define HELLO_SPARC		"test/sparc/hello"
+#define HELLO_PENTIUM	"test/pentium/hello"
+#define HELLO_HPPA		"test/hppa/hello"
+#define STARTER_PALM	"test/mc68328/Starter.prc"
+#define CALC_WINDOWS	"test/windows/calc.exe"
+#define CALC_WINXP		"test/windows/calcXP.exe"
+#define CALC_WIN2000	"test/windows/calc2000.exe"
+#define LPQ_WINDOWS		"test/windows/lpq.exe"
 
 #include "LoaderTest.h"
-//#include "util.h"           // For str()
-#include <iostream>         // For cout
+//#include "util.h"			  // For str()
+#include <iostream>			// For cout
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::registerTests
- * OVERVIEW:        Register the test functions in the given suite
- * PARAMETERS:      Pointer to the test suite
- * RETURNS:         <nothing>
+ * FUNCTION:		LoaderTest::registerTests
+ * OVERVIEW:		Register the test functions in the given suite
+ * PARAMETERS:		Pointer to the test suite
+ * RETURNS:			<nothing>
  *============================================================================*/
 #define MYTEST(name) \
 suite->addTest(new CppUnit::TestCaller<LoaderTest> ("LoaderTest", \
-    &LoaderTest::name, *this))
+	&LoaderTest::name, *this))
 
 void LoaderTest::registerTests(CppUnit::TestSuite* suite) {
-    MYTEST(testSparcLoad);
-    MYTEST(testPentiumLoad);
-    MYTEST(testHppaLoad);
-    MYTEST(testPalmLoad);
-    MYTEST(testWinLoad);
+	MYTEST(testSparcLoad);
+	MYTEST(testPentiumLoad);
+	MYTEST(testHppaLoad);
+	MYTEST(testPalmLoad);
+	MYTEST(testWinLoad);
 
-    MYTEST(testMicroDis1);
-    MYTEST(testMicroDis2);
+	MYTEST(testMicroDis1);
+	MYTEST(testMicroDis2);
 }
 
 int LoaderTest::countTestCases () const
-{ return 7; }   // ? What's this for?
+{ return 7; }	// ? What's this for?
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::setUp
- * OVERVIEW:        Set up anything needed before all tests
- * NOTE:            Called before any tests
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
+ * FUNCTION:		LoaderTest::setUp
+ * OVERVIEW:		Set up anything needed before all tests
+ * NOTE:			Called before any tests
+ * PARAMETERS:		<none>
+ * RETURNS:			<nothing>
  *============================================================================*/
 void LoaderTest::setUp () {
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::tearDown
- * OVERVIEW:        Delete objects created in setUp
- * NOTE:            Called after all tests
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
+ * FUNCTION:		LoaderTest::tearDown
+ * OVERVIEW:		Delete objects created in setUp
+ * NOTE:			Called after all tests
+ * PARAMETERS:		<none>
+ * RETURNS:			<nothing>
  *============================================================================*/
 void LoaderTest::tearDown () {
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testSparcLoad
- * OVERVIEW:        Test loading the sparc hello world program
+ * FUNCTION:		LoaderTest::testSparcLoad
+ * OVERVIEW:		Test loading the sparc hello world program
  *============================================================================*/
 void LoaderTest::testSparcLoad () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    // Load SPARC hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_SPARC);
-    CPPUNIT_ASSERT(pBF != NULL);
-    int n;
-    SectionInfo* si;
-    n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n\t";
-    // Just use the first (real one) and last sections
-    si = pBF->GetSectionInfo(1);
-    ost << si->pSectionName << "\t";
-    si = pBF->GetSectionInfo(n-1);
-    ost << si->pSectionName;
-    pBF->UnLoad();
-    // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 29\r\n\t"
-        ".interp	.stab.indexstr");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	// Load SPARC hello world
+	BinaryFile* pBF = BinaryFile::Load(HELLO_SPARC);
+	CPPUNIT_ASSERT(pBF != NULL);
+	int n;
+	SectionInfo* si;
+	n = pBF->GetNumSections();
+	ost << "Number of sections = " << std::dec << n << "\r\n\t";
+	// Just use the first (real one) and last sections
+	si = pBF->GetSectionInfo(1);
+	ost << si->pSectionName << "\t";
+	si = pBF->GetSectionInfo(n-1);
+	ost << si->pSectionName;
+	pBF->UnLoad();
+	// Note: the string below needs to have embedded tabs. Edit with caution!
+	std::string expected("Number of sections = 29\r\n\t"
+		".interp	.stab.indexstr");
+	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testPentiumLoad
- * OVERVIEW:        Test loading the pentium (Solaris) hello world program
+ * FUNCTION:		LoaderTest::testPentiumLoad
+ * OVERVIEW:		Test loading the pentium (Solaris) hello world program
  *============================================================================*/
 void LoaderTest::testPentiumLoad () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    // Load Pentium hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_PENTIUM);
-    CPPUNIT_ASSERT(pBF != NULL);
-    int n;
-    SectionInfo* si;
-    n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n\t";
-    si = pBF->GetSectionInfo(1);
-    ost << si->pSectionName << "\t";
-    si = pBF->GetSectionInfo(n-1);
-    ost << si->pSectionName;
-    pBF->UnLoad();
-    // Note: the string below needs to have embedded tabs. Edit with caution!
-    // (And slightly different string to the sparc test, e.g. rel vs rela)
-    std::string expected("Number of sections = 34\r\n\t"
-        ".interp	.strtab");
+	// Load Pentium hello world
+	BinaryFile* pBF = BinaryFile::Load(HELLO_PENTIUM);
+	CPPUNIT_ASSERT(pBF != NULL);
+	int n;
+	SectionInfo* si;
+	n = pBF->GetNumSections();
+	ost << "Number of sections = " << std::dec << n << "\r\n\t";
+	si = pBF->GetSectionInfo(1);
+	ost << si->pSectionName << "\t";
+	si = pBF->GetSectionInfo(n-1);
+	ost << si->pSectionName;
+	pBF->UnLoad();
+	// Note: the string below needs to have embedded tabs. Edit with caution!
+	// (And slightly different string to the sparc test, e.g. rel vs rela)
+	std::string expected("Number of sections = 34\r\n\t"
+		".interp	.strtab");
 
 
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testHppaLoad
- * OVERVIEW:        Test loading the sparc hello world program
+ * FUNCTION:		LoaderTest::testHppaLoad
+ * OVERVIEW:		Test loading the sparc hello world program
  *============================================================================*/
 void LoaderTest::testHppaLoad () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    // Load HPPA hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_HPPA);
-    CPPUNIT_ASSERT(pBF != NULL);
-    int n;
-    SectionInfo* si;
-    n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
-    for (int i=0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
-    }
-    pBF->UnLoad();
-    // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 4\r\n"
-        "$HEADER$	$TEXT$	$DATA$	$BSS$	");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	// Load HPPA hello world
+	BinaryFile* pBF = BinaryFile::Load(HELLO_HPPA);
+	CPPUNIT_ASSERT(pBF != NULL);
+	int n;
+	SectionInfo* si;
+	n = pBF->GetNumSections();
+	ost << "Number of sections = " << std::dec << n << "\r\n";
+	for (int i=0; i < n; i++) {
+		si = pBF->GetSectionInfo(i);
+		ost << si->pSectionName << "\t";
+	}
+	pBF->UnLoad();
+	// Note: the string below needs to have embedded tabs. Edit with caution!
+	std::string expected("Number of sections = 4\r\n"
+		"$HEADER$	$TEXT$	$DATA$	$BSS$	");
+	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 	delete pBF;
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testPalmLoad
- * OVERVIEW:        Test loading the Palm 68328 Starter.prc program
+ * FUNCTION:		LoaderTest::testPalmLoad
+ * OVERVIEW:		Test loading the Palm 68328 Starter.prc program
  *============================================================================*/
 void LoaderTest::testPalmLoad () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    // Load Palm Starter.prc
-    BinaryFile* pBF = BinaryFile::Load(STARTER_PALM);
-    CPPUNIT_ASSERT(pBF != NULL);
-    int n;
-    SectionInfo* si;
-    n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
-    for (int i=0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
-    }
-    pBF->UnLoad();
-    // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 8\r\n"
-        "code1	MBAR1000	tFRM1000	Talt1001	"
-        "data0	code0	tAIN1000	tver1000	");
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	// Load Palm Starter.prc
+	BinaryFile* pBF = BinaryFile::Load(STARTER_PALM);
+	CPPUNIT_ASSERT(pBF != NULL);
+	int n;
+	SectionInfo* si;
+	n = pBF->GetNumSections();
+	ost << "Number of sections = " << std::dec << n << "\r\n";
+	for (int i=0; i < n; i++) {
+		si = pBF->GetSectionInfo(i);
+		ost << si->pSectionName << "\t";
+	}
+	pBF->UnLoad();
+	// Note: the string below needs to have embedded tabs. Edit with caution!
+	std::string expected("Number of sections = 8\r\n"
+		"code1	MBAR1000	tFRM1000	Talt1001	"
+		"data0	code0	tAIN1000	tver1000	");
+	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 	delete pBF;
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testWinLoad
- * OVERVIEW:        Test loading the Windows calc.exe program
+ * FUNCTION:		LoaderTest::testWinLoad
+ * OVERVIEW:		Test loading the Windows calc.exe program
  *============================================================================*/
 void LoaderTest::testWinLoad () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    // Load Windows program calc.exe
-    BinaryFile* pBF = BinaryFile::Load(CALC_WINDOWS);
-    CPPUNIT_ASSERT(pBF != NULL);
-    int n;
-    SectionInfo* si;
-    n = pBF->GetNumSections();
-    ost << "Number of sections = " << std::dec << n << "\r\n";
-    for (int i=0; i < n; i++) {
-        si = pBF->GetSectionInfo(i);
-        ost << si->pSectionName << "\t";
-    }
+	// Load Windows program calc.exe
+	BinaryFile* pBF = BinaryFile::Load(CALC_WINDOWS);
+	CPPUNIT_ASSERT(pBF != NULL);
+	int n;
+	SectionInfo* si;
+	n = pBF->GetNumSections();
+	ost << "Number of sections = " << std::dec << n << "\r\n";
+	for (int i=0; i < n; i++) {
+		si = pBF->GetSectionInfo(i);
+		ost << si->pSectionName << "\t";
+	}
 
-    // Note: the string below needs to have embedded tabs. Edit with caution!
-    std::string expected("Number of sections = 5\r\n"
-        ".text	.rdata	.data	.rsrc	.reloc	");
-    std::string actual(ost.str());
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+	// Note: the string below needs to have embedded tabs. Edit with caution!
+	std::string expected("Number of sections = 5\r\n"
+		".text	.rdata	.data	.rsrc	.reloc	");
+	std::string actual(ost.str());
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-    ADDRESS addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	ADDRESS addr = pBF->GetMainEntryPoint();
+	CPPUNIT_ASSERT(addr != NO_ADDRESS);
 
-    // Test symbol table (imports)
-    char* s = pBF->SymbolByAddress(0x1292060U);
-    if (s == 0)
-        actual = "<not found>";
-    else
-        actual = std::string(s);
-    expected = std::string("SetEvent");
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+	// Test symbol table (imports)
+	char* s = pBF->SymbolByAddress(0x1292060U);
+	if (s == 0)
+		actual = "<not found>";
+	else
+		actual = std::string(s);
+	expected = std::string("SetEvent");
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-    ADDRESS a = pBF->GetAddressByName("SetEvent");
-    ADDRESS expectedAddr = 0x1292060;
-    CPPUNIT_ASSERT_EQUAL(expectedAddr, a);
-    pBF->UnLoad();
+	ADDRESS a = pBF->GetAddressByName("SetEvent");
+	ADDRESS expectedAddr = 0x1292060;
+	CPPUNIT_ASSERT_EQUAL(expectedAddr, a);
+	pBF->UnLoad();
 
-    // Test loading the "new style" exes, as found in winXP etc
-    pBF = BinaryFile::Load(CALC_WINXP);
-    CPPUNIT_ASSERT(pBF != NULL);
-    addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
-    pBF->UnLoad();
+	// Test loading the "new style" exes, as found in winXP etc
+	pBF = BinaryFile::Load(CALC_WINXP);
+	CPPUNIT_ASSERT(pBF != NULL);
+	addr = pBF->GetMainEntryPoint();
+	CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	pBF->UnLoad();
 
-    // Test loading the calc.exe found in Windows 2000 (more NT based)
-    pBF = BinaryFile::Load(CALC_WIN2000);
-    CPPUNIT_ASSERT(pBF != NULL);
-    addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
-    pBF->UnLoad();
+	// Test loading the calc.exe found in Windows 2000 (more NT based)
+	pBF = BinaryFile::Load(CALC_WIN2000);
+	CPPUNIT_ASSERT(pBF != NULL);
+	addr = pBF->GetMainEntryPoint();
+	CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	pBF->UnLoad();
 
-    // Test loading the lpq.exe program - console mode PE file
-    pBF = BinaryFile::Load(LPQ_WINDOWS);
-    CPPUNIT_ASSERT(pBF != NULL);
-    addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
-    pBF->UnLoad();
+	// Test loading the lpq.exe program - console mode PE file
+	pBF = BinaryFile::Load(LPQ_WINDOWS);
+	CPPUNIT_ASSERT(pBF != NULL);
+	addr = pBF->GetMainEntryPoint();
+	CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	pBF->UnLoad();
 	delete pBF;
 }
 
 /*==============================================================================
- * FUNCTION:        LoaderTest::testMicroDis
- * OVERVIEW:        Test the micro disassembler
+ * FUNCTION:		LoaderTest::testMicroDis
+ * OVERVIEW:		Test the micro disassembler
  *============================================================================*/
 extern "C" {
-    int microX86Dis(void* p);
+	int microX86Dis(void* p);
 }
 
 // The below lengths were derived from a quick and dirty program (called
@@ -505,49 +505,49 @@ static char pent_hello_text[] = {
 0x00, 0x5b, 0x81, 0xc3, 0x73, 0x10, 0x00, 0x00, 0x8b, 0x5d, 0xfc, 0xc9, 0xc3 };
 
 void LoaderTest::testMicroDis1 () {
-    std::ostringstream ost;
+	std::ostringstream ost;
 
-    int i;
-    unsigned int n = sizeof(pent_hello_text);
-    int totalSize = 0;
-    void* p = pent_hello_text;
-    i = 0;
-    while (totalSize < (int)n) {
-        int size = microX86Dis(p);
-        if (size >= 0x40) {
-            std::cout << "Not handled instruction at offset 0x" << std::hex <<
-                (ADDRESS)p - (ADDRESS)pent_hello_text << std::endl;
-            CPPUNIT_ASSERT(size != 0x40);
-            return;
-        }
-        int expected = lengths[i++];
-        if (expected != size) {
-            std::cout << "At offset 0x" << std::hex <<
-              (ADDRESS)p - (ADDRESS)pent_hello_text << " ("
-	      << (int)*((unsigned char*)p) << " "
-	      << (int)*((unsigned char*)p+1) << " " 
-	      << (int)*((unsigned char*)p+2) << " " 
-	      << (int)*((unsigned char*)p+3) << " " 
-	      << ") expected " <<
-              std::dec << expected << ", actual " << size << std::endl;
-              CPPUNIT_ASSERT_EQUAL(expected, size);
-        }
-        p = (void*) ((char*)p + size);
-        totalSize += size;
-    }
-    CPPUNIT_ASSERT_EQUAL((int)n, totalSize);
+	int i;
+	unsigned int n = sizeof(pent_hello_text);
+	int totalSize = 0;
+	void* p = pent_hello_text;
+	i = 0;
+	while (totalSize < (int)n) {
+		int size = microX86Dis(p);
+		if (size >= 0x40) {
+			std::cout << "Not handled instruction at offset 0x" << std::hex <<
+				(ADDRESS)p - (ADDRESS)pent_hello_text << std::endl;
+			CPPUNIT_ASSERT(size != 0x40);
+			return;
+		}
+		int expected = lengths[i++];
+		if (expected != size) {
+			std::cout << "At offset 0x" << std::hex <<
+			  (ADDRESS)p - (ADDRESS)pent_hello_text << " ("
+		  << (int)*((unsigned char*)p) << " "
+		  << (int)*((unsigned char*)p+1) << " " 
+		  << (int)*((unsigned char*)p+2) << " " 
+		  << (int)*((unsigned char*)p+3) << " " 
+		  << ") expected " <<
+			  std::dec << expected << ", actual " << size << std::endl;
+			  CPPUNIT_ASSERT_EQUAL(expected, size);
+		}
+		p = (void*) ((char*)p + size);
+		totalSize += size;
+	}
+	CPPUNIT_ASSERT_EQUAL((int)n, totalSize);
 }
 
 void LoaderTest::testMicroDis2 () {
 
-    // Now a special test:
-    // 8048910:  0f be 00            movsbl (%eax),%eax
-    // 8048913:  0f bf 00            movswl (%eax),%eax
+	// Now a special test:
+	// 8048910:	 0f be 00			 movsbl (%eax),%eax
+	// 8048913:	 0f bf 00			 movswl (%eax),%eax
 
-    unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
-    unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
-    int size = microX86Dis(movsbl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
-    size = microX86Dis(movswl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
+	unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
+	unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
+	int size = microX86Dis(movsbl);
+	CPPUNIT_ASSERT_EQUAL(3, size);
+	size = microX86Dis(movswl);
+	CPPUNIT_ASSERT_EQUAL(3, size);
 }

@@ -8,8 +8,8 @@
  */
 
 /*=============================================================================
- * FILE:        memo.h
- * OVERVIEW:    declaration of the memo class.
+ * FILE:		memo.h
+ * OVERVIEW:	declaration of the memo class.
  *============================================================================*/
 /*
  * $Revision$
@@ -25,11 +25,13 @@ public:
 	Memo(int m) : mId(m) { }
 	int mId;
 	virtual void doNothing() { }
+	virtual ~Memo() { }			// Kill gcc warning
 };
 
 class Memoisable {
 public:
 	Memoisable() { cur_memo = memos.begin(); }
+	virtual ~Memoisable() { }
 
 	void takeMemo(int mId);
 	void restoreMemo(int mId, bool dec = false);
@@ -47,3 +49,4 @@ protected:
 };
 
 #endif
+

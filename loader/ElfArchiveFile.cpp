@@ -52,14 +52,14 @@ bool ElfArchiveFile::Load(const char* pName)
 	unsigned int uNumSyms;
 	int iIndex = -1;		// 0,1,2... for 1st,2nd,3rd... member
 
-    Elf_Arsym* asym;
-    asym = elf_getarsym(m_arf, &uNumSyms);
+	Elf_Arsym* asym;
+	asym = elf_getarsym(m_arf, &uNumSyms);
 	uNumSyms--;
-    if (asym == 0)
-    {
-        printf("Get archive symbol table failed\n");
-        return false;
-    }
+	if (asym == 0)
+	{
+		printf("Get archive symbol table failed\n");
+		return false;
+	}
 
 	for (unsigned u=0; u < uNumSyms; u++)
 	{

@@ -8,8 +8,8 @@
  */
 
 /*=============================================================================
- * FILE:        XMLProgParser.h
- * OVERVIEW:    parses persisted XML output and creates a new prog.
+ * FILE:		XMLProgParser.h
+ * OVERVIEW:	parses persisted XML output and creates a new prog.
  *============================================================================*/
 /*
  * $Revision$
@@ -38,21 +38,21 @@ class RTL;
 #define MAX_STACK 1024
 
 typedef struct {
-    const char *tag;
-    void (XMLProgParser::*start_proc)(const char**);
-    void (XMLProgParser::*end_proc)(Context *c, int e);
+	const char *tag;
+	void (XMLProgParser::*start_proc)(const char**);
+	void (XMLProgParser::*end_proc)(Context *c, int e);
 } _tag;
 
 class XMLProgParser
 {
-    public:
+	public:
 	XMLProgParser() { }
 	Prog *parse(const char *filename);
 	void persistToXML(Prog *prog);
 	void handleElementStart(const char *el, const char **attr);
 	void handleElementEnd(const char *el);
 
-    protected:
+	protected:
 
 	void parseFile(const char *filename);
 	void parseChildren(Cluster *c);

@@ -8,8 +8,8 @@
  */
 
 /*==============================================================================
- * FILE:        register.h
- * OVERVIEW:    Header information for the Register class.
+ * FILE:		register.h
+ * OVERVIEW:	Header information for the Register class.
  *============================================================================*/
 
 /* 
@@ -36,7 +36,7 @@ class Type;
 class Register {
  public:
   
-  Register();       // needed for use in stl classes.
+  Register();		// needed for use in stl classes.
   Register(const Register&);
   Register operator=(const Register& r2);
   bool operator==(const Register& r2) const;
@@ -63,7 +63,7 @@ class Register {
    */
   void s_mappedIndex(int i) {mappedIndex = i;}
   /* Set the mapped offset. This is the bit number where this register starts,
-     e.g. for register %ah, this is 8. For COVERS regisers, this is 0 */
+	 e.g. for register %ah, this is 8. For COVERS regisers, this is 0 */
   void s_mappedOffset(int i) {mappedOffset = i;}
   /* Get the mapped index (see above) */
   int g_mappedIndex() const {return mappedIndex;}
@@ -78,7 +78,7 @@ class Register {
   void *address;
   int mappedIndex;
   int mappedOffset;
-  bool flt;             // True if this is a floating point register
+  bool flt;				// True if this is a floating point register
 };
 
 #endif

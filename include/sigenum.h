@@ -3,20 +3,20 @@
 #define __SIGENUM__
 
 enum platform {
-    PLAT_PENTIUM,
-    PLAT_SPARC,
-    PLAT_M68K,
-    PLAT_PARISC,
-    PLAT_PPC,
-    PLAT_MIPS,
-    PLAT_GENERIC
+	PLAT_PENTIUM,
+	PLAT_SPARC,
+	PLAT_M68K,
+	PLAT_PARISC,
+	PLAT_PPC,
+	PLAT_MIPS,
+	PLAT_GENERIC
 };
 
 enum callconv {
-    CONV_C,         // Standard C, no callee pop
-    CONV_PASCAL,    // callee pop
-    CONV_THISCALL,  // MSVC "thiscall": one parameter in register ecx
-    CONV_NONE
+	CONV_C,			// Standard C, no callee pop
+	CONV_PASCAL,	// callee pop
+	CONV_THISCALL,	// MSVC "thiscall": one parameter in register ecx
+	CONV_NONE
 };
 
-#endif  // __SIGENUM__
+#endif	// __SIGENUM__

@@ -10,7 +10,7 @@
  */
 
 /*==============================================================================
- * FILE:       decoder.h
+ * FILE:	   decoder.h
  * OVERVIEW:   The interface to the instruction decoder.
  *============================================================================*/
 
@@ -35,19 +35,19 @@ class Prog;
 // Binary Translation of Delayed Branches" for SPARC instructions.
 // Extended for HPPA. Ignored by machines with no delay slots
 enum ICLASS {
-    NCT,            // Non Control Transfer
-    SD,             // Static Delayed
-    DD,             // Dynamic Delayed
-    SCD,            // Static Conditional Delayed
-    SCDAN,          // Static Conditional Delayed, Anulled if Not taken
-    SCDAT,          // Static Conditional Delayed, Anulled if Taken
-    SU,             // Static Unconditional (not delayed)
-    SKIP,           // Skip successor
-//  TRAP,           // Trap
-    NOP,            // No operation (e.g. sparc BN,A)
-    // HPPA only
-    DU,             // Dynamic Unconditional (not delayed)
-    NCTA            // Non Control Transfer, with following instr Anulled
+	NCT,			// Non Control Transfer
+	SD,				// Static Delayed
+	DD,				// Dynamic Delayed
+	SCD,			// Static Conditional Delayed
+	SCDAN,			// Static Conditional Delayed, Anulled if Not taken
+	SCDAT,			// Static Conditional Delayed, Anulled if Taken
+	SU,				// Static Unconditional (not delayed)
+	SKIP,			// Skip successor
+//	TRAP,			// Trap
+	NOP,			// No operation (e.g. sparc BN,A)
+	// HPPA only
+	DU,				// Dynamic Unconditional (not delayed)
+	NCTA			// Non Control Transfer, with following instr Anulled
 };
 /*==============================================================================
  * The DecodeResult struct contains all the information that results from
@@ -55,48 +55,48 @@ enum ICLASS {
  * reference parameters.
  *============================================================================*/
 struct DecodeResult {
-    /*
-     * Resets all the fields to their default values.
-     */
-    void reset();
+	/*
+	 * Resets all the fields to their default values.
+	 */
+	void reset();
 
-    /*
-     * The number of bytes decoded in the main instruction
-     */
-    int numBytes;
+	/*
+	 * The number of bytes decoded in the main instruction
+	 */
+	int numBytes;
 
-    /*
-     * The RTL constructed (if any).
-     */
-    RTL* rtl;
+	/*
+	 * The RTL constructed (if any).
+	 */
+	RTL* rtl;
 
-    /*
-     * Indicates whether or not a valid instruction was decoded.
-     */
-    bool valid;
+	/*
+	 * Indicates whether or not a valid instruction was decoded.
+	 */
+	bool valid;
 
-    /*
-     * The class of the instruction decoded. Will be one of the classes
-     * described in "A Transformational Approach to Binary Translation of
-     * Delayed Branches" (plus two more HPPA specific entries).
-     * Ignored by machines with no delay slots
-     */
-    ICLASS type;
+	/*
+	 * The class of the instruction decoded. Will be one of the classes
+	 * described in "A Transformational Approach to Binary Translation of
+	 * Delayed Branches" (plus two more HPPA specific entries).
+	 * Ignored by machines with no delay slots
+	 */
+	ICLASS type;
 
-    /*
-     * If true, don't add numBytes and decode there; instead, re-decode
-     * the current instruction. Needed for instructions like the Pentium
-     * BSF/BSR, which emit branches (so numBytes needs to be carefully set
-     * for the fall through out edge after the branch)
-     */
-    bool reDecode;
+	/*
+	 * If true, don't add numBytes and decode there; instead, re-decode
+	 * the current instruction. Needed for instructions like the Pentium
+	 * BSF/BSR, which emit branches (so numBytes needs to be carefully set
+	 * for the fall through out edge after the branch)
+	 */
+	bool reDecode;
 
-    /*
-     * If non zero, this field represents a new native address to be used as
-     * the out-edge for this instruction's BB. At present, only used for
-     * the SPARC call/add caller prologue
-     */
-    ADDRESS forceOutEdge;
+	/*
+	 * If non zero, this field represents a new native address to be used as
+	 * the out-edge for this instruction's BB. At present, only used for
+	 * the SPARC call/add caller prologue
+	 */
+	ADDRESS forceOutEdge;
 
 };
 
@@ -106,75 +106,75 @@ struct DecodeResult {
  *============================================================================*/
 class NJMCDecoder {
 public:
-    /*
-     * Constructor and destructor
-     */
-    NJMCDecoder();
+	/*
+	 * Constructor and destructor
+	 */
+	NJMCDecoder();
 virtual ~NJMCDecoder() {};
 
-    /*
-     * Decodes the machine instruction at pc and returns an RTL instance for
-     * the instruction.
-     */
+	/*
+	 * Decodes the machine instruction at pc and returns an RTL instance for
+	 * the instruction.
+	 */
 virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta) = 0;
 
-    /*
-     * Disassembles the machine instruction at pc and returns the number of
-     * bytes disassembled. Assembler output goes to global _assembly
-     */
+	/*
+	 * Disassembles the machine instruction at pc and returns the number of
+	 * bytes disassembled. Assembler output goes to global _assembly
+	 */
 virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
-    RTLInstDict& getRTLDict() { return RTLDict; }
+	RTLInstDict& getRTLDict() { return RTLDict; }
 
 protected:
 
-    /*
-     * Given an instruction name and a variable list of Exps
-     * representing the actual operands of the instruction, use the
-     * RTL template dictionary to return the list of Statements
-     * representing the semantics of the instruction. This method also
-     * displays a disassembly of the instruction if the relevant
-     * compilation flag has been set.
-     */
-    std::list<Statement*>* instantiate(ADDRESS pc, const char* name, ...);
+	/*
+	 * Given an instruction name and a variable list of Exps
+	 * representing the actual operands of the instruction, use the
+	 * RTL template dictionary to return the list of Statements
+	 * representing the semantics of the instruction. This method also
+	 * displays a disassembly of the instruction if the relevant
+	 * compilation flag has been set.
+	 */
+	std::list<Statement*>* instantiate(ADDRESS pc, const char* name, ...);
 
-    /*
-     * Similarly, given a parameter name and a list of Exp*'s
-     * representing sub-parameters, return a fully substituted
-     * Exp for the whole expression
-     */
-    Exp* instantiateNamedParam(char *name, ...);
+	/*
+	 * Similarly, given a parameter name and a list of Exp*'s
+	 * representing sub-parameters, return a fully substituted
+	 * Exp for the whole expression
+	 */
+	Exp* instantiateNamedParam(char *name, ...);
 
-    /*
-     * In the event that it's necessary to synthesize the call of
-     * a named parameter generated with instantiateNamedParam(),
-     * this substituteCallArgs() will substitute the arguments that
-     * follow into the expression.
-     * Should only be used after e = instantiateNamedParam(name, ..);
-     */
-    void substituteCallArgs(char *name, Exp*& exp, ...);
+	/*
+	 * In the event that it's necessary to synthesize the call of
+	 * a named parameter generated with instantiateNamedParam(),
+	 * this substituteCallArgs() will substitute the arguments that
+	 * follow into the expression.
+	 * Should only be used after e = instantiateNamedParam(name, ..);
+	 */
+	void substituteCallArgs(char *name, Exp*& exp, ...);
 
-    /*
-     * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to
-     * other procedures
-     */
-    void unconditionalJump(const char* name, int size, ADDRESS relocd,
-        int delta, ADDRESS pc, std::list<Statement*>* stmts,
-        DecodeResult& result);
+	/*
+	 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to
+	 * other procedures
+	 */
+	void unconditionalJump(const char* name, int size, ADDRESS relocd,
+		int delta, ADDRESS pc, std::list<Statement*>* stmts,
+		DecodeResult& result);
 
-    /*
-     * String for the constructor names (displayed with use "-c")
-     */
-    char    constrName[84];
+	/*
+	 * String for the constructor names (displayed with use "-c")
+	 */
+	char	constrName[84];
 
 	/* decodes a number */
 	Exp* dis_Num(unsigned num);
 	/* decodes a register */
 	Exp* dis_Reg(int regNum);
 
-    // Public dictionary of instruction patterns, and other information
-    // summarised from the SSL file (e.g. source machine's endianness)
-    RTLInstDict RTLDict;
+	// Public dictionary of instruction patterns, and other information
+	// summarised from the SSL file (e.g. source machine's endianness)
+	RTLInstDict RTLDict;
 };
 
 // Function used to guess whether a given
@@ -192,42 +192,42 @@ bool isFuncPrologue(ADDRESS hostPC);
  *============================================================================*/
 #define DEBUG_DECODER (Boomerang::get()->debugDecoder)
 #define SHOW_ASM(output) if (DEBUG_DECODER) \
-    std::cout << std::hex << pc << std::dec << ": " << output << std::endl;
+	std::cout << std::hex << pc << std::dec << ": " << output << std::endl;
 #define DEBUG_STMTS \
-    std::list<Statement*>& lst = result.rtl->getList(); \
-    if (DEBUG_DECODER) { \
-        std::list<Statement*>::iterator ii; \
-        for (ii = lst.begin(); ii != lst.end(); ii++) \
-            std::cout << "          " << *ii << "\n"; \
-    }
+	std::list<Statement*>& lst = result.rtl->getList(); \
+	if (DEBUG_DECODER) { \
+		std::list<Statement*>::iterator ii; \
+		for (ii = lst.begin(); ii != lst.end(); ii++) \
+			std::cout << "			" << *ii << "\n"; \
+	}
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an
  * abstract type, in our case, PC is the raw address.
  */
-#define addressToPC(pc)  pc
+#define addressToPC(pc)	 pc
 
 // Macros for branches. Note: don't put inside a "match" statement, since
 // the ordering is changed and multiple copies may be made
 
 #define COND_JUMP(name, size, relocd, cond) \
-    result.rtl = new RTL(pc, stmts); \
-    BranchStatement* jump = new BranchStatement; \
-    result.rtl->appendStmt(jump); \
-    result.numBytes = size; \
-    jump->setDest(relocd-delta); \
-    jump->setCondType(cond); \
-    SHOW_ASM(name<<" "<<relocd)
+	result.rtl = new RTL(pc, stmts); \
+	BranchStatement* jump = new BranchStatement; \
+	result.rtl->appendStmt(jump); \
+	result.numBytes = size; \
+	jump->setDest(relocd-delta); \
+	jump->setCondType(cond); \
+	SHOW_ASM(name<<" "<<relocd)
 
 // This one is X86 specific
 #define SETS(name, dest, cond) \
-    result.rtl = new RTL(pc, stmts); \
-    BoolStatement* bs = new BoolStatement(8); \
-    bs->setDest(stmts); \
-    result.rtl->appendStmt(bs); \
-    bs->setCondType(cond); \
-    result.numBytes = 3; \
-    SHOW_ASM(name<<" "<<dest)
+	result.rtl = new RTL(pc, stmts); \
+	BoolStatement* bs = new BoolStatement(8); \
+	bs->setDest(stmts); \
+	result.rtl->appendStmt(bs); \
+	bs->setCondType(cond); \
+	result.numBytes = 3; \
+	SHOW_ASM(name<<" "<<dest)
 
 /*==============================================================================
  * These are arrays used to map register numbers to their names.
@@ -242,7 +242,7 @@ extern char *fp_names[];
  * This array decodes scale field values in an index memory expression
  * to the scale factor they represent.
  *============================================================================*/
-extern int  scale[];
+extern int	scale[];
 
 
 // General purpose

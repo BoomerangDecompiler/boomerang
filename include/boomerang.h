@@ -8,8 +8,8 @@
  */
 
 /*=============================================================================
- * FILE:        boomerang.h
- * OVERVIEW:    interface for the boomerang singleton object
+ * FILE:		boomerang.h
+ * OVERVIEW:	interface for the boomerang singleton object
  *============================================================================*/
 /*
  * $Revision$
@@ -31,7 +31,7 @@
 
 class Watcher {
 public:
-        Watcher() { }
+		Watcher() { }
 
 		virtual void alert_complete() { }
 		virtual void alert_new(Proc *p) { }
@@ -48,41 +48,42 @@ public:
 
 class Boomerang {
 private:
-    static Boomerang *boomerang;
-    std::string progPath;   // String with the path to this exec
-    std::string outputPath;
-    Log *logger;
+	static Boomerang *boomerang;
+	std::string progPath;	// String with the path to this exec
+	std::string outputPath;
+	Log *logger;
 	std::set<Watcher*> watchers;
 
-    void usage();
-    void help();
-    void helpcmd();
-    int splitLine(char *line, char ***pargv);
-    int parseCmd(int argc, const char **argv);
-    int cmdLine();
+	void usage();
+	void help();
+	void helpcmd();
+	int splitLine(char *line, char ***pargv);
+	int parseCmd(int argc, const char **argv);
+	int cmdLine();
 
 
-    Boomerang();
+	Boomerang();
+virtual ~Boomerang() {}
 public:
-    static Boomerang *get() { 
-        if (!boomerang) boomerang = new Boomerang(); 
+	static Boomerang *get() { 
+		if (!boomerang) boomerang = new Boomerang(); 
 	return boomerang;
-    }
+	}
 
-    Log &log();
-    void setLogger(Log *l) { logger = l; }
+	Log &log();
+	void setLogger(Log *l) { logger = l; }
 	bool setOutputDirectory(const char *path);
 
-    HLLCode *getHLLCode(UserProc *p = NULL);
+	HLLCode *getHLLCode(UserProc *p = NULL);
 
-    // performs command line operation
-    int commandLine(int argc, const char **argv);
-    void setProgPath(const char* p) { progPath = p; }
-    const std::string& getProgPath() { return progPath; }
-    void setOutputPath(const char* p) { outputPath = p; }
-    const std::string& getOutputPath() { return outputPath; }
-    Prog *loadAndDecode(const char *fname, const char *pname = NULL);
-    int decompile(const char *fname, const char *pname = NULL);
+	// performs command line operation
+	int commandLine(int argc, const char **argv);
+	void setProgPath(const char* p) { progPath = p; }
+	const std::string& getProgPath() { return progPath; }
+	void setOutputPath(const char* p) { outputPath = p; }
+	const std::string& getOutputPath() { return outputPath; }
+	Prog *loadAndDecode(const char *fname, const char *pname = NULL);
+	int decompile(const char *fname, const char *pname = NULL);
 	void addWatcher(Watcher *watcher) { watchers.insert(watcher); }
 	void persistToXML(Prog *prog);
 	Prog *loadFromXML(const char *fname);
@@ -133,47 +134,47 @@ public:
 			(*it)->alert_end_decompile(p);
 	}
 
-    // Command line flags
-    bool vFlag;
-    bool printRtl;
-    bool noBranchSimplify;
-    bool noRemoveNull;
-    bool noLocals;
-    bool noRemoveLabels;
-    bool noDataflow;
-    bool noDecompile;
+	// Command line flags
+	bool vFlag;
+	bool printRtl;
+	bool noBranchSimplify;
+	bool noRemoveNull;
+	bool noLocals;
+	bool noRemoveLabels;
+	bool noDataflow;
+	bool noDecompile;
 	bool stopBeforeDecompile;
-    bool noDecompileUp;
-    bool traceDecoder;
-    const char *dotFile;
-    int numToPropagate;
-    bool noPromote;
-    bool propOnlyToAll;
-    bool debugGen;
-    int maxMemDepth;
-    bool debugSwitch;
-    bool noParameterNames;
-    bool debugLiveness;
-    bool debugUnusedRets;
-    bool debugTA;
-    std::vector<ADDRESS> entrypoints;
-    std::vector<std::string> symbolFiles;
-    std::map<ADDRESS, std::string> symbols;
-    bool decodeMain;
-    bool printAST;
-    bool dumpXML;
-    bool noRemoveReturns;
-    bool debugDecoder;
-    bool decodeThruIndCall;
-    bool noDecodeChildren;
-    bool debugProof;
-    bool debugUnusedStmt;
-    bool loadBeforeDecompile;
-    bool saveBeforeDecompile;
-    bool overlapped;
+	bool noDecompileUp;
+	bool traceDecoder;
+	const char *dotFile;
+	int numToPropagate;
+	bool noPromote;
+	bool propOnlyToAll;
+	bool debugGen;
+	int maxMemDepth;
+	bool debugSwitch;
+	bool noParameterNames;
+	bool debugLiveness;
+	bool debugUnusedRets;
+	bool debugTA;
+	std::vector<ADDRESS> entrypoints;
+	std::vector<std::string> symbolFiles;
+	std::map<ADDRESS, std::string> symbols;
+	bool decodeMain;
+	bool printAST;
+	bool dumpXML;
+	bool noRemoveReturns;
+	bool debugDecoder;
+	bool decodeThruIndCall;
+	bool noDecodeChildren;
+	bool debugProof;
+	bool debugUnusedStmt;
+	bool loadBeforeDecompile;
+	bool saveBeforeDecompile;
+	bool overlapped;
 };
 
-#define VERBOSE  (Boomerang::get()->vFlag)
+#define VERBOSE	 (Boomerang::get()->vFlag)
 #define DEBUG_TA (Boomerang::get()->debugTA)
 
 

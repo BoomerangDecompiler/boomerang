@@ -9,13 +9,13 @@
  */
 
 /*==============================================================================
- * FILE:       palmsystraps.h
+ * FILE:	   palmsystraps.h
  * OVERVIEW:   Enumerated types for system trap names
- *             Based on code from the Metrowerks Compiler, PalmOS 2.0 support
+ *			   Based on code from the Metrowerks Compiler, PalmOS 2.0 support
  *============================================================================*/
 
 /* $Revision$
- *    Mar 00 - Cristina: Created
+ *	  Mar 00 - Cristina: Created
  * 31 Mar 00 - Mike: Removed "sysTrap" from function names
  */
 
@@ -25,7 +25,7 @@
 
 
 #define	sysTrapBase			0xA000
-#define numTrapStrings      (sizeof(trapNames) / sizeof(char*))
+#define numTrapStrings		(sizeof(trapNames) / sizeof(char*))
 
 //	"sysTrapMemInit",		// = sysTrapBase 
 
@@ -49,7 +49,7 @@ char *trapNames[] = {
 	"MemHeapInit",
 	"MemHeapFreeByOwnerID",
 	"MemChunkNew",
-	"MemPtrFree",        // Formerly sysTrapMemChunkFree
+	"MemPtrFree",		 // Formerly sysTrapMemChunkFree
 	"MemPtrNew",
 	"MemPtrRecoverHandle",
 	"MemPtrFlags",
@@ -931,7 +931,7 @@ char *trapNames[] = {
 	"WinSetColors",
 	
 	"FlpDispatch",
-	"FlpEmDispatch"  
+	"FlpEmDispatch"	 
 };
 
 	

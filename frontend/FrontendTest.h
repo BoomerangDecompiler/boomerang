@@ -8,16 +8,16 @@ class FrontendTest : public CppUnit::TestCase {
   protected:
 
   public:
-    FrontendTest(std::string name) : CppUnit::TestCase (name)
-    {}
+	FrontendTest(std::string name) : CppUnit::TestCase (name)
+	{}
 
-    virtual void registerTests(CppUnit::TestSuite* suite);
+	virtual void registerTests(CppUnit::TestSuite* suite);
 
-    int countTestCases () const;
+	int countTestCases () const;
 
-    void setUp ();
-    void tearDown ();
+	void setUp ();
+	void tearDown ();
 
-    void test1 ();
+	void test1 ();
 };
 

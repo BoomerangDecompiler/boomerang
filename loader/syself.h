@@ -8,9 +8,9 @@
  */
 
 /*==============================================================================
- * File:       syself.h
+ * File:	   syself.h
  * OVERVIEW:   This file contains the various system includes and the like
- *             needed to load elf binary files.
+ *			   needed to load elf binary files.
  *============================================================================*/
 
 /*
@@ -64,16 +64,16 @@ typedef Elf32_Half Elf32_Versym;
  * AT_UID and AT_GID to be something quite different. These aren't
  * (afaik) linux specific though
  */
-#define AT_LNX_UID          11              /* Real uid */
-#define AT_LNX_EUID         12              /* Effective uid */
-#define AT_LNX_GID          13              /* Real gid */
-#define AT_LNX_EGID         14              /* Effective gid */
+#define AT_LNX_UID			11				/* Real uid */
+#define AT_LNX_EUID			12				/* Effective uid */
+#define AT_LNX_GID			13				/* Real gid */
+#define AT_LNX_EGID			14				/* Effective gid */
 
 #ifndef AT_SUN_UID
-#define AT_SUN_UID    2000              /* As above, but for solaris... */
-#define AT_SUN_RUID   2001
-#define AT_SUN_GID    2002
-#define AT_SUN_RGID   2003
+#define AT_SUN_UID	  2000				/* As above, but for solaris... */
+#define AT_SUN_RUID	  2001
+#define AT_SUN_GID	  2002
+#define AT_SUN_RGID	  2003
 #endif
 
 #endif /* !__SYSELF_H_ */
