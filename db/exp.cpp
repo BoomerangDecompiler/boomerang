@@ -1509,7 +1509,7 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * PARAMETERS:      search:  ptr to ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
  *                  change: set true if a change made; cleared otherwise
- * NOTE:            change is ALWAYS set. No need to clear beforehand.
+ * NOTE:            change is ALWAYS assigned. No need to clear beforehand.
  * RETURNS:         the result (often this, but possibly changed)
  *============================================================================*/
 Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
@@ -2752,9 +2752,10 @@ Exp* RefExp::polySimplify(bool& bMod) {
             //Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), *uu), base->clone());
             Exp* query = new Binary(opEquals, first,
               new RefExp(subExp1->clone(), *uu));
-            LOG << "attempting to prove " << query << " for ref to phi\n";
+            if (Boomerang::get()->debugProof)
+                LOG << "attempting to prove " << query << " for ref to phi\n";
             if (!def->getProc()->prove(query)) {
-                LOG << "not proven\n";
+                if (Boomerang::get()->debugProof) LOG << "not proven\n";
                 allProven = false;
                 break;
             }
@@ -3186,7 +3187,7 @@ Exp *RefExp::fixCallRefs() {
             return e;
         } else {
             if (call->findReturn(subExp1) == -1) {
-                if (VERBOSE) {
+                if (VERBOSE && !subExp1->isPC()) {
                     LOG << "nothing proven about " << subExp1 << 
                         " and yet it is referenced, and not in returns of " << 
                         "\n" << "   " << call << "\n";
