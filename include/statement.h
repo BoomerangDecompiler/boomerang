@@ -366,12 +366,13 @@ protected:
 
 
 /*=============================================================================
- * GotoStatement has just one member variable, a semantic string representing the
+ * GotoStatement has just one member variable, an expression representing the
  * jump's destination (an integer constant for direct jumps; an expression
  * for register jumps). An instance of this class will never represent a
  * return or computed call as these are distinguised by the decoder and are
- * instantiated as CallStatements and ReturnStatements respecitvely. This class also
- * represents unconditional jumps with a fixed offset (e.g BN, Ba on SPARC).
+ * instantiated as CallStatements and ReturnStatements respecitvely.
+ * This class also represents unconditional jumps with a fixed offset
+ * (e.g BN, Ba on SPARC).
  *===========================================================================*/
 class GotoStatement: public Statement {
 protected:
@@ -677,8 +678,8 @@ public:
     // Set implicit arguments: so far, for testing only:
     void setImpArguments(std::vector<Exp*>& arguments);
     void setReturns(std::vector<Exp*>& returns); // Set call's return locs
-    void setSigArguments();         // Set arguments based on signature
-    std::vector<Exp*>& getArguments();            // Return call's arguments
+    void setSigArguments();                 // Set arguments based on signature
+    std::vector<Exp*>& getArguments();      // Return call's arguments
     int getNumReturns();
     Exp *getReturnExp(int i);
     int findReturn(Exp *e);
