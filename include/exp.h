@@ -371,7 +371,7 @@ virtual bool operator*=(Exp& o);
 
     // Get the constant
     int     getInt() {return u.i;}
-		QWord		getLong(){return u.ll;}
+    QWord   getLong(){return u.ll;}
     double  getFlt() {return u.d;}
     char*   getStr() {return u.p;}
     ADDRESS getAddr() {return u.a;}
