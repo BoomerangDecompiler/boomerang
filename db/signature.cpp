@@ -901,7 +901,7 @@ void Signature::analyse(UserProc *p)
     p->getStatements(stmts);
     StmtListIter si;
     for (Statement* s = stmts.getFirst(si); s; s = stmts.getNext(si)) {
-        if (VERBOSE) std::cerr << "updateParameters for " << *it << std::endl;
+        if (VERBOSE) std::cerr << "updateParameters for " << s << std::endl;
         updateParams(p, s);
     }
 /*    std::cerr << "searching for arguments in internals" << std::endl;

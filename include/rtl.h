@@ -658,7 +658,7 @@ protected:
  * set (to 1 or 0) depending on the condition codes. It has a condition
  * Exp, similar to the HLJcond class.
  * *==========================================================================*/
-class HLScond: public RTL {
+class HLScond: public RTL, public Statement {
 public:
     HLScond(ADDRESS instNativeAddr, std::list<Exp*>* listExp = NULL);
     virtual ~HLScond();
@@ -706,11 +706,28 @@ public:
     // simplify all the uses/defs in this RTL
     virtual void simplify();
 
+    // Statement functions
+    virtual void killReach(StatementSet &reach);
+    virtual void getDeadStatements(StatementSet &dead);
+    virtual Exp* getLeft() { return getDest(); }
+    virtual Type* getLeftType();
+    virtual Exp* getRight() { return getCondExpr(); }
+    virtual bool usesExp(Exp *e);
+    virtual void print(std::ostream &os) { print(os, false); }
+    virtual void printAsUse(std::ostream &os);
+    virtual void printAsUseBy(std::ostream &os);
+    virtual void processConstants(Prog *prog);
+    virtual bool search(Exp *search, Exp *&result);
+    virtual void searchAndReplace(Exp *search, Exp *replace);
+    virtual Type* updateType(Exp *e, Type *curType);
+    virtual void doReplaceUse(Statement *use);
+
 private:
     JCOND_TYPE jtCond;             // the condition for jumping
     Exp* pCond;                 // Exp representation of the high level
                                    // condition: e.g. r[8] == 5
     bool bFloat;                   // True if condition uses floating point CC
+    Exp* pDest;
 };
 
 /* 

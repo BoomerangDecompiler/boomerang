@@ -927,6 +927,12 @@ void UserProc::getStatements(StatementList &stmts) {
                 jcond->setProc(this);
                 jcond->setBB(bb);
             }
+            if (rtl->getKind() == SCOND_RTL) {
+                HLScond *scond = (HLScond*)rtl;
+                stmts.append(scond);
+                scond->setProc(this);
+                scond->setBB(bb);
+            }
         }
     }
 }
@@ -978,7 +984,8 @@ void UserProc::decompile() {
         call->decompile();
     }
 
-    cfg->computeDataflow();
+    if (!Boomerang::get()->noDataflow)
+        cfg->computeDataflow();
 #if 1   // Calculate ud/du as needed
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->calcUseLinks();
@@ -990,6 +997,8 @@ void UserProc::decompile() {
     }
     bool change = true;
     while (change) {
+        if (Boomerang::get()->noDataflow)
+            break;
         change = false;
         change |= propagateAndRemoveStatements();
         bool propagated = change;
@@ -1281,6 +1290,7 @@ void UserProc::removeInternalStatements() {
             }
             // This reaches the end of the proc. Save it in case it's for
             // the return location
+            s->clearUses();
             internal.append(s);
             removeStatement(s);
             cfg->getReachExit().remove(s);

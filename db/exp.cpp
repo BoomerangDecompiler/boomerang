@@ -1684,8 +1684,8 @@ Exp* Unary::polySimplify(bool& bMod) {
         case opAddrOf:
             // check for a[m[x]], becomes x
             if (subExp1->getOper() == opMemOf) {
-                res = ((Binary*)res)->becomeSubExp1();
-                res = ((Binary*)res)->becomeSubExp1();
+                res = ((Unary*)res)->becomeSubExp1();
+                res = ((Unary*)res)->becomeSubExp1();
                 bMod = true;
                 return res;
             }   

@@ -1430,7 +1430,7 @@ void HLCall::getDeadStatements(StatementSet &dead) {
         for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
             bool isKilled = false;
             if (getReturnLoc() && s->getLeft() &&
-            *s->getLeft() == *getReturnLoc())
+                *s->getLeft() == *getReturnLoc())
                 isKilled = true;
             if (s->getLeft() && getReturnLoc() && 
                 s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
@@ -1672,7 +1672,7 @@ void HLReturn::simplify() {
  * RETURNS:          <N/a>
  *============================================================================*/
 HLScond::HLScond(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/):
-  RTL(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL) {
+  RTL(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL), pDest(NULL) {
     kind = SCOND_RTL;
 }
 
@@ -1700,6 +1700,8 @@ HLScond::~HLScond() {
 void HLScond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
+    setCondExpr(new Terminal(opFlags));
+    getDest();
 }
 
 /*==============================================================================
@@ -1792,10 +1794,14 @@ void HLScond::print(std::ostream& os /*= cout*/, bool withDF) {
  * RETURNS:         Pointer to the expression representing the lvalue location
  *============================================================================*/
 Exp* HLScond::getDest() {
+    if (pDest) return pDest;
     assert(expList.size());
     Exp* pAsgn = expList.front();
     assert(pAsgn->isAssign());
-    return ((Binary*)pAsgn)->getSubExp1();
+    pDest = ((Binary*)pAsgn)->getSubExp1()->clone();
+    delete pAsgn;
+    expList.erase(expList.begin());
+    return pDest;
 }
 
 /*==============================================================================
@@ -1859,3 +1865,92 @@ void HLScond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 void HLScond::simplify() {
     RTL::simplify();
 }
+
+void HLScond::killReach(StatementSet &reach)
+{
+    assert(pDest);
+    StatementSet kills;
+    StmtSetIter it;
+    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
+        if (s->getLeft() && *s->getLeft() == *pDest)
+            kills.insert(s);
+    }
+    for (Statement* s = kills.getFirst(it); s; s = kills.getNext(it))
+        reach.remove(s);
+}
+
+void HLScond::getDeadStatements(StatementSet &dead)
+{
+    assert(pDest);
+    StatementSet reach;
+    getReachIn(reach);
+    StmtSetIter it;
+    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
+        if (s->getLeft() && *s->getLeft() == *pDest && 
+            s->getNumUseBy() == 0)
+            dead.insert(s);
+    }
+}
+
+Type* HLScond::getLeftType()
+{
+    return new BooleanType();
+}
+
+bool HLScond::usesExp(Exp *e)
+{
+    Exp *tmp;
+    if (getDest() && getDest()->search(e, tmp)) return true;
+    if (pCond && pCond->search(e, tmp)) return true;
+    return false;
+}
+
+void HLScond::printAsUse(std::ostream &os)
+{
+    os << "SCOND ";
+    getDest()->print(os);
+    os << " := ";
+    if (pCond)
+        pCond->print(os);
+    else
+        os << "<empty cond>";
+}
+
+void HLScond::printAsUseBy(std::ostream &os)
+{
+    printAsUse(os);
+}
+
+void HLScond::processConstants(Prog *prog)
+{
+}
+
+bool HLScond::search(Exp *search, Exp *&result)
+{
+    assert(pDest);
+    if (pDest->search(search, result)) return true;
+    assert(pCond);
+    return pCond->search(search, result);
+}
+
+void HLScond::searchAndReplace(Exp *search, Exp *replace)
+{
+    bool change;
+    assert(pCond);
+    assert(pDest);
+    pCond = pCond->searchReplaceAll(search, replace, change);
+    pDest = pDest->searchReplaceAll(search, replace, change);
+}
+
+Type* HLScond::updateType(Exp *e, Type *curType)
+{
+    delete curType;
+    return new BooleanType();
+}
+
+void HLScond::doReplaceUse(Statement *use)
+{
+    searchAndReplace(use->getLeft(), use->getRight());
+    simplify();
+}
+

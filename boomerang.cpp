@@ -10,7 +10,8 @@ Boomerang *Boomerang::boomerang = NULL;
 
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
-    noLocals(false), noRemoveLabels(false), traceDecoder(false), dotFile(NULL)
+    noLocals(false), noRemoveLabels(false), 
+    noDataflow(false), traceDecoder(false), dotFile(NULL)
 {
 }
 
@@ -35,6 +36,7 @@ void Boomerang::help() {
     std::cerr << "-ni: no removal of internal statements\n";
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
+    std::cerr << "-nd: no dataflow analysis\n";
     exit(1);
 }
         
@@ -82,6 +84,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                     case 'r':
                         noRemoveLabels = true;
+                        break;
+                    case 'd':
+                        noDataflow = true;
                         break;
                     default:
                         help();
