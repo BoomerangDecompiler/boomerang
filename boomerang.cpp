@@ -8,7 +8,9 @@
 
 Boomerang *Boomerang::boomerang = NULL;
 
-Boomerang::Boomerang() : vFlag(false), printRtl(false), noBranchSimplify(false) 
+Boomerang::Boomerang() : vFlag(false), printRtl(false), 
+    noBranchSimplify(false), noRemoveInternal(false),
+    noLocals(false), noRemoveLabels(false), dotFile(NULL)
 {
 }
 
@@ -26,8 +28,12 @@ void Boomerang::usage() {
 void Boomerang::help() {
     std::cerr << "-h: this help\n";
     std::cerr << "-v: verbose\n";
+    std::cerr << "-g <dot file>: generate a dotty graph of the program\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation\n";
     std::cerr << "-nb: no simplications for branches\n";
+    std::cerr << "-ni: no removal of internal statements\n";
+    std::cerr << "-nl: no creation of local variables\n";
+    std::cerr << "-nr: no removal of unnedded labels\n";
     exit(1);
 }
         
@@ -58,10 +64,22 @@ int Boomerang::commandLine(int argc, const char **argv) {
             case 'h': help(); break;
             case 'v': vFlag = true; break;
             case 'r': printRtl = true; break;
+            case 'g': 
+                dotFile = argv[++i];
+                break;
             case 'n':
                 switch(argv[i][2]) {
                     case 'b':
                         noBranchSimplify = true;
+                        break;
+                    case 'i':
+                        noRemoveInternal = true;
+                        break;
+                    case 'l':
+                        noLocals = true;
+                        break;
+                    case 'r':
+                        noRemoveLabels = true;
                         break;
                     default:
                         help();
@@ -84,6 +102,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
     prog->analyse();
     std::cerr << "decompiling..." << std::endl;
     prog->decompile();
+    std::cerr << "generating dot file..." << std::endl;
+    prog->generateDotFile();
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
 

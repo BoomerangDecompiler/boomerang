@@ -84,6 +84,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, "&");
             appendExp(str, u->getSubExp1());
             break;
+        case opParam:
         case opGlobal:
         case opLocal:
             c = dynamic_cast<Const*>(u->getSubExp1());
@@ -198,8 +199,16 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             break;
         case opMemOf:
             strcat(str, "*(int*)(");
-            appendExp(str, b->getSubExp1());
+            appendExp(str, u->getSubExp1());
             strcat(str, ")");
+            break;
+        case opRegOf:
+            strcat(str, "r[");
+            appendExp(str, u->getSubExp1());
+            strcat(str, "]");
+            break;
+        case opTemp:
+            strcat(str, "tmp");
             break;
         case opMult:
         case opDiv:
@@ -237,12 +246,9 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opNamedExp:
         case opGuard:
         case opTern:
-        case opRegOf:
         case opVar:
-        case opParam:
         case opArg:
         case opExpand:
-        case opTemp:
         case opSize:
         case opCastIntStar:
         case opPostVar:
@@ -484,6 +490,13 @@ void CHLLCode::RemoveLabel(int ord)
 
 void CHLLCode::AddAssignmentStatement(int indLevel, AssignExp *exp)
 {
+    Exp *match;
+    // hack
+    if (exp->getSubExp1()->getOper() == opFlags ||
+        exp->search(new Terminal(opPC), match) ||
+        (exp->getSubExp1()->getOper() == opRegOf &&
+        exp->getSubExp1()->getSubExp1()->getOper() == opTemp))
+        return;
     char s[1024];
     indent(s, indLevel);
     appendExp(s, exp);

@@ -116,6 +116,8 @@ void Statement::replaceUse(Statement *use) {
     if (pos != uses->end())
         uses->erase(pos);
     // However, we are now using whatever *use was using
+    // Actually, it's possible *use had uses on it's left that will not be
+    // propogated in the replacement, we have to remove these later - trent
     std::set<Statement*>::iterator ii;
     for (ii=use->uses->begin(); ii != use->uses->end(); ii++)
         uses->insert(*ii);
@@ -133,6 +135,25 @@ void Statement::replaceUse(Statement *use) {
 
     // do the replacement
     doReplaceUse(use);
+
+    // remove any uses that are not actually used by this statement
+    bool change = true;
+    while (change) {
+        change = false;
+        for (ii = uses->begin(); ii != uses->end(); ii++) {
+            if (!(*ii)->getLeft() || !usesExp((*ii)->getLeft())) {
+                assert(*ii); 
+                if ((*ii)->usedBy) {
+                    pos = (*ii)->usedBy->find(this);
+                    if (pos != (*ii)->usedBy->end())
+                        (*ii)->usedBy->erase(pos);
+                }
+                uses->erase(ii);
+                change = true; 
+                break;
+            }
+        }
+    }
     if (VERBOSE) {
         std::cerr << "   after: ";
         printAsUse(std::cerr);
@@ -248,6 +269,11 @@ bool Statement::canPropagateToAll() {
     killLive(tmp_uses);
     if (nold - tmp_uses.size() > 1) {
         // See comment above.
+        if (VERBOSE) {
+            std::cerr << "too hard failure in canPropogateToAll: ";
+            printWithUses(std::cerr);
+            std::cerr << std::endl;
+        }
         return false;
     }
 
@@ -260,12 +286,12 @@ bool Statement::canPropagateToAll() {
         (*it)->getLiveIn(in);
         // all uses must be live at the destination
         for (std::set<Statement*>::iterator iuse = tmp_uses.begin();
-          iuse != tmp_uses.end(); iuse++) {
+             iuse != tmp_uses.end(); iuse++) {
             if (in.find(*iuse) == in.end()) return false;
         }
         // no false uses must be created
         for (std::set<Statement*>::iterator ilive = in.begin();
-          ilive != in.end(); ilive++) {
+             ilive != in.end(); ilive++) {
             if (*ilive == this) continue;
             Exp *left = (*ilive)->getLeft();
             if (left == NULL) return false;
@@ -319,3 +345,32 @@ void Statement::flushProc() {
         (*it)->flushDataFlow();
     }
 }
+
+void Statement::printWithUses(std::ostream& os) {
+    print(os);
+    os << "   uses: ";
+    updateUses();
+    for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
+      it++) {
+        (*it)->printAsUse(os);
+        os << ", ";
+    }
+    os << "   used by: ";
+    updateUsedBy();
+    for (std::set<Statement*>::iterator it = usedBy->begin();
+      it != usedBy->end(); it++) {
+        (*it)->printAsUseBy(os);
+        os << ", ";
+    }
+#if 0       // Note: if you change this, you need to update DataflowTest.cpp!
+    os << "   live: ";
+    std::set<Statement*> liveIn;
+    getLiveIn(liveIn);
+    for (std::set<Statement*>::iterator it = liveIn.begin(); it != liveIn.end();
+      it++) {
+        (*it)->print(os);
+        os << ", ";
+    }
+#endif
+}
+

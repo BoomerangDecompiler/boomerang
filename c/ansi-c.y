@@ -149,6 +149,8 @@ type: CHAR
     { $$ = new VoidType(); }
     | type '*'
     { $$ = new PointerType($1); }
+    | IDENTIFIER
+    { $$ = new NamedType($1); }
     ;
 
 

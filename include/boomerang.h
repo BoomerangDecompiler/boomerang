@@ -50,6 +50,13 @@ public:
     bool vFlag;
     bool printRtl;
     bool noBranchSimplify;
+    bool noRemoveInternal;
+    bool noLocals;
+    bool noRemoveLabels;
+    const char *dotFile;
 };
+
+#define VERBOSE Boomerang::get()->vFlag
+
 
 #endif

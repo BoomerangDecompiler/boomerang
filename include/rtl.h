@@ -376,9 +376,6 @@ public:
     // get how to replace this statement in a use
     virtual Exp* getRight() { return pCond; }
 
-    // custom printing functions
-    virtual void printWithUses(std::ostream& os);
-
     // special print functions
     virtual void printAsUse(std::ostream &os);
     virtual void printAsUseBy(std::ostream &os);
@@ -555,9 +552,6 @@ public:
     // get how to replace this statement in a use
     virtual Exp* getRight() { return NULL; }
 
-    // custom printing functions
-    virtual void printWithUses(std::ostream& os);
-
     // special print functions
     virtual void printAsUse(std::ostream &os);
     virtual void printAsUseBy(std::ostream &os);
@@ -643,10 +637,11 @@ public:
     void setNumBytesPopped(int n) { nBytesPopped = n; }
 
     Exp *getReturnValue() { return returnVal; }
-    void setReturnValue(Exp *e) { if (returnVal) delete returnVal; returnVal = e; }
+    void setReturnValue(Exp *e) { 
+        if (returnVal) delete returnVal; returnVal = e; 
+    }
 
 protected:
-
     // number of bytes that this return pops
     int nBytesPopped;
 

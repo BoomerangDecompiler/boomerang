@@ -54,8 +54,6 @@
 #include "hllcode.h"
 #include "boomerang.h"
 
-#define VERBOSE Boomerang::get()->vFlag
-
 /************************
  * Proc methods.
  ***********************/
@@ -921,7 +919,8 @@ void UserProc::generateCode(HLLCode *hll)
     
     hll->AddProcEnd();
   
-    cfg->removeUnneededLabels(hll);
+    if (!Boomerang::get()->noRemoveLabels)
+        cfg->removeUnneededLabels(hll);
 }
 
 // print this userproc, maining for debugging
@@ -1009,6 +1008,10 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 void UserProc::decompile() {
     if (decompiled) return;
     decompiled = true;
+
+    if (VERBOSE) 
+        std::cerr << "decompiling: " << getName() << std::endl;
+    
     // The following loop could be a lot quicker if we just checked each BB,
     // and just looked at the last rtl of each CALL BB
     std::set<Statement*> stmts;
@@ -1033,22 +1036,25 @@ void UserProc::decompile() {
     bool change = true;
     while (change) {
         change = false;
+        change |= propagateAndRemoveStatements();
         change |= removeNullStatements();
         change |= removeDeadStatements();
-        change |= propagateAndRemoveStatements();
         if (VERBOSE) std::cerr << "Flushing whole procedure\n";
         flushProc();        // Flush the dataflow for the whole proc
     }
-    removeInternalStatements();
+    if (!Boomerang::get()->noRemoveInternal)
+        removeInternalStatements();
+    cfg->compressCfg();
     inlineConstants();
-    fixCalls();
     promoteSignature();
     cfg->structure();
     replaceExpressionsWithGlobals();
-    while (nameStackLocations())
-        replaceExpressionsWithSymbols();
-    while (nameRegisters())
-        replaceExpressionsWithSymbols();
+    if (!Boomerang::get()->noLocals) {
+        while (nameStackLocations())
+            replaceExpressionsWithSymbols();
+        while (nameRegisters())
+            replaceExpressionsWithSymbols();
+    }
     if (VERBOSE) {
         print(std::cerr /*,true*/);
     }
@@ -1068,47 +1074,6 @@ void UserProc::flushProc() {
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
         (*it)->flushDataFlow();
-    }
-}
-
-void UserProc::fixCalls()
-{
-    std::set<Statement*> stmts;
-    getStatements(stmts);
-    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++) {
-        HLCall *call = dynamic_cast<HLCall*>(*it);
-        if (call == NULL) continue;
-        if (call->getDestProc() && 
-            call->getDestProc()->getSignature()->hasEllipsis()) {
-            // functions like printf almost always have too many args
-            std::string name(call->getDestProc()->getName());
-            if ((name == "printf" || name == "scanf") &&
-                call->getArgumentExp(0)->isStrConst()) {
-                char *str = ((Const*)call->getArgumentExp(0))->getStr();
-                // actually have to parse it
-                int n = 1;      // Number of %s plus 1 = number of args
-                char *p = str;
-                while ((p = strchr(p, '%'))) {
-                    // special hack for scanf
-                    if (name == "scanf") {
-                        call->setArgumentExp(n, 
-                            new Unary(opAddrOf, 
-                                new Unary(opMemOf, call->getArgumentExp(n))));
-                    }
-                    p++;
-                    switch(*p) {
-                        case '%':
-                            break;
-                        // TODO: there's type information here
-                        default: 
-                            n++;
-                    }
-                    p++;
-                }
-                call->setNumArguments(n);
-            }
-        }
     }
 }
 
@@ -1290,11 +1255,12 @@ bool UserProc::removeNullStatements()
       it++) {
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
         if (e == NULL) continue;
-        if (*e->getSubExp1() == *e->getSubExp2() && 
-          e->getNumUseBy() == 0) {
-            //std::cerr << "removing null code: ";
-            //e->print(std::cerr);
-            //std::cerr << std::endl;
+        if (*e->getSubExp1() == *e->getSubExp2()) { 
+            if (VERBOSE) {
+                std::cerr << "removing null code: ";
+                e->print(std::cerr);
+                std::cerr << std::endl;
+            }
             removeStatement(e);
             // remove from liveness
             std::set<Statement*> &liveout = (*it)->getBB()->getLiveOut();
@@ -1315,11 +1281,14 @@ bool UserProc::removeDeadStatements()
     getStatements(stmts);
     // remove dead code
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++) {
+         it++) {
         std::set<Statement*> dead;
         (*it)->getDeadStatements(dead);
         for (std::set<Statement*>::iterator it1 = dead.begin(); 
-          it1 != dead.end(); it1++) {
+             it1 != dead.end(); it1++) {
+            if (getCFG()->getLiveOut().find(*it1) !=
+                getCFG()->getLiveOut().end())
+                continue;
             if (!(*it1)->getLeft()->isMemOf()) {
                 // hack: if the dead statement has a use which would make
                 // this statement useless if propagated, leave it
@@ -1327,7 +1296,7 @@ bool UserProc::removeDeadStatements()
                 (*it1)->calcUses(uses);
                 bool matchingUse = false;
                 for (std::set<Statement*>::iterator it2 = uses.begin();
-                  it2 != uses.end(); it2++) {
+                     it2 != uses.end(); it2++) {
                     AssignExp *e = dynamic_cast<AssignExp*>(*it2);
                     if (e == NULL || (*it1)->getLeft() == NULL) continue;
                     if (*e->getSubExp2() == *(*it1)->getLeft()) {
@@ -1335,13 +1304,13 @@ bool UserProc::removeDeadStatements()
                         break;
                     }
                 }
-                if (matchingUse) continue;
+                HLCall *call = dynamic_cast<HLCall*>(*it1);
+                if (matchingUse && call == NULL) continue;
                 if (VERBOSE) {
                     std::cerr << "removing dead code: ";
                     (*it1)->printAsUse(std::cerr);
                     std::cerr << std::endl;
                 }
-                HLCall *call = dynamic_cast<HLCall*>(*it1);
                 if (call == NULL) {
                     removeStatement(*it1);
 //std::cerr << "After remove, BB is"; (*it1)->getBB()->print(std::cerr, true);
@@ -1412,6 +1381,9 @@ bool UserProc::propagateAndRemoveStatements()
     // propagate any statements that can be removed
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
+        AssignExp *assign = dynamic_cast<AssignExp*>(*it);
+        if (assign && *assign->getSubExp1() == *assign->getSubExp2())
+            continue;
         if ((*it)->canPropagateToAll()) {
             if (cfg->getLiveOut().find(*it) != cfg->getLiveOut().end()) {
                 if ((*it)->getNumUses() != 0) {
@@ -1427,6 +1399,8 @@ bool UserProc::propagateAndRemoveStatements()
                     } else
                         continue;
                 } else {
+                    if (Boomerang::get()->noRemoveInternal)
+                        continue;
                     // new internal statement
                     if (VERBOSE) {
                         std::cerr << "new internal statement: ";

@@ -872,34 +872,6 @@ void AssignExp::print(std::ostream& os) {
     p2->print(os);
 }
 
-void AssignExp::printWithUses(std::ostream& os) {
-    print(os);
-    os << "   uses: ";
-    updateUses();
-    for (std::set<Statement*>::iterator it = uses->begin(); it != uses->end();
-      it++) {
-        (*it)->printAsUse(os);
-        os << ", ";
-    }
-    os << "   used by: ";
-    updateUsedBy();
-    for (std::set<Statement*>::iterator it = usedBy->begin();
-      it != usedBy->end(); it++) {
-        (*it)->printAsUseBy(os);
-        os << ", ";
-    }
-#if 0       // Note: if you change this, you need to update DataflowTest.cpp!
-    os << "   live: ";
-    std::set<Statement*> liveIn;
-    getLiveIn(liveIn);
-    for (std::set<Statement*>::iterator it = liveIn.begin(); it != liveIn.end();
-      it++) {
-        (*it)->print(os);
-        os << ", ";
-    }
-#endif
-}
-
 void AssignExp::printAsUse(std::ostream &os) {
     print(os);
 }

@@ -425,47 +425,28 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
     std::list<Exp*>* newList = new std::list<Exp*>();
     rtl.deepCopyList(*newList);
 
-    Exp* e;
-    if (newList->size() && (e = newList->back()) && e && e->isFlagCall()) {
-        // remove the flag call
-#if 0
-        Exp *f = newList->back();
-        newList->erase(--newList->end());
-        // look up the flagdef
-        std::string name((const char*)((Const*)f->getSubExp1())->getStr());
-        assert(FlagFuncs.find(name) != FlagFuncs.end());
-        FlagDef *def = (FlagDef*)FlagFuncs[name];
-        // convert the opList to a std::list for both params and actuals
-        std::list<std::string> def_params;
-        std::vector<Exp*> args;
-        for (Exp *l = def->getSubExp1(); l->getOper() == opList &&
-          l->getSubExp1()->getOper() == opParam; l = l->getSubExp2()) {
-            std::string param((const char *)
-              ((Const*)l->getSubExp1()->getSubExp1())->getStr());
-            def_params.push_back(param);
+    for (std::list<Exp*>::iterator it = newList->begin();
+         it != newList->end(); it++) 
+        if ((*it)->isFlagCall()) {
+            // remove the flag call
+            *it = new AssignExp(new Terminal(opFlags), *it);
         }
-        for (Exp *l = f->getSubExp2(); 
-             l && l->getOper() == opList;
-                 l = l->getSubExp2())
-            args.push_back(l->getSubExp1());
-        // instantiate the flag rtl
-        std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
-            def_params, args);
-        // append this list onto the list of exps for this rtl
-        for (std::list<Exp*>::iterator it = def_list->begin(); 
-          it != def_list->end(); it++)
-            newList->push_back(*it);
-        delete def_list;
-#else
-        *(--newList->end()) = new AssignExp(new Terminal(opFlags), 
-            newList->back());
-#endif
-    }
-    
 
     // Iterate through each Exp of the new list of Exps
     for (std::list<Exp*>::iterator rt = newList->begin();
       rt != newList->end(); rt++) {
+        if ((*rt)->isFlagCall()) {
+            std::cerr << "weird, flag call not replaced!" << std::endl;
+            for (std::list<Exp*>::iterator rt1 = newList->begin();
+                 rt1 != newList->end(); rt1++) {
+                if (rt == rt1)
+                    std::cerr << "-> ";
+                else
+                    std::cerr << "   ";
+                (*rt1)->print(std::cerr);
+                std::cerr << std::endl;
+            }
+        }
         assert(!(*rt)->isFlagCall());
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();

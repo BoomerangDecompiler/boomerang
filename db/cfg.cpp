@@ -2056,3 +2056,44 @@ void Cfg::removeUnneededLabels(HLLCode *hll)
             hll->RemoveLabel(Ordering[i]->ord);
 }
 
+void Cfg::generateDotFile(const char *str)
+{
+    std::ofstream of(str);
+    of << "digraph Cfg {" << std::endl;
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        of << "    " << i << " [";
+        of << "label=\"";
+        switch(Ordering[i]->getType()) {
+            case ONEWAY: of << "oneway"; break;
+            case TWOWAY: 
+                if (Ordering[i]->getCond())
+                    Ordering[i]->getCond()->print(of); 
+                else
+                    of << "twoway";
+                break;
+            case NWAY: of << "nway"; break;
+            case CALL: of << "call"; break;
+            case RET: of << "ret"; break;
+            case FALL: of << "fall"; break;
+            case COMPJUMP: of << "compjump"; break;
+            case COMPCALL: of << "compcall"; break;
+            case INVALID: of << "invalid"; break;
+        }
+        of << "\"];\n";
+    }
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        for (unsigned int j = 0; j < Ordering[i]->getOutEdges().size(); j++) {
+            of << "    " << i << " -> " << Ordering[i]->getOutEdges()[j]->ord;
+            if (Ordering[i]->getType() == TWOWAY) {
+                if (j == 0)
+                    of << "[label=\"true\"]";
+                else
+                    of << "[label=\"false\"]";
+            }
+            of << ";\n";
+        }
+    }
+    of << "}";
+    of.close();
+}
+

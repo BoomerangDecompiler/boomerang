@@ -106,7 +106,7 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF) {
     return NULL;
 }
 
-void FrontEnd::readLibraryCatalog(const char *sPath) {
+void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
     std::ifstream inf(sPath);
     if (!inf.good()) {
         std::cerr << "can't open `" << sPath << "'" << std::endl;
@@ -122,7 +122,7 @@ void FrontEnd::readLibraryCatalog(const char *sPath) {
         if (sFile == "") continue;
         std::string sPath = Boomerang::get()->getProgPath() + "signatures/"
           + sFile;
-            readLibrarySignatures(sPath.c_str());
+        readLibrarySignatures(sPath.c_str(), win32);
     }
     inf.close();
 }
@@ -134,6 +134,10 @@ void FrontEnd::readLibraryCatalog() {
     sList = Boomerang::get()->getProgPath() + "signatures/" + getFrontEndId()
       + ".hs";
     readLibraryCatalog(sList.c_str());
+    if (isWin32()) {
+        sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
+        readLibraryCatalog(sList.c_str(), true);
+    }
 }
 
 Prog *FrontEnd::decode() {
@@ -166,6 +170,7 @@ Prog *FrontEnd::decode() {
                 break;
         }
     }
+    prog->wellForm();
     return prog;
 }
 
@@ -179,7 +184,7 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
  * PARAMETERS:     The file to read from
  * RETURNS:        <nothing>
  *============================================================================*/
-void FrontEnd::readLibrarySignatures(const char *sPath) {
+void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     std::ifstream ifs;
 
     ifs.open(sPath);
@@ -191,6 +196,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath) {
 
     AnsiCParser *p = new AnsiCParser(ifs, false);
     std::string s = "-stdc-";
+    if (win32) s = "-win32-";
     s += getFrontEndId();
     p->yyparse(s.c_str());
 
@@ -209,9 +215,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     std::map<std::string, Signature*>::iterator it;
     it = librarySignatures.find(name);
     if (it == librarySignatures.end()) {
-#if 0
-        std::cerr << "Could not find parameters for library function " << name << std::endl;
-#endif
+        std::cerr << "unknown library function " << name << std::endl;
         // Get a default library signature
         if (isWin32())
             signature = Signature::instantiate("-win32-pentium", name);

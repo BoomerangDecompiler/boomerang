@@ -98,7 +98,7 @@ public:
     void calcUses(std::set<Statement*> &uses);
     int getNumUses() { 
         updateUses();
-	    return uses->size(); 
+        return uses->size(); 
     }
  
     // 
@@ -136,7 +136,7 @@ public:
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os) = 0;
-    virtual void printWithUses(std::ostream& os) = 0;
+    virtual void printWithUses(std::ostream& os);
     virtual void printAsUse(std::ostream &os) = 0;
     virtual void printAsUseBy(std::ostream &os) = 0;
 

@@ -125,6 +125,9 @@ public:
 	// Do decompilation
 	void decompile();
 
+        // Generate dotty file
+        void generateDotFile();
+
 	// Generate code
 	void generateCode(std::ostream &os);
 
@@ -140,6 +143,9 @@ public:
 
     // Get the front end id used to make this prog
     const char *getFrontEndId();
+
+    // Returns true if this is a win32 program
+    bool isWin32();
 
     // Get a global variable if possible
     const char *getGlobal(ADDRESS uaddr);

@@ -755,17 +755,6 @@ public:
     bool establishRevDFTOrder();
 
     /*
-     * Writes to an already opened .dot (dotty) file a graph
-     * for the current object's well-formed cfg. 
-     * All node IDs are offset by iOffset
-     * BinaryFile is used to find the names of library functions
-     * Native entry address for this proc is uEntryAddr
-     * Returns false if not successful.
-     */
-    bool writeDotFile (FILE* fi, const char* pName, int iOffset,
-        BinaryFile* pBF, ADDRESS uEntryAddr);
-
-    /*
      * Given a pointer to a basic block, return an index (e.g. 0 for the first
      * basic block, 1 for the next, ... n-1 for the last BB.
      */
@@ -934,6 +923,7 @@ private:
 public:
 
     void removeUnneededLabels(HLLCode *hll);
+    void generateDotFile(const char *str);
 
 protected:
 

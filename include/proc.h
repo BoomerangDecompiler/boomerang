@@ -363,9 +363,6 @@ public:
 	// remove internal statements
 	void removeInternalStatements();
 
-	// fix calls
-	void fixCalls();
-
 	// erase a statement from the internal statements list
 	void eraseInternalStatement(Statement *stmt);
 

@@ -710,26 +710,23 @@ bool HLJcond::usesExp(Exp *e)
     return pCond && pCond->search(e, tmp);
 }
 
-// custom printing functions
-void HLJcond::printWithUses(std::ostream& os)
-{
-}
-
 // special print functions
 void HLJcond::printAsUse(std::ostream &os)
 {
+    os << "JCOND ";
     if (pCond)
         pCond->print(os);
     else
-    os << "<empty cond>";
+        os << "<empty cond>";
 }
 
 void HLJcond::printAsUseBy(std::ostream &os)
 {
+    os << "JCOND ";
     if (pCond)
         pCond->print(os);
     else
-    os << "<empty cond>";
+        os << "<empty cond>";
 }
 
 // inline any constants in the statement
@@ -1241,7 +1238,24 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
             os << ", ";
         os << arguments[i];
     }
-    os << ")" << std::endl;
+    os << ")";
+    if (withDF) {
+        os << "   uses: ";
+        updateUses();
+        for (std::set<Statement*>::iterator it = uses->begin(); 
+             it != uses->end(); it++) {
+            (*it)->printAsUse(os);
+            os << ", ";
+        }
+        os << "   used by: ";
+        updateUsedBy();
+        for (std::set<Statement*>::iterator it = usedBy->begin();
+             it != usedBy->end(); it++) {
+            (*it)->printAsUseBy(os);
+            os << ", ";
+        }
+    }
+    os << std::endl;
 
     // Print the post call RTLs, if any
     if (postCallExpList) {
@@ -1254,7 +1268,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
     }
     
     if (withDF) {
-    std::list<Statement*> &internal = getInternalStatements();
+        std::list<Statement*> &internal = getInternalStatements();
         for (std::list<Statement*>::iterator it = internal.begin(); 
              it != internal.end(); it++) {
             os << "internal ";
@@ -1417,7 +1431,7 @@ void HLCall::decompile()
         arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
     if (procDest->getSignature()->hasEllipsis()) {
         // Just guess 10 parameters for now
-        for (int i = 0; i < 10; i++)
+        //for (int i = 0; i < 10; i++)
             arguments.push_back(procDest->getSignature()->
               getArgumentExp(arguments.size())->clone());
     }
@@ -1547,32 +1561,55 @@ void HLCall::doReplaceUse(Statement *use)
         arguments[i] = arguments[i]->simplifyArith();
         arguments[i] = arguments[i]->simplify();
     }
-}
-
-void HLCall::printWithUses(std::ostream& os)
-{
-    // TODO
-    assert(false);
+    inlineConstants(proc->getProg());
+    if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
+        // functions like printf almost always have too many args
+        std::string name(getDestProc()->getName());
+        if ((name == "printf" || name == "scanf") &&
+            getArgumentExp(0)->isStrConst()) {
+            char *str = ((Const*)getArgumentExp(0))->getStr();
+            // actually have to parse it
+            int n = 1;      // Number of %s plus 1 = number of args
+            char *p = str;
+            while ((p = strchr(p, '%'))) {
+                // special hack for scanf
+                if (name == "scanf") {
+                    setArgumentExp(n, new Unary(opAddrOf, 
+                        new Unary(opMemOf, getArgumentExp(n))));
+                }
+                p++;
+                switch(*p) {
+                    case '%':
+                        break;
+                    // TODO: there's type information here
+                    default: 
+                        n++;
+                }
+                p++;
+            }
+            setNumArguments(n);
+        }
+    }
 }
 
 void HLCall::inlineConstants(Prog *prog)
 {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
-    // char* and a constant
-    if ((arguments[i]->isIntConst()) && 
-        t && t->isPointer() && 
-        ((PointerType*)t)->getPointsTo()->isChar()) {
-        char *str = 
-            prog->getStringConstant(((Const*)arguments[i])->getAddr());
-        if (str) {
-         std::string s(str);
-         while (s.find('\n') != (unsigned)-1)
-             s.replace(s.find('\n'), 1, "\\n");
-             delete arguments[i];
-         arguments[i] = new Const(strdup(s.c_str()));
+        // char* and a constant
+        if ((arguments[i]->isIntConst()) && 
+            t && t->isPointer() && 
+            ((PointerType*)t)->getPointsTo()->isChar()) {
+            char *str = 
+                prog->getStringConstant(((Const*)arguments[i])->getAddr());
+            if (str) {
+             std::string s(str);
+             while (s.find('\n') != (unsigned)-1)
+                 s.replace(s.find('\n'), 1, "\\n");
+                 delete arguments[i];
+             arguments[i] = new Const(strdup(s.c_str()));
+            }
         }
-    }
     }
 }
 
@@ -1698,7 +1735,8 @@ void HLReturn::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
 
 void HLReturn::simplify()
 {
-    // TODO: return value?
+    if (returnVal)
+        returnVal = returnVal->simplify();
 }
 
 /**********************************

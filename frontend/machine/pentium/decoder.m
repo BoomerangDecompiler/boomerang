@@ -112,6 +112,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
          * Register call
          */
         // Mike: there should probably be a HLNwayCall class for this!
+        Exps = instantiate(pc,  "CALL.Evod", DIS_EADDR32);
         HLCall* newCall = new HLCall(pc, 0, Exps);
         // Record the fact that this is a computed call
         newCall->setIsComputed();

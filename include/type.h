@@ -51,6 +51,7 @@ virtual bool isChar() const { return false; }
 virtual bool isInteger() const { return false; }
 virtual bool isFloat() const { return false; }
 virtual bool isPointer() const { return false; }
+virtual bool isNamed() const { return false; }
 
     // cloning
 virtual Type* clone() const = 0;
@@ -220,6 +221,30 @@ public:
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
         Type *getPointsTo() { return points_to; }
+
+virtual Type* clone() const;
+
+virtual bool    operator==(const Type& other) const;
+//virtual bool    operator-=(const Type& other) const;
+virtual bool    operator< (const Type& other) const;
+
+virtual int     getSize() const;
+
+virtual const char *getCtype() const;
+
+virtual	bool serialize(std::ostream &ouf, int &len);
+virtual	bool deserialize_fid(std::istream &inf, int fid);
+};
+
+class NamedType : public Type {
+private:
+    std::string name;
+
+public:
+	NamedType(const char *name);
+virtual ~NamedType();
+virtual bool isNamed() const { return true; }
+        const char *getName() { return name.c_str(); }
 
 virtual Type* clone() const;
 
