@@ -37,15 +37,23 @@ int max(int a, int b) {		// Faster to write than to find the #include for
 #define DFA_ITER_LIMIT 20
 
 void UserProc::dfaTypeAnalysis() {
+	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
+	// int and char* in sparc/switch_gcc)
+	bool ch = signature->dfaTypeAnalysis(cfg);
 	StatementList stmts;
 	getStatements(stmts);
 	StatementList::iterator it;
-	bool ch;
 	int iter;
 	for (iter = 1; iter <= DFA_ITER_LIMIT; iter++) {
 		ch = false;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
-			(*it)->dfaTypeAnalysis(ch);	  
+			bool thisCh = false;
+			(*it)->dfaTypeAnalysis(thisCh);
+			if (thisCh) {
+				ch = true;
+				if (DEBUG_TA)
+					LOG << " Caused change: " << *it << "\n";
+			}
 		}
 		if (!ch)
 			// No more changes: round robin algorithm terminates
@@ -315,7 +323,16 @@ if (thisBase == otherBase)	// Note: compare pointers
 
 Type* ArrayType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
-	// Needs work
+	if (other->isArray()) {
+		ArrayType* otherArr = other->asArray();
+		Type* newBase = base_type->clone()->meetWith(otherArr->base_type, ch);
+		if (*newBase != *base_type) {
+			ch = true;
+			base_type = newBase;
+		}
+		return this;
+	}
+	// Needs work?
 	return createUnion(other, ch);
 }
 
@@ -484,20 +501,13 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 // ...
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	unsigned i, n = stmtVec.size();
-	Type* meetOfPred = stmtVec[0]->getTypeFor(lhs);
+	Type* meetOfArgs = stmtVec[0]->getTypeFor(lhs);
 	for (i=1; i < n; i++)
 		if (stmtVec[i] && stmtVec[i]->getTypeFor(lhs))
-			meetOfPred = meetOfPred->meetWith(stmtVec[i]->getTypeFor(lhs), ch);
-	type = type->meetWith(meetOfPred, ch);
+			meetOfArgs = meetOfArgs->meetWith(stmtVec[i]->getTypeFor(lhs), ch);
+	type = type->meetWith(meetOfArgs, ch);
 	for (i=0; i < n; i++) {
-		if (stmtVec[i] && stmtVec[i]->getTypeFor(lhs)) {
-			bool thisCh = false;
-			Type* res = stmtVec[i]->getTypeFor(lhs)->meetWith(type, thisCh);
-			if (thisCh) {
-				stmtVec[i]->setTypeFor(lhs, res);
-				ch = true;
-			}
-		}
+		if (stmtVec[i]) stmtVec[i]->meetWithFor(type, lhs, ch);
 	}
 	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
 }
@@ -661,6 +671,12 @@ Type* Binary::ascendType() {
 			return sigmaSum(ta, tb);
 		case opMinus:
 			return deltaDifference(ta, tb);
+		case opMult:
+		case opDiv:
+			return new IntegerType(ta->getSize(), -1);
+		case opMults:
+		case opDivs:
+			return new IntegerType(ta->getSize(), +1);
 		default:
 			// Many more cases to implement
 			return new VoidType;
@@ -781,10 +797,9 @@ void Binary::descendType(Type* parentType, bool& ch) {
 }
 
 void RefExp::descendType(Type* parentType, bool& ch) {
-	Type* oldType = def->getTypeFor(subExp1);
-	def->setTypeFor(subExp1, parentType);
-	ch |= oldType != parentType;
-	subExp1->descendType(parentType, ch);
+	Type* newType = def->meetWithFor(parentType, subExp1, ch);
+	// In case subExp1 is a m[...]
+	subExp1->descendType(newType, ch);
 }
 
 void Const::descendType(Type* parentType, bool& ch) {
@@ -794,7 +809,28 @@ void Const::descendType(Type* parentType, bool& ch) {
 void Unary::descendType(Type* parentType, bool& ch) {
 	switch (op) {
 		case opMemOf:
-			subExp1->descendType(new PointerType(parentType), ch);
+			// Check for m[x*K1 + K2]: array with base K2 and stride K1
+			if (subExp1->getOper() == opPlus &&
+					((Binary*)subExp1)->getSubExp1()->getOper() == opMult &&
+					((Binary*)subExp1)->getSubExp2()->isIntConst() &&
+					((Binary*)((Binary*)subExp1)->getSubExp1())->getSubExp2()->isIntConst()) {
+				Exp* leftOfPlus = ((Binary*)subExp1)->getSubExp1();
+				// We would expect the stride to be the same size as the base type
+				int stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
+				if (DEBUG_TA && stride*8 != parentType->getSize())
+					LOG << "Type WARNING: apparent array reference at " << this << " has stride " << stride*8 <<
+						" bits, but parent type " << parentType->getCtype() << " has size " <<
+						parentType->getSize() << "\n";
+				// The index is integer type
+				Exp* x = ((Binary*)leftOfPlus)->getSubExp1();
+				x->descendType(new IntegerType(parentType->getSize(), 0), ch);
+				// K2 is of type <array of parentType>
+				Exp* K2 = ((Binary*)subExp1)->getSubExp2();
+				K2->descendType(new ArrayType(parentType), ch);
+			}
+			// Other cases, e.g. struct reference m[x + K1] or m[x + p] where p is a pointer
+			else
+				subExp1->descendType(new PointerType(parentType), ch);
 			break;
 		default:
 			break;
@@ -905,7 +941,7 @@ Exp* DfaLocalConverter::preVisit(Location* e, bool& recur) {
 	if (e->isMemOf()) {
 		if (sig->isStackLocal(proc->getProg(), e)) {
 			recur = false;
-			mod = true;			// We've made a modification
+			//mod = true;			// We've made a modification
 			Exp* ret = proc->getLocalExp(e, parentType, true);
 			// ret is now *usually* a local so postVisit won't expect parentType changed
 			// Note: at least one of Trent's hacks can cause m[a[...]] to be returned
@@ -932,10 +968,31 @@ Exp* DfaLocalConverter::preVisit(Binary* e, bool& recur) {
 	// Check for sp -/+ K, but only if TA indicates this is a pointer
 	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, e)) {
 		recur = false;
-		mod = true;
-		return proc->getLocalExp(e, parentType->asPointer()->getPointsTo(), true);	// MVE: Check this!
+		//mod = true;
+		// We have something like sp-K; wrap it in a m[] to get the correct exp for the existing local (if any)
+		Exp* memOf_e = Location::memOf(e);
+		return new Unary(opAddrOf,
+			proc->getLocalExp(memOf_e, parentType->asPointer()->getPointsTo(), true));
 	}
 	recur = true;
 	return e;
 }
 
+bool Signature::dfaTypeAnalysis(Cfg* cfg) {
+	bool ch = false;
+	std::vector<Parameter*>::iterator it;
+	for (it = params.begin(); it != params.end(); it++) {
+		// Parameters should be defined in an implicit assignment
+		Statement* def = cfg->findImplicitParamAssign(*it);
+		if (def) { 			// But sometimes they are not used, and hence have no implicit definition
+			bool thisCh = false;
+			def->meetWithFor((*it)->getType(), (*it)->getExp(), thisCh);
+			if (thisCh) {
+				ch = true;
+				if (DEBUG_TA)
+					LOG << "  Sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->getName() << "\n";
+			}
+		}
+	}
+	return ch;
+}
