@@ -1502,8 +1502,9 @@ void UserProc::propagateStatements(int memDepth) {
     getStatements(stmts);
     // propagate any statements that can be
     StmtListIter it;
+    StatementSet empty;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->propagateTo(memDepth);
+        s->propagateTo(memDepth, empty);
 }
 
 void UserProc::promoteSignature() {
