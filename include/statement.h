@@ -75,11 +75,11 @@ enum STMT_KIND {
 	STMT_ASSIGN = 0,
 	STMT_PHIASSIGN,
 	STMT_IMPASSIGN,
+	STMT_BOOLASSIGN,				// For "setCC" instructions that set destination
 	STMT_CALL,
 	STMT_RET,
 	STMT_BRANCH,
 	STMT_GOTO,
-	STMT_BOOL,					// For "setCC" instructions that set destination
 								// to 1 or 0 depending on the condition codes.
 	STMT_CASE,					// Used to represent switch statements.
 };
@@ -170,6 +170,9 @@ virtual bool	isDefinition() = 0;
 
 	// true if this statement is a standard assign
 	bool		isAssign() {return kind == STMT_ASSIGN;}
+	// true if this statement is a any kind of assignment
+	bool		isAssignment() {return kind == STMT_ASSIGN || kind == STMT_PHIASSIGN ||
+					kind == STMT_IMPASSIGN || kind == STMT_BOOLASSIGN;}
 
 virtual bool	isGoto() { return kind == STMT_GOTO; }
 virtual bool	isBranch() { return kind == STMT_BRANCH; }
@@ -187,7 +190,7 @@ virtual bool	isBranch() { return kind == STMT_BRANCH; }
 	bool		isCall() { return kind == STMT_CALL; }
 
 	// true if this statement is a BoolAssign
-	bool		isBool() { return kind == STMT_BOOL; }
+	bool		isBool() { return kind == STMT_BOOLASSIGN; }
 
 	// true if this statement is a ReturnStatement
 	bool		isReturn() { return kind == STMT_RET; }
@@ -248,8 +251,7 @@ virtual bool	searchAndReplace(Exp *search, Exp *replace) = 0;
 virtual void	fromSSAform(igraph& igm) = 0;
 
 	// Propagate to this statement
-	bool		propagateTo(int memDepth, StatementSet& exclude,
-					int toDepth = -1);
+	bool		propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
 	// code generation
 virtual void	generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
