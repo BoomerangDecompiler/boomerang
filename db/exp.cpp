@@ -3689,13 +3689,16 @@ Type *Binary::getType() {
         case opArraySubscript:
             if (subExp1->getType()) {
                 Type *sty = subExp1->getType();
-                if (!sty->resolvesToArray()) {
-                    LOG << "subExp1 not of array type: " << this << "\n";
+                if (!sty->resolvesToArray() && !sty->resolvesToPointer()) {
+                    LOG << "subExp1 not of array/ptr type: " << this << "\n";
                     if (sty)
                         LOG << "it has a type: " << sty->getCtype() << "\n";
                     assert(false);
                 }
-                return sty->asArray()->getBaseType();
+                if (sty->resolvesToArray())
+                    return sty->asArray()->getBaseType();
+                // Else must be pointer
+                return sty->asPointer()->getPointsTo();
             }
             break;
         case opMemberAccess:
