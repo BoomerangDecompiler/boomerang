@@ -1067,6 +1067,7 @@ std::set<UserProc*>* UserProc::decompile() {
     if (Boomerang::get()->maxMemDepth < maxDepth)
         maxDepth = Boomerang::get()->maxMemDepth;
     int depth;
+    bool convert = false;  // True when indirect call converted to direct
     for (depth = 0; depth <= maxDepth; depth++) {
 
         if (VERBOSE)
@@ -1099,6 +1100,7 @@ std::set<UserProc*>* UserProc::decompile() {
             trimReturns();
         }
         if (depth == maxDepth) {
+            fixCallRefs();
             processConstants();
             removeRedundantPhis();
         }
@@ -1143,7 +1145,8 @@ std::set<UserProc*>* UserProc::decompile() {
         }
 
         // recognising locals early prevents them from becoming returns
-        replaceExpressionsWithLocals(depth == maxDepth);
+// But with indirect procs in a loop, the propagaton is not yet complete
+//    replaceExpressionsWithLocals(depth == maxDepth);
         addNewReturns(depth);
         cfg->renameBlockVars(0, depth, true);
         printXML();
@@ -1156,6 +1159,7 @@ std::set<UserProc*>* UserProc::decompile() {
               getName() << " at depth " << depth << " ===\n\n";
         }
         trimReturns();
+        fixCallRefs();
 
         printXML();
         // Print if requested
@@ -1173,7 +1177,7 @@ std::set<UserProc*>* UserProc::decompile() {
             if (VERBOSE)
                 LOG << "propagating at depth " << depth << " to depth " 
                           << td << "\n";
-            propagateStatements(depth, td);
+            convert |= propagateStatements(depth, td);
             for (int i = 0; i <= depth; i++)
                 cfg->renameBlockVars(0, i, true);
         }
@@ -1187,18 +1191,21 @@ std::set<UserProc*>* UserProc::decompile() {
         }
     }
 
-    // Check for indirect jumps or calls
-    if (cfg->decodeIndirectJmp(this)) {
+    // Check for indirect jumps or calls not already removed by propagation of
+    // constants
+    if (cfg->decodeIndirectJmp(this) || convert) {
         // There was at least one indirect jump or call found and decoded.
-        // That means that everything we have done to this function so far
-        // is invalid. So redo everything. Expensive!!
+        // That means that most of what has been done to this function so far
+        // is invalid. So redo everything. Very expensive!!
+        LOG << "=== About to restart decompilation of " << 
+          getName() << " because indirect calls have been removed\n\n";
         Analysis a;
         a.analyse(this);        // Get rid of this soon
-        return decompile();
+        return decompile();     // Restart decompiling this proc
     }
 
-    // Only remove unused statements after decompiling as much as possible of the
-    // proc
+    // Only remove unused statements after decompiling as much as possible of
+    // the proc
     for (depth = 0; depth <= maxDepth; depth++) {
         // Remove unused statements
         RefCounter refCounts;           // The map
@@ -1230,6 +1237,7 @@ std::set<UserProc*>* UserProc::decompile() {
             cfg->renameBlockVars(0, i, true);
         }
         trimReturns();
+        fixCallRefs();
         trimParameters();
         if (VERBOSE) {
             LOG << "=== After replacing expressions, trimming params "
@@ -1485,11 +1493,12 @@ void UserProc::trimReturns() {
             removeReturn(*it);
     }
     removeRedundantPhis();
-    fixCallRefs();
 }
 
 void UserProc::fixCallRefs()
 {
+    if (VERBOSE)
+        LOG << "\nfixCallRefs for " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
@@ -1498,6 +1507,8 @@ void UserProc::fixCallRefs()
         s->fixCallRefs();
     }
     simplify();
+    if (VERBOSE)
+        LOG << "end fixCallRefs for " << getName() << "\n\n";
 }
 
 void UserProc::addNewReturns(int depth) {
@@ -2448,20 +2459,23 @@ void UserProc::processConstants() {
 // components of a higher memory depth than memDepth)
 // Also don't propagate TO expressions of depth other than toDepth
 // (unless toDepth == -1)
-void UserProc::propagateStatements(int memDepth, int toDepth) {
+// Return true if an indirect call is converted to direct
+bool UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList stmts;
     getStatements(stmts);
     // propagate any statements that can be
     StatementSet empty;
     StatementList::iterator it;
+    bool convertedIndirect = false;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         if (s->isPhi()) continue;
         // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
-        s->propagateTo(memDepth, empty, toDepth);
+        convertedIndirect |= s->propagateTo(memDepth, empty, toDepth);
     }
     simplify();
+    return convertedIndirect;
 }
 
 void UserProc::promoteSignature() {
