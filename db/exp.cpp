@@ -2586,6 +2586,7 @@ bool PhiExp::hasGlobalFuncParam(Prog *prog)
     unsigned n = stmtVec.size();
     for (unsigned i = 0; i < n; i++) {
         Statement* u = stmtVec.getAt(i);
+        if (u == NULL) continue;
         Exp *right = u->getRight();
         if (right == NULL)
             continue;
