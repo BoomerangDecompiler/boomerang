@@ -255,7 +255,7 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
 
     for (std::list<Signature*>::iterator it = p->signatures.begin();
            it != p->signatures.end(); it++) {
-#if 1
+#if 0
         std::cerr << "readLibrarySignatures from " << sPath << ": " <<
           (*it)->getName() << "\n";
 #endif
