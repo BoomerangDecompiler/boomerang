@@ -255,16 +255,16 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
     else {
         // More than one in-edge.
         if (Boomerang::get()->debugSwitch) {
-            std::cerr << "Multiple in-edges for BB at " << std::hex <<
-              pCurBB->getLowAddr() << std::endl;
+            LOG << "Multiple in-edges for BB at " << 
+              pCurBB->getLowAddr() << "\n";
         }
 #if 0
-        std::cerr << "Multiple in-edges for BB at " << std::hex <<
+        LOG << "Multiple in-edges for BB at " << 
             pCurBB->getLowAddr() << ":\n==\n";
         for (unsigned ii=0; ii < pCurBB->getInEdges().size(); ii++) {
             (pCurBB->getInEdges()[ii])->print();
         }
-        std::cerr << "\n==\n";
+        LOG << "\n==\n";
 #endif
 #if 0       // This doesn't seem to suit form H switches...
         // Choose the most suitable in-edge. Best is a fall through,
@@ -335,7 +335,7 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
                 pCurBB = pCurBB->getInEdges()[++edge];
         }
         if (Boomerang::get()->debugSwitch)
-            std::cerr << "Chose in-edge at " << pCurBB->getLowAddr() << "\n";
+            LOG << "Chose in-edge at " << pCurBB->getLowAddr() << "\n";
     }
 
     // If we have already considered it, we have a loop, so exit
@@ -441,8 +441,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
     expJmp = pDest->clone();                 // Copy the desintation of the jump
 
     if (Boomerang::get()->debugSwitch)
-        std::cerr << std::hex << uJump << ":expJmp begins with " << expJmp <<
-          "\n";
+        LOG << uJump << ":expJmp begins with " << expJmp << "\n";
 
     // Check if the memory load is part of the jump instruction (e.g.
     // x86 jmp [%eax + %ebx*4]). If so, count this as the first memory
@@ -583,7 +582,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                 else {
                     // not really sure what to do... but it does recover
                     // from this by popping the opNot
-//                  std::cerr << "Switch @ " << std::hex << pRtl->getAddress()
+//                  LOG << "Switch @ " << pRtl->getAddress()
 //                    << " opNot and branch that is not low or equals\n";
                 }
             }
@@ -611,14 +610,13 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                             new Terminal(opNil),
                             new Terminal(opNil));
                     else {
-std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare " << operStrings[operBr] << "\n";
+LOG << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare " << operStrings[operBr] << "\n";
                     }
 #endif
 
                     if (Boomerang::get()->debugSwitch) {
-                        std::cerr << "isSwitch @ " << std::hex <<
-                          pRtl->getAddress();
-                        std::cerr << ": expBound now " << expBound << "\n";
+                        LOG << "isSwitch @ " << pRtl->getAddress();
+                        LOG << ": expBound now " << expBound << "\n";
                     }
 
                     continue;
@@ -659,9 +657,9 @@ std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a
                 bUpperFnd = true;           // Trigger pattern matching
 
                 if (Boomerang::get()->debugSwitch)
-                    std::cerr << "isSwitch @ " << std::hex <<
+                    LOG << "isSwitch @ " << 
                       (*itCurRtl)->getAddress() << ": expBound now " <<
-                      expBound << std::endl;
+                      expBound << "\n";
 
                 // Force a check. There may be no instructions after
                 // this that assign to a register of interest, etc,
@@ -683,8 +681,8 @@ std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a
             if (expBound && expBound->getOper() == opNot) {
                 expBound = expBound->getSubExp1();
                 if (Boomerang::get()->debugSwitch)
-                    std::cerr << "Popping opNot from expBound: now " <<
-                      expBound << std::endl;
+                    LOG << "Popping opNot from expBound: now " <<
+                      expBound << "\n";
             }
         }
 
@@ -837,9 +835,9 @@ std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a
 
 forcedCheck:
         if (Boomerang::get()->debugSwitch) {
-            std::cerr << "expJmp @ " << std::hex << (*itCurRtl)->getAddress()
-              << ": " << expJmp << std::endl;
-            if (expBound) std::cerr << "expBound is " << expBound << "\n";
+            LOG << "expJmp @ " << (*itCurRtl)->getAddress()
+              << ": " << expJmp << "\n";
+            if (expBound) LOG << "expBound is " << expBound << "\n";
         }
 
         // Needn't do any checking until we have found the uppper bound
@@ -849,8 +847,8 @@ forcedCheck:
             expJmp->simplify();
 
             if (Boomerang::get()->debugSwitch)
-                std::cerr << "isSwitch @ " << std::hex <<
-                  (*itCurRtl)->getAddress() << ": " << expJmp << std::endl;
+                LOG << "isSwitch @ " << 
+                  (*itCurRtl)->getAddress() << ": " << expJmp << "\n";
 
             // Simplify the expression, by removing all {size} and sign extend
             // (!) operations. These are tangential to the switch form
@@ -1004,8 +1002,8 @@ forcedCheck:
             expJmp->simplify();
 
             if (Boomerang::get()->debugSwitch)
-                std::cerr << "Post form @ " << std::hex <<
-                  (*itCurRtl)->getAddress() << ": " << expJmp << std::endl;
+                LOG << "Post form @ " << 
+                  (*itCurRtl)->getAddress() << ": " << expJmp << "\n";
 
             // Save the "switch variable" so we can return it in a SWITCH_INFO
 //          pSwitchVar = new Exp*(expJmp);
@@ -1024,8 +1022,8 @@ forcedCheck:
                 bGotLower = true;
                 iLower = ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
                 if (Boomerang::get()->debugSwitch)
-                    std::cerr << "Got lower: expJmp " << expJmp <<
-                      " -> iLower " << std::dec << iLower << std::endl;
+                    LOG << "Got lower: expJmp " << expJmp <<
+                      " -> iLower " << iLower << "\n";
                 iUpper += iLower;
             }
             else {
@@ -1037,9 +1035,8 @@ forcedCheck:
                     iLower =
                       -((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
                     if (Boomerang::get()->debugSwitch)
-                        std::cerr << "Got lower: expJmp " << expJmp <<
-                          " -> iLower " << std::dec; std::cerr << iLower <<
-                          "\n";
+                        LOG << "Got lower: expJmp " << expJmp <<
+                          " -> iLower " << iLower << "\n";
                     iUpper += iLower;
                     bGotLower = true;
                 }
@@ -1150,12 +1147,11 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
     si->delta = delta;
 
     if (Boomerang::get()->debugSwitch) {
-        std::cerr << "Found switch statement type " << si->chForm <<
-          " with table at 0x" << std::hex << si->uTable << ", ";
+        LOG << "Found switch statement type " << si->chForm <<
+          " with table at 0x" << si->uTable << ", ";
         if (si->iNumTable)
-            std::cerr << std::dec << si->iNumTable << " entries, ";
-        std::cerr << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper
-          << "\n";
+            LOG << si->iNumTable << " entries, ";
+        LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
     }
     ADDRESS uSwitch;
     int iNumOut, iNum;
