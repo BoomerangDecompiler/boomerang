@@ -424,37 +424,36 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
     std::list<Exp*>* newList = new std::list<Exp*>();
     rtl.deepCopyList(*newList);
 
-    if (newList->back()->isFlagCall()) {
+	Exp* e;
+    if ((e = newList->back()) && e && e->isFlagCall()) {
 	// remove the flag call
         Exp *f = newList->back();
         newList->erase(--newList->end());
-	// look up the flagdef
-	std::string name((const char*)((Const*)f->getSubExp1())->getStr());
-	assert(FlagFuncs.find(name) != FlagFuncs.end());
-	FlagDef *def = (FlagDef*)FlagFuncs[name];
-	// convert the opList to a std::list for both params and actuals
-	std::list<std::string> def_params;
-	std::vector<Exp*> args;
-	for (Exp *l = def->getSubExp1(); 
-		  l->getOper() == opList &&
-	          l->getSubExp1()->getOper() == opParam;
-                  l = l->getSubExp2()) {
-	     std::string param((const char *)
-			((Const*)l->getSubExp1()->getSubExp1())->getStr());
-	     def_params.push_back(param);
-	}
-	for (Exp *l = f->getSubExp2(); 
-	     l && l->getOper() == opList;
-             l = l->getSubExp2())
-		args.push_back(l->getSubExp1());
-	// instantiate the flag rtl
-	std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
+		// look up the flagdef
+		std::string name((const char*)((Const*)f->getSubExp1())->getStr());
+		assert(FlagFuncs.find(name) != FlagFuncs.end());
+		FlagDef *def = (FlagDef*)FlagFuncs[name];
+		// convert the opList to a std::list for both params and actuals
+		std::list<std::string> def_params;
+		std::vector<Exp*> args;
+		for (Exp *l = def->getSubExp1(); l->getOper() == opList &&
+	      l->getSubExp1()->getOper() == opParam; l = l->getSubExp2()) {
+	     	std::string param((const char *)
+			  ((Const*)l->getSubExp1()->getSubExp1())->getStr());
+	     	def_params.push_back(param);
+		}
+		for (Exp *l = f->getSubExp2(); 
+	    	 l && l->getOper() == opList;
+            	 l = l->getSubExp2())
+			args.push_back(l->getSubExp1());
+		// instantiate the flag rtl
+		std::list<Exp*>* def_list = instantiateRTL(*def->getRtl(), 
 			def_params, args);
-	// append this list onto the list of exps for this rtl
-	for (std::list<Exp*>::iterator it = def_list->begin(); 
-			it != def_list->end(); it++)
-	    newList->push_back(*it);
-	delete def_list;
+		// append this list onto the list of exps for this rtl
+		for (std::list<Exp*>::iterator it = def_list->begin(); 
+		  it != def_list->end(); it++)
+	    	newList->push_back(*it);
+		delete def_list;
     }
 
     // Iterate through each Exp of the new list of Exps
