@@ -21,6 +21,8 @@
  * 10 Jul 02 - Mike: Added simplifyAddr() methods
  * 16 Jul 02 - Mike: Fixed memory issues with operator==
  * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
+ * 26 Nov 02 - Mike: Quelched some warnings; fixed an error in AssignExp copy
+ *				constructor
  */
 
 #include <assert.h>
@@ -126,15 +128,18 @@ TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
     type = o.type->clone();
 }
 
-AssignExp::AssignExp() : Binary(opAssignExp), size(32), pbb(NULL) {}
-AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(32), pbb(NULL)
+AssignExp::AssignExp() : Binary(opAssignExp), pbb(NULL), size(32) { }
+AssignExp::AssignExp(Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs),
+  pbb(NULL), size(32)
 { 
 	if (lhs->getOper() == opTypedExp) { 
 		size = ((TypedExp*)lhs)->getType()->getSize(); 
 	} 
 }
-AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) : Binary(opAssignExp, lhs, rhs), size(sz), pbb(NULL) {}
-AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size), pbb(o.pbb)
+AssignExp::AssignExp(int sz, Exp* lhs, Exp* rhs) :
+  Binary(opAssignExp, lhs, rhs), pbb(NULL), size(sz) {}
+AssignExp::AssignExp(AssignExp& o) :
+  Binary(o), pbb(o.pbb), size(o.size)
 {
     subExp1 = o.subExp1->clone();
     subExp2 = o.subExp2->clone();
