@@ -231,6 +231,19 @@ Type *SizeType::clone() const
 	return t;
 }
 
+Type* UpperType::clone() const
+{
+	UpperType* t = new UpperType(base_type->clone());
+	return t;
+}
+
+Type* LowerType::clone() const
+{
+	LowerType* t = new LowerType(base_type->clone());
+	return t;
+}
+
+
 /*==============================================================================
  * FUNCTION:		*Type::getSize
  * OVERVIEW:		Get the size of this type
