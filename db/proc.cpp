@@ -25,6 +25,7 @@
  * 14 Mar 02 - Mike: Fixed a problem caused with 16-bit pushes in richards2
  * 20 Apr 02 - Mike: Mods for boomerang
  * 31 Jan 03 - Mike: Tabs and indenting
+ * 03 Feb 03 - Mike: removeStatement no longer linear searches for the BB
  */
 
 /*==============================================================================
@@ -1027,37 +1028,32 @@ void UserProc::getStatements(std::set<Statement*> &stmts) {
 // remove a statement
 void UserProc::removeStatement(Statement *stmt) {
     // remove from BB/RTL
-    // Ugh: linear search of whole proc! We at least know our own BB
-    BB_IT it;
-    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-      std::list<RTL*> *rtls = bb->getRTLs();
-        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-          rit++) {
-            RTL *rtl = *rit;
-            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-              it != rtl->getList().end(); it++) {
-                Statement *e = dynamic_cast<Statement*>(*it);
-                if (e == NULL) continue;
-                if (e == stmt) {
-    assert(bb = stmt->getBB());
+    PBB bb = stmt->getBB();         // Get our enclosing BB
+    std::list<RTL*> *rtls = bb->getRTLs();
+    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+      rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            if (e == stmt) {
+                stmt->updateDfForErase();
+                rtl->getList().erase(it);
+                return;
+            }
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            assert(call != stmt);
+            std::list<Statement*> &internal = call->getInternalStatements();
+            for (std::list<Statement*>::iterator it1 = internal.begin();
+              it1 != internal.end(); it1++)
+                if (*it1 == stmt) {
                     stmt->updateDfForErase();
-                    rtl->getList().erase(it);
+                    internal.erase(it1);
                     return;
                 }
-            }
-            if (rtl->getKind() == CALL_RTL) {
-                HLCall *call = (HLCall*)rtl;
-                assert(call != stmt);
-                std::list<Statement*> &internal = call->getInternalStatements();
-                for (std::list<Statement*>::iterator it1 = internal.begin();
-                  it1 != internal.end(); it1++)
-                    if (*it1 == stmt) {
-     assert(bb = stmt->getBB());
-                        stmt->updateDfForErase();
-                        internal.erase(it1);
-                        return;
-                    }
-            }
         }
     }
 }
