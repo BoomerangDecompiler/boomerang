@@ -1109,11 +1109,11 @@ void TypeVal::print(std::ostream& os) {
  *============================================================================*/
 extern char debug_buffer[];
 char* Exp::prints() {
-	  std::ostringstream ost;
-	  print(ost);
-	  strncpy(debug_buffer, ost.str().c_str(), 199);
-	  debug_buffer[199] = '\0';
-	  return debug_buffer;
+	std::ostringstream ost;
+	print(ost);
+	strncpy(debug_buffer, ost.str().c_str(), 399);
+	debug_buffer[399] = '\0';
+	return debug_buffer;
 }
 
 
