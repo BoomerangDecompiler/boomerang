@@ -54,7 +54,6 @@ void Boomerang::help() {
     std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
                     "\n";
-    std::cerr << "-rb: attempt Mike's \"recursion buster\" hack\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-v: verbose\n";
     exit(1);
