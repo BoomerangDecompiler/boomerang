@@ -169,7 +169,8 @@ testAll.o: testAll.cpp
 
 db/exp.o: include/exp.h include/operator.h include/types.h include/dataflow.h \
     include/cfg.h include/rtl.h include/proc.h include/prog.h db/operstrings.h
-db/prog.o: include/prog.h
+db/prog.o: include/prog.h include/exp.h include/cfg.h include/proc.h \
+    include/rtl.h include/BinaryFile.h include/frontend.h include/signature.h
 db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
 db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
