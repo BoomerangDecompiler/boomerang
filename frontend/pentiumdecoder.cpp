@@ -30,8 +30,8 @@
 */
 
 #include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "statement.h"
 #endif
 
 #include "rtl.h"
@@ -123,19 +123,21 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     hostPC
     ;
   char *MATCH_name;
-  char *MATCH_name_page_0[] = {"REPNE.MOVSB", "JMP.Jvow", };
-  char *MATCH_name_page_1[] = {"REPNE.MOVSvow", "REPNE.STOSvow", };
-  char *MATCH_name_page_2[] = {"REPNE.CMPSvow", "REPNE.LODSvow", };
-  char *MATCH_name_page_3[] = {"REP.MOVSvow", "REPNE.SCASvow", };
-  char *MATCH_name_page_4[] = {"REPNE.MOVSvod", "REPNE.STOSB", };
-  char *MATCH_name_page_5[] = {"REPNE.CMPSB", "REPNE.STOSvod", };
-  char *MATCH_name_page_6[] = {"REPNE.CMPSvod", "REPNE.LODSB", };
-  char *MATCH_name_page_7[] = {"REP.MOVSB", "REPNE.LODSvod", };
-  char *MATCH_name_page_8[] = {"REP.MOVSvod", "REPNE.SCASB", };
-  char *MATCH_name_page_9[] = {"REP.CMPSB", "REPNE.SCASvod", };
-  char *MATCH_name_page_10[] = {"REP.CMPSvow", "REP.STOSvow", };
-  char *MATCH_name_page_13[] = {"REP.CMPSvod", "REP.STOSB", };
-  char *MATCH_name_col_59[] = {(char *)0, "JMP.Jvod", (char *)0, "JMP.Jb", };
+  static char *MATCH_name_page_0[] = {"REPNE.MOVSB", "JMP.Jvow", };
+  static char *MATCH_name_page_1[] = {"REPNE.MOVSvow", "REPNE.STOSvow", };
+  static char *MATCH_name_page_2[] = {"REPNE.CMPSvow", "REPNE.LODSvow", };
+  static char *MATCH_name_page_3[] = {"REP.MOVSvow", "REPNE.SCASvow", };
+  static char *MATCH_name_page_4[] = {"REPNE.MOVSvod", "REPNE.STOSB", };
+  static char *MATCH_name_page_5[] = {"REPNE.CMPSB", "REPNE.STOSvod", };
+  static char *MATCH_name_page_6[] = {"REPNE.CMPSvod", "REPNE.LODSB", };
+  static char *MATCH_name_page_7[] = {"REP.MOVSB", "REPNE.LODSvod", };
+  static char *MATCH_name_page_8[] = {"REP.MOVSvod", "REPNE.SCASB", };
+  static char *MATCH_name_page_9[] = {"REP.CMPSB", "REPNE.SCASvod", };
+  static char *MATCH_name_page_10[] = {"REP.CMPSvow", "REP.STOSvow", };
+  static char *MATCH_name_page_13[] = {"REP.CMPSvod", "REP.STOSB", };
+  static char *MATCH_name_col_59[] = {
+    (char *)0, "JMP.Jvod", (char *)0, "JMP.Jb", 
+  };
   unsigned /* [0..255] */ MATCH_w_8_0;
   unsigned /* [0..255] */ MATCH_w_8_8;
   unsigned /* [0..65535] */ MATCH_w_16_8;
@@ -4124,7 +4126,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -4244,7 +4247,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -4364,7 +4368,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -4484,7 +4489,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -7226,7 +7232,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                           { 
                             unsigned Eaddr = 1 + addressToPC(MATCH_p);
                             int /* [~128..127] */ i8 = 
-                              sign_extend((MATCH_w_8_32 & 0xff) 
+                              sign_extend(
+                                          (MATCH_w_8_32 & 0xff) 
                                                 /* i8 at 32 */, 8);
                             unsigned reg = 
                               (MATCH_w_8_8 >> 3 & 0x7) /* reg_opcode at 8 */;
@@ -17010,7 +17017,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -17031,7 +17039,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -17086,7 +17095,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -17185,7 +17195,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -17281,8 +17292,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17304,8 +17315,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17327,8 +17338,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17350,8 +17361,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17373,8 +17384,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17396,8 +17407,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17419,8 +17430,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17442,8 +17453,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17472,8 +17483,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17503,8 +17514,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17526,8 +17537,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17549,8 +17560,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17572,8 +17583,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17595,8 +17606,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17618,8 +17629,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17641,8 +17652,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 getWord(3 + MATCH_p); 
                                               { 
                                                 unsigned relocd = 
-                                                  5 + 
-                                                  sign_extend((MATCH_w_16_24 & 0xffff) 
+                                                  5 + sign_extend(
+                                                              (MATCH_w_16_24 & 0xffff) 
                                                                     /* i16 at 24 */, 
                                                               16) + 
                                                   addressToPC(MATCH_p);
@@ -17689,7 +17700,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -17783,7 +17795,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -17876,14 +17889,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         case 2: case 3: 
                                                         case 6: case 7: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c101; 
                                                           
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -17892,14 +17907,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c103; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c102; 
                                                             
@@ -17908,7 +17925,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 5: 
                                                           MATCH_w_8_64 = 
-                                                            getByte(8 + 
+                                                            getByte(
+                                                                  8 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c104; 
                                                           
@@ -18008,14 +18026,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                         case 2: case 3: 
                                                         case 6: case 7: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c97; 
                                                           
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -18024,14 +18044,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c99; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c98; 
                                                             
@@ -18040,7 +18062,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 5: 
                                                           MATCH_w_8_64 = 
-                                                            getByte(8 + 
+                                                            getByte(
+                                                                  8 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c100; 
                                                           
@@ -18147,7 +18170,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -18241,7 +18265,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -18338,7 +18363,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -18449,7 +18475,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -18551,14 +18578,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                               case 2: case 3: 
                                                               case 6: case 7: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c121; 
                                                                 
                                                                 break;
                                                               case 4: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 if ((MATCH_w_8_32 & 0x7) 
                                                                         /* base at 32 */ == 5 && 
@@ -18567,14 +18596,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                   (MATCH_w_8_32 >> 3 & 0x7) 
                                                                         /* index at 32 */ < 8)) { 
                                                                   MATCH_w_8_72 = 
-                                                                    getByte(9 + 
+                                                                    getByte(
+                                                                          9 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c123; 
                                                                   
                                                                 } /*opt-block*/
                                                                 else { 
                                                                   MATCH_w_8_40 = 
-                                                                    getByte(5 + 
+                                                                    getByte(
+                                                                          5 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c122; 
                                                                   
@@ -18583,7 +18614,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 break;
                                                               case 5: 
                                                                 MATCH_w_8_64 = 
-                                                                  getByte(8 + 
+                                                                  getByte(
+                                                                        8 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c124; 
                                                                 
@@ -18594,7 +18626,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 1: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18603,14 +18636,17 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_48 = 
-                                                              getByte(6 + 
+                                                              getByte(
+                                                                    6 + 
                                                                     MATCH_p); 
                                                             { 
                                                               unsigned Eaddr = 
                                                                 3 + 
-                                                                addressToPC(MATCH_p);
+                                                                addressToPC(
+                                                                            MATCH_p);
                                                               int /* [~128..127] */ i8 = 
-                                                                sign_extend((MATCH_w_8_48 & 0xff) 
+                                                                sign_extend(
+                                                                            (MATCH_w_8_48 & 0xff) 
                                                                                   /* i8 at 48 */, 
                                                                             8);
                                                               nextPC = 7 + 
@@ -18631,7 +18667,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c122; 
                                                             
@@ -18640,7 +18677,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 2: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18649,14 +18687,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c123; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_64 = 
-                                                              getByte(8 + 
+                                                              getByte(
+                                                                    8 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c124; 
                                                             
@@ -18665,7 +18705,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 3: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c121; 
                                                           
@@ -18686,14 +18727,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                               case 2: case 3: 
                                                               case 6: case 7: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c125; 
                                                                 
                                                                 break;
                                                               case 4: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 if ((MATCH_w_8_32 & 0x7) 
                                                                         /* base at 32 */ == 5 && 
@@ -18702,14 +18745,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                   (MATCH_w_8_32 >> 3 & 0x7) 
                                                                         /* index at 32 */ < 8)) { 
                                                                   MATCH_w_8_72 = 
-                                                                    getByte(9 + 
+                                                                    getByte(
+                                                                          9 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c127; 
                                                                   
                                                                 } /*opt-block*/
                                                                 else { 
                                                                   MATCH_w_8_40 = 
-                                                                    getByte(5 + 
+                                                                    getByte(
+                                                                          5 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c126; 
                                                                   
@@ -18718,7 +18763,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 break;
                                                               case 5: 
                                                                 MATCH_w_8_64 = 
-                                                                  getByte(8 + 
+                                                                  getByte(
+                                                                        8 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c128; 
                                                                 
@@ -18729,7 +18775,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 1: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18738,14 +18785,17 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_48 = 
-                                                              getByte(6 + 
+                                                              getByte(
+                                                                    6 + 
                                                                     MATCH_p); 
                                                             { 
                                                               unsigned Eaddr = 
                                                                 3 + 
-                                                                addressToPC(MATCH_p);
+                                                                addressToPC(
+                                                                            MATCH_p);
                                                               int /* [~128..127] */ i8 = 
-                                                                sign_extend((MATCH_w_8_48 & 0xff) 
+                                                                sign_extend(
+                                                                            (MATCH_w_8_48 & 0xff) 
                                                                                   /* i8 at 48 */, 
                                                                             8);
                                                               nextPC = 7 + 
@@ -18766,7 +18816,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c126; 
                                                             
@@ -18775,7 +18826,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 2: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18784,14 +18836,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c127; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_64 = 
-                                                              getByte(8 + 
+                                                              getByte(
+                                                                    8 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c128; 
                                                             
@@ -18800,7 +18854,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 3: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c125; 
                                                           
@@ -18821,14 +18876,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                               case 2: case 3: 
                                                               case 6: case 7: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c129; 
                                                                 
                                                                 break;
                                                               case 4: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 if ((MATCH_w_8_32 & 0x7) 
                                                                         /* base at 32 */ == 5 && 
@@ -18837,14 +18894,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                   (MATCH_w_8_32 >> 3 & 0x7) 
                                                                         /* index at 32 */ < 8)) { 
                                                                   MATCH_w_8_72 = 
-                                                                    getByte(9 + 
+                                                                    getByte(
+                                                                          9 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c131; 
                                                                   
                                                                 } /*opt-block*/
                                                                 else { 
                                                                   MATCH_w_8_40 = 
-                                                                    getByte(5 + 
+                                                                    getByte(
+                                                                          5 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c130; 
                                                                   
@@ -18853,7 +18912,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 break;
                                                               case 5: 
                                                                 MATCH_w_8_64 = 
-                                                                  getByte(8 + 
+                                                                  getByte(
+                                                                        8 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c132; 
                                                                 
@@ -18864,7 +18924,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 1: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18873,14 +18934,17 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_48 = 
-                                                              getByte(6 + 
+                                                              getByte(
+                                                                    6 + 
                                                                     MATCH_p); 
                                                             { 
                                                               unsigned Eaddr = 
                                                                 3 + 
-                                                                addressToPC(MATCH_p);
+                                                                addressToPC(
+                                                                            MATCH_p);
                                                               int /* [~128..127] */ i8 = 
-                                                                sign_extend((MATCH_w_8_48 & 0xff) 
+                                                                sign_extend(
+                                                                            (MATCH_w_8_48 & 0xff) 
                                                                                   /* i8 at 48 */, 
                                                                             8);
                                                               nextPC = 7 + 
@@ -18901,7 +18965,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c130; 
                                                             
@@ -18910,7 +18975,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 2: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -18919,14 +18985,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c131; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_64 = 
-                                                              getByte(8 + 
+                                                              getByte(
+                                                                    8 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c132; 
                                                             
@@ -18935,7 +19003,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 3: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c129; 
                                                           
@@ -18956,14 +19025,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                               case 2: case 3: 
                                                               case 6: case 7: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c133; 
                                                                 
                                                                 break;
                                                               case 4: 
                                                                 MATCH_w_8_32 = 
-                                                                  getByte(4 + 
+                                                                  getByte(
+                                                                        4 + 
                                                                         MATCH_p); 
                                                                 if ((MATCH_w_8_32 & 0x7) 
                                                                         /* base at 32 */ == 5 && 
@@ -18972,14 +19043,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                   (MATCH_w_8_32 >> 3 & 0x7) 
                                                                         /* index at 32 */ < 8)) { 
                                                                   MATCH_w_8_72 = 
-                                                                    getByte(9 + 
+                                                                    getByte(
+                                                                          9 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c135; 
                                                                   
                                                                 } /*opt-block*/
                                                                 else { 
                                                                   MATCH_w_8_40 = 
-                                                                    getByte(5 + 
+                                                                    getByte(
+                                                                          5 + 
                                                                           MATCH_p); 
                                                                   goto MATCH_label_c134; 
                                                                   
@@ -18988,7 +19061,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                                 break;
                                                               case 5: 
                                                                 MATCH_w_8_64 = 
-                                                                  getByte(8 + 
+                                                                  getByte(
+                                                                        8 + 
                                                                         MATCH_p); 
                                                                 goto MATCH_label_c136; 
                                                                 
@@ -18999,7 +19073,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 1: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -19008,14 +19083,17 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_48 = 
-                                                              getByte(6 + 
+                                                              getByte(
+                                                                    6 + 
                                                                     MATCH_p); 
                                                             { 
                                                               unsigned Eaddr = 
                                                                 3 + 
-                                                                addressToPC(MATCH_p);
+                                                                addressToPC(
+                                                                            MATCH_p);
                                                               int /* [~128..127] */ i8 = 
-                                                                sign_extend((MATCH_w_8_48 & 0xff) 
+                                                                sign_extend(
+                                                                            (MATCH_w_8_48 & 0xff) 
                                                                                   /* i8 at 48 */, 
                                                                             8);
                                                               nextPC = 7 + 
@@ -19036,7 +19114,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_40 = 
-                                                              getByte(5 + 
+                                                              getByte(
+                                                                    5 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c134; 
                                                             
@@ -19045,7 +19124,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 2: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_24 & 0x7) 
                                                                   /* r_m at 24 */ == 4 && 
@@ -19054,14 +19134,16 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                             (MATCH_w_8_32 >> 3 & 0x7) 
                                                                   /* index at 32 */ < 8)) { 
                                                             MATCH_w_8_72 = 
-                                                              getByte(9 + 
+                                                              getByte(
+                                                                    9 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c135; 
                                                             
                                                           } /*opt-block*/
                                                           else { 
                                                             MATCH_w_8_64 = 
-                                                              getByte(8 + 
+                                                              getByte(
+                                                                    8 + 
                                                                     MATCH_p); 
                                                             goto MATCH_label_c136; 
                                                             
@@ -19070,7 +19152,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 3: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           goto MATCH_label_c133; 
                                                           
@@ -19107,7 +19190,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -19201,7 +19285,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -19298,7 +19383,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -19443,7 +19529,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -19542,7 +19629,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -19636,7 +19724,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                           break;
                                                         case 4: 
                                                           MATCH_w_8_32 = 
-                                                            getByte(4 + 
+                                                            getByte(
+                                                                  4 + 
                                                                   MATCH_p); 
                                                           if ((MATCH_w_8_32 & 0x7) 
                                                                   /* base at 32 */ == 5 && 
@@ -20171,7 +20260,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -20192,7 +20282,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -20559,7 +20650,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -20580,7 +20672,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -20947,7 +21040,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -20968,7 +21062,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -21064,7 +21159,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_16_16 = getWord(2 + MATCH_p); 
                                 { 
                                   int /* [~32768..32767] */ i16 = 
-                                    sign_extend((MATCH_w_16_16 & 0xffff) 
+                                    sign_extend(
+                                                (MATCH_w_16_16 & 0xffff) 
                                                       /* i16 at 16 */, 16);
                                   nextPC = 4 + MATCH_p; 
                                   
@@ -21142,7 +21238,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           int /* [~32768..32767] */ i16 = 
-                                            sign_extend((MATCH_w_16_40 & 0xffff) 
+                                            sign_extend(
+                                                        (MATCH_w_16_40 & 0xffff) 
                                                               /* i16 at 40 */, 
                                                         16);
                                           unsigned reg = 
@@ -21203,7 +21300,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 MATCH_w_8_16 = getByte(2 + MATCH_p); 
                                 { 
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_16 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_16 & 0xff) 
                                                       /* i8 at 16 */, 8);
                                   nextPC = 3 + MATCH_p; 
                                   
@@ -21281,7 +21379,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                           unsigned Eaddr = 
                                             2 + addressToPC(MATCH_p);
                                           int /* [~128..127] */ i8 = 
-                                            sign_extend((MATCH_w_8_40 & 0xff) 
+                                            sign_extend(
+                                                        (MATCH_w_8_40 & 0xff) 
                                                               /* i8 at 40 */, 
                                                         8);
                                           unsigned reg = 
@@ -21503,7 +21602,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -21623,7 +21723,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -21743,7 +21844,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -21863,7 +21965,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -21983,7 +22086,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -22103,7 +22207,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -22223,7 +22328,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -22343,7 +22449,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~32768..32767] */ i16 = 
-                                                  sign_extend((MATCH_w_16_40 & 0xffff) 
+                                                  sign_extend(
+                                                              (MATCH_w_16_40 & 0xffff) 
                                                                     /* i16 at 40 */, 
                                                               16);
                                                 nextPC = 7 + MATCH_p; 
@@ -22558,7 +22665,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -22678,7 +22786,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -22798,7 +22907,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -22918,7 +23028,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -23038,7 +23149,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -23158,7 +23270,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -23278,7 +23391,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -23398,7 +23512,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24162,7 +24277,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                           MATCH_w_16_16 = getWord(2 + MATCH_p); 
                           { 
                             int /* [~32768..32767] */ i16 = 
-                              sign_extend((MATCH_w_16_16 & 0xffff) 
+                              sign_extend(
+                                          (MATCH_w_16_16 & 0xffff) 
                                                 /* i16 at 16 */, 16);
                             unsigned r16 = (MATCH_w_8_8 & 0x7) /* r16 at 8 */;
                             nextPC = 4 + MATCH_p; 
@@ -24260,7 +24376,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24380,7 +24497,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24500,7 +24618,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24620,7 +24739,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24740,7 +24860,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24860,7 +24981,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -24982,7 +25104,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                                 unsigned Eaddr = 
                                                   2 + addressToPC(MATCH_p);
                                                 int /* [~128..127] */ i8 = 
-                                                  sign_extend((MATCH_w_8_40 & 0xff) 
+                                                  sign_extend(
+                                                              (MATCH_w_8_40 & 0xff) 
                                                                     /* i8 at 40 */, 
                                                               8);
                                                 nextPC = 6 + MATCH_p; 
@@ -25114,7 +25237,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                             unsigned Eaddr = 
                                               2 + addressToPC(MATCH_p);
                                             int /* [~32768..32767] */ i16 = 
-                                              sign_extend((MATCH_w_16_40 & 0xffff) 
+                                              sign_extend(
+                                                          (MATCH_w_16_40 & 0xffff) 
                                                                 /* i16 at 40 */, 
                                                           16);
                                             nextPC = 7 + MATCH_p; 
@@ -26391,7 +26515,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                           { 
                             char *name = MATCH_name;
                             unsigned relocd = 
-                              4 + sign_extend((MATCH_w_16_16 & 0xffff) 
+                              4 + sign_extend(
+                                          (MATCH_w_16_16 & 0xffff) 
                                                 /* i16 at 16 */, 16) + 
                               addressToPC(MATCH_p);
                             nextPC = 4 + MATCH_p; 
@@ -27506,7 +27631,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -27606,7 +27732,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -27706,7 +27833,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -27806,7 +27934,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -27906,7 +28035,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -28006,7 +28136,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -28106,7 +28237,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -28206,7 +28338,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29116,7 +29249,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29216,7 +29350,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29316,7 +29451,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29416,7 +29552,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29516,7 +29653,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29622,7 +29760,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29722,7 +29861,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -29822,7 +29962,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30455,7 +30596,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30555,7 +30697,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30655,7 +30798,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30755,7 +30899,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30855,7 +31000,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -30955,7 +31101,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31057,7 +31204,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31165,7 +31313,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31265,7 +31414,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31365,7 +31515,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31465,7 +31616,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31565,7 +31717,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31665,7 +31818,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -31767,7 +31921,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                                 { 
                                   unsigned Eaddr = 1 + addressToPC(MATCH_p);
                                   int /* [~128..127] */ i8 = 
-                                    sign_extend((MATCH_w_8_32 & 0xff) 
+                                    sign_extend(
+                                                (MATCH_w_8_32 & 0xff) 
                                                       /* i8 at 32 */, 8);
                                   nextPC = 5 + MATCH_p; 
                                   
@@ -32108,7 +32263,8 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
                             { 
                               unsigned Eaddr = 1 + addressToPC(MATCH_p);
                               int /* [~128..127] */ i8 = 
-                                sign_extend((MATCH_w_8_32 & 0xff) 
+                                sign_extend(
+                                            (MATCH_w_8_32 & 0xff) 
                                                   /* i8 at 32 */, 8);
                               nextPC = 5 + MATCH_p; 
                               
