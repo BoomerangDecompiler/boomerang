@@ -32,11 +32,7 @@
  * Dependencies.
  *============================================================================*/
 
-#include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif 
-
+#include <types.h>
 #include <sstream>
 #include <algorithm>        // For find()
 #include "statement.h"
@@ -151,7 +147,8 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
         return;
     bool wasVisited = visited;
     visited = true;
-    for (int i = 0; i < depth; i++)
+	int i;
+    for (i = 0; i < depth; i++)
         os << "   ";
     os << "<proc name=\"" << getName() << "\">\n";
     if (recurse) {
@@ -161,7 +158,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
             (*it)->printCallGraphXML(os, depth+1, !wasVisited && 
                                                   !(*it)->isVisited());
     }
-    for (int i = 0; i < depth; i++)
+    for (i = 0; i < depth; i++)
         os << "   ";
     os << "</proc>\n";
 }
@@ -173,13 +170,14 @@ void Proc::printDetailsXML()
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-details.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
-    for (int i = 0; i < signature->getNumParams(); i++) {
+	int i;
+    for (i = 0; i < signature->getNumParams(); i++) {
         out << "   <param name=\"" << signature->getParamName(i) << "\" "
             << "exp=\"" << signature->getParamExp(i) << "\" "
             << "type=\"" << signature->getParamType(i)->getCtype() << "\"";
         out << "/>\n";
     }
-    for (int i = 0; i < signature->getNumReturns(); i++)
+    for (i = 0; i < signature->getNumReturns(); i++)
         out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
             << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
     out << "</proc>\n";
@@ -1066,7 +1064,8 @@ std::set<UserProc*>* UserProc::decompile() {
     int maxDepth = findMaxDepth() + 1;
     if (Boomerang::get()->maxMemDepth < maxDepth)
         maxDepth = Boomerang::get()->maxMemDepth;
-    for (int depth = 0; depth <= maxDepth; depth++) {
+	int depth;
+    for (depth = 0; depth <= maxDepth; depth++) {
 
         if (VERBOSE)
             LOG << "placing phi functions at depth " << depth << "\n";
@@ -1198,7 +1197,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
     // Only remove unused statements after decoding as much as possible of the
     // proc
-    for (int depth = 0; depth <= maxDepth; depth++) {
+    for (depth = 0; depth <= maxDepth; depth++) {
         // Remove unused statements
         RefCounter refCounts;           // The map
         refCounts.clear();
@@ -1275,7 +1274,7 @@ int UserProc::findMaxDepth() {
         // Assume only need to check assignments
         if (s->getKind() == STMT_ASSIGN) {
             int depth = ((Assign*)s)->getMemDepth();
-            maxDepth = std::max(maxDepth, depth);
+			if (depth > maxDepth) maxDepth = depth;
         }
     }
     return maxDepth;
@@ -1642,12 +1641,13 @@ void UserProc::trimParameters(int depth) {
     std::vector<Exp*> params;
     bool referenced[32];
 		assert(nparams < sizeof(referenced)/sizeof(bool));
-    for (int i = 0; i < signature->getNumParams(); i++) {
+	int i;
+    for (i = 0; i < signature->getNumParams(); i++) {
         referenced[i] = false;
         params.push_back(signature->getParamExp(i)->clone()->
                             expSubscriptVar(new Terminal(opWild), NULL));
     }
-    for (int i = 0; i < signature->getNumImplicitParams(); i++) {
+    for (i = 0; i < signature->getNumImplicitParams(); i++) {
         referenced[i + signature->getNumParams()] = false;
         params.push_back(signature->getImplicitParamExp(i)->clone()->
                             expSubscriptVar(new Terminal(opWild), NULL));
@@ -1705,7 +1705,7 @@ void UserProc::trimParameters(int depth) {
         }
     }
 
-    for (int i = 0; i < nparams; i++) {
+    for (i = 0; i < nparams; i++) {
         if (!referenced[i] && (depth == -1 || 
               params[i]->getMemDepth() == depth)) {
             bool allZero;
@@ -2550,9 +2550,10 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                     LOG << "clearing return set of unused call " << s << "\n";
                 CallStatement *call = (CallStatement*)s;
                 std::vector<Exp*> returns;
-                for (int i = 0; i < call->getNumReturns(); i++)
+				int i;
+                for (i = 0; i < call->getNumReturns(); i++)
                     returns.push_back(call->getReturnExp(i));
-                for (int i = 0; i < (int)returns.size(); i++)
+                for (i = 0; i < (int)returns.size(); i++)
                     //if (depth < 0 || returns[i]->getMemDepth() <= depth)
                     if (returns[i]->getMemDepth() <= depth)
                         call->removeReturn(returns[i]);

@@ -31,7 +31,7 @@
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "statement.h"
+#include "signature.h"
 #endif
 
 #include "rtl.h"

@@ -38,6 +38,10 @@
 #include "cfg.h"
 #include "proc.h"
 #include "boomerang.h"
+// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "rtl.h"
+#endif
 
 char* Signature::platformName(platform plat) {
     switch (plat) {
@@ -887,18 +891,19 @@ void Signature::print(std::ostream &out)
     else
         out << "void ";
     out << name << "(";
-    for (unsigned i = 0; i < params.size(); i++) {
+	unsigned int i;
+    for (i = 0; i < params.size(); i++) {
         out << params[i]->getType()->getCtype() << " " << params[i]->getName() << " " << params[i]->getExp();
         if (i != params.size()-1) out << ", ";
     }
     out << "   implicit: ";
-    for (unsigned i = 0; i < implicitParams.size(); i++) {
+    for (i = 0; i < implicitParams.size(); i++) {
         out << implicitParams[i]->getType()->getCtype() << " " << implicitParams[i]->getName() << " " 
             << implicitParams[i]->getExp();
         if (i != implicitParams.size()-1) out << ", ";
     }
     out << ") { "; 
-    for (unsigned i = 0; i < returns.size(); i++) {
+    for (i = 0; i < returns.size(); i++) {
         out << returns[i]->getExp();
         if (i != returns.size()-1) out << ", ";
     }

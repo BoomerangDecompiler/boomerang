@@ -934,7 +934,8 @@ void Prog::printCallGraph() {
 void Prog::printCallGraphXML() {
     if (!Boomerang::get()->dumpXML)
         return;
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+	std::list<Proc*>::iterator it;
+    for (it = m_procs.begin(); it != m_procs.end();
          it++)
         (*it)->clearVisited();
     std::string fname = Boomerang::get()->getOutputPath()
@@ -946,7 +947,7 @@ void Prog::printCallGraphXML() {
     Proc *entry = getEntryProc();
     if (!entry->isLib())
         entry->printCallGraphXML(f, 2);
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+    for (it = m_procs.begin(); it != m_procs.end();
          it++)
         if (!(*it)->isVisited() && !(*it)->isLib()) {
             (*it)->printCallGraphXML(f, 2);
@@ -995,9 +996,9 @@ void Prog::readSymbolFile(const char *fname)
         }
     }
 
-    for (std::list<SymbolRef*>::iterator it = par->refs.begin();
-         it != par->refs.end(); it++) {
-        pFE->addRefHint((*it)->addr, (*it)->nam.c_str());
+    for (std::list<SymbolRef*>::iterator it2 = par->refs.begin();
+         it2 != par->refs.end(); it2++) {
+        pFE->addRefHint((*it2)->addr, (*it2)->nam.c_str());
     }
 
     delete par;
