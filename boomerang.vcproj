@@ -199,6 +199,9 @@
 				RelativePath=".\type\constraint.cpp">
 			</File>
 			<File
+				RelativePath=".\type\dfa.cpp">
+			</File>
+			<File
 				RelativePath=".\driver.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">

@@ -1793,6 +1793,7 @@ LRESULT CALLBACK DecompileOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	switch (message)
 	{
 	case WM_INITDIALOG:
+		CheckDlgButton(hDlg, IDC_RADIONTA, BST_CHECKED);
 		return TRUE;
 
 	case WM_COMMAND:
@@ -1807,6 +1808,12 @@ LRESULT CALLBACK DecompileOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 			Boomerang::get()->stopBeforeDecompile = (IsDlgButtonChecked(hDlg, IDC_CHECKNODECOMP) == BST_CHECKED);
 			Boomerang::get()->noProve = (IsDlgButtonChecked(hDlg, IDC_CHECKNOPROOF) == BST_CHECKED);
 			Boomerang::get()->noChangeSignatures = (IsDlgButtonChecked(hDlg, IDC_CHECKNOCHANGESIGS) == BST_CHECKED);
+			Boomerang::get()->conTypeAnalysis = false;
+			Boomerang::get()->dfaTypeAnalysis = false;
+			if (IsDlgButtonChecked(hDlg, IDC_RADIODFTA) == BST_CHECKED)
+				Boomerang::get()->dfaTypeAnalysis = true;
+			if (IsDlgButtonChecked(hDlg, IDC_RADIOCTA) == BST_CHECKED)
+				Boomerang::get()->conTypeAnalysis = true;			
 			char file[MAX_PATH];
 			GetDlgItemText(hDlg, IDC_COMBOSYMBOLFILE, file, sizeof(file));
 			if (file[0])

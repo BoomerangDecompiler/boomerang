@@ -3855,16 +3855,18 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	unsigned i, n = stmtVec.size();
 	Type* meetOfPred = stmtVec[0]->getType();
 	for (i=1; i < n; i++)
-		meetOfPred->meetWith(stmtVec[i]->getType(), ch);
+		if (stmtVec[i] && stmtVec[i]->getType())
+			meetOfPred->meetWith(stmtVec[i]->getType(), ch);
 	type->meetWith(meetOfPred, ch);
-	for (i=0; i < n; i++) {
-		bool thisCh = false;
-		Type* res = stmtVec[i]->getType()->meetWith(type, thisCh);
-		if (thisCh) {
-			stmtVec[i]->setType(res);
-			ch = true;
+	for (i=0; i < n; i++) 
+		if (stmtVec[i] && stmtVec[i]->getType()) {
+			bool thisCh = false;
+			Type* res = stmtVec[i]->getType()->meetWith(type, thisCh);
+			if (thisCh) {
+				stmtVec[i]->setType(res);
+				ch = true;
+			}
 		}
-	}
 }
 
 void Assign::dfaTypeAnalysis(bool& ch) {

@@ -78,6 +78,9 @@
 #define IDC_MSDN                        1046
 #define IDC_LIST1                       1047
 #define IDC_SCROLLBAR1                  1048
+#define IDC_RADIOCTA                    1050
+#define IDC_RADIODFTA                   1051
+#define IDC_RADIONTA                    1052
 #define ID_FILE_NEW                     32771
 #define ID_FILE_OPEN                    32773
 #define ID_FILE_CLOSE                   32775
@@ -130,7 +133,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        147
 #define _APS_NEXT_COMMAND_VALUE         32818
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1053
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
