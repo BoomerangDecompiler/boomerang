@@ -73,7 +73,9 @@ AC_CHECK_LIB(stdc++, main)
 
 dnl Checks for cppunit library
 AC_LANG_PUSH(C++)
-AC_CHECK_HEADER(cppunit/TestSuite.h,, [AC_MSG_ERROR("library 'cppunit' not found")])
+CPPFLAGS="-Iinclude ${CPPFLAGS}"
+AC_CHECK_HEADER(cppunit/TestSuite.h,, 
+  [AC_MSG_ERROR("library 'cppunit' not found")])
 AC_LANG_POP(C++)
 
 dnl Checks for header files.
