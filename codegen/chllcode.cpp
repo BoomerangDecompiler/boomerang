@@ -585,7 +585,6 @@ void CHLLCode::RemoveLabel(int ord)
 
 void CHLLCode::AddAssignmentStatement(int indLevel, AssignExp *exp)
 {
-    Exp *match;
     char s[1024];
     indent(s, indLevel);
     appendExp(s, exp);

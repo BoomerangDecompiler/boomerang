@@ -137,7 +137,7 @@ protected:
     PBB     pbb;  // contains a pointer to the enclosing BB
     UserProc *proc; // procedure containing this statement
     // The following 2 are soon to be deleted!
-    StatementSet uses;          // ud chain: my uses' defs
+    //StatementSet uses;          // ud chain: my uses' defs
     StatementSet usedBy;        // du chain: my def's uses
     int     number;             // Statement number for printing
 public:
@@ -189,7 +189,7 @@ public:
     virtual void getDeadStatements(StatementSet &dead) = 0;
 
     // calculates the uses/usedBy links for this statement
-    virtual void calcUseLinks();
+    //virtual void calcUseLinks();
 
     // returns true if this statement defines anything
     virtual bool isDefinition() = 0;
@@ -220,15 +220,15 @@ public:
     // returns the statement which is used by this statement and has a
     // left like the given expression
     // MVE: is this useful?
-    virtual Statement *findDef(Exp *e);
+    //virtual Statement *findDef(Exp *e);
 
     // 
     // get my uses' definitions (ud chain)
     // 
-    void calcUses(StatementSet &uses);
-    int getNumUses() { return uses.size(); }
-    StatementSet &getUses() { return uses; }
-    void clearUses() {uses.clear(); usedBy.clear();}
+    //void calcUses(StatementSet &uses);
+    //int getNumUses() { return uses.size(); }
+    //StatementSet &getUses() { return uses; }
+    //void clearUses() {uses.clear(); usedBy.clear();}
  
     // 
     // usedBy: du chain (my def's uses)
@@ -245,7 +245,7 @@ public:
 
     // returns true if this statement can be propagated to all its
     // uses and removed
-    virtual bool canPropagateToAll();
+    //virtual bool canPropagateToAll();
 
     // propagates this statement to all its uses, caller must remove
     virtual void propagateToAll();

@@ -598,10 +598,6 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
         case HLJCOND_JPAR:  os << "parity"; break;
     }
     if (bFloat) os << " float";
-    if (withDF) {
-        os << "\tuses: ";
-        uses.printNums(os);
-    }
     os << std::endl;
     if (pCond) {
         os << "High level: " << pCond << std::endl;

@@ -975,19 +975,27 @@ bool Cfg::compressCfg()
                 HLJcond *jcond = dynamic_cast<HLJcond*>((*it)->m_pRtls->back());
                 HLJcond *prior = dynamic_cast<HLJcond*>(bb->m_pRtls->back());
                 assert(jcond && prior);
+                // Check that all statements that prior's condition depends on
+                // reach the current jcond (if any are redefined, then we can't
+                // do this optimisation)
                 StatementSet reach;
-                jcond->getReachIn(reach, 0);       // What is this?
+                jcond->getReachIn(reach, 2);
                 bool allReach = true;
                 StmtSetIter sit;
-                StatementSet& priorUses = prior->getUses();
-                for (Statement* s = priorUses.getFirst(sit); s;
-                  s = priorUses.getNext(sit)) {
-                    if (!reach.exists(s)) {
-                        allReach = false;
-                        break;
+                Exp* priorCond = prior->getCondExpr();
+                assert(priorCond);
+                if (priorCond->getNumRefs()) {
+                    StatementSet& priorUses = ((RefsExp*)priorCond)->getRefs();
+                    for (Statement* s = priorUses.getFirst(sit); s;
+                      s = priorUses.getNext(sit)) {
+                        if (!reach.exists(s)) {
+                            allReach = false;
+                            break;
+                        }
                     }
+                    if (!allReach) continue;
                 }
-                if (!allReach) continue;
+
                 Exp *priorcond = prior->getCondExpr()->clone();
                 if (priorcond == NULL) 
                     continue;

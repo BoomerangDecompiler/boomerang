@@ -40,6 +40,7 @@
 
 
 
+#if 0
 // Finds a definition for a given location
 // MVE: Is this useful?
 Statement *Statement::findDef(Exp *e) {
@@ -94,6 +95,7 @@ void Statement::calcUsedBy(StatementSet &usedBy) {
 void Statement::calcUseLinks() {
     calcUses(uses);             // Does both uses and usedBy now
 }
+#endif
 
 // replace a use in this statement
 void Statement::replaceRef(Statement *def) {
@@ -338,6 +340,7 @@ void Statement::calcDeadIn(LocationSet &dead) {
  * This is considered too complex a task and is therefore defered for
  * later experimentation.
  */
+#if 0
 bool Statement::canPropagateToAll() {
     StatementSet defs;     // Set of locations used, except for (max 1) killed
     defs = uses;
@@ -425,6 +428,7 @@ bool Statement::canPropagateToAll() {
     }
     return true;
 }
+#endif
 
 // assumes canPropagateToAll has returned true
 // assumes this statement will be removed by the caller
@@ -448,6 +452,7 @@ void Statement::propagateToAll() {
 // uses| v             | v
 //     (3)             (3)
 //
+#if 0
 void Statement::updateDfForErase() {
     // First fix the down arrows (usedBy)
     StmtSetIter it, uu;
@@ -472,7 +477,7 @@ void Statement::updateDfForErase() {
             ss->uses.insert(suu);        // This (3) uses this (1)
     }
 }
-
+#endif
 
 /*==============================================================================
  * FUNCTION:        operator<<

@@ -1530,7 +1530,6 @@ void UserProc::recalcDataflow() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->calcUseLinks();
 }
-#endif
 
 void UserProc::computeUses() {
     StatementList stmts;
@@ -1541,6 +1540,7 @@ void UserProc::computeUses() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->calcUseLinks();
 }
+#endif
 
 void UserProc::getReturnSet(LocationSet &ret) {
     if (returnSet.size()) {
