@@ -55,7 +55,7 @@ Log &Log::operator<<(double d)
 Log &Log::operator<<(ADDRESS a)
 {
     std::ostringstream st;
-    st << std::hex << a;
+    st << "0x" << std::hex << a;
     *this << st.str().c_str();
     return *this;
 }
