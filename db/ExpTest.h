@@ -21,6 +21,7 @@ class ExpTest : public CppUnit::TestCase {
     void tearDown ();
 
     void test99 ();
+    void testFlt ();
     void testRegOf2 ();
 
     void testPlus ();
@@ -31,5 +32,41 @@ class ExpTest : public CppUnit::TestCase {
     void testDivs ();
     void testMod ();
     void testMods ();
+
+    void testIsAssign();
+    void testIsAfpTerm();
+    void testIsFlagCall();
+
+    void testCompare1();
+    void testCompare2();
+    void testCompare3();
+    void testCompare4();
+    void testCompare5();
+    void testCompare6();
+
+    void testSearchReplace1();
+    void testSearchReplace2();
+    void testSearchReplace3();
+    void testSearchReplace4();
+
+    void testSearch1();
+    void testSearch2();
+    void testSearch3();
+    void testSearchAll();
+
+    void testPartitionTerms();
+    void testAccumulate();
+    void testSimplifyArith();
+    void testSimplifyUnary();
+    void testSimplifyBinary();
+
+    void testBecome();
+    void testLess();
+    void testMapOfExp();
+
+    void testDecideType();
+    void testList();
+    void testClone();
+    void testParen();
 };
 

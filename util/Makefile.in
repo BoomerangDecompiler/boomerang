@@ -1,0 +1,56 @@
+######################################################
+# File: Makefile
+# Desc: Makefile for the utilities (util) directory
+#       Makes and tests the libutil.so library
+#
+######################################################
+
+# $Revision$
+# 09 Apr 02 - Mike: Created.
+# 10 Apr 02 - Mike: interface -> include; added util.cc (for str())
+# 11 Apr 02 - Mike: target is now ../lib/libutil so can use -lutil
+# 28 Apr 02 - Mike: Make library from .o not .cc
+
+LIB_OBJS = util.o type.o
+LIB=../lib/libutil.so
+
+CC = g++ -g
+CXX = $(CC)
+
+all: $(LIB) testUtil 
+
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+testUtil: testUtil.o UtilTest.o $(LIB)
+	$(CC) -o $@ testUtil.o UtilTest.o -lutil -lcppunit $(RUNPATH) -L../lib
+
+$(LIB): $(LIB_OBJS)
+	$(CC) -o $@ -shared $(LIB_OBJS) $(RUNPATH) -L../lib
+
+UtilTest.o: UtilTest.h
+util.o: ../include/util.h
+type.o: ../include/type.h
+
+# Make these objects with -fPIC
+$(LIB_OBJS): %.o : %.cc
+	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
+
+# Others without -fPIC
+.cc.o:
+	$(CC) -c -I../include -o $@ $<
+
+clean:
+	rm -f testUtil *.o $(LIB)
+
+test: all
+	./testUtil

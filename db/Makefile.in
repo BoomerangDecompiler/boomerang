@@ -35,7 +35,7 @@ all: $(DB_LIB) testDbase
 
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
-HOST_GNU_LD = yes
+HOST_GNU_LD = @HOST_GNU_LD@
 
 BOOMDIR="$(shell pwd)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
