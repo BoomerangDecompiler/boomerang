@@ -1013,7 +1013,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                             //   call foo
                             //   add %o7, K, %o7
                             // is equivalent to call foo / ba .+K
-                            Exp* rhs = ((Binary*)a)->getSubExp2();
+                            Exp* rhs = a->getRight();
                             static Unary o7(opRegOf, new Const(15));
                             if ((((Binary*)rhs)->getSubExp2()->getOper() ==
                               opIntConst) && (*((Binary*)rhs)->getSubExp1()
