@@ -55,7 +55,8 @@ void AnalysisTest::setUp () {
 	pFE = new SparcFrontEnd(pBF);
 
 	// Set up the prog
-	prog = pFE->decode();
+	prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 }
 
 /*==============================================================================

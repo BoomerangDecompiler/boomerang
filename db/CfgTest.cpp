@@ -78,7 +78,8 @@ void CfgTest::testDominators () {
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
-	Prog *prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
@@ -129,7 +130,8 @@ void CfgTest::testSemiDominators () {
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
-	Prog* prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
@@ -175,7 +177,8 @@ void CfgTest::testPlacePhi () {
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
-	Prog* prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
@@ -210,7 +213,8 @@ void CfgTest::testPlacePhi2 () {
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
-	Prog* prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
@@ -265,7 +269,8 @@ void CfgTest::testRenameVars () {
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
-	Prog* prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();

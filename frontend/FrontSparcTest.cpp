@@ -291,7 +291,8 @@ void FrontSparcTest::testDelaySlot() {
 	// decode calls readLibraryCatalog(), which needs to have definitions
 	// for non-sparc architectures cleared
 	Type::clearNamedTypes();
-	Prog *prog = pFE->decode();
+	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	pFE->decode(prog);
 
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
