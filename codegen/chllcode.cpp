@@ -66,6 +66,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
     if (exp == NULL) return;
 
     char s[BUFSIZE];
+    s[0] = '\0';        // Initialise the string to null, in case never used
     Const   *c = (Const*)exp;
     Unary   *u = (Unary*)exp;
     Binary  *b = (Binary*)exp;
@@ -545,6 +546,8 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 std::endl;
             assert(false);
     }
+    // We should be using std::strings and strstrings. For now, we assert that
+    // the buffers did not overflow
     assert(strlen(s) < BUFSIZE);
     assert(strlen(str) < BUFSIZE);
 }
