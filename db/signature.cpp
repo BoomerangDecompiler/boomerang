@@ -19,6 +19,7 @@
  * 18 Jul 02 - Mike: Changed addParameter's last param to deflt to "", not NULL
  * 02 Jan 03 - Mike: Fixed SPARC getParamExp and getArgExp
  * 09 Nov 04 - Mike: Fixed clone() functions
+ * 01 Feb 05 - Mike: Parameters default to void type unless ad-hoc TA
  */
 
 #include <assert.h>
@@ -307,8 +308,7 @@ void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 	
-void CallingConvention::Win32Signature::addParameter(Type *type, 
-							 const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+void CallingConvention::Win32Signature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
 {
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
@@ -355,8 +355,7 @@ Exp *CallingConvention::Win32Signature::getStackWildcard() {
 			new Terminal(opWild)));
 }
 
-Exp *CallingConvention::Win32Signature::getProven(Exp *left)
-{
+Exp *CallingConvention::Win32Signature::getProven(Exp *left) {
 	int nparams = params.size();
 	if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
 		nparams--;
@@ -499,8 +498,8 @@ void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 	Signature::addReturn(type, e);
 }
 
-void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/,
-		Exp *e /*= NULL*/) {
+void CallingConvention::StdC::PentiumSignature::addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/)
+{
 	if (e == NULL) {
 		e = getArgumentExp(params.size());
 	}
@@ -855,15 +854,15 @@ void Signature::setName(const char *nam)
 	name = nam;
 }
 
-void Signature::addParameter(const char *nam /*= NULL*/)
-{
-	addParameter(new IntegerType(), nam);
+void Signature::addParameter(const char *nam /*= NULL*/) {
+	if (ADHOC_TYPE_ANALYSIS)
+		addParameter(new IntegerType(), nam);
+	else
+		addParameter(new VoidType(), nam);
 }
 
-void Signature::addParameter(Exp *e)
-{
-//	if (ADHOC_TYPE_ANALYSIS)		// Needs thought
-if (true)
+void Signature::addParameter(Exp *e) {
+	if (ADHOC_TYPE_ANALYSIS)
 		addParameter(new IntegerType(), NULL, e);
 	else
 		addParameter(new VoidType(), NULL, e);
@@ -920,22 +919,19 @@ void Signature::addParameter(Parameter *param)
 		params.push_back(param);
 }
 
-void Signature::removeParameter(Exp *e)
-{
+void Signature::removeParameter(Exp *e) {
 	int i = findParam(e);
 	if (i != -1)
 		removeParameter(i);
 }
 
-void Signature::removeParameter(int i)
-{
+void Signature::removeParameter(int i) {
 	for (unsigned j = i+1; j < params.size(); j++)
 		params[j-1] = params[j];
 	params.resize(params.size()-1);
 }
 
-void Signature::setNumParams(int n)
-{
+void Signature::setNumParams(int n) {
 	if (n < (int)params.size()) {
 		// truncate
 		params.erase(params.begin() + n, params.end());
