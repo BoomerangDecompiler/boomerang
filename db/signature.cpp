@@ -625,9 +625,14 @@ bool CallingConvention::StdC::SparcSignature::deserialize_fid(std::istream &inf,
 
 Exp *CallingConvention::StdC::SparcSignature::getReturnExp()
 {
-	// TODO
-	assert(false);
-	return NULL;
+	// MVE: Note that doubles are returned in f0:f1
+	// So how do we say that?
+	// When structs are returned, the size appears after the end of the
+	// function
+	// For most things, the return value ends up in %o0, from the caller's
+	// perspective. For most callees (with save/restore), the actual assign-
+	// ment will be to %i0 (register 24).
+	return new Unary(opRegOf, new Const(8));
 }
 
 Type *CallingConvention::StdC::SparcSignature::getReturnType()
