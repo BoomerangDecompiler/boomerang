@@ -946,9 +946,9 @@ void CHLLCode::print(std::ostream &os)
 
 void CHLLCode::AddLineComment(char* cmt) {
     char s[BUFSIZE];
-    s[0] = '/'; s[1] = '*';
-    strcat(&s[2], cmt);
-    strcat(s, "*/");
+    s[0] = '/'; s[1] = '*'; s[2] = ' ';
+    strcat(&s[3], cmt);
+    strcat(s, " */");
     lines.push_back(strdup(s));
 }
 
