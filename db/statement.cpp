@@ -1901,7 +1901,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                 }
             }
         } else if (t->isFloat()) {
-            e->setOper(opFltConst);
+            e = new Ternary(opItof, new Const(32), new Const(t->getSize()), e);
         }
     }
 #if 0
@@ -2484,7 +2484,9 @@ void Assign::simplify() {
                     def->rhs->getSubExp1()->getOper() == opSubscript &&
                     def->rhs->getSubExp1()->getSubExp1()->getOper() 
                                                       == opGlobal &&
-                    rhs->getOper() == opIntConst) {
+                    rhs->getOper() != opPhi &&
+                    rhs->getOper() != opItof &&
+                    rhs->getOper() != opFltConst) {
                     Type *ty = proc->getProg()->getGlobalType(
                                  ((Const*)def->rhs->getSubExp1()->
                                                     getSubExp1()->
@@ -2492,8 +2494,10 @@ void Assign::simplify() {
                     if (ty && ty->isArray()) {
                         Type *bty = ((ArrayType*)ty)->getBaseType();
                         if (bty->isFloat()) {
-                            int n = ((Const*)rhs)->getInt(); 
-                            rhs = new Const(*(float*)&n);
+                            LOG << "replacing " << rhs << " with ";
+                            rhs = new Ternary(opItof, new Const(32), 
+                                              new Const(bty->getSize()), rhs);
+                            LOG << rhs << " (assign indicates float type)\n";
                         }
                     }
                 }

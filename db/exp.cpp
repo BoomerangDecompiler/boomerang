@@ -2231,6 +2231,16 @@ Exp* Ternary::polySimplify(bool& bMod) {
         return res;
     }
 
+    if (op == opItof && subExp3->getOper() == opIntConst &&
+        subExp2->getOper() == opIntConst &&
+        ((Const*)subExp2)->getInt() == 32) {
+        unsigned n = ((Const*)subExp3)->getInt();
+        res = new Const(*(float*)&n);
+        LOG << "bit pattern for " << res << " is " << n << "\n";
+        bMod = true;
+        return res;
+    }
+
     return res;
 }
 

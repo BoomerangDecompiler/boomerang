@@ -1524,6 +1524,11 @@ void UserProc::addNewParameters() {
                         LOG << "ignoring global " << e << "\n";
                     continue;
                 }
+                if (e->getMemDepth() > 1) {
+                    if (VERBOSE)
+                        LOG << "ignoring complex " << e << "\n";
+                    continue;
+                }
                 if (VERBOSE)
                     LOG << "Found new parameter " << e << "\n";
                 addParameter(e);
