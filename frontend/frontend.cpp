@@ -116,7 +116,7 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF) {
     return NULL;
 }
 
-void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
+void FrontEnd::readLibraryCatalog(const char *sPath) {
     std::ifstream inf(sPath);
     if (!inf.good()) {
         LOG << "can't open `" << sPath << "'\n";
@@ -134,7 +134,10 @@ void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
         if (sFile == "") continue;
         std::string sPath = Boomerang::get()->getProgPath() + "signatures/"
           + sFile;
-        readLibrarySignatures(sPath.c_str(), win32);
+        callconv cc = CONV_C;           // Most APIs are C calling convention
+        if (sFile == "windows.h") cc = CONV_PASCAL;     // One exception
+        if (sFile == "mfc.h")     cc = CONV_THISCALL;   // Another exception
+        readLibrarySignatures(sPath.c_str(), cc);
     }
     inf.close();
 }
@@ -148,7 +151,7 @@ void FrontEnd::readLibraryCatalog() {
     readLibraryCatalog(sList.c_str());
     if (isWin32()) {
         sList = Boomerang::get()->getProgPath() + "signatures/win32.hs";
-        readLibraryCatalog(sList.c_str(), true);
+        readLibraryCatalog(sList.c_str());
     }
 }
 
@@ -236,10 +239,11 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 /*==============================================================================
  * FUNCTION:       FrontEnd::readLibrarySignatures
  * OVERVIEW:       Read the library signatures from a file
- * PARAMETERS:     The file to read from
+ * PARAMETERS:     sPath: The file to read from
+ *                 cc: the calling convention assumed
  * RETURNS:        <nothing>
  *============================================================================*/
-void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
+void FrontEnd::readLibrarySignatures(const char *sPath, callconv cc) {
     std::ifstream ifs;
 
     ifs.open(sPath);
@@ -251,8 +255,6 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
 
     AnsiCParser *p = new AnsiCParser(ifs, false);
     
-    callconv cc = CONV_C;
-    if (win32) cc = CONV_PASCAL;
     platform plat = getFrontEndId();
     p->yyparse(plat, cc);
 

@@ -123,9 +123,9 @@ virtual int     getInst(int addr);
     /*
      * Read library signatures from a file.
      */
-    void readLibrarySignatures(const char *sPath, bool win32);
+    void readLibrarySignatures(const char *sPath, callconv cc);
     // read from a catalog
-    void readLibraryCatalog(const char *sPath, bool win32 = false);
+    void readLibraryCatalog(const char *sPath);
     // read from default catalog
     void readLibraryCatalog();
 
