@@ -16,73 +16,8 @@
 
 /*
  * $Revision$
- * Dec 97 - created by Mike based on Cristina's initial implementation
- * 19 Feb 98  - Cristina 
- *  changed RTLLIT for RTL_IT as this name is defined in the new rtl.h. 
- * 25 Feb 98 - Cristina 
- *  made RTL iterator arguments in Init() and NewBB() constant iterators.
- *  moved enumerated type BBTYPE from the RTL files to this file as a BBTYPE
- *      is a property of a basic block, not of a register transfer list.
- * 3 Mar 98 - Cristina
- *  replaced ADDR for ADDRESS.
- *  use of ADDRESS and RTL types based on whether the Cfg object is used
- *      on its own or as part of the uqbt tool. 
- * 11 Mar 98 - Cristina  
- *  replaced BOOL for bool type (C++'s), same for TRUE and FALSE.
- * 24 Mar 98 - Cristina
- *  replaced driver include to global.h. 
- * 26 Mar 98 - Cristina
- *  added AddInterProcOutEdge().
- * 7 Aug 98 - Mike
- *  Changed Init() to a constructor - decided it's OK to have constructors
-    that may fail
- * 13 Aug 98 - Mike
- *  Removed the ADDRESS parameter from NewBB - can get it from itFirst
- * 14 Aug 98 - Mike
- *  m_listBB is a list of pointers now, rather than BBs. Needed so that
- *  changes made to this list happen to all BBs
- * 19 Aug 98 - Mike
- *  Out edges are all pointers to BBs now; added m_bIncomplete to BasicBlock
- * 1 Sep 98 - Mike
- *  NewBB returns "bottom" part of BB if split, and returns 0 if BB already
- *  exists
- * 1 Sep 98 - Mike
- *  splitBB takes another parameter, in case we already have a BB for the
- *  "bottom" half
- * 23 Sep 98 - Mike
- *  Added GetFirstRtl() and GetLastRtl() to class BasicBlock
- * 29 Sep 98 - Mike
- *  Added GetOutEdges() to class BasicBlock
- * 10 Dec 98 - Mike: changes for WriteCfgFile() and WriteBBFile()
- * 12 Dec 98 - Mike: changes for AddCoverage()
- * 22 Dec 98 - Mike: itFirstRtl etc are not const now
- * 22 Jan 99 - Mike: Replaced m_it[First,Last]Rtl with m_pRtls
- * 27 Jan 99 - Mike: Use COMPJUMP and COMPCALL BBTYPEs now
- * 04 Feb 99 - Mike: added GetInEdges()
- * 25 Mar 99 - Mike: added Cfg::JoinBB()
- * 07 Apr 99 - Mike: attempted to isolate from other .h files
- * 09 Apr 99 - Mike: WriteDotFile() takes the entry address now
- * 27 Apr 99 - Doug: Added liveness sets for analysis.
- * 28 Apr 99 - Doug: Removed AddInEdges (was enclosed in #if 0)
- * 02 Jun 99 - Mike: Removed leading upper case on function names
- * 25 Aug 99 - Mike: addCoverage() -> addExCoverage()
- * 15 Mar 00 - Cristina: BasicBlock::setAFP and Cfg::setAFP transformed 
- *              to setAXP
- * 05 May 00 - Mike: Changed BasicBlock::addOutEdge() to addNewOutEdge()
- * 19 May 00 - Mike: Moved addNewOutEdge() from BasicBlock to Cfg class
- * 28 Sep 00 - Mike: Added setTraversed() and isTraversed(); joinBB has only
- *              2 parameters now
- * 19 Sep 00 - Mike: Added isDefined()
- * 14 Feb 01 - Mike: Trivial documentation update
- * 31 Mar 01 - Mike: getCallDest returns -1 if not a fixed address now
- * 19 Jun 01 - Mike: added getOutEdge
- * 12 Jul 01 - Mike: added getCorrectOutEdge method
- * 31 Jul 01 - Brian: New class HRTL replaces RTlist. Renamed LRTL to HRTLList,
- *              getLrtls to getHRTLs, setRTLs to setHRTLs,
- *              and RTL_IT to HRTLList_IT.
- * 13 Aug 01 - Bernard: Added support for type analysis
- * 16 Oct 01 - Mike: Added BITSET returnLoc to class BasicBlock
  * 18 Apr 02 - Mike: Mods for boomerang
+ * 04 Dec 02 - Mike: Added isJmpZ
  */
  
 #ifndef _CFG_H_
@@ -338,6 +273,9 @@ public:
 
 	/* set the condition */
 	void setCond(Exp *e);
+
+	/* Check if there is a jump if equals relation */
+	bool isJmpZ(PBB dest);
 
 	/* get the loop body */
 	BasicBlock *getLoopBody();
@@ -815,6 +753,11 @@ public:
     void computeDataflow();
     void updateLiveness();
     std::set<Statement*> &getLiveOut() { return liveout; }
+
+	/*
+	 * Virtual Function Call analysis
+	 */
+	void virtualFunctionCalls();
 
     std::vector<PBB> m_vectorBB; // faster access
 
