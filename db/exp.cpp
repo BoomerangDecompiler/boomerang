@@ -2716,6 +2716,11 @@ void Unary::addUsedLocs(LocationSet& used) {
     subExp1->addUsedLocs(used);
 }
 
+void Terminal::addUsedLocs(LocationSet& used) {
+    if (op == opPC)
+        used.insert(clone());
+}
+
 
 void Binary::addUsedLocs(LocationSet& used) {
     subExp1->addUsedLocs(used);
@@ -2736,51 +2741,66 @@ void UsesExp::addUsedLocs(LocationSet& used) {
     }
 }
 
+Exp* Exp::addSubscript(Statement* def) {
+        return new UsesExp(this, def);
+}
 
 /*==============================================================================
  * FUNCTION:        Unary::updateUses etc
  * OVERVIEW:        Update the "uses" information inherent in each Exp
- * PARAMETERS:      def: ptr to Statement defining a location
- *                  left: the location being defined
+ * PARAMETERS:      defs: ref to a StatementSet of statements reaching this
  * RETURNS:         <nothing>
  *============================================================================*/
 //  //  //  //
 //  Unary   //
 //  //  //  //
-Exp* Unary::updateUses(Statement* def, Exp* left) {
-    // I think it's possible that left could change from non subscripted to
-    // subscripted during this call
-    Exp* trueLeft = left;
-    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
-    if (*trueLeft == *this)
-        return new UsesExp(this, def);
-    subExp1 = subExp1->updateUses(def, left);
-    return this;
+Exp* Unary::updateUses(StatementSet& defs) {
+    StmtSetIter it;
+    // Note have to do the subexpressions first.
+    // Consider this is m[b], and there is a definition for bare m[b]
+    // (unsubscripted, because b is defined later on) in defs.
+    // Suppose m[b] appears before b in defs. Then we have trouble,
+    // because when b is subscripted, the subscripting for m[b]
+    // becomes invalid!
+    if (op == opMemOf)
+        subExp1 = subExp1->updateUses(defs);
+    Exp* res = this;
+    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+        Exp* left = s->getLeft();
+        assert(left);           // A definition must have a left
+        if (*left == *this)
+            // Need to subscript
+            res = res->addSubscript(s);
+    }
+    // Could check if res == this, and put an empty UsesExp here
+    return res;
 }
 
 //  //  //  //
 //  Binary  //
 //  //  //  //
-Exp* Binary::updateUses(Statement* def, Exp* left) {
-    // I think it's possible that left could change from non subscripted to
-    // subscripted during this call
-    Exp* trueLeft = left;
-    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
-    if (*trueLeft == *this)
-        return new UsesExp(this, def);
-    subExp1 = subExp1->updateUses(def, left);
-    subExp2 = subExp2->updateUses(def, left);
-    return this;            // This won't have changed
+Exp* Binary::updateUses(StatementSet& defs) {
+    StmtSetIter it;
+    Exp* res = this;
+    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+        Exp* left = s->getLeft();
+        assert(left);           // A definition must have a left
+        if (*left == *this)
+            res = res->addSubscript(s);
+    }
+    subExp1 = subExp1->updateUses(defs);
+    subExp2 = subExp2->updateUses(defs);
+    return res;
 }
 
 //  //  //  //  //
 //  AssignExp   //
 //  //  //  //  //
-Exp* AssignExp::updateUses(Statement* def, Exp* left) {
+Exp* AssignExp::updateUses(StatementSet& defs) {
     // No need to test for equality to left
     // However, need to update aa iff LHS is m[aa]
     if (subExp1->isMemOf())
-        // Beware. Consider left == m[r[28]].
+        // Beware. Consider left == m[r[28]]; subExp1 is the same.
         // If we call subExp1->updateUses, we will double subscript our
         // LHS (violating a basic property of SSA form)
         // If we call left->updateUses, we would get a
@@ -2788,36 +2808,54 @@ Exp* AssignExp::updateUses(Statement* def, Exp* left) {
         // Don't call setSubExp1 either, since it deletes the old
         // expression (old expression is always needed)
         ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateUses(def, left));
-    subExp2 = subExp2->updateUses(def, left);
+          updateUses(defs));
+if (subExp2->isPC())
+  std::cerr << "HISS!\n";
+    subExp2 = subExp2->updateUses(defs);
     return this;
 }
 
 //  //  //  //
 //  UsesExp //
 //  //  //  //
-Exp* UsesExp::updateUses(Statement* def, Exp* left) {
-    if (*left == *subExp1) {
-        // This means that we have a match with the current expression,
-        // and we need to append the use to our StatementList
-        stmtSet.insert(def);
-    } else
-        subExp1 = subExp1->updateUses(def, left);
+Exp* UsesExp::updateUses(StatementSet& defs) {
+    // The left of any definition can't be a UsesExp
+    // (LHS not subscripted any more)
+    subExp1 = subExp1->updateUses(defs);
     return this;
 }
 
 //  //  //  //
 // Ternary  //
 //  //  //  //
-Exp* Ternary::updateUses(Statement* def, Exp* left) {
-    Exp* trueLeft = left;
-    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
-    if (*trueLeft == *this)
-        return new UsesExp(this, def);
-    subExp1 = subExp1->updateUses(def, left);
-    subExp2 = subExp2->updateUses(def, left);
-    subExp3 = subExp3->updateUses(def, left);
-    return this;
+Exp* Ternary::updateUses(StatementSet& defs) {
+    StmtSetIter it;
+    Exp* res = this;
+    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+        Exp* left = s->getLeft();
+        assert(left);           // A definition must have a left
+        if (*left == *this)
+            res = res->addSubscript(s);
+    }
+    subExp1 = subExp1->updateUses(defs);
+    subExp2 = subExp2->updateUses(defs);
+    subExp3 = subExp3->updateUses(defs);
+    return res;
+}
+
+//  //  //  //
+// Terminal //
+//  //  //  //
+Exp* Terminal::updateUses(StatementSet& defs) {
+    StmtSetIter it;
+    Exp* res = this;
+    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+        Exp* left = s->getLeft();
+        assert(left);           // A definition must have a left
+        if (*left == *this)
+            res = res->addSubscript(s);
+    }
+    return res;
 }
 
 // Might be a useful framework for various tests one day

@@ -132,6 +132,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isAnull() {return op == opAnull;}
     // True if this is the Nil Terminal (terminates lists; "NOP" expression)
     bool isNil() {return op == opNil;}
+    // Trye if this is %pc
+    bool isPC() {return op == opPC;}
     // True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
     bool isAfpTerm();
     // True if is int const
@@ -238,8 +240,10 @@ virtual Exp* fixSuccessor() {return this;}
     virtual void addUsedLocs(LocationSet& used) {}
 
     // Update the "uses" information implicit in expressions
-    // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(Statement* def, Exp* left) {return this;}
+    // defs is a StatementSet of definitions reaching this statement
+    virtual Exp* updateUses(StatementSet& defs) {return this;}
+    // Add a subscript to this; may return a new Exp
+    virtual Exp* addSubscript(Statement* def);
 
     // Get number of definitions (statements this expression depends on)
     virtual int getNumUses() {return 0;}
@@ -327,6 +331,11 @@ public:
     void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
+    Exp*    updateUses(StatementSet& defs);
+    
+    // Do the work of finding used locations
+    virtual void addUsedLocs(LocationSet& used);
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -391,8 +400,7 @@ virtual Exp* fixSuccessor();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(Statement* def, Exp* left);
+    virtual Exp* updateUses(StatementSet& defs);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -458,8 +466,7 @@ virtual     ~Binary();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(Statement* def, Exp* left);
+    virtual Exp* updateUses(StatementSet& defs);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -522,7 +529,7 @@ virtual     ~Ternary();
 
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(Statement* def, Exp* left);
+    virtual Exp* updateUses(StatementSet& defs);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -626,7 +633,7 @@ public:
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateUses(Statement* def, Exp* left);
+    virtual Exp* updateUses(StatementSet& defs);
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
@@ -701,10 +708,12 @@ public:
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    Exp*    updateUses(Statement* def, Exp* left);
+    Exp*    updateUses(StatementSet& defs);
 virtual int getNumUses() {return stmtSet.size();}
     Statement* getFirstUses() {StmtSetIter it; return stmtSet.getFirst(it);}
     void    addUsedLocs(LocationSet& used);
+virtual Exp* addSubscript(Statement* def) {
+                stmtSet.insert(def); return this;}
 };
 
 /*

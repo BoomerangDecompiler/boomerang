@@ -1634,10 +1634,10 @@ void HLCall::setNumArguments(int n) {
 }
 
 // Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})
-void HLCall::updateArgUses(Statement* def, Exp* left) {
+void HLCall::updateArgUses(StatementSet& defs) {
     int n = arguments.size();
     for (int i = 0; i < n; i++) {
-        arguments[i] = arguments[i]->updateUses(def, left);
+        arguments[i] = arguments[i]->updateUses(defs);
     }
 }
 

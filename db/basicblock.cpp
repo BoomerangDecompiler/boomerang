@@ -1975,7 +1975,6 @@ void BasicBlock::toSSAform() {
     // statement
     StatementSet reachin;
     getReachIn(reachin, 2);
-    StmtSetIter ssi;
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
@@ -1986,37 +1985,23 @@ void BasicBlock::toSSAform() {
 
             // We have a statement, which is also an expression (usually an
             // assignment expression)
-            for (Statement* rd = reachin.getFirst(ssi); rd;
-              rd = reachin.getNext(ssi)) {
-                Exp* left = rd->getLeft();
-                assert(left);           // Definitions must have a left!
-                // Update the expression (*it)'s uses info
-                (*it)->updateUses(rd, left);
-            }
+            // Update the expression (*it)'s uses info
+            (*it)->updateUses(reachin);
             // Update reachin to be the input for the next statement in this BB
             s->calcReachOut(reachin);
         }
 
         if (rtl->getKind() == CALL_RTL) {
             HLCall *call = (HLCall*)rtl;
-            for (Statement* rd = reachin.getFirst(ssi); rd;
-              rd = reachin.getNext(ssi)) {
-                Exp* left = rd->getLeft();
-                call->updateArgUses(rd, left);
-            }
+            call->updateArgUses(reachin);
             call->calcReachOut(reachin);        // ? Should be a NOP now
             std::list<Exp*>* le = call->getPostCallExpList();
             if (le) {
                 std::list<Exp*>::iterator pp;
                 for (pp = le->begin(); pp != le->end(); pp++) {
                     Statement* s = dynamic_cast<Statement*>(*pp);
-                    for (Statement* rd = reachin.getFirst(ssi); rd;
-                      rd = reachin.getNext(ssi)) {
-                        Exp* left = rd->getLeft();
-                        assert(left);   // Definitions must have a left!
-                        // Update the expression (*pp)'s uses info
-                        (*pp)->updateUses(rd, left);
-                    }
+                    // Update the expression (*pp)'s uses info
+                    (*pp)->updateUses(reachin);
                     s->calcReachOut(reachin);
                 }
             }

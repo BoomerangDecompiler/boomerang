@@ -495,7 +495,7 @@ public:
     int  getNumArguments() { return arguments.size(); }
     void setNumArguments(int i);
     Type *getArgumentType(int i);
-    void updateArgUses(Statement* def, Exp* left);  // Update arguments to {1 2} format
+    void updateArgUses(StatementSet& defs);  // Update arguments to {1 2} format
     void truncateArguments();
     void clearLiveEntry();
 
