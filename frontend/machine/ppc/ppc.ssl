@@ -431,8 +431,8 @@ STMW	rs, eaddr, s					*32* tmp := 0
 
 BALLR  	   								*32* %pc := %LR;
 
-MFCR	rd								*32* rd :=	%CR0 << 28 + %CR1 << 24 + %CR2 << 20 + %CR3 << 16 +
-													%CR4 << 12 + %CR5 <<  8 + %CR6 <<  4 + %CR7;
+MFCR	rd								*32* rd :=	(%CR0 << 28) + (%CR1 << 24) + (%CR2 << 20) + (%CR3 << 16) +
+													(%CR4 << 12) + (%CR5 <<  8) + (%CR6 <<  4) + (%CR7);
 
 MFSPR	rd, spr							*32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
 
@@ -441,6 +441,20 @@ MTLR	rs  							*32* %LR := rs;
 MTXER 	rs								SETXER(rs);
 
 MTCTR	rs								*32* %CTR := rs;
+
+ROT_ANDS	:= {"RLWINM", "RLWINMq"};
+ROT_AND_ORS	:= {"RLWIMI", "RLWIMIq"};
+ROT_AND_DOTS:= {"RLWINMq", "RLWIMIq"};
+ROT_AND_ALL	:= {ROT_ANDS, ROT_AND_ORS};
+
+ROT_AND_ALL[IDX] ra, rs, uimm, beg, end	*32* tmp_mask := (1 << (32 - beg)) - (1 << (31 - end));
+
+ROT_ANDS[IDX]	 ra, rs, uimm, beg, end	*32* ra := rs rl uimm & tmp_mask;	# rl = rotate left
+
+ROT_AND_ORS[IDX] ra, rs, uimm, beg, end	*32* tmp_r := rs rl uimm & tmp_mask
+										*32* ra := rs | (ra & ~tmp_mask);
+
+ROT_AND_DOTS[IDX] ra, rs, uimm, beg, end	SETFLAGS0(ra);
 
 BL		reloc 							*32* %LR := %pc + 4 
 										*32* %pc := reloc;
