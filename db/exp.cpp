@@ -2669,7 +2669,7 @@ void AssignExp::addUsedLocs(LocationSet& used) {
     Exp* right = getSubExp2();
     right->addUsedLocs(used);
     if (left->isMemOf()) {
-        // We also use any expr like m[exp] on the LHS
+        // We also use any expr like m[exp] on the LHS (but not the outer m[])
         left = ((Unary*)left)->getSubExp1();
         left->addUsedLocs(used);
     }
