@@ -134,7 +134,7 @@ public:
     void appendListExp(std::list<Exp*>& le); // Append list of exps to end.
     void appendRTL(RTL& rtl);           // Append Statements from other RTL to end
     void deepCopyList(std::list<Exp*>& dest);// Make a deep copy of the list of Exp*
-	std::list<Exp*> &getList() { return expList; } // direct access to the list of expressions
+    std::list<Exp*> &getList() { return expList; } // direct access to the list of expressions
 
      // Print RTL to a stream.
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
@@ -191,19 +191,19 @@ public:
     // reverse nesting order. The search is optionally type sensitive.
     virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
-	// serialize this rtl
-	bool serialize(std::ostream &ouf, int &len);
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    bool serialize(std::ostream &ouf, int &len);
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	static RTL *deserialize(std::istream &inf);
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    static RTL *deserialize(std::istream &inf);
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
 protected:
     RTL_KIND kind;
@@ -276,20 +276,20 @@ public:
     // Used for type analysis. Stores type information that
     // can be gathered from the RTL instruction inside a
     // data structure within BBBlock inBlock
-    virtual void storeUseDefineStruct(BBBlock& inBlock);			   
+    virtual void storeUseDefineStruct(BBBlock& inBlock);               
 #endif
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
 protected:
     Exp* pDest;              // Destination of a jump or call. This is the
@@ -348,46 +348,46 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// new dataflow analysis
-        virtual void killLive(std::set<Statement*> &live) { }
-        virtual void getDeadStatements(std::set<Statement*> &dead) { }
-	virtual bool usesExp(Exp *e);
+    // new dataflow analysis
+    virtual void killLive(std::set<Statement*> &live) { }
+    virtual void getDeadStatements(std::set<Statement*> &dead) { }
+    virtual bool usesExp(Exp *e);
 
-	// dataflow related functions
-	virtual bool canPropogateToAll() { return false; }
-	virtual void propogateToAll() { assert(false); }
+    // dataflow related functions
+    virtual bool canPropagateToAll() { return false; }
+    virtual void propagateToAll() { assert(false); }
 
-        // get how to access this value
-        virtual Exp* getLeft() { return NULL; }
-	virtual Type* getLeftType() { return NULL; }
+    // get how to access this value
+    virtual Exp* getLeft() { return NULL; }
+    virtual Type* getLeftType() { return NULL; }
 
-        // get how to replace this statement in a use
-        virtual Exp* getRight() { return pCond; }
+    // get how to replace this statement in a use
+    virtual Exp* getRight() { return pCond; }
 
-	// custom printing functions
-        virtual void printWithUses(std::ostream& os);
+    // custom printing functions
+    virtual void printWithUses(std::ostream& os);
 
-	// special print functions
-        virtual void printAsUse(std::ostream &os);
-        virtual void printAsUseBy(std::ostream &os);
+    // special print functions
+    virtual void printAsUse(std::ostream &os);
+    virtual void printAsUseBy(std::ostream &os);
 
-	// inline any constants in the statement
-	virtual void inlineConstants(Prog *prog);
+    // inline any constants in the statement
+    virtual void inlineConstants(Prog *prog);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
 protected:
-    	virtual void doReplaceUse(Statement *use);
+    virtual void doReplaceUse(Statement *use);
 
 private:
     JCOND_TYPE jtCond;          // The condition for jumping
@@ -443,17 +443,17 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif     
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
-	
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
 private:    
     SWITCH_INFO* pSwitchInfo;   // Exp representation of the switch variable:
@@ -520,54 +520,54 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);       
 #endif
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// new dataflow analysis
-        virtual void killLive(std::set<Statement*> &live);
-        virtual void getDeadStatements(std::set<Statement*> &dead);
-	virtual bool usesExp(Exp *e);
+    // new dataflow analysis
+    virtual void killLive(std::set<Statement*> &live);
+    virtual void getDeadStatements(std::set<Statement*> &dead);
+    virtual bool usesExp(Exp *e);
 
-	// dataflow related functions
-	virtual bool canPropogateToAll() { return false; }
-	virtual void propogateToAll() { assert(false); }
+    // dataflow related functions
+    virtual bool canPropagateToAll() { return false; }
+    virtual void propagateToAll() { assert(false); }
 
-        // get how to access this value
-        virtual Exp* getLeft() { return getReturnLoc(); }
-	virtual Type* getLeftType();
+    // get how to access this value
+    virtual Exp* getLeft() { return getReturnLoc(); }
+    virtual Type* getLeftType();
 
-        // get how to replace this statement in a use
-        virtual Exp* getRight() { return NULL; }
+    // get how to replace this statement in a use
+    virtual Exp* getRight() { return NULL; }
 
-	// custom printing functions
-        virtual void printWithUses(std::ostream& os);
+    // custom printing functions
+    virtual void printWithUses(std::ostream& os);
 
-	// special print functions
-        virtual void printAsUse(std::ostream &os);
-        virtual void printAsUseBy(std::ostream &os);
+    // special print functions
+    virtual void printAsUse(std::ostream &os);
+    virtual void printAsUseBy(std::ostream &os);
 
-	// inline any constants in the statement
-	virtual void inlineConstants(Prog *prog);
+    // inline any constants in the statement
+    virtual void inlineConstants(Prog *prog);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
-	// add statements internal to the called procedure
-	// for interprocedural analysis
-	std::list<Statement*> &getInternalStatements() { return internal; }
+    // add statements internal to the called procedure
+    // for interprocedural analysis
+    std::list<Statement*> &getInternalStatements() { return internal; }
 
-	void setIgnoreReturnLoc(bool b);
+    void setIgnoreReturnLoc(bool b);
 
-	void decompile();
+    void decompile();
 
 protected:
-	virtual void doReplaceUse(Statement *use);
+    virtual void doReplaceUse(Statement *use);
 
 private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
@@ -583,10 +583,10 @@ private:
     // List of reg transfers that occur *after* the call.
     std::list<Exp*>* postCallExpList;
 
-	// Destination of call
+    // Destination of call
     Proc* procDest;
-	// Destination name of call (used in serialization)
-	std::string destStr;
+    // Destination name of call (used in serialization)
+    std::string destStr;
 
     Exp *returnLoc;
     std::list<Statement*> internal;
@@ -611,34 +611,34 @@ public:
     // Used for type analysis. Stores type information that
     // can be gathered from the RTL instruction inside a
     // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);   				    
+    void storeUseDefineStruct(BBBlock& inBlock);                    
 #endif
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
-	int getNumBytesPopped() { return nBytesPopped; }
-	void setNumBytesPopped(int n) { nBytesPopped = n; }
+    int getNumBytesPopped() { return nBytesPopped; }
+    void setNumBytesPopped(int n) { nBytesPopped = n; }
 
-	Exp *getReturnValue() { return returnVal; }
-	void setReturnValue(Exp *e) { if (returnVal) delete returnVal; returnVal = e; }
+    Exp *getReturnValue() { return returnVal; }
+    void setReturnValue(Exp *e) { if (returnVal) delete returnVal; returnVal = e; }
 
 protected:
 
-	// number of bytes that this return pops
-	int nBytesPopped;
+    // number of bytes that this return pops
+    int nBytesPopped;
 
-	// value returned
-	Exp *returnVal;
+    // value returned
+    Exp *returnVal;
 };
 
 
@@ -683,17 +683,17 @@ public:
     void storeUseDefineStruct(BBBlock& inBlock);       
 #endif
 
-	// serialize this rtl
-	virtual bool serialize_rest(std::ostream &ouf);
+    // serialize this rtl
+    virtual bool serialize_rest(std::ostream &ouf);
 
-	// deserialize an rtl
-	virtual bool deserialize_fid(std::istream &inf, int fid);
+    // deserialize an rtl
+    virtual bool deserialize_fid(std::istream &inf, int fid);
 
-	// code generation
-	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+    // code generation
+    virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
 
-	// simplify all the uses/defs in this RTL
-	virtual void simplify();
+    // simplify all the uses/defs in this RTL
+    virtual void simplify();
 
 private:
     JCOND_TYPE jtCond;             // the condition for jumping
@@ -776,21 +776,21 @@ class ParamEntry {
         mark = 0;
     }
     ~ParamEntry() {
-	if (type) delete type;
-	if (regType) delete regType;
+        if (type) delete type;
+        if (regType) delete regType;
     }
     
     std::list<std::string> params;        /* PARAM_VARIANT & PARAM_EXPR only */
     std::list<std::string> funcParams;    /* PARAM_LAMBDA - late bound params */
     Exp* exp;                   /* PARAM_EXPR only */
     bool lhs;                   /* True if this param ever appears on the LHS
-                                 * of an expression */
+                                   of an expression */
     ParamKind kind;
     Type* type;
-    Type* regType;               /* Type of r[this], if any (void otherwise) */
-    std::set<int> regIdx;            /* Values this param can take as an r[param] */
+    Type* regType;              /* Type of r[this], if any (void otherwise) */
+    std::set<int> regIdx;       /* Values this param can take as an r[param] */
     int mark;                   /* Traversal mark. (free temporary use,
-                                 * basically) */
+                                   basically) */
 };
 
 class PartialType;
@@ -921,8 +921,8 @@ protected:
                             int (*callback)(std::list<int> &)) const;
     
 #endif
-    void fixupParamsSub(std::string s, std::list<std::string>& funcParams, bool& haveCount,
-                        int mark);
+    void fixupParamsSub(std::string s, std::list<std::string>& funcParams,
+      bool& haveCount, int mark);
 };
 
 #endif /*__RTL_H__*/
