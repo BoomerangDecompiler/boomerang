@@ -836,11 +836,11 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 {
     std::ostringstream s;
     indent(s, indLevel);
-    if (asgn->getLeft()->getOper() == opMemOf &&
-      asgn->getType()->getSize() != 32) 
+    Type* asgnType = asgn->getType();
+    if (asgn->getLeft()->getOper() == opMemOf && asgnType) 
         appendExp(s,
             new TypedExp(
-                new IntegerType(asgn->getType()->getSize()),
+                asgnType,
                 asgn->getLeft()), PREC_ASSIGN);
     else if (asgn->getLeft()->getOper() == opGlobal &&
              ((Location*)asgn->getLeft())->getType()->isArray())
