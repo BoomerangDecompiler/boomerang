@@ -10,8 +10,10 @@ dnl nightmare of elf include files, for one thing
 dnl
 dnl $Revision$
 dnl
+dnl 15 Oct 02 - Sebastian Apel: checks for libelf, libcppunit and AC_PREREQ inserted
 dnl 12 Apr 02 - Mike: Created
 
+AC_PREREQ(2.52)
 AC_INIT(LICENSE.TERMS)
 AC_CONFIG_HEADER(include/config.h)
 
@@ -66,8 +68,13 @@ AC_MSG_RESULT( $HOST_GNU_LD )
 
 
 dnl Checks for libraries.       
-AC_CHECK_LIB(elf, elf_begin)
+AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
 AC_CHECK_LIB(stdc++, main)
+
+dnl Checks for cppunit library
+AC_LANG_PUSH(C++)
+AC_CHECK_HEADER(cppunit/TestSuite.h,, [AC_MSG_ERROR("library 'cppunit' not found")])
+AC_LANG_POP(C++)
 
 dnl Checks for header files.
 AC_HEADER_STDC
