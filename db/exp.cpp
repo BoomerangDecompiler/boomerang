@@ -3191,8 +3191,9 @@ Exp *RefExp::fixCallRefs() {
             if (call->findReturn(subExp1) == -1) {
                 if (VERBOSE && !subExp1->isPC()) {
                     LOG << "nothing proven about " << subExp1 << 
-                        " and yet it is referenced, and not in returns of " << 
-                        "\n" << "   " << call << "\n";
+                        " and yet it is referenced by " << this <<
+                        ", and not in returns of " << "\n" <<
+                        "   " << call << "\n";
                 }
             }
         }
@@ -3291,8 +3292,9 @@ Exp *PhiExp::fixCallRefs() {
                 if (call->findReturn(subExp1) == -1) {
                     if (VERBOSE) {
                         LOG << "nothing proven about " << subExp1 << 
-                            " and yet it is referenced, and not in returns of " 
-                            << "\n" << "   " << call << "\n";
+                            " and yet it is referenced by " << this <<
+                            ", and not in returns of " << "\n" <<
+                            "   " << call << "\n";
                     }
                 }
             }
