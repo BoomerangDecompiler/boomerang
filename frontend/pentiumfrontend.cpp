@@ -1294,7 +1294,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		if (!s->isAssign()) continue;
+		if (!s->isAssignment()) continue;
 		Exp* lhs = s->getLeft();
 		if (!lhs->isRegOf()) continue;
 		Const* c = (Const*)((Location*)lhs)->getSubExp1();
