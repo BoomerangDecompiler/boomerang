@@ -378,13 +378,9 @@ int Boomerang::decompile(const char *fname)
     std::cerr << "completed in " << std::dec;
     if (hours)
         std::cerr << hours << " hours ";
-    if (mins)
+    if (hours || mins)
         std::cerr << mins << " mins ";
-    if (secs)
-        std::cerr << secs << " secs.";
-    else
-        std::cerr << "no time!";
-    std::cerr << "\n";
+    std::cerr << secs << " sec" << (secs == 1 ? "" : "s") << ".\n";
 
     return 0;
 }
