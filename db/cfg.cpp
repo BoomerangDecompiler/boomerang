@@ -2180,6 +2180,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
     }
 }
 
+// Subscript dataflow variables
 void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     // Need to clear the Stack of old, renamed locations like m[esp-4]
     // (these will be deleted, and will cause compare failures in the Stack)
@@ -2192,7 +2193,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     for (S = bb->getFirstStmt(rit, sit); S;
          S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function
-        if (1) { //!S->isPhi()) {
+        if (1) { //!S->isPhi()) 
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
             if (S->isPhi()) {
@@ -2224,15 +2225,15 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
         S->getDefinitions(defs);
         LocationSet::iterator dd;
         for (dd = defs.begin(); dd != defs.end(); dd++) {
-            Exp *d = *dd;
-            if (d->getMemDepth() == memDepth) {
+            Exp *a = *dd;
+            if (a->getMemDepth() == memDepth) {
                 // Push i onto Stack[a]
-                Stack[d].push(S);
+                Stack[a].push(S);
                 // Replace definition of a with definition of a_i in S
                 // (we don't do this)
             }
-            if (d->getOper() == opLocal) {
-                d = S->getProc()->getLocalExp(((Const*)d->getSubExp1())->
+            if (a->getOper() == opLocal) {
+                a = S->getProc()->getLocalExp(((Const*)a->getSubExp1())->
                   getStr());
                 // Note: used to assert(d) here. However, with switch
                 // statements and in other cases, a local may be created which
@@ -2240,8 +2241,8 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
                 // UserProc::newLocal()), and so there is no entry in symbolMap,
                 // and so d becomes NULL. This is not an error.
                 // Stack already has a definition for d (as just the bare local)
-                if (d && d->getMemDepth() == memDepth)
-                    Stack[d].push(S);
+                if (a && a->getMemDepth() == memDepth)
+                    Stack[a].push(S);
             }
         }
     }
