@@ -120,10 +120,6 @@ STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS}
 lib/libBinaryFile.so:
 	cd loader && make
 
-bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
-	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
-    $(RUNPATH) -Llib -lcppunit -lgc -lexpat -ldl
-
 
 ifeq ($(HOST_CYGWIN), yes)
 LDL=
@@ -140,6 +136,11 @@ boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) \
 	  -Llib -lgc -lexpat $(LDL)
 	$(RENAME_FROM_DLL)
+
+bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
+	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
+    $(RUNPATH) -Llib -lcppunit -lgc -lexpat $(LDL)
+
 
 db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
