@@ -147,26 +147,6 @@ void Prog::analyse() {
     delete analysis;
 }
 
-// Globally initialise all statements
-void Prog::initStatements() {
-    int stmtNumber = 0;
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-      it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
-        UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
-
-        // Sort by address, so the statement numbers will be sensible
-        p->getCFG()->sortByAddress();
-        // Initialise (set BB, proc, give lib calls parameters, etc) the
-        // statements of this proc
-        p->initStatements();
-        // Also number them
-        p->numberStatements(stmtNumber);
-    }
-}
-
 void Prog::generateDotFile() {
     assert(Boomerang::get()->dotFile);
     std::ofstream of(Boomerang::get()->dotFile);
