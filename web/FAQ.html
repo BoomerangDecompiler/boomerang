@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Boomerang FAQ</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+<table cellpadding="2" cellspacing="2" border="0" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <h1 align="center"><br>
+      </h1>
+      <h1 align="center">Boomerang Frequently Asked Questions</h1>
+      <a href="http://sourceforge.net/projects/boomerang"> Sourceforge
+Project home page</a><br>
+Back to <a href="index.php">Boomerang home page</a><br>
+      </td>
+      <td valign="top"><img src="boomerangs_small.jpg" alt="boomerangs"
+ style="width: 150px; height: 159px;" align="right" title=""> <a
+ href="file:///home/emmerik/boomerang.old/web/index.php#News"><br>
+      </a> </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+1. <a href="#FAQ01">Isn't decompilation impossible, or at least a
+waste
+of time?</a><br>
+2. <a href="#FAQ02">Isn't decompilation illegal, or at least immoral?</a><br>
+3. <a href="#FAQ03">How good will the decompiled code be?</a><br>
+4. <a href="#FAQ04">How easy is it to use? I just give it the binary
+file, right?</a><br>
+5. <a href="#automatic">Just tell me where to find an automatic
+decompiler.</a><br>
+6. <a href="#FAQ05">What about obfuscated binary code?</a><br>
+7. <a href="#FAQ06">Is decompiling from binaries as easy as
+decompiling Java
+or Visual Basic programs?</a><br>
+8. <a href="#FAQ07">Won't the availability of a good decompiler
+threaten
+the software industry?</a><br>
+<br>
+<a name="FAQ01"></a>1. <font color="#ff0000">Isn't decompilation
+impossible, or at least a waste of time?</font><br>
+<br>
+The completely automatic decompilation of arbitrary binary files to
+equivalent source files in any language is equivalent to the halting
+problem, so we will
+never find an algorithm to achieve it. But then, many tasks such as
+routing
+printed circuit boards are impossible in general too, but they are so
+useful
+that we do them anyway, and put up with some manual tweaking to get a
+good
+(not necessaily perfect) result. There are a few of us that believe
+that
+a paractical decompiler is possible with the current state of the art.
+Boomerang
+is an attempt to prove that assertion.<br>
+<br>
+Note that disassembling a file well enough to be able to assemble the
+generated file is almost as difficult, and yet disassmeblers are
+considered useful tools.
+Very few people use them at present (at least, this is what I believe)
+to
+generate assemblable code. One of the reasons for this is that apart
+from being hard work, the result isn't portable to another
+architecture. This is
+where a decompiler is useful: it's just as much work as disassembling,
+but
+the output is hopefully portable (with perhaps a bit more effort for
+each
+target architecture).<br>
+<br>
+Those that compare decompilation to reconstructing an egg after it has
+been
+broken are wrong; a lot of information is lost in compilation
+(actually,
+most of it is lost in the assembling and linking processes), but not
+that
+much.<br>
+<br>
+See also the Wiki <a
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/DeCompilation">DeCompilation</a>
+page <a
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/DeCompilationPossible">Is
+it possible?</a><br>
+<br>
+<a name="FAQ02"></a>2. <font color="#ff0000">Isn't decompilation
+illegal, or at least immoral?</font><br>
+<br>
+This is a big issue. Certainly, decompiling commercial code for
+purposes other than a few purposes (interoperability, checking for
+malware, etc) is illegal. The legal situation may have changed in the
+USA with the Digital Millenium Act, and similar acts in contries that
+follow the US lead in this. However, there are plenty of legal uses.
+The three main ones are:<br>
+<ol>
+  <li>the recovery of lost source code (some estimates put all lost
+source code world wide at 5%).</li>
+  <li>reengineering of legacy code (where the old code is in a language
+that is no longer supported on modern architectures, for example).
+Where
+there is some source code, source to source translation would almost
+certainly be preferable.</li>
+  <li>Checking for malware (viruses, back doors, etc). In this case,
+it's used as a glorified disassembler, but the effort of looking
+through 100 lines of C is presumably less than looking through 500
+lines of assembler. Plus, the checker doesn't have to be aware of the
+details of the source machine.</li>
+</ol>
+I leave the issue of legality to others. I'm satisfied that there are
+enough legal uses for decompilation to make it a fruitful area for
+research.<br>
+<br>
+See also the Wiki <a
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/DeCompilation">DeCompilation</a>
+pages <a
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/WhyDecompilation">Why
+Decompilation</a> and <a
+ href="http://www.program-transformation.org/twiki/bin/view/Transform/EthicsOfDecompilation">The
+ethics of Decompilation</a>.<br>
+<br>
+<a name="FAQ03"></a> 3. <font color="#ff0000">How good will the
+decompiled code be?</font><br>
+<br>
+If you want the original source code back again, then you will
+certainly be disappointed. The only meaningful variable names, and
+useful comments, will be ones that you enter yourself, or (in the
+distant future) perhaps from
+some nifty analysis that might be able to identify some design patterns
+from
+binary code.<br>
+<br>
+So the real answer is "as good as you want it, but you'll have to put
+in a lot of work to get it to that stage".<br>
+<br>
+<a name="FAQ04"></a> 4. <font color="#ff0000">How easy is it to use? I
+just give it the binary file, right?</font><br>
+<br>
+For small programs, you may be able to just give the name of a binary
+file, and out will come a source file in some high level language
+(initially C, but there may be other choices later). However, there
+will be no (or minimal) comments, the variable names (depending on how
+much debugging information is in the input binary) will mostly be
+meaningless (var1, var2, that sort of thing). Most of the gotos should
+be gone, though you may find some for loops emitted as while loops, or
+other details of the control flow structure altered (but still valid).<br>
+<br>
+If you put a lot of effort into it, you should be able to emit well
+documented code (to your understanding of how it works; it can't think
+for you), with decent names for variables and functions, structures and
+arrays as they would have been in the original program, and perhaps
+even classes recovered.<br>
+<br>
+Depending on what's in the source file, there may be many tricky
+problems to solve. It may even be that decompiling this particular
+input file is impossible, or beyond your ability to achieve. For
+example, a particular register jump or call may fail to be
+automatically recognised; in that case, the quality of the output
+depends on your ability to identify to the decompiler where the jump or
+call might end up at. (This decision is undecidable in general, but a
+clever person could in principle solve any arbitrarily difficult
+example).<br>
+<br>
+<span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"><a
+ name="Automatic"></a>5. </span>Just tell me where to find an
+automatic decompiler.<br>
+<br style="color: rgb(0, 0, 0);">
+<span style="color: rgb(0, 0, 0);">A number of people believe that they
+can just find a free decompiler that will recreate their source code
+for their binary file, much like they can find a free decompiler for
+almost any Java program or applet. Well, it just doesn't exist at
+present. The best you can do at present is to use a good disassembler,
+and even that is a lot more work than many people realise. See the <a
+ href="http://www.program-transformation.org/AutomaticDecompiler">AutomaticDecompiler</a>
+wiki page.</span><br>
+<br>
+</span><a name="FAQ05"></a>6. <font color="#ff0000">What about
+obfuscated binary code?</font><br>
+<br>
+If the input file is obfuscated (deliberately arranged to make
+decompilation difficult), then obviously it's harder again. In my
+opinion (yet to be tested, of course), no obfuscation scheme is
+impossible to defeat, and in fact I think
+that any obfuscation will be about as successful as the copy protection
+schemes
+of the 1980s (i.e. not very successful at all).<br>
+<br>
+<a name="FAQ06"></a>7. <font color="#ff0000">Is decompiling from
+binaries
+as easy as decompiling Java or Visual Basic programs?</font><br>
+<br>
+No. Java bytecode programs have a lot of information in them, such as
+the
+name (including class name) of every method. In fact, about all that is
+missing
+in a bytecode program are the comments, and the names (and types) of
+local
+variables. Visual Basic programs, for some reason that some regard as
+suspicious,
+have even more information in the executable file (more than seems to
+be
+needed, for example). There are a number of successful Java and Visual
+Basic
+Decompilers, both free and commercial, that do a good job of recovering
+a
+usable source code for the program.<br>
+<br>
+Binary files are a totally different situation. Usually, there is no
+debugging
+information in them. However, dynamically linked library functions are
+usually
+referenced by name, so they are available. Often, library function
+parameter
+types are known, so there is more information. Statically linked
+library
+functions can sometimes be recognised using pattern matching. Binary
+files
+can also include difficult to handle instructions, such as register (or
+memory
+indirect) jumps and calls. Overall there is far less information in a
+binary
+file; this is why decompilation of binary files has stayed in its
+infancy
+for so long.<br>
+<br>
+<a name="FAQ07"></a>8. <font color="#ff0000">Won't the availability of
+a
+good decompiler threaten the software industry?</font><br>
+<br>
+I doubt it very much. First of all, it's a lot of work to decompile a
+program,
+and that won't change unless artificial intelligence improves
+dramatically
+(and then it would probably be easier to get a computer program to
+write
+a new program than to decompile an old one!) Secondly, source code
+isn't
+everything. A high level representation of a program isn't the same as
+understanding
+that program (well, it may be if you put a very large effort into the
+decompilation).<br>
+<br>
+<br>
+<small>Last modified: 1/Oct/03: Minor changes; automatic decompiler</small><br>
+<br>
+</body>
+</html>
