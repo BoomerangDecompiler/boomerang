@@ -202,9 +202,9 @@ util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
 
 frontend/frontend.o: frontend/frontend.cpp include/frontend.h \
-	include/decoder.h c/ansi-c-parser.h
-frontend/sparcfrontend.o: include/frontend.h
-frontend/pentiumfrontend.o: include/frontend.h
+	include/decoder.h c/ansi-c-parser.h include/boomerang.h
+frontend/sparcfrontend.o: include/frontend.h include/boomerang.h
+frontend/pentiumfrontend.o: include/frontend.h include/boomerang.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
