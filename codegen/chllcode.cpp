@@ -368,7 +368,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             break;
         case opSgnEx: {
             strcat(str, "/* opSgnEx */ (int) ");
-            Exp* s = u->getSubExp1();
+            Exp* s = t->getSubExp3();
             appendExp(str, s);
             break;
         }
