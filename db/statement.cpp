@@ -2062,12 +2062,10 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
     if (t == NULL) return e;
     // char* and a constant
     if (e->isIntConst()) {
-        if (t->isPointer()) {
-            PointerType *pt = (PointerType*)t;
+        if (t->resolvesToPointer()) {
+            PointerType *pt = t->asPointer();
             Type *points_to = pt->getPointsTo();
-            if (points_to->isNamed())
-                points_to = ((NamedType*)points_to)->resolvesTo();
-            if (points_to->isChar()) {
+            if (points_to->resolvesToChar()) {
                 ADDRESS u = ((Const*)e)->getAddr();
                 char *str = 
                     prog->getStringConstant(u);
@@ -2083,7 +2081,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                         e = Location::global(nam, proc);
                 }
             }
-            if (points_to->isFunc()) {
+            if (points_to->resolvesToFunc()) {
                 ADDRESS a = ((Const*)e)->getAddr();
                 if (VERBOSE)
                     LOG << "found function pointer with constant value "
@@ -2092,7 +2090,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                 prog->decode(a);
                 Proc *p = prog->findProc(a);
                 if (p) {
-                    Signature *sig = ((FuncType*)points_to)->getSignature()->clone();
+                    Signature *sig = points_to->asFunc()->getSignature()->clone();
                     if (sig->getName() == NULL ||
                         strlen(sig->getName()) == 0 || 
                         !strcmp(sig->getName(), "<ANON>") ||
@@ -2104,7 +2102,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     e = Location::global(p->getName(), proc);
                 }
             }
-        } else if (t->isFloat()) {
+        } else if (t->resolvesToFloat()) {
             e = new Ternary(opItof, new Const(32), new Const(t->getSize()), e);
         }
     }
@@ -2131,10 +2129,8 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
     }
     if (e->getOper() == opMemberAccess) {
         Type *tsubexp1 = getTypeFor(e->getSubExp1(), prog);
-        if (tsubexp1 && tsubexp1->isNamed())
-            tsubexp1 = ((NamedType*)tsubexp1)->resolvesTo();
-        CompoundType *compound = dynamic_cast<CompoundType*>(tsubexp1);
-        if (compound) {
+        if (tsubexp1->resolvesToCompound()) {
+            CompoundType *compound = tsubexp1->asCompound();
             const char *nam = ((Const*)e->getSubExp2())->getStr();
             ty = compound->getType((char*)nam);
         }
@@ -2703,14 +2699,10 @@ void Assign::simplify() {
                 a4->getRight()->getSubExp2()->getOper() == opIntConst) {
                 Type *ty = a1->getRight()->getType();
                 int b = ((Const*)a4->getRight()->getSubExp2())->getInt();
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty->isPointer()) {
-                    ty = ((PointerType*)ty)->getPointsTo();
-                    if (ty->isNamed())
-                        ty = ((NamedType*)ty)->resolvesTo();
-                    if (ty->isArray() && 
-                        b*8 == ((ArrayType*)ty)->getBaseType()->getSize()) {
+                if (ty->resolvesToPointer()) {
+                    ty = ty->asPointer()->getPointsTo();
+                    if (ty->resolvesToArray() && 
+                        b*8 == ty->asArray()->getBaseType()->getSize()) {
                         if (VERBOSE)
                             LOG << "doing complex pattern on " << this
                                 << " using " << a1 << " and " << a4 << "\n";

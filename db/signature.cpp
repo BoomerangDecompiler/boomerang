@@ -971,35 +971,26 @@ void Signature::addImplicitParametersFor(Parameter *pn)
 {
     Type *type = pn->getType();
     Exp *e = pn->getExp();
-    if (type && type->isNamed()) {
-        type = ((NamedType*)type)->resolvesTo();
-    }
-    if (type && type->isPointer()) { 
-        PointerType *p = (PointerType*)type;
+    if (type && type->resolvesToPointer()) { 
+        PointerType *p = type->asPointer();
         /* seems right, if you're passing a pointer to a procedure
          * then that procedure probably uses what the pointer points
          * to.  Need to add them as arguments so SSA finds em.
          */
         Type *points_to = p->getPointsTo();
-        Type *orig_points_to = points_to;
-        if (points_to && points_to->isNamed()) {
-            points_to = ((NamedType*)points_to)->resolvesTo();
-        }
-        if (points_to) {
-            if (points_to->isCompound()) {
-                CompoundType *c = (CompoundType*)points_to;
-                int base = 0;
-                for (int n = 0; n < c->getNumTypes(); n++) {
-                    Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),
-                                        new Const(base / 8)));
-                    e1 = e1->simplify();
-                    addImplicitParameter(c->getType(n), c->getName(n), e1, pn);
-                    base += c->getType(n)->getSize();
-                }
-            } else if (!points_to->isFunc()) 
-                addImplicitParameter(orig_points_to, NULL, 
-                                  Location::memOf(e->clone()), pn);
-        }
+        if (points_to->resolvesToCompound()) {
+            CompoundType *c = (CompoundType*)points_to;
+            int base = 0;
+            for (int n = 0; n < c->getNumTypes(); n++) {
+                Exp *e1 = Location::memOf(new Binary(opPlus, e->clone(),
+                                    new Const(base / 8)));
+                e1 = e1->simplify();
+                addImplicitParameter(c->getType(n), c->getName(n), e1, pn);
+                base += c->getType(n)->getSize();
+            }
+        } else if (!points_to->resolvesToFunc()) 
+            addImplicitParameter(points_to, NULL, 
+                              Location::memOf(e->clone()), pn);
     }
 }
 

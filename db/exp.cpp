@@ -2253,18 +2253,12 @@ Exp* Binary::polySimplify(bool& bMod) {
         subExp1->getSubExp1()->getType() &&
         subExp2->getOper() == opIntConst) {
         Type *ty = subExp1->getSubExp1()->getType();
-        if (ty->isNamed())
-            ty = ((NamedType*)ty)->resolvesTo();
-        if (ty->isPointer()) {
-            Type *pty = ((PointerType*)ty)->getPointsTo();
-            if (pty->isNamed())
-                pty = ((NamedType*)pty)->resolvesTo();
-            if (pty->isCompound()) {
-                res = new Binary(opPlus, subExp1->getSubExp1(), subExp2);
-                res = new Binary(opPlus, res, subExp1->getSubExp2());
-                bMod = true;
-                return res;
-            }
+        if (ty->resolvesToPointer() &&
+            ty->asPointer()->getPointsTo()->resolvesToCompound()) {
+            res = new Binary(opPlus, subExp1->getSubExp1(), subExp2);
+            res = new Binary(opPlus, res, subExp1->getSubExp2());
+            bMod = true;
+            return res;
         }
     }
 
@@ -2275,29 +2269,23 @@ Exp* Binary::polySimplify(bool& bMod) {
         int n = ((Const*)subExp2)->getInt();
         Exp *l = subExp1;
         Type *ty = l->getType();
-        if (ty->isNamed())
-            ty = ((NamedType*)ty)->resolvesTo();
-        if (ty && ty->isPointer()) { 
-            Type *pty = ((PointerType*)ty)->getPointsTo();
-            if (pty->isNamed())
-                pty = ((NamedType*)pty)->resolvesTo();
-            if (pty->isCompound()) {
-                CompoundType *c = (CompoundType*)pty;
-                if (n*8 < c->getSize()) {
-                    int r = c->getOffsetRemainder(n*8);
-                    assert((r % 8) == 0);
-                    const char *nam = c->getNameAtOffset(n*8);
-                    res = new Binary(opPlus, 
-                            new Unary(opAddrOf, 
-                                new Binary(opMemberAccess, 
-                                    Location::memOf(subExp1),
-                                    new Const((char*)nam))),
-                            new Const(r / 8));
-                    if (VERBOSE)
-                        LOG << "replacing " << this << " with " << res << "\n";
-                    bMod = true;
-                    return res;
-                }
+        if (ty->resolvesToPointer() &&
+            ty->asPointer()->getPointsTo()->resolvesToCompound()) { 
+            CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
+            if (n*8 < c->getSize()) {
+                int r = c->getOffsetRemainder(n*8);
+                assert((r % 8) == 0);
+                const char *nam = c->getNameAtOffset(n*8);
+                res = new Binary(opPlus, 
+                        new Unary(opAddrOf, 
+                            new Binary(opMemberAccess, 
+                                Location::memOf(subExp1),
+                                new Const((char*)nam))),
+                        new Const(r / 8));
+                if (VERBOSE)
+                    LOG << "replacing " << this << " with " << res << "\n";
+                bMod = true;
+                return res;
             }
         }
     }
@@ -2308,36 +2296,31 @@ Exp* Binary::polySimplify(bool& bMod) {
         Exp *x = subExp2;
         Exp *l = subExp1;
         Type *ty = l->getType();
-        if (ty && ty->isNamed())
-            ty = ((NamedType*)ty)->resolvesTo();
-        if (ty && ty->isPointer()) {
-            ty = ((PointerType*)ty)->getPointsTo();
-            if (ty && ty->isNamed())
-                ty = ((NamedType*)ty)->resolvesTo();
-            if (ty && ty->isArray()) {
-                int b = ((ArrayType*)ty)->getBaseType()->getSize() / 8;
-                int br = ((ArrayType*)ty)->getBaseType()->getSize() % 8;
-                assert(br == 0);
-                if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || 
-                    ((ArrayType*)ty)->getBaseType()->isArray()) {
-                    res = new Binary(opPlus, 
-                            new Unary(opAddrOf, 
-                                new Binary(opArraySubscript, 
-                                  Location::memOf(l->clone()), 
-                                  new Binary(opDiv, x->clone(), new Const(b)))),
-                            new Binary(opMod, x->clone(), new Const(b)));
-                    if (VERBOSE)
-                        LOG << "replacing " << this << " with " << res << "\n";
-                    if (l->getOper() == opSubscript) {
-                        RefExp *r = (RefExp*)l;
-                        if (r->getRef() && r->getRef()->isPhi()) {
-                            PhiExp *p = (PhiExp*)r->getRef()->getRight();
-                            LOG << "argh: " << p->getAt(1) << "\n";
-                        }
+        if (ty && ty->resolvesToPointer() &&
+            ty->asPointer()->getPointsTo()->resolvesToArray()) {
+            ArrayType *a = ty->asPointer()->getPointsTo()->asArray();
+            int b = a->getBaseType()->getSize() / 8;
+            int br = a->getBaseType()->getSize() % 8;
+            assert(br == 0);
+            if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || 
+                a->getBaseType()->isArray()) {
+                res = new Binary(opPlus, 
+                        new Unary(opAddrOf, 
+                            new Binary(opArraySubscript, 
+                              Location::memOf(l->clone()), 
+                              new Binary(opDiv, x->clone(), new Const(b)))),
+                        new Binary(opMod, x->clone(), new Const(b)));
+                if (VERBOSE)
+                    LOG << "replacing " << this << " with " << res << "\n";
+                if (l->getOper() == opSubscript) {
+                    RefExp *r = (RefExp*)l;
+                    if (r->getRef() && r->getRef()->isPhi()) {
+                        PhiExp *p = (PhiExp*)r->getRef()->getRight();
+                        LOG << "argh: " << p->getAt(1) << "\n";
                     }
-                    bMod = true;
-                    return res;
                 }
+                bMod = true;
+                return res;
             }
         }
     }
@@ -3544,29 +3527,24 @@ Type *Binary::getType() {
         case opArraySubscript:
             if (subExp1->getType()) {
                 Type *sty = subExp1->getType();
-                if (sty->isNamed())
-                    sty = ((NamedType*)sty)->resolvesTo();
-                ArrayType *ty = dynamic_cast<ArrayType*>(sty);
-                if (ty == NULL) {
+                if (!sty->resolvesToArray()) {
                     LOG << "subExp1 not of array type: " << this << "\n";
                     if (sty)
                         LOG << "it has a type: " << sty->getCtype() << "\n";
+                    assert(false);
                 }
-                assert(ty);
-                return ty->getBaseType();
+                return sty->asArray()->getBaseType();
             }
             break;
         case opMemberAccess:
             if (subExp1->getType()) {
                 Type *sty = subExp1->getType();
-                if (sty->isNamed())
-                    sty = ((NamedType*)sty)->resolvesTo();
-                CompoundType *ty = dynamic_cast<CompoundType*>(sty);
-                if (ty == NULL)
+                if (!sty->resolvesToCompound()) {
                     LOG << "subExp1 not of compound type: " << this << "\n";
-                assert(ty);
+                    assert(false);
+                }
                 assert(subExp2->getOper() == opStrConst);
-                return ty->getType(((Const*)subExp2)->getStr());
+                return sty->asCompound()->getType(((Const*)subExp2)->getStr());
             }
         default:
             break;

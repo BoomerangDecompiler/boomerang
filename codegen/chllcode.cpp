@@ -490,9 +490,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 if (ty == NULL)
                     LOG << "no type for subexp1 of " << b << "\n";
                 assert(ty);
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                assert(ty->isCompound());
+                assert(ty->resolvesToCompound());
                 if (b->getSubExp1()->getOper() == opMemOf) {
                     appendExp(str, b->getSubExp1()->getSubExp1());
                     strcat(str, "->");

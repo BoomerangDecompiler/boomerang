@@ -1836,23 +1836,20 @@ void UserProc::replaceExpressionsWithGlobals() {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
-                if (ty && ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty && ty->isPointer() && 
+                if (ty && ty->resolvesToPointer() && 
                     e->getOper() == opIntConst) {
-                    Type *pty = ((PointerType*)ty)->getPointsTo();
-                    Type *rpty = pty;
-                    if (rpty->isNamed())
-                        rpty = ((NamedType*)rpty)->resolvesTo();
-                    if (rpty->isArray() && ((ArrayType*)rpty)->isUnbounded()) {
-                        pty = rpty->clone();
-                        ((ArrayType*)pty)->setLength(1024);   // just something arbitary
+                    Type *pty = ty->asPointer()->getPointsTo();
+                    if (pty->resolvesToArray() && 
+                        pty->asArray()->isUnbounded()) {
+                        ArrayType *a = (ArrayType*)pty->asArray()->clone();
+                        pty = a;
+                        a->setLength(1024);   // just something arbitary
                         if (i+1 < call->getNumArguments()) {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
                                 nt = ((NamedType*)nt)->resolvesTo();
                             if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
-                                ((ArrayType*)pty)->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                                a->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
                         }
                     }
                     ADDRESS u = ((Const*)e)->getInt();
@@ -1991,10 +1988,8 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
-                if (ty && ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty && ty->isPointer() && e->getOper() != opAddrOf &&
-                           e->getMemDepth() == 0) {
+                if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf 
+                       && e->getMemDepth() == 0) {
                     if (e->getOper() == opMinus && 
                         *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
                         e->getSubExp2()->getOper() == opIntConst) {
@@ -2003,14 +1998,11 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                     }
                     Location *pe = Location::memOf(e);
                     pe->setProc(this);
-//                    if (pe->getType() && 
-//                        *pe->getType() == *((PointerType*)ty)->getPointsTo()) {
-                        Exp *ne = new Unary(opAddrOf, pe);
-                        if (VERBOSE)
-                            LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
-                        call->setArgumentExp(i, ne);
-                        found = true;
-//                    }
+                    Exp *ne = new Unary(opAddrOf, pe);
+                    if (VERBOSE)
+                        LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
+                    call->setArgumentExp(i, ne);
+                    found = true;
                 }
             }
         }
@@ -2062,36 +2054,32 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
                 std::string name = ((Const*)local->getSubExp1())->getStr();
                 Type *ty = locals[name];
                 assert(ty);
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty) {
-                    int size = ty->getSize() / 8;    // getSize() returns bits!
-                    if (base->getOper() == opMemOf && 
-                        base->getSubExp1()->getOper() == opMinus &&
-                        *base->getSubExp1()->getSubExp1() == 
-                             *new RefExp(Location::regOf(
-                                signature->getStackRegister(prog)), NULL) &&
-                        base->getSubExp1()->getSubExp2()->getOper() == 
-                                                                opIntConst) {
-                        int base_n = ((Const*)base->getSubExp1()->getSubExp2())
-                                                                ->getInt();
-                        if (le_n <= base_n && le_n > base_n-size) {
-                            if (VERBOSE)
-                                LOG << "found alias to " << name.c_str() << ": " << le << "\n";
-                            int n = base_n - le_n;
-                            return Location::memOf(new Binary(opPlus, 
-                                                    new Unary(opAddrOf, 
-                                                        local->clone()),
-                                                    new Const(n)));
+                int size = ty->getSize() / 8;    // getSize() returns bits!
+                if (base->getOper() == opMemOf && 
+                    base->getSubExp1()->getOper() == opMinus &&
+                    *base->getSubExp1()->getSubExp1() == 
+                         *new RefExp(Location::regOf(
+                            signature->getStackRegister(prog)), NULL) &&
+                    base->getSubExp1()->getSubExp2()->getOper() == 
+                                                            opIntConst) {
+                    int base_n = ((Const*)base->getSubExp1()->getSubExp2())
+                                                            ->getInt();
+                    if (le_n <= base_n && le_n > base_n-size) {
+                        if (VERBOSE)
+                            LOG << "found alias to " << name.c_str() << ": " << le << "\n";
+                        int n = base_n - le_n;
+                        return Location::memOf(new Binary(opPlus, 
+                                                new Unary(opAddrOf, 
+                                                    local->clone()),
+                                                new Const(n)));
 #if 0
-                            if (ty->isCompound()) {
-                                CompoundType *compound = (CompoundType*)ty;
-                                return new Binary(opMemberAccess, local->clone(), 
-                                                    new Const((char*)compound->getNameAtOffset((base_n - le_n)*8)));
-                            } else
-                                assert(false);
+                        if (ty->resolvesToCompound()) {
+                            CompoundType *compound = ty->asCompound();
+                            return new Binary(opMemberAccess, local->clone(), 
+                                                new Const((char*)compound->getNameAtOffset((base_n - le_n)*8)));
+                        } else
+                            assert(false);
 #endif
-                        }
                     }
                 }
             }
@@ -2119,15 +2107,11 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
                 ty = nty;
                 locals[name] = ty;
             }
-            if (ty->isNamed())
-                ty = ((NamedType*)ty)->resolvesTo();
-            if (ty) {
-                if (ty->isCompound()) {
-                    CompoundType *compound = (CompoundType*)ty;
-                    if (VERBOSE)
-                        LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
-                    return new Binary(opMemberAccess, e, new Const((char*)compound->getName(0)));
-                }
+            if (ty->resolvesToCompound()) {
+                CompoundType *compound = ty->asCompound();
+                if (VERBOSE)
+                    LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
+                return new Binary(opMemberAccess, e, new Const((char*)compound->getName(0)));
             }
         }
     }
@@ -2157,26 +2141,23 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
-                if (ty && ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                if (ty && ty->isPointer() && 
+                if (ty && ty->resolvesToPointer() && 
                     e->getOper() == opMinus && 
                     *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
                     e->getSubExp2()->getOper() == opIntConst) {
                     Exp *olde = e->clone();
-                    Type *pty = ((PointerType*)ty)->getPointsTo();
-                    Type *rpty = pty;
-                    if (rpty->isNamed())
-                        rpty = ((NamedType*)rpty)->resolvesTo();
-                    if (rpty->isArray() && ((ArrayType*)rpty)->isUnbounded()) {
-                        pty = rpty->clone();
-                        ((ArrayType*)pty)->setLength(1024);   // just something arbitary
+                    Type *pty = ty->asPointer()->getPointsTo();
+                    if (pty->resolvesToArray() && 
+                        pty->asArray()->isUnbounded()) {
+                        ArrayType *a = (ArrayType*)pty->asArray()->clone();
+                        pty = a;
+                        a->setLength(1024);   // just something arbitary
                         if (i+1 < call->getNumArguments()) {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
                                 nt = ((NamedType*)nt)->resolvesTo();
                             if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
-                                ((ArrayType*)pty)->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                                a->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
                         }
                     }
                     e = getLocalExp(Location::memOf(e->clone()), pty);

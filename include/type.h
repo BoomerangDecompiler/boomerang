@@ -33,6 +33,15 @@
 #include <vector>
 
 class Signature;
+class VoidType;
+class FuncType;
+class BooleanType;
+class CharType;
+class IntegerType;
+class FloatType;
+class PointerType;
+class ArrayType;
+class CompoundType;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed, eCompound};    // For operator< only
@@ -67,6 +76,28 @@ virtual bool isPointer() const { return false; }
 virtual bool isArray() const { return false; }
 virtual bool isNamed() const { return false; }
 virtual bool isCompound() const { return false; }
+
+    // These replace type casts
+    VoidType *asVoid();
+    FuncType *asFunc();
+    BooleanType *asBoolean();
+    CharType *asChar();
+    IntegerType *asInteger();
+    FloatType *asFloat();
+    PointerType *asPointer();
+    ArrayType *asArray();
+    CompoundType *asCompound();
+
+    // These replace calls to isNamed() and resolvesTo()
+    bool resolvesToVoid();
+    bool resolvesToFunc();
+    bool resolvesToBoolean();
+    bool resolvesToChar();
+    bool resolvesToInteger();
+    bool resolvesToFloat();
+    bool resolvesToPointer();
+    bool resolvesToArray();
+    bool resolvesToCompound();
 
     // cloning
 virtual Type* clone() const = 0;

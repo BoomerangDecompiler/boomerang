@@ -21,9 +21,6 @@
  * 26 Aug 03 - Mike: Fixed operator< (had to re-introduce an enum... ugh)
  */
 
-#ifndef __TYPE_H_
-#define __TYPE_H_
-
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
@@ -739,4 +736,166 @@ void ArrayType::fixBaseType(Type *b)
     }
 }
 
-#endif  // #ifndef __TYPE_H__
+VoidType *Type::asVoid()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    VoidType *res = dynamic_cast<VoidType*>(ty);
+    assert(res);
+    return res;
+}
+
+FuncType *Type::asFunc()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    FuncType *res = dynamic_cast<FuncType*>(ty);
+    assert(res);
+    return res;
+}
+
+BooleanType *Type::asBoolean()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    BooleanType *res = dynamic_cast<BooleanType*>(ty);
+    assert(res);
+    return res;
+}
+
+CharType *Type::asChar()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    CharType *res = dynamic_cast<CharType*>(ty);
+    assert(res);
+    return res;
+}
+
+IntegerType *Type::asInteger()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    IntegerType *res = dynamic_cast<IntegerType*>(ty);
+    assert(res);
+    return res;
+}
+
+FloatType *Type::asFloat()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    FloatType *res = dynamic_cast<FloatType*>(ty);
+    assert(res);
+    return res;
+}
+
+PointerType *Type::asPointer()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    PointerType *res = dynamic_cast<PointerType*>(ty);
+    assert(res);
+    return res;
+}
+
+ArrayType *Type::asArray()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    ArrayType *res = dynamic_cast<ArrayType*>(ty);
+    assert(res);
+    return res;
+}
+
+CompoundType *Type::asCompound()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    CompoundType *res = dynamic_cast<CompoundType*>(ty);
+    assert(res);
+    return res;
+}
+
+bool Type::resolvesToVoid()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isVoid();
+}
+
+bool Type::resolvesToFunc()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isFunc();
+}
+
+bool Type::resolvesToBoolean()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isBoolean();
+}
+
+bool Type::resolvesToChar()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isChar();
+}
+
+bool Type::resolvesToInteger()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isInteger();
+}
+
+bool Type::resolvesToFloat()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isFloat();
+}
+
+bool Type::resolvesToPointer()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isPointer();
+}
+
+bool Type::resolvesToArray()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isArray();
+}
+
+bool Type::resolvesToCompound()
+{
+    Type *ty = this;
+    if (ty->isNamed())
+        ty = ((NamedType*)ty)->resolvesTo();
+    return ty && ty->isCompound();
+}
+
+
