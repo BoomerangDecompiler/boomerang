@@ -2164,6 +2164,8 @@ Type *Statement::getTypeFor(Exp *e, Prog *prog)
     if (e->getOper() == opSubscript) {
         ty = getTypeFor(e->getSubExp1(), prog);
     }
+    // MVE: not sure if this is right
+    if (ty == NULL) ty = e->getType();  // May be m[blah].member
     return ty;
 }
 
