@@ -85,6 +85,8 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
 
 %define DEBUG 1 
 
+%define INHERIT : public gc
+
 %define PARSE_PARAM \
     RTLInstDict& Dict
 
@@ -1486,8 +1488,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                     Exp* repl =((ExprTable*)(TableDict[tbl]))
                       ->expressions[indexrefmap[idx]->getvalue()];
                     s->searchAndReplace(*it, repl);
-                    // Just in case the top level is changed...
-                    rtl->updateStmt(s, j);
                 }
             }
             // Operator tables
@@ -1516,8 +1516,6 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                 Exp* repl = new Binary(strToOper(ops), e1->clone(),
                 e2->clone());
                 s->searchAndReplace(res, repl);
-                // In case the top level is changed (common)
-                rtl->updateStmt(s, j);
             }
         }
    
