@@ -1109,7 +1109,8 @@ std::set<UserProc*>* UserProc::decompile() {
         }
         fixCallRefs();
         // recognising globals early prevents them from becoming parameters
-        replaceExpressionsWithGlobals();
+        if (depth == maxDepth)      // Else Sparc problems... MVE
+            replaceExpressionsWithGlobals();
         int nparams = signature->getNumParams();
         if (depth > 0) {
             addNewParameters();
@@ -1918,6 +1919,8 @@ void UserProc::replaceExpressionsWithGlobals() {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
+                // Temporary: the below assumes that the address of a global is
+                // an integer constant
                 if (ty && ty->resolvesToPointer() && 
                       e->getOper() == opIntConst) {
                     Type *pty = ty->asPointer()->getPointsTo();
@@ -1925,7 +1928,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                         pty->asArray()->isUnbounded()) {
                         ArrayType *a = (ArrayType*)pty->asArray()->clone();
                         pty = a;
-                        a->setLength(1024);   // just something arbitary
+                        a->setLength(1024);   // just something arbitrary
                         if (i+1 < call->getNumArguments()) {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
@@ -2335,7 +2338,7 @@ void UserProc::replaceExpressionsWithLocals(bool lastPass) {
                         pty->asArray()->isUnbounded()) {
                         ArrayType *a = (ArrayType*)pty->asArray()->clone();
                         pty = a;
-                        a->setLength(1024);   // just something arbitary
+                        a->setLength(1024);   // just something arbitrary
                         if (i+1 < call->getNumArguments()) {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
