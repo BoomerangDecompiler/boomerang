@@ -15,6 +15,7 @@
 
 #define FRONTIER_PENTIUM		BOOMDIR "/test/pentium/frontier"
 #define SEMI_PENTIUM		    BOOMDIR "/test/pentium/semi"
+#define IFTHEN_PENTIUM		    BOOMDIR "/test/pentium/ifthen"
 
 #include "CfgTest.h"
 #include <sstream>
@@ -39,6 +40,8 @@ suite->addTest(new CppUnit::TestCaller<CfgTest> ("CfgTest", \
 void CfgTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testDominators);
     MYTEST(testSemiDominators);
+    MYTEST(testPlacePhi);
+    MYTEST(testPlacePhi2);
 }
 
 int CfgTest::countTestCases () const
@@ -148,7 +151,8 @@ void CfgTest::testSemiDominators () {
     CPPUNIT_ASSERT(bb);
     int nL = d->indices[bb];
 
-    // The dominator for L should be B, where the semi dominator is D (book says F)
+    // The dominator for L should be B, where the semi dominator is D
+    // (book says F)
     unsigned actual_dom  = (unsigned)d->BBs[d->idom[nL]]->getLowAddr();
     unsigned actual_semi = (unsigned)d->BBs[d->semi[nL]]->getLowAddr();
     CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_B, actual_dom);
@@ -160,4 +164,94 @@ void CfgTest::testSemiDominators () {
     for (ii=d->DF[nL].begin(); ii != d->DF[nL].end(); ii++)
         actual << std::hex << (unsigned)d->BBs[*ii]->getLowAddr() << " ";
     CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
+}
+
+/*==============================================================================
+ * FUNCTION:        CfgTest::testPlacePhi
+ * OVERVIEW:        Test the placing of phi functions
+ *============================================================================*/
+void CfgTest::testPlacePhi () {
+    BinaryFile* pBF = BinaryFile::Load(FRONTIER_PENTIUM);
+    CPPUNIT_ASSERT(pBF != 0);
+    FrontEnd* pFE = new PentiumFrontEnd(pBF);
+    Prog* prog = pFE->decode();
+
+    UserProc* pProc = (UserProc*) prog->getProc(0);
+    Cfg* cfg = pProc->getCFG();
+
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    prog->analyse();
+
+    DOM* d = new DOM;
+    cfg->dominators(d);
+    cfg->placePhiFunctions(d, 1);
+
+    // m[r29 - 8] (x for this program)
+    Exp* e = new Unary(opMemOf,
+        new Binary(opMinus,
+            Unary::regOf(29),
+            new Const(4)));
+
+    // A_phi[x] should be the set {2 6 8 11 4 20} (all the join points)
+    std::set<int> expected;
+    expected.insert(2);  expected.insert(6); expected.insert(8);
+    expected.insert(11); expected.insert(4); expected.insert(20);
+    bool result = expected == d->A_phi[e];
+    CPPUNIT_ASSERT_EQUAL(true, result);
+    delete e;
+}
+
+/*==============================================================================
+ * FUNCTION:        CfgTest::testPlacePhi2
+ * OVERVIEW:        Test a case where a phi function is not needed
+ *============================================================================*/
+void CfgTest::testPlacePhi2 () {
+    BinaryFile* pBF = BinaryFile::Load(IFTHEN_PENTIUM);
+    CPPUNIT_ASSERT(pBF != 0);
+    FrontEnd* pFE = new PentiumFrontEnd(pBF);
+    Prog* prog = pFE->decode();
+
+    UserProc* pProc = (UserProc*) prog->getProc(0);
+    Cfg* cfg = pProc->getCFG();
+
+    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
+    prog->analyse();
+
+    DOM* d = new DOM;
+    cfg->dominators(d);
+    cfg->placePhiFunctions(d, 1);
+
+    // In this program, x is allocated at [ebp-4], a at [ebp-8], and
+    // b at [ebp-12]
+    // We check that A_phi[ m[ebp-8] ] is 3, and that
+    // A_phi A_phi[ m[ebp-8] ] is null
+    // (block 4 comes out with n=3)
+
+    std::string expected = "3 ";
+    std::ostringstream actual;
+    // m[r29 - 8]
+    Exp* e = new Unary(opMemOf,
+        new Binary(opMinus,
+            Unary::regOf(29),
+            new Const(8)));
+    std::set<int>& s = d->A_phi[e];
+    std::set<int>::iterator pp;
+    for (pp = s.begin(); pp != s.end(); pp++)
+        actual << *pp << " ";
+    CPPUNIT_ASSERT_EQUAL(expected, actual.str());
+    delete e;
+
+    expected = "";
+    std::ostringstream actual2;
+    // m[r29 - 12]
+    e = new Unary(opMemOf,
+        new Binary(opMinus,
+            Unary::regOf(29),
+            new Const(12)));
+ 
+    std::set<int>& s2 = d->A_phi[e];
+    for (pp = s2.begin(); pp != s2.end(); pp++)
+        actual2 << *pp << " ";
+    CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
+    delete e;
 }

@@ -372,7 +372,7 @@ public:
 protected:
 /* general basic block information */
     BBTYPE          m_nodeType;     // type of basic block
-    std::list<RTL*>*     m_pRtls;        // Ptr to list of RTLs
+    std::list<RTL*>* m_pRtls;       // Ptr to list of RTLs
     int             m_iLabelNum;    // Nonzero if start of BB needs label
 	std::string		m_labelStr;		// string label of this bb.
 	bool			m_labelneeded;
@@ -1072,6 +1072,7 @@ public:
     int  ancestorWithLowestSemi(DOM* d, int v);
     void Link(DOM* d, int p, int n);
     void computeDF(DOM* d, int n);
+    void placePhiFunctions(DOM* d, int memDepth);
 };              /* Cfg */
 
 #endif

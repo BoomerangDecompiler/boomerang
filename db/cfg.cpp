@@ -2179,7 +2179,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
             } else if ((*it)->getType() == CALL) {
                 if (j > 0)
                     // A call interprocedural edge
-                    of << " [color=blue]";
+                    of << " [color=blue style=dashed]";
                 else {
                     Proc* dest = (*it)->getDestProc();
                     if (!dest->isLib())
@@ -2188,7 +2188,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
                 }
             } else if ((*it)->getType() == RET) {
                 // A return interprocedural edge
-                    of << " [color=green]";
+                    of << " [color=green style=dashed]";
             }
             of << ";\n";
         }

@@ -21,5 +21,7 @@ class CfgTest : public CppUnit::TestCase {
 
     void testDominators ();
     void testSemiDominators ();
+    void testPlacePhi ();
+    void testPlacePhi2();
 };
 

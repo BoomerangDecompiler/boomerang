@@ -146,3 +146,78 @@ void Cfg::computeDF(DOM* d, int n) {
     }
     d->DF[n] = S;
 }
+
+void Cfg::placePhiFunctions(DOM* d, int memDepth) {
+    // First free some memory no longer needed
+    d->dfnum.resize(0);
+    d->semi.resize(0);
+    d->ancestor.resize(0);
+    d->idom.resize(0);
+    d->samedom.resize(0);
+    d->vertex.resize(0);
+    d->parent.resize(0);
+    d->best.resize(0);
+    d->bucket.resize(0);
+
+    // Set the sizes of needed vectors
+    int numBB = d->indices.size();
+    d->A_orig.resize(numBB);
+
+    // We need to create A_orig for the current memory depth
+    for (int n=0; n < numBB; n++) {
+        BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+        PBB bb = d->BBs[n];
+        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
+          s = bb->getNextStmt(rit, ii, cii)) {
+            AssignExp* ae = dynamic_cast<AssignExp*>(s);
+            if (ae) {
+                Exp* lhs = ae->getLeft();
+                if (lhs->getMemDepth() == memDepth)
+                    d->A_orig[n].insert(ae->getLeft());
+            }
+        }
+    }
+
+    // For each node n
+    for (int n=0; n < numBB; n++) {
+        // For each variable a in A_orig[n]
+        std::set<Exp*, lessExpStar>& s = d->A_orig[n];
+        std::set<Exp*, lessExpStar>::iterator aa;
+        for (aa = s.begin(); aa != s.end(); aa++) {
+            Exp* a = *aa;
+            d->defsites[a].insert(n);
+        }
+    }
+
+    // For each variable a (in defsites, I presume)
+    std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
+    for (mm = d->defsites.begin(); mm != d->defsites.end(); mm++) {
+        Exp* a = (*mm).first;               // *mm is pair<Exp*, set<int>>
+        std::set<int> W = d->defsites[a];   // set copy
+        // While W not empty
+        while (W.size()) {
+            // Remove some node n from W
+            int n = *W.begin();             // Copy first element
+            W.erase(W.begin());             // Remove first element
+            // for each y in DF[n]
+            std::set<int>::iterator yy;
+            std::set<int>& DFn = d->DF[n];
+            for (yy = DFn.begin(); yy != DFn.end(); yy++) {
+                int y = *yy;
+                // if y not element of A_phi[a]
+                std::set<int>& s = d->A_phi[a];
+                if (s.find(y) == s.end()) {
+                    // Supposed to insert trivial phi function for a at top of
+                    // block y
+//std::cerr << "Trivial phi function for " << a << " at top of block " << std::dec << y << " (0x" << std::hex << (unsigned)d->BBs[y]->getLowAddr() << ")\n";
+                    // A_phi[a] <- A_phi[a] U {y}
+                    s.insert(y);
+                    // if a !elementof A_orig[y]
+                    if (d->A_orig[y].find(a) == d->A_orig[y].end())
+                        // W <- W U {y}
+                        W.insert(y);
+                }
+            }
+        }
+    }
+}

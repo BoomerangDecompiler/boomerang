@@ -3,6 +3,9 @@
  * Type sensitive
  */
 
+#ifndef __EXPHELP_H__
+#define __EXPHELP_H__
+
 class Exp;
 
 // A helper file for comparing Exp*'s sensibly
@@ -21,4 +24,4 @@ public:
     bool operator()(const Exp* x, const Exp* y) const;
 };
 
-
+#endif      // __EXPHELP_H__
