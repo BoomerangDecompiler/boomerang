@@ -7,6 +7,7 @@
  * $Revision$
  *
  * 05 Apr 02 - Mike: Created
+ * 05 Apr 02 - Mike: Added clone(), copy constructors
  */
 
 #ifndef __EXP_H_
@@ -38,6 +39,7 @@ protected:
     // Print the expression to the given stream
 public:
     void    print(ostream& os = cout);
+virtual Exp* clone() = 0;
 };
 
 /*==============================================================================
@@ -57,6 +59,11 @@ public:
             Const(double d);
             Const(const char* p);
             Const(ADDRESS a);
+    // Copy constructor
+            Const(Const& o);
+            
+    // Clone
+    Exp*    clone();
 
     void    print(ostream& os);
     // Nothing to destruct: Don't deallocate the string passed to constructor
@@ -72,6 +79,12 @@ public:
             Unary(INDEX id);
     // Constructor, with ID and subexpression
             Unary(INDEX id, Exp* e);
+    // Copy constructor
+            Unary(Unary& o);
+
+    // Clone
+    Exp*    clone();
+
     // Destructor
             ~Unary();
     // Set first subexpression
@@ -90,6 +103,12 @@ public:
             Binary(INDEX id);
     // Constructor, with ID and subexpressions
             Binary(INDEX id, Exp* e1, Exp* e2);
+    // Copy constructor
+            Binary(Binary& o);
+
+	// Clone
+	Exp*	clone();
+
     // Destructor
             ~Binary();
     // Set second subexpression
@@ -108,6 +127,12 @@ public:
             Ternary(INDEX id);
     // Constructor, with ID and subexpressions
             Ternary(INDEX id, Exp* e1, Exp* e2, Exp* e3);
+    // Copy constructor
+            Ternary(Ternary& o);
+
+	// Clone
+	Exp*	clone();
+
     // Destructor
             ~Ternary();
     // Set third subexpression
