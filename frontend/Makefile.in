@@ -31,7 +31,7 @@ GENFILES = $(MACH_SRC)
 all: testFront
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
-HOST_GNU_LD = @HOST_GNU_LD@
+HOST_GNU_LD = yes
 
 BOOMDIR="$(shell pwd)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
@@ -43,10 +43,12 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 
+# Note: link with -lfrontsparc just to get the NJMCDecoder
+# constructor (doesn't matter whether we are using sparc or not)
 testFront: testFront.o $(FRONTEND_LIB) $(TEST_OBJS) $(MACH_LIBS) \
-        ../include/frontend.h
+        ../include/frontend.h 
 	$(CC) -o $@ testFront.o $(TEST_OBJS) -lcppunit -lfrontend -ldb \
-      -lBinaryFile -lutil $(RUNPATH) -L../lib
+      -lBinaryFile -lutil -lfrontsparc $(RUNPATH) -L../lib
 
 $(FRONTEND_LIB): $(LIB_OBJS)
 	$(CC) -shared -o $@ $(LIB_OBJS) $(RUNPATH) -L../lib
