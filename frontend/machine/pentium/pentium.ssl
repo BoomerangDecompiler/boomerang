@@ -1458,6 +1458,12 @@ XCHG.EV.GVOW   modrm, reg16
             *16* reg16 := r[tmph];
 
 # Start of Floating point operators
+
+F2XM1
+            # Compute (2^x)-1
+            # Note: pwr is the binary "raise to power of" operator
+            *80* %st := (2.0 pow %st) -f 1.0;
+
 FABS    
             *1* %st@[79:79] := 0;
 
@@ -1758,6 +1764,11 @@ FPTAN
 
 FRNDINT    
             *80* %st := fround(80,80,%st);
+
+FSCALE
+            # Not 100% sure that %st1 is in floating point form (used as an
+            # integer, though)
+            *80* %st := %st * (2.0 pow %st1);
 
 FSIN    
             *80* %st := sin(%st);
