@@ -620,17 +620,28 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				closeParen(str, curPrec, PREC_UNARY);
 			}
 			break;
-		case opSgnEx: {
-			// MVE: Needs work
-			str << "/* opSgnEx */ (int) ";
+		case opSgnEx: 
+		case opTruncs: {
 			Exp* s = t->getSubExp3();
+			int toSize = ((Const*)t->getSubExp2())->getInt();
+			switch (toSize) {
+				case 8:		str << "(char) "; break;
+				case 16:	str << "(short) "; break;
+				case 64:	str << "(long long) "; break;
+				default:	str << "(int) "; break;
+			}
 			appendExp(str, s, curPrec);
 			break;
 		}
-		case opTruncu:
-		case opTruncs: {
-			str << "/* opTruncs/u */ (int) ";
+		case opTruncu: {
 			Exp* s = t->getSubExp3();
+			int toSize = ((Const*)t->getSubExp2())->getInt();
+			switch (toSize) {
+				case 8:		str << "(unsigned char) "; break;
+				case 16:	str << "(unsigned short) "; break;
+				case 64:	str << "(unsigned long long) "; break;
+				default:	str << "(unsigned int) "; break;
+			}
 			appendExp(str, s, curPrec);
 			break;
 		}
