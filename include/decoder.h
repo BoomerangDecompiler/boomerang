@@ -126,6 +126,8 @@ virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
 	RTLInstDict& getRTLDict() { return RTLDict; }
 
+    void computedJump(const char* name, int size, Exp* dest, ADDRESS pc,std::list<Statement*>* stmts, DecodeResult& result);
+
 protected:
 
 	/*
@@ -156,12 +158,6 @@ protected:
 	 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
 	 */
 	void	unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
-		std::list<Statement*>* stmts, DecodeResult& result);
-
-	/*
-	 * Generate an unconditional jump to a computed location, such as %LR
-	 */
-	void	computedJump(const char* name, int size, Exp* dest, ADDRESS pc,
 		std::list<Statement*>* stmts, DecodeResult& result);
 
 	/*

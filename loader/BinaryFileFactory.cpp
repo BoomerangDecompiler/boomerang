@@ -69,7 +69,8 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 			} else if( TESTMAGIC2( buf,0, 'N','E' ) ) {
 				/* Win16 / Old OS/2 Binary */
 			} else if( TESTMAGIC2( buf,0, 'L','E' ) ) {
-				/* Win32 VxD (Linear Executable) */
+				/* Win32 VxD (Linear Executable) or DOS4GW app */
+                libName = "DOS4GWBinaryFile";
 			} else if( TESTMAGIC2( buf,0, 'L','X' ) ) {
 				/* New OS/2 Binary */
 			}

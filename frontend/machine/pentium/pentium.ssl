@@ -1038,6 +1038,16 @@ PUSH.OD   reg32
             *32* %esp := %esp - 4
             *32* m[%esp] := reg32;
 
+# Just fix up the stack for selector pushes.
+PUSH.CS
+            *32* %esp := %esp - 4;
+	    
+PUSH.DS
+            *32* %esp := %esp - 4;
+
+PUSH.ES
+            *32* %esp := %esp - 4;
+
 OP4 := { "rlc", "rrc", "rl", "rr" };
 ROT := { "RCL", "RCR", "ROL", "ROR" };
 
