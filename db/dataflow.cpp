@@ -313,26 +313,51 @@ void Statement::propagateToAll() {
 }
 
 // Update the dataflow for this stmt. This stmt is about to be deleted.
+// Don't assume the statement being erased has no dataflow; it could be
+// of the form x := x
+// 
 //   Before           After
-//     (1)           nothing!
+//     (1)             (1)
 //     ^ |usedBy       ^ |
-// uses| v             | v
-//     (2) = this      (2)
+// uses| v             | |
+//     (2) = this      | |
 //     ^ |usedBy       | |
 // uses| v             | v
-//  nothing!         nothing!
+//     (3)             (3)
 //
 void Statement::updateDfForErase() {
-    std::set<Statement*>::iterator it;
+    std::set<Statement*>::iterator it, uu;
     updateUses();
+    updateUsedBy();
+    // First fix the down arrows (usedBy)
     for (it = uses->begin(); it != uses->end(); it++) {
         Statement* ss = *it;
-        if (ss->usedBy == NULL) continue;
+        // it is iterating through the (1) set
+        ss->updateUsedBy();
         std::set<Statement*>::iterator pos;
         pos = ss->usedBy->find(this);
         if (pos != ss->usedBy->end())
+            // This is the usedBy entry from this (1) to (2)
             // Erase this use of my definition, since I'm about to be deleted
             ss->usedBy->erase(pos);
+            // The use from this (1) to each (3) comes next
+        for (uu = usedBy->begin(); uu != usedBy->end(); uu++)
+            ss->usedBy->insert(*uu);        // This (3) usedby this (1)
+    }
+    // Next, fix the up arrows (uses)
+    for (it = usedBy->begin(); it != usedBy->end(); it++) {
+        Statement* ss = *it;
+        // it is iterating through the (3) set
+        ss->updateUses();
+        std::set<Statement*>::iterator pos;
+        pos = ss->uses->find(this);
+        if (pos != ss->uses->end())
+            // This is the uses entry from this (3) to (2)
+            // Erase this def of my rhs, since I'm about to be deleted
+            ss->uses->erase(pos);
+            // The uses from this (3) to each (1) comes next
+        for (uu = uses->begin(); uu != uses->end(); uu++)
+            ss->uses->insert(*uu);        // This (3) uses this (1)
     }
 }
 
@@ -374,3 +399,15 @@ void Statement::printWithUses(std::ostream& os) {
 #endif
 }
 
+/*==============================================================================
+ * FUNCTION:        operator<<
+ * OVERVIEW:        Output operator for Statement*
+ *                  Just makes it easier to use e.g. std::cerr << myStmtStar
+ * PARAMETERS:      os: output stream to send to
+ *                  p: ptr to Statement to print to the stream
+ * RETURNS:         copy of os (for concatenation)
+ *============================================================================*/
+std::ostream& operator<<(std::ostream& os, Statement* s) {
+    s->print(os);
+    return os;
+}
