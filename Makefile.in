@@ -173,6 +173,7 @@ db/ExpTest.o:				EXTRA = $(BOOMSET)
 db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 db/StatementTest.o:			EXTRA = $(BOOMSET) -Ifrontend
 db/CfgTest.o:               EXTRA = $(BOOMSET) -Ifrontend
+type/TypeTest.o:            EXTRA = $(BOOMSET) -Ifrontend
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp

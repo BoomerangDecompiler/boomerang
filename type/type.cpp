@@ -279,6 +279,8 @@ int NamedType::getSize() const
     Type *ty = resolvesTo();
     if (ty)
         return ty->getSize();
+    if (VERBOSE)
+        LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
     return 0; // don't know
 }
 
@@ -302,8 +304,10 @@ Type *CompoundType::getTypeAtOffset(int n)
 {
     int offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
-        if (offset >= n && n < offset + types[i]->getSize())
-            return getType(offset == n ? i : i - 1);
+        //if (offset >= n && n < offset + types[i]->getSize())
+        if (offset <= n && n < offset + types[i]->getSize())
+            //return getType(offset == n ? i : i - 1);
+            return types[i];
         offset += types[i]->getSize();
     }
     return NULL;
@@ -313,8 +317,10 @@ const char *CompoundType::getNameAtOffset(int n)
 {
     int offset = 0;
     for (unsigned i = 0; i < types.size(); i++) {
-        if (offset >= n && n < offset + types[i]->getSize())
-            return getName(offset == n ? i : i - 1);
+        //if (offset >= n && n < offset + types[i]->getSize())
+        if (offset <= n && n < offset + types[i]->getSize())
+            //return getName(offset == n ? i : i - 1);
+            return names[i].c_str();
         offset += types[i]->getSize();
     }
     return NULL;
