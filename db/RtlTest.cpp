@@ -141,7 +141,7 @@ public:
     virtual bool visit(  CaseStatement *s) { d = true; return false; }
     virtual bool visit(  CallStatement *s) { e = true; return false; }
     virtual bool visit(ReturnStatement *s) { f = true; return false; }
-    virtual bool visit(   SetStatement *s) { g = true; return false; }
+    virtual bool visit(   BoolStatement *s) { g = true; return false; }
     virtual bool visit(         Assign *s) { h = true; return false; }
 };
 
@@ -161,7 +161,7 @@ void RtlTest::testVisitor()
     CPPUNIT_ASSERT(visitor->b);
     delete jump;
 
-    /* jcond stmt */
+    /* branch stmt */
     BranchStatement *jcond = new BranchStatement;
     jcond->accept(visitor);
     CPPUNIT_ASSERT(visitor->c);
@@ -185,8 +185,8 @@ void RtlTest::testVisitor()
     CPPUNIT_ASSERT(visitor->f);
     delete ret;
 
-    /* scond stmt */
-    SetStatement *scond = new SetStatement(0);
+    /* "bool" stmt */
+    BoolStatement *scond = new BoolStatement(0);
     scond->accept(visitor);
     CPPUNIT_ASSERT(visitor->g);
     delete scond;

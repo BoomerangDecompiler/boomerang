@@ -27,7 +27,7 @@
 /* Class hierarchy:           Statement (abstract)
                               /   |   \
                              /    |    \
-                 GotoStatement  Assign  SetStatement
+                 GotoStatement  Assign  BoolStatement
          _______/   |   \____ \____________
         /           |        \             \
 BranchStatement CaseStatement CallStatement ReturnStatement
@@ -1008,11 +1008,11 @@ protected:
 
 
 /*==============================================================================
- * SetStatement represents "setCC" type instructions, where some destination is
+ * BoolStatement represents "setCC" type instructions, where some destination is
  * set (to 1 or 0) depending on the condition codes. It has a condition
  * Exp, similar to the BranchStatement class.
  * *==========================================================================*/
-class SetStatement: public Statement {
+class BoolStatement: public Statement {
     BRANCH_TYPE jtCond;            // the condition for setting true
     Exp* pCond;                    // Exp representation of the high level
                                    // condition: e.g. r[8] == 5
@@ -1020,8 +1020,8 @@ class SetStatement: public Statement {
     Exp* pDest;                    // The location assigned (with 0 or 1)
     int  size;                     // The size of the dest
 public:
-    SetStatement(int size);
-    virtual ~SetStatement();
+    BoolStatement(int size);
+    virtual ~BoolStatement();
 
     // Make a deep copy, and make the copy a derived object if needed.
     virtual Statement* clone();
@@ -1125,7 +1125,7 @@ public:
     virtual bool visit(CaseStatement *stmt) = 0;
     virtual bool visit(CallStatement *stmt) = 0;
     virtual bool visit(ReturnStatement *stmt) = 0;
-    virtual bool visit(SetStatement *stmt) = 0;
+    virtual bool visit(BoolStatement *stmt) = 0;
 };
 
 

@@ -1253,13 +1253,6 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *============================================================================*/
 void GotoStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-#if 0
-    if (getKind() == STMT_RET) {
-        os << "RET";                // RET is a special case of a STMT_GOTO
-        return;
-    }
-#endif
-
     os << "GOTO ";
     if (pDest == NULL)
         os << "*no dest*";
@@ -1272,8 +1265,8 @@ void GotoStatement::print(std::ostream& os /*= cout*/, bool withDF) {
 /*==============================================================================
  * FUNCTION:      GotoStatement::setIsComputed
  * OVERVIEW:      Sets the fact that this call is computed.
- * NOTE:          This should really be removed, once CaseStatement and HLNwayCall
- *                  are implemented properly
+ * NOTE:          This should really be removed, once CaseStatement and
+ *                  HLNwayCall are implemented properly
  * PARAMETERS:    <none>
  * RETURNS:       <nothing>
  *============================================================================*/
@@ -2683,35 +2676,35 @@ void ReturnStatement::print(std::ostream& os /*= cout*/, bool withDF) {
 }
 
 /**********************************************************************
- * SetStatement methods
+ * BoolStatement methods
  * These are for statements that set a destination (usually to 1 or 0)
  * depending in a condition code (e.g. Pentium)
  **********************************************************************/
 
 /*==============================================================================
- * FUNCTION:         SetStatement::SetStatement
+ * FUNCTION:         BoolStatement::BoolStatement
  * OVERVIEW:         Constructor.
  * PARAMETERS:       sz: size of the assignment
  * RETURNS:          <N/a>
  *============================================================================*/
-SetStatement::SetStatement(int sz): jtCond((BRANCH_TYPE)0), pCond(NULL),
+BoolStatement::BoolStatement(int sz): jtCond((BRANCH_TYPE)0), pCond(NULL),
   pDest(NULL), size(sz) {
     kind = STMT_SET;
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::~SetStatement
+ * FUNCTION:        BoolStatement::~BoolStatement
  * OVERVIEW:        Destructor
  * PARAMETERS:      None
  * RETURNS:         N/a
  *============================================================================*/
-SetStatement::~SetStatement() {
+BoolStatement::~BoolStatement() {
     if (pCond)
         delete pCond;
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::setCondType
+ * FUNCTION:        BoolStatement::setCondType
  * OVERVIEW:        Sets the BRANCH_TYPE of this jcond as well as the flag
  *                  indicating whether or not the floating point condition codes
  *                  are used.
@@ -2720,7 +2713,7 @@ SetStatement::~SetStatement() {
  *                    condition codes
  * RETURNS:         a semantic string
  *============================================================================*/
-void SetStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
+void BoolStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
     setCondExpr(new Terminal(opFlags));
@@ -2728,13 +2721,13 @@ void SetStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) {
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::makeSigned
+ * FUNCTION:        BoolStatement::makeSigned
  * OVERVIEW:        Change this from an unsigned to a signed branch
  * NOTE:            Not sure if this is ever going to be used
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void SetStatement::makeSigned() {
+void BoolStatement::makeSigned() {
     // Make this into a signed branch
     switch (jtCond)
     {
@@ -2749,35 +2742,35 @@ void SetStatement::makeSigned() {
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::getCondExpr
+ * FUNCTION:        BoolStatement::getCondExpr
  * OVERVIEW:        Return the Exp expression containing the HL condition.
  * PARAMETERS:      <none>
  * RETURNS:         a semantic string
  *============================================================================*/
-Exp* SetStatement::getCondExpr() {
+Exp* BoolStatement::getCondExpr() {
     return pCond;
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::setCondExpr
+ * FUNCTION:        BoolStatement::setCondExpr
  * OVERVIEW:        Set the Exp expression containing the HL condition.
  * PARAMETERS:      Pointer to semantic string to set
  * RETURNS:         <nothing>
  *============================================================================*/
-void SetStatement::setCondExpr(Exp* pss) {
+void BoolStatement::setCondExpr(Exp* pss) {
     if (pCond) delete pCond;
     pCond = pss;
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::print
+ * FUNCTION:        BoolStatement::print
  * OVERVIEW:        Write a text representation to the given stream
  * PARAMETERS:      os: stream
  * RETURNS:         <Nothing>
  *============================================================================*/
-void SetStatement::print(std::ostream& os /*= cout*/, bool withDF) {
+void BoolStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "SCOND ";
+    os << "BOOL ";
     getDest()->print(os);
     os << " := CC(";
     switch (jtCond)
@@ -2809,13 +2802,13 @@ void SetStatement::print(std::ostream& os /*= cout*/, bool withDF) {
 }
 
 /*==============================================================================
- * FUNCTION:        SetStatement::clone
+ * FUNCTION:        BoolStatement::clone
  * OVERVIEW:        Deep copy clone
  * PARAMETERS:      <none>
- * RETURNS:         Pointer to a new Statement, a clone of this SetStatement
+ * RETURNS:         Pointer to a new Statement, a clone of this BoolStatement
  *============================================================================*/
-Statement* SetStatement::clone() {
-    SetStatement* ret = new SetStatement(size);
+Statement* BoolStatement::clone() {
+    BoolStatement* ret = new BoolStatement(size);
     ret->jtCond = jtCond;
     if (pCond) ret->pCond = pCond->clone();
     else ret->pCond = NULL;
@@ -2829,17 +2822,17 @@ Statement* SetStatement::clone() {
 }
 
 // visit this Statement
-bool SetStatement::accept(StmtVisitor* visitor) {
+bool BoolStatement::accept(StmtVisitor* visitor) {
     return visitor->visit(this);
 }
 
 // serialize this rtl
-bool SetStatement::serialize_rest(std::ostream &ouf) {
+bool BoolStatement::serialize_rest(std::ostream &ouf) {
     return true;
 }
 
 // deserialize an rtl
-bool SetStatement::deserialize_fid(std::istream &inf, int fid) {
+bool BoolStatement::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         default:
             return Statement::deserialize_fid(inf, fid);
@@ -2848,13 +2841,13 @@ bool SetStatement::deserialize_fid(std::istream &inf, int fid) {
     return true;
 }
 
-void SetStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+void BoolStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 }
 
-void SetStatement::simplify() {
+void BoolStatement::simplify() {
 }
 
-void SetStatement::killDef(StatementSet &reach)
+void BoolStatement::killDef(StatementSet &reach)
 {
     assert(pDest);
     StatementSet kills;
@@ -2868,7 +2861,7 @@ void SetStatement::killDef(StatementSet &reach)
 }
 
 // Liveness is killed by a definition
-void SetStatement::killLive(LocationSet &live) {
+void BoolStatement::killLive(LocationSet &live) {
     if (pDest == NULL) return;
     LocSetIter it;
     for (Exp* loc = live.getFirst(it); loc; loc = live.getNext(it)) {
@@ -2879,7 +2872,7 @@ void SetStatement::killLive(LocationSet &live) {
 }
 
 // Deadness is killed by a use
-void SetStatement::killDead(LocationSet &dead) {
+void BoolStatement::killDead(LocationSet &dead) {
     if (pCond)
         dead.remove(pCond);
 }
@@ -2887,7 +2880,7 @@ void SetStatement::killDead(LocationSet &dead) {
 
 #if 0
 // Probably not needed, and probably not right
-void SetStatement::getDeadStatements(StatementSet &dead) {
+void BoolStatement::getDeadStatements(StatementSet &dead) {
     assert(pDest);
     StatementSet reach;
     getReachIn(reach, 2);
@@ -2900,17 +2893,17 @@ void SetStatement::getDeadStatements(StatementSet &dead) {
 }
 #endif
 
-void SetStatement::getDefinitions(LocationSet &defs) 
+void BoolStatement::getDefinitions(LocationSet &defs) 
 {
     defs.insert(getLeft());
 }
 
-Type* SetStatement::getLeftType()
+Type* BoolStatement::getLeftType()
 {
     return new BooleanType();
 }
 
-bool SetStatement::usesExp(Exp *e)
+bool BoolStatement::usesExp(Exp *e)
 {
     assert(pDest && pCond);
     Exp *where = 0;
@@ -2918,11 +2911,11 @@ bool SetStatement::usesExp(Exp *e)
         ((Unary*)pDest)->getSubExp1()->search(e, where)));
 }
 
-void SetStatement::processConstants(Prog *prog)
+void BoolStatement::processConstants(Prog *prog)
 {
 }
 
-bool SetStatement::search(Exp *search, Exp *&result)
+bool BoolStatement::search(Exp *search, Exp *&result)
 {
     assert(pDest);
     if (pDest->search(search, result)) return true;
@@ -2930,7 +2923,7 @@ bool SetStatement::search(Exp *search, Exp *&result)
     return pCond->search(search, result);
 }
 
-bool SetStatement::searchAndReplace(Exp *search, Exp *replace) {
+bool BoolStatement::searchAndReplace(Exp *search, Exp *replace) {
     bool change = false;
     assert(pCond);
     assert(pDest);
@@ -2939,40 +2932,40 @@ bool SetStatement::searchAndReplace(Exp *search, Exp *replace) {
     return change;
 }
 
-Type* SetStatement::updateType(Exp *e, Type *curType) {
+Type* BoolStatement::updateType(Exp *e, Type *curType) {
     delete curType;
     return new BooleanType();
 }
 
 // Convert from SSA form
-void SetStatement::fromSSAform(igraph& ig) {
+void BoolStatement::fromSSAform(igraph& ig) {
     pCond = pCond->fromSSA(ig); 
     pDest = pDest->fromSSA(ig);
 }
 
-void SetStatement::doReplaceRef(Exp* from, Exp* to) {
+void BoolStatement::doReplaceRef(Exp* from, Exp* to) {
     searchAndReplace(from, to);
     simplify();
 }
 
-void SetStatement::addUsedLocs(LocationSet& used) {
+void BoolStatement::addUsedLocs(LocationSet& used) {
     if (pCond)
         pCond->addUsedLocs(used);
 }
 
-void SetStatement::subscriptVar(Exp* e, Statement* def) {
+void BoolStatement::subscriptVar(Exp* e, Statement* def) {
     if (pCond) pCond = pCond->expSubscriptVar(e, def);
     if (pDest) pDest = pDest->expSubscriptVar(e, def);
 }
 
 
 // Remove refs to statements defining restored locations
-void SetStatement::removeRestoreRefs(StatementSet& rs) {
+void BoolStatement::removeRestoreRefs(StatementSet& rs) {
     pCond->doRemoveRestoreRefs(rs);
     pDest->doRemoveRestoreRefs(rs);
 }
 
-void SetStatement::toSSAform(StatementSet& reachin, int memdepth,
+void BoolStatement::toSSAform(StatementSet& reachin, int memdepth,
   StatementSet& rs) {
     pCond = pCond->updateRefs(reachin, memdepth, rs);
     pDest = pDest->updateRefs(reachin, memdepth, rs);
