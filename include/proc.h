@@ -361,6 +361,7 @@ public:
     void replaceExpressionsWithSymbols();
     bool removeNullStatements();
     bool removeDeadStatements();
+    void removeUnusedStatements();
     bool propagateAndRemoveStatements();
     void propagateStatements();
     //void computeDataflow();       // Recalculate dataflow

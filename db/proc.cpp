@@ -903,6 +903,7 @@ void UserProc::print(std::ostream &out, bool withDF) {
 void UserProc::initStatements(int& stmtNum) {
     if (stmts_init)
         return;         // Already done
+    Prog* prog = getProg();         // Ptr to the Prog object
     stmts_init = true;  // Only do this once
     BB_IT it;
     BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
@@ -914,9 +915,10 @@ void UserProc::initStatements(int& stmtNum) {
             s->setNumber(++stmtNum);
             HLCall* call = dynamic_cast<HLCall*>(s);
             if (call) {
-                // FIXME: Temporary hack for lib procs!
+                // Temporary hack for lib procs!
                 Proc* dest = call->getDestProc();
                 if (dest && dest->isLib()) {
+                    call->setSigArguments();    // Get params
                     StatementList sl;
                     dest->getInternalStatements(sl);
                     std::list<Exp*>* le = new std::list<Exp*>;
@@ -1169,6 +1171,7 @@ void UserProc::decompile() {
             if (!Boomerang::get()->noRemoveNull) {
                 change |= removeNullStatements();
                 //change |= removeDeadStatements(); // Broken now
+                removeUnusedStatements();
             }
         }
     }
@@ -1602,7 +1605,8 @@ void UserProc::propagateStatements() {
             for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
                 if (e->getNumUses() == 1) {
                     // Can propagate TO this statement
-                    Statement* def = ((UsesExp*)e)->getFirstUses();
+                    StmtSetIter dummy;
+                    Statement* def = ((UsesExp*)e)->getFirstUses(dummy);
                     s->replaceUse(def);
                     numProp++;
                     if (VERBOSE) {
@@ -1657,6 +1661,41 @@ void UserProc::computeUses() {
 void UserProc::getReturnSet(LocationSet &ret) {
     if (returnSet.size()) {
         ret = returnSet;
+    }
+}
+
+void UserProc::removeUnusedStatements() {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter ll;
+    std::map<Statement*, int> useCounts;
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll))
+        useCounts[s] = 0;
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+        LocationSet uses;
+        s->addUsedLocs(uses);
+        LocSetIter uu;
+        for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
+            if (!u->isSubscript()) {
+                std::cerr << "removeUnusedStatements: " << u <<
+                  " is not subscripted!\n";
+                continue;
+            }
+            UsesExp* ue = (UsesExp*)u;
+            StmtSetIter xx;
+            for (Statement* def = ue->getFirstUses(xx); def;
+                  def = ue->getNextUses(xx)) {
+std::cerr << "Updating count for " << def << "\n";
+                useCounts[def]++;
+            }
+        }
+    }
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+        if (useCounts[s] == 0) {
+            if (VERBOSE)
+                std::cerr << "Removing unused statement " << s;
+            removeStatement(s);
+        }
     }
 }
 

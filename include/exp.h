@@ -701,12 +701,11 @@ virtual Exp* clone();
     void    print(std::ostream& os, bool withUses = false);
     Exp*    updateUses(StatementSet& defs);
 virtual int getNumUses() {return stmtSet.size();}
-    Statement* getFirstUses() {StmtSetIter it; return stmtSet.getFirst(it);}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
-    Statement* getFirstUse(StmtSetIter it) {return stmtSet.getFirst(it);}
-    Statement* getNextUse (StmtSetIter it) {return stmtSet.getNext (it);}
+    Statement* getFirstUses(StmtSetIter& it) {return stmtSet.getFirst(it);}
+    Statement* getNextUses (StmtSetIter& it) {return stmtSet.getNext (it);}
     virtual Exp* fromSSA(igraph& ig);
 };
 
