@@ -5,6 +5,7 @@
 #include "hllcode.h"
 #include "codegen/chllcode.h"
 #include "boomerang.h"
+#include "gc.h"
 
 Boomerang *Boomerang::boomerang = NULL;
 
