@@ -42,6 +42,12 @@ public: \
   #include "signature.h"
   class AnsiCScanner;
 
+  class TypeIdent {
+  public:
+      Type *ty;
+      std::string nam;
+  };
+
 %}
 %token PREINCLUDE PREDEFINE PREIF PREIFDEF PREENDIF PRELINE
 %token<str> IDENTIFIER STRING_LITERAL
@@ -66,6 +72,8 @@ public: \
    Parameter *param;
    Exp *exp;
    Signature *signature;
+   TypeIdent *type_ident;
+   std::list<TypeIdent*> *type_ident_list;
 }
 
 %{
@@ -75,6 +83,8 @@ public: \
 %type<type> type
 %type<param> param
 %type<param_list> param_list;
+%type<type_ident> type_ident;
+%type<type_ident_list> type_ident_list;
 
 %start translation_unit
 %%
@@ -149,6 +159,22 @@ func_decl: type IDENTIFIER '(' param_list ')' ';'
          }
          ;
 
+type_ident: type IDENTIFIER ';'
+          { $$ = new TypeIdent();
+            $$->ty = $1;
+            $$->nam = $2;
+          }
+
+type_ident_list: type_ident type_ident_list 
+          { $$ = $2;
+            $$->push_front($1);
+          }
+          | type_ident
+          { $$ = new std::list<TypeIdent*>(); 
+            $$->push_back($1);
+          }
+          ;
+
 type: CHAR 
     { $$ = new CharType(); }
     | SHORT 
@@ -174,9 +200,15 @@ type: CHAR
     }
     | CONST type
     { $$ = $2; }
+    | STRUCT '{' type_ident_list '}'
+    { CompoundType *t = new CompoundType(); 
+      for (std::list<TypeIdent*>::iterator it = $3->begin();
+           it != $3->end(); it++) {
+          t->addType((*it)->ty, (*it)->nam.c_str());
+      }
+      $$ = t;
+    }
     ;
-
-
 
 %%
 #include <stdio.h>

@@ -30,11 +30,12 @@
 #include <string>
 #include <map>
 #include <functional>       // For binary_function
+#include <vector>
 
 class Signature;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
-    eArray, eNamed};    // For operator< only
+    eArray, eNamed, eCompound};    // For operator< only
 
 class Type {
 protected:
@@ -65,6 +66,7 @@ virtual bool isFloat() const { return false; }
 virtual bool isPointer() const { return false; }
 virtual bool isArray() const { return false; }
 virtual bool isNamed() const { return false; }
+virtual bool isCompound() const { return false; }
 
     // cloning
 virtual Type* clone() const = 0;
@@ -280,6 +282,36 @@ virtual int     getSize() const;
 virtual const char *getCtype() const;
 
 };
+
+class CompoundType : public Type {
+private:
+    std::vector<Type*> types;
+    std::vector<std::string> names;
+
+public:
+	CompoundType();
+virtual ~CompoundType();
+virtual bool isCompound() const { return true; }
+
+        void addType(Type *n, const char *str) { 
+            types.push_back(n); 
+            names.push_back(str);
+        }
+        int getNumTypes() { return types.size(); }
+        Type *getType(int n) { return types[n]; }
+
+virtual Type* clone() const;
+
+virtual bool    operator==(const Type& other) const;
+//virtual bool    operator-=(const Type& other) const;
+virtual bool    operator< (const Type& other) const;
+
+virtual int     getSize() const;
+
+virtual const char *getCtype() const;
+
+};
+
 
 
 #endif  // __TYPE_H__

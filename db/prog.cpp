@@ -654,6 +654,11 @@ void Prog::insertArguments(StatementSet& rs) {
 
 void Prog::decompile() {
     assert(m_procs.size());
+
+    if (VERBOSE) 
+        std::cerr << "Decompiling " << m_procs.size() 
+                  << " procedures" << std::endl;
+
     UserProc* entryProc = (UserProc*) m_procs.front();
     assert(!entryProc->isLib());
     entryProc->decompile();

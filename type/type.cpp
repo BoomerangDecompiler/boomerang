@@ -85,6 +85,10 @@ NamedType::NamedType(const char *name) : Type(eNamed), name(name)
 {
 }
 
+CompoundType::CompoundType() : Type(eCompound)
+{
+}
+
 /*==============================================================================
  * FUNCTION:        Type::~Type
  * OVERVIEW:        Virtual destructor
@@ -130,6 +134,10 @@ ArrayType::~ArrayType()
 }
 
 NamedType::~NamedType()
+{
+}
+
+CompoundType::~CompoundType()
 {
 }
 
@@ -193,6 +201,14 @@ Type *NamedType::clone() const
     return t;
 }
 
+Type *CompoundType::clone() const
+{
+    CompoundType *t = new CompoundType();
+    for (unsigned i = 0; i < types.size(); i++)
+        t->addType(types[i]->clone(), names[i].c_str());
+    return t;
+}
+
 /*==============================================================================
  * FUNCTION:        *Type::getSize
  * OVERVIEW:        get the size of this type
@@ -242,6 +258,14 @@ int ArrayType::getSize() const
 int NamedType::getSize() const
 {
     return 0; // don't know
+}
+
+int CompoundType::getSize() const
+{
+    int n = 0;
+    for (unsigned i = 0; i < types.size(); i++)
+        n += types[i]->getSize();
+    return n;
 }
 
 /*==============================================================================
@@ -306,6 +330,18 @@ bool ArrayType::operator==(const Type& other) const
 bool NamedType::operator==(const Type& other) const
 {
     return other.isNamed() && (name == ((NamedType&)other).name);
+}
+
+bool CompoundType::operator==(const Type& other) const
+{
+    const CompoundType &cother = (CompoundType&)other;
+    if (other.isCompound() && cother.types.size() == types.size()) {
+        for (unsigned i = 0; i < types.size(); i++)
+            if (!(*types[i] == *cother.types[i]))
+                return false;
+        return true;
+    }
+    return false;
 }
 
 /*==============================================================================
@@ -402,6 +438,12 @@ bool NamedType::operator<(const Type& other) const {
     return (name < ((NamedType&)other).name);
 }
 
+bool CompoundType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+    return getSize() < other.getSize();
+}
+
 /*==============================================================================
  * FUNCTION:        *Type::getCtype
  * OVERVIEW:        Return a string representing this type
@@ -492,6 +534,20 @@ const char *ArrayType::getCtype() const
 const char *NamedType::getCtype() const
 {
      return name.c_str();
+}
+
+const char *CompoundType::getCtype() const
+{
+    std::string &tmp = *(new std::string("struct { "));
+    for (unsigned i = 0; i < types.size(); i++) {
+        tmp += types[i]->getCtype();
+        if (names[i] != "") {
+            tmp += " ";
+            tmp += names[i];
+        }
+        tmp += "; ";
+    }
+    return tmp.c_str();
 }
 
 std::map<std::string, Type*> Type::namedTypes;
