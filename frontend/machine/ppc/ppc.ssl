@@ -31,7 +31,7 @@ INTEGER
   %g8 , %g9 , %g10, %g11, %g12, %g13, %g14, %g15,
   %g16, %g17, %g18, %g19, %g20, %g21, %g22, %g23,
   %g24, %g25, %g26, %g27, %g28, %g29, %g30, %g31 ][32] -> 0..31,
-  [%CR0, %CR1, %CR2, %CR3, %CR4, %CR5, %CR6, %CR7] [32] -> 64; 		#condition registers (contains %CR0 to %CR7)
+  [%CR0, %CR1, %CR2, %CR3, %CR4, %CR5, %CR6, %CR7] [32] -> 64..71; 		#condition registers (contains %CR0 to %CR7)
 
 FLOAT
 [ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
