@@ -60,6 +60,8 @@ namespace CallingConvention {
         virtual Exp *getStackWildcard();
         virtual int  getStackRegister() {return 28; }
         virtual Exp *getProven(Exp *left);
+
+        virtual bool isPromoted() { return true; }
     };
 
     namespace StdC {
@@ -82,6 +84,7 @@ namespace CallingConvention {
             virtual Exp *getStackWildcard();
             virtual int  getStackRegister() {return 28; }
             virtual Exp *getProven(Exp *left);
+            virtual bool isPromoted() { return true; }
         };      
 
         class SparcSignature : public Signature {
@@ -101,6 +104,7 @@ namespace CallingConvention {
             virtual Signature *promote(UserProc *p);
             virtual Exp *getStackWildcard();
             virtual int  getStackRegister() {return 14; }
+            virtual bool isPromoted() { return true; }
         };
     };
 };
@@ -188,6 +192,8 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p,
 
 void CallingConvention::Win32Signature::addReturn(Type *type, Exp *e)
 {
+    if (type->isVoid())
+        return;
     if (e == NULL) {
         e = Location::regOf(24);
     }
@@ -350,6 +356,8 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p,
 
 void CallingConvention::StdC::PentiumSignature::addReturn(Type *type, Exp *e)
 {
+    if (type->isVoid())
+        return;
     if (e == NULL) {
         e = Location::regOf(24);
     }
@@ -451,6 +459,8 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
 
 void CallingConvention::StdC::SparcSignature::addReturn(Type *type, Exp *e)
 {
+    if (type->isVoid())
+        return;
     if (e == NULL) {
         e = Location::regOf(8);
     }

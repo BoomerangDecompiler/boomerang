@@ -738,7 +738,8 @@ void Prog::decompile() {
             LOG << "removing unused returns\n";
 
         // A final pass to remove return locations not used by any caller
-        removeUnusedReturns();
+        if (!Boomerang::get()->noRemoveReturns) 
+            removeUnusedReturns();
 
         // print XML after removing returns
         for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {

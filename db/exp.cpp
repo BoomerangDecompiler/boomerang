@@ -328,6 +328,7 @@ Exp* TypedExp::clone() {
 Exp* PhiExp::clone() {
     PhiExp* c = new PhiExp(subExp1->clone());
     c->stmtVec = stmtVec;
+    c->stmt = stmt;
     return c;
 }
 Exp* RefExp::clone() {
@@ -829,9 +830,10 @@ void Unary::print(std::ostream& os, bool withUses) {
         //    Unary operators   //
         //  //  //  //  //  //  //
 
-        case opNot:     case opLNot:    case opNeg:
+        case opNot:     case opLNot:    case opNeg: case opFNeg:
                  if (op == opNot)  os << "~";
             else if (op == opLNot) os << "L~";
+            else if (op == opFNeg) os << "~f";
             else                   os << "-";
             p1->printr(os, withUses);
             return;
@@ -892,6 +894,11 @@ void Unary::print(std::ostream& os, bool withUses) {
         case opTypeOf:
             os << "T";
             p1->print(os, withUses);
+            return;
+        case opFtrunc:
+            os << "ftrunc(";
+            p1->print(os, withUses);
+            os << ")";
             return;
         default:
             LOG << "Unary::print invalid operator " << operStrings[op] <<
@@ -2212,6 +2219,48 @@ Exp* Binary::polySimplify(bool& bMod) {
         }
     }
 
+    if (op == opFMinus && subExp1->getOper() == opFltConst &&
+        ((Const*)subExp1)->getFlt() == 0.0) {
+        res = new Unary(opFNeg, subExp2);
+        bMod = true;
+        return res;
+    }
+
+    if ((op == opPlus || op == opMinus) && 
+        (subExp1->getOper() == opMults || subExp1->getOper() == opMult) &&
+        subExp2->getOper() == opIntConst &&
+        subExp1->getSubExp2()->getOper() == opIntConst) {
+        int n1 = ((Const*)subExp2)->getInt();
+        int n2 = ((Const*)subExp1->getSubExp2())->getInt();
+        if (n1 == n2) {
+            res = new Binary(subExp1->getOper(), 
+                    new Binary(op, subExp1->getSubExp1()->clone(), 
+                                new Const(1)), 
+                    new Const(n1));
+            bMod = true;
+            return res;
+        }
+    }
+
+    if ((op == opPlus || op == opMinus) &&
+        subExp1->getOper() == opPlus && subExp2->getOper() == opIntConst &&
+        (subExp1->getSubExp2()->getOper() == opMults ||
+         subExp1->getSubExp2()->getOper() == opMult) &&
+        subExp1->getSubExp2()->getSubExp2()->getOper() == opIntConst) {
+        int n1 = ((Const*)subExp2)->getInt();
+        int n2 = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
+        if (n1 == n2) {
+            res = new Binary(opPlus, subExp1->getSubExp1(),
+                    new Binary(subExp1->getSubExp2()->getOper(), 
+                    new Binary(op, 
+                                subExp1->getSubExp2()->getSubExp1()->clone(), 
+                                new Const(1)), 
+                    new Const(n1)));
+            bMod = true;
+            return res;
+        }
+    }
+
     return res;
 }
 
@@ -2338,6 +2387,37 @@ Exp* RefExp::polySimplify(bool& bMod) {
         return res;
     }
 
+    // hack to fixing refs to phis which don't do anything
+    if (def && def->isPhi() && def->getProc()->canProveNow()) {
+        Exp *base = new RefExp(subExp1, NULL);
+        StatementVec::iterator uu;
+        PhiExp *phi = (PhiExp*)def->getRight();
+        for (uu = phi->begin(); uu != phi->end(); uu++)
+            if (*uu && (*uu)->isAssign() && *(*uu)->getLeft() == *subExp1) {
+                bool allZero = true;
+                (*uu)->getRight()->clone()->removeSubscripts(allZero);
+                if (allZero) {
+                    base = (*uu)->getRight()->clone();
+                    break;
+                }
+            }
+        bool allProven = true;
+        for (uu = phi->begin(); uu != phi->end(); uu++) {
+            Exp *query = new Binary(opEquals, new RefExp(subExp1, *uu), base);
+            LOG << "attempting to prove " << query << " for ref to phi\n";
+            if (!def->getProc()->prove(query)) {
+                allProven = false;
+                break;
+            }
+        }
+        if (allProven) {
+            bMod = true;
+            res = base->clone();
+            LOG << "replacing ref to phi " << def << " with " << res << "\n";
+            return res;
+        }
+    }
+
     return res;
 }
 
@@ -2346,8 +2426,20 @@ Exp* PhiExp::polySimplify(bool& bMod) {
     Exp *subExp1 = getSubExp1()->polySimplify(bMod);
 
     if (stmtVec.begin() != stmtVec.end()) {
-        bool allSame = true;
         StatementVec::iterator uu;
+        for (uu = stmtVec.begin(); uu != stmtVec.end(); ) {
+            if (*uu && (*uu)->getRight() && 
+                (*uu)->getRight()->getOper() == opSubscript &&
+                ((RefExp*)(*uu)->getRight())->getRef() == stmt) {
+                if (VERBOSE)
+                    LOG << "removing statement " << *uu << " from phi at " 
+                        << stmt->getNumber() << "\n";
+                uu = stmtVec.remove(uu);
+                continue;
+            }
+            uu++;
+        }
+        bool allSame = true;
         for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
             if (*uu != *stmtVec.begin()) {
                 allSame = false;
@@ -3274,6 +3366,27 @@ Exp* Location::polySimplify(bool& bMod) {
         if (ty->isArray()) {
             res = new Binary(opArraySubscript, l, 
                             new Const(n / (((ArrayType*)ty)->getBaseType()->getSize()/8)));
+            bMod = true;
+            return res;
+        }
+    }
+
+    // check for m[loc + x * n] where loc is a pointer and n is an int that
+    // is the size of the base of the pointer
+    if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp1()->isLocation() &&
+        (res->getSubExp1()->getSubExp2()->getOper() == opMult ||
+         res->getSubExp1()->getSubExp2()->getOper() == opMults) &&
+        res->getSubExp1()->getSubExp2()->getSubExp2()->getOper() == opIntConst)
+    {
+        Location *loc = (Location*)res->getSubExp1()->getSubExp1();
+        Type *ty = loc->getType();
+        int n = ((Const*)res->getSubExp1()->getSubExp2()->
+                              getSubExp2())->getInt();
+        if (ty && ty->isPointer() &&
+            ((PointerType*)ty)->getPointsTo()->getSize() == n*8) {
+            res = new Binary(opArraySubscript, loc, 
+                             res->getSubExp1()->getSubExp2()->getSubExp1());
             bMod = true;
             return res;
         }

@@ -11,6 +11,7 @@ char* operStrings[] = {
     "opFMinus",               // Binary subtraction(single floats)
     "opFMult",                // Multiplication(single floats)
     "opFDiv",                 // (single floats)
+    "opFNeg",                 // Floating point negate
     "opFPlusd",               // addition(double floats)
     "opFMinusd",              // subtraction(double floats)
     "opFMultd",               // Multiplication(double floats)

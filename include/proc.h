@@ -520,6 +520,8 @@ public:
     // Insert actual arguments to match formals
     void insertArguments(StatementSet& rs);
 
+    // returns true if the prover is working right now
+    bool canProveNow();
     // prove any arbitary property of this procedure
     bool prove(Exp *query);
     // helper function, should be private
@@ -610,9 +612,9 @@ public:
     Exp *getLocalExp(const char *nam);
 
     /*
-     * Add new locals, local<next available> to local<n-1>
+     * Add new locals, local<b> to local<n-1>
      */
-    void addLocals(int n);
+    void addLocals(int b, int n);
 
     /*
      * Print the locals declaration in C style.
@@ -687,6 +689,7 @@ public:
     void printAnalysedXML();
     void printSSAXML();
     void printXML();
+    void printUseGraph();
 
 private:
     

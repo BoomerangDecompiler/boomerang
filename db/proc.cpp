@@ -247,6 +247,33 @@ void UserProc::printXML()
     printDetailsXML();
     printSSAXML();
     prog->printCallGraphXML();
+    printUseGraph();
+}
+
+void UserProc::printUseGraph()
+{
+    std::ofstream out((Boomerang::get()->getOutputPath() + 
+                      getName() + "-usegraph.dot").c_str());
+    out << "digraph " << getName() << " {\n";
+    StatementList stmts;
+    getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        LocationSet refs;
+        s->addUsedLocs(refs);
+        LocationSet::iterator rr;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            if (((Exp*)*rr)->isSubscript()) {
+                RefExp *r = (RefExp*)*rr;
+                if (r->getRef())
+                    out << s->getNumber() << " -> " 
+                        << r->getRef()->getNumber() << ";\n";
+            }
+        }
+    }
+    out << "}\n";
+    out.close();
 }
 
 /*==============================================================================
@@ -1434,6 +1461,9 @@ void UserProc::fixCallRefs()
 
 void UserProc::addNewReturns(int depth) {
 
+    if (signature->isPromoted())
+        return;
+
     if (VERBOSE)
         LOG << "Adding new returns for " << getName() << "\n";
 
@@ -1482,6 +1512,9 @@ void UserProc::addNewReturns(int depth) {
 }
 
 void UserProc::addNewParameters() {
+
+    if (signature->isPromoted())
+        return;
 
     if (VERBOSE)
         LOG << "Adding new parameters for " << getName() << "\n";
@@ -1535,6 +1568,16 @@ void UserProc::addNewParameters() {
                         LOG << "ignoring m[global + int] " << e << "\n";
                     continue;
                 }
+#if 1
+                if (e->getOper() != opMemOf ||
+                    e->getSubExp1()->getOper() != opPlus ||
+                    !(*e->getSubExp1()->getSubExp1() == *Location::regOf(28)) ||
+                    e->getSubExp1()->getSubExp2()->getOper() != opIntConst) {
+                    if (VERBOSE)
+                        LOG << "ignoring non pentium " << e << "\n";
+                    continue;
+                }
+#endif
                 if (VERBOSE)
                     LOG << "Found new parameter " << e << "\n";
                 addParameter(e);
@@ -2164,7 +2207,7 @@ void UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        if (s->isPhi()) continue;
+        //if (s->isPhi()) continue;
         // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty, toDepth);
@@ -2206,13 +2249,14 @@ Exp *UserProc::getLocalExp(const char *nam)
     return NULL;
 }
 
-// Add local variables local<nextAvailable> .. local<n-1>
-void UserProc::addLocals(int n) {
-    for (int i=locals.size(); i < n; i++) {
+// Add local variables local<b> .. local<n-1>
+void UserProc::addLocals(int b, int n) {
+    for (int i=b; i < n; i++) {
         std::ostringstream os;
         os << "local" << i;
         std::string name = os.str();
-        locals[name] = new IntegerType();   // Fixed by type analysis later
+        if (locals.find(name) == locals.end())
+            locals[name] = new IntegerType();   // Fixed by type analysis later
     }
 }
 
@@ -2377,6 +2421,7 @@ void UserProc::fromSSAform() {
     getStatements(stmts);
     igraph ig;
     int tempNum = locals.size();
+    int tempBase = tempNum;
     cfg->findInterferences(ig, tempNum);
 
     // First rename the variables (including phi's, but don't remove)
@@ -2453,7 +2498,7 @@ void UserProc::fromSSAform() {
     }
 
     // Add the resulting locals to the proc, so they will be declared
-    addLocals(tempNum);
+    addLocals(tempBase, tempNum);
 
 }
 
@@ -2461,10 +2506,25 @@ void UserProc::insertArguments(StatementSet& rs) {
     cfg->insertArguments(rs);
 }
 
+bool inProve = false;
+
+bool UserProc::canProveNow()
+{
+    return !inProve;
+}
+
+// this function is non-reentrant
 bool UserProc::prove(Exp *query)
 {
-    if (proven.find(query) != proven.end())
+    if (inProve) {
+        LOG << "attempted reentry of prove, returning false\n";
+        return false;
+    }
+    inProve = true;
+    if (proven.find(query) != proven.end()) {
+        inProve = false;
         return true;
+    }
 
     Exp *original = query->clone();
 
@@ -2493,6 +2553,7 @@ bool UserProc::prove(Exp *query)
             }
         if (!gotdef && VERBOSE) {
             LOG << "not in return set: " << query->getSubExp1() << "\n";
+            inProve = false;
             return false;
         }
     }
@@ -2502,11 +2563,13 @@ bool UserProc::prove(Exp *query)
     std::map<PhiExp*, Exp*> cache;
     if (!prover(query, lastPhis, cache)) {
         proven.erase(original);
-        delete original;
+        //delete original;
+        inProve = false;
         return false;
     }
-    delete query;
+    //delete query;
    
+    inProve = false;
     return true;
 }
 
@@ -2619,11 +2682,11 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                                 lastPhis.insert(lastPhi);
                                 if (!prover(e, lastPhis, cache, p)) { 
                                     ok = false; 
-                                    delete e; 
+                                    //delete e; 
                                     break; 
                                 }
                                 lastPhis.erase(lastPhi);
-                                delete e;
+                                //delete e;
                             }
                             if (ok)
                                 cache[p] = query->getSubExp2()->clone();
@@ -2708,7 +2771,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
         if (change && !(*old == *query) && VERBOSE) {
             LOG << old << "\n";
         }
-        delete old;
+        //delete old;
     }
     
     return query->getOper() == opTrue;

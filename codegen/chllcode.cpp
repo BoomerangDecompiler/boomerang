@@ -169,6 +169,7 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, ")");
             break;
         case opNeg:
+        case opFNeg:
             strcat(str, "-(");
             appendExp(str, u->getSubExp1());
             strcat(str, ")");

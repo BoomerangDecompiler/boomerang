@@ -17,7 +17,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noPromote(false), propOnlyToAll(false), debugDataflow(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
-    debugTA(false), decodeMain(true), printAST(false), dumpXML(false)
+    debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
+    noRemoveReturns(false)
 {
 }
 
@@ -64,6 +65,7 @@ void Boomerang::help() {
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-np: no replacement of expressions with parameter names\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
+    std::cerr << "-nR: no removal of unused returns\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
@@ -139,6 +141,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                     case 'r':
                         noRemoveLabels = true;
+                        break;
+                    case 'R':
+                        noRemoveReturns = true;
                         break;
                     case 'd':
                         noDataflow = true;

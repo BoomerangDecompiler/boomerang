@@ -175,6 +175,8 @@ static StatementList& getStdRetStmt(Prog* prog);
 
     // get anything that can be proven as a result of the signature
     virtual Exp *getProven(Exp *left) { return NULL; }
+
+    virtual bool isPromoted() { return false; }
 };
 
 #endif

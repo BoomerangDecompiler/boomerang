@@ -2416,10 +2416,14 @@ Assign::Assign(Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), size(32), guard(NULL)
     if (lhs->getOper() == opTypedExp) { 
         size = ((TypedExp*)lhs)->getType()->getSize(); 
     } 
+    if (rhs->getOper() == opPhi)
+        ((PhiExp*)rhs)->setStatement(this);
 }
-Assign::Assign(int sz, Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), size(sz),
-  guard(NULL) {
+Assign::Assign(int sz, Exp* lhs, Exp* rhs) : lhs(lhs), rhs(rhs), size(sz), guard(NULL) 
+{
     setKind(STMT_ASSIGN);
+    if (rhs->getOper() == opPhi)
+        ((PhiExp*)rhs)->setStatement(this);
 }
 Assign::Assign(Assign& o) : size(o.size) {
     setKind(STMT_ASSIGN);

@@ -110,6 +110,7 @@ typedef std::vector<Statement*>::reverse_iterator reverse_iterator;
     // Get/put at position idx (0 based)
     Statement* getAt(int idx) {return svec[idx];}
     void   putAt(int idx, Statement* s);
+    iterator remove(iterator it);
     char*  prints();                        // Print to string (for debugging)
     void   printNums(std::ostream& os);
     void   clear() { svec.clear(); }

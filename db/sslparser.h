@@ -289,38 +289,39 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #define	TEMP	270
 #define	SHARES	271
 #define	CONV_FUNC	272
-#define	TRANSCEND	273
-#define	BIG	274
-#define	LITTLE	275
-#define	NAME_CALL	276
-#define	NAME_LOOKUP	277
-#define	ENDIANNESS	278
-#define	COVERS	279
-#define	INDEX	280
-#define	NOT	281
-#define	THEN	282
-#define	LOOKUP_RDC	283
-#define	BOGUS	284
-#define	ASSIGN	285
-#define	TO	286
-#define	COLON	287
-#define	S_E	288
-#define	AT	289
-#define	ADDR	290
-#define	REG_IDX	291
-#define	EQUATE	292
-#define	MEM_IDX	293
-#define	TOK_INTEGER	294
-#define	TOK_FLOAT	295
-#define	FAST	296
-#define	OPERAND	297
-#define	FETCHEXEC	298
-#define	CAST_OP	299
-#define	FLAGMACRO	300
-#define	SUCCESSOR	301
-#define	NUM	302
-#define	ASSIGNSIZE	303
-#define	FLOATNUM	304
+#define	TRUNC_FUNC	273
+#define	TRANSCEND	274
+#define	BIG	275
+#define	LITTLE	276
+#define	NAME_CALL	277
+#define	NAME_LOOKUP	278
+#define	ENDIANNESS	279
+#define	COVERS	280
+#define	INDEX	281
+#define	NOT	282
+#define	THEN	283
+#define	LOOKUP_RDC	284
+#define	BOGUS	285
+#define	ASSIGN	286
+#define	TO	287
+#define	COLON	288
+#define	S_E	289
+#define	AT	290
+#define	ADDR	291
+#define	REG_IDX	292
+#define	EQUATE	293
+#define	MEM_IDX	294
+#define	TOK_INTEGER	295
+#define	TOK_FLOAT	296
+#define	FAST	297
+#define	OPERAND	298
+#define	FETCHEXEC	299
+#define	CAST_OP	300
+#define	FLAGMACRO	301
+#define	SUCCESSOR	302
+#define	NUM	303
+#define	ASSIGNSIZE	304
+#define	FLOATNUM	305
 
 
 #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
@@ -365,7 +366,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 369 "sslparser.h"
+#line 370 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -381,6 +382,7 @@ static const int FPOP;
 static const int TEMP;
 static const int SHARES;
 static const int CONV_FUNC;
+static const int TRUNC_FUNC;
 static const int TRANSCEND;
 static const int BIG;
 static const int LITTLE;
@@ -421,7 +423,7 @@ static const int FLOATNUM;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 425 "sslparser.h"
+#line 427 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -437,38 +439,39 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,TEMP=270
 	,SHARES=271
 	,CONV_FUNC=272
-	,TRANSCEND=273
-	,BIG=274
-	,LITTLE=275
-	,NAME_CALL=276
-	,NAME_LOOKUP=277
-	,ENDIANNESS=278
-	,COVERS=279
-	,INDEX=280
-	,NOT=281
-	,THEN=282
-	,LOOKUP_RDC=283
-	,BOGUS=284
-	,ASSIGN=285
-	,TO=286
-	,COLON=287
-	,S_E=288
-	,AT=289
-	,ADDR=290
-	,REG_IDX=291
-	,EQUATE=292
-	,MEM_IDX=293
-	,TOK_INTEGER=294
-	,TOK_FLOAT=295
-	,FAST=296
-	,OPERAND=297
-	,FETCHEXEC=298
-	,CAST_OP=299
-	,FLAGMACRO=300
-	,SUCCESSOR=301
-	,NUM=302
-	,ASSIGNSIZE=303
-	,FLOATNUM=304
+	,TRUNC_FUNC=273
+	,TRANSCEND=274
+	,BIG=275
+	,LITTLE=276
+	,NAME_CALL=277
+	,NAME_LOOKUP=278
+	,ENDIANNESS=279
+	,COVERS=280
+	,INDEX=281
+	,NOT=282
+	,THEN=283
+	,LOOKUP_RDC=284
+	,BOGUS=285
+	,ASSIGN=286
+	,TO=287
+	,COLON=288
+	,S_E=289
+	,AT=290
+	,ADDR=291
+	,REG_IDX=292
+	,EQUATE=293
+	,MEM_IDX=294
+	,TOK_INTEGER=295
+	,TOK_FLOAT=296
+	,FAST=297
+	,OPERAND=298
+	,FETCHEXEC=299
+	,CAST_OP=300
+	,FLAGMACRO=301
+	,SUCCESSOR=302
+	,NUM=303
+	,ASSIGNSIZE=304
+	,FLOATNUM=305
 
 
 #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
@@ -525,5 +528,5 @@ public:
 /* END */
 
 /* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 529 "sslparser.h"
+#line 532 "sslparser.h"
 #endif
