@@ -127,7 +127,7 @@ void StatementTest::testFlow () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *a = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *a = new Assign(Location::regOf(24),
         new Const(5));
     a->setProc(proc);
     rtl->appendStmt(a);
@@ -174,11 +174,11 @@ void StatementTest::testKill () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *e = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *e = new Assign(Location::regOf(24),
                      new Const(5));
     e->setProc(proc);
     rtl->appendStmt(e);
-    e = new Assign(new Unary(opRegOf, new Const(24)),
+    e = new Assign(Location::regOf(24),
                   new Const(6));
     e->setProc(proc);
     rtl->appendStmt(e);
@@ -226,12 +226,12 @@ void StatementTest::testUse () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *a = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
     a->setProc(proc);
     rtl->appendStmt(a);
-    a = new Assign(new Unary(opRegOf, new Const(28)),
-                  new Unary(opRegOf, new Const(24)));
+    a = new Assign(Location::regOf(28),
+                  Location::regOf(24));
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
@@ -278,16 +278,16 @@ void StatementTest::testUseOverKill () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *e = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *e = new Assign(Location::regOf(24),
                      new Const(5));
     e->setProc(proc);
     rtl->appendStmt(e);
-    e = new Assign(new Unary(opRegOf, new Const(24)),
+    e = new Assign(Location::regOf(24),
                      new Const(6));
     e->setProc(proc);
     rtl->appendStmt(e);
-    e = new Assign(new Unary(opRegOf, new Const(28)),
-                  new Unary(opRegOf, new Const(24)));
+    e = new Assign(Location::regOf(28),
+                  Location::regOf(24));
     e->setProc(proc);
     rtl->appendStmt(e);
     pRtls->push_back(rtl);
@@ -335,11 +335,11 @@ void StatementTest::testUseOverBB () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *a = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
     a->setProc(proc);
     rtl->appendStmt(a);
-    a = new Assign(new Unary(opRegOf, new Const(24)),
+    a = new Assign(Location::regOf(24),
                      new Const(6));
     a->setProc(proc);
     rtl->appendStmt(a);
@@ -347,8 +347,8 @@ void StatementTest::testUseOverBB () {
     PBB first = cfg->newBB(pRtls, FALL, 1);
     pRtls = new std::list<RTL*>();
     rtl = new RTL();
-    a = new Assign(new Unary(opRegOf, new Const(28)),
-                  new Unary(opRegOf, new Const(24)));
+    a = new Assign(Location::regOf(28),
+                  Location::regOf(24));
     a->setProc(proc);
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
@@ -394,12 +394,12 @@ void StatementTest::testUseKill () {
     Cfg *cfg = proc->getCFG();
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
-    Assign *a = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *a = new Assign(Location::regOf(24),
                      new Const(5));
     a->setProc(proc);
     rtl->appendStmt(a);
-    a = new Assign(new Unary(opRegOf, new Const(24)),
-              new Binary(opPlus, new Unary(opRegOf, new Const(24)),
+    a = new Assign(Location::regOf(24),
+              new Binary(opPlus, Location::regOf(24),
                              new Const(1)));
     a->setProc(proc);
     rtl->appendStmt(a);
@@ -448,7 +448,7 @@ void StatementTest::testEndlessLoop () {
     std::list<RTL*>* pRtls = new std::list<RTL*>();
     RTL *rtl = new RTL();
     // r[24] := 5
-    Assign *e = new Assign(new Unary(opRegOf, new Const(24)),
+    Assign *e = new Assign(Location::regOf(24),
                      new Const(5));
     e->setProc(proc);
     rtl->appendStmt(e);
@@ -457,8 +457,8 @@ void StatementTest::testEndlessLoop () {
     pRtls = new std::list<RTL*>();
     rtl = new RTL();
     // r[24] := r[24] + 1
-    e = new Assign(new Unary(opRegOf, new Const(24)),
-              new Binary(opPlus, new Unary(opRegOf, new Const(24)),
+    e = new Assign(Location::regOf(24),
+              new Binary(opPlus, Location::regOf(24),
                              new Const(1)));
     e->setProc(proc);
     rtl->appendStmt(e);
@@ -494,7 +494,7 @@ void StatementTest::testEndlessLoop () {
  * OVERVIEW:        
  *============================================================================*/
 void StatementTest::testLocationSet () {
-    Unary rof(opRegOf, new Const(12));
+    Location rof(opRegOf, new Const(12), NULL);
     Const& theReg = *(Const*)rof.getSubExp1();
     LocationSet ls;
     LocationSet::iterator ii;
@@ -518,10 +518,10 @@ void StatementTest::testLocationSet () {
     e = *(++ii); CPPUNIT_ASSERT(rof == *e);
     theReg.setInt(31);
     e = *(++ii); CPPUNIT_ASSERT(rof == *e);
-    Unary mof(opMemOf,
+    Location mof(opMemOf,
         new Binary(opPlus,
-            new Unary(opRegOf, new Const(14)),
-            new Const(4)));
+            Location::regOf(14),
+            new Const(4)), NULL);
     ls.insert(mof.clone());
     ls.insert(mof.clone());
     CPPUNIT_ASSERT_EQUAL(5, ls.size());
@@ -541,8 +541,8 @@ void StatementTest::testLocationSet () {
  * OVERVIEW:        
  *============================================================================*/
 void StatementTest::testWildLocationSet () {
-    Unary rof12(opRegOf, new Const(12));
-    Unary rof13(opRegOf, new Const(13));
+    Location rof12(opRegOf, new Const(12), NULL);
+    Location rof13(opRegOf, new Const(13), NULL);
     Assign a10, a20;
     a10.setNumber(10);
     a20.setNumber(20);
@@ -552,8 +552,8 @@ void StatementTest::testWildLocationSet () {
     RefExp r13_10(rof13.clone(), &a10);
     RefExp r13_20(rof13.clone(), &a20);
     RefExp r13_0 (rof13.clone(), NULL);
-    RefExp r11_10(Unary::regOf(11), &a10);
-    RefExp r22_10(Unary::regOf(22), &a10);
+    RefExp r11_10(Location::regOf(11), &a10);
+    RefExp r22_10(Location::regOf(22), &a10);
     LocationSet ls;
     ls.insert(&r12_10);
     ls.insert(&r12_20);
@@ -565,22 +565,23 @@ void StatementTest::testWildLocationSet () {
     CPPUNIT_ASSERT(ls.find(&wildr12));
     RefExp wildr13(rof13.clone(), (Statement*)-1);
     CPPUNIT_ASSERT(ls.find(&wildr13));
-    RefExp wildr10(Unary::regOf(10), (Statement*)-1);
+    RefExp wildr10(Location::regOf(10), (Statement*)-1);
     CPPUNIT_ASSERT(!ls.find(&wildr10));
     // Test findDifferentRef
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_10));
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_20));
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r13_0));
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_10));
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_20));
-    CPPUNIT_ASSERT(ls.findDifferentRef(&r12_0));
+    Exp* x;
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r13_10, x));
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r13_20, x));
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r13_0 , x));
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r12_10, x));
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r12_20, x));
+    CPPUNIT_ASSERT( ls.findDifferentRef(&r12_0 , x));
     // Next 4 should fail
-    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10));
-    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10, x));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10, x));
     ls.insert(&r11_10);
     ls.insert(&r22_10);
-    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10));
-    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r11_10, x));
+    CPPUNIT_ASSERT(!ls.findDifferentRef(&r22_10, x));
 }
 
 /*==============================================================================
@@ -602,34 +603,34 @@ void StatementTest::testRecursion () {
     RTL *rtl = new RTL();
     // push bp
     // r28 := r28 + -4
-    Assign *a = new Assign(new Unary(opRegOf, new Const(28)),
+    Assign *a = new Assign(Location::regOf(28),
         new Binary(opPlus,
-            new Unary(opRegOf, new Const(28)),
+            Location::regOf(28),
             new Const(-4)));
     rtl->appendStmt(a);
     // m[r28] := r29
     a = new Assign(
-        new Unary(opMemOf,
-            new Unary(opRegOf, new Const(28))),
-        new Unary(opRegOf, new Const(29)));
+        Location::memOf(
+            Location::regOf(28)),
+        Location::regOf(29));
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
     pRtls = new std::list<RTL*>();
     // push arg+1
     // r28 := r28 + -4
-    a = new Assign(new Unary(opRegOf, new Const(28)),
+    a = new Assign(Location::regOf(28),
             new Binary(opPlus,
-                new Unary(opRegOf, new Const(28)),
+                Location::regOf(28),
                 new Const(-4)));
     rtl->appendStmt(a);
     // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
     // esp+8 is return address; esp+12 is our arg
     // m[r28] := m[r28+12] + 1
-    a = new Assign(new Unary(opMemOf, new Unary(opRegOf, new Const(28))),
+    a = new Assign(Location::memOf(Location::regOf(28)),
                      new Binary(opPlus,
-                        new Unary(opMemOf,
+                        Location::memOf(
                             new Binary(opPlus,
-                                new Unary(opRegOf, new Const(28)),
+                                Location::regOf(28),
                                 new Const(12))),
                         new Const(1)));
     a->setProc(proc);
@@ -641,11 +642,11 @@ void StatementTest::testRecursion () {
     pRtls = new std::list<RTL*>();
     rtl = new RTL(1);
     // r28 := r28 + -4
-    a = new Assign(new Unary(opRegOf, new Const(28)),
-        new Binary(opPlus, new Unary(opRegOf, new Const(28)), new Const(-4)));
+    a = new Assign(Location::regOf(28),
+        new Binary(opPlus, Location::regOf(28), new Const(-4)));
     rtl->appendStmt(a);
     // m[r28] := pc
-    a = new Assign(new Unary(opMemOf, new Unary(opRegOf, new Const(28))),
+    a = new Assign(Location::memOf(Location::regOf(28)),
         new Terminal(opPC));
     rtl->appendStmt(a);
     // %pc := (%pc + 5) + 135893848
@@ -664,8 +665,8 @@ void StatementTest::testRecursion () {
     // Vector of 1 arg
     std::vector<Exp*> args;
     // m[r[28]+8]
-    Exp* a = new Unary(opMemOf, new Binary(opPlus,
-      new Unary(opRegOf, new Const(28)), new Const(8)));
+    Exp* a = Location::memOf( new Binary(opPlus,
+      Location::regOf(28), new Const(8)));
     args.push_back(a);
     crtl->setArguments(args);
 #endif
@@ -683,12 +684,13 @@ void StatementTest::testRecursion () {
     // tests for standard Pentium calling convention
     // pc = m[r28]
     a = new Assign(new Terminal(opPC),
-        new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
+        Location::memOf(
+            Location::regOf(28)));
     rtl->appendStmt(a);
     // r28 = r28 + 4
-    a = new Assign(new Unary(opRegOf, new Const(28)),
+    a = new Assign(Location::regOf(28),
         new Binary(opPlus,
-            new Unary(opRegOf, new Const(28)),
+            Location::regOf(28),
             new Const(4)));
     rtl->appendStmt(a);
     pRtls->push_back(rtl);
@@ -727,9 +729,9 @@ void StatementTest::testRecursion () {
  *============================================================================*/
 void StatementTest::testClone () {
     Assign* a1 = new Assign(32,
-            new Unary(opRegOf, new Const(8)),
+            Location::regOf(8),
             new Binary(opPlus,
-                new Unary(opRegOf, new Const(9)),
+                Location::regOf(9),
                 new Const(99)));
     Assign* a2 = new Assign(16,
             new Unary(opParam, new Const("x")),
@@ -760,7 +762,7 @@ void StatementTest::testIsAssign () {
     std::ostringstream ost;
     // r2 := 99
     Assign a(32,
-        Unary::regOf(2),
+        Location::regOf(2),
         new Const(99));
     a.print(ost);
     std::string expected("   0 *32* r2 := 99");
@@ -785,14 +787,14 @@ void StatementTest::testIsFlagAssgn () {
         new Binary (opFlagCall,
             new Const("addFlags"),
             new Binary(opList,
-                Unary::regOf(2),
+                Location::regOf(2),
                 new Const(99))));
     CallStatement* call = new CallStatement;
     BranchStatement* br = new BranchStatement;
     Assign* as = new Assign(
-        Unary::regOf(9),
+        Location::regOf(9),
         new Binary(opPlus,
-            Unary::regOf(10),
+            Location::regOf(10),
             new Const(4)));
     fc.print(ost);
     std::string expected("   0 *32* %flags := addFlags( r2, 99 )");

@@ -11,6 +11,7 @@
 
 #include <sstream>
 #include "CTest.h"
+#include "sigenum.h"
 
 /*==============================================================================
  * FUNCTION:        CTest::registerTests
@@ -59,16 +60,17 @@ void CTest::tearDown () {
 void CTest::testSignature () {
     std::istringstream os("int printf(char *fmt, ...);");
     AnsiCParser *p = new AnsiCParser(os, false);
-    p->yyparse("-stdc-pentium");
+    p->yyparse(PLAT_PENTIUM, CONV_C);
     CPPUNIT_ASSERT_EQUAL(1, (int)p->signatures.size());
     Signature *sig = p->signatures.front();
     CPPUNIT_ASSERT_EQUAL(std::string("printf"), std::string(sig->getName()));
     CPPUNIT_ASSERT(*sig->getReturnType(0) == IntegerType());
     Type *t = new PointerType(new CharType());
-    // Pentium signatures have esp prepended to the list of parameters
-    CPPUNIT_ASSERT_EQUAL(2, sig->getNumParams());
-    CPPUNIT_ASSERT(*sig->getParamType(1) == *t);
-    CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(1)));
+    // Pentium signatures used to have esp prepended to the list of parameters;
+    // no more?
+    CPPUNIT_ASSERT_EQUAL(1, sig->getNumParams());
+    CPPUNIT_ASSERT(*sig->getParamType(0) == *t);
+    CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(0)));
     CPPUNIT_ASSERT(sig->hasEllipsis());
     delete t;
 }

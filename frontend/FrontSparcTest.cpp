@@ -157,7 +157,7 @@ void FrontSparcTest::test2() {
     // This call is to out of range of the program's
     // text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
-    expected = std::string("00010a60    0 CALL 0x21668()\n");
+    expected = std::string("00010a60    0 CALL 0x21668( implicit: )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
@@ -292,6 +292,9 @@ void FrontSparcTest::testDelaySlot() {
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
     FrontEnd *pFE = new SparcFrontEnd(pBF);
+    // decode calls readLibraryCatalog(), which needs to have definitions
+    // for non-sparc architectures cleared
+    Type::clearNamedTypes();
     Prog *prog = pFE->decode();
 
     bool gotMain;
@@ -341,7 +344,7 @@ void FrontSparcTest::testDelaySlot() {
         "00010a8c    0 *32* r8 := 0 | r16\n"
         "00010a90    0 *32* tmp := r30\n"
         "            0 *32* r9 := r30 + -20\n"
-        "00010a90    0 CALL 0x21868()\n");
+        "00010a90    0 CALL 0x21868( implicit: )\n");
     std::string actual(o1.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -353,7 +356,7 @@ void FrontSparcTest::testDelaySlot() {
         "00010a98    0 *32* r8 := 0 | r16\n"
         "00010a9c    0 *32* tmp := r30\n"
         "            0 *32* r9 := r30 + -24\n"
-        "00010a9c    0 CALL 0x21868()\n");
+        "00010a9c    0 CALL 0x21868( implicit: )\n");
     actual = std::string(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -390,7 +393,7 @@ void FrontSparcTest::testDelaySlot() {
     bb->print(o5);
     expected = std::string("Call BB:\n"
         "00010ab8    0 *32* r8 := r8 | 816\n"
-        "00010ab8    0 CALL 0x21874()\n");
+        "00010ab8    0 CALL 0x21874( implicit: )\n");
     actual = std::string(o5.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 

@@ -73,9 +73,9 @@ void RtlTest::tearDown () {
  *============================================================================*/
 void RtlTest::testAppend () {
     Assign* a = new Assign(32,
-            new Unary(opRegOf, new Const(8)),
+            Location::regOf(8),
             new Binary(opPlus,
-                new Unary(opRegOf, new Const(9)),
+                Location::regOf(9),
                 new Const(99)));
     RTL r;
     r.appendStmt(a);
@@ -96,9 +96,9 @@ void RtlTest::testAppend () {
  *============================================================================*/
 void RtlTest::testClone () {
     Assign* a1 = new Assign(32,
-            new Unary(opRegOf, new Const(8)),
+            Location::regOf(8),
             new Binary(opPlus,
-                new Unary(opRegOf, new Const(9)),
+                Location::regOf(9),
                 new Const(99)));
     Assign* a2 = new Assign(16,
             new Unary(opParam, new Const("x")),

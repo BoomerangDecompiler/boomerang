@@ -6,8 +6,8 @@
 
 class ExpTest : public CppUnit::TestCase {
   protected:
-    Const*  m_99;
-    Unary*  m_rof2;
+    Const*      m_99;
+    Location*   m_rof2;
 
   public:
     ExpTest(std::string name) : CppUnit::TestCase (name)
