@@ -584,8 +584,8 @@ std::ostream& LibProc::put(std::ostream& os) {
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
-    cfg(new Cfg()), decoded(false), decompiled(false),
-        returnIsSet(false), isSymbolic(false), uniqueID(0) {
+    cfg(new Cfg()), decoded(false), decompiled(false), decompiled_down(false),
+    stmts_init(false), returnIsSet(false), isSymbolic(false), uniqueID(0) {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
 
@@ -866,7 +866,15 @@ void UserProc::generateCode(HLLCode *hll) {
     assert(cfg);
     assert(getEntryBB());
 
-    if (Boomerang::get()->printRtl)
+    cfg->structure();
+    replaceExpressionsWithGlobals();
+    if (!Boomerang::get()->noLocals) {
+        while (nameStackLocations())
+            replaceExpressionsWithSymbols();
+        while (nameRegisters())
+            replaceExpressionsWithSymbols();
+    }
+    if (VERBOSE || Boomerang::get()->printRtl)
         print(std::cerr);
 
     hll->AddProcStart(signature);
@@ -888,6 +896,45 @@ void UserProc::generateCode(HLLCode *hll) {
 void UserProc::print(std::ostream &out, bool withDF) {
     signature->print(out);
     cfg->print(out, withDF);
+}
+
+// initialise all statements
+void UserProc::initStatements() {
+    if (stmts_init)
+        return;         // Already done
+    stmts_init = true;  // Only do this once
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        std::list<RTL*> *rtls = bb->getRTLs();
+        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+          rit++) {
+            RTL *rtl = *rit;
+            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+              it != rtl->getList().end(); it++) {
+                Statement *e = dynamic_cast<Statement*>(*it);
+                if (e == NULL) continue;
+                e->setProc(this);
+                e->setBB(bb);
+            }
+            if (rtl->getKind() == CALL_RTL) {
+                HLCall *call = (HLCall*)rtl;
+                call->setProc(this);   // Different statement to its assignments
+                call->setBB(bb);
+                StatementList &internal = call->getInternalStatements();
+                StmtListIter it1;
+                for (Statement* s1 = internal.getFirst(it1); s1;
+                  s1 = internal.getNext(it1)) {
+                    s1->setProc(this);
+                    s1->setBB(bb);
+                }
+            }
+            if (rtl->getKind() == JCOND_RTL) {
+                HLJcond *jcond = (HLJcond*)rtl;
+                jcond->setProc(this);
+                jcond->setBB(bb);
+            }
+        }
+    }
 }
 
 // get all statements
@@ -965,71 +1012,133 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
+// Perform "on the way down" decompilation processing
+// This is for coping with cycles in the call graph
+// At present, we summarise the dataflow (so that call statements which call
+// this proc can have dataflow accurately propagated through them), and
+// find the use-before-define locations (formal parameters) for later use
+void UserProc::decompile_down() {
+    initStatements();           // Ensure all statements have proc field set
+    // Summarise the data flow. Note that this is not the final dataflow;
+    // it assumes no uses or kills in call statements.
+    // When we perform "on the way back" processing, we will have the full
+    // dataflow
+
+    // Summary will be in cfg->getReachExit(), getAvailExit(), and 
+    // getLiveEntry()
+    cfg->computeReaches();
+    cfg->computeAvailable();
+    cfg->computeLiveness();
+    
+    if (VERBOSE) {
+        StmtSetIter oo;
+        StatementSet* reachExit = cfg->getReachExit();
+        if (reachExit) {
+            std::cerr << "reachExit for proc " << getName() <<
+            " (on way down):\n";
+            for (Statement* s = reachExit->getFirst(oo); s;
+              s = reachExit->getNext(oo)) {
+                s->printAsUse(std::cerr); std::cerr << ", ";
+            }
+        }
+        else std::cerr << "No reach exit!";
+        StatementSet* availExit = cfg->getAvailExit();
+        if (availExit) {
+std::cerr << "AvailExit is at 0x" << std::hex << (unsigned)cfg->getAvailExit() << "\n";
+            std::cerr << "\navailExit for proc " << getName() <<
+              " (on way down):\n";
+            for (Statement* s = availExit->getFirst(oo); s;
+              s = availExit->getNext(oo)) {
+                s->printAsUse(std::cerr); std::cerr << ", ";
+            }
+        }
+        else std::cerr << "No avail exit!";
+        LocationSet* liveEntry = cfg->getLiveEntry();
+        if (liveEntry) {
+            std::cerr << "\nliveEntry for proc " << getName() <<
+              " (on way down):\n";
+            LocSetIter ll;
+            for (Exp* loc = liveEntry->getFirst(ll); loc;
+              loc = liveEntry->getNext(ll)) {
+                std::cerr << loc << ", ";
+            }
+        }
+        else std::cerr << "No live entry!";
+        std::cerr << "\n--\n";
+    }
+}
+
 // decompile this userproc
 void UserProc::decompile() {
-    if (decompiled) return;
-    decompiled = true;
+    // Prevent infinite loops when there are cycles in the call graph
+    if (decompiled_down) return;
 
-    if (VERBOSE) 
-        std::cerr << "decompiling: " << getName() << std::endl;
-    
-    // The following loop could be a lot quicker if we just checked each BB,
-    // and just looked at the last rtl of each CALL BB
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        HLCall *call = dynamic_cast<HLCall*>(s);
-        if (call == NULL) continue;
-        call->decompile();
+    if (VERBOSE)
+        std::cerr << "decompiling (down): " << getName() << std::endl;
+    // This is code that we can perform "on the way down" to the bottom
+    // of the call tree. It should not depend on information from further
+    // down, or if it does, it should assume nothing about callees
+    // and add to the information that it finds.
+    // This solves problems with recursion and other cycles in the call graph
+    decompile_down();
+
+    // Done "on the way down" processing for this proc
+    decompiled_down = true;
+
+    // Look at each call, to perform a depth first search.
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        if (bb->getType() == CALL) {
+            // The call RTL will be the last in this BB
+            HLCall* call = (HLCall*)bb->getRTLs()->back();
+            call->decompile();
+        }
     }
 
-    if (!Boomerang::get()->noDataflow)
-        cfg->computeDataflow();
-#if 1   // Calculate ud/du as needed
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks();
-#endif
-
     if (VERBOSE) {
+        std::cerr << "decompiling (back): " << getName() << std::endl;
         print(std::cerr, false);    // First time no df so it's readable!
-        print(std::cerr, true);
     }
     bool change = true;
     while (change) {
         if (Boomerang::get()->noDataflow)
             break;
         change = false;
+        recalcDataflow();
+        if (VERBOSE) print(std::cerr, true);
         change |= propagateAndRemoveStatements();
-        bool propagated = change;
         change |= removeNullStatements();
         change |= removeDeadStatements();
-        // We have a problem with aliases that is not correctable as yet
-        // E.g. in pentium hello,
-        // m[r[28]] := 134517752
-        // ...
-        // CALL printf(m[r[28] + 4],...
-        // It is not obvious that the two m[] are the same until some forward
-        // subsitutions (propagate changes to r[28]
-        // Can't think of a way to avoid these precisely
-        if (propagated) recalcDataFlow();
     }
     if (!Boomerang::get()->noRemoveInternal)
-        removeInternalStatements();
+        moveInternalStatements();
     cfg->compressCfg();
     processConstants();
+
+    // Convert the signature object to one of a derived class, e.g.
+    // SparcSignature.
     promoteSignature();
-    cfg->structure();
-    replaceExpressionsWithGlobals();
-    if (!Boomerang::get()->noLocals) {
-        while (nameStackLocations())
-            replaceExpressionsWithSymbols();
-        while (nameRegisters())
-            replaceExpressionsWithSymbols();
+    // promoteSignature has converted some register and memory locations
+    // to "arg1" etc (opParam). Redo the liveness to reflect this change
+    cfg->computeLiveness();
+    LocationSet* le = cfg->getLiveEntry();
+// Above is unused... not finished
+    // Get the live set on entry to this procedure. It could well be
+    // shorter than it was
+    // MVE: Also need to fix return location (remove when not used)
+
+    // Truncate the number of arguments to calls (only needed for calls
+    // promoteSignature has converted some 
+    // involved in cycles in the call graph, e.g. recursive calls)
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        if (bb->getType() == CALL) {
+            // The call RTL will be the last in this BB
+            HLCall* call = (HLCall*)bb->getRTLs()->back();
+            call->truncateArguments();
+        }
     }
-    if (VERBOSE) {
-        print(std::cerr /*,true*/);
-    }
+
+    decompiled = true;          // Now fully decompiled
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
@@ -1211,7 +1320,8 @@ bool UserProc::removeNullStatements() {
             // remove from reach sets
             StatementSet &reachout = s->getBB()->getReachOut();
             if (reachout.remove(s))
-                cfg->updateReaches();
+                //cfg->computeReaches();      // Highly sus: do all or none!
+                recalcDataflow();
             change = true;
         }
     }
@@ -1225,6 +1335,21 @@ bool UserProc::removeDeadStatements() {
     // remove dead code
     StmtListIter it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+#if 1       // This seems so simple... remove statements with no usedBy MVE
+        AssignExp* asgn = dynamic_cast<AssignExp*>(s);
+        if (asgn == NULL)
+            // Never remove a call or jcond; they have important side effects
+            continue;
+        if (getCFG()->getReachExit()->exists(s))
+            // Don't remove unused code that reaches the exit
+            // These will be handled later by moveInternalStatements()
+            continue;
+        if (s->getNumUsedBy() == 0) {
+            if (VERBOSE) std::cerr << "Removing unused statement " << s << "\n";
+            removeStatement(s);
+            change = true;
+        }
+#else       // Why so complex? Is there a catch? MVE
         StatementSet dead;
         s->getDeadStatements(dead);
         StmtSetIter it1;
@@ -1235,7 +1360,7 @@ bool UserProc::removeDeadStatements() {
                 // hack: if the dead statement has a use which would make
                 // this statement useless if propagated, leave it
                 StatementSet uses;
-                s1->calcUses(uses);     // MVE: this could be getUses()?
+                s1->getUses(uses);
                 bool matchingUse = false;
                 StmtSetIter it2;
                 for (Statement* s2 = uses.getFirst(it2); s2;
@@ -1263,15 +1388,21 @@ bool UserProc::removeDeadStatements() {
                 // remove from reach sets
                 StatementSet &reachout = s1->getBB()->getReachOut();
                 reachout.remove(s1);
-                cfg->updateReaches();
+                //cfg->computeReaches();      // Highly sus: do all or none!
+                recalcDataflow();
                 change = true;
             }
         }
+#endif
     }
+    if (VERBOSE && change)
+        print(std::cerr, true);
     return change;
 }
 
-void UserProc::removeInternalStatements() {
+// Find assignments that have no uses, but which reach the end of the proc.
+// These are moved from the cfg to the set of internal statements
+void UserProc::moveInternalStatements() {
     StatementList stmts;
     getStatements(stmts);
     // remove any statements that have no uses and reach the end of this proc
@@ -1279,10 +1410,10 @@ void UserProc::removeInternalStatements() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         AssignExp *e = dynamic_cast<AssignExp *>(s);
         if (e == NULL) continue;
-        if (s->getNumUseBy() == 0 && 
-          s->getNumUses() == 0 &&
-          cfg->getReachExit().exists(s)) {
-            // remove internal statement
+        if (s->getNumUsedBy() == 0 && 
+          s->getNumUses() == 0 &&           // ? why this condition?
+          cfg->getReachExit()->exists(s)) {
+            // move this to an internal statement
             if (VERBOSE) {
                 std::cerr << "internalising: ";
                 s->printAsUse(std::cerr);
@@ -1293,7 +1424,7 @@ void UserProc::removeInternalStatements() {
             s->clearUses();
             internal.append(s);
             removeStatement(s);
-            cfg->getReachExit().remove(s);
+            cfg->getReachExit()->remove(s);
         }
     }
 }
@@ -1324,7 +1455,7 @@ bool UserProc::propagateAndRemoveStatements() {
             continue;
         Exp* rhs = s->getRight();
         if (s->canPropagateToAll()) {
-            if (cfg->getReachExit().exists(s)) {
+            if (cfg->getReachExit()->exists(s)) {
                 if (s->getNumUses() != 0) {
                     // tempories that store the results of calls are ok
                     if (rhs && 
@@ -1353,8 +1484,13 @@ bool UserProc::propagateAndRemoveStatements() {
             removeStatement(s);
             // remove from reach sets
             StatementSet &reachout = s->getBB()->getReachOut();
+#if 0
             if (reachout.remove(s))
-                cfg->updateReaches();
+                cfg->computeReaches();
+#else
+            reachout.remove(s);
+            recalcDataflow();       // Fix alias problems
+#endif
             if (VERBOSE) {
                 // debug: print
                 print(std::cerr, true);
@@ -1377,14 +1513,17 @@ Exp* UserProc::newLocal(Type* ty) {
     return new Unary(opLocal, new Const(strdup(name.c_str())));
 }
 
-void UserProc::recalcDataFlow() {
+void UserProc::recalcDataflow() {
     if (VERBOSE) std::cerr << "Recalculating dataflow\n";
-    cfg->computeDataflow();
+    cfg->computeLiveness();
+    cfg->computeReaches();
+    cfg->computeAvailable();
     StatementList stmts;
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->clearUses();
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks();
+        s->calcUseLinks(cfg);
 }
+

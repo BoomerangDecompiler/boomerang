@@ -497,6 +497,8 @@ bool Ternary::operator< (const Exp& o) const {
     if (op > o.getOper()) return false;
     if (*subExp1 < *((Ternary&)o).getSubExp1()) return true;
     if (*((Ternary&)o).getSubExp1() < *subExp1) return false;
+    if (*subExp2 < *((Ternary&)o).getSubExp2()) return true;
+    if (*((Ternary&)o).getSubExp2() < *subExp2) return false;
     return *subExp3 < *((Ternary&)o).getSubExp3();
 }
 
@@ -519,8 +521,9 @@ bool AssignExp::operator<  (const Exp& o) const {        // Type sensitive
     if (op > o.getOper()) return false;
     if (size < ((AssignExp&)o).size) return true;
     if (((AssignExp&)o).size < size) return false;
-    return *subExp1 < *((Binary&)o).getSubExp1() || 
-           *subExp2 < *((Binary&)o).getSubExp2(); 
+    if (*subExp1 < *((Binary&)o).getSubExp1()) return true;
+    if (*((Binary&)o).getSubExp1() < *subExp1) return false;
+    return *subExp2 < *((Binary&)o).getSubExp2();
 }
 
 
@@ -1244,6 +1247,7 @@ void AssignExp::doSearchChildren(Exp* search,
  * PARAMETERS:      search:  ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
  *                  change: ref to boolean, set true if a change made
+ *                  (else cleared)
  * RETURNS:         True if a change made
  *============================================================================*/
 Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
@@ -1263,7 +1267,8 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * NOTE:            Replacements are cloned. Caller to delete search and replace
  * PARAMETERS:      search:  ptr to ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
- * RETURNS:         True if a change made
+ *                  change: set true if a change made; cleared otherwise
+ * RETURNS:         the result (often this, but possibly changed)
  *============================================================================*/
 Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
   bool once /* = false */ )
@@ -1419,7 +1424,7 @@ Exp* Unary::simplifyArith()
 {
     if (op == opMemOf || op == opRegOf) {
         // assume we want to simplify the subexpression
-        return new Unary(op, getSubExp1()->simplifyArith());
+        subExp1 = subExp1->simplifyArith();
     }
     return this;            // Else, do nothing
 }
@@ -1427,6 +1432,13 @@ Exp* Unary::simplifyArith()
 Exp* AssignExp::simplifyArith() {
     subExp1 = subExp1->simplifyArith();
     subExp2 = subExp2->simplifyArith();
+    return this;
+}
+
+Exp* Ternary::simplifyArith() {
+    subExp1 = subExp1->simplifyArith();
+    subExp2 = subExp2->simplifyArith();
+    subExp3 = subExp3->simplifyArith();
     return this;
 }
 
@@ -2489,11 +2501,23 @@ void AssignExp::killReach(StatementSet &reach) {
         bool isKilled = false;
         if (*s->getLeft() == *subExp1)
             isKilled = true;
+        // MVE: Check this for conservatism
         isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
         if (isKilled)
         kills.insert(s);
     }
     reach.make_diff(kills);
+}
+
+// Liveness is killed by a definition
+void AssignExp::killLive(LocationSet &live) {
+    if (subExp1 == NULL) return;
+    LocSetIter it;
+    for (Exp* loc = live.getFirst(it); loc; loc = live.getNext(it)) {
+        // MVE: do we need to consider aliasing?
+        if (*loc == *subExp1)
+            live.remove(loc);
+    }
 }
 
 void AssignExp::getDeadStatements(StatementSet &dead)
@@ -2508,7 +2532,7 @@ void AssignExp::getDeadStatements(StatementSet &dead)
             isKilled = true;
         if (s->getLeft()->isMemOf() && subExp1->isMemOf())
             isKilled = true; // might alias, very conservative
-        if (isKilled && s->getNumUseBy() == 0)
+        if (isKilled && s->getNumUsedBy() == 0)
         dead.insert(s);
     }
 }
@@ -2618,4 +2642,50 @@ bool Exp::isTemp() {
     // Some old code has r[tmpb] instead of just tmpb
     Exp* sub = ((Unary*)this)->getSubExp1();
     return sub->op == opTemp;
+}
+
+/*==============================================================================
+ * FUNCTION:        AssignExp::addUsedLocs
+ * OVERVIEW:        Add all locations (registers or memory) used by this
+ *                    assignment
+ * PARAMETERS:      used: ref to a LocationSet to insert the used locations into
+ * RETURNS:         nothing
+ *============================================================================*/
+void AssignExp::addUsedLocs(LocationSet& used) {
+    Exp* left = getSubExp1();
+    Exp* right = getSubExp2();
+    right->addUsedLocs(used);
+    if (left->isMemOf()) {
+        // We also use any expr like m[exp] on the LHS
+        left = ((Unary*)left)->getSubExp1();
+        left->addUsedLocs(used);
+    }
+}
+
+void Unary::addUsedLocs(LocationSet& used) {
+    switch (op) {
+        // We are interested in r[], m[], and variables (named arguments,
+        // locals, and globals)
+        case opRegOf:   case opMemOf:
+        case opArg:     case opLocal:   case opGlobal:  case opParam:
+            // We want to add this expression
+            used.insert(clone());
+            // We also need to recurse, in case we have m[m[...]] or m[r[...]]
+            if (op == opMemOf)
+                subExp1->addUsedLocs(used);
+            break;
+        default:
+            break;
+    }
+}
+
+void Binary::addUsedLocs(LocationSet& used) {
+    subExp1->addUsedLocs(used);
+    subExp2->addUsedLocs(used);
+}
+
+void Ternary::addUsedLocs(LocationSet& used) {
+    subExp1->addUsedLocs(used);
+    subExp2->addUsedLocs(used);
+    subExp3->addUsedLocs(used);
 }

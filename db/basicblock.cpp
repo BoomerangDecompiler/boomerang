@@ -424,8 +424,7 @@ char* BasicBlock::prints() {
  *============================================================================*/
 void BasicBlock::print(std::ostream& os, bool withDF) {
     if (m_iLabelNum) os << "L" << std::dec << m_iLabelNum << ": ";
-    switch(m_nodeType)
-    {
+    switch(m_nodeType) {
         case ONEWAY:    os << "Oneway BB"; break;
         case TWOWAY:    os << "Twoway BB"; break;
         case NWAY:      os << "Nway BB"; break;
@@ -1452,13 +1451,11 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin) {
             if (*it == (AssignExp*)stmt) return;
             Statement *e = dynamic_cast<Statement*>(*it);
             if (e == NULL) continue;
-            e->setBB(this);
             e->calcReachOut(reachin);
         }
         if (rtl->getKind() == CALL_RTL) {
             HLCall *call = (HLCall*)rtl;
             if (call == stmt) return;
-            call->setBB(this);
             call->calcReachOut(reachin);
             StatementList &internals = call->getInternalStatements();
             StmtListIter it1;
@@ -1482,18 +1479,135 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin) {
     }
 }
 
+void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin) {
+    getAvailIn(availin);
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+      rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            if (*it == (AssignExp*)stmt) return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            e->calcAvailOut(availin);
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            if (call == stmt) return;
+            call->calcAvailOut(availin);
+            StatementList &internals = call->getInternalStatements();
+            StmtListIter it1;
+            for (Statement* s1 = internals.getFirst(it1); s1;
+              s1 = internals.getNext(it1)) {
+                // MVE: I think this next statement is wrong. The only way
+                // stmt can be == to *it1 is in a recursive function; it is
+                // affected by assignments to any part of the procedure, not
+                // just up to this recursive call
+                if (stmt == s1) return;
+                s1->setBB(this);            // ??
+                s1->calcAvailOut(availin);
+            } 
+        }
+        if (rtl->getKind() == JCOND_RTL) {
+            HLJcond *jcond = (HLJcond*)rtl;
+            if (jcond == stmt) return;
+            jcond->setBB(this);
+            jcond->calcAvailOut(availin);
+        }
+    }
+}
+
+void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
+    getLiveOut(liveout);
+    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
+      rit != m_pRtls->rend(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
+          it != rtl->getList().rend(); it++) {
+            if (*it == (AssignExp*)stmt) return;
+            Statement *e = dynamic_cast<Statement*>(*it);
+            if (e == NULL) continue;
+            e->calcLiveIn(liveout);
+        }
+        if (rtl->getKind() == CALL_RTL) {
+            HLCall *call = (HLCall*)rtl;
+            if (call == stmt) return;
+            call->calcLiveIn(liveout);
+            StatementList &internals = call->getInternalStatements();
+            StmtListRevIter it1;
+            for (Statement* s1 = internals.getLast(it1); s1;
+              s1 = internals.getPrev(it1)) {
+                // MVE: I think this next statement is wrong. The only way
+                // stmt can be == to *it1 is in a recursive function; it is
+                // affected by assignments to any part of the procedure, not
+                // just up to this recursive call
+                if (stmt == s1) return;
+                s1->calcLiveIn(liveout);
+            } 
+        }
+        if (rtl->getKind() == JCOND_RTL) {
+            HLJcond *jcond = (HLJcond*)rtl;
+            if (jcond == stmt) return;
+            jcond->calcLiveIn(liveout);
+        }
+    }
+}
+
 void BasicBlock::calcReachOut(StatementSet &reach) {
     /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the reach set after every assignment */
+       so this will calculate the reach set after every statement */
     getReachInAt(NULL, reach);
 }
 
+void BasicBlock::calcAvailOut(StatementSet &avail) {
+    /* hopefully we can be sure that NULL is not a valid assignment,
+       so this will calculate the available definitions after every statement */
+    getAvailInAt(NULL, avail);
+}
+
+void BasicBlock::calcLiveIn(LocationSet &live) {
+    /* hopefully we can be sure that NULL is not a valid assignment,
+       so this will calculate the live locations before every statement */
+    getLiveOutAt(NULL, live);
+}
+
+// Definitions that reach the start of this BB are the union of the definitions
+// that reach its predecessors
 void BasicBlock::getReachIn(StatementSet &reachin) {
+    reachin.clear();
     for (unsigned i = 0; i < m_InEdges.size(); i++) {
-        StatementSet &in = m_InEdges[i]->reachout;
+        StatementSet &in = m_InEdges[i]->reachOut;
         reachin.make_union(in);
     }
 }
+
+// Definitions that are available at the start of this BB are the intersection
+// of the definitions that are available at its predecessors
+void BasicBlock::getAvailIn(StatementSet &availin) {
+    if (m_InEdges.size() == 0) {
+        availin.clear();
+        return;
+    }
+    // Make equal to first, then intersect with the rest
+    // Have to to it this way, since we can't represent the universal set
+    availin = m_InEdges[0]->availOut;
+    for (unsigned i = 1; i < m_InEdges.size(); i++) {
+        StatementSet &in = m_InEdges[i]->availOut;
+        availin.make_isect(in);
+    }
+}
+
+// Vartiables that are live at the end of this BB are the union of the
+// variables that are live at the start of its successors
+void BasicBlock::getLiveOut(LocationSet &liveout) {
+    liveout.clear();
+    for (unsigned i = 0; i < m_OutEdges.size(); i++) {
+        LocationSet &out = m_OutEdges[i]->liveIn;
+        liveout.make_union(out);
+    }
+}
+
+
 
 void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order)
 {

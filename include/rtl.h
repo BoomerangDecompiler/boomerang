@@ -360,10 +360,13 @@ public:
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-    // new dataflow analysis
+    // dataflow analysis
     virtual void killReach(StatementSet &reach) { }
+    virtual void killAvail(StatementSet &avail) { }
+    virtual void killLive (LocationSet &kill ) { }
     virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
+    virtual void addUsedLocs(LocationSet& used);
 
     // dataflow related functions
     virtual bool canPropagateToAll() { return false; }
@@ -488,8 +491,10 @@ public:
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int getNumArguments() { return arguments.size(); }
-    void setNumArguments(int i) { arguments.resize(i); }
+    void setNumArguments(int i);
     Type *getArgumentType(int i);
+    void truncateArguments();
+    void clearLiveEntry();
 
     Exp* getReturnLoc();                // Get location used for return value
 
@@ -520,13 +525,6 @@ public:
     void setDestProc(Proc* dest);
     Proc* getDestProc();
 
-#if 0
-    // Used for type analysis. Stores type information that
-    // can be gathered from the RTL instruction inside a
-    // data structure within BBBlock inBlock
-    void storeUseDefineStruct(BBBlock& inBlock);       
-#endif
-
     // serialize this rtl
     virtual bool serialize_rest(std::ostream &ouf);
 
@@ -536,10 +534,13 @@ public:
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
-    // new dataflow analysis
+    // dataflow analysis
     virtual void killReach(StatementSet &reach);
+    virtual void killAvail(StatementSet &avail);
+    virtual void killLive (LocationSet  &live );
     virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
+    virtual void addUsedLocs(LocationSet& used);
 
     // dataflow related functions
     virtual bool canPropagateToAll() { return false; }
@@ -600,6 +601,10 @@ private:
 
     Exp *returnLoc;
     StatementList internal;
+
+    // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
+    // substitute it as needed
+    LocationSet liveEntry;
 };
 
 
@@ -708,6 +713,11 @@ public:
 
     // Statement functions
     virtual void killReach(StatementSet &reach);
+    virtual void killAvail(StatementSet &avail)
+        { // Same as kill for reaching definitions
+          killReach(avail); }
+    virtual void killLive (LocationSet &kill );
+    virtual void addUsedLocs(LocationSet& used);
     virtual void getDeadStatements(StatementSet &dead);
     virtual Exp* getLeft() { return getDest(); }
     virtual Type* getLeftType();
@@ -724,7 +734,7 @@ public:
 
 private:
     JCOND_TYPE jtCond;             // the condition for jumping
-    Exp* pCond;                 // Exp representation of the high level
+    Exp* pCond;                    // Exp representation of the high level
                                    // condition: e.g. r[8] == 5
     bool bFloat;                   // True if condition uses floating point CC
     Exp* pDest;

@@ -511,17 +511,32 @@ void ExpTest::testPartitionTerms() {
 void ExpTest::testSimplifyArith() {
     std::ostringstream ost;
     // afp + 108 + n - (afp + 92)
-    Binary e(opMinus,
+    Exp* e = new Binary(opMinus,
         new Binary(opPlus,
             new Binary(opPlus, new Terminal(opAFP), new Const(108)),
             new Unary(opVar, new Const("n"))),
         new Binary(opPlus, new Terminal(opAFP), new Const(92))
     );
-    Exp* p = e.simplifyArith();
-    p->print(ost);
+    e = e->simplifyArith();
+    e->print(ost);
     std::string expected ("v[n] + 16");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
-    delete p;
+    delete e;
+
+    // m[(r[28] + -4) + 8]
+    Exp* mm = new Unary(opMemOf,
+        new Binary(opPlus,
+            new Binary(opPlus,
+                new Unary(opRegOf, new Const(28)),
+                new Const(-4)),
+            new Const(8)));
+    mm = mm->simplifyArith();
+    std::ostringstream ost2;
+    mm->print(ost2);
+    expected = "m[r[28] + 4]";
+    CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
+    delete mm;
+    
 }
 
 /*==============================================================================

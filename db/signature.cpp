@@ -320,7 +320,7 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     bool gotcorrectret2 = false;
     StatementList internal;
     p->getInternalStatements(internal);
-    internal.append(p->getCFG()->getReachExit());
+    internal.append(*p->getCFG()->getReachExit());
     StmtListIter it;
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
         AssignExp *e = dynamic_cast<AssignExp*>(s);
@@ -876,7 +876,7 @@ void Signature::analyse(UserProc *p)
         }
     }
     StmtSetIter ll;
-    StatementSet& lout = p->getCFG()->getReachExit();
+    StatementSet& lout = *p->getCFG()->getReachExit();
     for (Statement* s = lout.getFirst(ll); s; s = lout.getNext(ll)) {
         if (s->getLeft() && *s->getLeft() == *getReturnExp()) {
             if (VERBOSE) {
@@ -990,8 +990,89 @@ Exp* e = new Unary(opMemOf, new Unary(opRegOf, new Const(28)));
         case MACHINE_PENTIUM:
             return new Unary(opRegOf, new Const(24));
         default:
-            std::cerr << "getReturnSig2: machine not handled\n";
+            std::cerr << "getReturnExp2: machine not handled\n";
             return NULL;
     }
+}
+
+// Not very satisfying to do things this way. Problem is that the polymorphic
+// CallingConvention objects are set up very late in the decompilation
+// Get the set of registers that are not saved in library functions (or any
+// procedures that follow the calling convention)
+// Caller is to delete the list (unless NULL, of course)
+std::list<Exp*> *Signature::getCallerSave(Prog* prog) {
+    MACHINE mach = prog->getMachine();
+    switch (mach) {
+        case MACHINE_PENTIUM: {
+            std::list<Exp*> *li = new std::list<Exp*>;
+            li->push_back(new Unary(opRegOf, new Const(24)));    // eax
+            li->push_back(new Unary(opRegOf, new Const(25)));    // ecx
+            li->push_back(new Unary(opRegOf, new Const(26)));    // edx
+            return li;
+        }
+        case MACHINE_SPARC: {
+            std::list<Exp*> *li = new std::list<Exp*>;
+            li->push_back(new Unary(opRegOf, new Const(8)));    // %o0
+            li->push_back(new Unary(opRegOf, new Const(9)));    // %o1
+            li->push_back(new Unary(opRegOf, new Const(10)));   // %o2
+            li->push_back(new Unary(opRegOf, new Const(11)));   // %o3
+            li->push_back(new Unary(opRegOf, new Const(12)));   // %o4
+            li->push_back(new Unary(opRegOf, new Const(13)));   // %o5
+            li->push_back(new Unary(opRegOf, new Const(1)));    // %g1
+            return li;
+        }
+        default:
+            break;
+    }
+    return NULL;
+}
+
+// Get the expected argument location, based solely on the machine of the
+// input program
+Exp* Signature::getEarlyParamExp(int n, Prog* prog) {
+    MACHINE mach = prog->getMachine();
+    switch (mach) {
+        case MACHINE_SPARC: {
+            CallingConvention::StdC::SparcSignature temp("");
+            return temp.getParamExp(n);
+        }
+        case MACHINE_PENTIUM: {
+            // Would we ever need Win32?
+            CallingConvention::StdC::PentiumSignature temp("");
+            return temp.getParamExp(n);
+        }
+        default:
+            break;
+    }
+    assert(0);          // Machine not handled
+    return NULL;
+}
+
+StatementList& Signature::getStdRetStmt(Prog* prog) {
+    // pc := m[r[28]]
+    static AssignExp pent1ret(opAssignExp,
+        new Terminal(opPC),
+        new Unary(opMemOf,
+            new Unary(opRegOf, new Const(28))));
+    // r[28] := r[28] + 4
+    static AssignExp pent2ret(opAssignExp,
+        new Unary(opRegOf, new Const(28)),
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(28)),
+            new Const(4)));
+    MACHINE mach = prog->getMachine();
+    switch (mach) {
+        case MACHINE_SPARC:
+            break;              // No adjustment to stack pointer required
+        case MACHINE_PENTIUM: {
+            StatementList* sl = new StatementList;
+            sl->append((Statement*)&pent1ret);
+            sl->append((Statement*)&pent2ret);
+            return *sl;
+        }
+        default:
+            break;
+    }
+    return *new StatementList;
 }
 

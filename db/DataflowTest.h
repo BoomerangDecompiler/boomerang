@@ -38,5 +38,6 @@ class DataflowTest : public CppUnit::TestCase {
     void testUseOverBB ();
     void testUseKill();
     void testEndlessLoop();
+    void testLocationSet();
 };
 

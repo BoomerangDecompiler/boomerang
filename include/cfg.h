@@ -33,20 +33,17 @@
 #include <iostream>
 #include <string>
 #include "types.h"
+#include "exp.h"        // For LocationSet
 
 //#include "bitset.h"     // Saves time. Otherwise, any implementation file that 
                         // defines say a BB, will need to #include this file
 
-class Exp;
-class AssignExp;
 class Proc;
 class UserProc;
 class UseSet;
 class DefSet;
 class SSACounts;
 class BinaryFile;
-// For Type Analysis
-class BBBlock;
 class BasicBlock;
 typedef BasicBlock* PBB;
 class HLLCode;
@@ -439,18 +436,44 @@ protected:
 
 public:
 
-	/* stuff for new data flow analysis */
+	/* stuff for data flow analysis */
+    /* Reaching definitions: forward flow, any path */
 	void getReachInAt(Statement *stmt, StatementSet &reachin);
 	void getReachIn(StatementSet &reachin);
 	void calcReachOut(StatementSet &reach);
-        StatementSet &getReachOut() { return reachout; }
+    StatementSet &getReachOut() { return reachOut; }
+        
+    /* As above, for available definitions. These are used for the second
+     * condition allowing copy propagation
+     * Forward flow, all paths */
+	void getAvailInAt(Statement *stmt, StatementSet &availin);
+	void getAvailIn(StatementSet &availin);
+	void calcAvailOut(StatementSet &avail);
+    StatementSet &getAvailOut() { return availOut; }
+
+    /* As above, for live locations. These are used for parameters and return
+     * locations. Backwards flow, any path */
+	void getLiveOutAt(Statement *stmt, LocationSet &liveout);
+	void getLiveOut(LocationSet &liveout);
+	void calcLiveIn(LocationSet &live);
+    LocationSet &getLiveIn() { return liveIn; }
 
     /* set the return value */
     void setReturnVal(Exp *e);
     Exp *getReturnVal() { return m_returnVal; }
 
 protected:
-    StatementSet reachout;
+    // This is the set of statements whose definitions reach the end of this BB
+    StatementSet reachOut;
+
+    // This is the set of statements available (not redefined on any path)
+    // at the end of this BB
+    StatementSet availOut;
+
+    // This is the set of locations that are upwardly exposed (not defined
+    // along all paths from the start of the procedure to the statement)
+    // at the start of the BB
+    LocationSet liveIn;
 
     Exp* m_returnVal;
 
@@ -781,22 +804,6 @@ public:
     bool isOrphan ( ADDRESS uAddr);
 
     /*
-     * Add the indicated number of bytes to the total coverage for the cfg.
-     * Needed for example with NOP instuctions in delay slots, and for
-     * switch tables, etc. Inlined for efficiency.
-     */
-    void addExCoverage(unsigned u)
-    {
-        m_uExtraCover += u;
-    }
-
-    /*
-     * Return the number of bytes occupied by the instructions in this
-     * Cfg.
-     */
-    unsigned getCoverage();
-
-    /*
      * This is called where a two-way branch is deleted, thereby joining
      * a two-way BB with it's successor. This happens for example when
      * transforming Intel floating point branches, and a branch on parity
@@ -851,9 +858,18 @@ public:
     /*
      * Compute reaches/use information
      */
-    void computeDataflow();
-    void updateReaches();
-    StatementSet &getReachExit() { return reachExit; }
+    void computeReaches();          // Compute reaching definitions
+    void computeAvailable();         // Compute available definitions
+    void computeLiveness();         // Compute live locations
+    void updateLiveEntryDefs();
+    void clearLiveEntryDefsUsedby();
+    // Summary information for this cfg
+    StatementSet *getReachExit() {
+        return (exitBB == NULL) ? NULL : &exitBB->reachOut; }
+    StatementSet *getAvailExit() { 
+        return (exitBB == NULL) ? NULL : &exitBB->availOut; }
+    LocationSet *getLiveEntry() {
+        return (entryBB == NULL) ? NULL : &entryBB->liveIn; }
 
     /*
      * Virtual Function Call analysis
@@ -946,9 +962,15 @@ protected:
     std::vector<PBB> revOrdering;
 
     /*
-     * Intersection of all statements which reach the end of the ret bb.
+     * All statements which reach the end of the ret bb.
      */
     StatementSet reachExit;
+
+    /*
+     * All statements which are available at the end of the ret bb
+     * (not redefined on any path)
+     */
+    StatementSet availExit;
 
     /*
      * The ADDRESS to PBB map.
@@ -956,19 +978,15 @@ protected:
     MAPBB m_mapBB;
 
     /*
-     * The entry BB.
+     * The entry and exit BBs.
      */
     BasicBlock* entryBB;
+    BasicBlock* exitBB;
 
     /*
      * True if well formed.
      */
     bool m_bWellFormed;
-
-    /*
-     * Extra coverage for NOPs and switch tables.
-     */
-    unsigned m_uExtraCover;
 
     /*
      * Set of the call instructions in this procedure.
@@ -982,14 +1000,15 @@ protected:
 
 public:
     /*
-     * Get the entry-point BB
+     * Get the entry-point or exit BB
      */
     PBB getEntryBB() { return entryBB;}
+    PBB getExitBB()  { return exitBB;}
 
     /*
-     * Set the entry-point BB
+     * Set the entry-point BB (and exit BB as well)
      */
-    void setEntryBB(PBB bb) { entryBB = bb;}
+    void setEntryBB(PBB bb);
 
     PBB findRetNode();
 
@@ -998,9 +1017,11 @@ public:
      */
     void addNewOutEdge(PBB fromBB, PBB newOutEdge);
 
-    // print this cfg, mainly for debugging
+    /*
+     * print this cfg, mainly for debugging
+     */
     void print(std::ostream &out, bool withDF = false);
-  
+
 };              /* Cfg */
 
 #endif

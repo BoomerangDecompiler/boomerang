@@ -171,10 +171,11 @@ db/exp.o: include/exp.h include/operator.h include/types.h include/dataflow.h \
 db/prog.o: include/prog.h
 db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
-db/cfg.o: include/cfg.h include/dataflow.h
+db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
 db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h
 db/rtl.o: include/rtl.h include/exp.h include/operator.h
-db/hrtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h
+db/hrtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
+    include/cfg.h include/signature.h
 db/register.o: include/register.h
 db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h
 db/sslscanner.o: db/sslscanner.cpp db/sslscanner.h
@@ -211,4 +212,6 @@ c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h
 analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
 	include/frontend.h include/analysis.h include/exp.h
+
+codegen/chllcode.o: include/hllcode.h codegen/chllcode.h
 

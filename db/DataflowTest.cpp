@@ -28,6 +28,7 @@ suite->addTest(new CppUnit::TestCaller<DataflowTest> ("testDataflow", \
 
 void DataflowTest::registerTests(CppUnit::TestSuite* suite) {
 
+    MYTEST(testLocationSet);
     MYTEST(testEmpty);
     MYTEST(testFlow);
     MYTEST(testKill);
@@ -83,8 +84,8 @@ void DataflowTest::testEmpty () {
     cfg->print(st, true);
     std::string s = st.str();
     // compare it to expected
-    std::string expected = "Ret BB: live in: \n00000123 RET\n"
-        "cfg liveout: \n";
+    std::string expected = "Ret BB: reach in: \n00000123 RET\n"
+        "cfg reachExit: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -124,11 +125,11 @@ void DataflowTest::testFlow () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: \n"
-      "Ret BB: live in: *32* r[24] := 5, \n"
+      "Ret BB: reach in: *32* r[24] := 5, \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := 5, \n";
+      "cfg reachExit: *32* r[24] := 5, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -172,12 +173,12 @@ void DataflowTest::testKill () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: \n"
       "         *32* r[24] := 6   uses:    used by: \n"
-      "Ret BB: live in: *32* r[24] := 6, \n"
+      "Ret BB: reach in: *32* r[24] := 6, \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := 6, \n";
+      "cfg reachExit: *32* r[24] := 6, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -221,12 +222,12 @@ void DataflowTest::testUse () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24], \n"
       "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by: \n"
-      "Ret BB: live in: *32* r[24] := 5, *32* r[28] := r[24], \n"
+      "Ret BB: reach in: *32* r[24] := 5, *32* r[28] := r[24], \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := 5, *32* r[28] := r[24], \n";
+      "cfg reachExit: *32* r[24] := 5, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -274,13 +275,13 @@ void DataflowTest::testUseOverKill () {
     // compare it to expected
     std::string expected;
     expected = 
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: \n"
       "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
       "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
-      "Ret BB: live in: *32* r[24] := 6, *32* r[28] := r[24], \n"
+      "Ret BB: reach in: *32* r[24] := 6, *32* r[28] := r[24], \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := 6, *32* r[28] := r[24], \n";
+      "cfg reachExit: *32* r[24] := 6, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -330,13 +331,13 @@ void DataflowTest::testUseOverBB () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: \n"
       "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
-      "Ret BB: live in: *32* r[24] := 6, \n"
+      "Ret BB: reach in: *32* r[24] := 6, \n"
       "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := 6, *32* r[28] := r[24], \n";
+      "cfg reachExit: *32* r[24] := 6, *32* r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -381,12 +382,12 @@ void DataflowTest::testUseKill () {
     // compare it to expected
     std::string expected;
     expected  = 
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
       "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by: \n"
-      "Ret BB: live in: *32* r[24] := r[24] + 1, \n"
+      "Ret BB: reach in: *32* r[24] := r[24] + 1, \n"
       "00000123 RET\n"
-      "cfg liveout: *32* r[24] := r[24] + 1, \n";
+      "cfg reachExit: *32* r[24] := r[24] + 1, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -434,13 +435,58 @@ void DataflowTest::testEndlessLoop () {
     // compare it to expected
     std::string expected;
     expected =
-      "Fall BB: live in: \n"
+      "Fall BB: reach in: \n"
       "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
-      "Oneway BB: live in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
+      "Oneway BB: reach in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
       "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
       "*32* r[24] := r[24] + 1,    used by: \n"
-      "cfg liveout: \n";
+      "cfg reachExit: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
+}
+
+/*==============================================================================
+ * FUNCTION:        DataflowTest::testLocationSet
+ * OVERVIEW:        
+ *============================================================================*/
+void DataflowTest::testLocationSet () {
+    Unary rof(opRegOf, new Const(12));
+    Const& theReg = *(Const*)rof.getSubExp1();
+    LocationSet ls;
+    LocSetIter ii;
+    ls.insert(rof.clone());
+    theReg.setInt(8);
+    ls.insert(rof.clone());
+    theReg.setInt(31);
+    ls.insert(rof.clone());
+    theReg.setInt(24);
+    ls.insert(rof.clone());
+    theReg.setInt(12);
+    ls.insert(rof.clone());     // Note: r[12] already inserted
+    CPPUNIT_ASSERT_EQUAL(4, ls.size());
+    theReg.setInt(8);
+    CPPUNIT_ASSERT(rof == *ls.getFirst(ii));
+    theReg.setInt(12);
+    Exp* e;
+    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    theReg.setInt(24);
+    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    theReg.setInt(31);
+    e = ls.getNext(ii); CPPUNIT_ASSERT(rof == *e);
+    Unary mof(opMemOf,
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(14)),
+            new Const(4)));
+    ls.insert(mof.clone());
+    ls.insert(mof.clone());
+    CPPUNIT_ASSERT_EQUAL(5, ls.size());
+    CPPUNIT_ASSERT(mof == *ls.getFirst(ii));
+    LocationSet ls2 = ls;
+    Exp* e2 = ls2.getFirst(ii);
+    CPPUNIT_ASSERT(e2 != ls.getFirst(ii));      // Must be cloned
+    CPPUNIT_ASSERT_EQUAL(5, ls2.size());
+    CPPUNIT_ASSERT(mof == *ls2.getFirst(ii));
+    theReg.setInt(8);
+    e = ls2.getNext(ii); CPPUNIT_ASSERT(rof == *e);
 }

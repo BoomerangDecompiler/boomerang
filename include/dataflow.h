@@ -31,8 +31,10 @@ class BasicBlock;
 typedef BasicBlock *PBB;
 class Prog;
 class UserProc;
+class Cfg;
 class Type;
 class Statement;
+class LocationSet;      // Actually declared in exp.h
 
 // A class to implement sets of statements
 // We may choose to implement these very differently one day
@@ -44,22 +46,27 @@ public:
     void make_union(StatementSet& other);    // Set union
     void make_diff (StatementSet& other);    // Set difference
     void make_isect(StatementSet& other);    // Set intersection
+    bool isSubSetOf(StatementSet& other);    // subset relation
 
     int size() {return sset.size();}        // Number of elements
     Statement* getFirst(StmtSetIter& it);   // Get the first Statement
     Statement* getNext (StmtSetIter& it);   // Get next
     void insert(Statement* s) {sset.insert(s);} // Insertion
-    bool remove(Statement* s);             // Removal; rets false if not found
-    bool exists(Statement* s);             // Search; returns false if not found
-    void clear() {sset.clear();}           // Clear the set
+    bool remove(Statement* s);              // Removal; rets false if not found
+    bool removeIfDefines(Exp* given);       // Remove if given exp is defined
+    bool removeIfDefines(StatementSet& given);// Remove if any given is def'd
+    bool exists(Statement* s);              // Search; returns false if !found
+    bool defines(Exp* loc);                 // Search; returns true if any
+                                            // statement defines loc
+    void clear() {sset.clear();}            // Clear the set
     bool operator==(const StatementSet& o) const // Compare
         { return sset == o.sset;}
-    bool operator!=(const StatementSet& o) const // Compare
-        { return sset != o.sset;}
+    void print();                           // Print to std::cerr (for debug)
 };
 
 // Ugh - we also need lists of Statements for the internal statements
 typedef std::list<Statement*>::iterator StmtListIter;
+typedef std::list<Statement*>::reverse_iterator StmtListRevIter;
 class StatementList {
     std::list<Statement*> slist;          // For now, use use standard list
 
@@ -67,12 +74,20 @@ public:
     int size() {return slist.size();}        // Number of elements
     Statement* getFirst(StmtListIter& it);   // Get the first Statement
     Statement* getNext (StmtListIter& it);   // Get next
+    Statement* getLast (StmtListRevIter& it);// Get the last Statement
+    Statement* getPrev (StmtListRevIter& it);// Get previous
     void append(Statement* s) {slist.push_back(s);} // Insert at end
     void append(StatementList& sl);         // Append whole StatementList
     void append(StatementSet& sl);          // Append whole StatementSet
     bool remove(Statement* s);              // Removal; rets false if not found
+    // This one is needed where you remove in the middle of a loop
+    // Use like this: it = mystatementlist.remove(it);
+    StmtListIter StatementList::remove(StmtListIter it) {
+        return slist.erase(it); }
     bool exists(Statement* s);  // Find; returns false if not found
 };
+
+// NOTE: class LocationSet is defined in exp.h (problems with #include ordering)
 
 
 /* Statements define values that are used in expressions.
@@ -104,17 +119,34 @@ public:
     // killed by this statement
     virtual void killReach(StatementSet &reach) = 0;
 
+    // calculates the available definitions set after this statement
+    virtual void calcAvailOut(StatementSet &availout);
+
     // get the available definitions (not reassigned on any path) before
     // this statement
-    // NOTE: needs separate calculation! For now, use Trent's approximation
-    virtual void getAvailIn(StatementSet& availin) {getReachIn(availin);}
+    virtual void getAvailIn(StatementSet& availin);
+
+    // removes any statement from the available definitions set which is
+    // killed by this statement
+    virtual void killAvail(StatementSet &reach) = 0;
+
+    // calculates the live variables (used before definition) before this stmt
+    virtual void calcLiveIn(LocationSet &livein);
+
+    // get the statements containing live variables after this statement
+    virtual void getLiveOut(LocationSet& liveout);
+
+    // removes any statement from the set containing live variables which is
+    // killed by this statement
+    virtual void killLive(LocationSet &live) = 0;
+
 
     // creates a set of statements that are killed by this statement
     // and have no uses
     virtual void getDeadStatements(StatementSet &dead) = 0;
 
     // calculates the uses/usedBy links for this statement
-    virtual void calcUseLinks();
+    virtual void calcUseLinks(Cfg* cfg);
 
     // returns an expression that would be used to reference the value
     // defined by this statement
@@ -130,6 +162,9 @@ public:
     // returns true if this statement uses the given expression
     virtual bool usesExp(Exp *e) = 0;
 
+    // Adds (inserts) all locations (registers or memory) used by this statement
+    virtual void addUsedLocs(LocationSet& used) = 0;
+
     // returns the statement which is used by this statement and has a
     // left like the given expression
     // MVE: is this useful?
@@ -138,7 +173,7 @@ public:
     // 
     // get my uses' definitions (ud chain)
     // 
-    void calcUses(StatementSet &uses);
+    void calcUses(StatementSet &uses, Cfg* cfg);
     int getNumUses() { return uses.size(); }
     StatementSet &getUses() { return uses; }
     void clearUses() {uses.clear(); usedBy.clear();}
@@ -147,7 +182,7 @@ public:
     // usedBy: du chain (my def's uses)
     //
     void calcUsedBy(StatementSet &usedBy);
-    int getNumUseBy() { return usedBy.size(); }
+    int getNumUsedBy() { return usedBy.size(); }
 
     // update my data flow (I'm about to be deleted)
     void updateDfForErase();
@@ -192,5 +227,6 @@ protected:
 
 // Print the Statement poited to by p
 std::ostream& operator<<(std::ostream& os, Statement* s);
+
 
 #endif // DATAFLOW

@@ -30,13 +30,14 @@
 #include "operator.h"   // Declares the OPER enum
 #include "types.h"      // For ADDRESS, etc
 #include "type.h"       // The Type class for typed expressions
+#include "dataflow.h"   // Exp derived from Statement
 
 class UseSet;
 class DefSet;
 class RTL;              // For class FlagDef
-class BasicBlock;	// For class AssignExp
+class BasicBlock;	    // For class AssignExp
+class LessExpStar;      // For sets of Exp* that behave like sets of Exp
 typedef BasicBlock* PBB;
-class Statement;
 
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
@@ -221,6 +222,9 @@ virtual Exp* fixSuccessor() {return this;}
 		// Kill any zero fill, sign extend, or truncates
 		Exp* killFill();
 
+    // Do the work of finding used locations
+    virtual void addUsedLocs(LocationSet& used) {};
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len) = 0;
 	static Exp *deserialize(std::istream &inf);
@@ -360,6 +364,9 @@ virtual Exp* fixSuccessor();
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
+    // Do the work of finding used locations
+    virtual void addUsedLocs(LocationSet& used);
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -417,6 +424,9 @@ virtual     ~Binary();
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
+    // Do the work of finding used locations
+    virtual void addUsedLocs(LocationSet& used);
+
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
@@ -467,7 +477,11 @@ virtual     ~Ternary();
       std::list<Exp**>& li, bool once);
 
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyArith();
     Exp* simplifyAddr();
+
+    // Do the work of finding used locations
+    virtual void addUsedLocs(LocationSet& used);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -566,9 +580,14 @@ public:
 	virtual bool serialize(std::ostream &ouf, int &len);
 
 	// new dataflow analysis
-        virtual void killReach(StatementSet &reach);
-        virtual void getDeadStatements(StatementSet &dead);
+    virtual void killReach(StatementSet &reach);
+    virtual void killAvail(StatementSet &avail)
+        { // Same as kill for reaching definitions
+          killReach(avail); }
+    virtual void killLive(LocationSet &live);
+    virtual void getDeadStatements(StatementSet &dead);
 	virtual bool usesExp(Exp *e);
+    virtual void addUsedLocs(LocationSet& used);
 
         // get how to access this value
         virtual Exp* getLeft() { return subExp1; }
@@ -644,6 +663,33 @@ public:
         }
 };
 
-
+// This should be in dataflow.h; here because of #include ordering issues
+// For liveness, we need sets of locations (registers or memory)
+typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;
+class LocationSet {
+    // We use a standard set, but with a special "less than" operator
+    // so that the sets are ordered by expression value. If this is not done,
+    // then two expressions with the same value (say r[10]) but that happen to
+    // have different addresses (because they came from different statements)
+    // would both be stored in the set (instead of the required set 
+    // behaviour, where only one is stored)
+    std::set<Exp*, lessExpStar> sset; 
+public:
+    LocationSet() {}                        // Default constructor
+    LocationSet(const LocationSet& o);      // Copy constructor
+    LocationSet& operator=(const LocationSet& o); // Assignment
+    void make_union(LocationSet& other);    // Set union
+    void clear() {sset.clear();}            // Clear the set
+    Exp* getFirst(LocSetIter& it);          // Get the first Statement
+    Exp* getNext (LocSetIter& it);          // Get next
+    void insert(Exp* loc) {sset.insert(loc);}// Insert the given location
+    void remove(Exp* loc);                  // Remove the given location
+    void remove(LocSetIter ll);             // Remove location, given iterator
+    void removeIfDefines(StatementSet& given);// Remove locs defined in given
+    int  size() const {return sset.size();}  // Number of elements
+    bool operator==(const LocationSet& o) const; // Compare
+    void print();                           // Print to cerr for debugging
+    bool find(Exp* e);                      // Return true if the location exists in the set
+};
 
 #endif // __EXP_H__

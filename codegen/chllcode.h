@@ -99,6 +99,9 @@ public:
 	virtual void AddProcEnd();
 	virtual void AddLocal(const char *name, Type *type);
 
+    // comments
+    virtual void AddLineComment(char* cmt);
+
 	/*
 	 * output functions
 	 */
