@@ -52,12 +52,13 @@ LDL=-ldl
 EXEEXT=
 DLLEXT=.so
 WININCLUDE=
+COPYDLL=
+endif
+
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,"lib"
 else # Assume Solaris
 RUNPATH=-R"lib"
-endif
-COPYDLL=
 endif
 
 # NOTE: "win32make/include" should be after "include" because if there

@@ -35,6 +35,9 @@ CXX=$(CC)
 # HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
 
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
 # LDL is -ldl if needed (Cygwin does not)
 ifeq ($(HOST_WINDOWS), yes)
 LDL=
@@ -51,11 +54,12 @@ EXEEXT=
 DLLEXT=.so
 OUTIMPLIB=
 COPYDLL=
+endif
+
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,"lib"
 else # Assume Solaris
 RUNPATH=-R"lib"
-endif
 endif
 
 LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
