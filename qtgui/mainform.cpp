@@ -36,7 +36,7 @@
  */
 MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
     : QMainWindow( parent, name, fl ), detailsMonitor(NULL),
-      decodedMonitor(NULL), ssaMonitor(NULL)
+      decodedMonitor(NULL), analysedMonitor(NULL), ssaMonitor(NULL)
 {
     projectPath = "../output/";
 
@@ -93,6 +93,11 @@ MainForm::MainForm( QWidget* parent, const char* name, WFlags fl )
     tabWidget2->insertTab( decoded, "Display the semantics as decoded" );
     //decoded->mimeSourceFactory()->setFilePath(".");
     //decoded->setTextFormat(Qt::RichText);
+
+    analysed = new QTextBrowser( tabWidget2, "analysed" );
+    tabWidget2->insertTab( analysed, "Display the semantics as analysed" );
+    //analysed->mimeSourceFactory()->setFilePath(".");
+    //analysed->setTextFormat(Qt::RichText);
 
     ssa = new QTextBrowser( tabWidget2, "ssa" );
     tabWidget2->insertTab( ssa, "Display the semantics in SSA form" );
@@ -165,6 +170,7 @@ void MainForm::languageChange()
 
     tabWidget2->changeTab( details, tr( "Details" ) );
     tabWidget2->changeTab( decoded, tr( "Decoded" ) );
+    tabWidget2->changeTab( analysed, tr( "Analysed" ) );
     tabWidget2->changeTab( ssa, tr( "SSA" ) );
     tabWidget2->changeTab( code, tr( "Code" ) );
     fileNewAction->setText( tr( "New" ) );
@@ -200,11 +206,14 @@ void MainForm::listSelectionChanged(QListViewItem *item)
 {
     updateDetails();
     updateDecoded();
+    updateAnalysed();
     updateSSA();
     if (tabWidget2->currentPage() == ssa && ssa->text() == "")
         tabWidget2->showPage(details);
     if (tabWidget2->currentPage() == decoded && decoded->text() == "")
         tabWidget2->showPage(details);
+    if (tabWidget2->currentPage() == analysed && decoded->text() == "")
+        tabWidget2->showPage(analysed);
     if (tabWidget2->currentPage() == code && code->text() == "")
         tabWidget2->showPage(details);
 }
@@ -464,6 +473,87 @@ bool DecodedHandler::characters( const QString& ch )
 {
     if (!startDecoded) return TRUE;
     decoded->setText(ch);
+    return TRUE;
+}
+
+class AnalysedHandler : public QXmlDefaultHandler
+{
+public:
+    bool startDocument();
+    bool startElement( const QString&, const QString&, const QString& , 
+                       const QXmlAttributes& );
+    bool characters( const QString& ch );
+    bool endElement( const QString&, const QString&, const QString& );
+
+    QTextBrowser *analysed;
+    
+protected:
+    bool startAnalysed;
+};                   
+
+void MainForm::updateAnalysed()
+{
+    QString fname = projectPath + 
+                    listView2->selectedItem()->text(0) + 
+                    "-analysed.xml";
+    int fd = lockFileRead(fname);
+    QFile f(fname);
+    if (f.open(IO_ReadOnly) == FALSE) {
+        std::cerr << "cannot open " << fname << std::endl;
+        analysed->clear();
+        return;
+    }
+    QXmlSimpleReader q;
+    QXmlInputSource i(f);
+    AnalysedHandler h;
+    h.analysed = analysed;
+    q.setContentHandler(&h);
+    q.parse(i);
+    unlockFile(fd);
+
+    if (analysedMonitor)
+        analysedMonitor->setFileName(fname);
+    else
+        analysedMonitor = new FileMonitor(fname);
+}
+
+bool AnalysedHandler::startDocument()
+{
+    analysed->clear();
+    startAnalysed = false;
+    return TRUE;
+}
+
+bool AnalysedHandler::startElement( const QString&, const QString&, 
+                                    const QString& qName, 
+                                    const QXmlAttributes &a )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "analysed") {
+        startAnalysed = true;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool AnalysedHandler::endElement( const QString&, const QString&, const QString& qName )
+{
+    if (qName == "proc") {
+        return TRUE;
+    }
+    if (qName == "analysed") {
+        startAnalysed = false;
+        return TRUE;
+    }
+    return TRUE;
+}
+
+bool AnalysedHandler::characters( const QString& ch )
+{
+    if (!startAnalysed) return TRUE;
+    analysed->setText(ch);
     return TRUE;
 }
 

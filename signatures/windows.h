@@ -5,10 +5,10 @@ typedef unsigned int LONG;
 typedef const void *LPCVOID;
 typedef void *LPVOID;
 typedef void *PVOID;
-typedef const char *LPCSTR;
-typedef char *LPSTR;
-typedef const short *LPCWSTR;
-typedef short *LPWSTR;
+typedef const char LPCSTR[];
+typedef char LPSTR[];
+typedef const short LPCWSTR[];
+typedef short LPWSTR[];
 typedef int DWORD;
 typedef int HWND;
 typedef int HLOCAL;
@@ -40,7 +40,7 @@ typedef int WinMain(
 
 HLOCAL LocalFree(HLOCAL hMem);
 DWORD FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPSTR lpBuffer, DWORD nSize, va_list* Arguments);
-int _write(int fd, char *buf, int size);
+int _write(int fd, char buf[], int size);
 LPSTR CharNextA(      
     LPCSTR lpsz
 );

@@ -81,6 +81,21 @@ ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p),
 {
 }
 
+// we actually want unbounded arrays to still work correctly when
+// computing aliases.. as such, we give them a very large bound
+// and hope that no-one tries to alias beyond them
+#define NO_BOUND 8*1024*1024
+
+ArrayType::ArrayType(Type *p) : Type(eArray), base_type(p),
+  length(NO_BOUND)
+{
+}
+
+bool ArrayType::isUnbounded()
+{
+    return length == NO_BOUND;
+}
+
 NamedType::NamedType(const char *name) : Type(eNamed), name(name)
 {
 }

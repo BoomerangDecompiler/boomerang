@@ -909,6 +909,11 @@ void Prog::printCallGraphXML() {
     f << "<prog name=\"" << getName() << "\">\n";
     f << "   <callgraph>\n";
     getEntryProc()->printCallGraphXML(f, 2);
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+         it++)
+        if (!(*it)->isVisited()) {
+            (*it)->printCallGraphXML(f, 2);
+        }
     f << "   </callgraph>\n";
     f << "</prog>\n";
     f.close();

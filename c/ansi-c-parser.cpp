@@ -693,7 +693,7 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 #line 694 "ansi-c-parser.cpp"
 
 
-#define	YYFINAL		69
+#define	YYFINAL		70
 #define	YYFLAG		-32768
 #define	YYNTBASE	76
 
@@ -738,9 +738,9 @@ static const char yytranslate[] = {     0,
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyprhs[] = {     0,
      0,     2,     5,     6,     8,    10,    14,    16,    18,    19,
-    21,    30,    32,    36,    47,    54,    60,    63,    69,    73,
-    76,    78,    80,    82,    85,    88,    90,    92,    94,    96,
-    99,   101,   104
+    21,    30,    32,    36,    47,    54,    60,    63,    69,    74,
+    78,    81,    83,    85,    87,    90,    93,    95,    97,    99,
+   101,   104,   106,   109
 };
 
 static const short yyrhs[] = {    77,
@@ -750,11 +750,12 @@ static const short yyrhs[] = {    77,
      0,    35,    83,    71,     0,    35,    85,    68,    69,     9,
     70,    68,    79,    70,    71,     0,    35,    83,    68,    79,
     70,    71,     0,    83,    68,    79,    70,    71,     0,    85,
-     9,     0,    85,     9,    72,    11,    73,     0,    83,    71,
-    84,     0,    83,    71,     0,    40,     0,    41,     0,    42,
-     0,    45,    40,     0,    45,    42,     0,    43,     0,    46,
-     0,    47,     0,    50,     0,    85,    69,     0,     9,     0,
-    48,    85,     0,    51,    74,    84,    75,     0
+     9,     0,    85,     9,    72,    11,    73,     0,    85,     9,
+    72,    73,     0,    83,    71,    84,     0,    83,    71,     0,
+    40,     0,    41,     0,    42,     0,    45,    40,     0,    45,
+    42,     0,    43,     0,    46,     0,    47,     0,    50,     0,
+    85,    69,     0,     9,     0,    48,    85,     0,    51,    74,
+    84,    75,     0
 };
 
 #endif
@@ -762,9 +763,9 @@ static const short yyrhs[] = {    77,
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyrline[] = { 0,
     92,    96,    98,   102,   104,   108,   112,   116,   118,   122,
-   124,   138,   142,   144,   158,   174,   190,   195,   201,   205,
-   211,   213,   215,   217,   219,   221,   223,   225,   227,   229,
-   231,   236,   238
+   138,   152,   156,   158,   172,   188,   204,   209,   214,   220,
+   224,   230,   232,   234,   236,   238,   240,   242,   244,   246,
+   248,   250,   255,   257
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
@@ -783,76 +784,76 @@ static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
 
 static const short yyr1[] = {     0,
     76,    77,    77,    78,    78,    79,    79,    79,    79,    80,
-    80,    80,    81,    81,    81,    82,    83,    83,    84,    84,
-    85,    85,    85,    85,    85,    85,    85,    85,    85,    85,
-    85,    85,    85
+    80,    80,    81,    81,    81,    82,    83,    83,    83,    84,
+    84,    85,    85,    85,    85,    85,    85,    85,    85,    85,
+    85,    85,    85,    85
 };
 
 static const short yyr2[] = {     0,
      1,     2,     0,     1,     1,     3,     1,     1,     0,     1,
-     8,     1,     3,    10,     6,     5,     2,     5,     3,     2,
-     1,     1,     1,     2,     2,     1,     1,     1,     1,     2,
-     1,     2,     4
+     8,     1,     3,    10,     6,     5,     2,     5,     4,     3,
+     2,     1,     1,     1,     2,     2,     1,     1,     1,     1,
+     2,     1,     2,     4
 };
 
 static const short yydefact[] = {     3,
-    31,     0,    21,    22,    23,    26,     0,    27,    28,     0,
-    29,     0,     1,     3,     4,     5,     0,     0,     0,     0,
-    24,    25,    32,     0,     2,     9,    17,    30,     9,    13,
-     0,     0,     0,    29,    12,     0,     7,    10,     0,     0,
-     0,     0,    20,    33,     0,     9,     0,     0,     0,     0,
-    19,    16,     6,     0,    18,    15,     0,     0,     9,     0,
-     0,     9,     0,     0,    14,    11,     0,     0,     0
+    32,     0,    22,    23,    24,    27,     0,    28,    29,     0,
+    30,     0,     1,     3,     4,     5,     0,     0,     0,     0,
+    25,    26,    33,     0,     2,     9,    17,    31,     9,    13,
+     0,     0,     0,    30,    12,     0,     7,    10,     0,     0,
+     0,     0,    21,    34,     0,     9,     0,     0,    19,     0,
+     0,    20,    16,     6,     0,    18,    15,     0,     0,     9,
+     0,     0,     9,     0,     0,    14,    11,     0,     0,     0
 };
 
-static const short yydefgoto[] = {    67,
+static const short yydefgoto[] = {    68,
     13,    14,    36,    37,    15,    16,    38,    33,    39
 };
 
-static const short yypact[] = {    32,
--32768,    44,-32768,-32768,-32768,-32768,   -30,-32768,-32768,    44,
--32768,   -65,-32768,    32,-32768,-32768,   -55,    -6,   -60,    -9,
--32768,-32768,   -54,    44,-32768,    -8,   -56,-32768,    -8,-32768,
-   -52,   -51,   -53,   -49,-32768,   -47,   -43,-32768,    -7,    14,
-   -44,    18,    44,-32768,   -41,    -8,   -38,   -37,   -27,   -25,
--32768,-32768,-32768,    40,-32768,-32768,   -18,   -19,    -8,   -16,
-   -15,    -8,   -17,   -14,-32768,-32768,    57,    58,-32768
+static const short yypact[] = {    33,
+-32768,    45,-32768,-32768,-32768,-32768,   -28,-32768,-32768,    45,
+-32768,   -71,-32768,    33,-32768,-32768,   -57,    -4,   -58,    -8,
+-32768,-32768,   -54,    45,-32768,    -7,   -55,-32768,    -7,-32768,
+   -51,   -52,   -53,   -47,-32768,   -46,   -42,-32768,    -5,   -11,
+   -44,    18,    45,-32768,   -43,    -7,   -40,   -41,-32768,   -34,
+   -25,-32768,-32768,-32768,    37,-32768,-32768,   -20,   -19,    -7,
+   -16,   -17,    -7,   -15,   -13,-32768,-32768,    55,    58,-32768
 };
 
 static const short yypgoto[] = {-32768,
-    50,-32768,    42,-32768,-32768,-32768,     5,    22,     4
+    52,-32768,    43,-32768,-32768,-32768,     7,    16,     6
 };
 
 
-#define	YYLAST		104
+#define	YYLAST		106
 
 
-static const short yytable[] = {    27,
-     1,    27,    27,    18,    17,    20,    19,    29,    24,    21,
-    30,    22,    26,    23,    28,    40,    42,    18,    17,    43,
-    -8,    44,    45,    46,    48,    49,    50,    18,    32,    52,
-    54,     3,     4,     5,     6,    55,     7,     8,     9,    10,
-     1,    34,    12,    56,    57,    35,    18,    32,    58,    59,
-    60,    62,     1,    65,    63,    66,    68,    69,    31,    28,
-    47,    28,    28,    25,    51,     0,     2,     0,     0,     0,
-    41,     3,     4,     5,     6,     0,     7,     8,     9,    10,
-     0,    11,    12,     3,     4,     5,     6,    53,     7,     8,
-     9,    10,     0,    11,    12,     0,     0,     0,     0,     0,
-    61,     0,     0,    64
+static const short yytable[] = {    48,
+    27,     1,    24,    27,    27,    18,    17,    20,    19,    29,
+    26,    21,    30,    22,    28,    23,    40,    42,    43,    18,
+    17,    44,    -8,    45,    46,    50,    51,    53,    55,    18,
+    32,    56,     3,     4,     5,     6,    57,     7,     8,     9,
+    10,     1,    34,    12,    58,    59,    35,    60,    18,    32,
+    61,    63,    64,     1,    69,    66,    67,    70,    52,    31,
+    28,    49,    47,    28,    28,    25,     0,     2,     0,     0,
+     0,    41,     3,     4,     5,     6,     0,     7,     8,     9,
+    10,     0,    11,    12,     3,     4,     5,     6,    54,     7,
+     8,     9,    10,     0,    11,    12,     0,     0,     0,     0,
+     0,     0,    62,     0,     0,    65
 };
 
-static const short yycheck[] = {     9,
-     9,     9,     9,     0,     0,     2,     2,    68,    74,    40,
-    71,    42,    68,    10,    69,    72,    69,    14,    14,    71,
-    70,    75,    70,    67,    11,    70,     9,    24,    24,    71,
-    69,    40,    41,    42,    43,    73,    45,    46,    47,    48,
-     9,    50,    51,    71,    70,    54,    43,    43,     9,    68,
-    70,    68,     9,    71,    70,    70,     0,     0,    68,    69,
-    68,    69,    69,    14,    43,    -1,    35,    -1,    -1,    -1,
-    29,    40,    41,    42,    43,    -1,    45,    46,    47,    48,
-    -1,    50,    51,    40,    41,    42,    43,    46,    45,    46,
-    47,    48,    -1,    50,    51,    -1,    -1,    -1,    -1,    -1,
-    59,    -1,    -1,    62
+static const short yycheck[] = {    11,
+     9,     9,    74,     9,     9,     0,     0,     2,     2,    68,
+    68,    40,    71,    42,    69,    10,    72,    69,    71,    14,
+    14,    75,    70,    70,    67,    70,     9,    71,    69,    24,
+    24,    73,    40,    41,    42,    43,    71,    45,    46,    47,
+    48,     9,    50,    51,    70,     9,    54,    68,    43,    43,
+    70,    68,    70,     9,     0,    71,    70,     0,    43,    68,
+    69,    73,    68,    69,    69,    14,    -1,    35,    -1,    -1,
+    -1,    29,    40,    41,    42,    43,    -1,    45,    46,    47,
+    48,    -1,    50,    51,    40,    41,    42,    43,    46,    45,
+    46,    47,    48,    -1,    50,    51,    -1,    -1,    -1,    -1,
+    -1,    -1,    60,    -1,    -1,    63
 };
 
 #line 329 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
@@ -1312,7 +1313,7 @@ YYLABEL(yyreduce)
 
 
 /* #line 783 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 1316 "ansi-c-parser.cpp"
+#line 1317 "ansi-c-parser.cpp"
 
   switch (yyn) {
 
@@ -1358,10 +1359,24 @@ case 9:
     break;}
 case 10:
 #line 123 "ansi-c.y"
-{ yyval.param = new Parameter(yyvsp[0].type_ident->ty, yyvsp[0].type_ident->nam.c_str()); ;
+{  if (yyvsp[0].type_ident->ty->isArray() || 
+            (yyvsp[0].type_ident->ty->isNamed() && 
+             ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo() &&
+             ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo()->isArray())) {
+            /* C has complex semantics for passing arrays.. seeing as 
+             * we're supposedly parsing C, then we should deal with this.
+             * When you pass an array in C it is understood that you are
+             * passing that array "by reference".  As all parameters in
+             * our internal representation are passed "by value", we alter
+             * the type here to be a pointer to an array.
+             */
+            yyvsp[0].type_ident->ty = new PointerType(yyvsp[0].type_ident->ty);
+        }
+        yyval.param = new Parameter(yyvsp[0].type_ident->ty, yyvsp[0].type_ident->nam.c_str()); 
+     ;
     break;}
 case 11:
-#line 125 "ansi-c.y"
+#line 139 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, NULL);
        sig->addReturn(yyvsp[-7].type);
        for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1377,15 +1392,15 @@ case 11:
      ;
     break;}
 case 12:
-#line 139 "ansi-c.y"
+#line 153 "ansi-c.y"
 { yyval.param = new Parameter(new VoidType, "..."); ;
     break;}
 case 13:
-#line 143 "ansi-c.y"
+#line 157 "ansi-c.y"
 { Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty); ;
     break;}
 case 14:
-#line 145 "ansi-c.y"
+#line 159 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, NULL);
            sig->addReturn(yyvsp[-8].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1401,7 +1416,7 @@ case 14:
          ;
     break;}
 case 15:
-#line 159 "ansi-c.y"
+#line 173 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, yyvsp[-4].type_ident->nam.c_str());
            sig->addReturn(yyvsp[-4].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1417,7 +1432,7 @@ case 15:
          ;
     break;}
 case 16:
-#line 175 "ansi-c.y"
+#line 189 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, yyvsp[-4].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-4].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1433,84 +1448,91 @@ case 16:
          ;
     break;}
 case 17:
-#line 191 "ansi-c.y"
+#line 205 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-1].type;
             yyval.type_ident->nam = yyvsp[0].str;
           ;
     break;}
 case 18:
-#line 196 "ansi-c.y"
+#line 210 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = new ArrayType(yyvsp[-4].type, yyvsp[-1].ival);
             yyval.type_ident->nam = yyvsp[-3].str;
           ;
     break;}
 case 19:
-#line 202 "ansi-c.y"
+#line 215 "ansi-c.y"
+{ yyval.type_ident = new TypeIdent();
+            yyval.type_ident->ty = new ArrayType(yyvsp[-3].type);
+            yyval.type_ident->nam = yyvsp[-2].str;
+          ;
+    break;}
+case 20:
+#line 221 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
           ;
     break;}
-case 20:
-#line 206 "ansi-c.y"
+case 21:
+#line 225 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
             yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
           ;
     break;}
-case 21:
-#line 212 "ansi-c.y"
+case 22:
+#line 231 "ansi-c.y"
 { yyval.type = new CharType(); ;
     break;}
-case 22:
-#line 214 "ansi-c.y"
+case 23:
+#line 233 "ansi-c.y"
 { yyval.type = new IntegerType(16); ;
     break;}
-case 23:
-#line 216 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
-    break;}
 case 24:
-#line 218 "ansi-c.y"
-{ yyval.type = new IntegerType(8, false); ;
+#line 235 "ansi-c.y"
+{ yyval.type = new IntegerType(); ;
     break;}
 case 25:
-#line 220 "ansi-c.y"
-{ yyval.type = new IntegerType(32, false); ;
+#line 237 "ansi-c.y"
+{ yyval.type = new IntegerType(8, false); ;
     break;}
 case 26:
-#line 222 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
+#line 239 "ansi-c.y"
+{ yyval.type = new IntegerType(32, false); ;
     break;}
 case 27:
-#line 224 "ansi-c.y"
-{ yyval.type = new FloatType(32); ;
+#line 241 "ansi-c.y"
+{ yyval.type = new IntegerType(); ;
     break;}
 case 28:
-#line 226 "ansi-c.y"
-{ yyval.type = new FloatType(64); ;
+#line 243 "ansi-c.y"
+{ yyval.type = new FloatType(32); ;
     break;}
 case 29:
-#line 228 "ansi-c.y"
-{ yyval.type = new VoidType(); ;
+#line 245 "ansi-c.y"
+{ yyval.type = new FloatType(64); ;
     break;}
 case 30:
-#line 230 "ansi-c.y"
-{ yyval.type = new PointerType(yyvsp[-1].type); ;
+#line 247 "ansi-c.y"
+{ yyval.type = new VoidType(); ;
     break;}
 case 31:
-#line 232 "ansi-c.y"
+#line 249 "ansi-c.y"
+{ yyval.type = new PointerType(yyvsp[-1].type); ;
+    break;}
+case 32:
+#line 251 "ansi-c.y"
 { //$$ = Type::getNamedType($1); 
       //if ($$ == NULL)
       yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
-case 32:
-#line 237 "ansi-c.y"
+case 33:
+#line 256 "ansi-c.y"
 { yyval.type = yyvsp[0].type; ;
     break;}
-case 33:
-#line 239 "ansi-c.y"
+case 34:
+#line 258 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
            it != yyvsp[-1].type_ident_list->end(); it++) {
@@ -1723,8 +1745,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 982 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 1727 "ansi-c-parser.cpp"
-#line 248 "ansi-c.y"
+#line 1749 "ansi-c-parser.cpp"
+#line 267 "ansi-c.y"
 
 #include <stdio.h>
 

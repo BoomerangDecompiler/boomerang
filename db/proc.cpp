@@ -134,28 +134,32 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
     return false;
 }
 
-void Proc::printCallGraphXML(std::ostream &os, int depth)
-{
-    if (!Boomerang::get()->dumpXML)
-        return;
-    for (int i = 0; i < depth; i++)
-        os << "   ";
-    os << "<proc name=\"" << getName() << "\"/>\n";
-}
-
-void UserProc::printCallGraphXML(std::ostream &os, int depth)
+void Proc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 {
     if (!Boomerang::get()->dumpXML)
         return;
     visited = true;
     for (int i = 0; i < depth; i++)
         os << "   ";
+    os << "<proc name=\"" << getName() << "\"/>\n";
+}
+
+void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
+{
+    if (!Boomerang::get()->dumpXML)
+        return;
+    bool wasVisited = visited;
+    visited = true;
+    for (int i = 0; i < depth; i++)
+        os << "   ";
     os << "<proc name=\"" << getName() << "\">\n";
-    for (std::set<Proc*>::iterator it = calleeSet.begin(); 
-                                   it != calleeSet.end();
-                                   it++) 
-        if (!(*it)->isVisited())
-            (*it)->printCallGraphXML(os, depth+1);
+    if (recurse) {
+        for (std::set<Proc*>::iterator it = calleeSet.begin(); 
+                                       it != calleeSet.end();
+                                       it++) 
+            (*it)->printCallGraphXML(os, depth+1, !wasVisited && 
+                                                  !(*it)->isVisited());
+    }
     for (int i = 0; i < depth; i++)
         os << "   ";
     os << "</proc>\n";
@@ -1666,33 +1670,81 @@ void Proc::addParameter(Exp *e)
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
-    Exp *match = new Unary(opMemOf, new Terminal(opWild)); 
     StatementList stmts;
     getStatements(stmts);
 
-    // replace expressions with symbols
+    // start with calls because that's where we have the most types
     StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) 
+        if ((*it)->isCall()) {
+            CallStatement *call = (CallStatement*)*it;
+            for (int i = 0; i < call->getNumArguments(); i++) {
+                Type *ty = call->getArgumentType(i);
+                Exp *e = call->getArgumentExp(i);
+                if (ty && ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                if (ty && ty->isPointer() && 
+                    e->getOper() == opIntConst) {
+                    Type *pty = ((PointerType*)ty)->getPointsTo();
+                    Type *rpty = pty;
+                    if (rpty->isNamed())
+                        rpty = ((NamedType*)rpty)->resolvesTo();
+                    if (rpty->isArray() && ((ArrayType*)rpty)->isUnbounded()) {
+                        pty = rpty->clone();
+                        ((ArrayType*)pty)->setLength(1024);   // just something arbitary
+                        if (i+1 < call->getNumArguments()) {
+                            Type *nt = call->getArgumentType(i+1);
+                            if (nt->isNamed())
+                                nt = ((NamedType*)nt)->resolvesTo();
+                            if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
+                                ((ArrayType*)pty)->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                        }
+                    }
+                    ADDRESS u = ((Const*)e)->getInt();
+                    prog->globalUsed(u);
+                    const char *global = prog->getGlobal(u);
+                    if (global) {
+                        prog->setGlobalType((char*)global, pty);
+                        Unary *g = new Unary(opGlobal,
+                            new Const(strdup((char*)global)));
+                        Exp *ne = new Unary(opAddrOf, g);
+                        call->setArgumentExp(i, ne);
+                        if (VERBOSE)
+                            LOG << "replacing param " << e << " with " << ne << " in " << call << "\n";
+                    }
+                }
+            }
+        }
+
+
+    // replace expressions with symbols
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        Exp *memof;
 
-        if (s->search(match, memof)) {
-            if (memof->getSubExp1()->getOper() == opIntConst) {
-                ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
-                const char *global = prog->getGlobal(u);
-                if (global) {
-                    Unary *g = new Unary(opGlobal,
-                        new Const(strdup((char*)global)));
-                    Exp* memofCopy = memof->clone();
-                    bool change = s->searchAndReplace(memofCopy, g);
-                    delete memofCopy; delete g;
-                    if (change)
-                        prog->globalUsed(u);
+        LocationSet refs;
+        s->addUsedLocs(refs);
+        LocationSet::iterator rr;
+        for (rr = refs.begin(); rr != refs.end(); rr++) {
+            if (((Exp*)*rr)->isSubscript()) {
+                Statement *ref = ((RefExp*)*rr)->getRef();
+                if (ref == NULL && 
+                    (*rr)->getSubExp1()->getOper() == opMemOf &&
+                    (*rr)->getSubExp1()->getSubExp1()->getOper() == opIntConst) {
+                    Exp *memof = (*rr)->getSubExp1();
+                    ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
+                    prog->globalUsed(u);
+                    const char *global = prog->getGlobal(u);
+                    if (global) {
+                        Unary *g = new Unary(opGlobal,
+                            new Const(strdup((char*)global)));
+                        Exp* memofCopy = memof->clone();
+                        s->searchAndReplace(memofCopy, g);
+                        delete memofCopy; delete g;
+                    }
                 }
             }
         }
     }
-    delete match;
 }
 
 void UserProc::replaceExpressionsWithSymbols() {
@@ -1820,12 +1872,29 @@ void UserProc::replaceExpressionsWithLocals() {
             for (int i = 0; i < call->getNumArguments(); i++) {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
+                if (ty && ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
                 if (ty && ty->isPointer() && 
                     e->getOper() == opMinus && 
                     *e->getSubExp1() == *new RefExp(Unary::regOf(sp), NULL) &&
                     e->getSubExp2()->getOper() == opIntConst) {
                     Exp *olde = e->clone();
-                    e = getLocalExp(new Unary(opMemOf, e->clone()), ((PointerType*)ty)->getPointsTo());
+                    Type *pty = ((PointerType*)ty)->getPointsTo();
+                    Type *rpty = pty;
+                    if (rpty->isNamed())
+                        rpty = ((NamedType*)rpty)->resolvesTo();
+                    if (rpty->isArray() && ((ArrayType*)rpty)->isUnbounded()) {
+                        pty = rpty->clone();
+                        ((ArrayType*)pty)->setLength(1024);   // just something arbitary
+                        if (i+1 < call->getNumArguments()) {
+                            Type *nt = call->getArgumentType(i+1);
+                            if (nt->isNamed())
+                                nt = ((NamedType*)nt)->resolvesTo();
+                            if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
+                                ((ArrayType*)pty)->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                        }
+                    }
+                    e = getLocalExp(new Unary(opMemOf, e->clone()), pty);
                     Exp *ne = new Unary(opAddrOf, e);
                     if (VERBOSE)
                         LOG << "replacing param " << olde << " with " << ne << " in " << call << "\n";
@@ -1972,6 +2041,7 @@ void UserProc::propagateStatements(int memDepth, int toDepth) {
         // if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty, toDepth);
     }
+    LOG << "out propagate statements\n";
 }
 
 void UserProc::promoteSignature() {
@@ -1991,6 +2061,16 @@ Type *UserProc::getLocalType(const char *nam)
     if (locals.find(nam) == locals.end())
         return NULL;
     return locals[nam];
+}
+
+Exp *UserProc::getLocalExp(const char *nam)
+{
+    for (std::map<Exp*,Exp*,lessExpStar>::iterator it = symbolMap.begin();
+         it != symbolMap.end(); it++)
+        if ((*it).second->getOper() == opLocal &&
+            !strcmp(((Const*)(*it).second->getSubExp1())->getStr(), nam))
+            return (*it).first;
+    return NULL;
 }
 
 // Add local variables local<nextAvailable> .. local<n-1>

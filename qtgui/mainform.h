@@ -40,6 +40,7 @@ protected:
     DetailsWidget* details;
     QTextBrowser* logger;
     QTextBrowser* decoded;
+    QTextBrowser* analysed;
     QTextBrowser* ssa;
     QTextBrowser* code;
     QMenuBar *MenuBarEditor;
@@ -51,7 +52,7 @@ protected:
     QPushButton* showLog;
     QHBoxLayout* MainFormLayout;
     FileMonitor *logMonitor, *cgMonitor, 
-                *detailsMonitor, *decodedMonitor, *ssaMonitor;
+                *detailsMonitor, *decodedMonitor, *analysedMonitor, *ssaMonitor;
     QString projectPath;
 
 protected slots:
@@ -65,6 +66,7 @@ protected slots:
     virtual void updateCallGraph();
     virtual void updateDetails();
     virtual void updateDecoded();
+    virtual void updateAnalysed();
     virtual void updateSSA();
 };
 

@@ -120,7 +120,21 @@ param_list: param ',' param_list
           ;
 
 param: type_ident
-     { $$ = new Parameter($1->ty, $1->nam.c_str()); }
+     {  if ($1->ty->isArray() || 
+            ($1->ty->isNamed() && 
+             ((NamedType*)$1->ty)->resolvesTo() &&
+             ((NamedType*)$1->ty)->resolvesTo()->isArray())) {
+            /* C has complex semantics for passing arrays.. seeing as 
+             * we're supposedly parsing C, then we should deal with this.
+             * When you pass an array in C it is understood that you are
+             * passing that array "by reference".  As all parameters in
+             * our internal representation are passed "by value", we alter
+             * the type here to be a pointer to an array.
+             */
+            $1->ty = new PointerType($1->ty);
+        }
+        $$ = new Parameter($1->ty, $1->nam.c_str()); 
+     }
      | type '(' '*' IDENTIFIER ')' '(' param_list ')'
      { Signature *sig = Signature::instantiate(sigstr, NULL);
        sig->addReturn($1);
@@ -195,6 +209,11 @@ type_ident: type IDENTIFIER
           | type IDENTIFIER '[' CONSTANT ']'
           { $$ = new TypeIdent();
             $$->ty = new ArrayType($1, $4);
+            $$->nam = $2;
+          }
+          | type IDENTIFIER '[' ']'
+          { $$ = new TypeIdent();
+            $$->ty = new ArrayType($1);
             $$->nam = $2;
           }
 

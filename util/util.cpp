@@ -202,8 +202,8 @@ void unlockFile(int fd)
 
 void escapeXMLChars(std::string &s)
 {
-    std::string bad = "<>";
-    const char *replace[] = { "&lt;", "&gt;" };
+    std::string bad = "<>&";
+    const char *replace[] = { "&lt;", "&gt;", "&amp;" };
     for (int i = 0; i < s.size(); i++) {
         int n = bad.find(s[i]);
         if (n != std::string::npos) {

@@ -247,7 +247,7 @@ int Boomerang::decompile(const char *fname)
     Prog *prog = fe->decode(decodeMain);
     if (entrypoints.size()) {
         for (unsigned i = 0; i < entrypoints.size(); i++) {
-            std::cerr<< "decoding extra entrypoint " << entrypoints[i] << "\n";
+            std::cerr<< "decoding extra entrypoint " << std::hex << entrypoints[i] << "\n";
             prog->decode(entrypoints[i]);
         }
     }

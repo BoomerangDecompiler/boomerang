@@ -2185,11 +2185,18 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
         S->getDefinitions(defs);
         LocationSet::iterator dd;
         for (dd = defs.begin(); dd != defs.end(); dd++) {
-            if ((*dd)->getMemDepth() == memDepth) {
+            Exp *d = *dd;
+            if (d->getMemDepth() == memDepth) {
                 // Push i onto Stack[a]
-                Stack[*dd].push(S);
+                Stack[d].push(S);
                 // Replace definition of a with definition of a_i in S
                 // (we don't do this)
+            }
+            if (d->getOper() == opLocal) {
+                d = S->getProc()->getLocalExp(((Const*)d->getSubExp1())->getStr());
+                assert(d);
+                if (d->getMemDepth() == memDepth)
+                    Stack[d].push(S);
             }
         }
     }

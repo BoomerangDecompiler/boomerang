@@ -216,7 +216,8 @@ public:
     void addParameter(Exp *e);
     virtual void addReturn(Exp *e);
 
-    virtual void printCallGraphXML(std::ostream &os, int depth);
+    virtual void printCallGraphXML(std::ostream &os, int depth, 
+                                   bool recurse = true);
     void printDetailsXML();
     void clearVisited() { visited = false; }
     bool isVisited() { return visited; }
@@ -603,6 +604,9 @@ public:
     // return a local's type
     Type *getLocalType(const char *nam);
 
+    // return a local's exp
+    Exp *getLocalExp(const char *nam);
+
     /*
      * Add new locals, local<next available> to local<n-1>
      */
@@ -675,7 +679,8 @@ public:
      */
     virtual bool isAggregateUsed() {return aggregateUsed;}
 
-    virtual void printCallGraphXML(std::ostream &os, int depth);
+    virtual void printCallGraphXML(std::ostream &os, int depth,
+                                   bool recurse = true);
     void printDecodedXML();
     void printAnalysedXML();
     void printSSAXML();

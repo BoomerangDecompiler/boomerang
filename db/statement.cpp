@@ -1585,6 +1585,7 @@ void CallStatement::addUsedLocs(LocationSet& used) {
 }
 
 void CallStatement::fixCallRefs() {
+    LOG << "fixing call refs for " << this << "\n";
     if (pDest)
         pDest = pDest->fixCallRefs();
     for (unsigned i = 0; i < arguments.size(); i++)
