@@ -218,27 +218,26 @@ bool hasSetFlags(Exp* e) {
 
 // Return true if an indirect call statement is converted to direct
 bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth, bool limit /* = true */) {
-#if 0		// If don't propagate into flag assigns, some converting to locals
-			// doesn't happen, and errors occur
+#if 0		// If don't propagate into flag assigns, some converting to locals doesn't happen, and errors occur
 	// don't propagate to flag assigns
 	if (isFlagAssgn())
 		return;
 #endif
 	// don't propagate into temp definitions (? why? Can this ever happen?)
+#if 0		// Don't want to propagate a temp from one RTL to another, but DO want to propagate withing one RTL
+			// Example: test/OSX/hello stmw instruction
 	if (isAssign() && getLeft()->isTemp())
 		return false;
+#endif
 	bool change;
 	bool convert = false;
 	int changes = 0;
 	int sp = proc->getSignature()->getStackRegister(proc->getProg());
 	Exp* regSp = Location::regOf(sp);
-	// Repeat substituting into this statement while there is a single reference
-	// component in it
-	// But all RefExps will have just one component. Maybe calls (later) will
-	// have more than one ref
+	// Repeat substituting into this statement while there is a single reference component in it
+	// But all RefExps will have just one component. Maybe calls (later) will have more than one ref
 	// Example: y := a{2,3} + b{4} + c{0}
-	// can substitute b{4} into this, but not a. Can't do c either, since there
-	// is no definition (it's a parameter).
+	// can substitute b{4} into this, but not a. Can't do c either, since there is no definition (it's a parameter).
 	do {
 		LocationSet exps;
 		addUsedLocs(exps);
@@ -291,9 +290,8 @@ bool Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth, bo
 							if (VERBOSE) LOG << "Allowing prop. into branch (1) of " << def << "\n";
 							else
 								;
-						// ?? Also allow any assignments to temps or assignment
-						// of anything to anything subscripted. Trent:
-						// was the latter meant to be anything NOT subscripted?
+						// ?? Also allow any assignments to temps or assignment of anything to anything subscripted.
+						// Trent: was the latter meant to be anything NOT subscripted?
 						else if (defRight->getOper() != opSubscript && !def->getLeft()->isTemp())
 							continue;
 						else
@@ -2925,8 +2923,8 @@ Assignment::Assignment(Exp* lhs) : type(new VoidType), lhs(lhs) {}
 Assignment::Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {}
 Assignment::~Assignment() {}
 
-Assign::Assign(Exp* lhs, Exp* rhs)
-  : Assignment(lhs), rhs(rhs), guard(NULL) {
+Assign::Assign(Exp* lhs, Exp* rhs, Exp* guard)
+  : Assignment(lhs), rhs(rhs), guard(guard) {
 	kind = STMT_ASSIGN;
 	// MVE: Can go soon:
 	if (lhs->getOper() == opTypedExp) { 
@@ -2934,8 +2932,8 @@ Assign::Assign(Exp* lhs, Exp* rhs)
 	} 
 }
 
-Assign::Assign(Type* ty, Exp* lhs, Exp* rhs)
-  : Assignment(ty, lhs), rhs(rhs), guard(NULL) 
+Assign::Assign(Type* ty, Exp* lhs, Exp* rhs, Exp* guard)
+  : Assignment(ty, lhs), rhs(rhs), guard(guard) 
 {
 	kind = STMT_ASSIGN;
 }
@@ -2950,8 +2948,8 @@ ImplicitAssign::ImplicitAssign(ImplicitAssign& o) : Assignment(lhs->clone()) {ki
 ImplicitAssign::~ImplicitAssign() { }
 
 Statement* Assign::clone() {
-	Assign* a = new Assign(type == NULL ? NULL : type->clone(),
-		lhs->clone(), rhs->clone());
+	Assign* a = new Assign(type == NULL ? NULL : type->clone(), lhs->clone(), rhs->clone(),
+		guard == NULL ? NULL : guard->clone());
 	// Statement members
 	a->pbb = pbb;
 	a->proc = proc;
@@ -3041,16 +3039,21 @@ void Assign::simplify() {
 
 	lhs = lhs->simplifyArith();
 	rhs = rhs->simplifyArith();
+	if (guard) guard = guard->simplifyArith();
 	// simplify the resultant expression
 	lhs = lhs->simplify();
 	rhs = rhs->simplify();
+	if (guard) guard = guard->simplify();
+
+	// Perhaps the guard can go away
+	if (guard && (guard->isTrue() || guard->isIntConst() && ((Const*)guard)->getInt() == 1))
+		guard = NULL;			// No longer a guarded assignment
 
 	if (lhs->getOper() == opMemOf) {
 		lhs->refSubExp1() = lhs->getSubExp1()->simplifyArith();
 	}
 
-	// this hack finds address constants.. it should go away when
-	// Mike writes some decent type analysis.
+	// this hack finds address constants.. it should go away when Mike writes some decent type analysis.
 	if (DFA_TYPE_ANALYSIS) return;
 	if (lhs->getOper() == opMemOf && lhs->getSubExp1()->getOper() == opSubscript) {
 		RefExp *ref = (RefExp*)lhs->getSubExp1();
@@ -3140,6 +3143,8 @@ void Assign::fixSuccessor() {
 void Assign::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
 	os << "*" << type << "* ";
+	if (guard) 
+		os << guard << " => ";
 	if (lhs) lhs->print(os);
 	os << " := ";
 	if (rhs) rhs->print(os);
@@ -3245,6 +3250,8 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace) {
 	bool change = false;
 	lhs = lhs->searchReplaceAll(search, replace, change);
 	rhs = rhs->searchReplaceAll(search, replace, change);
+	if (guard)
+		guard = guard->searchReplaceAll(search, replace, change);
 	return change;
 }
 bool PhiAssign::searchAndReplace(Exp* search, Exp* replace) {
