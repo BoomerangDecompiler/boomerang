@@ -280,7 +280,7 @@ int Boomerang::decompile(const char *fname)
         return 1;
     }
 
-    // Add symbols from -s switches
+    // Add symbols from -s switch(es)
     for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
          it != symbols.end(); it++) {
         fe->AddSymbol((*it).first, (*it).second.c_str());
@@ -291,6 +291,8 @@ int Boomerang::decompile(const char *fname)
     Prog *prog = fe->decode(decodeMain);
 
     // Delay symbol files to now, since need Prog* prog
+    // Also, decode() reads the library catalog
+    // symbolFiles from -sf switch(es)
     for (unsigned i = 0; i < symbolFiles.size(); i++) {
         std::cerr << "reading symbol file " << symbolFiles[i].c_str() << "\n";
         prog->readSymbolFile(symbolFiles[i].c_str());
