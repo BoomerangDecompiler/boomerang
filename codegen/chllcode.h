@@ -6,6 +6,9 @@
  * WARRANTIES.
  *
  */
+/*
+ * 22 Nov 02 - Mike: Re-ordered initialisations to keep gcc quiet
+ */
 
 /*==============================================================================
  * FILE:       chllcode.h
@@ -90,7 +93,7 @@ protected:
 	virtual void appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code);
 
 public:
-	CControlToken(BasicBlock *pbb, CTok t) : bb(pbb), CHLLToken(t) { }
+	CControlToken(BasicBlock *pbb, CTok t) : CHLLToken(t), bb(pbb) { }
 
 	virtual BasicBlock *getBasicBlock() { return bb; }
 };
@@ -102,7 +105,7 @@ protected:
 	virtual void appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code);
 
 public:	
-	CDataToken(Exp *e, CTok t) : exp(e), CHLLToken(t) { }
+	CDataToken(Exp *e, CTok t) : CHLLToken(t), exp(e) { }
 	virtual Exp *getExp() { return exp; }
 };
 
@@ -113,7 +116,7 @@ protected:
 	virtual void appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code);
 
 public:
-	CProcToken(Proc *p, CTok t) : proc(p), CHLLToken(t) { }
+	CProcToken(Proc *p, CTok t) : CHLLToken(t), proc(p) { }
 	virtual Proc *getCall() { return proc; }
 };
 
@@ -124,7 +127,8 @@ protected:
 	virtual void appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code);
 
 public:
-	CFmtToken(const char *s) : str(s), CHLLToken(C_FMT) { }
+	CFmtToken(const char *s) : CHLLToken(C_FMT), str(s) { }
+virtual ~CFmtToken() { }
 
 	void append(const char *s) { str += s; }
 };
