@@ -152,8 +152,9 @@ void FrontSparcTest::test2() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x10a60);
     inst.rtl->print(o1);
-    // NOTE: this call is to out of range of the program's
-    // text limits, is this correct behaviour?  Please check. - trent
+    // This call is to out of range of the program's
+    // text limits (to the Program Linkage Table (PLT), calling printf)
+	// This is quite normal.
     expected = std::string("00010a60 CALL 0x21668()\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
