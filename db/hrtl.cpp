@@ -210,8 +210,7 @@ void HLJump::print(std::ostream& os /*= cout*/, bool withDF)
 
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
-    if (getKind() == RET_RTL)
-    {
+    if (getKind() == RET_RTL) {
         os << "RET\n";             // RET is a special case of a JUMP_RTL
         return;
     }
@@ -222,7 +221,7 @@ void HLJump::print(std::ostream& os /*= cout*/, bool withDF)
     else if (pDest->getOper() != opIntConst)
          pDest->print(os);
     else
-        os << std::hex << getFixedDest();
+        os << "0x" << std::hex << getFixedDest();
     os << std::endl;
 }
 
@@ -599,7 +598,7 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF)
         os << pDest;
     else {
         // Really we'd like to display the destination label here...
-        os << std::hex << getFixedDest();
+        os << "0x" << std::hex << getFixedDest();
     }
     os << ", condition ";
     switch (jtCond)
@@ -1228,7 +1227,13 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
     else if (pDest == NULL)
             os << "*no dest*";
     else {
-        pDest->print(os);
+        // But Trent hacked out the opAddrConst (opCodeAddr) stuff... Sigh.
+        // I'd like to retain the 0xHEX notation, if only to retaing the
+        // existing tests
+        if (pDest->isIntConst())
+            os << "0x" << std::hex << ((Const*)pDest)->getInt();
+        else
+            pDest->print(os);       // Could still be an expression
     }
 
     // Print the actual arguments of the call

@@ -948,8 +948,8 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive,
 
 // Special for Mike: find the location where the first outgoing (actual)
 // parameter is conventionally held
-Exp* Signature::getFirstArgLoc(BinaryFile* pBF) {
-    MACHINE mach = pBF->GetMachine();
+Exp* Signature::getFirstArgLoc(Prog* prog) {
+    MACHINE mach = prog->getMachine();
     switch (mach) {
         case MACHINE_SPARC: {
             CallingConvention::StdC::SparcSignature sig("");
