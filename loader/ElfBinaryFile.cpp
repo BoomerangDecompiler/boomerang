@@ -22,6 +22,7 @@
  * 10 Mar 02 - Mike: Mods for stand alone operation; constuct function
  * 21 May 02 - Mike: Slight mod for gcc 3.1
  * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
+ * 02 Oct 02 - Mike: Fixed some more endianness issues
 */
 
 /*==============================================================================
@@ -676,7 +677,7 @@ ADDRESS ElfBinaryFile::GetMainEntryPoint()
 
 ADDRESS ElfBinaryFile::GetEntryPoint()
 {
-    return ((Elf32_Ehdr*)m_pImage)->e_entry;
+    return (ADDRESS) elfRead4(&((Elf32_Ehdr*)m_pImage)->e_entry);
 }
 
 ADDRESS ElfBinaryFile::NativeToHostAddress(ADDRESS uNative)
@@ -696,7 +697,8 @@ WORD ElfBinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord)
     if (idx == -1) return (ADDRESS)-1;
     ADDRESS wRes = 0;
 
-    switch (m_pImage->e_machine)
+	int machine = elfRead4(&((Elf32_Ehdr*)m_pImage)->e_machine);
+    switch (machine)
     {
         case EM_SPARC:
         {
@@ -788,7 +790,7 @@ WORD ElfBinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord)
 
         default:
             fprintf(stderr, "Machine type %d not implemented for relocation\n",
-                m_pImage->e_machine);
+                machine);
             return 0;
     }
     return wRes;
@@ -890,10 +892,11 @@ LOAD_FMT ElfBinaryFile::GetFormat() const
 
 MACHINE ElfBinaryFile::GetMachine() const
 {
-    if (((Elf32_Ehdr*)m_pImage)->e_machine == EM_SPARC)
-    return MACHINE_SPARC;
-    else if (((Elf32_Ehdr*)m_pImage)->e_machine == EM_386)
-    return MACHINE_PENTIUM;
+	int machine = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_machine);
+    	 if (machine == EM_SPARC) return MACHINE_SPARC;
+    else if (machine == EM_386)   return MACHINE_PENTIUM;
+    else if (machine == EM_PA_RISC)return MACHINE_HPRISC;
+    else if (machine == EM_68K)   return MACHINE_PALM;	// Unlikely
     // What sort of machine is this?
     assert(false);
     return (MACHINE)-1;
@@ -901,7 +904,8 @@ MACHINE ElfBinaryFile::GetMachine() const
 
 bool ElfBinaryFile::isLibrary() const
 {
-    return (((Elf32_Ehdr*)m_pImage)->e_type == ET_DYN);
+    int type = elfRead2(&((Elf32_Ehdr*)m_pImage)->e_type);
+    return (type == ET_DYN);
 }
 
 std::list<const char *> ElfBinaryFile::getDependencyList()
@@ -1361,7 +1365,7 @@ std::map<ADDRESS, const char*>* ElfBinaryFile::GetDynamicGlobalMap()
  * PARAMETERS:  ps or pi: host pointer to the data
  * RETURNS:     An integer representing the data
  *============================================================================*/
-int ElfBinaryFile::elfRead2(short* ps) {
+int ElfBinaryFile::elfRead2(short* ps) const {
     unsigned char* p = (unsigned char*)ps;
     if (m_elfEndianness) {
         // Big endian
@@ -1371,7 +1375,7 @@ int ElfBinaryFile::elfRead2(short* ps) {
         return (int)(p[0] + (p[1] << 8));
     }
 }
-int ElfBinaryFile::elfRead4(int* pi) {
+int ElfBinaryFile::elfRead4(int* pi) const{
     short* p = (short*)pi;
     if (m_elfEndianness) {
         return (int)((elfRead2(p) << 16) + elfRead2(p+1));
