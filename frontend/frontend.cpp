@@ -335,6 +335,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
         while (sequentialDecode) {
 
             // Decode and classify the current instruction
+            if (Boomerang::get()->traceDecoder)
+                std::cout << "*" << std::hex << uAddr << "\t" << std::flush;
 
             // procedure out edge
             if (processed[uAddr] != NULL) {
@@ -669,9 +671,9 @@ if (0) {
                             }
                         }
                         //newProc(pProc->getProg(), uNewAddr);
-                        // FIXME: settings
-//                        if (progOptions.trace)
-//                            std::cout << "p" << std::hex << uNewAddr << "\t" << std::flush; 
+                        if (Boomerang::get()->traceDecoder)
+                            std::cout << "p" << std::hex << uNewAddr << "\t"
+                              << std::flush; 
                     }
 
                     // Check if this is the _exit or exit function. May prevent
@@ -901,10 +903,8 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
     // if not already processed
     if (!bParsed) {
         targets.push(uNewAddr);
-        // FIXME: settings
-//        if (progOptions.trace)
-//            std::cout << ">" << std::hex << uNewAddr << "\t" << dec <<
-//            std::flush;
+        if (Boomerang::get()->traceDecoder)
+            std::cout << ">" << std::hex << uNewAddr << "\t" << std::flush;
     }
 }
 
@@ -931,9 +931,8 @@ ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
     {
         ADDRESS address = targets.front();
         targets.pop();
-        // FIXME: settings
-//        if (progOptions.trace)
-//            std::cout << "<" << std::hex << address << "\t" << std::flush;
+        if (Boomerang::get()->traceDecoder)
+            std::cout << "<" << std::hex << address << "\t" << std::flush;
 
         // If no label there at all, or if there is a BB, it's incomplete,
         // then we can parse this address next

@@ -945,32 +945,44 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 
 	gotMain = false;
     start = pBF->GetEntryPoint();
-    if( start == NO_ADDRESS ) return NO_ADDRESS;
+    //if( start == NO_ADDRESS ) return NO_ADDRESS;  // This is just the CRT
 
-	return start;  // dont use this pattern
+	// return start;  // dont use this pattern
 
-    if ((pBF->GetFormat() == LOADFMT_PE ) ||
-      (pBF->GetFormat() == LOADFMT_EXE)) {
-        int instCount = 100;
-        int conseq = 0;
-        ADDRESS addr = start;
+    int instCount = 100;
+    int conseq = 0;
+    ADDRESS addr = start;
         
-        // Look for 3 calls in a row in the first 100 instructions, with
-        // no other instructions between them. This is the "windows" pattern
-        do {
-            DecodeResult inst = decodeInstruction(addr);
-            if ((inst.rtl->getKind() == CALL_RTL) &&
-                ((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
-                if (++conseq == 3) {
-                    // Success. Return the target of the last call
-					gotMain = true;
-                    return ((HLCall*)inst.rtl)->getFixedDest();
-				}
+    // Look for 3 calls in a row in the first 100 instructions, with
+    // no other instructions between them. This is the "windows" pattern
+    // Or a call to __libc_start_main
+    ADDRESS dest;
+    do {
+        DecodeResult inst = decodeInstruction(addr);
+        if ((inst.rtl->getKind() == CALL_RTL) &&
+          ((dest = ((HLCall*)inst.rtl)->getFixedDest())) != NO_ADDRESS) {
+            if (++conseq == 3) {
+                // Success. Return the target of the last call
+	gotMain = true;
+                return ((HLCall*)inst.rtl)->getFixedDest();
+}
+            if (strcmp(pBF->SymbolByAddress(dest), "__libc_start_main") == 0) {
+                // This is a gcc 3 pattern. The first parameter will be
+                // a pointer to main. Assume it's the 5 byte push
+                // immediately preceeding this instruction
+                inst = decodeInstruction(addr-5);
+                assert(inst.valid);
+                assert(inst.rtl->getNumExp() == 2);
+                AssignExp* a = (AssignExp*) inst.rtl->elementAt(1);
+                Exp* rhs = a->getSubExp2();
+                assert(rhs->isIntConst());
+                return (ADDRESS)((Const*)rhs)->getInt();
             }
-            else 
-                conseq = 0;         // Must be consequitive
-            addr += inst.numBytes;
-        } while (--instCount);
+        }
+        else 
+            conseq = 0;         // Must be consequitive
+        addr += inst.numBytes;
+    } while (--instCount);
 #if 0       // Was for finding main in DOS 286 programs
         // Try another pattern; this one is for DOS programs. In the first
         // 120 instructions, look for 3 or more pushes, then a call. These
@@ -991,9 +1003,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         } while (--instCount);
 #endif
 
-        // Not ideal; we must return start
-        std::cerr << "main function not found\n";
-        return start;
-    }
-    return NO_ADDRESS;
+    // Not ideal; we must return start
+    std::cerr << "main function not found\n";
+    return start;
 }
