@@ -242,12 +242,6 @@ virtual Exp* simplifyAddr() {return this;}
 
     virtual Exp *fixCallRefs() { return this; }
 
-    // Update the "uses" information implicit in expressions
-    // defs is a StatementSet of definitions reaching this statement
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
-        StatementSet& rs) {return this;}
-    // Add a subscript to this; may return a new Exp
-    virtual Exp* addSubscript(Statement* def);
     // Add a subscript to all e (pointing to def)
     virtual Exp* expSubscriptVar(Exp* e, Statement* def) {return this;}
 
@@ -264,8 +258,6 @@ virtual Exp* simplifyAddr() {return this;}
     virtual bool serialize(std::ostream &ouf, int &len) = 0;
     static Exp *deserialize(std::istream &inf);
 
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs) {};
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -342,9 +334,6 @@ public:
     void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
-    Exp*    updateRefs(StatementSet& defs, int memDepth,
-                StatementSet& rs);
-    
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
 
@@ -417,20 +406,13 @@ virtual int getMemDepth();
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
-    // Update the "uses" information implicit in expressions
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
-                StatementSet& rs);
-
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
-
-};
+};  // class Unary
 
 /*==============================================================================
  * Binary is a subclass of Unary, holding two subexpressions
@@ -492,20 +474,13 @@ virtual int getMemDepth();
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
-    // Update the "uses" information implicit in expressions
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
-                StatementSet& rs);
-
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
-
-};
+};  // class Binary
 
 /*==============================================================================
  * Ternary is a subclass of Binary, holding three subexpressions
@@ -563,21 +538,13 @@ virtual int getMemDepth();
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
-    // Update the "uses" information implicit in expressions
-    // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
-                StatementSet& rs);
-
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
-
-};
+};  // class Ternary
 
 /*==============================================================================
  * TypedExp is a subclass of Unary, holding one subexpression and a Type
@@ -619,7 +586,7 @@ public:
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
-};
+};  // class TypedExp
 
 /*==============================================================================
  * FlagDef is a subclass of Unary, and holds a list of parameters (in the
@@ -636,41 +603,6 @@ virtual     ~FlagDef();                         // Destructor
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
-};
-
-/*==============================================================================
- * RefsExp is a subclass of Unary, holding an ordinary Exp pointer, and
- *  a StatementSet
- * This is used for subscripting SSA variables. Example:
- * m[1000] becomes m[1000]{3} if defined at statement 3
- * m[r[28]+4] becomes m[r[28]{2 8}]{3} if r[28] is defined at 2 and 8, and
- * the memof is defined at 3. The integers are really pointers to statements,
- * printed as the statement number for compactness
- *============================================================================*/
-class RefsExp : public Unary {
-    StatementSet    stmtSet;            // A set of pointers to statements
-
-public:
-            // Constructor with expression (e) and statement defining it (def)
-            RefsExp(Exp* e, Statement* def);
-            RefsExp(Exp* e);
-            RefsExp(RefsExp& o);
-virtual Exp* clone();
-    bool    operator==(const Exp& o) const;
-    bool    operator< (const Exp& o) const;
-    void    print(std::ostream& os, bool withUses = false);
-    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
-virtual int getNumRefs() {return stmtSet.size();}
-    void    addUsedLocs(LocationSet& used);
-virtual Exp* addSubscript(Statement* def) {
-                stmtSet.insert(def); return this;}
-    Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
-    Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
-    virtual Exp* fromSSA(igraph& ig);
-    bool    references(Statement* s) {return stmtSet.exists(s);}
-    StatementSet& getRefs() {return stmtSet;}
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
 };
 
 /*==============================================================================
@@ -693,42 +625,41 @@ virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
 virtual void print(std::ostream& os, bool withUses = false);
-    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
     void    addUsedLocs(LocationSet& used);
     virtual Exp *fixCallRefs();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-virtual Exp* addSubscript(Statement* def) {this->def = def; return this;}
+    Exp*    addSubscript(Statement* def) {this->def = def; return this;}
     void    setDef(Statement* def) {this->def = def;}
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return def == s;}
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs) {};
 };
 
 /*==============================================================================
- * PhiExp is a subclass of Terminal, holding just an operator (opPhi), and
- *  a StatementSet
+ * PhiExp is a subclass of Unary, holding an operator (opPhi), the expression
+ * that is being phi'd (in subExp1), and a StatementSet
  * This is used for phi functions. For example:
  * m[1000] := phi{3 7 10} if defined at statements 3, 7, and 10
  * m[r28{3}+4] := phi{2 8} if the memof is defined at 2 and 8, and
  * the r28 is defined at 3. The integers are really pointers to statements,
  * printed as the statement number for compactness
+ * NOTE: Although the subexpression is nearly always redundant, it is needed
+ * in one circumstance: when finding locations used by this statement, and
+ * the reference is to a CallStatement returning multiple locations.
  *============================================================================*/
-class PhiExp : public Terminal {
+class PhiExp : public Unary {
     StatementSet    stmtSet;            // A set of pointers to statements
 
 public:
-            PhiExp() : Terminal(opPhi) {};
+            PhiExp(Exp* e) : Unary(opPhi, e) {};
             // Constructor with statement defining it (def)
-            PhiExp(Statement* def);
+            PhiExp(Exp* e, Statement* def);
             PhiExp(PhiExp& o);
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
@@ -740,8 +671,6 @@ virtual Exp* addSubscript(Statement* def) {
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return stmtSet.exists(s);}
     StatementSet& getRefs() {return stmtSet;}
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
 };
     
 #endif // __EXP_H__

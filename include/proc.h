@@ -369,6 +369,8 @@ class UserProc : public Proc {
      * Set of locations defined in this proc. Some or all or none of these
      * may be return locations (will be if used before definition after the
      * call)
+     * Note: there is a different set in each call, because the locations
+     * may be different from the caller's perspective (e.g. stack locations)
      */
     LocationSet definesSet;
 
@@ -470,17 +472,12 @@ public:
     int  findMaxDepth();                    // Find max memory nesting depth
     // Recalculate dataflow
     void repairDataflow(int memDepth, StatementSet& rs);
-    void findRestoreSet_issa(StatementSet& rs);  // Find set of restoring stmts
-    void findRestoreSet(StatementSet& rs);      // Find set of restoring stmts
-    void removeRestoreRefs(StatementSet& rs);  // Remove refs to resore stmts
 
     void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform(igraph& ig);
 
-    void recoverParameters();       // Find formal parameters
     // Insert actual arguments to match formals
     void insertArguments(StatementSet& rs);
-    void recoverReturnLocs();       // Find return locations
 
     // prove any arbitary property of this procedure
     bool prove(Exp *query);

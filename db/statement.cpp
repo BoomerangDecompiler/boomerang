@@ -50,15 +50,14 @@ void Statement::replaceRef(Statement *def) {
     Exp* rhs = def->getRight();
     assert(lhs);
     assert(rhs);
-    // "Wrap" the LHS in a single ref RefsExp
-    // This is so that it doesn't "short circuit" to unsubscripted variables
-    // Example: 42:r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
-    // The bare r28 on the left "short circuits" to the bare r28 in this LHS
+    // "Wrap" the LHS in a RefExp
+    // This was so that it matches with the thing it is replacing.
+    // Example: 42: r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
+    // The r28 needs to be subscripted with {42} to match the thing on
+    // the RHS that is being substituted into. (It also makes sure it
+    // never matches the other r28, which should really be r28{0}).
     Unary* re;
-    if (Boomerang::get()->impSSA)
-        re = new RefsExp(lhs, def);
-    else
-        re = new RefExp(lhs, def);
+    re = new RefExp(lhs, def);
 
     // do the replacement
     doReplaceRef(re, rhs);
@@ -68,47 +67,6 @@ void Statement::replaceRef(Statement *def) {
     re->setSubExp1ND(NULL);
     delete re;
 }
-
-// special replace a use in this statement (where this statement has a
-// component with two refs)
-void Statement::specialReplaceRef(Statement *def) {
-    Exp* lhs = def->getLeft();
-    Exp* rhs = def->getRight();
-    assert(lhs);
-    assert(rhs);
-    // "Wrap" the LHS in a double ref RefsExp
-    // Example: this == 119 *32* r[29] := m[r[28]{85 119}],
-    //           def ==  85 *32* r[29] := r[28]{83}
-    // In order to substitute into the double ref component, we have to wrap
-    // lhs in a double ref RefsExp
-    RefsExp re(lhs, def);
-    re.addSubscript(this);
-
-    // do the replacement
-    doReplaceRef(&re, rhs);
-
-    // Careful: don't allow re to destruct while lhs is still a part of it!
-    // Else, will delete lhs, which is still a part of def!
-    re.setSubExp1ND(NULL);
-}
-
-/* Get everything that reaches this assignment.
-   To get the reachout, use getReachIn(reachset), calcReachOut(reachset).
- */
-void Statement::getReachIn(StatementSet &reachin, int phase) {
-    assert(pbb);
-    pbb->getReachInAt(this, reachin, phase);
-}
-
-void Statement::getAvailIn(StatementSet &availin, int phase) {
-    assert(pbb);
-    pbb->getAvailInAt(this, availin, phase);
-}
-
-//void Statement::getLiveOut(LocationSet &liveout, int phase) {
-//    assert(pbb);
-//    pbb->getLiveOutAt(this, liveout, phase);
-//}
 
 // Check the liveout set for interferences
 // Examples:  r[24]{3} and r[24]{5} both live at same time,
@@ -121,24 +79,6 @@ void insertInterference(igraph& ig, Exp* e) {
         ig.insert(std::pair<Exp*, int>(e, ++nextVarNum));
     // else it is already in the map: no need to do anything
 }
-
-void Statement::checkLiveIn(LocationSet& liveout, igraph& ig) {
-    // Note: this is an O(N**2) operation!
-    LocSetIter aa, bb;
-    for (Exp* a = liveout.getFirst(aa); a; a = liveout.getNext(aa)) {
-        bb = aa;
-        Exp* b = liveout.getNext(bb);
-        while (b) {
-            if (*a *= *b) {         // Compare, ignoring subscripts
-                if (*a < *b)
-                    insertInterference(ig, a);
-                else
-                    insertInterference(ig, b);
-            }
-            b = liveout.getNext(bb);
-        }
-    }
-} 
 
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
     if (*e1 == *e2) return true;
@@ -198,71 +138,6 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
     // args reversed
     return true;
 }
-
-/* calculates the definitions that are not killed by this assignment.
-   If the reach set is empty, it will contain anything this assignment defines.
-   If the reach set is not empty, then it will not contain anything this
-      assignment kills.
- */
-void Statement::calcReachOut(StatementSet &reach) {
-    // calculate kills
-    killDef(reach);
-    // add this def
-    if (getLeft() != NULL)
-        reach.insert(this);
-}
-
-/* calculates the definitions that are not killed by this statement (along
-    any path).
-   If the available set is empty, it will contain anything this assignment
-   defines. If the available set is not empty, then it will not contain
-   anything this assignment kills.
-   Note: now identical to the above
- */
-void Statement::calcAvailOut(StatementSet &avail) {
-    // calculate kills
-    killDef(avail);         // Reaching and available defs both killed by defs
-    // add this def
-    if (getLeft() != NULL)
-        avail.insert(this);
-}
-
-/* calculates the definitions containing live variables that are not killed by
-   this statement.
-   If the live set is empty, it will contain anything this assignment defines.
-   If the reach set is not empty, then it will not contain anything this
-      assignment kills.
- */
-void Statement::calcLiveIn(LocationSet &live) {
-    // Even though this is a backwards flow problem, we need to do the kills
-    // first. Consider
-    // eax := eax + 5
-    // where eax is in fact live (used before being defined) after this stmt.
-    // It is clearly still live before the statement, so we do the kill (which
-    // removes eax from the liveness set) then insert all our uses (which in
-    // this case is eax again). Weird.
-    // calculate kills
-    killLive(live);
-    // add all locations that this statement uses (register or memory)
-    addUsedLocs(live);
-#if 0
-    // Now substitute. If any of the locations in the live set use this
-    // statement's left hand side, do the substitution
-    // (Since live is a set of locations, this will only happend for
-    // memofs)
-    live.substitute(*this);
-#endif
-}
-
-void Statement::calcDeadIn(LocationSet &dead) {
-    // calculate kills
-    killDead(dead);
-    // add the location that this statement defines (register or memory)
-    Exp* left = getLeft();
-    if (left) dead.insert(left);
-//    dead.substitute(*this);
-}
-
 
 
 /* 
@@ -391,46 +266,6 @@ void Statement::propagateToAll() {
 }
 #endif
 
-// Update the dataflow for this stmt. This stmt is about to be deleted.
-// Don't assume the statement being erased has no dataflow; it could be
-// of the form x := x
-// 
-//   Before           After
-//     (1)             (1)
-//     ^ |usedBy       ^ |
-// uses| v             | |
-//     (2) = this      | |
-//     ^ |usedBy       | |
-// uses| v             | v
-//     (3)             (3)
-//
-#if 0
-void Statement::updateDfForErase() {
-    // First fix the down arrows (usedBy)
-    StmtSetIter it, uu;
-    for (Statement* ss = uses.getFirst(it); ss; ss = uses.getNext(it)) {
-        // it is iterating through the (1) set
-        // This is the usedBy entry from this (1) to (2)
-        // Erase this use of my definition, since I'm about to be deleted
-        ss->usedBy.remove(this);
-        // The use from this (1) to each (3) comes next
-        for (Statement* su = usedBy.getFirst(uu); su;
-          su = usedBy.getNext(uu))
-            ss->usedBy.insert(su);        // This (3) usedby this (1)
-    }
-    // Next, fix the up arrows (uses)
-    for (Statement* ss = usedBy.getFirst(it); ss; ss = usedBy.getNext(it)) {
-        // it is iterating through the (3) set
-        // This is the uses entry from this (3) to (2)
-        // Erase this def of my rhs, since I'm about to be deleted
-        ss->uses.remove(this);
-        // The uses from this (3) to each (1) comes next
-        for (Statement* suu = uses.getFirst(uu); suu; suu = uses.getNext(uu))
-            ss->uses.insert(suu);        // This (3) uses this (1)
-    }
-}
-#endif
-
 /*==============================================================================
  * FUNCTION:        operator<<
  * OVERVIEW:        Output operator for Statement*
@@ -490,13 +325,6 @@ void StatementSet::makeDiff(StatementSet& other) {
     }
 }
 
-// Killing difference. Kill any element of this where there is an element of
-// other that defines the same location
-void StatementSet::makeKillDiff(StatementSet& other) {
-    StmtSetIter it;
-    for (it = other.sset.begin(); it != other.sset.end(); it++)
-        (*it)->killDef(*this);
-}
 
 // Make this set the intersection of itself and other
 void StatementSet::makeIsect(StatementSet& other) {
@@ -868,10 +696,6 @@ char* Statement::prints() {
       return debug_buffer;
 }
 
-void Statement::getDefinitions(LocationSet &def) {
-    assert(false);
-}
-
 // exclude: a set of statements not to propagate from
 void Statement::propagateTo(int memDepth, StatementSet& exclude) {
     bool change;
@@ -884,44 +708,10 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
         LocSetIter ll;
         change = false;
         for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-            if (e->getNumRefs() == 2) {
-                StmtSetIter dummy;
-                Statement* d1 = ((RefsExp*)e)->getFirstRef(dummy);
-                Statement* d2 = ((RefsExp*)e)->getNextRef(dummy);
-                // Don't propagate if one of the defs is on the exclude list
-                if (exclude.exists(d1)) continue;
-                if (exclude.exists(d2)) continue;
-                // Warning! This also tries to propagate into loops!
-                // Not safe in general! (This is "Mike's hack")
-                if (Boomerang::get()->recursionBust &&
-                  (d1 == this || d2 == this) &&
-                  (*getLeft() == *((RefsExp*)e)->getSubExp1())) {
-                    // Experimental: get rid of defs caught up in recursion
-                    // Get the two definitions we reference
-                    // This is the special case where we have something like
-                    // 119 *32* r[29] := m[r[29]{85 119}]
-                    // Mike believes we can ignore the 119 part!
-                    if (d1 == this)
-                        change = doPropagateTo(memDepth, d2, true);
-                    else
-                        change = doPropagateTo(memDepth, d1, true);
-                    continue;
-                } else if (!Boomerang::get()->noPropMult && d1 == d2) {
-                    // Different definitions, but they are the same
-                    change = doPropagateTo(memDepth, d1, true);
-                    continue;
-                } else continue;
-            } 
-            // FIXME: Could find rare cases with 3 or more definitions, all
-            // the same; could propagate to these if the -npm flag not set
-            if (e->getNumRefs() != 1) continue;
+            if (!e->getNumRefs() == 1) continue;
             // Can propagate TO this (if memory depths are suitable)
-            StmtSetIter dummy;
             Statement* def;
-            if (Boomerang::get()->impSSA)
-                def = ((RefsExp*)e)->getFirstRef(dummy);
-            else
-                def = ((RefExp*)e)->getRef();
+            def = ((RefExp*)e)->getRef();
             if (def == NULL)
                 // Can't propagate statement "0"
                 continue;
@@ -939,12 +729,12 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
                 continue;
             if (def->isCall())
                 continue;
-            change = doPropagateTo(memDepth, def, false);
+            change = doPropagateTo(memDepth, def);
         }
     } while (change && ++changes < 20);
 }
 
-bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
+bool Statement::doPropagateTo(int memDepth, Statement* def) {
     // Check the depth of the definition (an assignment)
     // This checks the depth for the left and right sides, and
     // gives the max for both. Example: can't propagate
@@ -962,14 +752,8 @@ bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
             Boomerang::get()->numToPropagate--;
     }
 
-    if (twoRefs)
-        // A special version of replaceRef is needed, which wraps the LHS
-        // with two refs
-        specialReplaceRef(def);
-    else
-        replaceRef(def);
+    replaceRef(def);
     if (VERBOSE) {
-        if (twoRefs) std::cerr << "Special: ";
         std::cerr << "Propagating " << std::dec << def->getNumber() <<
           " into " << getNumber() <<
           ", result is " << this << "\n";
@@ -995,20 +779,8 @@ bool Statement::isNullStatement() {
     if (kind != STMT_ASSIGN) return false;
     Exp* right = ((Assign*)this)->getRight();
     if (right->isSubscript()) {
-        if (Boomerang::get()->impSSA) {
-            RefsExp* re = (RefsExp*)right;
-            if (re->getNumRefs() != 1)
-                // Can't be null
-                return false;
-            StmtSetIter dummy;
-            // Has only 1 reference; has to be equal to self to be a null statement
-            // Not even necessary to compare the LHS and RHS; just the statement
-            // numbers
-            return re->getFirstRef(dummy)->number == number;
-        }
-        else
-            // Must refer to self to be null
-            return this == ((RefExp*)right)->getRef();
+        // Must refer to self to be null
+        return this == ((RefExp*)right)->getRef();
     }
     else
         // Null if left == right
@@ -1030,6 +802,7 @@ bool Statement::isFpop() {
 }
 
 
+#if 0
 /*
  *  *   *   *   *   *
  *   Class Expand   *
@@ -1098,6 +871,10 @@ void Expand::print(std::ostream& ost) {
         ost << orig->getNumber() << parentString << c << " " << s << "\n";
     }
 }
+#endif
+
+
+
 
 /*
  * This code was in hrtl.cpp
@@ -1689,12 +1466,6 @@ bool BranchStatement::usesExp(Exp *e) {
     return pCond && pCond->search(e, tmp);
 }
 
-// Deadness is killed by a use
-void BranchStatement::killDead(LocationSet &dead) {
-    if (pCond)
-        dead.remove(pCond);
-}
-
 // process any constants in the statement
 void BranchStatement::processConstants(Prog *prog) {
 }
@@ -1804,13 +1575,6 @@ void BranchStatement::subscriptVar(Exp* e, Statement* def) {
         pCond = pCond->expSubscriptVar(e, def);
 }
 
-void BranchStatement::removeRestoreRefs(StatementSet& rs) {
-    pCond->doRemoveRestoreRefs(rs); }
-
-void BranchStatement::toSSAform(StatementSet& reachin, int memDepth, StatementSet& rs)
-{
-    pCond = pCond->updateRefs(reachin, memDepth, rs);
-}
 /**********************************
  * CaseStatement methods
  **********************************/
@@ -1964,7 +1728,7 @@ void CaseStatement::simplify() {
  *============================================================================*/
 CallStatement::CallStatement(int returnTypeSize /*= 0*/):  
       returnTypeSize(returnTypeSize), returnAfterCall(false), 
-      returnBlock(NULL), returnLoc(NULL) {
+      returnLoc(NULL) {
     kind = STMT_CALL;
     procDest = NULL;
 }
@@ -2166,6 +1930,20 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     // Print the return location if there is one
     if (getReturnLoc() != NULL)
         os << " " << getReturnLoc() << " := ";
+    // And the return locations if there are any
+    LocationSet defs;
+    getDefinitions(defs);
+    if (defs.size()) {
+        os << ")    {";
+        LocSetIter dd;
+        int i=0;
+        for (Exp* d = defs.getFirst(dd); d; d = defs.getNext(dd)) {
+            if (i++ != 0)
+                os << ", ";
+            os << d;
+        }
+        os << "} := ";
+    }
  
     os << "CALL ";
     if (procDest)
@@ -2173,9 +1951,6 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     else if (pDest == NULL)
             os << "*no dest*";
     else {
-        // But Trent hacked out the opAddrConst (opCodeAddr) stuff... Sigh.
-        // I'd like to retain the 0xHEX notation, if only to retain the
-        // existing tests
         if (pDest->isIntConst())
             os << "0x" << std::hex << ((Const*)pDest)->getInt();
         else
@@ -2189,13 +1964,7 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
             os << ", ";
         os << arguments[i];
     }
-    os << ")    {";
-    for (unsigned i = 0; i < getNumReturns(); i++) {
-        if (i != 0)
-            os << ", ";
-        os << getReturnExp(i);
-    }
-    os << "}";
+    os << ")";
 }
 
 /*==============================================================================
@@ -2328,107 +2097,6 @@ void CallStatement::decompile() {
 }
 #endif
 
-void CallStatement::clearLiveEntry() {
-    if (procDest && procDest->isLib()) return;
-    // Now is the time to let go of the summarised info
-    liveEntry.clear();
-    // Start parameters from scratch too
-    arguments.clear();
-}
-
-void CallStatement::truncateArguments() {
-    // Needs a total rewrite
-}
-
-void CallStatement::killDef(StatementSet &reach) {
-    if (procDest == NULL) {
-        // Will always be null for indirect calls
-        // MVE: we may have a "candidate" callee in the future
-        // Kill nothing. For calls, underestimating kills is safe
-        return;
-    }
-    if (procDest->isLib()) {
-        // A library function. We use the calling convention to find
-        // out what is killed.
-        Prog* prog = procDest->getProg();
-        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
-        assert(li);
-        std::list<Exp*>::iterator ll;
-        for (ll = li->begin(); ll != li->end(); ll++) {
-            // These statements do not reach the end of the call
-            reach.removeIfDefines(*ll);
-        }
-        return;
-    }
-
-    // A UserProc
-    // Don't kill anything. The interprocedural analysis handles the effects
-    // of the callee now
-}
-
-void CallStatement::killLive(LocationSet &live) {
-    if (procDest == NULL) {
-        // Will always be null for indirect calls
-        // MVE: we may have a "candidate" callee in the future
-        // Kills everything. Not clear that this is always "conservative"
-        live.clear();
-        return;
-    }
-    if (procDest->isLib()) {
-        // A library function. We use the calling convention to find
-        // out what is killed.
-        Prog* prog = procDest->getProg();
-        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
-        assert(li);
-        std::list<Exp*>::iterator ll;
-        for (ll = li->begin(); ll != li->end(); ll++) {
-            // These locations are no longer live at the start of the call
-            live.remove(*ll);
-        }
-        return;
-    }
-
-    // A UserProc
-    // This call kills only those live locations that are defined
-    // on all paths, which is the same set that is available at the exit
-    // of the procedure
-    live.removeIfDefines(*((UserProc*)procDest)->getCFG()->getAvailExit());
-}
-
-void CallStatement::killDead(LocationSet &dead) {
-    // All parameters kill deadness
-    int n = arguments.size();
-    for (int i = 0; i < n; i++)
-        dead.remove(arguments[i]);
-}
-
-#if 0
-// MVE: Probably not needed, and probably not correct
-void CallStatement::getDeadStatements(StatementSet &dead) {
-    StatementSet reach;
-    getReachIn(reach, 2);
-    StmtSetIter it;
-    if (procDest && procDest->isLib()) {
-        for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-            bool isKilled = false;
-            if (getReturnLoc() && s->getLeft() &&
-                *s->getLeft() == *getReturnLoc())
-                isKilled = true;
-            if (s->getLeft() && getReturnLoc() && 
-                s->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
-                isKilled = true; // might alias, very conservative
-            if (isKilled && s->getNumUsedBy() == 0)
-            dead.insert(s);
-        }
-    } else  {
-        for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-            if (s->getNumUsedBy() == 0)
-                dead.insert(s);
-        }
-    }
-}
-#endif
-
 // update type for expression
 Type *CallStatement::updateType(Exp *e, Type *curType) {
     return curType;
@@ -2447,10 +2115,12 @@ bool CallStatement::usesExp(Exp *e) {
         // No destination (e.g. indirect call)
         // For now, just return true (overstating uses is safe)
         return true;
+#if 0   // Huh? This was wrong anyway!
     if (!procDest->isLib()) {
         // Get the info that was summarised on the way down
         if (liveEntry.find(e)) return true;
     }
+#endif
     return false;
 }
 
@@ -2458,6 +2128,7 @@ bool CallStatement::usesExp(Exp *e) {
 void CallStatement::addUsedLocs(LocationSet& used) {
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i]->addUsedLocs(used);
+    // FIXME!
     if (returnLoc && returnLoc->isMemOf())
         ((Unary*)returnLoc)->getSubExp1()->addUsedLocs(used);
 }
@@ -2547,17 +2218,9 @@ void CallStatement::setNumArguments(int n) {
 
 void CallStatement::removeArgument(int i)
 {
-    for (int j = i+1; j < arguments.size(); j++)
+    for (unsigned j = i+1; j < arguments.size(); j++)
         arguments[j-1] = arguments[j];
     arguments.resize(arguments.size()-1);
-}
-
-// Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})
-void CallStatement::toSSAform(StatementSet& reachin, int memDepth, StatementSet& rs) {
-    int n = arguments.size();
-    for (int i = 0; i < n; i++) {
-        arguments[i] = arguments[i]->updateRefs(reachin, memDepth, rs);
-    }
 }
 
 // Convert from SSA form
@@ -2568,16 +2231,12 @@ void CallStatement::fromSSAform(igraph& ig) {
     }
 }
 
-void CallStatement::removeRestoreRefs(StatementSet& rs) {
-    int n = arguments.size();
-    for (int i=0; i < n; i++) {
-        arguments[i]->doRemoveRestoreRefs(rs);
-    }
-}
 
 // Insert actual arguments to match the formal parameters
 // This is called very late, after all propagation
 void CallStatement::insertArguments(StatementSet& rs) {
+    // FIXME: Fix this, or delete the whole function
+#if 0
     if (procDest == NULL) return;
     if (procDest->isLib()) return;
     Signature* sig = procDest->getSignature();
@@ -2597,6 +2256,7 @@ void CallStatement::insertArguments(StatementSet& rs) {
         propagateTo(1, empty);
         arguments.push_back(loc);
     }
+#endif
 }
 
 void CallStatement::processConstants(Prog *prog) {
@@ -2916,37 +2576,6 @@ void BoolStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 void BoolStatement::simplify() {
 }
 
-void BoolStatement::killDef(StatementSet &reach)
-{
-    assert(pDest);
-    StatementSet kills;
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() && *s->getLeft() == *pDest)
-            kills.insert(s);
-    }
-    for (Statement* s = kills.getFirst(it); s; s = kills.getNext(it))
-        reach.remove(s);
-}
-
-// Liveness is killed by a definition
-void BoolStatement::killLive(LocationSet &live) {
-    if (pDest == NULL) return;
-    LocSetIter it;
-    for (Exp* loc = live.getFirst(it); loc; loc = live.getNext(it)) {
-        // MVE: do we need to consider aliasing?
-        if (*loc == *pDest)
-            live.remove(loc);
-    }
-}
-
-// Deadness is killed by a use
-void BoolStatement::killDead(LocationSet &dead) {
-    if (pCond)
-        dead.remove(pCond);
-}
-
-
 #if 0
 // Probably not needed, and probably not right
 void BoolStatement::getDeadStatements(StatementSet &dead) {
@@ -3032,18 +2661,6 @@ void BoolStatement::subscriptVar(Exp* e, Statement* def) {
     if (pDest) pDest = pDest->expSubscriptVar(e, def);
 }
 
-
-// Remove refs to statements defining restored locations
-void BoolStatement::removeRestoreRefs(StatementSet& rs) {
-    pCond->doRemoveRestoreRefs(rs);
-    pDest->doRemoveRestoreRefs(rs);
-}
-
-void BoolStatement::toSSAform(StatementSet& reachin, int memdepth,
-  StatementSet& rs) {
-    pCond = pCond->updateRefs(reachin, memdepth, rs);
-    pDest = pDest->updateRefs(reachin, memdepth, rs);
-}
 
 void BoolStatement::setDest(std::list<Statement*>* stmts) {
     assert(stmts->size() == 1);
@@ -3219,12 +2836,6 @@ int Assign::getMemDepth() {
     return std::max(d1, d2);
 }
 
-void Assign::toSSAform(StatementSet& reachin, int memDepth,
-  StatementSet& rs) {
-    lhs->updateRefs(reachin, memDepth, rs);
-    rhs->updateRefs(reachin, memDepth, rs);
-}
-
 void Assign::fromSSAform(igraph& ig) {
     lhs = lhs->fromSSA(ig);
     rhs = rhs->fromSSA(ig);
@@ -3246,44 +2857,6 @@ bool Assign::serialize(std::ostream &ouf, int &len) {
 
     len = ouf.tellp() - st;
     return true;
-}
-
-void Assign::killDef(StatementSet &reach) {
-    StatementSet kills;
-    StmtSetIter it;
-    for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-        if (s->getLeft() == NULL) continue;     // Should never happen?
-        bool isKilled = false;
-        // Note: *= is "subscript insensitive" comparison. If attempt to
-        // redo global dataflow in SSA form, may need to change this
-        if (*s->getLeft() *= *lhs)
-            isKilled = true;
-        // The below is NOT necessarily conservative!
-        // In fact, it prevents hello world from working, so is commmented
-        // out for now:
-        //isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
-        if (isKilled)
-            kills.insert(s);
-    }
-    reach.makeDiff(kills);
-}
-
-// Liveness is killed by a definition
-void Assign::killLive(LocationSet &live) {
-    if (lhs == NULL) return;
-    LocSetIter it;
-    for (Exp* loc = live.getFirst(it); loc; loc = live.getNext(it)) {
-        // MVE: do we need to consider aliasing?
-        if (*loc == *lhs)
-            live.remove(loc);
-    }
-}
-
-// Deadness is killed by a use
-void Assign::killDead(LocationSet &dead) {
-    LocationSet uses;
-    addUsedLocs(uses);
-    dead.makeDiff(uses);
 }
 
 // update type for expression
@@ -3351,22 +2924,25 @@ void Assign::addUsedLocs(LocationSet& used) {
 void Assign::fixCallRefs() {
     rhs = rhs->fixCallRefs();
     if (lhs->isMemOf()) {
-        ((Unary*)lhs)->refSubExp1() = ((Unary*)lhs)->getSubExp1()->fixCallRefs();
+        ((Unary*)lhs)->refSubExp1() =
+          ((Unary*)lhs)->getSubExp1()->fixCallRefs();
     }
     if (rhs->getOper() == opPhi) {
         PhiExp *p = (PhiExp*)rhs;
         StmtSetIter it;
         std::vector<Statement*> from, to;
-        for (Statement* s = p->getFirstRef(it); !p->isLastRef(it); s = p->getNextRef(it)) {
+        for (Statement* s = p->getFirstRef(it); !p->isLastRef(it);
+          s = p->getNextRef(it)) {
             CallStatement *call = dynamic_cast<CallStatement*>(s);
             if (call && call->findReturn(lhs) == -1) {
                 assert(*call->getProven(lhs) == *lhs);
                 Exp *e = call->findArgument(lhs);
-                assert(e && e->getOper() == opSubscript && *e->getSubExp1() == *lhs);
+                assert(e && e->getOper() == opSubscript &&
+                  *e->getSubExp1() == *lhs);
                 from.push_back(call);
                 to.push_back(((RefExp*)e)->getRef());
             }
-            for (int i = 0; i < from.size(); i++) {
+            for (unsigned i = 0; i < from.size(); i++) {
                 p->addSubscript(to[i]);
                 p->removeSubscript(from[i]);
             }
@@ -3393,13 +2969,6 @@ Exp* Assign::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
 }
 #endif
 
-//  //  //  //  //
-//  Assign   //
-//  //  //  //  //
-void Assign::doRemoveRestoreRefs(StatementSet& rs) {
-    lhs->doRemoveRestoreRefs(rs);
-    rhs->doRemoveRestoreRefs(rs);
-}
 
 // Not sure if anything needed here
 void Assign::processConstants(Prog* prog) {

@@ -15,7 +15,7 @@ Boomerang::Boomerang() : vFlag(false), printRtl(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), recursionBust(false),
     debugDataflow(false), debugPrintReach(false), debugPrintSSA(false),
-    noPropMult(false), impSSA(false), maxMemDepth(99), debugSwitch(false), 
+    noPropMult(false), maxMemDepth(99), debugSwitch(false),
     prove(false), noParameterNames(false)
 {
 }
@@ -38,7 +38,6 @@ void Boomerang::help() {
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-h: this help\n";
-    std::cerr << "-issa: use Implicit SSA form (TEMPORARY)\n";
     std::cerr << "-m <num>: max memory depth\n";
     std::cerr << "-nb: no simplications for branches\n";
     std::cerr << "-nn: no removal of null and unused statements\n";
@@ -173,12 +172,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                 }
                 break;
-            case 'i':
-                if (argv[i][2] == 's') {
-                    impSSA = true;
-                    break;
-                }
-                break;
             case 'P':
                 prove = true;
                 break;
@@ -212,10 +205,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
     if (!noDecompile) {
         std::cerr << "decompiling..." << std::endl;
-        if (impSSA)
-            prog->decompile_issa();
-        else
-            prog->decompile();
+        prog->decompile();
     }
 
     // Note: printing of dotty file has been moved into Prog::decompile()

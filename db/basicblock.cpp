@@ -72,7 +72,6 @@ BasicBlock::BasicBlock()
         m_iNumOutEdges(0),
         m_iTraversed(false),
         m_returnVal(NULL),
-        returnBlock(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
 traversed(UNTRAVERSED), hllLabel(false),
@@ -132,7 +131,6 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
         m_iNumOutEdges(bb.m_iNumOutEdges),
         m_iTraversed(false),
         m_returnVal(bb.m_returnVal),
-        returnBlock(bb.returnBlock),
 // From Doug's code
 ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), 
 numForwardInEdges(bb.numForwardInEdges), traversed(bb.traversed), 
@@ -168,7 +166,6 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
         m_iNumOutEdges(iNumOutEdges),
         m_iTraversed(false),
         m_returnVal(NULL),
-        returnBlock(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
 traversed(UNTRAVERSED), hllLabel(false),
@@ -184,124 +181,6 @@ usType(Structured)
     setRTLs(pRtls);
 
 }
-
-#if 0
-/*==============================================================================
- * FUNCTION:        BasicBlock::storeUseDefineStruct
- * OVERVIEW:        Stores the type info of every register in this BB. This is 
- *                  done by inserting the used/defined places for each register
- * PARAMETERS:      BBBlock 
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::storeUseDefineStruct(BBBlock& inBlock) 
-{
-    if (m_pRtls)                    // Can be zero if e.g. INVALID
-    {
-
-//      RTL_CIT rit;
-        std::list<RTL*>_CIT rit;
-        for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-        (*rit)->storeUseDefineStruct(inBlock);
-        }
-    }
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::propagateType
- * OVERVIEW:        Recursively propagates type information from one 
- *                  basic block to the next. Depth first traversal
- * PARAMETERS:      BasicBlock * prevBlock, used to find the parent BB 
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::propagateType(BasicBlock * prevBlock, bool endCase = false){
-
-    // Remember to clear it before and after type propagation
-    m_iTraversed = true;
-    
-    assert(usedDefineStruct != NULL);
-    // First do any alias propagations in this BasicBlock
-    usedDefineStruct->propagateRegWithinBB();
-
-    tempPrevBB = prevBlock;
-/*
-    for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end();
-         it++) {
-        PBB child = *it;
-
-    if (child->m_iTraversed == false) {
-        child->propagateType(this);
-    }   
-    }        
-*/  
-
-    if (!endCase) { 
-    for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end();
-             it++) {
-
-        PBB child = *it;    
-        if (child->m_iTraversed == false) {
-        child->propagateType(this);
-        }
-        else {
-        child->propagateType(this, true);
-        }
-    }
-    }    
-
-    // We reached a back branch, propagate ONCE
-    // and then leave
-    // Ignore for now, implement later
-
-    std::map<Byte, UDChain*>::iterator noDefMapIt;
-    std::map<Byte, UDChain*>::iterator prevLastDefMapIt;
-
-    std::map<Byte, UDChain*> noDefMap = usedDefineStruct->returnNoDefRegChains();
-
-    // Iterate through the map of no def chains     
-    for (noDefMapIt = noDefMap.begin(); noDefMapIt != noDefMap.end(); ++noDefMapIt){
-
-    // Reset the forwardLooking BB to the immediate previous BB 
-    BasicBlock * forwardLookingBB = tempPrevBB;
-
-        int timeOut = 0;
-    while (forwardLookingBB) {
-        // Get a map of all the defined registers in the prev BB 
-            std::map<Byte, UDChain*> prevLastDefMap = 
-             forwardLookingBB->usedDefineStruct->returnLastDefRegChains();
-
-        // See if it contains one of the reg that we don't have a def for
-        prevLastDefMapIt = prevLastDefMap.find(noDefMapIt->first);
-
-        if (prevLastDefMapIt != prevLastDefMap.end()){
-        // Found a match! Propagate type. 
-
-        if (prevLastDefMapIt->second->chainType > noDefMapIt->second->chainType){
-            noDefMapIt->second->chainType = prevLastDefMapIt->second->chainType;
-        }
-        else{
-            prevLastDefMapIt->second->chainType = noDefMapIt->second->chainType ;
-        }
-        break;
-        }
-        else {
-        // 50 is currently an arbitary number   
-        // If we look 50 basic blocks up and still don't find it 
-        // where the register is defined, give up
-        if (timeOut++ > 50)
-           break;
-                
-        forwardLookingBB = forwardLookingBB->tempPrevBB;                
-
-        // Complete loop, will go around until timeout. 
-        // Break now to save time
-        if (forwardLookingBB == this->tempPrevBB)
-            break;          
-
-        }
-     }
-    }  
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        BasicBlock::getLabel
@@ -441,23 +320,7 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
         case COMPCALL:  os << "Computed call BB"; break;
         case INVALID:   os << "Invalid BB"; break;
     }
-    // Printing the address is bad for unit testing, since address will
-    // be arbitrary
-    //os << " (0x" << std::hex << (unsigned int)this << "):\n";
-    os << ":";
-    if (withDF) {
-        os << " reach in: ";
-        StatementSet reachin;
-        getReachIn(reachin, 2);
-        StmtSetIter it;
-        Statement* s = reachin.getFirst(it);
-        while (s) {
-            s->printAsUse(os);
-            os << " ";
-            s = reachin.getNext(it);
-        }
-    }
-    os << std::endl;
+    os << ":\n";
     if (m_pRtls) {                  // Can be zero if e.g. INVALID
         std::list<RTL*>::iterator rit;
         for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
@@ -748,22 +611,6 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
     return bb1->m_DFTfirst < bb2->m_DFTfirst;
 }
 
-
-#if 0
-/*==============================================================================
- * FUNCTION:        BasicBlock::resetDFASets
- * OVERVIEW:        Resets the DFA sets of this BB.
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::resetDFASets() {
-    reachOut.reset();
-    defSet.reset();
-    useSet.reset();
-    useUndefSet.reset();
-    recursiveUseUndefSet.reset();
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        BasicBlock::lessLastDFT
@@ -1307,13 +1154,14 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             WriteBB(hll, indLevel);
 
             // write the conditional header 
+            SWITCH_INFO* psi;
             if (cType == Case) {
                 // The CaseStatement will be in the last RTL this BB
                 RTL* last = m_pRtls->back();
                 CaseStatement* cs = (CaseStatement*)last->getHlStmt();
-                SWITCH_INFO* pss = cs->getSwitchInfo();
+                psi = cs->getSwitchInfo();
                 // Write the switch header (i.e. "switch(var) {")
-                hll->AddCaseCondHeader(indLevel, pss->pSwitchVar);
+                hll->AddCaseCondHeader(indLevel, psi->pSwitchVar);
             } else {
                 Exp *cond = getCond();
                 if (cType == IfElse) {
@@ -1365,7 +1213,9 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 // generate code for each out branch
                 for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
                     // emit a case label
-                    hll->AddCaseCondOption(indLevel, NULL); // TODO
+                    // FIXME: Not valid for all switch types
+                    Const caseVal(psi->iLower+i);
+                    hll->AddCaseCondOption(indLevel, &caseVal);
 
                     // generate code for the current outedge
                     PBB succ = m_OutEdges[i];
@@ -1449,345 +1299,6 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
     }
 }
 
-void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin,
-  int phase) {
-    getReachIn(reachin, phase);
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-      rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
-            if (*it == stmt) return;
-            (*it)->calcReachOut(reachin);
-        }
-    }
-}
-
-void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
-  int phase) {
-    getAvailIn(availin, phase);
-    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-      rit != m_pRtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
-            if (*it == stmt) return;
-            (*it)->calcAvailOut(availin);
-        }
-    }
-}
-
-void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase,
-  igraph& ig) {
-    getLiveOut(liveout);
-    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
-         rit != m_pRtls->rend(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
-             it != rtl->getList().rend(); it++) {
-            if (*it == stmt) return;
-            (*it)->calcLiveIn(liveout);
-            (*it)->checkLiveIn(liveout, ig);
-        }
-    }
-}
-
-void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase){
-    getLiveOut(liveout);
-    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
-         rit != m_pRtls->rend(); rit++) {
-        RTL *rtl = *rit;
-        // Do any post call semantics first
-        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
-          it != rtl->getList().rend(); it++) {
-            if (*it == stmt) return;
-            (*it)->calcLiveIn(liveout);
-        }
-    }
-}
-
-void BasicBlock::getDeadOutAt(Statement *stmt, LocationSet &deadout, int phase){
-    getDeadOut(deadout);
-    for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
-         rit != m_pRtls->rend(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Statement*>::reverse_iterator it = rtl->getList().rbegin(); 
-          it != rtl->getList().rend(); it++) {
-            if (*it == stmt) return;
-            (*it)->calcDeadIn(deadout);
-        }
-    }
-}
-
-
-void BasicBlock::calcReachOut(StatementSet &reach, int phase) {
-    /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the reach set after every statement */
-    getReachInAt(NULL, reach, phase);
-}
-
-void BasicBlock::calcAvailOut(StatementSet &avail, int phase) {
-    /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the available definitions after every statement */
-    getAvailInAt(NULL, avail, phase);
-}
-
-void BasicBlock::calcLiveIn(LocationSet &live, int phase, igraph& ig) {
-    /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the live locations before every statement */
-    getLiveOutAt(NULL, live, phase, ig);
-}
-
-void BasicBlock::calcLiveIn(LocationSet &live, int phase) {
-    /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the live locations before every statement */
-    getLiveOutAt(NULL, live, phase);
-}
-
-void BasicBlock::calcDeadIn(LocationSet &dead, int phase) {
-    /* hopefully we can be sure that NULL is not a valid assignment,
-       so this will calculate the dead locations before every statement */
-    getDeadOutAt(NULL, dead, phase);
-}
-
-// Check if this is a post-call BB (a return block in [SW93] terms)
-// Note: need to distinguish between true post-call edges (those that were
-// in the original cfg) and procedure entry blocks (which in phase 2 look
-// just like post-call blocks)
-bool BasicBlock::isPostCall() {
-    // Check in edges for a call. Could be other in-edges
-    for (int i=0; i<m_iNumInEdges; i++) {
-        if (m_InEdges[i]->m_nodeType == CALL &&
-              m_InEdges[i]->returnBlock == this)
-            return true;
-    }
-    return false;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::calcReaches
- * OVERVIEW:        Computes the reaching definitions for this BB
- * PARAMETERS:      phase: 1=phase 1, 2=phase 2
- * RETURNS:         <nothing>
- *============================================================================*/
-bool BasicBlock::calcReaches(int phase) {
-    bool change = false;
-    StatementSet out;
-    calcReachOut(out, phase);
-    if (!(out == reachOut)) {
-        reachOut = out;          // Copy the set
-        change = true;
-    }
-    return change;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::calcAvailable
- * OVERVIEW:        Computes the available definitions for this BB
- * PARAMETERS:      phase: 1=phase 1, 2=phase 2
- * RETURNS:         <nothing>
- *============================================================================*/
-bool BasicBlock::calcAvailable(int phase) {
-    bool change = false;
-    StatementSet out;
-    calcAvailOut(out, phase);
-    if (!(out == availOut)) {
-        availOut = out;          // Copy the set
-        change = true;
-    }
-    return change;
-}
-
-bool BasicBlock::calcLiveness(int phase) {
-    bool change = false;
-    LocationSet in;
-    calcLiveIn(in, phase);
-    if (!(in == liveIn)) {
-        liveIn = in;          // Copy the set
-        change = true;
-    }
-    return change;
-}
-
-bool BasicBlock::calcDeadness(int phase) {
-    bool change = false;
-    LocationSet in;
-    calcDeadIn(in, phase);
-    if (!(in == deadIn)) {
-        deadIn = in;          // Copy the set
-        change = true;
-    }
-    return change;
-}
-
-void BasicBlock::calcLiveness(igraph& ig) {
-    LocationSet in;
-    calcLiveIn(in, 2);
-}
-
-// Definitions that reach the start of this BB are usually the union of the
-// Definitions that reach the start of this BB are usually the union of the
-// definitions that reach its predecessors
-// There is an exception for post-call blocks (BBs after call blocks, called
-// return blocks in the literature)
-void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
-    if (isPostCall() && (phase != 0)) {
-        if (phase == 1) {
-            // REACHIN[return] = REACHOUT[exit] U
-            //   REACHOUT[call] - AVAILOUT[exit]
-            // Note we have to union all reaching defs from return edges
-            // (in-edges from exit blocks), since there could be more than
-            // one call edge flowing into this post-call BB (e.g. some branch
-            // BBs have been optimised away)
-            // Can't union everything and take away all available definitions
-            // from return nodes, because one callee may kill a def that others
-            // don't; in that case, the def still reaches the post-call BB
-            reachin.clear();
-            // For each call in-edge, add its reach set, less its particular
-            // callee's available set. For others, just add its reach out set.
-            for (unsigned i = 0; i < m_InEdges.size(); i++) {
-                PBB inEdge = m_InEdges[i];
-                if (inEdge->m_nodeType == CALL) {
-                    Proc* dest = inEdge->getDestProc();
-                        // MVE: check that return locations are handled
-                    if (dest->isLib()) {
-                        // Just union them in, as per any regular in-edge
-                        reachin.makeUnion(inEdge->reachOut);
-                    } else {
-                        StatementSet temp(inEdge->reachOut);
-                        PBB exitBlock =
-                          ((UserProc*)dest)->getCFG()->getExitBB();
-                        temp.makeKillDiff(exitBlock->availOut);
-                        reachin.makeUnion(temp);
-                    }
-                } else
-                    // Just union it in: either from a return edge, or from
-                    // an intra-procedural jump, flow-through (etc) edge
-                    reachin.makeUnion(inEdge->reachOut);
-            }
-        } else {
-            // Phase 2
-            // REACHIN[return] = PREACH[P] U REACHOUT[call] - PAVAIL[P]
-            reachin.clear();
-            for (unsigned i = 0; i < m_InEdges.size(); i++) {
-                PBB inEdge = m_InEdges[i];
-                if (inEdge->m_nodeType == CALL) {
-                    Proc* dest = inEdge->getDestProc();
-                    if (dest->isLib()) {
-                        // Just union it in, like an ordinary in-edge
-                        reachin.makeUnion(inEdge->reachOut);
-                    } else {
-                        StatementSet temp(inEdge->reachOut);
-                        Cfg* cfgDest = ((UserProc*)dest)->getCFG();
-                        temp.makeKillDiff(cfgDest->getSavedAvailExit());
-                        temp.makeUnion(cfgDest->getSavedReachExit());
-                        reachin.makeUnion(temp);
-                    }
-                } else
-                    // Just union it in: has to be an intra-procedural jump,
-                    // flow-through (etc) edge
-                    reachin.makeUnion(inEdge->reachOut);
-            }
-        }
-    } else {
-        // Standard situation: find the union of predecessors
-        reachin.clear();
-        for (unsigned i = 0; i < m_InEdges.size(); i++) {
-            StatementSet &in = m_InEdges[i]->reachOut;
-            reachin.makeUnion(in);
-        }
-    }
-}
-
-// Get a set of statements. If the inedge is a call, make it the reach out
-// set of the call, less the reach out of the exit block, union the available
-// out of the exit block.
-// For other blocks, it's just their avail out.
-void BasicBlock::doAvail(StatementSet& availSet, PBB inEdge) {
-    if (inEdge->m_nodeType == CALL) {
-        Proc* dest = inEdge->getDestProc();
-        if (dest->isLib()) {
-            // Treat lib calls like any ordinary in-edge
-            availSet = inEdge->availOut;
-            return;
-        }
-        // AVAILOUT[call]
-        availSet = inEdge->availOut;
-        PBB exitBlock = ((UserProc*)dest)->getCFG()->getExitBB();
-        // - REACHOUT[exit]
-        // Note: the Kill part is important. Just getting the difference of the
-        // two sets does not cause one definition to kill another
-        availSet.makeKillDiff(exitBlock->reachOut);
-        // U AVAILOUT[exit]
-        availSet.makeUnion(exitBlock->availOut);
-    } else {
-        // Non call in-edge; just copy the available set to intersect with the
-        // rest, except for return edges. These are considered with the special
-        // case for CALL basic blocks, above.
-        availSet = inEdge->availOut;
-    }
-    // Note: for return in-edges, this func is just not called
-    // This would be a lot simpler if we could set availSet to the universal set
-}
-
-// Definitions that are available at the start of this BB are usually the
-// intersection of the definitions that are available at its predecessors
-// There is an exception for post-call blocks (BBs after call blocks, called
-// return blocks in the literature)
-void BasicBlock::getAvailIn(StatementSet &availin, int phase) {
-    if (isPostCall() && (phase != 0)) {
-        // Phase 1: AVAILIN[return] = AVAILOUT[exit] U
-        //    AVAILOUT[call] - REACHOUT[exit]
-        // Find a non return in-edge (there must be one, the call)
-        unsigned i=0;
-        while (m_InEdges[i]->m_nodeType == RET)
-            i++;
-        doAvail(availin, m_InEdges[i]);
-        for (i++; i < m_InEdges.size(); i++) {
-            if (m_InEdges[i]->m_nodeType == RET)
-                // Don't intersect return in-edges
-                continue;
-            StatementSet temp;
-            doAvail(temp, m_InEdges[i]);
-            availin.makeIsect(temp);
-        }
-    } else {
-        // Standard situation: find the intersection of available defs of
-        // in-edges
-        if (m_InEdges.size() == 0) {
-            availin.clear();
-            return;
-        }
-        // Make equal to first, then intersect with the rest
-        // Have to to it this way, since we can't represent the universal set
-        availin = m_InEdges[0]->availOut;
-        for (unsigned i = 1; i < m_InEdges.size(); i++) {
-            StatementSet &in = m_InEdges[i]->availOut;
-            availin.makeIsect(in);
-        }
-    }
-}
-
-// Locations that are live at the end of this BB are the union of the
-// locations that are live at the start of its successors
-void BasicBlock::getLiveOut(LocationSet &liveout) {
-    liveout.clear();
-    for (unsigned i = 0; i < m_OutEdges.size(); i++) {
-        LocationSet &out = m_OutEdges[i]->liveIn;
-        liveout.makeUnion(out);
-    }
-}
-
-// Locations that are dead at the end of this BB are the intersection of the
-// locations that are dead at the start of its successors
-void BasicBlock::getDeadOut(LocationSet &liveout) {
-    liveout.clear();
-    for (unsigned i = 0; i < m_OutEdges.size(); i++) {
-        LocationSet &out = m_OutEdges[i]->liveIn;
-        liveout.makeUnion(out);
-    }
-}
-
 // Get the destination proc
 // Note: this must be a call BB!
 Proc* BasicBlock::getDestProc() {
@@ -1801,76 +1312,6 @@ Proc* BasicBlock::getDestProc() {
         assert(0);
     }
     return proc;
-}
-
-/*
- * Set the interprocedural outedge to the callee entry BB
- */
-void BasicBlock::setCallInterprocEdges() {
-    if (m_nodeType != CALL) return;
-    Proc* proc = getDestProc();
-    if (proc->isLib()) return;      // Leave it alone
-    m_iNumOutEdges = 2;
-    PBB entry = ((UserProc*)proc)->getCFG()->getEntryBB();
-    m_OutEdges.resize(2, entry);        // Append 1 new edge (entry)
-    assert((int)m_OutEdges.size() == m_iNumOutEdges);
-    entry->m_iNumInEdges++;
-    entry->m_InEdges.push_back(this);
-}
-
-// Kill the interprocedural outedges from call BBs
-void BasicBlock::clearCallInterprocEdges() {
-    if (m_nodeType != CALL) return;
-    Proc* proc = getDestProc();
-    if (proc->isLib()) return;  // Just ignore it
-    m_iNumOutEdges = 1;
-    m_OutEdges.resize(1);
-    PBB entry = ((UserProc*)proc)->getCFG()->getEntryBB();
-    entry->m_iNumInEdges = 0;
-    entry->m_InEdges.clear();       // Could get called several times
-}
-
-/*
- * Set the interprocedural outedge from the callee exit to the post-call block
- * Also sets the returnBlock entry in the CallStatement, so we can identify in phase 2
- * which are "real" post-call BBs
- */
-void BasicBlock::setReturnInterprocEdges() {
-    if (m_nodeType != CALL) return;
-    Proc* proc = getDestProc();
-    if (proc->isLib()) return;      // Leave it alone
-    PBB exitBB = ((UserProc*)proc)->getCFG()->getExitBB();
-    PBB postCall = m_OutEdges[0];
-    exitBB->m_iNumOutEdges++;
-    exitBB->m_OutEdges.push_back(postCall);
-    assert((int)exitBB->m_OutEdges.size() == exitBB->m_iNumOutEdges);
-    postCall->m_iNumInEdges++;
-    postCall->m_InEdges.push_back(exitBB);
-    assert((int)postCall->m_InEdges.size() == postCall->m_iNumInEdges);
-    returnBlock = postCall;     // For phase 2 identifying real post-call BBs
-}
-
-// Kill the interprocedural outedges from exit BBs to post-call BBs
-void BasicBlock::clearReturnInterprocEdges() {
-    if (m_nodeType != CALL) return;
-    Proc* proc = getDestProc();
-    if (proc->isLib()) return;  // Just ignore it
-    PBB exitBB = ((UserProc*)proc)->getCFG()->getExitBB();
-    m_iNumOutEdges = 1;
-    m_OutEdges.resize(1);
-    exitBB->m_iNumOutEdges = 0;
-    exitBB->m_OutEdges.clear();       // Could get called several times
-    PBB postCall = m_OutEdges[0];
-    std::vector<PBB>::iterator it;
-    for (it = postCall->m_InEdges.begin(); it != postCall->m_InEdges.end();
-      it++) {
-        if (*it == exitBB) {
-            postCall->m_InEdges.erase(it);
-            postCall->m_iNumInEdges--;
-            break;
-        }
-    }
-    assert((int)postCall->m_InEdges.size() == postCall->m_iNumInEdges);
 }
 
 void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order) {
@@ -2034,21 +1475,6 @@ bool BasicBlock::inLoop(PBB header, PBB latch) {
            revLoopStamps[1] < header->revLoopStamps[1] &&
            revLoopStamps[0] < latch->revLoopStamps[0] && 
            latch->revLoopStamps[1] < revLoopStamps[1]);
-}
-
-void BasicBlock::toSSAform(int memDepth, StatementSet& rs) {
-    // This set will be the set of reaching definitions before the current
-    // statement
-    StatementSet reachin;
-    getReachIn(reachin, 2);
-    rtlit rit; stmtlistIt sit;
-    for (Statement* s = getFirstStmt(rit, sit); s;
-          s = getNextStmt(rit, sit)) {
-        // Call the polymorphic function to update used expressions
-        s->toSSAform(reachin, memDepth, rs);
-        // Update reachin to be the input for the next statement in this BB
-        s->calcReachOut(reachin);
-    }
 }
 
 // Return the first statement number as a string.

@@ -71,9 +71,6 @@ public:
     void makeDiff (StatementSet& other);    // Set difference
     void makeIsect(StatementSet& other);    // Set intersection
     bool isSubSetOf(StatementSet& other);    // subset relation
-    // Set difference (remove all elements of this where some element of other
-    // defines same location)
-    void makeKillDiff (StatementSet& other);
 
     int size() {return sset.size();}        // Number of elements
     Statement* getFirst(StmtSetIter& it);   // Get the first Statement
@@ -191,48 +188,6 @@ public:
     STMT_KIND getKind() { return kind;}
     void setKind(STMT_KIND k) {kind = k;}
 
-    // calculates the reaching definitions set after this statement
-    virtual void calcReachOut(StatementSet &reachout);
-
-    // gets the reaching definitions set before this statement
-    virtual void getReachIn(StatementSet &reachin, int phase);
-
-    // removes any statement from the reaching or available definitions set
-    // which is killed by this statement
-    virtual void killDef(StatementSet &reach) = 0;
-
-    // calculates the available definitions set after this statement
-    virtual void calcAvailOut(StatementSet &availout);
-
-    // get the available definitions (not reassigned on any path) before
-    // this statement
-    virtual void getAvailIn(StatementSet& availin, int phase);
-
-    // calculates the live variables (used before definition) before this stmt
-    virtual void calcLiveIn(LocationSet &livein);
-
-    // removes any statement from the set containing live variables which is
-    // killed by this statement
-    virtual void killLive(LocationSet &live) = 0;
-
-    // calculates the dead variables (defined before use) before this stmt
-    virtual void calcDeadIn(LocationSet &deadin);
-
-    // removes any statement from the set containing dead variables which is
-    // killed (in a deadness sense, i.e. used) by this statement
-    virtual void killDead(LocationSet &dead) = 0;
-
-    // check live in for interference
-    void checkLiveIn(LocationSet& liveout, igraph& ig);
-
-
-    // creates a set of statements that are killed by this statement
-    // and have no uses
-    //virtual void getDeadStatements(StatementSet &dead) = 0;
-
-    // calculates the uses/usedBy links for this statement
-    //virtual void calcUseLinks();
-
     // returns true if this statement defines anything
     virtual bool isDefinition() = 0;
 
@@ -259,7 +214,9 @@ public:
     bool isFpop();
 
     // returns a set of locations defined by this statement
-    virtual void getDefinitions(LocationSet &def);
+    // Classes with no definitions (e.g. GotoStatement and children) don't
+    // override this
+    virtual void getDefinitions(LocationSet &def) {}
 
     // returns an expression that would be used to reference the value
     // defined by this statement (if this statement is propogatable)
@@ -311,21 +268,11 @@ public:
     PBB getBB() { return pbb; }
     void setBB(PBB bb) { pbb = bb; }
 
-    // returns true if this statement can be propagated to all its
-    // uses and removed
-    //virtual bool canPropagateToAll();
-
-    // propagates this statement to all its uses, caller must remove
-    //virtual void propagateToAll();
-
     // replaces a use of the given statement with an expression
             void replaceRef(Statement *use);
     // special version of the above for the "special hack"
     // (see Proc::propagateStatements, where numUses == 2)
             void specialReplaceRef(Statement* def);
-
-    // Remove refs to statements defining a restored location
-    virtual void removeRestoreRefs(StatementSet& rs) = 0;
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os, bool withUses = false) = 0;
@@ -353,9 +300,7 @@ public:
     // update the statement number
     void    setNumber(int num) {number = num;}
 
-    // To/from SSA form
-    virtual void   toSSAform(StatementSet& reachin, int memDepth,
-        StatementSet& rs) = 0;
+    // From SSA form
     virtual void fromSSAform(igraph& igm) = 0;
 
     // Propagate to this statement
@@ -380,7 +325,7 @@ public:
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
-    bool doPropagateTo(int memDepth, Statement* def, bool twoRefs);
+    bool doPropagateTo(int memDepth, Statement* def);
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };          // class Statement
@@ -458,17 +403,10 @@ public:
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
 
-    // new dataflow analysis
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive(LocationSet &live);
-    virtual void killDead(LocationSet &dead);
-    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
     virtual void fixCallRefs();
     // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs) {
-        doRemoveRestoreRefs(rs);}
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
@@ -501,13 +439,8 @@ public:
     // memory depth
     int getMemDepth();
 
-    // to/from SSA form
-    virtual void   toSSAform(StatementSet& reachin, int memDepth,
-      StatementSet& rs);
+    // from SSA form
     virtual void fromSSAform(igraph& ig);
-
-    // Remove refs that define restored locations
-    virtual void doRemoveRestoreRefs(StatementSet& rs);
 
     // Generate code
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
@@ -597,9 +530,6 @@ public:
     virtual void simplify();
 
     // Statement virtual functions
-    virtual void killDef(StatementSet& ss) {}
-    virtual void killLive(LocationSet& ss) {}
-    virtual void killDead(LocationSet& ss) {}
     virtual bool isDefinition() { return false;}
     virtual Exp* getLeft() {return NULL;}
     virtual Type* getLeftType() {return NULL;};
@@ -608,11 +538,9 @@ public:
     virtual void addUsedLocs(LocationSet&) {}
     virtual void fixCallRefs() { }
     virtual void subscriptVar(Exp*, Statement*) {}
-    virtual void removeRestoreRefs(StatementSet&) {}
     virtual void processConstants(Prog*) {}
     virtual bool search(Exp*, Exp*&) {return false;}
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
-    virtual void toSSAform(StatementSet&, int, StatementSet&) {}
     virtual void fromSSAform(igraph&) {}
     virtual void doReplaceRef(Exp*, Exp*) {}
 
@@ -704,10 +632,6 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // dataflow analysis
-    virtual void killDef(StatementSet &reach) { }
-    virtual void killLive (LocationSet &kill ) { }
-    virtual void killDead (LocationSet &dead );
-    //virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
     virtual void fixCallRefs();
@@ -726,10 +650,6 @@ public:
     // get how to replace this statement in a use
     virtual Exp* getRight() { return pCond; }
 
-    // special print functions
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
-
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
 
@@ -739,12 +659,7 @@ public:
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
 
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs);
-
-    // to/from SSA form
-    virtual void toSSAform(StatementSet& reachin, int memDepth,
-      StatementSet& rs);
+    // From SSA form
     virtual void fromSSAform(igraph& ig);
 
 protected:
@@ -824,6 +739,24 @@ public:
  * the like are stored here.
  *============================================================================*/
 class CallStatement: public GotoStatement {
+    // FIXME: Below will likely go away soon...
+    int returnTypeSize;         // Size in bytes of the struct, union or quad FP
+                                // value returned by the called function.
+    bool returnAfterCall;       // True if call is effectively followed by
+                                // a return.
+    
+    // The list of locations that reach this call. This list may be
+    // refined at a later stage to match the number of parameters declared
+    // for the called procedure.
+    std::vector<Exp*> arguments;
+
+    // Destination of call
+    Proc* procDest;
+    // Destination name of call (used in serialization)
+    std::string destStr;
+
+    Exp *returnLoc;             // For old code
+
 public:
     CallStatement(int returnTypeSize = 0);
     virtual ~CallStatement();
@@ -857,7 +790,7 @@ public:
     void truncateArguments();
     void clearLiveEntry();
 
-    Exp* getReturnLoc();                // Get location used for return value
+    Exp* getReturnLoc();                // FIXME Get location used for return value
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
 
@@ -895,18 +828,12 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // dataflow analysis
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive (LocationSet  &live );
-    virtual void killDead (LocationSet  &live );
-    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
     virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
-            void setPhase1();       // Set up for phase 1 of SW93
 
     // dataflow related functions
-    virtual bool canPropagateToAll() { return false; }
     virtual void propagateToAll() { assert(false); }
 
     virtual bool isDefinition();
@@ -932,11 +859,6 @@ public:
 
     void decompile();
 
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs);
-
-    virtual void toSSAform(StatementSet& reachin, int memDepth,
-        StatementSet& rs);
     virtual void fromSSAform(igraph& ig);
         
     // Insert actual arguments to match formal parameters
@@ -945,31 +867,6 @@ public:
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to);
 
-private:
-    int returnTypeSize;         // Size in bytes of the struct, union or quad FP
-                                // value returned by the called function.
-    bool returnAfterCall;       // True if call is effectively followed by
-                                // a return.
-    
-    // The list of locations that reach this call. This list may be
-    // refined at a later stage to match the number of parameters declared
-    // for the called procedure.
-    std::vector<Exp*> arguments;
-
-    // Destination of call
-    Proc* procDest;
-    // Destination name of call (used in serialization)
-    std::string destStr;
-    // The conjugate return block (see SW93)
-    // When this is still nill, we have not started phase 1, or are back
-    // to standard ("phase 0")
-    PBB returnBlock;
-
-    Exp *returnLoc;             // For old code
-
-    // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
-    // substitute it as needed
-    LocationSet liveEntry;
 };      // class CallStatement
 
 
@@ -1080,9 +977,6 @@ public:
     virtual void simplify();
 
     // Statement functions
-    virtual void killDef(StatementSet &reach);
-    virtual void killLive (LocationSet &kill );
-    virtual void killDead (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
     virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
@@ -1094,18 +988,12 @@ public:
     virtual Exp* getRight() { return getCondExpr(); }
     virtual bool usesExp(Exp *e);
     virtual void print(std::ostream &os) { print(os, false); }
-    //virtual void printAsUse(std::ostream &os);
-    //virtual void printAsUseBy(std::ostream &os);
     virtual void processConstants(Prog *prog);
     virtual bool search(Exp *search, Exp *&result);
     virtual bool searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
     virtual void doReplaceRef(Exp* from, Exp* to);
-    // Remove refs to statements defining restored locations
-    virtual void removeRestoreRefs(StatementSet& rs);
-    // to/from SSA form
-    virtual void toSSAform(StatementSet& reachin, int memdepth,
-      StatementSet& rs);
+    // from SSA form
     virtual void fromSSAform(igraph& ig);
 
 };

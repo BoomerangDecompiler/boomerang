@@ -956,7 +956,11 @@ bool Cfg::compressCfg()
     // must be well formed
     if (!m_bWellFormed) return false;
 
-#if 1
+    // FIXME: The below was working while we still had reaching definitions
+    // It seems to me that it would be easy to search the BB for definitions
+    // between the two branches (so we don't need reaching defs, just the
+    // SSA property of unique definition).
+#if 0
     // replace never taken branches with oneways
     bool change = true;
     while (change && !Boomerang::get()->noBranchSimplify) {
@@ -984,20 +988,11 @@ bool Cfg::compressCfg()
                 // do this optimisation)
                 StatementSet reach;
                 jcond->getReachIn(reach, 2);
-                bool allReach = true;
-                StmtSetIter sit;
                 Exp* priorCond = prior->getCondExpr();
                 assert(priorCond);
                 if (priorCond->getNumRefs()) {
-                    StatementSet& priorUses = ((RefsExp*)priorCond)->getRefs();
-                    for (Statement* s = priorUses.getFirst(sit); s;
-                      s = priorUses.getNext(sit)) {
-                        if (!reach.exists(s)) {
-                            allReach = false;
-                            break;
-                        }
-                    }
-                    if (!allReach) continue;
+                    Statement* s = ((RefExp*)priorCond)->getRef();
+                    if (!reach.exists(s)) continue;
                 }
 
                 Exp *priorcond = prior->getCondExpr()->clone();
@@ -1308,105 +1303,6 @@ void Cfg::searchAndReplace(Exp* search, Exp* replace)
 }
 
 
-void Cfg::saveForwardFlow(UserProc* proc) {
-    StatementSet* ss = getReachExit();
-    if (ss) reachExit = *ss;        // Copy reaching defs set
-    ss = getAvailExit();
-    if (ss) availExit = *ss;        // Copy available defs set
-    if (Boomerang::get()->vFlag) {
-        std::cerr << "Cfg reachExit for " << proc->getName() << ": ";
-        reachExit.printNums(std::cerr);std::cerr << "\n";
-        std::cerr << "Cfg availExit for " << proc->getName() << ": ";
-        availExit.printNums(std::cerr);std::cerr << "\n";
-    }
-}
-
-void Cfg::saveReverseFlow(UserProc* proc) {
-    LocationSet* ls = getLiveEntry();
-    if (ls) liveEntry = *ls;        // Copy live locations set
-    ls = getDeadEntry();
-    if (ls) deadEntry = *ls;        // Copy dead locations set
-    if (Boomerang::get()->vFlag) {
-        std::cerr << "Cfg liveEntry for " << proc->getName() << ": ";
-        liveEntry.prints();std::cerr << "\n";
-        std::cerr << "Cfg deadEntry for " << proc->getName() << ": ";
-        deadEntry.prints();std::cerr << "\n";
-    }
-}
-
-void Cfg::clearReaches() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++) {
-        (*it)->reachOut.clear();
-    }
-}
-
-void Cfg::clearAvailable() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++) {
-        (*it)->availOut.clear();
-    }
-}
-
-void Cfg::clearLiveness() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++) {
-        (*it)->liveIn.clear();
-    }
-}
-
-void Cfg::clearDeadness() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++) {
-        (*it)->deadIn.clear();
-    }
-}
-
-void Cfg::calcLiveness(igraph& ig) {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++) {
-        (*it)->calcLiveness(ig);
-    }
-}
-
-void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
-    // Append my list of BBs to the worklist
-    worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
-    // Do the same for the workset
-    std::list<PBB>::iterator it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++)
-        workset.insert(*it);
-}
-
-void Cfg::appendBBs(std::list<PBB>& allBBs) {
-    // Append my list of BBs to the worklist
-    allBBs.insert(allBBs.end(), m_listBB.begin(), m_listBB.end());
-}
-
-void Cfg::setCallInterprocEdges() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++)
-        (*it)->setCallInterprocEdges();
-}
-
-void Cfg::clearCallInterprocEdges() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++)
-        (*it)->clearCallInterprocEdges();
-}
-
-void Cfg::setReturnInterprocEdges() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++)
-        (*it)->setReturnInterprocEdges();
-}
-
-void Cfg::clearReturnInterprocEdges() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++)
-        (*it)->clearReturnInterprocEdges();
-}
-
 /*==============================================================================
  * FUNCTION:    delete_lrtls
  * OVERVIEW:    "deep" delete for a list of pointers to RTLs
@@ -1613,15 +1509,6 @@ void Cfg::print(std::ostream &out, bool withDF) {
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) 
         (*it)->print(out, withDF);
-    out << "cfg reachExit: ";
-    if (exitBB) {
-        StmtSetIter it;
-        for (Statement* s = exitBB->reachOut.getFirst(it); s;
-          s = exitBB->reachOut.getNext(it)) {
-            s->printAsUse(out);
-            out << ", ";
-        }
-    }
     out << std::endl;
 }
 
@@ -2177,13 +2064,6 @@ void Cfg::generateDotFile(std::ofstream& of) {
     }
 }
 
-void Cfg::toSSAform(int memDepth, StatementSet& rs) {
-    BB_IT it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        (*it)->toSSAform(memDepth, rs);
-    }
-}
-
 void Cfg::insertArguments(StatementSet& rs) {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
@@ -2197,42 +2077,316 @@ void Cfg::insertArguments(StatementSet& rs) {
     }
 }
 
-void Cfg::recoverReturnLocs() {
-    // We will create a map from UserProc (dest of call) to a LocationSet
-    // The statements in this set will be the union of locations used before
-    // definition after the call
-    std::map<UserProc*, LocationSet> liveAfter;
-    BB_IT it;
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        if ((*it)->getType() == CALL) {
-            UserProc* dest = (UserProc*)(*it)->getDestProc();
-            if (dest->isLib()) continue;
-            // The first out-edge should be to the normal, intra procedural
-            // successor of the call
-            assert((*it)->m_OutEdges.size() >= 1);
-            PBB postCall = (*it)->m_OutEdges[0];
-            LocationSet& liveAfterCall = postCall->getLiveIn();
-            // Look up the map
-            liveAfter[dest].makeUnion(liveAfterCall);
-#if 0
-            std::map<UserProc*, StatementSet>::iterator it;
-            it = liveAfter.find(dest);
-            if (it == liveAfter.end()) {
-                // No entry in the map; insert one
-                liveAfter[dest] = liveAfterCall;
-            } else {
-                it->second.makeUnion(liveAfterCall)
+
+
+/*
+ * Dominator frontier code largely as per Appel
+ */
+
+void Cfg::DFS(int p, int n) {
+    if (dfnum[n] == 0) {
+        dfnum[n] = N; vertex[N] = n; parent[n] = p;
+        N++;
+        // For each successor w of n
+        PBB bb = BBs[n];
+        std::vector<PBB>::iterator oo;
+        for (oo = bb->m_OutEdges.begin(); oo != bb->m_OutEdges.end(); oo++) {
+            PBB succ = *oo;
+            int w;
+            if (indices.find(succ) == indices.end()) {
+                w = next++;
+                indices[succ] = w;
+                BBs[w] = succ;
             }
-#endif
+            else
+                w = indices[succ];
+            DFS(n, w);
         }
     }
-    if (VERBOSE) {
-        std::cerr << "Live after call summary:\n";
-        std::map<UserProc*, LocationSet>::iterator it;
-        for (it = liveAfter.begin(); it != liveAfter.end(); it++) {
-            std::cerr << it->first->getName() << ": ";
-            it->second.prints();
-            std::cerr << "\n";
+}
+
+void Cfg::dominators() {
+    PBB r = getEntryBB();
+    int numBB = m_listBB.size();
+    BBs.resize(numBB, (PBB)-1);
+    N = 0; next = 1; BBs[0] = r; indices[r] = 0;
+    // Initialise to "none"
+    dfnum.resize(numBB, 0);
+    semi.resize(numBB, -1);
+    ancestor.resize(numBB, -1);
+    idom.resize(numBB, -1);
+    samedom.resize(numBB, -1);
+    vertex.resize(numBB, -1);
+    parent.resize(numBB, -1);
+    best.resize(numBB, -1);
+    bucket.resize(numBB);
+    DF.resize(numBB);
+    DFS(-1, 0);
+    for (int i=N-1; i >= 1; i--) {
+        int n = vertex[i]; int p = parent[n]; int s = p;
+        /* These lines calculate the semi-dominator of n, based on the
+            Semidominator Theorem */
+        // for each predecessor v of n
+        PBB bb = BBs[n];
+        std::vector<PBB>::iterator it;
+        for (it = bb->m_InEdges.begin(); it != bb->m_InEdges.end(); it++) {
+            int v = indices[*it];
+            int sdash;
+            if (dfnum[v] <= dfnum[n])
+                sdash = v;
+            else sdash = semi[ancestorWithLowestSemi(v)];
+            if (dfnum[sdash] < dfnum[s])
+                s = sdash;
+        }
+        semi[n] = s;
+        /* Calculation of n'd dominator is deferred until the path from s to n
+            has been linked into the forest */
+        bucket[s].insert(n);
+        Link(p, n);
+        // for each v in bucket[p]
+        std::set<int>::iterator jj;
+        for (jj=bucket[p].begin(); jj != bucket[p].end(); jj++) {
+            int v = *jj;
+            /* Now that the path from p to v has been linked into the spanning
+                forest, these lines calculate the dominator of v, based on the
+                first clause of the Dominator Theorem, or else defer the calc-
+                ulation until y's dominator is known. */
+            int y = ancestorWithLowestSemi(v);
+            if (semi[y] == semi[v])
+                idom[v] = p;         // Success!
+            else samedom[v] = y;     // Defer
+        }
+        bucket[p].clear();
+    }
+    for (int i=1; i < N-1; i++) {
+        /* Now all the deferred dominator calculations, based on the second
+            clause of the Dominator Theorem, are performed. */
+        int n = vertex[i];
+        if (samedom[n] != -1) {
+            idom[n] = idom[samedom[n]];    // Deferred success!
+        }
+    }
+    computeDF(0);               // Finally, compute the dominance frontiers
+}
+
+int Cfg::ancestorWithLowestSemi(int v) {
+    int a = ancestor[v];
+    if (ancestor[a] != -1) {
+        int b = ancestorWithLowestSemi(a);
+        ancestor[v] = ancestor[a];
+        if (dfnum[semi[b]] < dfnum[semi[best[v]]])
+            best[v] = b;
+    }
+    return best[v];
+}
+
+void Cfg::Link(int p, int n) {
+    ancestor[n] = p; best[n] = n;
+}
+
+// Return true if n dominates w
+bool Cfg::doesDominate(int n, int w) {
+    while (idom[w] != -1) {
+        if (idom[w] == n)
+            return true;
+        w = idom[w];     // Move up the dominator tree
+    }
+    return false;
+}
+
+void Cfg::computeDF(int n) {
+    std::set<int> S;
+    /* THis loop computes DF_local[n] */
+    // for each node y in succ(n)
+    PBB bb = BBs[n];
+    std::vector<PBB>::iterator it;
+    for (it = bb->m_OutEdges.begin(); it != bb->m_OutEdges.end(); it++) {
+        int y = indices[*it];
+        if (idom[y] != n)
+            S.insert(y);
+    }
+    // for each child c of n in the dominator tree
+    // Note: this is a linear search!
+    int sz = ancestor.size();
+    for (int c = 0; c < sz; c++) {
+        if (idom[c] != n) continue;
+        computeDF(c);
+        /* This loop computes DF_up[c] */
+        // for each element w of DF[c]
+        std::set<int>& s = DF[c];
+        std::set<int>::iterator ww;
+        for (ww = s.begin(); ww != s.end(); ww++) {
+            int w = *ww;
+            // if n does not dominate w, or if n = w
+            if (n == w || !doesDominate(n, w)) {
+                S.insert(w);
+            }
+        }
+    }
+    DF[n] = S;
+}
+
+void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
+    // First free some memory no longer needed
+    dfnum.resize(0);
+    semi.resize(0);
+    ancestor.resize(0);
+    samedom.resize(0);
+    vertex.resize(0);
+    parent.resize(0);
+    best.resize(0);
+    bucket.resize(0);
+    defsites.clear();            // Clear defsites map
+    A_orig.clear();              // and A_orig
+
+    // Set the sizes of needed vectors
+    int numBB = indices.size();
+    A_orig.resize(numBB);
+
+    // We need to create A_orig for the current memory depth
+    for (int n=0; n < numBB; n++) {
+        BasicBlock::rtlit rit; stmtlistIt sit;
+        PBB bb = BBs[n];
+        for (Statement* s = bb->getFirstStmt(rit, sit); s;
+                        s = bb->getNextStmt(rit, sit)) {
+            LocSetIter it;
+            LocationSet ls;
+            s->getDefinitions(ls);
+            for (Exp* l = ls.getFirst(it); l; l = ls.getNext(it)) 
+                if (l->getMemDepth() == memDepth)
+                    A_orig[n].insert(l);
+        }
+    }
+
+    // For each node n
+    for (int n=0; n < numBB; n++) {
+        // For each variable a in A_orig[n]
+        std::set<Exp*, lessExpStar>& s = A_orig[n];
+        std::set<Exp*, lessExpStar>::iterator aa;
+        for (aa = s.begin(); aa != s.end(); aa++) {
+            Exp* a = *aa;
+            defsites[a].insert(n);
+        }
+    }
+
+    // For each variable a (in defsites, I presume)
+    std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
+    for (mm = defsites.begin(); mm != defsites.end(); mm++) {
+        Exp* a = (*mm).first;               // *mm is pair<Exp*, set<int>>
+        std::set<int> W = defsites[a];   // set copy
+        // While W not empty
+        while (W.size()) {
+            // Remove some node n from W
+            int n = *W.begin();             // Copy first element
+            W.erase(W.begin());             // Remove first element
+            // for each y in DF[n]
+            std::set<int>::iterator yy;
+            std::set<int>& DFn = DF[n];
+            for (yy = DFn.begin(); yy != DFn.end(); yy++) {
+                int y = *yy;
+                // if y not element of A_phi[a]
+                std::set<int>& s = A_phi[a];
+                if (s.find(y) == s.end()) {
+                    // Insert trivial phi function for a at top of block y
+                    // a := phi{}
+                    Statement* as = new Assign(a->clone(),
+                      new PhiExp(a->clone()));
+                    PBB Ybb = BBs[y];
+                    Ybb->prependStmt(as, proc);
+                    // A_phi[a] <- A_phi[a] U {y}
+                    s.insert(y);
+                    // if a !elementof A_orig[y]
+                    if (A_orig[y].find(a) == A_orig[y].end()) {
+                        // W <- W U {y}
+                        W.insert(y);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Cfg::renameBlockVars(int n, int memDepth) {
+    // For each statement S in block n
+    BasicBlock::rtlit rit; stmtlistIt sit;
+    PBB bb = BBs[n];
+    for (Statement* S = bb->getFirstStmt(rit, sit); S;
+                    S = bb->getNextStmt(rit, sit)) {
+        // if S is not a phi function
+        if (!S->isPhi()) {
+            // For each use of some variable x in S (not just assignments)
+            LocationSet locs;
+            S->addUsedLocs(locs);
+            LocSetIter xx;
+            for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+                if (x->getMemDepth() == memDepth) {
+                    // If the stack is empty, assume NULL (statement "0")
+                    // This avoids having to initialise the stack for ALL
+                    // variables (not just those that need phi functions)
+                    Statement* def;
+                    if (Stack[x].empty())
+                        def = NULL;
+                    else
+                        def = Stack[x].top();
+                    // Replace the use of x with x{def} in S
+                    S->subscriptVar(x, def);
+                }
+            }
+        }
+        // For each definition of some variable a in S
+        LocationSet defs;
+        S->getDefinitions(defs);
+        LocSetIter dd;
+        for (Exp* a = defs.getFirst(dd); a; a = defs.getNext(dd)) {
+            if (a->getMemDepth() == memDepth) {
+                // Push i onto Stack[a]
+                Stack[a].push(S);
+                // Replace definition of a with definition of a_i in S
+                // (we don't do this)
+            }
+        }
+    }
+    // For each successor Y of block n
+    int numSucc = bb->m_OutEdges.size();
+    for (int succ = 0; succ != numSucc; succ++) {
+        PBB Ybb = bb->m_OutEdges[succ];
+        // For each phi-function in Y
+        for (Statement* S = Ybb->getFirstStmt(rit, sit); S;
+                        S = Ybb->getNextStmt(rit, sit)) {
+            Assign* ae = dynamic_cast<Assign*>(S);
+            // if S is not a phi function, then quit the loop (no more phi's)
+            if (!ae || !ae->isPhi()) break;
+            Exp* a = ae->getLeft();
+            // Only consider variables of the current memory depth
+            // (since we only have reaching defs for these)
+            if (a->getMemDepth() != memDepth) continue;
+            Statement* def;
+            if (Stack[a].empty()) {
+                def = NULL;
+            }
+            else
+                def = Stack[a].top();
+            // "Replace jth operand with a_i"
+            ((PhiExp*)ae->getRight())->addSubscript(def);
+        }
+    }
+    // For each child X of n
+    // Note: linear search!
+    int numBB = m_listBB.size();
+    for (int X=0; X < numBB; X++) {
+        if (idom[X] == n)
+            renameBlockVars(X, memDepth);
+    }
+    // For each statement S in block n
+    for (Statement* S = bb->getFirstStmt(rit, sit); S;
+                    S = bb->getNextStmt(rit, sit)) {
+        // For each definition of some variable a in S
+        LocationSet defs;
+        S->getDefinitions(defs);
+        LocSetIter dd;
+        for (Exp* a = defs.getFirst(dd); a; a = defs.getNext(dd)) {
+            if (a->getMemDepth() == memDepth)
+                Stack[a].pop();
         }
     }
 }

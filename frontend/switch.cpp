@@ -471,9 +471,11 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         if (bNegate) {
             // We have come via a conditional branch. For the purposes
             // of switch detection, this means a logical negation
-            expBound = new Unary(opNot, expBound);
+            if (expBound)
+                expBound = new Unary(opNot, expBound);
+            else
+                expBound = new Unary(opNot, new Terminal(opNil));
         }
-//      pRtl->machineSimplify();
         
         // General approach: we look for the comparison that defines the
         // switch variable's upper bound separately.
@@ -497,9 +499,10 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         // therefore the ideal place to assign the switch variable.
         if (pRtl->getNumStmt() > indexRT) {
             currStmt = pRtl->elementAt(indexRT);
-            if (currStmt->getKind() == STMT_ASSIGN) {
-                Exp* lhs = currStmt->getLeft();
-                if (!lhs->isRegOfK()) continue;      // Only interested in r[K]
+            // Only interested to assignements to registers (not temps, as in
+            // compares)
+            if (currStmt->getKind() == STMT_ASSIGN &&
+              currStmt->getLeft()->isRegOfK()) {
                 Exp* rhs = currStmt->getRight();
                 // r[ int R] - iReg
                 if (rhs->getOper() == opMinus) {
@@ -545,7 +548,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                 }
             }
         }
-        
+
         // See if we are defining the upper or lower bound with a compare
         // and branch. We need to do this first, because most other
         // cases require an assignment to a register of interest, and will

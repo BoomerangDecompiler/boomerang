@@ -33,7 +33,7 @@ public:
 
     Type *getType() { return type; }
     const char *getName() { return name.c_str(); }
-    Exp *getExp() { return exp; }
+    Exp *getExp()       { return exp; }
 };
 
 class Return {
@@ -47,6 +47,8 @@ public:
 
     Type *getType() { return type; }
     Exp *getExp() { return exp; }
+    Exp*& getRefExp() {return exp;}
+    void setExp(Exp* e) { exp = e; }
 };
 
 class Signature {
@@ -86,8 +88,10 @@ public:
     virtual void removeReturn(Exp *e);
     virtual int getNumReturns();
     virtual Exp *getReturnExp(int n);
+    void         setReturnExp(int n, Exp* e);
     virtual Type *getReturnType(int n);
     virtual int findReturn(Exp *e);
+    void fixReturnsWithParameters();
 
     // get/set the name
     virtual const char *getName();
@@ -117,7 +121,7 @@ public:
     std::list<Exp*> *getCallerSave(Prog* prog);
 
     // analysis determines parameters / return type
-    virtual void analyse(UserProc *p);
+    //virtual void analyse(UserProc *p);
 
     // any signature can be promoted to a higher level signature, if available
     virtual Signature *promote(UserProc *p);

@@ -792,7 +792,7 @@ void Signature::removeParameter(Exp *e)
 
 void Signature::removeParameter(int i)
 {
-    for (int j = i+1; j < params.size(); j++)
+    for (unsigned j = i+1; j < params.size(); j++)
         params[j-1] = params[j];
     params.resize(params.size()-1);
 }
@@ -808,25 +808,24 @@ void Signature::setNumParams(int n)
     }
 }
 
-int Signature::getNumParams()
-{
+int Signature::getNumParams() {
     return params.size();
 }
 
-const char *Signature::getParamName(int n)
-{
+const char *Signature::getParamName(int n) {
     assert(n < (int)params.size());
     return params[n]->getName();
 }
 
-Exp *Signature::getParamExp(int n)
-{
+Exp *Signature::getParamExp(int n) {
     assert(n < (int)params.size());
+    // FIXME: I think this should return a clone, and callers should not have
+    // to clone the result. Derived class versions of these return new
+    // expressions (e.g. PentiumSignature::getParamExp())
     return params[n]->getExp();
 }
 
-Type *Signature::getParamType(int n)
-{
+Type *Signature::getParamType(int n) {
     static IntegerType def;
     //assert(n < (int)params.size() || ellipsis);
 // With recursion, parameters not set yet. Hack for now:
@@ -834,66 +833,73 @@ Type *Signature::getParamType(int n)
     return params[n]->getType();
 }
 
-int Signature::findParam(Exp *e)
-{
+int Signature::findParam(Exp *e) {
     for (int i = 0; i < getNumParams(); i++)
         if (*getParamExp(i) == *e)
             return i;
     return -1;
 }
 
-int Signature::findReturn(Exp *e)
-{
+int Signature::findReturn(Exp *e) {
     for (int i = 0; i < getNumReturns(); i++)
         if (*getReturnExp(i) == *e)
             return i;
     return -1;
 }
 
-void Signature::addReturn(Type *type, Exp *exp)
-{
+void Signature::addReturn(Type *type, Exp *exp) {
     addReturn(new Return(type, exp));
 }
 
-void Signature::addReturn(Exp *exp)
-{
+void Signature::addReturn(Exp *exp) {
     addReturn(new IntegerType(), exp);
 }
 
-void Signature::removeReturn(Exp *exp)
-{
-    for (int i = 0; i < returns.size(); i++)
+void Signature::removeReturn(Exp *exp) {
+    for (unsigned i = 0; i < returns.size(); i++)
         if (*returns[i]->getExp() == *exp) {
-            for (int j = i+1; j < returns.size(); j++)
+            for (unsigned j = i+1; j < returns.size(); j++)
                 returns[j-1] = returns[j];
             returns.resize(returns.size()-1);
             break;
         }
 }
 
-int Signature::getNumReturns()
-{
+int Signature::getNumReturns() {
     return returns.size();
 }
 
-Exp *Signature::getReturnExp(int n)
-{
+Exp *Signature::getReturnExp(int n) {
     return returns[n]->getExp();
 }
 
-Type *Signature::getReturnType(int n)
-{
+void Signature::setReturnExp(int n, Exp* e) {
+    returns[n]->setExp(e);
+}
+
+Type *Signature::getReturnType(int n) {
     return returns[n]->getType();
 }
 
-Exp *Signature::getArgumentExp(int n)
-{
+void Signature::fixReturnsWithParameters() {
+    for (unsigned i = 0; i < params.size(); i++) { 
+        int n = returns.size();
+        for (int j=0; j < n; j++) {
+            bool change;
+            RefExp r(getParamExp(i)->clone(), NULL);
+            Exp*& retExp = returns[j]->getRefExp();
+            retExp = retExp->searchReplaceAll(&r, new Unary(opParam, 
+              new Const((char*)getParamName(i))), change);
+        }
+    }
+}
+
+Exp *Signature::getArgumentExp(int n) {
     // TODO: esp?
     return getParamExp(n);
 }
 
-Signature *Signature::promote(UserProc *p)
-{
+Signature *Signature::promote(UserProc *p) {
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::Win32Signature(*this);
 //        sig->analyse(p);
@@ -918,8 +924,7 @@ Signature *Signature::promote(UserProc *p)
     return this;
 }
 
-Signature *Signature::instantiate(const char *str, const char *nam)
-{
+Signature *Signature::instantiate(const char *str, const char *nam) {
     std::string s = str;
     if (s == "-win32-pentium") {
         return new CallingConvention::Win32Signature(nam);
@@ -955,8 +960,8 @@ void Signature::getInternalStatements(StatementList &stmts)
 }
 
 // No longer used; may be used again in future
-void Signature::analyse(UserProc *p)
-{
+#if 0
+void Signature::analyse(UserProc *p) {
     if (VERBOSE) {
         std::cerr << "accepted promotion" << std::endl;
         std::cerr << "searching for creation of return value" << std::endl;
@@ -1013,7 +1018,10 @@ void Signature::analyse(UserProc *p)
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
     updateParams(p, s, false); */
 }
+#endif
 
+// Note: the below few functions require reaching definitions.
+// Likely can't be used
 void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
     int i;
     if (usesNewParam(p, stmt, checkreach, i)) {
@@ -1036,7 +1044,7 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach,
         std::cerr << std::endl;
     }
     StatementSet reachin;
-    stmt->getReachIn(reachin, 2);
+    //stmt->getReachIn(reachin, 2);
     for (int i = getNumParams(); i < 10; i++)
         if (stmt->usesExp(getParamExp(i))) {
             bool ok = true;

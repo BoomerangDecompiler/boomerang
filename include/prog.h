@@ -124,28 +124,12 @@ public:
     // Analyse any decoded procedures
     void analyse();
 
-    // Calculate fowrard-flow global dataflow for all procs (i.e. reaching and
-    // available definitions, as one large dataflow problem).
-    // Similar to the [SW93] paper
-    void forwardGlobalDataflow();
-
-    // Calculate reverse-flow global dataflow for all procs (i.e. live and
-    // dead locations, as one large dataflow problem).
-    // Very similar to the [SW93] paper
-    void reverseGlobalDataflow();
-
-    // Recover parameters. Uses liveness from reverseGlobalDataflow
-    void recoverParameters();
-
     // Insert arguments. Assumes all procedures have their formal parameters
     // recovered
     void insertArguments(StatementSet& rs);
 
     // Recover return locations
     void recoverReturnLocs();
-
-    // Transform out of SSA form
-    void fromSSAform();
 
     // Remove interprocedural edges
     void removeInterprocEdges();
@@ -157,7 +141,6 @@ public:
     void toSSAform();
 
     // Do decompilation
-    void decompile_issa();
     void decompile();
 
     // All that used to be done in UserProc::decompile, but now done globally.
@@ -175,14 +158,6 @@ public:
 
     // Repair dataflow... a hack
     void repairDataflow(StatementSet& rs);
-
-    // Find the restoredSet: the set of definitions that restores the effect
-    // of a save. These definitions are not considered in subsequent dataflow
-    void findRestoreSet(StatementSet& restoreSet);
-
-    // Remove the restored references. Repairing the dataflow does not (at
-    // present) remove any references, so we need this extra pass.
-    void removeRestoreRefs(StatementSet& restoreSet);
 
     // Generate dotty file
     void generateDotFile();

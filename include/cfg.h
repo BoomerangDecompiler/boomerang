@@ -32,8 +32,10 @@
 #include <map>
 #include <iostream>
 #include <string>
+#include <stack>
 #include "types.h"
 #include "exp.h"        // For LocationSet
+#include "exphelp.h"    // For lessExpStar
 
 //#include "bitset.h"     // Saves time. Otherwise, any implementation file that 
                         // defines say a BB, will need to #include this file
@@ -395,48 +397,6 @@ public:
     bool isPostCall();
     static void doAvail(StatementSet& s, PBB inEdge);
 
-    /* Reaching definitions: forward flow, any path */
-	void getReachInAt(Statement *stmt, StatementSet &reachin, int phase);
-	void getReachIn(StatementSet &reachin, int phase);
-	void calcReachOut(StatementSet &reach, int phase);
-    bool calcReaches(int phase);
-    StatementSet &getReachOut() { return reachOut; }
-        
-    /* As above, for available definitions. These are used for the first
-     * phase of the global reaching definitions DFA
-     * Forward flow, all paths */
-	void getAvailInAt(Statement *stmt, StatementSet &availini, int phase);
-	void getAvailIn(StatementSet &availin, int phase);
-	void calcAvailOut(StatementSet &avail, int phase);
-    bool calcAvailable(int phase);
-    StatementSet &getAvailOut() { return availOut; }
-
-    /* As above, for live locations. These are used for coming out of SSA
-     * mode, parameters and return locations.
-     * Backwards flow, any path */
-	void getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase);
-	void getLiveOutAt(Statement *stmt, LocationSet &liveout, int phase,
-        igraph& ig);
-	void getLiveOut(LocationSet &liveout);
-	void calcLiveIn(LocationSet &live, int phase, igraph& ig);
-	void calcLiveIn(LocationSet &live, int phase);
-    bool calcLiveness(int phase);
-    void calcLiveness(igraph& ig);
-    LocationSet &getLiveIn() { return liveIn; }
-
-    /* As above, for dead locations. These are used for the first phase
-     * of the global live location DFA.
-     * Backwards flow, all paths */
-	void getDeadOutAt(Statement *stmt, LocationSet &deadout, int phase);
-	void getDeadOut(LocationSet &deadout);
-	void calcDeadIn(LocationSet &dead, int phase);
-    bool calcDeadness(int phase);
-    LocationSet &getDeadIn() { return deadIn; }
-
-    /* set the return value */
-    void setReturnVal(Exp *e);
-    Exp *getReturnVal() { return m_returnVal; }
-
     /**
       * Set up for phases 1 or 2 of [SW93] (or clear them)
       */
@@ -464,35 +424,17 @@ public:
     char* getStmtNumber();
 
     /**
-     * Transform the CFG to/from SSA form.
+     * Transform the CFG from SSA form.
      */
-    void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform();
 
+    /* set the return value */
+    void setReturnVal(Exp *e);
+    Exp *getReturnVal() { return m_returnVal; }
+
 protected:
-    // This is the set of statements whose definitions reach the end of this BB
-    StatementSet reachOut;
-
-    // This is the set of statements available (not redefined on any path)
-    // at the end of this BB
-    StatementSet availOut;
-
-    // This is the set of locations that are upwardly exposed (not defined
-    // along all paths from the start of the procedure to the statement)
-    // at the start of the BB
-    LocationSet liveIn;
-
-    // This is the set of locations that are dead (defined before being used
-    // along all paths from the start of the procedure to the statement)
-    // at the start of the BB
-    LocationSet deadIn;
-
+    // ?? What is this? Needed?
     Exp* m_returnVal;
-
-    // If this is a call BB, this holds a pointer to the BB that the call
-    // conventionally falls through to (in [SW93] dataflow analysis, the out
-    // edge of a call is the entry BB of the callee (in phase 1)
-    PBB returnBlock;
 
     /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
      */
@@ -596,23 +538,87 @@ typedef std::map<ADDRESS, PBB, std::less<ADDRESS> >   MAPBB;
  *============================================================================*/
 class Cfg {
     /*
-     * These statements reach the exit (saved from phase 1 of [SW93])
+     * Pointer to the UserProc object that contains this CFG object
      */
-    StatementSet reachExit;
+    UserProc* myProc;
+
     /*
-     * These statements are available at the exit
+     * The list of pointers to BBs.
      */
-    StatementSet availExit;
+    std::list<PBB> m_listBB;
+
     /*
-     * These locations are live at the entry to the proc (saved from phase 1
-     * of [SW93])
+     * Ordering of BBs for control flow structuring
      */
-    LocationSet liveEntry;
+    std::vector<PBB> Ordering;
+    std::vector<PBB> revOrdering;
+
     /*
-     * These locations are dead at the entry to the proc (saved from phase 1
-     * of [SW93])
+     * The ADDRESS to PBB map.
      */
-    LocationSet deadEntry;
+    MAPBB m_mapBB;
+
+    /*
+     * The entry and exit BBs.
+     */
+    BasicBlock* entryBB;
+    BasicBlock* exitBB;
+
+    /*
+     * True if well formed.
+     */
+    bool m_bWellFormed;
+
+    /*
+     * Set of the call instructions in this procedure.
+     */
+    std::set<CallStatement*> callSites;
+
+    /*
+     * Last label (positive integer) used by any BB this Cfg
+     */
+    int lastLabel;
+
+    /******************** Dominance Frontier Data *******************/
+
+    /* These first three are not from Appel; they map PBBs to indices */
+    std::vector<PBB> BBs;               // Pointers to BBs from indices
+    std::map<PBB, int> indices;         // Indices from pointers to BBs
+    int next;                           // Next index to use
+    /*
+     * Calculating the dominance frontier
+     */
+    // If there is a path from a to b in the cfg, then a is an ancestor of b
+    // if dfnum[a] < denum[b]
+    std::vector<int> dfnum;             // Number set in depth first search
+    std::vector<int> semi;              // Semi dominators
+    std::vector<int> ancestor;          // Defines the forest that becomes the
+                                        // spanning tree
+    std::vector<int> idom;              // Immediate dominator
+    std::vector<int> samedom;           // ? To do with deferring
+    std::vector<int> vertex;            // ?
+    std::vector<int> parent;            // Parent in the dominator tree?
+    std::vector<int> best;              // Improves ancestorWithLowestSemi
+    std::vector<std::set<int> > bucket; // Deferred calculation?
+    int N;                              // Current node number in algorithm
+    std::vector<std::set<int> > DF;     // The dominance frontiers
+
+    /*
+     * Inserting phi-functions
+     */
+    // Array of sets of locations defined in BB n
+    std::vector<std::set<Exp*, lessExpStar> > A_orig;
+    // Map from expression to set of block numbers
+    std::map<Exp*, std::set<int>, lessExpStar > defsites;
+    // Array of sets of BBs needing phis
+    std::map<Exp*, std::set<int>, lessExpStar> A_phi;
+
+    /*
+     * Renaming variables
+     */
+    // Note: this becomes a map of stacks of Statement*s. 
+    std::map<Exp*, std::stack<Statement*>, lessExpStar> Stack;
+
 
 public:
     /*
@@ -877,45 +883,6 @@ public:
     void structure();
 
     /*
-     * Compute reaches/use information
-     */
-    void clearReaches();
-    void clearAvailable();
-    void clearLiveness();
-    void clearDeadness();
-    // Compute dataflow for this Cfg, return true if a change
-    //bool computeDataflow();
-    bool computeReaches(int phase);
-    bool computeAvailable(int phase);
-    //bool computeLiveness();
-    void updateLiveEntryDefs();
-    void clearLiveEntryDefsUsedby();
-    // Summary information saved from phase 1 for this cfg
-    StatementSet &getSavedReachExit() { return reachExit;}
-    StatementSet &getSavedAvailExit() { return availExit;}
-    // Summary information at end of phase 1 for this cfg
-    StatementSet *getReachExit() {
-        return exitBB ? &exitBB->reachOut : NULL;}
-    void    getReachEntry(StatementSet& ss) {
-        if (entryBB) entryBB->getReachIn(ss, 2); }
-    StatementSet *getAvailExit() {
-        return exitBB ? &exitBB->availOut : NULL;}
-    LocationSet *getLiveEntry() {
-        return entryBB ? &entryBB->liveIn : NULL;}
-    LocationSet *getDeadEntry() {
-        return entryBB ? &entryBB->deadIn : NULL;}
-    void saveForwardFlow(UserProc* proc);   // Save forward flow info
-    void saveReverseFlow(UserProc* proc);   // Save reverse flow info
-    void setCallInterprocEdges();
-    void clearCallInterprocEdges();
-    void setReturnInterprocEdges();
-    void clearReturnInterprocEdges();
-    void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
-    void appendBBs(std::list<PBB>& allBBs);
-    void calcLiveness(igraph& ig);
-    void recoverReturnLocs();
-
-    /*
      * Virtual Function Call analysis
      */
     void virtualFunctionCalls(Prog* prog);
@@ -934,12 +901,6 @@ public:
     /* Simplify all the expressions in the CFG
      */
     void simplify();
-
-    /**
-     * Transform the CFG to SSA form.
-     * rs is the set of restored definitions
-     */
-    void toSSAform(int memDepth, StatementSet& rs);
 
     /*
      * Insert actual arguments to match formal parameters
@@ -976,6 +937,7 @@ private:
      */
     bool checkEntryBB();
 
+public:
     /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
      */
     void setTimeStamps();
@@ -988,56 +950,10 @@ private:
     void findLoopFollow(PBB header, bool* &loopNodes);
     void tagNodesInLoop(PBB header, bool* &loopNodes);
 
-public:
-
     void removeUnneededLabels(HLLCode *hll);
     void generateDotFile(std::ofstream& of);
 
-protected:
 
-    /*
-     * Pointer to the UserProc object that contains this CFG object
-     */
-    UserProc* myProc;
-
-    /*
-     * The list of pointers to BBs.
-     */
-    std::list<PBB> m_listBB;
-
-    /*
-     * Ordering of BBs for control flow structuring
-     */
-    std::vector<PBB> Ordering;
-    std::vector<PBB> revOrdering;
-
-    /*
-     * The ADDRESS to PBB map.
-     */
-    MAPBB m_mapBB;
-
-    /*
-     * The entry and exit BBs.
-     */
-    BasicBlock* entryBB;
-    BasicBlock* exitBB;
-
-    /*
-     * True if well formed.
-     */
-    bool m_bWellFormed;
-
-    /*
-     * Set of the call instructions in this procedure.
-     */
-    std::set<CallStatement*> callSites;
-
-    /*
-     * Last label (positive integer) used by any BB this Cfg
-     */
-    int lastLabel;
-
-public:
     /*
      * Get the entry-point or exit BB
      */
@@ -1062,15 +978,16 @@ public:
     void print(std::ostream &out, bool withDF = false);
 
     /*
-     * Experimental domonator frontier code
+     * Domonator frontier code
      */
-    void DFS(DOM* d, int p, int n);
-    void dominators(DOM* d);
-    int  ancestorWithLowestSemi(DOM* d, int v);
-    void Link(DOM* d, int p, int n);
-    void computeDF(DOM* d, int n);
-    void placePhiFunctions(DOM* d, int memDepth, UserProc* proc);
-    void renameBlockVars(DOM* d, int n, int memDepth);
+    void DFS(int p, int n);
+    void dominators();
+    int  ancestorWithLowestSemi(int v);
+    void Link(int p, int n);
+    void computeDF(int n);
+    void placePhiFunctions(int memDepth, UserProc* proc);
+    void renameBlockVars(int n, int memDepth);
+    bool doesDominate(int n, int w);
 
 };              /* Cfg */
 

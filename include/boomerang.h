@@ -67,7 +67,6 @@ public:
     bool debugPrintReach;
     bool debugPrintSSA;
     bool noPropMult;
-    bool impSSA;
     int maxMemDepth;
     bool debugSwitch;
     bool prove;

@@ -135,23 +135,14 @@ TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
 FlagDef::FlagDef(Exp* params, RTL* rtl)
     : Unary(opFlagDef, params), rtl(rtl) {}
 
-RefsExp::RefsExp(Exp* e, Statement* def) : Unary(opSubscript, e) {
-    stmtSet.insert(def);
-}
-RefsExp::RefsExp(Exp* e) : Unary(opSubscript, e) {
-}
-RefsExp::RefsExp(RefsExp& o) : Unary(o) {
-    stmtSet = o.stmtSet;
-}
-
 RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
 }
 
-PhiExp::PhiExp(Statement* d) : Terminal(opPhi)
+PhiExp::PhiExp(Exp* e, Statement* d) : Unary(opPhi, e)
 {   stmtSet.insert(d);
 }
 
-PhiExp::PhiExp(PhiExp& o) : Terminal(opPhi)
+PhiExp::PhiExp(PhiExp& o) : Unary(opPhi, subExp1)
 {   stmtSet = o.stmtSet;
 }
 
@@ -313,13 +304,8 @@ Exp* TypedExp::clone() {
     TypedExp* c = new TypedExp(type, subExp1->clone());
     return c;
 }
-Exp* RefsExp::clone() {
-    RefsExp* c = new RefsExp(subExp1->clone());
-    c->stmtSet = stmtSet;
-    return c;
-}
 Exp* PhiExp::clone() {
-    PhiExp* c = new PhiExp();
+    PhiExp* c = new PhiExp(subExp1->clone());
     c->stmtSet = stmtSet;
     return c;
 }
@@ -393,13 +379,6 @@ bool TypedExp::operator==(const Exp& o) const {
     if (*type != *((TypedExp&)o).type) return false;
     return *((Unary*)this)->getSubExp1() == *((Unary&)o).getSubExp1();
 }
-bool RefsExp::operator==(const Exp& o) const {
-    if (op == opWild) return true;
-    if (((RefsExp&)o).op == opWild) return true;
-    if (((RefsExp&)o).op != opSubscript) return false;
-    if (!( *subExp1 == *((RefsExp&)o).subExp1)) return false;
-    return stmtSet == ((RefsExp&)o).stmtSet;
-}
 
 bool RefExp::operator==(const Exp& o) const {
     if (op == opWild) return true;
@@ -416,6 +395,7 @@ bool PhiExp::operator==(const Exp& o) const {
     if (op == opWild) return true;
     if (((PhiExp&)o).op == opWild) return true;
     if (((PhiExp&)o).op != opPhi) return false;
+    if (!( *subExp1 == *((PhiExp&)o).subExp1)) return false;
     return stmtSet == ((PhiExp&)o).stmtSet;
 }
 
@@ -423,10 +403,10 @@ bool PhiExp::operator==(const Exp& o) const {
 bool Exp::operator*=(const Exp& o) const {
     const Exp* one = this;
     if (op == opSubscript)
-        one = ((RefsExp*)this)->getSubExp1();
+        one = ((RefExp*)this)->getSubExp1();
     Exp* two = const_cast<Exp*>(&o);
     if (two->isSubscript())
-        two = ((RefsExp*)two)->getSubExp1();
+        two = ((RefExp*)two)->getSubExp1();
     return *one == *two;
 }
 
@@ -543,17 +523,11 @@ bool RefExp::operator< (const Exp& o) const {
     return def < ((RefExp&)o).def;
 }
 
-bool RefsExp::operator< (const Exp& o) const {
-    if (opSubscript < o.getOper()) return true;
-    if (opSubscript > o.getOper()) return false;
-    if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
-    if (*((Unary&)o).getSubExp1() < *subExp1) return false;
-    return stmtSet < ((RefsExp&)o).stmtSet;
-}
-
 bool PhiExp::operator< (const Exp& o) const {
     if (opPhi < o.getOper()) return true;
     if (opPhi > o.getOper()) return false;
+    if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
+    if (*((Unary&)o).getSubExp1() < *subExp1) return false;
     return stmtSet < ((PhiExp&)o).stmtSet;
 }
 
@@ -658,7 +632,10 @@ void Binary::print(std::ostream& os, bool withUses) {
     }
 
     // Ordinary infix operators. Emit parens around the binary
-    p1->printr(os, withUses);
+    if (p1 == NULL)
+        os << "<NULL>";
+    else
+        p1->printr(os, withUses);
     switch (op) {
         case opPlus:    os << " + ";  break;
         case opMinus:   os << " - ";  break;
@@ -703,7 +680,10 @@ void Binary::print(std::ostream& os, bool withUses) {
             assert(0);
     }
 
-    p2->printr(os, withUses);
+    if (p2 == NULL)
+        os << "<NULL>";
+    else
+        p2->printr(os, withUses);
 
 }
 
@@ -888,26 +868,26 @@ void Ternary::print(std::ostream& os, bool withUses) {
             }
             // Use print not printr here, since , has the lowest precendence
             // of all. Also it makes it the same as UQBT, so it's easier to test
-            p1->print(os, withUses); os << ",";
-            p2->print(os, withUses); os << ",";
-            p3->print(os, withUses); os << ")";
+            if (p1) p1->print(os, withUses); else os << "<NULL>"; os << ",";
+            if (p2) p2->print(os, withUses); else os << "<NULL>"; os << ",";
+            if (p3) p3->print(os, withUses); else os << "<NULL>"; os << ")";
             return;
         default:
             break;
     }
     // Else must be ?: or @ (traditional ternary operators)
-    p1->printr(os, withUses);
+    if (p1) p1->printr(os, withUses); else os << "<NULL>";
     if (op == opTern) {
         os << " ? ";
-        p2->printr(os, withUses);
+        if (p2) p2->printr(os, withUses); else os << "<NULL>";
         os << " : ";        // Need wide spacing here
-        p3->print(os, withUses);
+        if (p3) p3->print(os, withUses); else os << "<NULL>";
     } 
     else if (op == opAt) {
             os << "@";
-            p2->printr(os, withUses);
+            if (p2) p2->printr(os, withUses); else os << "NULL>";
             os << ":";
-            p3->printr(os, withUses);
+            if (p3) p3->printr(os, withUses); else os << "NULL>";
     } else {
         std::cerr << "Ternary::print invalid operator " << operStrings[op] <<
           std::endl;
@@ -924,18 +904,6 @@ void TypedExp::print(std::ostream& os, bool withUses) {
     p1->print(os, withUses);
 }
 
-
-//  //  //  //
-// RefsExp  //
-//  //  //  //
-void RefsExp::print(std::ostream& os, bool withUses) {
-    subExp1->print(os, withUses);
-    if (withUses) {
-        os << "{";
-        stmtSet.printNums(os);
-        os << "}";
-    }
-}
 
 //  //  //  //
 //  RefExp  //
@@ -2608,14 +2576,6 @@ void Ternary::addUsedLocs(LocationSet& used) {
     subExp3->addUsedLocs(used);
 }
 
-void RefsExp::addUsedLocs(LocationSet& used) {
-    used.insert(clone());           // We want to see these
-    if (subExp1->isMemOf()) {
-        Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
-        grandChild->addUsedLocs(used);
-    }
-}
-
 void RefExp::addUsedLocs(LocationSet& used) {
     used.insert(clone());           // We want to see these
     if (subExp1->isMemOf()) {
@@ -2625,7 +2585,17 @@ void RefExp::addUsedLocs(LocationSet& used) {
 }
 
 void PhiExp::addUsedLocs(LocationSet& used) {
-    // Not sure if we need to see these "uses"
+    /* Suppose we have
+      10: r1 := 5
+      20: {r1,r2} := call(foo)
+      30: r1 := phi{10 20}
+      That means we effectively use r1{10} and r1{20}
+    */
+    StmtSetIter uu;
+    for (Statement* u = stmtSet.getFirst(uu); u; u = stmtSet.getNext(uu)) {
+        Exp* temp = new RefExp(subExp1->clone(), u);
+        used.insert(temp);
+    }
 }
 
 Exp *Unary::fixCallRefs()
@@ -2671,181 +2641,10 @@ Exp *RefExp::fixCallRefs() {
     return this;
 }
 
-Exp* Exp::addSubscript(Statement* def) {
-        return new RefsExp(this, def);
-}
-
-/*==============================================================================
- * FUNCTION:        Unary::updateRefs etc
- * OVERVIEW:        Update the references ("uses" (rhymes with "fuses"))
- *                    information inherent in each component of an expression
- * PARAMETERS:      defs: ref to a StatementSet of statements reaching this
- *                  memDepth: don't do anything if this is not of the correct
- *                    memory depth, e.g. 2 means m[m[x]]
- *                  rs: StatementSet of definitions to ignore (because they
- *                    restore a saved location)
- * RETURNS:         <nothing>
- *============================================================================*/
-//  //  //  //
-//  Unary   //
-//  //  //  //
-Exp* Unary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // Only consider expressions that are of the correct "memory nesting depth"
-    Exp* res = this;
-    if (getMemDepth() == memDepth) {
-        StmtSetIter it;
-        for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
-            if (rs.exists(s)) continue;
-            Exp* left = s->getLeft();
-            assert(left);           // A definition must have a left
-            if (*left == *this)
-                // Need to subscript.
-                // Note: several defs could reach, so don't return yet
-                res = res->addSubscript(s);
-        }
-    }
-    // Recurse (in case a memof, addrof etc)
-    // Recurse even if memory depths don't match; we want to subscript all
-    // the parameters of the m[]'s
-    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
-    return res;
-}
-
-//  //  //  //
-//  Binary  //
-//  //  //  //
-Exp* Binary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
-    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
-    return this;
-}
-
-//  //  //  //
-//  RefsExp //
-//  //  //  //
-Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // The left of any definition can't be a RefsExp
-    // (LHS not subscripted any more)
-    // Note: we don't want to double subscript, so only subscript if
-    // our subexpression is a m[] or a[]
-    // This is important if toSSAform gets called more than once
-    if (subExp1->getOper() == opMemOf || subExp1->getOper() == opAddrOf)
-        ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateRefs(defs, memDepth, rs));
-    return this;
-}
-
-Exp* PhiExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // Don't think we need this
-    return this;
-}
-
-Exp* RefExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // Don't think we need this
-    return this;
-}
-
-
-//  //  //  //
-// Ternary  //
-//  //  //  //
-Exp* Ternary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
-    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
-    subExp3 = subExp3->updateRefs(defs, memDepth, rs);
-    return this;
-}
-
-//  //  //  //
-// Terminal //
-//  //  //  //
-Exp* Terminal::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    if (memDepth != 0) return this;
-    StmtSetIter it;
-    Exp* res = this;
-    for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
-        if (rs.exists(s)) continue;     // Ignore
-        Exp* left = s->getLeft();
-        assert(left);           // A definition must have a left
-        if (*left == *this)
-            res = res->addSubscript(s);
-    }
-    return res;
-}
-
-/*==============================================================================
- * FUNCTION:        Unary::doRemoveRestoreRefs etc
- * OVERVIEW:        Remove refs to statements defining restored locations
- * PARAMETERS:      rs: a ref to a StatementSet with statements that define
- *                    restored locations
- * RETURNS:         <nothing>
- *============================================================================*/
-//  //  //  //
-//  RefsExp //
-//  //  //  //
-void RefsExp::doRemoveRestoreRefs(StatementSet& rs) {
-    stmtSet.makeDiff(rs);               // Just use set difference
-    subExp1->doRemoveRestoreRefs(rs);   // Also recurse (e.g. m[..]{7})
-}
-
-//  //  //  //
-//  PhiExp  //
-//  //  //  //
-void PhiExp::doRemoveRestoreRefs(StatementSet& rs) {
-    stmtSet.makeDiff(rs);               // Just use set difference
-}
-
-//  //  //  //
-//  Unary   //
-//  //  //  //
-void Unary::doRemoveRestoreRefs(StatementSet& rs) {
-    subExp1->doRemoveRestoreRefs(rs);
-}
-
-//  //  //  //
-//  Binary  //
-//  //  //  //
-void Binary::doRemoveRestoreRefs(StatementSet& rs) {
-    subExp1->doRemoveRestoreRefs(rs);
-    subExp2->doRemoveRestoreRefs(rs);
-}
-
-//  //  //  //
-// Ternary  //
-//  //  //  //
-void Ternary::doRemoveRestoreRefs(StatementSet& rs) {
-    subExp1->doRemoveRestoreRefs(rs);
-    subExp2->doRemoveRestoreRefs(rs);
-    subExp3->doRemoveRestoreRefs(rs);
-}
-
 
 //
 // From SSA form
 //
-
-Exp* RefsExp::fromSSA(igraph& ig) {
-    // FIXME: Need to check if the argument is a memof, and if so
-    // deal with that specially (e.g. global)
-    // Check to see if it is in the map
-    igraph::iterator it = ig.find(this);
-    if (it == ig.end()) {
-        // It is not in the map. Remove the opSubscript
-        Exp* ret = becomeSubExp1();
-        // ret could be a memof, etc, which could need subscripts removed from
-        ret->fromSSA(ig);
-        return ret;
-    }
-    else {
-        // It is in the map. Delete the current expression, and replace
-        // with a new local
-        std::ostringstream os;
-        os << "temp" << ig[this];
-        std::string name = os.str();
-        delete this;
-        return new Unary(opLocal, new Const(strdup(name.c_str())));
-    }
-}
 
 Exp* RefExp::fromSSA(igraph& ig) {
     // FIXME: Need to check if the argument is a memof, and if so
@@ -2917,40 +2716,6 @@ int Ternary::getMemDepth() {
 }
 
     
-
-// Might be a useful framework for various tests one day
-void Exp::check() {
-    Ternary* t = dynamic_cast<Ternary*>(this);
-    if (t) {
-        t->getSubExp1()->check();
-        t->getSubExp2()->check();
-        t->getSubExp3()->check();
-    } else {
-        Binary* b = dynamic_cast<Binary*>(this);
-        if (b) {
-            b->getSubExp1()->check();
-            b->getSubExp2()->check();
-        } else {
-            Unary* u = dynamic_cast<Unary*>(this);
-            if (u) {
-                if (op == opSubscript) {
-                    RefsExp* u = dynamic_cast<RefsExp*>(this);
-                    if (u) std::cerr << ".";
-                    else
-                        std::cerr << "Here it is!!!\n";
-                }
-                u->getSubExp1()->check();
-            } else {
-                Terminal* t = dynamic_cast<Terminal*>(this);
-                if (t == NULL) {
-                    Const* c = dynamic_cast<Const*>(this);
-                    if (c == NULL)
-                        std::cerr << "None of the above: " << this << "\n";
-                }
-            }
-        }
-    }
-}
 
 // A helper file for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const Exp* x, const Exp* y) const {

@@ -1007,7 +1007,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
 					// temp register first. So look at last RT
                     Statement* a = delay_inst.rtl->elementAt(nd-1);	// Look at last
                     if (a && a->isAssign()) {
-                        Exp* lhs = ((Binary*)a)->getSubExp1();
+                        Exp* lhs = a->getLeft();
                         if (lhs->isRegN(15)) {       // %o7 is r[15]
                             // If it's an add, this is special. Example:
                             //   call foo

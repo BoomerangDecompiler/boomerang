@@ -53,7 +53,6 @@
 #include "signature.h"
 #include "hllcode.h"
 #include "boomerang.h"
-#include "dom.h"
 
 typedef std::map<Statement*, int> RefCounter;
 
@@ -952,14 +951,8 @@ std::set<UserProc*>* UserProc::decompile() {
     }
 
     isRecursive = cycleSet->size() != 0;
-std::cerr << "Proc " << getName() << ((isRecursive) ? " is" : " is not") <<
-  " recursive\n";
     // Remove self from the cycle list
     cycleSet->erase(this);
-std::cerr << "After erase in " << getName() << ", cycleSet has " << cycleSet->size() << " members\n";
-std::set<UserProc*>::iterator zz;
-for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
-  std::cerr << (*zz)->getName() << ", ";
 
     if (Boomerang::get()->noDecompileUp) {
         decompiled = true;
@@ -977,8 +970,7 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
     initStatements();
 
     // Compute dominance frontier
-    DOM* d = new DOM;
-    cfg->dominators(d);
+    cfg->dominators();
 
 
     // For each memory depth
@@ -988,7 +980,7 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
     for (int depth = 0; depth <= maxDepth; depth++) {
 
         // Place the phi functions for this memory depth
-        cfg->placePhiFunctions(d, depth, this);
+        cfg->placePhiFunctions(depth, this);
 
         // Number the statements
         int stmtNumber = 0;
@@ -996,7 +988,7 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
 
 
         // Rename variables
-        cfg->renameBlockVars(d, 0, depth);
+        cfg->renameBlockVars(0, depth);
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA) {
@@ -1036,30 +1028,15 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
     // Now all the other things that were in UserProc::decompile()
     complete();
 
-#if 0
-    // Find the "restore set"
-    StatementSet restoreSet;
-    findRestoreSet(restoreSet);
-    if (VERBOSE) {
-        std::cerr << "=== Restore set for " << getName() << " ===\n";
-        StmtSetIter rr;
-        for (Statement* r = restoreSet.getFirst(rr); r;
-          r = restoreSet.getNext(rr))
-            std::cerr << std::dec << r->getNumber() << " ";
-        std::cerr << "\n\n";
-    }
-#endif
-
     // Remove null statements
     if (!Boomerang::get()->noRemoveNull)
         removeNullStatements();
 
     // Remove unused statements
-    // FIXME: refCounts doesn't have to be parameter when remove global
     RefCounter refCounts;           // The map
     // Count the references first
     countRefs(refCounts);
-    // Now remove any that have no used (globally)
+    // Now remove any that have no used
     if (!Boomerang::get()->noRemoveNull)
         removeUnusedStatements(refCounts);
 
@@ -1082,8 +1059,6 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
         print(std::cerr, true);
         std::cerr << "===== End after transformation from SSA =====\n\n";
     }
-
-    delete d;
 
     decompiled = true;          // Now fully decompiled
     return cycleSet;
@@ -1325,6 +1300,7 @@ void UserProc::replaceExpressionsWithSymbols() {
     // replace expressions with symbols in the return value
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
+#if 0
         Exp *e = cfg->getReturnVal();
         if (e == NULL) break;
         e = e->clone();
@@ -1337,6 +1313,19 @@ void UserProc::replaceExpressionsWithSymbols() {
             std::cerr << "  after: " << e << std::endl;
         }
         if (change) cfg->setReturnVal(e->clone());
+#endif
+        int n = signature->getNumReturns();
+        for (int j=0; j < n; j++) {
+            Exp* e = signature->getReturnExp(j)->clone();
+            bool change = false;
+            e = e->searchReplaceAll((*it1).first, (*it1).second, change);
+            if (change && VERBOSE) {
+                std::cerr << "return value: " << " replaced " <<
+                  (*it1).first << " with " << (*it1).second << " in " << e <<
+                  std::endl;
+            }
+            if (change) signature->setReturnExp(j, e);
+        }
     }
 }
 
@@ -1349,11 +1338,12 @@ void UserProc::replaceExpressionsWithParameters() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         for (int i = 0; i < signature->getNumParams(); i++) {
             RefExp *r = new RefExp(signature->getParamExp(i), NULL);
-            bool ch = s->searchAndReplace(r, new Unary(opParam, 
+            s->searchAndReplace(r, new Unary(opParam, 
                          new Const((char*)signature->getParamName(i))));
         }
     }
 
+#if 0
     // replace expressions with parameters in the return value
     for (int i = 0; i < signature->getNumParams(); i++) { 
         Exp *e = cfg->getReturnVal();
@@ -1365,6 +1355,12 @@ void UserProc::replaceExpressionsWithParameters() {
                          new Const((char*)signature->getParamName(i))), change);
         if (change) cfg->setReturnVal(e->clone());
     }
+#else
+    // replace expressions with parameters in the return values. This may be
+    // needed if a return location is say m[esi] and esi is a parameter
+    // Or of course if something (e.g. a register) is a parameter and returned
+    signature->fixReturnsWithParameters();
+#endif
 }
 
 bool UserProc::nameStackLocations() {
@@ -1638,8 +1634,10 @@ void UserProc::propagateStatements(int memDepth) {
     // propagate any statements that can be
     StmtListIter it;
     StatementSet empty;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        if (s->isPhi()) continue;
         s->propagateTo(memDepth, empty);
+    }
 }
 
 void UserProc::promoteSignature() {
@@ -1691,17 +1689,10 @@ void UserProc::countRefs(RefCounter& refCounts) {
         LocSetIter rr;
         for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
             if (r->isSubscript()) {
-                if (Boomerang::get()->impSSA) {
-                    RefsExp* re = (RefsExp*)r;
-                    StmtSetIter xx;
-                    for (Statement* def = re->getFirstRef(xx); def;
-                          def = re->getNextRef(xx)) {
-                        refCounts[def]++;
-                    }
-                } else
-                    refCounts[((RefExp*)r)->getRef()]++;
+                refCounts[((RefExp*)r)->getRef()]++;
             }
         }
+        #if 0       // No, phi statements do use their parameters now
         if (s->isPhi()) {
             PhiExp *p = (PhiExp*)s->getRight();
             StmtSetIter it;
@@ -1709,9 +1700,11 @@ void UserProc::countRefs(RefCounter& refCounts) {
                  s1 = p->getNextRef(it))
                 refCounts[s1]++;
         }
+        #endif
         if (s->getLeft() && signature->findReturn(s->getLeft()) != -1)
             lastDef[s->getLeft()] = s;
     }
+    // Returned locations are used (outside this proc)
     for (std::map<Exp*, Statement*>::iterator it = lastDef.begin();
          it != lastDef.end(); it++)
         refCounts[(*it).second]++;
@@ -1743,10 +1736,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
                 for (Exp* c = components.getFirst(cc); c;
                   c = components.getNext(cc)) {
                     if (c->isSubscript()) {
-                        if (Boomerang::get()->impSSA)
-                            refs.makeUnion(((RefsExp*)c)->getRefs());
-                        else
-                            refs.insert(((RefExp*)c)->getRef());
+                        refs.insert(((RefExp*)c)->getRef());
                     }
                 }
                 StmtSetIter dd;
@@ -1771,10 +1761,6 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
 //  SSA code
 //
 
-void UserProc::toSSAform(int memDepth, StatementSet& rs) {
-    cfg->toSSAform(memDepth, rs);
-}
-
 void UserProc::fromSSAform(igraph& ig) {
     StatementList stmts;
     getStatements(stmts);
@@ -1787,45 +1773,8 @@ void UserProc::fromSSAform(igraph& ig) {
     }
 }
 
-void UserProc::repairDataflow(int memDepth, StatementSet& rs) {
-    // FIXME: This should be done in an incremental way!
-    // This should be solid, but very slow
-    if (VERBOSE)
-        std::cerr << "Repairing dataflow\n";
-    Prog* prog = getProg();
-    prog->forwardGlobalDataflow();
-    toSSAform(memDepth, rs);
-}
-
-void UserProc::recoverParameters() {
-    Prog* prog = getProg();
-    Unary sp(opRegOf, new Const(signature->getStackRegister(prog)));
-    LocationSet* le = cfg->getLiveEntry();
-    LocSetIter ll;
-    int numParams = 0;
-    for (Exp* loc = le->getFirst(ll); loc; loc = le->getNext(ll)) {
-        if (!(*loc *= sp)) {    // Not stack pointer (ignoring subscripts)?
-            if (VERBOSE)
-                std::cerr << "Found param " << signature->getNumParams() <<
-                  ": " << loc << "\n";
-            signature->addParameter(loc);
-            numParams++;
-        }
-    }
-
-
-//    for (int n = 0; n < numParams; n++) {
-//        cfg->searchAndReplace(signature->getParamExp(n),
-//            new Unary(opParam, new Const((char *)signature->getParamName(n))));
-//    }
-}
-
 void UserProc::insertArguments(StatementSet& rs) {
     cfg->insertArguments(rs);
-}
-
-void UserProc::recoverReturnLocs() {
-    cfg->recoverReturnLocs();
 }
 
 bool UserProc::prove(Exp *query)
@@ -1988,60 +1937,5 @@ bool UserProc::prover(Exp *query)
         delete old;
     }
     return query->getOper() == opTrue;
-}
-
-void UserProc::findRestoreSet_issa(StatementSet& restoreSet) {
-    // Set up a map from location to set of definitions reaching the entry
-    std::map<Exp*, StatementSet, lessExpStar> reachEntryDefs;
-    StatementSet reachEntry;
-    cfg->getReachEntry(reachEntry);
-    StmtSetIter rr;
-    for (Statement* s = reachEntry.getFirst(rr); s; s = reachEntry.getNext(rr))
-    {
-        Exp* def = s->getLeft();
-        if (def)
-            reachEntryDefs[def].insert(s);
-    }
-
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        Exp* left = s->getLeft();
-        if (left == NULL) continue;
-        Exp* right = s->getRight();
-        if (!right->isSubscript()) continue;
-        if (!(*left == *((RefsExp*)right)->getSubExp1())) continue;
-        // It is of the form x = x{refs}
-        if (reachEntryDefs[left] == ((RefsExp*)right)->getRefs())
-            // We have a restore location
-            restoreSet.insert(s);
-    }
-}
-
-void UserProc::findRestoreSet(StatementSet& restoreSet) {
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        Exp* left = s->getLeft();
-        if (left == NULL) continue;
-        Exp* right = s->getRight();
-        if (!right->isSubscript()) continue;
-        if (!(*left == *((RefExp*)right)->getSubExp1())) continue;
-        // It is of the form x = x{ref}
-        if (((RefExp*)right)->getRef() == NULL)
-            // It is of the form x = x{0}, i.e. we have a restore location
-            restoreSet.insert(s);
-    }
-}
-
-void UserProc::removeRestoreRefs(StatementSet& restoreSet) {
-    StatementList stmts;
-    getStatements(stmts);
-    StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        s->removeRestoreRefs(restoreSet);
-    }
 }
 
