@@ -58,6 +58,8 @@ public:
     const char *makeDirs();
     const char *getOutPath(const char *ext);
     Cluster *find(const char *nam);
+
+    void printTree(std::ostream &out);
 protected:
 
     friend class XMLProgParser;

@@ -282,7 +282,6 @@ protected:
     Cluster *m_rootCluster;		// Root of the cluster tree
 
     friend class XMLProgParser;
-    void addProc(Proc *p) { m_procs.push_back(p); }
     void setFrontEnd(FrontEnd *p) { pFE = p; }
     void setBinaryFile(BinaryFile *p) { pBF = p; }
  

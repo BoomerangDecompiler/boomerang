@@ -38,7 +38,9 @@ private:
     void usage();
     void help();
     void helpcmd();
-    int parseCmd(int argc, const char **argv, int n);
+    int splitLine(char *line, char ***pargv);
+    int parseCmd(int argc, const char **argv);
+    int cmdLine();
 
     Boomerang();
 public:
