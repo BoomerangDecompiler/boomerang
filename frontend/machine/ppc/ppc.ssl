@@ -31,7 +31,7 @@ INTEGER
   %g8 , %g9 , %g10, %g11, %g12, %g13, %g14, %g15,
   %g16, %g17, %g18, %g19, %g20, %g21, %g22, %g23,
   %g24, %g25, %g26, %g27, %g28, %g29, %g30, %g31 ][32] -> 0..31,
-  [%CR0, %CR1, %CR2, %CR3, %CR4, %CR5, %CR6, %CR7] [4] -> 64..71; #condition registers
+  [%CR] [32] -> 64; 			#condition registers (contains %CR0 to %CR7)
 
 FLOAT
 [ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
@@ -53,10 +53,10 @@ SETXER(value) {
 };
 
 SETCR0(rd) {
-   *1* %CR0@[3:3] := %XERSO
-   *1* %CR0@[2:2] := [rd = 0?1:0]
-   *1* %CR0@[1:1] := [rd > 0?1:0]
-   *1* %CR0@[0:0] := [rd < 0?1:0]
+   *1* %CR@[3:3] := %XERSO
+   *1* %CR@[2:2] := [rd = 0?1:0]
+   *1* %CR@[1:1] := [rd > 0?1:0]
+   *1* %CR@[0:0] := [rd < 0?1:0]
 };
 
 
@@ -127,9 +127,9 @@ NLOGDOT	:= {"NANDRc",	"NORRc",	"EQVRc"};			# Negated logicals that set flags
 														# Note: NXOR is called EQV
 NLOG	:= {"NAND",		"NOR",		"EQV", NLOGDOT};	# All negated logicals
 LOGOP	:= {  "&","|", "^",	"&", "|", "^"};
-LOGC	:= {"ANDC",	"ORC", "ANDCRc","ORCRc"};			# Note: no XORC
+LOGC	:= {"ANDC",	"ORC", "ANDCRc","ORCRc"};			# Note: no XORCR
 LOGCOP	:= {  "&",	 "|",	 "&",	  "|"};
-LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORC.
+LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORCR.
 
 
 LOG[IDX]		rd, ra, rb				*32* rd := ra LOGOP[IDX] rb;
@@ -152,44 +152,49 @@ LOGCDOT[IDX]	rd, ra, rb				SETCR0(rd);
 
 #Memory access
 
-STWU    rs, d, ra					   *32* m[ra + d] := rs
-									   *32* ra := ra + d;
+STWU    rs, d, ra						*32* m[ra + d] := rs
+										*32* ra := ra + d;
 
-STW    rs, d, ra					   *32* m[ra + d] := rs;
+STW    rs, d, ra						*32* m[ra + d] := rs;
 
-LWZ	   rd, eaddr					   *32* rd := m[eaddr];
+LWZ	   rd, eaddr						*32* rd := m[eaddr];
 
-LWZX   rd, eaddr					   *32* rd := m[eaddr];
+LWZX   rd, eaddr						*32* rd := m[eaddr];
 
 
-BCLR   	   							   *32* %pc := %LR;
+BCLR   	   								*32* %pc := %LR;
 
-MFSPR  rd, spr						   *32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
+MFSPR	rd, spr							*32* rd := [spr & 1 ? [spr >> 3 & 1 ? %CTR : %XER] : %LR];
 
-MTLR   rs  							   *32* %LR := rs;
+MTLR	rs  							*32* %LR := rs;
 
-MTXER  rs							   SETXER(rs);
+MTXER 	rs								SETXER(rs);
 
-MTCTR rs							   *32* %CTR := rs;
+MTCTR	rs								*32* %CTR := rs;
 
-BL	reloc 							   *32* %LR := %pc + 4 
-									   *32* %pc := reloc;
+BL		reloc 							*32* %LR := %pc + 4 
+										*32* %pc := reloc;
 
 # comparisons
 
-CMPI crfd, ra, simm					   *4* crfd := [ra < sgnex(16,32,simm)?8:[ra > sgnex(16,32,simm)?4:2]] | %XERSO;
+CMPI crfd, ra, simm						*4* crfd := [ra < sgnex(16,32,simm)?8:[ra > sgnex(16,32,simm)?4:2]] | %XERSO;
 
-CMPLI crfd, ra, uimm				   *4* crfd := [ra <u zfill(16,32,uimm)?8:[ra >u zfill(16,32,uimm)?4:2]] | %XERSO;
+CMPLI crfd, ra, uimm					*4* crfd := [ra <u zfill(16,32,uimm)?8:[ra >u zfill(16,32,uimm)?4:2]] | %XERSO;
 
-CMP crfd, ra, rb					   *4* crfd := [ra < rb?8:[ra > rb?4:2]] | %XERSO;
+CMP crfd, ra, rb						*4* crfd := [ra < rb?8:[ra > rb?4:2]] | %XERSO;
 
-CMPL crfd, ra, rb				   *4* crfd := [ra <u rb?8:[ra >u rb?4:2]] | %XERSO;
+CMPL crfd, ra, rb				  		*4* crfd := [ra <u rb?8:[ra >u rb?4:2]] | %XERSO;
 
 
 #condition register manipulation
 
-CRLOG := {"CRAND","CROR","CRXOR"};
-CRNLOG := {"CRAND","CROR","CRXOR"};
+CRLOG	:= {"CRAND",	"CROR",		"CRXOR"};
+CRNLOG	:= {"CRNAND",	"CRNOR",	"CREQV"};			# Note: CRNXOR called CREQV
+CRLOGC	:= {"CRANDC",	"CRORC"};						# Note: no CRXORC
+CR_OP	:= {  "&",		  "|",        "^"};
 
+CRLOG[IDX]	crbD, crbA, crbB			*1* %CR@[crbD:crbD] :=   %CR@[crbA:crbA] CR_OP[IDX] ( %CR@[crbB:crbB]);
+CRNLOG[IDX]	crbD, crbA, crbB			*1* %CR@[crbD:crbD] := ~(%CR@[crbA:crbA] CR_OP[IDX] ( %CR@[crbB:crbB]));
+CRLOGC[IDX]	crbD, crbA, crbB			*1* %CR@[crbD:crbD] :=   %CR@[crbA:crbA] CR_OP[IDX] (~%CR@[crbB:crbB]);
 
 
