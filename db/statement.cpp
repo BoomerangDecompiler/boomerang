@@ -1456,8 +1456,10 @@ void CallStatement::setSigArguments() {
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
         implicitArguments.resize(params.size());
-        for (unsigned i = 0; i < params.size(); i++)
+        for (unsigned i = 0; i < params.size(); i++) {
             implicitArguments[i] = params[i]->clone();
+            implicitArguments[i]->fixLocationProc(proc);
+        }
         std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
         returns.resize(0);
         for (unsigned i = 0; i < rets.size(); i++)
@@ -1493,6 +1495,7 @@ void CallStatement::setSigArguments() {
         Exp *e = sig->getImplicitParamExp(i);
         assert(e);
         implicitArguments[i] = e->clone();
+        implicitArguments[i]->fixLocationProc(proc);
     }
  
     // initialize returns
@@ -1584,7 +1587,8 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     }
     for (unsigned i = 0; i < implicitArguments.size(); i++) {
         bool ch;
-        implicitArguments[i] = implicitArguments[i]->searchReplaceAll(search, replace, ch);
+        implicitArguments[i] = implicitArguments[i]->searchReplaceAll(
+            search, replace, ch);
         change |= ch;
     }
     return change;
@@ -1829,8 +1833,9 @@ void CallStatement::fixCallRefs() {
         pDest = pDest->fixCallRefs();
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->fixCallRefs();
-    for (unsigned i = 0; i < implicitArguments.size(); i++)
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
         implicitArguments[i] = implicitArguments[i]->fixCallRefs();
+    }
     for (unsigned i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
             returns[i]->refSubExp1() = 
@@ -2208,7 +2213,7 @@ void CallStatement::processConstants(Prog *prog) {
                 // special hack for scanf
                 if (name == "scanf") {
                     setArgumentExp(n, new Unary(opAddrOf,
-                        Location::memOf(getArgumentExp(n))));
+                        Location::memOf(getArgumentExp(n), proc)));
                 }
                 p++;
                 switch(*p) {
@@ -2736,7 +2741,7 @@ void Assign::simplify() {
                                 << " using " << a1 << " and " << a4 << "\n";
                         ((Const*)a4->getRight()->getSubExp2())->setInt(1);
                         lhs = new Binary(opArraySubscript, 
-                                Location::memOf(a1->getRight()->clone()), 
+                                Location::memOf(a1->getRight()->clone(), proc), 
                                 lhs->getSubExp1()->clone());
                         a1->setRight(new Const(0));
                         if (VERBOSE)
@@ -2777,7 +2782,8 @@ void Assign::simplify() {
                         def->rhs->getSubExp1()->getSubExp1()->getOper() == 
                                                                     opRegOf &&
                         def->rhs->getSubExp2()->getOper() == opIntConst))) {
-                    Exp *ne = new Unary(opAddrOf, Location::memOf(def->rhs)); 
+                    Exp *ne = new Unary(opAddrOf,
+                        Location::memOf(def->rhs, proc)); 
                     if (VERBOSE)
                         LOG << "replacing " << def->rhs << " with " 
                             << ne << " in " << def << "\n";

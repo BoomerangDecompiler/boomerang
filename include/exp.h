@@ -52,6 +52,7 @@ class LocationSet;
 class StatementSet;
 class Exp;
 class TypeVal;
+class ExpVisitor;
 typedef BasicBlock* PBB;
 typedef std::map<Exp*, int, lessExpStar> igraph;
 
@@ -308,6 +309,12 @@ virtual Exp* simplifyAddr() {return this;}
 
     virtual Type *getType() { return NULL; }
 
+    // Visitation
+    // Note: best to have accept() as pure virtual, so you don't forget to
+    // implement it for new functions
+    virtual bool accept(ExpVisitor* v) = 0;
+    void         fixLocationProc(UserProc* p);
+
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -363,6 +370,9 @@ public:
     void    appendDotFile(std::ofstream& of);
     virtual Exp*  genConstraints(Exp* restrictTo);
 
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
     // Nothing to destruct: Don't deallocate the string passed to constructor
 };
 
@@ -393,6 +403,9 @@ public:
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     virtual bool isTerminal() { return true; }
+
+    // Visitation
+    bool accept(ExpVisitor* v);
 };
 
 /*==============================================================================
@@ -460,6 +473,9 @@ virtual Exp* polySimplify(bool& bMod);
     virtual Exp*  genConstraints(Exp* restrictTo);
 
     virtual Type*   getType();
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
 
 };  // class Unary
 
@@ -531,6 +547,9 @@ virtual Exp* polySimplify(bool& bMod);
 
     virtual Type*   getType();
 
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
@@ -600,6 +619,9 @@ virtual Exp* polySimplify(bool& bMod);
 
     virtual Type*   getType();
 
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
 };  // class Ternary
 
 /*==============================================================================
@@ -640,6 +662,9 @@ public:
     // polySimplify
 virtual Exp* polySimplify(bool& bMod);
 
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
 };  // class TypedExp
 
 /*==============================================================================
@@ -654,6 +679,9 @@ virtual     ~FlagDef();                         // Destructor
     void    appendDotFile(std::ofstream& of);
     RTL*    getRtl() { return rtl; }
     void    setRtl(RTL* r) { rtl = r; }
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
 
 };
 
@@ -689,7 +717,11 @@ virtual int getNumRefs() {return 1;}
     bool    references(Statement* s) {return def == s;}
 virtual Exp* polySimplify(bool& bMod);
     virtual Type*   getType();
-};
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
+};  // Class RefExp
 
 /*==============================================================================
  * PhiExp is a subclass of Unary, holding an operator (opPhi), the expression
@@ -742,6 +774,10 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     // polySimplify
 virtual Exp* polySimplify(bool& bMod);
     void simplifyRefs();
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
 };
 
 /*==============================================================================
@@ -762,6 +798,10 @@ virtual Exp* clone();
     void    print(std::ostream& os, bool withUses = false);
     virtual Exp*  genConstraints(Exp* restrictTo) {
         assert(0); return NULL;} // Should not be constraining constraints
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
 };
 
 class Location : public Unary {
@@ -769,15 +809,17 @@ protected:
     UserProc *proc;
     Type *ty;
 
-    // Constructor, with ID and subexpression
-            Location(OPER op, Exp* e, UserProc *proc = NULL);
+    // Constructor with ID, subexpression, and UserProc*
+            Location(OPER op, Exp* e, UserProc *proc);
 public:
     // Copy constructor
             Location(Location& o);
     // Custom constructor
-    static Location* regOf(int r) {return new Location(opRegOf, new Const(r));}
-    static Location* regOf(Exp *e) {return new Location(opRegOf, e);}
-    static Location* memOf(Exp *e) {return new Location(opMemOf, e);}
+    static Location* regOf(int r) {return new Location(opRegOf, new Const(r),
+        NULL);}
+    static Location* regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
+    static Location* memOf(Exp *e, UserProc* p = NULL) {
+        return new Location(opMemOf, e, p);}
     static Location* global(const char *nam, UserProc *p) {return new Location(opGlobal, new Const((char*)nam), p);}
     static Location* local(const char *nam, UserProc *p) {return new Location(opLocal, new Const((char*)nam), p);}
     static Location* param(const char *nam, UserProc *p = NULL) {return new Location(opParam, new Const((char*)nam), p);}
@@ -794,6 +836,51 @@ public:
     virtual Type *getType();
     virtual void setType(Type *t) { ty = t; }
 virtual int getMemDepth();
-};
+
+    // Visitation
+    virtual bool accept(ExpVisitor* v);
+
+};  // Class Location
     
+/*
+ * The ExpVisitor class is used to iterate over all subexpressions in
+ * an expression. It contains methods for each kind of subexpression found
+ * in an and can be used to eliminate switch statements.
+ */
+class ExpVisitor {
+private:
+    // the enclosing UserProc (if a Location)
+    UserProc* proc;
+
+public:
+    ExpVisitor() { proc = NULL; }
+    virtual ~ExpVisitor() { }
+
+    // visitor functions,
+    // return true to continue iterating through the expression
+    // Note: you only need to override the ones that "do something"
+    virtual bool visit(Unary *e)    {return true;}
+    virtual bool visit(Binary *e)   {return true;}
+    virtual bool visit(Ternary *e)  {return true;}
+    virtual bool visit(TypedExp *e) {return true;}
+    virtual bool visit(FlagDef *e)  {return true;}
+    virtual bool visit(RefExp *e)   {return true;}
+    virtual bool visit(PhiExp *e)   {return true;}
+    virtual bool visit(Location *e) {return true;}
+    virtual bool visit(Const *e)    {return true;}
+    virtual bool visit(Terminal *e) {return true;}
+    virtual bool visit(TypeVal *e)  {return true;}
+};
+
+// This class visits subexpressions, and if a location, sets the UserProc
+class FixProcVisitor : public ExpVisitor {
+    UserProc* proc;
+
+public:
+    void setProc(UserProc* p) { proc = p; }
+    virtual bool visit(Location *e);
+    // All other virtual functions derive from ExpVisitor, i.e. they just
+    // visit their children recursively
+};
+
 #endif // __EXP_H__

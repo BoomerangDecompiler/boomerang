@@ -3670,3 +3670,72 @@ Type *Location::getType()
     return NULL;
 }
 
+//  //  //  //  //  //  //  //
+//                          //
+//     V i s i t i n g      //
+//                          //
+//  //  //  //  //  //  //  //
+bool Unary::accept(ExpVisitor* v) {
+    bool ret = v->visit(this);
+    if (ret) ret = subExp1->accept(v);
+    return ret;
+}
+
+bool Binary::accept(ExpVisitor* v) {
+    bool ret = v->visit(this);
+    if (ret) ret = subExp1->accept(v);
+    if (ret) ret = subExp2->accept(v);
+    return ret;
+}
+
+bool Ternary::accept(ExpVisitor* v) {
+    bool ret = v->visit(this);
+    if (ret) ret = subExp1->accept(v);
+    if (ret) ret = subExp2->accept(v);
+    if (ret) ret = subExp3->accept(v);
+    return ret;
+}
+
+// All the Unary derived accept functions look the same, but they have to be
+// repeated because the particular visitor function called each time is
+// different for each class (because "this" is different each time)
+bool TypedExp::accept(ExpVisitor* v) {
+    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+}
+bool  FlagDef::accept(ExpVisitor* v) {
+    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+}
+bool   RefExp::accept(ExpVisitor* v) {
+    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+}
+bool   PhiExp::accept(ExpVisitor* v) {
+    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+}
+bool Location::accept(ExpVisitor* v) {
+    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+}
+
+// The following are similar, but don't have children that have to accept
+// visitors
+bool Terminal::accept(ExpVisitor* v) {return v->visit(this);}
+bool    Const::accept(ExpVisitor* v) {return v->visit(this);}
+bool  TypeVal::accept(ExpVisitor* v) {return v->visit(this);}
+
+
+
+// FixProcVisitor class
+
+bool FixProcVisitor::visit(Location* l) {
+    l->setProc(proc);       // Set the proc, but only for Locations
+    return true;
+}
+
+void Exp::fixLocationProc(UserProc* p) {
+    // All locations are supposed to have a pointer to the enclosing
+    // UserProc that they are a location of. Sometimes, you have an
+    // arbitrary expression that may not have all its procs set. This
+    // function fixes the procs for all Location subexpresssions.
+    FixProcVisitor fpv;
+    fpv.setProc(p);
+    accept(&fpv);
+}
