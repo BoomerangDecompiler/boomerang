@@ -1,0 +1,23 @@
+long long a = 123456789012345;
+int b = 7;
+
+int main(int param1)
+{
+    foo1(param1 - 16);
+    printf("b = %i\n", b);
+    return 0;
+}
+
+void foo1(int param5)
+{
+    foo2();
+    return;
+}
+
+void foo2()
+{
+    b = 12;
+    local5 = printf("a = %lld\n", a);
+    return;
+}
+
