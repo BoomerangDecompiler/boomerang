@@ -96,6 +96,7 @@
 #include <set>
 #include <map>
 #include <iostream>
+#include <string>
 #include "types.h"
 
 //#include "bitset.h"     // Saves time. Otherwise, any implementation file that 
