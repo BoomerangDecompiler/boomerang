@@ -350,7 +350,7 @@ public:
 				PointerType(Type *p);
 virtual			~PointerType();
 virtual bool	isPointer() const { return true; }
-		void	setPointsTo(Type *p) { points_to = p; }
+		void	setPointsTo(Type *p);
 		Type	*getPointsTo() { return points_to; }
 static PointerType* newPtrAlpha();
 		bool	pointsToAlpha();
@@ -461,7 +461,7 @@ public:
 virtual			~CompoundType();
 virtual bool	isCompound() const { return true; }
 
-		void addType(Type *n, const char *str) { 
+		void	addType(Type *n, const char *str) { 
 					types.push_back(n); 
 					names.push_back(str);
 		}
@@ -505,16 +505,16 @@ private:
 	std::vector<std::string> names;
 
 public:
-			UnionType();
-virtual ~UnionType();
-virtual bool isUnion() const { return true; }
+				UnionType();
+virtual			~UnionType();
+virtual bool	isUnion() const { return true; }
 
-	void	addType(Type *n, const char *str);
-	int		getNumTypes() const { return types.size(); }
-	bool	findType(Type* ty);			// Return true if ty is already in the union
-	Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
-	Type	*getType(const char *nam);
-	const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
+		void	addType(Type *n, const char *str);
+		int		getNumTypes() const { return types.size(); }
+		bool	findType(Type* ty);			// Return true if ty is already in the union
+		Type	*getType(int n) { assert(n < getNumTypes()); return types[n]; }
+		Type	*getType(const char *nam);
+		const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
 virtual Type* clone() const;
 

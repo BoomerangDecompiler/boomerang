@@ -50,37 +50,38 @@
  * PARAMETERS:		<none>
  * RETURNS:			<Not applicable>
  *============================================================================*/
-Type::Type(eType id) : id(id)
-{
+Type::Type(eType id) : id(id) {
 }
 
-VoidType::VoidType() : Type(eVoid)
-{
+VoidType::VoidType() : Type(eVoid) {
 }
 
-FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig)
-{
+FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig) {
 }
 
-IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz),
-  signedness(sign)
-{
+IntegerType::IntegerType(int sz, int sign) : Type(eInteger), size(sz), signedness(sign) {
 }
 
-FloatType::FloatType(int sz) : Type(eFloat), size(sz)
-{
+FloatType::FloatType(int sz) : Type(eFloat), size(sz) {
 }
 
-BooleanType::BooleanType() : Type(eBoolean)
-{
+BooleanType::BooleanType() : Type(eBoolean) {
 }
 
-CharType::CharType() : Type(eChar)
-{
+CharType::CharType() : Type(eChar) {
 }
 
-PointerType::PointerType(Type *p) : Type(ePointer), points_to(p)
-{
+void PointerType::setPointsTo(Type* p) {
+	if (p == this) {					// Note: comparing pointers
+		points_to = new VoidType();		// Can't point to self; impossible to compare, print, etc
+		if (VERBOSE)
+			LOG << "Warning: attempted to create pointer to self: " << (unsigned)this << "\n";
+	} else
+		points_to = p;
+}
+
+PointerType::PointerType(Type *p) : Type(ePointer) {
+	setPointsTo(p);
 }
 
 ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p),
@@ -421,8 +422,17 @@ bool FuncType::operator==(const Type& other) const {
 	return other.isFunc() && (*signature == *((FuncType&)other).signature);
 }
 
+static int pointerCompareNest = 0;
 bool PointerType::operator==(const Type& other) const {
-	return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
+//	return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
+	if (!other.isPointer()) return false;
+	if (++pointerCompareNest >= 20) {
+		std::cerr << "PointerType operator== nesting depth exceeded!\n";
+		return true;
+	}
+	bool ret = (*points_to == *((PointerType&)other).points_to);
+	pointerCompareNest--;
+	return ret;
 }
 
 bool ArrayType::operator==(const Type& other) const {
@@ -1385,6 +1395,11 @@ void UnionType::addType(Type *n, const char *str) {
 		types.insert(types.end(), utp->types.begin(), utp->types.end());
 		names.insert(names.end(), utp->names.begin(), utp->names.end());
 	} else {
+		if (n->isPointer() && n->asPointer()->getPointsTo() == this) {		// Note: pointer comparison
+			n = new PointerType(new VoidType);
+			if (VERBOSE)
+				LOG << "Warning: attempt to union with pointer to self!\n";
+		}
 		types.push_back(n); 
 		names.push_back(str);
 	}

@@ -70,6 +70,8 @@ void UserProc::dfaTypeAnalysis() {
 					LOG << (*cc)->getType()->getCtype() << " " << *cc << "  ";
 				LOG << "\n";
 			}
+			// If it is a call, also display its return types
+			// TBC HACK!
 		}
 		LOG << "\n *** End results for Data flow based Type Analysis for " << getName() << " ***\n\n";
 	}
@@ -249,10 +251,12 @@ Type* PointerType::meetWith(Type* other, bool& ch) {
 			Type* thisBase = getPointsTo();
 			Type* otherBase = otherPtr->getPointsTo();
 			if (otherBase->isPointer()) {
-if (thisBase->asPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
+if (thisBase->isPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
   std::cerr << "HACK! BAD POINTER 1\n";
-if (otherBase->asPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
+if (otherBase->isPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
   std::cerr << "HACK! BAD POINTER 2\n";
+if (thisBase == otherBase)	// Note: compare pointers
+  return this;				// Crude attempt to prevent stack overflow
 				if (*thisBase == *otherBase)
 					return this;
 				if (pointerDepth() == otherPtr->pointerDepth()) {
