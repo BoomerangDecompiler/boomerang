@@ -135,8 +135,7 @@ void Prog::analyse() {
     delete analysis;
 }
 
-// Do decompilation
-void Prog::decompile() {
+void Prog::numberStatements() {
     int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
@@ -150,8 +149,32 @@ void Prog::decompile() {
         // Initialise (number, etc) the statements of this proc
         p->initStatements(stmtNumber);
     }
+}
 
-    // First do forward-flow global dataflow
+void Prog::toSSAform() {
+    if (Boomerang::get()->debugPrintSSA)
+        std::cerr << "====== Debug Print SSA Form (no propagations) ======\n";
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+      it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+
+        // Put this proc into implicit SSA form
+        // For now, memory depth 0
+        StatementSet empty;
+        p->toSSAform(0, empty);
+        if (Boomerang::get()->debugPrintSSA)
+            p->print(std::cerr, true);
+    }
+    if (Boomerang::get()->debugPrintSSA)
+        std::cerr << "====== End Debug Print SSA Form ======\n\n";
+}
+
+// Do decompilation
+void Prog::decompile() {
+    numberStatements();
     forwardGlobalDataflow();
 
     if (Boomerang::get()->debugPrintReach) {
@@ -181,25 +204,7 @@ void Prog::decompile() {
                      "=====\n\n";
     }
 
-    
-    if (Boomerang::get()->debugPrintSSA)
-        std::cerr << "====== Debug Print SSA Form (no propagations) ======\n";
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-      it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
-        UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
-
-        // Put this proc into implicit SSA form
-        // For now, memory depth 0
-        StatementSet empty;
-        p->toSSAform(0, empty);
-        if (Boomerang::get()->debugPrintSSA)
-            p->print(std::cerr, true);
-    }
-    if (Boomerang::get()->debugPrintSSA)
-        std::cerr << "====== End Debug Print SSA Form ======\n\n";
+    toSSAform();
 
     // What used to be done in UserProc::decompile
     decompileProcs();
@@ -737,6 +742,39 @@ Proc* Prog::getNextProc(PROGMAP::const_iterator& it) {
     if (it == m_procLabels.end())
         return 0;
     return it->second;
+}
+
+/*==============================================================================
+ * FUNCTION:    Prog::getFirstUserProc
+ * OVERVIEW:    Return a pointer to the first UserProc object for this program
+ * NOTE:        The it parameter must be passed to getNextUserProc
+ * PARAMETERS:  it: An uninitialised std::list<Proc*>::iterator
+ * RETURNS:     A pointer to the first UserProc object; could be 0 if none
+ *============================================================================*/
+UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {
+    it = m_procs.begin();
+    while (it != m_procs.end() && (*it)->isLib())
+        it++;
+    if (it == m_procs.end())
+        return 0;
+    return (UserProc*)*it;
+}
+
+/*==============================================================================
+ * FUNCTION:    Prog::getNextUserProc
+ * OVERVIEW:    Return a pointer to the next UserProc object for this program
+ * NOTE:        The it parameter must be from a previous call to
+ *                getFirstUserProc or getNextUserProc
+ * PARAMETERS:  it: A std::list<Proc*>::iterator
+ * RETURNS:     A pointer to the next UserProc object; could be 0 if no more
+ *============================================================================*/
+UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
+    it++;
+    while (it != m_procs.end() && (*it)->isLib())
+        it++;
+    if (it == m_procs.end())
+        return 0;
+    return (UserProc*)*it;
 }
 
 /*==============================================================================
