@@ -172,15 +172,15 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		result.rtl->appendStmt(newCall);
 
 	| buul (BIcr, reladdr) [name] =>		// Unconditional "conditional" branch with link, test/OSX/hello has this
-		if (reladdr - delta - pc == 4) {	// Very short branch?
-			// Effectively %LR = %pc
+		if (reladdr - delta - pc == 4) {	// Branch to next instr?
+			// Effectively %LR = %pc+4, but give the actual value for %pc
 			Assign* as = new Assign(
 				new IntegerType,
-				new Unary(opMachFtr, new Const("LR")),
-				new Terminal(opPC));
+				new Unary(opMachFtr, new Const("%LR")),
+				new Const(pc+4));
 			stmts = new std::list<Statement*>;
 			stmts->push_back(as);
-			SHOW_ASM(name<<" "<<BIcr<<", .+4  %LR = %pc")
+			SHOW_ASM(name<<" "<<BIcr<<", .+4"<<" %LR = %pc+4")
 		} else {
 			Exp* dest = DIS_RELADDR;
 			stmts = instantiate(pc, name, dest);
