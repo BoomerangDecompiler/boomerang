@@ -202,10 +202,10 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
  *                  to get the right value at any point in the call tree
  * PARAMETERS:    pBB: pointer to the current BB
  *                tos: reference to the value of the "top of stack" pointer
- *				    currently. Starts at zero, and is decremented to 7 with
- *					the first load, so r[39] should be used first, then r[38]
- *					etc. However, it is reset to 0 for calls, so that if a
- *					function returns a float, the it will always appear in r[32]
+ *                currently. Starts at zero, and is decremented to 7 with
+ *                the first load, so r[39] should be used first, then r[38]
+ *		  etc. However, it is reset to 0 for calls, so that if a
+ *                function returns a float, the it will always appear in r[32]
  * RETURNS:       <nothing>
  *============================================================================*/
 void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
@@ -221,18 +221,18 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
     }
     rit = BB_rtls->begin();
     while (rit != BB_rtls->end()) {
-		// Check for call.
-		if ((*rit)->getKind() == CALL_RTL) {
-			// Reset the "top of stack" index. If this is not done, then after
-			// a sequence of calls to functions returning floats, the value will
-			// appear to be returned in registers r[32], then r[33], etc.
-			tos = 0;
-		}
-        if ((*rit)->getNumExp() == 0) {rit++; continue;}
+        // Check for call.
+        if ((*rit)->getKind() == CALL_RTL) {
+            // Reset the "top of stack" index. If this is not done, then after
+            // a sequence of calls to functions returning floats, the value will
+            // appear to be returned in registers r[32], then r[33], etc.
+            tos = 0;
+        }
+        if ((*rit)->getNumExp() == 0) { rit++; continue; }
         // Check for f(n)stsw
         if (isStoreFsw((*rit)->elementAt(0))) {
             // Check the register - at present we only handle AX
-            Exp* lhs = ((AssignExp*)*rit)->getSubExp1();
+            Exp* lhs = ((AssignExp*)(*rit)->elementAt(0))->getSubExp1();
             Exp* ax = new Unary(opRegOf, new Const(0));
             assert(*lhs == *ax);
             delete ax;
@@ -249,7 +249,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
         for (int i=0; i < (*rit)->getNumExp(); i++) {
             // Get the current Exp
             exp = (*rit)->elementAt(i);
-            if (!exp->isFlagCall()) {
+            if (!exp->isFlagAssgn()) {
                 // We are interested in either FPUSH/FPOP, or r[32..39]
                 // appearing in either the left or right hand sides, or calls
                 Terminal fpush(opFpush);
