@@ -23,6 +23,7 @@ void upperStr(const char* s, char* d);
 std::string operator+(const std::string& s, int i);
 
 void escapeXMLChars(std::string &s);
+char* escapeStr(char* str);
 
 int lockFileRead(const char *fname);
 int lockFileWrite(const char *fname);
