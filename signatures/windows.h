@@ -394,6 +394,22 @@ int wsprintfA(
 char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
 int MulDiv(int number, int numerator, int denominator);
 HFONT CreateFontIndirectA(void* lf);
+HFONT CreateFontA(
+  int nHeight,               // height of font
+  int nWidth,                // average character width
+  int nEscapement,           // angle of escapement
+  int nOrientation,          // base-line orientation angle
+  int fnWeight,              // font weight
+  DWORD fdwItalic,           // italic attribute option
+  DWORD fdwUnderline,        // underline attribute option
+  DWORD fdwStrikeOut,        // strikeout attribute option
+  DWORD fdwCharSet,          // character set identifier
+  DWORD fdwOutputPrecision,  // output precision
+  DWORD fdwClipPrecision,    // clipping precision
+  DWORD fdwQuality,          // output quality
+  DWORD fdwPitchAndFamily,   // pitch and family
+  LPCTSTR lpszFace           // typeface name
+);
 
 typedef DWORD LCID;
 LCID GetThreadLocale();
@@ -497,4 +513,7 @@ BOOL CheckRadioButton(
 HCURSOR SetCursor(      
     HCURSOR hCursor
 );
-
+BOOL TextOutA(
+    HDC hDC,
+    int x, int y,
+    char* sz, int len);
