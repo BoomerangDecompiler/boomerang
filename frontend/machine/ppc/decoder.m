@@ -300,60 +300,60 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| balctr(BIcr) [name] =>
 		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
 		
-	// bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
+	// b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
+	// statement.
 	| bltlr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSL, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSGE, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| blelr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSLE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| beqlr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JNE, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bgelr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSGE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSL, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bgtlr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSG, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSLE, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnllr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSGE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSL, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnelr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JNE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JE, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnglr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), BRANCH_JSLE, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, BRANCH_JSG, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bsolr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);	// MVE: Don't know these last 4 yet
+		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnslr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bunlr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		 PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| bnulr(BIcr) [name] =>
-		std::cerr << "HACK " << name << "\n";
-//		 PPC_COND_JUMP(name, 4, new Unary(opMachFtr, new Const("%LR")), (BRANCH_TYPE)0, BIcr);
+		PPC_COND_JUMP(name, 4, hostPC+4, (BRANCH_TYPE)0, BIcr);
+		result.rtl->appendStmt(new ReturnStatement);
 
 	| ballr(BIcr) [name] =>
-		// Jump to %LR. Assume this is always a return statement
-		stmts = instantiate(pc,	 name);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(new ReturnStatement);
+		SHOW_ASM(name<<"\n");
 
 	// Link versions of the above. For now, only handle unconditional case
 	| ballrl(BIcr) [name] =>
