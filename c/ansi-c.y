@@ -85,183 +85,187 @@ postfix_expression
 
 argument_expression_list
 	: assignment_expression
-          {}
+          { $$ = new list<Exp*>; 
+            $$->push_back($1);
+          }
 	| argument_expression_list ',' assignment_expression
-          {}
+          { $$ = $1;
+            $$->push_back($3);
+          }
 	;
 
 unary_expression
 	: postfix_expression
-          {}
+          { $$ = $1; }
 	| INC_OP unary_expression
-          {}
+          { $$ = Unary(idPreInc, $2); }
 	| DEC_OP unary_expression
-          {}
+          { $$ = Unary(idPreDec, $2); }
 	| unary_operator cast_expression
-          {}
+          { $$ = Unary($1, $2); }
 	| SIZEOF unary_expression
-          {}
+          { $$ = Unary(idSizeOf, $2); }
 	| SIZEOF '(' type_name ')'
-          {}
+          { $$ = Unary(idSizeOf, $3); }
 	;
 
 unary_operator
 	: '&'
-          {}
+          { $$ = idAddrOf; }
 	| '*'
-          {}
+          { $$ = idDeref; }
 	| '+'
-          {}
+          { $$ = idPos; }
 	| '-'
-          {}
+          { $$ = idNeg; }
 	| '~'
-          {}
+          { $$ = idBitNot; }
 	| '!'
-          {}
+          { $$ = idNot; }
 	;
 
 cast_expression
 	: unary_expression
-          {}
+          { $$ = $1; }
 	| '(' type_name ')' cast_expression
-          {}
+          { $$ = new Binary(idCast, $2, $4); }
 	;
 
 multiplicative_expression
 	: cast_expression
-          {}
+          { $$ = $1; }
 	| multiplicative_expression '*' cast_expression
-          {}
+          { $$ = new Binary(idMul, $1, $3); }
 	| multiplicative_expression '/' cast_expression
-          {}
+          { $$ = new Binary(idDiv, $1, $3); }
 	| multiplicative_expression '%' cast_expression
-          {}
+          { $$ = new Binary(idMod, $1, $3); }
 	;
 
 additive_expression
 	: multiplicative_expression
-          {}
+          { $$ = $1; }
 	| additive_expression '+' multiplicative_expression
-          {}
+          { $$ = new Binary(idPlus, $1, $3); }
 	| additive_expression '-' multiplicative_expression
-          {}
+          { $$ = new Binary(idMinus, $1, $3); }
 	;
 
 shift_expression
 	: additive_expression
-          {}
+          { $$ = $1; }
 	| shift_expression LEFT_OP additive_expression
-          {}
+          { $$ = new Binary(idShLeft, $1, $3); }
 	| shift_expression RIGHT_OP additive_expression
-          {}
+          { $$ = new Binary(idShRight, $1, $3); }
 	;
 
 relational_expression
 	: shift_expression
-          {}
+          { $$ = $1; }
 	| relational_expression '<' shift_expression
-          {}
+          { $$ = new Binary(idLessTh, $1, $3); }
 	| relational_expression '>' shift_expression
-          {}
+          { $$ = new Binary(idGrTh, $1, $3); }
 	| relational_expression LE_OP shift_expression
-          {}
+          { $$ = new Binary(idLeEqTh, $1, $3); }
 	| relational_expression GE_OP shift_expression
-          {}
+          { $$ = new Binary(idGrEqTh, $1, $3); }
 	;
 
 equality_expression
 	: relational_expression
-          {}
+          { $$ = $1; }
 	| equality_expression EQ_OP relational_expression
-          {}
+          { $$ = new Binary(idEqual, $1, $3); }
 	| equality_expression NE_OP relational_expression
-          {}
+          { $$ = new Binary(idNotEqual, $1, $3); }
 	;
 
 and_expression
 	: equality_expression
-          {}
+          { $$ = $1; }
 	| and_expression '&' equality_expression
-          {}
+          { $$ = new Binary(idAnd, $1, $3); }
 	;
 
 exclusive_or_expression
 	: and_expression
-          {}
+          { $$ = $1; }
 	| exclusive_or_expression '^' and_expression
-          {}
+          { $$ = new Binary(idXor, $1, $3); }
 	;
 
 inclusive_or_expression
 	: exclusive_or_expression
-          {}
+          { $$ = $1; }
 	| inclusive_or_expression '|' exclusive_or_expression
-          {}
+          { $$ = new Binary(idOr, $1, $3); }
 	;
 
 logical_and_expression
 	: inclusive_or_expression
-          {}
+          { $$ = $1; }
 	| logical_and_expression AND_OP inclusive_or_expression
-          {}
+          { $$ = new Binary(idAnd, $1, $3); }
 	;
 
 logical_or_expression
 	: logical_and_expression
-          {}
+          { $$ = $1; }
 	| logical_or_expression OR_OP logical_and_expression
-          {}
+          { $$ = new Binary(idOr, $1, $3); }
 	;
 
 conditional_expression
 	: logical_or_expression
-          {}
+          { $$ = $1; }
 	| logical_or_expression '?' expression ':' conditional_expression
-          {}
+          { $$ = new Ternary(idCondExp, $1, $3, $5); }
 	;
 
 assignment_expression
 	: conditional_expression
-          {}
+          { $$ = $1; }
 	| unary_expression assignment_operator assignment_expression
-          {}
+          { $$ = new Binary($2, $1, $3); }
 	;
 
 assignment_operator
 	: '='
-          {}
+          { $$ = idAssign; }
 	| MUL_ASSIGN
-          {}
+          { $$ = idMulAssign; }
 	| DIV_ASSIGN
-          {}
+          { $$ = idDivAssign; }
 	| MOD_ASSIGN
-          {}
+          { $$ = idModAssign; }
 	| ADD_ASSIGN
-          {}
+          { $$ = idAddAssign; }
 	| SUB_ASSIGN
-          {}
+          { $$ = idSubAssign; }
 	| LEFT_ASSIGN
-          {}
+          { $$ = idShLeftAssign; }
 	| RIGHT_ASSIGN
-          {}
+          { $$ = idShRightAssign; }
 	| AND_ASSIGN
-          {}
+          { $$ = idAndAssign; }
 	| XOR_ASSIGN
-          {}
+          { $$ = idXorAssign; }
 	| OR_ASSIGN
-          {}
+          { $$ = idOrAssign; }
 	;
 
 expression
 	: assignment_expression
-          {}
+          { $$ = $1; }
 	| expression ',' assignment_expression
-          {}
+          { $$ = new Binary(idComma, $1, $3); }
 	;
 
 constant_expression
 	: conditional_expression
-          {}
+          { $$ = $1; }
 	;
 
 declaration
