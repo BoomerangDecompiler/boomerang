@@ -22,7 +22,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false), debugDecoder(false)
+    noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false)
 {
 }
 
@@ -62,6 +62,7 @@ void Boomerang::help() {
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
+    std::cerr << "-ic: decode through type 0 indirect calls\n";
     std::cerr << "-o <output path>: where to generate output (defaults to .)\n";
     std::cerr << "-h: this help\n";
     std::cerr << "-m <num>: max memory depth\n";
@@ -238,6 +239,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 break;
             case 'm':
                 sscanf(argv[++i], "%i", &maxMemDepth);
+                break;
+            case 'i':
+                if (argv[i][2] == 'c')
+                    decodeThruIndCall = true;       // -ic;
                 break;
             default:
                 help();

@@ -1905,7 +1905,8 @@ std::cerr << "Indirect call matches form " << i << "\n";
         }
         if (recognised && i == 0) {
             // This is basically an indirection on a global function pointer
-            // If it is initialised, we have a decdable entry point
+            // If it is initialised, we have a decodable entry point
+            // Note: it could also be a library function (e.g. Windows)
             // Pattern 0: global<name>{0}[0]{0}
             if (e->isSubscript()) e = e->getSubExp1();
             e = ((Binary*)e)->getSubExp1();             // e is global<name>{0}
@@ -1920,7 +1921,9 @@ assert(glo);
               !((PointerType*)ty)->getPointsTo()->isFunc())
                 glo->setType(new PointerType(new FuncType()));
             Exp* init = glo->getInitialValue(prog);
-            if (init) {
+            // Danger. For now, only do if -ic given
+            bool decodeThru = Boomerang::get()->decodeThruIndCall;
+            if (init && decodeThru) {
                 ADDRESS aglo = glo->getAddress();
                 ADDRESS pfunc = prog->readNative4(aglo);  
                 bool newFunc =  prog->findProc(pfunc) == NULL;
