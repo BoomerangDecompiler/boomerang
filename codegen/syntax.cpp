@@ -172,10 +172,28 @@ int BlockSyntaxNode::evaluate(SyntaxNode *root)
                 n += 50;
             }
         } else if (statements[i]->isBranch()) {
+            SyntaxNode *loop = root->getEnclosingLoop(this);
+            std::cerr << "branch " << statements[i]->getNumber() 
+                      << " not in loop" << std::endl;
+            if (loop) {
+                std::cerr << "branch " << statements[i]->getNumber() 
+                          << " in loop " << loop->getNumber() << std::endl;
+                // this is a bit C specific
+                SyntaxNode *out = loop->getOutEdge(root, 0);
+                if (out && statements[i]->getOutEdge(root, 0) == out) {
+                    std::cerr << "found break" << std::endl;
+                    n += 10;
+                }
+                if (statements[i]->getOutEdge(root, 0) == loop) {
+                    std::cerr << "found continue" << std::endl;
+                    n += 10;
+                }
+            } else {
 #if DEBUG_EVAL
-            std::cerr << "add 50" << std::endl;
+                std::cerr << "add 50" << std::endl;
 #endif
-            n += 50;
+                n += 50;
+            }
         } else if (i < statements.size()-1 && 
                  statements[i]->getOutEdge(root, 0) != statements[i+1]) {
 #if DEBUG_EVAL
@@ -199,7 +217,7 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root,
 {
     for (unsigned i = 0; i < statements.size(); i++) {
         if (statements[i]->isBlock()) {
-            BlockSyntaxNode *b = (BlockSyntaxNode*)statements[i];
+            //BlockSyntaxNode *b = (BlockSyntaxNode*)statements[i];
 #if 0
             // can replace blocks with only one statement with that statement
             if (b->getNumStatements() == 1) {
@@ -598,7 +616,8 @@ void PretestedLoopSyntaxNode::addSuccessors(SyntaxNode *root,
     if (pBody->getNumOutEdges() == 1 && pBody->endsWithGoto()) {
         std::cerr << "successor: ignoring goto at end of body of pretested "
                   << "loop" << std::endl;
-        assert(pBody->getOutEdge(root, 0) == this);
+        SyntaxNode *out = pBody->getOutEdge(root, 0);
+        assert(out->startsWith(this));
         SyntaxNode *n = root->clone();
         n->setDepth(root->getDepth() + 1);
         SyntaxNode *nBody = pBody->clone();

@@ -25,6 +25,7 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "type.h"
+#include "gc_cpp.h"
 
 class RTLInstDict;
 class Proc;
@@ -35,7 +36,7 @@ class StatementSet;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
-class ProgWatcher {
+class ProgWatcher : public gc {
 public:
         ProgWatcher() { }
 
@@ -47,7 +48,7 @@ public:
         virtual void alert_progress(unsigned long off, unsigned long size) = 0;
 };
 
-class Global {
+class Global : public gc {
 private:
     Type *type;
     ADDRESS uaddr;
@@ -68,7 +69,7 @@ public:
     const char *getName() { return nam.c_str(); }
 };
 
-class Prog {
+class Prog : public gc {
     // Phase of the interprocedural DFA (0=none, 1=phase 1, 2 = phase 2)
     int     interProcDFAphase;
 

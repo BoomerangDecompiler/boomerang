@@ -43,6 +43,7 @@ BranchStatement CaseStatement CallStatement ReturnStatement
 #include "exphelp.h"    // For lessExpStar
 #include "types.h"
 #include "managed.h"
+#include "gc_cpp.h"
 
 class BasicBlock;
 typedef BasicBlock *PBB;
@@ -84,7 +85,7 @@ enum STMT_KIND {
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
  */
-class Statement {
+class Statement : public gc {
 protected:
     PBB     pbb;        // contains a pointer to the enclosing BB
     UserProc *proc;     // procedure containing this statement

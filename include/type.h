@@ -30,13 +30,14 @@
 #include <string>
 #include <map>
 #include <functional>       // For binary_function
+#include "gc_cpp.h"
 
 class Signature;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed};    // For operator< only
 
-class Type {
+class Type : public gc {
 protected:
     eType id;
 private:
