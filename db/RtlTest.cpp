@@ -20,7 +20,7 @@
 #include "decoder.h"
 #include "proc.h"
 #include "prog.h"
-
+#include "visitor.h"
 
 #ifndef BOOMDIR
 #error Must define BOOMDIR
