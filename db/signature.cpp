@@ -266,12 +266,13 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 		LOG << "consider promotion to stdc win32 signature for " << p->getName() << "\n";
 
 	bool gotcorrectret1, gotcorrectret2;
-	Exp *proven = p->getProven(new Terminal(opPC));
-	gotcorrectret1 = proven && (*proven == *savedReturnLocation);
+	Exp *provenPC = p->getProven(new Terminal(opPC));
+	gotcorrectret1 = provenPC && (*provenPC == *savedReturnLocation);
 	if (gotcorrectret1) {
 		if (VERBOSE)
 			LOG << "got pc = m[r[28]]\n";
-		gotcorrectret2 = *p->getProven(Location::regOf(28)) == *stackPlusFour;
+		Exp *provenSP = p->getProven(Location::regOf(28));
+		gotcorrectret2 = provenSP && *provenSP == *stackPlusFour;
 		if (gotcorrectret2 && VERBOSE)
 			LOG << "got r[28] = r[28] + 4\n";
 	}
