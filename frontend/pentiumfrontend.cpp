@@ -21,6 +21,7 @@
  * 21 May 02 - Mike: Mods for boomerang
  * 27 Nov 02 - Mike: Fixed a bug in the floating point fixup code, which was
  *                  screwing up registers in flag calls
+ * 16 Apr 03 - Mike: processFloatCode accepts test 0x45 where and 0x45 expected
 */
 
 #include <assert.h>
@@ -335,7 +336,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 /*
 // Finite state machine for recognising code handling floating point CCs
 //
-//                               Start=0
+//            test_45 or          Start=0
 //          ___and_45____________/ |  \  \______sahf____________
 //        /                        |   \_____and_5__________    \     ___ 
 //       [1]__________cmp_1_      and 44                    \    \   /   |jp
@@ -360,12 +361,12 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
  * RETURNS:       True if the current BB is deleted (because 2 BBs were joined)
  *                  Also returns true on error, so abandon this BB
  *============================================================================*/
-bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit, std::list<RTL*>* BB_rtls, PBB pBB,
-  Cfg* pCfg) {
+bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
+  std::list<RTL*>* BB_rtls, PBB pBB, Cfg* pCfg) {
     int state = 0;              // Start in state 0
-    Unary ah(opRegOf, new Const(AH));
-    Unary notZf(opNot, new Terminal(opZF));
-    Ternary ahAt7(opTern,
+    static Unary ah(opRegOf, new Const(AH));
+    static Unary notZf(opNot, new Terminal(opZF));
+    static Ternary ahAt7(opTern,
         new Unary(opRegOf, new Const(AH)),
         new Const(7),
         new Const(7));
@@ -389,8 +390,9 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit, std::list<RTL*
         Exp* lhs = asgn->getSubExp1();
         Exp* rhs = asgn->getSubExp2();
         Exp* result;
-        // Check if assigns to and uses register ah
-        if (lhs->search(&ah, result) && rhs->search(&ah, result)) {
+        // Check if uses register ah, and assigns to either ah or a temp
+        if ((lhs->search(&ah, result) || lhs->isTemp()) &&
+          rhs->search(&ah, result)) {
             // Should be an AND or XOR instruction
             OPER op = rhs->getOper();
             if ((op == opBitAnd) || (op == opBitXor)) {
