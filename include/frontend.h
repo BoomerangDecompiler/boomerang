@@ -74,7 +74,6 @@ protected:
     // Public map from function name (string) to signature.
     std::map<std::string, Signature*> librarySignatures;
 
-
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
@@ -88,13 +87,16 @@ public:
     /**
      * Destructor. Virtual to mute a warning
      */
-virtual ~FrontEnd();
+    virtual ~FrontEnd();
 
-// returns a string identifer for this frontend
-virtual const char *getFrontEndId() = 0;
+    // returns a symbolic name for a register index
+    const char *getRegName(int idx);
 
-// returns a frontend given a string
-static FrontEnd *createById(std::string &str, BinaryFile *pBF);
+    // returns a string identifer for this frontend
+    virtual const char *getFrontEndId() = 0;
+
+    // returns a frontend given a string
+    static FrontEnd *createById(std::string &str, BinaryFile *pBF);
 
     bool    isWin32();                  // Is this a win32 frontend?
 

@@ -943,12 +943,12 @@ void UserProc::initStatements() {
 void UserProc::getStatements(StatementList &stmts) {
     BB_IT it;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-      std::list<RTL*> *rtls = bb->getRTLs();
+        std::list<RTL*> *rtls = bb->getRTLs();
         for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-          rit++) {
+             rit++) {
             RTL *rtl = *rit;
             for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-              it != rtl->getList().end(); it++) {
+                 it != rtl->getList().end(); it++) {
                 Statement *e = dynamic_cast<Statement*>(*it);
                 if (e == NULL) continue;
                 stmts.append(e);
@@ -1029,6 +1029,70 @@ void UserProc::decompile_down() {
     cfg->computeReaches();
     cfg->computeAvailable();
     cfg->computeLiveness();
+
+    // Make parameters for this procedure
+    LocationSet *live = cfg->getLiveEntry();
+    LocSetIter liveit;
+    for (Exp *e = live->getFirst(liveit); e; e = live->getNext(liveit)) {
+        signature->addParameter(e->clone());
+    }
+
+    // Determine returnSet for this procedure
+    StatementSet *reach = cfg->getReachExit();
+    StmtSetIter reachit;
+    for (Statement *stmt = reach->getFirst(reachit); stmt; 
+         stmt = reach->getNext(reachit)) {
+        Exp *left = stmt->getLeft();
+        if (left == NULL) continue;
+        if (left->getOper() == opMemOf) {
+            /* consider:
+             *     %esp = %esp - 4
+             *     m[%esp] = 5;
+             *     ret
+             *
+             * we want m[%esp - 4] but we get m[%esp]
+             */
+            left = left->clone();
+            StatementSet reachin;
+            StmtSetIter it;
+            stmt->getReachIn(reachin);
+            bool found, found2;
+            Statement *prop = NULL;
+            found = found2 = false;
+            for (Statement *s = reachin.getFirst(it); s; 
+                 s = reachin.getNext(it)) {
+                Exp *find;
+                if (s->getLeft() && 
+                    left->getSubExp1()->search(s->getLeft(), find)) {
+#if 0
+                    std::cerr << "found: ";
+                    s->print(std::cerr);
+                    std::cerr << " as use of ";
+                    stmt->print(std::cerr);
+                    std::cerr << " which now has left " << left;
+                    std::cerr << std::endl;
+#endif
+                    if (found) 
+                        found2 = true;
+                    else {
+                        found = true;
+                        prop = s;
+                    }
+                }
+            }
+            if (found && !found2 && prop->getRight()) {
+                bool change;
+                left = left->searchReplace(prop->getLeft(), 
+                                           prop->getRight(), change);
+                assert(change);
+            }
+            if (!found2) {
+                returnSet.insert(left);
+            } else delete left;
+        } else {
+            returnSet.insert(left->clone());
+        }
+    }
     
     if (VERBOSE) {
         StmtSetIter oo;
@@ -1095,6 +1159,11 @@ void UserProc::decompile() {
         }
     }
 
+    if (Boomerang::get()->noDecompileUp) {
+        decompiled = true;
+        return;
+    }
+
     if (VERBOSE) {
         std::cerr << "decompiling (back): " << getName() << std::endl;
         print(std::cerr, false);    // First time no df so it's readable!
@@ -1110,22 +1179,26 @@ void UserProc::decompile() {
                 propagate = propagateAndRemoveStatements();
                 change |= propagate;
             } while (propagate);
-            change |= removeNullStatements();
-            change |= removeDeadStatements();
+            if (!Boomerang::get()->noRemoveNull) {
+                change |= removeNullStatements();
+                change |= removeDeadStatements();
+            }
         }
     }
     if (!Boomerang::get()->noRemoveInternal)
         moveInternalStatements();
     cfg->compressCfg();
-    //processConstants();
+    processConstants();
 
     // Convert the signature object to one of a derived class, e.g.
     // SparcSignature.
-    promoteSignature();
-    // May have trouble with the below if there are cycles in the call graph
-    processConstants();
+    if (!Boomerang::get()->noPromote)
+        promoteSignature();
+    // simplify the procedure (currently just to remove a[m['s)
+    simplify();
+
     // promoteSignature has converted some register and memory locations
-    // to "arg1" etc (opParam). Redo the liveness to reflect this change
+    // to "param1" etc (opParam). Redo the liveness to reflect this change
     cfg->computeLiveness();
     LocationSet* le = cfg->getLiveEntry();
     // Above is unused... not finished
@@ -1342,20 +1415,35 @@ bool UserProc::removeDeadStatements() {
     StmtListIter it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
 #if 1       // This seems so simple... remove statements with no usedBy MVE
+            // Trent: this is not dead code removal!  Dead code is statements
+            // which define a location which is subsequently written to by
+            // another statement, without first being used.  So although
+            // having an empty usedBy set is a necessary condition, it is not
+            // a sufficient condition.
         AssignExp* asgn = dynamic_cast<AssignExp*>(s);
-        if (asgn == NULL)
+        if (asgn == NULL) {
             // Never remove a call or jcond; they have important side effects
+            HLCall *call = dynamic_cast<HLCall*>(s);
+            if (call != NULL && call->getReturnLoc() != NULL) {
+                if (VERBOSE) 
+                    std::cerr << "Ignoring return value of statement " << s 
+                        << std::endl;
+                call->setIgnoreReturnLoc(true);
+                change = true;
+            }
             continue;
+        }
         if (getCFG()->getReachExit()->exists(s))
             // Don't remove unused code that reaches the exit
             // These will be handled later by moveInternalStatements()
             continue;
         if (s->getNumUsedBy() == 0) {
-            if (VERBOSE) std::cerr << "Removing unused statement " << s << "\n";
+            if (VERBOSE) 
+                std::cerr << "Removing unused statement " << s << std::endl;
             removeStatement(s);
             change = true;
         }
-#else       // Why so complex? Is there a catch? MVE
+#else       // Why so complex? Is there a catch? MVE.. See above, Trent
         StatementSet dead;
         s->getDeadStatements(dead);
         StmtSetIter it1;
@@ -1380,7 +1468,7 @@ bool UserProc::removeDeadStatements() {
                 }
                 HLCall *call = dynamic_cast<HLCall*>(*it1);
                 if (matchingUse && call == NULL) continue;
-                if (VERBOSE) {
+                if (VERBOSE|1) {
                     std::cerr << "removing dead code: ";
                     s1->printAsUse(std::cerr);
                     std::cerr << std::endl;
@@ -1461,6 +1549,10 @@ bool UserProc::propagateAndRemoveStatements() {
             continue;
         Exp* rhs = s->getRight();
         if (s->canPropagateToAll()) {
+            if (Boomerang::get()->numToPropogate >= 0) {
+                if (Boomerang::get()->numToPropogate == 0) return change;
+                Boomerang::get()->numToPropogate--;
+            }
             if (cfg->getReachExit()->exists(s)) {
                 if (s->getNumUses() != 0) {
                     // tempories that store the results of calls are ok
@@ -1557,3 +1649,10 @@ void UserProc::transformFromSSAForm() {
     cfg->revSSATransform();
 }
 #endif
+
+void UserProc::getReturnSet(LocationSet &ret)
+{
+    if (returnSet.size()) {
+        ret = returnSet;
+    }
+}

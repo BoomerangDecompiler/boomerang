@@ -11,7 +11,8 @@ Boomerang *Boomerang::boomerang = NULL;
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
-    noDataflow(false), traceDecoder(false), dotFile(NULL)
+    noDataflow(false), noDecompileUp(false),
+    traceDecoder(false), dotFile(NULL), numToPropogate(-1), noPromote(false)
 {
 }
 
@@ -38,6 +39,10 @@ void Boomerang::help() {
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
+    std::cerr << "-nDu: no decompilation when recursing up the call graph\n";
+    std::cerr << "-nD: no decompilation (at all!)\n";
+    std::cerr << "-nP: no promotion of signatures (at all!)\n";
+    std::cerr << "-p num: only do num propogations\n";
     exit(1);
 }
         
@@ -61,6 +66,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         help();
         return 1;
     }
+    bool noDecompilation = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -71,6 +77,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
             case 't': traceDecoder = true; break;
             case 'g': 
                 dotFile = argv[++i];
+                break;
+            case 'p':
+                sscanf(argv[++i], "%i", &numToPropogate);
                 break;
             case 'n':
                 switch(argv[i][2]) {
@@ -92,6 +101,15 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'd':
                         noDataflow = true;
                         break;
+                    case 'D':
+                        if (argv[i][3] == 'u')
+                            noDecompileUp = true;
+                        else
+                            noDecompilation = true;
+                        break;
+                    case 'P':
+                        noPromote = true;
+                        break;
                     default:
                         help();
                 }
@@ -111,8 +129,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
     Prog *prog = fe->decode();
     std::cerr << "analysing..." << std::endl;
     prog->analyse();
-    std::cerr << "decompiling..." << std::endl;
-    prog->decompile();
+    if (!noDecompilation) {
+        std::cerr << "decompiling..." << std::endl;
+        prog->decompile();
+    }
     if (dotFile) {
         std::cerr << "generating dot file..." << std::endl;
         prog->generateDotFile();

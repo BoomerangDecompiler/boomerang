@@ -38,12 +38,13 @@ public: \
   #include <string>
   #include "exp.h"
   #include "type.h"
+  #include "cfg.h"
   #include "proc.h"
   #include "signature.h"
   class AnsiCScanner;
 
 
-#line 60 "ansi-c.y"
+#line 61 "ansi-c.y"
 typedef union {
    int ival;
    char *str;
@@ -107,21 +108,21 @@ typedef union {
 #ifndef YY_AnsiCParser_PURE
 
 /* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 111 "ansi-c-parser.h"
+#line 112 "ansi-c-parser.h"
 
 #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
 /* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 118 "ansi-c-parser.h"
+#line 119 "ansi-c-parser.h"
 
 #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
 /* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 125 "ansi-c-parser.h"
+#line 126 "ansi-c-parser.h"
 
 #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_DEBUG */
@@ -129,7 +130,7 @@ typedef union {
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
 /* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 133 "ansi-c-parser.h"
+#line 134 "ansi-c-parser.h"
 
 #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
@@ -207,7 +208,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 
 
 /* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 211 "ansi-c-parser.h"
+#line 212 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -316,7 +317,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 320 "ansi-c-parser.h"
+#line 321 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -389,7 +390,7 @@ static const int RETURN;
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
 /* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 393 "ansi-c-parser.h"
+#line 394 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -510,5 +511,5 @@ public:
 /* END */
 
 /* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 514 "ansi-c-parser.h"
+#line 515 "ansi-c-parser.h"
 #endif

@@ -591,6 +591,10 @@ public:
 	virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
 
+
+        virtual bool isDefinition() { return true; }
+        virtual void getDefinitions(LocationSet &defs);
+        
         // get how to access this value
         virtual Exp* getLeft() { return subExp1; }
 	virtual Type* getLeftType() { return NULL; }

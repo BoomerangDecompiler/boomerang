@@ -739,16 +739,22 @@ void Signature::addParameter(const char *nam /*= NULL*/)
     addParameter(new IntegerType(), nam);
 }
 
-void Signature::addParameter(Type *type, const char *nam /*= NULL*/)
+void Signature::addParameter(Exp *e)
+{
+    addParameter(new IntegerType(), NULL, e);
+}
+
+void Signature::addParameter(Type *type, const char *nam /*= NULL*/, 
+                             Exp *e /*= NULL*/)
 {
     std::string s;
     if (nam == NULL) {
         std::stringstream os;
-        os << "arg" << params.size()+1 << std::ends;
+        os << "param" << params.size()+1 << std::ends;
         s = os.str();
         nam = s.c_str();
     }
-    addParameter(new Parameter(type, nam));
+    addParameter(new Parameter(type, nam, e));
 }
 
 void Signature::setNumParams(int n)
@@ -775,7 +781,8 @@ const char *Signature::getParamName(int n)
 
 Exp *Signature::getParamExp(int n)
 {
-    assert(false);
+    assert(n < (int)params.size());
+    return params[n]->getExp();
 }
 
 Type *Signature::getParamType(int n)
@@ -899,7 +906,7 @@ void Signature::analyse(UserProc *p)
         }
     }
     if (VERBOSE)
-        std::cerr << "searching for arguments in statements" << std::endl;
+        std::cerr << "searching for parameters in statements" << std::endl;
     StatementList stmts;
     p->getStatements(stmts);
     StmtListIter si;
@@ -907,7 +914,7 @@ void Signature::analyse(UserProc *p)
         if (VERBOSE) std::cerr << "updateParameters for " << s << std::endl;
         updateParams(p, s);
     }
-/*    std::cerr << "searching for arguments in internals" << std::endl;
+/*    std::cerr << "searching for parameters in internals" << std::endl;
     internal.clear();
     p->getInternalStatements(internal);
     for (Statement* s = internal.getFirst(it); s; s = internal.getNext(it)) {
@@ -918,8 +925,8 @@ void Signature::updateParams(UserProc *p, Statement *stmt, bool checkreach) {
     int i;
     if (usesNewParam(p, stmt, checkreach, i)) {
         int n = getNumParams();
-            setNumParams(i+1);
-        for (; n < getNumParams(); n++) {
+        setNumParams(i+1);
+        for (n = 0; n < getNumParams(); n++) {
             if (VERBOSE) std::cerr << "found param " << n << std::endl;
             p->getCFG()->searchAndReplace(getParamExp(n), 
                 new Unary(opParam, new Const((char *)getParamName(n))));

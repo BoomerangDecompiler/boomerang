@@ -93,7 +93,7 @@ public:
     void setFirstCaller(Proc *p) { if (m_firstCaller == NULL) m_firstCaller = p; }
 
     /*
-     * Returns a poiner to the Signature
+     * Returns a pointer to the Signature
      */
     Signature *getSignature();
 
@@ -346,6 +346,9 @@ public:
     // print this proc, mainly for debugging
     void print(std::ostream &out, bool withDF = false);
 
+    // simplify the statements in this proc
+    void simplify() { cfg->simplify(); }
+
     // decompile this proc
     void    decompile();
     // perform the "on the way down" processing for the proc
@@ -376,8 +379,8 @@ public:
     // erase a statement from the internal statements list
     void eraseInternalStatement(Statement *stmt);
 
-	// inline constants / decode function pointer constants
-	void processConstants();
+    // inline constants / decode function pointer constants
+    void processConstants();
 
     // get internal statements
     // Note: assignment causes shallow copy of list
@@ -397,6 +400,10 @@ public:
 
     // minimise the SSA form, returns true if anything changed
     bool minimiseSSAForm();
+
+    // get the set of locations "returned" by this procedure
+    // I'm thinking this belongs here instead of in signature.
+    void getReturnSet(LocationSet &ret);
 
 private:
     /*
@@ -592,6 +599,12 @@ private:
      * See Proc::moveInternalStatements
      */
     StatementList internal;
+
+    /* 
+     * Locations "returned" by this procedure.  These are different to the
+     * return location of the signature.  This is a dataflow concept.
+     */
+    LocationSet returnSet;
 
 };      /* UserProc */
 #endif

@@ -37,6 +37,7 @@
 #endif
 
 #include "exp.h"
+#include "cfg.h"
 #include "proc.h"
 #include "prog.h"
 #include "decoder.h"

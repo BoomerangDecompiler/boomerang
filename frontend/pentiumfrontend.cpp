@@ -965,6 +965,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
                 AssignExp* a = (AssignExp*) inst.rtl->elementAt(1);
                 Exp* rhs = a->getSubExp2();
                 assert(rhs->isIntConst());
+                gotMain = true;
                 return (ADDRESS)((Const*)rhs)->getInt();
             }
         }

@@ -106,12 +106,13 @@ public: \
   #include <string>
   #include "exp.h"
   #include "type.h"
+  #include "cfg.h"
   #include "proc.h"
   #include "signature.h"
   class AnsiCScanner;
 
 
-#line 60 "ansi-c.y"
+#line 61 "ansi-c.y"
 typedef union {
    int ival;
    char *str;
@@ -122,7 +123,7 @@ typedef union {
    Signature *signature;
 } yy_AnsiCParser_stype;
 #define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
-#line 70 "ansi-c.y"
+#line 71 "ansi-c.y"
 
 #include "ansi-c-scanner.h"
 
@@ -173,7 +174,7 @@ typedef union {
 #ifndef YY_AnsiCParser_PURE
 
 /* #line 121 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 177 "ansi-c-parser.cpp"
+#line 178 "ansi-c-parser.cpp"
 
 #line 121 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /*  YY_AnsiCParser_PURE */
@@ -182,14 +183,14 @@ typedef union {
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* #line 125 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 186 "ansi-c-parser.cpp"
+#line 187 "ansi-c-parser.cpp"
 
 #line 125 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
 /* #line 127 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 193 "ansi-c-parser.cpp"
+#line 194 "ansi-c-parser.cpp"
 
 #line 127 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* YY_AnsiCParser_DEBUG */
@@ -199,7 +200,7 @@ typedef union {
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
 /* #line 132 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 203 "ansi-c-parser.cpp"
+#line 204 "ansi-c-parser.cpp"
 
 #line 132 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* YY_AnsiCParser_LSP_NEEDED*/
@@ -312,7 +313,7 @@ typedef
 /* TOKEN C */
 
 /* #line 240 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 316 "ansi-c-parser.cpp"
+#line 317 "ansi-c-parser.cpp"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -426,7 +427,7 @@ public:
 /* static const int token ... */
 
 /* #line 284 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 430 "ansi-c-parser.cpp"
+#line 431 "ansi-c-parser.cpp"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -499,7 +500,7 @@ static const int RETURN;
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
 /* #line 287 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 503 "ansi-c-parser.cpp"
+#line 504 "ansi-c-parser.cpp"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -600,7 +601,7 @@ public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 
 /* #line 318 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 604 "ansi-c-parser.cpp"
+#line 605 "ansi-c-parser.cpp"
 const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
 const int YY_AnsiCParser_CLASS::PREDEFINE=259;
 const int YY_AnsiCParser_CLASS::PREIF=260;
@@ -681,7 +682,7 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 #endif
 
 /* #line 329 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 685 "ansi-c-parser.cpp"
+#line 686 "ansi-c-parser.cpp"
 
 
 #define	YYFINAL		45
@@ -747,9 +748,9 @@ static const short yyrhs[] = {    73,
 
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyrline[] = { 0,
-    81,    85,    87,    91,    93,    97,   101,   105,   107,   111,
-   113,   127,   131,   135,   151,   153,   155,   157,   159,   161,
-   163,   165,   167,   169,   171
+    82,    86,    88,    92,    94,    98,   102,   106,   108,   112,
+   114,   128,   132,   136,   152,   154,   156,   158,   160,   162,
+   164,   166,   168,   170,   175
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
@@ -1287,56 +1288,56 @@ YYLABEL(yyreduce)
 
 
 /* #line 783 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 1291 "ansi-c-parser.cpp"
+#line 1292 "ansi-c-parser.cpp"
 
   switch (yyn) {
 
 case 1:
-#line 82 "ansi-c.y"
+#line 83 "ansi-c.y"
 { ;
     break;}
 case 2:
-#line 86 "ansi-c.y"
+#line 87 "ansi-c.y"
 { ;
     break;}
 case 3:
-#line 88 "ansi-c.y"
+#line 89 "ansi-c.y"
 { ;
     break;}
 case 4:
-#line 92 "ansi-c.y"
+#line 93 "ansi-c.y"
 { ;
     break;}
 case 5:
-#line 94 "ansi-c.y"
+#line 95 "ansi-c.y"
 { ;
     break;}
 case 6:
-#line 98 "ansi-c.y"
+#line 99 "ansi-c.y"
 { yyval.param_list = yyvsp[0].param_list;
             yyval.param_list->push_front(yyvsp[-2].param);
           ;
     break;}
 case 7:
-#line 102 "ansi-c.y"
+#line 103 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>(); 
             yyval.param_list->push_back(yyvsp[0].param);
           ;
     break;}
 case 8:
-#line 106 "ansi-c.y"
+#line 107 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>();
     break;}
 case 9:
-#line 108 "ansi-c.y"
+#line 109 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>();
     break;}
 case 10:
-#line 112 "ansi-c.y"
+#line 113 "ansi-c.y"
 { yyval.param = new Parameter(yyvsp[-1].type, yyvsp[0].str); ;
     break;}
 case 11:
-#line 114 "ansi-c.y"
+#line 115 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, NULL);
        sig->setReturnType(yyvsp[-7].type);
        for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1352,15 +1353,15 @@ case 11:
      ;
     break;}
 case 12:
-#line 128 "ansi-c.y"
+#line 129 "ansi-c.y"
 { yyval.param = new Parameter(new VoidType, "..."); ;
     break;}
 case 13:
-#line 132 "ansi-c.y"
-{ ;
+#line 133 "ansi-c.y"
+{ Type::addNamedType(yyvsp[-1].str, yyvsp[-2].type); ;
     break;}
 case 14:
-#line 136 "ansi-c.y"
+#line 137 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, yyvsp[-4].str); 
            sig->setReturnType(yyvsp[-5].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1376,47 +1377,50 @@ case 14:
          ;
     break;}
 case 15:
-#line 152 "ansi-c.y"
+#line 153 "ansi-c.y"
 { yyval.type = new CharType(); ;
     break;}
 case 16:
-#line 154 "ansi-c.y"
+#line 155 "ansi-c.y"
 { yyval.type = new IntegerType(16); ;
     break;}
 case 17:
-#line 156 "ansi-c.y"
+#line 157 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 18:
-#line 158 "ansi-c.y"
+#line 159 "ansi-c.y"
 { yyval.type = new IntegerType(32, false); ;
     break;}
 case 19:
-#line 160 "ansi-c.y"
+#line 161 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 20:
-#line 162 "ansi-c.y"
+#line 163 "ansi-c.y"
 { yyval.type = new FloatType(32); ;
     break;}
 case 21:
-#line 164 "ansi-c.y"
-{ yyval.type = new FloatType(32); ;
+#line 165 "ansi-c.y"
+{ yyval.type = new FloatType(64); ;
     break;}
 case 22:
-#line 166 "ansi-c.y"
+#line 167 "ansi-c.y"
 { yyval.type = new VoidType(); ;
     break;}
 case 23:
-#line 168 "ansi-c.y"
+#line 169 "ansi-c.y"
 { yyval.type = new PointerType(yyvsp[-1].type); ;
     break;}
 case 24:
-#line 170 "ansi-c.y"
-{ yyval.type = new NamedType(yyvsp[0].str); ;
+#line 171 "ansi-c.y"
+{ yyval.type = Type::getNamedType(yyvsp[0].str); 
+      if (yyval.type == NULL)
+          yyval.type = new NamedType(yyvsp[0].str);
+    ;
     break;}
 case 25:
-#line 172 "ansi-c.y"
+#line 176 "ansi-c.y"
 { yyval.type = yyvsp[0].type; ;
     break;}
 }
@@ -1623,8 +1627,8 @@ YYLABEL(yyerrhandle)
 /* END */
 
 /* #line 982 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
-#line 1627 "ansi-c-parser.cpp"
-#line 177 "ansi-c.y"
+#line 1631 "ansi-c-parser.cpp"
+#line 181 "ansi-c.y"
 
 #include <stdio.h>
 

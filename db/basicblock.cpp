@@ -1510,10 +1510,10 @@ void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin) {
 void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
     getLiveOut(liveout);
     for (std::list<RTL*>::reverse_iterator rit = m_pRtls->rbegin(); 
-      rit != m_pRtls->rend(); rit++) {
+         rit != m_pRtls->rend(); rit++) {
         RTL *rtl = *rit;
         for (std::list<Exp*>::reverse_iterator it = rtl->getList().rbegin(); 
-          it != rtl->getList().rend(); it++) {
+             it != rtl->getList().rend(); it++) {
             if (*it == (AssignExp*)stmt) return;
             Statement *e = dynamic_cast<Statement*>(*it);
             if (e == NULL) continue;
@@ -1526,7 +1526,7 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
             StatementList &internals = call->getInternalStatements();
             StmtListRevIter it1;
             for (Statement* s1 = internals.getLast(it1); s1;
-              s1 = internals.getPrev(it1)) {
+                 s1 = internals.getPrev(it1)) {
                 // MVE: I think this next statement is wrong. The only way
                 // stmt can be == to *it1 is in a recursive function; it is
                 // affected by assignments to any part of the procedure, not

@@ -949,10 +949,9 @@ void HLNwayJump::simplify() {
  * RETURNS:          <nothing>
  *============================================================================*/
 HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
-  std::list<Exp*>* le /*= NULL*/):
-
-    HLJump(instNativeAddr, le),returnTypeSize(returnTypeSize),
-      returnAfterCall(false), returnLoc(NULL) {
+  std::list<Exp*>* le /*= NULL*/): HLJump(instNativeAddr, le), 
+      returnTypeSize(returnTypeSize), returnAfterCall(false), 
+      returnLoc(NULL) {
     kind = CALL_RTL;
     postCallExpList = NULL;
     procDest = NULL;
@@ -1017,7 +1016,10 @@ Exp* HLCall::getReturnLoc() {
 void HLCall::setIgnoreReturnLoc(bool b) {
     if (b) { returnLoc = NULL; return; }
     assert(procDest);
-    returnLoc = procDest->getSignature()->getReturnExp()->clone();
+    if (procDest->getSignature()->getReturnType()->isVoid())
+        returnLoc = NULL;
+    else
+        returnLoc = procDest->getSignature()->getReturnExp()->clone();
 }
 
 Type* HLCall::getLeftType() {
@@ -1327,6 +1329,12 @@ void HLCall::setDestProc(Proc* dest) {
 }
 
 void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
+    LocationSet defs;
+    getDefinitions(defs);
+
+    // Generate code for low level semantics (if present)
+    RTL::generateCode(hll, pbb, indLevel);
+    
     Proc *p = getDestProc();
 
     if (p == NULL && isComputed()) {
@@ -1334,11 +1342,13 @@ void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
         return;
     }
 
-//    std::cerr << "call: ";
-//    print(std::cerr, false);
-//    std::cerr << "in proc " << proc->getName() << std::endl;
+#if 0
+    std::cerr << "call: ";
+    print(std::cerr, false);
+    std::cerr << "in proc " << proc->getName() << std::endl;
+#endif
     assert(p);
-    hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments);
+    hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments, defs);
 }
 
 void HLCall::simplify() {
@@ -1365,58 +1375,24 @@ void HLCall::decompile() {
             liveEntry = *((UserProc*)procDest)->getCFG()->getLiveEntry();
         }
         procDest->getInternalStatements(internal);
-        // init arguments
-        // Note that in the case of cycles in the call graph, the arguments
-        // can't be determined here
         assert(arguments.size() == 0);
-        if (procDest->isLib() || ((UserProc*)procDest)->isDecompiled()) {
-            // Luxury: the destination is already fully decompiled (or is a
-            // library function)
-            arguments.resize(procDest->getSignature()->getNumParams());
-            for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
-                arguments[i] = procDest->getSignature()->getArgumentExp(i)->
-                  clone();
-            if (procDest->getSignature()->hasEllipsis()) {
-                // Just guess 10 parameters for now
-                //for (int i = 0; i < 10; i++)
+        int n = procDest->getSignature()->getNumParams();
+        arguments.resize(n);
+        for (int i = 0; i < n; i++) {
+            Exp *e = procDest->getSignature()->getArgumentExp(i);
+            assert(e);
+            arguments[i] = e->clone();
+        }
+        if (procDest->getSignature()->hasEllipsis()) {
+            // Just guess 10 parameters for now
+            //for (int i = 0; i < 10; i++)
                 arguments.push_back(procDest->getSignature()->
-                  getArgumentExp(arguments.size())->clone());
-            }
-            // init return location
-            returnLoc = procDest->getSignature()->getReturnExp();
-            if (returnLoc) returnLoc = returnLoc->clone();
-
+                                getArgumentExp(arguments.size())->clone());
         }
-        else {
-            // We only have the summarised dataflow from the "on the way down"
-            // processing. So for now, we make all the liveEntry variables
-            // parameters. This will overstate the parameters, e.g.
-            // the stack pointer will always appear to be a parameter
-            UserProc* uproc = (UserProc*)procDest;
-            LocationSet le = *uproc->getCFG()->getLiveEntry();
-            arguments.resize(le.size());
-            // We want the parameters that coincide with conventional parameter
-            // locations first
-            Prog* prog = uproc->getProg();
-            LocSetIter ll; int i=0; bool found = true;
-            while (found) {
-                Exp* stdloc = uproc->getSignature()->getEarlyParamExp(i, prog);
-                if (le.find(stdloc)) {
-                    arguments[i++] = stdloc;
-                    le.remove(stdloc);
-                }
-                else found = false;
-            }
-            // Whatever is left can go in any order, presumably
-            for (Exp* loc = le.getFirst(ll); loc; loc = le.getNext(ll))
-               arguments[i++] = loc;
-// MVE: check this
-            // For pentium, need some artificial internal statements to
-            // keep the stack pointer correct. This is a shameless hack
-            internal = Signature::getStdRetStmt(prog);
-        }
+        // init return location
+        setIgnoreReturnLoc(false);
     } else {
-    // TODO: indirect call
+        // TODO: indirect call
     }
 }
 
@@ -1516,9 +1492,11 @@ void HLCall::killReach(StatementSet &reach) {
     }
 
     // A UserProc
-    // This call kills only those reaching definitions that are defined
-    // on all paths
-    reach.removeIfDefines(*((UserProc*)procDest)->getCFG()->getAvailExit());
+    LocationSet defs;
+    getDefinitions(defs);
+    LocSetIter it;
+    for (Exp *e = defs.getFirst(it); e; e = defs.getNext(it))
+        reach.removeIfDefines(e);
 }
 
 void HLCall::killAvail(StatementSet &avail) {
@@ -1635,6 +1613,26 @@ void HLCall::addUsedLocs(LocationSet& used) {
         ((Unary*)returnLoc)->getSubExp1()->addUsedLocs(used);
 }
 
+bool HLCall::isDefinition() 
+{
+    LocationSet defs;
+    getDefinitions(defs);
+    return defs.size() != 0;
+}
+
+void HLCall::getDefinitions(LocationSet &defs)
+{
+    if (procDest) {
+        if (procDest->isLib()) {
+            Exp *e = getLeft();
+            if (e) defs.insert(e);
+        } else {
+            ((UserProc*)procDest)->getReturnSet(defs);
+        }
+    } else {
+        // TODO: computed call
+    }
+}
 
 void HLCall::doReplaceUse(Statement *use) {
     Exp *left = use->getLeft()->clone();        // Note: could be changed!
@@ -1739,22 +1737,33 @@ void HLCall::setNumArguments(int n) {
 void HLCall::processConstants(Prog *prog) {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
+        if (t == NULL) continue;
         // char* and a constant
-        if ((arguments[i]->isIntConst()) && t && t->isPointer()) {
-            if (((PointerType*)t)->getPointsTo()->isChar()) {
-                char *str = 
-                    prog->getStringConstant(((Const*)arguments[i])->getAddr());
-                if (str) {
-                    std::string s(str);
-                    while (s.find('\n') != (unsigned)-1)
-                        s.replace(s.find('\n'), 1, "\\n");
-                    delete arguments[i];
-                    arguments[i] = new Const(strdup(s.c_str()));
+        if (arguments[i]->isIntConst()) {
+            if (t->isPointer()) {
+                PointerType *pt = (PointerType*)t;
+                if (pt->getPointsTo()->isChar()) {
+                    char *str = 
+                        prog->getStringConstant(((Const*)arguments[i])->getAddr());
+                    if (str) {
+                        std::string s(str);
+                        while (s.find('\n') != (unsigned)-1)
+                            s.replace(s.find('\n'), 1, "\\n");
+                        delete arguments[i];
+                        arguments[i] = new Const(strdup(s.c_str()));
+                    }
                 }
+                if (pt->getPointsTo()->isFunc()) {
+                    ADDRESS a = ((Const*)arguments[i])->getAddr();
+                    prog->decode(a);
+                }
+            } else if (t->isFloat()) {
+                arguments[i]->setOper(opFltConst);
             }
-            if (((PointerType*)t)->getPointsTo()->isFunc()) {
-                prog->decode(((Const*)arguments[i])->getAddr());
-            }
+        }
+        if (t->isPointer() && arguments[i]->getOper() != opAddrOf) {
+            arguments[i] = new Unary(opAddrOf, 
+                                     new Unary(opMemOf, arguments[i]));
         }
     }
 }
@@ -1808,45 +1817,6 @@ RTL* HLReturn::clone() {
 bool HLReturn::accept(RTLVisitor* visitor) {
     return visitor->visit(this);
 }
-
-
-#if 0
-/*==============================================================================
- * FUNCTION:        HLReturn::getUseDefLocations
- * OVERVIEW:        Get the set of locations used and defined in this BB
- * NOTE:            The return location is considered to be used, even if this
- *                    use is not explicit (e.g. in Sparc might return the first
- *                    parameter)
- * PARAMETERS:      locMap - a map between locations and integer bit numbers
- *                  filter - a filter to restrict which locations are
- *                    considered
- *                  useSet - has added to it those locations used this BB
- *                  defSet - has added to it those locations defined this BB
- *                  useUndefSet - has added those locations used before defined
- *                  proc - pointer to the Proc object containing this RTL
- * RETURNS:         <nothing>
- *============================================================================*/
-void HLReturn::getUseDefLocations(LocationMap& locMap,
-    LocationFilter* filter, BITSET& defSet, BITSET& useSet,
-    BITSET& useUndefSet, Proc* proc) const {
-    // It is possible that any RTL, including a HLReturn, has semantics
-    // So process the semantics (assignments) for this HLCall
-    RTL::getUseDefLocations(locMap, filter, defSet, useSet, useUndefSet,
-        proc);
-
-    // Register a use for the return location. It may not be used anywhere
-    // else; e.g. in the Sparc returnparam test, an empty procedure whose
-    // integer return location is used must take a parameter
-    const Exp* retl = proc->getReturnLoc();
-    if (retl->len()) {
-        int bit = locMap.toBit(*retl);
-        useSet.set(bit);
-        // Add this to the use-before-definition set if necessary
-        if (!defSet.test(bit))
-            useUndefSet.set(bit);
-    }
-}
-#endif
 
 // serialize this rtl
 bool HLReturn::serialize_rest(std::ostream &ouf) {
@@ -2119,6 +2089,11 @@ void HLScond::getDeadStatements(StatementSet &dead)
             s->getNumUsedBy() == 0)
             dead.insert(s);
     }
+}
+
+void HLScond::getDefinitions(LocationSet &defs) 
+{
+    defs.insert(getLeft());
 }
 
 Type* HLScond::getLeftType()

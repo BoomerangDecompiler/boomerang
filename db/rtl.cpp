@@ -36,6 +36,7 @@
 #include "exp.h"
 #include "type.h"
 #include "register.h"
+#include "cfg.h"
 #include "proc.h"           // For printing proc names
 #include "rtl.h"
 #include "prog.h"

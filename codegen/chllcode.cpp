@@ -203,9 +203,23 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             strcat(str, ")");
             break;
         case opRegOf:
-            strcat(str, "r[");
-            appendExp(str, u->getSubExp1());
-            strcat(str, "]");
+            {
+                if (u->getSubExp1()->getOper() == opTemp) {
+                    // The great debate: r[tmpb] vs tmpb
+                    strcat(str, "tmp");
+                    break;
+                }
+                assert(u->getSubExp1()->getOper() == opIntConst);
+                const char *n = m_proc->getProg()->getRegName(
+                                    ((Const*)u->getSubExp1())->getInt());
+                if (n)
+                    strcat(str, n);
+                else {
+                    strcat(str, "r[");
+                    appendExp(str, u->getSubExp1());
+                    strcat(str, "]");
+                }
+            }
             break;
         case opTemp:
             strcat(str, "tmp");
@@ -316,7 +330,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opSqrt:
         case opExecute:
         case opCodeAddr:
-        case opPC:
         case opAFP:
         case opAGP:
             // not implemented
@@ -325,10 +338,25 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             assert(false);
             break;
         case opFlagCall:
-            strcat(str, "/* flag call */ ");    
+            {
+                assert(b->getSubExp1()->getOper() == opStrConst);
+                strcat(str, ((Const*)b->getSubExp1())->getStr());
+                strcat(str, "(");
+                Binary *l = (Binary*)b->getSubExp2();
+                for (; l && l->getOper() == opList; 
+                     l = (Binary*)l->getSubExp2()) {
+                    appendExp(str, l->getSubExp1());
+                    if (l->getSubExp2()->getOper() == opList)
+                        strcat(str, ", ");
+                }
+                strcat(str, ")");
+            } 
             break;
         case opFlags:
-            strcat(str, "/* flags */ ");    
+            strcat(str, "%flags");    
+            break;
+        case opPC:
+            strcat(str, "%pc");
             break;
         case opZfill:
             // MVE: this is a temporary hack... needs cast?
@@ -557,12 +585,6 @@ void CHLLCode::RemoveLabel(int ord)
 void CHLLCode::AddAssignmentStatement(int indLevel, AssignExp *exp)
 {
     Exp *match;
-    // hack
-    if (exp->getSubExp1()->getOper() == opFlags ||
-        exp->search(new Terminal(opPC), match) ||
-        (exp->getSubExp1()->getOper() == opRegOf &&
-        exp->getSubExp1()->getSubExp1()->getOper() == opTemp))
-        return;
     char s[1024];
     indent(s, indLevel);
     appendExp(s, exp);
@@ -571,21 +593,44 @@ void CHLLCode::AddAssignmentStatement(int indLevel, AssignExp *exp)
 }
 
 void CHLLCode::AddCallStatement(int indLevel, Exp *retloc, Proc *proc, 
-    std::vector<Exp*> &args)
+    std::vector<Exp*> &args, LocationSet &defs)
 {
     char s[1024];
     indent(s, indLevel);
     if (retloc) {
         appendExp(s, retloc);
         strcat(s, " = ");
+        defs.remove(retloc);
     }
     strcat(s, proc->getName());
     strcat(s, "(");
     for (unsigned int i = 0; i < args.size(); i++) {
-        appendExp(s, args[i]);
+        Type *t = proc->getSignature()->getParamType(i);
+        bool ok = true;
+        if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() 
+              && args[i]->isIntConst()) {
+            Proc *p = proc->getProg()->findProc(((Const*)args[i])->getAddr());
+            if (p) {
+                strcat(s, p->getName());
+                ok = false;
+            }
+        }
+        if (ok)
+            appendExp(s, args[i]);
         if (i < args.size() - 1) strcat(s, ", ");
     }
     strcat(s, ");");
+    LocSetIter it;
+    Exp *e = defs.getFirst(it);
+    if (e) {
+        strcat(s, " // OUT: ");
+    }
+    for (; e; e = defs.getNext(it)) {
+        appendExp(s, e);
+        strcat(s, ", ");
+    }
+    if (s[strlen(s)-1] == ' ' && s[strlen(s)-2] == ',')
+        s[strlen(s)-2] = 0;
     lines.push_back(strdup(s));
 }
 
@@ -645,6 +690,7 @@ void CHLLCode::AddProcStart(Signature *signature)
 void CHLLCode::AddProcEnd()
 {
     lines.push_back(strdup("}"));
+    lines.push_back("");
 }
 
 void CHLLCode::AddLocal(const char *name, Type *type)

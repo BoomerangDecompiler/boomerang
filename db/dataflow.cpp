@@ -611,8 +611,9 @@ void StatementSet::print() {
 LocationSet& LocationSet::operator=(const LocationSet& o) {
     sset.clear();
     std::set<Exp*, lessExpStar>::const_iterator it;
-    for (it = o.sset.begin(); it != o.sset.end(); it++)
+    for (it = o.sset.begin(); it != o.sset.end(); it++) {
         sset.insert((*it)->clone());
+    }
     return *this;
 }
 
@@ -835,3 +836,6 @@ char* Statement::prints() {
       return debug_buffer;
 }
 
+void Statement::getDefinitions(LocationSet &def) {
+    assert(false);
+}

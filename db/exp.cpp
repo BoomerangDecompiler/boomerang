@@ -890,6 +890,10 @@ void AssignExp::print(std::ostream& os) {
     p2->print(os);
 }
 
+void AssignExp::getDefinitions(LocationSet &defs) {
+    defs.insert(getLeft());
+}
+
 void AssignExp::printAsUse(std::ostream &os) {
     print(os);
 }

@@ -41,6 +41,7 @@
 #include "register.h"
 #include "type.h"
 #include "rtl.h"
+#include "cfg.h"
 #include "proc.h"
 #include "prog.h"
 #include "sslparser.h"

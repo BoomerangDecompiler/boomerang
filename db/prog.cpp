@@ -43,8 +43,8 @@
 #include "types.h"
 #include "dataflow.h"
 #include "exp.h"
-#include "proc.h"
 #include "cfg.h"
+#include "proc.h"
 #include "util.h"                   // For str()
 #include "register.h"
 #include "rtl.h"

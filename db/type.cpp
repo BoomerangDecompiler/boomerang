@@ -30,6 +30,7 @@
 #include "type.h"
 #include "util.h"
 #include "exp.h"
+#include "cfg.h"
 #include "proc.h"
 #include "signature.h"
 
@@ -443,6 +444,21 @@ const char *PointerType::getCtype() const
 const char *NamedType::getCtype() const
 {
      return name.c_str();
+}
+
+std::map<std::string, Type*> Type::namedTypes;
+
+// named type accessors
+void Type::addNamedType(const char *name, Type *type)
+{
+    namedTypes[name] = type;
+}
+
+Type *Type::getNamedType(const char *name)
+{
+    if (namedTypes.find(name) != namedTypes.end())
+        return namedTypes[name];
+    return NULL;
 }
 
 /*==============================================================================

@@ -21,21 +21,21 @@ class Parameter {
 private:
     Type *type;
     std::string name;
-    bool out;
+    Exp *exp;
 
 public: 
-    Parameter(Type *type, const char *name, bool out = false) : type(type),
-   	 name(name), out(out) { }
-    ~Parameter() { delete type; }
+    Parameter(Type *type, const char *name, Exp *exp = NULL) : type(type),
+   	 name(name), exp(exp) { }
+    ~Parameter() { delete type; delete exp; }
 
     Type *getType() { return type; }
     const char *getName() { return name.c_str(); }
-    bool isOut() { return out; }
+    Exp *getExp() { return exp; }
 };
 
 class Signature {
 protected:
-    std::string name;						// name of procedure
+    std::string name;       // name of procedure
     std::vector<Parameter*> params;
     Type *rettype;
     bool ellipsis;
@@ -70,7 +70,9 @@ public:
 
     // add a new parameter to this signature
     virtual void addParameter(const char *nam = NULL);
-    virtual void addParameter(Type *type, const char *nam = NULL);
+    virtual void addParameter(Type *type, const char *nam = NULL, 
+                              Exp *e = NULL);
+    virtual void addParameter(Exp *e);
     virtual void addParameter(Parameter *param) { params.push_back(param); }
     virtual void addEllipsis() { ellipsis = true; }
     // set the number of parameters using defaults
