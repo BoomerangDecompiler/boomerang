@@ -801,6 +801,13 @@ bool StatementList::remove(Statement* s) {
     return false;
 }
 
+Statement* StatementList::remove(StmtListIter& it) {
+    it = slist.erase(it);
+    if (it == slist.end())
+        return NULL;
+    return *it;
+}
+
 void StatementList::append(StatementList& sl) {
     for (StmtListIter it = sl.slist.begin(); it != sl.slist.end(); it++) {
         slist.push_back(*it);

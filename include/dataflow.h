@@ -91,9 +91,8 @@ public:
     void append(StatementSet& sl);          // Append whole StatementSet
     bool remove(Statement* s);              // Removal; rets false if not found
     // This one is needed where you remove in the middle of a loop
-    // Use like this: elem = mystatementlist.remove(it);
-    Statement* StatementList::remove(StmtListIter& it) {
-        it = slist.erase(it); return *it;}
+    // Use like this: s = mystatementlist.remove(it);
+    Statement* StatementList::remove(StmtListIter& it);
     bool exists(Statement* s);  // Find; returns false if not found
     void prints();                          // Print to cerr (for debugging)
 };
