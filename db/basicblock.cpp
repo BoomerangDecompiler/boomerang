@@ -958,15 +958,9 @@ Exp *BasicBlock::getCond() {
     assert(m_pRtls);
     RTL *last = m_pRtls->back();
     // it should contain a BranchStatement
-    std::list<Statement*>& sl = last->getList();
-    std::list<Statement*>::reverse_iterator it;
-    assert(sl.size());
-    for (it = sl.rbegin(); it != sl.rend(); it++) {
-        if ((*it)->getKind() == STMT_BRANCH)
-            return ((BranchStatement*)(*it))->getCondExpr();
-    }
-    assert(0);
-    return 0;
+    BranchStatement* bs = (BranchStatement*)last->getHlStmt();
+    assert(bs->getKind() == STMT_BRANCH);
+    return bs->getCondExpr();
 }
 
 void BasicBlock::setCond(Exp *e) {
@@ -1314,7 +1308,12 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
             // write the conditional header 
             if (cType == Case) {
-                hll->AddCaseCondHeader(indLevel, getCond());
+                // The CaseStatement will be in the last RTL this BB
+                RTL* last = m_pRtls->back();
+                CaseStatement* cs = (CaseStatement*)last->getHlStmt();
+                SWITCH_INFO* pss = cs->getSwitchInfo();
+                // Write the switch header (i.e. "switch(var) {")
+                hll->AddCaseCondHeader(indLevel, pss->pSwitchVar);
             } else {
                 Exp *cond = getCond();
                 if (cType == IfElse) {

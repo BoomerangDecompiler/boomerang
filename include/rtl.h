@@ -166,6 +166,9 @@ public:
     // Is this RTL a call instruction?
     bool isCall();
 
+    // Is this RTL a branch instruction?
+    bool isBranch();
+
     // Get the "special" (High Level) Statement this RTL (else NULL)
     Statement* getHlStmt();
 

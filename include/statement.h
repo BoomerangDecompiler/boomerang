@@ -769,6 +769,7 @@ typedef struct {
 } SWITCH_INFO;
 
 class CaseStatement: public GotoStatement {
+    SWITCH_INFO* pSwitchInfo;   // Ptr to struct with info about the switch
 public:
     CaseStatement();
     virtual ~CaseStatement();
@@ -811,9 +812,6 @@ public:
     // simplify all the uses/defs in this RTL
     virtual void simplify();
 
-private:    
-    SWITCH_INFO* pSwitchInfo;   // Exp representation of the switch variable:
-                                // e.g., r[8]
 };          // class CaseStatement
 
 /*==============================================================================

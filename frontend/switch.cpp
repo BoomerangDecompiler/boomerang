@@ -69,6 +69,7 @@
 #include "frontend.h"
 #include "signature.h"
 #include "statement.h"
+#include "boomerang.h"
 
 extern char* operStrings[];
 
@@ -353,7 +354,7 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
         // This indicates a logical negation, for the purposes
         // of switch detection
         bNegate = true;
-    // Point to the last RT
+    // Point to the last RTL
     itRtl = pCurBB->getRTLs()->end(); itRtl--;
     return false;
 }
@@ -384,19 +385,19 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
 
     // return false;                // Use to disable switch analysis
 
-    Exp* ssJmp;                     // The expression repr jump, or
+    Exp* expJmp;                    // The expression representing the jump, or
                                     //  reresenting <expr> when bPostForm
     bool bStopped = false;          // True when search must stop
     bool bUpperFnd = false;         // True when have ss for upper bound
     bool bGotUpper = false;         // True when have final iUpper
     bool bGotLower = false;         // True when know lower bound
-    bool bPostForm = false;         // Indicates that ssJmp repr <expr> now
+    bool bPostForm = false;         // Indicates that expJmp repr <expr> now
     bool bLoaded = false;           // True when the table memory is loaded
     bool bGotDefines = false;       // True when have set itDefinesSw
     PBB pCurBB = pSwitchBB;         // Current basic block
-    Exp* ssBound = NULL;            // Expression for the upper etc bound
+    Exp* expBound = NULL;           // Expression for the upper etc bound
     RTL* pRtl;                      // Current RTL
-    int indexRT = -1;               // Current RT in current RTL
+    int indexRT = 0;                // Current RT in current RTL
     char chForm = '?';              // Unknown form so far
     int iLower, iUpper = 0;         // Upper and lower bounds for switch var
     ADDRESS uTable = 0;             // Address of the table
@@ -407,8 +408,8 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                                     //  might turn out to be of interest
     Exp* expCompare = NULL;         // Pointer to last compare argument
     // I'm not sure that bDestBound is a good idea!
-    // It seems to be asserting that the current RTL affects ssBound, and not
-    // ssJmp-> But it could affect both!
+    // It seems to be asserting that the current RTL affects expBound, and not
+    // expJmp-> But it could affect both!
     bool bDestBound = false;
 	int iReg;
     iOffset = 0;                    // Needed only for type R
@@ -439,16 +440,16 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
     pRtl = *--itCurRtl;
     ADDRESS uJump = pRtl->getAddress();     // Needed for type R
 
-    ssJmp = pDest->clone();                 // Copy the desintation of the jump
+    expJmp = pDest->clone();                 // Copy the desintation of the jump
 
 #if DEBUG_SWITCH
-    std::cout << std::hex << uJump << ":ssJmp begins with " << ssJmp << "\n";
+    std::cout << std::hex << uJump << ":expJmp begins with " << expJmp << "\n";
 #endif
 
     // Check if the memory load is part of the jump instruction (e.g.
     // x86 jmp [%eax + %ebx*4]). If so, count this as the first memory
     // load
-    if (ssJmp->isMemOf())
+    if (expJmp->isMemOf())
         bLoaded = true;
 
     do {
@@ -469,35 +470,34 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
             else return false;
         }
         pRtl = *itCurRtl;
-        Statement* last = pRtl->getList().back();
         if (bNegate) {
             // We have come via a conditional branch. For the purposes
             // of switch detection, this means a logical negation
-            ssBound = new Unary(opNot, ssBound);
+            expBound = new Unary(opNot, expBound);
         }
 //      pRtl->machineSimplify();
         
         // General approach: we look for the comparison that defines the
         // switch variable's upper bound separately.
-        // We maintain a Semantic String, ssJmp, that is the current
+        // We maintain a Expression, expJmp, that is the current
         // expression for the destination of the register jump. To make
         // it easier to compare with canonical forms of switch statements,
         // we impose an ordering on commutative partial expressions, such
         // that when one side is an integer constant, it will be placed
-        // on the right; Exp*::simplify() does this for us, as well as
+        // on the right; Exp::simplify() does this for us, as well as
         // folding constants.
 
-        // Another semantic string, ssBound, is used to keep track of the
+        // Another expression, expBound, is used to keep track of the
         // upper (and occasionally lower) bounds. Mostly, we end up with
         // r[v] GT k, but occasionally if the upper bound is larger than
         // will fit into an imm13, we get r[v] GT r[x] and have to subs-
-        // titute into ssBound-> For the epc compiler, we can get
+        // titute into expBound. For the epc compiler, we can get
         // r[v] GT k1 || r[v] LT k2, and have to add 4*k2 to the table
         // address.
         // Along the way, we check for subtracts that assign to a register
         // of interest.  This is assumed to set the lower bound, and is
         // therefore the ideal place to assign the switch variable.
-        if ((last->getKind() == STMT_ASSIGN) && (pRtl->getNumStmt() > indexRT)){
+        if (pRtl->getNumStmt() > indexRT) {
             currStmt = pRtl->elementAt(indexRT);
             if (currStmt->getKind() == STMT_ASSIGN) {
                 Exp* rhs = currStmt->getRight();
@@ -508,11 +508,11 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                     if (sub1->isRegOfK()) {
                         // We have a subtract from a register. But is the
                         // destination (lhs) a register of interest? That is,
-                        // is the LHS register contained in ssJmp?
+                        // is the LHS register contained in expJmp?
                         Exp* lhs = currStmt->getLeft();
                         if (lhs->isRegOfK()) {
                             Exp* result;
-                            if (ssJmp->search(lhs, result)) {
+                            if (expJmp->search(lhs, result)) {
                                 // Yes, it is. Remember this RTL, since it
                                 // defines the switch variable.
                                 itDefinesSw = itCurRtl;
@@ -535,7 +535,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
                         sub = lhs->getSubExp1();
                         assert(sub->isIntConst());
                         Exp* result;
-                        if (ssJmp->search(lhs, result)) {
+                        if (expJmp->search(lhs, result)) {
                             // Yes, it is. Remember this RTL, since it
                             // defines the switch variable
                             itDefinesSw = itCurRtl;
@@ -552,29 +552,30 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
         // continue the loop if this is not found
         Unary regOfFuncRet(opRegOf, new Const(iFuncRetReg));
         Exp* result;
-        if ((last->getKind() == STMT_CALL) && 
-          ssJmp->search(&regOfFuncRet, result)) {
+        if (pRtl->isCall() && expJmp->search(&regOfFuncRet, result)) {
             // We have come across a call, and the function return
-            // register is used in ssJmp-> We have to assume that
+            // register is used in expJmp-> We have to assume that
             // this call will define the switch variable. Replace it
             // with 999 to ensure it is not altered.
             bool changed;
-            ssJmp = ssJmp->searchReplaceAll(&regOfFuncRet, &expReg999, changed);
-            // Do the same to ssBound
-            ssBound = ssBound->searchReplaceAll(&regOfFuncRet, &expReg999,
+            expJmp = expJmp->searchReplaceAll(&regOfFuncRet, &expReg999,
+              changed);
+            // Do the same to expBound
+            expBound = expBound->searchReplaceAll(&regOfFuncRet, &expReg999,
               changed);
             continue;
         }
-        else if (last->getKind() == STMT_BRANCH) {
+        else if (pRtl->isBranch()) {
             // It's a conditional branch
-            BRANCH_TYPE jt = ((BranchStatement*)pRtl)->getCond();
+            BRANCH_TYPE jt = ((BranchStatement*)pRtl->getHlStmt())->getCond();
             OPER operBr = opNil;
-            if (ssBound && ssBound->getOper() == opNot) {
+            if (expBound && expBound->getOper() == opNot) {
                 // Expect branch if unsigned lower or equals
                 if (jt == BRANCH_JULE) {
                     // Replace the not with opUpper
-                    //ssBound->substIndex(0, opUpper);
-std::cerr << "FIXME: Replace the not with opUpper here: " << ssBound << std::endl;
+                    expBound = new Binary(opUpper,
+                        expBound,
+                        new Terminal(opNil));
                 }
                 else {
                     // not really sure what to do... but it does recover
@@ -597,24 +598,24 @@ std::cerr << "FIXME: Replace the not with opUpper here: " << ssBound << std::end
 #if 0
                     // If we already have an expression there, we have
                     // to prepend an opOr
-                    if (ssBound)
-                        ssBound->prep(opOr);
+                    if (expBound)
+                        expBound->prep(opOr);
                     // Add the appropriate index
-                    ssBound->push(operBr);
+                    expBound->push(operBr);
 #else
-                    if (ssBound == NULL)
-                        ssBound = new Binary(operBr,
+                    if (expBound == NULL)
+                        expBound = new Binary(operBr,
                             new Terminal(opNil),
                             new Terminal(opNil));
                     else {
-std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a bare " << operStrings[operBr] << "\n";
+std::cerr << "FIXME: Supposed to OR current expBound (" << expBound << ") with a bare " << operStrings[operBr] << "\n";
                     }
 #endif
 
 #if DEBUG_SWITCH
                     std::cout << "isSwitch @ " << std::hex <<
                       pRtl->getAddress();
-                    std::cout << ": ssBound now " << ssBound << "\n";
+                    std::cout << ": expBound now " << expBound << "\n";
 #endif
 
                     continue;
@@ -625,17 +626,17 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // Check for a compare instruction for the upper or lower bound
         // Must already have seen an appropriate branch
         // FIXME: Check this!
-        //if (ssBound->getLastIdx() == opUpper ||
-        //    ssBound->getLastIdx() == opLower) {
-        if (ssBound &&
-          (ssBound->getOper() == opUpper || ssBound->getOper() == opLower)) {
+        //if (expBound->getLastIdx() == opUpper ||
+        //    expBound->getLastIdx() == opLower) {
+        if (expBound &&
+          (expBound->getOper() == opUpper || expBound->getOper() == opLower)) {
             int iReg;
             if ((*itCurRtl)->isCompare(iReg, expCompare)) {
                 // It is a compare instruction. But it should be a comparison
                 // to a register of interest
                 Unary regOfK(opRegOf, new Const(iReg));
                 Exp* result;
-                if (!ssJmp->search(&regOfK, result)) {
+                if (!expJmp->search(&regOfK, result)) {
                     // It doesn't appear to be a register of interest. But it
                     // might be, if there is a copy ahead. Example from
                     // /usr/ccs/bin/dis (Sparc Solaris 2.6):
@@ -648,16 +649,16 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
                     continue;
                 }
                 // Append r[ int iReg
-                ssBound->setSubExp1(regOfK.clone());
+                expBound->setSubExp1(regOfK.clone());
                 // Append the semantic string for the thing being compared
                 // to
-                ssBound->setSubExp2(expCompare->clone());
+                expBound->setSubExp2(expCompare->clone());
                 bUpperFnd = true;           // Trigger pattern matching
 
 #if DEBUG_SWITCH
                 std::cout << "isSwitch @ " << std::hex <<
-                  (*itCurRtl)->getAddress() << ": ssBound now " <<
-                  ssBound << std::endl;
+                  (*itCurRtl)->getAddress() << ": expBound now " <<
+                  expBound << std::endl;
 #endif
 
                 // Force a check. There may be no instructions after
@@ -668,8 +669,8 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         }
 
         // Check if this instruction affects the condition codes. If it
-        // does, and there is something in ssBound, then we need to pop
-        // off the end of ssBound, since (by virtue of the fact that we
+        // does, and there is something in expBound, then we need to pop
+        // off the end of expBound, since (by virtue of the fact that we
         // have reached here at all) the instruction defining the CCs is
         // not a compare of interest, the branch is also not a branch of
         // interest. So we remove the opNot, if any
@@ -677,10 +678,10 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         if (n == 0) continue;
         // We assume that the last RTL will define the flags, if at all
         if (pRtl->elementAt(n-1)->isFlagAssgn()) {
-            if (ssBound->getOper() == opNot) {
-                ssBound = ssBound->getSubExp1();
+            if (expBound->getOper() == opNot) {
+                expBound = expBound->getSubExp1();
 #if DEBUG_SWITCH
-                std::cout << "Popping opNot from ssBound: now " << ssBound
+                std::cout << "Popping opNot from expBound: now " << expBound
                   << std::endl;
 #endif
             }
@@ -688,9 +689,9 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
 
         // See if we have an RTL whereby the first significant RT is an
         // assignment, and the dest is a register of interest.
-        // A register of interest is any register used by ssJmp, except
+        // A register of interest is any register used by expJmp, except
         // 999 (don't want to change it any more)
-        // We are also interested in any registers in ssBound
+        // We are also interested in any registers in expBound
         // See if the current RT is an assignment
         if (!pRtl->elementAt(indexRT)->isAssign()) continue;
         currStmt = pRtl->elementAt(indexRT);
@@ -711,8 +712,8 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // current jump expression, or by the current bound
         // expression. Remember which expression iDest refers to in
         // bDestBound
-        if (!ssJmp->search(pLHS, result)) {
-            if (ssBound->search(pLHS, result))
+        if (!expJmp->search(pLHS, result)) {
+            if (expBound->search(pLHS, result))
                 bDestBound = true;
             else continue;
         }
@@ -726,7 +727,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
                 // bounds expression
                 Unary regOfK(opRegOf, new Const(iDest));
                 bool changed;
-                ssBound = ssBound->searchReplaceAll(&regOfK, &expReg999,
+                expBound = expBound->searchReplaceAll(&regOfK, &expReg999,
                   changed);
                 continue;
             }
@@ -743,13 +744,13 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
             else {
                 // We are loading our switch variable from memory.
                 // To make sure we don't change this any more, replace
-                // the r[iDest] in ssJmp to r[999]
+                // the r[iDest] in expJmp to r[999]
                 Unary regOfK(opRegOf, new Const(iDest));
                 bool changed;
-                ssJmp = ssJmp->searchReplaceAll(&regOfK, &expReg999, changed);
-                // Do the same to ssBound, if set
-                if (ssBound)
-                    ssBound = ssBound->searchReplaceAll(&regOfK, &expReg999,
+                expJmp = expJmp->searchReplaceAll(&regOfK, &expReg999, changed);
+                // Do the same to expBound, if set
+                if (expBound)
+                    expBound = expBound->searchReplaceAll(&regOfK, &expReg999,
                       changed);
                 iDest = 999;             // Don't subst again
                 // This defines the switch variable, if not already set
@@ -768,21 +769,21 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         // that the compare could be on either register. We assume that
         // the last compare was valid (should really test that the register
         // isn't changed between here and the compare.)
-        //if (iCompareReg != -1 && ssBound->len() <= 2) {
-        if (iCompareReg != -1 && !isComplete(ssBound)) {
+        //if (iCompareReg != -1 && expBound->len() <= 2) {
+        if (iCompareReg != -1 && !isComplete(expBound)) {
             Exp* rhs = pRHS;
             //rhs->machineSimplify();      // Could be sparc move: r[0] | r[x]
             rhs->simplify();             // 0 | r[x] -> r[x]
             if (rhs->isRegOf() && ((Unary*)rhs)->getSubExp1()->isIntConst()) {
-                // Update ssBound to be a valid compare
-                if (ssBound->getOper() == opNot) {
+                // Update expBound to be a valid compare
+                if (expBound->getOper() == opNot) {
                     // This can happen when there is a branch not to do with
                     // the upper bound, e.g. /usr/ccs/bin/dis Solaris 2.6 13af0
-                    ssBound = ((Unary*)ssBound)->getSubExp1();
+                    expBound = ((Unary*)expBound)->getSubExp1();
                 }
-                ((Binary*)ssBound)->setSubExp1(rhs);
+                ((Binary*)expBound)->setSubExp1(rhs);
                 // Append the expression for the thing being compared to
-                ((Binary*)ssBound)->setSubExp2(expCompare);
+                ((Binary*)expBound)->setSubExp2(expCompare);
                 bUpperFnd = true;           // Trigger pattern matching
             }
         }
@@ -812,72 +813,72 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
         }
 #if 0
         if (bDestBound) {
-            ssBound->substReg(iDest, pRHS);
-            ssBound->simplify();
+            expBound->substReg(iDest, pRHS);
+            expBound->simplify();
         }
         else if (iDest != 999) {
             // Substitute register iDest with the RHS
-            ssJmp->substReg(iDest, pRHS);
+            expJmp->substReg(iDest, pRHS);
         }
 #else
-        // Substitute both ssJmp and ssBound, if affected
+        // Substitute both expJmp and expBound, if affected
         if (iDest != 999) {
             Unary regOfK(opRegOf, new Const(iDest));
             bool changed;
-            if (ssBound) {
-                ssBound = ssBound->searchReplaceAll(&regOfK, pRHS, changed);
-                ssBound->simplify();
+            if (expBound) {
+                expBound = expBound->searchReplaceAll(&regOfK, pRHS, changed);
+                expBound->simplify();
             }
-            if (ssJmp)
-                ssJmp = ssJmp->searchReplaceAll(&regOfK, pRHS, changed);
+            if (expJmp)
+                expJmp = expJmp->searchReplaceAll(&regOfK, pRHS, changed);
         }
 #endif
 
 forcedCheck:
 #if DEBUG_SWITCH
-        std::cout << "ssJmp @ " << std::hex << (*itCurRtl)->getAddress() <<
-          ": " << ssJmp << std::endl;
-        if (ssBound) std::cout << "ssBound is " << ssBound << "\n";
+        std::cout << "expJmp @ " << std::hex << (*itCurRtl)->getAddress() <<
+          ": " << expJmp << std::endl;
+        if (expBound) std::cout << "expBound is " << expBound << "\n";
 #endif
 
         // Needn't do any checking until we have found the uppper bound
         if (!bPostForm && bUpperFnd) {
             // Simplify the expression, if possible, using contant folding
             // and various other techniques
-            ssJmp->simplify();
+            expJmp->simplify();
 
 #if DEBUG_SWITCH
             std::cout << "isSwitch @ " << std::hex << (*itCurRtl)->getAddress()
-              << ": " << ssJmp << std::endl;
+              << ": " << expJmp << std::endl;
 #endif
 
             // Simplify the expression, by removing all {size} and sign extend
             // (!) operations. These are tangential to the switch form
-            //ssJmp->removeSize();
-            ssJmp->killFill();
+            //expJmp->removeSize();
+            expJmp->killFill();
 
             // Check for form A (addresses)
             // Pattern: m[<expr> * 4 + T ]
-            if (*ssJmp == formA) {
+            if (*expJmp == formA) {
                 chForm = 'A';
-                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();     // <expr> * 4 + T
+                expJmp = ((Unary*) expJmp)->becomeSubExp1();     // <expr> * 4 + T
                 uTable = (ADDRESS)
-                  ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();  // <expr>
+                  ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();     // <expr> * 4
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();  // <expr>
             }
 
             // Check for form O (offsets)
             // Pattern: m[<expr> * 4 + T ] + T
-            else if (*ssJmp == formO) {
+            else if (*expJmp == formO) {
                 chForm = 'O';
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();
                 // m[<expr> * 4 + T]
-                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();     // <expr> * 4 + T
+                expJmp = ((Unary*) expJmp)->becomeSubExp1();     // <expr> * 4 + T
                 uTable = (ADDRESS)
-                  ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();     // <expr>
+                  ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();     // <expr> * 4
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();     // <expr>
             }
 
             // Check for form H (hash table)
@@ -885,33 +886,33 @@ forcedCheck:
             // Expect an expression like this:
             // m[(((<expr> & 63) * 8) + 12345) + 4]
             // Simplifies to m[((<expr> & 63) * 8) + 12344]
-            else if (*ssJmp == formH) {
+            else if (*expJmp == formH) {
                 chForm = 'H';
-                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                expJmp = ((Unary*) expJmp)->becomeSubExp1();
                 //((<expr> & K) * 8) + T
                 uTable = (ADDRESS)
-                  ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                  ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();
                 // ((<expr> & K) * 8)
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> & K
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr> & K
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr>
             }
 
             // Check for form O1 (one of the relocatable versions of O)
             // Expect an expression like this:
             // %pc + m[%pc  + ((<expr> * 4) + k)]
             // where k is a small constant, typically 28
-            else if (*ssJmp == formO1) {
+            else if (*expJmp == formO1) {
                 chForm = 'R';
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
+                expJmp = ((Binary*)expJmp)->becomeSubExp2();
                 // m[%pc + ((<expr> * 4) + k)]
-                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                expJmp = ((Unary*) expJmp)->becomeSubExp1();
                 // %pc + ((<expr> * 4) + k)
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp2(); // (<expr>*4) + k
+                expJmp = ((Binary*)expJmp)->becomeSubExp2(); // (<expr>*4) + k
                 // iOffset needed to figure correct out edges
-                iOffset = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
+                iOffset = ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr> * 4
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr>
                 uTable = uJump + 8;         // Set way earlier
             }
 
@@ -919,21 +920,21 @@ forcedCheck:
             // Expect an expression like this:
             // %pc + m[%pc  + ((<expr> * 4) - k)] - k
             // where k is a smallish constant, e.g. 288
-            else if (*ssJmp == formO2) {
+            else if (*expJmp == formO2) {
                 chForm = 'r';
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
+                expJmp = ((Binary*)expJmp)->becomeSubExp2();
                 // m[%pc  + ((<expr> * 4) - k)] - k
-                int k1 = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1();
+                int k1 = ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
+                expJmp = ((Binary*)expJmp)->becomeSubExp1();
                 // m[%pc + ((<expr> * 4) - k)]
-                ssJmp = ((Unary*) ssJmp)->becomeSubExp1();
+                expJmp = ((Unary*) expJmp)->becomeSubExp1();
                 // %pc + ((<expr> * 4) - k)
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp2();
+                expJmp = ((Binary*)expJmp)->becomeSubExp2();
                 // (<expr> * 4) - k
-                int k2 = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
+                int k2 = ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
                 assert(k1 == k2);
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr> * 4
-                ssJmp = ((Binary*)ssJmp)->becomeSubExp1(); // <expr>
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr> * 4
+                expJmp = ((Binary*)expJmp)->becomeSubExp1(); // <expr>
                 uTable = uCopyPC - k1;           // uCopyPC set way earlier
             }
 
@@ -954,10 +955,10 @@ forcedCheck:
                 new Binary(opLower,
                     new Terminal(opWildRegOf),
                     new Terminal(opWildIntConst)));
-            if (ssBound && *ssBound == expBoth) {
+            if (expBound && *expBound == expBoth) {
                 // We have both bounds
-                Exp* sub1 = ssBound->getSubExp1();
-                Exp* sub2 = ssBound->getSubExp2();
+                Exp* sub1 = expBound->getSubExp1();
+                Exp* sub2 = expBound->getSubExp2();
                 sub1 = ((Binary*)sub1)->getSubExp2();
                 sub2 = ((Binary*)sub2)->getSubExp2();
                 iUpper = ((Const*)sub1)->getInt();
@@ -982,9 +983,9 @@ forcedCheck:
             static Binary expUpper(opUpper,
                 new Terminal(opWildRegOf),
                 new Terminal(opWildIntConst));
-            if (ssBound && *ssBound == expUpper) {
+            if (expBound && *expBound == expUpper) {
                 bGotUpper = true;
-                Exp* sub = ((Binary*)ssBound)->getSubExp2();
+                Exp* sub = ((Binary*)expBound)->getSubExp2();
                 iUpper = ((Const*)sub)->getInt();
                 // If we haven't seen the instruction defining the switch var
                 // (usually a subtract), then this compare defines it
@@ -996,19 +997,19 @@ forcedCheck:
         }
 
         // When bPostForm is true, we are in the second phase of the
-        // algorithm where ssJmp represents <expr>
+        // algorithm where expJmp represents <expr>
         // We can check for the lower bound by subtraction now, but only
         // if we have the upper bound already
         if (bPostForm && !bGotLower && bGotUpper) {
-            ssJmp->simplify();
+            expJmp->simplify();
 
 #if DEBUG_SWITCH
             std::cout << "Post form @ " << std::hex << (*itCurRtl)->getAddress()
-              << ": " << ssJmp << std::endl;
+              << ": " << expJmp << std::endl;
 #endif
 
             // Save the "switch variable" so we can return it in a SWITCH_INFO
-//          pSwitchVar = new Exp*(ssJmp);
+//          pSwitchVar = new Exp*(expJmp);
             // Save an iterator to the current RTL, so we can save the switch
             // variable
             // But if we already have it defined (because we have defined the
@@ -1018,13 +1019,13 @@ forcedCheck:
 
             // Now check if have `r[v] - k'
             Exp* result;
-            bool bRet = ssJmp->search(&expRegMinus, result);
+            bool bRet = expJmp->search(&expRegMinus, result);
             if (bRet) {
                 // We now have the lower bound, and all is done
                 bGotLower = true;
-                iLower = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
+                iLower = ((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
 #if DEBUG_SWITCH
-            std::cout << "Got lower: ssJmp " << ssJmp <<
+            std::cout << "Got lower: expJmp " << expJmp <<
               " -> iLower " << std::dec << iLower << std::endl;
 #endif
                 iUpper += iLower;
@@ -1032,13 +1033,13 @@ forcedCheck:
             else {
                 // Could be r[v] + k, where k is positive; in this case
                 // the lower bound is -k
-                bool bRet = ssJmp->search(&expRegPlus, temp);
+                bool bRet = expJmp->search(&expRegPlus, temp);
                 if (bRet) {
                     // We now have the lower bound, and all is done
                     iLower =
-                      -((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
+                      -((Const*)((Binary*)expJmp)->getSubExp2())->getInt();
 #if DEBUG_SWITCH
-                    std::cout << "Got lower: ssJmp " << ssJmp <<
+                    std::cout << "Got lower: expJmp " << expJmp <<
                       " -> iLower " << std::dec; std::cout << iLower << "\n";
 #endif
                     iUpper += iLower;
@@ -1086,7 +1087,8 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     pSwitchInfo->uTable = uTable;
     pSwitchInfo->iNumTable = iNumTable;
     pSwitchInfo->iOffset = iOffset;
-    CaseStatement* jump = (CaseStatement*)pSwitchBB->getRTLs()->back();
+    RTL* last = pSwitchBB->getRTLs()->back();
+    CaseStatement* jump = (CaseStatement*)last->getHlStmt();
     jump->setSwitchInfo(pSwitchInfo);
 
     // Now add an assignment to the RTL defining the switch variable, so we can
@@ -1098,7 +1100,7 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     // r[9] = m[r[16] + 572]
     Exp* pLHS = pProc->newLocal(new IntegerType());
 
-    // Want the defining assignment. Assume it's the last RTAssign of the RTL
+    // Want the defining assignment. Assume it's the last Assign of the RTL
     int n = (*itDefinesSw)->getNumStmt();
     int i=n-1;
     Statement* currStmt = (*itDefinesSw)->elementAt(i);
@@ -1143,19 +1145,20 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
 void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
   BinaryFile* pBF) {
 
-    CaseStatement* jump = (CaseStatement*)pBB->getRTLs()->back();
+    RTL* last = pBB->getRTLs()->back();
+    CaseStatement* jump = (CaseStatement*)last->getHlStmt();
     SWITCH_INFO* si = jump->getSwitchInfo();
     // Update the delta field
     si->delta = delta;
 
-#if DEBUG_SWITCH
-    std::cout << "Found switch statement type " << si->chForm <<
-      " with table at 0x" << std::hex << si->uTable << ", ";
-    if (si->iNumTable)
-        std::cout << std::dec << si->iNumTable << " entries, ";
-    std::cout << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper <<
-      "\n";
-#endif
+    if (Boomerang::get()->vFlag) {
+        std::cerr << "Found switch statement type " << si->chForm <<
+          " with table at 0x" << std::hex << si->uTable << ", ";
+        if (si->iNumTable)
+            std::cerr << std::dec << si->iNumTable << " entries, ";
+        std::cerr << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper <<
+          "\n";
+    }
     ADDRESS uSwitch;
     int iNumOut, iNum;
     if (si->chForm == 'H') {
