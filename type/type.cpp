@@ -1239,10 +1239,12 @@ Type* SizeType::mergeWith(Type* other) {
 
 Type* UpperType::mergeWith(Type* other) {
 	// FIXME: TBC
+	return this;
 }
 
 Type* LowerType::mergeWith(Type* other) {
 	// FIXME: TBC
+	return this;
 }
 
 
