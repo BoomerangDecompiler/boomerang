@@ -1108,7 +1108,6 @@ void UserProc::decompile_down() {
         else std::cerr << "No reach exit!";
         StatementSet* availExit = cfg->getAvailExit();
         if (availExit) {
-std::cerr << "AvailExit is at 0x" << std::hex << (unsigned)cfg->getAvailExit() << "\n";
             std::cerr << "\navailExit for proc " << getName() <<
               " (on way down):\n";
             for (Statement* s = availExit->getFirst(oo); s;
@@ -1549,9 +1548,9 @@ bool UserProc::propagateAndRemoveStatements() {
             continue;
         Exp* rhs = s->getRight();
         if (s->canPropagateToAll()) {
-            if (Boomerang::get()->numToPropogate >= 0) {
-                if (Boomerang::get()->numToPropogate == 0) return change;
-                Boomerang::get()->numToPropogate--;
+            if (Boomerang::get()->numToPropagate >= 0) {
+                if (Boomerang::get()->numToPropagate == 0) return change;
+                Boomerang::get()->numToPropagate--;
             }
             if (cfg->getReachExit()->exists(s)) {
                 if (s->getNumUses() != 0) {
