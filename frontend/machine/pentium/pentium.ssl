@@ -628,7 +628,7 @@ CBW
             *16* %ax := sgnex(8, 16, %al);
 
 CWDE    
-            *32* %eax := sgnex(16,32,%eax);
+            *32* %eax := sgnex(16,32,%ax);
 
 CLC    
             *1* %CF := 0;
