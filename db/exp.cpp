@@ -2785,12 +2785,18 @@ Exp* RefExp::polySimplify(bool& bMod) {
 
 /*==============================================================================
  * FUNCTION:		Exp::simplifyAddr
- * OVERVIEW:		Just do addressof simplification: a[ m[ any ]] == any,
+ * OVERVIEW:		Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any,
  *					  and also a[ size m[ any ]] == any
+ * TODO:			Replace with a visitor some day
  * PARAMETERS:		<none>
  * RETURNS:			Ptr to the simplified expression
  *============================================================================*/
 Exp* Unary::simplifyAddr() {
+	Exp* sub;
+	if (op == opMemOf && subExp1->isAddrOf()) {
+		Unary* s = (Unary*)becomeSubExp1();
+		return s->becomeSubExp1();
+	}
 	if (op != opAddrOf) {
 		// Not a[ anything ]. Recurse
 		subExp1 = subExp1->simplifyAddr();
@@ -2801,7 +2807,7 @@ Exp* Unary::simplifyAddr() {
 		return s->becomeSubExp1();
 	}
 	if (subExp1->getOper() == opSize) {
-		Exp* sub = subExp1->getSubExp2();
+		sub = subExp1->getSubExp2();
 		if (sub->getOper() == opMemOf) {
 			// Remove the a[
 			Binary* b = (Binary*)becomeSubExp1();
