@@ -135,7 +135,7 @@ enum OPER
     opItof,                 // Integer to floating point (and size) conversion
     opFtoi,                 // Floating point to integer (and size) conversion
     opFround,               // Floating point to nearest float conversion
-    opFtrunc,               // chop float to int, e.g. 3.01 -> 3.00
+    opFtrunc,               // chop float to int, e.g. 3.99 -> 3.00
     opFabs,                 // floating point absolute function
     opForceInt,             // Forcibly change current type to int/flt,
     opForceFlt,             //  without changing any of the bits
