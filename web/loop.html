@@ -1,0 +1,117 @@
+<title>Removing null loops</title>
+<h1>Decompiling loops</h1>
+<p>Consider the following program:
+<pre>
+int main() {
+   int i;
+   for (i = 0; i < 8; i++)
+	;
+   printf("%i\n", i);
+   return 0;
+}
+</pre>
+<p>Regardless of how the compiler munges this input, a decompiler should
+generate the following output:
+<pre>
+int main() {
+   printf("%i\n", 8);
+   return 0;
+}
+</pre>
+<p>Because it is the simplest equivilent program.  At the moment (4 June 2003) we generate something like this:
+<pre>
+int main() {
+   int local0;
+   local0 = 0;
+   while (local0 < 8) {
+       local0 = local0 + 1;
+   }
+   printf("%i\n", local0);
+}
+</pre>
+<p>So it is clear that our decompiler still has more work to do.  The above can be transformed into the correct program by incrementally unrolling the loop.
+By looking at the condition of the while statement we can see that the body of the loop must execute at least once, therefore it is legal to duplicate the 
+body of the loop before the condition:
+<pre>
+int main() {
+   int local0;
+   local0 = 0;
+   local0 = local0 + 1;
+   while (local0 < 8) {
+       local0 = local0 + 1;
+   }
+   printf("%i\n", local0);
+}
+</pre>
+<p>The two statements before the condition can be simplified, and the unrolling can be performed again and again.  Eventually we get the following:
+<pre>
+int main() {
+   int local0;
+   local0 = 8;
+   while (local0 < 8) {
+       local0 = local0 + 1;
+   }
+   printf("%i\n", local0);
+}
+</pre>
+<p>Now we can see that the condition will always be false, and the body of the loop will <i>never</i> be executed.  It is therefore legal to remove the entire while statement!  After which a single propogation will result in the correct output -- the simplest possible program.  
+<h2>Undecidability</h2>
+<p>Someone, somewhere, is likely to tell me that what I have suggested above is undecidable, so I might as well address them here.  To state it explicitly, <i>in general, determining which branch of a conditional is taken is an undecidable problem</i>.  For the above example, it is not an undecidable problem to determine when the body of the loop will execute at least once (the true branch) and it is not an undecidable problem to determine when the body of the loop will never be executed (the false branch).  However, <i>in the general case</i> it is.  My quickest answer is simply to ignore the cases where it is not obvious like it is above, and therefore to state that our decompiler is not complete and that it never can be.  This is correct, but I think we can do a lot more than just the obvious cases.
+<p>Irrespective of its undecidability, determining which way a branch will go is a complex problem for all but the obvious cases.  For the above example I suggest the following algorithm:
+<ul>
+<li>Transform to Implicit SSA form
+<li>Take a copy of the while condition
+<li>Remove any uses in the condition which are dominated by the condition
+<li>Do any propagations into the condition that are possible
+<li>Simplify the condition
+</ul>
+<p>If the result is <i>true</i> then the body of the loop will be executed at least once.  If the result is <i>false</i> then the body of the loop will never be executed.  If the result is something else then there is nothing we can say about the loop.   I will now apply this algorithm to the above (obvious) example.  First, transform to Implicit SSA form:
+<pre>
+1   local0 = 0;
+2   while (local0{1 3} < 8) {
+3       local0 = local0{1 3} + 1;
+    }
+4   printf("%i\n", local0{1 3});
+</pre>
+<p>Take a copy of the while condition:
+<pre>
+    local0{1 3} < 8
+</pre>
+<p>Remove any uses in the condition which are dominated by the condition:
+<pre>
+    local0{1} < 8
+</pre>
+<p>Do any propogations into the condition that are possible:
+<pre>
+    0 < 8
+</pre>
+<p>Simplify the condition:
+<pre>
+    true
+</pre>
+<p>Therefore the loop body will be executed at least once.  The algorithm works similarly for local0 = 8 showing that the loop body is never executed.  For a more complicated example the algorithm fails:
+<pre>
+1   local0 = 0;
+2   if (...) {
+3      local0 = 3;
+    }
+4   while (local0{1 3 5} < 8) {
+5       local0 = local0{1 3 5} + 1;
+    }
+6   printf("%i\n", local0{1 3 5});
+</pre>
+<p>Take a copy of the condition:
+<pre>
+    local0{1 3 5} < 8
+</pre>
+<p>Remove any uses in the condition which are dominated by the condition:
+<pre>
+    local0{1 3} < 8
+</pre>
+<p>No propogations are possible into the condition, and therefore no simplifications can be done.  Unfortunately, the algorithm is not strong enough to recognise that both the definition of local0 at statement 1 and the definition of local0 at statement 3 define a value that is less than 8.  We could persist on this path and try to make the algorithm more general, but we are quickly marching towards undecidability.  One way we could do it is to expand the condition, making the semantics of the SSA form more explicit.  To show that the body of the loop is always taken at least once we must show:
+<pre>
+    local0{1} < 8 && local0{3} < 8
+</pre>
+<p>This is adequate for most cases, but it's difficult to come up with a sensible condition in many situations.
+<br>
+<p><b>To be continued</b>.
