@@ -97,6 +97,7 @@ typedef union {
    char *str;
    Type *type;
    std::list<Parameter*> *param_list;
+   std::list<int> *num_list;
    Parameter *param;
    Exp *exp;
    Signature *sig;
@@ -160,21 +161,21 @@ typedef union {
 #ifndef YY_AnsiCParser_PURE
 
 /* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 164 "ansi-c-parser.h"
+#line 165 "ansi-c-parser.h"
 
 #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
 /* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 171 "ansi-c-parser.h"
+#line 172 "ansi-c-parser.h"
 
 #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
 /* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 178 "ansi-c-parser.h"
+#line 179 "ansi-c-parser.h"
 
 #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_AnsiCParser_DEBUG */
@@ -182,7 +183,7 @@ typedef union {
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
 /* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 186 "ansi-c-parser.h"
+#line 187 "ansi-c-parser.h"
 
 #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
@@ -260,7 +261,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 
 
 /* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 264 "ansi-c-parser.h"
+#line 265 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -279,61 +280,62 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 #define	REGOF	273
 #define	MEMOF	274
 #define	CUSTOM	275
-#define	WITHSTACK	276
-#define	PTR_OP	277
-#define	INC_OP	278
-#define	DEC_OP	279
-#define	LEFT_OP	280
-#define	RIGHT_OP	281
-#define	LE_OP	282
-#define	GE_OP	283
-#define	EQ_OP	284
-#define	NE_OP	285
-#define	AND_OP	286
-#define	OR_OP	287
-#define	MUL_ASSIGN	288
-#define	DIV_ASSIGN	289
-#define	MOD_ASSIGN	290
-#define	ADD_ASSIGN	291
-#define	SUB_ASSIGN	292
-#define	LEFT_ASSIGN	293
-#define	RIGHT_ASSIGN	294
-#define	AND_ASSIGN	295
-#define	XOR_ASSIGN	296
-#define	OR_ASSIGN	297
-#define	TYPE_NAME	298
-#define	TYPEDEF	299
-#define	EXTERN	300
-#define	STATIC	301
-#define	AUTO	302
-#define	REGISTER	303
-#define	CHAR	304
-#define	SHORT	305
-#define	INT	306
-#define	LONG	307
-#define	SIGNED	308
-#define	UNSIGNED	309
-#define	FLOAT	310
-#define	DOUBLE	311
-#define	CONST	312
-#define	VOLATILE	313
-#define	VOID	314
-#define	STRUCT	315
-#define	UNION	316
-#define	ENUM	317
-#define	ELLIPSIS	318
-#define	CASE	319
-#define	DEFAULT	320
-#define	IF	321
-#define	ELSE	322
-#define	SWITCH	323
-#define	WHILE	324
-#define	DO	325
-#define	FOR	326
-#define	GOTO	327
-#define	CONTINUE	328
-#define	BREAK	329
-#define	RETURN	330
+#define	PREFER	276
+#define	WITHSTACK	277
+#define	PTR_OP	278
+#define	INC_OP	279
+#define	DEC_OP	280
+#define	LEFT_OP	281
+#define	RIGHT_OP	282
+#define	LE_OP	283
+#define	GE_OP	284
+#define	EQ_OP	285
+#define	NE_OP	286
+#define	AND_OP	287
+#define	OR_OP	288
+#define	MUL_ASSIGN	289
+#define	DIV_ASSIGN	290
+#define	MOD_ASSIGN	291
+#define	ADD_ASSIGN	292
+#define	SUB_ASSIGN	293
+#define	LEFT_ASSIGN	294
+#define	RIGHT_ASSIGN	295
+#define	AND_ASSIGN	296
+#define	XOR_ASSIGN	297
+#define	OR_ASSIGN	298
+#define	TYPE_NAME	299
+#define	TYPEDEF	300
+#define	EXTERN	301
+#define	STATIC	302
+#define	AUTO	303
+#define	REGISTER	304
+#define	CHAR	305
+#define	SHORT	306
+#define	INT	307
+#define	LONG	308
+#define	SIGNED	309
+#define	UNSIGNED	310
+#define	FLOAT	311
+#define	DOUBLE	312
+#define	CONST	313
+#define	VOLATILE	314
+#define	VOID	315
+#define	STRUCT	316
+#define	UNION	317
+#define	ENUM	318
+#define	ELLIPSIS	319
+#define	CASE	320
+#define	DEFAULT	321
+#define	IF	322
+#define	ELSE	323
+#define	SWITCH	324
+#define	WHILE	325
+#define	DO	326
+#define	FOR	327
+#define	GOTO	328
+#define	CONTINUE	329
+#define	BREAK	330
+#define	RETURN	331
 
 
 #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
@@ -378,7 +380,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 382 "ansi-c-parser.h"
+#line 384 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -397,6 +399,7 @@ static const int PASCAL;
 static const int REGOF;
 static const int MEMOF;
 static const int CUSTOM;
+static const int PREFER;
 static const int WITHSTACK;
 static const int PTR_OP;
 static const int INC_OP;
@@ -460,7 +463,7 @@ static const int RETURN;
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
 /* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 464 "ansi-c-parser.h"
+#line 467 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -479,61 +482,62 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,REGOF=273
 	,MEMOF=274
 	,CUSTOM=275
-	,WITHSTACK=276
-	,PTR_OP=277
-	,INC_OP=278
-	,DEC_OP=279
-	,LEFT_OP=280
-	,RIGHT_OP=281
-	,LE_OP=282
-	,GE_OP=283
-	,EQ_OP=284
-	,NE_OP=285
-	,AND_OP=286
-	,OR_OP=287
-	,MUL_ASSIGN=288
-	,DIV_ASSIGN=289
-	,MOD_ASSIGN=290
-	,ADD_ASSIGN=291
-	,SUB_ASSIGN=292
-	,LEFT_ASSIGN=293
-	,RIGHT_ASSIGN=294
-	,AND_ASSIGN=295
-	,XOR_ASSIGN=296
-	,OR_ASSIGN=297
-	,TYPE_NAME=298
-	,TYPEDEF=299
-	,EXTERN=300
-	,STATIC=301
-	,AUTO=302
-	,REGISTER=303
-	,CHAR=304
-	,SHORT=305
-	,INT=306
-	,LONG=307
-	,SIGNED=308
-	,UNSIGNED=309
-	,FLOAT=310
-	,DOUBLE=311
-	,CONST=312
-	,VOLATILE=313
-	,VOID=314
-	,STRUCT=315
-	,UNION=316
-	,ENUM=317
-	,ELLIPSIS=318
-	,CASE=319
-	,DEFAULT=320
-	,IF=321
-	,ELSE=322
-	,SWITCH=323
-	,WHILE=324
-	,DO=325
-	,FOR=326
-	,GOTO=327
-	,CONTINUE=328
-	,BREAK=329
-	,RETURN=330
+	,PREFER=276
+	,WITHSTACK=277
+	,PTR_OP=278
+	,INC_OP=279
+	,DEC_OP=280
+	,LEFT_OP=281
+	,RIGHT_OP=282
+	,LE_OP=283
+	,GE_OP=284
+	,EQ_OP=285
+	,NE_OP=286
+	,AND_OP=287
+	,OR_OP=288
+	,MUL_ASSIGN=289
+	,DIV_ASSIGN=290
+	,MOD_ASSIGN=291
+	,ADD_ASSIGN=292
+	,SUB_ASSIGN=293
+	,LEFT_ASSIGN=294
+	,RIGHT_ASSIGN=295
+	,AND_ASSIGN=296
+	,XOR_ASSIGN=297
+	,OR_ASSIGN=298
+	,TYPE_NAME=299
+	,TYPEDEF=300
+	,EXTERN=301
+	,STATIC=302
+	,AUTO=303
+	,REGISTER=304
+	,CHAR=305
+	,SHORT=306
+	,INT=307
+	,LONG=308
+	,SIGNED=309
+	,UNSIGNED=310
+	,FLOAT=311
+	,DOUBLE=312
+	,CONST=313
+	,VOLATILE=314
+	,VOID=315
+	,STRUCT=316
+	,UNION=317
+	,ENUM=318
+	,ELLIPSIS=319
+	,CASE=320
+	,DEFAULT=321
+	,IF=322
+	,ELSE=323
+	,SWITCH=324
+	,WHILE=325
+	,DO=326
+	,FOR=327
+	,GOTO=328
+	,CONTINUE=329
+	,BREAK=330
+	,RETURN=331
 
 
 #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
@@ -590,5 +594,5 @@ public:
 /* END */
 
 /* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 594 "ansi-c-parser.h"
+#line 598 "ansi-c-parser.h"
 #endif

@@ -752,7 +752,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
 }
 
 void CHLLCode::AddCallStatement(int indLevel, Proc *proc, 
-    std::vector<Exp*> &args, LocationSet &defs)
+    const char *name, std::vector<Exp*> &args, LocationSet &defs)
 {
     char s[BUFSIZE];
     indent(s, indLevel);
@@ -762,7 +762,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
         strcat(s, " = ");
         defs.remove((Exp*)*it);
     }
-    strcat(s, proc->getName());
+    strcat(s, name); 
     strcat(s, "(");
     for (unsigned int i = 0; i < args.size(); i++) {
         Type *t = proc->getSignature()->getParamType(i);

@@ -1765,7 +1765,16 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     LOG << " in proc " << proc->getName() << "\n";
 #endif
     assert(p);
-    hll->AddCallStatement(indLevel, p, arguments, defs);
+    if (p->isLib() && *p->getSignature()->getPreferedName()) {
+        std::vector<Exp*> args;
+        for (unsigned int i = 0; i < p->getSignature()->getNumPreferedParams();
+             i++)
+            args.push_back(arguments[p->getSignature()->getPreferedParam(i)]);
+        hll->AddCallStatement(indLevel, p,  
+                              p->getSignature()->getPreferedName(),
+                              args, defs);
+    } else
+        hll->AddCallStatement(indLevel, p, p->getName(), arguments, defs);
 }
 
 void CallStatement::simplify() {

@@ -1,5 +1,5 @@
-int _IO_putc(char c);
+int _IO_putc(char c) PREFER int putchar(1);
 int __xstat (int __ver,
              const char *__filename,
-             stat *__stat_buf);
+             struct stat *__stat_buf) PREFER int stat(2,3);
 

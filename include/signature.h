@@ -77,6 +77,9 @@ protected:
     std::vector<Return*> returns;
     Type *rettype;
     bool ellipsis;
+    Type *preferedReturn;
+    std::string preferedName;
+    std::vector<int> preferedParams;
 
     void updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
     bool usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
@@ -188,6 +191,15 @@ static StatementList& getStdRetStmt(Prog* prog);
     // ascii versions of platform, calling convention name
 static char*   platformName(platform plat);
 static char*   conventionName(callconv cc);
+
+    // prefered format
+    void setPreferedReturn(Type *ty) { preferedReturn = ty; }
+    void setPreferedName(const char *nam) { preferedName = nam; }
+    void addPreferedParameter(int n) { preferedParams.push_back(n); }
+    Type *getPreferedReturn() { return preferedReturn; }
+    const char *getPreferedName() { return preferedName.c_str(); }
+    unsigned int getNumPreferedParams() { return preferedParams.size(); }
+    int getPreferedParam(int n) { return preferedParams[n]; }
 };
 
 class CustomSignature : public Signature {

@@ -337,7 +337,7 @@ class YY_AnsiCScanner_CLASS YY_AnsiCScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 167 "ansi-c.l"
+#line 168 "ansi-c.l"
 #endif
 #line 302 "/home/02/binary/u1.luna.tools/flex++/lib/flexskel.h"
 

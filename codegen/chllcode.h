@@ -95,7 +95,7 @@ public:
 	// sequential statements
 	virtual void AddAssignmentStatement(int indLevel, Assign *asgn);
 	virtual void AddCallStatement(int indLevel, Proc *proc, 
-            std::vector<Exp*> &args, LocationSet &defs);
+            const char *name, std::vector<Exp*> &args, LocationSet &defs);
 	virtual void AddIndCallStatement(int indLevel, Exp *exp,
             std::vector<Exp*> &args);
 	virtual void AddReturnStatement(int indLevel, 

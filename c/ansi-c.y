@@ -99,7 +99,7 @@ public: \
 %token CDECL PASCAL
 %token REGOF
 %token MEMOF
-%token CUSTOM
+%token CUSTOM PREFER
 %token WITHSTACK
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
@@ -117,6 +117,7 @@ public: \
    char *str;
    Type *type;
    std::list<Parameter*> *param_list;
+   std::list<int> *num_list;
    Parameter *param;
    Exp *exp;
    Signature *sig;
@@ -137,6 +138,7 @@ public: \
 %type<exp> exp
 %type<custom_options> custom_options
 %type<param_list> param_list;
+%type<num_list> num_list;
 %type<type_ident> type_ident;
 %type<type_ident_list> type_ident_list;
 %type<sig> signature;
@@ -172,6 +174,19 @@ convention:
         { $$ = CONV_C; }
         | PASCAL
         { $$ = CONV_PASCAL; }
+        ;
+
+num_list: CONSTANT ',' num_list 
+        { $$ = $3;
+          $$->push_front($1);
+        }
+        | CONSTANT
+        { $$ = new std::list<int>();
+          $$->push_back($1);
+        }
+        | /* empty */
+        { $$ = new std::list<int>();
+        }
         ;
 
 param_list: param_exp ',' param_list 
@@ -277,11 +292,31 @@ type_decl: TYPEDEF type_ident ';'
                }
            delete $4;
            Type::addNamedType($2->nam.c_str(), new FuncType(sig)); 
+         } 
+         | STRUCT IDENTIFIER '{' type_ident_list '}' ';'
+         { CompoundType *t = new CompoundType(); 
+           for (std::list<TypeIdent*>::iterator it = $4->begin();
+                   it != $4->end(); it++) {
+              t->addType((*it)->ty, (*it)->nam.c_str());
+           }
+           char tmp[1024];
+           sprintf(tmp, "struct %s", $2);
+           Type::addNamedType(tmp, t); 
          }
          ;
 
 func_decl: signature ';'
          {
+           signatures.push_back($1);
+         }
+         | signature PREFER type_ident '(' num_list ')' ';'
+         {
+           $1->setPreferedReturn($3->ty);
+           $1->setPreferedName($3->nam.c_str());
+           for (std::list<int>::iterator it = $5->begin();
+                it != $5->end(); it++)
+               $1->addPreferedParameter(*it - 1);
+           delete $5;
            signatures.push_back($1);
          }
          ;
@@ -421,10 +456,16 @@ type: CHAR
     { $$ = new IntegerType(); }
     | UNSIGNED CHAR
     { $$ = new IntegerType(8, false); }
+    | UNSIGNED SHORT
+    { $$ = new IntegerType(16, false); }
     | UNSIGNED INT 
     { $$ = new IntegerType(32, false); }
     | LONG 
     { $$ = new IntegerType(); }
+    | LONG LONG
+    { $$ = new IntegerType(64); }
+    | UNSIGNED LONG LONG
+    { $$ = new IntegerType(64, false); }
     | FLOAT 
     { $$ = new FloatType(32); }
     | DOUBLE 
@@ -448,6 +489,12 @@ type: CHAR
     }
     | CONST type
     { $$ = $2; }
+    | STRUCT IDENTIFIER 
+    {
+      char tmp[1024];
+      sprintf(tmp, "struct %s", $2);
+      $$ = new NamedType(tmp);
+    }
     | STRUCT '{' type_ident_list '}'
     { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = $3->begin();

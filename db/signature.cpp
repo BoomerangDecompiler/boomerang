@@ -148,6 +148,9 @@ Signature *CallingConvention::Win32Signature::clone()
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
     return n;
 }
 
@@ -313,6 +316,9 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
     return n;
 }
 
@@ -462,6 +468,9 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
     return n;
 }
 
@@ -556,6 +565,9 @@ Signature *Signature::clone()
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
     return n;
 }
 
@@ -568,6 +580,9 @@ Signature *CustomSignature::clone()
     n->ellipsis = ellipsis;
     n->rettype = rettype;
     n->sp = sp;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
     return n;
 }
 
