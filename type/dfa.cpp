@@ -722,7 +722,9 @@ Type* Binary::ascendType() {
 	Type* tb = subExp2->ascendType();
 	switch (op) {
 		case opPlus:
+//std::cerr << "HACK: ascend type for `" << this << "', operands have types " << ta << " and " << tb << "\n";
 			return sigmaSum(ta, tb);
+			// Do I need to check here for Array* promotion? I think checking in descendType is enough
 		case opMinus:
 			return deltaDifference(ta, tb);
 		case opMult:
@@ -808,12 +810,9 @@ Type* Ternary::ascendType() {
 	switch (op) {
 		case opFsize:
 			return new FloatType(((Const*)subExp2)->getInt());
-		case opZfill: {
+		case opZfill: case opSgnEx: {
 			int toSize = ((Const*)subExp2)->getInt();
-			if (toSize == 1)
-				return new BooleanType;
-			else
-				return new IntegerType(toSize, -1);
+			return Type::newIntegerLikeType(toSize, op==opZfill ? -1 : 1);
 		}
 
 		default:
@@ -853,6 +852,14 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	}
 	switch (op) {
 		case opPlus:
+			if (parentType->isPointer()) {
+				if (ta->isInteger() && !subExp1->isIntConst()) {
+//std::cerr << "ARRAY HACK: parentType is " << parentType << ", tb is " << tb->getCtype() << ", ta is " << ta << ", this is " << this << "\n";
+				}
+				else if (tb->isInteger() && !subExp2->isIntConst()) {
+//std::cerr << "ARRAY HACK: parentType is " << parentType << ", ta is " << ta << ", this is " << this << "\n";
+                }
+			}
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
 			subExp1->descendType(ta, ch, proc);
 			tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
@@ -866,20 +873,19 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 			break;
 		case opGtrUns:	case opLessUns:
 		case opGtrEqUns:case opLessEqUns: {
-			int parentSize = parentType->getSize();
-			ta = ta->meetWith(new IntegerType(parentSize, -1), ch);
+			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
+			ta = ta->meetWith(new IntegerType(ta->getSize(), -1), ch);	// Must be unsigned
 			subExp1->descendType(ta, ch, proc);
-			tb = tb->meetWith(new IntegerType(parentSize, -1), ch);
-			subExp2->descendType(tb, ch, proc);
+			subExp2->descendType(ta, ch, proc);
 			break;
 		}
 		case opGtr:	case opLess:
 		case opGtrEq:case opLessEq: {
 			int parentSize = parentType->getSize();
-			ta = ta->meetWith(new IntegerType(parentSize, +1), ch);
+			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
+			ta = ta->meetWith(new IntegerType(ta->getSize(), +1), ch);	// Must be signed
 			subExp1->descendType(ta, ch, proc);
-			tb = tb->meetWith(new IntegerType(parentSize, +1), ch);
-			subExp2->descendType(tb, ch, proc);
+			subExp2->descendType(ta, ch, proc);
 			break;
 		}
 		case opBitAnd: case opBitOr: case opBitXor: {
@@ -944,16 +950,14 @@ void Ternary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 		case opFsize:
 			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, proc);
 			break;
-		case opZfill: {
+		case opZfill: case opSgnEx: {
 			int fromSize = ((Const*)subExp1)->getInt();
 			Type* fromType;
-			if (fromSize == 1)
-				fromType = new BooleanType;
-			else
-				fromType = new IntegerType(fromSize, -1);
+			fromType = Type::newIntegerLikeType(fromSize, op == opZfill ? -1 : 1);
 			subExp3->descendType(fromType, ch, proc);
 			break;
 		}
+
 		default:
 			break;
 	}
