@@ -924,6 +924,7 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder) {
  * FUNCTION:	getInstanceFor
  * OVERVIEW:	Guess the machine required to decode this binary file;
  *				  load the library and return an instance of FrontEnd
+ * NOTE:		No longer used... replaced by similar code in class BinaryFileFactory
  * PARAMETERS:	sName: name of the binary file
  *				dlHandle: ref to a void* needed for closeInstance
  *				prog: the program to decode
