@@ -673,6 +673,11 @@ Type* Binary::ascendType() {
 		case opMults:
 		case opDivs:
 			return new IntegerType(ta->getSize(), +1);
+		case opBitAnd: case opBitOr: case opBitXor:
+			return new IntegerType(ta->getSize(), 0);
+		case opLess:	case opGtr:		case opLessEq:		case opGtrEq:
+		case opLessUns:	case opGtrUns:	case opLessEqUns:	case opGtrEqUns:
+			return new BooleanType();
 		default:
 			// Many more cases to implement
 			return new VoidType;
@@ -745,6 +750,14 @@ Type* Ternary::ascendType() {
 	switch (op) {
 		case opFsize:
 			return new FloatType(((Const*)subExp2)->getInt());
+		case opZfill: {
+			int toSize = ((Const*)subExp2)->getInt();
+			if (toSize == 1)
+				return new BooleanType;
+			else
+				return new IntegerType(toSize, -1);
+		}
+
 		default:
 			break;
 	}
@@ -794,11 +807,31 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 			subExp2->descendType(tb, ch, proc);
 			break;
 		case opGtrUns:	case opLessUns:
-		case opGtrEqUns:case opLessEqUns:
-			ta = ta->meetWith(new IntegerType(32, -1), ch);
+		case opGtrEqUns:case opLessEqUns: {
+			int parentSize = parentType->getSize();
+			ta = ta->meetWith(new IntegerType(parentSize, -1), ch);
 			subExp1->descendType(ta, ch, proc);
-			tb = tb->meetWith(new IntegerType(32, -1), ch);
+			tb = tb->meetWith(new IntegerType(parentSize, -1), ch);
 			subExp2->descendType(tb, ch, proc);
+			break;
+		}
+		case opGtr:	case opLess:
+		case opGtrEq:case opLessEq: {
+			int parentSize = parentType->getSize();
+			ta = ta->meetWith(new IntegerType(parentSize, +1), ch);
+			subExp1->descendType(ta, ch, proc);
+			tb = tb->meetWith(new IntegerType(parentSize, +1), ch);
+			subExp2->descendType(tb, ch, proc);
+			break;
+		}
+		case opBitAnd: case opBitOr: case opBitXor: {
+			int parentSize = parentType->getSize();
+			ta = ta->meetWith(new IntegerType(parentSize, 0), ch);
+			subExp1->descendType(ta, ch, proc);
+			tb = tb->meetWith(new IntegerType(parentSize, 0), ch);
+			subExp2->descendType(tb, ch, proc);
+			break;
+		}
 		default:
 			// Many more cases to implement
 			break;
@@ -851,6 +884,16 @@ void Ternary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 		case opFsize:
 			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, proc);
 			break;
+		case opZfill: {
+			int fromSize = ((Const*)subExp1)->getInt();
+			Type* fromType;
+			if (fromSize == 1)
+				fromType = new BooleanType;
+			else
+				fromType = new IntegerType(fromSize, -1);
+			subExp3->descendType(fromType, ch, proc);
+			break;
+		}
 		default:
 			break;
 	}
