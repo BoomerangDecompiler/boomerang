@@ -58,8 +58,7 @@
  * RETURNS:         N/a
  *============================================================================*/
 HLJump::HLJump(ADDRESS instNativeAddr, std::list<Exp*>* listExp /*= NULL*/)
-    : RTL(instNativeAddr, listExp), pDest(NULL), m_isComputed(false)
-{
+    : RTL(instNativeAddr, listExp), pDest(NULL), m_isComputed(false) {
     kind = JUMP_RTL;
 }
 
@@ -71,8 +70,7 @@ HLJump::HLJump(ADDRESS instNativeAddr, std::list<Exp*>* listExp /*= NULL*/)
  * RETURNS:         N/a
  *============================================================================*/
 HLJump::HLJump(ADDRESS instNativeAddr, ADDRESS uDest) :
-    RTL(instNativeAddr), m_isComputed(false)
-{
+    RTL(instNativeAddr), m_isComputed(false) {
     kind = JUMP_RTL;
     // Note: we used to generate an assignment (pc := <dest>), but it gets
     // ignored anyway, and it causes us to declare pc as a variable in the back
@@ -86,8 +84,7 @@ HLJump::HLJump(ADDRESS instNativeAddr, ADDRESS uDest) :
  * PARAMETERS:      None
  * RETURNS:         N/a
  *============================================================================*/
-HLJump::~HLJump()
-{
+HLJump::~HLJump() {
     if (pDest) delete pDest;
 }
 
@@ -100,8 +97,7 @@ HLJump::~HLJump()
  * PARAMETERS:      <none>
  * RETURNS:         Fixed dest or -1 if there isn't one
  *============================================================================*/
-ADDRESS HLJump::getFixedDest() 
-{
+ADDRESS HLJump::getFixedDest() {
     if (pDest->getOper() != opIntConst) return NO_ADDRESS;
     return ((Const*)pDest)->getAddr();
 }
@@ -112,8 +108,7 @@ ADDRESS HLJump::getFixedDest()
  * PARAMETERS:      addr - the new fixed address
  * RETURNS:         Nothing
  *============================================================================*/
-void HLJump::setDest(Exp* pd)
-{
+void HLJump::setDest(Exp* pd) {
     if (pDest != NULL)
         delete pDest;
     pDest = pd;
@@ -125,8 +120,7 @@ void HLJump::setDest(Exp* pd)
  * PARAMETERS:      addr - the new fixed address
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJump::setDest(ADDRESS addr)
-{
+void HLJump::setDest(ADDRESS addr) {
 // This fails in FrontSparcTest, do you really want it to Mike? -trent
 //  assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
     // Delete the old destination if there is one
@@ -142,8 +136,7 @@ void HLJump::setDest(ADDRESS addr)
  * PARAMETERS:      None
  * RETURNS:         Pointer to the SS representing the dest of this jump
  *============================================================================*/
-Exp* HLJump::getDest() 
-{
+Exp* HLJump::getDest() {
     return pDest;
 }
 
@@ -156,8 +149,7 @@ Exp* HLJump::getDest()
  *                  negative)
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJump::adjustFixedDest(int delta)
-{
+void HLJump::adjustFixedDest(int delta) {
     // Ensure that the destination is fixed.
     if (pDest == 0 || pDest->getOper() != opIntConst)
         std::cerr << "Can't adjust destination of non-static CTI\n";
@@ -173,8 +165,7 @@ void HLJump::adjustFixedDest(int delta)
  *                  replace - the expression with which to replace it
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJump::searchAndReplace(Exp* search, Exp* replace)
-{
+void HLJump::searchAndReplace(Exp* search, Exp* replace) {
     RTL::searchAndReplace(search, replace);
     if (pDest) {
         bool change;
@@ -190,8 +181,7 @@ void HLJump::searchAndReplace(Exp* search, Exp* replace)
  *                           appended to it
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLJump::searchAll(Exp* search, std::list<Exp*> &result)
-{
+bool HLJump::searchAll(Exp* search, std::list<Exp*> &result) {
     return RTL::searchAll(search, result) ||
         ( pDest && pDest->searchAll(search, result) );
 }
@@ -202,8 +192,7 @@ bool HLJump::searchAll(Exp* search, std::list<Exp*> &result)
  * PARAMETERS:      os: stream to write to
  * RETURNS:         Nothing
  *============================================================================*/
-void HLJump::print(std::ostream& os /*= cout*/, bool withDF)
-{
+void HLJump::print(std::ostream& os /*= cout*/, bool withDF) {
     // Returns can all have semantics (e.g. ret/restore)
     if (expList.size() != 0)
         RTL::print(os, withDF);
@@ -233,8 +222,7 @@ void HLJump::print(std::ostream& os /*= cout*/, bool withDF)
  * PARAMETERS:    <none>
  * RETURNS:       <nothing>
  *============================================================================*/
-void HLJump::setIsComputed(bool b)
-{
+void HLJump::setIsComputed(bool b) {
     m_isComputed = b;
 }
 
@@ -246,8 +234,7 @@ void HLJump::setIsComputed(bool b)
  * PARAMETERS:    <none>
  * RETURNS:       this call is computed
  *============================================================================*/
-bool HLJump::isComputed() 
-{
+bool HLJump::isComputed() {
     return m_isComputed;
 }
 
@@ -257,8 +244,7 @@ bool HLJump::isComputed()
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this one
  *============================================================================*/
-RTL* HLJump::clone() 
-{
+RTL* HLJump::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -291,8 +277,7 @@ bool HLJump::accept(RTLVisitor* visitor) {
  * RETURNS:         <nothing>
  *============================================================================*/
 void HLJump::getUseDefLocations(LocationMap& locMap, LocationFilter* filter,
-    BITSET& defSet, BITSET& useSet, BITSET& useUndefSet, Proc* proc) const
-{
+    BITSET& defSet, BITSET& useSet, BITSET& useUndefSet, Proc* proc) const {
     // If jumps ever have semantics, then this call would be needed
     // RTL::getUseDefLocations(locMap, filter, defSet, useSet, useUndefSet,
         // proc);
@@ -303,8 +288,7 @@ void HLJump::getUseDefLocations(LocationMap& locMap, LocationFilter* filter,
 #endif
 
 // serialize this rtl
-bool HLJump::serialize_rest(std::ostream &ouf)
-{
+bool HLJump::serialize_rest(std::ostream &ouf) {
     if (pDest && pDest->getOper() == opIntConst) {
         saveFID(ouf, FID_RTL_FIXDEST);
         saveValue(ouf, ((Const *)pDest)->getAddr());
@@ -318,8 +302,7 @@ bool HLJump::serialize_rest(std::ostream &ouf)
 }
 
 // deserialize an rtl
-bool HLJump::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLJump::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         case FID_RTL_FIXDEST:
             {
@@ -344,13 +327,11 @@ bool HLJump::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // dont generate any code for jumps, they will be handled by the BB
 }
 
-void HLJump::simplify()
-{
+void HLJump::simplify() {
     if (isComputed()) {
         Exp *e = pDest->simplifyArith()->clone();
         delete pDest;
@@ -370,9 +351,8 @@ void HLJump::simplify()
  * RETURNS:         N/a
  *============================================================================*/
 HLJcond::HLJcond(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/) :
-    HLJump(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL),
-    bFloat(false)
-{
+  HLJump(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL),
+  bFloat(false) {
     kind = JCOND_RTL;
 }
 
@@ -382,8 +362,7 @@ HLJcond::HLJcond(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/) :
  * PARAMETERS:      None
  * RETURNS:         N/a
  *============================================================================*/
-HLJcond::~HLJcond()
-{
+HLJcond::~HLJcond() {
     if (pCond)
         delete pCond;
 }
@@ -398,8 +377,7 @@ HLJcond::~HLJcond()
  *                    condition codes
  * RETURNS:         a semantic string
  *============================================================================*/
-void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
-{
+void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
 
@@ -492,8 +470,7 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJcond::makeSigned()
-{
+void HLJcond::makeSigned() {
     // Make this into a signed branch
     switch (jtCond)
     {
@@ -513,8 +490,7 @@ void HLJcond::makeSigned()
  * PARAMETERS:      <none>
  * RETURNS:         ptr to an expression
  *============================================================================*/
-Exp* HLJcond::getCondExpr()
-{
+Exp* HLJcond::getCondExpr() {
     return pCond;
 }
 
@@ -524,14 +500,12 @@ Exp* HLJcond::getCondExpr()
  * PARAMETERS:      Pointer to Exp to set
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJcond::setCondExpr(Exp* e)
-{
+void HLJcond::setCondExpr(Exp* e) {
     if (pCond) delete pCond;
     pCond = e;
 }
 
-bool HLJcond::search(Exp* search, Exp*& result)
-{
+bool HLJcond::search(Exp* search, Exp*& result) {
     if (pCond) return pCond->search(search, result);
     result = NULL;
     return false;
@@ -544,8 +518,7 @@ bool HLJcond::search(Exp* search, Exp*& result)
  *                  replace - the expression with which to replace it
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLJcond::searchAndReplace(Exp* search, Exp* replace)
-{
+void HLJcond::searchAndReplace(Exp* search, Exp* replace) {
     HLJump::searchAndReplace(search, replace);
     bool change;
     if (pCond)
@@ -553,8 +526,7 @@ void HLJcond::searchAndReplace(Exp* search, Exp* replace)
 }
 
 // update type for expression
-Type *HLJcond::updateType(Exp *e, Type *curType)
-{
+Type *HLJcond::updateType(Exp *e, Type *curType) {
     if (jtCond == HLJCOND_JUGE || jtCond == HLJCOND_JULE ||
         jtCond == HLJCOND_JUG || jtCond == HLJCOND_JUL && 
         curType->isInteger()) {
@@ -571,8 +543,7 @@ Type *HLJcond::updateType(Exp *e, Type *curType)
  *                           appended to it
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLJcond::searchAll(Exp* search, std::list<Exp*> &result)
-{
+bool HLJcond::searchAll(Exp* search, std::list<Exp*> &result) {
     return RTL::searchAll(search, result) ||
       (pCond && (pCond->searchAll(search, result)));
 }
@@ -584,8 +555,7 @@ bool HLJcond::searchAll(Exp* search, std::list<Exp*> &result)
  * PARAMETERS:      os: stream
  * RETURNS:         Nothing
  *============================================================================*/
-void HLJcond::print(std::ostream& os /*= cout*/, bool withDF)
-{
+void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
     // These can have semantics (e.g. pa-risc add and (conditionally) branch)
     if (expList.size() != 0)
         RTL::print(os, withDF);
@@ -632,8 +602,7 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF)
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this HLJcond
  *============================================================================*/
-RTL* HLJcond::clone()
-{
+RTL* HLJcond::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -656,8 +625,7 @@ bool HLJcond::accept(RTLVisitor* visitor) {
 }
 
 // serialize this rtl
-bool HLJcond::serialize_rest(std::ostream &ouf)
-{
+bool HLJcond::serialize_rest(std::ostream &ouf) {
     HLJump::serialize_rest(ouf);
 
     saveFID(ouf, FID_RTL_JCONDTYPE);
@@ -676,8 +644,7 @@ bool HLJcond::serialize_rest(std::ostream &ouf)
 }
 
 // deserialize an rtl
-bool HLJcond::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLJcond::deserialize_fid(std::istream &inf, int fid) {
     char ch;
 
     switch (fid) {
@@ -698,20 +665,17 @@ bool HLJcond::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLJcond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLJcond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // dont generate any code for jconds, they will be handled by the bb
 }
 
-bool HLJcond::usesExp(Exp *e)
-{
+bool HLJcond::usesExp(Exp *e) {
     Exp *tmp;
     return pCond && pCond->search(e, tmp);
 }
 
 // special print functions
-void HLJcond::printAsUse(std::ostream &os)
-{
+void HLJcond::printAsUse(std::ostream &os) {
     os << "JCOND ";
     if (pCond)
         pCond->print(os);
@@ -719,8 +683,7 @@ void HLJcond::printAsUse(std::ostream &os)
         os << "<empty cond>";
 }
 
-void HLJcond::printAsUseBy(std::ostream &os)
-{
+void HLJcond::printAsUseBy(std::ostream &os) {
     os << "JCOND ";
     if (pCond)
         pCond->print(os);
@@ -729,20 +692,17 @@ void HLJcond::printAsUseBy(std::ostream &os)
 }
 
 // inline any constants in the statement
-void HLJcond::inlineConstants(Prog *prog)
-{
+void HLJcond::inlineConstants(Prog *prog) {
 }
 
-void HLJcond::doReplaceUse(Statement *use)
-{
+void HLJcond::doReplaceUse(Statement *use) {
     bool change;
     assert(pCond);
     pCond = pCond->searchReplaceAll(use->getLeft(), use->getRight(), change);
     simplify();
 }
 
-void HLJcond::simplify()
-{
+void HLJcond::simplify() {
     if (pCond) {
         Exp *e = pCond->simplifyArith()->clone();
         delete pCond;
@@ -837,8 +797,7 @@ void HLJcond::simplify()
  * RETURNS:         N/a
  *============================================================================*/
 HLNwayJump::HLNwayJump(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/) :
-    HLJump(instNativeAddr, le), pSwitchInfo(NULL)
-{
+    HLJump(instNativeAddr, le), pSwitchInfo(NULL) {
     kind = NWAYJUMP_RTL;
 }
 
@@ -850,8 +809,7 @@ HLNwayJump::HLNwayJump(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/) :
  * PARAMETERS:      None
  * RETURNS:         N/a
  *============================================================================*/
-HLNwayJump::~HLNwayJump()
-{
+HLNwayJump::~HLNwayJump() {
     if (pSwitchInfo)
         delete pSwitchInfo;
 }
@@ -862,8 +820,7 @@ HLNwayJump::~HLNwayJump()
  * PARAMETERS:      <none>
  * RETURNS:         a semantic string
  *============================================================================*/
-SWITCH_INFO* HLNwayJump::getSwitchInfo()
-{
+SWITCH_INFO* HLNwayJump::getSwitchInfo() {
     return pSwitchInfo;
 }
 
@@ -873,8 +830,7 @@ SWITCH_INFO* HLNwayJump::getSwitchInfo()
  * PARAMETERS:      Pointer to SWITCH_INFO struct
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLNwayJump::setSwitchInfo(SWITCH_INFO* psi)
-{
+void HLNwayJump::setSwitchInfo(SWITCH_INFO* psi) {
     pSwitchInfo = psi;
 }
 
@@ -885,8 +841,7 @@ void HLNwayJump::setSwitchInfo(SWITCH_INFO* psi)
  *                  replace - the expression with which to replace it
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLNwayJump::searchAndReplace(Exp* search, Exp* replace)
-{
+void HLNwayJump::searchAndReplace(Exp* search, Exp* replace) {
     HLJump::searchAndReplace(search, replace);
     bool ch;
     if (pSwitchInfo && pSwitchInfo->pSwitchVar)
@@ -902,8 +857,7 @@ void HLNwayJump::searchAndReplace(Exp* search, Exp* replace)
  * NOTES:           search can't easily be made const
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLNwayJump::searchAll(Exp* search, std::list<Exp*> &result)
-{
+bool HLNwayJump::searchAll(Exp* search, std::list<Exp*> &result) {
     return HLJump::searchAll(search, result) ||
         ( pSwitchInfo && pSwitchInfo->pSwitchVar &&
           pSwitchInfo->pSwitchVar->searchAll(search, result) );
@@ -916,8 +870,7 @@ bool HLNwayJump::searchAll(Exp* search, std::list<Exp*> &result)
  *                  indent: number of columns to skip
  * RETURNS:         Nothing
  *============================================================================*/
-void HLNwayJump::print(std::ostream& os /*= cout*/, bool withDF)
-{
+void HLNwayJump::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
     os << "NWAY_JUMP [";
@@ -936,8 +889,7 @@ void HLNwayJump::print(std::ostream& os /*= cout*/, bool withDF)
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this one
  *============================================================================*/
-RTL* HLNwayJump::clone()
-{
+RTL* HLNwayJump::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -958,14 +910,12 @@ bool HLNwayJump::accept(RTLVisitor* visitor) {
 }
 
 // serialize this rtl
-bool HLNwayJump::serialize_rest(std::ostream &ouf)
-{
+bool HLNwayJump::serialize_rest(std::ostream &ouf) {
     return true;
 }
 
 // deserialize an rtl
-bool HLNwayJump::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLNwayJump::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         default:
             return RTL::deserialize_fid(inf, fid);
@@ -974,13 +924,11 @@ bool HLNwayJump::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLNwayJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLNwayJump::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // dont generate any code for switches, they will be handled by the bb
 }
 
-void HLNwayJump::simplify()
-{
+void HLNwayJump::simplify() {
     // TODO
 }
 
@@ -999,8 +947,7 @@ HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
   std::list<Exp*>* le /*= NULL*/):
 
     HLJump(instNativeAddr, le),returnTypeSize(returnTypeSize),
-      returnAfterCall(false), returnLoc(NULL)
-{
+      returnAfterCall(false), returnLoc(NULL) {
     kind = CALL_RTL;
     postCallExpList = NULL;
     procDest = NULL;
@@ -1012,8 +959,7 @@ HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
  * PARAMETERS:    BB - the enclosing basic block of this call
  * RETURNS:       <nothing>
  *============================================================================*/
-HLCall::~HLCall()
-{
+HLCall::~HLCall() {
     std::list<Exp*>::iterator it;
     for (unsigned i = 0; i < arguments.size(); i++)
         delete arguments[i];
@@ -1032,13 +978,11 @@ HLCall::~HLCall()
  * PARAMETERS:    <none>
  * RETURNS:       A reference to the list of arguments
  *============================================================================*/
-std::vector<Exp*>& HLCall::getArguments()
-{
+std::vector<Exp*>& HLCall::getArguments() {
     return arguments;
 }
 
-Type *HLCall::getArgumentType(int i)
-{
+Type *HLCall::getArgumentType(int i) {
     assert(i < (int)arguments.size());
     assert(procDest);
     return procDest->getSignature()->getParamType(i);
@@ -1050,8 +994,7 @@ Type *HLCall::getArgumentType(int i)
  * PARAMETERS:    arguments - the list of locations live at this call
  * RETURNS:       <nothing>
  *============================================================================*/
-void HLCall::setArguments(std::vector<Exp*>& arguments)
-{
+void HLCall::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
 }
 
@@ -1062,20 +1005,17 @@ void HLCall::setArguments(std::vector<Exp*>& arguments)
  * PARAMETERS:    <none>
  * RETURNS:       ptr to the location that will be used to hold the return value
  *============================================================================*/
-Exp* HLCall::getReturnLoc() 
-{
+Exp* HLCall::getReturnLoc() {
     return returnLoc;
 }
 
-void HLCall::setIgnoreReturnLoc(bool b)
-{
+void HLCall::setIgnoreReturnLoc(bool b) {
     if (b) { returnLoc = NULL; return; }
     assert(procDest);
     returnLoc = procDest->getSignature()->getReturnExp()->clone();
 }
 
-Type* HLCall::getLeftType()
-{
+Type* HLCall::getLeftType() {
     if (procDest == NULL || returnLoc == NULL)
         return new VoidType();
     return procDest->getSignature()->getReturnType();
@@ -1097,8 +1037,7 @@ Type* HLCall::getLeftType()
  *============================================================================*/
 void HLCall::getUseDefLocations(LocationMap& locMap,
     LocationFilter* filter, BITSET& defSet, BITSET& useSet,
-    BITSET& useUndefSet, Proc* proc) const
-{
+    BITSET& useUndefSet, Proc* proc) const {
     // Note: calls can have semantics now (mainly from restore instructions
     // in their delay slots).
     // So process the semantics (assignments) for this HLCall
@@ -1135,20 +1074,18 @@ void HLCall::getUseDefLocations(LocationMap& locMap,
  * PARAMETERS:       <none>
  * RETURNS:          the called function returns an aggregate value
  *============================================================================*/
-bool HLCall::returnsStruct()
-{
+bool HLCall::returnsStruct() {
     return (returnTypeSize != 0);
 }
 
-bool HLCall::search(Exp* search, Exp*& result)
-{
+bool HLCall::search(Exp* search, Exp*& result) {
     result = NULL;
     if (returnLoc && returnLoc->search(search, result)) return true;
     for (unsigned i = 0; i < arguments.size(); i++)
         if (arguments[i]->search(search, result)) return true;
     if (postCallExpList) {
         for (std::list<Exp*>::iterator it = postCallExpList->begin(); 
-                it != postCallExpList->end(); it++)
+          it != postCallExpList->end(); it++)
             if ((*it)->search(search, result)) return true;
     }
     return false;
@@ -1161,8 +1098,7 @@ bool HLCall::search(Exp* search, Exp*& result)
  *                  replace - the expression with which to replace it
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLCall::searchAndReplace(Exp* search, Exp* replace)
-{
+void HLCall::searchAndReplace(Exp* search, Exp* replace) {
     bool change;
     HLJump::searchAndReplace(search, replace);
     if (returnLoc != NULL)
@@ -1171,7 +1107,8 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace)
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, change);
     // Also replace the postCall rtls, if any
     if (postCallExpList) {
-        for (std::list<Exp*>::iterator it = postCallExpList->begin(); it != postCallExpList->end(); it++)
+        for (std::list<Exp*>::iterator it = postCallExpList->begin();
+          it != postCallExpList->end(); it++)
             *it = (*it)->searchReplaceAll(search, replace, change);
     }
 }
@@ -1184,8 +1121,7 @@ void HLCall::searchAndReplace(Exp* search, Exp* replace)
  *                           appended to it
  * RETURNS:         true if there were any matches
  *============================================================================*/
-bool HLCall::searchAll(Exp* search, std::list<Exp *>& result)
-{
+bool HLCall::searchAll(Exp* search, std::list<Exp *>& result) {
     bool found = false;
     //if( HLJump::searchAll(search, result) ||
     //  (returnLoc != 0 && returnLoc->searchAll(search, result)))
@@ -1208,8 +1144,7 @@ bool HLCall::searchAll(Exp* search, std::list<Exp *>& result)
  * PARAMETERS:      os: stream to write to
  * RETURNS:         Nothing
  *============================================================================*/
-void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
-{
+void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
     // Calls can all have semantics (e.g. call/restore)
     if (expList.size() != 0)
         RTL::print(os, withDF);
@@ -1291,8 +1226,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
  * PARAMETERS:       b: true if this is to be set; false to clear the bit
  * RETURNS:          <nothing>
  *============================================================================*/
-void HLCall::setReturnAfterCall(bool b)
-{
+void HLCall::setReturnAfterCall(bool b) {
     returnAfterCall = b;
 }
 
@@ -1304,8 +1238,7 @@ void HLCall::setReturnAfterCall(bool b)
  * PARAMETERS:       none
  * RETURNS:          True if this call is effectively followed by a return
  *============================================================================*/
-bool HLCall::isReturnAfterCall() 
-{
+bool HLCall::isReturnAfterCall() {
     return returnAfterCall;
 }
 
@@ -1315,8 +1248,7 @@ bool HLCall::isReturnAfterCall()
  * PARAMETERS:       Pointer to the list of Exps to be saved
  * RETURNS:          <nothing>
  *============================================================================*/
-void HLCall::setPostCallExpList(std::list<Exp*>* le)
-{
+void HLCall::setPostCallExpList(std::list<Exp*>* le) {
     postCallExpList = le;
 }
 
@@ -1326,8 +1258,7 @@ void HLCall::setPostCallExpList(std::list<Exp*>* le)
  * PARAMETERS:       <None>
  * RETURNS:          List of Exps to be emitted
  *============================================================================*/
-std::list<Exp*>* HLCall::getPostCallExpList()
-{
+std::list<Exp*>* HLCall::getPostCallExpList() {
     return postCallExpList;
 }
 
@@ -1337,8 +1268,7 @@ std::list<Exp*>* HLCall::getPostCallExpList()
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this HLCall
  *============================================================================*/
-RTL* HLCall::clone() 
-{
+RTL* HLCall::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -1358,8 +1288,7 @@ bool HLCall::accept(RTLVisitor* visitor) {
 }
 
 // serialize this rtl
-bool HLCall::serialize_rest(std::ostream &ouf)
-{
+bool HLCall::serialize_rest(std::ostream &ouf) {
     HLJump::serialize_rest(ouf);
 
     if (procDest) {
@@ -1371,8 +1300,7 @@ bool HLCall::serialize_rest(std::ostream &ouf)
 }
 
 // deserialize an rtl
-bool HLCall::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLCall::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         case FID_RTL_CALLDESTSTR:
             loadString(inf, destStr);           
@@ -1384,36 +1312,30 @@ bool HLCall::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-Proc* HLCall::getDestProc() 
-{
+Proc* HLCall::getDestProc() {
     return procDest; 
 }
 
-void HLCall::setDestProc(Proc* dest) 
-{ 
+void HLCall::setDestProc(Proc* dest) { 
     assert(dest);
     assert(procDest == NULL);
     procDest = dest;
     destStr = procDest->getName();
 }
 
-void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLCall::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     Proc *p = getDestProc();
 
     if (p == NULL && isComputed()) {
-        assert(false);
-        //hll.AddCallStatement(indLevel, getReturnLoc(), pDest, arguments);
+        hll->AddIndCallStatement(indLevel, getReturnLoc(), pDest, arguments);
         return;
     }
 
     assert(p);
-
     hll->AddCallStatement(indLevel, getReturnLoc(), p, arguments);
 }
 
-void HLCall::simplify()
-{
+void HLCall::simplify() {
     HLJump::simplify();
     for (unsigned i = 0; i < arguments.size(); i++) {
         Exp *e = arguments[i]->simplifyArith()->clone();
@@ -1422,35 +1344,33 @@ void HLCall::simplify()
     }
 }
 
-void HLCall::decompile()
-{
+void HLCall::decompile() {
     if (procDest) { 
-    UserProc *p = dynamic_cast<UserProc*>(procDest);
-    if (p != NULL)
+        UserProc *p = dynamic_cast<UserProc*>(procDest);
+        if (p != NULL)
             p->decompile();
-    procDest->getInternalStatements(internal);
-    // init arguments
-    assert(arguments.size() == 0);
-    arguments.resize(procDest->getSignature()->getNumParams());
-    for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
-        arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
-    if (procDest->getSignature()->hasEllipsis()) {
-        // Just guess 10 parameters for now
-        //for (int i = 0; i < 10; i++)
+        procDest->getInternalStatements(internal);
+        // init arguments
+        assert(arguments.size() == 0);
+        arguments.resize(procDest->getSignature()->getNumParams());
+        for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
+            arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
+        if (procDest->getSignature()->hasEllipsis()) {
+            // Just guess 10 parameters for now
+            //for (int i = 0; i < 10; i++)
             arguments.push_back(procDest->getSignature()->
               getArgumentExp(arguments.size())->clone());
-    }
-    // init return location
-    returnLoc = procDest->getSignature()->getReturnExp();
-    if (returnLoc) returnLoc = returnLoc->clone();
+        }
+        // init return location
+        returnLoc = procDest->getSignature()->getReturnExp();
+        if (returnLoc) returnLoc = returnLoc->clone();
     } else {
     // TODO
     }
 }
 
 
-void HLCall::printAsUse(std::ostream &os)
-{
+void HLCall::printAsUse(std::ostream &os) {
     // Print the return location if there is one
     if (getReturnLoc() != NULL)
         os << " " << getReturnLoc() << " := ";
@@ -1474,36 +1394,35 @@ void HLCall::printAsUse(std::ostream &os)
     os << ")";
 }
 
-void HLCall::printAsUseBy(std::ostream &os)
-{
+void HLCall::printAsUseBy(std::ostream &os) {
     printAsUse(os);
 }
 
 
-void HLCall::killLive(std::set<Statement*> &live)
-{
+void HLCall::killLive(std::set<Statement*> &live) {
     if (procDest == NULL) {
-    live.clear();
+        live.clear();
         return;
     }
     std::set<Statement*> kills;
-    for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
+    for (std::set<Statement*>::iterator it = live.begin(); it != live.end();
+      it++) {
         bool isKilled = false;
         if (getReturnLoc() && (*it)->getLeft() && 
-        *(*it)->getLeft() == *getReturnLoc())
+          *(*it)->getLeft() == *getReturnLoc())
             isKilled = true;
         if (getReturnLoc() && (*it)->getLeft() &&
-        (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+          (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
             isKilled = true; // might alias, very conservative
         if (isKilled)
-        kills.insert(*it);
+            kills.insert(*it);
     }
-    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); it++)
+    for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end();
+      it++)
         live.erase(*it);
 }
 
-void HLCall::getDeadStatements(std::set<Statement*> &dead)
-{
+void HLCall::getDeadStatements(std::set<Statement*> &dead) {
     std::set<Statement*> live;
     getLiveIn(live);
     if (procDest && procDest->isLib()) {
@@ -1528,23 +1447,19 @@ void HLCall::getDeadStatements(std::set<Statement*> &dead)
 }
 
 // update type for expression
-Type *HLCall::updateType(Exp *e, Type *curType)
-{
+Type *HLCall::updateType(Exp *e, Type *curType) {
     return curType;
 }
 
-bool HLCall::usesExp(Exp *e)
-{
+bool HLCall::usesExp(Exp *e) {
     Exp *where = 0;
     for (unsigned i = 0; i < arguments.size(); i++)
-        if (*arguments[i] == *e ||
-        arguments[i]->search(e, where))
+        if (*arguments[i] == *e || arguments[i]->search(e, where))
             return true;
     return false;
 }
 
-void HLCall::doReplaceUse(Statement *use)
-{
+void HLCall::doReplaceUse(Statement *use) {
     Exp *left = use->getLeft();
     Exp *right = use->getRight();
     assert(left);
@@ -1552,13 +1467,13 @@ void HLCall::doReplaceUse(Statement *use)
     bool change = false;
     for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
-        arguments[i] = right->clone();
-        change = true;
-    } else {
+            arguments[i] = right->clone();
+            change = true;
+        } else {
             bool changeright = false;
             arguments[i]->searchReplaceAll(left, right->clone(), changeright);
-        change |= changeright;
-    }
+            change |= changeright;
+        }
     }
     assert(change);
     // simplify the arguments
@@ -1571,7 +1486,7 @@ void HLCall::doReplaceUse(Statement *use)
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
         if ((name == "printf" || name == "scanf") &&
-            getArgumentExp(0)->isStrConst()) {
+          getArgumentExp(0)->isStrConst()) {
             char *str = ((Const*)getArgumentExp(0))->getStr();
             // actually have to parse it
             int n = 1;      // Number of %s plus 1 = number of args
@@ -1586,7 +1501,7 @@ void HLCall::doReplaceUse(Statement *use)
                 switch(*p) {
                     case '%':
                         break;
-                    // TODO: there's type information here
+                        // TODO: there's type information here
                     default: 
                         n++;
                 }
@@ -1597,22 +1512,20 @@ void HLCall::doReplaceUse(Statement *use)
     }
 }
 
-void HLCall::inlineConstants(Prog *prog)
-{
+void HLCall::inlineConstants(Prog *prog) {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
         // char* and a constant
-        if ((arguments[i]->isIntConst()) && 
-            t && t->isPointer() && 
-            ((PointerType*)t)->getPointsTo()->isChar()) {
+        if ((arguments[i]->isIntConst()) && t && t->isPointer() && 
+          ((PointerType*)t)->getPointsTo()->isChar()) {
             char *str = 
-                prog->getStringConstant(((Const*)arguments[i])->getAddr());
+              prog->getStringConstant(((Const*)arguments[i])->getAddr());
             if (str) {
-             std::string s(str);
-             while (s.find('\n') != (unsigned)-1)
-                 s.replace(s.find('\n'), 1, "\\n");
-                 delete arguments[i];
-             arguments[i] = new Const(strdup(s.c_str()));
+                std::string s(str);
+                while (s.find('\n') != (unsigned)-1)
+                    s.replace(s.find('\n'), 1, "\\n");
+                delete arguments[i];
+                arguments[i] = new Const(strdup(s.c_str()));
             }
         }
     }
@@ -1630,8 +1543,7 @@ void HLCall::inlineConstants(Prog *prog)
  * RETURNS:          <nothing>
  *============================================================================*/
 HLReturn::HLReturn(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/):
-    HLJump(instNativeAddr, le), nBytesPopped(0), returnVal(NULL)
-{
+    HLJump(instNativeAddr, le), nBytesPopped(0), returnVal(NULL) {
     kind = RET_RTL;
 }
 
@@ -1641,8 +1553,7 @@ HLReturn::HLReturn(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/):
  * PARAMETERS:       <none>
  * RETURNS:          <nothing>
  *============================================================================*/
-HLReturn::~HLReturn()
-{
+HLReturn::~HLReturn() {
     if (returnVal)
         delete returnVal;
 }
@@ -1653,8 +1564,7 @@ HLReturn::~HLReturn()
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this HLReturn
  *============================================================================*/
-RTL* HLReturn::clone() 
-{
+RTL* HLReturn::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -1690,8 +1600,7 @@ bool HLReturn::accept(RTLVisitor* visitor) {
  *============================================================================*/
 void HLReturn::getUseDefLocations(LocationMap& locMap,
     LocationFilter* filter, BITSET& defSet, BITSET& useSet,
-    BITSET& useUndefSet, Proc* proc) const
-{
+    BITSET& useUndefSet, Proc* proc) const {
     // It is possible that any RTL, including a HLReturn, has semantics
     // So process the semantics (assignments) for this HLCall
     RTL::getUseDefLocations(locMap, filter, defSet, useSet, useUndefSet,
@@ -1712,16 +1621,14 @@ void HLReturn::getUseDefLocations(LocationMap& locMap,
 #endif
 
 // serialize this rtl
-bool HLReturn::serialize_rest(std::ostream &ouf)
-{
+bool HLReturn::serialize_rest(std::ostream &ouf) {
     HLJump::serialize_rest(ouf);
 
     return true;
 }
 
 // deserialize an rtl
-bool HLReturn::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLReturn::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         default:
             return HLJump::deserialize_fid(inf, fid);
@@ -1730,16 +1637,14 @@ bool HLReturn::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLReturn::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLReturn::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     // There could be semantics, e.g. SPARC RETURN instruction
     // Most of the time, the list of RTs will be empty, and the
     // below does nothing
     RTL::generateCode(hll, pbb, indLevel);
 }
 
-void HLReturn::simplify()
-{
+void HLReturn::simplify() {
     if (returnVal)
         returnVal = returnVal->simplify();
 }
@@ -1756,8 +1661,7 @@ void HLReturn::simplify()
  * RETURNS:          <N/a>
  *============================================================================*/
 HLScond::HLScond(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/):
-  RTL(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL)
-{
+  RTL(instNativeAddr, le), jtCond((JCOND_TYPE)0), pCond(NULL) {
     kind = SCOND_RTL;
 }
 
@@ -1767,8 +1671,7 @@ HLScond::HLScond(ADDRESS instNativeAddr, std::list<Exp*>* le /*= NULL*/):
  * PARAMETERS:      None
  * RETURNS:         N/a
  *============================================================================*/
-HLScond::~HLScond()
-{
+HLScond::~HLScond() {
     if (pCond)
         delete pCond;
 }
@@ -1783,8 +1686,7 @@ HLScond::~HLScond()
  *                    condition codes
  * RETURNS:         a semantic string
  *============================================================================*/
-void HLScond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
-{
+void HLScond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/) {
     jtCond = cond;
     bFloat = usesFloat;
 }
@@ -1796,8 +1698,7 @@ void HLScond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLScond::makeSigned()
-{
+void HLScond::makeSigned() {
     // Make this into a signed branch
     switch (jtCond)
     {
@@ -1817,8 +1718,7 @@ void HLScond::makeSigned()
  * PARAMETERS:      <none>
  * RETURNS:         a semantic string
  *============================================================================*/
-Exp* HLScond::getCondExpr() 
-{
+Exp* HLScond::getCondExpr() {
     return pCond;
 }
 
@@ -1828,8 +1728,7 @@ Exp* HLScond::getCondExpr()
  * PARAMETERS:      Pointer to semantic string to set
  * RETURNS:         <nothing>
  *============================================================================*/
-void HLScond::setCondExpr(Exp* pss)
-{
+void HLScond::setCondExpr(Exp* pss) {
     if (pCond) delete pCond;
     pCond = pss;
 }
@@ -1840,8 +1739,7 @@ void HLScond::setCondExpr(Exp* pss)
  * PARAMETERS:      os: stream
  * RETURNS:         <Nothing>
  *============================================================================*/
-void HLScond::print(std::ostream& os /*= cout*/, bool withDF)
-{
+void HLScond::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " ";
     os << "SCOND ";
@@ -1882,8 +1780,7 @@ void HLScond::print(std::ostream& os /*= cout*/, bool withDF)
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to the expression representing the lvalue location
  *============================================================================*/
-Exp* HLScond::getDest() 
-{
+Exp* HLScond::getDest() {
     assert(expList.size());
     Exp* pAsgn = expList.front();
     assert(pAsgn->isAssign());
@@ -1897,8 +1794,7 @@ Exp* HLScond::getDest()
  * PARAMETERS:      <none>
  * RETURNS:         The size
  *============================================================================*/
-int HLScond::getSize()
-{
+int HLScond::getSize() {
     assert(expList.size());
     Exp* first = expList.front();
     assert(first->isAssign());
@@ -1911,8 +1807,7 @@ int HLScond::getSize()
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a new RTL that is a clone of this HLScond
  *============================================================================*/
-RTL* HLScond::clone()
-{
+RTL* HLScond::clone() {
     std::list<Exp*> le;
     std::list<Exp*>::iterator it;
     for (it = expList.begin(); it != expList.end(); it++)
@@ -1932,14 +1827,12 @@ bool HLScond::accept(RTLVisitor* visitor) {
 }
 
 // serialize this rtl
-bool HLScond::serialize_rest(std::ostream &ouf)
-{
+bool HLScond::serialize_rest(std::ostream &ouf) {
     return true;
 }
 
 // deserialize an rtl
-bool HLScond::deserialize_fid(std::istream &inf, int fid)
-{
+bool HLScond::deserialize_fid(std::istream &inf, int fid) {
     switch (fid) {
         default:
             return RTL::deserialize_fid(inf, fid);
@@ -1948,12 +1841,10 @@ bool HLScond::deserialize_fid(std::istream &inf, int fid)
     return true;
 }
 
-void HLScond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel)
-{
+void HLScond::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
     RTL::generateCode(hll, pbb, indLevel);
 }
 
-void HLScond::simplify()
-{
+void HLScond::simplify() {
     RTL::simplify();
 }
