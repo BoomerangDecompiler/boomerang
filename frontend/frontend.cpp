@@ -124,8 +124,8 @@ void FrontEnd::readLibraryCatalog(const char *sPath)
         std::string sFile;
 	inf >> sFile;
 	size_t j = sFile.find('#');
-	if (j != -1)
-            sFile = sFile.substr(0, j);
+	if (j != (size_t)-1)
+        sFile = sFile.substr(0, j);
 	if (sFile == "") continue;
 	std::string sPath = Boomerang::get()->getProgPath() + "signatures/" + sFile;
         readLibrarySignatures(sPath.c_str());
@@ -1158,4 +1158,17 @@ void FrontEnd::closeInstance(void* dlHandle) {
 #endif
 }
 
+/*==============================================================================
+ * FUNCTION:    FrontEnd::getProg
+ * OVERVIEW:    Get a Prog object (mainly for testing and not decoding)
+ * NOTE:		Caller to destroy
+ * PARAMETERS:  None
+ * RETURNS:     Pointer to a Prog object (with pFE and pBF filled in)
+ *============================================================================*/
+Prog* FrontEnd::getProg() {
+    Prog *prog = new Prog;
+    prog->pBF = pBF;
+    prog->pFE = this;
+	return prog;
+}
 
