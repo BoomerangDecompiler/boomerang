@@ -1735,17 +1735,19 @@ Exp* Binary::polySimplify(bool& bMod) {
     }
 
     // turn a - b into a + -b
-    // doesn't count as a change
+    // Counts as a change, in case b happens to be an integer constant
+    // (then neg int 99 -> int -99)
     if (op == opMinus) {
         subExp2 = new Unary(opNeg, subExp2);
         op = opPlus;
         opSub2 = opNeg;
+        bMod = true;
     }
 
     // Might want to commute to put an integer constant on the RHS
     // Later simplifications can rely on this (ADD other ops as necessary)
     if (opSub1 == opIntConst && 
-        (op == opPlus || op == opMult)) {
+        (op == opPlus || op == opMult || op == opMults)) {
         ((Binary*)res)->commute();
         // Swap opSub1 and opSub2 as well
         OPER t = opSub1;
@@ -2210,7 +2212,7 @@ Exp *Exp::deserialize(std::istream &inf)
     switch(ch) {
         case 'C':
             {
-                int i; double d; std::string s; ADDRESS a;
+                int i; double d; std::string s;
                 switch(op) {
                     case opIntConst:
                         loadValue(inf, i, false);
