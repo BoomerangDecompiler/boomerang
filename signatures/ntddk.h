@@ -21,11 +21,7 @@ struct UNICODE_STRING {
   PWSTR	 Buffer;
 };
 
-void 
-RtlInitUnicodeString(
-    PUNICODE_STRING DestinationString,
-    PCWSTR SourceString
-    );
+typedef UNICODE_STRING *PUNICODE_STRING;
 
 struct RTL_OSVERSIONINFOEXW {
   ULONG	 dwOSVersionInfoSize;
@@ -89,6 +85,7 @@ struct DEVICE_OBJECT {
 };
 typedef DEVICE_OBJECT *PDEVICE_OBJECT; 
 
+
 struct DEVOBJ_EXTENSION {
 
     CSHORT          Type;
@@ -121,14 +118,12 @@ struct DRIVER_OBJECT {
     PDRIVER_INITIALIZE DriverInit;
     PDRIVER_STARTIO DriverStartIo;
     PDRIVER_UNLOAD DriverUnload;
-    PDRIVER_DISPATCH MajorFunction[IRP_MJ_MAXIMUM_FUNCTION + 1];
+    PDRIVER_DISPATCH MajorFunction[28];
 };
 typedef DRIVER_OBJECT *PDRIVER_OBJECT; 
 
 
 typedef RTL_OSVERSIONINFOEXW *PRTL_OSVERSIONINFOEXW;
-
-typedef UNICODE_STRING *PUNICODE_STRING;
 
 PVOID 
   ExAllocatePoolWithTag(
@@ -399,8 +394,55 @@ PIRP
 	PIO_STATUS_BLOCK  IoStatusBlock
 	);
 
-NTSTATUS 
+typedef NTSTATUS 
 	DriverEntry (
 		PDRIVER_OBJECT DriverObject,
 		PUNICODE_STRING RegistryPath
 		);
+
+NTSTATUS 
+  PsCreateSystemThread(
+    PHANDLE  ThreadHandle,
+    ULONG  DesiredAccess,
+    POBJECT_ATTRIBUTES  ObjectAttributes,
+    HANDLE  ProcessHandle,
+    PCLIENT_ID  ClientId,
+    PKSTART_ROUTINE  StartRoutine,
+    PVOID  StartContext
+    );
+
+
+void 
+RtlInitUnicodeString(
+    PUNICODE_STRING DestinationString,
+    PCWSTR SourceString
+    );
+
+NTSTATUS 
+  IoInitializeTimer(
+    PDEVICE_OBJECT  DeviceObject,
+    PIO_TIMER_ROUTINE  TimerRoutine,
+    PVOID  Context
+    );
+
+void
+  IoStartTimer(
+    PDEVICE_OBJECT  DeviceObject
+    );
+
+void
+  KeInitializeSpinLock(
+    PKSPIN_LOCK  SpinLock
+    );
+
+void
+  KeInitializeMutex(
+    PRKMUTEX  Mutex,
+    ULONG  Level
+    );
+
+NTSTATUS 
+  IoCreateSymbolicLink(
+    PUNICODE_STRING  SymbolicLinkName,
+    PUNICODE_STRING  DeviceName
+    );
