@@ -1150,16 +1150,6 @@ void BranchStatement::simplify() {
     }
 }
 
-void BranchStatement::addUsedLocs(LocationSet& used) {
-    if (pCond)
-        pCond->addUsedLocs(used);
-}
-
-void BranchStatement::fixCallRefs() {
-    if (pCond)
-        pCond = pCond->fixCallRefs();
-}
-
 void BranchStatement::subscriptVar(Exp* e, Statement* def) {
     if (pCond)
         pCond = pCond->expSubscriptVar(e, def);
@@ -1301,13 +1291,6 @@ bool CaseStatement::usesExp(Exp *e) {
     if (pSwitchInfo->pSwitchVar)
         return *pSwitchInfo->pSwitchVar == *e;
     return false;
-}
-
-void CaseStatement::addUsedLocs(LocationSet& used) {
-    if (pDest)
-        pDest->addUsedLocs(used);
-    else if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-        pSwitchInfo->pSwitchVar->addUsedLocs(used);
 }
 
 void CaseStatement::subscriptVar(Exp* e, Statement* def) {
@@ -1505,6 +1488,17 @@ void CallStatement::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
     std::vector<Exp*>::iterator ll;
     for (ll = arguments.begin(); ll != arguments.end(); ll++) {
+        Location *l = dynamic_cast<Location*>(*ll);
+        if (l) {
+            l->setProc(proc);
+        }
+    }
+}
+
+void CallStatement::setImpArguments(std::vector<Exp*>& arguments) {
+    this->implicitArguments = arguments;
+    std::vector<Exp*>::iterator ll;
+    for (ll = implicitArguments.begin(); ll != implicitArguments.end(); ll++) {
         Location *l = dynamic_cast<Location*>(*ll);
         if (l) {
             l->setProc(proc);
@@ -1894,61 +1888,6 @@ bool CallStatement::usesExp(Exp *e) {
     }
 #endif
     return false;
-}
-
-// Add all locations that this call uses
-void CallStatement::addUsedLocs(LocationSet& used) {
-    if (procDest == NULL && pDest)
-        pDest->addUsedLocs(used);
-
-    unsigned int i;
-    for (i = 0; i < arguments.size(); i++) {
-        arguments[i]->addUsedLocs(used);
-    }
-
-    for (i = 0; i < implicitArguments.size(); i++) {
-        implicitArguments[i]->addUsedLocs(used);
-    }
-     
-    for (i = 0; i < returns.size(); i++)
-        if (returns[i]->isMemOf())
-            returns[i]->getSubExp1()->addUsedLocs(used);
-}
-
-void CallStatement::addUsedLocsFinal(LocationSet& used) {
-    if (procDest == NULL && pDest)
-        pDest->addUsedLocs(used);
-
-    unsigned int i;
-    for (i = 0; i < arguments.size(); i++) {
-        arguments[i]->addUsedLocs(used);
-    }
-
-    // Don't count implicit arguments; this is final code
-     
-    // Also only count the first return location
-    if (returns.size() != 0) {
-        if (returns[0]->isMemOf())
-            returns[0]->getSubExp1()->addUsedLocs(used);
-    }
-
-}
-
-void CallStatement::fixCallRefs() {
-    if (VERBOSE)
-        LOG << "fixCallRefs call:" << this << "\n";
-    if (pDest)
-        pDest = pDest->fixCallRefs();
-	unsigned int i;
-    for (i = 0; i < arguments.size(); i++)
-        arguments[i] = arguments[i]->fixCallRefs();
-    for (i = 0; i < implicitArguments.size(); i++) {
-        implicitArguments[i] = implicitArguments[i]->fixCallRefs();
-    }
-    for (i = 0; i < returns.size(); i++)
-        if (returns[i]->isMemOf())
-            returns[i]->refSubExp1() = 
-                    returns[i]->getSubExp1()->fixCallRefs();
 }
 
 bool CallStatement::isDefinition() 
@@ -2547,16 +2486,6 @@ bool ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
     return false;
 }
  
-void ReturnStatement::addUsedLocs(LocationSet& used) {
-    for (unsigned i = 0; i < returns.size(); i++)
-            returns[i]->addUsedLocs(used);
-}
-
-void ReturnStatement::fixCallRefs() {
-    for (unsigned i = 0; i < returns.size(); i++)
-        returns[i] = returns[i]->fixCallRefs();
-}
-
 /**********************************************************************
  * BoolStatement methods
  * These are for statements that set a destination (usually to 1 or 0)
@@ -2782,16 +2711,6 @@ bool BoolStatement::doReplaceRef(Exp* from, Exp* to) {
     searchAndReplace(from, to);
     simplify();
     return false;
-}
-
-void BoolStatement::addUsedLocs(LocationSet& used) {
-    if (pCond)
-        pCond->addUsedLocs(used);
-}
-
-void BoolStatement::fixCallRefs() {
-    if (pCond)
-        pCond = pCond->fixCallRefs();
 }
 
 void BoolStatement::subscriptVar(Exp* e, Statement* def) {
@@ -3170,51 +3089,6 @@ void Assign::subscriptVar(Exp* e, Statement* def) {
     }
 }
 
-/*==============================================================================
- * FUNCTION:        Assign::addUsedLocs
- * OVERVIEW:        Add all locations (registers or memory) used by this
- *                    assignment
- * PARAMETERS:      used: ref to a LocationSet to insert the used locations into
- * RETURNS:         nothing
- *============================================================================*/
-void Assign::addUsedLocs(LocationSet& used) {
-    rhs->addUsedLocs(used);
-    if (lhs->isMemOf()) {
-        // We also use any expr like m[exp] on the LHS (but not the outer m[])
-        Exp* leftChild = ((Unary*)lhs)->getSubExp1();
-        leftChild->addUsedLocs(used);
-    }
-}
-
-void Assign::fixCallRefs() {
-    simplify();         // This seems like an arbitrary HACK
-    rhs = rhs->fixCallRefs();
-    if (lhs->isMemOf()) {
-        ((Unary*)lhs)->refSubExp1() =
-          ((Unary*)lhs)->getSubExp1()->fixCallRefs();
-    }
-}
-
-#if 0
-Exp* Assign::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
-    // No need to test for equality to left
-    // However, need to update aa iff LHS is m[aa]
-    if (lhs->isMemOf())
-        // Beware. Consider left == m[r[28]]; subExp1 is the same.
-        // If we call subExp1->updateRefs, we will double subscript our
-        // LHS (violating a basic property of SSA form)
-        // If we call left->updateRefs, we would get a
-        // subscript of a subscript, also not what we want!
-        // Don't call setSubExp1 either, since it deletes the old
-        // expression (old expression is always needed)
-        ((Unary*)lhs)->setSubExp1ND(lhs->getSubExp1()->
-          updateRefs(defs, memDepth, rs));
-    rhs = rhs->updateRefs(defs, memDepth, rs);
-    return this;
-}
-#endif
-
-
 // Not sure if anything needed here
 void Assign::processConstants(Prog* prog) {
 #if 0
@@ -3372,12 +3246,98 @@ bool Statement::stripRefs() {
     return sp.getDelete();
 }
 
+// Visiting from class StmtExpVisitor
+// Visit all the various expressions in a statement
+bool Assign::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override)
+        // The visitor has overridden this functionality
+        // This is needed for example in UsedLocFinder, where the lhs of an
+        // assignment is not used (but it it's m[blah], then blah is used)
+        return ret;
+    if (ret && lhs) ret = lhs->accept(v->ev);
+    if (ret && rhs) ret = rhs->accept(v->ev);
+    return ret;
+}
+
+bool GotoStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret && pDest)
+        ret = pDest->accept(v->ev);
+    return ret;
+}
+
+bool BranchStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    // Destination will always be a const for X86, so the below will never
+    // be used in practice
+    if (ret && pDest)
+        ret = pDest->accept(v->ev);
+    if (ret && pCond)
+        ret = pCond->accept(v->ev);
+    return ret;
+}
+
+bool CaseStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret && pDest)
+        ret = pDest->accept(v->ev);
+    if (ret && pSwitchInfo && pSwitchInfo->pSwitchVar)
+        ret = pSwitchInfo->pSwitchVar->accept(v->ev);
+    return ret;
+}
+
+bool CallStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret && pDest)
+        ret = pDest->accept(v->ev);
+    std::vector<Exp*>::iterator it;
+    for (it = arguments.begin(); ret && it != arguments.end(); it++)
+        ret = (*it)->accept(v->ev);
+    for (it = implicitArguments.begin(); ret && it != implicitArguments.end(); it++)
+        ret = (*it)->accept(v->ev);
+    for (it = returns.begin(); ret && it != returns.end(); it++)
+        ret = (*it)->accept(v->ev);
+    return ret;
+}
+
+bool ReturnStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    std::vector<Exp*>::iterator it;
+    for (it = returns.begin(); ret && it != returns.end(); it++)
+        ret = (*it)->accept(v->ev);
+    return ret;
+}
+
+bool BoolStatement::accept(StmtExpVisitor* v) {
+    bool override;
+    bool ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret && pCond)
+        ret = pCond->accept(v->ev);
+    return ret;
+}
+
 // Visiting from class StmtModifier
 // Modify all the various expressions in a statement
 bool Assign::accept(StmtModifier* v) {
     v->visit(this);
+    v->mod->clearMod();
     if (lhs) lhs = lhs->acceptMod(v->mod);
     if (rhs) rhs = rhs->acceptMod(v->mod);
+    if (VERBOSE && v->mod->isMod())
+        LOG << "Assignment changed: now " << this << "\n";
     return true;
 }
 
@@ -3431,3 +3391,16 @@ bool BoolStatement::accept(StmtModifier* v) {
     return true;
 }
 
+void Statement::fixCallRefs() {
+    CallRefsFixer crf;
+    StmtModifier sm(&crf);
+    accept(&sm);
+}
+
+// Find the locations used by expressions in this Statement.
+// Use the StmtExpVisitor and UsedLocsFinder visitor classes
+void Statement::addUsedLocs(LocationSet& used, bool final /* = false */) {
+    UsedLocsFinder ulf(used);
+    UsedLocsVisitor ulv(&ulf, final);
+    accept(&ulv);
+}

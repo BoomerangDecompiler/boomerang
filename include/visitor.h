@@ -40,22 +40,7 @@
 #define NULL 0      // Often defined in stdio.h
 #endif
 
-#if 1
 #include "exp.h"
-#else
-class Exp;
-class Unary;
-class Binary;
-class Ternary;
-class RefExp;
-class PhiExp;
-class Terminal;
-class Const;
-class TypedExp;
-class FlagDef;
-class Location;
-class TypeVal;
-#endif
 
 class Statement;
 class Assign;
@@ -71,6 +56,7 @@ class UserProc;
 class BasicBlock;
 typedef BasicBlock* PBB;
 
+class LocationSet;
 
 class ExpVisitor {
 
@@ -81,17 +67,18 @@ public:
     // visitor functions,
     // return true to continue iterating through the expression
     // Note: you only need to override the ones that "do something"
-    virtual bool visit(Unary *e)    {return true;}
-    virtual bool visit(Binary *e)   {return true;}
-    virtual bool visit(Ternary *e)  {return true;}
-    virtual bool visit(TypedExp *e) {return true;}
-    virtual bool visit(FlagDef *e)  {return true;}
-    virtual bool visit(RefExp *e)   {return true;}
-    virtual bool visit(PhiExp *e)   {return true;}
-    virtual bool visit(Location *e) {return true;}
-    virtual bool visit(Const *e)    {return true;}
-    virtual bool visit(Terminal *e) {return true;}
-    virtual bool visit(TypeVal *e)  {return true;}
+virtual bool visit(Unary *e,    bool& override) {override = false; return true;}
+virtual bool visit(Binary *e,   bool& override) {override = false; return true;}
+virtual bool visit(Ternary *e,  bool& override) {override = false; return true;}
+virtual bool visit(TypedExp *e, bool& override) {override = false; return true;}
+virtual bool visit(FlagDef *e,  bool& override) {override = false; return true;}
+virtual bool visit(RefExp *e,   bool& override) {override = false; return true;}
+virtual bool visit(PhiExp *e,   bool& override) {override = false; return true;}
+virtual bool visit(Location *e, bool& override) {override = false; return true;}
+// These three have zero arity, so there is nothing to override
+virtual bool visit(Const *e   ) {return true;}
+virtual bool visit(Terminal *e) {return true;}
+virtual bool visit(TypeVal *e ) {return true;}
 };
 
 // This class visits subexpressions, and if a location, sets the UserProc
@@ -101,7 +88,7 @@ class FixProcVisitor : public ExpVisitor {
 
 public:
     void setProc(UserProc* p) { proc = p; }
-    virtual bool visit(Location *e);
+    virtual bool visit(Location *e, bool& override);
     // All other virtual functions inherit from ExpVisitor, i.e. they just
     // visit their children recursively
 };
@@ -114,7 +101,7 @@ class GetProcVisitor : public ExpVisitor {
 public:
                  GetProcVisitor() {proc = NULL;}    // Constructor
     UserProc*    getProc() {return proc;}
-    virtual bool visit(Location *e);
+    virtual bool visit(Location *e, bool& override);
     // All others inherit and visit their children
 };
 
@@ -127,7 +114,7 @@ public:
                 {curConscript = n;}
     int     getLast() {return curConscript;}
     virtual bool visit(Const* e);
-    virtual bool visit(Location* e);
+    virtual bool visit(Location* e, bool& override);
     // All other virtual functions inherit from ExpVisitor: return true
 };
 
@@ -139,31 +126,49 @@ public:
  * to the expression
  */
 class ExpModifier {
-
+protected:
+    bool    mod;        // Set if there is any change. Don't have to implement
 public:
-    ExpModifier() { }
+    ExpModifier() {mod = false;}
     virtual ~ExpModifier() { }
+    bool    isMod() {return mod;}
+    void    clearMod() {mod = false;}
 
     // visitor functions
     // Most times these won't be needed
     // Note: you only need to override the ones that make a cange.
-    virtual Exp* visit(Unary *e)    {return e;}
-    virtual Exp* visit(Binary *e)   {return e;}
-    virtual Exp* visit(Ternary *e)  {return e;}
-    virtual Exp* visit(TypedExp *e) {return e;}
-    virtual Exp* visit(FlagDef *e)  {return e;}
-    virtual Exp* visit(RefExp *e)   {return e;}
-    virtual Exp* visit(PhiExp *e)   {return e;}
-    virtual Exp* visit(Location *e) {return e;}
-    virtual Exp* visit(Const *e)    {return e;}
-    virtual Exp* visit(Terminal *e) {return e;}
-    virtual Exp* visit(TypeVal *e)  {return e;}
+    // preVisit comes before modifications to the children (if any)
+    virtual Exp* preVisit(Unary *e)    {return e;}
+    virtual Exp* preVisit(Binary *e)   {return e;}
+    virtual Exp* preVisit(Ternary *e)  {return e;}
+    virtual Exp* preVisit(TypedExp *e) {return e;}
+    virtual Exp* preVisit(FlagDef *e)  {return e;}
+    virtual Exp* preVisit(RefExp *e)   {return e;}
+    virtual Exp* preVisit(PhiExp *e)   {return e;}
+    virtual Exp* preVisit(Location *e) {return e;}
+    virtual Exp* preVisit(Const *e)    {return e;}
+    virtual Exp* preVisit(Terminal *e) {return e;}
+    virtual Exp* preVisit(TypeVal *e)  {return e;}
+
+    // postVisit comes after modifications to the children (if any)
+    virtual Exp* postVisit(Unary *e)    {return e;}
+    virtual Exp* postVisit(Binary *e)   {return e;}
+    virtual Exp* postVisit(Ternary *e)  {return e;}
+    virtual Exp* postVisit(TypedExp *e) {return e;}
+    virtual Exp* postVisit(FlagDef *e)  {return e;}
+    virtual Exp* postVisit(RefExp *e)   {return e;}
+    virtual Exp* postVisit(PhiExp *e)   {return e;}
+    virtual Exp* postVisit(Location *e) {return e;}
+    virtual Exp* postVisit(Const *e)    {return e;}
+    virtual Exp* postVisit(Terminal *e) {return e;}
+    virtual Exp* postVisit(TypeVal *e)  {return e;}
 };
 
 /* 
  * The StmtVisitor class is used to iterate over all stmts in a basic 
  * block. It contains methods for each kind of Statement found in an
  * RTL and can be used to eliminate switch statements.
+ * It does not visit the expressions in the statement.
  */
 class StmtVisitor {
 private:
@@ -205,6 +210,30 @@ public:
     virtual bool visit(BoolStatement *stmt);
 };
 
+// StmtExpVisitor is a visitor of statements, and of expressions within
+// those expressions. The visiting of expressions is done by an ExpVisitor.
+class StmtExpVisitor {
+public:
+    ExpVisitor*  ev;
+                 StmtExpVisitor(ExpVisitor* v) {
+                    ev = v;}
+    virtual      ~StmtExpVisitor() {}
+    virtual bool visit(Assign *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(GotoStatement *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(BranchStatement *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(CaseStatement *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(CallStatement *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(ReturnStatement *stmt, bool& override)
+        {override = false; return true;}
+    virtual bool visit(BoolStatement *stmt, bool& override)
+        {override = false; return true;}
+};
+
 // StmtModifier is a class that visits all statements in an RTL, and for
 // all expressions in the various types of statements, makes a modification.
 // The modification is as a result of an ExpModifier; there is a pointer to
@@ -241,8 +270,77 @@ public:
 class StripRefs : public ExpModifier {
 public:
             StripRefs() {}
-    virtual Exp* visit(RefExp* e);
+    virtual Exp* preVisit(RefExp* e);
     // All other virtual functions inherit and do nothing
+};
+
+class CallRefsFixer : public ExpModifier {
+    // These two provide 31 bits (or sizeof(int)-1) of information about whether
+    // the child is unchanged. If the mask overflows, it goes to zero, and
+    // from then on the child is reported as always changing.
+    // This is used to avoid calling simplify in most cases where it is not
+    // necessary.
+    unsigned    mask;
+    unsigned    unchanged;
+public:
+            CallRefsFixer() { mask = 1; unchanged = (unsigned)-1;}
+    virtual Exp* preVisit(Unary *e)    {mask <<= 1; return e;}
+    virtual Exp* preVisit(Binary *e)   {mask <<= 1; return e;}
+    virtual Exp* preVisit(Ternary *e)  {mask <<= 1; return e;}
+    virtual Exp* preVisit(TypedExp *e) {mask <<= 1; return e;}
+    virtual Exp* preVisit(FlagDef *e)  {mask <<= 1; return e;}
+    virtual Exp* preVisit(RefExp *e)   {mask <<= 1; return e;}
+    virtual Exp* preVisit(PhiExp *e)   {mask <<= 1; return e;}
+    virtual Exp* preVisit(Location *e) {mask <<= 1; return e;}
+    virtual Exp* preVisit(Const *e)    {mask <<= 1; return e;}
+    virtual Exp* preVisit(Terminal *e) {mask <<= 1; return e;}
+    virtual Exp* preVisit(TypeVal *e)  {mask <<= 1; return e;}
+
+    virtual Exp* postVisit(Unary *e);
+    virtual Exp* postVisit(Binary *e);
+    virtual Exp* postVisit(Ternary *e);
+    virtual Exp* postVisit(TypedExp *e);
+    virtual Exp* postVisit(FlagDef *e);
+    virtual Exp* postVisit(RefExp *e);
+    virtual Exp* postVisit(PhiExp *e);
+    virtual Exp* postVisit(Location *e);
+    virtual Exp* postVisit(Const *e);
+    virtual Exp* postVisit(Terminal *e);
+    virtual Exp* postVisit(TypeVal *e);
+};
+
+class UsedLocsFinder : public ExpVisitor {
+    LocationSet* used;
+public:
+                 UsedLocsFinder(LocationSet& used) {this->used = &used;}
+                 ~UsedLocsFinder() {}
+
+    LocationSet* getLocSet() {return used;}
+    virtual bool visit(RefExp *e,   bool& override);
+    virtual bool visit(Location *e, bool& override);
+    virtual bool visit(Terminal* e);
+    virtual bool visit(PhiExp* e,   bool& override);
+};
+
+class UsedLocsVisitor : public StmtExpVisitor {
+public:
+    // The bool final is for ignoring those parts of expressions that are
+    // not to be considered for the final pass just before code generation.
+    // For example, implicit parameters and returns in CallStatements are
+    // ignored (not considered used).
+    bool final;
+            UsedLocsVisitor(ExpVisitor* v, bool f = false) : StmtExpVisitor(v)
+              {final = f;}
+    virtual ~UsedLocsVisitor() {}
+    // Needs special attention because the lhs of an assignment isn't used
+    // (except where it's m[blah], when blah is used)
+    virtual bool visit(Assign *stmt, bool& override);
+    // Returns aren't used (again, except where m[blah] where blah is used),
+    // and there is special logic for when the pass is final
+    virtual bool visit(CallStatement *stmt, bool& override);
+    // A BoolStatement uses its condition expression, but not its destination
+    // (unless it's an m[x], in which case x is used and not m[x])
+    virtual bool visit(BoolStatement *stmt, bool& override);
 };
 
 #endif  // #ifndef __VISIOR_H__

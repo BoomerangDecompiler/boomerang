@@ -286,10 +286,9 @@ virtual Exp* simplifyConstraint() {return this;}
         Exp* killFill();
 
     // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used) {}
+            void addUsedLocs(LocationSet& used);
 
     Exp *removeSubscripts(bool& allZero);
-    virtual Exp *fixCallRefs() { return this; }
 
     // Add a subscript to all e (pointing to def)
     virtual Exp* expSubscriptVar(Exp* e, Statement* def) {return this;}
@@ -394,8 +393,8 @@ virtual void    print(std::ostream& os, bool withUses = false);
 virtual void    printx(int ind);
  
 
-    void    appendDotFile(std::ofstream& of);
-    virtual Exp*  genConstraints(Exp* restrictTo);
+virtual void    appendDotFile(std::ofstream& of);
+virtual Exp*    genConstraints(Exp* restrictTo);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
@@ -423,12 +422,9 @@ virtual bool    operator==(const Exp& o) const;
 virtual bool    operator< (const Exp& o) const;
 virtual bool    operator*=(Exp& o);
 
-        void    print(std::ostream& os, bool withUses = false);
-        void    appendDotFile(std::ofstream& of);
+virtual void    print(std::ostream& os, bool withUses = false);
+virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
-
-    // Do the work of finding used locations
-virtual void    addUsedLocs(LocationSet& used);
 
     // Do the work of subscripting variables
 virtual Exp*    expSubscriptVar(Exp* e, Statement* def);
@@ -466,11 +462,11 @@ virtual bool operator*=(Exp& o);
 virtual     ~Unary();
 
     // Arity
-    int getArity() {return 1;}
+virtual int getArity() {return 1;}
 
     // Print
 virtual void    print(std::ostream& os, bool withUses = false);
-        void    appendDotFile(std::ofstream& of);
+virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
 
     // Set first subexpression
@@ -494,11 +490,6 @@ virtual Exp* polySimplify(bool& bMod);
         Exp* simplifyArith();
         Exp* simplifyAddr();
 virtual Exp* simplifyConstraint();
-
-    // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used);
-
-    virtual Exp *fixCallRefs();
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
@@ -547,8 +538,8 @@ virtual     ~Binary();
 
     // Print
 virtual void    print(std::ostream& os, bool withUses = false);
-        void    printr(std::ostream& os, bool withUses = false);
-        void    appendDotFile(std::ofstream& of);
+virtual void    printr(std::ostream& os, bool withUses = false);
+virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
 
     // Set second subexpression
@@ -573,11 +564,6 @@ virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
 virtual Exp* simplifyConstraint();
-
-    // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used);
-
-    virtual Exp *fixCallRefs();
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
@@ -628,8 +614,8 @@ virtual     ~Ternary();
 
     // Print
 virtual void    print(std::ostream& os, bool withUses = false);
-        void    printr(std::ostream& os, bool withUses = false);
-        void    appendDotFile(std::ofstream& of);
+virtual void    printr(std::ostream& os, bool withUses = false);
+virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
 
     // Set third subexpression
@@ -648,11 +634,6 @@ virtual int getMemDepth();
 virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
-
-    // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used);
-
-    virtual Exp *fixCallRefs();
 
     // Do the work of subscripting variables
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
@@ -701,7 +682,7 @@ virtual bool operator*=(Exp& o);
 
 
 virtual void    print(std::ostream& os, bool withUses = false);
-        void    appendDotFile(std::ofstream& of);
+virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
 
     // Get and set the type
@@ -726,7 +707,7 @@ class FlagDef : public Unary {
 public:
             FlagDef(Exp* params, RTL* rtl);     // Constructor
 virtual     ~FlagDef();                         // Destructor
-    void    appendDotFile(std::ofstream& of);
+virtual void    appendDotFile(std::ofstream& of);
     RTL*    getRtl() { return rtl; }
     void    setRtl(RTL* r) { rtl = r; }
 
@@ -761,8 +742,6 @@ virtual void print(std::ostream& os, bool withUses = false);
 virtual void printx(int ind);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
-    void    addUsedLocs(LocationSet& used);
-    virtual Exp *fixCallRefs();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
     Exp*    addSubscript(Statement* def) {this->def = def; return this;}
     void    setDef(Statement* def) {this->def = def;}
@@ -808,10 +787,8 @@ virtual Exp* clone();
 virtual bool operator==(const Exp& o) const;
 virtual bool operator< (const Exp& o) const;
 virtual bool operator*=(Exp& o);
-    void    print(std::ostream& os, bool withUses = false);
+virtual void    print(std::ostream& os, bool withUses = false);
 virtual int getNumRefs() {return stmtVec.size();}
-    void    addUsedLocs(LocationSet& used);
-    virtual Exp *fixCallRefs();
     bool    hasGlobalFuncParam(Prog *prog);
 virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     Statement* getAt(int idx) {return stmtVec.getAt(idx);}
@@ -895,7 +872,6 @@ public:
     UserProc *getProc() { return proc; }
 
     virtual Exp* polySimplify(bool& bMod);
-    virtual void addUsedLocs(LocationSet& used);
     virtual void getDefinitions(LocationSet& defs);
 
     virtual Type *getType();

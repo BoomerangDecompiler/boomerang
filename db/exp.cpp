@@ -3071,61 +3071,6 @@ bool Exp::isTemp() {
     return sub->op == opTemp;
 }
 
-void Unary::addUsedLocs(LocationSet& used) {
-    subExp1->addUsedLocs(used);
-}
-
-void Terminal::addUsedLocs(LocationSet& used) {
-    switch (op) {
-        case opPC:
-        case opFlags:
-        case opFflags:
-        // Fall through
-        // The carry flag can be used in some SPARC idioms, etc
-        case opDF: case opCF: case opZF: case opNF: case opOF:  // these flags too
-            used.insert(this);
-        default:
-            break;
-    }
-}
-
-
-void Binary::addUsedLocs(LocationSet& used) {
-    subExp1->addUsedLocs(used);
-    subExp2->addUsedLocs(used);
-}
-
-void Ternary::addUsedLocs(LocationSet& used) {
-    subExp1->addUsedLocs(used);
-    subExp2->addUsedLocs(used);
-    subExp3->addUsedLocs(used);
-}
-
-void RefExp::addUsedLocs(LocationSet& used) {
-    used.insert(this);           // We want to see these
-    if (subExp1->isMemOf()) {
-        Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
-        grandChild->addUsedLocs(used);
-    }
-    if (subExp1->getOper() == opArraySubscript) {
-        subExp1->addUsedLocs(used);
-    }
-}
-
-void PhiExp::addUsedLocs(LocationSet& used) {
-    /* Suppose we have
-      10: r1 := 5
-      20: {r1,r2} := call(foo)
-      30: r1 := phi{10 20}
-      That means we effectively use r1{10} and r1{20}
-    */
-    StatementVec::iterator uu;
-    for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-        Exp* temp = new RefExp(subExp1, *uu);
-        used.insert(temp);
-    }
-}
-
 Exp *Exp::removeSubscripts(bool& allZero)
 {
     Exp *e = this;
@@ -3147,61 +3092,6 @@ Exp *Exp::removeSubscripts(bool& allZero)
 }
 
 
-Exp *Unary::fixCallRefs()
-{
-    if (op == opAddrOf)
-        // Don't ruin the a[m[blah]] that is required for generating &localn
-        return this;
-    subExp1 = subExp1->fixCallRefs();
-    Exp *res = this->simplify();
-    return res;
-}
-
-Exp *Binary::fixCallRefs()
-{
-    subExp1 = subExp1->fixCallRefs();
-    subExp2 = subExp2->fixCallRefs();
-    Exp *res = this->simplify();
-    return res;
-}
-
-Exp *Ternary::fixCallRefs()
-{
-    subExp1 = subExp1->fixCallRefs();
-    subExp2 = subExp2->fixCallRefs();
-    subExp3 = subExp3->fixCallRefs();
-    Exp *res = this->simplify();
-    return res;
-}
-
-Exp *RefExp::fixCallRefs() {
-    subExp1 = subExp1->fixCallRefs();
-    CallStatement *call = dynamic_cast<CallStatement*>(def);
-    if (call) {
-        Exp *e = call->getProven(subExp1);
-        if (e) {
-            e = call->substituteParams(e->clone());
-            assert(e);
-            if (VERBOSE)
-                LOG << "fixcall refs replacing " << this << " with " << e 
-                    << "\n";
-            ;//delete this;
-            e = e->simplify();
-            return e;
-        } else {
-            if (call->findReturn(subExp1) == -1) {
-                if (VERBOSE && !subExp1->isPC()) {
-                    LOG << "nothing proven about " << subExp1 << 
-                        " and yet it is referenced by " << this <<
-                        ", and not in returns of " << "\n" <<
-                        "   " << call << "\n";
-                }
-            }
-        }
-    }
-    Exp *res = this->simplify();
-    return res;
-}
 
 // This is a hack.  If we have a phi which has one of its
 // elements referencing a statement which is defined as a 
@@ -3246,64 +3136,6 @@ bool PhiExp::hasGlobalFuncParam(Prog *prog)
     return false;
 }
 
-Exp *PhiExp::fixCallRefs() {
-    std::vector<Statement*> remove;
-    std::vector<Statement*> insert;
-    unsigned n = stmtVec.size();
-
-    bool oneIsGlobalFunc = false;
-    Prog *prog = NULL;
-	unsigned int i;
-    for (i=0; i < n; i++) {
-        Statement* u = stmtVec.getAt(i);
-        if (u) {
-            CallStatement *call = dynamic_cast<CallStatement*>(u);
-            if (call)
-                prog = call->getProc()->getProg();
-        }
-    }
-    if (prog) 
-        oneIsGlobalFunc = hasGlobalFuncParam(prog);
-
-    for (i=0; i < n; i++) {
-        Statement* u = stmtVec.getAt(i);
-        CallStatement *call = dynamic_cast<CallStatement*>(u);
-        if (call) {
-            Exp *e = call->getProven(subExp1);
-            if (call->isComputed() && oneIsGlobalFunc) {
-                e = subExp1->clone();
-                if (VERBOSE)
-                    LOG << "ignoring ref in phi to computed call with "
-                        << "function pointer param " << e << "\n";
-            }
-            if (e) {
-                e = call->substituteParams(e->clone());
-                if (e && e->getOper() == opSubscript &&
-                    *e->getSubExp1() == *subExp1) {
-                    if (VERBOSE)
-                        LOG << "fixcall refs replacing param " << i << " in "
-                            << this << " with " << e << "\n";
-                    stmtVec.putAt(i, ((RefExp*)e)->getRef());
-                } else {
-                    if (VERBOSE)
-                        LOG << "cant update phi ref to " << e 
-                                  << "\n";
-                }
-            } else {
-                if (call->findReturn(subExp1) == -1) {
-                    if (VERBOSE) {
-                        LOG << "nothing proven about " << subExp1 << 
-                            " and yet it is referenced by " << this <<
-                            ", and not in returns of " << "\n" <<
-                            "   " << call << "\n";
-                    }
-                }
-            }
-        }
-    }
-    Exp *res = this->simplify();
-    return res;
-}
 
 //
 // From SSA form
@@ -3779,14 +3611,6 @@ Exp* Location::polySimplify(bool& bMod) {
     return res;
 }
 
-void Location::addUsedLocs(LocationSet& used) {
-    // We want to add this expression
-    used.insert(this);
-    // We also need to recurse, in case we have m[m[...]] or m[r[...]]
-    if (op == opMemOf)
-        subExp1->addUsedLocs(used);
-}
-
 void Location::getDefinitions(LocationSet& defs) {
     // This is a hack to fix aliasing (replace with something general)
     if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
@@ -4008,20 +3832,23 @@ Exp* Binary::simplifyConstraint() {
 //                          //
 //  //  //  //  //  //  //  //
 bool Unary::accept(ExpVisitor* v) {
-    bool ret = v->visit(this);
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;   // Override the rest of the accept logic
     if (ret) ret = subExp1->accept(v);
     return ret;
 }
 
 bool Binary::accept(ExpVisitor* v) {
-    bool ret = v->visit(this);
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
     if (ret) ret = subExp1->accept(v);
     if (ret) ret = subExp2->accept(v);
     return ret;
 }
 
 bool Ternary::accept(ExpVisitor* v) {
-    bool ret = v->visit(this);
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
     if (ret) ret = subExp1->accept(v);
     if (ret) ret = subExp2->accept(v);
     if (ret) ret = subExp3->accept(v);
@@ -4032,19 +3859,33 @@ bool Ternary::accept(ExpVisitor* v) {
 // repeated because the particular visitor function called each time is
 // different for each class (because "this" is different each time)
 bool TypedExp::accept(ExpVisitor* v) {
-    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret) ret = subExp1->accept(v);
+    return ret;
 }
 bool  FlagDef::accept(ExpVisitor* v) {
-    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret) ret = subExp1->accept(v);
+    return ret;
 }
 bool   RefExp::accept(ExpVisitor* v) {
-    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret) ret = subExp1->accept(v); return ret;
 }
 bool   PhiExp::accept(ExpVisitor* v) {
-    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret) ret = subExp1->accept(v);
+    return ret;
 }
 bool Location::accept(ExpVisitor* v) {
-    bool ret = v->visit(this); if (ret) ret = subExp1->accept(v); return ret;
+    bool override, ret = v->visit(this, override);
+    if (override) return ret;
+    if (ret) ret &= subExp1->accept(v);
+    return ret;
 }
 
 // The following are similar, but don't have children that have to accept
@@ -4087,68 +3928,72 @@ Exp* Exp::stripRefs() {
 }
 
 Exp* Unary::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    // This Unary will be changed in *either* the pre or the post visit
+    // If it's changed in the preVisit step, then postVisit doesn't care
+    // about the type of ret. So let's call it a Unary, and the type system
+    // is happy
+    Unary* ret = (Unary*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 Exp* Binary::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    Binary* ret = (Binary*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
     subExp2 = subExp2->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 Exp* Ternary::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    Ternary* ret = (Ternary*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
     subExp2 = subExp2->acceptMod(v);
     subExp3 = subExp3->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* Location::acceptMod(ExpModifier* v) {
     // This looks to be the same source code as Unary::acceptMod, but the
     // type of "this" is different, which is all important here!
     // (it makes a call to a different visitor member function).
-    Exp* ret = v->visit(this);
+    Location* ret = (Location*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* PhiExp::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    PhiExp* ret = (PhiExp*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* RefExp::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    RefExp* ret = (RefExp*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* FlagDef::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    FlagDef* ret = (FlagDef*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* TypedExp::acceptMod(ExpModifier* v) {
-    Exp* ret = v->visit(this);
+    TypedExp* ret = (TypedExp*)v->preVisit(this);
     subExp1 = subExp1->acceptMod(v);
-    return ret;
+    return v->postVisit(ret);
 }
 
 Exp* Terminal::acceptMod(ExpModifier* v) {
     // This is important if we need to modify terminals
-    return v->visit(this);
+    return v->postVisit((Terminal*)v->preVisit(this));
 }
 
 Exp* Const::acceptMod(ExpModifier* v) {
-    return v->visit(this);
+    return v->postVisit((Const*)v->preVisit(this));
 }
 
 Exp* TypeVal::acceptMod(ExpModifier* v) {
-    return v->visit(this);
+    return v->postVisit((TypeVal*)v->preVisit(this));
 }
 
 void child(Exp* e, int ind) {
@@ -4234,4 +4079,11 @@ char* Exp::getAnyStrConst() {
     }
     if (e->op != opStrConst) return NULL;
     return ((Const*)e)->getStr();
+}
+
+// Find the locations used by this expression. Use the UsedLocsFinder visitor
+// class
+void Exp::addUsedLocs(LocationSet& used) {
+    UsedLocsFinder ulf(used);
+    accept(&ulf);
 }

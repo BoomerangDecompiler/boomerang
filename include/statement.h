@@ -56,6 +56,7 @@ class Cfg;
 class Type;
 class Statement;
 class StmtVisitor;
+class StmtExpVisitor;
 class StmtModifier;
 class HLLCode;
 class Assign;
@@ -105,8 +106,9 @@ public:
 
     virtual Statement*  clone() = 0;            // Make copy of self
 
-    // Accept a visitor to this Statement
+    // Accept a visitor (of various kinds) to this Statement
     virtual bool accept(StmtVisitor* visitor) = 0;
+    virtual bool accept(StmtExpVisitor* visitor) = 0;
     virtual bool accept(StmtModifier* visitor) = 0;
 
     STMT_KIND getKind() { return kind;}
@@ -166,11 +168,8 @@ public:
 
     // Adds (inserts) all locations (registers or memory) used by this
     // statement
-    virtual void addUsedLocs(LocationSet& used) = 0;
-    virtual void addUsedLocsFinal(LocationSet& used) {
-        addUsedLocs(used); }        // For most cases, use standard addUsedLocs
-
-    virtual void fixCallRefs() = 0;
+            void addUsedLocs(LocationSet& used, bool final = false);
+    void fixCallRefs();
 
     // Subscript all occurrences of e with definition def (except for top level
     // of LHS of assignment)
@@ -306,6 +305,7 @@ public:
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Compare
@@ -325,9 +325,6 @@ public:
     bool isGuarded() {return guard != NULL;}
 
     virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void fixCallRefs();
-    // Remove refs to statements defining restored locations
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
@@ -413,6 +410,7 @@ public:
 
     // Accept a visitor to this Statement
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Set and return the destination of the jump. The destination is either
@@ -457,8 +455,6 @@ public:
     virtual Type* getLeftType() {return NULL;};
     virtual Exp* getRight() {return NULL;}
     virtual bool usesExp(Exp*) {return false;}
-    virtual void addUsedLocs(LocationSet&) {}
-    virtual void fixCallRefs() { }
     virtual void subscriptVar(Exp*, Statement*) {}
     virtual void processConstants(Prog*) {}
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
@@ -503,6 +499,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Set and return the BRANCH_TYPE of this jcond as well as whether the
@@ -547,8 +544,6 @@ public:
 
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
@@ -616,6 +611,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Set and return the Exp representing the switch variable
@@ -643,7 +639,6 @@ public:
     
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
     virtual void subscriptVar(Exp* e, Statement* def);
 protected:
     virtual bool doReplaceRef(Exp* from, Exp* to);
@@ -688,6 +683,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Return true if the called function returns an aggregate: i.e., a
@@ -695,6 +691,8 @@ public:
     bool returnsStruct();
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
+    // Set implicit arguments: so far, for testing only:
+    void setImpArguments(std::vector<Exp*>& arguments);
     void setReturns(std::vector<Exp*>& returns); // Set call's return locs
     void setSigArguments();         // Set arguments based on signature
     std::vector<Exp*>& getArguments();            // Return call's arguments
@@ -705,10 +703,11 @@ public:
     void addReturn(Exp *e);
     Exp *getProven(Exp *e);
     Exp *substituteParams(Exp *e);
-    Exp *findArgument(Exp *e);
     void addArgument(Exp *e);
+    Exp* findArgument(Exp* e);
     Exp* getArgumentExp(int i);
     Exp* getImplicitArgumentExp(int i);
+    int  getNumImplicitArguments() {return implicitArguments.size();}
     void setArgumentExp(int i, Exp *e);
     void setNumArguments(int i);
     int  getNumArguments();
@@ -754,9 +753,6 @@ public:
 
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void addUsedLocs(LocationSet& used);
-            void addUsedLocsFinal(LocationSet& used);
-    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
@@ -818,6 +814,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // print
@@ -844,12 +841,6 @@ public:
 
     // returns true if this statement uses the given expression
     virtual bool usesExp(Exp *e);
-
-    // Adds (inserts) all locations (registers or memory) used by this
-    // statement
-    virtual void addUsedLocs(LocationSet& used);
-
-    virtual void fixCallRefs();
 
     // Subscript all occurrences of e with definition def (except for top level
     // of LHS of assignment)
@@ -894,6 +885,7 @@ public:
 
     // Accept a visitor to this RTL
     virtual bool accept(StmtVisitor* visitor);
+    virtual bool accept(StmtExpVisitor* visitor);
     virtual bool accept(StmtModifier* visitor);
 
     // Set and return the BRANCH_TYPE of this scond as well as whether the
@@ -931,8 +923,6 @@ public:
     virtual void simplify();
 
     // Statement functions
-    virtual void addUsedLocs(LocationSet& used);
-    virtual void fixCallRefs();
     virtual void subscriptVar(Exp* e, Statement* def);
     //virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }
