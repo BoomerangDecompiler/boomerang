@@ -142,11 +142,17 @@ void Prog::generateCode(std::ostream &os) {
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-        CHLLCode code(p);
+/*        CHLLCode code(p);
         if (p->generateCode(code)) {
             std::string str;
             code.toString(str);
         os << str << std::endl;
+        } */
+        std::list<char*> code;
+        p->generateCode(code);
+        for (std::list<char*>::iterator it1 = code.begin(); it1 != code.end();
+             it1++) {
+            os << *it1; 
         }
     }
 }

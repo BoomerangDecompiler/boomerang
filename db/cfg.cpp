@@ -1040,6 +1040,17 @@ bool Cfg::establishDFTOrder()
     return numTraversed == m_listBB.size();
 }
 
+PBB Cfg::findRetNode()
+{
+    PBB retNode = NULL;
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); 
+	 it++) {
+        if ((*it)->getOutEdges().size() == 0 && (*it)->getType() == RET)
+            retNode = *it;
+    }
+    return retNode;
+}
+
 /*==============================================================================
  * FUNCTION:        Cfg::establishRevDFTOrder
  * OVERVIEW:        Performs establishDFTOrder on the reverse (flip) of the 
@@ -1059,11 +1070,7 @@ bool Cfg::establishRevDFTOrder()
 	// it needs to be fixed.
     //sortByLastDFT();
 
-	PBB retNode = NULL;
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
-		if ((*it)->getOutEdges().size() == 0 && (*it)->getType() == RET)
-			retNode = *it;
-	}
+	PBB retNode = findRetNode();
 
 	if (retNode == NULL) return false;
 
@@ -1342,17 +1349,6 @@ void Cfg::updateLiveness()
 }
 
 /*==============================================================================
- * FUNCTION:        Cfg::structure
- * OVERVIEW:        Structures the control flow graph into loops and conditionals
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::structure() 
-{   
-    computeDominators();
-}
-
-/*==============================================================================
  * FUNCTION:    delete_lrtls
  * OVERVIEW:    "deep" delete for a list of pointers to RTLs
  * PARAMETERS:  pLrtl - the list
@@ -1602,3 +1598,458 @@ Exp *Cfg::getReturnVal()
 	}
     return e;
 }
+
+void Cfg::setTimeStamps()
+{
+    // set DFS tag
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+         it++) (*it)->traversed = DFS_TAG;
+
+    // set the parenthesis for the nodes as well as setting
+    // the post-order ordering between the nodes
+    int time = 1;
+    Ordering.clear();
+    entryBB->setLoopStamps(time, Ordering);
+
+    // set the reverse parenthesis for the nodes
+    time = 1;
+    entryBB->setRevLoopStamps(time);
+
+    PBB retNode = findRetNode();
+    assert(retNode);
+    revOrdering.clear();
+    retNode->setRevOrder(revOrdering);
+}
+
+// Finds the common post dominator of the current immediate post dominator
+// and its successor's immediate post dominator
+PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom)
+{
+    if (!curImmPDom)
+        return succImmPDom;
+    if (!succImmPDom)
+        return curImmPDom;
+
+    while (curImmPDom && succImmPDom && (curImmPDom != succImmPDom))
+        if (curImmPDom->revOrd > succImmPDom->revOrd)
+            succImmPDom = succImmPDom->immPDom;
+        else
+            curImmPDom = curImmPDom->immPDom;
+
+    return curImmPDom;
+}
+
+/* Finds the immediate post dominator of each node in the graph PROC->cfg.
+ * Adapted version of the dominators algorithm by Hecht and Ullman; finds
+ * immediate post dominators only.
+ * Note: graph should be reducible */
+void Cfg::findImmedPDom()
+{
+    PBB curNode, succNode;	// the current Node and its successor
+
+    // traverse the nodes in order (i.e from the bottom up)
+    for (int i = revOrdering.size() - 1; i >= 0; i--) {
+        curNode = revOrdering[i];
+        std::vector<PBB> &oEdges = curNode->getOutEdges();
+        for (unsigned int j = 0; j < oEdges.size(); j++) {
+            succNode = oEdges[j];
+	    if (succNode->revOrd > curNode->revOrd)
+	        curNode->immPDom = commonPDom(curNode->immPDom, succNode);
+	}
+    }
+
+    // make a second pass but consider the original CFG ordering this time
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        curNode = Ordering[i];
+        std::vector<PBB> &oEdges = curNode->getOutEdges();
+        if (oEdges.size() > 1)
+            for (unsigned int j = 0; j < oEdges.size(); j++) {
+                succNode = oEdges[j];
+	        curNode->immPDom = commonPDom(curNode->immPDom, succNode);
+	    }
+    }
+
+    // one final pass to fix up nodes involved in a loop
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        curNode = Ordering[i];
+        std::vector<PBB> &oEdges = curNode->getOutEdges();
+        if (oEdges.size() > 1)
+            for (unsigned int j = 0; j < oEdges.size(); j++) {
+                succNode = oEdges[j];	
+                if (curNode->hasBackEdgeTo(succNode) && 
+                    curNode->getOutEdges().size() > 1 &&
+                    succNode->immPDom->ord < curNode->immPDom->ord)
+                    curNode->immPDom = 
+                        commonPDom(succNode->immPDom, curNode->immPDom);
+                else
+                    curNode->immPDom = 
+                        commonPDom(curNode->immPDom, succNode);
+            }
+    }
+}
+
+// Structures all conditional headers (i.e. nodes with more than one outedge)
+void Cfg::structConds()
+{
+    // Process the nodes in order
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        PBB curNode = Ordering[i];
+
+        // does the current node have more than one out edge?
+        if (curNode->getOutEdges().size() > 1) {
+	    // if the current conditional header is a two way node and has a 
+            // back edge, then it won't have a follow
+            if (curNode->hasBackEdge() && curNode->getType() == TWOWAY) {
+                curNode->setStructType(Cond);
+                continue;
+            }
+		
+            // set the follow of a node to be its immediate post dominator
+            curNode->setCondFollow(curNode->immPDom);
+
+            // set the structured type of this node
+            curNode->setStructType(Cond);
+
+            // if this is an nway header, then we have to tag each of the nodes
+            // within the body of the nway subgraph
+            if (curNode->getCondType() == Case)
+                curNode->setCaseHead(curNode,curNode->getCondFollow());
+        }
+    }
+}
+
+// Pre: The loop induced by (head,latch) has already had all its member nodes 
+//      tagged
+// Post: The type of loop has been deduced
+void Cfg::determineLoopType(PBB header, bool* &loopNodes)
+{
+    assert(header->getLatchNode());
+
+    // if the latch node is a two way node then this must be a post tested 
+    // loop
+    if (header->getLatchNode()->getType() == TWOWAY) {
+        header->setLoopType(PostTested);
+
+        // if the head of the loop is a two way node and the loop spans more 
+        // than one block  then it must also be a conditional header
+        if (header->getType() == TWOWAY && header != header->getLatchNode())
+            header->setStructType(LoopCond);
+    }
+
+    // otherwise it is either a pretested or endless loop
+    else if (header->getType() == TWOWAY) {
+        // if the header is a two way node then it must have a conditional 
+        // follow (since it can't have any backedges leading from it). If this 
+        // follow is within the loop then this must be an endless loop
+        assert(header->getCondFollow());
+        if (loopNodes[header->getCondFollow()->ord]) {
+            header->setLoopType(Endless);
+
+            // retain the fact that this is also a conditional header
+            header->setStructType(LoopCond);
+        } else
+            header->setLoopType(PreTested);
+    }
+
+    // both the header and latch node are one way nodes so this must be an 
+    // endless loop
+    else
+        header->setLoopType(Endless);
+}
+
+// Pre: The loop headed by header has been induced and all it's member nodes 
+//      have been tagged
+// Post: The follow of the loop has been determined.
+void Cfg::findLoopFollow(PBB header, bool* &loopNodes)
+{
+    assert(header->getStructType() == Loop || 
+           header->getStructType() == LoopCond);
+    loopType lType = header->getLoopType();
+    PBB latch = header->getLatchNode();
+
+    if (lType == PreTested) {
+        // if the 'while' loop's true child is within the loop, then its false 
+        // child is the loop follow
+        if (loopNodes[header->getOutEdges()[0]->ord])
+            header->setLoopFollow(header->getOutEdges()[1]);
+        else
+	    header->setLoopFollow(header->getOutEdges()[0]);
+    } else if (lType == PostTested) {
+        // the follow of a post tested ('repeat') loop is the node on the end 
+        // of the non-back edge from the latch node
+        if (latch->getOutEdges()[0] == header)
+            header->setLoopFollow(latch->getOutEdges()[1]);
+        else
+            header->setLoopFollow(latch->getOutEdges()[0]);
+    } else { // endless loop
+        PBB follow = NULL;
+	
+        // traverse the ordering array between the header and latch nodes.
+        PBB latch = header->getLatchNode();
+	for (int i = header->ord - 1; i > latch->ord; i--) {
+	    PBB &desc = Ordering[i];
+	    // the follow for an endless loop will have the following 
+            // properties:
+            //   i) it will have a parent that is a conditional header inside 
+            //      the loop whose follow is outside the loop
+	    //  ii) it will be outside the loop according to its loop stamp 
+            //      pair
+            // iii) have the highest ordering of all suitable follows (i.e. 
+            //      highest in the graph)
+	
+	    if (desc->getStructType() == Cond && desc->getCondFollow() && 
+                desc->getLoopHead() == header) {
+	        if (loopNodes[desc->getCondFollow()->ord]) {
+	            // if the conditional's follow is in the same loop AND is 
+                    // lower in the loop, jump to this follow
+                    if (desc->ord > desc->getCondFollow()->ord)
+		        i = desc->getCondFollow()->ord;
+                    // otherwise there is a backward jump somewhere to a node 
+                    // earlier in this loop. We don't need to any nodes below 
+                    // this one as they will all have a conditional within the 
+                    // loop.  
+                    else break;
+                } else {
+                    // otherwise find the child (if any) of the conditional 
+                    // header that isn't inside the same loop 
+                    PBB succ = desc->getOutEdges()[0];
+		    if (loopNodes[succ->ord])
+		        if (!loopNodes[desc->getOutEdges()[1]->ord])
+                            succ = desc->getOutEdges()[1];
+                        else
+                            succ = NULL;
+		    // if a potential follow was found, compare its ordering 
+                    // with the currently found follow
+                    if (succ && (!follow || succ->ord > follow->ord))
+                        follow = succ;
+                }
+            }
+        } 
+	// if a follow was found, assign it to be the follow of the loop under 
+        // investigation
+	if (follow)
+	    header->setLoopFollow(follow);
+    }
+}
+
+// Pre: header has been detected as a loop header and has the details of the 
+//      latching node
+// Post: the nodes within the loop have been tagged
+void Cfg::tagNodesInLoop(PBB header, bool* &loopNodes)
+{
+    assert(header->getLatchNode());
+
+    // traverse the ordering structure from the header to the latch node 
+    // tagging the nodes determined to be within the loop. These are nodes 
+    // that satisfy the following:
+    //  i) header.loopStamps encloses curNode.loopStamps and 
+    //     curNode.loopStamps encloses latch.loopStamps
+    //  OR
+    //  ii) latch.revLoopStamps encloses curNode.revLoopStamps and 
+    //      curNode.revLoopStamps encloses header.revLoopStamps
+    //  OR
+    //  iii) curNode is the latch node
+
+    PBB latch = header->getLatchNode();
+    for (int i = header->ord - 1; i >= latch->ord; i--)
+        if (Ordering[i]->inLoop(header, latch)) {
+            // update the membership map to reflect that this node is within 
+            // the loop
+            loopNodes[i] = true;
+
+	    Ordering[i]->setLoopHead(header);
+	}
+}
+
+// Pre: The graph for curProc has been built.
+// Post: Each node is tagged with the header of the most nested loop of which 
+//       it is a member (possibly none).
+// The header of each loop stores information on the latching node as well as 
+// the type of loop it heads.
+void Cfg::structLoops()
+{
+    for (int i = Ordering.size() - 1; i >= 0; i--) {
+        PBB curNode = Ordering[i];	// the current node under investigation
+        PBB latch = NULL;	        // the latching node of the loop
+
+        // If the current node has at least one back edge into it, it is a 
+        // loop header. If there are numerous back edges into the header, 
+        // determine which one comes form the proper latching node.
+        // The proper latching node is defined to have the following 
+        // properties:
+        //   i) has a back edge to the current node
+        //  ii) has the same case head as the current node
+        // iii) has the same loop head as the current node
+        //  iv) is not an nway node
+        //   v) is not the latch node of an enclosing loop
+        //  vi) has a lower ordering than all other suitable candiates
+        // If no nodes meet the above criteria, then the current node is not a 
+        // loop header
+
+        std::vector<PBB> &iEdges = curNode->getInEdges();
+        for (unsigned int j = 0; j < iEdges.size(); j++) {
+            PBB pred = iEdges[j];
+            if (pred->getCaseHead() == curNode->getCaseHead() &&  // ii)
+                pred->getLoopHead() == curNode->getLoopHead() &&  // iii)
+                (!latch || latch->ord > pred->ord) &&             // vi)
+                !(pred->getLoopHead() && 
+                  pred->getLoopHead()->getLatchNode() == pred) && // v)
+                pred->hasBackEdgeTo(curNode))                     // i)
+                latch = pred;
+        }
+
+        // if a latching node was found for the current node then it is a loop 
+        // header. 
+        if (latch) {
+            // define the map that maps each node to whether or not it is 
+            // within the current loop
+            bool* loopNodes = new bool[Ordering.size()];
+            for (unsigned int j = 0; j < Ordering.size(); j++)
+                loopNodes[j] = false;
+
+            curNode->setLatchNode(latch);
+
+            // the latching node may already have been structured as a 
+            // conditional header. If it is not also the loop header (i.e. the 
+            // loop is over more than one block) then reset it to be a 
+            // sequential node otherwise it will be correctly set as a loop 
+            // header only later
+            if (latch != curNode && latch->getStructType() == Cond)
+                latch->setStructType(Seq);
+	
+            // set the structured type of this node
+            curNode->setStructType(Loop);
+
+            // tag the members of this loop
+            tagNodesInLoop(curNode, loopNodes);
+
+            // calculate the type of this loop
+            determineLoopType(curNode, loopNodes);
+
+            // calculate the follow node of this loop
+            findLoopFollow(curNode, loopNodes);
+
+            // delete the space taken by the loopnodes map
+            delete[] loopNodes;
+        }
+    }
+}
+
+// This routine is called after all the other structuring has been done. It 
+// detects conditionals that are in fact the head of a jump into/outof a loop 
+// or into a case body.  Only forward jumps are considered as unstructured 
+// backward jumps will always be generated nicely.
+void Cfg::checkConds()
+{
+    for (unsigned int i = 0; i < Ordering.size(); i++) {
+        PBB curNode = Ordering[i];
+        std::vector<PBB> &oEdges = curNode->getOutEdges();
+		
+        // consider only conditional headers that have a follow and aren't 
+        // case headers
+        if ((curNode->getStructType() == Cond || 
+             curNode->getStructType() == LoopCond) &&
+            curNode->getCondFollow() && curNode->getCondType() != Case) {
+            // define convenient aliases for the relevant loop and case heads 
+            // and the out edges
+	    PBB myLoopHead = (curNode->getStructType() == LoopCond ? 
+                              curNode : curNode->getLoopHead());
+            PBB follLoopHead = curNode->getCondFollow()->getLoopHead();
+
+            // analyse whether this is a jump into/outof a loop
+            if (myLoopHead != follLoopHead) {
+                // we want to find the branch that the latch node is on for a 
+                // jump out of a loop
+                if (myLoopHead) {
+                    PBB myLoopLatch = myLoopHead->getLatchNode();
+
+                    // does the then branch goto the loop latch?
+                    if (oEdges[BTHEN]->isAncestorOf(myLoopLatch) || 
+                        oEdges[BTHEN] == myLoopLatch) {
+                        curNode->setUnstructType(JumpInOutLoop);
+                        curNode->setCondType(IfElse);
+                    }
+		    // does the else branch goto the loop latch?
+		    else if (oEdges[BELSE]->isAncestorOf(myLoopLatch) || 
+                             oEdges[BELSE] == myLoopLatch) {
+                        curNode->setUnstructType(JumpInOutLoop);
+                        curNode->setCondType(IfThen);
+                    }
+                }
+
+                if (curNode->getUnstructType() == Structured && follLoopHead) { 
+                    // find the branch that the loop head is on for a jump 
+                    // into a loop body. If a branch has already been found, 
+                    // then it will match this one anyway
+
+                    // does the else branch goto the loop head?
+                    if (oEdges[BTHEN]->isAncestorOf(follLoopHead) || 
+                        oEdges[BTHEN] == follLoopHead) {
+                        curNode->setUnstructType(JumpInOutLoop);
+                        curNode->setCondType(IfElse);
+                    }
+
+                    // does the else branch goto the loop head?
+                    else if (oEdges[BELSE]->isAncestorOf(follLoopHead) || 
+                             oEdges[BELSE] == follLoopHead) {
+                        curNode->setUnstructType(JumpInOutLoop);
+                        curNode->setCondType(IfThen);
+                    }
+                }
+            }
+
+            // this is a jump into a case body if either of its children don't 
+            // have the same same case header as itself
+            if (curNode->getUnstructType() == Structured &&
+                (curNode->getCaseHead() != 
+                     curNode->getOutEdges()[BTHEN]->getCaseHead() ||
+                 curNode->getCaseHead() != 
+                     curNode->getOutEdges()[BELSE]->getCaseHead())) {
+                PBB myCaseHead = curNode->getCaseHead();
+                PBB thenCaseHead = curNode->getOutEdges()[BTHEN]->getCaseHead();
+                PBB elseCaseHead = curNode->getOutEdges()[BELSE]->getCaseHead();
+
+                if (thenCaseHead == myCaseHead && 
+                    (!myCaseHead || 
+                     elseCaseHead != myCaseHead->getCondFollow())) {
+                    curNode->setUnstructType(JumpIntoCase);
+                    curNode->setCondType(IfElse);
+                } else if (elseCaseHead == myCaseHead && 
+                           (!myCaseHead || 
+                            thenCaseHead != myCaseHead->getCondFollow())) {
+                    curNode->setUnstructType(JumpIntoCase);
+                    curNode->setCondType(IfThen);
+                }
+            }	
+        }
+
+        // for 2 way conditional headers that don't have a follow (i.e. are 
+        // the source of a back edge) and haven't been structured as latching 
+        // nodes, set their follow to be the non-back edge child.
+        if (curNode->getStructType() == Cond && !curNode->getCondFollow() &&
+            curNode->getUnstructType() == Structured && 
+            curNode->getCondType() != Case) {
+            // latching nodes will already have been reset to Seq structured 
+            // type
+            assert(curNode->hasBackEdge());
+
+            if (curNode->hasBackEdgeTo(curNode->getOutEdges()[BTHEN])) {
+                curNode->setCondType(IfThen);
+                curNode->setCondFollow(curNode->getOutEdges()[BELSE]);
+            } else {
+                curNode->setCondType(IfElse);
+                curNode->setCondFollow(curNode->getOutEdges()[BTHEN]);
+            }
+        }
+    }
+}
+
+void Cfg::structure()
+{
+    setTimeStamps();
+    findImmedPDom();
+    structConds();
+    structLoops();
+    checkConds();
+}
+

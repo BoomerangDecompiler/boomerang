@@ -336,6 +336,7 @@ public:
 
 	// code generation
 	bool generateCode(HLLCode &hll);
+        void generateCode(std::list<char*> &lines);
 
     // print this proc, mainly for debugging
     void print(std::ostream &out, bool withDF = false);

@@ -939,6 +939,12 @@ bool UserProc::generateCode(HLLCode &hll)
     return true;
 }
 
+void UserProc::generateCode(std::list<char*> &lines)
+{
+    std::list<PBB> followSet, gotoSet;
+    getEntryBB()->generateCode(lines, 1, NULL, followSet, gotoSet);
+}
+
 // print this userproc, maining for debugging
 void UserProc::print(std::ostream &out, bool withDF) {
     signature->print(out);
@@ -1024,7 +1030,6 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 void UserProc::decompile() {
     if (decompiled) return;
     decompiled = true;
-    std::cerr << "decompiling " << getName() << std::endl;
     // The following loop could be a lot quicker if we just checked each BB,
     // and just looked at the last rtl of each CALL BB
     std::set<Statement*> stmts;
@@ -1066,7 +1071,7 @@ void UserProc::decompile() {
     if (VERBOSE) {
         print(std::cout /*,true*/);
     }
-    std::cerr << "decompiled " << getName() << std::endl;
+    cfg->structure();
 }
 
 // Flush the dataflow for the whole proc. Needed because of aliasing problems.
@@ -1217,7 +1222,6 @@ void UserProc::nameStackLocations()
                     new Unary(opLocal, new Const(strdup(name.c_str())));
                 locals[name] = new IntegerType();
             }
-            std::cout << "mark" << std::endl;
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())
 					->getStr();

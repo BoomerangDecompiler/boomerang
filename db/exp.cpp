@@ -1595,6 +1595,64 @@ Exp* Exp::simplify() {
 Exp* Unary::polySimplify(bool& bMod) {
     Exp* res = this;
     subExp1 = subExp1->polySimplify(bMod);
+
+    if (op == opNot || op == opLNot) {
+        switch(subExp1->getOper()) {
+            case opEquals:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opNotEqual);
+                bMod = true;
+                return res;
+            case opNotEqual:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opEquals);
+                bMod = true;
+                return res;
+            case opLess:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opGtrEq);
+                bMod = true;
+                return res;
+            case opLessEq:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opGtr);
+                bMod = true;
+                return res;
+            case opGtr:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opLessEq);
+                bMod = true;
+                return res;
+            case opGtrEq:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opLess);
+                bMod = true;
+                return res;
+            case opLessUns:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opGtrEqUns);
+                bMod = true;
+                return res;
+            case opLessEqUns:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opGtrUns);
+                bMod = true;
+                return res;
+            case opGtrUns:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opLessEqUns);
+                bMod = true;
+                return res;
+            case opGtrEqUns:
+                res = ((Unary*)res)->becomeSubExp1();
+                res->setOper(opLessUns);
+                bMod = true;
+                return res;
+            default:
+                break;
+        }
+    }
+
     switch (op) {
         case opNeg: case opNot: case opLNot: case opSize: {
             OPER subOP = subExp1->getOper();
@@ -1614,11 +1672,6 @@ Exp* Unary::polySimplify(bool& bMod) {
                 }
                 ((Const*)res)->setInt(k);
                 bMod = true; 
-            } else if ((op == opNot || op == opLNot) && subOP == opEquals) {
-                res = ((Unary*)res)->becomeSubExp1();
-                res->setOper(opNotEqual);
-                bMod = true;
-                break;
             } else if (op == subOP) {
                res = ((Unary*)res)->becomeSubExp1();
                res = ((Unary*)res)->becomeSubExp1();

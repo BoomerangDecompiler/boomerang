@@ -69,7 +69,13 @@ BasicBlock::BasicBlock()
         m_iNumInEdges(0),
         m_iNumOutEdges(0),
         m_iTraversed(false),
-    m_returnVal(NULL)
+    m_returnVal(NULL),
+// From Doug's code
+ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
+traversed(UNTRAVERSED), hllLabel(false), labelStr(0), 
+indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
+condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
+usType(Structured) 
 {
 }
 
@@ -122,7 +128,14 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
         m_iNumInEdges(bb.m_iNumInEdges),
         m_iNumOutEdges(bb.m_iNumOutEdges),
         m_iTraversed(false),
-        m_returnVal(bb.m_returnVal)
+        m_returnVal(bb.m_returnVal),
+// From Doug's code
+ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), 
+numForwardInEdges(bb.numForwardInEdges), traversed(bb.traversed), 
+hllLabel(bb.hllLabel), labelStr(bb.labelStr), indentLevel(bb.indentLevel), 
+immPDom(bb.immPDom), loopHead(bb.loopHead), caseHead(bb.caseHead), 
+condFollow(bb.condFollow), loopFollow(bb.loopFollow), 
+latchNode(bb.latchNode), sType(bb.sType), usType(bb.usType) 
 {
     setRTLs(bb.m_pRtls);
 }
@@ -150,7 +163,13 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
         m_iNumInEdges(0),
         m_iNumOutEdges(iNumOutEdges),
         m_iTraversed(false),
-    m_returnVal(NULL)
+    m_returnVal(NULL),
+// From Doug's code
+ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
+traversed(UNTRAVERSED), hllLabel(false), labelStr(0), 
+indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
+condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
+usType(Structured) 
 {
     m_OutEdges.reserve(iNumOutEdges);               // Reserve the space;
                                                     // values added with
@@ -930,11 +949,6 @@ bool BasicBlock::deserialize(std::istream &inf) {
  *
  */
 
-/* Is this the loop latch node? */
-bool BasicBlock::isLatchNode() { 
-    return (m_loopHead != NULL) && (m_loopHead->m_latchNode == this); 
-}
-
 /* Get the condition */
 Exp *BasicBlock::getCond() {
     // the condition will be in the last rtl
@@ -987,9 +1001,13 @@ BasicBlock *BasicBlock::getLoopBody() {
 }
 
 bool BasicBlock::isAncestorOf(BasicBlock *other) {           
-    return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
+    return ((loopStamps[0] < other->loopStamps[0] && 
+             loopStamps[1] > other->loopStamps[1]) ||
+            (revLoopStamps[0] < other->revLoopStamps[0] && 
+             revLoopStamps[1] > other->revLoopStamps[1]));
+/*    return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
       (m_DFTrevlast < other->m_DFTrevlast &&
-       m_DFTrevfirst > other->m_DFTrevfirst);
+       m_DFTrevfirst > other->m_DFTrevfirst);*/
 }
 
 void BasicBlock::simplify() {
@@ -1323,6 +1341,478 @@ void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond) {
     }   
 }
 
+// some constants required to indicate extra code to be added
+#define CLOSE_BRACKET 2		// length of "}\n"
+#define DO_HEADER 5			// length of "do {\n"
+#define ENDLESS_HEADER 11	// langth of "for (;;) {\n"
+
+// Return the string containing indLevel tabstops. 
+// If extra = CLOSE_BRACKET then append "}\n" to the returned string
+// If extra = DO_HEADER then append "do {\n" to the returned string
+char* BasicBlock::indent(int indLevel, int extra/* = 0*/)
+{
+    char* retStr = new char[indLevel + extra + 1];
+    memset(retStr,'\t',indLevel);
+
+    retStr[indLevel] = '\0';
+
+    // add the extra stuff in necessary
+    if (extra == CLOSE_BRACKET)
+        strcat(retStr,"}\n");
+    else if (extra == DO_HEADER)
+        strcat(retStr,"do {\n");
+    else if (extra == ENDLESS_HEADER)
+        strcat(retStr,"for (;;) {\n");
+
+    return retStr;
+}
+
+// Return true if every parent (i.e. forward in edge source) of this node has 
+// had its code generated
+bool BasicBlock::allParentsGenerated()
+{
+    for (unsigned int i = 0; i < m_InEdges.size(); i++)
+        if (!m_InEdges[i]->hasBackEdgeTo(this) && 
+            m_InEdges[i]->traversed != DFS_CODEGEN)
+            return false;
+    return true;
+}
+
+// Emits a goto statement (at the correct indentation level) with the 
+// destination label for dest. Also places the label just before the 
+// destination code if it isn't already there.  If the goto is to the return 
+// block, emit a 'return' instead.  Also, 'continue' and 'break' statements 
+// are used instead if possible
+void BasicBlock::emitGotoAndLabel(std::list<char*> &lines, int indLevel, 
+    PBB dest)
+{
+    // is this a goto to the ret block?
+    if (dest->getType() == RET) { // WAS: check about size of ret bb
+        char* retStmt = new char[indLevel * 2 + strlen("return;\n\n") + 1];
+
+        sprintf(retStmt, "%sreturn;\n", indent(indLevel));
+	lines.push_back(retStmt);
+    } else { 
+        char* gotoStmt;
+
+        if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
+            gotoStmt = new char[indLevel + strlen("continue;\n") + 1];
+            sprintf(gotoStmt, "%s%s\n", indent(indLevel),
+                    (loopHead == dest ? "continue;" : "break;"));
+        } else {
+            gotoStmt = new char[indLevel + strlen("goto L;\n") + 
+                                1024 + 1];
+            sprintf(gotoStmt, "%sgoto L%d;\n", indent(indLevel), dest->ord);
+
+            // don't emit the label if it already has been emitted or the code 
+            // for the destination has not yet been generated
+            if (!dest->hllLabel && dest->traversed == DFS_CODEGEN)
+                sprintf(dest->labelStr,"L%d:\n",dest->ord);
+
+            dest->hllLabel = true;
+        }
+        lines.push_back(gotoStmt);
+    }
+}
+
+// Generates code for each non CTI (except procedure calls) statement within 
+// the block.
+void BasicBlock::WriteBB(std::list<char*> &lines, int indLevel)
+{
+    // allocate space for a label to be generated for this node and add this to
+    // the generated code. The actual label can then be generated now or back 
+    // patched later
+    labelStr = new char[1024];
+    lines.push_back(labelStr);
+    if (hllLabel)
+	sprintf(labelStr,"L%d:\n",ord);
+    else
+        strcpy(labelStr,"");
+
+    lines.push_back("BB\n");
+	
+    // save the indentation level that this node was written at
+    indentLevel = indLevel;
+}
+
+void BasicBlock::generateCode(std::list<char*> &lines, int indLevel, 
+    PBB latch, std::list<PBB> &followSet, std::list<PBB> &gotoSet)
+{
+    // If this is the follow for the most nested enclosing conditional, then
+    // don't generate anything. Otherwise if it is in the follow set
+    // generate a goto to the follow
+    PBB enclFollow = followSet.size() == 0 ? NULL : 
+                     followSet.back();
+
+    if (isIn(gotoSet, this) && !isLatchNode() && 
+        ((latch && this == latch->loopHead->loopFollow) || 
+        !allParentsGenerated())) {
+        emitGotoAndLabel(lines, indLevel, this);
+        return;
+    } else if (isIn(followSet, this)) {
+        if (this != enclFollow) {
+            emitGotoAndLabel(lines, indLevel, this);
+            return;
+        } else return;
+    }
+
+    // Has this node already been generated?
+    if (traversed == DFS_CODEGEN) {
+        // this should only occur for a loop over a single block
+        assert(sType == Loop && lType == PostTested && latchNode == this);
+        return;
+    } else
+        traversed = DFS_CODEGEN;
+
+    // if this is a latchNode and the current indentation level is
+    // the same as the first node in the loop, then this write out its body 
+    // and return otherwise generate a goto
+    if (isLatchNode())
+        if (indLevel == latch->loopHead->indentLevel + 
+                        (latch->loopHead->lType == PreTested ? 1 : 0)) {
+            WriteBB(lines, indLevel);
+            return;
+        } else {
+	    // unset its traversed flag
+	    traversed = UNTRAVERSED;
+
+	    emitGotoAndLabel(lines, indLevel, this);
+	    return;
+        }
+	
+    // declare some strings that can't be initialised in the body of the switch
+    char* condPred;
+    char* predString;
+    char* opCode;
+    char* retStmt;
+
+    switch(sType) {
+        case Loop:
+        case LoopCond:
+            // add the follow of the loop (if it exists) to the follow set
+            if (loopFollow)
+                followSet.push_back(loopFollow);
+
+            if (lType == PreTested) {
+                assert(latchNode->m_OutEdges.size() == 1);
+
+                // write the body of the block (excluding the predicate)
+                WriteBB(lines, indLevel);
+
+                // write the 'while' predicate
+                Exp *cond = getCond();
+                if (m_OutEdges[BTHEN] == loopFollow) {
+                    cond = new Unary(opNot, cond);
+                    cond = cond->simplify();
+                }
+                std::ostringstream str;
+                cond->print(str);
+                opCode = (char*)str.str().c_str();
+                predString = new char[(indLevel * 2) + 1 + strlen("while (") + 
+                                      1024 + strlen(")\n") + 
+                                      strlen("{\n") + 1];
+                sprintf(predString, "%swhile (%s)\n%s{\n", 
+                        indent(indLevel), opCode, indent(indLevel));
+                lines.push_back(predString);
+
+		// write the code for the body of the loop
+		PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? 
+                                m_OutEdges[BTHEN] : m_OutEdges[BELSE];
+                loopBody->generateCode(lines, indLevel + 1, latchNode, 
+                    followSet, gotoSet);
+
+                // if code has not been generated for the latch node, generate 
+                // it now
+                if (latchNode->traversed != DFS_CODEGEN) {
+                    latchNode->traversed = DFS_CODEGEN;
+                    latchNode->WriteBB(lines, indLevel+1);
+                }
+
+                // rewrite the body of the block (excluding the predicate) at 
+                // the next nesting level after making sure another label 
+                // won't be generated
+                hllLabel = false;
+                WriteBB(lines, indLevel+1);
+
+                // write the loop tail
+                lines.push_back(indent(indLevel, CLOSE_BRACKET));
+            } else {
+                // write the loop header
+                if (lType == Endless)
+                    lines.push_back(indent(indLevel,ENDLESS_HEADER));
+                else
+                    lines.push_back(indent(indLevel,DO_HEADER));
+
+                // if this is also a conditional header, then generate code 
+                // for the conditional. Otherwise generate code for the loop 
+                // body.
+                if (sType == LoopCond) {
+                    // set the necessary flags so that generateCode can 
+                    // successfully be called again on this node
+                    sType = Cond;
+                    traversed = UNTRAVERSED;
+                    generateCode(lines, indLevel + 1, latchNode, followSet, 
+                                 gotoSet);
+                } else {
+                    WriteBB(lines, indLevel+1);
+
+                    // write the code for the body of the loop
+                    m_OutEdges[0]->generateCode(lines, indLevel + 1, latchNode, 
+                                             followSet, gotoSet);
+                }
+
+                if (lType == PostTested) {
+                    // if code has not been generated for the latch node, 
+                    // generate it now
+                    if (latchNode->traversed != DFS_CODEGEN) {
+                        latchNode->traversed = DFS_CODEGEN;
+                        latchNode->WriteBB(lines, indLevel+1);
+                    }
+			
+                    // string for the repeat loop predicate.
+                    predString = new char[indLevel + strlen("} while (") + 
+                                          1024 + strlen(")\n") + 2];
+
+                    // write the repeat loop predicate
+                    std::ostringstream str;
+                    getCond()->print(str);
+                    opCode = (char*)str.str().c_str();
+                    sprintf(predString,"%s} while (%s);\n", indent(indLevel),
+                            opCode);
+                    lines.push_back(predString);
+                } else {
+                    assert(lType == Endless);
+
+                    // if code has not been generated for the latch node, 
+                    // generate it now
+                    if (latchNode->traversed != DFS_CODEGEN) {
+                        latchNode->traversed = DFS_CODEGEN;
+                        latchNode->WriteBB(lines, indLevel+1);
+                    }
+
+                    // write the closing bracket for an endless loop
+                    lines.push_back(indent(indLevel,CLOSE_BRACKET));
+                }
+            }
+
+            // write the code for the follow of the loop (if it exists)
+            if (loopFollow) {
+                // remove the follow from the follow set
+                followSet.resize(followSet.size()-1);
+
+                if (loopFollow->traversed != DFS_CODEGEN)
+                    loopFollow->generateCode(lines, indLevel, latch, followSet,
+                                             gotoSet);
+                else
+                    emitGotoAndLabel(lines, indLevel, loopFollow);
+            }
+            break;
+
+        case Cond:
+        {
+            // reset this back to LoopCond if it was originally of this type
+            if (latchNode)
+                sType = LoopCond;
+
+            // for 2 way conditional headers that are effectively jumps into 
+            // or out of a loop or case body, we will need a new follow node
+            PBB tmpCondFollow = NULL;
+
+            // keep track of how many nodes were added to the goto set so that 
+            // the correct number are removed
+            int gotoTotal = 0;
+
+            // add the follow to the follow set if this is a case header
+            if (cType == Case)
+                followSet.push_back(condFollow);
+            else if (cType != Case && condFollow) {
+                // For a structured two conditional header, its follow is 
+                // added to the follow set
+                PBB myLoopHead = (sType == LoopCond ? this : loopHead);
+
+                if (usType == Structured)
+                    followSet.push_back(condFollow);
+	
+                // Otherwise, for a jump into/outof a loop body, the follow is 
+                // added to the goto set.  The temporary follow is set for any 
+                // unstructured conditional header branch that is within the 
+                // same loop and case.
+		else {
+		    if (usType == JumpInOutLoop) {
+		        // define the loop header to be compared against
+			PBB myLoopHead = (sType == LoopCond ? this : loopHead);
+                        gotoSet.push_back(condFollow);
+                        gotoTotal++;
+	
+                        // also add the current latch node, and the loop header
+                        // of the follow if they exist
+                        if (latch) {
+                            gotoSet.push_back(latch);
+                            gotoTotal++;
+                        }
+                        
+                        if (condFollow->loopHead && 
+                            condFollow->loopHead != myLoopHead) {
+                            gotoSet.push_back(condFollow->loopHead);
+                            gotoTotal++;
+                        }
+                    }
+
+                    if (cType == IfThen)
+                        tmpCondFollow = m_OutEdges[BELSE];
+                    else
+                        tmpCondFollow = m_OutEdges[BTHEN];
+
+                    // for a jump into a case, the temp follow is added to the 
+                    // follow set
+                    if (usType == JumpIntoCase)
+                        followSet.push_back(tmpCondFollow);
+                }
+            }
+
+            // write the body of the block (excluding the predicate)
+            WriteBB(lines, indLevel);
+
+            // write the conditional header 
+            if (cType == Case) {
+                condPred = new char[indLevel * 2 + strlen("switch (!") + 
+                                    1024 + 4 + 1];
+                sprintf(condPred, "%sswitch (%s) {\n", indent(indLevel), "Reg0");
+            } else {
+                Exp *cond = getCond();
+                if (cType == IfElse) {
+                    cond = new Unary(opNot, cond);
+                    cond = cond->simplify();
+                }
+                std::ostringstream str;
+                cond->print(str);
+                opCode = (char*)str.str().c_str();
+                condPred = new char[indLevel * 2 + strlen("if (") + 
+                                    1024 + 4 + 1];
+                sprintf(condPred, "%sif (%s) {\n", indent(indLevel), opCode);
+            }
+            lines.push_back(condPred);
+
+            // write code for the body of the conditional
+            if (cType != Case) {
+                PBB succ = (cType == IfElse ? m_OutEdges[BELSE] : 
+                    m_OutEdges[BTHEN]);
+
+                // emit a goto statement if the first clause has already been 
+                // generated or it is the follow of this node's enclosing loop
+                if (succ->traversed == DFS_CODEGEN || 
+                    (loopHead && succ == loopHead->loopFollow))
+                    emitGotoAndLabel(lines, indLevel + 1, succ);
+                else	
+                    succ->generateCode(lines, indLevel + 1, latch, followSet, 
+                                    gotoSet);
+
+                // generate the else clause if necessary
+                if (cType == IfThenElse) {
+                    // generate the 'else' keyword and matching brackets
+                    char* elseStr = new char[indLevel * 2 + 
+                                             strlen("} else\n{\n") + 1];
+                    sprintf(elseStr, "%s} else\n%s{\n", indent(indLevel),
+                            indent(indLevel));
+                    lines.push_back(elseStr);
+
+                    succ = m_OutEdges[BELSE];
+
+                    // emit a goto statement if the second clause has already 
+                    // been generated
+                    if (succ->traversed == DFS_CODEGEN)
+                        emitGotoAndLabel(lines, indLevel + 1, succ);
+                    else
+                        succ->generateCode(lines, indLevel + 1, latch, 
+                                        followSet, gotoSet);
+                }	
+            } else { // case header
+                // generate code for each out branch
+                for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
+                    // emit a case label
+                    char* caseStr = new char[indLevel + strlen("cond_:\n") + 
+                          1024 + 1];
+                    sprintf(caseStr, "%scase cond_%d:\n", indent(indLevel), i);
+                    lines.push_back(caseStr);
+
+                    // generate code for the current outedge
+                    PBB succ = m_OutEdges[i];
+//assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
+                    if (succ->traversed == DFS_CODEGEN)
+                        emitGotoAndLabel(lines, indLevel + 1, succ);
+                    else
+                        succ->generateCode(lines, indLevel + 1, latch, 
+                            followSet, gotoSet);
+
+                    // generate the 'break' statement
+                    caseStr = new char[indLevel + 1 + strlen("break;\n") + 1];
+                    sprintf(caseStr,"%sbreak;\n",indent(indLevel + 1));
+                    lines.push_back(caseStr);
+                }
+            }
+
+            // generate the closing bracket
+            lines.push_back(indent(indLevel,CLOSE_BRACKET));
+
+            // do all the follow stuff if this conditional had one
+            if (condFollow) {
+                // remove the original follow from the follow set if it was 
+                // added by this header
+                if (usType == Structured || usType == JumpIntoCase) {
+                    assert(gotoTotal == 0);
+                    followSet.resize(followSet.size()-1);
+                } else // remove all the nodes added to the goto set
+                    for (int i = 0; i < gotoTotal; i++)
+                        gotoSet.resize(gotoSet.size()-1);
+
+                // do the code generation (or goto emitting) for the new 
+                // conditional follow if it exists, otherwise do it for the 
+                // original follow
+                if (!tmpCondFollow)
+                    tmpCondFollow = condFollow;
+			
+                if (tmpCondFollow->traversed == DFS_CODEGEN)
+                    emitGotoAndLabel(lines, indLevel, tmpCondFollow);
+                else
+                    tmpCondFollow->generateCode(lines, indLevel, latch,
+                        followSet, gotoSet);
+            }
+            break;
+	} 
+	case Seq:
+            // generate code for the body of this block
+            WriteBB(lines, indLevel);
+
+            // return if this is the 'return' block (i.e. has no out edges)
+            // after emmitting a 'return' statement
+            if (getType() == RET) {
+                retStmt = new char[indLevel * 2 + strlen("return;\n") + 1];
+                sprintf(retStmt, "%sreturn;\n", indent(indLevel));
+                lines.push_back(retStmt);
+                return;
+            }
+
+            // generate code for its successor if it hasn't already been 
+            // visited and is in the same loop/case and is not the latch 
+            // for the current most enclosing loop.  The only exception 
+            // for generating it when it is not in the same loop is when 
+            // it is only reached from this node
+            PBB child = m_OutEdges[0];
+            if (child->traversed == DFS_CODEGEN || 
+                ((child->loopHead != loopHead) && 
+		 (!child->allParentsGenerated() || 
+                  isIn(followSet, child))) ||
+	        (latch && latch->loopHead->loopFollow == child) ||
+		!(caseHead == child->caseHead || 
+                  (caseHead && child == caseHead->condFollow)))
+                emitGotoAndLabel(lines, indLevel, m_OutEdges[0]);
+            else
+                m_OutEdges[0]->generateCode(lines, indLevel, latch,
+                     followSet, gotoSet);
+	    break;
+    }
+}
+
 void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein) {
     getLiveIn(livein);
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
@@ -1375,3 +1865,176 @@ void BasicBlock::getLiveIn(std::set<Statement*> &livein) {
         }
     }
 }
+
+void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order)
+{
+    // timestamp the current node with the current time and set its traversed 
+    // flag
+    traversed = DFS_LNUM;
+    loopStamps[0] = time;
+
+    // recurse on unvisited children and set inedges for all children
+    for (unsigned int i = 0; i < m_OutEdges.size(); i++) {
+        // set the in edge from this child to its parent (the current node)
+        // (not done here, might be a problem)
+        // outEdges[i]->inEdges.Add(this);
+
+        // recurse on this child if it hasn't already been visited
+        if (m_OutEdges[i]->traversed != DFS_LNUM)
+            m_OutEdges[i]->setLoopStamps(++time, order);
+    }
+
+    // set the the second loopStamp value
+    loopStamps[1] = ++time;
+
+    // add this node to the ordering structure as well as recording its 
+    // position within the ordering
+    ord = order.size();
+    order.push_back(this);
+}
+
+void BasicBlock::setRevLoopStamps(int &time)
+{
+    // timestamp the current node with the current time and set its traversed 
+    // flag
+    traversed = DFS_RNUM;
+    revLoopStamps[0] = time;
+
+    // recurse on the unvisited children in reverse order
+    for (int i = m_OutEdges.size() - 1; i >= 0; i--) {
+        // recurse on this child if it hasn't already been visited
+        if (m_OutEdges[i]->traversed != DFS_RNUM)
+            m_OutEdges[i]->setRevLoopStamps(++time);
+    }
+
+    // set the the second loopStamp value
+    revLoopStamps[1] = ++time;
+}
+
+void BasicBlock::setRevOrder(std::vector<PBB> &order)
+{
+    // Set this node as having been traversed during the post domimator 
+    // DFS ordering traversal
+    traversed = DFS_PDOM;
+	
+    // recurse on unvisited children 
+    for (unsigned int i = 0; i < m_InEdges.size(); i++)
+	if (m_InEdges[i]->traversed != DFS_PDOM)
+	    m_InEdges[i]->setRevOrder(order);
+
+    // add this node to the ordering structure and record the post dom. order
+    // of this node as its index within this ordering structure
+    revOrd = order.size();
+    order.push_back(this);
+}
+
+void BasicBlock::setCaseHead(PBB head, PBB follow) 
+{
+    assert(!caseHead);
+
+    traversed = DFS_CASE;
+
+    // don't tag this node if it is the case header under investigation 
+    if (this != head)
+        caseHead = head;
+
+    // if this is a nested case header, then it's member nodes will already 
+    // have been tagged so skip straight to its follow
+    if (getType() == NWAY && this != head) {
+        if (condFollow->traversed != DFS_CASE && condFollow != follow)
+            condFollow->setCaseHead(head, follow);
+    } else
+        // traverse each child of this node that:
+        //   i) isn't on a back-edge,
+        //  ii) hasn't already been traversed in a case tagging traversal and,
+        // iii) isn't the follow node.
+        for (unsigned int i = 0; i < m_OutEdges.size(); i++)
+            if (!hasBackEdgeTo(m_OutEdges[i]) && 
+                m_OutEdges[i]->traversed != DFS_CASE && 
+                m_OutEdges[i] != follow)
+                m_OutEdges[i]->setCaseHead(head, follow);
+}
+
+void BasicBlock::setStructType(structType s)
+{
+    // if this is a conditional header, determine exactly which type of 
+    // conditional header it is (i.e. switch, if-then, if-then-else etc.)
+    if (s == Cond) {
+        if (getType() == NWAY) 
+            cType = Case;
+        else if (m_OutEdges[BELSE] == condFollow)
+            cType = IfThen;
+        else if (m_OutEdges[BTHEN] == condFollow)
+            cType = IfElse;
+        else
+            cType = IfThenElse;
+    }
+
+    sType = s;
+}
+
+void BasicBlock::setUnstructType(unstructType us)
+{
+    assert((sType == Cond || sType == LoopCond) && cType != Case);
+    usType = us;
+}
+
+unstructType BasicBlock::getUnstructType()
+{
+    assert((sType == Cond || sType == LoopCond) && cType != Case);
+    return usType;
+}
+
+void BasicBlock::setLoopType(loopType l)
+{
+    assert (sType == Loop || sType == LoopCond);
+    lType = l;
+
+    // set the structured class (back to) just Loop if the loop type is 
+    // PreTested OR it's PostTested and is a single block loop
+    if (lType == PreTested || (lType == PostTested && this == latchNode))
+        sType = Loop;
+}
+
+loopType BasicBlock::getLoopType()
+{
+    assert (sType == Loop || sType == LoopCond);
+    return lType;
+}
+
+void BasicBlock::setCondType(condType c)
+{
+    assert (sType == Cond || sType == LoopCond);
+    cType = c;
+}
+
+condType BasicBlock::getCondType()
+{
+    assert (sType == Cond || sType == LoopCond);
+    return cType;
+}
+
+bool BasicBlock::inLoop(PBB header, PBB latch)
+{
+   assert(header->latchNode == latch);
+   assert(header == latch || 
+          ((header->loopStamps[0] > latch->loopStamps[0] && 
+            latch->loopStamps[1] > header->loopStamps[1]) ||
+	  (header->loopStamps[0] < latch->loopStamps[0] && 
+           latch->loopStamps[1] < header->loopStamps[1])));
+   // this node is in the loop if it is the latch node OR
+   // this node is within the header and the latch is within this when using 
+   // the forward loop stamps OR
+   // this node is within the header and the latch is within this when using 
+   // the reverse loop stamps 
+   return this == latch ||
+          (header->loopStamps[0] < loopStamps[0] && 
+           loopStamps[1] < header->loopStamps[1] &&
+           loopStamps[0] < latch->loopStamps[0] && 
+           latch->loopStamps[1] < loopStamps[1]) ||
+          (header->revLoopStamps[0] < revLoopStamps[0] && 
+           revLoopStamps[1] < header->revLoopStamps[1] &&
+           revLoopStamps[0] < latch->revLoopStamps[0] && 
+           latch->revLoopStamps[1] < revLoopStamps[1]);
+}
+

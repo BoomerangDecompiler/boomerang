@@ -53,6 +53,51 @@ class HLLCode;
 class HLCall;
 class RTL;
 
+#define BTHEN 0
+#define BELSE 1
+
+// an enumerated type for the class of stucture determined for a node
+enum structType { 
+	Loop,      // Header of a loop only
+	Cond,      // Header of a conditional only (if-then-else or switch)
+	LoopCond,  // Header of a loop and a conditional
+	Seq 	   // sequential statement (default)
+};
+
+// an type for the class of unstructured conditional jumps
+enum unstructType {
+	Structured,
+	JumpInOutLoop,
+	JumpIntoCase
+};
+
+
+// an enumerated type for the type of conditional headers
+enum condType {
+	IfThen,	    // conditional with only a then clause
+	IfThenElse, // conditional with a then and an else clause
+	IfElse,	    // conditional with only an else clause
+	Case	    // nway conditional header (case statement)
+};
+
+// an enumerated type for the type of loop headers
+enum loopType {
+	PreTested,     // Header of a while loop
+	PostTested,    // Header of a repeat loop
+	Endless	       // Header of an endless loop
+};
+
+// Depth-first traversal constants.
+enum travType {
+	UNTRAVERSED,   // Initial value
+	DFS_TAG,       // Remove redundant nodes pass
+	DFS_LNUM,      // DFS loop stamping pass
+	DFS_RNUM,      // DFS reverse loop stamping pass
+	DFS_CASE,      // DFS case head tagging traversal
+	DFS_PDOM,      // DFS post dominator ordering
+	DFS_CODEGEN    // Code generating pass
+};
+
 // Kinds of basic block nodes
 // reordering these will break the save files - trent
 enum BBTYPE {
@@ -265,9 +310,6 @@ public:
      */
     void resetDFASets();
 
-	/* is this the latch node */
-	bool isLatchNode();
-
 	/* get the condition */
 	Exp *getCond();
 
@@ -279,12 +321,6 @@ public:
 
 	/* get the loop body */
 	BasicBlock *getLoopBody();
-
-	// establish if this bb has a back edge to the given destination
-	bool hasBackEdgeTo(BasicBlock *dest);
-
-	// establish if this bb is an ancestor of another BB
-	bool isAncestorOf(BasicBlock *other);
 
 	/* Simplify all the expressions in this BB
 	 */
@@ -411,12 +447,12 @@ public:
 	void calcLiveOut(std::set<Statement*> &live);
         std::set<Statement*> &getLiveOut() { return liveout; }
 
-	/* set the return value */
-	void setReturnVal(Exp *e);
-	Exp *getReturnVal() { return m_returnVal; }
+    /* set the return value */
+    void setReturnVal(Exp *e);
+    Exp *getReturnVal() { return m_returnVal; }
 
 protected:
-        std::set<Statement*> liveout;
+    std::set<Statement*> liveout;
 
     Exp* m_returnVal;
 
@@ -427,6 +463,95 @@ protected:
      */
     std::map<Exp*,Exp*> regSubs;
 
+    /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
+     */
+    int ord;     // node's position within the ordering structure
+    int revOrd;  // position within ordering structure for the reverse graph
+    int inEdgesVisited;	// counts the number of in edges visited during a DFS
+    int numForwardInEdges; // inedges to this node that aren't back edges
+    int loopStamps[2], revLoopStamps[2]; // used for structuring analysis
+    travType traversed;	// traversal flag for the numerous DFS's
+    bool hllLabel; // emit a label for this node when generating HL code?
+    char* labelStr; // the high level label for this node (if needed)
+    int indentLevel; // the indentation level of this node in the final code
+
+    // analysis information
+    PBB immPDom; // immediate post dominator
+    PBB loopHead; // head of the most nested enclosing loop
+    PBB caseHead; // head of the most nested enclosing case
+    PBB condFollow; // follow of a conditional header
+    PBB loopFollow; // follow of a loop header
+    PBB latchNode; // latching node of a loop header
+
+    // Structured type of the node
+    structType sType; // the structuring class (Loop, Cond , etc)
+    unstructType usType; // the restructured type of a conditional header
+    loopType lType; // the loop type of a loop header
+    condType cType; // the conditional type of a conditional header
+
+    void setLoopStamps(int &time, std::vector<PBB> &order);
+    void setRevLoopStamps(int &time);
+    void setRevOrder(std::vector<PBB> &order);
+
+    void setLoopHead(PBB head) { loopHead = head; }
+    PBB getLoopHead() { return loopHead; }
+    void setLatchNode(PBB latch) { latchNode = latch; }
+    bool isLatchNode() { return loopHead && loopHead->latchNode == this; }
+    PBB getLatchNode() { return latchNode; }
+    PBB getCaseHead() { return caseHead; }
+    void setCaseHead(PBB head, PBB follow);
+
+    structType getStructType() { return sType; }
+    void setStructType(structType s);
+
+    unstructType getUnstructType();
+    void setUnstructType(unstructType us);
+
+    loopType getLoopType();
+    void setLoopType(loopType l);
+
+    condType getCondType();
+    void setCondType(condType l);
+
+    void setLoopFollow(PBB other) { loopFollow = other; }
+    PBB getLoopFollow() { return loopFollow; }
+
+    void setCondFollow(PBB other) { condFollow = other; }
+    PBB getCondFollow() { return condFollow; }
+
+    // establish if this bb has a back edge to the given destination
+    bool hasBackEdgeTo(BasicBlock *dest);
+
+    // establish if this bb has any back edges leading FROM it
+    bool hasBackEdge() 
+    {
+        for (unsigned int i = 0; i < m_OutEdges.size(); i++)
+            if (hasBackEdgeTo(m_OutEdges[i])) 
+                return true;
+        return false;
+    }
+
+    // establish if this bb is an ancestor of another BB
+    bool isAncestorOf(BasicBlock *other);
+
+    bool inLoop(PBB header, PBB latch);
+
+    bool isIn(std::list<PBB> &set, PBB bb)
+    {
+        for (std::list<PBB>::iterator it = set.begin();
+             it != set.end(); it++)
+            if (*it == bb) return true;
+        return false;
+    }
+
+    char* indent(int indLevel, int extra = 0);
+    bool allParentsGenerated();
+    void emitGotoAndLabel(std::list<char*> &lines, int indLevel, PBB dest);
+    void WriteBB(std::list<char*> &lines, int indLevel);
+
+public:
+    void generateCode(std::list<char*> &lines, int indLevel, PBB latch, 
+                      std::list<PBB> &followSet, std::list<PBB> &gotoSet);
 };
 
     // A type for the ADDRESS to BB map
@@ -793,11 +918,22 @@ private:
      */
     void completeMerge(PBB pb1, PBB pb2, bool bDelete);
 
-
     /*
      * checkEntryBB: emit error message if this pointer is null
      */
     bool checkEntryBB();
+
+    /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
+     */
+    void setTimeStamps();
+    PBB commonPDom(PBB curImmPDom, PBB succImmPDom);
+    void findImmedPDom();
+    void structConds();
+    void structLoops();
+    void checkConds();
+    void determineLoopType(PBB header, bool* &loopNodes);
+    void findLoopFollow(PBB header, bool* &loopNodes);
+    void tagNodesInLoop(PBB header, bool* &loopNodes);
 
 protected:
 
@@ -810,6 +946,12 @@ protected:
      * The list of pointers to BBs.
      */
     std::list<PBB> m_listBB;
+
+    /*
+     * Ordering of BBs for control flow structuring
+     */
+    std::vector<PBB> Ordering;
+    std::vector<PBB> revOrdering;
 
     /*
      * Intersection of all statements live at the end of all the ret bbs.
@@ -856,6 +998,8 @@ public:
      * Set the entry-point BB
      */
     void setEntryBB(PBB bb) { entryBB = bb;}
+
+    PBB findRetNode();
 
     /*
      * Set an additional new out edge to a given value
