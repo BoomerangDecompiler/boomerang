@@ -162,6 +162,8 @@ bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERDLLS)
 
 db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
+	cd db ; sed -e "s/int __alloca_free_ptr/static int __alloca_free_ptr/" < sslparser.cpp > sslparser.cpp1
+	mv db/sslparser.cpp1 db/sslparser.cpp
 
 db/sslscanner.cpp db/sslscanner.h: db/sslscanner.l db/sslparser.y
 	cd db ; ${FLEXPP} -osslscanner.cpp -hsslscanner.h sslscanner.l
