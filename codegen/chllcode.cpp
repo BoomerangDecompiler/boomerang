@@ -754,6 +754,10 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 		if (!a->isUnbounded())
 			str << a->getLength();
 		str << "]";
+	} else if (typ->isVoid()) {
+		// Can happen in e.g. twoproc, where really need global parameter and return analysis
+		LOG << "Warning: replacing type void with int for " << ident << "\n";
+		str << "int " << ident;
 	} else {
 		appendType(str, typ);
 		str << " " << ident;
