@@ -216,7 +216,9 @@ virtual Signature *promote(UserProc *p);
 
 		// Get a wildcard to find stack locations
 virtual Exp			*getStackWildcard() { return NULL; }
-virtual int			getStackRegister(			) {return 0; };
+virtual int			getStackRegister(			) {
+						assert(0);
+						return 0; };
 		int			getStackRegister(Prog* prog);
 		// Does expression e represent a local stack-based variable?
 		// Result can be ABI specific, e.g. sparc has locals in the parent's stack frame,

@@ -543,7 +543,10 @@ Exp *CallingConvention::StdC::PentiumSignature::getProven(Exp *left) {
 
 
 CallingConvention::StdC::PPCSignature::PPCSignature(const char *nam) : Signature(nam) {
-  //Signature::addReturn(Location::regOf(3));
+	Signature::addReturn(Location::regOf(1));
+	Signature::addImplicitParameter(new PointerType(new IntegerType()), "r1",
+									Location::regOf(1), NULL);
+	// FIXME: Should also add m[r1+4] as an implicit parameter? Holds return address
 }
 
 Signature *CallingConvention::StdC::PPCSignature::clone() {
@@ -1358,7 +1361,7 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
 	return *new StatementList;
 }
 
-// Temporary hack till get signature promotion sorted
+// Needed before the first proof is done. Ugh.
 int Signature::getStackRegister(Prog* prog) {
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
@@ -1366,7 +1369,10 @@ int Signature::getStackRegister(Prog* prog) {
 			return 14;
 		case MACHINE_PENTIUM:
 			return 28;
+		case MACHINE_PPC:
+			return 1;
 		default:
+			assert(0);
 			return 0;
 	}
 }
@@ -1381,7 +1387,7 @@ bool Signature::isStackLocal(Prog* prog, Exp *e) {
 bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
 	OPER op = e->getOper();
 	// e must be sp -/+ K or just sp
-	static Exp *sp = Location::regOf(getStackRegister(prog));
+	static Exp *sp = Location::regOf(getStackRegister());
 	if (op != opMinus && op != opPlus) {
 		// Matches if e is sp or sp{0}
 		return (*e == *sp ||
