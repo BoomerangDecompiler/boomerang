@@ -76,6 +76,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         return 1;
     }
     std::list<ADDRESS> entrypoints;
+    bool prove = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -170,6 +171,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     impSSA = true;
                     break;
                 }
+            case 'P':
+                prove = true;
+                break;
             default:
                 help();
         }
@@ -201,6 +205,24 @@ int Boomerang::commandLine(int argc, const char **argv) {
             prog->decompile_issa();
         else
             prog->decompile();
+    }
+
+    if (prove) {
+        for (int i = 0; i < prog->getNumProcs(); i++) {
+            UserProc *u = dynamic_cast<UserProc*>(prog->getProc(i));
+            if (u) {
+                std::cerr << "proving esp = esp + 4 for " << u->getName() 
+                          << ": ";
+                if (u->prove(new Binary(opEquals, 
+                                 new Unary(opRegOf, new Const(28)), 
+                                 new Binary(opPlus, 
+                                     new Unary(opRegOf, new Const(28)),
+                                     new Const(4)))))
+                    std::cerr << "proven" << std::endl;
+                else
+                    std::cerr << "not proven" << std::endl;
+            }
+        }
     }
 
     // Note: printing of dotty file has been moved into Prog::decompile()

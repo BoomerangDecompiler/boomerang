@@ -1686,6 +1686,87 @@ void UserProc::recoverReturnLocs() {
     cfg->recoverReturnLocs();
 }
 
+bool UserProc::prove(Exp *query)
+{
+    assert(query->getOper() == opEquals);
+    
+    // subscript locs on the right with {0}
+    LocationSet locs;
+    query->getSubExp2()->addUsedLocs(locs);
+    LocSetIter xx;
+    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+        query->refSubExp2() = query->getSubExp2()->expSubscriptVar(x, NULL);
+    }
+
+    // subscript locs on the left with the last statement that defined them
+    locs.clear();
+    query->getSubExp1()->addUsedLocs(locs);
+    StatementList stmts;
+    getStatements(stmts);
+    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+        StmtListIter it;
+        Statement *def = NULL;
+        for (Statement *s = stmts.getFirst(it); s; s = stmts.getNext(it))
+            if (s->getLeft() && *s->getLeft() == *x) 
+                def = s;
+        query->refSubExp1() = query->getSubExp1()->expSubscriptVar(x, def);
+    }
+
+    return prover(query);
+}
+
+bool UserProc::prover(Exp *query)
+{
+    bool change = true;
+    while (change) {
+        query->print(std::cerr, true);
+        std::cerr << std::endl;
+    
+        change = false;
+        if (query->getOper() == opEquals) {
+
+            // move constants to the right
+            Exp *plus = query->getSubExp1();
+            Exp *s1s2 = plus->getSubExp2();
+            if (plus->getOper() == opPlus && s1s2->isIntConst()) {
+                query->refSubExp2() = new Binary(opPlus, query->getSubExp2(),
+                                        new Unary(opNeg, s1s2->clone()));
+                query->refSubExp1() = ((Binary*)plus)->becomeSubExp1();
+                change = true;
+            }
+
+            // substitute using a statement that has the same left as the query
+            if (query->getSubExp1()->getOper() == opSubscript) {
+                RefExp *r = (RefExp*)query->getSubExp1();
+                Statement *s = r->getRef();
+                if (s && s->getRight()) {
+                    if (s->getRight()->getOper() == opPhi) {
+                        // for a phi, we have to prove the query for every 
+                        // statement
+                        PhiExp *p = (PhiExp*)s->getRight();
+                        StmtSetIter it;
+                        bool ok = true;
+                        for (Statement *s1 = p->getFirstRef(it); 
+                                        !p->isLastRef(it);
+                                        s1 = p->getNextRef(it)) {
+                            r->setDef(s1);
+                            if (!prover(query)) { ok = false; break; }
+                        }
+                        if (ok) query = new Terminal(opTrue);
+                        else query = new Terminal(opFalse);
+                        change = true;
+                    } else {
+                        query->setSubExp1(s->getRight()->clone());
+                        change = true;
+                    }
+                }
+            }
+        }
+        query = query->simplify();
+    }
+    return query->getOper() == opTrue;
+}
+
 void UserProc::findRestoreSet_issa(StatementSet& restoreSet) {
     // Set up a map from location to set of definitions reaching the entry
     std::map<Exp*, StatementSet, lessExpStar> reachEntryDefs;

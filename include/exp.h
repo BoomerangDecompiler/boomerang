@@ -776,7 +776,7 @@ public:
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
-    void    print(std::ostream& os, bool withUses = false);
+virtual void print(std::ostream& os, bool withUses = false);
     Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
@@ -818,6 +818,7 @@ virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
     Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
     Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
+    bool isLastRef(StmtSetIter& it) {return stmtSet.isLast(it);}
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return stmtSet.exists(s);}
     StatementSet& getRefs() {return stmtSet;}

@@ -565,6 +565,10 @@ Statement* StatementSet::getNext(StmtSetIter& it) {
     return *it;         // Else return the next element
 }
 
+bool StatementSet::isLast(StmtSetIter& it) {
+    return it == sset.end();
+}
+
 // Remove this Statement. Return false if it was not found
 bool StatementSet::remove(Statement* s) {
     if (sset.find(s) != sset.end()) {

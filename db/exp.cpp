@@ -784,6 +784,8 @@ void Terminal::print(std::ostream& os, bool withUses) {
         case opWildAddrOf:os<< "a[WILD]"; break;
         case opWildIntConst:os<<"WILDINT"; break;
         case opNil:     break;
+        case opTrue:    os << "true"; break;
+        case opFalse:   os << "false"; break;
         default:
             std::cerr << "Terminal::print invalid operator " << operStrings[op]
               << std::endl;
@@ -1923,6 +1925,14 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+    if (op == opEquals && *subExp1 == *subExp2) {
+        // x == x: result is true
+        delete this;
+        res = new Terminal(opTrue);
+        bMod = true;
+        return res;
+    }
+
     // Might want to commute to put an integer constant on the RHS
     // Later simplifications can rely on this (ADD other ops as necessary)
     if (opSub1 == opIntConst && 
@@ -1934,6 +1944,17 @@ Exp* Binary::polySimplify(bool& bMod) {
         opSub1 = opSub2;
         opSub2 = t;
         // This is not counted as a modification
+    }
+
+    // check for (x + a) + b where a and b are constants, becomes x + a+b
+    if (op == opPlus && opSub1 == opPlus && opSub2 == opIntConst &&
+        subExp1->getSubExp2()->getOper() == opIntConst) {
+        int n = ((Const*)subExp2)->getInt();
+        res = ((Binary*)res)->becomeSubExp1();
+        ((Const*)res->getSubExp2())->setInt(
+            ((Const*)res->getSubExp2())->getInt() + n);
+        bMod = true;
+        return res;
     }
 
     // Turn a + -K into a - K (K is int const > 0)

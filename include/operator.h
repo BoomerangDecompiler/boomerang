@@ -175,6 +175,8 @@ enum OPER
     // Added for type analysis
     opHLCTI,		        // High level Control transfer instruction
     opDEFINE,		        // Define Type of use with lexer
+    opTrue,
+    opFalse,
 
     //---------------------- "The line" --------------------------//
     // All id's greater or equal to idMachSpec are assumed to be source machine

@@ -61,6 +61,7 @@ public:
     int size() {return sset.size();}        // Number of elements
     Statement* getFirst(StmtSetIter& it);   // Get the first Statement
     Statement* getNext (StmtSetIter& it);   // Get next
+    bool isLast(StmtSetIter& it);           // returns true if it is at end
     void insert(Statement* s) {sset.insert(s);} // Insertion
     bool remove(Statement* s);              // Removal; rets false if not found
     bool removeIfDefines(Exp* given);       // Remove if given exp is defined

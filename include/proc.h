@@ -378,6 +378,10 @@ public:
     void insertArguments(StatementSet& rs);
     void recoverReturnLocs();       // Find return locations
 
+    // prove any arbitary property of this procedure
+    bool prove(Exp *query);
+    bool prover(Exp *query);    // helper function, should be private
+
     // promote the signature if possible
     void promoteSignature();
 
