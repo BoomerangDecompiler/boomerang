@@ -1167,10 +1167,9 @@ YYENDDECLARELABEL
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
 #ifdef __HAVE_NO_ALLOCA
-
-static int __alloca_free_ptr(char *ptr,char *ref)
+int __alloca_free_ptr(char *ptr,char *ref)
 {if(ptr!=ref) free(ptr);
-return 0;}
+ return 0;}
 
 #define __ALLOCA_alloca(size) malloc(size)
 #define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
@@ -3243,8 +3242,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 				else
 					t = (Ternary *)res;
 				assert(t->getOper() == opOpTable);
-				// The ternary opOpTable has a table and index
-				// name as strings, then a list of 2 expressions
+				// The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
 				// (and we want to replace it with e1 OP e2)
 				char* tbl = ((Const*)t->getSubExp1()) ->getStr();
 				char* idx = ((Const*)t->getSubExp2()) ->getStr();
@@ -3252,12 +3250,12 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 				Binary* b = (Binary*)t->getSubExp3();
 				assert(b->getOper() == opList);
 				Exp* e1 = b->getSubExp1();
-				Exp* e2 = b->getSubExp2();	// This should be an opList too
-				assert(b->getOper() == opList);
+				Exp* e2 = b->getSubExp2();		// This should be an opList too
+				assert(b->getOper() == opList);	// FIXME: b should be e2?
 				e2 = ((Binary*)e2)->getSubExp1();
 				const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
 				Exp* repl = new Binary(strToOper(ops), e1->clone(),
-				e2->clone());
+				e2->clone());					// FIXME!
 				s->searchAndReplace(res, repl);
 			}
 		}
