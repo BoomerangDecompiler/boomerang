@@ -219,7 +219,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 				// Skip the useless hint (2 bytes)
 				std::string name((const char*)(iatEntry+2+base));
 				dlprocptrs[paddr] = name;
-				if (paddr != (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase))
+				if ((int)paddr != (int)iat - (int)base + LMMH(m_pPEHeader->Imagebase))
 					dlprocptrs[(int)iat - (int)base + LMMH(m_pPEHeader->Imagebase)]
 					= std::string("old_") + name; // add both possibilities
 				// printf("Added symbol %s value %x\n", name.c_str(), paddr);
