@@ -271,8 +271,10 @@ frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h 
 frontend/sparcfrontend.o: include/frontend.h include/boomerang.h
 frontend/pentiumfrontend.o: include/frontend.h include/boomerang.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
-frontend/FrontSparcTest.o: frontend/FrontSparcTest.h include/BinaryFile.h
-frontend/FrontPentTest.o:  frontend/FrontPentTest.h include/BinaryFile.h
+frontend/FrontSparcTest.o: frontend/FrontSparcTest.h include/BinaryFile.h include/frontend.h include/proc.h \
+	include/prog.h include/cfg.h include/BinaryFile.h
+frontend/FrontPentTest.o:  frontend/FrontPentTest.h include/BinaryFile.h include/rtl.h include/prog.h \
+	include\frontend.h include/BinaryFile.h include/types.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h
