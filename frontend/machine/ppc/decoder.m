@@ -171,6 +171,29 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
 
+	| buul (BIcr, reladdr) [name] =>		// Unconditional "conditional" branch with link, test/OSX/hello has this
+		if (reladdr - delta - pc == 4) {	// Very short branch?
+			// Effectively %LR = %pc
+			Assign* as = new Assign(
+				new IntegerType,
+				new Unary(opMachFtr, new Const("LR")),
+				new Terminal(opPC));
+			stmts = new std::list<Statement*>;
+			stmts->push_back(as);
+			SHOW_ASM(name<<" "<<BIcr<<", .+4  %LR = %pc")
+		} else {
+			Exp* dest = DIS_RELADDR;
+			stmts = instantiate(pc, name, dest);
+			CallStatement* newCall = new CallStatement;
+			// Record the fact that this is not a computed call
+			newCall->setIsComputed(false);
+			// Set the destination expression
+			newCall->setDest(dest);
+			result.rtl = new RTL(pc, stmts);
+			result.rtl->appendStmt(newCall);
+		}
+		unused(BIcr);
+
 	| Xcmp_ (crfd, l, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);
 		unused(l);
@@ -208,6 +231,32 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| bnu(BIcr, reladdr) [name] =>
 		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
 
+	// Conditional calls (bcl)
+	// bcc_^LI is bltl | blel | beql | bgel | bgtl | bnll | bnel | bngl | bsol | bnsl | bunl | bnul
+	| bltl(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bltl\n";
+	| blel(BIcr, reladdr) [name] =>
+		std::cerr << "HACK blel\n";
+	| beql(BIcr, reladdr) [name] =>
+		std::cerr << "HACK beql\n";
+	| bgel(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bgel\n";
+	| bgtl(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bgtl\n";
+	| bnll(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bnll\n";
+	| bnel(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bnel\n";
+	| bngl(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bngl\n";
+	| bsol(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bsol\n";
+	| bnsl(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bnsl\n";
+	| bunl(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bunl\n";
+	| bnul(BIcr, reladdr) [name] =>
+		std::cerr << "HACK bnul\n";
 	else
 		stmts = NULL;
 		result.valid = false;

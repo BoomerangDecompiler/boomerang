@@ -667,8 +667,9 @@ patterns
  bns is BO = 4  & BIcc = 3		# f, so
  bun is BO = 12 & BIcc = 3		# t, un
  bnu is BO = 4  & BIcc = 3		# f, un
+ buu is BO = 20 & BIcc = 3      # un, un
 
-bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu
+bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | buu
 
 constructors
 
