@@ -67,7 +67,7 @@ namespace CallingConvention {
         Win32Signature(Signature &old);
         virtual ~Win32Signature() { }
         virtual Signature *clone();
-        virtual bool operator==(const Signature& other) const;
+        virtual bool operator==(Signature& other);
         static bool qualified(UserProc *p, Signature &candidate);
 
         virtual void addReturn(Type *type, Exp *e = NULL);
@@ -91,7 +91,7 @@ namespace CallingConvention {
             PentiumSignature(Signature &old);
             virtual ~PentiumSignature() { }
             virtual Signature *clone(); 
-            virtual bool operator==(const Signature& other) const;
+            virtual bool operator==(Signature& other);
             static bool qualified(UserProc *p, Signature &candidate);
 
             virtual void addReturn(Type *type, Exp *e = NULL);
@@ -113,7 +113,7 @@ namespace CallingConvention {
             SparcSignature(Signature &old);
             virtual ~SparcSignature() { }
             virtual Signature *clone();
-            virtual bool operator==(const Signature& other) const;
+            virtual bool operator==(Signature& other);
             static bool qualified(UserProc *p, Signature &candidate);
 
             virtual void addReturn(Type *type, Exp *e = NULL);
@@ -151,10 +151,9 @@ Signature *CallingConvention::Win32Signature::clone()
     return n;
 }
 
-bool CallingConvention::Win32Signature::operator==(const Signature& other) const
+bool CallingConvention::Win32Signature::operator==(Signature& other)
 {
-    // TODO
-    return false;
+    return Signature::operator==(other);
 }
 
 bool CallingConvention::Win32Signature::qualified(UserProc *p,
@@ -317,10 +316,9 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
     return n;
 }
 
-bool CallingConvention::StdC::PentiumSignature::operator==(const Signature& other) const
+bool CallingConvention::StdC::PentiumSignature::operator==(Signature& other)
 {
-    // TODO
-    return false;
+    return Signature::operator==(other);
 }
 
 
@@ -467,10 +465,9 @@ Signature *CallingConvention::StdC::SparcSignature::clone() {
     return n;
 }
 
-bool CallingConvention::StdC::SparcSignature::operator==(const Signature&
-  other) const {
-    // TODO
-    return false;
+bool CallingConvention::StdC::SparcSignature::operator==(Signature&
+  other) {
+    return Signature::operator==(other);
 }
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p,
@@ -575,10 +572,21 @@ Signature *CustomSignature::clone()
 }
 
 
-bool Signature::operator==(const Signature& other) const
+bool Signature::operator==(Signature& other)
 {
-    // TODO
-    return false;
+    if (name != other.name) return false;
+    if (params.size() != other.params.size()) return false;
+    // Only care about the first return location (at present)
+    if ((returns.size() != 0) != (other.returns.size() != 0)) return false;
+    std::vector<Parameter*>::iterator it1, it2;
+    for (it1 = params.begin(), it2 = other.params.begin();
+      it1 != params.end();
+      it1++, it2++)
+        if (!(**it1 == **it2)) return false; 
+    if (returns.size())
+        // Compare the first return type only
+        if (!(*returns[0] == *other.returns[0])) return false; 
+    return true;
 }
 
 const char *Signature::getName()
@@ -1193,3 +1201,18 @@ bool Signature::isStackLocal(Prog* prog, Exp *e)
            e->getSubExp1()->getSubExp2()->getOper() == opIntConst;
 }
 
+
+bool Parameter::operator==(Parameter& other) {
+    if (!(*type == *other.type)) return false;
+    // Do we really care about a parameter's name?
+    if (!(name == other.name)) return false;
+    if (!(*exp == *other.exp)) return false;
+    return true;
+}
+
+bool Return::operator==(Return& other) {
+    if (!(*type == *other.type)) return false;
+    if (!(*exp == *other.exp)) return false;
+    return true;
+}
+    

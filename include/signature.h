@@ -28,8 +28,10 @@ private:
     Exp *exp;
 
 public: 
-    Parameter(Type *type, const char *name, Exp *exp = NULL) : type(type), name(name), exp(exp)  { }
-    ~Parameter() { delete type; delete exp; }
+            Parameter(Type *type, const char *name, Exp *exp = NULL) :
+              type(type), name(name), exp(exp)  { }
+            ~Parameter() { delete type; delete exp; }
+    bool    operator==(Parameter& other);
 
     Type *getType() { return type; }
     void setType(Type *ty) { type = ty; }
@@ -58,6 +60,7 @@ private:
 public:
     Return(Type *type, Exp *exp) : type(type), exp(exp) { }
     ~Return() { delete type; delete exp; }
+    bool    operator==(Return& other);
 
     Type *getType() { return type; }
     void setType(Type *ty) { type = ty; }
@@ -88,7 +91,7 @@ public:
     static Signature *instantiate(platform plat, callconv cc, const char *nam);
     virtual ~Signature() { }
 
-    virtual bool operator==(const Signature& other) const;
+    virtual bool operator==(Signature& other);
 
     // clone this signature
     virtual Signature *clone();
