@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>         // Close()
+#include <iostream>
 typedef std::map<std::string, int, std::less<std::string> >     StrIntMap;
 
 ElfBinaryFile::ElfBinaryFile(bool bArchive /* = false */)
@@ -305,23 +306,22 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++)
     {
-        if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
+//        if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
             ADDRESS val = (ADDRESS)
 			  elfRead4((int*)&m_pSym[i].st_value);
             std::string str(GetStrPtr(idx,
 			  elfRead4(&m_pSym[i].st_name)));
-            // Hack of the "@@GLIBC_2.0" of Linux, if present
+            // Hack off the "@@GLIBC_2.0" of Linux, if present
             unsigned pos;
             if ((pos = str.find("@@")) != std::string::npos)
                 str.erase(pos);
             std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
             // Ensure no overwriting
             if (aa == m_SymA.end()) {
-//				printf("Elf AddSym: about to add %s to address %x\n",
-//				  str.c_str(), val);
+                std::cerr << "Elf AddSym: about to add " << str << " to address " << std::hex << val << std::dec << std::endl;
                 m_SymA[val] = str;
-			}
-        }
+	    }
+//        }
     }
     ADDRESS uMain = GetMainEntryPoint();
     if (m_SymA.find(uMain) == m_SymA.end())
