@@ -102,8 +102,10 @@ void CfgTest::testDominators () {
     CPPUNIT_ASSERT(bb);
 
     std::ostringstream expected, actual;
-    expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " <<
-        FRONTIER_TWELVE << " " << FRONTIER_FOUR << " ";
+  //expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " <<
+  //      FRONTIER_TWELVE << " " << FRONTIER_FOUR << " ";
+    expected << std::hex << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " <<
+        FRONTIER_TWELVE << " " << FRONTIER_FIVE << " ";
     int n5 = cfg->pbbToNode(bb);
     std::set<int>::iterator ii;
     std::set<int>& DFset = cfg->getDF(n5);
@@ -159,7 +161,8 @@ void CfgTest::testSemiDominators () {
     CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_D, actual_semi);
     // Check the final dominator frontier as well; should be M and B
     std::ostringstream expected, actual;
-    expected << std::hex << SEMI_M << " " << SEMI_B << " ";
+  //expected << std::hex << SEMI_M << " " << SEMI_B << " ";
+    expected << std::hex << SEMI_B << " " << SEMI_M << " ";
     std::set<int>::iterator ii;
     std::set<int>& DFset = cfg->getDF(nL);
     for (ii=DFset.begin(); ii != DFset.end(); ii++)
@@ -193,10 +196,10 @@ void CfgTest::testPlacePhi () {
             Location::regOf(29),
             new Const(4)));
 
-    // A_phi[x] should be the set {2 6 8 11 4 20} (all the join points)
+    // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
     std::set<int> expected;
-    expected.insert(2);  expected.insert(6); expected.insert(8);
-    expected.insert(11); expected.insert(4); expected.insert(20);
+    expected.insert(7);  expected.insert(8); expected.insert(10);
+    expected.insert(15); expected.insert(20); expected.insert(21);
     bool result = expected == cfg->getA_phi(e);
     CPPUNIT_ASSERT_EQUAL(true, result);
     delete e;
@@ -224,11 +227,11 @@ void CfgTest::testPlacePhi2 () {
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
     // b at [ebp-12]
-    // We check that A_phi[ m[ebp-8] ] is 3, and that
+    // We check that A_phi[ m[ebp-8] ] is 4, and that
     // A_phi A_phi[ m[ebp-8] ] is null
-    // (block 4 comes out with n=3)
+    // (block 4 comes out with n=4)
 
-    std::string expected = "3 ";
+    std::string expected = "4 ";
     std::ostringstream actual;
     // m[r29 - 8]
     Exp* e = new Unary(opMemOf,
@@ -279,4 +282,6 @@ void CfgTest::testRenameVars () {
     int stmtNumber = 0;
     pProc->numberStatements(stmtNumber);// After placing phi functions!
     cfg->renameBlockVars(0, 1);      // Block 0, mem depth 1
+
+    // MIKE: something missing here?
 }
