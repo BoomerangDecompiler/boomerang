@@ -197,8 +197,20 @@ static Boomerang *get() {
 	bool dfaTypeAnalysis;
 };
 
-#define VERBOSE	 (Boomerang::get()->vFlag)
-#define DEBUG_TA (Boomerang::get()->debugTA)
+#define VERBOSE				(Boomerang::get()->vFlag)
+#define DEBUG_TA			(Boomerang::get()->debugTA)
+#define DEBUG_PROOF 		(Boomerang::get()->debugProof)
+#define DEBUG_UNUSED_STMT 	(Boomerang::get()->debugUnusedStmt)
+#define DEBUG_LIVENESS 		(Boomerang::get()->debugLiveness)
+#define DFA_TYPE_ANALYSIS	(Boomerang::get()->dfaTypeAnalysis)
+#define CON_TYPE_ANALYSIS	(Boomerang::get()->conTypeAnalysis)
+#define ADHOC_TYPE_ANALYSIS	(!Boomerang::get()->dfaTypeAnalysis && !Boomerang::get()->conTypeAnalysis)
+#define DEBUG_GEN			(Boomerang::get()->debugGen)
+#define DUMP_XML			(Boomerang::get()->dumpXML)
+#define DEBUG_SWITCH		(Boomerang::get()->debugSwitch)
+#define DEBUG_UNUSED_RETS_PARAMS (Boomerang::get()->debugUnusedRetsAndParams)
+
+
 
 
 #endif
