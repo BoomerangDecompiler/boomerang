@@ -16,7 +16,7 @@
 /* 
  * $Revision$
  * 06 Jun 02 - Trent: Created.
- *
+ * 04 Dec 02 - Mike: Added dis_RegLhs() and dis_RegRhs()
  */
 
 #ifndef SPARCDECODER
@@ -57,6 +57,8 @@ private:
      */
     Exp*    dis_Eaddr(ADDRESS pc, int size = 0);
     Exp*    dis_RegImm(ADDRESS pc);
+    Exp*    dis_RegLhs(unsigned r);
+    Exp*    dis_RegRhs(unsigned r);
 
     void    unused(int x);
     HLJcond* createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name);

@@ -24,6 +24,7 @@
  * 21 May 02 - Mike: SAVE and RESTORE have full semantics now
  * 30 Oct 02 - Mike: dis_Eaddr mode indirectA had extra memof
  * 22 Nov 02 - Mike: Support 32 bit V9 branches
+ * 04 Dec 02 - Mike: r[0] -> 0 automatically (rhs only)
 */
 
 /*==============================================================================
@@ -46,21 +47,19 @@
 
 #define DIS_ROI     (dis_RegImm(roi))
 #define DIS_ADDR    (dis_Eaddr(addr))
-// The following are all dis_Num because in the SSL file, we have r[rd],
-// and we don't want r[r[14]]!
-#define DIS_RD      (dis_Num(rd))
-#define DIS_RS1     (dis_Num(rs1))
-#define DIS_FS1S    (dis_Num(fs1s+32))
-#define DIS_FS2S    (dis_Num(fs2s+32))
+#define DIS_RD      (dis_RegLhs(rd))
+#define DIS_RS1     (dis_RegRhs(rs1))
+#define DIS_FS1S    (dis_RegRhs(fs1s+32))
+#define DIS_FS2S    (dis_RegRhs(fs2s+32))
 // Note: Sparc V9 has a second set of double precision registers that have an
 // odd index. So far we only support V8
-#define DIS_FDS     (dis_Num((fds>>1)+64))
-#define DIS_FS1D    (dis_Num((fs1d>>1)+64))
-#define DIS_FS2D    (dis_Num((fs2d>>1)+64))
-#define DIS_FDD     (dis_Num((fdd>>1)+64))
-#define DIS_FDQ     (dis_Num((fdq>>2)+80))
-#define DIS_FS1Q    (dis_Num((fs1q>>2)+80))
-#define DIS_FS2Q    (dis_Num((fs2q>>2)+80))
+#define DIS_FDS     (dis_RegLhs((fds>>1)+64))
+#define DIS_FS1D    (dis_RegRhs((fs1d>>1)+64))
+#define DIS_FS2D    (dis_RegRhs((fs2d>>1)+64))
+#define DIS_FDD     (dis_RegLhs((fdd>>1)+64))
+#define DIS_FDQ     (dis_RegLhs((fdq>>2)+80))
+#define DIS_FS1Q    (dis_RegRhs((fs1q>>2)+80))
+#define DIS_FS2Q    (dis_RegRhs((fs2q>>2)+80))
 
 /*==============================================================================
  * FUNCTION:       unused
@@ -2541,6 +2540,32 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
  **********************************************************************/
 
 /*==============================================================================
+ * FUNCTION:        SparcDecoder::dis_RegLhs
+ * OVERVIEW:        Decode the register on the LHS
+ * PARAMETERS:      r - register (0-31)
+ * RETURNS:         the expression representing the register
+ *============================================================================*/
+Exp* SparcDecoder::dis_RegLhs(unsigned r)
+{
+	return new  Unary(opRegOf, new Const((int) r));
+}
+
+/*==============================================================================
+ * FUNCTION:        SparcDecoder::dis_RegRhs
+ * OVERVIEW:        Decode the register on the RHS
+ * NOTE:            Replaces r[0] with const 0
+ * NOTE:			Not used by DIS_RD since don't want 0 on LHS
+ * PARAMETERS:      r - register (0-31)
+ * RETURNS:         the expression representing the register
+ *============================================================================*/
+Exp* SparcDecoder::dis_RegRhs(unsigned r)
+{
+	if (r == 0)
+		return new Const(0);
+	return new  Unary(opRegOf, new Const((int) r));
+}
+
+/*==============================================================================
  * FUNCTION:        SparcDecoder::dis_RegImm
  * OVERVIEW:        Decode the register or immediate at the given
  *                  address.
@@ -2553,11 +2578,11 @@ Exp* SparcDecoder::dis_RegImm(unsigned pc)
 
 
 
-#line 598 "frontend/machine/sparc/decoder.m"
+#line 624 "frontend/machine/sparc/decoder.m"
 { 
   dword MATCH_p = 
     
-#line 598 "frontend/machine/sparc/decoder.m"
+#line 624 "frontend/machine/sparc/decoder.m"
     pc
     ;
   unsigned MATCH_w_32_0;
@@ -2567,7 +2592,7 @@ Exp* SparcDecoder::dis_RegImm(unsigned pc)
       int /* [~4096..4095] */ i = 
         sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
       
-#line 600 "frontend/machine/sparc/decoder.m"
+#line 626 "frontend/machine/sparc/decoder.m"
       
 
               Exp* expr = new Const(i);
@@ -2581,12 +2606,10 @@ Exp* SparcDecoder::dis_RegImm(unsigned pc)
     else { 
       unsigned rs2 = (MATCH_w_32_0 & 0x1f) /* rs2 at 0 */;
       
-#line 603 "frontend/machine/sparc/decoder.m"
+#line 628 "frontend/machine/sparc/decoder.m"
       
 
-              Exp* expr = new Unary(opRegOf, new Const((int) rs2));
-
-              return expr;
+      		return dis_RegRhs(rs2);
 
       
       
@@ -2599,7 +2622,7 @@ Exp* SparcDecoder::dis_RegImm(unsigned pc)
   
 }
 
-#line 607 "frontend/machine/sparc/decoder.m"
+#line 632 "frontend/machine/sparc/decoder.m"
 }
 
 /*==============================================================================
@@ -2617,11 +2640,11 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 
 
 
-#line 621 "frontend/machine/sparc/decoder.m"
+#line 646 "frontend/machine/sparc/decoder.m"
 { 
   dword MATCH_p = 
     
-#line 621 "frontend/machine/sparc/decoder.m"
+#line 646 "frontend/machine/sparc/decoder.m"
     pc
     ;
   unsigned MATCH_w_32_0;
@@ -2632,7 +2655,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
         int /* [~4096..4095] */ i = 
           sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
         
-#line 628 "frontend/machine/sparc/decoder.m"
+#line 653 "frontend/machine/sparc/decoder.m"
         
 
                 expr = new Const((int)i);
@@ -2646,7 +2669,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
           sign_extend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
         unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         
-#line 631 "frontend/machine/sparc/decoder.m"
+#line 656 "frontend/machine/sparc/decoder.m"
         
 
                 expr = new Binary(opPlus,
@@ -2663,7 +2686,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
       if ((MATCH_w_32_0 & 0x1f) /* rs2 at 0 */ == 0) { 
         unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         
-#line 622 "frontend/machine/sparc/decoder.m"
+#line 647 "frontend/machine/sparc/decoder.m"
         
 
                 expr = new Unary(opRegOf, new Const((int)rs1));
@@ -2676,7 +2699,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
         unsigned rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
         unsigned rs2 = (MATCH_w_32_0 & 0x1f) /* rs2 at 0 */;
         
-#line 625 "frontend/machine/sparc/decoder.m"
+#line 650 "frontend/machine/sparc/decoder.m"
         
 
                 expr = new Binary(opPlus,
@@ -2696,7 +2719,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
   
 }
 
-#line 636 "frontend/machine/sparc/decoder.m"
+#line 661 "frontend/machine/sparc/decoder.m"
 
     return expr;
 }
@@ -2739,11 +2762,11 @@ bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
 bool SparcDecoder::isRestore(ADDRESS hostPC) {
 
 
-#line 675 "frontend/machine/sparc/decoder.m"
+#line 700 "frontend/machine/sparc/decoder.m"
 { 
   dword MATCH_p = 
     
-#line 675 "frontend/machine/sparc/decoder.m"
+#line 700 "frontend/machine/sparc/decoder.m"
     hostPC
     ;
   unsigned MATCH_w_32_0;
@@ -2757,7 +2780,7 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
       unsigned b = addressToPC(MATCH_p);
       unsigned c = (MATCH_w_32_0 >> 25 & 0x1f) /* rd at 0 */;
       
-#line 677 "frontend/machine/sparc/decoder.m"
+#line 702 "frontend/machine/sparc/decoder.m"
       
 
                   unused(a);      // Suppress warning messages
@@ -2779,7 +2802,7 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
   
   MATCH_label_a0: (void)0; /*placeholder for label*/ 
     
-#line 681 "frontend/machine/sparc/decoder.m"
+#line 706 "frontend/machine/sparc/decoder.m"
     
                 return false;
 
@@ -2791,7 +2814,7 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
   
 }
 
-#line 685 "frontend/machine/sparc/decoder.m"
+#line 710 "frontend/machine/sparc/decoder.m"
 }
 
  /**********************************

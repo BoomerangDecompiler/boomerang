@@ -8,6 +8,7 @@
  *
  * 05 Apr 02 - Mike: Created
  * 21 May 02 - Mike: Mods for gcc 3.1
+ * 04 Dec 02 - Mike: Changed all r[0] to 0
  */
 
 #ifndef BOOMDIR
@@ -167,7 +168,7 @@ void FrontSparcTest::test2() {
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x10a68);
     inst.rtl->print(o3);
-    expected = std::string("00010a68 *32* r[24] := r[0] | 0\n");
+    expected = std::string("00010a68 *32* r[24] := 0 | 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     std::ostringstream o4;
@@ -207,7 +208,7 @@ void FrontSparcTest::test3() {
     inst = pFE->decodeInstruction(0x10a78);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010a78 *32* r[tmp] := r[0] + r[0]\n"
+        "00010a78 *32* r[tmp] := 0 + 0\n"
         "         *32* r[8] := r[24]\n"
         "         *32* r[9] := r[25]\n"
         "         *32* r[10] := r[26]\n"
@@ -331,7 +332,7 @@ void FrontSparcTest::testDelaySlot() {
         "         *32* r[14] := r[tmp]\n"
         "00010a84 *32* r[16] := 70656\n"
         "00010a88 *32* r[16] := r[16] | 808\n"
-        "00010a8c *32* r[8] := r[0] | r[16]\n"
+        "00010a8c *32* r[8] := 0 | r[16]\n"
         "00010a90 *32* r[tmp] := r[30]\n"
         "         *32* r[9] := r[30] + -20\n"
         "00010a90 CALL 0x21868()\n");
@@ -343,7 +344,7 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o2;
     bb->print(o2);
     expected = std::string("Call BB:\n"
-        "00010a98 *32* r[8] := r[0] | r[16]\n"
+        "00010a98 *32* r[8] := 0 | r[16]\n"
         "00010a9c *32* r[tmp] := r[30]\n"
         "         *32* r[9] := r[30] + -24\n"
         "00010a9c CALL 0x21868()\n");
@@ -356,7 +357,7 @@ void FrontSparcTest::testDelaySlot() {
     bb->print(o3);
     expected = std::string("Twoway BB:\n"
 	"00010aa4 *32* r[8] := m[r[30] + -20]\n"
-	"00010aa8 *32* r[16] := r[0] | 5\n"
+	"00010aa8 *32* r[16] := 0 | 5\n"
 	"00010aac *32* r[tmp] := r[16]\n"
 	"         *32* r[0] := r[16] - r[8]\n"
 	"         *32* %flags := SUBFLAGS( r[tmp], r[8], r[0] )\n"

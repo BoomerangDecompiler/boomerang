@@ -21,6 +21,7 @@
 #                   use 0- rather than !
 # 21 Jun 01 - Nathan: Fixed precedence problem in LDD & STD
 # 26 Nov 02 - Mike: Added RETURN (V9) instruction
+# 04 Dec 02 - Mike: r[rs1] -> rs1 (so we can make r[0] -> 0)
 
 NWINDOWS    := 8;            # Number of windows (register windows)-
                              # implementation dependent
@@ -201,14 +202,14 @@ OPERAND
     reg_or_imm := { imode, rmode };
 
 OPERAND
-    dispA      rs1, simm13      *32* r[rs1] + sgnex(13,32,simm13),
+    dispA      rs1, simm13      *32* rs1 + sgnex(13,32,simm13),
     absoluteA  simm13           *32* sgnex(13,32,simm13),
-    indexA     rs1, rs2         *32* r[rs1] + r[rs2],
-    indirectA  rs1              *32* r[rs1],
+    indexA     rs1, rs2         *32* rs1 + rs2,
+    indirectA  rs1              *32* rs1,
     imode      simm13           *32* sgnex(13,32,simm13),
-    rmode      rs2              *32* r[rs2],
-    indexR     rs1, rs2         *32* r[rs1] + r[rs2],
-    indirectR  rs1              *32* r[rs1];
+    rmode      rs2              *32* rs2,
+    indexR     rs1, rs2         *32* rs1 + rs2,
+    indirectR  rs1              *32* rs1;
 
 
 
@@ -221,41 +222,43 @@ FETCHEXEC           *32* %g0 := 0
 
 # Load double instruction-  the 1st reg. of double load must be even
 # the 2nd reg. of double load must be the next reg. after 1st, hence odd. 
+# Note: this is fudged in sslinst.cpp now!
 #LOADD := { LDD_, LDDA_ }
-LDD      eaddr, rd                      *32* r[rd&0x1E] := m[eaddr]
-                                        *32* r[(rd&0x1E)+1] := m[eaddr + WORD]; 
+LDD      eaddr, rd                      *32* rd := m[eaddr]
+                                        *32* rd := m[eaddr + WORD]; 
 # Note: the above offset (WORD) is now in bytes!
 
 #LOADU := { LD_, LDA_ }
-LD       eaddr, rd                      *32* r[rd] := m[eaddr]{32};
+LD       eaddr, rd                      *32* rd := m[eaddr]{32};
                                               
 #LOADUH := { LDUH_, LDUHA_ }
-LDUH     eaddr, rd                      *32* r[rd] := zfill(16, 32, m[eaddr]);
+LDUH     eaddr, rd                      *32* rd := zfill(16, 32, m[eaddr]);
                                               
 #LOADUB := { LDUB_, LDUBA_ }
-LDUB     eaddr, rd                      *32* r[rd] := zfill(8, 32, m[eaddr]);
+LDUB     eaddr, rd                      *32* rd := zfill(8, 32, m[eaddr]);
                                               
 #LOADSH := { LDSH_, LDSHA_ }
-LDSH     eaddr, rd                      *32* r[rd] := sgnex(16, 32, m[eaddr]);
+LDSH     eaddr, rd                      *32* rd := sgnex(16, 32, m[eaddr]);
 
 #LOADSB := { LDSB_, LDSBA_ }
-LDSB     eaddr, rd                      *32* r[rd] := sgnex(8, 32, m[eaddr]);
+LDSB     eaddr, rd                      *32* rd := sgnex(8, 32, m[eaddr]);
 
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
+# NOTE: this is fudged in sslinst.cpp now!
 #STOD := { STD_, STDA_ }
-STD      rd, eaddr                      *32* m[eaddr] := r[rd&0x1E]  
-                                        *32* m[eaddr + WORD] := r[(rd&0x1E)+1];
+STD      rd, eaddr                      *32* m[eaddr] := rd  
+                                        *32* m[eaddr + WORD] := rd;
 
 #STW := { ST_, STA_}
-ST       rd, eaddr                      *32* m[eaddr] := r[rd];
+ST       rd, eaddr                      *32* m[eaddr] := rd;
 
 #STH := { STH_, STHA_ }
-STH      rd, eaddr                      *16* m[eaddr] := truncs(32, 16, r[rd]);
+STH      rd, eaddr                      *16* m[eaddr] := truncs(32, 16, rd);
 
 #STB := { STB_, STBA_ }
-STB      rd, eaddr                      *8*  m[eaddr] := truncs(32, 8, r[rd]);
+STB      rd, eaddr                      *8*  m[eaddr] := truncs(32, 8, rd);
 
 
 # LOad STore Unsigned Byte  
@@ -263,13 +266,13 @@ STB      rd, eaddr                      *8*  m[eaddr] := truncs(32, 8, r[rd]);
 # (1st 2 bytes of addr.) is selected by a shift
 # the copied byte (in the source addr.) is replaced with 1's
 #LDSTUNBYTE := { LDSTUB_, LDSTUBA_ }
-LDSTUB   eaddr, rd                      *32*  r[rd] := zfill(8,32,m[eaddr])
+LDSTUB   eaddr, rd                      *32*  rd := zfill(8,32,m[eaddr])
                                         *8*  m[eaddr] := m[eaddr] | MAX_BYTE;
 
 # Swap using temp register
 #SWAPS := { SWAP_, SWAPA_ }
-SWAP     eaddr, rd                      *32* r[tmp1] := r[rd]
-                                        *32* r[rd] := m[eaddr] 
+SWAP     eaddr, rd                      *32* r[tmp1] := rd
+                                        *32* rd := m[eaddr] 
                                         *32* m[eaddr] := r[tmp1];
 
 # Logical operators - use OP1 (table) to map the correct operator. 
@@ -280,14 +283,14 @@ LOG_NOT := { "ANDN","ORN","XNOR","ANDNCC","ORNCC","XNORCC" };
 LOG_CC  := { "ANDCC","ANDNCC","ORCC","ORNCC","XORCC","XNORCC" };
 
 LOG_N[IDX]      rs1, reg_or_imm, rd
-                    *32* r[rd] := r[rs1] OP1[IDX] reg_or_imm;
+                    *32* rd := rs1 OP1[IDX] reg_or_imm;
 LOG_NOT[IDX]    rs1, reg_or_imm, rd
-                    *32* r[rd] := r[rs1] OP1[IDX] (0-reg_or_imm - 1 );
+                    *32* rd := rs1 OP1[IDX] (0-reg_or_imm - 1 );
 LOG_CC[IDX]     rs1, reg_or_imm, rd
-                    LOGICALFLAGS(r[rd]);
+                    LOGICALFLAGS(rd);
 
 # sethi instruction- puts the immediate into the top 22 bits
-SETHI   val, rd                         *32* r[rd] := val;
+SETHI   val, rd                         *32* rd := val;
 
 NOP                                    _;
 
@@ -299,7 +302,7 @@ STBAR                                   _; # store barrier
 SHIFTS  := { "SLL", "SRL", "SRA" };
 OP2     := { "<<",  ">>",  ">>A" };
 SHIFTS[IDX]     rs1, reg_or_imm, rd
-			        *32* r[rd] := r[rs1] OP2[IDX] reg_or_imm;
+			        *32* rd := rs1 OP2[IDX] reg_or_imm;
 
 
 # Arithmetic operators- uses OP3 table for correct operator. 
@@ -310,77 +313,77 @@ ARITH   := { "ADD", "SUB", "ADDCC", "SUBCC", "TADDCC", "TSUBCC" };
 OP3     := {  "+",   "-",    "+",     "-",     "+",       "-"   };
 
 ARITH[IDX]   rs1, reg_or_imm, rd
-                *32* r[tmp] := r[rs1]
-			    *32* r[rd]  := r[rs1] OP3[IDX] reg_or_imm;
+                *32* r[tmp] := rs1
+			    *32* rd  := rs1 OP3[IDX] reg_or_imm;
 
 ADDCC         rs1, reg_or_imm, rd
-                ADDFLAGS(r[tmp], reg_or_imm, r[rd]);
+                ADDFLAGS(r[tmp], reg_or_imm, rd);
 
 SUBCC         rs1, reg_or_imm, rd
-                SUBFLAGS(r[tmp], reg_or_imm, r[rd]);
+                SUBFLAGS(r[tmp], reg_or_imm, rd);
 
 TADDCC        rs1, reg_or_imm, rd
-              TADDFLAGS(r[tmp], reg_or_imm, r[rd]);
+              TADDFLAGS(r[tmp], reg_or_imm, rd);
 
 TSUBCC        rs1, reg_or_imm, rd
-              TSUBFLAGS(r[tmp], reg_or_imm, r[rd]);
+              TSUBFLAGS(r[tmp], reg_or_imm, rd);
 
 ARITH_C := { "ADDX", "SUBX", "ADDXCC", "SUBXCC" };
 OP4     := { "+",      "-",    "+",      "-" };
 
 ARITH_C[idx]  rs1, reg_or_imm, rd
-                *32* r[tmp] := r[rs1]
-                *32* r[rd]  := r[rs1] OP4[idx] reg_or_imm OP4[idx] zfill(1,32,%CF) ;
+                *32* r[tmp] := rs1
+                *32* rd  := rs1 OP4[idx] reg_or_imm OP4[idx] zfill(1,32,%CF) ;
 ADDXCC        rs1, reg_or_imm, rd
-                ADDFLAGS(r[tmp], reg_or_imm, r[rd]);
+                ADDFLAGS(r[tmp], reg_or_imm, rd);
 SUBXCC        rs1, reg_or_imm, rd
-                SUBFLAGS(r[tmp], reg_or_imm, r[rd]);
+                SUBFLAGS(r[tmp], reg_or_imm, rd);
 
 # Unsigned Multiplication - uses the Y register to store top 32 bits treats  Y
-#  and r[rd] as 64 bit register
+#  and rd as 64 bit register
 UMULT   := { "UMUL", "UMULCC" };
 
 UMULT[idx]  rs1, reg_or_imm, rd
-                *32* r[tmp] := r[rs1]
-                *64* r[tmpl] := zfill(32, 64, r[rs1]) * zfill(32, 64, reg_or_imm)
-                *32* r[rd] := truncs(64, 32, r[tmpl])
+                *32* r[tmp] := rs1
+                *64* r[tmpl] := zfill(32, 64, rs1) * zfill(32, 64, reg_or_imm)
+                *32* rd := truncs(64, 32, r[tmpl])
                 *32* %Y := r[tmpl]@[32:63];
 UMULTCC     rs1, reg_or_imm, rd
-                MULTFLAGS(r[tmp], reg_or_imm, r[rd]);
+                MULTFLAGS(r[tmp], reg_or_imm, rd);
 
 
 MULSCC      rs1, reg_or_imm, rd
-                *32* r[tmp] := (r[rs1] >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
+                *32* r[tmp] := (rs1 >> 1) | [(%NF^%OF) = 1 ? 1<<31 : 0]
                 *32* r[tmp2] := [(%Y@[0:0] = 1) ? reg_or_imm : 0 ]
-                *32* %Y := %Y >> 1 | (r[rs1] << 31)
-                *32* r[rd] := r[tmp] + r[tmp2]
-                ADDFLAGS( r[tmp], r[tmp2], r[rd]);
+                *32* %Y := %Y >> 1 | (rs1 << 31)
+                *32* rd := r[tmp] + r[tmp2]
+                ADDFLAGS( r[tmp], r[tmp2], rd);
     
 
 # Signed Multiplication - uses the Y register to store top 32 bits treats  Y 
-# and r[rd] as 64 bit register
+# and rd as 64 bit register
 SMULT   := { "SMUL", "SMULCC" };
 SMULT[idx]  rs1, reg_or_imm, rd
-                *32* r[tmp] := r[rs1]
-                *64* r[tmpl] := sgnex(32, 64, r[rs1]) *! sgnex(32, 64, reg_or_imm)
-                *32* r[rd] := truncs(64, 32, r[tmpl])
+                *32* r[tmp] := rs1
+                *64* r[tmpl] := sgnex(32, 64, rs1) *! sgnex(32, 64, reg_or_imm)
+                *32* rd := truncs(64, 32, r[tmpl])
                 *32* %Y := r[tmpl]@[32:63];
 SMULCC      rs1, reg_or_imm, rd
-                MULTFLAGS(r[tmp], reg_or_imm, r[rd]);
+                MULTFLAGS(r[tmp], reg_or_imm, rd);
 
 # Unsigned Multiplication Quick - 32 x 32 -> 32 bits
 UMULTQ  := { "UMULQ", "UMULCCQ" };
 UMULTQ[idx] rs1, reg_or_imm, rd
-                *32* r[rd] := r[rs1] * reg_or_imm;
+                *32* rd := rs1 * reg_or_imm;
 UMULCCQ     rs1, reg_or_imm, rd
-                MULTFLAGS(r[rs1], reg_or_imm, r[rd]);
+                MULTFLAGS(rs1, reg_or_imm, rd);
 
 # Signed Multiplication - 32 x 32 bits -> 32 bits
 SMULTQ := { "SMULQ", "SMULCCQ" };
 SMULTQ[idx]  rs1, reg_or_imm, rd
-                *32* r[rd] := r[rs1] *! reg_or_imm;
+                *32* rd := rs1 *! reg_or_imm;
 SMULCCQ      rs1, reg_or_imm, rd
-                MULTFLAGS(r[rs1], reg_or_imm, r[rd]);
+                MULTFLAGS(rs1, reg_or_imm, rd);
 
 
 # Unsigned Division
@@ -390,19 +393,19 @@ SMULCCQ      rs1, reg_or_imm, rd
 # For now, we don't model the behaviour with these inputs (too expensive)
 UDIVS := { "UDIV", "UDIVCC" };
 UDIVS[idx]  rs1, reg_or_imm, rd
-    *64* r[tmpl] := (zfill(32, 64, %Y) << 32) | zfill(32, 64, r[rs1])
-    *32* r[rd] := truncu(64, 32, r[tmpl] / zfill(32, 64, reg_or_imm));
+    *64* r[tmpl] := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
+    *32* rd := truncu(64, 32, r[tmpl] / zfill(32, 64, reg_or_imm));
 #   *64* r[tmpl] := r[tmpl] / reg_or_imm{64}
-#   *32* r[rd] := [r[tmpl] > MAX32BIT  ? MAX32BIT : r[tmpl]{32}] ;
+#   *32* rd := [r[tmpl] > MAX32BIT  ? MAX32BIT : r[tmpl]{32}] ;
 
 #
 # Unsigned division: 32 / 32 bits -> 32 bits
 #
 UDIVSQ := { "UDIVQ", "UDIVCCQ" };
 UDIVSQ[idx] rs1, reg_or_imm, rd
-                *32* r[rd] := r[rs1] / reg_or_imm;
+                *32* rd := rs1 / reg_or_imm;
 UDIVCCQ     rs1, reg_or_imm, rd
-                DIVFLAGS(r[rs1], reg_or_imm, r[rd]);
+                DIVFLAGS(rs1, reg_or_imm, rd);
 
 # Signed Division
 # If no overflow or underflow then put value in result
@@ -412,23 +415,23 @@ UDIVCCQ     rs1, reg_or_imm, rd
 # For now, we don't model the behaviour with these inputs (too expensive)
 SDIVS := { "SDIV", "SDIVCC" };
 SDIVS[idx]  rs1, reg_or_imm, rd
-                *64* r[tmpl] := (zfill(32, 64, %Y) << 32) | zfill(32, 64, r[rs1])
-                *32* r[rd] := truncs(64, 32, r[tmpl] /! sgnex(32, 64, reg_or_imm)) ;
-#   *32* r[rd] := [((r[tmp]@[32:63] = 0) or (r[tmp]@[32:63] = MAX32BIT)) ? 
+                *64* r[tmpl] := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
+                *32* rd := truncs(64, 32, r[tmpl] /! sgnex(32, 64, reg_or_imm)) ;
+#   *32* rd := [((r[tmp]@[32:63] = 0) or (r[tmp]@[32:63] = MAX32BIT)) ? 
 #   r[tmp] : [r[tmp] > 0 ? MAXSIGN32 : SIGN_32_NEG]]! ;
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
 SDIVSQ[idx] rs1, reg_or_imm, rd
-                *32* r[rd] := r[rs1] /! reg_or_imm;
+                *32* rd := rs1 /! reg_or_imm;
 SDIVCCQ     rs1, reg_or_imm, rd
-                DIVFLAGS(r[rs1], reg_or_imm, r[rd]);
+                DIVFLAGS(rs1, reg_or_imm, rd);
 
 # Save instruction is machine-dependant (register windows)
 # Note that these versions of save and restore are one possible implementation 
 # of the sparc spec (essentially number of windows = 1 & assume the window traps
 # do what they're supposed to do). 
 SAVE  rs1, reg_or_imm, rd
-                        *32* r[tmp] := r[rs1] + reg_or_imm
+                        *32* r[tmp] := rs1 + reg_or_imm
                         *32* m[%sp+0]  := %l0
                         *32* m[%sp+4]  := %l1
                         *32* m[%sp+8]  := %l2
@@ -453,11 +456,11 @@ SAVE  rs1, reg_or_imm, rd
                         *32* %i5 := %o5
                         *32* %i6 := %o6
                         *32* %i7 := %o7
-                        *32* r[rd] := r[tmp];
+                        *32* rd := r[tmp];
 
-# Restore instruction is machine-dependant (register windows) 
+# Restore instruction is machine-dependent (register windows) 
 RESTORE  rs1, reg_or_imm, rd
-                        *32* r[tmp] := r[rs1] + reg_or_imm
+                        *32* r[tmp] := rs1 + reg_or_imm
                         *32* %o0 := %i0
                         *32* %o1 := %i1
                         *32* %o2 := %i2
@@ -466,7 +469,7 @@ RESTORE  rs1, reg_or_imm, rd
                         *32* %o5 := %i5
                         *32* %o6 := %i6
                         *32* %o7 := %i7
-                        *32* r[rd] := r[tmp] # for rd==sp
+                        *32* rd := r[tmp] # for rd==sp
                         *32* %l0 := m[%sp+0]
                         *32* %l1 := m[%sp+4]
                         *32* %l2 := m[%sp+8]
@@ -483,7 +486,7 @@ RESTORE  rs1, reg_or_imm, rd
                         *32* %i5 := m[%sp+52]
                         *32* %i6 := m[%sp+56]
                         *32* %i7 := m[%sp+60]
-                        *32* r[rd] := r[tmp]; # repeat
+                        *32* rd := r[tmp]; # repeat
 
 RETURN  addr
                         *32* %o0 := %i0
@@ -565,10 +568,10 @@ CALL__ reloc
 
 # Jump and Link instruction- always executes delay instruction
 # Register indirect transfer of control
-# Note: eaddr and r[rd] could be the same register (e.g. jmpl %o7, %o7)
+# Note: eaddr and rd could be the same register (e.g. jmpl %o7, %o7)
 JMPL  eaddr, rd
                 *32* r[tmp] := eaddr
-                *32* r[rd] := %pc
+                *32* rd := %pc
 		*32* %pc := %npc
                 *32* %npc := r[tmp]
 		*1* %CTI := 1;
@@ -576,28 +579,28 @@ JMPL  eaddr, rd
 
 # Read and Write State Register Instructions
 RDY  rd
-                *32* r[rd] := %Y;
+                *32* rd := %Y;
 
 RDPSR   rd
-                *32* r[rd] := %PSR;
+                *32* rd := %PSR;
 
 RDWIM   rd
-                *32* r[rd] := %WIM;
+                *32* rd := %WIM;
 
 RDTBR   rd
-                *32* r[rd] := %TBR;
+                *32* rd := %TBR;
 
 WRY  rs1, reg_or_imm
-                *32* %Y := r[rs1] ^ reg_or_imm;
+                *32* %Y := rs1 ^ reg_or_imm;
 
 WRPSR  rs1, reg_or_imm
-                *32* %PSR := r[rs1] ^ reg_or_imm;
+                *32* %PSR := rs1 ^ reg_or_imm;
 
 WRWIM  rs1, reg_or_imm
-                *32* %WIM := r[rs1] ^ reg_or_imm;
+                *32* %WIM := rs1 ^ reg_or_imm;
 
 WRTBR  rs1, reg_or_imm
-                *32* %TBR := %TBR | ((r[rs1] ^ reg_or_imm) << 12);
+                *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
 
 ## Float Instructions
 # NB all instructions assume that we have registers up to 128 bits and that 
@@ -608,11 +611,11 @@ WRTBR  rs1, reg_or_imm
 # 4 to move a quad.
 
 FMOVs      fs2s, fds
-                *32* r[fds] := r[fs2s];
+                *32* fds := fs2s;
 FNEGs      fs2s, fds
-                *32* r[fds] := 0.0 -f r[fs2s];
+                *32* fds := 0.0 -f fs2s;
 FABSs      fs2s, fds
-                *32* r[fds] := [ r[fs2s] < 0.0 ? 0.0 -f r[fs2s] : r[fs2s] ];
+                *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
 
 # FMUL requires primitives
 #   *f      (multiply 2 32 bit floats and store the result in
@@ -659,33 +662,33 @@ OPQ5    := { "+f",    "-f",    "/f",    "*f",    "*f" };
 FARITHQ := { "FADDq", "FSUBq", "FDIVq", "FMULq", "FdMULq" };
 
 # Note: FsMULd and FdMULq probably read from the wrong registers!
-FARITHS[idx] fs1s, fs2s, fds  *32* r[fds] := r[fs1s] OPS5[idx] r[fs2s] ;
-FARITHD[idx] fs1d, fs2d, fdd  *64* r[fdd] := r[fs1d] OPD5[idx] r[fs2d] ;
-FARITHQ[idx] fs1q, fs2q, fdq *128* r[fdq] := r[fs1q] OPQ5[idx] r[fs2q] ;
+FARITHS[idx] fs1s, fs2s, fds  *32* fds := fs1s OPS5[idx] fs2s ;
+FARITHD[idx] fs1d, fs2d, fdd  *64* fdd := fs1d OPD5[idx] fs2d ;
+FARITHQ[idx] fs1q, fs2q, fdq *128* fdq := fs1q OPQ5[idx] fs2q ;
 
 # FSQRTx_ assumes that SQRT can operate on a register of any size
 
-FSQRTs     fs2s, fds      *32* r[fds] := sqrt(r[fs2s]);
-FSQRTd     fs2d, fdd      *64* r[fdd] := sqrt(r[fs2d]);
-FSQRTq     fs2q, fdq     *128* r[fdq] := sqrt(r[fs2q]);
+FSQRTs     fs2s, fds      *32* fds := sqrt(fs2s);
+FSQRTd     fs2d, fdd      *64* fdd := sqrt(fs2d);
+FSQRTq     fs2q, fdq     *128* fdq := sqrt(fs2q);
 
 # FiTOf etc are no longer their own unique unary operators
-FiTOs      fs2s, fds     *32* r[fds] := itof(32, 32,  r[fs2s]);
-FiTOd      fs2s, fdd     *64* r[fdd] := itof(32, 64,  r[fs2s]);
-FiTOq      fs2s, fdq    *128* r[fdq] := itof(32, 128, r[fs2s]);
+FiTOs      fs2s, fds     *32* fds := itof(32, 32,  fs2s);
+FiTOd      fs2s, fdd     *64* fdd := itof(32, 64,  fs2s);
+FiTOq      fs2s, fdq    *128* fdq := itof(32, 128, fs2s);
 
-FsTOi      fs2s, fds     *32* r[fds] := ftoi(32,  32, r[fs2s]);
-FdTOi      fs2d, fds     *32* r[fds] := ftoi(64,  32, r[fs2d]);
-FqTOi      fs2q, fds     *32* r[fds] := ftoi(128, 32, r[fs2q]);
+FsTOi      fs2s, fds     *32* fds := ftoi(32,  32, fs2s);
+FdTOi      fs2d, fds     *32* fds := ftoi(64,  32, fs2d);
+FqTOi      fs2q, fds     *32* fds := ftoi(128, 32, fs2q);
 
-FdTOs      fs2d,  fds    *32* r[fds] := fsize(64,  32, r[fs2d]);
-FqTOs      fs2q,  fds    *32* r[fds] := fsize(128, 32, r[fs2q]);
+FdTOs      fs2d,  fds    *32* fds := fsize(64,  32, fs2d);
+FqTOs      fs2q,  fds    *32* fds := fsize(128, 32, fs2q);
 
-FsTOd      fs2s, fdd     *64* r[fdd] := fsize(32,  64, r[fs2s]);
-FqTOd      fs2q, fdd     *64* r[fdd] := fsize(128, 64, r[fs2q]);
+FsTOd      fs2s, fdd     *64* fdd := fsize(32,  64, fs2s);
+FqTOd      fs2q, fdd     *64* fdd := fsize(128, 64, fs2q);
 
-FsTOq      fs2s, fdq    *128* r[fdq] := fsize(32, 128, r[fs2s]);
-FdTOq      fs2d, fdq    *128* r[fdq] := fsize(64, 128, r[fs2d]);
+FsTOq      fs2s, fdq    *128* fdq := fsize(32, 128, fs2s);
+FdTOq      fs2d, fdq    *128* fdq := fsize(64, 128, fs2d);
 
 #FCMPx
 # Since we are only concerned with the result value being 0, >0 or <0
@@ -696,12 +699,12 @@ FCOMPS := { "FCMPs", "FCMPEs" };
 FCOMPD := { "FCMPd", "FCMPEd" };
 FCOMPQ := { "FCMPq", "FCMPEq" };
 
-FCOMPS[idx] fs1s, fs2s       *32* r[tmpf] := r[fs1s] -f r[fs2s]
-                                  SETFFLAGS(r[fs1s], r[fs2s]);
-FCOMPD[idx] fs1d, fs2d       *64* r[tmpd] := r[fs1d] -f r[fs2d]
-                                  SETFFLAGS(r[fs1d], r[fs2d]);
-FCOMPQ[idx] fs1q, fs2q      *128* r[tmpD] := r[fs1q] -f r[fs2q]
-                                  SETFFLAGS(r[fs1q], r[fs2q]);
+FCOMPS[idx] fs1s, fs2s       *32* r[tmpf] := fs1s -f fs2s
+                                  SETFFLAGS(fs1s, fs2s);
+FCOMPD[idx] fs1d, fs2d       *64* r[tmpd] := fs1d -f fs2d
+                                  SETFFLAGS(fs1d, fs2d);
+FCOMPQ[idx] fs1q, fs2q      *128* r[tmpD] := fs1q -f fs2q
+                                  SETFFLAGS(fs1q, fs2q);
 
 
 #More generalised form based loosely on the 8086 architecture.  a
@@ -753,14 +756,14 @@ JUMPS2_C[idx]"A"   reloc
 # Loading and storing Floating point registers.
 LDFSR      eaddr       *32* %FSR := m[eaddr]{32};
 
-LDF  eaddr, fds        *32* r[fds] := m[eaddr]{32};
-LDDF eaddr, fdd        *64* r[fdd] := m[eaddr]{64};
+LDF  eaddr, fds        *32* fds := m[eaddr]{32};
+LDDF eaddr, fdd        *64* fdd := m[eaddr]{64};
 
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
 STFSR      eaddr       *32* m[eaddr] := %FSR;
-STF   fds, eaddr       *32* m[eaddr] := r[fds];
-STDF  fdd, eaddr       *64* m[eaddr] := r[fdd];
+STF   fds, eaddr       *32* m[eaddr] := fds;
+STDF  fdd, eaddr       *64* m[eaddr] := fdd;
 
 TRAPS := { "TA", "TN", "TNE", "TE", "TG", "TLE", "TGE", "TL",
            "TGU", "TLEU", "TCC", "TCS", "TPOS", "TNEG", "TVC", "TVS" };
@@ -787,8 +790,8 @@ TRAPS[idx]  eaddr
 # call/restore (below), because this can clutter the output (.c) file with
 # redundant moves, but more importantly it causes all the I registers to be
 # use before define, and that forces 6 parameters for the enclosing procedure
-RET_REG_VAL rs1, rs2         *32* %o0 := r[rs1] + r[rs2];
-RET_IMM_VAL rs1, imm         *32* %o0 := r[rs1] + imm;
+RET_REG_VAL rs1, rs2         *32* %o0 := rs1 + rs2;
+RET_IMM_VAL rs1, imm         *32* %o0 := rs1 + imm;
 
 # A restore in the delay slot of a call. 
 # The temp is needed because the sources are in the old register window, and
@@ -799,23 +802,23 @@ RET_IMM_VAL rs1, imm         *32* %o0 := r[rs1] + imm;
 # restore %g0, %o0, %o1     # This has been seen in real code!
 # Note: the (possibly) redundant moves here will make it appear that the call
 # uses all 6 register parameters, unless the live-ins are considered as well
-DLY_RST_REG rs1, rs2, rd     *32* r[tmp1] := r[rs1] + r[rs2]
+DLY_RST_REG rs1, rs2, rd     *32* r[tmp1] := rs1 + rs2
                               *32* %o0 := %i0
                               *32* %o1 := %i1
                               *32* %o2 := %i2
                               *32* %o3 := %i3
                               *32* %o4 := %i4
                               *32* %o5 := %i5
-                              *32* r[rd] := r[tmp1];
+                              *32* rd := r[tmp1];
 # Same as above but for immediates
-DLY_RST_IMM rs1, imm, rd     *32* r[tmp1] := r[rs1] + imm
+DLY_RST_IMM rs1, imm, rd     *32* r[tmp1] := rs1 + imm
                               *32* %o0 := %i0
                               *32* %o1 := %i1
                               *32* %o2 := %i2
                               *32* %o3 := %i3
                               *32* %o4 := %i4
                               *32* %o5 := %i5
-                              *32* r[rd] := r[tmp1];
+                              *32* rd := r[tmp1];
 
 # Semantics for the standard return, i.e. ret/restore. The effect is to copy
 # i0 to o0, so o0 is the real return location (for integers) for all types of
