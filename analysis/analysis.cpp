@@ -90,15 +90,14 @@ void Analysis::checkBBflags(PBB pBB, UserProc* proc)
                     continue;
                 Exp* pRT = (*rit)->elementAt(i);
                 Exp* pRHS = pRT->getSubExp2();
-				if (pRHS) {
-                	int flagUsed = anyFlagsUsed(pRHS);
-                	if (flagUsed)
-                    	// We have a use of a flag
-                    	findDefs(pBB, proc, flagUsed, false, rit,
-                        	true);
-				}
-           }
-       }
+                if (pRHS) {
+                    int flagUsed = anyFlagsUsed(pRHS);
+                    if (flagUsed)
+                        // We have a use of a flag
+                        findDefs(pBB, proc, flagUsed, false, rit, true);
+                }
+            }
+        }
     }
 }
 
@@ -143,14 +142,14 @@ void Analysis::analyse(UserProc* proc)
         //checkBBflags(pBB, proc);
         // Perform final simplifications
         finalSimplify(pBB);
-#if USE_PROCESS_CONST		// Fatally flawed. Somehow, conversion of
-							// strings and function pointers has disappeared!
+#if USE_PROCESS_CONST       // Fatally flawed. Somehow, conversion of
+                            // strings and function pointers has disappeared!
         // Check for constants
         checkBBconst(proc->getProg(), pBB);
 #endif // USE_PROCESS_CONST
 
-	// analyse calls
-	analyseCalls(pBB, proc);
+        // analyse calls
+        analyseCalls(pBB, proc);
 
         pBB = cfg->getNextBB(it);
     }
@@ -653,7 +652,7 @@ void Analysis::processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
         jt = jc->getCond();
     else
         jt = sc->getCond();
-	Exp *pHL = NULL;
+    Exp *pHL = NULL;
     OPER op = opWild;
     switch (jt) {
         case HLJCOND_JMI:
@@ -671,7 +670,7 @@ void Analysis::processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
             }
             Exp* pRtDef = (*rrit)->elementAt((*rrit)->getNumExp()-2);
 
-			pHL = new Binary(op, pRtDef->getSubExp2()->clone()->simplify(), new Const(0));
+            pHL = new Binary(op, pRtDef->getSubExp2()->clone()->simplify(), new Const(0));
             break;
         }
         default: {
@@ -703,12 +702,13 @@ void Analysis::processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
             assert(li->getOper() == opList);
             Exp* sec = li->getSubExp1();
 
-			assert(fst); assert(sec);
-			pHL = new Binary(op, fst->clone()->simplify(), sec->clone()->simplify());
+            assert(fst); assert(sec);
+            pHL = new Binary(op, fst->clone()->simplify(),
+              sec->clone()->simplify());
             break;
         }
     }   // end switch
-	assert(pHL);
+    assert(pHL);
     if (kd == JCOND_RTL)
         jc->setCondExpr(pHL);
     else
@@ -738,7 +738,7 @@ void Analysis::processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
         jt = jc->getCond();
     else
         jt = sc->getCond();
-	Exp *pHL = NULL;
+    Exp *pHL = NULL;
     // Result is (lhs op 0)
     AssignExp* pRtDef = (AssignExp*)((*rrit)->elementAt((*rrit)->getNumExp()-2));
     assert(pRtDef->getOper() == opAssignExp);
@@ -759,9 +759,9 @@ void Analysis::processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
             std::cerr << ost.str() << std::endl;
             return;
     }
-	Exp* pRight = pRtDef->getSubExp2()->clone()->simplify();
-	pHL = new Binary(op, pRight, new Const(0));
-	assert(pHL);
+    Exp* pRight = pRtDef->getSubExp2()->clone()->simplify();
+    pHL = new Binary(op, pRight, new Const(0));
+    assert(pHL);
     if (kd == JCOND_RTL)
         jc->setCondExpr(pHL);
     else
@@ -799,8 +799,8 @@ void Analysis::matchAssign(std::list<RTL*>* pOrigRtls, PBB pOrigBB,
         Exp* pRT = (*rrit)->elementAt(n-1);
         char* fname;
         if (pRT->isFlagCall() &&
-            (fname = ((Const*)pRT->getSubExp1())->getStr(),
-            (std::string(fname).substr(0, 3) == "SUB"))) {
+          (fname = ((Const*)pRT->getSubExp1())->getStr(),
+          (std::string(fname).substr(0, 3) == "SUB"))) {
             // Get the assignment/comparison. Should be the last assignment,
             // which should be the second last RT (excluding added RTs).
             // Note: have to assume that it has an opMinus or opNeg in the RHS
@@ -1196,13 +1196,13 @@ bool Analysis::isFlagFloat(Exp* rt, UserProc* proc)
         if (firstSub->getOper() == opIntConst) {
             int regNum = ((Const*)firstSub)->getInt();
             // Get the register's intrinsic type (note how ugly this is).
-	    RTLInstDict &dict = proc->getProg()->pFE->getDecoder()->getRTLDict();
-	    if (dict.DetRegMap.find(regNum) == dict.DetRegMap.end())
-		    return false;
-	    Register &reg = dict.DetRegMap[regNum];
+        RTLInstDict &dict = proc->getProg()->pFE->getDecoder()->getRTLDict();
+        if (dict.DetRegMap.find(regNum) == dict.DetRegMap.end())
+            return false;
+        Register &reg = dict.DetRegMap[regNum];
             Type* rType = reg.g_type();
             bool ret = rType->isFloat();
-	    delete rType;
+        delete rType;
             return ret;
         } else if (first->getOper() == opTemp) {
             Type* rType = Type::getTempType(((Const*)firstSub)->getStr());
@@ -1216,24 +1216,24 @@ bool Analysis::isFlagFloat(Exp* rt, UserProc* proc)
         // FIXME: This is completely broken in proc; assumes v1 etc names.
         // For now, assume integer
         //char* vname = ((Const*)firstSub)->getStr();
-	    return false;
+        return false;
     }       
     return false;
 }
 
-	// analyse calls
+    // analyse calls
 void Analysis::analyseCalls(PBB pBB, UserProc *proc)
 {
-	std::list<RTL*>* rtls = pBB->getRTLs();
-	for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 
-		it++) {
-		if ((*it)->getKind() != CALL_RTL) continue;
-		HLCall *call = (HLCall*)*it;
-		if (call->getDestProc() == NULL && !call->isComputed()) {
-			Proc *p = proc->getProg()->findProc(call->getFixedDest());
-			assert(p);
-			call->setDestProc(p);
-		}
-	}
+    std::list<RTL*>* rtls = pBB->getRTLs();
+    for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 
+      it++) {
+        if ((*it)->getKind() != CALL_RTL) continue;
+        HLCall *call = (HLCall*)*it;
+        if (call->getDestProc() == NULL && !call->isComputed()) {
+            Proc *p = proc->getProg()->findProc(call->getFixedDest());
+            assert(p);
+            call->setDestProc(p);
+        }
+    }
 }
 
