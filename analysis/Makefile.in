@@ -1,0 +1,55 @@
+######################################################
+# File: Makefile
+# Desc: Makefile for the analysis directory
+#       Makes and tests the libanalysis.so library
+#
+######################################################
+
+# $Revision$
+# 10 Jul 02 - Mike: Created.
+
+LIB_OBJS = analysis.o
+LIB=../lib/libanalysis.so
+
+CC = g++ -g
+CXX = $(CC)
+
+all: $(LIB) testAnalysis 
+
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+testAnalysis: testAnalysis.o AnalysisTest.o $(LIB)
+	$(CC) -o $@ testAnalysis.o AnalysisTest.o -lanalysis -ldb -lcppunit \
+    -lfrontend -lBinaryFile $(RUNPATH) -L../lib
+
+$(LIB): $(LIB_OBJS)
+	$(CC) -o $@ -shared $(LIB_OBJS) $(RUNPATH) -L../lib
+
+AnalysisTest.o: AnalysisTest.h
+analysis.o: ../include/rtl.h ../include/cfg.h ../include/proc.h \
+  ../include/prog.h
+AnalysisTest.o: EXTRAS = -I../frontend $(BOOMSET)
+
+# Make these objects with -fPIC
+$(LIB_OBJS): %.o : %.cpp
+	$(CC) -c -o $@ -fPIC -I../include $(EXTRAS) $<
+
+# Others without -fPIC
+.cpp.o:
+	$(CC) -c -o $@ -I../include $(EXTRAS) $<
+
+clean:
+	rm -f testAnalysis *.o $(LIB)
+
+test: all
+	./testAnalysis

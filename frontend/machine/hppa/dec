@@ -1,0 +1,112 @@
+
+#line 1 "generated-code"
+#include <assert.h>
+#define sign_extend(N,SIZE) (((int)((N) << (sizeof(unsigned)*8-(SIZE)))) >> (sizeof(unsigned)*8-(SIZE)))
+
+#line 1 "disassembler.m"
+/*==============================================================================
+ * FILE:     disassembler.m
+ * OVERVIEW: Matcher file for a stand alone disassembler tool
+ *
+ (C) 2000-2001 The University of Queensland, BT group
+ *============================================================================*/
+/*
+ * Revision: 1.4 
+ *
+ * Simon Long 2000.11.30
+ * 03 May 01 - Mike: Added constructor names (use -c); don't truncate opcode
+ *              names to 3 chars
+ * 08 May 01 - Mike: Many mods to work with Cristina's disassembler model
+ * 09 May 01 - Mike: %ld -> %d (prevents pages of warnings) with gcc 2.95
+ * 18 Jun 01 - Mike: Added floating point instructions
+ * 28 Jun 01 - Mike: Major rewrite of integer loads and stores for 1.1 syntax
+ */
+
+
+/*
+  void NJMCDecoder :: Cmplt_1(ADDRESS hostpc1)
+  {
+  }
+
+  void NJMCDecoder :: Cmplt_2(ADDRESS hostpc2)
+  {
+  }
+
+  void NJMCDecoder :: Cmplt_3(ADDRESS hostpc3)
+  {
+  }
+ */
+
+
+#include "global.h"
+#include "decoder.h"
+#include "BinaryFile.h"
+
+#include "hppa-names.h"
+
+// globals
+extern char _assembly[];
+char* astr;
+char *cmpltsep = ".";       // ??
+
+// Prototypes
+const char* GetSym(unsigned pc);
+const char* GetReloc(unsigned pc);
+
+
+DWord getDword (unsigned lc)
+/* get4Bytes - returns next 4-Byte from image pointed to by lc.
+   Fetch in a big-endian manner  */
+{
+    return
+      (DWord)
+      ((((((
+          *(Byte *)lc << 8
+      ) + *(Byte *)(lc+1)) << 8
+      ) + *(Byte *)(lc+2)) << 8
+      ) + *(Byte *)(lc+3));
+}
+
+static char killBuffer[32];
+
+// Find and kill any dots in the opcode name (and all chars thereafter)
+char* killDot(char* str)
+{
+    strcpy(killBuffer, str);
+    char* p = strchr(killBuffer, '.');
+    if (p) *p = '\0';
+    return killBuffer;
+}
+
+static char shexBuffer[32];
+
+char* signedHex(int disp)
+{
+    if (disp < 0)
+        sprintf(shexBuffer, "-0x%x", -disp);
+    else
+        sprintf(shexBuffer, "0x%x", disp);
+    return shexBuffer;
+}
+
+void NJMCDecoder::dis_c_c(ADDRESS hostpc)
+{
+  static char *logw[] =  {"",",=",",<",",OD"
+                            ,",TR",",!=",",>=",",EV"};
+  static char *logdw[] =  {"",",*=",",*<] ",",*OD"
+                            ,",*TR",",*!=",",*>=",",*EV"};
+  static char *cmpsubw[] = {"",",=",",<",",<=",",<<",",<<=",
+                               ",SV",",OD",
+                               ",TR",",<>",",>=",",>",",>>=",
+                               ",>>",",NSV",",EV"};
+  static char *cmpsubdw[] = {"",",*=",",*<",",*<=",",*<<",",*<<=",
+                                ",*SV",",*OD",
+                                ",*TR",",*<>",",*>=",",*>",",*>>=",
+                                ",*>>",",*NSV",",*EV"};
+/*  static char *bitw[]  = {",<", ",>="};*/
+/*  static char *bitdw[] = {",*<", ",*>="};*/
+  
+
+
+#line 101 "generated-code"
+

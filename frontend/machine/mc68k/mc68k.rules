@@ -1,0 +1,28 @@
+# MC68000 makefile fragment
+MC68K_DIR := machine/mc68k
+MC68K_SPEC:= $(MC68K_DIR)/mc68000.spec
+MC68K_DIS := $(MC68K_SPEC) $(MC68K_DIR)/mc68000dis.spec
+MC68K_PAT := $(MC68K_DIR)/mc68k.pat
+MC68K_PAL := $(MC68K_DIR)/mc68k.pal
+MC68K_SSL := $(MC68K_DIR)/mc68k.ssl
+MC68K_SRC := $(MC68K_DIR)/decoder_low.cc $(MC68K_DIR)/decoder.cc \
+	     $(MC68K_DIR)/front68k.cc $(MC68K_DIR)/mc68k.pat.cc \
+	     rtl/cti68k.cc
+MC68K_MAT := $(MC68K_DIR)/decoder_low.m $(MC68K_DIR)/decoder.m \
+	     $(MC68K_DIR)/mc68k.pat.m
+MC68K_INC := $(MC68K_DIR)/mc68k.pat.h
+
+ARCH_OBJ  += $(MC68K_SRC:%.cc=%.o)
+PROC_DIR  += $(MC68K_DIR)
+
+ifeq (0, ${REMOTE})
+$(MC68K_DIR)/decoder.cc: $(MC68K_DIS) $(MC68K_DIR)/decoder.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(MC68K_DIR)/decoder_low.cc: $(MC68K_DIS) $(MC68K_DIR)/decoder_low.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(MC68K_DIR)/mc68k.pat.cc: $(MC68K_DIS) $(MC68K_DIR)/mc68k.pat.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+$(MC68K_DIR)/mc68kemu.cc: $(MC68K_DIS) $(MC68K_DIR)/mc68kemu.m
+	${MLTK} $^ 2> mltk.err | grep -v "^bogus"
+endif
+

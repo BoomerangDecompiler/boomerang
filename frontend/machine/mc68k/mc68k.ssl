@@ -1,0 +1,770 @@
+#
+# Copyright (C) 2000, Sun Microsystems, Inc
+# Copyright (C) 2000, The University of Queensland
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+# May 2000: Created: Cristina and Mike
+
+
+ENDIANNESS BIG;
+
+
+SP := 15;
+
+INTEGER
+%d0[32] -> 0,
+%d1[32] -> 1,
+%d2[32] -> 2,
+%d3[32] -> 3,
+%d4[32] -> 4,
+%d5[32] -> 5,
+%d6[32] -> 6,
+%d7[32] -> 7,
+%a0[32] -> 8,
+%a1[32] -> 9,
+%a2[32] -> 10,
+%a3[32] -> 11,
+%a4[32] -> 12,
+%a5[32] -> 13,
+%a6[32] -> 14,
+%a7[32] -> 15,
+%pc[32] -> -1,
+%CF[1] -> -1,
+%ZF[1] -> -1,
+%NF[1] -> -1,
+%OF[1] -> -1;
+
+ADDFLAGS8(op1, op2, result)  {
+			*1* %CF := ((op1@[7:7]) and (op2@[7:7])) or (~(result@[7:7]) and ((op1@[7:7]) or (op2@[7:7])))
+			*1* %OF := ((op1@[7:7]) and (op2@[7:7]) and ~(result@[7:7])) or (~(op1@[7:7]) and ~(op2@[7:7]) and (result@[7:7]))
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+};
+
+SUBFLAGS8(op1, op2, result)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op1@[7:7]) and ~(op2@[7:7]) and ~(result@[7:7])) or (~(op1@[7:7]) and (op2@[7:7]) and (result@[7:7]))
+			*1* %CF := (~(op1@[7:7]) and (op2@[7:7])) or ((result@[7:7]) and (~(op1@[7:7]) or (op2@[7:7])))
+};
+
+ADDFLAGS16(op1, op2, result)  {
+			*1* %CF := ((op1@[15:15]) and (op2@[15:15])) or (~(result@[15:15]) and ((op1@[15:15]) or (op2@[15:15])))
+			*1* %OF := ((op1@[15:15]) and (op2@[15:15]) and ~(result@[15:15])) or (~(op1@[15:15]) and ~(op2@[15:15]) and (result@[15:15]))
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+};
+
+SUBFLAGS16(op1, op2, result)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op1@[15:15]) and ~(op2@[15:15]) and ~(result@[15:15])) or (~(op1@[15:15]) and (op2@[15:15]) and (result@[15:15]))
+			*1* %CF := (~(op1@[15:15]) and (op2@[15:15])) or ((result@[15:15]) and (~(op1@[15:15]) or (op2@[15:15])))
+};
+
+ADDFLAGS32(op1, op2, result)  {
+			*1* %CF := ((op1@[31:31]) and (op2@[31:31])) or (~(result@[31:31]) and ((op1@[31:31]) or (op2@[31:31])))
+			*1* %OF := ((op1@[31:31]) and (op2@[31:31]) and ~(result@[31:31])) or (~(op1@[31:31]) and ~(op2@[31:31]) and (result@[31:31]))
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+};
+
+SUBFLAGS32(op1, op2, result)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op1@[31:31]) and ~(op2@[31:31]) and ~(result@[31:31])) or (~(op1@[31:31]) and (op2@[31:31]) and (result@[31:31]))
+			*1* %CF := (~(op1@[31:31]) and (op2@[31:31])) or ((result@[31:31]) and (~(op1@[31:31]) or (op2@[31:31])))
+};
+
+SUBXFLAGS32(result, op1, op2)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result! = 0?0:%ZF]
+			*1* %OF := ((op1@[31:31]) and ~(op2@[31:31]) and ~(result@[31:31])) or (~(op1@[31:31]) and (op2@[31:31]) and (result@[31:31]))
+			*1* %CF := (~(op1@[31:31]) and (op2@[31:31])) or ((result@[31:31]) and (~(op1@[31:31]) or (op2@[31:31])))
+};
+
+COMPLEXARITHFLAGS32(op1, op2, result)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op1@[31:31]) and ~(op2@[31:31]) and ~(result@[31:31])) or (~(op1@[31:31]) and (op2@[31:31]) and (result@[31:31]))
+			*1* %CF := 0
+};
+
+LOGICALFLAGS8(result)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+LOGICALFLAGS16(result)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+LOGICALFLAGS32(result)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+ARITHSHIFTFLAGS8(result, src, count)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(7 - count):(7 - count)]]
+};
+
+ARITHSHIFTFLAGS16(result, src, count)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(15 - count):(15 - count)]]
+};
+
+ARITHSHIFTFLAGS32(result, src, count)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(31 - count):(31 - count)]]
+};
+
+LOGSHIFTFLAGS8(result, src, count)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(7 - count):(7 - count)]]
+};
+
+LOGSHIFTFLAGS16(result, src, count)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(15 - count):(15 - count)]]
+};
+
+LOGSHIFTFLAGS32(result, src, count)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := [count = 0?0:src@[(31 - count):(31 - count)]]
+};
+
+CLEARFLAGS()  {
+			*1* %NF := 0
+			*1* %ZF := 1
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+NEGFLAGS8(result, op2)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op2@[7:7]) and (result@[7:7]))
+			*1* %CF := [result = 0?0:1]
+};
+
+NEGFLAGS16(result, op2)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op2@[15:15]) and (result@[15:15]))
+			*1* %CF := [result = 0?0:1]
+};
+
+NEGFLAGS32(result, op2)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := ((op2@[31:31]) and (result@[31:31]))
+			*1* %CF := [result = 0?0:1]
+};
+
+NEGXFLAGS8(result, op2)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result! = 0?0:%ZF]
+			*1* %OF := ((op2@[7:7]) and (result@[7:7]))
+			*1* %CF := (op2@[7:7]) or ((result@[7:7]) and (op2@[7:7]))
+};
+
+NEGXFLAGS16(result, op2)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result! = 0?0:%ZF]
+			*1* %OF := ((op2@[15:15]) and (result@[15:15]))
+			*1* %CF := (op2@[15:15]) or ((result@[15:15]) and (op2@[15:15]))
+};
+
+NEGXFLAGS32(result, op2)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result! = 0?0:%ZF]
+			*1* %OF := ((op2@[31:31]) and (result@[31:31]))
+			*1* %CF := (op2@[31:31]) or ((result@[31:31]) and (op2@[31:31]))
+};
+
+COMMONFLAGS8(result)  {
+			*1* %NF := result@[7:7]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+COMMONFLAGS16(result)  {
+			*1* %NF := result@[15:15]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+COMMONFLAGS32(result)  {
+			*1* %NF := result@[31:31]
+			*1* %ZF := [result = 0?1:0]
+			*1* %OF := 0
+			*1* %CF := 0
+};
+
+ADDXB   src, dst 
+			*8* r[tmp1] := dst{8}
+			*8* dst := dst + src + %CF
+			ADDFLAGS8(r[tmp1], src, dst);
+
+ADDXW   src, dst 
+			*16* r[tmp1] := dst{16}
+			*16* dst := dst + src + %CF
+			ADDFLAGS16(r[tmp1], src, dst);
+
+ADDXL   src, dst 
+			*32* r[tmp1] := dst{32}
+			*32* dst := dst + src + %CF
+			ADDFLAGS32(r[tmp1], src, dst);
+
+OP1 := { "+", "-", "&", "|", "^" };
+ALU := { "ADD", "SUB", "AND", "OR", "EOR" };
+
+ALU_0_ := { "ADD" };
+OP1_0_ := { "+" };
+ALU_1_ := { "SUB" };
+OP1_1_ := { "-" };
+ALU_2_ := { "AND","OR","EOR" };
+OP1_2_ := { "&","|","^" };
+ALU[IDX]^"b" src, dst 
+			_ ;
+ALU_0_[IDX]^"b"   src, dst
+			*8* r[tmp1] := dst{8}
+			*8* dst := dst{8} OP1_0_[IDX] src{8}
+			ADDFLAGS8(r[tmp1], src, dst);
+ALU[IDX]^"b"   src, dst	_
+			_ ;
+ALU_1_[IDX]^"b"   src, dst
+			*8* r[tmp1] := dst{8}
+			*8* dst := dst{8} OP1_1_[IDX] src{8}
+			SUBFLAGS8(r[tmp1], src, dst);
+ALU[IDX]^"b"   src, dst	_
+			_ ;
+ALU_2_[IDX]^"b"   src, dst
+			*8* dst := dst{8} OP1_2_[IDX] src{8}
+			LOGICALFLAGS8(dst);
+ALU[IDX]^"b"   src, dst	_;
+
+ALU_3_ := { "ADD" };
+OP1_3_ := { "+" };
+ALU_4_ := { "SUB" };
+OP1_4_ := { "-" };
+ALU_5_ := { "AND","OR","EOR" };
+OP1_5_ := { "&","|","^" };
+ALU[IDX]^"w" src, dst 
+			_ ;
+ALU_3_[IDX]^"w"   src, dst
+			*16* r[tmp1] := dst{16}
+			*16* dst := dst{16} OP1_3_[IDX] src{16}
+			ADDFLAGS16(r[tmp1], src, dst);
+ALU[IDX]^"w"   src, dst	_
+			_ ;
+ALU_4_[IDX]^"w"   src, dst
+			*16* r[tmp1] := dst{16}
+			*16* dst := dst{16} OP1_4_[IDX] src{16}
+			SUBFLAGS16(r[tmp1], src, dst);
+ALU[IDX]^"w"   src, dst	_
+			_ ;
+ALU_5_[IDX]^"w"   src, dst
+			*16* dst := dst{16} OP1_5_[IDX] src{16}
+			LOGICALFLAGS16(dst);
+ALU[IDX]^"w"   src, dst	_;
+
+ALU_6_ := { "ADD" };
+OP1_6_ := { "+" };
+ALU_7_ := { "SUB" };
+OP1_7_ := { "-" };
+ALU_8_ := { "AND","OR","EOR" };
+OP1_8_ := { "&","|","^" };
+ALU[IDX]^"l" src, dst 
+			_ ;
+ALU_6_[IDX]^"l"   src, dst
+			*32* r[tmp1] := dst{32}
+			*32* dst := dst{32} OP1_6_[IDX] src{32}
+			ADDFLAGS32(r[tmp1], src, dst);
+ALU[IDX]^"l"   src, dst	_
+			_ ;
+ALU_7_[IDX]^"l"   src, dst
+			*32* r[tmp1] := dst{32}
+			*32* dst := dst{32} OP1_7_[IDX] src{32}
+			SUBFLAGS32(r[tmp1], src, dst);
+ALU[IDX]^"l"   src, dst	_
+			_ ;
+ALU_8_[IDX]^"l"   src, dst
+			*32* dst := dst{32} OP1_8_[IDX] src{32}
+			LOGICALFLAGS32(dst);
+ALU[IDX]^"l"   src, dst	_;
+
+OP9 := { "+", "-" };
+ALUQA := { "ADDQA", "SUBQA" };
+
+ALUQA[IDX]   src, dst 
+			*32* dst := dst OP9[IDX] src;
+
+OP2 := { "*!", "*" };
+MUL := { "MULS", "MULU" };
+
+MUL[IDX]^"w" src, dst 
+			*32* r[tmp1] := dst{16}
+			*32* dst := dst{16} OP2[IDX] src{16}
+			COMPLEXARITHFLAGS32(r[tmp1], src, dst);
+
+DIVSw   src, dst 
+			*32* r[tmp1] := dst{32}
+			*16* r[tmp2] := dst{32} /! src{16}
+			*16* r[tmp3] := dst{32} %! src{16}
+			*32* dst := r[tmp2] + (r[tmp3] << 16)
+			COMPLEXARITHFLAGS32(r[tmp1], src, dst);
+
+DIVUw   src, dst 
+			*32* r[tmp1] := dst{32}
+			*16* r[tmp2] := dst{32} / src{16}
+			*16* r[tmp3] := dst{32} % src{16}
+			*32* dst := r[tmp2] + (r[tmp3] << 16)
+			COMPLEXARITHFLAGS32(r[tmp1], src, dst);
+
+CMPb   src, dst 
+			*8* r[tmp1] := dst - src
+			SUBFLAGS8(dst, src, r[tmp1]);
+
+CMPw   src, dst 
+			*16* r[tmp1] := dst - src
+			SUBFLAGS16(dst, src, r[tmp1]);
+
+CMPl   src, dst 
+			*32* r[tmp1] := dst - src
+			SUBFLAGS32(dst, src, r[tmp1]);
+
+OP3 := { ">>A", "<<", ">>", "rl", "rl", "rlc", "rrc" };
+SHIFTS := { "ASR", "LSL", "LSR", "ROL", "ROR", "ROXL", "ROXR" };
+
+SHIFTS_9_ := { "ASR" };
+OP3_9_ := { ">>A" };
+SHIFTS_10_ := { "LSL","LSR","ROL","ROR","ROXL","ROXR" };
+OP3_10_ := { "<<",">>","rl","rl","rlc","rrc" };
+SHIFTS[IDX]^"b" cnt, dst 
+			*8* r[tmp1] := dst{8}
+			*8* dst := dst{8} OP3[IDX] cnt{8}
+			_ ;
+SHIFTS_9_[IDX]^"b"   cnt, dst
+			ARITHSHIFTFLAGS8(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"b"   cnt, dst	_
+			_ ;
+SHIFTS_10_[IDX]^"b"   cnt, dst
+			LOGSHIFTFLAGS8(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"b"   cnt, dst	_;
+
+SHIFTS_11_ := { "ASR" };
+OP3_11_ := { ">>A" };
+SHIFTS_12_ := { "LSL","LSR","ROL","ROR","ROXL","ROXR" };
+OP3_12_ := { "<<",">>","rl","rl","rlc","rrc" };
+SHIFTS[IDX]^"w" cnt, dst 
+			*16* r[tmp1] := dst{16}
+			*16* dst := dst{16} OP3[IDX] cnt{16}
+			_ ;
+SHIFTS_11_[IDX]^"w"   cnt, dst
+			ARITHSHIFTFLAGS16(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"w"   cnt, dst	_
+			_ ;
+SHIFTS_12_[IDX]^"w"   cnt, dst
+			LOGSHIFTFLAGS16(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"w"   cnt, dst	_;
+
+SHIFTS_13_ := { "ASR" };
+OP3_13_ := { ">>A" };
+SHIFTS_14_ := { "LSL","LSR","ROL","ROR","ROXL","ROXR" };
+OP3_14_ := { "<<",">>","rl","rl","rlc","rrc" };
+SHIFTS[IDX]^"l" cnt, dst 
+			*32* r[tmp1] := dst{32}
+			*32* dst := dst{32} OP3[IDX] cnt{32}
+			_ ;
+SHIFTS_13_[IDX]^"l"   cnt, dst
+			ARITHSHIFTFLAGS32(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"l"   cnt, dst	_
+			_ ;
+SHIFTS_14_[IDX]^"l"   cnt, dst
+			LOGSHIFTFLAGS32(dst, r[tmp1], cnt);
+SHIFTS[IDX]^"l"   cnt, dst	_;
+
+COND1 := { "1", "~%CF & ~%ZF", "%CF | %ZF", "~%CF", "%CF", "~%ZF", "%ZF", "~%OF", "%OF", "~%NF", "~%NF", "~(%NF ^ %OF)", "%NF ^ %OF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)" };
+BRANCHES := { "BRA", "BHI", "BLS", "BCC", "BCS", "BNE", "BEQ", "BVC", "BVS", "BPL", "BMI", "BGE", "BLT", "BGT", "BLE" };
+
+BRANCHES[IDX]   dst 
+			*32* %pc := [(COND1[IDX] = 1)?dst:%pc];
+
+JSR   size, dst 
+			*32* r[SP] := r[SP] - 4
+			*32* m[r[SP]] := %pc + size
+			*32* %pc := dst;
+
+BCHGb   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := ~dst@[bit:bit];
+
+BCHGl   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := ~dst@[bit:bit];
+
+BCLRb   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := 0;
+
+BCLRl   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := 0;
+
+BSETb   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := 1;
+
+BSETl   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit])
+			*1* dst@[bit:bit] := 1;
+
+BTST   bit, dst 
+			*1* %ZF := ~(dst@[bit:bit]);
+
+CLRb   dst 
+			*8* dst := 0
+			CLEARFLAGS();
+
+CLRw   dst 
+			*16* dst := 0
+			CLEARFLAGS();
+
+CLRl   dst 
+			*32* dst := 0
+			CLEARFLAGS();
+
+NEGb   dst 
+			*8* r[tmp1] := dst
+			*8* dst := 0 - dst{8}
+			NEGFLAGS8(dst, r[tmp1]);
+
+NEGw   dst 
+			*16* r[tmp1] := dst
+			*16* dst := 0 - dst{16}
+			NEGFLAGS16(dst, r[tmp1]);
+
+NEGl   dst 
+			*32* r[tmp1] := dst
+			*32* dst := 0 - dst{32}
+			NEGFLAGS32(dst, r[tmp1]);
+
+NEGXb   dst 
+			*8* r[tmp1] := dst
+			*8* dst := 0 - dst{8} - %CF
+			NEGXFLAGS8(dst, r[tmp1]);
+
+NEGXw   dst 
+			*16* r[tmp1] := dst
+			*16* dst := 0 - dst{16} - %CF
+			NEGXFLAGS16(dst, r[tmp1]);
+
+NEGXl   dst 
+			*32* r[tmp1] := dst
+			*32* dst := 0 - dst{32} - %CF
+			NEGXFLAGS32(dst, r[tmp1]);
+
+NOTb   dst 
+			*8* dst := ~dst{8}
+			COMMONFLAGS8(dst);
+
+NOTw   dst 
+			*16* dst := ~dst{16}
+			COMMONFLAGS16(dst);
+
+NOTl   dst 
+			*32* dst := ~dst{32}
+			COMMONFLAGS32(dst);
+
+TSTb   dst 
+			*8* r[tmp1] := dst{8}
+			LOGICALFLAGS8(r[tmp1]);
+
+TSTw   dst 
+			*16* r[tmp1] := dst{16}
+			LOGICALFLAGS16(r[tmp1]);
+
+TSTl   dst 
+			*32* r[tmp1] := dst{32}
+			LOGICALFLAGS32(r[tmp1]);
+
+TAS   dst 
+			*8* r[tmp1] := dst{8}
+			*1* dst@[7:7] := 1
+			COMMONFLAGS8(r[tmp1]);
+
+COND2 := { "1", "~%CF & ~%ZF", "%CF | %ZF", "~%CF", "%CF", "~%ZF", "%ZF", "~%OF", "%OF", "~%NF", "~%NF", "~(%NF ^ %OF)", "%NF ^ %OF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)", "0" };
+DBCCS := { "DBT", "DBHI", "DBLS", "DBCC", "DBCS", "DBNE", "DBEQ", "DBVC", "DBVS", "DBPL", "DBMI", "DBGE", "DBLT", "DBGT", "DBLE", "DBF" };
+
+DBCCS[IDX]   dn, dst 
+			*32* dn := [COND2[IDX]?dn:dn - 1]
+			*32* %pc := [(COND2[IDX] = 1)?%pc:[(dn = -1)?%pc:dst]];
+
+EXG   rx, ry 
+			*32* r[tmp1] := rx
+			*32* rx := ry
+			*32* ry := r[tmp1];
+
+EXTw   dst 
+			*16* dst := dst{8}!
+			COMMONFLAGS16(dst);
+
+EXTl   dst 
+			*32* dst := dst{16}!
+			COMMONFLAGS32(dst);
+
+EXTBl   dst 
+			*32* dst := dst{8}!
+			COMMONFLAGS32(dst);
+
+SWAP   dst 
+			*32* dst := (dst@[0:15] << 16) + dst@[15:31]
+			COMMONFLAGS32(dst);
+
+NOP    
+			_ ;
+
+RESET    
+			_ ;
+
+RTR    
+			_ ;
+
+RTS    
+			*32* r[tmp1] := m[r[SP]]
+			*32* r[SP] := r[SP] + 4
+			*32* %pc := r[tmp1];
+
+JMP   dst 
+			*32* %pc := dst;
+
+PEA   dst 
+			*32* r[tmp1] := addr(dst)
+			*32* r[SP] := r[SP] - 4
+			*32* m[r[SP]] := r[tmp1];
+
+LEA   src, an 
+			*32* an := addr(src);
+
+LINK   an, size 
+			*32* r[SP] := r[SP] - 4
+			*32* m[r[SP]] := an
+			*32* an := r[SP]
+			*32* r[SP] := r[SP] + size;
+
+MOVEfromCCR   dst 
+			*16* dst := 0
+			*1* dst@[0:0] := %CF
+			*1* dst@[1:1] := %OF
+			*1* dst@[2:2] := %ZF
+			*1* dst@[3:3] := %NF
+			*1* dst@[4:4] := %CF;
+
+MOVEtoCCR   src 
+			*1* %CF := src@[4:4]
+			*1* %OF := src@[1:1]
+			*1* %ZF := src@[2:2]
+			*1* %NF := src@[3:3];
+
+MOVEb   src, dst 
+			*8* dst := src
+			COMMONFLAGS8(dst);
+
+MOVEw   src, dst 
+			*16* dst := src
+			COMMONFLAGS16(dst);
+
+MOVEl   src, dst 
+			*32* dst := src
+			COMMONFLAGS32(dst);
+
+MOVEAb   src, dst 
+			*8* dst := src;
+
+MOVEAw   src, dst 
+			*16* dst := src;
+
+MOVEAl   src, dst 
+			*32* dst := src;
+
+LOADMw   mask, an 
+			*16* r[0] := [mask@[0:0]?m[an]{16}:r[0]]
+			*32* an := [mask@[0:0]?an + 2:an]
+			*16* r[1] := [mask@[1:1]?m[an]{16}:r[1]]
+			*32* an := [mask@[1:1]?an + 2:an]
+			*16* r[2] := [mask@[2:2]?m[an]{16}:r[2]]
+			*32* an := [mask@[2:2]?an + 2:an]
+			*16* r[3] := [mask@[3:3]?m[an]{16}:r[3]]
+			*32* an := [mask@[3:3]?an + 2:an]
+			*16* r[4] := [mask@[4:4]?m[an]{16}:r[4]]
+			*32* an := [mask@[4:4]?an + 2:an]
+			*16* r[5] := [mask@[5:5]?m[an]{16}:r[5]]
+			*32* an := [mask@[5:5]?an + 2:an]
+			*16* r[6] := [mask@[6:6]?m[an]{16}:r[6]]
+			*32* an := [mask@[6:6]?an + 2:an]
+			*16* r[7] := [mask@[7:7]?m[an]{16}:r[7]]
+			*32* an := [mask@[7:7]?an + 2:an]
+			*16* r[8] := [mask@[8:8]?m[an]{16}:r[8]]
+			*32* an := [mask@[8:8]?an + 2:an]
+			*16* r[9] := [mask@[9:9]?m[an]{16}:r[9]]
+			*32* an := [mask@[9:9]?an + 2:an]
+			*16* r[10] := [mask@[10:10]?m[an]{16}:r[10]]
+			*32* an := [mask@[10:10]?an + 2:an]
+			*16* r[11] := [mask@[11:11]?m[an]{16}:r[11]]
+			*32* an := [mask@[11:11]?an + 2:an]
+			*16* r[12] := [mask@[12:12]?m[an]{16}:r[12]]
+			*32* an := [mask@[12:12]?an + 2:an]
+			*16* r[13] := [mask@[13:13]?m[an]{16}:r[13]]
+			*32* an := [mask@[13:13]?an + 2:an]
+			*16* r[14] := [mask@[14:14]?m[an]{16}:r[14]]
+			*32* an := [mask@[14:14]?an + 2:an]
+			*16* r[15] := [mask@[15:15]?m[an]{16}:r[15]]
+			*32* an := [mask@[15:15]?an + 2:an];
+
+STOREMw   an, mask 
+			*32* an := [mask@[15:15]?an - 2:an]
+			*16* r[0] := [mask@[15:15]?m[an]{16}:r[0]]
+			*32* an := [mask@[14:14]?an - 2:an]
+			*16* r[0] := [mask@[14:14]?m[an]{16}:r[1]]
+			*32* an := [mask@[13:13]?an - 2:an]
+			*16* r[0] := [mask@[13:13]?m[an]{16}:r[2]]
+			*32* an := [mask@[12:12]?an - 2:an]
+			*16* r[0] := [mask@[12:12]?m[an]{16}:r[3]]
+			*32* an := [mask@[11:11]?an - 2:an]
+			*16* r[0] := [mask@[11:11]?m[an]{16}:r[4]]
+			*32* an := [mask@[10:10]?an - 2:an]
+			*16* r[0] := [mask@[10:10]?m[an]{16}:r[5]]
+			*32* an := [mask@[9:9]?an - 2:an]
+			*16* r[0] := [mask@[9:9]?m[an]{16}:r[6]]
+			*32* an := [mask@[8:8]?an - 2:an]
+			*16* r[0] := [mask@[8:8]?m[an]{16}:r[7]]
+			*32* an := [mask@[7:7]?an - 2:an]
+			*16* r[0] := [mask@[7:7]?m[an]{16}:r[8]]
+			*32* an := [mask@[6:6]?an - 2:an]
+			*16* r[0] := [mask@[6:6]?m[an]{16}:r[9]]
+			*32* an := [mask@[5:5]?an - 2:an]
+			*16* r[0] := [mask@[5:5]?m[an]{16}:r[10]]
+			*32* an := [mask@[4:4]?an - 2:an]
+			*16* r[0] := [mask@[4:4]?m[an]{16}:r[11]]
+			*32* an := [mask@[3:3]?an - 2:an]
+			*16* r[0] := [mask@[3:3]?m[an]{16}:r[12]]
+			*32* an := [mask@[2:2]?an - 2:an]
+			*16* r[0] := [mask@[2:2]?m[an]{16}:r[13]]
+			*32* an := [mask@[1:1]?an - 2:an]
+			*16* r[0] := [mask@[1:1]?m[an]{16}:r[14]]
+			*32* an := [mask@[0:0]?an - 2:an]
+			*16* r[0] := [mask@[0:0]?m[an]{16}:r[15]];
+
+LOADMl   mask, an 
+			*32* r[0] := [mask@[0:0]?m[an]{32}:r[0]]
+			*32* an := [mask@[0:0]?an + 4:an]
+			*32* r[1] := [mask@[1:1]?m[an]{32}:r[1]]
+			*32* an := [mask@[1:1]?an + 4:an]
+			*32* r[2] := [mask@[2:2]?m[an]{32}:r[2]]
+			*32* an := [mask@[2:2]?an + 4:an]
+			*32* r[3] := [mask@[3:3]?m[an]{32}:r[3]]
+			*32* an := [mask@[3:3]?an + 4:an]
+			*32* r[4] := [mask@[4:4]?m[an]{32}:r[4]]
+			*32* an := [mask@[4:4]?an + 4:an]
+			*32* r[5] := [mask@[5:5]?m[an]{32}:r[5]]
+			*32* an := [mask@[5:5]?an + 4:an]
+			*32* r[6] := [mask@[6:6]?m[an]{32}:r[6]]
+			*32* an := [mask@[6:6]?an + 4:an]
+			*32* r[7] := [mask@[7:7]?m[an]{32}:r[7]]
+			*32* an := [mask@[7:7]?an + 4:an]
+			*32* r[8] := [mask@[8:8]?m[an]{32}:r[8]]
+			*32* an := [mask@[8:8]?an + 4:an]
+			*32* r[9] := [mask@[9:9]?m[an]{32}:r[9]]
+			*32* an := [mask@[9:9]?an + 4:an]
+			*32* r[10] := [mask@[10:10]?m[an]{32}:r[10]]
+			*32* an := [mask@[10:10]?an + 4:an]
+			*32* r[11] := [mask@[11:11]?m[an]{32}:r[11]]
+			*32* an := [mask@[11:11]?an + 4:an]
+			*32* r[12] := [mask@[12:12]?m[an]{32}:r[12]]
+			*32* an := [mask@[12:12]?an + 4:an]
+			*32* r[13] := [mask@[13:13]?m[an]{32}:r[13]]
+			*32* an := [mask@[13:13]?an + 4:an]
+			*32* r[14] := [mask@[14:14]?m[an]{32}:r[14]]
+			*32* an := [mask@[14:14]?an + 4:an]
+			*32* r[15] := [mask@[15:15]?m[an]{32}:r[15]]
+			*32* an := [mask@[15:15]?an + 4:an];
+
+STOREMl   an, mask 
+			*32* an := [mask@[15:15]?an - 4:an]
+			*32* r[0] := [mask@[15:15]?m[an]{32}:r[0]]
+			*32* an := [mask@[14:14]?an - 4:an]
+			*32* r[0] := [mask@[14:14]?m[an]{32}:r[1]]
+			*32* an := [mask@[13:13]?an - 4:an]
+			*32* r[0] := [mask@[13:13]?m[an]{32}:r[2]]
+			*32* an := [mask@[12:12]?an - 4:an]
+			*32* r[0] := [mask@[12:12]?m[an]{32}:r[3]]
+			*32* an := [mask@[11:11]?an - 4:an]
+			*32* r[0] := [mask@[11:11]?m[an]{32}:r[4]]
+			*32* an := [mask@[10:10]?an - 4:an]
+			*32* r[0] := [mask@[10:10]?m[an]{32}:r[5]]
+			*32* an := [mask@[9:9]?an - 4:an]
+			*32* r[0] := [mask@[9:9]?m[an]{32}:r[6]]
+			*32* an := [mask@[8:8]?an - 4:an]
+			*32* r[0] := [mask@[8:8]?m[an]{32}:r[7]]
+			*32* an := [mask@[7:7]?an - 4:an]
+			*32* r[0] := [mask@[7:7]?m[an]{32}:r[8]]
+			*32* an := [mask@[6:6]?an - 4:an]
+			*32* r[0] := [mask@[6:6]?m[an]{32}:r[9]]
+			*32* an := [mask@[5:5]?an - 4:an]
+			*32* r[0] := [mask@[5:5]?m[an]{32}:r[10]]
+			*32* an := [mask@[4:4]?an - 4:an]
+			*32* r[0] := [mask@[4:4]?m[an]{32}:r[11]]
+			*32* an := [mask@[3:3]?an - 4:an]
+			*32* r[0] := [mask@[3:3]?m[an]{32}:r[12]]
+			*32* an := [mask@[2:2]?an - 4:an]
+			*32* r[0] := [mask@[2:2]?m[an]{32}:r[13]]
+			*32* an := [mask@[1:1]?an - 4:an]
+			*32* r[0] := [mask@[1:1]?m[an]{32}:r[14]]
+			*32* an := [mask@[0:0]?an - 4:an]
+			*32* r[0] := [mask@[0:0]?m[an]{32}:r[15]];
+
+COND3 := { "1", "0", "~%CF ^ ~%ZF", "%CF | %ZF", "~%CF", "%CF", "~%ZF", "%ZF", "~%OF", "%OF", "~%NF", "%NF", "%NF ^ %OF | ~%NF ^ ~%OF", "%NF ^ ~%OF | ~%NF ^ %OF", "%NF ^ %OF ^ ~%ZF | ~%NF ^ ~%OF ^ ~%ZF", "%ZF | %NF ^ ~%OF | ~%NF ^ %OF" };
+SCCS := { "ST", "SF", "SHI", "SLS", "SCC", "SCS", "SNE", "SEQ", "SVC", "SVS", "SPL", "SMI", "SGE", "SLT", "SGT", "SLE" };
+
+SCCS[IDX]   dst 
+			*8* dst := [(COND3[IDX] = 1)?1:0];
+
+SUBX   src, dst 
+			*32* r[tmp1] := dst
+			*32* dst := dst - src - %CF
+			SUBXFLAGS32(dst, r[tmp1], src);
+
+UNLK   an 
+			*32* r[SP] := an
+			*32* an := m[r[SP]]{32}
+			*32* r[SP] := r[SP] + 4;
+
+CLEAR_STACK   n 
+			*32* r[SP] := r[SP] + n;

@@ -1,0 +1,78 @@
+#
+# Copyright (C) 2001, Sun Microsystems, Inc
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+#=====================================================================
+# FILE:       arm.pal
+# OVERVIEW:   A PAL specification for the ARM architecture with no
+#             hardware floating point support. An example of such
+#             a processor is the StrongARM. This specification does not
+#             include support for the THUMB architecture. It also assumes
+#             the calling conventions used by gcc.
+#===================================================================*/
+# 08 Aug 01 - Brian: Created file.
+# 20 Aug 01 - Cristina: Merged std_entry and split_arg_entry frame abstraction.
+#             Commented SSL register name assumptions.
+
+
+FRAME ABSTRACTION
+    INIT = %sp
+
+    # Note that both local_vars and num_saved_regs are positive.
+    # FP always points to the first saved register in the frame.
+    # Storage on the stack is reserved to hold the low-order word of the
+    # split argument so it can be accessed as a whole.
+
+    std_entry
+    split_arg_entry
+    {
+        %fp -> %afp + local_vars + (num_saved_regs * 4)
+    }
+
+LOCALS
+    std_entry
+    {
+        local_vars + (num_saved_regs * 4)
+    }
+
+    split_arg_entry
+    {
+        local_vars + (num_saved_regs * 4) + 4
+    }
+
+PARAMETERS
+    CALLER
+    std_entry
+    split_arg_entry
+    {
+        AGGREGATE -> %r0
+        REGISTERS -> %r0 %r1 %r2 %r3
+        STACK     -> BASE = [%afp]
+                     OFFSET = 4
+    }
+
+RETURNS
+    # The FP emulation software library used by gcc on the StrongARM and other
+    # ARM processors without FP hardware uses emulated FP registers f0-f7
+    # that can each hold either a 32 or 64 bit FP value.
+    # Assumes SSL names for: 64-bit integer register %r0to1 and 64-bit 
+    # float register %f0to1:  
+    #    %r0to1[64] -> 64 COVERS %r0..%r1
+    #    %f0to1[64] -> 64 COVERS %f0..%f1
+
+    std_ret
+    CALLER
+    {
+        INTEGER.64  IN %r0to1
+        INTEGER.32  IN %r0
+        INTEGER.16  IN %r0
+        INTEGER.8   IN %r0
+        ADDRESS     IN %r0
+        FLOAT.32    IN %f0
+        FLOAT.64    IN %f0to1
+    }
+

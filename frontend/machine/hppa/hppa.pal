@@ -1,0 +1,105 @@
+#
+# Copyright (C) 2001, The University of Queensland
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+#=====================================================================
+# FILE:       hppa.pal
+# OVERVIEW:   A PAL specification for the HP PA/Risc architecture.
+#===================================================================*/
+
+# $Revision$
+
+# 01 May 01 - Mike: Created
+# 09 May 01 - Mike: Added logue names where needed
+# 17 May 01 - Mike: Added gcc frameless logues where needed
+# 17 Jul 01 - Simon: Fixed initial value of %r3 in FRAME ABSTRACTION; added
+#               PARENTSTACK entry
+# 18 Jul 01 - Mike: Fixed initial value of %sp in FRAME ABSTRACTION
+# 23 Jul 01 - Mike: %afp is at the top of the frame, and STACK IS INVERTED
+# 01 Aug 01 - Mike: GLOBAL ABSTRACTION has just one equation now
+# 17 Aug 01 - Mike: Added specs for pa-risc floating point register parameters
+# 31 Aug 01 - Mike: Oops, forgot to put param_reloc1 in the LOCALS section
+
+STACK IS INVERTED
+
+FRAME ABSTRACTION
+    INIT = %sp
+
+    gcc_frame
+    {
+        # %r3 appears to be used as a frame pointer
+        %r3 -> %afp - locals
+    }
+
+    gcc_frameless
+    {
+    }
+
+
+GLOBAL ABSTRACTION
+    %r27 -> %agp
+
+#    INIT = %r27
+#    gcc_frame
+#    gcc_frameless
+#    {
+#        %r27 -> %agp    # + GLOBALOFFSET
+#    }
+
+
+LOCALS
+    gcc_frame
+    gcc_frameless
+    param_reloc1
+    {
+        locals
+    }
+
+PARAMETERS
+
+    CALLER
+    {
+        AGGREGATE -> m[%r28]
+        INTEGER REGISTERS -> %r26 %r25 %r24 %r23
+        FLOAT   REGISTERS -> %fr4 %fr5 %fr6 %fr7
+        DOUBLE  REGISTERS -> %fd5 %fd7
+        STACK -> BASE = [%afp - 52]
+                 OFFSET = -4
+        DOUBLE ALIGNMENT 8 BYTES
+    }
+    gcc_frame
+    gcc_frameless
+    param_reloc1
+    {
+        AGGREGATE -> m[%r28]
+        INTEGER REGISTERS -> %r26 %r25 %r24 %r23
+        FLOAT   REGISTERS -> %fr4 %fr5 %fr6 %fr7
+        DOUBLE  REGISTERS -> %fd5 %fd7
+# Stack parameters are in the parent stack frame
+        STACK -> BASE = [%afp - locals - 52]
+                 OFFSET = -4
+        DOUBLE ALIGNMENT 8 BYTES
+    }
+
+RETURNS
+    gcc_unframe
+    gcc_unframeless1
+    gcc_unframeless2
+    CALLER
+    {
+        INTEGER.32   IN %r28
+        ADDRESS      IN %r28
+#       FLOAT.32     IN %fr4
+#       FLOAT.64     IN %fr4   # ?
+    }
+
+PARENT STACK
+    gcc_frame
+    gcc_frameless
+    {
+        %afp - locals - 48 TO %afp - locals - 36 STEP 4
+    }

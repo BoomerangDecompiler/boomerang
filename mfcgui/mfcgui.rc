@@ -1,0 +1,860 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\mfcgui.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\mfcgui.ico"
+IDR_PROCTYPE            ICON    DISCARDABLE     "res\\ProcDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDB_TRENT               BITMAP  DISCARDABLE     "res\\mebright-small.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+    BUTTON      ID_CONTEXT_HELP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_PROJECT_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_PROJECT_OPEN
+        MENUITEM "&Close",                      ID_PROJECT_CLOSE, GRAYED
+        MENUITEM "&Save\tCtrl+S",               ID_PROJECT_SAVE, GRAYED
+        MENUITEM "Save &As...",                 ID_PROJECT_SAVE_AS, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Procedures",                 ID_VIEW_PROCEDURES
+        MENUITEM "S&ymbols",                    ID_VIEW_SYMBOLS
+        MENUITEM SEPARATOR
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help Topics",                ID_HELP_FINDER
+        MENUITEM SEPARATOR
+        MENUITEM "&About Boomerang...",         ID_APP_ABOUT
+    END
+END
+
+IDR_PROCTYPE MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_PROJECT_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_PROJECT_OPEN
+        MENUITEM "&Close",                      ID_PROJECT_CLOSE, GRAYED
+        MENUITEM "&Save\tCtrl+S",               ID_PROJECT_SAVE, GRAYED
+        MENUITEM "Save &As...",                 ID_PROJECT_SAVE_AS, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Export src...",              ID_FILE_SAVE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Procedures",                 ID_VIEW_PROCEDURES
+        MENUITEM "&Control flow",               ID_VIEW_CONTROLFLOW
+        MENUITEM "S&ymbols",                    ID_VIEW_SYMBOLS
+        MENUITEM SEPARATOR
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help Topics",                ID_HELP_FINDER
+        MENUITEM SEPARATOR
+        MENUITEM "&About Boomerang...",         ID_APP_ABOUT
+    END
+END
+
+IDR_DUMMY1 MENU DISCARDABLE 
+BEGIN
+    MENUITEM "This menu isnt actually used, I just want the ID's", 
+                                            ID_RENAME_VARIABLE
+    MENUITEM "edit code",                   ID_EDIT_CODE
+    MENUITEM "properties",                  ID_PROPERTIES
+    MENUITEM "edit bb",                     ID_EDIT_BB
+    MENUITEM "show all labels",             ID_SHOW_ALL_LABELS
+    MENUITEM "hide unneeded labels",        ID_HIDE_UN_LABELS
+    MENUITEM "new symbol",                  ID_NEW_SYMBOL
+    MENUITEM "delete symbol",               ID_DELETE_SYMBOL
+    MENUITEM "fix invalid cfg",             ID_FIX_INVALID_CFG
+    MENUITEM "show leaves",                 ID_SHOW_LEAVES
+    MENUITEM "edit procedure",              ID_EDIT_PROC
+    MENUITEM "show structures",             ID_SHOW_STRUCTURES
+    MENUITEM "remove useless code",         ID_REMOVE_USELESS
+    MENUITEM "make ssa form",               ID_MAKE_SSA
+    MENUITEM "propogate forward",           ID_PROPOGATE_FORWARD
+    MENUITEM "make if then",                ID_MAKE_IF_THEN
+    MENUITEM "make if then else",           ID_MAKE_IF_THEN_ELSE
+    MENUITEM "change follow",               ID_CHANGE_FOLLOW
+    MENUITEM "debug expr",                  ID_DEBUG_EXP
+    MENUITEM "simplify expr",               ID_SIMPLIFY_EXP
+    MENUITEM "change latch",                ID_CHANGE_LATCH
+    MENUITEM "make pretested loop",         ID_MAKE_PRETESTED_LOOP
+    MENUITEM "reverse ssa form",            ID_REV_SSA_FORM
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT
+    VK_F1,          ID_HELP,                VIRTKEY 
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 86
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Boomerang"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "Boomerang Version 0.1\n\nBoomerang is an interactive decompiler based on the UQBT framework.  Boomerang is available under a BSD style license.  See http://boomerang.sourceforge.org/",
+                    IDC_STATIC,40,10,119,56,SS_NOPREFIX
+    LTEXT           "Copyright (C) Trent Waddington 2002",IDC_STATIC,39,71,
+                    119,8
+    DEFPUSHBUTTON   "OK",IDOK,181,7,47,15,WS_GROUP
+    CONTROL         143,IDC_STATIC,"Static",SS_BITMAP,181,22,47,57
+END
+
+IDD_RENAME_VARIABLE DIALOG DISCARDABLE  0, 0, 233, 81
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Rename Varaible"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,111,58,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,33,58,50,14
+    LTEXT           "variable:",IDC_STATIC,21,25,28,8
+    LTEXT           "to:",IDC_STATIC,38,41,9,8
+    CONTROL         "up",IDC_UP,"Button",BS_AUTORADIOBUTTON,179,24,24,10
+    CONTROL         "down",IDC_DOWN,"Button",BS_AUTORADIOBUTTON,179,37,33,10
+    CONTROL         "both",IDC_BOTH,"Button",BS_AUTORADIOBUTTON,179,52,30,10
+    GROUPBOX        "Rename",IDC_STATIC,172,13,49,57
+    COMBOBOX        IDC_NAME,51,21,116,12,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_NEWNAME,51,39,116,12,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_NEW_PROJECT DIALOG DISCARDABLE  0, 0, 248, 195
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Project"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,153,175,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,50,175,50,14
+    LTEXT           "Name:",IDC_STATIC,27,9,22,8
+    GROUPBOX        "Decompile",IDC_STATIC,19,37,214,136
+    LTEXT           "Filename:",IDC_STATIC,37,57,31,8
+    PUSHBUTTON      "...",IDC_BROWSE_FILENAME,197,55,11,14
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,218,20,11,14
+    EDITTEXT        IDC_FILENAME,70,55,124,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NAME,52,7,164,12,ES_AUTOHSCROLL
+    LTEXT           "Loader:",IDC_STATIC,37,73,23,8
+    LISTBOX         IDC_LOADER,37,82,182,29,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Front end:",IDC_STATIC,37,116,33,8
+    LISTBOX         IDC_FRONTEND,37,125,184,37,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Location:",IDC_STATIC,19,24,30,8
+    EDITTEXT        IDC_LOCATION,52,22,164,12,ES_AUTOHSCROLL
+END
+
+IDD_VIEWDECODE DIALOGEX 0, 0, 510, 201
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Decoding..."
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,377,180,44,11
+    CONTROL         "",IDC_STATUS,"Static",SS_BLACKFRAME,15,7,405,172
+    GROUPBOX        "Legend",IDC_STATIC,432,7,64,55
+    LTEXT           "Undecoded",IDC_STATIC,454,17,38,8
+    LTEXT           "Instruction",IDC_STATIC,454,28,34,8
+    LTEXT           "Procedure",IDC_STATIC,454,39,34,8
+    LTEXT           "Problem",IDC_STATIC,454,49,26,8
+    CONTROL         "",IDC_UNDECODED,"Static",SS_BLACKFRAME | 
+                    SS_REALSIZEIMAGE,441,18,9,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_INSTRUCTION,"Static",SS_BLACKFRAME | 
+                    SS_REALSIZEIMAGE,441,28,9,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_PROCEDURE,"Static",SS_BLACKFRAME | 
+                    SS_REALSIZEIMAGE,441,39,9,8,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_PROBLEM,"Static",SS_BLACKFRAME | SS_REALSIZEIMAGE,
+                    441,50,9,8,WS_EX_TRANSPARENT
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",WS_BORDER,
+                    15,182,338,8
+    CTEXT           "100%",IDC_COMPLETE,357,182,18,8
+    CONTROL         "Tree1",IDC_PROCTREE,"SysTreeView32",WS_BORDER | 
+                    WS_TABSTOP,428,65,75,129
+END
+
+IDD_PROCEDURES DIALOG DISCARDABLE  0, 0, 509, 244
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Procedures"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,452,223,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,399,223,50,14
+    CONTROL         "Tree1",IDC_PROCS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | WS_BORDER | WS_TABSTOP,
+                    7,7,332,230
+    LTEXT           "Calls procedures:",IDC_STATIC,345,117,55,8
+    LTEXT           "Called by procedures:",IDC_STATIC,345,16,69,8
+    CONTROL         "Tree1",IDC_CALLEDBY,"SysTreeView32",WS_BORDER | 
+                    WS_TABSTOP,345,27,157,85
+    CONTROL         "Tree2",IDC_CALLS,"SysTreeView32",WS_BORDER | WS_TABSTOP,
+                    345,127,157,93
+END
+
+IDD_SAVELOAD DIALOG DISCARDABLE  0, 0, 463, 44
+STYLE DS_MODALFRAME | WS_POPUP
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,406,19,50,14
+    CONTROL         "Progress1",IDC_SAVELOADPROGRESS,"msctls_progress32",
+                    WS_BORDER,7,19,398,15
+    LTEXT           "Message",IDC_MESSAGE,7,7,449,11
+END
+
+IDD_CFGVIEW DIALOG DISCARDABLE  0, 0, 484, 247
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Control flow graph"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "",IDC_GRAPH,"Static",SS_BLACKFRAME,7,7,391,233
+    CONTROL         "Tree1",IDC_TREE,"SysTreeView32",TVS_SHOWSELALWAYS | 
+                    WS_BORDER | WS_TABSTOP,398,7,79,219
+    CONTROL         "Auto arrange",IDC_AUTOARRANGE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,404,230,64,10
+END
+
+IDD_EDITBB DIALOG DISCARDABLE  0, 0, 342, 134
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit basic block at "
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,285,118,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,233,118,50,14
+    COMBOBOX        IDC_TYPE,127,15,195,52,CBS_DROPDOWNLIST | 
+                    CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Structured type:",IDC_STATIC,71,18,51,8
+    LTEXT           "Extra conditional structured type:",IDC_STATIC,19,34,
+                    104,8
+    COMBOBOX        IDC_CONDTYPE,127,30,193,56,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Head of most nested enclosing loop:",IDC_STATIC,7,50,
+                    116,8
+    COMBOBOX        IDC_LOOPHEAD,127,48,104,115,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Head of most nested enclosing case:",IDC_STATIC,7,66,
+                    118,8
+    COMBOBOX        IDC_CASEHEAD,127,63,104,96,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Follow of conditional header:",IDC_STATIC,33,81,91,8
+    COMBOBOX        IDC_CONDFOLLOW,127,77,104,86,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Follow of loop header:",IDC_STATIC,53,96,70,8
+    COMBOBOX        IDC_LOOPFOLLOW,127,92,104,73,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Latch node of loop header:",IDC_STATIC,38,112,86,8
+    COMBOBOX        IDC_LATCHNODE,127,108,104,84,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SYMBOLS DIALOG DISCARDABLE  0, 0, 306, 294
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Symbol table"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,175,273,32,14
+    PUSHBUTTON      "Cancel",IDCANCEL,99,273,32,14
+    CONTROL         "Tab1",IDC_TAB,"SysTabControl32",0x0,7,7,292,262
+    CONTROL         "List2",IDC_LIST,"SysListView32",LVS_REPORT | WS_BORDER | 
+                    WS_TABSTOP,13,22,280,243
+END
+
+IDD_NEWSYMBOL DIALOG DISCARDABLE  0, 0, 285, 105
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New / edit symbol"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,167,84,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,65,84,50,14
+    LTEXT           "Expression:",IDC_STATIC,33,22,37,8
+    LTEXT           "Name:",IDC_STATIC,48,39,22,8
+    EDITTEXT        IDC_EXP,77,20,124,12,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_NAME,77,36,124,12,ES_AUTOHSCROLL
+    CONTROL         "Local",IDC_LOCAL,"Button",BS_AUTORADIOBUTTON,83,70,33,
+                    10
+    CONTROL         "Global",IDC_GLOBAL,"Button",BS_AUTORADIOBUTTON,129,70,
+                    36,10
+    LTEXT           "Type:",IDC_STATIC,51,53,19,8
+    COMBOBOX        IDC_TYPE,77,52,122,76,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_PROC_PROPERTIES DIALOG DISCARDABLE  0, 0, 392, 185
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Properties of procedure at "
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,239,164,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,164,50,14
+    CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,7,7,378,156
+END
+
+IDD_DATA_FLOW DIALOG DISCARDABLE  0, 0, 334, 227
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Data flow information"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,200,206,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,101,206,50,14
+    LTEXT           "Expression:",IDC_STATIC,25,28,37,8
+    EDITTEXT        IDC_EDIT1,67,27,115,12,ES_AUTOHSCROLL
+    LTEXT           "Definition:",IDC_STATIC,28,49,32,8
+    EDITTEXT        IDC_EDIT2,67,44,115,12,ES_AUTOHSCROLL
+    LISTBOX         IDC_LIST,29,73,216,64,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Uses:",IDC_STATIC,29,64,19,8
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "Boomerang MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "Boomerang\0"
+            VALUE "LegalCopyright", "Copyright (C) 2002\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "mfcgui.EXE\0"
+            VALUE "ProductName", "Boomerang\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
+
+    IDD_RENAME_VARIABLE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 226
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 74
+    END
+
+    IDD_NEW_PROJECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 241
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 188
+    END
+
+    IDD_VIEWDECODE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 503
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 194
+    END
+
+    IDD_PROCEDURES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 502
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 237
+    END
+
+    IDD_SAVELOAD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 456
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 34
+    END
+
+    IDD_CFGVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 477
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 240
+    END
+
+    IDD_EDITBB, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 335
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 132
+    END
+
+    IDD_SYMBOLS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 299
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 287
+    END
+
+    IDD_NEWSYMBOL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 278
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
+    END
+
+    IDD_PROC_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 385
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 178
+    END
+
+    IDD_DATA_FLOW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 327
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 220
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_EDITBB DLGINIT
+BEGIN
+    IDC_TYPE, 0x403, 5, 0
+0x6f6e, 0x656e, "\000" 
+    IDC_TYPE, 0x403, 23, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x7270, 0x7465, 0x7365, 0x6574, 0x2064, 
+0x6f6c, 0x706f, "\000" 
+    IDC_TYPE, 0x403, 25, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6f70, 0x7473, 0x742d, 0x7365, 0x6574, 
+0x2064, 0x6f6c, 0x706f, "\000" 
+    IDC_TYPE, 0x403, 21, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6e65, 0x6c64, 0x7365, 0x2073, 0x6f6c, 
+0x706f, "\000" 
+    IDC_TYPE, 0x403, 20, 0
+0x756a, 0x706d, 0x6920, 0x2f6e, 0x756f, 0x2074, 0x666f, 0x6c20, 0x6f6f, 
+0x0070, 
+    IDC_TYPE, 0x403, 15, 0
+0x756a, 0x706d, 0x6920, 0x746e, 0x206f, 0x6163, 0x6573, "\000" 
+    IDC_TYPE, 0x403, 8, 0
+0x6669, 0x6720, 0x746f, 0x006f, 
+    IDC_TYPE, 0x403, 8, 0
+0x6669, 0x7420, 0x6568, 0x006e, 
+    IDC_TYPE, 0x403, 13, 0
+0x6669, 0x7420, 0x6568, 0x206e, 0x6c65, 0x6573, "\000" 
+    IDC_TYPE, 0x403, 8, 0
+0x6669, 0x6520, 0x736c, 0x0065, 
+    IDC_TYPE, 0x403, 13, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6163, 0x6573, "\000" 
+    IDC_CONDTYPE, 0x403, 5, 0
+0x6f6e, 0x656e, "\000" 
+    IDC_CONDTYPE, 0x403, 23, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x7270, 0x7465, 0x7365, 0x6574, 0x2064, 
+0x6f6c, 0x706f, "\000" 
+    IDC_CONDTYPE, 0x403, 25, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6f70, 0x7473, 0x742d, 0x7365, 0x6574, 
+0x2064, 0x6f6c, 0x706f, "\000" 
+    IDC_CONDTYPE, 0x403, 21, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6e65, 0x6c64, 0x7365, 0x2073, 0x6f6c, 
+0x706f, "\000" 
+    IDC_CONDTYPE, 0x403, 20, 0
+0x756a, 0x706d, 0x6920, 0x2f6e, 0x756f, 0x2074, 0x666f, 0x6c20, 0x6f6f, 
+0x0070, 
+    IDC_CONDTYPE, 0x403, 15, 0
+0x756a, 0x706d, 0x6920, 0x746e, 0x206f, 0x6163, 0x6573, "\000" 
+    IDC_CONDTYPE, 0x403, 8, 0
+0x6669, 0x6720, 0x746f, 0x006f, 
+    IDC_CONDTYPE, 0x403, 8, 0
+0x6669, 0x7420, 0x6568, 0x006e, 
+    IDC_CONDTYPE, 0x403, 13, 0
+0x6669, 0x7420, 0x6568, 0x206e, 0x6c65, 0x6573, "\000" 
+    IDC_CONDTYPE, 0x403, 8, 0
+0x6669, 0x6520, 0x736c, 0x0065, 
+    IDC_CONDTYPE, 0x403, 13, 0
+0x6568, 0x6461, 0x6f20, 0x2066, 0x6163, 0x6573, "\000" 
+    0
+END
+
+IDD_NEWSYMBOL DLGINIT
+BEGIN
+    IDC_TYPE, 0x403, 5, 0
+0x6f76, 0x6469, "\000" 
+    IDC_TYPE, 0x403, 5, 0
+0x6863, 0x7261, "\000" 
+    IDC_TYPE, 0x403, 6, 0
+0x6873, 0x726f, 0x0074, 
+    IDC_TYPE, 0x403, 4, 0
+0x6e69, 0x0074, 
+    IDC_TYPE, 0x403, 10, 0
+0x6f6c, 0x676e, 0x6c20, 0x6e6f, 0x0067, 
+    IDC_TYPE, 0x403, 14, 0
+0x6e75, 0x6973, 0x6e67, 0x6465, 0x6320, 0x6168, 0x0072, 
+    IDC_TYPE, 0x403, 15, 0
+0x6e75, 0x6973, 0x6e67, 0x6465, 0x7320, 0x6f68, 0x7472, "\000" 
+    IDC_TYPE, 0x403, 13, 0
+0x6e75, 0x6973, 0x6e67, 0x6465, 0x6920, 0x746e, "\000" 
+    IDC_TYPE, 0x403, 19, 0
+0x6e75, 0x6973, 0x6e67, 0x6465, 0x6c20, 0x6e6f, 0x2067, 0x6f6c, 0x676e, 
+"\000" 
+    IDC_TYPE, 0x403, 6, 0
+0x6c66, 0x616f, 0x0074, 
+    IDC_TYPE, 0x403, 7, 0
+0x6f64, 0x6275, 0x656c, "\000" 
+    IDC_TYPE, 0x403, 6, 0
+0x6f76, 0x6469, 0x002a, 
+    IDC_TYPE, 0x403, 10, 0
+0x6f76, 0x6469, 0x2a28, 0x2829, 0x0029, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_INDICATE_FOLLOW     CURSOR  DISCARDABLE     "res\\cursor1.cur"
+IDC_POINTER             CURSOR  DISCARDABLE     "arrow.cur"
+IDC_INDICATE_LATCH      CURSOR  DISCARDABLE     "res\\indicate.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "Boomerang"
+    IDR_PROCTYPE            "\nproc\nproc\nBoomerang procedure file (*.c)\n.c\nBoomerang.Procedure\nBoomerang Procedure"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Boomerang"
+    AFX_IDS_IDLEMESSAGE     "For Help, press F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new project"
+    ID_FILE_OPEN            "Open an existing project"
+    ID_FILE_CLOSE           "Close the active project\nClose"
+    ID_FILE_SAVE            "Save the active project\nSave"
+    ID_FILE_SAVE_AS         "Save the active project with a new name\nSave As"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save changes\nExit"
+    ID_HELP_INDEX           "Opens Help\nHelp Topics"
+    ID_HELP_FINDER          "List Help topics\nHelp Topics"
+    ID_HELP_USING           "Display instructions about how to use help\nHelp"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows\nHelp"
+    ID_HELP                 "Display help for current task or command\nHelp"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this project"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active procedure\nNew Window"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\mfcgui.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

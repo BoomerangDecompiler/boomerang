@@ -1,0 +1,2476 @@
+crhs for c_arith_w is (arith_w) op ==  2 & ext6_20 == 24 & d_26 ==  0 & 
+c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 56 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 28 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 60 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 25 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 57 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 26 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 58 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 27 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 59 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 16 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 48 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 19 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 51 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 20 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 52 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 17 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  0 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  8 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  9 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 10 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 14 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 34 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 38 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 39 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 40 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 41 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 42 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 43 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 46 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 47 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 15 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 13 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 12 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  7 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  5 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  4 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 11 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 29 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 30 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 31 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 21 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 22 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 23 & d_26 ==  0 & c3_16 = c3_16 
+| (ADDI) op == 45 & ext_20 ==  0 & c3_16 = c3_16 
+| (ADDI.v) op == 45 & ext_20 ==  1 & c3_16 = c3_16 
+| (ADDI.t) op == 44 & ext_20 ==  0 & c3_16 = c3_16 
+| (ADDI.t.v) op == 44 & ext_20 ==  1 & c3_16 = c3_16 
+| (SUBI) op == 37 & ext_20 ==  0 & c3_16 = c3_16 
+| (SUBI.v) op == 37 & ext_20 ==  1 & c3_16 = c3_16
+applied c_arith_w to get (arith_w) op ==  2 & ext6_20 == 24 & d_26 ==  0 & 
+c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 56 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 28 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 60 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 25 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 57 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 26 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 58 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 27 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 59 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 16 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 48 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 19 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 51 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 20 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 52 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 17 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  0 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  8 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  9 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 10 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 14 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 34 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 38 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 39 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 40 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 41 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 42 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 43 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 46 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 47 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 15 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 13 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 12 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  7 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  5 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 ==  4 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 11 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 29 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 30 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 31 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 21 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 22 & d_26 ==  0 & c3_16 = c3_16 
+| (arith_w) op ==  2 & ext6_20 == 23 & d_26 ==  0 & c3_16 = c3_16 
+| (ADDI) op == 45 & ext_20 ==  0 & c3_16 = c3_16 
+| (ADDI.v) op == 45 & ext_20 ==  1 & c3_16 = c3_16 
+| (ADDI.t) op == 44 & ext_20 ==  0 & c3_16 = c3_16 
+| (ADDI.t.v) op == 44 & ext_20 ==  1 & c3_16 = c3_16 
+| (SUBI) op == 37 & ext_20 ==  0 & c3_16 = c3_16 
+| (SUBI.v) op == 37 & ext_20 ==  1 & c3_16 = c3_16
+after pnf we have case arm (arith_w) op ==  2 & ext6_20 == 24 & d_26 ==  0 & 
+  c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 56 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 28 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 60 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 25 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 57 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 26 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 58 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 27 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 59 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 16 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 48 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 19 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 51 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 20 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 52 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 17 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  0 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  8 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  9 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 10 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 14 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 34 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 38 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 39 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 40 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 41 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 42 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 43 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 46 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 47 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 15 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 13 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 12 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  7 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  5 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  4 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 11 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 29 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 30 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 31 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 21 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 22 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 23 & d_26 ==  0 & c3_16 = c3_16 
+  | (ADDI) op == 45 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.v) op == 45 & ext_20 ==  1 & c3_16 = c3_16 
+  | (ADDI.t) op == 44 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.t.v) op == 44 & ext_20 ==  1 & c3_16 = c3_16 
+  | (SUBI) op == 37 & ext_20 ==  0 & c3_16 = c3_16 
+  | (SUBI.v) op == 37 & ext_20 ==  1 & c3_16 = c3_16
+after binding patlabel names we have case arm (arith_w) op ==  2 & 
+  ext6_20 == 24 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 56 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 28 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 60 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 25 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 57 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 26 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 58 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 27 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 59 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 16 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 48 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 19 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 51 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 20 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 52 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 17 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  0 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  8 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  9 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 10 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 14 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 34 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 38 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 39 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 40 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 41 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 42 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 43 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 46 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 47 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 15 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 13 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 12 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  7 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  5 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  4 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 11 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 29 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 30 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 31 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 21 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 22 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 23 & d_26 ==  0 & c3_16 = c3_16 
+  | (ADDI) op == 45 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.v) op == 45 & ext_20 ==  1 & c3_16 = c3_16 
+  | (ADDI.t) op == 44 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.t.v) op == 44 & ext_20 ==  1 & c3_16 = c3_16 
+  | (SUBI) op == 37 & ext_20 ==  0 & c3_16 = c3_16 
+  | (SUBI.v) op == 37 & ext_20 ==  1 & c3_16 = c3_16
+after setting offsets we have case arm (arith_w) op ==  2 & ext6_20 == 24 & 
+  d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 56 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 28 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 60 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 25 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 57 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 26 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 58 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 27 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 59 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 16 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 48 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 19 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 51 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 20 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 52 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 17 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  0 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  8 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  9 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 10 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 14 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 34 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 38 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 39 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 40 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 41 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 42 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 43 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 46 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 47 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 15 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 13 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 12 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  7 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  5 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 ==  4 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 11 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 29 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 30 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 31 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 21 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 22 & d_26 ==  0 & c3_16 = c3_16 
+  | (arith_w) op ==  2 & ext6_20 == 23 & d_26 ==  0 & c3_16 = c3_16 
+  | (ADDI) op == 45 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.v) op == 45 & ext_20 ==  1 & c3_16 = c3_16 
+  | (ADDI.t) op == 44 & ext_20 ==  0 & c3_16 = c3_16 
+  | (ADDI.t.v) op == 44 & ext_20 ==  1 & c3_16 = c3_16 
+  | (SUBI) op == 37 & ext_20 ==  0 & c3_16 = c3_16 
+  | (SUBI.v) op == 37 & ext_20 ==  1 & c3_16 = c3_16
+after anf+subst we have case arm (arith_w) LENGTH = 32, {op at 0} ==  2 & 
+  {ext6_20 at 0} == 24 & {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 56 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 28 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 60 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 25 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 57 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 26 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 58 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 27 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 59 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 16 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 48 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 19 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 51 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 20 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 52 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 17 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  0 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  8 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  9 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 10 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 14 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 34 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 38 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 39 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 40 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 41 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 42 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 43 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 46 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 47 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 15 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 13 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 12 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  7 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  5 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  4 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 11 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 29 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 30 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 31 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 21 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 22 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 23 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (ADDI) LENGTH = 32, {op at 0} == 45 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.v) LENGTH = 32, {op at 0} == 45 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.t) LENGTH = 32, {op at 0} == 44 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.t.v) LENGTH = 32, {op at 0} == 44 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16 
+  | (SUBI) LENGTH = 32, {op at 0} == 37 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (SUBI.v) LENGTH = 32, {op at 0} == 37 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16
+caught free variables:
+  freevars[c3_16] = c3_16 : integer
+Before simplification, case arm is 
+  (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 24 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 56 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 28 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 60 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 25 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 57 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 26 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 58 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 27 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 59 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 16 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 48 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 19 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 51 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 20 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 52 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 17 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  0 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  8 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  9 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 10 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 14 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 34 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 38 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 39 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 40 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 41 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 42 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 43 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 46 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 47 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 15 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 13 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 12 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  7 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  5 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  4 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 11 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 29 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 30 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 31 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 21 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 22 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (arith_w) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 23 & 
+  {d_26 at 0} ==  0 & {c3_16 at 0} = c3_16 
+  | (ADDI) LENGTH = 32, {op at 0} == 45 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.v) LENGTH = 32, {op at 0} == 45 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.t) LENGTH = 32, {op at 0} == 44 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (ADDI.t.v) LENGTH = 32, {op at 0} == 44 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16 
+  | (SUBI) LENGTH = 32, {op at 0} == 37 & {ext_20 at 0} ==  0 & 
+  {c3_16 at 0} = c3_16 
+  | (SUBI.v) LENGTH = 32, {op at 0} == 37 & {ext_20 at 0} ==  1 & 
+  {c3_16 at 0} = c3_16
+Case arm doesn't simplify
+Saw binding instances of c3_16
+Answers and conditions (record arm_87(10)) at length  (record solution_70(4)):
+  answers[c3_16] = {c3_16 at 0}
+(constraints:  )
+crhs for c_arith_dw is (arith_dw) op ==  2 & ext6_20 == 24 & d_26 ==  1 & 
+c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 56 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 28 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 60 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 25 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 57 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 26 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 58 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 27 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 59 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 16 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 48 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 19 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 51 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 20 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 52 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 17 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  0 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  8 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  9 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 10 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 14 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 34 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 38 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 39 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 40 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 41 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 42 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 43 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 46 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 47 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 15 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 13 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 12 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  7 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  5 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  4 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 11 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 29 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 30 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 31 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 21 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 22 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 23 & d_26 ==  1 & c3_16 = c3_16
+applied c_arith_dw to get (arith_dw) op ==  2 & ext6_20 == 24 & d_26 ==  1 & 
+c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 56 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 28 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 60 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 25 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 57 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 26 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 58 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 27 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 59 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 16 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 48 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 19 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 51 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 20 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 52 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 17 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  0 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  8 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  9 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 10 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 14 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 34 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 38 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 39 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 40 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 41 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 42 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 43 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 46 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 47 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 15 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 13 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 12 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  7 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  5 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 ==  4 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 11 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 29 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 30 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 31 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 21 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 22 & d_26 ==  1 & c3_16 = c3_16 
+| (arith_dw) op ==  2 & ext6_20 == 23 & d_26 ==  1 & c3_16 = c3_16
+after pnf we have case arm (arith_dw) op ==  2 & ext6_20 == 24 & d_26 ==  1 & 
+  c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 56 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 28 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 60 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 25 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 57 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 26 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 58 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 27 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 59 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 16 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 48 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 19 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 51 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 20 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 52 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 17 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  0 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  8 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  9 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 10 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 14 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 34 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 38 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 39 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 40 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 41 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 42 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 43 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 46 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 47 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 15 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 13 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 12 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  7 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  5 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  4 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 11 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 29 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 30 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 31 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 21 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 22 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 23 & d_26 ==  1 & c3_16 = c3_16
+after binding patlabel names we have case arm (arith_dw) op ==  2 & 
+  ext6_20 == 24 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 56 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 28 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 60 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 25 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 57 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 26 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 58 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 27 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 59 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 16 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 48 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 19 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 51 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 20 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 52 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 17 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  0 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  8 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  9 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 10 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 14 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 34 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 38 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 39 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 40 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 41 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 42 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 43 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 46 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 47 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 15 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 13 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 12 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  7 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  5 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  4 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 11 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 29 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 30 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 31 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 21 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 22 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 23 & d_26 ==  1 & c3_16 = c3_16
+after setting offsets we have case arm (arith_dw) op ==  2 & ext6_20 == 24 & 
+  d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 56 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 28 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 60 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 25 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 57 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 26 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 58 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 27 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 59 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 16 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 48 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 19 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 51 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 20 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 52 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 17 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  0 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  8 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  9 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 10 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 14 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 34 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 38 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 39 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 40 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 41 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 42 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 43 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 46 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 47 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 15 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 13 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 12 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  7 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  5 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 ==  4 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 11 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 29 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 30 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 31 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 21 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 22 & d_26 ==  1 & c3_16 = c3_16 
+  | (arith_dw) op ==  2 & ext6_20 == 23 & d_26 ==  1 & c3_16 = c3_16
+after anf+subst we have case arm (arith_dw) LENGTH = 32, {op at 0} ==  2 & 
+  {ext6_20 at 0} == 24 & {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 56 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 28 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 60 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 25 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 57 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 26 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 58 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 27 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 59 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 16 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 48 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 19 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 51 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 20 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 52 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 17 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  0 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  8 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  9 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 10 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 14 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 34 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 38 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 39 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 40 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 41 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 42 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 43 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 46 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 47 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 15 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 13 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 12 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  7 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  5 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  4 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 11 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 29 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 30 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 31 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 21 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 22 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 23 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16
+caught free variables:
+  freevars[c3_16] = c3_16 : integer
+Before simplification, case arm is 
+  (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 24 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 56 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 28 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 60 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 25 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 57 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 26 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 58 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 27 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 59 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 16 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 48 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 19 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 51 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 20 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 52 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 17 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  0 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  8 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  9 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 10 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 14 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 34 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 38 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 39 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 40 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 41 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 42 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 43 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 46 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 47 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 15 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 13 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 12 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  7 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  5 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  4 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 11 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 29 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 30 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 31 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 21 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 22 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16 
+  | (arith_dw) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} == 23 & 
+  {d_26 at 0} ==  1 & {c3_16 at 0} = c3_16
+Case arm doesn't simplify
+Saw binding instances of c3_16
+Answers and conditions (record arm_88(10)) at length  (record solution_70(4)):
+  answers[c3_16] = {c3_16 at 0}
+(constraints:  )
+crhs for c_cmpb_w is (COMBT) op == 32 & c3_16 = c3_16 
+| (COMBF) op == 34 & c3_16 = c3_16 
+| (COMIBT) op == 33 & c3_16 = c3_16 
+| (COMIBF) op == 35 & c3_16 = c3_16
+applied c_cmpb_w to get (COMBT) op == 32 & c3_16 = c3_16 
+| (COMBF) op == 34 & c3_16 = c3_16 
+| (COMIBT) op == 33 & c3_16 = c3_16 
+| (COMIBF) op == 35 & c3_16 = c3_16
+after pnf we have case arm (COMBT) op == 32 & c3_16 = c3_16 
+  | (COMBF) op == 34 & c3_16 = c3_16 
+  | (COMIBT) op == 33 & c3_16 = c3_16 
+  | (COMIBF) op == 35 & c3_16 = c3_16
+after binding patlabel names we have case arm (COMBT) op == 32 & c3_16 = c3_16 
+  | (COMBF) op == 34 & c3_16 = c3_16 
+  | (COMIBT) op == 33 & c3_16 = c3_16 
+  | (COMIBF) op == 35 & c3_16 = c3_16
+after setting offsets we have case arm (COMBT) op == 32 & c3_16 = c3_16 
+  | (COMBF) op == 34 & c3_16 = c3_16 
+  | (COMIBT) op == 33 & c3_16 = c3_16 
+  | (COMIBF) op == 35 & c3_16 = c3_16
+after anf+subst we have case arm (COMBT) LENGTH = 32, {op at 0} == 32 & 
+  {c3_16 at 0} = c3_16 
+  | (COMBF) LENGTH = 32, {op at 0} == 34 & {c3_16 at 0} = c3_16 
+  | (COMIBT) LENGTH = 32, {op at 0} == 33 & {c3_16 at 0} = c3_16 
+  | (COMIBF) LENGTH = 32, {op at 0} == 35 & {c3_16 at 0} = c3_16
+caught free variables:
+  freevars[c3_16] = c3_16 : integer
+Before simplification, case arm is 
+  (COMBT) LENGTH = 32, {op at 0} == 32 & {c3_16 at 0} = c3_16 
+  | (COMBF) LENGTH = 32, {op at 0} == 34 & {c3_16 at 0} = c3_16 
+  | (COMIBT) LENGTH = 32, {op at 0} == 33 & {c3_16 at 0} = c3_16 
+  | (COMIBF) LENGTH = 32, {op at 0} == 35 & {c3_16 at 0} = c3_16
+Case arm doesn't simplify
+Saw binding instances of c3_16
+Answers and conditions (record arm_89(10)) at length  (record solution_70(4)):
+  answers[c3_16] = {c3_16 at 0}
+(constraints:  )
+crhs for c_cmpb_dw is (CMPBdwt) op == 39 & c3_16 = c3_16 
+| (CMPBdwf) op == 47 & c3_16 = c3_16 
+| (CMPIBdw) op == 59 & c3_16 = c3_16
+applied c_cmpb_dw to get (CMPBdwt) op == 39 & c3_16 = c3_16 
+| (CMPBdwf) op == 47 & c3_16 = c3_16 
+| (CMPIBdw) op == 59 & c3_16 = c3_16
+after pnf we have case arm (CMPBdwt) op == 39 & c3_16 = c3_16 
+  | (CMPBdwf) op == 47 & c3_16 = c3_16 
+  | (CMPIBdw) op == 59 & c3_16 = c3_16
+after binding patlabel names we have case arm (CMPBdwt) op == 39 & 
+  c3_16 = c3_16 
+  | (CMPBdwf) op == 47 & c3_16 = c3_16 
+  | (CMPIBdw) op == 59 & c3_16 = c3_16
+after setting offsets we have case arm (CMPBdwt) op == 39 & c3_16 = c3_16 
+  | (CMPBdwf) op == 47 & c3_16 = c3_16 
+  | (CMPIBdw) op == 59 & c3_16 = c3_16
+after anf+subst we have case arm (CMPBdwt) LENGTH = 32, {op at 0} == 39 & 
+  {c3_16 at 0} = c3_16 
+  | (CMPBdwf) LENGTH = 32, {op at 0} == 47 & {c3_16 at 0} = c3_16 
+  | (CMPIBdw) LENGTH = 32, {op at 0} == 59 & {c3_16 at 0} = c3_16
+caught free variables:
+  freevars[c3_16] = c3_16 : integer
+Before simplification, case arm is 
+  (CMPBdwt) LENGTH = 32, {op at 0} == 39 & {c3_16 at 0} = c3_16 
+  | (CMPBdwf) LENGTH = 32, {op at 0} == 47 & {c3_16 at 0} = c3_16 
+  | (CMPIBdw) LENGTH = 32, {op at 0} == 59 & {c3_16 at 0} = c3_16
+Case arm doesn't simplify
+Saw binding instances of c3_16
+Answers and conditions (record arm_90(10)) at length  (record solution_70(4)):
+  answers[c3_16] = {c3_16 at 0}
+(constraints:  )
+crhs for c_bbs_w is (ins_bbs_w) op == 49 & d_18 ==  0 & c_16 = c_16 
+| (ins_bbs_w) op == 48 & d_18 ==  0 & c_16 = c_16
+applied c_bbs_w to get (ins_bbs_w) op == 49 & d_18 ==  0 & c_16 = c_16 
+| (ins_bbs_w) op == 48 & d_18 ==  0 & c_16 = c_16
+after pnf we have case arm (ins_bbs_w) op == 49 & d_18 ==  0 & c_16 = c_16 
+  | (ins_bbs_w) op == 48 & d_18 ==  0 & c_16 = c_16
+after binding patlabel names we have case arm (ins_bbs_w) op == 49 & 
+  d_18 ==  0 & c_16 = c_16 
+  | (ins_bbs_w) op == 48 & d_18 ==  0 & c_16 = c_16
+after setting offsets we have case arm (ins_bbs_w) op == 49 & d_18 ==  0 & 
+  c_16 = c_16 
+  | (ins_bbs_w) op == 48 & d_18 ==  0 & c_16 = c_16
+after anf+subst we have case arm (ins_bbs_w) LENGTH = 32, {op at 0} == 49 & 
+  {d_18 at 0} ==  0 & {c_16 at 0} = c_16 
+  | (ins_bbs_w) LENGTH = 32, {op at 0} == 48 & {d_18 at 0} ==  0 & 
+  {c_16 at 0} = c_16
+caught free variables:
+  freevars[c_16] = c_16 : integer
+Before simplification, case arm is 
+  (ins_bbs_w) LENGTH = 32, {op at 0} == 49 & {d_18 at 0} ==  0 & 
+  {c_16 at 0} = c_16 
+  | (ins_bbs_w) LENGTH = 32, {op at 0} == 48 & {d_18 at 0} ==  0 & 
+  {c_16 at 0} = c_16
+Case arm doesn't simplify
+Saw binding instances of c_16
+Answers and conditions (record arm_91(10)) at length  (record solution_272(4)):
+  answers[c_16] = {c_16 at 0}
+(constraints:  )
+crhs for c_bbs_dw is (ins_bbs_dw) op == 49 & d_18 ==  1 & c_16 = c_16 
+| (ins_bbs_dw) op == 48 & d_18 ==  1 & c_16 = c_16
+applied c_bbs_dw to get (ins_bbs_dw) op == 49 & d_18 ==  1 & c_16 = c_16 
+| (ins_bbs_dw) op == 48 & d_18 ==  1 & c_16 = c_16
+after pnf we have case arm (ins_bbs_dw) op == 49 & d_18 ==  1 & c_16 = c_16 
+  | (ins_bbs_dw) op == 48 & d_18 ==  1 & c_16 = c_16
+after binding patlabel names we have case arm (ins_bbs_dw) op == 49 & 
+  d_18 ==  1 & c_16 = c_16 
+  | (ins_bbs_dw) op == 48 & d_18 ==  1 & c_16 = c_16
+after setting offsets we have case arm (ins_bbs_dw) op == 49 & d_18 ==  1 & 
+  c_16 = c_16 
+  | (ins_bbs_dw) op == 48 & d_18 ==  1 & c_16 = c_16
+after anf+subst we have case arm (ins_bbs_dw) LENGTH = 32, {op at 0} == 49 & 
+  {d_18 at 0} ==  1 & {c_16 at 0} = c_16 
+  | (ins_bbs_dw) LENGTH = 32, {op at 0} == 48 & {d_18 at 0} ==  1 & 
+  {c_16 at 0} = c_16
+caught free variables:
+  freevars[c_16] = c_16 : integer
+Before simplification, case arm is 
+  (ins_bbs_dw) LENGTH = 32, {op at 0} == 49 & {d_18 at 0} ==  1 & 
+  {c_16 at 0} = c_16 
+  | (ins_bbs_dw) LENGTH = 32, {op at 0} == 48 & {d_18 at 0} ==  1 & 
+  {c_16 at 0} = c_16
+Case arm doesn't simplify
+Saw binding instances of c_16
+Answers and conditions (record arm_92(10)) at length  (record solution_272(4)):
+  answers[c_16] = {c_16 at 0}
+(constraints:  )
+crhs for c_arith_none is (ins_arith_none) op == 10
+applied c_arith_none to get (ins_arith_none) op == 10
+after pnf we have case arm (ins_arith_none) op == 10
+after binding patlabel names we have case arm (ins_arith_none) op == 10
+after setting offsets we have case arm (ins_arith_none) op == 10
+after anf+subst we have case arm (ins_arith_none) LENGTH = 32, {op at 0} == 10
+Before simplification, case arm is (ins_arith_none) LENGTH = 32, {op at 0} == 10
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_93(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_94(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for addr_index is (LDBX) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+x_11 = x & s2_16 = ss & b_06 = b 
+| (LDHX) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDWAX) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDCWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & x_11 = x & s2_16 = ss & 
+b_06 = b
+applied addr_index to get (LDBX) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+x_11 = x & s2_16 = ss & b_06 = b 
+| (LDHX) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDWAX) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & x_11 = x & s2_16 = ss & 
+b_06 = b 
+| (LDCWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & x_11 = x & s2_16 = ss & 
+b_06 = b
+after pnf we have case arm (LDBX) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+  x_11 = x & s2_16 = ss & b_06 = b 
+  | (LDHX) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWAX) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDCWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & x_11 = x & s2_16 = ss & 
+  b_06 = b
+after binding patlabel names we have case arm (LDBX) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & x_11 = x & s2_16 = ss & b_06 = b 
+  | (LDHX) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWAX) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDCWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & x_11 = x & s2_16 = ss & 
+  b_06 = b
+after setting offsets we have case arm (LDBX) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & x_11 = x & s2_16 = ss & b_06 = b 
+  | (LDHX) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDWAX) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & x_11 = x & s2_16 = ss & 
+  b_06 = b 
+  | (LDCWX) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & x_11 = x & s2_16 = ss & 
+  b_06 = b
+after anf+subst we have case arm (LDBX) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  0 & {ext4_22 at 0} ==  0 & {x_11 at 0} = x & 
+  {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDHX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWAX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDCWX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[ss] = ss : integer
+  freevars[x] = x : integer
+Before simplification, case arm is 
+  (LDBX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  0 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDHX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWAX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDCWX) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {x_11 at 0} = x & {s2_16 at 0} = ss & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, ss, and x
+Answers and conditions (record arm_95(10)) at length  (record solution_284(4)):
+  answers[b] = {b_06 at 0}
+  answers[ss] = {s2_16 at 0}
+  answers[x] = {x_11 at 0}
+(constraints:  )
+crhs for addr_lsdisp is (LDBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  0 & 
+im4_11 = im5[28:3] & im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDWAS) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDCWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b
+applied addr_lsdisp to get (LDBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  0 & 
+im4_11 = im5[28:3] & im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDWAS) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+| (LDCWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & im4_11 = im5[28:3] & 
+im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b
+after pnf we have case arm (LDBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  0 & 
+  im4_11 = im5[28:3] & im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWAS) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDCWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b
+after binding patlabel names we have case arm (LDBS) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & im4_11 = im5[28:3] & im1_15 = im5[0:31][1!] & s2_16 = ss & 
+  b_06 = b 
+  | (LDHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWAS) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDCWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b
+after setting offsets we have case arm (LDBS) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & im4_11 = im5[28:3] & im1_15 = im5[0:31][1!] & s2_16 = ss & 
+  b_06 = b 
+  | (LDHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDWAS) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b 
+  | (LDCWS) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & im4_11 = im5[28:3] & 
+  im1_15 = im5[0:31][1!] & s2_16 = ss & b_06 = b
+after anf+subst we have case arm (LDBS) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  1 & {ext4_22 at 0} ==  0 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDHS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWAS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDCWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[im5] = im5 : integer
+  freevars[ss] = ss : integer
+Before simplification, case arm is 
+  (LDBS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  0 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDHS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWAS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDCWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {im4_11 at 0} = im5[28:3] & 
+  {im1_15 at 0} = im5[0:31][1!] & {s2_16 at 0} = ss & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, im5, and ss
+Answers and conditions (record arm_96(10)) at length  (record solution_294(4)):
+  answers[b] = {b_06 at 0}
+  answers[im5] = {im1_15 at 0}!1
+  answers[ss] = {s2_16 at 0}
+(constraints: {im4_11 at 0} = {im1_15 at 0}!1[28:3] )
+crhs for addr_ssdisp is (STBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & 
+i_31 = im5[0:31][1!] & im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STWS) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STBYS) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STWAS) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b
+applied addr_ssdisp to get (STBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & 
+i_31 = im5[0:31][1!] & im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STWS) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STBYS) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+| (STWAS) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & i_31 = im5[0:31][1!] & 
+im4_27 = im5[28:3] & s2_16 = ss & b_06 = b
+after pnf we have case arm (STBS) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & 
+  i_31 = im5[0:31][1!] & im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWS) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STBYS) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWAS) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b
+after binding patlabel names we have case arm (STBS) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  8 & i_31 = im5[0:31][1!] & im4_27 = im5[28:3] & s2_16 = ss & 
+  b_06 = b 
+  | (STHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWS) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STBYS) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWAS) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b
+after setting offsets we have case arm (STBS) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  8 & i_31 = im5[0:31][1!] & im4_27 = im5[28:3] & s2_16 = ss & 
+  b_06 = b 
+  | (STHS) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWS) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STBYS) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b 
+  | (STWAS) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & i_31 = im5[0:31][1!] & 
+  im4_27 = im5[28:3] & s2_16 = ss & b_06 = b
+after anf+subst we have case arm (STBS) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  1 & {ext4_22 at 0} ==  8 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STHS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STBYS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWAS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[im5] = im5 : integer
+  freevars[ss] = ss : integer
+Before simplification, case arm is 
+  (STBS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  8 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STHS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STBYS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWAS) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {i_31 at 0} = im5[0:31][1!] & 
+  {im4_27 at 0} = im5[28:3] & {s2_16 at 0} = ss & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, im5, and ss
+Answers and conditions (record arm_97(10)) at length  (record solution_304(4)):
+  answers[b] = {b_06 at 0}
+  answers[im5] = {i_31 at 0}!1
+  answers[ss] = {s2_16 at 0}
+(constraints: {im4_27 at 0} = {i_31 at 0}!1[28:3] )
+crhs for addr_lldisp is (LDB) op == 16 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+| (LDH) op == 17 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (LDW) op == 18 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (LDWM) op == 19 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b
+applied addr_lldisp to get (LDB) op == 16 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+| (LDH) op == 17 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (LDW) op == 18 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (LDWM) op == 19 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b
+after pnf we have case arm (LDB) op == 16 & i_31 = ldisp[0:31][1!] & 
+  im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (LDH) op == 17 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDW) op == 18 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDWM) op == 19 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after binding patlabel names we have case arm (LDB) op == 16 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (LDH) op == 17 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDW) op == 18 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDWM) op == 19 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after setting offsets we have case arm (LDB) op == 16 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (LDH) op == 17 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDW) op == 18 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (LDWM) op == 19 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after anf+subst we have case arm (LDB) LENGTH = 32, {op at 0} == 16 & 
+  {i_31 at 0} = ldisp[0:31][1!] & {im13_18 at 0} = ldisp[19:12] & 
+  {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDH) LENGTH = 32, {op at 0} == 17 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDW) LENGTH = 32, {op at 0} == 18 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWM) LENGTH = 32, {op at 0} == 19 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[ldisp] = ldisp : integer
+  freevars[ss] = ss : integer
+Before simplification, case arm is 
+  (LDB) LENGTH = 32, {op at 0} == 16 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDH) LENGTH = 32, {op at 0} == 17 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDW) LENGTH = 32, {op at 0} == 18 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (LDWM) LENGTH = 32, {op at 0} == 19 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, ldisp, and ss
+Answers and conditions (record arm_98(10)) at length  (record solution_314(4)):
+  answers[b] = {b_06 at 0}
+  answers[ldisp] = {i_31 at 0}!1
+  answers[ss] = {s2_16 at 0}
+(constraints: {im13_18 at 0} = {i_31 at 0}!1[19:12] )
+crhs for addr_sldisp is (STB) op == 24 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+| (STH) op == 25 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (STW) op == 26 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (STWM) op == 27 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b
+applied addr_sldisp to get (STB) op == 24 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+| (STH) op == 25 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (STW) op == 26 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b 
+| (STWM) op == 27 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+s2_16 = ss & b_06 = b
+after pnf we have case arm (STB) op == 24 & i_31 = ldisp[0:31][1!] & 
+  im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (STH) op == 25 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STW) op == 26 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STWM) op == 27 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after binding patlabel names we have case arm (STB) op == 24 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (STH) op == 25 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STW) op == 26 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STWM) op == 27 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after setting offsets we have case arm (STB) op == 24 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & s2_16 = ss & b_06 = b 
+  | (STH) op == 25 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STW) op == 26 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b 
+  | (STWM) op == 27 & i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & 
+  s2_16 = ss & b_06 = b
+after anf+subst we have case arm (STB) LENGTH = 32, {op at 0} == 24 & 
+  {i_31 at 0} = ldisp[0:31][1!] & {im13_18 at 0} = ldisp[19:12] & 
+  {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STH) LENGTH = 32, {op at 0} == 25 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STW) LENGTH = 32, {op at 0} == 26 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWM) LENGTH = 32, {op at 0} == 27 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[ldisp] = ldisp : integer
+  freevars[ss] = ss : integer
+Before simplification, case arm is 
+  (STB) LENGTH = 32, {op at 0} == 24 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STH) LENGTH = 32, {op at 0} == 25 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STW) LENGTH = 32, {op at 0} == 26 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b 
+  | (STWM) LENGTH = 32, {op at 0} == 27 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {s2_16 at 0} = ss & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, ldisp, and ss
+Answers and conditions (record arm_99(10)) at length  (record solution_314(4)):
+  answers[b] = {b_06 at 0}
+  answers[ldisp] = {i_31 at 0}!1
+  answers[ss] = {s2_16 at 0}
+(constraints: {im13_18 at 0} = {i_31 at 0}!1[19:12] )
+crhs for addr_ldo is (LDO) op == 13 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & b_06 = b
+applied addr_ldo to get (LDO) op == 13 & i_31 = ldisp[0:31][1!] & 
+im13_18 = ldisp[19:12] & b_06 = b
+after pnf we have case arm (LDO) op == 13 & i_31 = ldisp[0:31][1!] & 
+  im13_18 = ldisp[19:12] & b_06 = b
+after binding patlabel names we have case arm (LDO) op == 13 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & b_06 = b
+after setting offsets we have case arm (LDO) op == 13 & 
+  i_31 = ldisp[0:31][1!] & im13_18 = ldisp[19:12] & b_06 = b
+after anf+subst we have case arm (LDO) LENGTH = 32, {op at 0} == 13 & 
+  {i_31 at 0} = ldisp[0:31][1!] & {im13_18 at 0} = ldisp[19:12] & 
+  {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[ldisp] = ldisp : integer
+Before simplification, case arm is 
+  (LDO) LENGTH = 32, {op at 0} == 13 & {i_31 at 0} = ldisp[0:31][1!] & 
+  {im13_18 at 0} = ldisp[19:12] & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b and ldisp
+Answers and conditions (record arm_100(10)) at length  (record solution_330(4)):
+  answers[b] = {b_06 at 0}
+  answers[ldisp] = {i_31 at 0}!1
+(constraints: {im13_18 at 0} = {i_31 at 0}!1[19:12] )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_101(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_mfctl is (MFCTL) op ==  0 & ext8_19 == 69 & ext_17 ==  0 & 
+r_06 = r_06
+applied c_mfctl to get (MFCTL) op ==  0 & ext8_19 == 69 & ext_17 ==  0 & 
+r_06 = r_06
+after pnf we have case arm (MFCTL) op ==  0 & ext8_19 == 69 & ext_17 ==  0 & 
+  r_06 = r_06
+after binding patlabel names we have case arm (MFCTL) op ==  0 & 
+  ext8_19 == 69 & ext_17 ==  0 & r_06 = r_06
+after setting offsets we have case arm (MFCTL) op ==  0 & ext8_19 == 69 & 
+  ext_17 ==  0 & r_06 = r_06
+after anf+subst we have case arm (MFCTL) LENGTH = 32, {op at 0} ==  0 & 
+  {ext8_19 at 0} == 69 & {ext_17 at 0} ==  0 & {r_06 at 0} = r_06
+caught free variables:
+  freevars[r_06] = r_06 : integer
+Before simplification, case arm is 
+  (MFCTL) LENGTH = 32, {op at 0} ==  0 & {ext8_19 at 0} == 69 & 
+  {ext_17 at 0} ==  0 & {r_06 at 0} = r_06
+Case arm doesn't simplify
+Saw binding instances of r_06
+Answers and conditions (record arm_102(10)) at length  (record solution_334(4)):
+  answers[r_06] = {r_06 at 0}
+(constraints:  )
+crhs for c_mfctl_w is (MFCTL.w) op ==  0 & ext8_19 == 69 & ext_17 ==  1
+applied c_mfctl_w to get (MFCTL.w) op ==  0 & ext8_19 == 69 & ext_17 ==  1
+after pnf we have case arm (MFCTL.w) op ==  0 & ext8_19 == 69 & ext_17 ==  1
+after binding patlabel names we have case arm (MFCTL.w) op ==  0 & 
+  ext8_19 == 69 & ext_17 ==  1
+after setting offsets we have case arm (MFCTL.w) op ==  0 & ext8_19 == 69 & 
+  ext_17 ==  1
+after anf+subst we have case arm (MFCTL.w) LENGTH = 32, {op at 0} ==  0 & 
+  {ext8_19 at 0} == 69 & {ext_17 at 0} ==  1
+Before simplification, case arm is 
+  (MFCTL.w) LENGTH = 32, {op at 0} ==  0 & {ext8_19 at 0} == 69 & 
+  {ext_17 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_103(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_104(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_br_nnull is (ins_br_nnull) op == 58 & n_30 ==  0 
+| (ins_br_nnull) op == 32 & n_30 ==  0 
+| (ins_br_nnull) op == 34 & n_30 ==  0 
+| (ins_br_nnull) op == 39 & n_30 ==  0 
+| (ins_br_nnull) op == 47 & n_30 ==  0 
+| (ins_br_nnull) op == 33 & n_30 ==  0 
+| (ins_br_nnull) op == 35 & n_30 ==  0 
+| (ins_br_nnull) op == 59 & n_30 ==  0 
+| (ins_br_nnull) op == 49 & n_30 ==  0 
+| (ins_br_nnull) op == 48 & n_30 ==  0 
+| (ins_br_nnull) op == 56 & n_30 ==  0 
+| (ins_br_nnull) op == 57 & n_30 ==  0
+applied c_br_nnull to get (ins_br_nnull) op == 58 & n_30 ==  0 
+| (ins_br_nnull) op == 32 & n_30 ==  0 
+| (ins_br_nnull) op == 34 & n_30 ==  0 
+| (ins_br_nnull) op == 39 & n_30 ==  0 
+| (ins_br_nnull) op == 47 & n_30 ==  0 
+| (ins_br_nnull) op == 33 & n_30 ==  0 
+| (ins_br_nnull) op == 35 & n_30 ==  0 
+| (ins_br_nnull) op == 59 & n_30 ==  0 
+| (ins_br_nnull) op == 49 & n_30 ==  0 
+| (ins_br_nnull) op == 48 & n_30 ==  0 
+| (ins_br_nnull) op == 56 & n_30 ==  0 
+| (ins_br_nnull) op == 57 & n_30 ==  0
+after pnf we have case arm (ins_br_nnull) op == 58 & n_30 ==  0 
+  | (ins_br_nnull) op == 32 & n_30 ==  0 
+  | (ins_br_nnull) op == 34 & n_30 ==  0 
+  | (ins_br_nnull) op == 39 & n_30 ==  0 
+  | (ins_br_nnull) op == 47 & n_30 ==  0 
+  | (ins_br_nnull) op == 33 & n_30 ==  0 
+  | (ins_br_nnull) op == 35 & n_30 ==  0 
+  | (ins_br_nnull) op == 59 & n_30 ==  0 
+  | (ins_br_nnull) op == 49 & n_30 ==  0 
+  | (ins_br_nnull) op == 48 & n_30 ==  0 
+  | (ins_br_nnull) op == 56 & n_30 ==  0 
+  | (ins_br_nnull) op == 57 & n_30 ==  0
+after binding patlabel names we have case arm (ins_br_nnull) op == 58 & 
+  n_30 ==  0 
+  | (ins_br_nnull) op == 32 & n_30 ==  0 
+  | (ins_br_nnull) op == 34 & n_30 ==  0 
+  | (ins_br_nnull) op == 39 & n_30 ==  0 
+  | (ins_br_nnull) op == 47 & n_30 ==  0 
+  | (ins_br_nnull) op == 33 & n_30 ==  0 
+  | (ins_br_nnull) op == 35 & n_30 ==  0 
+  | (ins_br_nnull) op == 59 & n_30 ==  0 
+  | (ins_br_nnull) op == 49 & n_30 ==  0 
+  | (ins_br_nnull) op == 48 & n_30 ==  0 
+  | (ins_br_nnull) op == 56 & n_30 ==  0 
+  | (ins_br_nnull) op == 57 & n_30 ==  0
+after setting offsets we have case arm (ins_br_nnull) op == 58 & n_30 ==  0 
+  | (ins_br_nnull) op == 32 & n_30 ==  0 
+  | (ins_br_nnull) op == 34 & n_30 ==  0 
+  | (ins_br_nnull) op == 39 & n_30 ==  0 
+  | (ins_br_nnull) op == 47 & n_30 ==  0 
+  | (ins_br_nnull) op == 33 & n_30 ==  0 
+  | (ins_br_nnull) op == 35 & n_30 ==  0 
+  | (ins_br_nnull) op == 59 & n_30 ==  0 
+  | (ins_br_nnull) op == 49 & n_30 ==  0 
+  | (ins_br_nnull) op == 48 & n_30 ==  0 
+  | (ins_br_nnull) op == 56 & n_30 ==  0 
+  | (ins_br_nnull) op == 57 & n_30 ==  0
+after anf+subst we have case arm (ins_br_nnull) LENGTH = 32, {op at 0} == 58 & 
+  {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 32 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 34 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 39 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 47 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 33 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 35 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 59 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 49 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 48 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 56 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 57 & {n_30 at 0} ==  0
+Before simplification, case arm is 
+  (ins_br_nnull) LENGTH = 32, {op at 0} == 58 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 32 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 34 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 39 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 47 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 33 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 35 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 59 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 49 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 48 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 56 & {n_30 at 0} ==  0 
+  | (ins_br_nnull) LENGTH = 32, {op at 0} == 57 & {n_30 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_105(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_br_null is (ins_br_null) op == 58 & n_30 ==  1 
+| (ins_br_null) op == 32 & n_30 ==  1 
+| (ins_br_null) op == 34 & n_30 ==  1 
+| (ins_br_null) op == 39 & n_30 ==  1 
+| (ins_br_null) op == 47 & n_30 ==  1 
+| (ins_br_null) op == 33 & n_30 ==  1 
+| (ins_br_null) op == 35 & n_30 ==  1 
+| (ins_br_null) op == 59 & n_30 ==  1 
+| (ins_br_null) op == 49 & n_30 ==  1 
+| (ins_br_null) op == 48 & n_30 ==  1 
+| (ins_br_null) op == 56 & n_30 ==  1 
+| (ins_br_null) op == 57 & n_30 ==  1
+applied c_br_null to get (ins_br_null) op == 58 & n_30 ==  1 
+| (ins_br_null) op == 32 & n_30 ==  1 
+| (ins_br_null) op == 34 & n_30 ==  1 
+| (ins_br_null) op == 39 & n_30 ==  1 
+| (ins_br_null) op == 47 & n_30 ==  1 
+| (ins_br_null) op == 33 & n_30 ==  1 
+| (ins_br_null) op == 35 & n_30 ==  1 
+| (ins_br_null) op == 59 & n_30 ==  1 
+| (ins_br_null) op == 49 & n_30 ==  1 
+| (ins_br_null) op == 48 & n_30 ==  1 
+| (ins_br_null) op == 56 & n_30 ==  1 
+| (ins_br_null) op == 57 & n_30 ==  1
+after pnf we have case arm (ins_br_null) op == 58 & n_30 ==  1 
+  | (ins_br_null) op == 32 & n_30 ==  1 
+  | (ins_br_null) op == 34 & n_30 ==  1 
+  | (ins_br_null) op == 39 & n_30 ==  1 
+  | (ins_br_null) op == 47 & n_30 ==  1 
+  | (ins_br_null) op == 33 & n_30 ==  1 
+  | (ins_br_null) op == 35 & n_30 ==  1 
+  | (ins_br_null) op == 59 & n_30 ==  1 
+  | (ins_br_null) op == 49 & n_30 ==  1 
+  | (ins_br_null) op == 48 & n_30 ==  1 
+  | (ins_br_null) op == 56 & n_30 ==  1 
+  | (ins_br_null) op == 57 & n_30 ==  1
+after binding patlabel names we have case arm (ins_br_null) op == 58 & 
+  n_30 ==  1 
+  | (ins_br_null) op == 32 & n_30 ==  1 
+  | (ins_br_null) op == 34 & n_30 ==  1 
+  | (ins_br_null) op == 39 & n_30 ==  1 
+  | (ins_br_null) op == 47 & n_30 ==  1 
+  | (ins_br_null) op == 33 & n_30 ==  1 
+  | (ins_br_null) op == 35 & n_30 ==  1 
+  | (ins_br_null) op == 59 & n_30 ==  1 
+  | (ins_br_null) op == 49 & n_30 ==  1 
+  | (ins_br_null) op == 48 & n_30 ==  1 
+  | (ins_br_null) op == 56 & n_30 ==  1 
+  | (ins_br_null) op == 57 & n_30 ==  1
+after setting offsets we have case arm (ins_br_null) op == 58 & n_30 ==  1 
+  | (ins_br_null) op == 32 & n_30 ==  1 
+  | (ins_br_null) op == 34 & n_30 ==  1 
+  | (ins_br_null) op == 39 & n_30 ==  1 
+  | (ins_br_null) op == 47 & n_30 ==  1 
+  | (ins_br_null) op == 33 & n_30 ==  1 
+  | (ins_br_null) op == 35 & n_30 ==  1 
+  | (ins_br_null) op == 59 & n_30 ==  1 
+  | (ins_br_null) op == 49 & n_30 ==  1 
+  | (ins_br_null) op == 48 & n_30 ==  1 
+  | (ins_br_null) op == 56 & n_30 ==  1 
+  | (ins_br_null) op == 57 & n_30 ==  1
+after anf+subst we have case arm (ins_br_null) LENGTH = 32, {op at 0} == 58 & 
+  {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 32 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 34 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 39 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 47 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 33 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 35 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 59 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 49 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 48 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 56 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 57 & {n_30 at 0} ==  1
+Before simplification, case arm is 
+  (ins_br_null) LENGTH = 32, {op at 0} == 58 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 32 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 34 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 39 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 47 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 33 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 35 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 59 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 49 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 48 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 56 & {n_30 at 0} ==  1 
+  | (ins_br_null) LENGTH = 32, {op at 0} == 57 & {n_30 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_106(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_107(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_bitpos_w is (ins_bb_w) op == 49 & d_18 ==  0 & p_06 = p_06
+applied c_bitpos_w to get (ins_bb_w) op == 49 & d_18 ==  0 & p_06 = p_06
+after pnf we have case arm (ins_bb_w) op == 49 & d_18 ==  0 & p_06 = p_06
+after binding patlabel names we have case arm (ins_bb_w) op == 49 & 
+  d_18 ==  0 & p_06 = p_06
+after setting offsets we have case arm (ins_bb_w) op == 49 & d_18 ==  0 & 
+  p_06 = p_06
+after anf+subst we have case arm (ins_bb_w) LENGTH = 32, {op at 0} == 49 & 
+  {d_18 at 0} ==  0 & {p_06 at 0} = p_06
+caught free variables:
+  freevars[p_06] = p_06 : integer
+Before simplification, case arm is 
+  (ins_bb_w) LENGTH = 32, {op at 0} == 49 & {d_18 at 0} ==  0 & 
+  {p_06 at 0} = p_06
+Case arm doesn't simplify
+Saw binding instances of p_06
+Answers and conditions (record arm_108(10)) at length  (record solution_390(4)):
+  answers[p_06] = {p_06 at 0}
+(constraints:  )
+crhs for c_bitpos_dw is (ins_bb_dw) op == 49 & d_18 ==  1 & p_06 = p_06
+applied c_bitpos_dw to get (ins_bb_dw) op == 49 & d_18 ==  1 & p_06 = p_06
+after pnf we have case arm (ins_bb_dw) op == 49 & d_18 ==  1 & p_06 = p_06
+after binding patlabel names we have case arm (ins_bb_dw) op == 49 & 
+  d_18 ==  1 & p_06 = p_06
+after setting offsets we have case arm (ins_bb_dw) op == 49 & d_18 ==  1 & 
+  p_06 = p_06
+after anf+subst we have case arm (ins_bb_dw) LENGTH = 32, {op at 0} == 49 & 
+  {d_18 at 0} ==  1 & {p_06 at 0} = p_06
+caught free variables:
+  freevars[p_06] = p_06 : integer
+Before simplification, case arm is 
+  (ins_bb_dw) LENGTH = 32, {op at 0} == 49 & {d_18 at 0} ==  1 & 
+  {p_06 at 0} = p_06
+Case arm doesn't simplify
+Saw binding instances of p_06
+Answers and conditions (record arm_109(10)) at length  (record solution_390(4)):
+  answers[p_06] = {p_06 at 0}
+(constraints:  )
+crhs for c_bitsar is (BVB) op == 48
+applied c_bitsar to get (BVB) op == 48
+after pnf we have case arm (BVB) op == 48
+after binding patlabel names we have case arm (BVB) op == 48
+after setting offsets we have case arm (BVB) op == 48
+after anf+subst we have case arm (BVB) LENGTH = 32, {op at 0} == 48
+Before simplification, case arm is (BVB) LENGTH = 32, {op at 0} == 48
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_110(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_111(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_addr_mb is (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  0 & 
+a_18 ==  1 & m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  1 & 
+m_26 ==  1
+applied c_addr_mb to get (pc_addr_mb) op ==  3 & addr_19 ==  1 & 
+ext4_22 ==  0 & a_18 ==  1 & m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  1 & 
+m_26 ==  1
+after pnf we have case arm (pc_addr_mb) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & a_18 ==  1 & m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  1 & 
+  m_26 ==  1
+after binding patlabel names we have case arm (pc_addr_mb) op ==  3 & 
+  addr_19 ==  1 & ext4_22 ==  0 & a_18 ==  1 & m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  1 & 
+  m_26 ==  1
+after setting offsets we have case arm (pc_addr_mb) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & a_18 ==  1 & m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_mb) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  1 & 
+  m_26 ==  1
+after anf+subst we have case arm (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  1 & {ext4_22 at 0} ==  0 & {a_18 at 0} ==  1 & 
+  {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  8 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1
+Before simplification, case arm is 
+  (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  0 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  8 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_mb) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {a_18 at 0} ==  1 & {m_26 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_112(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_addr_ma is (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  0 & 
+a_18 ==  0 & m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  0 & 
+m_26 ==  1
+applied c_addr_ma to get (pc_addr_ma) op ==  3 & addr_19 ==  1 & 
+ext4_22 ==  0 & a_18 ==  0 & m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  0 & 
+m_26 ==  1
+after pnf we have case arm (pc_addr_ma) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & a_18 ==  0 & m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  0 & 
+  m_26 ==  1
+after binding patlabel names we have case arm (pc_addr_ma) op ==  3 & 
+  addr_19 ==  1 & ext4_22 ==  0 & a_18 ==  0 & m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  0 & 
+  m_26 ==  1
+after setting offsets we have case arm (pc_addr_ma) op ==  3 & addr_19 ==  1 & 
+  ext4_22 ==  0 & a_18 ==  0 & m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  1 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  2 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  6 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  7 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  8 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 ==  9 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 10 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 12 & a_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_ma) op ==  3 & addr_19 ==  1 & ext4_22 == 14 & a_18 ==  0 & 
+  m_26 ==  1
+after anf+subst we have case arm (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  1 & {ext4_22 at 0} ==  0 & {a_18 at 0} ==  0 & 
+  {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  8 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1
+Before simplification, case arm is 
+  (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  0 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  1 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  2 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  6 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  7 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  8 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} ==  9 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 10 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 12 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_ma) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  1 & 
+  {ext4_22 at 0} == 14 & {a_18 at 0} ==  0 & {m_26 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_113(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_addr_s is (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+u_18 ==  1 & m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & m_26 ==  0
+applied c_addr_s to get (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+u_18 ==  1 & m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+m_26 ==  0 
+| (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & m_26 ==  0
+after pnf we have case arm (pc_addr_s) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  1 & m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  0
+after binding patlabel names we have case arm (pc_addr_s) op ==  3 & 
+  addr_19 ==  0 & ext4_22 ==  0 & u_18 ==  1 & m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  0
+after setting offsets we have case arm (pc_addr_s) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  1 & m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  0 
+  | (pc_addr_s) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  0
+after anf+subst we have case arm (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  0 & {ext4_22 at 0} ==  0 & {u_18 at 0} ==  1 & 
+  {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0
+Before simplification, case arm is 
+  (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  0 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0 
+  | (pc_addr_s) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  1 & {m_26 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_114(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_addr_m is (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+u_18 ==  0 & m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  0 & m_26 ==  1
+applied c_addr_m to get (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+u_18 ==  0 & m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  0 & 
+m_26 ==  1 
+| (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  0 & m_26 ==  1
+after pnf we have case arm (pc_addr_m) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  0 & m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  0 & 
+  m_26 ==  1
+after binding patlabel names we have case arm (pc_addr_m) op ==  3 & 
+  addr_19 ==  0 & ext4_22 ==  0 & u_18 ==  0 & m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  0 & 
+  m_26 ==  1
+after setting offsets we have case arm (pc_addr_m) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  0 & m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  0 & 
+  m_26 ==  1 
+  | (pc_addr_m) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  0 & 
+  m_26 ==  1
+after anf+subst we have case arm (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  0 & {ext4_22 at 0} ==  0 & {u_18 at 0} ==  0 & 
+  {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1
+Before simplification, case arm is 
+  (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  0 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1 
+  | (pc_addr_m) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  0 & {m_26 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_115(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for c_addr_sm is (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  0 & 
+u_18 ==  1 & m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+m_26 ==  1
+applied c_addr_sm to get (pc_addr_sm) op ==  3 & addr_19 ==  0 & 
+ext4_22 ==  0 & u_18 ==  1 & m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+m_26 ==  1 
+| (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+m_26 ==  1
+after pnf we have case arm (pc_addr_sm) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  1 & m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  1
+after binding patlabel names we have case arm (pc_addr_sm) op ==  3 & 
+  addr_19 ==  0 & ext4_22 ==  0 & u_18 ==  1 & m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  1
+after setting offsets we have case arm (pc_addr_sm) op ==  3 & addr_19 ==  0 & 
+  ext4_22 ==  0 & u_18 ==  1 & m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  1 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  2 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  6 & u_18 ==  1 & 
+  m_26 ==  1 
+  | (pc_addr_sm) op ==  3 & addr_19 ==  0 & ext4_22 ==  7 & u_18 ==  1 & 
+  m_26 ==  1
+after anf+subst we have case arm (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & 
+  {addr_19 at 0} ==  0 & {ext4_22 at 0} ==  0 & {u_18 at 0} ==  1 & 
+  {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1
+Before simplification, case arm is 
+  (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  0 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  1 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  2 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  6 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1 
+  | (pc_addr_sm) LENGTH = 32, {op at 0} ==  3 & {addr_19 at 0} ==  0 & 
+  {ext4_22 at 0} ==  7 & {u_18 at 0} ==  1 & {m_26 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_116(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (epsilon) epsilon
+after binding patlabel names we have case arm (epsilon) epsilon
+after setting offsets we have case arm (epsilon) epsilon
+after anf+subst we have case arm (epsilon) LENGTH = 0, <MATCH>
+Before simplification, case arm is (epsilon) LENGTH = 0, <MATCH>
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_117(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+crhs for index_faddr is (?noname?) addr_22 ==  0 & x_11 = x & s2_16 = s & 
+b_06 = b
+applied index_faddr to get (index_faddr) addr_22 ==  0 & x_11 = x & s2_16 = s & 
+b_06 = b
+after pnf we have case arm (index_faddr) addr_22 ==  0 & x_11 = x & s2_16 = s & 
+  b_06 = b
+after binding patlabel names we have case arm (index_faddr) addr_22 ==  0 & 
+  x_11 = x & s2_16 = s & b_06 = b
+after setting offsets we have case arm (index_faddr) addr_22 ==  0 & x_11 = x & 
+  s2_16 = s & b_06 = b
+after anf+subst we have case arm 
+  (index_faddr) LENGTH = 32, {addr_22 at 0} ==  0 & {x_11 at 0} = x & 
+  {s2_16 at 0} = s & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[s] = s : integer
+  freevars[x] = x : integer
+Before simplification, case arm is 
+  (index_faddr) LENGTH = 32, {addr_22 at 0} ==  0 & {x_11 at 0} = x & 
+  {s2_16 at 0} = s & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, s, and x
+Answers and conditions (record arm_118(10)) at length  (record solution_470(4)):
+  answers[b] = {b_06 at 0}
+  answers[s] = {s2_16 at 0}
+  answers[x] = {x_11 at 0}
+(constraints:  )
+crhs for sdisps_faddr is (?noname?) addr_22 ==  1 & im4_11 = d[28:3] & 
+im1_15 = d[0:31][1!] & s2_16 = s & b_06 = b
+applied sdisps_faddr to get (sdisps_faddr) addr_22 ==  1 & im4_11 = d[28:3] & 
+im1_15 = d[0:31][1!] & s2_16 = s & b_06 = b
+after pnf we have case arm (sdisps_faddr) addr_22 ==  1 & im4_11 = d[28:3] & 
+  im1_15 = d[0:31][1!] & s2_16 = s & b_06 = b
+after binding patlabel names we have case arm (sdisps_faddr) addr_22 ==  1 & 
+  im4_11 = d[28:3] & im1_15 = d[0:31][1!] & s2_16 = s & b_06 = b
+after setting offsets we have case arm (sdisps_faddr) addr_22 ==  1 & 
+  im4_11 = d[28:3] & im1_15 = d[0:31][1!] & s2_16 = s & b_06 = b
+after anf+subst we have case arm 
+  (sdisps_faddr) LENGTH = 32, {addr_22 at 0} ==  1 & {im4_11 at 0} = d[28:3] & 
+  {im1_15 at 0} = d[0:31][1!] & {s2_16 at 0} = s & {b_06 at 0} = b
+caught free variables:
+  freevars[b] = b : integer
+  freevars[d] = d : integer
+  freevars[s] = s : integer
+Before simplification, case arm is 
+  (sdisps_faddr) LENGTH = 32, {addr_22 at 0} ==  1 & {im4_11 at 0} = d[28:3] & 
+  {im1_15 at 0} = d[0:31][1!] & {s2_16 at 0} = s & {b_06 at 0} = b
+Case arm doesn't simplify
+Saw binding instances of b, d, and s
+Answers and conditions (record arm_119(10)) at length  (record solution_472(4)):
+  answers[b] = {b_06 at 0}
+  answers[d] = {im1_15 at 0}!1
+  answers[s] = {s2_16 at 0}
+(constraints: {im4_11 at 0} = {im1_15 at 0}!1[28:3] )
+after pnf we have case arm (ins_faddr_s) u_18 ==  1 & m_26 ==  0 & addr_19 ==  0
+after binding patlabel names we have case arm (ins_faddr_s) u_18 ==  1 & 
+  m_26 ==  0 & addr_19 ==  0
+after setting offsets we have case arm (ins_faddr_s) u_18 ==  1 & m_26 ==  0 & 
+  addr_19 ==  0
+after anf+subst we have case arm (ins_faddr_s) LENGTH = 32, {u_18 at 0} ==  1 & 
+  {m_26 at 0} ==  0 & {addr_19 at 0} ==  0
+Before simplification, case arm is 
+  (ins_faddr_s) LENGTH = 32, {u_18 at 0} ==  1 & {m_26 at 0} ==  0 & 
+  {addr_19 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_120(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_m) u_18 ==  0 & m_26 ==  1 & addr_19 ==  0
+after binding patlabel names we have case arm (ins_faddr_m) u_18 ==  0 & 
+  m_26 ==  1 & addr_19 ==  0
+after setting offsets we have case arm (ins_faddr_m) u_18 ==  0 & m_26 ==  1 & 
+  addr_19 ==  0
+after anf+subst we have case arm (ins_faddr_m) LENGTH = 32, {u_18 at 0} ==  0 & 
+  {m_26 at 0} ==  1 & {addr_19 at 0} ==  0
+Before simplification, case arm is 
+  (ins_faddr_m) LENGTH = 32, {u_18 at 0} ==  0 & {m_26 at 0} ==  1 & 
+  {addr_19 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_121(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_sm) u_18 ==  1 & m_26 ==  1 & 
+  addr_19 ==  0
+after binding patlabel names we have case arm (ins_faddr_sm) u_18 ==  1 & 
+  m_26 ==  1 & addr_19 ==  0
+after setting offsets we have case arm (ins_faddr_sm) u_18 ==  1 & m_26 ==  1 & 
+  addr_19 ==  0
+after anf+subst we have case arm 
+  (ins_faddr_sm) LENGTH = 32, {u_18 at 0} ==  1 & {m_26 at 0} ==  1 & 
+  {addr_19 at 0} ==  0
+Before simplification, case arm is 
+  (ins_faddr_sm) LENGTH = 32, {u_18 at 0} ==  1 & {m_26 at 0} ==  1 & 
+  {addr_19 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_122(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_x) u_18 ==  0 & m_26 ==  0 & addr_19 ==  0
+after binding patlabel names we have case arm (ins_faddr_x) u_18 ==  0 & 
+  m_26 ==  0 & addr_19 ==  0
+after setting offsets we have case arm (ins_faddr_x) u_18 ==  0 & m_26 ==  0 & 
+  addr_19 ==  0
+after anf+subst we have case arm (ins_faddr_x) LENGTH = 32, {u_18 at 0} ==  0 & 
+  {m_26 at 0} ==  0 & {addr_19 at 0} ==  0
+Before simplification, case arm is 
+  (ins_faddr_x) LENGTH = 32, {u_18 at 0} ==  0 & {m_26 at 0} ==  0 & 
+  {addr_19 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_123(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_mb) a_18 ==  1 & m_26 ==  0 & 
+  addr_19 ==  1
+after binding patlabel names we have case arm (ins_faddr_mb) a_18 ==  1 & 
+  m_26 ==  0 & addr_19 ==  1
+after setting offsets we have case arm (ins_faddr_mb) a_18 ==  1 & m_26 ==  0 & 
+  addr_19 ==  1
+after anf+subst we have case arm 
+  (ins_faddr_mb) LENGTH = 32, {a_18 at 0} ==  1 & {m_26 at 0} ==  0 & 
+  {addr_19 at 0} ==  1
+Before simplification, case arm is 
+  (ins_faddr_mb) LENGTH = 32, {a_18 at 0} ==  1 & {m_26 at 0} ==  0 & 
+  {addr_19 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_124(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_ma) a_18 ==  0 & m_26 ==  1 & 
+  addr_19 ==  1
+after binding patlabel names we have case arm (ins_faddr_ma) a_18 ==  0 & 
+  m_26 ==  1 & addr_19 ==  1
+after setting offsets we have case arm (ins_faddr_ma) a_18 ==  0 & m_26 ==  1 & 
+  addr_19 ==  1
+after anf+subst we have case arm 
+  (ins_faddr_ma) LENGTH = 32, {a_18 at 0} ==  0 & {m_26 at 0} ==  1 & 
+  {addr_19 at 0} ==  1
+Before simplification, case arm is 
+  (ins_faddr_ma) LENGTH = 32, {a_18 at 0} ==  0 & {m_26 at 0} ==  1 & 
+  {addr_19 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_125(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (ins_faddr_si) m_26 ==  0 & addr_19 ==  1
+after binding patlabel names we have case arm (ins_faddr_si) m_26 ==  0 & 
+  addr_19 ==  1
+after setting offsets we have case arm (ins_faddr_si) m_26 ==  0 & addr_19 ==  1
+after anf+subst we have case arm 
+  (ins_faddr_si) LENGTH = 32, {m_26 at 0} ==  0 & {addr_19 at 0} ==  1
+Before simplification, case arm is 
+  (ins_faddr_si) LENGTH = 32, {m_26 at 0} ==  0 & {addr_19 at 0} ==  1
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_126(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
+after pnf we have case arm (NOP) op ==  2 & ext6_20 ==  9 & r_06 ==  0 & 
+  r_11 ==  0 & t_27 ==  0
+after binding patlabel names we have case arm (NOP) op ==  2 & ext6_20 ==  9 & 
+  r_06 ==  0 & r_11 ==  0 & t_27 ==  0
+after setting offsets we have case arm (NOP) op ==  2 & ext6_20 ==  9 & 
+  r_06 ==  0 & r_11 ==  0 & t_27 ==  0
+after anf+subst we have case arm (NOP) LENGTH = 32, {op at 0} ==  2 & 
+  {ext6_20 at 0} ==  9 & {r_06 at 0} ==  0 & {r_11 at 0} ==  0 & 
+  {t_27 at 0} ==  0
+Before simplification, case arm is 
+  (NOP) LENGTH = 32, {op at 0} ==  2 & {ext6_20 at 0} ==  9 & 
+  {r_06 at 0} ==  0 & {r_11 at 0} ==  0 & {t_27 at 0} ==  0
+Case arm doesn't simplify
+No binding instances
+Answers and conditions (record arm_127(10)) at length  (record solution_280(4)):
+Environment answers is empty
+(constraints:  )
