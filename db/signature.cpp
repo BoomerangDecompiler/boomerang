@@ -99,6 +99,8 @@ namespace CallingConvention {
         Win32TcSignature(const char *nam);
         Win32TcSignature(Signature &old);
         virtual Exp *getArgumentExp(int n);
+        virtual Exp *getProven(Exp* left);
+        virtual Signature *clone();
     };
 
 
@@ -176,6 +178,20 @@ CallingConvention::Win32TcSignature::Win32TcSignature(Signature &old)
 Signature *CallingConvention::Win32Signature::clone()
 {
     Win32Signature *n = new Win32Signature(name.c_str());
+    n->params = params;
+    n->implicitParams = implicitParams;
+    n->returns = returns;
+    n->ellipsis = ellipsis;
+    n->rettype = rettype;
+    n->preferedName = preferedName;
+    n->preferedReturn = preferedReturn;
+    n->preferedParams = preferedParams;
+    return n;
+}
+
+Signature *CallingConvention::Win32TcSignature::clone()
+{
+    Win32TcSignature *n = new Win32TcSignature(name.c_str());
     n->params = params;
     n->implicitParams = implicitParams;
     n->returns = returns;
@@ -317,9 +333,9 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
                 return new Binary(opPlus, Location::regOf(28), 
                                           new Const(4 + nparams*4));
             case 26:
-                return Location::regOf(29);
+                return Location::regOf(26);
             case 27:
-                return Location::regOf(29);
+                return Location::regOf(27);
             case 29:
                 return Location::regOf(29);
             case 30:
@@ -331,6 +347,26 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
     }
     return NULL;
 }
+
+Exp *CallingConvention::Win32TcSignature::getProven(Exp *left)
+{
+    if (left->getOper() == opRegOf &&
+        left->getSubExp1()->getOper() == opIntConst) {
+        if (((Const*)left->getSubExp1())->getInt() == 28) {
+            int nparams = params.size();
+            if (nparams > 0 && *params[0]->getExp() == *Location::regOf(28)) {
+                nparams--;
+            }
+            // r28 += 4 + nparams*4 - 4   (-4 because ecx is register param)
+            return new Binary(opPlus, Location::regOf(28),
+                                      new Const(4 + nparams*4 - 4));
+        }
+    }
+    // Else same as for standard Win32 signature
+    return Win32Signature::getProven(left);
+}
+
+
 
 void CallingConvention::Win32Signature::getInternalStatements(StatementList &stmts)
 {
