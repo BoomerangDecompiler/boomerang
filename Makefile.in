@@ -82,6 +82,7 @@ distclean: clean
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	db/ProcTest.o db/ProgTest.o db/RtlTest.o db/TypeTest.o \
+	db/DataflowTest.o \
 	frontend/FrontSparcTest.o frontend/FrontPentTest.o \
 	analysis/AnalysisTest.o loader/BinaryFileStub.o \
         c/CTest.o
@@ -181,6 +182,7 @@ db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h
 db/ProgTest.o: db/ProgTest.h include/prog.h
 db/ProcTest.o: db/ProcTest.h include/proc.h
 db/TypeTest.o: db/TypeTest.h include/util.h include/type.h
+db/DataflowTest.o: db/DataflowTest.h include/dataflow.h
 
 util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h

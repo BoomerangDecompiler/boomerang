@@ -1191,26 +1191,6 @@ void Cfg::searchAndReplace(Exp* search, Exp* replace)
     }
 }
 
-#if 0
-/*==============================================================================
- * FUNCTION:        Cfg::printDFAInfo
- * OVERVIEW:        Print any data flow analysis info gathered so far such as
- *                  the live-in and live-out sets for each BB.
- * PARAMETERS:      os - the output stream to use
- * RETURNS:         the given output stream
- *============================================================================*/
-ostream& Cfg::printDFAInfo(ostream& os)
-{
-    for (std::list<PBB>::reverse_iterator it = m_listBB.rbegin();
-      it != m_listBB.rend(); it++){
-
-        (*it)->printDFAInfo(os);
-        os << std::endl;
-    }
-    return os;
-}
-#endif
-
 /*==============================================================================
  * FUNCTION:        Cfg::computeDominators
  * OVERVIEW:        computes the dominators of each BB 

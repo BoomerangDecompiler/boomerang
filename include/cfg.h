@@ -292,11 +292,6 @@ public:
 
 
     /*
-     * Print any data flow analysis info gathered for this BB.
-     */
-    std::ostream& printDFAInfo(std::ostream& os);
-
-    /*
      *  given an address, returns the outedge which corresponds to that address
      *  or 0 if there was no such outedge
      */
@@ -718,12 +713,6 @@ public:
      * Can be type sensitive if reqd
      */
     void searchAndReplace(Exp* search, Exp* replace);
-
-    /*
-     * Print any data flow analysis info gathered so far such as
-     * the live-in and live-out sets for each BB.
-     */
-    std::ostream& printDFAInfo(std::ostream& os);
 
     /*
      * Set the return value for this CFG 
