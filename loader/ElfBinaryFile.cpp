@@ -303,9 +303,14 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
     // Get index to string table
     int idx = GetSectionIndexByName(sStrSect);
 
+    PSectionInfo siPLT = GetSectionInfoByName(".plt");
+    assert(siPLT);
+    ADDRESS addrPLT = siPLT->uNativeAddr;
+    static bool warned = false;
+    // Number of entries in the PLT:
+    int max_i_for_hack = (int)siPLT->uSectionSize / 0x10;
     // Index 0 is a dummy entry
-    for (int i = 1; i < nSyms; i++)
-    {
+    for (int i = 1; i < nSyms; i++) {
         ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
         int name = elfRead4(&m_pSym[i].st_name);
         if (name == 0)  /* Silly symbols with no names */ continue;
@@ -317,8 +322,23 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
         std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
         // Ensure no overwriting (except functions)
         if (aa == m_SymA.end() || 
-            ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            //std::cerr << "Elf AddSym: about to add " << str << " to address " << std::hex << val << std::dec << std::endl;
+              ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
+            if (val == 0 && i < max_i_for_hack) {
+                // Special hack for gcc circa 3.3.3: the value in the dynamic
+                // symbol table is zero! Assume that index i in the dynamic
+                // symbol table corresponds to index i in the .plt section
+                // Note that entries in .plt are 4 words (0x10 bytes) each
+                // Note that this hack can cause strange symbol names to appear
+                val = addrPLT + 0x10*i;
+                if (!warned) { warned = true;
+                    std::cerr << "Warning: gcc 3.3.3 hack used!\n";
+                }
+            }
+#define ECHO_SYMS 0
+#if     ECHO_SYMS
+            std::cerr << "Elf AddSym: about to add " << str << " to address "
+                << std::hex << val << std::dec << std::endl;
+#endif
             m_SymA[val] = str;
         }
     }
