@@ -2613,7 +2613,7 @@ case 128:
             Exp* s;
             std::set<std::string>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
             if (it != Dict.ParamSet.end()) {
-                s = new Unary(opParam, new Const(yyvsp[0].str));
+                s = new Location(opParam, new Const(yyvsp[0].str), NULL);
             } else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
                 s = new Const(ConstTable[yyvsp[0].str]);
             } else {
@@ -3209,8 +3209,8 @@ Exp* listStrToExp(std::list<std::string>* ls) {
     for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
         *cur = new Binary(opList);
         // *it is a string. Convert it to a parameter
-        ((Binary*)*cur)->setSubExp1(new Unary(opParam,
-          new Const((char*)(*it).c_str())));
+        ((Binary*)*cur)->setSubExp1(new Location(opParam,
+          new Const((char*)(*it).c_str()), NULL));
         cur = &(*cur)->refSubExp2();
     }
     *cur = new Terminal(opNil);          // Terminate the chain
