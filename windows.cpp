@@ -1706,7 +1706,7 @@ LRESULT CALLBACK DebugOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			Boomerang::get()->debugLiveness		= (IsDlgButtonChecked(hDlg, IDC_CHECKL)		== BST_CHECKED);
 			Boomerang::get()->debugSwitch		= (IsDlgButtonChecked(hDlg, IDC_CHECKSA)	== BST_CHECKED);
 			Boomerang::get()->debugProof		= (IsDlgButtonChecked(hDlg, IDC_CHECKPROOF) == BST_CHECKED);
-			Boomerang::get()->debugUnusedRets	= (IsDlgButtonChecked(hDlg, IDC_CHECKUR)	== BST_CHECKED);
+			Boomerang::get()->debugUnusedRetsAndParams=(IsDlgButtonChecked(hDlg, IDC_CHECKUR)	== BST_CHECKED);
 			Boomerang::get()->debugTA			= (IsDlgButtonChecked(hDlg, IDC_CHECKTA)	== BST_CHECKED);
 			Boomerang::get()->debugUnusedStmt	= (IsDlgButtonChecked(hDlg, IDC_CHECKUS)	== BST_CHECKED);
 			Boomerang::get()->printRtl			= (IsDlgButtonChecked(hDlg, IDC_CHECKRTL)	== BST_CHECKED);
