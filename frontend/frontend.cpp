@@ -341,7 +341,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     INSTTYPE type;              // Cfg type of instruction (e.g. IRET)
 
     if (!pProc->getSignature()->isPromoted()) {
-        std::cerr << "adding default params for " << pProc->getName() << "\n";
+        if (VERBOSE)
+            LOG << "adding default params for " << pProc->getName() << "\n";
         std::vector<Exp*> &params = getDefaultParams();
         for (std::vector<Exp*>::iterator it = params.begin(); 
              it != params.end(); it++)
