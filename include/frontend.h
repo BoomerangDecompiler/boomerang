@@ -82,6 +82,9 @@ public:
     // Load a binary
     static FrontEnd* Load(const char *fname);
 
+    // Add a symbol to the loader
+    void AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
+
     /**
      * Destructor. Virtual to mute a warning
      */

@@ -1035,6 +1035,8 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
                                                             ->getList().back());
                                 if (toMain && toMain->getFixedDest() 
                                                             != NO_ADDRESS) {
+                                    pBF->AddSymbol(toMain->getFixedDest(), 
+                                                   "WinMain");
                                     gotMain = true;
                                     return toMain->getFixedDest();
                                 }

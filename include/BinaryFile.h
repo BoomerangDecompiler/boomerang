@@ -182,6 +182,7 @@ virtual ~BinaryFile() {}			// Virtual destructor
     // Lookup the name, return the address. If not found, return NO_ADDRESS
     virtual ADDRESS GetAddressByName(const char* pName,
                                      bool bNoTypeOK = false);
+    virtual void AddSymbol(ADDRESS uNative, const char *pName) { }
     // Lookup the name, return the size
     virtual int GetSizeByName(const char* pName, bool bTypeOK = false);
     // Get an array of addresses of imported function stubs

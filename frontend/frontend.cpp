@@ -184,6 +184,26 @@ Prog *FrontEnd::decode(bool decodeMain)
                                            new CharType())), "argv");
     }
 
+    if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
+        Proc *main = prog->findProc(a);
+        assert(main);
+        main->setSignature(getDefaultSignature("WinMain"));
+        main->getSignature()->addReturn(new IntegerType());
+        /* HINSTANCE hInstance,
+           HINSTANCE hPrevInstance,
+           LPSTR     lpCmdLine,
+           int       nCmdShow 
+         */
+        Type *ty = Type::getNamedType("HINSTANCE");
+        if (ty == NULL) ty = new NamedType("HINSTANCE");
+        main->getSignature()->addParameter(ty, "hInstance");
+        main->getSignature()->addParameter(ty, "hPrevInstance");
+        ty = Type::getNamedType("LPSTR");
+        if (ty == NULL) ty = new NamedType("LPSTR");
+        main->getSignature()->addParameter(ty, "lpCmdLine");
+        main->getSignature()->addParameter(new IntegerType(), "nCmdShow");
+    }
+
     return prog;
 }
 

@@ -72,6 +72,7 @@ void Boomerang::help() {
 //  std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
                     "\n";
+    std::cerr << "-s <addr> <name>: define a symbol\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-x: dump xml files\n";
     std::cerr << "-v: verbose\n";
@@ -174,6 +175,24 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     entrypoints.push_back(addr);
                 }
                 break;
+            case 's':
+                {
+                    ADDRESS addr;
+                    int n;
+                    if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
+                        n = sscanf(argv[i+1], "0x%x", &addr);
+                    } else {
+                        n = sscanf(argv[i+1], "%i", &addr);
+                    }
+                    i++;
+                    if (n != 1) {
+                        std::cerr << "bad address: " << argv[i+1] << std::endl;
+                        exit(1);
+                    }
+                    const char *nam = argv[++i];
+                    symbols[addr] = nam;
+                }
+                break;
             case 'd':
                 switch(argv[i][2]) {
                     case 'c':
@@ -219,6 +238,10 @@ int Boomerang::decompile(const char *fname)
         std::cerr << "failed.\n";
         return 1;
     }
+
+    for (std::map<ADDRESS, std::string>::iterator it = symbols.begin();
+         it != symbols.end(); it++)
+        fe->AddSymbol((*it).first, (*it).second.c_str());
 
     std::cerr << "decoding...\n";
     Prog *prog = fe->decode(decodeMain);

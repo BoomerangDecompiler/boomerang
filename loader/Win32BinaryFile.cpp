@@ -226,7 +226,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
     if (entry != NO_ADDRESS) {
         std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(entry);
         if (it == dlprocptrs.end())
-            dlprocptrs[entry] = "_main";
+            dlprocptrs[entry] = "_init";
     }
 
     fclose(fp);
@@ -264,6 +264,12 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
     }
     return 0;
 }
+
+void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName)
+{
+    dlprocptrs[uNative] = pName;
+}
+
 #endif
 
 bool Win32BinaryFile::DisplayDetails(const char* fileName, FILE* f

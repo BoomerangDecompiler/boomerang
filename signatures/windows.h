@@ -21,3 +21,81 @@ typedef struct {
 typedef WNDCLASSEX *PWNDCLASSEX;
 
 ATOM RegisterClassExW(WNDCLASSEX *lpwcx);
+ATOM RegisterClassExA(WNDCLASSEX *lpwcx);
+
+int LoadStringA(      
+    HINSTANCE hInstance,
+    UINT uID,
+    LPTSTR lpBuffer,
+    int nBufferMax
+);
+
+HACCEL LoadAcceleratorsA(      
+    HINSTANCE hInstance,
+    LPCTSTR lpTableName
+);
+
+typedef struct {
+    HWND hwnd;
+    UINT message;
+    WPARAM wParam;
+    LPARAM lParam;
+    DWORD time;
+    POINT pt;
+} MSG;
+typedef MSG *PMSG;
+
+BOOL GetMessageA(      
+    LPMSG lpMsg,
+    HWND hWnd,
+    UINT wMsgFilterMin,
+    UINT wMsgFilterMax
+);
+
+int TranslateAcceleratorA(      
+    HWND hWnd,
+    HACCEL hAccTable,
+    LPMSG lpMsg
+);
+
+BOOL TranslateMessage(      
+    const MSG *lpMsg
+);
+
+LRESULT DispatchMessageA(      
+    const MSG *lpmsg
+);
+
+HICON LoadIconA(      
+    HINSTANCE hInstance,
+    LPCTSTR lpIconName
+);
+
+HCURSOR LoadCursorA(      
+    HINSTANCE hInstance,
+    LPCTSTR lpCursorName
+);
+
+HWND CreateWindowExA(      
+    DWORD dwExStyle,
+    LPCTSTR lpClassName,
+    LPCTSTR lpWindowName,
+    DWORD dwStyle,
+    int x,
+    int y,
+    int nWidth,
+    int nHeight,
+    HWND hWndParent,
+    HMENU hMenu,
+    HINSTANCE hInstance,
+    LPVOID lpParam
+);
+
+BOOL ShowWindow(      
+    HWND hWnd,
+    int nCmdShow
+);
+
+BOOL UpdateWindow(
+  HWND hWnd
+);
