@@ -1804,9 +1804,10 @@ void Cfg::checkConds() {
         // for 2 way conditional headers that don't have a follow (i.e. are 
         // the source of a back edge) and haven't been structured as latching 
         // nodes, set their follow to be the non-back edge child.
-        if (curNode->getStructType() == Cond && !curNode->getCondFollow() &&
-            curNode->getUnstructType() == Structured && 
-            curNode->getCondType() != Case) {
+        if (curNode->getStructType() == Cond &&
+              !curNode->getCondFollow() &&
+              curNode->getCondType() != Case &&
+              curNode->getUnstructType() == Structured) {
             // latching nodes will already have been reset to Seq structured 
             // type
             assert(curNode->hasBackEdge());
