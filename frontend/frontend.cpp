@@ -23,6 +23,7 @@
  * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness
  *                    rather than machine type)
  * 22 Nov 02 - Mike: Quelched warnings
+ * 16 Apr 03 - Mike: trace (-t) to cerr not cout now
  */
 
 #include <assert.h>
@@ -341,7 +342,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
 
             // Decode and classify the current instruction
             if (Boomerang::get()->traceDecoder)
-                std::cout << "*" << std::hex << uAddr << "\t" << std::flush;
+                std::cerr << "*" << std::hex << uAddr << "\t" << std::flush;
 
             // procedure out edge
             if (processed[uAddr] != NULL) {
@@ -677,7 +678,7 @@ if (0) {
                         }
                         //newProc(pProc->getProg(), uNewAddr);
                         if (Boomerang::get()->traceDecoder)
-                            std::cout << "p" << std::hex << uNewAddr << "\t"
+                            std::cerr << "p" << std::hex << uNewAddr << "\t"
                               << std::flush; 
                     }
 
@@ -909,7 +910,7 @@ void TargetQueue::visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB) {
     if (!bParsed) {
         targets.push(uNewAddr);
         if (Boomerang::get()->traceDecoder)
-            std::cout << ">" << std::hex << uNewAddr << "\t" << std::flush;
+            std::cerr << ">" << std::hex << uNewAddr << "\t" << std::flush;
     }
 }
 
@@ -937,7 +938,7 @@ ADDRESS TargetQueue::nextAddress(Cfg* cfg) {
         ADDRESS address = targets.front();
         targets.pop();
         if (Boomerang::get()->traceDecoder)
-            std::cout << "<" << std::hex << address << "\t" << std::flush;
+            std::cerr << "<" << std::hex << address << "\t" << std::flush;
 
         // If no label there at all, or if there is a BB, it's incomplete,
         // then we can parse this address next
