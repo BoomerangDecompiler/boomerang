@@ -55,7 +55,7 @@ INTEGER
 [ %NF, %ZF, %AF, %PF,
   %CF, %OF, %DF, %IF,
   %FP, %SKIP, %RPT, %FLF,
-  %C2, %FZF ][1] -> -1;
+  %C1, %C2, %FZF ][1] -> -1;
 
 FLOAT
 [ %st, %st1,        # stack head, stack neck
@@ -1753,6 +1753,26 @@ FNOP    _ ;
 FPATAN    
             *80* %st1 := arctan(%st1 /f %st)
             FPOP;
+
+# FPREM is for backwards compatibility with 80{2}87 FPUs
+FPREM
+            *80* tmpD := ftrunc(%st /f %st1)   # Should chop towards 0
+            *80* %st := %st -f (%st1 *f tmpD)
+# If st1 was/is negative, we need to change the sign of st?
+            *80* %st := [%st1 < 0 ? ~f %st : %st];
+            #*1* %C2 := 0
+            #*1* %FZF := bit 2 of tmpD as integer  # %C0 is %FZF
+            #*1* %FLF := bit 1 of tmpD as integer  # %C3 is %FLF
+            #*1* %C1  := bit 0 of tmpD as integer
+
+# Floating point remainder.
+FPREM1
+            *80* tmpD := ftrunc(%st /f %st1)   # Should round to nearest
+            *80* %st := %st -f (%st1 *f tmpD);
+            #*1* %C2 := 0
+            #*1* %FZF := bit 2 of tmpD as integer  # %C0 is %FZF
+            #*1* %FLF := bit 1 of tmpD as integer  # %C3 is %FLF
+            #*1* %C1  := bit 0 of tmpD as integer
 
 FPTAN    
             *80* %st := tan(%st)
