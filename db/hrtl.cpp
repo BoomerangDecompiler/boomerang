@@ -960,7 +960,7 @@ std::vector<Exp*>& HLCall::getArguments()
 
 Type *HLCall::getArgumentType(int i)
 {
-    assert(i < arguments.size());
+    assert(i < (int)arguments.size());
     assert(procDest);
     return procDest->getSignature()->getParamType(i);
 }
@@ -1412,7 +1412,7 @@ void HLCall::getDeadStatements(std::set<Statement*> &dead)
 bool HLCall::usesExp(Exp *e)
 {
     Exp *where = 0;
-    for (int i = 0; i < arguments.size(); i++)
+    for (unsigned i = 0; i < arguments.size(); i++)
         if (*arguments[i] == *e ||
 	    arguments[i]->search(e, where))
             return true;
@@ -1426,7 +1426,7 @@ void HLCall::doReplaceUse(Statement *use)
     assert(left);
     assert(right);
     bool change = false;
-    for (int i = 0; i < arguments.size(); i++) {
+    for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
 	    arguments[i] = right->clone();
 	    change = true;
@@ -1438,7 +1438,7 @@ void HLCall::doReplaceUse(Statement *use)
     }
     assert(change);
     // simplify the arguments
-    for (int i = 0; i < arguments.size(); i++) {
+    for (unsigned i = 0; i < arguments.size(); i++) {
 	    arguments[i] = arguments[i]->simplifyArith();
 	    arguments[i] = arguments[i]->simplify();
     }
@@ -1452,7 +1452,7 @@ void HLCall::printWithUses(std::ostream& os)
 
 void HLCall::inlineConstants(Prog *prog)
 {
-    for (int i = 0; i < arguments.size(); i++) {
+    for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
 	// char* and a constant
 	if ((arguments[i]->isAddrConst() || arguments[i]->isIntConst()) && 
@@ -1462,7 +1462,7 @@ void HLCall::inlineConstants(Prog *prog)
 	        prog->getStringConstant(((Const*)arguments[i])->getAddr());
 	    if (str) {
 		 std::string s(str);
-		 while (s.find('\n') != -1)
+		 while (s.find('\n') != (unsigned)-1)
 		     s.replace(s.find('\n'), 1, "\\n");
 	         delete arguments[i];
 		 arguments[i] = new Const(strdup(s.c_str()));
