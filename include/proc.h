@@ -691,6 +691,8 @@ public:
 
 
     bool searchAndReplace(Exp *search, Exp *replace);
+
+    void stripRefs();
  
 private:
     // We ensure that there is only one return statement now. See code in
