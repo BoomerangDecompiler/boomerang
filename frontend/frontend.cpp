@@ -119,6 +119,8 @@ void FrontEnd::readLibraryCatalog(const char *sPath, bool win32) {
         size_t j = sFile.find('#');
         if (j != (size_t)-1)
             sFile = sFile.substr(0, j);
+	if (sFile.size() > 0 && sFile[sFile.size()-1] == '\n')
+	    sFile = sFile.substr(0, sFile.size()-1);
         if (sFile == "") continue;
         std::string sPath = Boomerang::get()->getProgPath() + "signatures/"
           + sFile;

@@ -1103,7 +1103,7 @@ void UserProc::replaceExpressionsWithGlobals()
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
         bool change;
-        Exp *e = cfg->getReturnVal();
+        Exp *e = cfg->getReturnVal()->clone();
         if (e == NULL) break;
         if (VERBOSE) {
             std::cerr << "return value: ";
@@ -1150,7 +1150,7 @@ void UserProc::replaceExpressionsWithSymbols()
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
         bool change;
-        Exp *e = cfg->getReturnVal();
+        Exp *e = cfg->getReturnVal()->clone();
         if (e == NULL) break;
         if (VERBOSE) {
             std::cerr << "return value: ";
