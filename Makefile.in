@@ -177,7 +177,8 @@ db/cfg.o: include/cfg.h include/dataflow.h include/exp.h
 db/basicblock.o: include/cfg.h include/hllcode.h include/dataflow.h \
     include/exp.h include/types.h include/rtl.h include/proc.h include/prog.h \
     include/util.h
-db/rtl.o: include/rtl.h include/exp.h include/operator.h
+db/rtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
+    include/cfg.h include/proc.h include/prog.h include/boomerang.h
 db/hrtl.o: include/rtl.h include/exp.h include/operator.h include/dataflow.h \
     include/cfg.h include/signature.h
 db/register.o: include/register.h
