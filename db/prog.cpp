@@ -1027,29 +1027,45 @@ Exp* Global::getInitialValue(Prog* prog) {
             // Make a function constant. Back end should know how to emit
             // the correct language-dependent code
             return new Const(dest);
+    } else if (type->isArray()) {
+        Type *baseType = type->asArray()->getBaseType();
+        e = new Terminal(opNil);
+        for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i)
+            e = new Binary(opList, prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType), e);
+        LOG << "calced init for array global: " << e << "\n";
     }
-    if (e == NULL) switch(type->getSize()) {
+    if (e == NULL) 
+        e = prog->readNativeAs(uaddr, type);
+    return e;
+}
+
+Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
+{
+    Exp *e = NULL;
+    PSectionInfo si = getSectionInfoByAddr(uaddr);
+    switch(type->getSize()) {
     case 8:
         e = new Const(
             (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
         break;
     case 16:
         // Note: must respect endianness
-        e = new Const(prog->readNative2(uaddr));
+        e = new Const(readNative2(uaddr));
         break;
     case 32:
     default:
         // Note: must respect endianness and type
         if (type->isFloat())
-            e = new Const(prog->readNativeFloat4(uaddr));
+            e = new Const(readNativeFloat4(uaddr));
         else
-            e = new Const(prog->readNative4(uaddr));
+            e = new Const(readNative4(uaddr));
         break;
     case 64:
         if (type->isFloat())
-            e = new Const(prog->readNativeFloat8(uaddr));
+            e = new Const(readNativeFloat8(uaddr));
         else
-            e = new Const(prog->readNative8(uaddr));
+            e = new Const(readNative8(uaddr));
     }
     return e;
 }
+

@@ -1933,10 +1933,11 @@ void UserProc::replaceExpressionsWithGlobals() {
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             if (((Exp*)*rr)->isSubscript()) {
                 Statement *ref = ((RefExp*)*rr)->getRef();
+                Exp *r1 = (*rr)->getSubExp1();
                 if (ref == NULL && 
-                    (*rr)->getSubExp1()->getOper() == opMemOf &&
-                    (*rr)->getSubExp1()->getSubExp1()->getOper() == opIntConst) {
-                    Exp *memof = (*rr)->getSubExp1();
+                    r1->getOper() == opMemOf &&
+                    r1->getSubExp1()->getOper() == opIntConst) {
+                    Exp *memof = r1;
                     ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
                     prog->globalUsed(u);
                     const char *gloName = prog->getGlobalName(u);
@@ -1960,6 +1961,71 @@ void UserProc::replaceExpressionsWithGlobals() {
                                 ne = g;
                         }
                         s->searchAndReplace(memof->clone(), ne);
+                    }
+                } else if (ref == NULL && r1->getOper() == opMemOf &&
+                       r1->getSubExp1()->getOper() == opPlus &&
+                       r1->getSubExp1()->getSubExp1()->getOper() 
+                                                      == opMult &&
+                       r1->getSubExp1()->getSubExp1()->getSubExp2()
+                                          ->getOper() == opIntConst &&
+                       r1->getSubExp1()->getSubExp2()->getOper() 
+                                                            == opIntConst) {
+                    Exp *memof = r1;
+                    int stride = ((Const*)memof->getSubExp1()->getSubExp1()
+                                               ->getSubExp2())->getInt();
+                    ADDRESS u = ((Const*)memof->getSubExp1()->getSubExp2())
+                                                            ->getInt();
+                    LOG << "detected array ref with stride " << stride << "\n";
+                    prog->globalUsed(u);
+                    const char *gloName = prog->getGlobalName(u);
+                    if (gloName) {
+                        ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
+                        Exp *ne = NULL;
+                        if (r) {
+                            // TOO HARD
+                        } else {
+                            Type *ty = prog->getGlobalType((char*)gloName);
+                            Location *g = Location::global(strdup(gloName), this);
+                            if (ty == NULL || ty->getSize() == 0) {
+                                LOG << "setting type of global to array\n";
+                                ty = new ArrayType(new IntegerType(stride*8),1);
+                                prog->setGlobalType((char*)gloName, ty);
+                            }
+
+                            if (ty)
+                                LOG << "got type: " << ty->getCtype() << "\n";
+
+                            if (ty && ty->isArray() && 
+                                ty->asArray()->getBaseType()->getSize() 
+                                                            != stride*8) {
+                                LOG << "forcing array base type size to stride\n";
+                                ty->asArray()->setLength(ty->asArray()->getLength() *
+                                    ty->asArray()->getBaseType()->getSize() /
+                                    (stride * 8));
+                                ty->asArray()->setBaseType(new IntegerType(stride*8));
+                                prog->setGlobalType((char*)gloName, ty);
+                            }
+
+                            if (ty)
+                                LOG << "got type: " << ty->getCtype() << "\n";
+
+                            if (ty && ty->isArray() && 
+                                ty->asArray()->getBaseType()->getSize() 
+                                                            == stride*8) {
+                                LOG << "setting new exp to array ref\n";
+                                ne = new Binary(opArraySubscript, g, 
+                                            memof->getSubExp1()->getSubExp1()->getSubExp1()
+                                                               ->clone());
+                                LOG << "set to " << ne << "\n";
+                            }
+                            /* else 
+                                ne = Location::memOf(new Binary(opPlus, 
+                                        new Unary(opAddrOf, g), 
+                                        memof->getSubExp1()->getSubExp1()->clone()
+                                        )); */
+                        }
+                        if (ne)
+                            s->searchAndReplace(memof->clone(), ne);
                     }
                 }
             }

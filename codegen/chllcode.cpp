@@ -447,6 +447,13 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
                 str << ")";
             } 
             break;
+        case opList:
+            appendExp(str, b->getSubExp1(), PREC_NONE);
+            if (b->getSubExp2()->getOper() == opList) {
+                str << ", ";
+                appendExp(str, b->getSubExp2(), PREC_NONE);
+            }
+            break;
         case opFlags:
             str << "%flags"; break;
         case opPC:
@@ -812,8 +819,20 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
             new Const(0)), PREC_ASSIGN);
     else
         appendExp(s, asgn->getLeft(), PREC_ASSIGN);
-    s << " = ";
-    appendExp(s, asgn->getRight(), PREC_ASSIGN);
+    if (asgn->getRight()->getOper() == opPlus && 
+        *asgn->getRight()->getSubExp1() == *asgn->getLeft()) {
+        // C has special syntax for this, eg += and ++
+        if (asgn->getRight()->getSubExp2()->getOper() == opIntConst &&
+            ((Const*)asgn->getRight()->getSubExp2())->getInt() == 1) 
+            s << "++";
+        else {
+            s << " += ";
+            appendExp(s, asgn->getRight()->getSubExp2(), PREC_ASSIGN);
+        }
+    } else {
+        s << " = ";
+        appendExp(s, asgn->getRight(), PREC_ASSIGN);
+    }
     s << ";";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -991,10 +1010,13 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
         appendType(s, type);
         s << " " << name;
     }
-    // Don't attempt to initialise arrays yet; complex syntax required
-    if (init && !type->isArray()) {
+    if (init) {
         s << " = ";
+        if (type->isArray())
+            s << "{ ";
         appendExp(s, init, PREC_ASSIGN);
+        if (type->isArray())
+            s << " }";
     }
     s << ";";
     lines.push_back(strdup(s.str().c_str()));
