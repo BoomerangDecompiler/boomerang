@@ -100,6 +100,8 @@ public:
     virtual void addParameter(Exp *e);
     virtual void addParameter(Parameter *param) { params.push_back(param); }
     virtual void addEllipsis() { ellipsis = true; }
+    virtual void removeParameter(Exp *e);
+    virtual void removeParameter(int i);
     // set the number of parameters using defaults
     virtual void setNumParams(int n);
 

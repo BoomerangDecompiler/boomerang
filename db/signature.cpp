@@ -783,6 +783,20 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/,
     addParameter(new Parameter(type, nam, e));
 }
 
+void Signature::removeParameter(Exp *e)
+{
+    int i = findParam(e);
+    if (i != -1)
+        removeParameter(i);
+}
+
+void Signature::removeParameter(int i)
+{
+    for (int j = i+1; j < params.size(); j++)
+        params[j-1] = params[j];
+    params.resize(params.size()-1);
+}
+
 void Signature::setNumParams(int n)
 {
     if (n < (int)params.size()) {

@@ -1008,7 +1008,7 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
         if (depth == 0) {
             trimReturns();
             removeRedundantPhis();
-            //trimParameters();
+            trimParameters();
         }
 
         // Print if requested
@@ -1188,39 +1188,41 @@ void UserProc::trimParameters() {
     StatementList stmts;
     getStatements(stmts);
 
-    assert(false); // TODO
-
-    bool referenced[signature->getNumParams()];
-    for (int i = 0; i < signature->getNumParams(); i++)
+    int nparams = signature->getNumParams();
+    bool referenced[nparams];
+    for (int i = 0; i < nparams; i++) {
         referenced[i] = false;
-#if 0
-    // find parameters that are referenced
+    }
+
+    // find parameters that are referenced (ignore calls to this)
     StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        for (int i = 0; i < signature->getNumParams(); i++) {
-            RefExp *r = new RefExp(signature->getParamExp(i), NULL);
-            bool ch = s->search(r, new Unary(opParam, new Const((char*)signature->getParamName(i))));
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) 
+        if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
+            for (int i = 0; i < nparams; i++) 
+                if (!referenced[i]) {
+                    RefExp *r = new RefExp(signature->getParamExp(i)->clone(), 
+                                    NULL);
+                    Exp *result;
+                    bool ch = s->search(r, result);
+                    if (ch) referenced[i] = true;
+                    delete r;
+                }
         }
-    }
 
-    // replace expressions with parameters in the return value
-    for (int i = 0; i < signature->getNumParams(); i++) { 
-        Exp *e = cfg->getReturnVal();
-        if (e == NULL) break;
-        e = e->clone();
-        bool change = false;
-        RefExp *r = new RefExp(signature->getParamExp(i), NULL);
-        e = e->searchReplaceAll(r, new Unary(opParam, 
-                         new Const((char*)signature->getParamName(i))), change);
-        if (change) cfg->setReturnVal(e->clone());
-    }
+    for (int i = 0; i < nparams; i++)
+        if (!referenced[i]) {
+            if (VERBOSE) 
+                std::cerr << "removing unused parameter " << i << std::endl;
+            removeParameter(i);
+        }
+}
 
-    for (int i = 0; i < signature->getNumParam(); i++) {
-        Exp *e = signature->getParamExp(i);
-
-        
-    }
-#endif
+void UserProc::removeParameter(int n)
+{
+    signature->removeParameter(n);
+    for (std::set<CallStatement*>::iterator it = callerSet.begin();
+         it != callerSet.end(); it++)
+        (*it)->removeArgument(n);
 }
 
 void UserProc::replaceExpressionsWithGlobals() {

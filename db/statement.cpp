@@ -2069,6 +2069,9 @@ void CallStatement::setSigArguments() {
             arguments.push_back(procDest->getSignature()->
                             getArgumentExp(arguments.size())->clone());
     }
+    UserProc *u = dynamic_cast<UserProc*>(procDest);
+    if (u) 
+        u->addCaller(this);
 }
 
 /*==============================================================================
@@ -2540,6 +2543,13 @@ void CallStatement::setNumArguments(int n) {
     for (int i = oldSize; i < n; i++) {
         arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
     }
+}
+
+void CallStatement::removeArgument(int i)
+{
+    for (int j = i; j < arguments.size(); j++)
+        arguments[j-1] = arguments[j];
+    arguments.resize(arguments.size()-1);
 }
 
 // Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})

@@ -344,6 +344,11 @@ class UserProc : public Proc {
     std::set<ADDRESS> calleeAddrSet;  // used in serialization
  
     /*
+     * Set of callers (CallStatements that call this procedure).
+     */
+    std::set<CallStatement*> callerSet;
+
+     /*
      * Set if visited on the way down the call tree during decompile()
      * Used for recursion detection
      */
@@ -451,6 +456,7 @@ public:
     void removeRedundantPhis();
     void trimReturns();
     void trimParameters();
+    void removeParameter(int i);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters();   // must be in SSA form
@@ -593,6 +599,16 @@ public:
      * Add to the set of callees
      */
     void setCallee(Proc* callee); 
+
+    /*
+     * Get the callers
+     */
+    std::set<CallStatement*>& getCallers() { return callerSet; }
+
+    /*
+     * Add to the set of callers
+     */
+    void addCaller(CallStatement* caller) { callerSet.insert(caller); }
 
     /*
      * return true if this procedure contains the given address

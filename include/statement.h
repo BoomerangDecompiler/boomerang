@@ -852,6 +852,7 @@ public:
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int  getNumArguments() { return arguments.size(); }
     void setNumArguments(int i);
+    void removeArgument(int i);
     Type *getArgumentType(int i);
     void truncateArguments();
     void clearLiveEntry();
