@@ -460,6 +460,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             std::list<Statement*>::iterator ss;
             for (ss = sl.begin(); ss != sl.end(); ss++) {
                 Statement* s = *ss;
+                s->setProc(pProc); // let's do this really early!
+                s->simplify();
                 GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
 
                 switch (s->getKind())

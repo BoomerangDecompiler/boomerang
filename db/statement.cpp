@@ -55,8 +55,9 @@ void Statement::setProc(UserProc *p)
     LocationSet::iterator ll;
     for (ll = exps.begin(); ll != exps.end(); ll++) {
         Location *l = dynamic_cast<Location*>(*ll);
-        if (l)
+        if (l) {
             l->setProc(p);
+        }
     }
 }
 
@@ -2494,10 +2495,13 @@ void Assign::simplify() {
                     if (ty && ty->isArray()) {
                         Type *bty = ((ArrayType*)ty)->getBaseType();
                         if (bty->isFloat()) {
-                            LOG << "replacing " << rhs << " with ";
+                            if (VERBOSE)
+                                LOG << "replacing " << rhs << " with ";
                             rhs = new Ternary(opItof, new Const(32), 
                                               new Const(bty->getSize()), rhs);
-                            LOG << rhs << " (assign indicates float type)\n";
+                            if (VERBOSE)
+                                LOG << rhs 
+                                    << " (assign indicates float type)\n";
                         }
                     }
                 }

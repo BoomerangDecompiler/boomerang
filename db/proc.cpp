@@ -1019,19 +1019,6 @@ std::set<UserProc*>* UserProc::decompile() {
 
     printXML();
 
-    // Print if requested
-    if (VERBOSE) {
-        LOG << "=== Debug Print for " << getName()
-          << " before processing float constants ===\n";
-        printToLog(true);
-        LOG << "=== End Debug Print for " <<
-          getName() << " before processing float constants ===\n\n";
-    }
- 
-    processFloatConstants();
-
-    printXML();
-
     if (Boomerang::get()->noDecompile) {
         decompiled = true;
         return cycleSet;

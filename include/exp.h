@@ -760,6 +760,7 @@ public:
     virtual Exp* clone();
 
     void setProc(UserProc *p) { proc = p; }
+    UserProc *getProc() { return proc; }
 
     virtual Exp* polySimplify(bool& bMod);
     virtual void addUsedLocs(LocationSet& used);

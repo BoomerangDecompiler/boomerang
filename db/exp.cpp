@@ -2236,9 +2236,28 @@ Exp* Ternary::polySimplify(bool& bMod) {
         ((Const*)subExp2)->getInt() == 32) {
         unsigned n = ((Const*)subExp3)->getInt();
         res = new Const(*(float*)&n);
-        LOG << "bit pattern for " << res << " is " << n << "\n";
         bMod = true;
         return res;
+    }
+
+    if (op == opFsize && subExp3->getOper() == opMemOf &&
+        subExp3->getSubExp1()->getOper() == opIntConst) {
+        unsigned u = ((Const*)subExp3->getSubExp1())->getInt();
+        Location *l = dynamic_cast<Location*>(subExp3);
+        UserProc *p = l->getProc();
+        if (p) {
+            Prog *prog = p->getProg();
+            bool ok;
+            double d = prog->getFloatConstant(u, ok);
+            if (ok) {
+                if (VERBOSE) 
+                    LOG << "replacing " << subExp3 << " with " << d 
+                        << " in " << this << "\n";
+                subExp3 = new Const(d);
+                bMod = true;
+                return res;
+            }
+        }
     }
 
     return res;
@@ -2556,7 +2575,7 @@ void Terminal::addUsedLocs(LocationSet& used) {
         // Fall through
         // The carry flag can be used in some SPARC idioms, etc
         case opDF: case opCF: case opZF: case opNF: case opOF:  // these flags too
-            used.insert(clone());
+            used.insert(this);
         default:
             break;
     }
@@ -2575,7 +2594,7 @@ void Ternary::addUsedLocs(LocationSet& used) {
 }
 
 void RefExp::addUsedLocs(LocationSet& used) {
-    used.insert(clone());           // We want to see these
+    used.insert(this);           // We want to see these
     if (subExp1->isMemOf()) {
         Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
         grandChild->addUsedLocs(used);
@@ -2591,7 +2610,7 @@ void PhiExp::addUsedLocs(LocationSet& used) {
     */
     StatementVec::iterator uu;
     for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-        Exp* temp = new RefExp(subExp1->clone(), *uu);
+        Exp* temp = new RefExp(subExp1, *uu);
         used.insert(temp);
     }
 }
@@ -3201,7 +3220,7 @@ Exp* Location::polySimplify(bool& bMod) {
 
 void Location::addUsedLocs(LocationSet& used) {
     // We want to add this expression
-    used.insert(clone());
+    used.insert(this);
     // We also need to recurse, in case we have m[m[...]] or m[r[...]]
     if (op == opMemOf)
         subExp1->addUsedLocs(used);

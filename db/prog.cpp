@@ -58,6 +58,7 @@
 #include "analysis.h"
 #include "boomerang.h"
 #include "ansi-c-parser.h"
+#include "config.h"
 
 Prog::Prog()
     : interProcDFAphase(0),
@@ -531,11 +532,11 @@ double Prog::getFloatConstant(ADDRESS uaddr, bool &ok, int bits) {
     ok = true;
     SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
     if (si && si->bReadOnly)
-        if (bits == 64)
-            return *(double*)(uaddr + si->uHostAddr - si->uNativeAddr);
-        else {
+        if (bits == 64) {
+            return pBF->readNativeFloat8(uaddr);
+        } else {
             assert(bits == 32);
-            return *(float*)(uaddr + si->uHostAddr - si->uNativeAddr);
+            return pBF->readNativeFloat4(uaddr);
         }
     ok = false;
     return 0.0;
