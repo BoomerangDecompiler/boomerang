@@ -15,6 +15,7 @@
 # $Revision$
 # 16 Oct 98 - Mike: lower case register names to be consistent with sparc
 # 20 Nov 02 - Mike: Fixed MOV.ED.IVOD and MOV.EW.IVOW
+# 20 Jul 04 - Mike: Fixed FISUB, FISUBR
 
 # Constants defined in hexadecimal (modelling manual) 
 MAX8BITS  := 0xFF;
@@ -1871,11 +1872,17 @@ FSUBRP.STi.ST   i
             *80* i := %st -f i
             FPOP;
 
-FISUBR.r32   modrm 
+FISUB.i32   modrm 
+            *80* %st := %st -f itof(32,80,modrm);
+
+FISUB.i16   modrm 
+            *80* %st := %st - itof(16,80,modrm);
+
+FISUBR.i32   modrm 
             *80* %st := itof(32,80,modrm) -f %st;
 
-FISUBR.r64   modrm 
-            *80* %st := itof(64,80,modrm) -f %st;
+FISUBR.i16   modrm 
+            *80* %st := itof(16,80,modrm) -f %st;
 
 FTST    
             SETFFLAGS(%st, 0.0);
