@@ -51,6 +51,7 @@ public:
     bool printRtl;
     bool noBranchSimplify;
     bool noRemoveInternal;
+    bool noRemoveNull;
     bool noLocals;
     bool noRemoveLabels;
     bool noDataflow;
