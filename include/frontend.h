@@ -147,6 +147,10 @@ virtual int     getInst(int addr);
     /* Decode starting at a given address in a given program. */
     void decode(Prog *prog, ADDRESS a);
 
+    /* Decode a fragment of a procedure, e.g. for each destination of a
+      switch statement */
+    void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a);
+
     /*
      * create a new procedure of the appropriate type in a program at
      * the given address.
@@ -158,10 +162,13 @@ virtual int     getInst(int addr);
      * processProc. This is the main function for decoding a procedure.
      * It is usually overridden in the derived class to do
      * source machine specific things.
+     * If frag is set, we are decoding just a fragment of the proc
+     *  (e.g. each arm of a switch statement is decoded)
      * If spec is set, this is a speculative decode
      * Returns true on a good decode
      */
-virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
+virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
+    bool frag = false, bool spec = false, PHELPER helperFunc = NULL);
 
     /*
      * Locate the starting address of "main", returning a native address

@@ -194,8 +194,7 @@ Prog *FrontEnd::decode(bool decodeMain)
     return prog;
 }
 
-void FrontEnd::decode(Prog *prog, ADDRESS a) 
-{
+void FrontEnd::decode(Prog *prog, ADDRESS a) {
     if (a != NO_ADDRESS)
         prog->setNewProc(a);
 
@@ -220,6 +219,11 @@ void FrontEnd::decode(Prog *prog, ADDRESS a)
         }
     }
     prog->wellForm();
+}
+
+void FrontEnd::decodeFragment(UserProc* proc, ADDRESS a) {
+    std::ofstream os;
+    processProc(a, proc, os, true);
 }
 
 DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
@@ -326,6 +330,7 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  * OVERVIEW:      Process a procedure, given a native (source machine) address.
  * PARAMETERS:    address - the address at which the procedure starts
  *                pProc - the procedure object
+ *                frag - if true, this is just a fragment of a procedure
  *                spec - if true, this is a speculative decode
  *                helperFunc - pointer to a function to call (if not null) to
  *                  do a processor specific test for helper functions
@@ -336,11 +341,12 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  * RETURNS:       true for a good decode (no illegal instructions)
  *============================================================================*/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-  bool spec /* = false */, PHELPER helperFunc) {
+  bool frag /* = false */, bool spec /* = false */,
+  PHELPER helperFunc /* = NULL */) {
     PBB pBB;                    // Pointer to the current basic block
     INSTTYPE type;              // Cfg type of instruction (e.g. IRET)
 
-    if (!pProc->getSignature()->isPromoted()) {
+    if (!frag && !pProc->getSignature()->isPromoted()) {
         if (VERBOSE)
             LOG << "adding default params for " << pProc->getName() << "\n";
         std::vector<Exp*> &params = getDefaultParams();
@@ -386,8 +392,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     // ADDRESS initAddr = uAddr;
     int nTotalBytes = 0;
     ADDRESS lastAddr = uAddr;
-
-    ADDRESS retAddr = NO_ADDRESS;
 
     while ((uAddr = targetQueue.nextAddress(pCfg)) != NO_ADDRESS) {
 
@@ -562,11 +566,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
                     // FIXME: This needs to call a new register branch
                     // processing function
+                    #if 0
                     if (isSwitch(pBB, stmt_jump->getDest(), pProc, pBF)) {
                         processSwitch(pBB, pBF->getTextDelta(), pCfg,
                         targetQueue, pBF);
                     }
-                    else { // Computed jump
+                    else // Computed jump
+                    #endif
+                    {
                         // Not a switch statement
                         std::string sKind("JUMP");
                         if (type == I_COMPCALL) sKind = "CALL";
@@ -628,7 +635,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         call->setIsComputed(false);
                     }
 
-                    // Treat computed and static calls seperately
+                    // Treat computed and static calls separately
                     if (call->isComputed()) {
                         BB_rtls->push_back(pRtl);
                         pBB = pCfg->newBB(BB_rtls, COMPCALL, 1);
@@ -737,14 +744,15 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     // Stop decoding sequentially
                     sequentialDecode = false;
 
-                    if (retAddr == NO_ADDRESS) {
+                    if (pProc->getTheReturnAddr() == NO_ADDRESS) {
 
                         // Add the RTL to the list
                         BB_rtls->push_back(pRtl);
                         // Create the basic block
                         pBB = pCfg->newBB(BB_rtls, RET, 0);
 
-                        retAddr = pRtl->getAddress();
+                        pProc->setTheReturnAddr((ReturnStatement*)s,
+                          pRtl->getAddress());
 
                         // If this ret pops anything other than the return
                         // address, this information can be useful in the proc
@@ -754,7 +762,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                             // convention
                             pProc->setBytesPopped(popped);
                     } else {
-                        std::list<Statement*> *stmt_list = new std::list<Statement*>;
+                        ADDRESS retAddr = pProc->getTheReturnAddr();
+                        std::list<Statement*> *stmt_list =
+                            new std::list<Statement*>;
                         stmt_list->push_back(new GotoStatement(retAddr));
                         BB_rtls->push_back(new RTL(uAddr, stmt_list));
                         targetQueue.visit(pCfg, retAddr, pBB);

@@ -35,11 +35,13 @@ virtual platform getFrontEndId() { return PLAT_SPARC; }
      * This overrides the base class processProc to do source machine
      * specific things (but often calls the base class to do most of the
      * work. Sparc is an exception)
+     * If frag is true, we are decoding only a fragment of the proc
      * If spec is true, this is a speculative decode (so give up on any invalid
      * instruction)
      * Returns true on a good decode
      */
-virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
+virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
+    bool frag = false, bool spec = false, PHELPER helperFunc = NULL);
 
 virtual std::vector<Exp*> &getDefaultParams();
 virtual std::vector<Exp*> &getDefaultReturns();

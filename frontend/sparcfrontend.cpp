@@ -10,13 +10,11 @@
  */
 
 /*==============================================================================
- * FILE:       machine/sparc/frontendsrc.cc
+ * FILE:       frontend/sparcfrontend.cpp
  * OVERVIEW:   This file contains routines to manage the decoding of sparc
  *             instructions and the instantiation to RTLs, removing sparc
  *             dependent features such as delay slots in the process. These
  *             functions replace Frontend.cc for decoding sparc instructions.
- * NOTE:       File can't have "sparc" in the name because of limitations in
- *             the Makefile (pattern substitution can happen only once per name)
  *============================================================================*/
 
 /*
@@ -549,6 +547,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
         // to analyse its callee(s), of course.
         callSet.insert(call_stmt);
     }
+#if 0
     else if(last->getKind() == STMT_CASE) {
 
         // Attempt to process this jmpl as a switch statement.
@@ -558,10 +557,12 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
             inst.rtl->getList().back());
         if (isSwitch(newBB, stmt_jump->getDest(), proc, pBF))
             processSwitch(newBB, delta, cfg, tq, pBF);
-        else {
+        else
+        {
             std::cerr << "Warning: COMPUTED JUMP at " << std::hex << address-8 << std::endl;
         }
     }
+#endif
 
     // Set the address of the lexical successor of the call
     // that is to be decoded next and create a new list of
@@ -836,7 +837,8 @@ std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
  * RETURNS:          True if a good decode
  *============================================================================*/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
-  std::ofstream &os, bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
+  std::ofstream &os, bool fragment /* = false */, bool spec /* = false */,
+    PHELPER helperFunc /* = NULL */) {
 
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
@@ -1326,13 +1328,13 @@ if (0)          // SETTINGS
 
         // Must set sequentialDecode back to true
         sequentialDecode = true;
-    }
+    }   // End huge while loop
 
 
-    // Add the callees to the set of CallStatements to proces for parameter recovery,
-    // and also to the Prog object
-    for (std::set<CallStatement*>::iterator it = callSet.begin(); it != callSet.end();
-      it++) {
+    // Add the callees to the set of CallStatements to proces for parameter
+    // recovery, and also to the Prog object
+    for (std::set<CallStatement*>::iterator it = callSet.begin();
+      it != callSet.end(); it++) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
