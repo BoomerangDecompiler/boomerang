@@ -179,6 +179,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
 
+	| b (reladdr) =>
+		unconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
+
 	| buul (BIcr, reladdr) [name] =>		// Unconditional "conditional" branch with link, test/OSX/hello has this
 		if (reladdr - delta - pc == 4) {	// Branch to next instr?
 			// Effectively %LR = %pc+4, but give the actual value for %pc

@@ -201,28 +201,32 @@ NEG			 rd, ra							*32* rd := 0 - ra;
 NEGq		 rd, ra							*32* rd := 0 - ra
 			 	 							SETFLAGS0(rd);
 
-# Note: the "andq" instruction comes out as "AND"^"Rc" or "ANDRc" here. However, "andiq" comes out as "ANDI"
-LOGDOT	:= {"ANDRc",	"ORRc",		"XORRc"};			# Logicals that set flags as well
+LOGDOT	:= {"ANDq",		"ORq",		"XORq"};			# Logicals that set flags as well
 LOG		:= {"AND",		"OR",		"XOR",	LOGDOT};	# All logicals with uncomplemented operands
-LOGI	:= {"ANDI",		"ORI",		"XORI"};			# Immediate with dot
-LOGIS	:= {"ANDIS",	"ORIS",		"XORIS"};			# Immediate with operand B shifted left 16 bits, and dot
-NLOGDOT	:= {"NANDRc",	"NORRc",	"EQVRc"};			# Negated logicals that set flags
+LOGI	:= {			"ORI",		"XORI"};			# Immediate, NO dot (Note: ANDIq, but ORI, XORI)
+LOGIS	:= {			"ORIS",		"XORIS"};			# Immediate with operand B shifted left 16 bits, NO dot
+NLOGDOT	:= {"NANDq",	"NORq",		"EQVq"};			# Negated logicals that set flags
 														# Note: NXOR is called EQV
 NLOG	:= {"NAND",		"NOR",		"EQV", NLOGDOT};	# All negated logicals
 LOGOP	:= {  "&","|", "^",	"&", "|", "^"};
-LOGC	:= {"ANDC",	"ORC", "ANDCRc","ORCRc"};			# Note: no XORCR
+LOGC	:= {"ANDC",	"ORC", "ANDCq","ORCq"};				# Note: no XORCR
 LOGCOP	:= {  "&",	 "|",	 "&",	  "|"};
-LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORCRq
+LOGCDOT	:= {"ANDCq","ORCq"};							# Note: no XORCRq
+LOGIDOTOP:={"|", "^"};									# Note: no ANDI or ANDIS (ANDIq and ANDISq instead)
 
 
 LOG[IDX]		rd, ra, rb				*32* rd := ra LOGOP[IDX] rb;
 LOGDOT[IDX]		rd, ra, rb				SETFLAGS0(rd);
 
-LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] uimm
-										SETFLAGS0(rd);				# All immediates set flags
+LOGI[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] uimm;
 
-LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGOP[IDX] (uimm << 16)
-										SETFLAGS0(rd);				# All immediates set flags
+ANDI			rd, rs, uimm			*32* rd := rs & uimm
+										SETFLAGS0(rd);				# Only ANDIq sets flags
+
+LOGIS[IDX]		rd, rs, uimm			*32* rd := rs LOGIDOTOP[IDX] (uimm << 16);
+
+ANDISq			rd, rs, uimm			*32* rd := rs & (uimm << 16)
+										SETFLAGS0(rd);				# Only ANDISq sets flags
 
 NLOG[IDX]		rd, ra, rb				*32* rd := ~(ra LOGOP[IDX] rb);
 NLOGDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
@@ -247,6 +251,8 @@ STWU	rs, eaddr, ra					*32* m[eaddr] := rs
 										*32* ra := eaddr;
 
 STW		rs, eaddr, ra					*32* m[eaddr] := rs;
+
+STH		rs, eaddr, ra					*16* m[eaddr] := truncs(32, 16, rs);
 
 STB		rs, eaddr, ra					*8*  m[eaddr] := truncs(32, 8, rs);
 
