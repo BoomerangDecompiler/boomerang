@@ -155,7 +155,7 @@ void FrontSparcTest::test2() {
     inst.rtl->print(o1);
     // This call is to out of range of the program's
     // text limits (to the Program Linkage Table (PLT), calling printf)
-	// This is quite normal.
+    // This is quite normal.
     expected = std::string("00010a60 CALL 0x21668()\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
@@ -257,7 +257,7 @@ void FrontSparcTest::testBranch() {
     inst = pFE->decodeInstruction(0x10ab0);
     inst.rtl->print(o1);
     expected = std::string("00010ab0 JCOND 0x10ac8, condition not equals\n"
-	  "High level: ~%ZF\n");
+      "High level: ~%ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     // bg
@@ -265,7 +265,7 @@ void FrontSparcTest::testBranch() {
     inst = pFE->decodeInstruction(0x10af8);
     inst.rtl->print(o2);
     expected = std::string("00010af8 JCOND 0x10b10, condition signed greater\n"
-	  "High level: %NF\n");
+      "High level: ~(%ZF or (%NF ~= %OF))\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     // bleu
@@ -274,7 +274,7 @@ void FrontSparcTest::testBranch() {
     inst.rtl->print(o3);
     expected = std::string(
         "00010b44 JCOND 0x10b54, condition unsigned less or equals\n"
-		"High level: ~%CF or %ZF\n");
+        "High level: %CF or %ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -359,17 +359,17 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o3;
     bb->print(o3);
     expected = std::string("Twoway BB:\n"
-	"00010aa4 *32* r[8] := m[r[30] + -20]\n"
-	"00010aa8 *32* r[16] := 0 | 5\n"
-	"00010aac *32* r[tmp] := r[16]\n"
-	"         *32* r[0] := r[16] - r[8]\n"
-	"         *1* %NF := r[0]@31:31\n"
+    "00010aa4 *32* r[8] := m[r[30] + -20]\n"
+    "00010aa8 *32* r[16] := 0 | 5\n"
+    "00010aac *32* r[tmp] := r[16]\n"
+    "         *32* r[0] := r[16] - r[8]\n"
+    "         *1* %NF := r[0]@31:31\n"
     "         *1* %ZF := (r[0] = 0) ? 1 : 0\n"
     "         *1* %OF := (((r[tmp]@31:31) & ~(r[8]@31:31)) & ~(r[0]@31:31)) | ((~(r[tmp]@31:31) & (r[8]@31:31)) & (r[0]@31:31))\n"
     "         *1* %CF := (~(r[tmp]@31:31) & (r[8]@31:31)) | ((r[0]@31:31) & (~(r[tmp]@31:31) | (r[8]@31:31)))\n"
-	"00010ab0 *32* r[8] := 70656\n"
-	"00010ab0 JCOND 0x10ac8, condition not equals\n"
-	"High level: ~%ZF\n");
+    "00010ab0 *32* r[8] := 70656\n"
+    "00010ab0 JCOND 0x10ac8, condition not equals\n"
+    "High level: ~%ZF\n");
     actual = std::string(o3.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -380,7 +380,7 @@ void FrontSparcTest::testDelaySlot() {
     expected = std::string("L1: Twoway BB:\n"
         "00010ac8 *32* r[8] := 70656\n"
         "00010ac8 JCOND 0x10ad8, condition equals\n"
-		"High level: %ZF\n");
+        "High level: %ZF\n");
     actual = std::string(o4.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 

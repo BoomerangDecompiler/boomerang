@@ -76,7 +76,7 @@ void FrontPentTest::test1 () {
 
     BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
     if (pBF == NULL)
-	    pBF = new BinaryFileStub();
+        pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
@@ -120,7 +120,7 @@ void FrontPentTest::test2() {
 
     BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
     if (pBF == NULL)
-	    pBF = new BinaryFileStub();
+        pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
@@ -131,10 +131,10 @@ void FrontPentTest::test2() {
     expected = std::string(
         "08048925 *32* r[tmp1] := r[28]\n"
         "         *32* r[28] := r[28] + 4\n"
-		"         *1* %CF := ((r[tmp1]@31:31) and (4@31:31)) or (~(r[28]@31:31) and ((r[tmp1]@31:31) or (4@31:31)))\n"
-    	"         *1* %OF := (((r[tmp1]@31:31) and (4@31:31)) and ~(r[28]@31:31)) or ((~(r[tmp1]@31:31) and ~(4@31:31)) and (r[28]@31:31))\n"
-    	"         *1* %NF := r[28]@31:31\n"
-    	"         *1* %ZF := (r[28] = 0) ? 1 : 0\n");
+        "         *1* %CF := ((r[tmp1]@31:31) and (4@31:31)) or (~(r[28]@31:31) and ((r[tmp1]@31:31) or (4@31:31)))\n"
+        "         *1* %OF := (((r[tmp1]@31:31) and (4@31:31)) and ~(r[28]@31:31)) or ((~(r[tmp1]@31:31) and ~(4@31:31)) and (r[28]@31:31))\n"
+        "         *1* %NF := r[28]@31:31\n"
+        "         *1* %ZF := (r[28] = 0) ? 1 : 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
@@ -142,10 +142,10 @@ void FrontPentTest::test2() {
     inst.rtl->print(o2);
     expected = std::string(
         "08048928 *32* r[24] := r[24] ^ r[24]\n"
-		"         *1* %CF := 0\n"
-		"         *1* %OF := 0\n"
-		"         *1* %ZF := (r[24] = 0) ? 1 : 0\n"
-		"         *1* %NF := r[24]@31:31\n");
+        "         *1* %CF := 0\n"
+        "         *1* %OF := 0\n"
+        "         *1* %ZF := (r[24] = 0) ? 1 : 0\n"
+        "         *1* %NF := r[24]@31:31\n");
 
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
@@ -165,7 +165,7 @@ void FrontPentTest::test3() {
 
     BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
     if (pBF == NULL)
-	    pBF = new BinaryFileStub();
+        pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
@@ -183,9 +183,9 @@ void FrontPentTest::test3() {
     inst = pFE->decodeInstruction(0x804892d);
     inst.rtl->print(o2);
     expected = std::string(
-	  "0804892d *32* %pc := m[r[28]]\n"
-	  "         *32* r[28] := r[28] + 4\n"
-	  "0804892d RET\n");
+      "0804892d *32* %pc := m[r[28]]\n"
+      "         *32* r[28] := r[28] + 4\n"
+      "0804892d RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     delete pFE;
@@ -198,7 +198,7 @@ void FrontPentTest::testBranch() {
 
     BinaryFile *pBF = BinaryFile::Load(BRANCH_PENT);
     if (pBF == NULL)
-	    pBF = new BinaryFileStub();
+        pBF = new BinaryFileStub();
     CPPUNIT_ASSERT(pBF != 0);
     CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
     FrontEnd *pFE = new PentiumFrontEnd(pBF); 
@@ -208,7 +208,7 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x8048979);
     inst.rtl->print(o1);
     expected = std::string("08048979 JCOND 0x8048988, condition not equals\n"
-	  "High level: ~%ZF\n");
+      "High level: ~%ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, o1.str());
 
     // jg
@@ -216,8 +216,8 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x80489c1);
     inst.rtl->print(o2);
     expected = std::string(
-	  "080489c1 JCOND 0x80489d5, condition signed greater\n"
-	  "High level: %NF\n");
+      "080489c1 JCOND 0x80489d5, condition signed greater\n"
+      "High level: ~(%ZF or (%NF ~= %OF))\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     // jbe
@@ -226,7 +226,7 @@ void FrontPentTest::testBranch() {
     inst.rtl->print(o3);
     expected = std::string(
         "08048a1b JCOND 0x8048a2a, condition unsigned less or equals\n"
-	    "High level: %CF or %ZF\n");
+        "High level: %CF or %ZF\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;

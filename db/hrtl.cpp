@@ -21,6 +21,7 @@
  * 26 Nov 02 - Mike: Generate code for HlReturn with semantics (eg SPARC RETURN)
  * 26 Nov 02 - Mike: In getReturnLoc test for null procDest
  * 03 Dec 02 - Mike: Made a small mod to HLCall::killLive for indirect calls
+ * 19 Dec 02 - Mike: Fixed the expressions in HLJcond::setCondType()
  */
 
 #include <assert.h>
@@ -304,14 +305,14 @@ void HLJump::getUseDefLocations(LocationMap& locMap, LocationFilter* filter,
 // serialize this rtl
 bool HLJump::serialize_rest(std::ostream &ouf)
 {
-	if (pDest && pDest->getOper() == opAddrConst) {
-		saveFID(ouf, FID_RTL_FIXDEST);
-		saveValue(ouf, ((Const *)pDest)->getAddr());
-	} else if (pDest) {
-		saveFID(ouf, FID_RTL_JDEST);
-		int l;
-		pDest->serialize(ouf, l);
-	}
+    if (pDest && pDest->getOper() == opAddrConst) {
+        saveFID(ouf, FID_RTL_FIXDEST);
+        saveValue(ouf, ((Const *)pDest)->getAddr());
+    } else if (pDest) {
+        saveFID(ouf, FID_RTL_JDEST);
+        int l;
+        pDest->serialize(ouf, l);
+    }
 
     return true;
 }
@@ -319,26 +320,26 @@ bool HLJump::serialize_rest(std::ostream &ouf)
 // deserialize an rtl
 bool HLJump::deserialize_fid(std::istream &inf, int fid)
 {
-	switch (fid) {
-		case FID_RTL_FIXDEST:
-			{
-				ADDRESS a;
-				loadValue(inf, a);
-				pDest = new Const(a);
-			}
-			break;
-		case FID_RTL_JDEST:
-			{
-				pDest = Exp::deserialize(inf);
-				if (pDest->getOper() != opAddrConst)
-					m_isComputed = true;
-				else
-					m_isComputed = false;
-			}
-			break;
-		default:
-			return RTL::deserialize_fid(inf, fid);
-	}
+    switch (fid) {
+        case FID_RTL_FIXDEST:
+            {
+                ADDRESS a;
+                loadValue(inf, a);
+                pDest = new Const(a);
+            }
+            break;
+        case FID_RTL_JDEST:
+            {
+                pDest = Exp::deserialize(inf);
+                if (pDest->getOper() != opAddrConst)
+                    m_isComputed = true;
+                else
+                    m_isComputed = false;
+            }
+            break;
+        default:
+            return RTL::deserialize_fid(inf, fid);
+    }
 
     return true;
 }
@@ -414,46 +415,66 @@ void HLJcond::setCondType(JCOND_TYPE cond, bool usesFloat /*= false*/)
             p = new Unary(opNot, new Terminal(opZF));
             break;
         case HLJCOND_JSL:
-            p = new Unary(opNot, new Terminal(opNF));
+            // N xor V
+            p = new Binary(opNotEqual, new Terminal(opNF), new Terminal(opOF));
             break;
         case HLJCOND_JSLE:
-            p = new Binary(opOr, new Unary(opNot, new Terminal(opNF)), 
-                                 new Terminal(opZF));
+            // Z or (N xor V)
+            p = new Binary(opOr,
+                new Terminal(opZF),
+                new Binary(opNotEqual, new Terminal(opNF), new Terminal(opOF)));
             break;
         case HLJCOND_JSGE:
-            p = new Binary(opOr, new Terminal(opNF),
-                                 new Terminal(opZF));
+            // not (N xor V) same as (N == V)
+            p = new Binary(opEquals, new Terminal(opNF), new Terminal(opOF));
             break;
         case HLJCOND_JSG:
-            p = new Terminal(opNF);
+            // not (Z or (N xor V))
+            p = new Unary(opNot,
+                new Binary(opOr,
+                    new Terminal(opZF),
+                    new Binary(opNotEqual,
+                        new Terminal(opNF), new Terminal(opOF))));
             break;
         case HLJCOND_JUL:
-            p = new Unary(opNot, new Terminal(opOF));
+            // C
+            p = new Terminal(opCF);
             break;
         case HLJCOND_JULE:
-            p = new Binary(opOr, new Unary(opNot, new Terminal(opOF)), 
+            // C or Z
+            p = new Binary(opOr, new Terminal(opCF), 
                                  new Terminal(opZF));
             break;
         case HLJCOND_JUGE:
-            p = new Binary(opOr, new Terminal(opOF), 
-                                 new Terminal(opZF));
+            // not C
+            p = new Unary(opNot, new Terminal(opCF));
             break;
         case HLJCOND_JUG:
-            p = new Terminal(opOF);
+            // not (C or Z)
+            p = new Unary(opNot,
+                new Binary(opOr,
+                    new Terminal(opCF),
+                    new Terminal(opZF)));
             break;
         case HLJCOND_JMI:
+            // N
             p = new Terminal(opNF);
             break;
         case HLJCOND_JPOS:
+            // not N
             p = new Unary(opNot, new Terminal(opNF));
             break;
         case HLJCOND_JOF:
+            // V
             p = new Terminal(opOF);
             break;
         case HLJCOND_JNOF:
+            // not V
             p = new Unary(opNot, new Terminal(opOF));
             break;
         case HLJCOND_JPAR:
+            // Can't handle (could happen as a result of a failure of Pentium
+            // floating point analysis)
             assert(false);
             break;
     }
@@ -617,19 +638,19 @@ bool HLJcond::serialize_rest(std::ostream &ouf)
 {
     HLJump::serialize_rest(ouf);
 
-	saveFID(ouf, FID_RTL_JCONDTYPE);
-	saveValue(ouf, (char)jtCond);
+    saveFID(ouf, FID_RTL_JCONDTYPE);
+    saveValue(ouf, (char)jtCond);
 
-	saveFID(ouf, FID_RTL_USESFLOATCC);
-	saveValue(ouf, bFloat);
+    saveFID(ouf, FID_RTL_USESFLOATCC);
+    saveValue(ouf, bFloat);
 
-	if (pCond) {
-		saveFID(ouf, FID_RTL_JCOND);
-		int l;
-		pCond->serialize(ouf, l);
-	}
+    if (pCond) {
+        saveFID(ouf, FID_RTL_JCOND);
+        int l;
+        pCond->serialize(ouf, l);
+    }
 
-	return true;
+    return true;
 }
 
 // deserialize an rtl
@@ -637,20 +658,20 @@ bool HLJcond::deserialize_fid(std::istream &inf, int fid)
 {
     char ch;
 
-	switch (fid) {
-		case FID_RTL_JCONDTYPE:				
-			loadValue(inf, ch);
-			jtCond = (JCOND_TYPE)ch;
-			break;
-		case FID_RTL_USESFLOATCC:
-			loadValue(inf, bFloat);
-			break;
-		case FID_RTL_JCOND:
-			pCond = Exp::deserialize(inf);
-			break;
-		default:
-			return HLJump::deserialize_fid(inf, fid);
-	}
+    switch (fid) {
+        case FID_RTL_JCONDTYPE:             
+            loadValue(inf, ch);
+            jtCond = (JCOND_TYPE)ch;
+            break;
+        case FID_RTL_USESFLOATCC:
+            loadValue(inf, bFloat);
+            break;
+        case FID_RTL_JCOND:
+            pCond = Exp::deserialize(inf);
+            break;
+        default:
+            return HLJump::deserialize_fid(inf, fid);
+    }
 
     return true;
 }
@@ -677,7 +698,7 @@ void HLJcond::printAsUse(std::ostream &os)
     if (pCond)
         pCond->print(os);
     else
-	os << "<empty cond>";
+    os << "<empty cond>";
 }
 
 void HLJcond::printAsUseBy(std::ostream &os)
@@ -685,7 +706,7 @@ void HLJcond::printAsUseBy(std::ostream &os)
     if (pCond)
         pCond->print(os);
     else
-	os << "<empty cond>";
+    os << "<empty cond>";
 }
 
 // inline any constants in the statement
@@ -998,7 +1019,7 @@ void HLCall::setIgnoreReturnLoc(bool b)
 Type* HLCall::getLeftType()
 {
     if (procDest == NULL || returnLoc == NULL)
-	    return new VoidType();
+        return new VoidType();
     return procDest->getSignature()->getReturnType();
 }
 
@@ -1157,7 +1178,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF)
     }
     
     if (withDF) {
-	std::list<Statement*> &internal = getInternalStatements();
+    std::list<Statement*> &internal = getInternalStatements();
         for (std::list<Statement*>::iterator it = internal.begin(); 
              it != internal.end(); it++) {
             os << "internal ";
@@ -1244,12 +1265,12 @@ bool HLCall::accept(RTLVisitor* visitor) {
 // serialize this rtl
 bool HLCall::serialize_rest(std::ostream &ouf)
 {
-	HLJump::serialize_rest(ouf);
+    HLJump::serialize_rest(ouf);
 
-	if (procDest) {
-		saveFID(ouf, FID_RTL_CALLDESTSTR);
-		saveString(ouf, std::string(procDest->getName()));
-	}
+    if (procDest) {
+        saveFID(ouf, FID_RTL_CALLDESTSTR);
+        saveString(ouf, std::string(procDest->getName()));
+    }
 
     return true;
 }
@@ -1257,20 +1278,20 @@ bool HLCall::serialize_rest(std::ostream &ouf)
 // deserialize an rtl
 bool HLCall::deserialize_fid(std::istream &inf, int fid)
 {
-	switch (fid) {
-		case FID_RTL_CALLDESTSTR:
-			loadString(inf, destStr);			
-			break;
-		default:
-			return HLJump::deserialize_fid(inf, fid);
-	}
+    switch (fid) {
+        case FID_RTL_CALLDESTSTR:
+            loadString(inf, destStr);           
+            break;
+        default:
+            return HLJump::deserialize_fid(inf, fid);
+    }
 
-	return true;
+    return true;
 }
 
 Proc* HLCall::getDestProc() 
 {
-	return procDest; 
+    return procDest; 
 }
 
 void HLCall::setDestProc(Proc* dest) 
@@ -1283,7 +1304,7 @@ void HLCall::setDestProc(Proc* dest)
 
 void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
-	Proc *p = getDestProc();
+    Proc *p = getDestProc();
 
     if (p == NULL && isComputed()) {
         hll.AddCallStatement(pbb, getReturnLoc(), pDest, arguments);
@@ -1308,8 +1329,8 @@ void HLCall::simplify()
 void HLCall::decompile()
 {
     if (procDest) { 
-	UserProc *p = dynamic_cast<UserProc*>(procDest);
-	if (p != NULL)
+    UserProc *p = dynamic_cast<UserProc*>(procDest);
+    if (p != NULL)
             p->decompile();
         procDest->getInternalStatements(internal);
         // init arguments
@@ -1318,15 +1339,15 @@ void HLCall::decompile()
         for (int i = 0; i < procDest->getSignature()->getNumParams(); i++)
             arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
         if (procDest->getSignature()->hasEllipsis()) {
-	    for (int i = 0; i < 10; i++)
-	        arguments.push_back(procDest->getSignature()->
-				getArgumentExp(arguments.size())->clone());
+        for (int i = 0; i < 10; i++)
+            arguments.push_back(procDest->getSignature()->
+                getArgumentExp(arguments.size())->clone());
         }
-	// init return location
-	returnLoc = procDest->getSignature()->getReturnExp();
-	if (returnLoc) returnLoc = returnLoc->clone();
+    // init return location
+    returnLoc = procDest->getSignature()->getReturnExp();
+    if (returnLoc) returnLoc = returnLoc->clone();
     } else {
-	// TODO
+    // TODO
     }
 }
 
@@ -1365,20 +1386,20 @@ void HLCall::printAsUseBy(std::ostream &os)
 void HLCall::killLive(std::set<Statement*> &live)
 {
     if (procDest == NULL) {
-	live.clear();
+    live.clear();
         return;
     }
     std::set<Statement*> kills;
     for (std::set<Statement*>::iterator it = live.begin(); it != live.end(); it++) {
         bool isKilled = false;
         if (getReturnLoc() && (*it)->getLeft() && 
-	    *(*it)->getLeft() == *getReturnLoc())
+        *(*it)->getLeft() == *getReturnLoc())
             isKilled = true;
         if (getReturnLoc() && (*it)->getLeft() &&
-	    (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
+        (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
             isKilled = true; // might alias, very conservative
         if (isKilled)
-	    kills.insert(*it);
+        kills.insert(*it);
     }
     for (std::set<Statement*>::iterator it = kills.begin(); it != kills.end(); it++)
         live.erase(*it);
@@ -1390,22 +1411,22 @@ void HLCall::getDeadStatements(std::set<Statement*> &dead)
     getLiveIn(live);
     if (procDest && procDest->isLib()) {
         for (std::set<Statement*>::iterator it = live.begin(); 
-	     it != live.end(); it++) {
+         it != live.end(); it++) {
             bool isKilled = false;
             if (getReturnLoc() && (*it)->getLeft() &&
-	        *(*it)->getLeft() == *getReturnLoc())
+            *(*it)->getLeft() == *getReturnLoc())
                 isKilled = true;
             if ((*it)->getLeft() && getReturnLoc() && 
                 (*it)->getLeft()->isMemOf() && getReturnLoc()->isMemOf())
                 isKilled = true; // might alias, very conservative
             if (isKilled && (*it)->getNumUseBy() == 0)
-	        dead.insert(*it);
+            dead.insert(*it);
         }
     } else  {
         for (std::set<Statement*>::iterator it = live.begin(); 
-	     it != live.end(); it++) 
-		if ((*it)->getNumUseBy() == 0)
-			dead.insert(*it);
+         it != live.end(); it++) 
+        if ((*it)->getNumUseBy() == 0)
+            dead.insert(*it);
     }
 }
 
@@ -1414,7 +1435,7 @@ bool HLCall::usesExp(Exp *e)
     Exp *where = 0;
     for (unsigned i = 0; i < arguments.size(); i++)
         if (*arguments[i] == *e ||
-	    arguments[i]->search(e, where))
+        arguments[i]->search(e, where))
             return true;
     return false;
 }
@@ -1428,19 +1449,19 @@ void HLCall::doReplaceUse(Statement *use)
     bool change = false;
     for (unsigned i = 0; i < arguments.size(); i++) {
         if (*arguments[i] == *left) {
-	    arguments[i] = right->clone();
-	    change = true;
-	} else {
+        arguments[i] = right->clone();
+        change = true;
+    } else {
             bool changeright = false;
             arguments[i]->searchReplaceAll(left, right->clone(), changeright);
-	    change |= changeright;
-	}
+        change |= changeright;
+    }
     }
     assert(change);
     // simplify the arguments
     for (unsigned i = 0; i < arguments.size(); i++) {
-	    arguments[i] = arguments[i]->simplifyArith();
-	    arguments[i] = arguments[i]->simplify();
+        arguments[i] = arguments[i]->simplifyArith();
+        arguments[i] = arguments[i]->simplify();
     }
 }
 
@@ -1454,20 +1475,20 @@ void HLCall::inlineConstants(Prog *prog)
 {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
-	// char* and a constant
-	if ((arguments[i]->isAddrConst() || arguments[i]->isIntConst()) && 
-	    t && t->isPointer() && 
-	    ((PointerType*)t)->getPointsTo()->isChar()) {
-	    char *str = 
-	        prog->getStringConstant(((Const*)arguments[i])->getAddr());
-	    if (str) {
-		 std::string s(str);
-		 while (s.find('\n') != (unsigned)-1)
-		     s.replace(s.find('\n'), 1, "\\n");
-	         delete arguments[i];
-		 arguments[i] = new Const(strdup(s.c_str()));
-	    }
-	}
+    // char* and a constant
+    if ((arguments[i]->isAddrConst() || arguments[i]->isIntConst()) && 
+        t && t->isPointer() && 
+        ((PointerType*)t)->getPointsTo()->isChar()) {
+        char *str = 
+            prog->getStringConstant(((Const*)arguments[i])->getAddr());
+        if (str) {
+         std::string s(str);
+         while (s.find('\n') != (unsigned)-1)
+             s.replace(s.find('\n'), 1, "\\n");
+             delete arguments[i];
+         arguments[i] = new Const(strdup(s.c_str()));
+        }
+    }
     }
 }
 
@@ -1585,10 +1606,10 @@ bool HLReturn::deserialize_fid(std::istream &inf, int fid)
 
 void HLReturn::generateCode(HLLCode &hll, BasicBlock *pbb)
 {
-	// There could be semantics, e.g. SPARC RETURN instruction
-	// Most of the time, the list of RTs will be empty, and the
-	// below does nothing
-	RTL::generateCode(hll, pbb);
+    // There could be semantics, e.g. SPARC RETURN instruction
+    // Most of the time, the list of RTs will be empty, and the
+    // below does nothing
+    RTL::generateCode(hll, pbb);
 }
 
 void HLReturn::simplify()
