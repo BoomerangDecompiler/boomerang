@@ -89,8 +89,7 @@ AC_CHECK_HEADER(expat.h,,
         [AC_MSG_WARN()]
         [AC_MSG_WARN(Header file expat.h not found: eXpat not installed...)]
         [AC_MSG_WARN(or you need to copy expat.h to boomerang's include/ dir)]
-        [AC_MSG_WARN()])],
-        ./include)
+        [AC_MSG_WARN()], ./include)])
 
 dnl Check for eXpat library
 AC_CHECK_LIB(expat, XML_ExpatVersion, ,
