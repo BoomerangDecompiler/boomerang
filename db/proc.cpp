@@ -1578,9 +1578,11 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
         change = false;
         Statement* s = stmts.getFirst(ll);
         while (s) {
-            HLCall* call = dynamic_cast<HLCall*>(s);
-            if (call) {
-                // Never delete a call statement
+            AssignExp* asgn = dynamic_cast<AssignExp*>(s);
+            HLScond*   sc   = dynamic_cast<HLScond*>(s);
+            if (!asgn && !sc) {
+                // Never delete a statement other than an assignment or scond
+                // (e.g. nothing "uses" a Jcond)
                 s = stmts.getNext(ll);
                 continue;
             }
@@ -1598,8 +1600,9 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts) {
                 }
                 StmtSetIter dd;
                 for (Statement* def = refs.getFirst(dd); def;
-                  def = refs.getNext(dd))
+                  def = refs.getNext(dd)) {
                     refCounts[def]--;
+                }
                 if (VERBOSE)
                     std::cerr << "Removing unused statement " <<
                       s->getNumber() << " " << s << std::endl;
