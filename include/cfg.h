@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1997-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -93,16 +94,31 @@
 #include <list>
 #include <vector>
 #include <set>
-#include "proc.h"
+#include <map>
+#include <iostream>
+#include "types.h"
 
 //#include "bitset.h"     // Saves time. Otherwise, any implementation file that 
                         // defines say a BB, will need to #include this file
 
+class Exp;
+class AssignExp;
+class Proc;
+class UserProc;
+class UseSet;
+class DefSet;
+class SSACounts;
 class BinaryFile;
 // For Type Analysis
 class BBBlock;
+class BasicBlock;
+typedef BasicBlock* PBB;
+class HLLCode;
+class HLCall;
+class RTL;
 
 // Kinds of basic block nodes
+// reordering these will break the save files - trent
 enum BBTYPE {
     ONEWAY,                  // unconditional branch
     TWOWAY,                  // conditional branch
@@ -115,8 +131,21 @@ enum BBTYPE {
     INVALID                  // invalid instruction
 };
 
-typedef std::list<PBB>::iterator BB_IT;
+enum SBBTYPE {
+	NONE,					 // not structured
+	PRETESTLOOP,			 // header of a loop
+	POSTTESTLOOP,
+	ENDLESSLOOP,
+	JUMPINOUTLOOP,			 // an unstructured jump in or out of a loop
+	JUMPINTOCASE,			 // an unstructured jump into a case statement
+	IFGOTO,					 // unstructured conditional
+	IFTHEN,				 	 // conditional with then clause
+	IFTHENELSE,				 // conditional with then and else clauses
+	IFELSE,					 // conditional with else clause only
+	CASE					 // case statement (switch)
+};
 
+typedef std::list<PBB>::iterator BB_IT;
 /*==============================================================================
  * BasicBlock class. <more comments>
  *============================================================================*/
@@ -154,6 +183,11 @@ public:
      */
     int getLabel();
 
+	std::string &getLabelStr() { return m_labelStr; }
+	void setLabelStr(std::string &s) { m_labelStr = s; }
+	bool isLabelNeeded() { return m_labelneeded; }
+	void setLabelNeeded(bool b) { m_labelneeded = b; }
+
     /*
      * Return whether this BB has been traversed or not
      */
@@ -166,8 +200,10 @@ public:
 
     /*
      * Print the BB. For -R and for debugging
+	 * Don't use = std::cout, because gdb doesn't know about std::
      */
-    void print(std::ostream& os = std::cout);
+    void print(std::ostream& os);
+	void print() {print(std::cout);}
 
     /*
      * Set the type of the basic block.
@@ -278,15 +314,15 @@ public:
 
     /*
      * Static comparison function that returns true if the first BB has an
-     * DFS first number less than the second BB.
+     * DFT first number less than the second BB.
      */
-    static bool lessFirstDFS(PBB bb1, PBB bb2);
+    static bool lessFirstDFT(PBB bb1, PBB bb2);
 
     /*
      * Static comparison function that returns true if the first BB has an
-     * DFS last less than the second BB.
+     * DFT last less than the second BB.
      */
-    static bool lessLastDFS(PBB bb1, PBB bb2);
+    static bool lessLastDFT(PBB bb1, PBB bb2);
 
     /*
      * (see comment for Proc::subAXP)
@@ -297,6 +333,28 @@ public:
      * Resets the DFA sets of this BB.
      */
     void resetDFASets();
+
+	/* is this the latch node */
+	bool isLatchNode();
+
+	/* get the condition */
+	Exp *getCond();
+
+	/* set the condition */
+	void setCond(Exp *e);
+
+	/* get the loop body */
+	BasicBlock *getLoopBody();
+
+	// establish if this bb has a back edge to the given destination
+	bool hasBackEdgeTo(BasicBlock *dest);
+
+	// establish if this bb is an ancestor of another BB
+	bool isAncestorOf(BasicBlock *other);
+
+	/* Simplify all the expressions in this BB
+	 */
+	void simplify();
 
 #if 0
     /*
@@ -361,20 +419,17 @@ public:
 
     PBB getCorrectOutEdge(ADDRESS a);
     
-    int         m_first;        // depth-first traversal first visit
-    int         m_last;         // depth-first traversal last visit
-    int         m_revfirst;     // reverse depth-first traversal first visit
-    int         m_revlast;      // reverse depth-first traversal last visit
-#if 0
-    bool        m_header;       // True if this node is the header of a loop
-    bool        m_follow;       // True if this node is a follow
-    PBB         m_followNode;   // Set to the follow node of this conditional
-    std::list<PBB>   m_listLatchNodes; // latch nodes of this loop if this is a header node
-    bool        m_latch;        // True if this is a latch node
-    PBB         m_headerNode;   // header node if this is a latch node
-    int         m_index;        // The index of this BB in m_listBB sorted by
-                                // last DFS number.
+	/*
+	 * Depth first traversal of all bbs, numbering as we go and as we come back,
+	 * forward and reverse passes.  Use Cfg::establishDFTOrder() and 
+	 * CFG::establishRevDFTOrder to create these values.
+	 */
+    int         m_DFTfirst;        // depth-first traversal first visit
+    int         m_DFTlast;         // depth-first traversal last visit
+    int         m_DFTrevfirst;     // reverse depth-first traversal first visit
+    int         m_DFTrevlast;      // reverse depth-first traversal last visit
 
+#if 0
     BITSET& getPostDominatorSet() { return postdominators; }
 
         
@@ -407,6 +462,13 @@ private:
      */
     BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges);
 
+    /*
+     * Sets the RTLs for this BB. This is the only place that
+     * the RTLs for a block must be set as we need to add the back
+     * link for a call instruction to its enclosing BB.
+     */
+    void setRTLs(std::list<RTL*>* rtls);
+
 #if 0
     /*
      * Build the sets of locations that are live into and out of this basic
@@ -415,21 +477,44 @@ private:
     bool buildLiveInOutSets(const BITSET* callDefines = NULL);
 #endif
 
-    /*
-     * Sets the RTLs for this BB. This is the only place that
-     * the RTLs for a block must be set as we need to add the back
-     * link for a call instruction to its enclosing BB.
-     */
-    void setRTLs(std::list<RTL*>* rtls);
+	// serialize the basic block
+	bool serialize(std::ostream &ouf, int &len);
+
+	// deserialize a basic block
+	bool deserialize(std::istream &inf);
+
+	// used during serialization
+	std::vector<int> m_nOutEdges;     // numerical outedges
+	int m_nindex;					// numerical index of this bb in list of bbs in CFG.
+
+	// establish that all "parents" - ie. inedges that are not back edges - have been traversed
+	bool allParentsTraversed();
+
+public:
+
+	// code generation
+	void generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond = false);
+	void generateBodyCode(HLLCode &hll, bool dup = false);
+
+/* high level structuring */
+	SBBTYPE		m_structType;   // structured type of this node
+	SBBTYPE		m_loopCondType;	// type of conditional to treat this loop header as (if any)
+	PBB			m_loopHead;     // head of the most nested enclosing loop
+	PBB			m_caseHead;		// head of the most nested enclosing case
+	PBB			m_condFollow;	// follow of a conditional header
+	PBB			m_loopFollow;	// follow of a loop header
+	PBB			m_latchNode;	// latch node of a loop header  
 
 protected:
 /* general basic block information */
     BBTYPE          m_nodeType;     // type of basic block
     std::list<RTL*>*     m_pRtls;        // Ptr to list of RTLs
     int             m_iLabelNum;    // Nonzero if start of BB needs label
-    bool            m_bIncomplete:1;// True if not yet complete
-    bool            m_bJumpReqd:1;  // True if jump required for "fall through"
-    
+	std::string		m_labelStr;		// string label of this bb.
+	bool			m_labelneeded;
+    bool            m_bIncomplete;  // True if not yet complete
+    bool            m_bJumpReqd;    // True if jump required for "fall through"
+
 /* in-edges and out-edges */
     std::vector<PBB>     m_InEdges;      // Vector of in-edges
     std::vector<PBB>     m_OutEdges;     // Vector of out-edges
@@ -437,7 +522,71 @@ protected:
     int             m_iNumOutEdges; // support resize() of vectors!
 
 /* for traversal */
-    int             m_iTraversed;   // traversal marker
+    bool            m_iTraversed;   // traversal marker
+
+/* Yet Another Implementation of dataflow analysis.  All but one of these
+ * will go eventually, and we'll have something stable - trent 
+ *
+ * So how about some explanation of these things:
+ *
+ * * defs = set of assignment expressions in this BB defining a value
+ * * uses = set of expressions in this BB where defs are used.
+ * * liveIn = set of defs that reach this BB
+ * * killed = set of expressions in liveIn which are overwritten by defs
+ * * liveOut = liveIn - killed + defs
+ *
+ * This implementation tries to be a little more OO than the dragon book.
+ */
+public:
+
+	/* Get all the definitions in this BB.  Returns true if the
+	 * BB is in SSA form.
+     */
+	bool getSSADefs(DefSet &defs);
+
+	/* Return true if this expression is used in a phi
+	 */
+	bool isUsedInPhi(Exp *e);
+
+	void getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein);
+
+protected:
+
+	void getUses(UseSet &uses);
+	void getUsesOf(UseSet &uses, Exp *e);
+	void getDefs(DefSet &defs, Exp *before_use = NULL);
+	void getKilled(DefSet &killed);
+	void getLiveIn(DefSet &liveIn);
+	void getLiveOut(DefSet &liveOut);
+
+	/* Get all the uses of a given def after it's definition.
+	 * This function recurses the remainder of the cfg and 
+	 * does not assume ssa form.
+	 */
+	void getUsesAfterDef(Exp *def, UseSet &uses, bool start = false);
+
+	/* Subscript the definitions in this BB to SSA form.
+	 */
+	void SSAsubscript(SSACounts counts);
+
+	/* Set the parameters of a phi function based on current
+	 * counts.
+	 */
+	void SSAsetPhiParams(SSACounts &counts);
+
+	/* Add phi functions in every BB with more than one in edge for every def.
+	 * takes a map of unique definitions (lhs of assigns) to subscript values.
+	 */
+	void SSAaddPhiFunctions(std::set<Exp*> &defs);
+
+	/* Minimize the number of phi functions in this node.
+	 * returns true if anything changed.
+	 */
+	bool minimizeSSAForm();
+
+	/* Reverse the SSA transformation on this node.
+	 */
+	void revSSATransform();
 
 /* others to come later for analysis purposes */
 
@@ -546,6 +695,11 @@ public:
      * Set the pointer to the owning UserProc object
      */
     void setProc(UserProc* proc);
+
+	/*
+	 * clear this CFG of all basic blocks, ready for decode
+	 */
+	void clear();
 
     /*
      * Equality operator.
@@ -659,14 +813,14 @@ public:
     void sortByAddress ();
 
     /*
-     * Sorts the BBs in the CFG by their first DFS numbers.
+     * Sorts the BBs in the CFG by their first DFT numbers.
      */
-    void sortByFirstDFS();
+    void sortByFirstDFT();
 
     /*
-     * Sorts the BBs in the CFG by their last DFS numbers.
+     * Sorts the BBs in the CFG by their last DFT numbers.
      */
-    void sortByLastDFS();
+    void sortByLastDFT();
 
     /*
      * Updates m_vectorBB to m_listBB
@@ -805,7 +959,7 @@ public:
      * Replace all instances of search with replace.
      * Can be type sensitive if reqd
      */
-    void searchAndReplace(Exp* search, Exp* replace, bool typeSens = false);
+    void searchAndReplace(Exp* search, Exp* replace);
 
     /*
      * Print any data flow analysis info gathered so far such as
@@ -834,6 +988,62 @@ public:
     void computePostDominators();
 
     std::vector<PBB> m_vectorBB; // faster access
+
+	// serialize the CFG
+	bool serialize(std::ostream &ouf, int &len);
+
+	// deserialize a CFG
+	bool deserialize(std::istream &inf);
+
+	/* make the given BB into a call followed by a ret 
+	 * and remove all the orphaned nodes.
+	 */
+	void makeCallRet(PBB head, Proc *p);
+
+	/* return a bb given an address */
+	PBB bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
+
+	/* Get all the definitions in this CFG.  Returns true if the
+	 * CFG is in SSA form.
+     */
+	bool getSSADefs(DefSet &defs);
+
+	/* Transform the CFG to SSA form.
+	 */
+	void SSATransform(DefSet &defs);
+
+	/* Transform the CFG from SSA form.
+	 */
+	void revSSATransform();
+
+	/* Minimize the CFG, returns true if anything changed
+	 */
+	bool minimizeSSAForm();
+
+	/* Get all uses of a given expression
+	 */
+	void getAllUses(Exp *def, UseSet &uses);
+	void getAllUses(UseSet &uses);
+
+	/* Propogate a given expression forward in the CFG
+	 */
+	void propogateForward(Exp *e);
+
+	/* Return true if this expression is used in a phi
+	 */
+	bool isUsedInPhi(Exp *e);
+
+	/* Simplify all the expressions in the CFG
+	 */
+	void simplify();
+
+	/* Find the basic block containing the given expression
+	 */
+	PBB findBBWith(Exp *exp);
+
+	/* does a simple forward propogation
+	 */
+	void simplePropogate(Exp *def);
 
 private:
 

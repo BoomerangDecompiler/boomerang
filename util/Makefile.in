@@ -7,11 +7,11 @@
 
 # $Revision$
 # 09 Apr 02 - Mike: Created.
-# 10 Apr 02 - Mike: interface -> include; added util.cc (for str())
+# 10 Apr 02 - Mike: interface -> include; added util.cpp (for str())
 # 11 Apr 02 - Mike: target is now ../lib/libutil so can use -lutil
-# 28 Apr 02 - Mike: Make library from .o not .cc
+# 28 Apr 02 - Mike: Make library from .o not .cpp
 
-LIB_OBJS = util.o type.o
+LIB_OBJS = util.o
 LIB=../lib/libutil.so
 
 CC = g++ -g
@@ -39,14 +39,13 @@ $(LIB): $(LIB_OBJS)
 
 UtilTest.o: UtilTest.h
 util.o: ../include/util.h
-type.o: ../include/type.h
 
 # Make these objects with -fPIC
-$(LIB_OBJS): %.o : %.cc
+$(LIB_OBJS): %.o : %.cpp
 	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
 
 # Others without -fPIC
-.cc.o:
+.cpp.o:
 	$(CC) -c -I../include -o $@ $<
 
 clean:

@@ -1,0 +1,80 @@
+# Sparc makefile fragment
+SPARC_DIR := machine/sparc
+SPARC_SPEC:= $(SPARC_DIR)/sparc-core.spec $(SPARC_DIR)/sparc-synth.spec
+SPARC_DIS := $(SPARC_SPEC) $(SPARC_DIR)/sparcdis.spec
+SPARC_PAT := $(SPARC_DIR)/sparc.pat
+SPARC_PAL := $(SPARC_DIR)/sparc.pal
+SPARC_SSL := $(SPARC_DIR)/sparc.ssl
+SPARC_SRC := $(SPARC_DIR)/decoder_low.cc $(SPARC_DIR)/decoder.cc \
+	     $(SPARC_DIR)/sparc-names.cc $(SPARC_DIR)/frontsparc.cc \
+	     rtl/ctisparc.cc $(SPARC_DIR)/sparc.pat.cc 
+SPARC_MAT := $(SPARC_DIR)/decoder_low.m $(SPARC_DIR)/decoder.m \
+	     $(SPARC_DIR)/sparc.pat.m
+SPARC_INC := $(SPARC_DIR)/sparc-names.h $(SPARC_DIR)/sparc.pat.h
+
+ARCH_OBJ  += $(SPARC_SRC:%.cc=%.o)
+DISASM_OBJ+= $(SPARC_DIR)/disassembler.o $(SPARC_DIR)/sparc-names.o
+DISASM_BIN:= sparcDis
+PROC_DIR  += $(SPARC_DIR)
+
+EMU_BIN   := sparcemu
+EMU_C_SRC := dynamic/emu/sparcemu.cc dynamic/emu/sparcstub_c.cc
+EMU_C_OBJ += $(EMU_C_SRC:%.cc=%.o)
+
+EMU_JAVA  := dynamic/emu/sparcemu.java dynamic/emu/sparcmain.java
+EMU_JAVA_OBJ += $(EMU_JAVA:%.java=%.class) 
+EMU_JAVA_SHOBJ := dynamic/emu/sparcstub_java.lo
+EMU_JAVA_LIB := libsparcemu.so
+EMU_BIN_JAVA := sparcemu.class
+DISASM_JAVA_DEBUG := disasm/sparcdisdebug.java
+
+INSTRM_EMU_BIN   := spathfinder
+INSTRM_EMU_C_SRC := dynamic/emu/spathfinder.cc dynamic/emu/instrsparcstub_c.cc
+INSTRM_EMU_C_OBJ += $(INSTRM_EMU_C_SRC:%.cc=%.o)
+
+DYN_GEN_H := dynamic/emu/sparcemu.h dynamic/emu/spathfinder.h
+DYN_GEN_CC := dynamic/emu/sparcemu.cc dynamic/emu/spathfinder.cc
+DYN_GEN_M := dynamic/emu/sparcemu.m dynamic/emu/spathfinder.m
+
+ifeq (0, ${REMOTE})
+$(SPARC_DIR)/decoder.cc: $(SPARC_DIS) $(SPARC_DIR)/decoder.m
+	${MLTK} $^ 2> mltk.err
+$(SPARC_DIR)/decoder_low.cc: $(SPARC_DIS) $(SPARC_DIR)/decoder_low.m
+	${MLTK} $^ 2> mltk.err
+$(SPARC_DIR)/sparc.pat.cc: $(SPARC_DIS) $(SPARC_DIR)/sparc.pat.m
+	${MLTK} $^ 2> mltk.err
+$(SPARC_DIR)/disassembler.cc: $(SPARC_DIS) $(SPARC_DIR)/disassembler.m
+	${MLTK} $^ 2> mltk.err
+dynamic/emu/sparcemu.cc: $(SPARC_DIS) dynamic/emu/sparcemu.m
+	${MLTK} $^ 2> mltk.err
+dynamic/emu/spathfinder.cc: $(SPARC_DIS) dynamic/emu/spathfinder.m
+	${MLTK} $^ 2> mltk.err
+
+dynamic/emu/sparcemu.m: $(SPARC_SPEC) $(SPARC_SSL) dynamic/tools/genemu
+	dynamic/tools/genemu -o $@ $(SPARC_SPEC) $(SPARC_SSL)
+dynamic/emu/spathfinder.m: $(SPARC_SPEC) $(SPARC_SSL) dynamic/tools/genemu
+	dynamic/tools/genemu -i $(INSTR_DIR)/profile.inst -o $@ \
+		$(SPARC_SPEC) $(SPARC_SSL)	
+
+dynamic/emu/sparcemu.java: $(SPARC_DIR)/sparc-core.spec $(SPARC_DIR)/sparc.ssl \
+		dynamic/tools/genemu
+	dynamic/tools/mkjava ${UQBTSITE} $(SPARC_DIR)/sparc-core.spec \
+		$(SPARC_DIR)/sparc.ssl $@ -unsafe
+disasm/sparcdis.java: $(SPARC_DIR)/sparc-core.spec dynamic/tools/genemu
+	dynamic/tools/mkjavad ${UQBTSITE} $(SPARC_DIR)/sparc-core.spec $@ -unsafe
+disasm/sparcdiself.java: $(SPARC_DIR)/sparc-core.spec dynamic/tools/genemu
+	dynamic/tools/mkjavad ${UQBTSITE} $(SPARC_DIR)/sparc-core.spec $@ -elfParser	
+endif
+
+$(SPARC_DIR)/disassembler.o: $(SPARC_DIR)/disassembler.cc
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -DDISASM -c -o $@ $<
+
+sparcdisj: disasm/libdisasm.so disasm/sparcdis.class disasm/disasm.class
+
+sparcdiself: disasm/sparcdiself.java
+	${JAVAC} -classpath disasm:/proj/walkabout/disasm2/bin disasm/sparcdiself.java disasm/DisasmElf.java
+
+disasm/sparcdisdebug.java: $(SPARC_DIR)/sparc-core.spec dynamic/tools/genemu
+	dynamic/tools/mkjavad ${UQBTSITE} $(SPARC_DIR)/sparc-core.spec $@ -unsafe -emuDebug
+
+sparcdisdebug: disasm/libdisasm.so disasm/sparcdisdebug.class

@@ -16,6 +16,7 @@
 #define __WIN32BINARYFILE_H_
 
 #include "BinaryFile.h"
+#include <string>
 
 /* $Revision$
  * This file contains the definition of the Win32BinaryFile class, and some
@@ -31,8 +32,11 @@
  *             defined in BinaryFile.h.
  */
 
-#define LMMH(p) ((int)((Byte *)(&p))[0] + ((int)((Byte *)(&p))[1] << 8) + \
-    ((int)((Byte *)(&p))[2] << 16) + ((int)((Byte *)(&p))[3] << 24))
+// Given a little endian value x, load its value assuming little endian order
+// Note: must be able to take address of x
+// Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
+#define LMMH(x) ((int)((Byte *)(&x))[0] + ((int)((Byte *)(&x))[1] << 8) + \
+    ((int)((Byte *)(&x))[2] << 16) + ((int)((Byte *)(&x))[3] << 24))
 
 typedef struct {                /* exe file header, just the signature really */
          Byte   sigLo;          /* .EXE signature: 0x4D 0x5A     */
@@ -118,6 +122,16 @@ typedef struct {
   DWord Flags;
 } PEObject;
 
+typedef struct {
+    DWord originalFirstThunk; // 0 for end of array; also ptr to hintNameArray
+    DWord preSnapDate;      // Time and date the import data was pre-snapped
+                            // or zero if not pre-snapped
+    SWord verMajor;         // Major version number of dll being ref'd
+    SWord verMinor;         // Minor "       "
+    DWord name;             // RVA of dll name (asciz)
+    DWord firstThunk;       // RVA of start of import address table (IAT)
+} PEImportDtor;
+
 //#ifdef WIN32
 #pragma pack(4)
 //#endif
@@ -125,14 +139,15 @@ typedef struct {
 class Win32BinaryFile : public BinaryFile
 {
 public:
-                                Win32BinaryFile();                      
-// Default constructor
+                Win32BinaryFile();              // Default constructor
+  virtual       ~Win32BinaryFile();             // Destructor
   virtual bool  Open(const char* sName);        // Open the file for r/w; ???
   virtual void  Close();                        // Close file opened with Open()
   virtual void  UnLoad();                       // Unload the image
-  virtual char* SymbolByAddr(ADDRESS a);
   virtual LOAD_FMT GetFormat() const;           // Get format (i.e.
                                                 // LOADFMT_Win32)
+  virtual MACHINE GetMachine() const;           // Get machine (i.e.
+                                                // MACHINE_Pentium)
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();
   virtual ADDRESS getImageBase();
@@ -142,7 +157,11 @@ public:
   virtual ADDRESS GetMainEntryPoint();
   virtual ADDRESS GetEntryPoint();
   DWord getDelta();
-        char*   SymbolByAddress(const ADDRESS dwAddr);  // Get sym from addr
+#ifndef WIN32
+  virtual char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
+  virtual ADDRESS GetAddressByName(const char* name,
+    bool bNoTypeOK = false);                    // Find addr given name  
+#endif
 
 //
 //      --      --      --      --      --      --      --      --      --
@@ -150,6 +169,9 @@ public:
         // Internal information
         // Dump headers, etc
 virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
+
+virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
+virtual const char *GetDynamicProcName(ADDRESS uNative);
 
   protected:
     virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
@@ -160,11 +182,11 @@ virtual bool    DisplayDetails(const char* fileName, FILE* f = stdout);
 
         Header* m_pHeader;              // Pointer to header
         PEHeader* m_pPEHeader;          // Pointer to pe header
-        Byte*   m_pImage;               // Pointer to image
         int     m_cbImage;              // Size of image
         int     m_cReloc;               // Number of relocation entries
         DWord*  m_pRelocTable;          // The relocation table
-        char *  base;
+        char *  base;                   // Beginning of the loaded image
+        std::map<ADDRESS, std::string> dlprocptrs;  // Address of dynamic pointers to library procedures
 
 };
 

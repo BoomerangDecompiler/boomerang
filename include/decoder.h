@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1996-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -21,8 +22,12 @@
 #ifndef _DECODER_H_
 #define _DECODER_H_
 
-#include "rtl.h"
-#include "BinaryFile.h"
+#include <list>
+#include "types.h"
+
+class Exp;
+class RTL;
+class BinaryFile;
 
 // These are the instruction classes defined in "A Transformational Approach to
 // Binary Translation of Delayed Branches" for SPARC instructions.
@@ -100,21 +105,15 @@ public:
      * Decodes the machine instruction at pc and returns an RTL instance for
      * the instruction.
      */
-virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta);
+virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta) = 0;
 
     /*
      * Disassembles the machine instruction at pc and returns the number of
      * bytes disassembled. Assembler output goes to global _assembly
      */
-virtual int decodeAssemblyInstruction (ADDRESS pc, int delta);
+virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
-    /*
-     * Alternate constructor for disassemblers (only!)
-     */
-    NJMCDecoder(BinaryFile* pbf);
-
-
-private:
+protected:
     
     /*
      * Given an instruction name and a variable list of Exps
@@ -141,71 +140,7 @@ private:
      * Should only be used after e = instantiateNamedParam(name, ..);
      */
     void substituteCallArgs(char *name, Exp*& exp, ...);
-    /*
-     * Decodes a machine instruction and returns an instantiated
-     * list of RTs.
-     */
-    std::list<Exp*>* decodeLowLevelInstruction (ADDRESS start,
-        ADDRESS pc, DecodeResult& result);
 
-    /*
-     * Decode the instructions in a given range and return the
-     * concatenation of all their lists of Exps.
-     */
-    std::list<Exp*>* getLowLevelExps(ADDRESS start, int length,
-        ADDRESS pc, DecodeResult& result);
-
-#ifdef DISASM
-    /*
-     * Functions for disassembly support of effective addresses and
-     * other complex operands.
-     */
-    char * dis_RegImm (ADDRESS pc);
-    char * dis_Eaddr (ADDRESS pc);
-
-    /* HPPA */
-    void    dis_c_xd(ADDRESS pc);
-    void    dis_c_addr(ADDRESS pc);
-    void    dis_c_c(ADDRESS pc);
-    void    dis_c_null(ADDRESS pc);
-    void    dis_c_bit(ADDRESS pc);
-    void    dis_c_wcr(ADDRESS pc);
-    void    dis_flt_fmt(int fmt);
-    void    dis_faddr(ADDRESS faddr);
-    void    dis_c_faddr(ADDRESS c_faddr);
-    char*   dis_freg(int regNum);
-
-#else
-
-    /*
-     * Various functions to decode the operands of an instruction into
-     * a SemStr representation.
-     */
-    Exp*    dis_Reg(int regNum);
-    Exp*    dis_Num(unsigned immed);
-    Exp*    dis_Eaddr(ADDRESS pc, int size = 0);
-    Exp*    dis_Mem(ADDRESS ps);
-    Exp*    dis_RegImm(ADDRESS pc);
-
-    /* HPPA */
-    Exp*    c_c(ADDRESS pc, int &cond);
-    Exp*    c_bit(ADDRESS hostpc);
-    Exp*    dis_x_addr_shift(ADDRESS hostpc);
-	Exp*    dis_xd(ADDRESS pc);
-    Exp*    dis_c_addr(ADDRESS pc);
-    Exp*    dis_c_bit(ADDRESS pc);
-    Exp*    dis_c_wcr(ADDRESS pc);
-    Exp*    dis_ct(ADDRESS pc);
-    Exp*    dis_Freg(int regNum, int fmt);
-    Exp*    dis_Creg(int regNum);
-    Exp*    dis_Sreg(int regNum);
-
-    void low_level(std::list<Exp*>*& exps, ADDRESS hostPC, ADDRESS pc,
-        DecodeResult& result, ADDRESS& nextPC);
-
-#endif
-
-public:
     /*
      * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to
      * other procedures
@@ -218,15 +153,10 @@ public:
      */
     char    constrName[84];
 
-private:
-
-#ifdef DISASM
-    /*
-     * Disassemblers may need a pointer to the BinaryFile object that has loaded
-     * their input binary image, to get symbols for calls, etc
-     */
-    BinaryFile* pBF;
-#endif
+	/* decodes a number */
+	Exp* dis_Num(unsigned num);
+	/* decodes a register */
+	Exp* dis_Reg(int regNum);
 
 };
 

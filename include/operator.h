@@ -73,8 +73,9 @@ enum OPER
     opTargetInst,           // Target specific instruction (Unary)
                             // See frontend.cc for details
 
-    opAssign,               // Assignment
+    opAssignExp,            // Assignment
     opTypedExp,             // Typed expression
+	opNamedExp,				// Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,                // Guarded expression (should be assignment)
     // The below is (and should) probably no longer used. Use opList instead
     opComma,                // Separate expressions in a list (e.g. params)
@@ -100,7 +101,10 @@ enum OPER
     opRegOf,                // Represents r[]
     opAddrOf,               // Represents a[]
     opVar,                  // Represents l[] (recovered locations)
+	opPhi,					// Represents phi(a1, a2, a3) .. ie SSA form merging
+	opSubscript,			// Represents subscript(e, n) .. ie SSA renaming
     opParam,                // Parameter param`'
+	opArg,					// Used a temporary for arguments to calls
     opExpand,               // Expandable expression
     opTemp,                 // Temp register name
     opSize,                 // Size override

@@ -1,0 +1,113 @@
+#
+# Copyright (C) 1998-2001, The University of Queensland
+# Copyright (C) 2001, Sun Microsystems, Inc
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+#=====================================================================
+# FILE:       386.pal
+# OVERVIEW:   A PAL specification for the 386 architecture.
+#===================================================================== 
+
+# 14 Apr 00 - Mike: Return locations for INTEGER and FLOAT have .size now
+# 12 Oct 00 - Mike: Return location for floats and doubles is %st7 now;
+#               not sure if this will stay
+# 15 Mar 01 - Mike: Return location for floats and doubles is %st7 for callees,
+#                and %st for callers, now that the FP stack pointer is zeroed
+#                at every call
+# 26 Mar 01 - Mike: added callee prologue "none"
+# 29 Mar 01 - Mike: added prologues localless_pro and localless_epi
+# 30 Mar 01 - Mike: Commented out INTEGER.16 and INTEGER.8 return locations;
+#               merged frameless and localless logues
+# 12 Apr 01 - Cristina: Removed return locations INTEGER.16 and INTEGER.8 
+#				as x86 ABI book states that all integral values are returned
+#				in %eax only. 
+
+
+FRAME ABSTRACTION
+    INIT = %esp
+
+# Only these two prologues set up a frame pointer (%ebp)
+    std_entry
+    struct_ptr
+    {
+        %ebp -> %afp + (regs * 4) + locals
+    }
+
+LOCALS
+    std_entry
+    struct_ptr
+    {
+        locals + (regs * 4)
+    }
+    frameless_pro
+    {
+        locals
+    }
+
+PARAMETERS
+    CALLER
+    {
+        STACK     -> BASE = [%afp - 4] # Parameters are found at negative
+                     OFFSET = -4       # offsets (that are a multiple of
+                                       # -4) from (%afp - 4)
+    }
+
+    std_entry
+    {
+        STACK     -> BASE = [%afp + locals + (regs * 4) + 8]
+                     OFFSET = 4
+    }
+
+    struct_ptr
+    {
+        AGGREGATE -> %eax
+        STACK     -> BASE = [%afp + locals + (regs * 4) + 8]
+                     OFFSET = 4
+    }
+
+    # Same as std_entry, except there is no push of %ebp. Hence 4 less bytes
+    frameless_pro
+    {
+        STACK     -> BASE = [%afp + locals + (regs * 4) + 4]
+                     OFFSET = 4
+    }
+
+    none
+    {
+        STACK     -> BASE = [%afp + 4]
+                     OFFSET = 4
+    }
+
+RETURNS
+
+# Integral values and addresses are returned in %eax. 
+# Floats are returned on the top of the stack, always 80 bits wide
+# The top of stack will be assigned with a fld, which will decrement the
+# stack pointer first, so the stack pointer will underflow to 7
+
+    std_ret
+    frameless_epi
+    {
+        INTEGER.32  IN %eax
+        INTEGER.16  IN %ax      # So that functions returning shorts
+        INTEGER.8   IN %al      # or chars can be analysed as such
+        ADDRESS     IN %eax
+        FLOAT.80    IN %st7
+    }
+
+# The caller receives integer and address values in %eax. 
+# After every call, the stack index (in the caller) is set to 0. 
+# Hence, the returned floating point value will be in %st, not %st7.
+
+    CALLER
+    {
+        INTEGER.32  IN %eax
+        INTEGER.16  IN %ax      # So that functions returning shorts
+        INTEGER.8   IN %al      # or chars can be analysed as such
+        ADDRESS     IN %eax
+        FLOAT.80    IN %st
+    }

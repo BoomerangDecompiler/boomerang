@@ -24,12 +24,19 @@
  * 03 May 02 - Mike: Commented
  * 08 May 02 - Mike: ParamMap -> ParamSet
  * 15 May 02 - Mike: Fixed strToOper: *f was coming out as /f, << as =
+ * 16 Jul 02 - Mike: Fixed code in expandTables processing opOpTables: was
+ *				doing replacements on results of searchAll
  */
 
 %name SSLParser     // the parser class name will be SSLParser
 
 // stuff to go in sslparser.h
 %header{
+#include <assert.h>
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+#pragma warning(disable:4786)
+#endif 
+
 #include <sstream>
 #include "types.h"
 #include "rtl.h"
@@ -89,8 +96,10 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
 
 %define CONSTRUCTOR_CODE \
     std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
+    theScanner = NULL; \
     if (!*fin) { \
         std::cerr << "can't open `" << sslFile << "' for reading\n"; \
+	return; \
     } \
     theScanner = new SSLScanner(*fin, trace); \
     if (trace) yydebug = 1;
@@ -104,12 +113,12 @@ static  Exp* parseExp(const char *str); /* Parse an expression from a string */ 
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
-protected: \
 \
     /* \
      * The scanner. \
      */ \
     SSLScanner* theScanner; \
+protected: \
 \
     /* \
      * The file from which the SSL spec is read. \
@@ -197,8 +206,8 @@ protected: \
 %%
 
 specorexp:
-        exp EQUATE exp {
-            the_exp = new Binary(opAssign, $1, $3);
+        assign_rt {
+            the_exp = $1;
         }
     |   exp {
             the_exp = $1;
@@ -269,8 +278,7 @@ operand:
     |   param list_parameter func_parameter ASSIGNSIZE exp {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[$1];
-            Exp* asgn = new TypedExp(Type(INTEGER, $4),
-                new Binary(opAssign, new Terminal(opNil), $5));
+            Exp* asgn = new AssignExp($4, new Terminal(opNil), $5);
             // Note: The below 2 copy lists of strings (to be deleted below!)
             param.params = *$2;
             param.funcParams = *$3;
@@ -515,11 +523,11 @@ name_expand:
                     $$ = new std::deque<std::string>(TableDict[$2]->records);
                 else {
                     o << "name " << $2 << " is not a NAMETABLE.\n";
-                    yyerror(str(o));
+                    yyerror(STR(o));
                 }
             else {
                 o << "could not dereference name " << $2 << "\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             }
         }
     |   NAME {
@@ -531,7 +539,7 @@ name_expand:
                 else {
                     std::ostringstream o;
                     o << "name " << $1 << " is not a NAMETABLE.\n";
-                    yyerror(str(o));
+                    yyerror(STR(o));
                 }
             else {
                 $$ = new std::deque<std::string>;
@@ -652,10 +660,10 @@ name_contract:
             std::ostringstream o;
             if (TableDict.find($1) == TableDict.end()) {
                 o << "Table " << $1 << " has not been declared.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (($2 < 0) || ($2 >= (int)TableDict[$1]->records.size())) {
                 o << "Can't get element " << $2 << " of table " << $1 << ".\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else
                 $$ = new InsNameElem(TableDict[$1]->records[$2]);
         }
@@ -665,7 +673,7 @@ name_contract:
             std::ostringstream o;
             if (TableDict.find($1) == TableDict.end()) {
                 o << "Table " << $1 << " has not been declared.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else
                 $$ = new InsListElem($1, TableDict[$1], $2);
         }
@@ -674,10 +682,10 @@ name_contract:
             std::ostringstream o;
             if (TableDict.find($2) == TableDict.end()) {
                 o << "Table " << $2 << " has not been declared.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (($3 < 0) || ($3 >= (int)TableDict[$2]->records.size())) {
                 o << "Can't get element " << $3 << " of table " << $2 << ".\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else
                 $$ = new InsNameElem(TableDict[$2]->records[$3]);
         }
@@ -685,7 +693,7 @@ name_contract:
             std::ostringstream o;
             if (TableDict.find($2) == TableDict.end()) {
                 o << "Table " << $2 << " has not been declared.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else
                 $$ = new InsListElem($2, TableDict[$2], $3);
         }
@@ -726,7 +734,7 @@ rt:
                     listExpToExp($2));
             } else {
                 o << $1 << " is not declared as a flag function.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             }
         }
     |   FLAGMACRO flag_list ')' {
@@ -799,16 +807,14 @@ assign_rt:
         // Size   guard =>   lhs    :=    rhs
         //  $1     $2         $4          $6
         ASSIGNSIZE exp THEN var_op EQUATE exp {
-            $$ = new TypedExp(Type(INTEGER, $1),
-                new Unary(opGuard,
-                    new Binary(opAssign, $4, $6)));
+            $$ = new Unary(opGuard,
+		    new AssignExp($1, $4, $6));
         }
         // Size     lhs     :=   rhs
         // $1       $2      $3   $4
     |   ASSIGNSIZE var_op EQUATE exp {
             // update the size of any generated RT's
-            $$ = new TypedExp(Type(INTEGER, $1),
-                new Binary(opAssign, $2, $4));
+            $$ = new AssignExp($1, $2, $4);
         }
 
         // FPUSH and FPOP are special "transfers" with just a Terminal
@@ -820,8 +826,7 @@ assign_rt:
         }
         // ? Just a RHS?
     |   ASSIGNSIZE exp {
-            $$ = new TypedExp(Type(INTEGER, $1),
-                new Binary(opAssign, 0, $2));
+            $$ = new AssignExp($1, 0, $2);
         }
     ;
 
@@ -854,7 +859,7 @@ exp_term:
             Ternary* t = new Ternary(opTern, $2, $4, $6);
             Exp* e = t;
             if ($8 != STD_SIZE) {
-                e = new Binary(opSize, new Const($8), t);
+			    e = new TypedExp(new IntegerType($8), t);                
             }
             $$ = e;
         }
@@ -889,21 +894,21 @@ exp_term:
             std::ostringstream o;
             if (indexrefmap.find($2) == indexrefmap.end()) {
                 o << "index " << $2 << " not declared for use.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (TableDict.find($1) == TableDict.end()) {
                 o << "table " << $1 << " not declared for use.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (TableDict[$1]->getType() != EXPRTABLE) {
                 o << "table " << $1 << " is not an expression table but "
                   "appears to be used as one.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if ((int)((ExprTable*)TableDict[$1])->expressions.size() <
               indexrefmap[$2]->ntokens()) {
                 o << "table " << $1 << " (" <<
                   ((ExprTable*)TableDict[$1])->expressions.size() <<
                   ") is too small to use " << $2 << " (" <<
                   indexrefmap[$2]->ntokens() << ") as an index.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             }
             // $1 is a map from string to Table*; $2 is a map from string to
             // InsNameElem*
@@ -921,7 +926,7 @@ exp_term:
                 if ($2->size() != param.funcParams.size() ) {
                     o << $1 << " requires " << param.funcParams.size()
                       << " parameters, but received " << $2->size() << ".\n";
-                    yyerror(str(o));
+                    yyerror(STR(o));
                 } else {
                     // Everything checks out. *phew* 
                     // Note: the below may not be right! (MVE)
@@ -932,11 +937,11 @@ exp_term:
                 }
             } else {
                 o << $1 << " is not defined as a OPERAND function.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             }
         } else {
             o << $1 << ": Unrecognized name in call.\n";
-            yyerror(str(o));
+            yyerror(STR(o));
         }
     }
     ;
@@ -952,11 +957,11 @@ exp:
         // in the Bison documantation)
       // $1  $2
     |   exp cast %prec CAST_OP {
-            // opSize is deprecated, but we leave it here for old SSL files
+            // opSize is deprecated, but for old SSL files we'll make a TypedExp
             if ($2 == STD_SIZE)
                 $$ = $1;
             else
-                $$ = new Binary(opSize, new Const($2), $1);
+                $$ = new TypedExp(new IntegerType($2), $1);
         }
     
     |   NOT exp {
@@ -990,19 +995,19 @@ exp:
             std::ostringstream o;
             if (indexrefmap.find($3) == indexrefmap.end()) {
                 o << "index " << $3 << " not declared for use.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (TableDict.find($2) == TableDict.end()) {
                 o << "table " << $2 << " not declared for use.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if (TableDict[$2]->getType() != OPTABLE) {
                 o << "table " << $2 <<
                   " is not an operator table but appears to be used as one.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             } else if ((int)TableDict[$2]->records.size() <
               indexrefmap[$3]->ntokens()) {
                 o << "table " << $2 << " is too small to use with " << $3
                   << " as an index.\n";
-                yyerror(str(o));
+                yyerror(STR(o));
             }
             $$ = new Ternary(opOpTable, new Const($2), new Const($3),
                 new Binary(opList,
@@ -1028,7 +1033,7 @@ var_op:
             if (it == Dict.RegMap.end()) {
                 std::ostringstream ost;
                 ost << "register `" << $1 << "' is undefined";
-                yyerror(str(ost));
+                yyerror(STR(ost));
             } else if (it->second == -1) {
                 // A special register, e.g. %npc or %CF
                 // Return a Terminal for it
@@ -1068,7 +1073,7 @@ var_op:
                 std::ostringstream ost;
                 ost << "`" << $1 << "' is not a constant, definition or a";
                 ost << " parameter of this instruction\n";
-                yyerror(str(ost));
+                yyerror(STR(ost));
             }
             $$ = s;
         }
@@ -1172,7 +1177,6 @@ SSLParser::~SSLParser()
 void SSLParser::yyerror(char* msg)
 {
     std::cerr << sslFile << ":" << theScanner->theLine << ": " << msg << std::endl;
-    exit(1);
 }
 
 /*==============================================================================
@@ -1348,7 +1352,7 @@ OPER SSLParser::strToOper(const char* s) {
     }
     std::ostringstream ost;
     ost << "Unknown operator " << s << std::endl;
-    yyerror(str(ost));
+    yyerror(STR(ost));
     return opWild;
 }
 
@@ -1463,31 +1467,34 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
                 }
             }
             // Operator tables
-            if (e->searchAll(srchOp, le)) {
-                std::list<Exp*>::iterator it;
-                for (it = le.begin(); it != le.end(); it++) {
-                    // The ternary opOpTable has a table and index
-                    // name as strings, then a list of 2 expressions
-                    // (and we want to replace it with e1 OP e2)
-                    char* tbl = ((Const*)((Ternary*)*it)->getSubExp1())
-                      ->getStr();
-                    char* idx = ((Const*)((Ternary*)*it)->getSubExp2())
-                      ->getStr();
-                    // The expressions to OPerate on are in the list
-                    Binary* b = (Binary*)((Ternary*)*it)->getSubExp3();
-                    assert(b->getOper() == opList);
-                    Exp* e1 = b->getSubExp1();
-                    Exp* e2 = b->getSubExp2();  // This should be an opList too
-                    assert(b->getOper() == opList);
-                    e2 = ((Binary*)e2)->getSubExp1();
-                    const char* ops = ((OpTable*)(TableDict[tbl]))
-                      ->records[indexrefmap[idx]->getvalue()].c_str();
-                    Exp* repl = new Binary(strToOper(ops), e1, e2);
-                    bool ch;
-                    e = e->searchReplace(*it, repl, ch);
-                    // In case the top level is changed (common)
-                    rtl->updateExp(e, j);
-                }
+			Exp* res;
+			while (e->search(srchOp, res)) {
+				Ternary* t;
+				if (res->getOper() == opTypedExp)
+				   t = (Ternary *)res->getSubExp1();
+				else
+				   t = (Ternary *)res;
+				assert(t->getOper() == opOpTable);
+                // The ternary opOpTable has a table and index
+                // name as strings, then a list of 2 expressions
+                // (and we want to replace it with e1 OP e2)
+                char* tbl = ((Const*)t->getSubExp1()) ->getStr();
+                char* idx = ((Const*)t->getSubExp2()) ->getStr();
+                // The expressions to operate on are in the list
+                Binary* b = (Binary*)t->getSubExp3();
+                assert(b->getOper() == opList);
+                Exp* e1 = b->getSubExp1();
+                Exp* e2 = b->getSubExp2();  // This should be an opList too
+                assert(b->getOper() == opList);
+                e2 = ((Binary*)e2)->getSubExp1();
+                const char* ops = ((OpTable*)(TableDict[tbl]))
+                  ->records[indexrefmap[idx]->getvalue()].c_str();
+                Exp* repl = new Binary(strToOper(ops), e1->clone(),
+                e2->clone());
+                bool ch;
+                e = e->searchReplace(res, repl, ch);
+                // In case the top level is changed (common)
+                rtl->updateExp(e, j);
             }
         }
    
@@ -1495,7 +1502,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
             o << "Pattern " << iname->getinspattern()
               << " conflicts with an earlier declaration of " << nam <<
               ".\n";
-            yyerror(str(o));
+            yyerror(STR(o));
         }
     }
     delete iname;

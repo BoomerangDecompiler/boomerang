@@ -93,6 +93,7 @@ public:
     virtual void  Close();                    // Close file opened with Open()
     virtual bool  PostLoad(void* handle);     // For archive files only
     virtual LOAD_FMT GetFormat() const;       // Get format i.e. LOADFMT_PALM
+    virtual MACHINE GetMachine() const;       // Get format i.e. MACHINE_HPRISC
 
     virtual bool isLibrary() const;
     virtual std::list<const char *> getDependencyList();

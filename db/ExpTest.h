@@ -24,14 +24,8 @@ class ExpTest : public CppUnit::TestCase {
     void testFlt ();
     void testRegOf2 ();
 
-    void testPlus ();
-    void testMinus ();
-    void testMult ();
-    void testDiv ();
-    void testMults ();
-    void testDivs ();
-    void testMod ();
-    void testMods ();
+    void testBinaries ();
+    void testUnaries ();
 
     void testIsAssign();
     void testIsAfpTerm();
@@ -59,12 +53,12 @@ class ExpTest : public CppUnit::TestCase {
     void testSimplifyArith();
     void testSimplifyUnary();
     void testSimplifyBinary();
+    void testSimplifyAddr();
 
     void testBecome();
     void testLess();
     void testMapOfExp();
 
-    void testDecideType();
     void testList();
     void testClone();
     void testParen();

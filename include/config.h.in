@@ -100,8 +100,8 @@
 /* PalmOS PRC generator */
 #undef TARGET_BUILDPRC_PATH
 
-/* Target uses GNU ld */
-#undef TARGET_GNU_LD
+/* Host uses GNU ld */
+#undef HOST_GNU_LD
 
 /* Path to head */
 #undef TARGET_HEAD_PATH

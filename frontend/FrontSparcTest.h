@@ -4,13 +4,12 @@
 #include "BinaryFile.h"
 
 class FrontEnd;
+class SparcFrontEnd;
 class NJMCDecoder;
 
 
 class FrontSparcTest : public CppUnit::TestCase {
   protected:
-    // The FrontEndSrc object
-    FrontEnd* fe;
     // The decoder object
     NJMCDecoder* decoder;
     // Handle set by getInstanceFor()

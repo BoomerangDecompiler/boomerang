@@ -101,23 +101,15 @@ files in its own subdirectory. This will be flat, e.g. don't put decoder
 inside frontend, because in the end it gets too hard to decide where to
 put any one module (and where someone else has already put a module).
 Each module directory will have a makefile which will make the module
-and a test program for that module. The output of the test program should
-be obvious; at least it must return non zero if any test fails, and
-error messages should go to stderr. Most of the time, stdout can be
-ignored for the test programs. (I'd like to do something with CppUnit
-for unit (individual class) testing).
+and a test program for that module. Cppunit is used for unit testing.
+Each makefile has a "test" target which makes and runs the test.
 
-The interface to other modules should be via a file in ../interface. Other
-internal header files are not in a special directory (so no /include as in
-UQBT). Most compiles will therefore need "-I../interface". Note: it appears
-that the Unix convention is to put all .h files into /include, as with UQBT. If
-we do this, it may be worth distinguishing interface classes with a naming
-convention.
+The interface to other modules should be via a file in ../include. Other
+internal header files are not in a special directory.
 
-All dynamic libraries will be files ending in ".so" in their own directory
-(so they can do things like "rm -f *.so" in their "make clean" entries.
-Each Makefile will have a "make install" entry, which makes soft links
-from the /bin directory (/bin relative to the top level boomerang directory).
-To run the programs, users may need to add "/path/to/boomerang/bin" to
-their LD_LIBRARY_PATH. Maybe a future installer will do this automatically.
-
+All dynamic libraries will be files ending in ".so" in the lib directory.
+The Makefiles have -R switches in the links so that the absolute path
+to the lib directory is "burned in" to each executable. That means that
+the program works whatever the current directory happens to be, but fails
+if it is moved (until it is reconfigured). This is the standard compromise
+for dynamically linked modules.

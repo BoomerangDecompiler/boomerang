@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -59,14 +60,26 @@
 #define _PROC_H_
 
 #include <list>
+#include <vector>
+#include <map>
+#include <set>
+#include <string>
 #include "coverage.h"           // For Coverage class
-#include "exp.h"
-#include "rtl.h"
 
 class UserProc;
 class Cfg;
 class BasicBlock;
 typedef BasicBlock* PBB;
+class Exp;
+class TypedExp;
+class lessTI;
+class Type;
+class RTL;
+class HLLCode;
+class HLCall;
+class Parameter;
+class Argument;
+class Signature;
 
 /*==============================================================================
  * Procedure class.
@@ -77,7 +90,7 @@ public:
     /*
      * Constructor with name, native address and optional bLib.
      */
-    Proc(std::string& name, ADDRESS uNative);
+    Proc(ADDRESS uNative, Signature *sig);
 
     virtual ~Proc();
 
@@ -87,14 +100,30 @@ public:
     const char* getName();
 
     /*
+     * Gets sets the name of this procedure.
+     */
+    void setName(const char *nam);
+
+    /*
      * Get the native address.
      */
     ADDRESS getNativeAddress();
 
-    /*
-     * Returns the number of parameters this procedure takes.
-     */
-    int getNumArgs();
+	/*
+	 * Set the native address
+	 */
+	void setNativeAddress(ADDRESS a);
+
+	/*
+	 * Get/Set the first procedure that calls this procedure (or null for main/start).
+	 */
+	Proc *getFirstCaller();
+	void setFirstCaller(Proc *p) { if (m_firstCaller == NULL) m_firstCaller = p; }
+
+	/*
+	 * Returns a poiner to the Signature
+	 */
+	Signature *getSignature();
 
     /*
      * Prints this procedure to an output stream.
@@ -105,22 +134,6 @@ public:
      * Return the coverage of this procedure in bytes.
      */
 //    virtual unsigned getCoverage() = 0;
-
-    /*
-     * Return the n'th parameter.
-     */
-    Exp* getParameter(unsigned int n);
-
-    /*
-     * Return true if given location is a parameter
-     */
-    bool isParam(Exp* loc);
-
-    /*
-     * Recover the return type for a user procedure or just ensure
-     * that a library  procedure returns the expected type.
-     */
-    virtual bool setReturnType(TypedExp* retLoc) = 0;
 
     /*
      * Modify actuals so that it is now the list of locations that must
@@ -176,35 +189,11 @@ public:
      */
     std::list<Type>* Proc::getParamTypeList(const std::list<Exp*>& actuals);
 
-    /*
-     * Get the formal parameters of this procedure
-     */
-    std::list<TypedExp*>& getParams();
-
-    /*
-     * Print the parameters of this procedure, as "v[1]" etc
-     */
-    void printParams(std::ostream& os);
-
-    /*
-     * Print the parameters of this procedure, as "int v1" etc.
-     */
-    void printParamsAsC(std::ostream& os);
-
-    /*
-     * Print the return type of this procedure, as "int" etc.
-     */
-    void printReturnTypeAsC(std::ostream& os);
-
-    /*
-     * Get the return type of this procedure, as a Type object
-     */
-    Type& getReturnType();
-
-    /*
-     * Get the return location of this procedure, as a TypedExp*
-     */
-    TypedExp* getReturnLoc();
+	/*
+	 * Set the number of bytes popped off the caller stack by this procedure
+	 */
+	void setBytesPopped(int n);
+	int getBytesPopped() { return bytesPopped; }
 
     /*
      * Return true if this is a library proc
@@ -228,29 +217,37 @@ public:
      */
     std::list<int> regParams;
 
-protected:
+	// serialize this procedure
+	virtual bool serialize(std::ostream &ouf, int &len) = 0;
 
-    /*
-     * Procedure's name.
-     */
-    std::string name;
+	// deserialize a procedure
+	static Proc *deserialize(std::istream &inf);
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+protected:
 
     /*
      * Procedure's address.
      */
-    unsigned address;
+    ADDRESS address;
 
     /*
-     * The formal parameters of this procedure. This information is determined
+     * The formal signature of this procedure. This information is determined
      * either by the common.hs file (for a library function) or by analysis.
      */
-    std::list<TypedExp*> parameters;
+    Signature *signature;
 
-    /*
-     * The return location for this procedure, e.g. v2 or r[8]. Empty (null)
-        by default. It is typed.
-     */
-    TypedExp* returnLocn;
+	/*
+	 * Number of bytes this procedure will cause any call to it to pop off
+	 * the stack (of the caller).
+	 */
+	int bytesPopped;
+
+	/*
+	 * The first procedure to call this procedure
+	 */
+	Proc *m_firstCaller;
+	ADDRESS m_firstCallerAddr;  // can only be used once.
 
 }; 
 
@@ -259,8 +256,9 @@ protected:
  *============================================================================*/
 class LibProc : public Proc {
 public:
-
+	
     LibProc(std::string& name, ADDRESS address);
+	virtual ~LibProc();
 
     /*
      * Return the coverage of this procedure in bytes.
@@ -274,11 +272,6 @@ public:
     void matchParams(std::list<Exp*>& actuals, UserProc& caller,
         const Parameters* outgoing, const Exp** intRetLoc) const;
 #endif
-
-    /*
-     * Ensure that this procedure returns the expected type.
-     */
-    bool setReturnType(TypedExp* retLoc);
 
     /*
      * Return true, since is a library proc
@@ -296,6 +289,11 @@ public:
      */
     std::ostream& put(std::ostream& os);
 
+	// serialize this procedure
+	virtual bool serialize(std::ostream &ouf, int &len);
+	// deserialize the subclass specific portion of this procedure
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
 };
 
 /*==============================================================================
@@ -305,11 +303,18 @@ class UserProc : public Proc {
 public:
 
     UserProc(std::string& name, ADDRESS address);
+	virtual ~UserProc();
 
     /*
      * Records that this procedure has been decoded.
      */
     void setDecoded();
+
+	/*
+	 * Removes the decoded bit and throws away all the current information 
+	 * about this procedure.
+	 */
+	void unDecode();
 
     /*
      * Returns a pointer to the CFG.
@@ -336,12 +341,38 @@ public:
     /*
      * Get the type of the given var
      */
-    Type getVarType(int idx);
+//    Type getVarType(int idx);
 
     /*
      * Set the size of the given var
      */
-    void setVarSize(int idx, int size);
+//    void setVarSize(int idx, int size);
+
+	// serialize this procedure
+	virtual bool serialize(std::ostream &ouf, int &len);
+	// deserialize the subclass specific portion of this procedure
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	bool generateCode(HLLCode &hll);
+
+	// return true if the procedure is in ssa form
+	bool isSSAForm();
+
+	// transform the procedure to ssa form
+	void transformToSSAForm();
+
+	// transform the procedure from ssa form
+	void transformFromSSAForm();
+
+	// minimize the SSA form, returns true if anything changed
+	bool minimizeSSAForm();
+
+	// remove any useless code
+	void removeUselessCode();
+
+	// promote the signature if possible
+	void promoteSignature();
 
 private:
     /*
@@ -394,27 +425,6 @@ public:
      */
     void setParams(std::list<TypedExp*>& params, bool aggUsed = false);
 
-
-    /*
-     * Given the type of a location that has been
-     * determined as holding a value returned by this
-     * procedure, verify this against the type this
-     * procedure currently thinks it returns. If this is
-     * the first time this method has been called, then
-     * the return type of this procedure is set to be the
-     * given type and the location used for returning that
-     * type is determined to be the return location of
-     * this procedure. Otherwise, simply ensure that the
-     * given type matches the already established return
-     * type, emitting an error message if it isn't.
-     */
-    bool setReturnType(TypedExp* retLoc);
-
-    /*
-     * Set the return type for this procedure.
-     */
-    void doSetReturnType(TypedExp* retLoc);
-
     /*
      * Given a machine dependent location, return a generated symbolic
      * representation for it.
@@ -424,7 +434,7 @@ public:
     /*
      * Return the next available local variable; make it the given type
      */
-    TypedExp* newLocal(Type& ty);
+    TypedExp* newLocal(Type* ty);
 
     /*
      * Print the locals declaration in C style.
@@ -477,6 +487,11 @@ public:
      */
     void setCallee(Proc* callee); 
 
+	/*
+	 * return true if this procedure contains the given address
+	 */
+	bool containsAddr(ADDRESS uAddr);
+
     /*
      * Add (st, fi) to the set of ranges covered in this procedure
      */
@@ -528,7 +543,13 @@ public:
      * first parameter
      */
     virtual bool isAggregateUsed() {return aggregateUsed;}
- 
+
+	// map for local symbols
+	std::map<std::string, TypedExp *> symbols;
+	
+	// search for a symbol which matches an expression (locals, then globals searched)
+	bool findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp);
+
 private:
 
     /*
@@ -579,7 +600,7 @@ private:
      * A map between machine dependent locations and their corresponding
      * symbolic, machine independent representations.
      */
-    std::map<TypedExp*,TypedExp*, lessTI> symbolMap;
+    std::map<Exp*,Exp*> symbolMap;
 
     /* 
      * An object that represents a set of ranges, which gives the coverage
@@ -598,7 +619,7 @@ private:
      * call graph, among other things
      */
     std::set<Proc*> calleeSet;
-
+	std::set<ADDRESS> calleeAddrSet;  // used in serialization
 
 };      /* UserProc */
 #endif

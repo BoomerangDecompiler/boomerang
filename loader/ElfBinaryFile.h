@@ -77,6 +77,7 @@ public:
   virtual bool  Open(const char* sName);        // Open the file for r/w; pv
   virtual void  Close();                        // Close file opened with Open()
   virtual LOAD_FMT GetFormat() const;           // Get format (e.g. LOADFMT_ELF)
+  virtual MACHINE GetMachine() const;           // Get machine (e.g. MACHINE_SPARC)
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();
   virtual ADDRESS getImageBase();

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1998-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -38,34 +39,54 @@
 #ifndef _PROG_H_
 #define _PROG_H_
 
-#include "rtl.h"                        // For RTLInstDict
+#include <map>
+#include "exp.h"
 #include "proc.h"
-#include "coverage.h"                   // For the Coverage class
-#include "BinaryFile.h"
+#include "rtl.h"
 
 class BinaryFile;
+class FrontEnd;
+class RTLInstDict;
+class Proc;
+class UserProc;
+class Signature;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
+
+class ProgWatcher {
+public:
+	ProgWatcher() { }
+
+	virtual void alert_complete() = 0;
+	virtual void alert_new(Proc *p) = 0;
+	virtual void alert_decode(ADDRESS pc, int nBytes) = 0;
+	virtual void alert_baddecode(ADDRESS pc) = 0;
+	virtual void alert_done(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) = 0;
+	virtual void alert_progress(unsigned long off, unsigned long size) = 0;
+};
 
 class Prog {
 public:
             Prog();                     // Default constructor
+			~Prog();
             Prog(const char* name);     // Constructor with name
-    void    setName(std::string& name);      // Set the name of this program
-    Proc*   newProc(char* name, ADDRESS uNative, bool bLib = false);
+    void    setName(const char *name);      // Set the name of this program
+    Proc*   newProc(const char* name, ADDRESS uNative, bool bLib = false);
                                         // Returns a pointer to a new proc
     void    remProc(UserProc* proc);    // Remove the given UserProc
     char*   getName();                  // Get the name of this program
     int     getNumProcs();              // # of procedures stored in prog
     Proc*   getProc(int i) const;       // returns pointer to indexed proc
     Proc*   findProc(ADDRESS uAddr) const;// Find the Proc with given address
+	Proc*   findProc(const char *name) const; // Find the Proc with the given name
+	Proc*	findContainingProc(ADDRESS uAddr) const; // Find the Proc that contains the given address
     bool    isProcLabel (ADDRESS addr); // Checks if addr is a label or not
     // Create a dot file for all CFGs
     bool    createDotFile(const char*, bool bMainOnly = false) const;
     // Call the following when a proc is discovered
     Proc*   visitProc(ADDRESS uAddr);
     void    setArgv0(const char* p);    // Set the argv[0] pointer
-    const std::string& getProgPath();        // Get path to the translator executable
+    std::string& getProgPath();        // Get path to the translator executable
     void    readLibParams();            // Read the common.hs file
     std::string  getNameNoPath() const;      // Get the program name with no path
     // This pair of functions allows the user to iterate through all the procs
@@ -75,13 +96,51 @@ public:
     // Get the lower and upper limits of the text segment
     void    getTextLimits();
 
+	// load a given binary file
+	bool LoadBinary(const char *fname);
+
+	// load/save the current program, project/location must be set.
+	void	load();
+	void	save();
+
+	// serialize the program
+	bool serialize(std::ostream &ouf, int &len);
+	// deserialize the program
+	void deserialize(std::istream &inf);
+
+	// clear the prog object NOTE: deletes everything!
+	void	clear();
+
     // Lookup the given native address in the code section, returning
     // a host pointer corresponding to the same address
     const void* getCodeInfo(ADDRESS uAddr, const char*& last, int& delta);
 
+	// Get the watcher.. other classes (such as the decoder) can alert
+	// the watcher when there are changes.	
+	ProgWatcher *getWatcher() { return m_watcher; }
+
+	// Indicate that a watcher would like to be updated of status (only 1
+	// watcher allowed at the moment, old watchers will be disconnected).
+	void setWatcher(ProgWatcher *p) { m_watcher = p; }
+
+	// Well form all the procedures/cfgs in this program
+	bool wellForm();
+
+	// Decode any undecoded procedures
+	void decode();
+
+	// map for global symbols
+	std::map<std::string, TypedExp *> symbols;
+
+	// search for a symbol which matches an expression
+	bool findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp);
+
+	// lookup a library procedure by name
+	LibProc *getLibraryProc(const char *nam);
+
     // Public map from function name (string) to signature (list of Types).
     // One day we may named library parameters).
-    std::map<std::string, std::list<TypedExp*> > mapLibParam;
+    std::map<std::string, Signature* > mapLibParam;
 
     // Public dictionary of instruction patterns, and other information
     // summarised from the SSL file (e.g. source machine's endianness)
@@ -90,6 +149,19 @@ public:
     // Pointer to the BinaryFile object for the program, which contains the
     // program image. Created in main()
     BinaryFile* pBF;
+
+	// Pointer to the FrontEnd object for the project, which is used to decode
+	// procedures.
+	FrontEnd *pFE;
+
+	// The filename being decompiled
+	std::string filename;
+
+	// The name of the project
+	std::string project;
+
+	// The full location of the project file
+	std::string location;
 
     // Public object that keeps track of the coverage of the source program's
     // text segment
@@ -115,6 +187,7 @@ protected:
     PROGMAP     m_procLabels;           // map from address to Proc*
     int         m_iNumberedProc;        // Next numbered proc will use this
     std::string      m_progPath;             // String with the path to this exec
+	ProgWatcher *m_watcher;				// used for status updates
 }; 
 
 // Declare the global Prog object

@@ -10,7 +10,7 @@
 /*==============================================================================
  * FILE:       decoder.m
  * OVERVIEW:   Implementation of the SPARC specific parts of the
- *             NJMCDecoder class.
+ *             SparcDecoder class.
  *============================================================================*/
 
 /* $Revision$
@@ -24,10 +24,15 @@
  * Dependencies.
  *============================================================================*/
 
+#include <assert.h>
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+#pragma warning(disable:4786)
+#endif
+
 #include "proc.h"
 #include "prog.h"
 #include "decoder.h"
-//#include "machine/sparc/decoder.h"  // Need -I. for this
+#include "sparcdecoder.h"
 #include "exp.h"
 #include "rtl.h"
 #include "BinaryFile.h"		// For SymbolByAddress()
@@ -57,7 +62,7 @@
  * PARAMETERS:     x: integer variable to be "used"
  * RETURNS:        Nothing
  *============================================================================*/
-void unused(int x)
+void SparcDecoder::unused(int x)
 {}
 
 /*==============================================================================
@@ -68,7 +73,7 @@ void unused(int x)
  *                  name - instruction name (e.g. "BNE,a")
  * RETURNS:        Pointer to newly created RTL, or NULL if invalid
  *============================================================================*/
-HLJcond* createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name)
+HLJcond* SparcDecoder::createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name)
 {
     HLJcond* res = new HLJcond(pc, exps);
     if (name[0] == 'F') {
@@ -166,7 +171,7 @@ HLJcond* createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name)
 
 
 /*==============================================================================
- * FUNCTION:       NJMCDecoder::decodeInstruction
+ * FUNCTION:       SparcDecoder::decodeInstruction
  * OVERVIEW:       Attempt to decode the high level instruction at a given
  *                 address and return the corresponding HL type (e.g. HLCall,
  *                 HLJump etc). If no high level instruction exists at the
@@ -182,7 +187,7 @@ HLJcond* createJcond(ADDRESS pc, std::list<Exp*>* exps, const char* name)
  * RETURNS:        a DecodeResult structure containing all the information
  *                   gathered during decoding
  *============================================================================*/
-DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
+DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta)
 { 
     static DecodeResult result;
     ADDRESS hostPC = pc+delta;
@@ -528,14 +533,14 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
  **********************************************************************/
 
 /*==============================================================================
- * FUNCTION:        NJMCDecoder::dis_RegImm
+ * FUNCTION:        SparcDecoder::dis_RegImm
  * OVERVIEW:        Decode the register or immediate at the given
  *                  address.
  * NOTE:            Used via macro DIS_ROI
  * PARAMETERS:      pc - an address in the instruction stream
  * RETURNS:         the register or immediate at the given address
  *============================================================================*/
-Exp* NJMCDecoder::dis_RegImm(unsigned pc)
+Exp* SparcDecoder::dis_RegImm(unsigned pc)
 {
 
     match pc to
@@ -549,7 +554,7 @@ Exp* NJMCDecoder::dis_RegImm(unsigned pc)
 }
 
 /*==============================================================================
- * FUNCTION:        NJMCDecoder::dis_Eaddr
+ * FUNCTION:        SparcDecoder::dis_Eaddr
  * OVERVIEW:        Converts a dynamic address to a Exp* expression.
  *                  E.g. %o7 --> r[ 15 ]
  * PARAMETERS:      pc - the instruction stream address of the dynamic
@@ -557,7 +562,7 @@ Exp* NJMCDecoder::dis_RegImm(unsigned pc)
  *                  ignore - redundant parameter on SPARC
  * RETURNS:         the Exp* representation of the given address
  *============================================================================*/
-Exp* NJMCDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
+Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 {
     Exp* expr;
 
@@ -587,7 +592,7 @@ Exp* NJMCDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
  * PARAMETERS:    hostPC - pointer to the code in question (host address)
  * RETURNS:       True if a match found
  *============================================================================*/
-bool isFuncPrologue(ADDRESS hostPC)
+bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
 {
 #if 0       // Can't do this without patterns. It was a bit of a hack anyway
     int hiVal, loVal, reg, locals;
@@ -614,7 +619,7 @@ bool isFuncPrologue(ADDRESS hostPC)
  * PARAMETERS:    hostPC - pointer to the code in question (host address)
  * RETURNS:       True if a match found
  *============================================================================*/
-bool isRestore(ADDRESS hostPC) {
+bool SparcDecoder::isRestore(ADDRESS hostPC) {
         match hostPC to
         | RESTORE(a, b, c) =>
             unused(a);      // Suppress warning messages
@@ -636,21 +641,22 @@ bool isRestore(ADDRESS hostPC) {
  * PARAMETERS:      lc - address at which to decode the double
  * RETURNS:         the decoded double
  *============================================================================*/
-DWord getDword(ADDRESS lc)
+DWord SparcDecoder::getDword(ADDRESS lc)
 {
   Byte* p = (Byte*)lc;
   return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
 /*==============================================================================
- * FUNCTION:       NJMCDecoder::NJMCDecoder
+ * FUNCTION:       SparcDecoder::SparcDecoder
  * OVERVIEW:       
  * PARAMETERS:     None
  * RETURNS:        N/A
  *============================================================================*/
-NJMCDecoder::NJMCDecoder()
+SparcDecoder::SparcDecoder() : NJMCDecoder()
 {}
 
 // For now...
-int NJMCDecoder::decodeAssemblyInstruction(unsigned, int)
+int SparcDecoder::decodeAssemblyInstruction(unsigned, int)
 { return 0; }
+

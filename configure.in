@@ -1,0 +1,118 @@
+dnl
+dnl See the file "LICENSE.TERMS" for information on usage and
+dnl redistribution of this file, and for a DISCLAIMER OF ALL
+dnl WARRANTIES.
+dnl
+dnl File: configure.in
+dnl autoconf uses this file to create the configure script, which generates
+dnl the Makefiles and sets up various things. Needed to deal with the
+dnl nightmare of elf include files, for one thing
+dnl
+dnl $Revision$
+dnl
+dnl 12 Apr 02 - Mike: Created
+
+AC_INIT(LICENSE.TERMS)
+AC_CONFIG_HEADER(include/config.h)
+
+AC_CANONICAL_SYSTEM
+
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_CPP
+dnl AC_PATH_PROG( BISONPP, bison++ )
+dnl AC_PATH_PROG( FLEXPP, flex++ )
+dnl AC_SUBST( BISONPP )
+dnl AC_SUBST( FLEXPP )
+
+AC_DEFUN(AC_PATH_BINUTIL, [
+   for i in $2; do
+      if test -f ${TARGET_PREFIX}$i; then
+          AC_MSG_CHECKING([for ${TARGET_PREFIX}$i])
+          $1=${TARGET_PREFIX}$i
+	  AC_MSG_RESULT( [yes] )
+      else
+         AC_PATH_PROG( $1, ${TARGET_PREFIX}$i )
+      fi
+      if test -n "$$1"; then
+         break
+      fi
+   done
+   if test -z "$$1"; then
+      # not found, try to fall back on basic versions
+      AC_PATH_PROGS( $1, $2 )
+   fi
+] )
+
+dnl -------------------
+AC_PATH_BINUTIL( HOST_CC, gcc cc )
+
+dnl -------------------
+AC_MSG_CHECKING( [if using GNU ld] )
+HOST_GNU_LD=no
+if ${HOST_CC} -v 2>&1 </dev/null | egrep "gcc" 1>&5; then
+   HOST_GCC=yes
+   HOST_LD=`${HOST_CC} -print-prog-name=ld`
+else
+   HOST_LD=ld
+fi
+if ${HOST_LD} -v 2>&1 </dev/null | egrep '(GNU|with BFD)' 1>&5; then
+   HOST_GNU_LD=yes
+   AC_DEFINE( HOST_GNU_LD, 1, [Host uses GNU ld] )
+fi
+AC_MSG_RESULT( $HOST_GNU_LD )
+
+
+dnl Checks for libraries.       
+AC_CHECK_LIB(elf, elf_begin)
+AC_CHECK_LIB(stdc++, main)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h malloc.h sys/time.h unistd.h byteswap.h)
+AC_CHECK_HEADERS(libelf.h libelf/libelf.h, break)
+AC_CHECK_HEADERS(link.h sys/link.h, break)
+AC_CHECK_HEADERS(elf.h sys/elf_SPARC.h sys/auxv.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
+
+AC_CHECK_SIZEOF(char,1)
+AC_CHECK_SIZEOF(short,2)
+AC_CHECK_SIZEOF(int,4)
+AC_CHECK_SIZEOF(long,4)
+AC_CHECK_SIZEOF(long long,8)
+AC_CHECK_SIZEOF(float,4)
+AC_CHECK_SIZEOF(double,8)
+AC_CHECK_SIZEOF(long double,16)
+
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+
+dnl Now the options...
+AC_CHECK_FUNCS(mkdir rmdir)
+
+AC_ARG_ENABLE(remote, [  --enable-remote         don't try to regenerate source files],
+              [ REMOTE=1 ], [ REMOTE=0 ] )
+
+AC_SUBST(REMOTE)
+
+PREFIX=$srcdir
+LIBDIR=$srcdir/lib
+
+AC_SUBST(PREFIX)
+AC_SUBST(LIBDIR)
+AC_SUBST(HOST_GNU_LD)
+
+
+AC_CONFIG_FILES(         Makefile)
+AC_CONFIG_FILES(    util/Makefile)
+AC_CONFIG_FILES(  loader/Makefile)
+AC_CONFIG_FILES(      db/Makefile)
+AC_CONFIG_FILES(frontend/Makefile)
+AC_CONFIG_FILES(analysis/Makefile)
+
+AC_OUTPUT

@@ -20,5 +20,6 @@ class ProgTest : public CppUnit::TestCase {
     void tearDown ();
 
     void testName ();
+    void testLibParams ();
 };
 

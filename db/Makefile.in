@@ -13,14 +13,16 @@
 # 26 Apr 02 - Mike: Create the libdb.so library, from .o files
 # 29 Apr 02 - Mike: Added sslparser etc
 # 13 May 02 - Mike: Added RtlTest and ParserTest
+# 04 Jul 02 - Mike: Added type.cpp, TypeType.cpp
 
 BISONPP=bison++
 FLEXPP=flex++
 
 DB_LIB=../lib/libdb.so
-TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o
+TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o
 LIB_OBJS = exp.o prog.o proc.o rtl.o hrtl.o cfg.o basicblock.o register.o \
-           sslparser.o sslscanner.o insnameelem.o sslinst.o table.o
+           sslparser.o sslscanner.o insnameelem.o sslinst.o table.o type.o \
+           dataflow.o
 
 BOOMDIR="$(shell pwd)/.."
 LIBDIR=$(BOOMDIR)/lib
@@ -29,7 +31,7 @@ BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
 CC = g++ -g -Wall
 CXX = $(CC)
 
-GENFILES = sslparser.cc sslparser.h sslscanner.cc sslscanner.h
+GENFILES = sslparser.cpp sslparser.h sslscanner.cpp sslscanner.h
 
 all: $(DB_LIB) testDbase
 
@@ -68,28 +70,28 @@ basicblock.o: ../include/cfg.h
 rtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
 hrtl.o: ../include/rtl.h ../include/exp.h ../include/operator.h
 register.o: ../include/register.h
-sslparser.o: sslparser.cc sslparser.h sslscanner.h
-sslscanner.o: sslscanner.cc sslscanner.h
+sslparser.o: sslparser.cpp sslparser.h sslscanner.h
+sslscanner.o: sslscanner.cpp sslscanner.h
 insnameelem.o: insnameelem.h
 
-# prog.cc needs BOOMDIR set
+# prog.cpp needs BOOMDIR set
 prog.o: EXTRAS = $(BOOMSET)
-# exp.cc needs -I.
+# exp.cpp needs -I.
 exp.o: EXTRAS = -I.
 
 # Make these objects with -fPIC
-$(LIB_OBJS): %.o : %.cc
+$(LIB_OBJS): %.o : %.cpp
 	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
 
 # Others without -fPIC
-.cc.o:
+.cpp.o:
 	$(CC) -c -I../include -o $@ $<
 
-sslparser.cc sslparser.h: sslparser.y sslscanner.l
-	${BISONPP} -d -v -osslparser.cc -hsslparser.h $<
+sslparser.cpp sslparser.h: sslparser.y sslscanner.l
+	${BISONPP} -d -v -osslparser.cpp -hsslparser.h $<
 
-sslscanner.cc sslscanner.h: sslscanner.l sslparser.y
-	${FLEXPP} -osslscanner.cc -hsslscanner.h $<
+sslscanner.cpp sslscanner.h: sslscanner.l sslparser.y
+	${FLEXPP} -osslscanner.cpp -hsslscanner.h $<
 
 
 clean:

@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 1998-2001, The University of Queensland
- * Copyright (C) 2000-2001, Sun Microsystems, Inc
+ * Copyright (C) 2000-2001, Sun Microsystems, Inc  
+ * Copyright (C) 2002, Trent Waddington
+ *
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -26,15 +28,22 @@
 #ifndef __FRONTEND_H__
 #define __FRONTEND_H__
 
+#include <list>
+#include <map>
 #include <queue>
+#include <fstream>
 #include "types.h"
-#include "decoder.h"
-#include "cfg.h"
 
 class UserProc;
 class Proc;
 class TargetQueue;
-class FrontEndSrc;          // Forward class declaration
+class RTL;
+class NJMCDecoder;
+class BasicBlock;
+typedef BasicBlock* PBB;
+class Exp;
+class TypedExp;
+class Cfg;
 
 // Control flow types
 enum INSTTYPE {
@@ -53,15 +62,28 @@ class FrontEnd {
 protected:
     int delta;                  // Text host address - native address difference
     ADDRESS uUpper;             // Upper address for the text segment
-    NJMCDecoder* decoder;       // Ptr to the NJMCDecoder object
-    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
-    const int NOP_INST;         // No-op pattern
+//    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
+//    const int NOP_INST;         // No-op pattern
+	std::map<ADDRESS, Proc *> processed;
 
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    FrontEnd(int delta, ADDRESS uUpper, NJMCDecoder* decoder);
+    FrontEnd(int delta, ADDRESS uUpper);
+    // If you know which machine you want.
+    static FrontEnd* instantiate(MACHINE machine, int delta, ADDRESS uUpper);
+
+    /**
+     * Destructor. Virtual to mute a warning
+     */
+virtual ~FrontEnd();
+
+// returns a string identifer for this frontend
+virtual const char *getFrontEndId() = 0;
+
+// returns a frontend given a string
+static FrontEnd *createById(std::string &str, int delta, ADDRESS uUpper);
 
     /*
      * Function to fetch the smallest machine instruction
@@ -69,8 +91,13 @@ public:
 virtual int     getInst(int addr);
 
     /*
+     * Accessor function to get the decoder.
+     */
+virtual NJMCDecoder *getDecoder() = 0;
+
+    /*
      * processProc. This is the main function for decoding a procedure.
-     * It is usually overridden in the derived class FrontEndSrc to do
+     * It is usually overridden in the derived class to do
      * source machine specific things.
      * If spec is set, this is a speculative decode
      * Returns true on a good decode
@@ -81,23 +108,22 @@ virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     /*
      * Locate the starting address of "main", returning a native address
      */
-     ADDRESS getMainEntryPoint( void );
+virtual ADDRESS getMainEntryPoint( bool &gotMain ) = 0;
 
     /*
      * getInstanceFor. Get an instance of a class derived from FrontEnd,
-     * returning a pointer to an object of class FrontEndSrc.
+     * returning a pointer to the object of that class.
      * Do this by guessing the machine for the binary file whose name is
      * sName, loading the appropriate library using dlopen/dlsym, running
      * the "construct" function in that library, and returning the result.
      */
-static FrontEndSrc* getInstanceFor( const char* sName, void*& dlHandle,
+static FrontEnd* getInstanceFor( const char* sName, void*& dlHandle,
   int delta, ADDRESS uUpper, NJMCDecoder*& decoder);
 
     /*
      * Close the library opened by getInstanceFor
      */
-static void closeInstance(FrontEnd* fr, void* dlHandle);
-
+static void closeInstance(void* dlHandle);
 
 };
 
@@ -164,7 +190,7 @@ RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder);
  * If spec is true, then we are speculatively decoding (i.e. if there is an
  *  illegal instruction, we just bail out)
  */
-bool decodeProc(ADDRESS uAddr, FrontEndSrc& fe, bool keep = true,
+bool decodeProc(ADDRESS uAddr, FrontEnd& fe, bool keep = true,
     bool spec = false);
 
 // Put the target queue logic into this small class
@@ -212,30 +238,6 @@ public:
 
 
 
-
-// Class FrontEndSrc: derived from FrontEnd, with source machine specific
-// behaviour (if any)
-
-class FrontEndSrc : public FrontEnd
-{
-public:
-    /*
-     * Constructor. Takes some parameters to save passing these around a lot
-     */
-    FrontEndSrc(int delta, ADDRESS uUpper, NJMCDecoder* decoder);
-
-    /*
-     * processProc. This is the main function for decoding a procedure.
-     * This overrides the base class processProc to do source machine
-     * specific things (but often calls the base class to do most of the
-     * work. Sparc is an exception)
-     * If spec is true, this is a speculative decode (so give up on any invalid
-     * instruction)
-     * Returns true on a good decode
-     */
-    bool        processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-                bool spec = false, PHELPER helperFunc = NULL);
-};
 
 
 #endif      // #ifndef __FRONTEND_H__

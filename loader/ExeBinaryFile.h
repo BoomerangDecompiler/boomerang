@@ -76,6 +76,7 @@ public:
   virtual void  Close();                        // Close file opened with Open()
   virtual bool  PostLoad(void* handle);         // For archive files only
   virtual LOAD_FMT GetFormat() const;           // Get format (i.e. LOADFMT_EXE)
+  virtual MACHINE GetMachine() const;           // Get machine (i.e. MACHINE_PENTIUM)
 
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();

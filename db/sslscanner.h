@@ -56,13 +56,13 @@
 #line 28 "sslscanner.l"
 #include "sslparser.h"
 #define MAX_LINE 1024      // the longest SSL spec line
-#line 37 "sslscanner.l"
+#line 42 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_PARAM  std::istream &ins, bool trace
-#line 38 "sslscanner.l"
+#line 43 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins)
-#line 39 "sslscanner.l"
+#line 44 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_CODE 
-#line 40 "sslscanner.l"
+#line 45 "sslscanner.l"
 #define YY_SSLScanner_INPUT_CODE  if (in.eof()) {  \
     result = 0; \
 } else { \
@@ -70,16 +70,16 @@
     result=in.gcount(); \
 } \
 return result;
-#line 47 "sslscanner.l"
+#line 52 "sslscanner.l"
 #define YY_SSLScanner_MEMBERS  \
 public: \
     int theLine;        /* the current line number */\
     char lineBuf[MAX_LINE]; /* the current line */ \
     bool traceLines;    /* echo each lines as it is scanned */ \
     std::istream &in;
-#line 54 "sslscanner.l"
+#line 59 "sslscanner.l"
 #define YY_SSLScanner_LEX_PARAM  YY_SSLParser_STYPE &yylval 
-#line 56 "sslscanner.l"
+#line 61 "sslscanner.l"
 #line 52 "/home/02/binary/u1.luna.tools/flex++/lib/flexskel.h"
 
 
@@ -331,7 +331,7 @@ class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 297 "sslscanner.l"
+#line 302 "sslscanner.l"
 #endif
 #line 302 "/home/02/binary/u1.luna.tools/flex++/lib/flexskel.h"
 

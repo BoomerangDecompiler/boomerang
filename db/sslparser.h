@@ -18,7 +18,12 @@
 
 /* #line 14 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
 #line 21 "sslparser.h"
-#line 32 "sslparser.y"
+#line 34 "sslparser.y"
+
+#include <assert.h>
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+#pragma warning(disable:4786)
+#endif 
 
 #include <sstream>
 #include "types.h"
@@ -33,7 +38,7 @@
 
 class SSLScanner;
 
-#line 52 "sslparser.y"
+#line 59 "sslparser.y"
 typedef union {
     Exp*            exp;
     char*           str;
@@ -60,9 +65,11 @@ typedef union {
 #define YY_SSLParser_CONSTRUCTOR_INIT  : \
    sslFile(sslFile), bFloat(false)
 #define YY_SSLParser_CONSTRUCTOR_CODE  \
-    std::fstream *fin = new std::fstream(sslFile.c_str()); \
+    std::fstream *fin = new std::fstream(sslFile.c_str(), std::ios::in); \
+    theScanner = NULL; \
     if (!*fin) { \
         std::cerr << "can't open `" << sslFile << "' for reading\n"; \
+	return; \
     } \
     theScanner = new SSLScanner(*fin, trace); \
     if (trace) yydebug = 1;
@@ -75,12 +82,12 @@ static  Exp* parseExp(const char *str); /* Parse an expression from a string */ 
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
-protected: \
 \
     /* \
      * The scanner. \
      */ \
     SSLScanner* theScanner; \
+protected: \
 \
     /* \
      * The file from which the SSL spec is read. \
@@ -165,21 +172,21 @@ protected: \
 #ifndef YY_SSLParser_PURE
 
 /* #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 169 "sslparser.h"
+#line 176 "sslparser.h"
 
 #line 63 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
 /* #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 176 "sslparser.h"
+#line 183 "sslparser.h"
 
 #line 65 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
 /* #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 183 "sslparser.h"
+#line 190 "sslparser.h"
 
 #line 67 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
 /* YY_SSLParser_DEBUG */
@@ -187,7 +194,7 @@ protected: \
 #ifndef YY_SSLParser_LSP_NEEDED
 
 /* #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 191 "sslparser.h"
+#line 198 "sslparser.h"
 
 #line 70 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
@@ -265,7 +272,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 
 /* #line 143 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 269 "sslparser.h"
+#line 276 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -355,7 +362,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 359 "sslparser.h"
+#line 366 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -409,7 +416,7 @@ static const int FLOATNUM;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 413 "sslparser.h"
+#line 420 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -511,5 +518,5 @@ public:
 /* END */
 
 /* #line 236 "/home/02/binary/u1.luna.tools/bison++/lib/bison.h" */
-#line 515 "sslparser.h"
+#line 522 "sslparser.h"
 #endif

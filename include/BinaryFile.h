@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1997-2001, The University of Queensland
  * Copyright (C) 2001, Sun Microsystems, Inc
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -107,13 +108,15 @@ typedef BinaryFile *(*get_library_callback_t)(char *name);
 // This enum allows a sort of run time type identification, without using
 // compiler specific features
 enum LOAD_FMT {LOADFMT_ELF, LOADFMT_PE, LOADFMT_PALM, LOADFMT_PAR, LOADFMT_EXE};
+enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM};
 
 class BinaryFile {
 
-  friend class ArchiveFile;           // So can use the protected Load()
+  friend class ArchiveFile;			// So can use the protected Load()
  
   public:
 
+virtual ~BinaryFile() {}			// Virtual destructor
     /*
      * Perform simple magic on the file by the given name in order to
      * determine the appropriate type, and then return an instance of
@@ -132,6 +135,8 @@ class BinaryFile {
     virtual void    Close() = 0;
     // Get the format (e.g. LOADFMT_ELF)
     virtual LOAD_FMT GetFormat() const = 0;
+    // Get the expected machine (e.g. MACHINE_PENTIUM)
+    virtual MACHINE GetMachine() const = 0;
 
     // Return whether or not the object is a library file.
     virtual bool isLibrary() const = 0;
@@ -202,6 +207,8 @@ class BinaryFile {
     // Analysis functions
     virtual std::list<RegAddr>& GetInitialState();
     virtual bool    IsDynamicLinkedProc(ADDRESS uNative);
+	virtual bool    IsDynamicLinkedProcPointer(ADDRESS uNative);
+	virtual const char *GetDynamicProcName(ADDRESS uNative);
     virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") = 0;
     virtual ADDRESS GetMainEntryPoint() = 0;
 
@@ -213,6 +220,9 @@ class BinaryFile {
     int         GetSectionIndexByName(const char* sName);
 
 
+    virtual bool    RealLoad(const char* sName) = 0;
+
+	virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
 //
 //  --  --  --  --  --  --  --  --  --  --  --
 //
@@ -221,7 +231,7 @@ class BinaryFile {
     // Special load function for archive members
     virtual bool    PostLoad(void* handle) = 0;     // Called after loading archive member
     // Load the file. Pure virtual function
-    virtual bool    RealLoad(const char* sName) = 0;
+
 
     // Data
     bool        m_bArchive;                 // True if archive member

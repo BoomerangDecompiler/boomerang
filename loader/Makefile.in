@@ -14,7 +14,7 @@
 
 # $Revision$
 # Note: gnu make is probably required (for patsubst etc)
-# Whole make is dependent on finding the pattern *BinaryFile.cc;
+# Whole make is dependent on finding the pattern *BinaryFile.cpp;
 # a lib%.so file is made for each of these
 # You should be able to add a simple loader without any changes to this
 # Makefile, as long as you follow the naming convention <type>BinaryFile.*
@@ -23,13 +23,15 @@
 # 11 Apr 02 - Mike: Use lib%.so names and -l now; no "make install" any more
 # 17 Apr 02 - Mike: Use $(shell pwd) to get an absolute path for BOOMDIR
 # 26 Apr 02 - Mike: Make .so from .o files now
+# 16 Jul 02 - Mike: Removed prog again; no longer needed for serialise code
 
-CC = g++ -g
+C = gcc -g -Wall
+CC = g++ -g -Wall
 CXX=$(CC)
 
-ALLLIBSRC =  $(wildcard *BinaryFile.cc)
-ALLLIB =  $(patsubst %.cc,../lib/lib%.so,$(ALLLIBSRC))
-ALLOBJS = $(patsubst %.cc, %.o, $(ALLLIBSRC))
+ALLLIBSRC =  $(wildcard *BinaryFile.cpp)
+ALLLIB =  $(patsubst %.cpp,../lib/lib%.so,$(ALLLIBSRC))
+ALLOBJS = $(patsubst %.cpp, %.o, $(ALLLIBSRC))
 ALLOBJS += ElfDetails.o SymTab.o
 
 all:    $(ALLLIB) testLoader
@@ -47,34 +49,39 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 
-testLoader: testLoader.o LoaderTest.o
-	$(CC) testLoader.o LoaderTest.o -o $@ -lutil -lcppunit -lBinaryFile \
-        $(RUNPATH) -L../lib
+testLoader: testLoader.o LoaderTest.o microX86dis.o
+	$(CC) -o $@ $^  -lcppunit -lBinaryFile $(RUNPATH) -L../lib
 
-testLoader.o: testLoader.cc
-	$(CC) -c -I../include $(BOOMSET) -o $@ $<
+testLoader.o: testLoader.cpp
+	$(CC) -c -o $@ -I../include $(BOOMSET) $<
 
-LoaderTest.o: LoaderTest.cc LoaderTest.h
-	$(CC) -c -I../include $(BOOMSET) -o $@ $<
+LoaderTest.o: LoaderTest.cpp LoaderTest.h
+	$(CC) -c -o $@ -I../include $(BOOMSET) $<
+
+microX86dis.o: microX86dis.c
+	$(C) -c -o $@ -fPIC $<
 
 # Extra object files, etc
 # Only ElfBinaryFile needs libelf. These are target specific variables.
 ../lib/libElfBinaryFile.so: EXTRAS = -lelf SymTab.o ElfDetails.o
 ../lib/libHpSomBinaryFile.so: EXTRAS = SymTab.o
 ../lib/libBinaryFile.so: EXTRAS = -ldl
+../lib/libWin32BinaryFile.so: EXTRAS = microX86dis.o
 
 # This pattern generates all the main dependencies
 $(ALLLIB): ../lib/lib%.so : %.o
 	$(CC) -o $@ -shared $< $(EXTRAS) $(RUNPATH) -L../lib
 
 # Compile all objects with -fPIC
-$(ALLOBJS): %.o : %.cc
+$(ALLOBJS): %.o : %.cpp
 	$(CC) -c -fPIC -I../include $(BOOMSET) -o $@ $<
 
 # Dependencies
 ../lib/libElfBinaryFile.so: SymTab.o ElfDetails.o
+../lib/libWin32BinaryFile.so: microX86dis.o
 ElfDetails.o: ElfDetails.h
 SymTab.o:   SymTab.h
+
 
 
 clean:

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2001, Sun Microsystems, Inc
  * Copyright (C) 2001, The University of Queensland
+ * Copyright (C) 2002, Trent Waddington
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL
@@ -32,15 +33,25 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <iostream>
 #include "exp.h"
-#include "type.h"
 #include "register.h"
 
 class BasicBlock;
+class HLLCode;
 typedef BasicBlock* PBB;
+class Exp;
+class TypedExp;
+class DefSet;
+class UseSet;
+class SSACounts;
+class Type;
+class Register;
+class Proc;
 
 /*==============================================================================
  * Kinds of RTLs, or high-level register transfer lists.
+ * changing the order of these will result in save files not working - trent
  *============================================================================*/
 enum RTL_KIND {
     HL_NONE = 0,
@@ -57,6 +68,7 @@ enum RTL_KIND {
 /*==============================================================================
  * JCOND_TYPE: These values indicate what kind of conditional jump is being
  * performed.
+ * changing the order of these will result in save files not working - trent
  *============================================================================*/
 enum JCOND_TYPE {
     HLJCOND_JE = 0,          // Jump if equals
@@ -119,6 +131,7 @@ public:
     void appendListExp(std::list<Exp*>& le); // Append list of Exps to end.
     void appendRTL(RTL& rtl);           // Append Exps from other RTL to end
     void deepCopyList(std::list<Exp*>& dest);// Make a deep copy of the list of Exp*
+	std::list<Exp*> &getList() { return expList; } // direct access to the list of Exps
 
      // Print RTL to a stream.
     virtual void print(std::ostream& os = std::cout);
@@ -176,13 +189,39 @@ public:
     void insertAfterTemps(Exp* ssLhs, Exp* ssRhs, int size = -1);
 
     // Replace all instances of "search" with "replace".
-    virtual void searchAndReplace(Exp* search, Exp* replace,
-                                  bool typeSens = false);
+    virtual void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of "search" and adds them to "result" in
     // reverse nesting order. The search is optionally type sensitive.
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result,
-                           bool typeSens = false);
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
+
+	// serialize this rtl
+	bool serialize(std::ostream &ouf, int &len);
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	static RTL *deserialize(std::istream &inf);
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+	void getUsesAfterDef(Exp *def, UseSet &uses);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
+
+	// return true if a given expression is defined in this rtl
+	bool containsDef(Exp *def);
 
 protected:
     RTL_KIND kind;
@@ -236,20 +275,17 @@ public:
     // Set and return whether the destination of this CTI is computed.
     // NOTE: These should really be removed, once HLNwayJump and HLNwayCall
     // are implemented properly.
-    void setIsComputed();
+    void setIsComputed(bool b = true);
     bool isComputed();
 
     virtual void print(std::ostream& os = std::cout);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace,
-                          bool typeSens = false);
+    void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
-    // expression and adds them to a given list in reverse nesting order.
-    // If typeSens is set, then type is considered during the match
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result,
-                           bool typeSens = false);
+    // expression and adds them to a given list in reverse nesting order.    
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);                           
 
 #if 0
     // Used for type analysis. Stores type information that
@@ -257,6 +293,28 @@ public:
     // data structure within BBBlock inBlock
     virtual void storeUseDefineStruct(BBBlock& inBlock);			   
 #endif
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
 
 protected:
     Exp* pDest;              // Destination of a jump or call. This is the
@@ -298,14 +356,11 @@ public:
     virtual void print(std::ostream& os = std::cout);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace,
-                          bool typeSens = false);
+    void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    // If typeSens is set, then type is considered during the match
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result,
-                           bool typeSens = false);
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
 #if 0
     // Used for type analysis. Stores type information that
@@ -313,6 +368,28 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
 
 private:
     JCOND_TYPE jtCond;          // The condition for jumping
@@ -352,14 +429,11 @@ public:
     virtual void print(std::ostream& os = std::cout);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace,
-                          bool typeSens = false);
+    void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    // If typeSens is set, then type is considered during the match
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result,
-                           bool typeSens = false);
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
     
 #if 0
     // Used for type analysis. Stores type information that
@@ -367,7 +441,29 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);   
 #endif     
-     
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+	
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
+
 private:    
     SWITCH_INFO* pSwitchInfo;   // Exp representation of the switch variable:
                                 // e.g., r[8]
@@ -381,7 +477,7 @@ class HLCall: public HLJump {
 public:
     HLCall(ADDRESS instNativeAddr, int returnTypeSize = 0,
            std::list<Exp*>* listExp = NULL);
-    HLCall::~HLCall();
+    virtual ~HLCall();
 
     // Make a deep copy, and make the copy a derived object if needed.
     virtual RTL* clone();
@@ -393,8 +489,8 @@ public:
     void setBB(PBB BB);                 // Set link from call to enclosing BB
     PBB getBB();                        // Get link from call to enclosing BB
 
-    void setParams(std::list<Exp*>& params); // Set call's parameters
-    std::list<Exp*>& getParams();            // Return call's parameters
+    void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
+    std::vector<Exp*>& getArguments();            // Return call's arguments
 
     void setReturnLoc(Exp* loc);        // Set location used for return value
     Exp* getReturnLoc();                // Get location used for return value
@@ -402,14 +498,11 @@ public:
     virtual void print(std::ostream& os = std::cout);
 
     // Replace all instances of "search" with "replace".
-    void searchAndReplace(Exp* search, Exp* replace,
-                          bool typeSens = false);
+    void searchAndReplace(Exp* search, Exp* replace);
     
     // Searches for all instances of a given subexpression within this
     // expression and adds them to a given list in reverse nesting order.
-    // If typeSens is set, then type is considered during the match
-    virtual bool searchAll(Exp* search, std::list<Exp*> &result,
-                           bool typeSens = false);
+    virtual bool searchAll(Exp* search, std::list<Exp*> &result);
 
     // Set and return whether the call is effectively followed by a return.
     // E.g. on Sparc, whether there is a restore in the delay slot.
@@ -421,9 +514,9 @@ public:
     void setPostCallExpList(std::list<Exp*>* le);
     std::list<Exp*>* getPostCallExpList();
 
-    // Set and return the destination name. Useful for patterns.
-    void setDestName(const char* pName);
-    const char* getDestName();
+    // Set and return the destination proc.
+    void setDestProc(Proc* dest);
+    Proc* getDestProc();
     
 #if 0
     // Used for type analysis. Stores type information that
@@ -431,6 +524,28 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);       
 #endif
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
 
 private:
     int returnTypeSize;         // Size in bytes of the struct, union or quad FP
@@ -443,15 +558,15 @@ private:
     // The list of locations that are live at this call. This list may be
     // refined at a later stage to match the number of parameters declared
     // for the called procedure.
-    std::list<Exp*> params;
+    std::vector<Exp*> arguments;
 
     // List of reg transfers that occur *after* the call.
     std::list<Exp*>* postCallExpList;
 
-    // The name of the destination. (Note: this is usually found by looking
-    // up the destination using the BinaryFile object, but in this case the
-    // name is totally synthetic.) When used, getFixedDest() returns 0
-    const char* pDestName;
+	// Destination of call
+    Proc* procDest;
+	// Destination name of call (used in serialization)
+	std::string destStr;
 };
 
 
@@ -472,6 +587,42 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);   				    
 #endif
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
+
+	int getNumBytesPopped() { return nBytesPopped; }
+	void setNumBytesPopped(int n) { nBytesPopped = n; }
+
+	Exp *getReturnValue() { return returnVal; }
+	void setReturnValue(Exp *e) { if (returnVal) delete returnVal; returnVal = e; }
+
+protected:
+
+	// number of bytes that this return pops
+	int nBytesPopped;
+
+	// value returned
+	Exp *returnVal;
 };
 
 
@@ -512,6 +663,28 @@ public:
     // data structure within BBBlock inBlock
     void storeUseDefineStruct(BBBlock& inBlock);       
 #endif
+
+	// serialize this rtl
+	virtual bool serialize_rest(std::ostream &ouf);
+
+	// deserialize an rtl
+	virtual bool deserialize_fid(std::istream &inf, int fid);
+
+	// code generation
+	virtual void generateCode(HLLCode &hll, BasicBlock *pbb);
+
+	// for dataflow analysis
+	virtual bool getSSADefs(DefSet &defs, bool ssa);
+	virtual void SSAsubscript(SSACounts &counts);
+	virtual void getDefs(DefSet &defs, Exp *before_use = NULL);
+	virtual void getUses(UseSet &uses, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp *e);
+
+	// simplify all the uses/defs in this RTL
+	virtual void simplify();
+
+	// return true if this expression is used in a phi
+	virtual bool isUsedInPhi(Exp *e);
 
 private:
     JCOND_TYPE jtCond;             // the condition for jumping
@@ -560,10 +733,14 @@ class ParamEntry {
     ParamEntry() {
         exp = NULL;
         kind = PARAM_SIMPLE;
-        type = Type();
-        regType = Type(TVOID,0,false);
+        type = NULL;
+        regType = NULL;
         lhs = false;
         mark = 0;
+    }
+    ~ParamEntry() {
+	if (type) delete type;
+	if (regType) delete regType;
     }
     
     std::list<std::string> params;        /* PARAM_VARIANT & PARAM_EXPR only */
@@ -572,8 +749,8 @@ class ParamEntry {
     bool lhs;                   /* True if this param ever appears on the LHS
                                  * of an expression */
     ParamKind kind;
-    Type type;
-    Type regType;               /* Type of r[this], if any (void otherwise) */
+    Type* type;
+    Type* regType;               /* Type of r[this], if any (void otherwise) */
     std::set<int> regIdx;            /* Values this param can take as an r[param] */
     int mark;                   /* Traversal mark. (free temporary use,
                                  * basically) */
@@ -592,6 +769,9 @@ class PartialType;
 
 class RTLInstDict {
 public:
+    RTLInstDict();
+    ~RTLInstDict();
+
     // Parse a file containing a list of instructions definitions in SSL format
     // and build the contents of this dictionary.
     bool readSSLFile(const std::string& SSLFileName, bool bPrint = false);
@@ -631,11 +811,6 @@ public:
     // If the top level operator of the given expression indicates any kind
     // of type, update ty to match.
     bool partialType(Exp* exp, Type& ty);
-
-    // Scan the assignment given, and attempt to determine the
-    // correct overall type. If the type is decideable, updates the expression
-    // appropriately and returns true. Other the function return false.
-    bool decideType(TypedExp* asgn);
 
 #if 0
     // Type checking and evaluation functions
@@ -714,3 +889,4 @@ protected:
 };
 
 #endif /*__RTL_H__*/
+

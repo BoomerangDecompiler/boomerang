@@ -19,7 +19,13 @@
  * 26 Apr 02 - Mike: Changes for boomerang
 */
 
+#include <assert.h>
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+#pragma warning(disable:4786)
+#endif
+
 #include "decoder.h"
+#include "pentiumdecoder.h"
 #include "prog.h"
 #include "exp.h"
 #include "rtl.h"
@@ -53,7 +59,7 @@
 #define DIS_OFF     (new Const(off))
 
 /**********************************
- * NJMCDecoder methods.
+ * PentiumDecoder methods.
  **********************************/   
 
 /*==============================================================================
@@ -62,11 +68,11 @@
  * PARAMETERS:     x: integer variable to be "used"
  * RETURNS:        Nothing
  *============================================================================*/
-void unused(int x)
+void PentiumDecoder::unused(int x)
 {}
 
 /*==============================================================================
- * FUNCTION:       NJMCDecoder::decodeInstruction
+ * FUNCTION:       PentiumDecoder::decodeInstruction
  * OVERVIEW:       Decodes a machine instruction and returns an RTL instance. In
  *                 most cases a single instruction is decoded. However, if a
  *                 higher level construct that may consist of multiple
@@ -84,7 +90,7 @@ void unused(int x)
  * RETURNS:        a DecodeResult structure containing all the information
  *                   gathered during decoding
  *============================================================================*/
-DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
+DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 {
     static DecodeResult result;
     ADDRESS hostPC = pc + delta;
@@ -449,15 +455,23 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | RET.far.Iw(i16) =>
         Exps = instantiate(pc,  "RET.far.Iw", DIS_I16);
+		HLReturn *retrtl = new HLReturn(pc, Exps);
+		retrtl->setNumBytesPopped(DIS_I16->getAddr());
+		result.rtl = retrtl;
 
     | RET.Iw(i16) =>
         Exps = instantiate(pc,  "RET.Iw", DIS_I16);
+		HLReturn *retrtl = new HLReturn(pc, Exps);
+		retrtl->setNumBytesPopped(DIS_I16->getAddr());
+		result.rtl = retrtl;
 
     | RET.far() =>
         Exps = instantiate(pc,  "RET.far");
+		result.rtl = new HLReturn(pc, Exps);
 
     | RET() =>
-        Exps = instantiate(pc,  "RET");
+        Exps = instantiate(pc,  "RET");   // Why was this just being instantiated?  - Trent 8/6/2002
+        result.rtl = new HLReturn(pc, Exps);
 
 //   | REPNE() =>
 //      Exps = instantiate(pc,  "REPNE");
@@ -1066,8 +1080,10 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
     | INT.Ib(i8) =>
         Exps = instantiate(pc,  "INT.Ib", DIS_I8);
 
-    | INT3() =>
-        Exps = instantiate(pc,  "INT3");
+// Removing because an invalid instruction is better than trying to
+// instantiate this. -trent
+//    | INT3() =>
+//        Exps = instantiate(pc,  "INT3");
 
 //    | INSvod() =>
 //        Exps = instantiate(pc,  "INSvod");
@@ -1241,10 +1257,12 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
         Exps = instantiate(pc, "NOP");
 
     | CALL.Jvod(relocd) [name] =>
-        Exps = instantiate(pc,  name, dis_Num(relocd-hostPC-5));
+        HLCall* newCall = new HLCall(pc, 0, 0);
 
-    | CALL.Evod(Eaddr) =>
-        Exps = instantiate(pc,  "CALL.Evod", DIS_EADDR32);
+        // Set the destination
+	// WAS: relocd-hostPC-5, which is broken? -trent
+        newCall->setDest(relocd-delta);
+        result.rtl = newCall;
 
     | BTSiod(Eaddr, i8) =>
         Exps = instantiate(pc,  "BTSiod", DIS_I8, DIS_EADDR32);
@@ -2069,7 +2087,7 @@ DecodeResult& NJMCDecoder::decodeInstruction (ADDRESS pc, int delta)
  *                  expr - the expression that will be built
  * RETURNS:         the Exp* representation of the given Eaddr
  *============================================================================*/
-Exp* NJMCDecoder::dis_Mem(ADDRESS pc)
+Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 {
     Exp* expr;
 
@@ -2162,7 +2180,7 @@ Exp* NJMCDecoder::dis_Mem(ADDRESS pc)
  *                  size - size of the operand (important if a register)
  * RETURNS:         the Exp* representation of the given Eaddr
  *============================================================================*/
-Exp* NJMCDecoder::dis_Eaddr(ADDRESS pc, int size)
+Exp* PentiumDecoder::dis_Eaddr(ADDRESS pc, int size)
 {
     match pc to
     | E (mem) =>
@@ -2186,7 +2204,7 @@ Exp* NJMCDecoder::dis_Eaddr(ADDRESS pc, int size)
  * PARAMETERS:    hostPC - pointer to the code in question (native address)
  * RETURNS:       True if a match found
  *============================================================================*/
-bool isFuncPrologue(ADDRESS hostPC)
+bool PentiumDecoder::isFuncPrologue(ADDRESS hostPC)
 {
 #if 0
     int locals, regs;
@@ -2214,7 +2232,7 @@ bool isFuncPrologue(ADDRESS hostPC)
  * PARAMETERS:      lc - address at which to decode the double
  * RETURNS:         the decoded double
  *============================================================================*/
-Byte getByte (unsigned lc)
+Byte PentiumDecoder::getByte (unsigned lc)
 /* getByte - returns next byte from image pointed to by lc.  */
 {
     return *(Byte *)lc;
@@ -2226,7 +2244,7 @@ Byte getByte (unsigned lc)
  * PARAMETERS:      lc - address at which to decode the double
  * RETURNS:         the decoded double
  *============================================================================*/
-SWord getWord (unsigned lc)
+SWord PentiumDecoder::getWord (unsigned lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.  */
 {
     return (SWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8));
@@ -2238,7 +2256,7 @@ SWord getWord (unsigned lc)
  * PARAMETERS:      lc - address at which to decode the double
  * RETURNS:         the decoded double
  *============================================================================*/
-DWord getDword (unsigned lc)
+DWord PentiumDecoder::getDword (unsigned lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
     return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) +
@@ -2247,16 +2265,16 @@ DWord getDword (unsigned lc)
 
 
 /*==============================================================================
- * FUNCTION:       NJMCDecoder::NJMCDecoder
+ * FUNCTION:       PentiumDecoder::PentiumDecoder
  * OVERVIEW:       Constructor. The code won't work without this (not sure why
  *                  the default constructor won't do...)
  * PARAMETERS:     None
  * RETURNS:        N/A
  *============================================================================*/
-NJMCDecoder::NJMCDecoder()
+PentiumDecoder::PentiumDecoder() : NJMCDecoder()
 {}
 
 // For now...
-int NJMCDecoder::decodeAssemblyInstruction(unsigned, int)
+int PentiumDecoder::decodeAssemblyInstruction(unsigned, int)
 { return 0; }
 

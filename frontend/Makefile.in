@@ -17,11 +17,11 @@ TEST_OBJS = FrontSparcTest.o FrontPentTest.o # FrontendTest.o
 LIB_OBJS  = frontend.o njmcDecoder.o
 
 MACHS     = sparc pentium
-MACH_LIBS = $(patsubst %, ../lib/libfront%.so,  $(MACHS))
-MACH_OBJS = $(patsubst %, machine/%/decoder.o,  $(MACHS))
-MACH_SRC  = $(patsubst %, machine/%/decoder.cc, $(MACHS))
-MACH_FE_SRC=$(patsubst %, machine/%/frontendsrc.cc, $(MACHS))
-MACH_FE_OBJ=$(patsubst %, machine/%/frontendsrc.o , $(MACHS))
+MACH_LIBS = $(patsubst %, ../lib/libfront%.so, $(MACHS))
+MACH_OBJS = $(patsubst %, %decoder.o, $(MACHS))
+MACH_SRC  = $(patsubst %, %decoder.cpp, $(MACHS))
+MACH_FE_SRC=$(patsubst %, %frontend.cpp, $(MACHS))
+MACH_FE_OBJ=$(patsubst %, %frontend.o, $(MACHS))
 
 CC = g++ -g -Wall
 CXX = $(CC)
@@ -31,7 +31,7 @@ GENFILES = $(MACH_SRC)
 all: testFront
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
-HOST_GNU_LD = yes
+HOST_GNU_LD = @HOST_GNU_LD@
 
 BOOMDIR="$(shell pwd)/.."
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
@@ -43,50 +43,46 @@ RUNPATH=-R$(LIBDIR)
 endif
 
 
-# Note: link with -lfrontsparc just to get the NJMCDecoder
-# constructor (doesn't matter whether we are using sparc or not)
 testFront: testFront.o $(FRONTEND_LIB) $(TEST_OBJS) $(MACH_LIBS) \
-        ../include/frontend.h 
+        ../include/frontend.h
 	$(CC) -o $@ testFront.o $(TEST_OBJS) -lcppunit -lfrontend -ldb \
-      -lBinaryFile -lutil -lfrontsparc $(RUNPATH) -L../lib
+      -lBinaryFile -lutil $(RUNPATH) -L../lib
 
 $(FRONTEND_LIB): $(LIB_OBJS)
 	$(CC) -shared -o $@ $(LIB_OBJS) $(RUNPATH) -L../lib
 
 # A pattern for the machine dependent libraries
-$(MACH_LIBS): ../lib/libfront%.so : machine/%/decoder.o machine/%/frontendsrc.o
+$(MACH_LIBS): ../lib/libfront%.so : %decoder.o %frontend.o
 	$(CC) -shared -o $@ $^ $(RUNPATH) -L../lib
 
 # Dependencies
-frontend.o: frontend.cc ../include/frontend.h ../include/decoder.h
+frontend.o: frontend.cpp ../include/frontend.h ../include/decoder.h
 FrontendTest.o: FrontendTest.h
 FrontSparcTest.o: FrontSparcTest.h
 FrontPentTest.o:  FrontPentTest.h
-njmcDecoder.o: njmcDecoder.cc ../include/decoder.h
+njmcDecoder.o: njmcDecoder.cpp ../include/decoder.h
 
 # Extras
 FrontSparcTest.o: EXTRAS = -I.  # To include frontend.h
 FrontPentTest.o:  EXTRAS = -I.  # To include frontend.h
 frontend.o:       EXTRAS = $(BOOMSET)
 
-# The .m's depend on the .cc's
-DECODER_CCS     = $(patsubst %, machine/%/decoder.cc, $(MACHS))
-
-$(DECODER_CCS):    machine/%/decoder.cc     : machine/%/core.spec \
-                                              machine/%/synth.spec \
-                                              machine/%/dis.spec \
-                                              machine/%/decoder.m
-	mltk.sh $^ 2> mltk.err
+# The .cpp's depend on the .m's
+$(MACH_SRC): %decoder.cpp : machine/%/core.spec \
+                                   machine/%/synth.spec \
+                                   machine/%/dis.spec \
+                                   machine/%/decoder.m
+	./mltk.sh -o $@ $^ 2> mltk.err
 
 # The library objs require -fPIC
 $(LIB_OBJS):
 	$(CC) -c -o $@ -I../include -I. -fPIC $(EXTRAS) $<
 
 # Also the machine dependent decoders
-$(MACH_OBJS) $(MACH_FE_OBJ): %.o : %.cc ../include/decoder.h
+$(MACH_OBJS) $(MACH_FE_OBJ): %.o : %.cpp ../include/decoder.h
 	$(CC) -c -o $@ -I../include -I. -fPIC $<
 
-.cc.o:
+.cpp.o:
 	$(CC) -c -o $@ -I../include $(BOOMSET) $(EXTRAS) $<
 
 

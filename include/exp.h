@@ -1,3 +1,6 @@
+/*
+ * Copyright (C) 2002, Trent Waddington
+ */
 /*==============================================================================
  * FILE:       exp.h
  * OVERVIEW:   Provides the definition for the Exp class and its
@@ -23,11 +26,15 @@
 #include <stdio.h>      // For sprintf
 #include <list>
 #include <vector>
+#include <set>
 #include "operator.h"   // Declares the OPER enum
 #include "types.h"      // For ADDRESS, etc
 #include "type.h"       // The Type class for typed expressions
 
+class UseSet;
+class DefSet;
 class RTL;              // For class FlagDef
+class BasicBlock;	// For class AssignExp
 
 /*==============================================================================
  * Exp is an expression class, though it will probably be used to hold many
@@ -46,15 +53,19 @@ protected:
 
     // Constructor, with ID
             Exp(OPER op) : op(op) {}
-
 public:
+	// Virtual destructor
+virtual		~Exp() {}
+
     // Return the index. Note: I'd like to make this protected, but then
     // subclasses don't seem to be able to use it (at least, for subexpressions)
     OPER    getOper() const {return op;}
     void    setOper(OPER x) {op = x;}     // A few simplifications use this
 
     // Print the expression to the given stream
-virtual void print(std::ostream& os = std::cout) = 0;
+	// Don't default to std::cout because it makes debugging harder
+virtual void print(std::ostream& os) = 0;
+	void	 print() {print(std::cout);}
     void     printt(std::ostream& os = std::cout);    // Print with <type>
     void     printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
              // Recursive print: don't want parens at the top level
@@ -85,8 +96,6 @@ virtual bool operator<<(const Exp& o) const
     {return (*this < o);}
 
 // Return the number of subexpressions. This is only needed in rare cases,
-// e.g. decideType, where we need to search subexpressions in the default
-// case (don't know the exact operator).
 // Could use polymorphism for all those cases, but this is easier
 virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
 
@@ -133,28 +142,25 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     
     // Search for Exp *search in this Exp. If found, return true and return
     // a ref to the matching expression in result (useful with wildcards).
-    // If typeSens is true, the comparisons will be type sensitive
-    bool    search(Exp* search, Exp*& result, bool typeSens = false);
+    bool    search(Exp* search, Exp*& result);
 
     // Search for Exp search in this Exp. For each found, add
-    // a ptr to the matching expression in result (useful with wildcards).
-    // If typeSens is true, the comparisons will be type sensitive
-    bool    searchAll(Exp* search, std::list<Exp*>& result, bool typeSens = false);
+    // a ptr to the matching expression in result (useful with wildcards).    
+    bool    searchAll(Exp* search, std::list<Exp*>& result);
 
     // Search this Exp for *search; if found, replace with *replace
-    Exp* searchReplace (Exp* search, Exp* replace, bool& change,
-        bool typeSens = false);
+    Exp* searchReplace (Exp* search, Exp* replace, bool& change);
 
     // Search *pSrc for *search; for all occurrences, replace with *replace
     Exp* searchReplaceAll(Exp* search, Exp* replace, bool& change,
-        bool typeSens = false, bool once = false);
+        bool once = false);
 
     // Not for public use. Search for subexpression matches.
-static void doSearch(Exp* search, bool typeSens, Exp*& pSrc, std::list<Exp**>& li,
+static void doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
         bool once);
 
     // As above.
-virtual void doSearchChildren(Exp* search, bool typeSens, std::list<Exp**>& li,
+virtual void doSearchChildren(Exp* search, std::list<Exp**>& li,
           bool once);
 
     //  //  //  //  //  //  //
@@ -192,11 +198,16 @@ static Exp* Accumulate(std::list<Exp*> exprs);
     // Simplify the expression
     Exp*    simplify();
 virtual Exp* polySimplify(bool& bMod) {bMod = false; return this;}
+    // Just the address simplification a[ m[ any ]]
+virtual Exp* simplifyAddr() {return this;}
 
-    // Misc //
-    // Find a top level type
-    bool    decideType(int assignSize, Type*& ty);
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len) = 0;
+	static Exp *deserialize(std::istream &inf);
 
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false) = 0;
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e) = 0;
 };
 
 // Not part of the Exp class, but logically belongs with it:
@@ -247,6 +258,13 @@ public:
     // Nothing to destruct: Don't deallocate the string passed to constructor
 
     void    appendDotFile(std::ofstream& of);
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -270,6 +288,12 @@ public:
     void    printr(std::ostream& os) {print (os);}
     void    appendDotFile(std::ofstream& of);
 
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -315,11 +339,19 @@ virtual     ~Unary();
     Exp*&   refSubExp1();
 
     // Search children
-    void doSearchChildren(Exp* search, bool typeSens,
+    void doSearchChildren(Exp* search,
       std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyAddr();
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -366,11 +398,19 @@ virtual     ~Binary();
     Exp*&   refSubExp2();
 
     // Search children
-    void doSearchChildren(Exp* search, bool typeSens,
+    void doSearchChildren(Exp* search, 
       std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyAddr();
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
@@ -414,15 +454,25 @@ virtual     ~Ternary();
     Exp*&   refSubExp3();
 
     // Search children
-    void doSearchChildren(Exp* search, bool typeSens,
+    void doSearchChildren(Exp* search, 
       std::list<Exp**>& li, bool once);
+
+    Exp* polySimplify(bool& bMod);
+    Exp* simplifyAddr();
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*==============================================================================
  * TypedExp is a subclass of Unary, holding one subexpression and a Type
  *============================================================================*/
 class TypedExp : public Unary {
-    Type    type;               // Top level type
+    Type   *type;
 public:
     // Constructor
             TypedExp();
@@ -431,7 +481,7 @@ public:
     // Constructor, type, and subexpression.
     // A rare const parameter allows the common case of providing a temporary,
     // e.g. foo = new TypedExp(Type(INTEGER), ...);
-            TypedExp(const Type& ty, Exp* e1);
+            TypedExp(Type* ty, Exp* e1);
     // Copy constructor
             TypedExp(TypedExp& o);
 
@@ -451,15 +501,74 @@ public:
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the type
-    Type&   getType();
-    void    setType(Type& ty);
+    Type*   getType();
+    void    setType(Type* ty);
 
     // Search children
-    void doSearchChildren(Exp* search, bool typeSens,
+    void doSearchChildren(Exp* search, 
       std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
+    Exp* simplifyAddr();
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
+};
+
+/*==============================================================================
+ * AssignExp is a subclass of Binary, holding two subexpressions and a size
+ *============================================================================*/
+class AssignExp : public Binary {
+    BasicBlock *pbb;  // contains a pointer to the enclosing BB
+    int size;
+public:
+    // Constructor
+            AssignExp();
+    // Constructor, subexpression
+            AssignExp(Exp* lhs, Exp* rhs);
+    // Constructor, size, and subexpressions.
+            AssignExp(int sz, Exp* lhs, Exp* rhs);
+    // Copy constructor
+            AssignExp(AssignExp& o);
+
+	// Clone
+	Exp*	clone();
+
+    // Compare
+    bool    operator==(const Exp& o) const;
+    bool    operator< (const Exp& o) const;
+
+    void    print(std::ostream& os);
+    void    printr(std::ostream& os) {print(os);}     // Printr same as print
+    void    appendDotFile(std::ofstream& of);
+
+    // Get and set the size
+    int	    getSize();
+    void    setSize(int sz);
+
+    // Search children
+    void doSearchChildren(Exp* search, 
+      std::list<Exp**>& li, bool once);
+
+    // Do the work of simplifying this expression
+    Exp* polySimplify(bool& bMod);
+    Exp* simplifyAddr();
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
+
+	// new dataflow analysis
+        void calcLive(std::set<AssignExp*> &live);
+	void getLiveIn(std::set<AssignExp*> &livein);
 };
 
 /*==============================================================================
@@ -472,6 +581,15 @@ public:
             FlagDef(Exp* params, RTL* rtl);     // Constructor
 virtual     ~FlagDef();                         // Destructor
     void    appendDotFile(std::ofstream& of);
+	RTL*	getRtl() { return rtl; }
+	void	setRtl(RTL* r) { rtl = r; }
+
+	// serialization
+	virtual bool serialize(std::ostream &ouf, int &len);
+
+	// for dataflow analysis
+	virtual void getUses(UseSet &uses, Exp* &ref, bool defIsUse = false);
+	virtual void getUsesOf(UseSet &uses, Exp* &ref, Exp *e);
 };
 
 /*
