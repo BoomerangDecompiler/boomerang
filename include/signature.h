@@ -182,6 +182,9 @@ public:
     // at POSITIVE offsets from the stack pointer register
     // Also, I believe that the PA/RISC stack grows away from 0
     bool isStackLocal(Prog* prog, Exp *e);
+    // Similar to the above, but checks for address of a local (i.e.
+    // sp{0} -/+ K)
+    bool isAddrOfStackLocal(Prog* prog, Exp* e);
     // For most machines, local variables are always NEGATIVE offsets from sp
     virtual bool isLocalOffsetNegative() {return true;}
     // For most machines, local variables are not POSITIVE offsets from sp

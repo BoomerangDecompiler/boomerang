@@ -1303,14 +1303,18 @@ bool Signature::isStackLocal(Prog* prog, Exp *e) {
     // e must me m[...]
     if (!e->isMemOf()) return false;
     Exp* addr = ((Location*)e)->getSubExp1();
-    OPER op = addr->getOper();
-    // e must be m[... - ...]
+    return isAddrOfStackLocal(prog, addr);
+}
+
+bool Signature::isAddrOfStackLocal(Prog* prog, Exp *e) {
+    OPER op = e->getOper();
+    // e must be ... - ...
     if (op != opMinus && op != opPlus) return false;
     if (op == opMinus && !isLocalOffsetNegative()) return false;
     if (op == opPlus  && !isLocalOffsetPositive()) return false;
-    Exp* sub1 = ((Binary*)addr)->getSubExp1();
-    Exp* sub2 = ((Binary*)addr)->getSubExp2();
-    // e must be m[<sub1> - K]
+    Exp* sub1 = ((Binary*)e)->getSubExp1();
+    Exp* sub2 = ((Binary*)e)->getSubExp2();
+    // e must be <sub1> - K
     if (!sub2->isIntConst()) return false;
     static Exp *sp = Location::regOf(getStackRegister(prog));
     // first operand must be sp or sp{0}
