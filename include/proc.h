@@ -216,6 +216,11 @@ public:
     void addParameter(Exp *e);
     virtual void addReturn(Exp *e);
 
+    virtual void printCallGraphXML(std::ostream &os, int depth);
+    void printDetailsXML();
+    void clearVisited() { visited = false; }
+    bool isVisited() { return visited; }
+
 protected:
 
     /*
@@ -253,6 +258,8 @@ protected:
      * Set of callers (CallStatements that call this procedure).
      */
     std::set<CallStatement*> callerSet;
+
+    bool visited;
 }; 
 
 /*==============================================================================
@@ -652,6 +659,8 @@ public:
      * first parameter
      */
     virtual bool isAggregateUsed() {return aggregateUsed;}
+
+    virtual void printCallGraphXML(std::ostream &os, int depth);
 
 private:
     

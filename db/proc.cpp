@@ -134,6 +134,47 @@ bool UserProc::containsAddr(ADDRESS uAddr) {
     return false;
 }
 
+void Proc::printCallGraphXML(std::ostream &os, int depth)
+{
+    printDetailsXML();
+    for (int i = 0; i < depth; i++)
+        os << "   ";
+    os << "<proc name=\"" << getName() << "\"/>\n";
+}
+
+void UserProc::printCallGraphXML(std::ostream &os, int depth)
+{
+    printDetailsXML();
+    visited = true;
+    for (int i = 0; i < depth; i++)
+        os << "   ";
+    os << "<proc name=\"" << getName() << "\">\n";
+    for (std::set<Proc*>::iterator it = calleeSet.begin(); 
+                                   it != calleeSet.end();
+                                   it++) 
+        if (!(*it)->isVisited())
+            (*it)->printCallGraphXML(os, depth+1);
+    for (int i = 0; i < depth; i++)
+        os << "   ";
+    os << "</proc>\n";
+}
+
+void Proc::printDetailsXML()
+{
+    std::ofstream out((Boomerang::get()->getOutputPath() + 
+                      getName() + "-details.xml").c_str());
+    out << "<proc name=\"" << getName() << "\">\n";
+    for (int i = 0; i < signature->getNumParams(); i++)
+        out << "   <param name=\"" << signature->getParamName(i) << "\" "
+            << "exp=\"" << signature->getParamExp(i) << "\" "
+            << "type=\"" << signature->getParamType(i)->getCtype() << "\"/>\n";
+    for (int i = 0; i < signature->getNumReturns(); i++)
+        out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
+            << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
+    out << "</proc>\n";
+    out.close();
+}
+
 /*==============================================================================
  * FUNCTION:        operator<<
  * OVERVIEW:        Output operator for a Proc object.

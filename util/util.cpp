@@ -44,9 +44,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-#include "prog.h"
 #include "util.h"
-#include "type.h"
 #include <unistd.h>
 #include <fcntl.h>
 

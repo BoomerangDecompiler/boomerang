@@ -244,6 +244,7 @@ public:
     bool        bRegisterCall;
 
     void printCallGraph();
+    void printCallGraphXML();
 
 protected:
     // Pointer to the BinaryFile object for the program

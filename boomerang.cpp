@@ -231,6 +231,7 @@ int Boomerang::decompile(const char *fname)
     prog->analyse();
 
     prog->printCallGraph();
+    prog->printCallGraphXML();
 
     if (!noDecompile) {
         std::cerr << "decompiling...\n";

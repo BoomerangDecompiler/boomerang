@@ -14,9 +14,6 @@
 
 #include <sstream>
 #include <string>
-#include "types.h"
-
-class Prog;
 
 // was a workaround
 #define STR(x) (char *)(x.str().c_str())

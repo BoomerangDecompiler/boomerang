@@ -344,8 +344,8 @@ bool Const::operator==(const Exp& o) const {
         case opIntConst: return u.i == ((Const&)o).u.i;
         case opFltConst: return u.d == ((Const&)o).u.d;
         case opStrConst: return (strcmp(u.p, ((Const&)o).u.p) == 0);
-        default: std::cerr << "Operator== invalid operator " << operStrings[op]
-                   << std::endl;
+        default: LOG << "Operator== invalid operator " << operStrings[op]
+                   << "\n";
                  assert(0);
     }
     return false;
@@ -487,8 +487,8 @@ bool Const::operator< (const Exp& o) const {
             return u.d < ((Const&)o).u.d;
         case opStrConst:
             return strcmp(u.p, ((Const&)o).u.p) < 0;
-        default: std::cerr << "Operator< invalid operator " << operStrings[op]
-                   << std::endl;
+        default: LOG << "Operator< invalid operator " << operStrings[op]
+                   << "\n";
                 assert(0);
     }
     return false;
@@ -588,8 +588,8 @@ void Const::print(std::ostream& os, bool withUses) {
             os << "\"" << u.p << "\"";
             break;
         default:
-            std::cerr << "Const::print invalid operator " << operStrings[op] <<
-              std::endl;
+            LOG << "Const::print invalid operator " << operStrings[op] <<
+              "\n";
             assert(0);
     }
 }
@@ -705,8 +705,8 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opRotateRC: os << " rrc "; break;
 
         default:
-            std::cerr << "Binary::print invalid operator " << operStrings[op]
-              << std::endl;
+            LOG << "Binary::print invalid operator " << operStrings[op]
+              << "\n";
             assert(0);
     }
 
@@ -744,8 +744,8 @@ void Terminal::print(std::ostream& os, bool withUses) {
         case opTrue:    os << "true"; break;
         case opFalse:   os << "false"; break;
         default:
-            std::cerr << "Terminal::print invalid operator " << operStrings[op]
-              << std::endl;
+            LOG << "Terminal::print invalid operator " << operStrings[op]
+              << "\n";
             assert(0);
     }
 }
@@ -854,8 +854,8 @@ void Unary::print(std::ostream& os, bool withUses) {
             p1->print(os, withUses);
             return;
         default:
-            std::cerr << "Unary::print invalid operator " << operStrings[op] <<
-              std::endl;
+            LOG << "Unary::print invalid operator " << operStrings[op] <<
+              "\n";
             assert(0);
     }
 }
@@ -923,8 +923,8 @@ void Ternary::print(std::ostream& os, bool withUses) {
             os << ":";
             if (p3) p3->printr(os, withUses); else os << "NULL>";
     } else {
-        std::cerr << "Ternary::print invalid operator " << operStrings[op] <<
-          std::endl;
+        LOG << "Ternary::print invalid operator " << operStrings[op] <<
+          "\n";
         assert(0);
     }
 }
@@ -1000,7 +1000,7 @@ void Exp::createDotFile(char* name) {
     std::ofstream of;
     of.open(name);
     if (!of) {
-        std::cerr << "Could not open " << name << " to write dotty file\n";
+        LOG << "Could not open " << name << " to write dotty file\n";
         return;
     }
     of << "digraph Exp {\n";
@@ -2500,9 +2500,9 @@ Exp *RefExp::fixCallRefs() {
         } else {
             if (call->findReturn(subExp1) == -1) {
                 if (VERBOSE) {
-                    std::cerr << "nothing proven about " << subExp1 << 
+                    LOG << "nothing proven about " << subExp1 << 
                         " and yet it is referenced, and not in returns of " << 
-                        std::endl << "   " << call << std::endl;
+                        "\n" << "   " << call << "\n";
                 }
             }
         }
@@ -2526,15 +2526,15 @@ Exp *PhiExp::fixCallRefs() {
                     stmtVec.putAt(i, ((RefExp*)e)->getRef());
                 } else {
                     if (VERBOSE)
-                        std::cerr << "cant update phi ref to " << e 
-                                  << std::endl;
+                        LOG << "cant update phi ref to " << e 
+                                  << "\n";
                 }
             } else {
                 if (call->findReturn(subExp1) == -1) {
                     if (VERBOSE) {
-                        std::cerr << "nothing proven about " << subExp1 << 
+                        LOG << "nothing proven about " << subExp1 << 
                             " and yet it is referenced, and not in returns of " 
-                            << std::endl << "   " << call << std::endl;
+                            << "\n" << "   " << call << "\n";
                     }
                 }
             }
