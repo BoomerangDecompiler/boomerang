@@ -855,14 +855,14 @@ void Signature::addReturn(Exp *exp) {
     addReturn(new IntegerType(), exp);
 }
 
-void Signature::removeReturn(Exp *exp) {
-    for (unsigned i = 0; i < returns.size(); i++)
-        if (*returns[i]->getExp() == *exp) {
-            for (unsigned j = i+1; j < returns.size(); j++)
-                returns[j-1] = returns[j];
-            returns.resize(returns.size()-1);
-            break;
-        }
+void Signature::removeReturn(Exp *e)
+{
+    int i = findReturn(e);
+    if (i != -1) {
+        for (unsigned j = i+1; j < returns.size(); j++)
+            returns[j-1] = returns[j];
+        returns.resize(returns.size()-1);
+    }
 }
 
 int Signature::getNumReturns() {

@@ -750,6 +750,9 @@ class CallStatement: public GotoStatement {
     // for the called procedure.
     std::vector<Exp*> arguments;
 
+    // The set of locations that are defined by this call.
+    std::vector<Exp*> returns;
+
     // Destination of call
     Proc* procDest;
     // Destination name of call (used in serialization)
@@ -778,6 +781,7 @@ public:
     int getNumReturns();
     Exp *getReturnExp(int i);
     int findReturn(Exp *e);
+    void removeReturn(Exp *e);
     Exp *getProven(Exp *e);
     Exp *substituteParams(Exp *e);
     Exp *findArgument(Exp *e);

@@ -458,6 +458,7 @@ public:
     void removeRedundantPhis();
     void trimReturns();
     void trimParameters();
+    void removeReturn(Exp *e);
     void removeParameter(Exp *e);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();

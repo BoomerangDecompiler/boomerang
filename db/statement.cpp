@@ -1756,18 +1756,28 @@ std::vector<Exp*>& CallStatement::getArguments() {
 }
 
 int CallStatement::getNumReturns() {
-    assert(procDest);
-    return procDest->getSignature()->getNumReturns();
+    return returns.size();
 }
 
 Exp *CallStatement::getReturnExp(int i) {
-    assert(procDest);
-    return procDest->getSignature()->getReturnExp(i);
+    return returns[i];
 }
 
 int CallStatement::findReturn(Exp *e) {
-    assert(procDest);
-    return procDest->getSignature()->findReturn(e);
+    for (int i = 0; i < returns.size(); i++)
+        if (*returns[i] == *e)
+            return i;
+    return -1;
+}
+
+void CallStatement::removeReturn(Exp *e)
+{
+    int i = findReturn(e);
+    if (i != -1) {
+        for (unsigned j = i+1; j < returns.size(); j++)
+            returns[j-1] = returns[j];
+        returns.resize(returns.size()-1);
+    }
 }
 
 Exp *CallStatement::getProven(Exp *e) {
@@ -1835,8 +1845,12 @@ void CallStatement::setSigArguments() {
                             getArgumentExp(arguments.size())->clone());
     }
     UserProc *u = dynamic_cast<UserProc*>(procDest);
-    if (u) 
+    if (u)
         u->addCaller(this);
+
+    // initialize returns
+    for (int i = 0; i < procDest->getSignature()->getNumReturns(); i++)
+        returns.push_back(procDest->getSignature()->getReturnExp(i));
 }
 
 /*==============================================================================
