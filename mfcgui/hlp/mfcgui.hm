@@ -1,0 +1,56 @@
+ 
+// Commands (ID_* and IDM_*) 
+HID_RENAME_VARIABLE                     0x18003
+HID_VIEW_PROCEDURES                     0x18004
+HID_EDIT_CODE                           0x18005
+HID_PROPERTIES                          0x18006
+HID_VIEW_CONTROLFLOW                    0x18007
+HID_EDIT_BB                             0x18008
+HID_SHOW_ALL_LABELS                     0x18009
+HID_HIDE_UN_LABELS                      0x1800A
+HID_VIEW_SYMBOLS                        0x1800B
+HID_PROJECT_NEW                         0x1800C
+HID_PROJECT_OPEN                        0x1800D
+HID_PROJECT_CLOSE                       0x1800E
+HID_PROJECT_SAVE                        0x1800F
+HID_PROJECT_SAVE_AS                     0x18010
+HID_NEW_SYMBOL                          0x18011
+HID_DELETE_SYMBOL                       0x18012
+HID_FIX_INVALID_CFG                     0x18013
+HID_SHOW_LEAVES                         0x18014
+HID_EDIT_PROC                           0x18015
+HID_SHOW_STRUCTURES                     0x18016
+HID_REMOVE_USELESS                      0x18017
+HID_MAKE_SSA                            0x18018
+HID_PROPOGATE_FORWARD                   0x18019
+HID_MAKE_IF_THEN                        0x1801A
+HID_MAKE_IF_THEN_ELSE                   0x1801B
+HID_CHANGE_FOLLOW                       0x1801C
+HID_DEBUG_EXP                           0x1801D
+HID_SIMPLIFY_EXP                        0x1801E
+HID_CHANGE_LATCH                        0x1801F
+HID_MAKE_PRETESTED_LOOP                 0x18020
+HID_REV_SSA_FORM                        0x18021
+ 
+// Prompts (IDP_*) 
+ 
+// Resources (IDR_*) 
+HIDR_MAINFRAME                          0x20080
+HIDR_PROCTYPE                           0x20081
+HIDR_DUMMY1                             0x20082
+ 
+// Dialogs (IDD_*) 
+HIDD_ABOUTBOX                           0x20064
+HIDD_RENAME_VARIABLE                    0x20083
+HIDD_NEW_PROJECT                        0x20084
+HIDD_VIEWDECODE                         0x20085
+HIDD_PROCEDURES                         0x20087
+HIDD_SAVELOAD                           0x20088
+HIDD_CFGVIEW                            0x20089
+HIDD_EDITBB                             0x2008B
+HIDD_SYMBOLS                            0x2008D
+HIDD_NEWSYMBOL                          0x20090
+HIDD_PROC_PROPERTIES                    0x20092
+HIDD_DATA_FLOW                          0x20093
+ 
+// Frame Controls (IDW_*) 
