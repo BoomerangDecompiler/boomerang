@@ -148,6 +148,7 @@ enum OPER
     opExecute,              // Execute instruction at(addr)
 
     opIntConst,             // integer constant
+    opLongConst,            // long integer constant
     opFltConst,             // floating point constant
     opStrConst,             // string constant
     opCodeAddr,             // opAddrConst for addresses in code segment

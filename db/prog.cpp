@@ -188,21 +188,29 @@ void Prog::generateCode(std::ostream &os) {
         Type *ty = (*it1)->getType();
         PSectionInfo si = pBF->GetSectionInfoByAddr(uaddr);
         if (!si->bBss) {
-            int n = 0;
             switch(ty->getSize()) {
             case 8:
-                n = *(char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                e = new Const(
+                    (int)*(char*)(uaddr + si->uHostAddr - si->uNativeAddr));
                 break;
             case 16:
                 // Note: must respect endianness
-                n = pBF->readNative2(uaddr);
+                e = new Const(pBF->readNative2(uaddr));
                 break;
             case 32:
             default:
-                // Note: must respect endianness
-                n = pBF->readNative4(uaddr);
+                // Note: must respect endianness and type
+                if ((*it1)->getType()->isFloat())
+                    e = new Const(pBF->readNativeFloat4(uaddr));
+                else
+                    e = new Const(pBF->readNative4(uaddr));
+                break;
+            case 64:
+                if ((*it1)->getType()->isFloat())
+                    e = new Const(pBF->readNativeFloat8(uaddr));
+                else
+                    e = new Const(pBF->readNative8(uaddr));
             }
-            e = new Const(n);
         } 
         code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
     }

@@ -168,6 +168,12 @@ virtual ~BinaryFile() {}			// Virtual destructor
     virtual int readNative2(ADDRESS a) {return 0;}
     // Read 4 bytes from given native address a; considers endianness
     virtual int readNative4(ADDRESS a) {return 0;}
+    // Read 8 bytes from given native address a; considers endianness
+    virtual long long readNative8(ADDRESS a) {return 0;}
+    // Read 4 bytes as a float; consider endianness
+    virtual float readNativeFloat4(ADDRESS a) {return 0.;}
+    // Read 8 bytes as a float; consider endianness
+    virtual double readNativeFloat8(ADDRESS a) {return 0.;}
 
 // Symbol table functions
     // Lookup the address, return the name, or 0 if not found

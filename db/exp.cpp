@@ -63,6 +63,7 @@
 // Derived class constructors
 
 Const::Const(int i)     : Exp(opIntConst)   {u.i = i;}
+Const::Const(long long ll): Exp(opLongConst){u.ll= ll;}
 Const::Const(double d)  : Exp(opFltConst)   {u.d = d;}
 Const::Const(char* p)   : Exp(opStrConst)   {u.p = p;}
 // Note: need something special for opCodeAddr

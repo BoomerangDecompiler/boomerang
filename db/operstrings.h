@@ -124,9 +124,9 @@ char* operStrings[] = {
     "opExecute",              // Execute instruction at(addr)
 
     "opIntConst",             // integer constant
+    "opLongConst",            // long integer constant
     "opFltConst",             // floating point constant
     "opStrConst",             // string constant
-    //"opAddrConst",            // address constant
     "opCodeAddr",             // opAddrConst for addresses in code segment
     "opWildIntConst",         // an integer constant whose value is wild
 
@@ -140,8 +140,11 @@ char* operStrings[] = {
     "opAnull",                // Anull "variable"
 
 
-    "opHLCTI",		        // High level Control transfer instruction
-    "opDEFINE",		        // Define Type of use with lexer
+    "opHLCTI",		          // High level Control transfer instruction
+    "opDEFINE",		          // Define Type of use with lexer
+
+    "opTrue",                 // Logical true
+    "opFalse",                // Logical false
 
     "opZF",                   // zero flag
     "opCF",                   // carry flag

@@ -275,6 +275,7 @@ std::ostream& operator<<(std::ostream& os, Exp* p);  // Print the Exp poited to 
 class Const : public Exp {
     union {
         int i;          // Integer
+        long long ll;   // 64 bit integer
         double d;       // Double precision float
         char* p;        // Pointer to string
         ADDRESS a;      // Code address
@@ -282,6 +283,7 @@ class Const : public Exp {
 public:
     // Special constructors overloaded for the various constants
             Const(int i);
+            Const(long long ll);
             Const(ADDRESS a);
             Const(double d);
             Const(char* p);
@@ -297,12 +299,14 @@ public:
 
     // Get the constant
     int     getInt() {return u.i;}
+  long long getLong(){return u.ll;}
     double  getFlt() {return u.d;}
     char*   getStr() {return u.p;}
     ADDRESS getAddr(){return u.a;}
 
     // Set the constant
     void setInt(int i)      {u.i = i;}
+    void setLong(long long ll) {u.ll = ll;}
     void setFlt(double d)   {u.d = d;}
     void setStr(char* p)    {u.p = p;}
     void setAddr(ADDRESS a) {u.a = a;}

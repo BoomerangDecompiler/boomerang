@@ -73,6 +73,10 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             sprintf(s, "%d", c->getInt());
             strcat(str, s);
             break;
+        case opLongConst:
+            sprintf(s, "%lld", c->getLong());
+            strcat(str, s);
+            break;
         case opFltConst:
             sprintf(s, "%f", c->getFlt());
             strcat(str, s);

@@ -1399,6 +1399,54 @@ int ElfBinaryFile::readNative4(ADDRESS nat) {
     return elfRead4((int*)host);
 }
 
+// Read 8 bytes from given native address
+long long ElfBinaryFile::readNative8(ADDRESS nat) {
+    int raw[2];
+#ifdef WORDS_BIGENDIAN      // This tests the  host  machine
+    if (m_elfEndianness) {  // This tests the source machine
+#else
+    if (!m_elfEndianness) {
+#endif  // Balance }
+        // Source and host are same endianness
+        raw[0] = readNative4(nat);
+        raw[1] = readNative4(nat+4);
+    } else {
+        // Source and host are different endianness
+        raw[1] = readNative4(nat);
+        raw[0] = readNative4(nat+4);
+    }
+    //return reinterpret_cast<long long>(*raw);    // Note: cast, not convert!!
+    return *(long long*)raw;
+}
+
+// Read 4 bytes as a float
+float ElfBinaryFile::readNativeFloat4(ADDRESS nat) {
+    int raw = readNative4(nat);
+    // Ugh! gcc says that reinterpreting from int to float is invalid!!
+    //return reinterpret_cast<float>(raw);    // Note: cast, not convert!!
+    return *(float*)&raw;           // Note: cast, not convert
+}
+
+// Read 8 bytes as a float
+double ElfBinaryFile::readNativeFloat8(ADDRESS nat) {
+    int raw[2];
+#ifdef WORDS_BIGENDIAN      // This tests the  host  machine
+    if (m_elfEndianness) {  // This tests the source machine
+#else
+    if (!m_elfEndianness) {
+#endif  // Balance }
+        // Source and host are same endianness
+        raw[0] = readNative4(nat);
+        raw[1] = readNative4(nat+4);
+    } else {
+        // Source and host are different endianness
+        raw[1] = readNative4(nat);
+        raw[0] = readNative4(nat+4);
+    }
+    //return reinterpret_cast<double>(*raw);    // Note: cast, not convert!!
+    return *(double*)raw;
+}
+
 // This function is called via dlopen/dlsym; it returns a new BinaryFile
 // derived concrete object. After this object is returned, the virtual function
 // call mechanism will call the rest of the code in this library
