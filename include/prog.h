@@ -165,6 +165,11 @@ public:
     // Do decompilation
     void decompile();
 
+    // All that used to be done in UserProc::decompile, but now done globally.
+    // propagation, recalc DFA, remove null and unused statements, compressCfg,
+    // process constants, promote signature, simplify a[m[]].
+    void decompileProcs();
+
     // Generate dotty file
     void generateDotFile();
 

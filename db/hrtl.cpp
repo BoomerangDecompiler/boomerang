@@ -1383,6 +1383,7 @@ void HLCall::simplify() {
     }
 }
 
+#if 0
 void HLCall::decompile() {
     if (procDest) { 
         UserProc *p = dynamic_cast<UserProc*>(procDest);
@@ -1396,6 +1397,7 @@ void HLCall::decompile() {
         // TODO: indirect call
     }
 }
+#endif
 
 void HLCall::clearLiveEntry() {
     if (procDest && procDest->isLib()) return;

@@ -40,6 +40,7 @@
 #include <assert.h>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include "types.h"
 #include "dataflow.h"
 #include "exp.h"
@@ -203,8 +204,11 @@ void Prog::decompile() {
 
     // usedby analysis goes about here (if needed)
 
-    // Decompile
-    if (Boomerang::get()->noDecompile) return;
+    // What used to be done in UserProc::decompile
+    if (!Boomerang::get()->noDecompile)
+        decompileProcs();
+
+#if 0
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
@@ -215,6 +219,7 @@ void Prog::decompile() {
         // decoded userproc.. decompile it
         p->decompile();
     }
+#endif
 
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
     reverseGlobalDataflow();
@@ -962,4 +967,103 @@ void Prog::removeInterprocEdges() {
         cfg->clearReturnInterprocEdges();
     }
 }
- 
+
+/*==============================================================================
+ * FUNCTION:    Prog::decompileProcs
+ * OVERVIEW:    Do all the things that UserProc::decompile used to do, except
+ *                at a global level. This is needed for programs as simple as
+ *                twoproc; propagations in main are needed into proc1 and so on.
+ * PARAMETERS:  None
+ * RETURNS:     Nothing
+ *============================================================================*/
+void Prog::decompileProcs() {
+    // First calculate the vector of proc memory depths
+    std::vector<int> depths(getNumProcs()); // Initialise to known correct size
+    std::list<Proc*>::iterator pp;
+    UserProc* proc;
+    std::list<PBB> allBBs;
+    int i=0;
+    int maxMaxDepth = 0;                // Max of all proc's max depths
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        int depth = proc->findMaxDepth();
+        depths[i++] = depth;
+        if (depth > maxMaxDepth)
+            maxMaxDepth = depth;
+    }
+
+    int depth = 0;
+    while (true) {
+        i=0;
+        // First propagate for all procs at this level
+        for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+            proc = (UserProc*)(*pp);
+            if (proc->isLib()) continue;
+            if (depth > depths[i]) continue;
+            proc->propagateStatements(depth);
+        }
+
+        if (VERBOSE) {
+            std::cerr << "===== After propagate at memory depth " <<
+              depth << " =====\n";
+            for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+                proc = (UserProc*)(*pp);
+                if (proc->isLib()) continue;
+                proc->print(std::cerr, true);
+            }
+            std::cerr << "===== End propagate at memory depth " <<
+              depth << " =====\n\n";
+        }
+
+        // Move to the next memory depth
+        depth++;
+        if (depth > maxMaxDepth)
+            break;
+
+        // Repair the DFA ready for next level of propagation
+        i=0;
+        for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+            proc = (UserProc*)(*pp);
+            if (proc->isLib()) continue;
+            if (depth <= depths[i])
+                proc->repairDataflow(depth);
+        }
+        if (VERBOSE) {
+            std::cerr << "===== After dataflow repair at memory depth " <<
+              depth << " =====\n";
+            for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+                proc = (UserProc*)(*pp);
+                if (proc->isLib()) continue;
+                proc->print(std::cerr, true);
+            }
+            std::cerr << "===== End after dataflow repair at memory depth " <<
+              depth << " =====\n\n";
+        }
+    }
+        
+    // Remove null and unused statements
+    if (VERBOSE)
+        std::cerr << "===== After removing null and unused statements "
+          "=====\n";
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        if (!Boomerang::get()->noRemoveNull) {
+            proc->removeNullStatements();
+            proc->removeUnusedStatements();
+            if (VERBOSE)
+                print(std::cerr, true);
+        }
+    }
+    if (VERBOSE)
+        std::cerr << "===== End after removing null and unused "
+          "statements =====\n\n";
+
+    // Now all the other things that were in UserProc::decompile()
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->complete();
+    }
+} 

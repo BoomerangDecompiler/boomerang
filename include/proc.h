@@ -315,12 +315,6 @@ public:
     bool isDecoded();
 
     /*
-     * Is this procedure decompiled or partly decompiled
-     */
-    bool isDecompiled() {return decompiled;}
-    bool isPartDecompiled() {return decompiled_down;}
-
-    /*
      * Return the number of bytes allocated for locals on the stack.
      */
     int getLocalsSize();
@@ -350,10 +344,11 @@ public:
     void simplify() { cfg->simplify(); }
 
     // decompile this proc
-    void    decompile();
-    // perform the "on the way down" processing for the proc
-    void    decompile_down();
-    // Initialise the staements, e.g. proc, bb pointers
+    //void    decompile();
+    // All the decompile stuff except propagation, DFA repair, and null/unused
+    // statement removal
+    void    complete(); 
+    // Initialise the statements, e.g. proc, bb pointers
     void initStatements(int& stmtNum);
     bool nameStackLocations();
     bool nameRegisters();
@@ -364,8 +359,8 @@ public:
     void removeUnusedStatements();
     bool propagateAndRemoveStatements();
     void propagateStatements(int memDepth);
-    int  findMaxDepth();
-    void repairDataflow(int memDepth);       // Recalculate dataflow
+    int  findMaxDepth();                    // Find max memory nesting depth
+    void repairDataflow(int memDepth);      // Recalculate dataflow
 
     void toSSAform(int memDepth);
     void fromSSAform(igraph& ig);
@@ -514,23 +509,6 @@ private:
      * True if this procedure has been decoded.
      */
     bool decoded;
-
-    /*
-     * True if this procedure has been fully decomplied.
-     */
-    bool decompiled;
-
-    /*
-     * True if this procedure has decompiled "on the way down", i.e.
-     * it has done limited processing not requiring callees to have
-     * been processed
-     */
-    bool decompiled_down;
-
-    /*
-     * True if the statements have been initialised, e.g. proc, bb pointers
-     */
-    bool        stmts_init;
 
     /*
      * Indicates whether or not a non-default return type has been

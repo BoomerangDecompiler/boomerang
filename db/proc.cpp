@@ -584,8 +584,8 @@ std::ostream& LibProc::put(std::ostream& os) {
  *============================================================================*/
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
     Proc(prog, uNative, new Signature(name.c_str())), 
-    cfg(new Cfg()), decoded(false), decompiled(false), decompiled_down(false),
-    stmts_init(false), returnIsSet(false), isSymbolic(false), uniqueID(0) {
+    cfg(new Cfg()), decoded(false), 
+    returnIsSet(false), isSymbolic(false), uniqueID(0) {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
 
@@ -901,9 +901,6 @@ void UserProc::print(std::ostream &out, bool withDF) {
 
 // initialise all statements
 void UserProc::initStatements(int& stmtNum) {
-    if (stmts_init)
-        return;         // Already done
-    stmts_init = true;  // Only do this once
     BB_IT it;
     BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
@@ -924,12 +921,10 @@ void UserProc::initStatements(int& stmtNum) {
                     // Convert to a list of Exp*; ugh
                     StmtListIter ii;
                     for (Statement* in = sl.getFirst(ii); in;
-                      in = sl.getNext(ii)) {
-                        in->setProc(this);
-                        in->setBB(bb);
-                        in->setNumber(++stmtNum);
+                      in = sl.getNext(ii))
                         le->push_back(dynamic_cast<Exp*>(in));
-                    }
+                        // Note: don't number them here; they will get
+                        // numbered as ordinary statements (above)
                     call->setPostCallExpList(le);
                 }
             }
@@ -1013,6 +1008,7 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
+#if 0
 // decompile this userproc
 void UserProc::decompile() {
     // Prevent infinite loops when there are cycles in the call graph
@@ -1108,6 +1104,20 @@ void UserProc::decompile() {
     }
 
     decompiled = true;          // Now fully decompiled
+}
+#endif
+
+void UserProc::complete() {
+    cfg->compressCfg();
+    processConstants();
+
+    // Convert the signature object to one of a derived class, e.g.
+    // SparcSignature.
+    if (!Boomerang::get()->noPromote)
+        promoteSignature();
+    // simplify the procedure (currently just to remove a[m['s)
+    simplify();
+
 }
 
 int UserProc::findMaxDepth() {
