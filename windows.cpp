@@ -164,6 +164,7 @@ void updateCodeView()
 
 void saveUndoPoint()
 {
+	return;  // Possibly Mike broke it
 	if (prog) {
 		prog->takeMemo();
 		if (prog->canRestore())
