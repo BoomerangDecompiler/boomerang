@@ -415,7 +415,7 @@ bool PhiExp::operator==(const Exp& o) const {
 bool TypeVal::operator==(const Exp& o) const {
     if (op == opWild) return true;
     if (((TypeVal&)o).op == opWild) return true;
-    if (((TypeVal&)o).op != opPhi) return false;
+    if (((TypeVal&)o).op != opTypeVal) return false;
     return *val == *((TypeVal&)o).val;
 }
 
