@@ -26,6 +26,7 @@
  * 15 May 02 - Mike: Fixed strToOper: *f was coming out as /f, << as =
  * 16 Jul 02 - Mike: Fixed code in expandTables processing opOpTables: was
  *				doing replacements on results of searchAll
+ * 09 Dec 02 - Mike: Added succ() syntax (for SPARC LDD and STD)
  */
 
 %name SSLParser     // the parser class name will be SSLParser
@@ -113,6 +114,7 @@ static  Exp* parseExp(const char *str); /* Parse an expression from a string */ 
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
+Exp*	makeSuccessor(Exp* e);	/* Get successor (of register expression) */ \
 \
     /* \
      * The scanner. \
@@ -167,7 +169,7 @@ protected: \
 %token       SHARES NOT THEN LOOKUP_RDC BOGUS
 %token       ASSIGN TO COLON S_E AT ADDR REG_IDX EQUATE
 %token       MEM_IDX TOK_INTEGER TOK_FLOAT FAST OPERAND
-%token       FETCHEXEC CAST_OP FLAGMACRO
+%token       FETCHEXEC CAST_OP FLAGMACRO SUCCESSOR
 
 %token <num> NUM  ASSIGNSIZE
 %token <dbl> FLOATNUM      // I'd prefer type double here!
@@ -916,7 +918,7 @@ exp_term:
         }
 
         // This is a "lambda" function-like parameter
-        // $1 is the "function" name, and $2 is a list of exp* for the
+        // $1 is the "function" name, and $2 is a list of Exp* for the
         // actual params
     |   NAME_CALL list_actualparameter ')' {
         std::ostringstream o;
@@ -944,6 +946,10 @@ exp_term:
             yyerror(STR(o));
         }
     }
+
+	|		SUCCESSOR exp ')' {
+			$$ = makeSuccessor($2);
+		}
     ;
 
 exp:
@@ -1085,6 +1091,9 @@ var_op:
     |      var_op '\'' {
             $$ = new Unary(opPostVar, $1);
         }
+	|		SUCCESSOR exp ')' {
+			$$ = makeSuccessor($2);
+		}
     ;
 
 cast:
@@ -1509,4 +1518,20 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
     delete params;
     delete o_rtlist;
     indexrefmap.erase(indexrefmap.begin(), indexrefmap.end());
+}
+
+/*==============================================================================
+ * FUNCTION:        SSLParser::makeSuccessor
+ * OVERVIEW:        Make the successor of the given expression, e.g. given
+ *					  r[2], return succ( r[2] ) (using opSuccessor)
+ *					We can't do the successor operation here, because the
+ *					  parameters are not yet instantiated (still of the form
+ *					  param(rd)). Actual successor done in Exp::fixSuccessor()
+ * NOTE:            The given expression should be of the form  r[const]
+ * NOTE:			The parameter expresion is copied (not cloned) in the result
+ * PARAMETERS:      The expression to find the successor of
+ * RETURNS:         The modified expression
+ *============================================================================*/
+Exp* SSLParser::makeSuccessor(Exp* e) {
+	return new Unary(opSuccessor, e);
 }

@@ -18,7 +18,7 @@
 
 /* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "sslparser.h"
-#line 34 "sslparser.y"
+#line 35 "sslparser.y"
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -38,7 +38,7 @@
 
 class SSLScanner;
 
-#line 59 "sslparser.y"
+#line 60 "sslparser.y"
 typedef union {
     Exp*            exp;
     char*           str;
@@ -82,6 +82,7 @@ static  Exp* parseExp(const char *str); /* Parse an expression from a string */ 
 /* The code for expanding tables and saving to the dictionary */ \
 void    expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, \
   RTLInstDict& Dict); \
+Exp*	makeSuccessor(Exp* e);	/* Get successor (of register expression) */ \
 \
     /* \
      * The scanner. \
@@ -172,21 +173,21 @@ protected: \
 #ifndef YY_SSLParser_PURE
 
 /* #line 63 "/usr/local/lib/bison.h" */
-#line 176 "sslparser.h"
+#line 177 "sslparser.h"
 
 #line 63 "/usr/local/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
 /* #line 65 "/usr/local/lib/bison.h" */
-#line 183 "sslparser.h"
+#line 184 "sslparser.h"
 
 #line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
 /* #line 67 "/usr/local/lib/bison.h" */
-#line 190 "sslparser.h"
+#line 191 "sslparser.h"
 
 #line 67 "/usr/local/lib/bison.h"
 /* YY_SSLParser_DEBUG */
@@ -194,7 +195,7 @@ protected: \
 #ifndef YY_SSLParser_LSP_NEEDED
 
 /* #line 70 "/usr/local/lib/bison.h" */
-#line 198 "sslparser.h"
+#line 199 "sslparser.h"
 
 #line 70 "/usr/local/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
@@ -272,7 +273,7 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 
 
 /* #line 143 "/usr/local/lib/bison.h" */
-#line 276 "sslparser.h"
+#line 277 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -315,9 +316,10 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #define	FETCHEXEC	297
 #define	CAST_OP	298
 #define	FLAGMACRO	299
-#define	NUM	300
-#define	ASSIGNSIZE	301
-#define	FLOATNUM	302
+#define	SUCCESSOR	300
+#define	NUM	301
+#define	ASSIGNSIZE	302
+#define	FLOATNUM	303
 
 
 #line 143 "/usr/local/lib/bison.h"
@@ -362,7 +364,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/usr/local/lib/bison.h" */
-#line 366 "sslparser.h"
+#line 368 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -405,6 +407,7 @@ static const int OPERAND;
 static const int FETCHEXEC;
 static const int CAST_OP;
 static const int FLAGMACRO;
+static const int SUCCESSOR;
 static const int NUM;
 static const int ASSIGNSIZE;
 static const int FLOATNUM;
@@ -416,7 +419,7 @@ static const int FLOATNUM;
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-#line 420 "sslparser.h"
+#line 423 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -459,9 +462,10 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,FETCHEXEC=297
 	,CAST_OP=298
 	,FLAGMACRO=299
-	,NUM=300
-	,ASSIGNSIZE=301
-	,FLOATNUM=302
+	,SUCCESSOR=300
+	,NUM=301
+	,ASSIGNSIZE=302
+	,FLOATNUM=303
 
 
 #line 185 "/usr/local/lib/bison.h"
@@ -518,5 +522,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-#line 522 "sslparser.h"
+#line 526 "sslparser.h"
 #endif

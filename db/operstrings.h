@@ -70,6 +70,7 @@ char* operStrings[] = {
     "opNameTable",            // A table of strings
     "opExpTable",             // A table of expressions
     "opOpTable",              // A table of operators
+	"opSuccessor",			  // Get the successor of this register parameter
 
     "opTern",                 // Ternary (i.e. ? : )
     "opAt",                   // Bit extraction (expr@first:last)
@@ -82,6 +83,7 @@ char* operStrings[] = {
 	"opSubscript",			  // Represents subscript(e, n) .. ie SSA renaming
     "opParam",                // Parameter param`'
 	"opArg",				  // Used a temporary for arguments to calls
+	"opLocal",				  // Represents a local, takes a string
     "opExpand",               // Expandable expression
     "opTemp",                 // Temp register name
     "opSize",                 // Size override
@@ -127,6 +129,7 @@ char* operStrings[] = {
     "opAFP",                  // abstract frame pointer
     "opAGP",                  // abstract global pointer
     "opNil",                  // Nil list
+	"opFlags",				  // Flags
 
     "opAnull",                // Anull "variable"
 

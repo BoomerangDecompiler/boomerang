@@ -458,18 +458,19 @@ std::list<Exp*>* RTLInstDict::instantiateRTL(RTL& rtl,
 
     // Iterate through each Exp of the new list of Exps
     for (std::list<Exp*>::iterator rt = newList->begin();
-         rt != newList->end(); rt++) {
-	assert(!(*rt)->isFlagCall());
+      rt != newList->end(); rt++) {
+		assert(!(*rt)->isFlagCall());
         // Search for the formals and replace them with the actuals
         std::list<std::string>::iterator param = params.begin();
         std::vector<Exp*>::const_iterator actual = actuals.begin();
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
             Exp* formal = new Unary(opParam, 
-			    new Const((char*)(param->c_str())));
+			new Const((char*)(param->c_str())));
                 
             bool ch;        // Result of search: unused
             *rt = (*rt)->searchReplaceAll(formal, *actual, ch);
+			*rt = (*rt)->fixSuccessor();
             delete formal;
         }
     }

@@ -212,7 +212,12 @@ public: \
                 yylval.str = strdup(yytext);
                 yylval.str[strlen(yylval.str)-1] = '\0';
                 return SSLParser::TRANSCEND;
+			}
+
+"succ("		{
+				return SSLParser::SUCCESSOR;
             }
+
 "tmp"[a-zA-Z0-9_]*  {
                 yylval.str = strdup(yytext);
                 return SSLParser::TEMP;

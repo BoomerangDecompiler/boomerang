@@ -18,6 +18,7 @@
  * $Revision$
  * Dec 97 - created by Mike
  * 18 Apr 02 - Mike: Changes for boomerang
+ * 04 Dec 02 - Mike: Added isJmpZ
 */
 
 
@@ -971,6 +972,26 @@ void BasicBlock::setCond(Exp *e)
 	assert(last->getKind() == JCOND_RTL);
 	HLJcond *j = (HLJcond*)last;
 	j->setCondExpr(e);
+}
+
+/* Check for branch if equal relation */
+bool BasicBlock::isJmpZ(PBB dest)
+{
+	// The condition will be in the last rtl
+	assert(m_pRtls);
+	RTL *last = m_pRtls->back();
+	// It should be a HLJcond
+	assert(last->getKind() == JCOND_RTL);
+	HLJcond *j = (HLJcond*)last;
+	JCOND_TYPE jt = j->getCond();
+    if ((jt != HLJCOND_JE) && (jt != HLJCOND_JNE)) return false;
+    PBB trueEdge = m_OutEdges[0];
+    if (jt == HLJCOND_JE)
+        return dest == trueEdge;
+    else {
+        PBB falseEdge = m_OutEdges[1];
+        return dest == falseEdge;
+    }
 }
 
 /* get the loop body */

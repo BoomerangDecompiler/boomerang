@@ -10,6 +10,7 @@
  * 09 Apr 02 - Mike: Compare, searchReplace
  * 14 Apr 02 - Mike: search and replace functions take Exp*, was Exp&
  * 27 Apr 02 - Mike: Added testDecideType
+ * 09 Dec 02 - Mike: Added test for fixSuccessor
  */
 
 #include "ExpTest.h"
@@ -27,6 +28,7 @@ suite->addTest(new CppUnit::TestCaller<ExpTest> ("testExp", \
     &ExpTest::name, *this))
 
 void ExpTest::registerTests(CppUnit::TestSuite* suite) {
+MYTEST(testFixSuccessor);
     MYTEST(test99);
     MYTEST(testFlt);
     MYTEST(testRegOf2);
@@ -61,6 +63,7 @@ void ExpTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testList);
     MYTEST(testClone);
     MYTEST(testParen);
+	MYTEST(testFixSuccessor);
 }
 
 int ExpTest::countTestCases () const
@@ -208,7 +211,10 @@ void ExpTest::testIsAssign () {
     // r[2] := 99
     AssignExp a(32, m_rof2->clone(), m_99->clone());
     a.print(ost);
-    CPPUNIT_ASSERT_EQUAL (std::string("*32* r[2] := 99"), std::string(ost.str()));
+std::string expected("*32* r[2] := 99");
+std::string actual (ost.str());
+CPPUNIT_ASSERT_EQUAL(expected, actual);
+//    CPPUNIT_ASSERT_EQUAL (std::string("*32* r[2] := 99"), std::string(ost.str()));
     CPPUNIT_ASSERT(a.isAssign());
 }
 
@@ -914,4 +920,32 @@ void ExpTest::testParen () {
     // e.createDotFile("andn.dot");
     std::string actual(o.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testFixSuccessor
+ * OVERVIEW:        Test succ(r[k]) == r[k+1]
+ *============================================================================*/
+void ExpTest::testFixSuccessor() {
+	// Trivial test (should not affect)
+	Binary* b = new Binary(opMinus,
+		m_99->clone(),
+		m_rof2->clone());
+	std::ostringstream o1;
+	Exp* e = b->fixSuccessor();
+	e->print(o1);
+	std::string expected("99 - r[2]");
+	std::string actual(o1.str());
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+	delete e;
+	
+	Unary* u = new Unary(opSuccessor,
+		new Unary(opRegOf, new Const(2)));
+	std::ostringstream o2;
+	e = u->fixSuccessor();
+	e->print(o2);
+	expected = "r[3]";
+	actual = o2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+	delete e;
 }

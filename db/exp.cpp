@@ -23,6 +23,8 @@
  * ?? Nov 02 - Mike: Added Exp::prints (great for debugging)
  * 26 Nov 02 - Mike: Quelched some warnings; fixed an error in AssignExp copy
  *				constructor
+ * 03 Dec 02 - Mike: Fixed simplification of exp AND -1 (was exp AND +1)
+ * 09 Dec 02 - Mike: Print succ()
  */
 
 #include <assert.h>
@@ -740,6 +742,7 @@ void Unary::print(std::ostream& os) {
         case opSqrt: case opSin: case opCos:
         case opTan: case opArcTan: case opLog2:
         case opLog10: case opLoge: case opMachFtr:
+		case opSuccessor:
             switch (op) {
                 case opSQRTs: os << "SQRTs("; break;
                 case opSQRTd: os << "SQRTd("; break;
@@ -754,6 +757,7 @@ void Unary::print(std::ostream& os) {
                 case opLoge:  os << "loge("; break;
                 case opExecute:os<< "execute("; break;
                 case opMachFtr:os << "machine("; break;
+				case opSuccessor: os << "succ("; break;
                 default: break;         // For warning
             }
             p1->printr(os);
@@ -1239,7 +1243,7 @@ void AssignExp::doSearchChildren(Exp* search,
 /*==============================================================================
  * FUNCTION:        Exp::searchReplace
  * OVERVIEW:        Search for the given subexpression, and replace if found
- * NOTE:            If the top level expression matches, search will be changed
+ * NOTE:            If the top level expression matches, return val != this
  * PARAMETERS:      search:  ptr to Exp we are searching for
  *                  replace: ptr to Exp to replace it with
  *                  change: ref to boolean, set true if a change made
@@ -1707,9 +1711,25 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
-    // Check for exp * 1  or exp AND 1
-    if ((op == opMult || op == opMults || (op == opAnd)) &&
+    // Check for exp * 1
+    if ((op == opMult || op == opMults) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 1) {
+        res = ((Unary*)res)->becomeSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp AND -1 (bitwise AND)
+    if ((op == opBitAnd) &&
+      opSub2 == opIntConst && ((Const*)subExp2)->getInt() == -1) {
+        res = ((Unary*)res)->becomeSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp AND TRUE (logical AND)
+    if ((op == opAnd) &&
+      opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) {
         res = ((Unary*)res)->becomeSubExp1();
         bMod = true;
         return res;
@@ -2394,6 +2414,38 @@ void AssignExp::doReplaceUse(Statement *use)
     simplify();
 }
 
+/*==============================================================================
+ * FUNCTION:        Unary::fixSuccessor
+ * OVERVIEW:        Replace succ(r[k]) by r[k+1]
+ * NOTE:			Could change top level expression
+ * PARAMETERS:      None
+ * RETURNS:         Fixed expression
+ *============================================================================*/
+static Unary succRegOf(opSuccessor,
+	new Unary(opRegOf, new Terminal(opWild)));
+Exp* Unary::fixSuccessor() {
+	bool change;
+	Exp* result;
+	// Assume only one successor function in any 1 assignment
+	if (search(&succRegOf, result)) {
+		// Result has the matching expression, i.e. succ(r[K])
+		Exp* sub1 = ((Unary*)result)->getSubExp1();
+		assert(sub1->getOper() == opRegOf);
+		Exp* sub2 = ((Unary*)sub1)->getSubExp1();
+    	assert(sub2->getOper() == opIntConst);
+		// result    sub1   sub2
+		// succ(      r[   Const K  ])
+		// Note: we need to clone the r[K] part, since it will be deleted as
+		// part of the searchReplace below
+		Unary* replace = (Unary*)sub1->clone();
+		Const* c = (Const*)replace->getSubExp1();
+		c->setInt(c->getInt()+1);		// Do the increment
+		Exp* res = searchReplace(result, replace, change);
+		return res;
+	}
+	return this;
+}
+	
 void AssignExp::inlineConstants(Prog *prog)
 {
     // TODO

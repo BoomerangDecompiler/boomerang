@@ -62,5 +62,6 @@ class ExpTest : public CppUnit::TestCase {
     void testList();
     void testClone();
     void testParen();
+    void testFixSuccessor();
 };
 
