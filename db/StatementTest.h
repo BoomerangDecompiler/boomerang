@@ -46,5 +46,7 @@ class StatementTest : public CppUnit::TestCase {
     void testIsAssign();
     void testIsFlagAssgn();
     void testAddUsedLocs();
+    void testSubscriptVars();
+    void testCallRefsFixer();
 };
 
