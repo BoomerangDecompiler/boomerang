@@ -248,7 +248,7 @@ public:
 
     // Parse a file containing a list of instructions definitions in SSL format
     // and build the contents of this dictionary.
-    bool readSSLFile(const std::string& SSLFileName, bool bPrint = false);
+    bool readSSLFile(const std::string& SSLFileName);
 
     // Reset the object to "undo" a readSSLFile()
     void reset();

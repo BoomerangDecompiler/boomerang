@@ -46,6 +46,7 @@
 #include "proc.h"
 #include "prog.h"
 #include "sslparser.h"
+#include "boomerang.h"
 
 //#define DEBUG_SSLPARSER 1
 
@@ -167,11 +168,9 @@ RTLInstDict::~RTLInstDict()
  *                  sets up the register map and flag functions.
  * PARAMETERS:      SSLFileName - the name of the file containing the SSL
  *                    specification.
- *                  bPrint - instructions are displayed on std::cout as they are
- *                    parsed if this is true
  * RETURNS:         the file was successfully read
  *============================================================================*/
-bool RTLInstDict::readSSLFile(const std::string& SSLFileName, bool bPrint /*= false*/)
+bool RTLInstDict::readSSLFile(const std::string& SSLFileName)
 {
     // emptying the rtl dictionary
     idict.erase(idict.begin(),idict.end());
@@ -195,10 +194,10 @@ bool RTLInstDict::readSSLFile(const std::string& SSLFileName, bool bPrint /*= fa
 
     fixupParams();
 
-    if (bPrint) {
-        std::cout << "\n=======Expanded RTL template dictionary=======" << std::endl;
+    if (Boomerang::get()->debugDecoder) {
+        std::cout << "\n=======Expanded RTL template dictionary=======\n";
         print();
-        std::cout << "\n==============================================" << std::endl;
+        std::cout << "\n==============================================\n\n";
     }
     
     return true;
@@ -421,7 +420,7 @@ if (0) {
  * OVERVIEW:         Returns an instance of a register transfer list for
  *                   the parameterized rtlist with the given formals replaced
  *                   with the actuals given as the third parameter.
- * PARAMETERS:       rtl - a register trace list
+ * PARAMETERS:       rtl - a register transfer list
  *                   params - a list of formal parameters
  *                   actuals - the actual parameter values
  * RETURNS:          the instantiated list of Exps
@@ -443,11 +442,12 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl,
         for (; param != params.end(); param++, actual++) {
             /* Simple parameter - just construct the formal to search for */
             Exp* formal = Location::param(param->c_str());
-                
             (*rt)->searchAndReplace(formal, *actual);
-            (*rt)->fixSuccessor();
             //delete formal;
         }
+        (*rt)->fixSuccessor();
+        if (Boomerang::get()->debugDecoder)
+            std::cerr << "          " << *rt << "\n";
     }
 
     transformPostVars( newList, true );

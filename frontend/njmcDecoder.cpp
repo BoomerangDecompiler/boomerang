@@ -34,6 +34,7 @@
 #include "proc.h"
 #include "prog.h"
 #include "BinaryFile.h"
+#include "boomerang.h"
 
 /**********************************
  * NJMCDecoder methods.
@@ -60,38 +61,39 @@ NJMCDecoder::NJMCDecoder()
  *============================================================================*/
 std::list<Statement*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name,
   ...) {
-	// Get the signature of the instruction and extract its parts
-	std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
-	std::string opcode = sig.first;
-	unsigned numOperands = sig.second;
+    // Get the signature of the instruction and extract its parts
+    std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
+    std::string opcode = sig.first;
+    unsigned numOperands = sig.second;
 
-	// Put the operands into an vector
-	std::vector<Exp*> actuals(numOperands);
-	va_list args;
-	va_start(args,name);
-	for (unsigned i = 0; i < numOperands; i++)
-		actuals[i] = va_arg(args,Exp*);
-	va_end(args);
+    // Put the operands into an vector
+    std::vector<Exp*> actuals(numOperands);
+    va_list args;
+    va_start(args,name);
+    for (unsigned i = 0; i < numOperands; i++)
+        actuals[i] = va_arg(args,Exp*);
+    va_end(args);
 
-#ifdef DEBUG_DECODER 
-	// Display a disassembly of this instruction if necessary
-	std::cout << std::hex << pc << std::dec << ": " << name << " ";
-	for (std::vector<Exp*>::iterator itd = actuals.begin();
-		 itd != actuals.end(); itd++) {
-			(*itd)->print(std::cout);
-			std::cout << ", ";
-	}
-	std::cout << std::endl;
-#endif
+    if (Boomerang::get()->debugDecoder) {
+        // Display a disassembly of this instruction if requested
+        std::cout << std::hex << pc << std::dec << ": " << name << " ";
+        for (std::vector<Exp*>::iterator itd = actuals.begin();
+          itd != actuals.end(); itd++) {
+            (*itd)->print(std::cout);
+            if (itd != --actuals.end())
+                std::cout << ", ";
+        }
+        std::cout << std::endl;
+    }
 
-	std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode,actuals);
+    std::list<Statement*>* instance = RTLDict.instantiateRTL(opcode,actuals);
 
-	// Delete the memory used for the actuals
-	for (std::vector<Exp*>::iterator it = actuals.begin();
-		it != actuals.end(); it++)
-		delete *it;
+    // Delete the memory used for the actuals
+    for (std::vector<Exp*>::iterator it = actuals.begin();
+        it != actuals.end(); it++)
+        delete *it;
 
-	return instance;
+    return instance;
 }
 
 /*==============================================================================
@@ -178,11 +180,11 @@ void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
  *============================================================================*/
 void DecodeResult::reset()
 {
-	numBytes = 0;
-	type = NCT;
-	valid = true;
-	rtl = NULL;
-    forceOutEdge = 0;	
+    numBytes = 0;
+    type = NCT;
+    valid = true;
+    rtl = NULL;
+    forceOutEdge = 0;   
 }
 
 /*==============================================================================
@@ -210,8 +212,8 @@ Exp* NJMCDecoder::dis_Reg(int regNum)
  *============================================================================*/
 Exp* NJMCDecoder::dis_Num(unsigned num)
 {
-	Exp* expr = new Const((int)num);
-	return expr;
+    Exp* expr = new Const((int)num);
+    return expr;
 }
 
 /*==============================================================================

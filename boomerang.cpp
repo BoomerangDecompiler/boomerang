@@ -18,7 +18,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-    noRemoveReturns(false)
+    noRemoveReturns(false), debugDecoder(false)
 {
 }
 
@@ -49,6 +49,7 @@ void Boomerang::usage() {
 
 void Boomerang::help() {
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
+    std::cerr << "-dd: debug - debug decoder to stderr\n";
     std::cerr << "-dg: debug - debug code generation\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dr: debug - debug unused Returns\n";
@@ -208,6 +209,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 switch(argv[i][2]) {
                     case 'c':
                         debugSwitch = true;
+                        break;
+                    case 'd':
+                        debugDecoder = true;
                         break;
                     case 'g':
                         debugGen = true;

@@ -88,6 +88,7 @@ public:
     bool printAST;
     bool dumpXML;
     bool noRemoveReturns;
+    bool debugDecoder;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)
