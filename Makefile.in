@@ -32,9 +32,8 @@ CXX=$(CC)
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
-# These should be autoconfigured one day:
-BISONPP=bison++
-FLEXPP=flex++
+BISONPP=@BISONPP@
+FLEXPP=@FLEXPP@
 
 BOOMDIR="$(shell pwd)"
 BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
@@ -117,7 +116,7 @@ CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
     ${TYPEOBJS}
-EXPAT_INCLUDE = ../../expat-1.95.7/lib
+#EXPAT_INCLUDE = ../../expat-1.95.7/lib     # See other reference
 EXPAT_LIB = ../../expat-1.95.7/.libs/libexpat.a
 
 lib/libBinaryFile.so:
@@ -177,7 +176,8 @@ db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 db/StatementTest.o:			EXTRA = $(BOOMSET) -Ifrontend
 db/CfgTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 type/TypeTest.o:            EXTRA = $(BOOMSET) -Ifrontend
-db/xmlprogparser.o:			EXTRA = -I$(EXPAT_INCLUDE)
+# expat.h is installed into /usr/include, so the below is not needed
+#db/xmlprogparser.o:			EXTRA = -I$(EXPAT_INCLUDE)
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
