@@ -650,7 +650,7 @@ void ExpTest::testSimplifyBinary() {
     CPPUNIT_ASSERT(*b == *expb2);
     delete b; delete expb2;
 
-    std::string expected("(((0 + v[a]) - 0) | 0) \\/ 0");
+    std::string expected("(((0 + v[a]) - 0) | 0) or 0");
     std::ostringstream ost;
     Exp* e =
         new Binary(opOr,

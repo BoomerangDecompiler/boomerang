@@ -41,6 +41,7 @@ class BasicBlock;
 class LocationSet;
 class StatementSet;
 class Exp;
+class TypeVal;
 typedef BasicBlock* PBB;
 typedef std::map<Exp*, int, lessExpStar> igraph;
 
@@ -162,6 +163,10 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     int getVarIndex();
     // True if this is a terminal
     virtual bool isTerminal() { return false; }
+    // True if this is the constant "true"
+    bool isTrue() {return op == opTrue;}
+    // True if this is the constant "false"
+    bool isFalse() {return op == opFalse;}
     // True if this is an equality (== or !=)
     bool isEquality() {return op == opEquals || op == opNotEqual;}
     // True if this is a comparison
@@ -264,9 +269,19 @@ virtual Exp* simplifyAddr() {return this;}
     // statement d)
     Exp* fromSSAleft(igraph& ig, Statement* d);
 
-    // Constrain this Exp with the type variable given in con
-    // Add any generated constraints to cons
-    virtual Exp*  constrainTo(Exp* con) {return NULL;}
+    // Generate constraints for this Exp. NOTE: The behaviour is a bit different
+    // depending on whether or not parameter result is a type constant or a
+    // type variable.
+    // If the constraint is always satisfied, return true
+    // If the constraint can never be satisfied, return false
+    // Example: this is opMinus and result is <int>, constraints are:
+    //   sub1 = <int> and sub2 = <int> or
+    //   sub1 = <ptr> and sub2 = <ptr>
+    // Example: this is opMinus and result is Tr (typeOf r), constraints are:
+    //   sub1 = <int> and sub2 = <int> and Tr = <int> or
+    //   sub1 = <ptr> and sub2 = <ptr> and Tr = <int> or
+    //   sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
+    virtual Exp*  genConstraints(Exp* result);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len) = 0;
@@ -325,7 +340,7 @@ public:
     // Print "recursive" (extra parens not wanted at outer levels)
 
     void    appendDotFile(std::ofstream& of);
-    virtual Exp*  constrainTo(Exp* con);
+    virtual Exp*  genConstraints(Exp* restrictTo);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -429,7 +444,7 @@ virtual int getMemDepth();
     virtual Exp* fromSSA(igraph& ig);
 
     // Type analysis
-    virtual Exp*  constrainTo(Exp* con);
+    virtual Exp*  genConstraints(Exp* restrictTo);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -497,13 +512,16 @@ virtual int getMemDepth();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Type analysis
-    virtual Exp*  constrainTo(Exp* con);
+    virtual Exp*  genConstraints(Exp* restrictTo);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
+
+private:
+    Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
 
 };  // class Binary
 
@@ -564,7 +582,7 @@ virtual int getMemDepth();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Type analysis
-    virtual Exp* constrainTo(Exp* con);
+    virtual Exp*  genConstraints(Exp* restrictTo);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -706,7 +724,7 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     virtual Exp* fromSSA(igraph& ig);
     //bool    references(Statement* s) {return stmtVec.exists(s);}
     StatementVec& getRefs() {return stmtVec;}
-    virtual Exp* constrainTo(Exp* con);
+    virtual Exp*  genConstraints(Exp* restrictTo);
 };
 
 /*==============================================================================
@@ -724,8 +742,8 @@ virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    Exp*    constrainTo(Exp* con) {
-        assert(0); return false;} // Should not be constraining constraints
+    virtual Exp*  genConstraints(Exp* restrictTo) {
+        assert(0); return NULL;} // Should not be constraining constraints
 };
     
 #endif // __EXP_H__

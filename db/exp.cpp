@@ -679,8 +679,8 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opFMinus:  os << " -f "; break;
         case opFMult:   os << " *f "; break;
         case opFDiv:    os << " /f "; break;
-        case opAnd:     os << " /\\ ";break;
-        case opOr:      os << " \\/ "; break;
+        case opAnd:     os << " and ";break;
+        case opOr:      os << " or "; break;
         case opBitAnd:  os << " & ";  break;
         case opBitOr :  os << " | ";  break;
         case opBitXor:  os << " ^ ";  break;
@@ -2844,16 +2844,20 @@ bool lessTI::operator()(const Exp* x, const Exp* y) const {
     return (*x << *y);      // Compare the actual Exps
 }
 
-//  //  //  //  //
-//  constrainTo //
-//  //  //  //  //
+//  //  //  //  //  //
+//  genConstraints  //
+//  //  //  //  //  //
 
+Exp* Exp::genConstraints(Exp* result) {
+    // Default case, no constraints -> return true
+    return new Terminal(opTrue);
+}
 
-Exp* Const::constrainTo(Exp* con) {
-    if (con->isTypeVal()) {
-        // con is a constant type, or possibly a partial type such as
+Exp* Const::genConstraints(Exp* result) {
+    if (result->isTypeVal()) {
+        // result is a constant type, or possibly a partial type such as
         // ptr(alpha)
-        Type* t = ((TypeVal*)con)->getType();
+        Type* t = ((TypeVal*)result)->getType();
         bool match = false;
         switch (op) {
             case opIntConst:
@@ -2873,21 +2877,25 @@ Exp* Const::constrainTo(Exp* con) {
             default:
                 break;
         }
-        if (!match) {
+        if (match)
+            return new Terminal(opTrue);
+        else {
             // This constant will require a cast. So we generate a constraint
             // as a sign to the back end
             return new Binary(opEquals,
                 new Unary(opTypeOf, this->clone()),
-                con->clone());
+                result->clone());
         }
     }
-    // con is a type variable, which is constrained by this constant
+    // result is a type variable, which is constrained by this constant
     Type* t;
     switch (op) {
         case opIntConst:
+            // FIXME: Can also be a pointer to anything
             t = new IntegerType(32);
             break;
         case opLongConst:
+            // FIXME: Can also be a pointer to anything
             t = new IntegerType(64);
             break;
         case opStrConst:
@@ -2900,13 +2908,20 @@ Exp* Const::constrainTo(Exp* con) {
             return false;
     }
     TypeVal* tv = new TypeVal(t);
-    Exp* e = new Binary(opEquals, con, tv);
+    Exp* e = new Binary(opEquals, result->clone(), tv);
     return e;
 }
 
-Exp* Binary::constrainTo(Exp* con) {
-    Exp* con1;
-    Exp* con2;
+Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
+    Exp* con1 = subExp1->genConstraints(typeVal1);
+    Exp* con2 = subExp2->genConstraints(typeVal2);
+    return new Binary(opAnd, con1, con2);
+}
+
+Exp* Binary::genConstraints(Exp* result) {
+    Type* restrictTo = NULL;
+    if (result->isTypeVal())
+        restrictTo = ((TypeVal*)result)->getType();
     Exp* res = NULL;
     IntegerType* intType = new IntegerType;
     TypeVal intVal(intType);
@@ -2915,49 +2930,108 @@ Exp* Binary::constrainTo(Exp* con) {
         case opFMinus:
         case opFMult:
         case opFDiv: {
+            if (restrictTo && !restrictTo->isFloat())
+                // Result can only be float
+                return new Terminal(opFalse);
+
             FloatType* ft = new FloatType();
             TypeVal* ftv = new TypeVal(ft);
-            if (subExp1->constrainTo(ftv)) {
-                // Constrain con to be float
-                Exp* e = new Binary(opEquals, con->clone(), ftv);
-                return e;
-            } else {
-                if (VERBOSE || DEBUG_TA)
-                    std::cerr << "Floating point operator " << operStrings[op]
-                      << " constraint failure with first operand " << subExp1
-                      << "\n";
+            res = constrainSub(ftv, ftv);
+            if (!restrictTo)
+                // Also constrain the result
+                res = new Binary(opAnd, res,
+                    new Binary(opEquals, result->clone(), ftv));
+            else
                 delete ftv;     // Also deletes ft
-            }
+            return res;
             break;
         }
 
         case opPlus: {
-            if (con->isTypeVal()) {
-                // int + int
-                con1 = subExp1->constrainTo(&intVal);
-                con2 = subExp2->constrainTo(&intVal);
-                if (con1 && con2) {
-                    res = new Binary(opAnd,
-                        con1->clone(),
-                        con2->clone());
-                    // FIXME: MORE!
-                }
+            Type* ptrType = 0;      // FIXME!
+            TypeVal ptrVal(ptrType);
+            if (!restrictTo || restrictTo && restrictTo->isInteger()) {
+                // int + int -> int
+                res = constrainSub(&intVal, &intVal);
+                if (!restrictTo)
+                    res = new Binary(opAnd, res,
+                        new Binary(opEquals, result->clone(),
+                        intVal.clone()));
             }
+
+            if (!restrictTo || restrictTo && restrictTo->isPointer()) {
+                // ptr + int -> ptr
+                Exp* res2 = constrainSub(&ptrVal, &intVal);
+                if (!restrictTo)
+                    res2 = new Binary(opAnd, res2,
+                        new Binary(opEquals, result->clone(),
+                        ptrVal.clone()));
+                if (res) res = new Binary(opOr, res, res2);
+                else     res = res2;
+
+                // int + ptr -> ptr
+                res2 = constrainSub(&intVal, &ptrVal);
+                if (!restrictTo)
+                    res2 = new Binary(opAnd, res2,
+                        new Binary(opEquals, result->clone(),
+                        ptrVal.clone()));
+                if (res) res = new Binary(opOr, res, res2);
+                else     res = res2;
+            }
+
+            if (res) return res;
+            else return new Terminal(opFalse);
+        }
+            
+        case opMinus: {
+            Type* ptrType = 0;      // FIXME!
+            TypeVal ptrVal(ptrType);
+            if (!restrictTo || restrictTo && restrictTo->isInteger()) {
+                // int - int -> int
+                res = constrainSub(&intVal, &intVal);
+                if (!restrictTo)
+                    res = new Binary(opAnd, res,
+                        new Binary(opEquals, result->clone(),
+                        intVal.clone()));
+
+                // ptr - ptr -> int
+                Exp* res2 = constrainSub(&ptrVal, &ptrVal);
+                if (!restrictTo)
+                    res2 = new Binary(opAnd, res2,
+                        new Binary(opEquals, result->clone(),
+                        ptrVal.clone()));
+                if (res) res = new Binary(opOr, res, res2);
+                else     res = res2;
+            }
+
+            if (!restrictTo || restrictTo && restrictTo->isPointer()) {
+                // ptr - int -> ptr
+                Exp* res2 = constrainSub(&ptrVal, &intVal);
+                if (!restrictTo)
+                    res2 = new Binary(opAnd, res2,
+                        new Binary(opEquals, result->clone(),
+                        ptrVal.clone()));
+                if (res) res = new Binary(opOr, res, res2);
+                else     res = res2;
+            }
+
+            if (res) return res;
+            else return new Terminal(opFalse);
         }
             
                 
         default:
             break;
     }
-    return NULL;
+    return new Terminal(opTrue);
 }
 
-Exp* PhiExp::constrainTo(Exp* con) {
-    return NULL;
+Exp* PhiExp::genConstraints(Exp* result) {
+    return new Terminal(opTrue);
 }
-Exp* Unary::constrainTo(Exp* con) {
-    return NULL;
+Exp* Unary::genConstraints(Exp* result) {
+    return new Terminal(opTrue);
 }
-Exp* Ternary::constrainTo(Exp* con) {
-    return NULL;
+Exp* Ternary::genConstraints(Exp* result) {
+    return new Terminal(opTrue);
 }

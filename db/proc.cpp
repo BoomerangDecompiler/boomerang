@@ -2549,7 +2549,7 @@ void UserProc::typeAnalysis(Prog* prog) {
     // For each statement this proc
     for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
         cons.clear();
-        s->generateConstraints(cons);
+        s->genConstraints(cons);
         consObj.addConstraints(cons);
         if (DEBUG_TA)
             std::cerr << s << "\n" << &cons << "\n";

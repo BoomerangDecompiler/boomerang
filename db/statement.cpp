@@ -3292,12 +3292,12 @@ void Assign::processConstants(Prog* prog) {
 }
 
 // generate constraints
-void Assign::generateConstraints(LocationSet& cons) {
-    Exp* con = rhs->constrainTo(new Unary(opTypeOf, lhs->clone()));
+void Assign::genConstraints(LocationSet& cons) {
+    Exp* con = rhs->genConstraints(new Unary(opTypeOf, lhs->clone()));
     if (con) cons.insert(con);
 }
 
-void CallStatement::generateConstraints(LocationSet& cons) {
+void CallStatement::genConstraints(LocationSet& cons) {
     Proc* dest = getDestProc();
     Signature* destSig = dest->getSignature();
     // Generate a constraint for the type of each actual argument to be equal
