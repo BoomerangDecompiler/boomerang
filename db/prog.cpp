@@ -1043,22 +1043,26 @@ void Prog::decompileProcs() {
     }
         
     // Remove null and unused statements
-    if (VERBOSE)
-        std::cerr << "===== After removing null and unused statements "
-          "=====\n";
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
         if (!Boomerang::get()->noRemoveNull) {
             proc->removeNullStatements();
             proc->removeUnusedStatements();
-            if (VERBOSE)
-                print(std::cerr, true);
         }
     }
-    if (VERBOSE)
+
+    if (VERBOSE) {
+        std::cerr << "===== After removing null and unused statements "
+          "=====\n";
+        for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+            proc = (UserProc*)(*pp);
+            if (proc->isLib()) continue;
+                proc->print(std::cerr, true);
+        }
         std::cerr << "===== End after removing null and unused "
           "statements =====\n\n";
+    }
 
     // Now all the other things that were in UserProc::decompile()
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
