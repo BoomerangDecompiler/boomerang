@@ -280,7 +280,6 @@ Signature *FrontEnd::getLibSignature(const char *name) {
         signature = getDefaultSignature(name);
     }
     else {
-std::cerr << "Library signature match: " << name << "\n";
         signature = (*it).second->clone();
     }
     return signature;
