@@ -130,12 +130,6 @@ public:
         // Print this program (primarily for debugging)
         void print(std::ostream &out, bool withDF = false);
 
-	// map for global symbols
-	std::map<std::string, TypedExp *> symbols;
-
-	// search for a symbol which matches an expression
-	bool findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp);
-
     // lookup a library procedure by name
     LibProc *getLibraryProc(const char *nam);
 

@@ -76,10 +76,10 @@ INTEGER
 
 
 ADDFLAGS8(op1, op2, result)  {
-            *1* %CF := ((op1@[7:7]) and (op2@[7:7]))
-                        or (~(result@[7:7]) and ((op1@[7:7]) or (op2@[7:7])))
-            *1* %OF := ((op1@[7:7]) and (op2@[7:7]) and ~(result@[7:7]))
-                        or (~(op1@[7:7]) and ~(op2@[7:7]) and (result@[7:7]))
+            *1* %CF := ((op1@[7:7]) & (op2@[7:7]))
+                        | (~(result@[7:7]) & ((op1@[7:7]) | (op2@[7:7])))
+            *1* %OF := ((op1@[7:7]) & (op2@[7:7]) & ~(result@[7:7]))
+                        | (~(op1@[7:7]) & ~(op2@[7:7]) & (result@[7:7]))
             *1* %NF := result@[7:7]
             *1* %ZF := [result = 0?1:0]
 #           *1*  %PF := ??
@@ -87,10 +87,10 @@ ADDFLAGS8(op1, op2, result)  {
 };
 
 ADDFLAGS16(op1, op2, result)  {
-            *1* %CF := ((op1@[15:15]) and (op2@[15:15]))
-                        or (~(result@[15:15]) and ((op1@[15:15]) or (op2@[15:15])))
-            *1* %OF := ((op1@[15:15]) and (op2@[15:15]) and ~(result@[15:15]))
-                        or (~(op1@[15:15]) and ~(op2@[15:15]) and (result@[15:15]))
+            *1* %CF := ((op1@[15:15]) & (op2@[15:15]))
+                        | (~(result@[15:15]) & ((op1@[15:15]) | (op2@[15:15])))
+            *1* %OF := ((op1@[15:15]) & (op2@[15:15]) & ~(result@[15:15]))
+                        | (~(op1@[15:15]) & ~(op2@[15:15]) & (result@[15:15]))
             *1* %NF := result@[15:15]
             *1* %ZF := [result = 0?1:0]
 #           *1*  %PF := ??
@@ -98,10 +98,10 @@ ADDFLAGS16(op1, op2, result)  {
 };
 
 ADDFLAGS32(op1, op2, result)  {
-            *1* %CF := ((op1@[31:31]) and (op2@[31:31]))
-                        or (~(result@[31:31]) and ((op1@[31:31]) or (op2@[31:31])))
-            *1* %OF := ((op1@[31:31]) and (op2@[31:31]) and ~(result@[31:31]))
-                        or (~(op1@[31:31]) and ~(op2@[31:31]) and (result@[31:31]))
+            *1* %CF := ((op1@[31:31]) & (op2@[31:31]))
+                        | (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
+            *1* %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31]))
+                        | (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
             *1* %NF := result@[31:31]
             *1* %ZF := [result = 0?1:0]
 #           *1*  %PF := ??
@@ -109,47 +109,34 @@ ADDFLAGS32(op1, op2, result)  {
 };
 
 SUBFLAGS8(op1, op2, result)  {
-            *1* %CF := op2 > op1
-            *1* %OF := op2 >u op1
-            *1* %NF := result < 0
-            *1* %ZF := op1 = op2
-#            *1* %CF := (~(op1@[7:7]) and (op2@[7:7]))
-#                        or ((result@[7:7]) and (~(op1@[7:7]) or (op2@[7:7])))
-#            *1* %OF := ((op1@[7:7]) and ~(op2@[7:7]) and ~(result@[7:7]))
-#                        or (~(op1@[7:7]) and (op2@[7:7]) and (result@[7:7]))
-#            *1* %NF := result@[7:7]
-#            *1* %ZF := [result = 0?1:0]
+            *1* %CF := (~(op1@[7:7]) & (op2@[7:7]))
+                        | ((result@[7:7]) & (~(op1@[7:7]) | (op2@[7:7])))
+            *1* %OF := ((op1@[7:7]) & ~(op2@[7:7]) & ~(result@[7:7]))
+                        | (~(op1@[7:7]) & (op2@[7:7]) & (result@[7:7]))
+            *1* %NF := result@[7:7]
+            *1* %ZF := [result = 0?1:0]
 #           *1*  %PF := ??
 #           *1*  %AF := ??                  # unpacked BCD
 };
 
 SUBFLAGS16(op1, op2, result)  {
-            *1* %CF := op2 > op1
-            *1* %OF := op2 >u op1
-            *1* %NF := result < 0
-            *1* %ZF := op1 = op2
-#            *1* %CF := (~(op1@[15:15]) and (op2@[15:15]))
-#                        or ((result@[15:15]) and (~(op1@[15:15]) or (op2@[15:15])))
-#            *1* %OF := ((op1@[15:15]) and ~(op2@[15:15]) and ~(result@[15:15]))
-#                        or (~(op1@[15:15]) and (op2@[15:15]) and (result@[15:15]))
-#            *1* %NF := result@[15:15]
-#            *1* %ZF := [result = 0?1:0]
+            *1* %CF := (~(op1@[15:15]) & (op2@[15:15]))
+                        | ((result@[15:15]) & (~(op1@[15:15]) | (op2@[15:15])))
+            *1* %OF := ((op1@[15:15]) & ~(op2@[15:15]) & ~(result@[15:15]))
+                        | (~(op1@[15:15]) & (op2@[15:15]) & (result@[15:15]))
+            *1* %NF := result@[15:15]
+            *1* %ZF := [result = 0?1:0]
 #       *1*  %PF := ??
 #       *1*  %AF := ??                  # unpacked BCD
 };
 
 SUBFLAGS32(op1, op2, result)  {
-            *1* %CF := op2 > op1
-            *1* %OF := op2 >u op1
-            *1* %NF := result < 0
-            *1* %ZF := op1 = op2
-# Below is more accurate but ugly
-#            *1* %CF := (~(op1@[31:31]) and (op2@[31:31]))
-#                        or ((result@[31:31]) and (~(op1@[31:31]) or (op2@[31:31])))
-#            *1* %OF := ((op1@[31:31]) and ~(op2@[31:31]) and ~(result@[31:31]))
-#                        or (~(op1@[31:31]) and (op2@[31:31]) and (result@[31:31]))
-#            *1* %NF := result@[31:31]
-#            *1* %ZF := [result = 0?1:0]
+            *1* %CF := (~(op1@[31:31]) & (op2@[31:31]))
+                        | ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
+            *1* %OF := ((op1@[31:31]) & ~(op2@[31:31]) & ~(result@[31:31]))
+                        | (~(op1@[31:31]) & (op2@[31:31]) & (result@[31:31]))
+            *1* %NF := result@[31:31]
+            *1* %ZF := [result = 0?1:0]
 #           *1*  %PF := ??
 #           *1*  %AF := ??                  # unpacked BCD
 };

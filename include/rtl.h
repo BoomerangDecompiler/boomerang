@@ -386,6 +386,9 @@ public:
     // simplify all the uses/defs in this RTL
     virtual void simplify();
 
+    // update type for expression
+    virtual Type *updateType(Exp *e, Type *curType);
+
 protected:
     virtual void doReplaceUse(Statement *use);
 
@@ -483,6 +486,7 @@ public:
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
     std::vector<Exp*>& getArguments();            // Return call's arguments
     Exp* getArgumentExp(int i) { return arguments[i]; }
+    void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int getNumArguments() { return arguments.size(); }
     void setNumArguments(int i) { arguments.resize(i); }
     Type *getArgumentType(int i);
@@ -557,6 +561,9 @@ public:
 
     // simplify all the uses/defs in this RTL
     virtual void simplify();
+
+    // update type for expression
+    virtual Type *updateType(Exp *e, Type *curType);
 
     // add statements internal to the called procedure
     // for interprocedural analysis

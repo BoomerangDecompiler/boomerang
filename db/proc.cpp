@@ -867,24 +867,6 @@ bool UserProc::serialize(std::ostream &ouf, int &len)
         saveValue(ouf, (*it)->getNativeAddress());
     }
 
-    for (std::map<std::string, TypedExp *>::iterator its = symbols.begin();
-      its != symbols.end(); its++) {
-        saveFID(ouf, FID_PROC_SYMBOL);
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, (*its).first);
-        assert((*its).second->serialize(ouf, len));
-
-        std::streampos now = ouf.tellp();
-        len = now - posa;
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
     saveFID(ouf, FID_PROC_END);
     saveLen(ouf, 0);
 
@@ -909,18 +891,6 @@ bool UserProc::deserialize_fid(std::istream &inf, int fid)
                 assert((int)(inf.tellg() - pos) == len);
             }
             break;
-        case FID_PROC_SYMBOL:
-            {
-                int len = loadLen(inf);
-                std::streampos pos = inf.tellg();
-                std::string s;
-                loadString(inf, s);
-                Exp *e = Exp::deserialize(inf);
-                assert(e->getOper() == opTypedExp);
-                symbols[s] = (TypedExp*)e;
-                assert((int)(inf.tellg() - pos) == len);
-            }
-            break;
         case FID_PROC_CALLEE:
             loadValue(inf, a);
             calleeAddrSet.insert(a);
@@ -930,24 +900,6 @@ bool UserProc::deserialize_fid(std::istream &inf, int fid)
     }
 
     return true;
-}
-
-// this can probably go
-bool UserProc::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
-{
-    Exp *e1 = e;
-    if (e->getOper() == opTypedExp)
-        e1 = e->getSubExp1();
-    for (std::map<std::string, TypedExp *>::iterator it = symbols.begin();
-      it != symbols.end(); it++) {
-        assert((*it).second);
-        if (*(*it).second->getSubExp1() == *e1) {
-            sym = (*it).first;
-            sym_exp = (*it).second;
-            return true;
-        }
-    }
-    return prog->findSymbolFor(e, sym, sym_exp);
 }
 
 bool UserProc::generateCode(HLLCode &hll)
@@ -1106,7 +1058,10 @@ void UserProc::decompile() {
     inlineConstants();
     fixCalls();
     promoteSignature();
-    renameLocalVariables();
+    nameStackLocations();
+    replaceExpressionsWithSymbols();
+    //nameRegisters();
+//    replaceExpressionsWithSymbols();
     if (VERBOSE) {
         print(std::cout /*,true*/);
     }
@@ -1138,7 +1093,7 @@ void UserProc::fixCalls()
         HLCall *call = dynamic_cast<HLCall*>(*it);
         if (call == NULL) continue;
         if (call->getDestProc() && 
-          call->getDestProc()->getSignature()->hasEllipsis()) {
+            call->getDestProc()->getSignature()->hasEllipsis()) {
             // functions like printf almost always have too many args
             std::string name(call->getDestProc()->getName());
             if ((name == "printf" || name == "scanf") &&
@@ -1148,13 +1103,19 @@ void UserProc::fixCalls()
                 int n = 1;      // Number of %s plus 1 = number of args
                 char *p = str;
                 while ((p = strchr(p, '%'))) {
+                    // special hack for scanf
+                    if (name == "scanf") {
+                        call->setArgumentExp(n, 
+                            new Unary(opAddrOf, 
+                                new Unary(opMemOf, call->getArgumentExp(n))));
+                    }
                     p++;
                     switch(*p) {
                         case '%':
                             break;
                         // TODO: there's type information here
-                            default: 
-                        n++;
+                        default: 
+                            n++;
                     }
                     p++;
                 }
@@ -1164,12 +1125,13 @@ void UserProc::fixCalls()
     }
 }
 
-void UserProc::renameLocalVariables()
+void UserProc::nameStatementLefts()
 {
     std::set<Statement*> stmts;
     getStatements(stmts);
+    // create a symbol for everything on the left of an assign
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
-      it++)
+      it++) {
         if ((*it)->getLeft() && 
             symbolMap.find((*it)->getLeft()) == symbolMap.end()) {
             if (VERBOSE) {
@@ -1187,7 +1149,15 @@ void UserProc::renameLocalVariables()
             else
                 locals[name] = new IntegerType();
         } 
+    }
+}
 
+void UserProc::replaceExpressionsWithSymbols()
+{
+    std::set<Statement*> stmts;
+    getStatements(stmts);
+
+    // replace expressions with symbols
     for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
       it++) {
         for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
@@ -1195,6 +1165,7 @@ void UserProc::renameLocalVariables()
             (*it)->searchAndReplace((*it1).first, (*it1).second);
     }
 
+    // replace expressions with symbols in the return value
     for (std::map<Exp*, Exp*>::iterator it1 = symbolMap.begin();
       it1 != symbolMap.end(); it1++) {
         bool change;
@@ -1216,6 +1187,41 @@ void UserProc::renameLocalVariables()
             std::cerr << std::endl;
         }
         if (change) cfg->setReturnVal(e->clone());
+    }
+}
+
+void UserProc::nameStackLocations()
+{
+    std::set<Statement*> stmts;
+    getStatements(stmts);
+    // create a symbol for every memory reference
+    for (std::set<Statement*>::iterator it = stmts.begin(); it != stmts.end(); 
+      it++) {
+        Exp *right = (*it)->getRight();
+        if (right == NULL) continue;
+        Exp *memref, *match = signature->getStackWildcard();
+        if (match == NULL) break;
+        if (right->search(match, memref)) {
+            if (symbolMap.find(memref) == symbolMap.end()) {
+                if (VERBOSE) {
+                    std::cout << "stack location found: ";
+                    memref->print(std::cout);
+                    std::cout << std::endl;
+                }
+                std::ostringstream os;
+                os << "local" << locals.size();
+                std::string name = os.str();
+                symbolMap[memref->clone()] = 
+                    new Unary(opLocal, new Const(strdup(name.c_str())));
+                locals[name] = new IntegerType();
+            }
+            std::cout << "mark" << std::endl;
+            assert(symbolMap.find(memref) != symbolMap.end());
+            std::string name = ((Const*)symbolMap[memref]->getSubExp1())
+					->getStr();
+            locals[name] = (*it)->updateType(memref, locals[name]);
+        }
+        delete match;
     }
 }
 

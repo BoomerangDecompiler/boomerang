@@ -138,13 +138,13 @@ void CHLLCode::appendExp(Exp *exp)
 		case opLess:        // Logical less than (signed)
 		case opLessUns:     // Logical less than (unsigned)
 			appendExp(b->getSubExp1());
-			appendToken(exp, '<');
+			appendToken(exp, C_LESS);
 			appendExp(b->getSubExp2());
 			break;
 		case opGtr:         // Logical greater than (signed)
 		case opGtrUns:      // Logical greater than (unsigned)
 			appendExp(b->getSubExp1());
-			appendToken(exp, '>');
+			appendToken(exp, C_GTR);
 			appendExp(b->getSubExp2());
 			break;
 		case opLessEq:      // Logical <= (signed)
@@ -226,7 +226,7 @@ void CHLLCode::appendExp(Exp *exp)
 				assert(t->getSubExp3()->getOper() == opIntConst);
 				int first = ((Const*)t->getSubExp2())->getInt();
 				int last = ((Const*)t->getSubExp3())->getInt();
-				unsigned mask = 0;
+				int mask = 0;
 				for (int i = 0; i < first - last + 1; i++)
 					mask |= (1 << i);
 				appendToken(exp, '(');
@@ -242,34 +242,6 @@ void CHLLCode::appendExp(Exp *exp)
 			break;
 		case opMemOf:       // Represents m[]
 			{
-				std::string s;
-				TypedExp *s_exp;
-				// symbol
-				if (m_proc->findSymbolFor(exp, s, s_exp)) {
-					appendToken(exp, C_SYM);
-					break;
-				} 
-				// dereference
-				if (m_proc->findSymbolFor(exp->getSubExp1(), s, s_exp)) {
-					Type *ty = s_exp->getType();
-					if (ty->isPointer()) {
-						appendToken('*');
-						appendToken(exp->getSubExp1(), C_SYM);
-						break;
-					}
-				}
-				// array ref
-				if (exp->getSubExp1()->getOper() == opPlus &&
-					m_proc->findSymbolFor(exp->getSubExp1()->getSubExp1(), s, s_exp)) {
-					Type *ty = s_exp->getType();
-					if (ty->isPointer()) {
-						appendToken(exp->getSubExp1()->getSubExp1(), C_SYM);
-						appendToken('[');
-						appendToken(exp->getSubExp1()->getSubExp2(), C_INTEGER); // wrong!
-						appendToken(']');
-						break;
-					}					
-				}
 				// unknown
 				appendToken('*');
 				appendToken('(');
@@ -285,30 +257,18 @@ void CHLLCode::appendExp(Exp *exp)
 			break;
 		case opRegOf:       // Represents r[]
 			{				
-				std::string s;
-				TypedExp *s_exp;
-				if (m_proc->findSymbolFor(exp, s, s_exp))
-					appendToken(exp, C_SYM);
-				else {					
-					appendToken(exp, C_BADREG);
-					appendExp(u->getSubExp1());
-					appendToken(exp, C_BADREGEND);
-				}
+				appendToken(exp, C_BADREG);
+				appendExp(u->getSubExp1());
+				appendToken(exp, C_BADREGEND);
 			}
 			break;
 		case opSubscript:       // Represents subscript
 			{				
-				std::string s;				
-				TypedExp *s_exp;
-				if (m_proc->findSymbolFor(exp, s, s_exp))
-					appendToken(exp, C_SYM);
-				else {					
-					appendToken(exp, C_BADSUBSCRIPT);
-					appendExp(b->getSubExp1());
-					appendToken(exp, C_BADSUBSCRIPTMID);
-					appendExp(b->getSubExp2());
-					appendToken(exp, C_BADSUBSCRIPTEND);
-				}
+				appendToken(exp, C_BADSUBSCRIPT);
+				appendExp(b->getSubExp1());
+				appendToken(exp, C_BADSUBSCRIPTMID);
+				appendExp(b->getSubExp2());
+				appendToken(exp, C_BADSUBSCRIPTEND);
 			}
 			break;
 
@@ -722,6 +682,14 @@ void CDataToken::appendString(std::string &s, CTok &context, std::list<CHLLToken
 			s += " != ";
 			context = tok;
 			break;
+		case C_GTR:
+			s += " > ";
+			context = tok;
+			break;
+		case C_LESS:
+			s += " < ";
+			context = tok;
+			break;
 		case C_LESSEQ:
 			s += " <= ";
 			context = tok;
@@ -742,13 +710,13 @@ void CDataToken::appendString(std::string &s, CTok &context, std::list<CHLLToken
 			assert(exp->getSubExp1()->getOper() == opStrConst);
 			s += ((Const*)exp->getSubExp1())->getStr();
 			break;
-		case C_SYM:
+		/*case C_SYM:
 			{
 				TypedExp *s_exp;
 				assert(code->getProc()->findSymbolFor(exp, sym, s_exp));
 				s += sym;
 			}
-			break;
+			break; */
 		case C_BADMEM:
 			s += "m[";
 			break;

@@ -60,8 +60,8 @@
 Const::Const(int i)     : Exp(opIntConst)   {u.i = i;}
 Const::Const(double d)  : Exp(opFltConst)   {u.d = d;}
 Const::Const(char* p)   : Exp(opStrConst)   {u.p = p;}
-Const::Const(ADDRESS a) : Exp(opAddrConst)  {u.a = a;}
 // Note: need something special for opCodeAddr
+Const::Const(ADDRESS a)     : Exp(opIntConst)   {u.a = a;}
 
 // Copy constructor
 Const::Const(Const& o) : Exp(o.op) {u = o.u;}
@@ -347,7 +347,6 @@ bool Const::operator==(const Exp& o) const
         case opIntConst: return u.i == ((Const&)o).u.i;
         case opFltConst: return u.d == ((Const&)o).u.d;
         case opStrConst: return (strcmp(u.p, ((Const&)o).u.p) == 0);
-        case opAddrConst:return u.a == ((Const&)o).u.a;
         default: std::cerr << "Operator== invalid operator " << operStrings[op]
                    << std::endl;
                  assert(0);
@@ -461,8 +460,6 @@ bool Const::operator< (const Exp& o) const {
             return u.d < ((Const&)o).u.d;
         case opStrConst:
             return strcmp(u.p, ((Const&)o).u.p) < 0;
-        case opAddrConst:
-            return u.a < ((Const&)o).u.a;
         default: std::cerr << "Operator< invalid operator " << operStrings[op]
                    << std::endl;
                 assert(0);
@@ -543,9 +540,6 @@ void Const::print(std::ostream& os) {
             break;
         case opStrConst:
             os << "\"" << u.p << "\"";
-            break;
-        case opAddrConst: 
-            os << "0x" << std::hex << u.a;
             break;
         default:
             std::cerr << "Const::print invalid operator " << operStrings[op] << std::endl;
@@ -961,8 +955,7 @@ void Const::appendDotFile(std::ofstream& of) {
         case opIntConst:  of << std::dec << u.i; break;
         case opFltConst:  of << u.d; break;
         case opStrConst:  of << "\\\"" << u.p << "\\\""; break;
-        case opCodeAddr:
-        case opAddrConst: of << "0x" << std::hex << u.a; break;
+        case opCodeAddr:  of << "0x" << std::hex << u.a; break;
         default:
             break;
     }
@@ -1621,11 +1614,16 @@ Exp* Unary::polySimplify(bool& bMod) {
                 }
                 ((Const*)res)->setInt(k);
                 bMod = true; 
-            } else if (op == opLNot && subOP == opEquals) {
+            } else if ((op == opNot || op == opLNot) && subOP == opEquals) {
                 res = ((Unary*)res)->becomeSubExp1();
                 res->setOper(opNotEqual);
                 bMod = true;
                 break;
+            } else if (op == subOP) {
+               res = ((Unary*)res)->becomeSubExp1();
+               res = ((Unary*)res)->becomeSubExp1();
+               bMod = true;
+               break;
             }
         }
         break;
@@ -1710,9 +1708,18 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+    // turn a - b into a + -b
+    // doesn't count as a change
+    if (op == opMinus) {
+        subExp2 = new Unary(opNeg, subExp2);
+        op = opPlus;
+        opSub2 = opNeg;
+    }
+
     // Might want to commute to put an integer constant on the RHS
-    // Later simplifications can rely on this
-    if (opSub1 == opIntConst) {
+    // Later simplifications can rely on this (ADD other ops as necessary)
+    if (opSub1 == opIntConst && 
+        (op == opPlus || op == opMult)) {
         ((Binary*)res)->commute();
         // Swap opSub1 and opSub2 as well
         OPER t = opSub1;
@@ -1787,9 +1794,19 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
-    // Check for (x - y) == 0, becomes x == y
-    if (op == opEquals && opSub2 == opIntConst &&
-        ((Const*)subExp2)->getInt() == 0 && opSub1 == opMinus) {
+    // Check for -x compare y, becomes x compare -y
+    // doesn't count as a change
+    if (isComparison() && opSub1 == opNeg) {
+        Exp *e = subExp1;
+        subExp1 = e->getSubExp1()->clone();
+        delete e;
+        subExp2 = new Unary(opNeg, subExp2);
+    }
+
+    // Check for (x + y) compare 0, becomes x compare -y
+    if (isComparison() &&
+        opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0 && 
+        opSub1 == opPlus) {
         delete subExp2;
         Binary *b = (Binary*)subExp1;
         subExp2 = b->subExp2;
@@ -1797,6 +1814,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         subExp1 = b->subExp1;
         b->subExp1 = 0;
         delete b;
+        subExp2 = new Unary(opNeg, subExp2);
         bMod = true;
         return res;
     }
@@ -1813,6 +1831,25 @@ Exp* Binary::polySimplify(bool& bMod) {
         delete b;
         bMod = true;
         return res;
+    }
+
+    // Check for x + -y == 0, becomes x == y
+    if (op == opEquals && opSub2 == opIntConst &&
+        ((Const*)subExp2)->getInt() == 0 && opSub1 == opPlus &&
+        ((Binary*)subExp1)->subExp2->getOper() == opIntConst) {
+        Binary *b = (Binary*)subExp1;
+        int n = ((Const*)b->subExp2)->getInt();
+        if (n < 0) {
+            delete subExp2;
+            subExp2 = b->subExp2;
+            ((Const*)subExp2)->setInt(-((Const*)subExp2)->getInt());
+            b->subExp2 = 0;
+            subExp1 = b->subExp1;
+            b->subExp1 = 0;
+            delete b;
+            bMod = true;
+            return res;
+        }
     }
 
     // Check for (x == y) == 0, becomes x != y
@@ -2152,10 +2189,6 @@ Exp *Exp::deserialize(std::istream &inf)
                         loadString(inf, s);
                         e = new Const(strdup(s.c_str()));
                         break;
-                    case opAddrConst:
-                        loadValue(inf, a, false);
-                        e = new Const(a);
-                        break;
                     default:
                         std::cerr << "WARNING: unknown const expression type, ignoring, data will be lost!" << std::endl;
                 }
@@ -2239,9 +2272,6 @@ bool Const::serialize(std::ostream &ouf, int &len)
                 std::string s(u.p);
                 saveString(ouf, s);
             }
-            break;
-        case opAddrConst:
-            saveValue(ouf, u.a, false);
             break;
         default:
             // add a new case
@@ -2418,6 +2448,12 @@ void AssignExp::getDeadStatements(std::set<Statement*> &dead)
         if (isKilled && (*it)->getNumUseBy() == 0)
         dead.insert(*it);
     }
+}
+
+// update type for expression
+Type *AssignExp::updateType(Exp *e, Type *curType)
+{
+    return curType;
 }
 
 bool AssignExp::usesExp(Exp *e) {

@@ -117,9 +117,12 @@ public:
 
     virtual void getInternalStatements(std::list<Statement*> &stmts);
 
-	// Special for Mike: find the location that conventionall holds
-	// the first outgoing (actual) parameter
-	Exp* getFirstArgLoc(BinaryFile* pBF);
+    // Special for Mike: find the location that conventionall holds
+    // the first outgoing (actual) parameter
+    Exp* getFirstArgLoc(BinaryFile* pBF);
+
+    // Get a wildcard to find stack locations
+    virtual Exp *getStackWildcard() { return NULL; }
 };
 
 #endif

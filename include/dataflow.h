@@ -144,6 +144,9 @@ public:
     // general search and replace
     virtual void searchAndReplace(Exp *search, Exp *replace) = 0;
 
+    // update the type information for an expression in this statement
+    virtual Type *updateType(Exp *e, Type *curType) = 0;
+
 protected:
     virtual void doReplaceUse(Statement *use) = 0;
     bool calcAlias(Exp *e1, Exp *e2, int size);

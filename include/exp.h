@@ -130,8 +130,6 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isAfpTerm();
     // True if is int const
     bool isIntConst() {return op == opIntConst;}
-    // True if is addr const
-    bool isAddrConst() {return op == opAddrConst;}
     // True if is string const
     bool isStrConst() {return op == opStrConst;}
     // True if is flt point const
@@ -144,6 +142,14 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     int getVarIndex();
     // True if this is a terminal
     virtual bool isTerminal() { return false; }
+    // True if this is a comparison
+    bool isComparison() { return op == opEquals || op == opNotEqual ||
+                                 op == opGtr || op == opLess ||
+                                 op == opGtrUns || op == opLessUns ||
+                                 op == opGtrEq || op == opLessEq ||
+                                 op == opGtrEqUns || op == opLessEqUns; }
+           
+                 
 
     //  //  //  //  //  //  //
     //  Search and Replace  //
@@ -236,9 +242,9 @@ class Const : public Exp {
 public:
     // Special constructors overloaded for the various constants
             Const(int i);
+            Const(ADDRESS a);
             Const(double d);
             Const(char* p);
-            Const(ADDRESS a);
     // Copy constructor
             Const(Const& o);
             
@@ -585,6 +591,9 @@ public:
 	    Exp *e = searchReplaceAll(search, replace, change);
 	    assert(e == this);
 	}
+ 
+        // update type for expression
+        virtual Type *updateType(Exp *e, Type *curType);
 
 protected:
 	virtual void doReplaceUse(Statement *use);

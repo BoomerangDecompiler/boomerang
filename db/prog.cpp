@@ -165,21 +165,6 @@ void Prog::print(std::ostream &out, bool withDF) {
     }
 }
 
-
-bool Prog::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp) {
-    Exp *e1 = e;
-    if (e->getOper() == opTypedExp)
-        e1 = e->getSubExp1();
-    for (std::map<std::string, TypedExp *>::iterator it = symbols.begin();
-      it != symbols.end(); it++)       
-        if (*(*it).second->getSubExp1() == *e1) {
-            sym = (*it).first;
-            sym_exp = (*it).second;
-            return true;
-        }
-    return false;
-}
-
 void Prog::deserialize(std::istream &inf) {
     int fid;
     int len;
@@ -194,18 +179,6 @@ void Prog::deserialize(std::istream &inf) {
 //            case FID_FILENAME:
 //                loadString(inf, filename);
 //                break;
-        case FID_SYMBOL:                
-                {
-                    len = loadLen(inf);
-                    std::streampos pos = inf.tellg();
-                    std::string s;
-                    loadString(inf, s);
-                    Exp *e = Exp::deserialize(inf);
-                    assert((int)(inf.tellg() - pos) == len);
-                    assert(e->getOper() == opTypedExp);
-                    symbols[s] = (TypedExp*)e;
-                }
-                break;
          case FID_FRONTEND:
                 {
                     len = loadLen(inf);
@@ -286,26 +259,6 @@ bool Prog::serialize(std::ostream &ouf, int &len) {
         ouf.seekp(now);
     }
 
-    // write global symbols
-    for (std::map<std::string, TypedExp *>::iterator its = symbols.begin();
-      its != symbols.end(); its++) {
-        saveFID(ouf, FID_SYMBOL);
-
-        std::streampos pos = ouf.tellp();
-        int len = -1;
-        saveLen(ouf, -1, true);
-        std::streampos posa = ouf.tellp();
-
-        saveString(ouf, (*its).first);
-        assert((*its).second->serialize(ouf, len));
-
-        std::streampos now = ouf.tellp();
-        len = now - posa;
-        ouf.seekp(pos);
-        saveLen(ouf, len, true);
-        ouf.seekp(now);
-    }
-
     // write information about each proc
     for (
 #ifndef WIN32
@@ -356,7 +309,6 @@ void Prog::clear() {
     if (pFE)
         delete pFE;
     pFE = NULL;
-    symbols.clear();
 }
 
 

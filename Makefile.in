@@ -71,7 +71,7 @@ clean:
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
 	cd analysis && ${MAKE} clean
-	rm driver.o codegen/chllcode.o boomerang
+	rm -f driver.o codegen/chllcode.o boomerang
 
 #20 Aug 02 icer
 #added config.h config.log config.status and analysis/Makefile

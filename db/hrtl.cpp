@@ -101,7 +101,7 @@ HLJump::~HLJump()
  *============================================================================*/
 ADDRESS HLJump::getFixedDest() 
 {
-    if (pDest->getOper() != opAddrConst) return NO_ADDRESS;
+    if (pDest->getOper() != opIntConst) return NO_ADDRESS;
     return ((Const*)pDest)->getAddr();
 }
 
@@ -158,7 +158,7 @@ Exp* HLJump::getDest()
 void HLJump::adjustFixedDest(int delta)
 {
     // Ensure that the destination is fixed.
-    if (pDest == 0 || pDest->getOper() != opAddrConst)
+    if (pDest == 0 || pDest->getOper() != opIntConst)
         std::cerr << "Can't adjust destination of non-static CTI\n";
 
     ADDRESS dest = ((Const*)pDest)->getAddr();
@@ -305,7 +305,7 @@ void HLJump::getUseDefLocations(LocationMap& locMap, LocationFilter* filter,
 // serialize this rtl
 bool HLJump::serialize_rest(std::ostream &ouf)
 {
-    if (pDest && pDest->getOper() == opAddrConst) {
+    if (pDest && pDest->getOper() == opIntConst) {
         saveFID(ouf, FID_RTL_FIXDEST);
         saveValue(ouf, ((Const *)pDest)->getAddr());
     } else if (pDest) {
@@ -331,7 +331,7 @@ bool HLJump::deserialize_fid(std::istream &inf, int fid)
         case FID_RTL_JDEST:
             {
                 pDest = Exp::deserialize(inf);
-                if (pDest->getOper() != opAddrConst)
+                if (pDest->getOper() != opIntConst)
                     m_isComputed = true;
                 else
                     m_isComputed = false;
@@ -541,6 +541,17 @@ void HLJcond::searchAndReplace(Exp* search, Exp* replace)
         pCond = pCond->searchReplaceAll(search, replace, change);
 }
 
+// update type for expression
+Type *HLJcond::updateType(Exp *e, Type *curType)
+{
+    if (jtCond == HLJCOND_JUGE || jtCond == HLJCOND_JULE ||
+        jtCond == HLJCOND_JUG || jtCond == HLJCOND_JUL && 
+        curType->isInteger()) {
+        ((IntegerType*)curType)->setSigned(false);
+    }
+    return curType;
+}
+
 /*==============================================================================
  * FUNCTION:        HLJCond::searchAll
  * OVERVIEW:        Find all instances of the search expression
@@ -740,24 +751,108 @@ void HLJcond::simplify()
             case HLJCOND_JNE:   // Jump if not equals
                 break;
             case HLJCOND_JSL:   // Jump if signed less
+                if (pCond->getOper() == opNotEqual &&
+                    pCond->getSubExp1()->getOper() == opAt &&
+                    pCond->getSubExp1()->getSubExp1()->getOper() == opPlus) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opLess);
+                    Exp *tmp = pCond->getSubExp2()->clone();
+                    pCond->setSubExp2(new Unary(opNeg, tmp));
+                }
                 break;
             case HLJCOND_JSLE:  // Jump if signed less or equal
+                if (pCond->getOper() == opOr && 
+                    pCond->getSubExp1()->getOper() == opEquals) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opLessEq);
+                }
                 break;
             case HLJCOND_JSGE:  // Jump if signed greater or equal
+                if (pCond->getOper() == opEquals &&
+                    pCond->getSubExp1()->getOper() == opAt &&
+                    pCond->getSubExp1()->getSubExp1()->getOper() == opPlus) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opGtrEq);
+                    Exp *tmp = pCond->getSubExp2()->clone();
+                    pCond->setSubExp2(new Unary(opNeg, tmp));
+                }
                 break;
             case HLJCOND_JSG:   // Jump if signed greater
+                if (pCond->getOper() == opNot &&
+                    pCond->getSubExp1()->getOper() == opOr &&
+                    pCond->getSubExp1()->getSubExp1()->getOper() == opEquals) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opGtr);
+                }
                 break;
             case HLJCOND_JUL:   // Jump if unsigned less
+                if (pCond->getOper() == opBitOr &&
+                    pCond->getSubExp2()->getOper() == opBitAnd &&
+                    pCond->getSubExp2()->getSubExp1()->getOper() == opAt &&
+                    pCond->getSubExp2()->getSubExp1()->getSubExp1()->getOper() == opPlus) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp2()->getSubExp1()->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opLessUns);
+                    Exp *tmp = pCond->getSubExp2()->clone();
+                    pCond->setSubExp2(new Unary(opNeg, tmp));
+                }
                 break;
             case HLJCOND_JULE:  // Jump if unsigned less or equal
+                if (pCond->getOper() == opOr &&
+                    pCond->getSubExp2()->getOper() == opEquals) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp2()->clone();
+                    delete e;
+                    pCond->setOper(opLessEqUns);
+                }
                 break;
             case HLJCOND_JUGE:  // Jump if unsigned greater or equal
+                if (pCond->getOper() == opNot && 
+                    pCond->getSubExp1()->getOper() == opBitOr &&
+                    pCond->getSubExp1()->getSubExp2()->getOper() == opBitAnd &&
+                    pCond->getSubExp1()->getSubExp2()->getSubExp1()->getOper() == opAt &&
+                    pCond->getSubExp1()->getSubExp2()->getSubExp1()->getSubExp1()->getOper() == opPlus) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->getSubExp2()->getSubExp1()->getSubExp1()->clone();
+                    delete e;
+                    pCond->setOper(opGtrEqUns);
+                    Exp *tmp = pCond->getSubExp2()->clone();
+                    pCond->setSubExp2(new Unary(opNeg, tmp));
+                }
                 break;
             case HLJCOND_JUG:   // Jump if unsigned greater
+                if (pCond->getOper() == opNot &&
+                    pCond->getSubExp1()->getOper() == opOr &
+                    pCond->getSubExp1()->getSubExp2()->getOper() == opEquals) {
+                    Exp *e = pCond;
+                    pCond = e->getSubExp1()->getSubExp2()->clone();
+                    delete e;
+                    pCond->setOper(opGtrUns);
+                }
                 break;
             case HLJCOND_JMI:   // Jump if result is minus
+                if (pCond->getOper() == opAt) {
+                    Exp *e = pCond;
+                    pCond = new Binary(opLess, e->getSubExp1()->clone(), new Const(0));
+                    delete e;
+                }
                 break;
             case HLJCOND_JPOS:  // Jump if result is positive
+                if (pCond->getOper() == opNot && 
+                    pCond->getSubExp1()->getOper() == opAt) {
+                    Exp *e = pCond;
+                    pCond = new Binary(opGtrEq, e->getSubExp1()->getSubExp1()->clone(), new Const(0));
+                    delete e;
+                }
                 break;
             case HLJCOND_JOF:   // Jump if overflow
                 break;
@@ -1431,6 +1526,12 @@ void HLCall::getDeadStatements(std::set<Statement*> &dead)
     }
 }
 
+// update type for expression
+Type *HLCall::updateType(Exp *e, Type *curType)
+{
+    return curType;
+}
+
 bool HLCall::usesExp(Exp *e)
 {
     Exp *where = 0;
@@ -1477,7 +1578,7 @@ void HLCall::inlineConstants(Prog *prog)
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
     // char* and a constant
-    if ((arguments[i]->isAddrConst() || arguments[i]->isIntConst()) && 
+    if ((arguments[i]->isIntConst()) && 
         t && t->isPointer() && 
         ((PointerType*)t)->getPointsTo()->isChar()) {
         char *str = 

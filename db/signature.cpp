@@ -83,6 +83,7 @@ namespace CallingConvention {
 
             virtual Signature *promote(UserProc *p);
                         virtual void getInternalStatements(std::list<Statement*> &stmts);
+	    virtual Exp *getStackWildcard();
         };      
 
         class SparcSignature : public Signature {
@@ -103,6 +104,7 @@ namespace CallingConvention {
             virtual Exp *getArgumentExp(int n);
 
             virtual Signature *promote(UserProc *p);
+	    virtual Exp *getStackWildcard();
         };
     };
 };
@@ -281,28 +283,28 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     for (std::list<Statement*>::iterator it = internal.begin();
          it != internal.end(); it++) {
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
-    if (e == NULL) continue;
-    if (e->getLeft()->getOper() == opPC) {
-        if (e->getRight()->isMemOf() && 
-        e->getRight()->getSubExp1()->isRegOf() &&
-        e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-        ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28) {
-        std::cerr << "got pc = m[r[28]]" << std::endl;
-            gotcorrectret1 = true;
+        if (e == NULL) continue;
+        if (e->getLeft()->getOper() == opPC) {
+            if (e->getRight()->isMemOf() && 
+                e->getRight()->getSubExp1()->isRegOf() &&
+                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28) {
+                std::cerr << "got pc = m[r[28]]" << std::endl;
+                gotcorrectret1 = true;
+            }
+        } else if (e->getLeft()->isRegOf() && 
+                   e->getLeft()->getSubExp1()->isIntConst() &&
+                   ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
+            if (e->getRight()->getOper() == opPlus &&
+                e->getRight()->getSubExp1()->isRegOf() &&
+                e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
+                ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+                e->getRight()->getSubExp2()->isIntConst() &&
+                ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
+                std::cerr << "got r[28] = r[28] + 4" << std::endl;
+                gotcorrectret2 = true;
+            }
         }
-    } else if (e->getLeft()->isRegOf() && 
-           e->getLeft()->getSubExp1()->isIntConst() &&
-           ((Const*)e->getLeft()->getSubExp1())->getInt() == 28) {
-        if (e->getRight()->getOper() == opPlus &&
-        e->getRight()->getSubExp1()->isRegOf() &&
-        e->getRight()->getSubExp1()->getSubExp1()->isIntConst() &&
-        ((Const*)e->getRight()->getSubExp1()->getSubExp1())->getInt() == 28 &&
-        e->getRight()->getSubExp2()->isIntConst() &&
-        ((Const*)e->getRight()->getSubExp2())->getInt() == 4) {
-        std::cerr << "got r[28] = r[28] + 4" << std::endl;
-        gotcorrectret2 = true;
-        }
-    }
     }
     return gotcorrectret1 && gotcorrectret2;
 }
@@ -386,6 +388,13 @@ Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
     // No promotions from here up, obvious idea would be c++ name mangling  
     return this;
 }
+
+Exp *CallingConvention::StdC::PentiumSignature::getStackWildcard()
+{
+    return new Unary(opMemOf, new Binary(opPlus, new Unary(opRegOf, 
+               new Const(28)), new Terminal(opWild)));
+}
+
 
 void CallingConvention::StdC::PentiumSignature::getInternalStatements(std::list<Statement*> &stmts)
 {
@@ -535,6 +544,12 @@ Signature *CallingConvention::StdC::SparcSignature::promote(UserProc *p)
 {
     // no promotions from here up, obvious example would be name mangling
     return this;
+}
+
+Exp *CallingConvention::StdC::SparcSignature::getStackWildcard()
+{
+    return new Unary(opMemOf, new Binary(opPlus, new Unary(opRegOf, 
+               new Const(14)), new Terminal(opWild)));
 }
 
 Signature::Signature(const char *nam) : rettype(new VoidType()), ellipsis(false)

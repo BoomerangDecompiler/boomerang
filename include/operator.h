@@ -145,8 +145,6 @@ enum OPER
     opIntConst,             // integer constant
     opFltConst,             // floating point constant
     opStrConst,             // string constant
-    // FIXME: Probably won't end up using the opAddrConst
-    opAddrConst,            // address constant
     opCodeAddr,             // opAddrConst for addresses in code segment
 
 
