@@ -26,7 +26,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
-    noDecodeChildren(false), debugProof(false)
+    noDecodeChildren(false), debugProof(false), debugUnusedStmt(false)
 {
 }
 
@@ -63,8 +63,9 @@ void Boomerang::help() {
     std::cerr << "-dg: debug - debug code generation\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dp: debug - debug proof engine\n";
-    std::cerr << "-dr: debug - debug unused Returns\n";
+    std::cerr << "-dr: debug - debug removing unused Returns\n";
     std::cerr << "-dt: debug - debug type analysis\n";
+    std::cerr << "-du: debug - debug removing unused statements\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
@@ -251,6 +252,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                 break;
             case 'd':
                 switch(argv[i][2]) {
+                    case 'a':
+                        printAST = true;
+                        break;
                     case 'c':
                         debugSwitch = true;
                         break;
@@ -263,17 +267,17 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'l':
                         debugLiveness = true;
                         break;
+                    case 'p':
+                        debugProof = true;
+                        break;
                     case 'r':       // debug counting unused Returns
                         debugUnusedRets = true;
                         break;
                     case 't':       // debug type analysis
                         debugTA = true;
                         break;
-                    case 'a':
-                        printAST = true;
-                        break;
-                    case 'p':
-                        debugProof = true;
+                    case 'u':       // debug unused locations (incl unused rets)
+                        debugUnusedStmt = true;
                         break;
                     default:
                         help();
