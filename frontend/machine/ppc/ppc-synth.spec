@@ -1,5 +1,6 @@
 # Table F-9
 
+constructors
    crset  bx      is creqv( bx, bx, bx )
    crclr  bx      is crxor( bx, bx, bx )
    crmove bx, by  is cror(  bx, by, by )
