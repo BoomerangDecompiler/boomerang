@@ -481,15 +481,18 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             break;
         case opSubscript:
             appendExp(str, u->getSubExp1());
-            std::cerr << "subscript in code generation of proc " << m_proc->getName() << " exp (without subscript): " << str << std::endl;
+            std::cerr << "subscript in code generation of proc " <<
+              m_proc->getName() << " exp (without subscript): " << str << "\n";
             assert(false);
             break;
         case opMemberAccess:
             {
                 Type *ty = b->getSubExp1()->getType();
-                if (ty == NULL)
+                if (ty == NULL) {
                     LOG << "no type for subexp1 of " << b << "\n";
-                assert(ty);
+                    strcat(str, "/* type failure */ ");
+                    break;
+                }
                 assert(ty->resolvesToCompound());
                 if (b->getSubExp1()->getOper() == opMemOf) {
                     appendExp(str, b->getSubExp1()->getSubExp1());
