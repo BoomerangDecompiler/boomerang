@@ -26,4 +26,6 @@ rm -rf functests.out
 ./testOne.sh pentium minmax2 two
 ./testOne.sh sparc minmax2 two
 ./testOne.sh pentium minmax3 two
+./testOne.sh pentium printpi
+./testOne.sh sparc printpi
 echo === Done ===
