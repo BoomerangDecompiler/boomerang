@@ -911,6 +911,8 @@ void Prog::printCallGraph() {
     while (queue.size()) {
         Proc *p = queue.front();
         queue.erase(queue.begin());
+        if ((unsigned)p == NO_ADDRESS)
+            continue;
         if (seen.find(p) == seen.end()) {
             seen.insert(p);
             int n = spaces[p];
