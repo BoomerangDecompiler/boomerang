@@ -288,6 +288,10 @@ SOURCE=.\codegen\chllcode.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\include\config.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\include\decoder.h
 # End Source File
 # Begin Source File
