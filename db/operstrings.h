@@ -112,6 +112,7 @@ char* operStrings[] = {
     "opFtoi",                 // Floating point to integer (and size) conversion
     "opFround",               // Floating point to nearest float conversion
     "opFtrunc",               // Floating point to next lower e.g. 3.01 -> 3.00
+    "opFabs",                 // Floating point absolute function
     "opForceInt",             // Forcibly change current type to int/flt,
     "opForceFlt",             //  without changing any of the bits
     "opFpush",                // Floating point stack push

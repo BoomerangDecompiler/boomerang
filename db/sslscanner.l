@@ -200,6 +200,11 @@ public: \
                 yylval.str[strlen(yylval.str)-1] = '\0';
                 return SSLParser::TRUNC_FUNC;
             }
+"fabs("     {
+                yylval.str = strdup(yytext);
+                yylval.str[strlen(yylval.str)-1] = '\0';
+                return SSLParser::FABS_FUNC;
+            }
 "defineflags(" |
 "undefineflags(" {
                 return SSLParser::FLAGMACRO;

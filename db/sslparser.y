@@ -165,7 +165,7 @@ protected: \
 %token <str> NAME 
 %token <str> REG_ID REG_NUM COND_TNAME DECOR
 %token <str> FARITH_OP FPUSH FPOP
-%token <str> TEMP SHARES CONV_FUNC TRUNC_FUNC TRANSCEND
+%token <str> TEMP SHARES CONV_FUNC TRUNC_FUNC TRANSCEND FABS_FUNC
 %token <str> BIG LITTLE
 %token <str> NAME_CALL NAME_LOOKUP
 
@@ -894,6 +894,11 @@ exp_term:
     // Truncation function: ftrunc(3.01) == 3.00
     |   TRUNC_FUNC exp ')' {
             $$ = new Unary(opFtrunc, $2);
+        }
+
+    // fabs function: fabs(-3.01) == 3.01
+    |   FABS_FUNC exp ')' {
+            $$ = new Unary(opFabs, $2);
         }
 
     // FPUSH and FPOP

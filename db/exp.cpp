@@ -900,6 +900,11 @@ void Unary::print(std::ostream& os, bool withUses) {
             p1->print(os, withUses);
             os << ")";
             return;
+        case opFabs:
+            os << "fabs(";
+            p1->print(os, withUses);
+            os << ")";
+            return;
         default:
             LOG << "Unary::print invalid operator " << operStrings[op] <<
               "\n";
