@@ -569,7 +569,7 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 
     match pc to
     | indirectA(rs1) =>
-        expr = new new Unary(opRegOf, new Const((int)rs1));
+        expr = new Unary(opRegOf, new Const((int)rs1));
     | indexA(rs1, rs2) =>
         expr = new Binary(opPlus,
             new Unary(opRegOf, new Const((int)rs1)),

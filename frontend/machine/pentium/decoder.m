@@ -25,11 +25,11 @@
 #pragma warning(disable:4786)
 #endif
 
+#include "rtl.h"
 #include "decoder.h"
 #include "pentiumdecoder.h"
 #include "prog.h"
 #include "exp.h"
-#include "rtl.h"
 #include "proc.h"
 
 // The following are all dis_Num because the SSL has r[REG32], not just REG32
