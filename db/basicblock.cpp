@@ -1843,16 +1843,19 @@ void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
 	}
 }
 
+// Find the number of cases for this switch statement. Assumes that there is a compare and branch around the indirect
+// branch. Note: fails test/sparc/switchAnd_cc because of the and instruction, and the compare that is outside is not
+// the compare for the upper bound. Note that you CAN have an and and still a test for an upper bound. So this needs
+// tightening.
 int BasicBlock::findNumCases() {
 	std::vector<PBB>::iterator it;
-	for (it = m_InEdges.begin(); it != m_InEdges.end(); it++) {
-		if ((*it)->m_nodeType != TWOWAY)
-			continue;
+	for (it = m_InEdges.begin(); it != m_InEdges.end(); it++) {		// For each in-edge
+		if ((*it)->m_nodeType != TWOWAY)							// look for a two-way BB
+			continue;												// Ignore all others
 		assert((*it)->m_pRtls->size());
 		RTL* lastRtl = (*it)->m_pRtls->back();
 		assert(lastRtl->getNumStmt() >= 1);
-		BranchStatement* lastStmt = (BranchStatement*)lastRtl->elementAt(
-			lastRtl->getNumStmt()-1);
+		BranchStatement* lastStmt = (BranchStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
 		Exp* pCond = lastStmt->getCondExpr();
 		if (pCond->getArity() != 2) continue;
 		Exp* rhs = ((Binary*)pCond)->getSubExp2();
@@ -1889,6 +1892,36 @@ void findConstantValues(Statement* s, std::list<int>& dests) {
 
 // Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
 bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
+#define CHECK_REAL_PHI_LOOPS 0
+#if CHECK_REAL_PHI_LOOPS
+	rtlit rit; StatementList::iterator sit;
+	Statement* s = getFirstStmt(rit, sit);
+	for (s=getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
+		if (!s->isPhi()) continue;
+		Statement* originalPhi = s;
+		StatementSet workSet, seenSet;
+		workSet.insert(s);
+		seenSet.insert(s);
+		do {
+			PhiAssign* pi = (PhiAssign*)*workSet.begin();
+			workSet.remove(pi);
+			PhiAssign::Definitions::iterator it;
+			for (it = pi->begin(); it != pi->end(); it++) {
+				if (it->def == NULL) continue;
+				if (!it->def->isPhi()) continue;
+				if (seenSet.exists(it->def)) {
+					std::cerr << "Real phi loop involving statements " << originalPhi->getNumber() << " and " <<
+						pi->getNumber() << "\n";
+					break;
+				} else {
+					workSet.insert(it->def);
+					seenSet.insert(it->def);
+				}
+			}
+		} while (workSet.size());
+	}
+#endif
+
 	if (m_nodeType == COMPJUMP) {
 		assert(m_pRtls->size());
 		RTL* lastRtl = m_pRtls->back();
@@ -1905,7 +1938,6 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;
-		bool matched = false;
 		for (int i=0; i < n; i++) {
 			if (*e *= *hlForms[i]) {		// *= compare ignores subscripts
 				form = chForms[i];
@@ -1914,7 +1946,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				break;
 			}
 		}
-		if (matched) {
+		if (form) {
 			SWITCH_INFO* swi = new SWITCH_INFO;
 			swi->chForm = form;
 			ADDRESS T;
@@ -2021,6 +2053,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				// Typical pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
 				if (e->isSubscript())
 					e = ((RefExp*)e)->getSubExp1();
+				e = ((Location*)e)->getSubExp1();		// e = m[r27{25} + 8]{-} + 8
 				Exp* rhs = ((Binary*)e)->getSubExp2();	// rhs = 8
 				int K2 = ((Const*)rhs)->getInt();
 				Exp* lhs = ((Binary*)e)->getSubExp1();	// lhs = m[r27{25} + 8]{-}
@@ -2030,7 +2063,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				Exp* e = ((Binary*)lhs)->getSubExp1();
 				Exp* CK1 = ((Binary*)lhs)->getSubExp2();
 				int K1 = ((Const*)CK1)->getInt();
-std::cerr << "From expression " << e << " get e = " << e << ", K1 = " << K1 << ", K2 = " << K2 << "\n";
+std::cerr << "From statement " << lastStmt << " get e = " << e << ", K1 = " << K1 << ", K2 = " << K2 << "\n";
 			}
 		}			 
 			
