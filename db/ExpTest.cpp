@@ -609,13 +609,21 @@ void ExpTest::testSimplifyBinary() {
     delete b;
 
     // Test commute
+    // 77 * r[2]
     b = new Binary(opMults, new Const(77), m_rof2->clone());
     b = b->simplify();
+    // r[2] * 77
     Binary exp(opMults, m_rof2->clone(), new Const(77));
     CPPUNIT_ASSERT(*b == exp);
 
     // x*1
     ((Const*)b->getSubExp2())->setInt(1);
+    b = b->simplify();
+    CPPUNIT_ASSERT(*b == *m_rof2);
+    delete b;
+
+    // 0 | r[2]
+    b = new Binary(opBitOr, new Const(0), m_rof2->clone());
     b = b->simplify();
     CPPUNIT_ASSERT(*b == *m_rof2);
     delete b;

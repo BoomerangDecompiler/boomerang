@@ -1747,7 +1747,8 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Might want to commute to put an integer constant on the RHS
     // Later simplifications can rely on this (ADD other ops as necessary)
     if (opSub1 == opIntConst && 
-        (op == opPlus || op == opMult || op == opMults)) {
+        (op == opPlus || op == opMult   || op == opMults || op == opBitOr) ||
+         op == opOr   || op == opBitAnd || op == opAnd) {
         ((Binary*)res)->commute();
         // Swap opSub1 and opSub2 as well
         OPER t = opSub1;
