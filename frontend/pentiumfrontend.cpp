@@ -1210,6 +1210,10 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         } while (--instCount);
 #endif
 
+    // Last chance check: look for _main (e.g. Borland programs)
+    ADDRESS umain = pBF->GetAddressByName("_main");
+    if (umain != NO_ADDRESS) return umain;
+
     // Not ideal; we must return start
     std::cerr << "main function not found\n";
     return start;
