@@ -147,7 +147,8 @@ public: \
 "+fq"   |
 "-f"    |
 "-fd"   |
-"-fq" {
+"-fq"   |
+"pow" {
         yylval.str = strdup(yytext);
         return SSLParser::FARITH_OP;
       }

@@ -2973,6 +2973,9 @@ OPER SSLParser::strToOper(const char* s) {
         case 'o':
             // or
             return opOr;
+        case 'p':
+            // pow
+            return opPow;
         case 'r':
             // rlc, rrc, rl, rr
             if (s[1] == 'l') {
