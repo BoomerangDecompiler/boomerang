@@ -559,7 +559,6 @@ int Boomerang::commandLine(int argc, const char **argv)
 		progPath = "./";			// Just assume the current directory
 	}
 #endif
-	std::cerr << "Prog path is " << progPath << "\n";	// HACK!
 	// Parse switches on command line
 	if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
 		help();
