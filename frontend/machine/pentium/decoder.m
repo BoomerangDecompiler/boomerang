@@ -1276,6 +1276,26 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         call->setDest(relocd-delta);
         stmts->push_back(call);
         result.rtl = new RTL(pc, stmts);
+std::vector<Exp*> argregs;
+argregs.push_back(Unary::regOf(24/*eax*/));
+argregs.push_back(Unary::regOf(25/*ecx*/));
+argregs.push_back(Unary::regOf(26/*edx*/));
+argregs.push_back(Unary::regOf(27/*ebx*/));
+argregs.push_back(Unary::regOf(28/*esp*/));
+argregs.push_back(Unary::regOf(29/*ebp*/));
+argregs.push_back(Unary::regOf(30/*esi*/));
+argregs.push_back(Unary::regOf(31/*edi*/));
+call->setArguments(argregs);
+std::vector<Exp*> returns;
+returns.push_back(Unary::regOf(24/*eax*/));
+returns.push_back(Unary::regOf(25/*ecx*/));
+returns.push_back(Unary::regOf(26/*edx*/));
+returns.push_back(Unary::regOf(27/*ebx*/));
+returns.push_back(Unary::regOf(28/*esp*/));
+returns.push_back(Unary::regOf(29/*ebp*/));
+returns.push_back(Unary::regOf(30/*esi*/));
+returns.push_back(Unary::regOf(31/*edi*/));
+call->setReturns(returns);
 
     | BTSiod(Eaddr, i8) =>
         stmts = instantiate(pc,  "BTSiod", DIS_I8, DIS_EADDR32);

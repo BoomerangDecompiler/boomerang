@@ -937,6 +937,8 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude) {
             if (def->isPhi())
                 // Don't propagate phi statements!
                 continue;
+            if (def->isCall())
+                continue;
             change = doPropagateTo(memDepth, def, false);
         }
     } while (change && ++changes < 20);
@@ -1985,6 +1987,17 @@ std::vector<Exp*>& CallStatement::getArguments() {
     return arguments;
 }
 
+/*==============================================================================
+ * FUNCTION:      CallStatement::getReturns
+ * OVERVIEW:      Return a copy of the locations that have been determined
+ *                as the return locations for this call.
+ * PARAMETERS:    <none>
+ * RETURNS:       A reference to the list of returns
+ *============================================================================*/
+std::vector<Exp*>& CallStatement::getReturns() {
+    return returnLocs;
+}
+
 Type *CallStatement::getArgumentType(int i) {
     assert(i < (int)arguments.size());
     assert(procDest);
@@ -1999,6 +2012,16 @@ Type *CallStatement::getArgumentType(int i) {
  *============================================================================*/
 void CallStatement::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
+}
+
+/*==============================================================================
+ * FUNCTION:      CallStatement::setReturns
+ * OVERVIEW:      Set the return locs of this call.
+ * PARAMETERS:    returns - the list of locations that this call defines
+ * RETURNS:       <nothing>
+ *============================================================================*/
+void CallStatement::setReturns(std::vector<Exp*>& returns) {
+    this->returnLocs = returns;
 }
 
 /*==============================================================================
@@ -2138,7 +2161,13 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
             os << ", ";
         os << arguments[i];
     }
-    os << ")";
+    os << ")    {";
+    for (unsigned i = 0; i < returnLocs.size(); i++) {
+        if (i != 0)
+            os << ", ";
+        os << returnLocs[i];
+    }
+    os << "}";
 }
 
 /*==============================================================================
@@ -2771,7 +2800,7 @@ void BoolStatement::setCondExpr(Exp* pss) {
 void BoolStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
     os << "BOOL ";
-    getDest()->print(os);
+    pDest->print(os);
     os << " := CC(";
     switch (jtCond)
     {
@@ -2969,6 +2998,13 @@ void BoolStatement::toSSAform(StatementSet& reachin, int memdepth,
   StatementSet& rs) {
     pCond = pCond->updateRefs(reachin, memdepth, rs);
     pDest = pDest->updateRefs(reachin, memdepth, rs);
+}
+
+void BoolStatement::setDest(std::list<Statement*>* stmts) {
+    assert(stmts->size() == 1);
+    Assign* first = (Assign*)stmts->front();
+    assert(first->getKind() == STMT_ASSIGN);
+    pDest = first->getLeft();
 }
 
 //  //  //  //

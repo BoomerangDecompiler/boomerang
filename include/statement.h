@@ -251,6 +251,9 @@ public:
     // true if this statement is a phi assignment
     bool isPhi();
 
+    // true if this statement is a call
+    bool isCall() { return kind == STMT_CALL; }
+
     // true if this is a fpush/fpop
     bool isFpush();
     bool isFpop();
@@ -833,8 +836,10 @@ public:
     bool returnsStruct();
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
+    void setReturns(std::vector<Exp*>& returns); // Set call's return locs
     void setSigArguments();         // Set arguments based on signature
     std::vector<Exp*>& getArguments();            // Return call's arguments
+    std::vector<Exp*>& getReturns();            // Return call's returns
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
     int  getNumArguments() { return arguments.size(); }
@@ -954,7 +959,9 @@ private:
     // to standard ("phase 0")
     PBB returnBlock;
 
+    // For old code
     Exp *returnLoc;
+    std::vector<Exp*> returnLocs;
     StatementList internal;
 
     // Somewhat experimental. Keep a copy of the proc's liveEntry info, and
@@ -1043,6 +1050,7 @@ public:
     void setCondExprND(Exp* e) { pCond = e; }
 
     Exp* getDest() {return pDest;}  // Return the destination of the set
+    void setDest(std::list<Statement*>* stmts);
     int getSize() {return size;}    // Return the size of the assignment
 
     void makeSigned();

@@ -209,9 +209,10 @@ bool isFuncPrologue(ADDRESS hostPC);
 // This one is X86 specific
 #define SETS(name, dest, cond) \
     result.rtl = new RTL(pc, stmts); \
-    SetStatement* scond = new SetStatement(8); \
-    result.rtl->appendStmt(scond); \
-    scond->setCondType(cond); \
+    BoolStatement* bs = new BoolStatement(8); \
+    bs->setDest(stmts); \
+    result.rtl->appendStmt(bs); \
+    bs->setCondType(cond); \
     result.numBytes = 3; \
     SHOW_ASM(name<<" "<<dest)
 
