@@ -163,7 +163,7 @@ Exp* CallRefsFixer::postVisit(RefExp* r) {
 	if (!(unchanged & ~mask)) ret = r->simplify();
 	mask >>= 1;
 	// Note: r will always == ret here, so the below is safe
-	Statement* def = r->getRef();
+	Statement* def = r->getDef();
 	CallStatement *call = dynamic_cast<CallStatement*>(def);
 	if (call) {
 		// Get the left had side of the proven expression (e.g. from r28 = r28 + 4, get r28)
@@ -234,7 +234,7 @@ Exp* CallRefsFixer::postVisit(PhiExp* p) {
 					if (VERBOSE)
 						LOG << "fixcall refs replacing param " << i << " in "
 							<< p << " with " << e << "\n";
-					p->putAt(i, ((RefExp*)e)->getRef());
+					p->putAt(i, ((RefExp*)e)->getDef());
 					mod = true;
 				} else {
 					if (VERBOSE)
@@ -347,25 +347,6 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 	return true;
 }
 
-#if 0
-bool UsedLocsFinder::visit(PhiExp* e, bool& override) {
-	StatementVec& stmtVec = e->getRefs();
-	Exp* subExp1 = e->getSubExp1();
-	StatementVec::iterator uu;
-	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
-		Exp* temp = new RefExp(subExp1, *uu);
-		// Note: the below is not really correct; it is kept for compatibility
-		// with the pre-visitor code.
-		// A phi of m[blah] uses blah, but a phi should never be the only place
-		// it is used, so that should be OK.
-		// Should really be temp->accept(this);
-		used->insert(temp);
-	}
-	override = true;
-	return true;
-}
-#endif
-
 bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	Exp* rhs = s->getRight();
@@ -395,20 +376,12 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
 		subExp2->accept(ev);
 	}
-	StatementVec& stmtVec = s->getRefs();
-	StatementVec::iterator uu;
-	for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+	PhiAssign::iterator uu;
+	for (uu = s->begin(); uu != s->end(); uu++) {
 		// Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
-		// Use the actual left from Statement **uu
-		Exp* temp = NULL;
-		if (*uu == NULL) {
-			// Special case: a null PhiAssign reference means the lhs at "statement 0"
-			// MVE: check if it's possible that there is a null AND the LHS has been renamed
-			temp = new RefExp(lhs, NULL);
-		} else if ((*uu)->getLeft())
-			temp = new RefExp((*uu)->getLeft(), *uu);
-		if (temp)
-			temp->accept(ev);
+		// Use the actual expression in the PhiAssign
+		RefExp* temp = new RefExp(uu->e, uu->def);
+		temp->accept(ev);
 	}
 
 	override = true;				// Don't do the usual accept logic
@@ -665,19 +638,17 @@ bool ConstFinder::visit(Location* e, bool& override) {
 // Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a NULL definition
 // for r28.
 Exp* ImplicitConverter::postVisit(RefExp* e) {
-	if (e->getRef() == NULL)
+	if (e->getDef() == NULL)
 		e->setDef(cfg->findImplicitAssign(e->getSubExp1()));
 	return e;
 }
 
 void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
-	int n = s->getNumRefs();
-	StatementVec& refs = s->getRefs();
 	// The LHS could be a m[x] where x has a null subscript; must do first
 	s->setLeft(s->getLeft()->accept(mod));
-	for (int i=0; i < n; i++) {
-		if (refs[i] == NULL)
-			refs.putAt(i, cfg->findImplicitAssign(s->getLeft()));
-	}
+	PhiAssign::iterator uu;
+	for (uu = s->begin(); uu != s->end(); uu++)
+		if (uu->def == NULL)
+			uu->def = cfg->findImplicitAssign(uu->e);
 	recur = false;		// Already done LHS
 }
