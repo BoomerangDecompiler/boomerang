@@ -56,6 +56,7 @@ public:
     bool noLocals;
     bool noRemoveLabels;
     bool noDataflow;
+    bool noDecompile;
     bool noDecompileUp;
     bool traceDecoder;
     const char *dotFile;

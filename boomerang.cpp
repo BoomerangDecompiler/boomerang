@@ -11,7 +11,7 @@ Boomerang *Boomerang::boomerang = NULL;
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
-    noDataflow(false), noDecompileUp(false),
+    noDataflow(false), noDecompile(false), noDecompileUp(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1), noPromote(false)
 {
 }
@@ -68,7 +68,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
         return 1;
     }
     std::list<ADDRESS> entrypoints;
-    bool noDecompilation = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -107,7 +106,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         if (argv[i][3] == 'u')
                             noDecompileUp = true;
                         else
-                            noDecompilation = true;
+                            noDecompile = true;
                         break;
                     case 'P':
                         noPromote = true;
@@ -155,10 +154,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
     }
     std::cerr << "analysing..." << std::endl;
     prog->analyse();
-    if (!noDecompilation) {
-        std::cerr << "decompiling..." << std::endl;
-        prog->decompile();
-    }
+    std::cerr << "decompiling..." << std::endl;
+    prog->decompile();
     if (dotFile) {
         std::cerr << "generating dot file..." << std::endl;
         prog->generateDotFile();
