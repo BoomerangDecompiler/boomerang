@@ -84,6 +84,7 @@ void Boomerang::helpcmd() {
 }
 
 void Boomerang::help() {
+    std::cerr << "--: no effect (used for testing)\n";
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-dc: debug - debug switch (case) analysis\n";
     std::cerr << "-dd: debug - debug decoder to stdout\n";
@@ -568,6 +569,7 @@ int Boomerang::commandLine(int argc, const char **argv)
         if (argv[i][0] != '-')
             usage();
         switch (argv[i][1]) {
+            case '-': break;        // No effect: ignored
             case 'h': help(); break;
             case 'v': vFlag = true; break;
             case 'x': dumpXML = true; break;
