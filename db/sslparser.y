@@ -27,6 +27,7 @@
  * 16 Jul 02 - Mike: Fixed code in expandTables processing opOpTables: was
  *				doing replacements on results of searchAll
  * 09 Dec 02 - Mike: Added succ() syntax (for SPARC LDD and STD)
+ * 29 Sep 03 - Mike: Parse %DF correctly
  */
 
 %name SSLParser     // the parser class name will be SSLParser
@@ -1384,11 +1385,12 @@ OPER SSLParser::strToOper(const char* s) {
 }
 
 OPER strToTerm(char* s) {
-    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF
+    // s could be %pc, %afp, %agp, %CF, %ZF, %OF, %NF, %DF
     if (s[2] == 'F') {
         if (s[1] <= 'N') {
             if (s[1] == 'C') return opCF;
-            return opNF;
+            if (s[1] == 'N') return opNF;
+            return opDF;
         } else {
             if (s[1] == 'O') return opOF;
             return opZF;

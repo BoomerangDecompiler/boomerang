@@ -18,7 +18,7 @@
 
 /* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "sslparser.h"
-#line 35 "sslparser.y"
+#line 36 "sslparser.y"
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -38,7 +38,7 @@
 
 class SSLScanner;
 
-#line 60 "sslparser.y"
+#line 61 "sslparser.y"
 typedef union {
     Exp*            exp;
     char*           str;
