@@ -207,14 +207,14 @@ LOGCDOT[IDX]	rd, ra, rb				SETFLAGS0(rd);
 
 #Memory access
 
+LWZ		rd, eaddr						*32* rd := m[eaddr];
+
+LWZX	rd, eaddr						*32* rd := m[eaddr];
+
 STWU	rs, d, ra						*32* m[ra + d] := rs
 										*32* ra := ra + d;
 
 STW		rs, d, ra						*32* m[ra + d] := rs;
-
-LWZ		rd, eaddr						*32* rd := m[eaddr];
-
-LWZX	rd, eaddr						*32* rd := m[eaddr];
 
 # Multi word load and store
 
