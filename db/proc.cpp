@@ -1626,8 +1626,6 @@ void UserProc::trimParameters(int depth) {
 					p = Location::param(signature->getImplicitParamName( i - nparams), this);
 					pe = signature->getImplicitParamExp(i - nparams);
 				}
-if (!referenced[i] && excluded.find(s) == excluded.end())
- LOG << " ## Searching " << s << " for " << p << " ( " << params[i] << " )\n";       // HACK!
 				if (!referenced[i] && excluded.find(s) == excluded.end() && 
 						// Search for the named parameter (e.g. param1), and just
 						// in case, also for the expression (e.g. r8{0})
@@ -1958,7 +1956,8 @@ void UserProc::replaceExpressionsWithGlobals() {
 					int stride = ((Const*)memof->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
 					// u is K2
 					ADDRESS u = ((Const*)memof->getSubExp1()->getSubExp2())->getInt();
-					LOG << "detected array ref with stride " << stride << "\n";
+					if (VERBOSE)
+						LOG << "detected array ref with stride " << stride << "\n";
 					prog->globalUsed(u);
 					const char *gloName = prog->getGlobalName(u);
 					if (gloName) {
@@ -1975,18 +1974,19 @@ void UserProc::replaceExpressionsWithGlobals() {
 								prog->setGlobalType((char*)gloName, ty);
 							}
 
-							if (ty)
+							if (ty && VERBOSE)
 								LOG << "got type: " << ty->getCtype() << "\n";
 
 							if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() != stride*8) {
-								LOG << "forcing array base type size to stride\n";
+								if (VERBOSE)
+									LOG << "forcing array base type size to stride\n";
 								ty->asArray()->setLength(ty->asArray()->getLength() * ty->asArray()->getBaseType()->getSize() /
 									(stride * 8));
 								ty->asArray()->setBaseType(new IntegerType(stride*8));
 								prog->setGlobalType((char*)gloName, ty);
 							}
 
-							if (ty)
+							if (ty && VERBOSE)
 								LOG << "got type: " << ty->getCtype() << "\n";
 
 							if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() == stride*8) {
