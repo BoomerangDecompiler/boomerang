@@ -192,13 +192,13 @@ void initSwitch();
  * number of entries in the table (not the number of cases,
  * or max-min).
  */
-bool isSwitch(PBB pBB, Exp* pDest, UserProc* pProc);
+bool isSwitch(PBB pBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF);
 
 /*
- * Make use of the switch info. Should be incorporated into isSwitch.
+ * Make use of the switch info. Should arguably be incorporated into isSwitch.
  */
 void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& targetQueue,
-    UserProc* proc);
+    BinaryFile* pBF);
 
 
 /*==============================================================================
@@ -206,18 +206,13 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& targetQueue,
  * of those that actually drive the decoding and analysis of the procedures of
  * the program being translated.
  * These functions are implemented in the files front<XXX> where XXX is a
- * plaform name such as sparc or 386.
+ * platform name such as sparc or pentium.
  *============================================================================*/
 
 /*
  * Intialise the procedure decoder and analyser.
  */
 void initFront();
-
-/*
- * Needed by the switch logic. Here because it's source machine specific.
- */
-unsigned fetch4(unsigned char* ptr);
 
 /*
  * Decode one RTL
