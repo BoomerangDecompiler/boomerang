@@ -21,6 +21,9 @@
  * 25 Jul 03 - Mike: Changed dataflow.h to statement.h
  * 15 Jul 04 - Mike: New Assignment hierarchy
  * 11 Aug 04 - Mike: BoolStatement -> BoolAssign
+ * 17 Sep 04 - Mike: PhiExp in ordinary assignment replaced by PhiAssign statement
+ * 27 Oct 04 - Mike: PhiAssign has vector of PhiInfo now; needed because a statement pointer alone does not uniquely
+ *						define what is defined. It is now possible for all parameters of a phi to have different exps
  */
 
 #ifndef _STATEMENT_H_
@@ -66,7 +69,9 @@ class HLLCode;
 class Assign;
 class RTL;
 class XMLProgParser;
-typedef std::map<Exp*, int, lessExpStar> igraph;
+
+// The map of interferences. It maps locations such as argc{55} to a local, e.g. local17
+typedef std::map<Exp*, Exp*, lessExpStar> igraph;
 
 /*==============================================================================
  * Kinds of Statements, or high-level register transfer lists.
@@ -206,6 +211,8 @@ virtual void		getDefinitions(LocationSet &def) {}
 		// returns an expression that would be used to reference the value
 		// defined by this statement (if this statement is propogatable)
 virtual Exp*		getLeft() = 0;
+		// set the left for forExp to newExp
+virtual	void		setLeftFor(Exp* forExp, Exp* newExp) {assert(0);}
 
 	// returns an expression that would be used to replace this statement in a use
 virtual Exp*		getRight() = 0;
@@ -371,8 +378,9 @@ virtual bool	usesExp(Exp *e);	   // PhiAssign and ImplicitAssign don't override
 virtual bool	isDefinition() { return true; }
 virtual void	getDefinitions(LocationSet &defs);
 		
-	// get how to access this value
-virtual Exp*	getLeft() { return lhs; }
+	// get how to access this lvalue
+virtual Exp*		getLeft() { return lhs; }
+virtual	void		setLeftFor(Exp* forExp, Exp* newExp) {lhs = newExp; }
 
 		// set the lhs to something new
 		void	setLeft(Exp* e)	 { lhs = e; }
@@ -509,21 +517,31 @@ virtual bool	doReplaceRef(Exp* from, Exp* to);
  * and the reference is to a CallStatement returning multiple locations.
  * Besides, the lhs gives it useful common functionality with other Assignments
  *============================================================================*/
+// The below could almost be a RefExp. But we can't #include exp.h, we don't need another copy of the Memo class,
+// and it's more convenient to have these members public
+struct PhiInfo {
+		Statement*	def;		// The defining statement
+		Exp*		e;			// The expression for the thing being defined (never subscripted)
+};
 class PhiAssign : public Assignment {
-	StatementVec	stmtVec;		// A vector of pointers to statements
 public:
-	// Constructor, subexpression
+		typedef std::vector<PhiInfo> Definitions;
+		typedef Definitions::iterator iterator;
+private:
+	Definitions	defVec;		// A vector of information about definitions
+public:
+		// Constructor, subexpression
 				PhiAssign(Exp* lhs)
 				  : Assignment(lhs) {kind = STMT_PHIASSIGN;}
-	// Constructor, type and subexpression
+		// Constructor, type and subexpression
 				PhiAssign(Type* ty, Exp* lhs)
 				  : Assignment(ty, lhs) {kind = STMT_PHIASSIGN;}
-	// Copy constructor (not currently used or implemented)
+		// Copy constructor (not currently used or implemented)
 				PhiAssign(Assign& o);
-	// Destructor
+		// Destructor
 virtual			~PhiAssign() {}
 
-	// Clone
+		// Clone
 virtual Statement* clone();
 
 	// get how to replace this statement in a use
@@ -562,24 +580,25 @@ virtual void	genConstraints(LocationSet& cons);
 //	Phi specific functions
 //
 
-	// Get or put the statement at index idx
-	Statement*	getAt(int idx) {return stmtVec[idx];}
-	void		putAt(int idx, Statement* d) {stmtVec.putAt(idx, d);}
-	void		simplifyRefs();
-virtual int		getNumRefs() {return stmtVec.size();}
-	StatementVec& getRefs() {return stmtVec;}
-	// A hack. Check MVE
-	bool		hasGlobalFuncParam();
+		// Get or put the statement at index idx
+		Statement*	getStmtAt(int idx) {return defVec[idx].def;}
+		PhiInfo&	getAt(int idx) {return defVec[idx];}
+		void		putAt(int idx, Statement* d, Exp* e);
+		void		simplifyRefs();
+virtual	int			getNumDefs() {return defVec.size();}
+		Definitions& getDefs() {return defVec;}
+		// A hack. Check MVE
+		bool		hasGlobalFuncParam();
 
-	StatementVec::iterator begin() {return stmtVec.begin();}
-	StatementVec::iterator end()   {return stmtVec.end();}
+		Definitions::iterator begin() {return defVec.begin();}
+		Definitions::iterator end()   {return defVec.end();}
 
-	// Convert this phi assignment to an ordinary assignment
-	void		convertToAssign(Exp* rhs);
+		// Convert this phi assignment to an ordinary assignment
+		void		convertToAssign(Exp* rhs);
 
 protected:
-	friend class XMLProgParser;
-};	// class PhiAssign
+		friend class XMLProgParser;
+};		// class PhiAssign
 
 // An implicit assignment has only a left hand side. It is a placeholder for
 // storing the types of parameters and globals
@@ -679,9 +698,9 @@ virtual bool	search(Exp *search, Exp *&result);
 virtual bool	searchAll(Exp* search, std::list<Exp*>& result);
 virtual bool	searchAndReplace(Exp *search, Exp *replace);
 virtual bool	doReplaceRef(Exp* from, Exp* to);
-	// from SSA form
+		// from SSA form
 virtual void	fromSSAform(igraph& ig);
-	// a hack for the SETS macro
+		// a hack for the SETS macro
 		void	setLeftFromList(std::list<Statement*>* stmts);
 
 virtual void	dfaTypeAnalysis(bool& ch);
@@ -1058,6 +1077,7 @@ virtual bool	isDefinition();
 virtual void	getDefinitions(LocationSet &defs);
 
 virtual Exp*	getLeft() {return getReturnExp(0);}
+virtual void	setLeftFor(Exp* forExp, Exp* newExp);
 		// get how to replace this statement in a use
 virtual Exp*	getRight() { return NULL; }
 

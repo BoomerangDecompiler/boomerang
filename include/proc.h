@@ -321,6 +321,8 @@ class UserProc : public Proc {
 	 */
 	std::map<std::string, Type*> locals;
 
+	int		nextLocal;		// Number of the next local. Can't use locals.size() because some get deleted
+
 	/*
 	 * A map between machine dependent locations and their corresponding
 	 * symbolic, machine independent representations.
@@ -616,11 +618,6 @@ public:
 	virtual void renameParam(const char *oldName, const char *newName);
 
 	/*
-	 * Add new locals, local<b> to local<n-1>
-	 */
-	void addLocals(int b, int n);
-
-	/*
 	 * Print the locals declaration in C style.
 	 */
 	void printLocalsAsC(std::ostream& os);
@@ -708,7 +705,8 @@ public:
 	ReturnStatement* getTheReturnStatement() {return theReturnStatement;}
 protected:
 	friend class XMLProgParser;
-	UserProc() : Proc(), cfg(NULL), decoded(false), analysed(false), decompileSeen(false), decompiled(false), isRecursive(false) { }
+	UserProc() : Proc(), cfg(NULL), decoded(false), analysed(false), nextLocal(0), decompileSeen(false),
+		decompiled(false), isRecursive(false) { }
 	void setCFG(Cfg *c) { cfg = c; }
 	void addDef(Exp *e) { definesSet.insert(e); }
 };		// class UserProc

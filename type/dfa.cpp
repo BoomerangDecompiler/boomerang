@@ -491,15 +491,16 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 // Ex2 := Ex1 meet Ex0
 // ...
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
-	unsigned i, n = stmtVec.size();
-	Type* meetOfArgs = stmtVec[0]->getTypeFor(lhs);
-	for (i=1; i < n; i++)
-		if (stmtVec[i] && stmtVec[i]->getTypeFor(lhs))
-			meetOfArgs = meetOfArgs->meetWith(stmtVec[i]->getTypeFor(lhs), ch);
-	type = type->meetWith(meetOfArgs, ch);
-	for (i=0; i < n; i++) {
-		if (stmtVec[i]) stmtVec[i]->meetWithFor(type, lhs, ch);
+	iterator it;
+	Type* meetOfArgs = defVec[0].def->getTypeFor(lhs);
+	for (it = ++defVec.begin(); it != defVec.end(); it++) {
+		assert(it->def);
+		Type* typeOfDef = it->def->getTypeFor(it->e);
+		meetOfArgs = meetOfArgs->meetWith(typeOfDef, ch);
 	}
+	type = type->meetWith(meetOfArgs, ch);
+	for (it = defVec.begin(); it != defVec.end(); it++)
+		it->def->meetWithFor(type, it->e, ch);
 	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
 }
 
@@ -582,7 +583,7 @@ Type* sigmaAddend(Type* tc, Type* to) {
 // alpha*	bottom	alpha*	alpha*
 // int		alpha*	int		pi
 // pi		alpha*	int		pi
-Type* deltaSubtrahend(Type* tc, Type* tb) {
+Type* deltaMinuend(Type* tc, Type* tb) {
 	bool ch;
 	if (tc->isPointer()) {
 		if (tb->isPointer())
@@ -604,7 +605,7 @@ Type* deltaSubtrahend(Type* tc, Type* tb) {
 // alpha*	int		alpha*	pi
 // int		bottom	int		int
 // pi		alpha*	int		pi
-Type* deltaSubtractor(Type* tc, Type* ta) {
+Type* deltaSubtrahend(Type* tc, Type* ta) {
 	bool ch;
 	if (tc->isPointer()) {
 		if (ta->isPointer())
@@ -770,9 +771,9 @@ void Binary::descendType(Type* parentType, bool& ch) {
 			subExp2->descendType(tb, ch);
 			break;
 		case opMinus:
-			ta = ta->meetWith(deltaSubtrahend(parentType, tb), ch);
+			ta = ta->meetWith(deltaMinuend(parentType, tb), ch);
 			subExp1->descendType(ta, ch);
-			tb = tb->meetWith(deltaSubtractor(parentType, ta), ch);
+			tb = tb->meetWith(deltaSubtrahend(parentType, ta), ch);
 			subExp2->descendType(tb, ch);
 			break;
 		case opGtrUns:	case opLessUns:
