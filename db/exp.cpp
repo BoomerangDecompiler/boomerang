@@ -160,7 +160,7 @@ Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp),
                                                         proc(proc), ty(NULL)
 {
     assert(op == opRegOf || op == opMemOf || op == opLocal ||
-           op == opGlobal || op == opParam);
+           op == opGlobal || op == opParam || op == opTemp);
     if (proc == NULL) {
         // eep.. this almost always causes problems
         Exp *e = exp;
@@ -170,6 +170,7 @@ Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp),
                 switch(e->getOper()) {
                     case opRegOf:
                     case opMemOf:
+                    case opTemp:
                     case opLocal:
                     case opGlobal:
                     case opParam:
@@ -4095,10 +4096,43 @@ bool SetConscripts::visit(Location* l) {
     return true;       // Continue recursion
 }
 
-
 void Exp::setConscripts(int n) {
     SetConscripts sc(n);
     accept(&sc);
+}
+
+//
+// Strip References class
+//
+Exp* Exp::stripRefs() {
+    StripRefs sr;
+    return accept(&sr);
+}
+
+Exp* Unary::accept(ExpModifier* v) {
+    v->visit(this);
+    subExp1 = subExp1->accept(v);
+    return this;
+}
+Exp* Binary::accept(ExpModifier* v) {
+    v->visit(this);
+    subExp1 = subExp1->accept(v);
+    v->visit(this);
+    subExp2 = subExp2->accept(v);
+    return this;
+}
+Exp* Ternary::accept(ExpModifier* v) {
+    v->visit(this);
+    subExp1 = subExp1->accept(v);
+    v->visit(this);
+    subExp2 = subExp2->accept(v);
+    v->visit(this);
+    subExp3 = subExp3->accept(v);
+    return this;
+}
+
+Exp* RefExp::accept(ExpModifier* re) {
+    return subExp1;     // The actual stripping!
 }
 
 void child(Exp* e, int ind) {

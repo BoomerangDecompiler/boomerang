@@ -54,6 +54,7 @@ class StatementSet;
 class Exp;
 class TypeVal;
 class ExpVisitor;
+class ExpModifier;
 typedef BasicBlock* PBB;
 typedef std::map<Exp*, int, lessExpStar> igraph;
 
@@ -323,9 +324,13 @@ virtual Exp* simplifyConstraint() {return this;}
     // Note: best to have accept() as pure virtual, so you don't forget to
     // implement it for new functions
     virtual bool accept(ExpVisitor* v) = 0;
+    // Now I break the above rule; it is convenient to inherit implementation,
+    // especially from Unary
+    virtual Exp* accept(ExpModifier* v) {return this;}
     void         fixLocationProc(UserProc* p);
     UserProc*    findProc();
     void         setConscripts(int n);  // Set the constant subscripts
+    Exp*         stripRefs();           // Strip all references
 
 };  // Class Exp
 
@@ -432,7 +437,7 @@ virtual Exp*    expSubscriptVar(Exp* e, Statement* def);
 virtual bool    isTerminal() { return true; }
 
     // Visitation
-    bool        accept(ExpVisitor* v);
+    virtual bool accept(ExpVisitor* v);
 };  // class Terminal
 
 /*==============================================================================
@@ -508,6 +513,7 @@ virtual Exp* simplifyConstraint();
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class Unary
 
@@ -586,6 +592,7 @@ virtual Exp* simplifyConstraint();
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
+    virtual Exp* accept(ExpModifier* v);
 
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
@@ -660,6 +667,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class Ternary
 
@@ -765,6 +773,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // Class RefExp
 
@@ -824,7 +833,7 @@ virtual Exp* polySimplify(bool& bMod);
     // Visitation
     virtual bool accept(ExpVisitor* v);
 
-};
+};  // class PhiExp
 
 /*==============================================================================
 class TypeVal. Just a Terminal with a Type. Used for type values in constraints
@@ -851,7 +860,7 @@ virtual void    printx(int ind);
     // Visitation
     virtual bool accept(ExpVisitor* v);
 
-};
+};  // class TypeVal
 
 class Location : public Unary {
 protected:
@@ -869,6 +878,7 @@ public:
     static Location* regOf(Exp *e) {return new Location(opRegOf, e, NULL);}
     static Location* memOf(Exp *e, UserProc* p = NULL) {
         return new Location(opMemOf, e, p);}
+    static Location* tempOf(Exp* e) {return new Location(opTemp, e, NULL);}
     static Location* global(const char *nam, UserProc *p) {
         return new Location(opGlobal, new Const((char*)nam), p);}
     static Location* local(const char *nam, UserProc *p) {
@@ -955,9 +965,43 @@ public:
     int     getLast() {return curConscript;}
     virtual bool visit(Const* e);
     virtual bool visit(Location* e);
-    // All other virtual functions inherit from ExpVisitor: just recurse
+    // All other virtual functions inherit from ExpVisitor: return true
 };
 
-// This class visits subexpressions, and performs alpha substitution
+/*
+ * The ExpModifier class is used to iterate over all subexpressions in
+ * an expression. It contains methods for each kind of subexpression found
+ * in an and can be used to eliminate switch statements.
+ * It is a little more expensive to use than ExpVisitor, but can make changes
+ * to the expression
+ */
+class ExpModifier {
+
+public:
+    ExpModifier() { }
+    virtual ~ExpModifier() { }
+
+    // visitor functions
+    // Most times these won't be needed
+    // Note: you only need to override the ones that "do something"
+    virtual void visit(Unary *e)    {}
+    virtual void visit(Binary *e)   {}
+    virtual void visit(Ternary *e)  {}
+    virtual void visit(TypedExp *e) {}
+    virtual void visit(FlagDef *e)  {}
+    virtual void visit(RefExp *e)   {}
+    virtual void visit(PhiExp *e)   {}
+    virtual void visit(Location *e) {}
+    virtual void visit(Const *e)    {}
+    virtual void visit(Terminal *e) {}
+    virtual void visit(TypeVal *e)  {}
+};
+
+// This class visits subexpressions, strips references
+class StripRefs : public ExpModifier {
+public:
+            StripRefs() {}
+    // All virtual functions inherit and do nothing
+};
 
 #endif // __EXP_H__
