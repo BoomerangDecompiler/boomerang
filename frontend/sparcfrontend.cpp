@@ -599,8 +599,7 @@ bool SparcFrontEnd::case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
     // Assume that if we find a call in the delay slot, it's actually a pattern
     // such as move/call/move
 // MVE: Check this! Only needed for HP PA/RISC
-    bool delayPattern = delay_inst.rtl->getList().back()->getKind() ==
-      STMT_CALL;
+    bool delayPattern = delay_inst.rtl->isCall();
 
     if (delayPattern) {
         // Just emit the branch, and decode the instruction immediately
