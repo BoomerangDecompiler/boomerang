@@ -174,6 +174,7 @@ c/ansi-c-scanner.o: c/ansi-c-scanner.cpp c/ansi-c-scanner.h
 db/insnameelem.o: db/insnameelem.h
 db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/prog.h include/type.h
+db/dataflow.o: db/exp.o db/cfg.o include/dataflow.h db/basicblock.o db/proc.o
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
 db/ExpTest.o: db/ExpTest.h include/exp.h
 db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h
