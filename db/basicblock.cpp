@@ -761,7 +761,7 @@ bool BasicBlock::deserialize(std::istream &inf) {
 //
 // Get First/Next Statement in a BB
 //
-Statement* BasicBlock::getFirstStmt(rtlit& rit, stmtlistIt& sit) {
+Statement* BasicBlock::getFirstStmt(rtlit& rit, StmtListIter& sit) {
     if (m_pRtls == NULL) return NULL;
     rit = m_pRtls->begin();
     while (rit != m_pRtls->end()) {
@@ -774,7 +774,7 @@ Statement* BasicBlock::getFirstStmt(rtlit& rit, stmtlistIt& sit) {
     return NULL;
 }
 
-Statement* BasicBlock::getNextStmt(rtlit& rit, stmtlistIt& sit) {
+Statement* BasicBlock::getNextStmt(rtlit& rit, StmtListIter& sit) {
     do {
         if (++sit != (*rit)->getList().end())
             return *sit;
@@ -1486,7 +1486,7 @@ bool BasicBlock::inLoop(PBB header, PBB latch) {
 // Used in dotty file generation
 char* BasicBlock::getStmtNumber() {
     static char ret[12];
-    rtlit rit; stmtlistIt sit;
+    rtlit rit; StmtListIter sit;
     Statement* first = getFirstStmt(rit, sit);
     if (first)
         sprintf(ret, "%d", first->getNumber());

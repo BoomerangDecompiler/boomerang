@@ -2236,7 +2236,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 
     // We need to create A_orig for the current memory depth
     for (int n=0; n < numBB; n++) {
-        BasicBlock::rtlit rit; stmtlistIt sit;
+        BasicBlock::rtlit rit; StmtListIter sit;
         PBB bb = BBs[n];
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
                         s = bb->getNextStmt(rit, sit)) {
@@ -2303,7 +2303,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     if (clearStack) Stack.clear();
 
     // For each statement S in block n
-    BasicBlock::rtlit rit; stmtlistIt sit;
+    BasicBlock::rtlit rit; StmtListIter sit;
     PBB bb = BBs[n];
     for (Statement* S = bb->getFirstStmt(rit, sit); S;
                     S = bb->getNextStmt(rit, sit)) {

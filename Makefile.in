@@ -93,7 +93,7 @@ INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic -Itype
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/statement.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
-  db/sslinst.o db/insnameelem.o db/signature.o \
+  db/sslinst.o db/insnameelem.o db/signature.o db/managed.o \
   c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
@@ -194,6 +194,7 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/proc.h include/prog.h include/type.h \
     include/statement.h
 db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h
+db/managed.o: include/managed.h include/statement.h include/exp.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
 db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
 db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h \
@@ -238,3 +239,5 @@ type/constraint.o: include/constraint.h include/exp.h include/type.h
 type/type.o: include/type.h
 type/TypeTest.o: type/TypeTest.h include/util.h include/type.h \
     include/constraint.h
+
+include/statement.h: include/managed.h

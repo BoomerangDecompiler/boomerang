@@ -421,8 +421,8 @@ public:
      */
     typedef std::list<RTL*>::iterator rtlit;
     typedef std::list<Exp*>::iterator elit;
-    Statement* getFirstStmt(rtlit& rit, stmtlistIt& sit);
-    Statement*  getNextStmt(rtlit& rit, stmtlistIt& sit);
+    Statement* getFirstStmt(rtlit& rit, StmtListIter& sit);
+    Statement*  getNextStmt(rtlit& rit, StmtListIter& sit);
 
     /**
      * Get the statement number for the first BB as a character array.
