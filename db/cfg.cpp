@@ -1158,7 +1158,8 @@ PBB Cfg::findRetNode()
     PBB retNode = NULL;
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); 
      it++) {
-        if ((*it)->getOutEdges().size() == 0 && (*it)->getType() == RET)
+        if (/*(*it)->getOutEdges().size() == 0 && */
+            (*it)->getType() == RET)
             retNode = *it;
     }
     return retNode;
