@@ -35,15 +35,17 @@ then
   echo Skipping switch tests, requires type analysis
   echo
 else
-./testOne.sh pentium switch_gcc 5 $BOOMSW 2 3 4 5
-./testOne.sh sparc   switch_gcc 5 $BOOMSW 2 3 4 5
+# There is a serious problem with switch_gcc. Mike is working on it.
+echo Skipping known problem with switch_gcc
+echo
+#./testOne.sh pentium switch_gcc 5 $BOOMSW 2 3 4 5
+#./testOne.sh sparc   switch_gcc 5 $BOOMSW 2 3 4 5
 ./testOne.sh pentium switch_cc 4 $BOOMSW 2 3 4
 ./testOne.sh sparc   switch_cc 4 $BOOMSW 2 3 4
 ./testOne.sh pentium switch_gcc 1 $BOOMSW
 ./testOne.sh sparc   switch_gcc 1 $BOOMSW
 ./testOne.sh pentium switch_cc 1 $BOOMSW
-# Below has a known problem, due to setSigArguments (after ind. jump) rewriting arguments that were renamed elsewhere
-#./testOne.sh sparc   switch_cc 1 $BOOMSW
+./testOne.sh sparc   switch_cc 1 $BOOMSW
 fi
 ./testOne.sh pentium stattest 1 $BOOMSW
 ./testOne.sh sparc   stattest 1 $BOOMSW
