@@ -821,6 +821,8 @@ void UserProc::generateCode(HLLCode *hll) {
         while (nameRegisters())
             replaceExpressionsWithSymbols();
     }
+    removeUnusedLocals();
+
     if (VERBOSE || Boomerang::get()->printRtl)
         print(std::cerr);
 
@@ -1929,6 +1931,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
     }
 }
 
+// Note: call the below after translating from SSA form
 void UserProc::removeUnusedLocals() {
     std::set<std::string> usedLocals;
     StatementList stmts;
@@ -1940,8 +1943,8 @@ void UserProc::removeUnusedLocals() {
         s->addUsedLocs(refs);
         LocSetIter rr;
         for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
-            if (r->isSubscript())
-                r = ((RefExp*)r)->getSubExp1();
+            //if (r->isSubscript())
+                //r = ((RefExp*)r)->getSubExp1();
             if (r->isLocal()) {
                 Const* c = (Const*)((Unary*)r)->getSubExp1();
                 std::string name(c->getStr());
@@ -1957,9 +1960,9 @@ void UserProc::removeUnusedLocals() {
         std::string& name = const_cast<std::string&>(it->first);
         // std::cerr << "Considering local " << name << "\n";
         if (usedLocals.find(name) == usedLocals.end()) {
-            locals.erase(it);
             if (VERBOSE)
                 std::cerr << "Removed unused local " << name << "\n";
+            locals.erase(it);
         }
 #if 0   // Ugh - still have to rename the variables.
         else {
