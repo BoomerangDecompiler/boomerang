@@ -2200,7 +2200,6 @@ Exp* PentiumDecoder::dis_Mem(ADDRESS pc)
 			// m[ r[ base] + d ]
 			// Note: d should be sign extended; we do it here manually
 			signed char ds8 = d;
-			signed int ds32 = ds8;
 			expr = Location::memOf(new Binary(opPlus,
 					dis_Reg(24+base),
 					new Const(ds8)));
