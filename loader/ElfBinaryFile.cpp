@@ -286,6 +286,28 @@ char* ElfBinaryFile::GetStrPtr(int idx, int offset)
 	return pSym + offset;
 }
 
+// Search the .rel[a].plt section for an entry with symbol table index i.
+// If found, return the native address of the associated PLT entry.
+// A linear search will be needed. However, starting at offset i and searching backwards with wraparound should
+// typically minimise the number of entries to search
+ADDRESS findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt) {
+	int curr = i;
+	do {
+		// Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
+		int* pEntry = (int*)(addrRelPlt + (curr*sizeRelPlt));
+		int sym = pEntry[1] >> 8;			// The symbol index is in the top 24 bits (Elf32 only)
+		if (sym == i) {
+			// Found! Now we want the native address of the associated PLT entry.
+			// For now, assume a size of 0x10 for each PLT entry, and assume that each entry in the .rel.plt section
+			// corresponds exactly to an entry in the .plt (except there is one dummy .plt entry)
+			return addrPlt + 0x10 * (curr+1);
+		}
+		if (--curr < 0)
+			curr = numRelPlt - 1;
+	} while (curr != i);
+	return 0;							// Exit if looped all the way back to the staring point
+}
+
 // Add appropriate symbols to the symbol table.  sSymSect is the name of the symbol section (e.g. ".dynsym"),
 // and sStrSect is the name of the associated string section (e.g. ".dynstr")
 void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect) {
@@ -296,11 +318,23 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect) {
     m_pSym = (Elf32_Sym*) pSect->uHostAddr;			// Pointer to symbols
     int idx = GetSectionIndexByName(sStrSect);		// Get index to string table
 
-    PSectionInfo siPLT = GetSectionInfoByName(".plt");
-	ADDRESS addrPLT = siPLT ? siPLT->uNativeAddr : 0;
+    PSectionInfo siPlt = GetSectionInfoByName(".plt");
+	ADDRESS addrPlt = siPlt ? siPlt->uNativeAddr : 0;
+	PSectionInfo siRelPlt = GetSectionInfoByName(".rel.plt");
+	int sizeRelPlt = 8;			// Size of each entry in the .rel.plt table
+	if (siRelPlt == NULL) {
+		siRelPlt = GetSectionInfoByName(".rela.plt");
+		sizeRelPlt = 12;		// Size of each entry in the .rela.plt table is 12 bytes
+	}
+	ADDRESS addrRelPlt = 0;
+	int numRelPlt = 0;
+	if (siRelPlt) {
+		addrRelPlt = siRelPlt->uHostAddr;
+		numRelPlt = sizeRelPlt ? siRelPlt->uSectionSize / sizeRelPlt : 0;
+	}
     static bool warned = false;
     // Number of entries in the PLT:
-	int max_i_for_hack = siPLT ? (int)siPLT->uSectionSize / 0x10 : 0;
+	int max_i_for_hack = siPlt ? (int)siPlt->uSectionSize / 0x10 : 0;
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++) {
         ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
@@ -314,13 +348,16 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect) {
         std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
         // Ensure no overwriting (except functions)
         if (aa == m_SymA.end() || ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            if (siPLT && val == 0 && i < max_i_for_hack) {
-                // Special hack for gcc circa 3.3.3: the value in the dynamic symbol table is zero!
-				// Assume that index i in the dynamic symbol table corresponds to index i in the .plt section
-                // Note that entries in .plt are 4 words (0x10 bytes) each
-                // Note also that this hack can cause strange symbol names to appear
-                val = addrPLT + 0x10*i;
-                if (!warned) { warned = true;
+            if (val == 0 && siPlt && i < max_i_for_hack) {
+                // Special hack for gcc circa 3.3.3: (e.g. test/pentium/settest).
+				// The value in the dynamic symbol table is zero!
+				// I was assuming that index i in the dynamic symbol table would always correspond to index i
+				// in the .plt section, but for fedora2_true, this doesn't work. So we have to look in the
+				// .rel[a].plt setion. Thanks, gcc!
+                // Note that this hack can cause strange symbol names to appear
+                val = findRelPltOffset(i, addrRelPlt, sizeRelPlt, numRelPlt, addrPlt);
+                if (!warned) {
+					warned = true;
                     std::cerr << "Warning: dynamic symbol table hack used!\n";
                 }
             }
