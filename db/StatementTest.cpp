@@ -98,7 +98,7 @@ void StatementTest::testEmpty () {
     pRtls->push_back(new RTL(0x123));
     cfg->newBB(pRtls, RET, 0);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -140,7 +140,7 @@ void StatementTest::testFlow () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);     // Also sets exitBB; important!
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -191,7 +191,7 @@ void StatementTest::testKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -243,7 +243,7 @@ void StatementTest::testUse () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -299,7 +299,7 @@ void StatementTest::testUseOverKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -358,7 +358,7 @@ void StatementTest::testUseOverBB () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -412,7 +412,7 @@ void StatementTest::testUseKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -468,7 +468,7 @@ void StatementTest::testEndlessLoop () {
     body->addInEdge(body);
     cfg->setEntryBB(first);
     // compute dataflow
-    prog->forwardGlobalDataflow();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -669,77 +669,6 @@ void StatementTest::testRecursion () {
     // clean up
     delete prog;
 }
-
-/*==============================================================================
- * FUNCTION:        StatementTest::testExpand
- * OVERVIEW:        Test class Expand
- *============================================================================*/
-#if 0
-void StatementTest::testExpand () {
-    // 119 *32* r29 := m[r29{85 119}]
-    Assign* ae85 = new Assign;
-    ae85->setNumber(85);
-    RefsExp* re;
-    Assign* ae = new Assign(
-        Unary::regOf(29),
-        new Unary(opMemOf,
-            re = new RefsExp(
-                Unary::regOf(29),
-                ae85)));
-    ae->setNumber(119);
-    re->addSubscript(ae);       // Add ref to 119
-    std::string expected("119a *32* r29 := m[r29{85}]\n"
-                         "119b *32* r29 := m[r29{119}]\n");
-    std::ostringstream ost;
-    Expand e;
-    e.process(ae, "");
-    e.print(ost);
-    CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-
-    FrontEnd *fe = FrontEnd::Load(FIBO_PENTIUM);
-    Prog *prog = fe->decode();
-    prog->analyse();
-    prog->initStatements();
-    prog->forwardGlobalDataflow();
-    prog->toSSAform();
-    std::list<Proc*>::iterator pp;
-    // Propagate at level 0 (all procs)
-    for (UserProc* proc = prog->getFirstUserProc(pp); proc;
-      proc = prog->getNextUserProc(pp)) {
-        proc->propagateStatements(0);
-    }
-    for (UserProc* proc = prog->getFirstUserProc(pp); proc;
-      proc = prog->getNextUserProc(pp)) {
-        Boomerang::get()->vFlag = false;
-        StatementList stmts;
-        proc->getStatements(stmts);
-        StmtListIter it;
-        for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-            LocationSet refs;
-            s->addUsedLocs(refs);
-            LocSetIter ll;
-            for (Exp* r = refs.getFirst(ll); r; r = refs.getNext(ll)) {
-                if (r->isMemOf()) {
-                    LocationSet mrefs;
-                    r->addUsedLocs(mrefs);
-                    LocSetIter mri;
-                    for (Exp* mr = mrefs.getFirst(mri); mr;
-                      mr = mrefs.getNext(mri)) {
-                        if (mr->getNumRefs() > 1) {
-                            std::cerr << "\n" << s->getNumber() << " has multiref memof: " << s << "\n";   // HACK!
-                            Expand e;
-                            StatementSet empty;
-                            e.process(s, "", empty);
-                            e.print(std::cerr);
-                        }
-                    }
-                }
-            }
-        }
-        Boomerang::get()->vFlag = false;
-    }
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        StatamentTest::testClone

@@ -15,31 +15,11 @@ class Prog;
 #include "utilStubs.cpp"
 
 // basicblock
-void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin, int phase) {}
-void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &reachin, int phase) {}
 void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {}
 void BasicBlock::addInEdge(PBB pNewInEdge) {}
 
 // type
 #include "typeStubs.cpp"
-
-// Proc
-Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig) {}
-Proc::~Proc() {}
-Signature *Proc::getSignature() {return NULL;}
-Cfg* UserProc::getCFG() {return NULL;}
-const char* Proc::getName() {return "";}
-Prog *Proc::getProg() {return NULL;}
-void UserProc::getReturnSet(LocationSet &ret) {}
-UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative)
-  : Proc(prog, uNative, new Signature(name.c_str())) {}
-UserProc::~UserProc() {}
-std::ostream& UserProc::put(std::ostream& os) {return std::cerr;}
-bool UserProc::serialize(std::ostream &ouf, int &len) {return false;}
-bool UserProc::deserialize_fid(std::istream &inf, int fid) {return false;}
-bool Proc::deserialize_fid(std::istream &inf, int fid) {return false;}
-void UserProc::propagateStatements(int memDepth) {}
-void UserProc::getStatements(StatementList &stmts) {}
 
 // Prog
 Prog::Prog() {}
@@ -48,39 +28,11 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) {}
 char *Prog::getStringConstant(ADDRESS uaddr) {return NULL;}
 Proc* Prog::findProc(ADDRESS uAddr) const {return NULL;}
 void Prog::analyse() {}
-void Prog::forwardGlobalDataflow() {}
 void Prog::decompile() {}
 void Prog::toSSAform() {}
 void Prog::initStatements() {}
 UserProc* Prog::getFirstUserProc(std::list<Proc*>::iterator& it) {return 0;}
 UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {return 0;}
-
-// signature
-std::list<Exp*> *Signature::getCallerSave(Prog* prog) {return NULL;}
-Signature::Signature(const char *nam) {}
-bool Signature::operator==(const Signature& other) const {return false;}
-Signature *Signature::clone() {return 0;}
-bool Signature::serialize(std::ostream &ouf, int len) {return false;}
-Signature *Signature::deserialize(std::istream &inf) {return 0;}
-bool Signature::deserialize_fid(std::istream &inf, int fid) {return false;}
-Exp *Signature::getReturnExp() {return 0;}
-Exp *Signature::getReturnExp2(BinaryFile *pBF) {return NULL;}
-Type *Signature::getReturnType() {return 0;}
-void Signature::setReturnType(Type *t) {}
-const char *Signature::getName() {return NULL;}
-void Signature::setName(const char *nam) {}
-void Signature::addParameter(const char *nam) {}
-void Signature::addParameter(Type *type, const char *nam, Exp *e) {}
-void Signature::addParameter(Exp *e) {}
-void Signature::setNumParams(int n) {}
-int Signature::getNumParams() {return 0;}
-Exp *Signature::getParamExp(int n) {return 0;}
-Type *Signature::getParamType(int n) {return 0;}
-Exp *Signature::getArgumentExp(int n) {return 0;}
-const char *Signature::getParamName(int n) {return 0;}
-void Signature::analyse(UserProc *p) {}
-Signature *Signature::promote(UserProc *p) {return 0;}
-void Signature::getInternalStatements(StatementList &stmts) {}
 
 // frontend
 void FrontEnd::decode(Prog *prog, ADDRESS a) {}

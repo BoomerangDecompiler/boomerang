@@ -989,6 +989,14 @@ public:
     void renameBlockVars(int n, int memDepth);
     bool doesDominate(int n, int w);
 
+    // For testing:
+    int pbbToNode(PBB bb) {return indices[bb];}
+    std::set<int>& getDF(int node) {return DF[node];}
+    PBB nodeToBB(int node) {return BBs[node];} 
+    int getIdom(int node) {return idom[node];}
+    int getSemi(int node) {return semi[node];}
+    std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
+
 };              /* Cfg */
 
 #endif

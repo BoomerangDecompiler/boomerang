@@ -1334,7 +1334,7 @@ void BranchStatement::fromSSAform(igraph& ig) {
 }
 
 /*==============================================================================
- * FUNCTION:        HLJCond::searchAll
+ * FUNCTION:        BranchStatement::searchAll
  * OVERVIEW:        Find all instances of the search expression
  * PARAMETERS:      search - a location to search for
  *                  result - a list which will have any matching exprs
@@ -1968,13 +1968,15 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << ")";
 
     // And the return locations 
-    os << " { ";
-    for (int i = 0; i < getNumReturns(); i++) {
-        if (i != 0)
-            os << ", ";
-        os << getReturnExp(i);
+    if (getNumReturns()) {
+        os << " { ";
+        for (int i = 0; i < getNumReturns(); i++) {
+            if (i != 0)
+                os << ", ";
+            os << getReturnExp(i);
+        }
+        os << " }";
     }
-    os << " }";
 }
 
 /*==============================================================================

@@ -22,10 +22,13 @@ Exp *Signature::getParamExp(int n) {return 0;}
 Type *Signature::getParamType(int n) {return 0;}
 Exp *Signature::getArgumentExp(int n) {return 0;}
 const char *Signature::getParamName(int n) {return 0;}
-void Signature::analyse(UserProc *p) {}
+//void Signature::analyse(UserProc *p) {}
 Signature *Signature::promote(UserProc *p) {return 0;}
 void Signature::getInternalStatements(StatementList &stmts) {}
 void Signature::print(std::ostream &out) {}
 int Signature::getStackRegister(Prog* prog) {return 0;}
 Signature *Signature::instantiate(const char *str, const char *nam)
 {return 0;}
+
+
+

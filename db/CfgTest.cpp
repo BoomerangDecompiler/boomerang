@@ -25,7 +25,6 @@
 #include "pentiumfrontend.h"        // For PentiumFrontEnd
 #include "proc.h"
 #include "prog.h"
-#include "dom.h"
 
 /*==============================================================================
  * FUNCTION:        CfgTest::registerTests
@@ -91,8 +90,7 @@ void CfgTest::testDominators () {
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
 
-    DOM* d = new DOM;
-    cfg->dominators(d);
+    cfg->dominators();
 
     // Find BB "5" (as per Appel, Figure 19.5).
     BB_IT it;
@@ -105,15 +103,15 @@ void CfgTest::testDominators () {
     std::ostringstream expected, actual;
     expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " <<
         FRONTIER_TWELVE << " " << FRONTIER_FOUR << " ";
-    int n5 = d->indices[bb];
+    int n5 = cfg->pbbToNode(bb);
     std::set<int>::iterator ii;
-    for (ii=d->DF[n5].begin(); ii != d->DF[n5].end(); ii++)
-        actual << std::hex << (unsigned)d->BBs[*ii]->getLowAddr() << " ";
+    std::set<int>& DFset = cfg->getDF(n5);
+    for (ii=DFset.begin(); ii != DFset.end(); ii++)
+        actual << std::hex << (unsigned)cfg->nodeToBB(*ii)->getLowAddr() << " ";
     CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
 
     pBF->UnLoad();
     delete pFE;
-    delete d;
 }
 
 
@@ -140,8 +138,7 @@ void CfgTest::testSemiDominators () {
     UserProc* pProc = (UserProc*) prog->getProc(0);
     Cfg* cfg = pProc->getCFG();
 
-    DOM* d = new DOM;
-    cfg->dominators(d);
+    cfg->dominators();
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
     BB_IT it;
@@ -150,20 +147,21 @@ void CfgTest::testSemiDominators () {
         bb = cfg->getNextBB(it);
     }
     CPPUNIT_ASSERT(bb);
-    int nL = d->indices[bb];
+    int nL = cfg->pbbToNode(bb);
 
     // The dominator for L should be B, where the semi dominator is D
     // (book says F)
-    unsigned actual_dom  = (unsigned)d->BBs[d->idom[nL]]->getLowAddr();
-    unsigned actual_semi = (unsigned)d->BBs[d->semi[nL]]->getLowAddr();
+    unsigned actual_dom  = (unsigned)cfg->nodeToBB(cfg->getIdom(nL))->getLowAddr();
+    unsigned actual_semi = (unsigned)cfg->nodeToBB(cfg->getSemi(nL))->getLowAddr();
     CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_B, actual_dom);
     CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_D, actual_semi);
     // Check the final dominator frontier as well; should be M and B
     std::ostringstream expected, actual;
     expected << std::hex << SEMI_M << " " << SEMI_B << " ";
     std::set<int>::iterator ii;
-    for (ii=d->DF[nL].begin(); ii != d->DF[nL].end(); ii++)
-        actual << std::hex << (unsigned)d->BBs[*ii]->getLowAddr() << " ";
+    std::set<int>& DFset = cfg->getDF(nL);
+    for (ii=DFset.begin(); ii != DFset.end(); ii++)
+        actual << std::hex << (unsigned)cfg->nodeToBB(*ii)->getLowAddr() << " ";
     CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
 }
 
@@ -183,9 +181,8 @@ void CfgTest::testPlacePhi () {
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->analyse();
 
-    DOM* d = new DOM;
-    cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1, pProc);
+    cfg->dominators();
+    cfg->placePhiFunctions(1, pProc);
 
     // m[r29 - 8] (x for this program)
     Exp* e = new Unary(opMemOf,
@@ -197,7 +194,7 @@ void CfgTest::testPlacePhi () {
     std::set<int> expected;
     expected.insert(2);  expected.insert(6); expected.insert(8);
     expected.insert(11); expected.insert(4); expected.insert(20);
-    bool result = expected == d->A_phi[e];
+    bool result = expected == cfg->getA_phi(e);
     CPPUNIT_ASSERT_EQUAL(true, result);
     delete e;
 }
@@ -218,9 +215,8 @@ void CfgTest::testPlacePhi2 () {
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->analyse();
 
-    DOM* d = new DOM;
-    cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1, pProc);
+    cfg->dominators();
+    cfg->placePhiFunctions(1, pProc);
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
     // b at [ebp-12]
@@ -235,7 +231,7 @@ void CfgTest::testPlacePhi2 () {
         new Binary(opMinus,
             Unary::regOf(29),
             new Const(8)));
-    std::set<int>& s = d->A_phi[e];
+    std::set<int>& s = cfg->getA_phi(e);
     std::set<int>::iterator pp;
     for (pp = s.begin(); pp != s.end(); pp++)
         actual << *pp << " ";
@@ -250,7 +246,7 @@ void CfgTest::testPlacePhi2 () {
             Unary::regOf(29),
             new Const(12)));
  
-    std::set<int>& s2 = d->A_phi[e];
+    std::set<int>& s2 = cfg->getA_phi(e);
     for (pp = s2.begin(); pp != s2.end(); pp++)
         actual2 << *pp << " ";
     CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
@@ -273,10 +269,9 @@ void CfgTest::testRenameVars () {
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->analyse();
 
-    DOM* d = new DOM;
-    cfg->dominators(d);
-    cfg->placePhiFunctions(d, 1, pProc);
+    cfg->dominators();
+    cfg->placePhiFunctions(1, pProc);
     int stmtNumber = 0;
     pProc->numberStatements(stmtNumber);// After placing phi functions!
-    cfg->renameBlockVars(d, 0, 1);      // Block 0, mem depth 1
+    cfg->renameBlockVars(0, 1);      // Block 0, mem depth 1
 }

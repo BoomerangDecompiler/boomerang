@@ -50,9 +50,10 @@ testExp: testExp.o exp.o statement.o rtl.o testExpStubs.o ExpTest.o
 testStmt.o: testStmt.cpp
 	$(CC) -c -o $@ -I../include $<
 
-testStmt: testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o
-	$(CC) -o $@ exp.o statement.o rtl.o testStmtStubs.o StatementTest.o \
-      -lcppunit $<
+STMT_TEST_OBJS = testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o \
+    proc.o signature.o
+testStmt: $(STMT_TEST_OBJS)
+	$(CC) -o $@ $(STMT_TEST_OBJS) -lcppunit
 
 testRtl.o: testRtl.cpp
 	$(CC) -c -o $@ -I../include $<
