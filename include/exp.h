@@ -51,7 +51,6 @@ class Statement;
 class BasicBlock;
 class LocationSet;
 class StatementSet;
-class Exp;
 class TypeVal;
 class ExpVisitor;
 class ExpModifier;
@@ -290,9 +289,6 @@ virtual Exp* simplifyConstraint() {return this;}
 
     Exp *removeSubscripts(bool& allZero);
 
-    // Add a subscript to all e (pointing to def)
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def) {return this;}
-
     // Get number of definitions (statements this expression depends on)
     virtual int getNumRefs() {return 0;}
 
@@ -323,12 +319,13 @@ virtual Exp* simplifyConstraint() {return this;}
     // Note: best to have accept() as pure virtual, so you don't forget to
     // implement it for new subclasses of Exp
     virtual bool accept(ExpVisitor* v) = 0;
-    virtual Exp* acceptMod(ExpModifier* v) = 0;
+    virtual Exp* accept(ExpModifier* v) = 0;
     void         fixLocationProc(UserProc* p);
     UserProc*    findProc();
     void         setConscripts(int n);  // Set the constant subscripts
     Exp*         stripRefs();           // Strip all references
-
+    // Subscript all e in this Exp with statement def:
+    Exp*         expSubscriptVar(Exp* e, Statement* def);
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -398,7 +395,7 @@ virtual Exp*    genConstraints(Exp* restrictTo);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
     void    setConscript(int cs) {conscript = cs;}
 
@@ -426,14 +423,11 @@ virtual void    print(std::ostream& os, bool withUses = false);
 virtual void    appendDotFile(std::ofstream& of);
 virtual void    printx(int ind);
 
-    // Do the work of subscripting variables
-virtual Exp*    expSubscriptVar(Exp* e, Statement* def);
-
 virtual bool    isTerminal() { return true; }
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 };  // class Terminal
 
 /*==============================================================================
@@ -491,9 +485,6 @@ virtual Exp* polySimplify(bool& bMod);
         Exp* simplifyAddr();
 virtual Exp* simplifyConstraint();
 
-    // Do the work of subscripting variables
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
@@ -504,7 +495,7 @@ virtual Exp* simplifyConstraint();
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class Unary
 
@@ -565,9 +556,6 @@ virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyAddr();
 virtual Exp* simplifyConstraint();
 
-    // Do the work of subscripting variables
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-
     // Type analysis
     virtual Exp*  genConstraints(Exp* restrictTo);
 
@@ -578,7 +566,7 @@ virtual Exp* simplifyConstraint();
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
@@ -635,9 +623,6 @@ virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
-    // Do the work of subscripting variables
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
-
     // Type analysis
     virtual Exp*  genConstraints(Exp* restrictTo);
 
@@ -648,7 +633,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class Ternary
 
@@ -694,7 +679,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class TypedExp
 
@@ -713,7 +698,7 @@ virtual void    appendDotFile(std::ofstream& of);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };
 
@@ -742,7 +727,6 @@ virtual void print(std::ostream& os, bool withUses = false);
 virtual void printx(int ind);
 virtual int getNumRefs() {return 1;}
     Statement* getRef() {return def;}
-    virtual Exp* expSubscriptVar(Exp* e, Statement* def);
     Exp*    addSubscript(Statement* def) {this->def = def; return this;}
     void    setDef(Statement* def) {this->def = def;}
     virtual Exp*  genConstraints(Exp* restrictTo);
@@ -754,7 +738,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 };  // Class RefExp
 
 /*==============================================================================
@@ -810,7 +794,7 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class PhiExp
 
@@ -838,7 +822,7 @@ virtual void    printx(int ind);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // class TypeVal
 
@@ -880,7 +864,7 @@ virtual int getMemDepth();
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
-    virtual Exp* acceptMod(ExpModifier* v);
+    virtual Exp* accept(ExpModifier* v);
 
 };  // Class Location
     
