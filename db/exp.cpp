@@ -2596,8 +2596,8 @@ void PhiExp::addUsedLocs(LocationSet& used) {
       That means we effectively use r1{10} and r1{20}
     */
     StmtVecIter uu;
-    for (Statement* u = stmtVec.getFirst(uu); !isLastRef(uu);
-          u = stmtVec.getNext(uu)) {
+    for (Statement* u = stmtVec.getFirst(uu); !stmtVec.isLast(uu); 
+         u = stmtVec.getNext(uu)) {
         Exp* temp = new RefExp(subExp1->clone(), u);
         used.insert(temp);
     }
@@ -2679,6 +2679,9 @@ Exp *PhiExp::fixCallRefs() {
                     std::cerr << "cant update phi ref to " << e << std::endl;
                 }
             } else {
+                std::cerr << "nothing proven about " << subExp1 << 
+                    " and yet it is referenced, and not in returns of " << 
+                    std::endl << "   " << call << std::endl;
                 assert(call->findReturn(subExp1) != -1);
             }
         }

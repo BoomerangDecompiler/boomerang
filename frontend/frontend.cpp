@@ -163,10 +163,16 @@ Prog *FrontEnd::decode()
 
     decode(prog, a);
 
-    if (gotMain && pBF->SymbolByAddress(a) == NULL) {
+    if (gotMain && (pBF->SymbolByAddress(a) == NULL ||
+        !strcmp(pBF->SymbolByAddress(a), "main"))) {
         Proc *main = prog->findProc(a);
         assert(main);
-        main->setName("main");
+        //main->setName("main");
+        main->setSignature(getDefaultSignature("main"));
+        main->getSignature()->addReturn(new IntegerType());
+        main->getSignature()->addParameter(new IntegerType(), "argc");
+        main->getSignature()->addParameter(new PointerType(new PointerType(
+                                           new CharType())), "argv");
     }
 
     return prog;
@@ -233,6 +239,20 @@ void FrontEnd::readLibrarySignatures(const char *sPath, bool win32) {
     ifs.close();
 }
 
+Signature *FrontEnd::getDefaultSignature(const char *name)
+{
+    Signature *signature = NULL;
+    // Get a default library signature
+    if (isWin32())
+        signature = Signature::instantiate("-win32-pentium", name);
+    else {
+        std::string s = "-stdc-";
+        s += getFrontEndId();
+        signature = Signature::instantiate(s.c_str(), name);
+    } 
+    return signature;
+}
+
 // get a library signature by name
 Signature *FrontEnd::getLibSignature(const char *name) {
     Signature *signature;
@@ -241,14 +261,7 @@ Signature *FrontEnd::getLibSignature(const char *name) {
     it = librarySignatures.find(name);
     if (it == librarySignatures.end()) {
         std::cerr << "unknown library function " << name << std::endl;
-        // Get a default library signature
-        if (isWin32())
-            signature = Signature::instantiate("-win32-pentium", name);
-        else {
-            std::string s = "-stdc-";
-            s += getFrontEndId();
-            signature = Signature::instantiate(s.c_str(), name);
-        } 
+        signature = getDefaultSignature(name);
     }
     else {
         signature = (*it).second->clone();

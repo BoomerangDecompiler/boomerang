@@ -434,11 +434,6 @@ Proc *Proc::getFirstCaller() {
     return m_firstCaller; 
 }
 
-Signature *Proc::getSignature() {
-    assert(signature);
-    return signature;
-}
-
 // deserialize a procedure
 Proc *Proc::deserialize(Prog *prog, std::istream &inf) {
     /*
@@ -1050,7 +1045,7 @@ std::set<UserProc*>* UserProc::decompile() {
         }
         addNewParameters();
         cfg->renameBlockVars(0, depth);
-        trimParameters();
+        trimParameters(depth);
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
@@ -1162,10 +1157,47 @@ void UserProc::removeRedundantPhis()
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        if (s->isPhi() && refCounts[s] == 0) { 
-            if (VERBOSE)
-                std::cerr << "removing unused statement " << s << std::endl;
-            removeStatement(s);
+        if (s->isPhi()) {
+            bool unused = false;
+            if (refCounts[s] == 0)
+                unused = true;
+            else if (refCounts[s] == 1) {
+                /* This looks pretty good, if all the statements in a phi
+                 * are either NULL or a call to this proc, then 
+                 * the phi is redundant.  However, we only remove it if 
+                 * the only use is in the return statement.
+                 */
+                RefExp *r = new RefExp(s->getLeft()->clone(), s);
+                bool usedInRet = false;
+                for (unsigned i = 0; i < returnStatements.size(); i++)
+                    if (returnStatements[i]->usesExp(r)) {
+                        usedInRet = true;
+                        break;
+                    }
+                delete r;
+                PhiExp *p = (PhiExp*)s->getRight();
+                if (usedInRet) {
+                    bool allZeroOrSelfCall = true;
+                    StmtVecIter it1;
+                    for (Statement *s1 = p->getFirstRef(it1); 
+                         !p->isLastRef(it1); s1 = p->getNextRef(it1))
+                        if (s1 != NULL && (!s1->isCall() || 
+                            ((CallStatement*)s1)->getDestProc() != this))
+                            allZeroOrSelfCall = false;
+                    if (allZeroOrSelfCall) {
+                        if (VERBOSE)
+                            std::cerr << "removing using shakey hack:"  
+                                      << std::endl;
+                        unused = true;
+                        removeReturn(p->getSubExp1());
+                    }
+                }
+            }
+            if (unused) {
+                if (VERBOSE)
+                    std::cerr << "removing unused statement " << s << std::endl;
+                removeStatement(s);
+            }
         }
 
     stmts.clear();
@@ -1282,7 +1314,7 @@ void UserProc::addNewParameters() {
     }
 }
 
-void UserProc::trimParameters() {
+void UserProc::trimParameters(int depth) {
 
     if (VERBOSE)
         std::cerr << "Trimming parameters for " << getName() << std::endl;
@@ -1308,12 +1340,27 @@ void UserProc::trimParameters() {
                              new Const((char*)signature->getParamName(i)));
                 if (!referenced[i] && (s->usesExp(params[i]) || s->usesExp(p)))
                     referenced[i] = true;
+                if (!referenced[i] && s->isPhi() && 
+                    *s->getLeft() == *signature->getParamExp(i)) {
+                    if (VERBOSE)
+                        std::cerr << "searching " << s << " for uses of " 
+                                  << params[i] << std::endl;
+                    PhiExp *ph = (PhiExp*)s->getRight();
+                    StmtVecIter it1;
+                    for (Statement *s1 = ph->getFirstRef(it1);
+                         !ph->isLastRef(it1); s1 = ph->getNextRef(it1))
+                        if (s1 == NULL) {
+                            referenced[i] = true;
+                            break;
+                        }
+                }
                 delete p;
             }
         }
 
     for (int i = 0; i < nparams; i++)
-        if (!referenced[i]) {
+        if (!referenced[i] && (depth == -1 || 
+            params[i]->getMemDepth() == depth)) {
             bool allZero;
             Exp *e = params[i]->removeSubscripts(allZero);
             if (VERBOSE) 
@@ -1990,6 +2037,7 @@ bool UserProc::prove(Exp *query)
 
 bool UserProc::prover(Exp *query, PhiExp *lastPhi)
 {
+    Exp *phiInd = query->getSubExp2()->clone();
     query = query->clone();
     bool change = true;
     bool swapped = false;
@@ -2042,16 +2090,23 @@ bool UserProc::prover(Exp *query, PhiExp *lastPhi)
                         // for a phi, we have to prove the query for every 
                         // statement
                         PhiExp *p = (PhiExp*)s->getRight();
-                        if (VERBOSE)
-                            std::cerr << "found " << p << " prove for each" 
-                                      << std::endl;
                         StmtVecIter it;
                         bool ok = true;
                         if (p == lastPhi) {
                             if (VERBOSE)
-                                std::cerr << "phi loop detected" << std::endl;
-                            ok = false;
+                                std::cerr << "phi loop detected ";
+                            ok = (*query->getSubExp2() == *phiInd);
+                            if (ok && VERBOSE)
+                                std::cerr << "(set true due to induction)" 
+                                          << std::endl;
+                            if (!ok && VERBOSE)
+                                std::cerr << "(set false " << 
+                                    query->getSubExp2() << " != " << 
+                                    phiInd << ")" << std::endl;
                         } else {
+                            if (VERBOSE)
+                                std::cerr << "found " << p << " prove for each" 
+                                          << std::endl;
                             for (Statement *s1 = p->getFirstRef(it); 
                                             !p->isLastRef(it);
                                             s1 = p->getNextRef(it)) {
