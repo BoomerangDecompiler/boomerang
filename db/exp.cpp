@@ -3203,7 +3203,7 @@ int Binary::getMemDepth() {
 int Ternary::getMemDepth() {
     int d1 = subExp1->getMemDepth();
     int d2 = subExp2->getMemDepth();
-    int d3 = subExp2->getMemDepth();
+    int d3 = subExp3->getMemDepth();
     return std::max(std::max(d1, d2), d3);
 }
 
