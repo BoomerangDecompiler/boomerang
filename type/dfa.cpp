@@ -45,8 +45,6 @@ void UserProc::dfaTypeAnalysis() {
 	for (iter = 1; iter <= DFA_ITER_LIMIT; iter++) {
 		ch = false;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
-if ((*it)->getType()->isUnion())
-  std::cerr << "HACK!\n";
 			(*it)->dfaTypeAnalysis(ch);	  
 		}
 		if (!ch)
