@@ -88,7 +88,7 @@ void DataflowTest::testEmpty () {
     pRtls->push_back(new HLReturn(0x123));
     cfg->newBB(pRtls, RET, 0);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -128,7 +128,7 @@ void DataflowTest::testFlow () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);     // Also sets exitBB; important!
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -177,7 +177,7 @@ void DataflowTest::testKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -227,7 +227,7 @@ void DataflowTest::testUse () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -281,7 +281,7 @@ void DataflowTest::testUseOverKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -338,7 +338,7 @@ void DataflowTest::testUseOverBB () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -390,7 +390,7 @@ void DataflowTest::testUseKill () {
     ret->addInEdge(first);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -446,7 +446,7 @@ void DataflowTest::testEndlessLoop () {
     body->addInEdge(body);
     cfg->setEntryBB(first);
     // compute dataflow
-    cfg->computeDataflow();
+    prog->forwardGlobalDataflow();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);
@@ -625,7 +625,7 @@ void DataflowTest::testRecursion () {
 Boomerang* boo = Boomerang::get();
 boo->vFlag = true;
     // decompile the "proc"
-    proc->decompile();
+    prog->decompile();
     // print cfg to a string
     std::ostringstream st;
     cfg->print(st, true);

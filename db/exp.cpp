@@ -27,6 +27,7 @@
  * 09 Dec 02 - Mike: Print succ()
  * 03 Feb 03 - Mike: Mods for cached dataflow
  * 25 Mar 03 - Mike: Print new operators (opWildIntConst, etc)
+ * 10 Jun 03 - Mike: Swapped simplification of a - K -> a + -K
  */
 
 #include <assert.h>
@@ -1613,7 +1614,7 @@ Exp* Exp::simplify() {
     // only where needed:
     // res = res->simplifyArith();
 #if DEBUG_SIMP
-    if (!(*res == *save)) std::cout << "simplified " << save << " to " << res
+    if (!(*res == *save)) std::cout << "simplified " << save << "  to  " << res
       << "\n";
     delete save;
 #endif
@@ -1727,7 +1728,10 @@ Exp* Unary::polySimplify(bool& bMod) {
             break;
         case opMemOf: case opRegOf: {
             subExp1 = subExp1->polySimplify(bMod);
-            subExp1 = subExp1->simplifyArith();  // probably bad
+            // The below IS bad now. It undoes the simplification of
+            // m[r29 + -4] to m[r29 - 4]
+            // If really needed, do another polySimplify, or swap the order
+            //subExp1 = subExp1->simplifyArith();  // probably bad
         }
         break;
         default:
@@ -1791,33 +1795,32 @@ Exp* Binary::polySimplify(bool& bMod) {
 
     if (((op == opBitXor) || (op == opMinus)) && (*subExp1 == *subExp2)) {
         // x ^ x or x - x: result is zero
-        delete res;
+        delete this;
         res = new Const(0);
         bMod = true;
         return res;
     }
 
-    // turn a - b into a + -b
-    // Counts as a change, in case b happens to be an integer constant
-    // (then neg int 99 -> int -99)
-    if (op == opMinus) {
-        subExp2 = new Unary(opNeg, subExp2);
-        op = opPlus;
-        opSub2 = opNeg;
-        bMod = true;
-    }
-
     // Might want to commute to put an integer constant on the RHS
     // Later simplifications can rely on this (ADD other ops as necessary)
     if (opSub1 == opIntConst && 
-        (op == opPlus || op == opMult   || op == opMults || op == opBitOr) ||
-         op == opOr   || op == opBitAnd || op == opAnd) {
-        ((Binary*)res)->commute();
+        (op == opPlus || op == opMult   || op == opMults || op == opBitOr ||
+         op == opOr   || op == opBitAnd || op == opAnd)) {
+        commute();
         // Swap opSub1 and opSub2 as well
         OPER t = opSub1;
         opSub1 = opSub2;
         opSub2 = t;
         // This is not counted as a modification
+    }
+
+    // Turn a + -K into a - K (K is int const > 0)
+    // Also a - -K into a + K (K is int const > 0)
+    // Does not count as a change
+    if ((op == opPlus || op == opMinus) &&
+      opSub2 == opIntConst && ((Const*)subExp2)->getInt() < 0) {
+        ((Const*)subExp2)->setInt(-((Const*)subExp2)->getInt());
+        op = op == opPlus ? opMinus : opPlus;
     }
 
     // Check for exp + 0  or  exp - 0  or  exp | 0 or exp OR 0
@@ -1858,21 +1861,6 @@ Exp* Binary::polySimplify(bool& bMod) {
     if ((op == opAnd) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) {
         res = ((Unary*)res)->becomeSubExp1();
-        bMod = true;
-        return res;
-    }
-
-    // NOTE: this simplification used to be around the other way, i.e.
-    // x + -4 was changed to x - 4.
-    // However, this is inconsistent with what happens with
-    // simplifyArith(). Also, it makes more sense to do it the
-    // other way, i.e. change x - 4 to x + -4 (only have to check for
-    // opPlus, not opPlus and opMinus)
-    // Change x - 4 to x + -4 (and x - -5 to x + 5)
-    if ((op == opMinus) && (opSub2 == opIntConst)) {
-        res->setOper(opPlus);
-        k = ((Const*)subExp2)->getInt();
-        ((Const*)subExp2)->setInt(-k);
         bMod = true;
         return res;
     }
@@ -2117,24 +2105,10 @@ Exp* Ternary::polySimplify(bool& bMod) {
     return res;
 }
 
-Exp* TypedExp::polySimplify(bool& bMod) {
-    Exp *res = this;
-    OPER opSub1 = subExp1->getOper();
-
-    assert(opSub1 != opAssignExp);
-
-    subExp1 = subExp1->polySimplify(bMod);
-    return res;
-}
-
 Exp* AssignExp::polySimplify(bool& bMod) {
-    Exp *res = this;
-    //OPER opSub1 = subExp1->getOper();
-    //OPER opSub2 = subExp2->getOper();
-
     subExp1 = subExp1->polySimplify(bMod);
     subExp2 = subExp2->polySimplify(bMod);
-    return res;
+    return this;
 }
 
 /*==============================================================================
@@ -2183,17 +2157,6 @@ Exp* Ternary::simplifyAddr() {
     subExp3 = subExp3->simplifyAddr();
     return this;
 }
-
-Exp* TypedExp::simplifyAddr() {
-    subExp1 = subExp1->simplifyAddr();
-    return this;
-} 
-
-Exp* AssignExp::simplifyAddr() {
-    subExp1 = subExp1->simplifyAddr();
-    subExp2 = subExp2->simplifyAddr();
-    return this;
-} 
 
 /*==============================================================================
  * FUNCTION:        Exp::printt

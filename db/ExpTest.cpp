@@ -661,6 +661,10 @@ void ExpTest::testSimplifyBinary() {
     b = new Binary(opPlus, m_rof2->clone(), new Const(-99));
     // r2 - 99
     Exp* expb2 = new Binary(opMinus, m_rof2->clone(), new Const(99));
+    // As of June 2003, I've decided to go the old way. esp + -4 is just
+    // too ugly, and all the code has to cope with pluses and minuses anyway,
+    // just in case
+#define OLD_WAY 1
 #if OLD_WAY
     b = b->simplify();
 #else
@@ -690,11 +694,29 @@ void ExpTest::testSimplifyBinary() {
     // Make sure we got it right!
     e->print(ost);
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
-    // The above should simplify to just "a"
+    // The above should simplify to just "v[a]"
     e = e->simplify();
     Unary a(opVar, new Const("a"));
-    CPPUNIT_ASSERT(a == *e);
+    expected = "v[a]";
+    std::ostringstream ost2;
+    e->print(ost2);
+    CPPUNIT_ASSERT_EQUAL(expected, ost2.str());
     delete e;
+
+    // r27 := m[r29 + -4]
+    e = new AssignExp(
+        new Unary(opRegOf, new Const(27)),
+        new Unary(opMemOf,
+            new Binary(opPlus,
+                new Unary(opRegOf, new Const(29)),
+                new Const(-4))));
+    e = e->simplify();
+    expected = "*32* r27 := m[r29 - 4]";
+    std::ostringstream ost3;
+    e->print(ost3);
+    CPPUNIT_ASSERT_EQUAL(expected, ost3.str());
+    delete e;
+
 }
 
 /*==============================================================================
@@ -702,6 +724,7 @@ void ExpTest::testSimplifyBinary() {
  * OVERVIEW:        Test the simplifyArith function
  *============================================================================*/
 void ExpTest::testSimplifyAddr() {
+    // a[m[1000]] - a[m[r2]{64}]@0:15
     Exp* e = new Binary(opMinus,
         new Unary(opAddrOf,
             new Unary(opMemOf,

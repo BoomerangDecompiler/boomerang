@@ -571,9 +571,7 @@ public:
     Type*   getType();
     void    setType(Type* ty);
 
-    // Do the work of simplifying this expression
-    Exp* polySimplify(bool& bMod);
-    Exp* simplifyAddr();
+    // polySimplify simply inherits from Unary (no special processing)
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -612,7 +610,6 @@ public:
     // Do the work of simplifying this expression
     Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
-    Exp* simplifyAddr();
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
