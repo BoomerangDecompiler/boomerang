@@ -243,7 +243,7 @@ virtual Exp* fixSuccessor() {return this;}
     virtual Exp* addSubscript(Statement* def);
 
     // Get number of definitions (statements this expression depends on)
-    virtual int getNumUses() {return 0;}
+    virtual int getNumRefs() {return 0;}
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig) {return this;}
@@ -703,14 +703,15 @@ virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
     Exp*    updateRefs(StatementSet& defs, int memDepth);
-virtual int getNumUses() {return stmtSet.size();}
+virtual int getNumRefs() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
-    Statement* getFirstUses(StmtSetIter& it) {return stmtSet.getFirst(it);}
-    Statement* getNextUses (StmtSetIter& it) {return stmtSet.getNext (it);}
+    Statement* getFirstRef(StmtSetIter& it) {return stmtSet.getFirst(it);}
+    Statement* getNextRef (StmtSetIter& it) {return stmtSet.getNext (it);}
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return stmtSet.exists(s);}
+    StatementSet& getRefs() {return stmtSet;}
 };
 
     

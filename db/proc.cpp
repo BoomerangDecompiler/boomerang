@@ -1308,22 +1308,20 @@ bool UserProc::removeNullStatements() {
     // remove null code
     StmtListIter it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        AssignExp *e = dynamic_cast<AssignExp*>(s);
-        if (e == NULL) continue;
-        if (*e->getSubExp1() == *e->getSubExp2()) { 
+        if (s->isNullStatement()) {
             // A statement of the form x := x
-            // Note that Statement::updateDfForErase() will propagate the DF
             if (VERBOSE) {
-                std::cerr << "removing null stmt: " << e->getNumber() << " ";
-                e->print(std::cerr);
-                std::cerr << std::endl;
+                std::cerr << "removing null statement: " << s->getNumber() <<
+                " " << s << "\n";
             }
-            removeStatement(e);
+            removeStatement(s);
+#if 0
             // remove from reach sets
             StatementSet &reachout = s->getBB()->getReachOut();
             if (reachout.remove(s))
-                //cfg->computeReaches();      // Highly sus: do all or none!
-                //recalcDataflow();
+                cfg->computeReaches();      // Highly sus: do all or none!
+                recalcDataflow();
+#endif
             change = true;
         }
     }
@@ -1419,6 +1417,8 @@ bool UserProc::removeDeadStatements() {
 }
 
 void UserProc::processConstants() {
+    if (VERBOSE)
+        std::cerr << "Process constants for " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
     // process any constants in the statement
@@ -1446,7 +1446,7 @@ bool UserProc::propagateAndRemoveStatements() {
                 Boomerang::get()->numToPropagate--;
             }
             if (cfg->getReachExit()->exists(s)) {
-                if (s->getNumUses() != 0) {
+                if (s->getNumRefs() != 0) {
                     // tempories that store the results of calls are ok
                     if (rhs && 
                       s->findDef(rhs) &&
@@ -1561,28 +1561,52 @@ void UserProc::removeUnusedStatements() {
         LocSetIter uu;
         for (Exp* u = uses.getFirst(uu); u; u = uses.getNext(uu)) {
             if (u->isSubscript()) {
-                RefsExp* ue = (RefsExp*)u;
+                RefsExp* re = (RefsExp*)u;
                 StmtSetIter xx;
-                for (Statement* def = ue->getFirstUses(xx); def;
-                      def = ue->getNextUses(xx)) {
-//std::cerr << "Updating count for " << def << "\n";
+                for (Statement* def = re->getFirstRef(xx); def;
+                      def = re->getNextRef(xx))
                     useCounts[def]++;
-                }
             }
         }
     }
-    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
-        HLCall* call = dynamic_cast<HLCall*>(s);
-        if (call)
-            // Never delete a call statement
-            continue;
-        if (useCounts[s] == 0) {
-            if (VERBOSE)
-                std::cerr << "Removing unused statement " << s->getNumber() <<
-                  " " << s << std::endl;
-            removeStatement(s);
+    bool change;
+    do {
+        change = false;
+        Statement* s = stmts.getFirst(ll);
+        while (s) {
+            HLCall* call = dynamic_cast<HLCall*>(s);
+            if (call) {
+                // Never delete a call statement
+                s = stmts.getNext(ll);
+                continue;
+            }
+            if (useCounts[s] == 0) {
+                // First adjust the counts. Need to be careful not to count
+                // two refs as two; useCounts is a count of the number of
+                // statements that use a definition, not the number of refs
+                StatementSet refs;
+                LocationSet comps;
+                s->addUsedLocs(comps);
+                LocSetIter cc;
+                for (Exp* c = comps.getFirst(cc); c; c = comps.getNext(cc)) {
+                    if (c->isSubscript())
+                        refs.makeUnion(((RefsExp*)c)->getRefs());
+                }
+                StmtSetIter dd;
+                for (Statement* def = refs.getFirst(dd); def;
+                  def = refs.getNext(dd))
+                    useCounts[def]--;
+                if (VERBOSE)
+                    std::cerr << "Removing unused statement " <<
+                      s->getNumber() << " " << s << std::endl;
+                removeStatement(s);
+                s = stmts.remove(ll);  // So we don't try to re-remove it
+                change = true;
+                continue;               // Don't call getNext this time
+            }
+            s = stmts.getNext(ll);
         }
-    }
+    } while (change);
 }
 
 //

@@ -554,7 +554,7 @@ Statement* StatementSet::getNext(StmtSetIter& it) {
     return *it;         // Else return the next element
 }
 
-// Remove this set. Return false if it was not found
+// Remove this Statement. Return false if it was not found
 bool StatementSet::remove(Statement* s) {
     if (sset.find(s) != sset.end()) {
         sset.erase(s);
@@ -874,57 +874,94 @@ void Statement::propagateTo(int memDepth) {
         LocSetIter ll;
         change = false;
         for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-#if 1
-            if (e->getNumUses() == 2) {
-                // Check for a special case induced by recursion
-                // FIXME: Need to extend the hack for two refs, where
-                // they define the same thing. May need to iterate
-                // propagations if this succeeds!
-                if (!((RefsExp*)e)->references(this)) continue;
-                if (!(*getLeft() == *((RefsExp*)e)->getSubExp1()))
-                    continue;
-                // It's passed these 2 tests; allow propagation to s
-                // Can propagate TO s (if memory depths are suitable)
+#if 0
+            if (e->getNumRefs() == 2) {
+                // Check for two special cases induced by recursion
+                // Get the two definitions we reference
                 StmtSetIter dummy;
-                Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
-                if (def == this)
-                    // We want the other one; we know there are just 2
-                    def = ((RefsExp*)e)->getNextUses(dummy);
-                // Check the depth of the definition (an assignment)
-                // This checks the depth for the left and right sides, and
-                // gives the max for both. Example: can't propagate
-                // tmp := m[x] to foo := tmp if memDepth == 0
-                int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
-                if (depth > memDepth)
+                Statement* d1 = ((RefsExp*)e)->getFirstRef(dummy);
+                Statement* d2 = ((RefsExp*)e)->getNextRef(dummy);
+                if (d1 == this || d2 == this) {
+                    // This is the special case where we have something like
+                    // 119 *32* r[29] := m[r[29]{85 119}]
+                    // I believe we can ignore the 119 part!
+                    if (!(*getLeft() == *((RefsExp*)e)->getSubExp1()))
+                        continue;
+                    if (d1 == this)
+                        change = doPropagateTo(memDepth, d2, true);
+                    else
+                        change = doPropagateTo(memDepth, d1, true);
                     continue;
-                specialReplaceRef(def);
-                change = true;
-                if (VERBOSE) {
-                    std::cerr << "Special hack propagating " <<
-                      def->getNumber() << " into " << getNumber() <<
-                      ", result is " << this << "\n";
-                }
+                } else if (*d1 == *d2) {
+                    // Different definitions, but they are the same
+                    change = doPropagateTo(memDepth, d1, true);
+                    continue;
+                } else continue;
             }
+            else
 #endif
-            if (e->getNumUses() != 1) continue;
-            // Can propagate TO s (if memory depths are suitable)
+            if (e->getNumRefs() != 1) continue;
+            // Can propagate TO this (if memory depths are suitable)
             StmtSetIter dummy;
-            Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
-            // Check the depth of the definition (an assignment)
-            // This checks the depth for the left and right sides, and
-            // gives the max for both. Example: can't propagate
-            // tmp := m[x] to foo := tmp if memDepth == 0
-            int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
-            if (depth > memDepth)
+            Statement* def = ((RefsExp*)e)->getFirstRef(dummy);
+            if (def == this)
+                // Don't propagate to self! Can happen with %pc's
                 continue;
-            replaceRef(def);
-            change = true;
-            if (VERBOSE) {
-                std::cerr << "Propagating " << def->getNumber() <<
-                  " into " << getNumber() <<
-                  ", result is " << this << "\n";
-            }
+            if (def->isNullStatement())
+                // Don't propagate a null statement! Can happen with %pc's
+                // (this would have no effect, and would infinitely loop)
+                continue;
+            change = doPropagateTo(memDepth, def, false);
         }
     } while (change);
 }
 
+bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
+    // Check the depth of the definition (an assignment)
+    // This checks the depth for the left and right sides, and
+    // gives the max for both. Example: can't propagate
+    // tmp := m[x] to foo := tmp if memDepth == 0
+    int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
+    if (depth > memDepth)
+        return false;
+    if (twoRefs)
+        // A special version of replaceRef is needed, which wraps the LHS
+        // with two refs
+        specialReplaceRef(def);
+    else
+        replaceRef(def);
+    if (VERBOSE) {
+        if (twoRefs) std::cerr << "Special: ";
+        std::cerr << "Propagating " << def->getNumber() <<
+          " into " << getNumber() <<
+          ", result is " << this << "\n";
+    }
+    return true;
+}
+
+bool Statement::operator==(Statement& other) {
+    AssignExp* ae1 = dynamic_cast<AssignExp*>(this);
+    AssignExp* ae2 = dynamic_cast<AssignExp*>(&other);
+    assert(ae1);
+    assert(ae2);
+    return *ae1 == *ae2;
+}
+
+bool Statement::isNullStatement() {
+    AssignExp *e = dynamic_cast<AssignExp*>(this);
+    if (e == NULL) return false;
+    Exp* sub2 = e->getSubExp2();
+    if (sub2->isSubscript()) {
+        RefsExp* re = (RefsExp*)sub2;
+        if (re->getNumRefs() != 1)
+            // Can't be null
+            return false;
+        StmtSetIter dummy;
+        // Has only 1 reference; has to be to self to be a null statement
+        // Not even necessary to do the compare
+        return re->getFirstRef(dummy) == this;
+    }
+    else
+        // Null if left == right
+        return *e->getSubExp1() == *sub2;
+}

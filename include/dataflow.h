@@ -91,9 +91,9 @@ public:
     void append(StatementSet& sl);          // Append whole StatementSet
     bool remove(Statement* s);              // Removal; rets false if not found
     // This one is needed where you remove in the middle of a loop
-    // Use like this: it = mystatementlist.remove(it);
-    StmtListIter StatementList::remove(StmtListIter it) {
-        return slist.erase(it); }
+    // Use like this: elem = mystatementlist.remove(it);
+    Statement* StatementList::remove(StmtListIter& it) {
+        it = slist.erase(it); return *it;}
     bool exists(Statement* s);  // Find; returns false if not found
     void prints();                          // Print to cerr (for debugging)
 };
@@ -147,6 +147,7 @@ public:
     virtual ~Statement() {
     }
 
+    bool        operator==(Statement& o);
     void        setProc(UserProc *p) { proc = p; }
 
     // calculates the reaching definitions set after this statement
@@ -282,6 +283,9 @@ public:
     // update the statement number
     void    setNumber(int num) {number = num;}
 
+    // true if is a null statement
+    bool    isNullStatement();
+
     // To/from SSA form
     virtual void   toSSAform(StatementSet& reachin, int memDepth) = 0;
     virtual void fromSSAform(igraph& igm) = 0;
@@ -291,6 +295,7 @@ public:
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
+    bool doPropagateTo(int memDepth, Statement* def, bool twoRefs);
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };
