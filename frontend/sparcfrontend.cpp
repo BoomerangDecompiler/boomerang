@@ -190,7 +190,7 @@ void SparcFrontEnd::handleCall(ADDRESS dest, BasicBlock* callBB, Cfg* cfg, ADDRE
     // If the destination address is the same as this very instruction,
     // we have a call with iDisp30 == 0. Don't treat this as the start
     // of a real procedure.
-    if ((dest != address) && prog.findProc(dest) == 0) {
+    if ((dest != address) && prog->findProc(dest) == 0) {
         // We don't want to call prog.visitProc just yet, in case this is
         // a speculative decode that failed. Instead, we use the set of
         // HLCalls (not in this procedure) that is needed by CSR
@@ -290,8 +290,8 @@ if (0)      // SETTINGS!
         // First check for helper functions
         ADDRESS dest = call_rtl->getFixedDest();
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((prog.pBF->IsDynamicLinkedProc(dest)) && 
-          (prog.pBF->SymbolByAddress(dest) == NULL)) {
+        if ((prog->pBF->IsDynamicLinkedProc(dest)) && 
+          (prog->pBF->SymbolByAddress(dest) == NULL)) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -355,7 +355,7 @@ if (0)      // SETTINGS!
             bool ret = true;
             // Check for _exit; probably should check for other "never return"
             // functions
-            const char* name = prog.pBF->SymbolByAddress(dest);
+            const char* name = prog->pBF->SymbolByAddress(dest);
             if (name && strcmp(name, "_exit") == 0) {
                 // Don't keep decoding after this call
                 ret = false;
@@ -810,6 +810,9 @@ bool SparcFrontEnd::case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddres
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &os,
     bool spec /* = false */, PHELPER helperFunc /* = NULL */)
 {
+    // cache the program being decoded
+    this->prog = prog;
+
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;
@@ -1326,10 +1329,10 @@ if (0)          // SETTINGS
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
-        if (prog.pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
+        if (prog->pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
             cfg->addCall(*it);
             // Don't visit the destination of a register call
-            if (dest != NO_ADDRESS) prog.visitProc(dest);
+            if (dest != NO_ADDRESS) prog->visitProc(dest);
         }
     }
 
@@ -1438,8 +1441,8 @@ void SparcFrontEnd::quadOperation(ADDRESS addr, std::list<RTL*>* lrtl, OPER op)
 // appropriate RTLs to lrtl, and return true
 bool SparcFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
-    if (!prog.pBF->IsDynamicLinkedProc(dest)) return false;
-    const char* p = prog.pBF->SymbolByAddress(dest);
+    if (!prog->pBF->IsDynamicLinkedProc(dest)) return false;
+    const char* p = prog->pBF->SymbolByAddress(dest);
     if (p == NULL) {
         std::cerr << "Error: Can't find symbol for PLT address " << std::hex << dest <<
           std::endl;
@@ -1681,8 +1684,8 @@ void SparcFrontEnd::setReturnLocations(CalleeEpilogue* epilogue, int iReg)
  *============================================================================*/
 #ifdef DYNAMIC
 extern "C" {
-    SparcFrontEnd* construct(int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
-        SparcFrontEnd *fe = new SparcFrontEnd(delta, uUpper);
+    SparcFrontEnd* construct(Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
+        SparcFrontEnd *fe = new SparcFrontEnd(prog, delta, uUpper);
         *decoder = fe->getDecoder();
         return fe;
     }
@@ -1697,10 +1700,10 @@ extern "C" {
  * PARAMETERS:    Same as the FrontEnd constructor
  * RETURNS:       <N/A>
  *============================================================================*/
-SparcFrontEnd::SparcFrontEnd(int delta, ADDRESS uUpper)
-  : FrontEnd(delta, uUpper)
+SparcFrontEnd::SparcFrontEnd(Prog *prog, int delta, ADDRESS uUpper)
+  : FrontEnd(prog, delta, uUpper)
 {
-    decoder = new SparcDecoder();
+    decoder = new SparcDecoder(prog);
     nop_inst.numBytes = 0;          // So won't disturb coverage
     nop_inst.type = NOP;
     nop_inst.valid = true;
@@ -1720,10 +1723,10 @@ SparcFrontEnd::~SparcFrontEnd()
  *============================================================================*/
 ADDRESS SparcFrontEnd::getMainEntryPoint( bool &gotMain ) 
 {
-    ADDRESS start = prog.pBF->GetMainEntryPoint();
+    ADDRESS start = prog->pBF->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
-    start = prog.pBF->GetEntryPoint();
+    start = prog->pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
 	return start;

@@ -19,10 +19,13 @@
 #define SSL_PATH       BOOMDIR "/frontend/machine/pentium/pentium.ssl"
 
 #include "types.h"
+#include "rtl.h"
 #include "FrontPentTest.h"
-#include "prog.h"           // For global prog
+#include "prog.h"
 #include "frontend.h"
 #include "pentiumfrontend.h"
+#include "BinaryFile.h"
+#include "BinaryFileStub.h"
 
 /*==============================================================================
  * FUNCTION:        FrontPentTest::registerTests
@@ -53,9 +56,13 @@ int FrontPentTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontPentTest::setUp () {
-    prog.pBF = BinaryFile::Load(HELLO_PENT);
-    CPPUNIT_ASSERT(prog.pBF != 0);
-    prog.pFE = FrontEnd::getInstanceFor(HELLO_PENT, dlHandle, prog.textDelta, prog.limitTextHigh, decoder); 
+    prog = new Prog();
+    prog->pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(prog->pBF != 0);
+    // Set the text limits
+    prog->getTextLimits();
+    prog->pFE = new PentiumFrontEnd(prog, prog->textDelta, prog->limitTextHigh); 
+    decoder = prog->pFE->getDecoder();
 }
 
 /*==============================================================================
@@ -66,9 +73,8 @@ void FrontPentTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontPentTest::tearDown () {
-    prog.pBF->UnLoad();
-    FrontEnd::closeInstance(dlHandle);
-	delete prog.pFE; prog.pFE = 0;
+    prog->pBF->UnLoad();
+	delete prog->pFE; prog->pFE = 0;
     delete decoder;
 }
 
@@ -79,18 +85,12 @@ void FrontPentTest::tearDown () {
 void FrontPentTest::test1 () {
     std::ostringstream ost;
 
-    // Set the text limits
-    prog.getTextLimits();
-
-    bool readResult = prog.RTLDict.readSSLFile(SSL_PATH, false);
-    CPPUNIT_ASSERT(readResult);
-
     bool gotMain;
-    ADDRESS addr = prog.pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     // Decode first instruction
-    DecodeResult inst = decoder->decodeInstruction(addr, prog.textDelta);
+    DecodeResult inst = decoder->decodeInstruction(addr, prog->textDelta);
     inst.rtl->print(ost);
     
     std::string expected(
@@ -100,14 +100,14 @@ void FrontPentTest::test1 () {
 
     std::ostringstream o2;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog.textDelta);
+    inst = decoder->decodeInstruction(addr, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string("08048919 *32* r[29] := r[28]\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog.textDelta);
+    inst = decoder->decodeInstruction(addr, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string(
         "0804891b *32* r[28] := r[28] - 4\n"
@@ -121,7 +121,7 @@ void FrontPentTest::test2() {
     std::string expected;
 
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x8048925, prog.textDelta);
+    inst = decoder->decodeInstruction(0x8048925, prog->textDelta);
     inst.rtl->print(o1);
     expected = std::string(
         "08048925 *32* r[tmp1] := r[28]\n"
@@ -130,7 +130,7 @@ void FrontPentTest::test2() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x8048928, prog.textDelta);
+    inst = decoder->decodeInstruction(0x8048928, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string(
         "08048928 *32* r[24] := r[24] ^ r[24]\n"
@@ -138,7 +138,7 @@ void FrontPentTest::test2() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x804892a, prog.textDelta);
+    inst = decoder->decodeInstruction(0x804892a, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string("0804892a JUMP 0x804892c\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
@@ -150,7 +150,7 @@ void FrontPentTest::test3() {
     std::string expected;
 
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x804892c, prog.textDelta);
+    inst = decoder->decodeInstruction(0x804892c, prog->textDelta);
     inst.rtl->print(o1);
     expected = std::string(
         "0804892c *32* r[28] := r[29]\n"
@@ -159,7 +159,7 @@ void FrontPentTest::test3() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x804892d, prog.textDelta);
+    inst = decoder->decodeInstruction(0x804892d, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string(
 	  "0804892d *32* %pc := m[r[28]]\n"
@@ -173,22 +173,22 @@ void FrontPentTest::testBranch() {
     DecodeResult inst;
     std::string expected;
 
-    prog.pBF->UnLoad();
-    prog.pBF = BinaryFile::Load(BRANCH_PENT);
-    CPPUNIT_ASSERT(prog.pBF != 0);
+/*    prog->pBF->UnLoad();
+    prog->pBF = BinaryFile::Load(BRANCH_PENT);
+    CPPUNIT_ASSERT(prog->pBF != 0); */
     // Set the text limits
-    prog.getTextLimits();
+    prog->getTextLimits();
 
     // jne
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x8048979, prog.textDelta);
+    inst = decoder->decodeInstruction(0x8048979, prog->textDelta);
     inst.rtl->print(o1);
     expected = std::string("08048979 JCOND 0x8048988, condition not equals\n");
     CPPUNIT_ASSERT_EQUAL(expected, o1.str());
 
     // jg
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x80489c1, prog.textDelta);
+    inst = decoder->decodeInstruction(0x80489c1, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string(
 	  "080489c1 JCOND 0x80489d5, condition signed greater\n");
@@ -196,7 +196,7 @@ void FrontPentTest::testBranch() {
 
     // jbe
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x8048a1b, prog.textDelta);
+    inst = decoder->decodeInstruction(0x8048a1b, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string(
         "08048a1b JCOND 0x8048a2a, condition unsigned less or equals\n");

@@ -9,14 +9,15 @@
  * 23 Apr 02 - Mike: Created
  */
 
-#ifndef BOOMDIR
-#error Must define BOOMDIR
-#endif
+//#ifndef BOOMDIR
+//#error Must define BOOMDIR
+//#endif
 
 #define HELLO_PENTIUM       BOOMDIR "/test/pentium/hello"
 
 #include "ProcTest.h"
 #include "BinaryFile.h"
+#include "BinaryFileStub.h"
 #include "pentiumfrontend.h"
 
 #include <sstream>
@@ -48,13 +49,13 @@ int ProcTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void ProcTest::setUp () {
-    prog.clear();
-    prog.pBF = BinaryFile::Load(HELLO_PENTIUM);
-    CPPUNIT_ASSERT(prog.pBF != 0);
+    m_prog = new Prog();
+    m_prog->pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(m_prog->pBF != 0);
     // Set the text limits
-    prog.getTextLimits();
-    prog.pFE = new PentiumFrontEnd(prog.textDelta, prog.limitTextHigh);
-    prog.readLibParams();
+    m_prog->getTextLimits();
+    m_prog->pFE = new PentiumFrontEnd(m_prog, m_prog->textDelta, m_prog->limitTextHigh);
+    m_prog->readLibParams();
 }
 
 /*==============================================================================
@@ -65,10 +66,9 @@ void ProcTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void ProcTest::tearDown () {
-    prog.pBF->UnLoad();
-    delete prog.pBF;
-    delete prog.pFE;
+    m_prog->pBF->UnLoad();
     delete m_proc;
+    delete m_prog;
 }
 
 /*==============================================================================
@@ -77,12 +77,12 @@ void ProcTest::tearDown () {
  *============================================================================*/
 void ProcTest::testName () {
     std::string nm("default name");
-    m_proc = new UserProc(nm, 20000);   // They will print in decimal if error
+    m_proc = new UserProc(m_prog, nm, 20000);   // They will print in decimal if error
     std::string actual(m_proc->getName());
     CPPUNIT_ASSERT_EQUAL(std::string("default name"), actual);
 
     std::string name("printf");
-    LibProc lp(name, 30000);
+    LibProc lp(m_prog, name, 30000);
     actual =  lp.getName();
     CPPUNIT_ASSERT_EQUAL(name, actual);
 

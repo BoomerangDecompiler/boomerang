@@ -1200,23 +1200,12 @@ void HLCall::print(std::ostream& os /*= cout*/)
         os << " " << returnLoc << " :=";
  
     os << "CALL ";
-    if (pDest == NULL) {
-        if (procDest)
-            os << procDest->getName();
-        else
+    if (procDest)
+        os << procDest->getName();
+    else if (pDest == NULL)
             os << "*no dest*";
-    }
-    else if (pDest->getOper() != opAddrConst) {
-        // Not just an address constant. Print as a semantic string
-        os << pDest << std::endl;
-        return;
-    }
     else {
-        Proc* pProc = prog.findProc(getFixedDest());
-        if ((pProc == NULL) || (pProc == (Proc*)-1))
-            os << "0x"<< std::hex << getFixedDest();
-        else
-            os << pProc->getName();
+        os << pDest << std::endl;
     }
 
     // Print the actual arguments of the call
@@ -1346,9 +1335,6 @@ void HLCall::setDestProc(Proc* dest)
 
 Proc* HLCall::getDestProc() 
 {
-	if (procDest == NULL && destStr != "") {
-		procDest = prog.findProc(destStr.c_str());
-	}
 	return procDest; 
 }
 
@@ -1361,10 +1347,8 @@ void HLCall::generateCode(HLLCode &hll, BasicBlock *pbb)
         return;
     }
 
-    if (p == NULL) {
-        p = prog.findProc(getFixedDest());
-        assert(p);
-    }
+    assert(p);
+
 	if (arguments.size() != p->getSignature()->getNumParams()) {
 		int orgsize = arguments.size();
 		arguments.resize(p->getSignature()->getNumParams());

@@ -12,16 +12,45 @@
 */
 
 /* $Revision$
+ * This object provides 3 pseudo-sections:
+ *  $HEADER is the main (elf) header of the file (Elf32_Ehdr)
+ *  $PHEADER is the program header of the file (array of Elf32_Phdr structs)
+ *  This is as per the file's program header, so the first enrty here
+ *  corresponds to the all zeroes first section. The second entry here
+ *  corresponds to the first real section of the file, which is the
+ *  fourth section presented in the SECTION_INFO array.
+ *  $SHEADER is an array of Elf32_Shdr structs; the first element
+ *  corresponds to the first real section of the elf file (which
+ *  is the fourth section presented in the SECTION_INFO array).
+ *
+ * 3 Mar 98 - Cristina
+ *  changed ADDR for ADDRESS for consistency with other tools.
+ * 11 Mar 98 - Cristina  
+ *  replaced BOOL for bool type (C++'s), same for TRUE and FALSE.
+ * 27 Mar 98 - Cristina
+ *  added GetMainEntryPoint().
+ * 27 May 98 - Mike
+ *  Mods for BinaryFile
+ * 6th Aug 98 - Mike
+ *  GetEntryPoints returns list of SectionInfo* now
+ * 21 Aug 98 - Mike
+ *  Added bNoTypeOK to ValueByName(), GetAddressByName(), GetSizeByName
+ * 14th Jan 99 - Mike
+ *  Added functions like dumpVerneed() to dump these section types
+ * 20 Apr 99 - Mike: Added GetDistanceByName()
+ * 26 Sep 99 - Mike: Made GetStrPtr() public
+ * 10 Aug 01 - Mike: Added GetDynamicGlobalMap(); define ELF32_R_SYM if nec
  * 12 Sep 01 - Mike: Replaced SymTab object with map from ADDRESS to string
  * 09 Mar 02 - Mike: Changes for stand alone compilation
- * 01 Oct 02 - Mike: Removed elf library (and include file) dependencies
- * 02 Oct 02 - Mike: elfRead2 and elfRead4 are const now
 */
 
 #ifndef __ELFBINARYFILE_H__
 #define __ELFBINARYFILE_H__
 
+// In case the below is not found in sys/elf.h
+#ifndef  ELF32_R_SYM
 #define  ELF32_R_SYM(info)       ((info)>>8)
+#endif
 
 /*==============================================================================
  * Dependencies.
@@ -60,17 +89,12 @@ typedef struct {
         short e_shstrndx;
 } Elf32_Ehdr;
 
-#define EM_SPARC        2			// Sun SPARC
-#define EM_386          3			// Intel 80386 or higher
-#define EM_68K			4			// Motorola 68000
-#define EM_PA_RISC		15			// HP PA-RISC
-
 #define ET_DYN  3       // Elf type (dynamic library)
 
 // Program header
 typedef struct {
     int  p_type;     /* entry type */
-    int  p_offset;   /* file offset */
+    int   p_offset;   /* file offset */
     int  p_vaddr;    /* virtual address */
     int  p_paddr;    /* physical address */
     int  p_filesz;   /* file size */
@@ -92,12 +116,6 @@ typedef struct {
   int   sh_addralign;
   int   sh_entsize;
 } Elf32_Shdr;
-
-#define SHF_WRITE		1		// Writeable
-#define SHF_ALLOC		2		// Consumes memory in exe
-#define SHF_EXECINSTR	4		// Executable
-
-#define SHT_NOBITS		8		// Bss
 
 typedef struct {
    int      st_name;
@@ -140,7 +158,6 @@ public:
   virtual bool  Open(const char* sName);        // Open the file for r/w; pv
   virtual void  Close();                        // Close file opened with Open()
   virtual LOAD_FMT GetFormat() const;           // Get format (e.g. LOADFMT_ELF)
-  virtual MACHINE GetMachine() const;           // Get machine (e.g. MACHINE_SPARC)
   virtual bool isLibrary() const;
   virtual std::list<const char *> getDependencyList();
   virtual ADDRESS getImageBase();
@@ -229,14 +246,12 @@ virtual ADDRESS* GetImportStubs(int& numImports);
     bool        PostLoad(void* handle); // Called after archive member loaded
 
     // Internal elf reading methods
-    // Read a short with endianness care
-    int         elfRead2(short* ps) const;
-    // Read an int with endianness care
-    int         elfRead4(int*   pi) const;
+    int         elfRead2(short* ps);    // Read a short with endianness care
+    int         elfRead4(int*   pi);    // Read an int with endianness care
 
     FILE*       m_fd;                   // File stream
-	long		m_lImageSize;			// Size of image in bytes
     char*       m_pImage;               // Pointer to the loaded image
+    Elf32_Ehdr* m_pHeader;              // Pointer to header
     Elf32_Phdr* m_pPhdrs;               // Pointer to program headers
     Elf32_Shdr* m_pShdrs;               // Array of section header structs
     char*       m_pStrings;             // Pointer to the string section

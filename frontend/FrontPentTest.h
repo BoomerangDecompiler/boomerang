@@ -9,10 +9,10 @@ class PentiumFrontEnd;
 
 class FrontPentTest : public CppUnit::TestCase {
   protected:
+    // the program
+    Prog *prog;
     // The decoder object
     NJMCDecoder* decoder;
-    // Handle set by getInstanceFor()
-    void* dlHandle;
 
   public:
     FrontPentTest(std::string name) : CppUnit::TestCase (name)

@@ -66,6 +66,7 @@
 #include <string>
 #include "coverage.h"           // For Coverage class
 
+class Prog;
 class UserProc;
 class Cfg;
 class BasicBlock;
@@ -90,7 +91,7 @@ public:
     /*
      * Constructor with name, native address and optional bLib.
      */
-    Proc(ADDRESS uNative, Signature *sig);
+    Proc(Prog *prog, ADDRESS uNative, Signature *sig);
 
     virtual ~Proc();
 
@@ -113,6 +114,11 @@ public:
 	 * Set the native address
 	 */
 	void setNativeAddress(ADDRESS a);
+
+	/*
+	 * Get the program this procedure belongs to.
+	 */
+	Prog *getProg();
 
 	/*
 	 * Get/Set the first procedure that calls this procedure (or null for main/start).
@@ -221,10 +227,15 @@ public:
 	virtual bool serialize(std::ostream &ouf, int &len) = 0;
 
 	// deserialize a procedure
-	static Proc *deserialize(std::istream &inf);
+	static Proc *deserialize(Prog *prog, std::istream &inf);
 	virtual bool deserialize_fid(std::istream &inf, int fid);
 
 protected:
+
+    /*
+     * Program containing this procedure.
+     */
+    Prog *prog;
 
     /*
      * Procedure's address.
@@ -238,16 +249,17 @@ protected:
     Signature *signature;
 
 	/*
+	 * The first procedure to call this procedure
+	 */
+	Proc *m_firstCaller;
+	ADDRESS m_firstCallerAddr;  // can only be used once.
+
+	/*
 	 * Number of bytes this procedure will cause any call to it to pop off
 	 * the stack (of the caller).
 	 */
 	int bytesPopped;
 
-	/*
-	 * The first procedure to call this procedure
-	 */
-	Proc *m_firstCaller;
-	ADDRESS m_firstCallerAddr;  // can only be used once.
 
 }; 
 
@@ -257,7 +269,7 @@ protected:
 class LibProc : public Proc {
 public:
 	
-    LibProc(std::string& name, ADDRESS address);
+    LibProc(Prog *prog, std::string& name, ADDRESS address);
 	virtual ~LibProc();
 
     /*
@@ -302,7 +314,7 @@ public:
 class UserProc : public Proc {
 public:
 
-    UserProc(std::string& name, ADDRESS address);
+    UserProc(Prog *prog, std::string& name, ADDRESS address);
 	virtual ~UserProc();
 
     /*

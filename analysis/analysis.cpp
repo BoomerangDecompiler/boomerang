@@ -32,6 +32,9 @@
 #include "cfg.h"
 #include "proc.h"
 #include "prog.h"
+#include "BinaryFile.h"
+#include "frontend.h"
+#include "decoder.h"
 
 #define DEBUG_ANALYSIS 0        // Non zero for debugging
 
@@ -59,6 +62,7 @@ void processAddFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
   UserProc* proc, RTL_KIND kd);
 void checkBBconst(PBB pBB);
 bool isFlagFloat(Exp* rt, UserProc* proc);
+void analyseCalls(PBB pBB, UserProc *proc);
 
 // A global array for initialising the below
 int memXinit[] = {opMemOf, -1};
@@ -168,8 +172,12 @@ void analysis(UserProc* proc)
 #if USE_PROCESS_CONST		// Fatally flawed. Somehow, conversion of
 							// strings and function pointers has disappeared!
         // Check for constants
-        checkBBconst(pBB);
+        checkBBconst(proc->getProg(), pBB);
 #endif // USE_PROCESS_CONST
+
+	// analyse calls
+	analyseCalls(pBB, proc);
+
         pBB = cfg->getNextBB(it);
     }
 }
@@ -949,7 +957,7 @@ int copySwap2(short* h)
  *                RHS: pointer to the RHS to be changed
  * RETURNS:       <nothing>; note that the RHS Exp* gets changed
  *============================================================================*/
-void processConst(ADDRESS addr, Exp*& memExp, Exp* RHS)
+void processConst(Prog *prog, ADDRESS addr, Exp*& memExp, Exp* RHS)
 {
     const void* p;
     const char* last;
@@ -958,7 +966,7 @@ void processConst(ADDRESS addr, Exp*& memExp, Exp* RHS)
         double d;
         int i[2];
     } value;
-    p = prog.getCodeInfo(addr, last, delta);
+    p = prog->getCodeInfo(addr, last, delta);
     if (p == NULL) return;      // No code section pointer there
     int size = memExp.getType().getSize();
 
@@ -1124,7 +1132,7 @@ bool isConst(const Exp* exp, const KMAP& constMap, ADDRESS& value)
  *                  proc: Ptr to UserProc object for the current procedure
  * RETURNS:         <nothing>
  *============================================================================*/
-void checkBBconst(PBB pBB)
+void checkBBconst(Prog *prog, PBB pBB)
 {
     std::list<RTL*>* pRtls = pBB->getRTLs();
     if (pRtls == 0)
@@ -1175,7 +1183,7 @@ void checkBBconst(PBB pBB)
                 if (isConst(address, constMap, value))
                     // This is what we are waiting for: assignment from a
                     // constant memory address. value is the const address
-                    processConst(value, **it, RHS);
+                    processConst(prog, value, **it, RHS);
                 delete address;
             }
         }
@@ -1205,8 +1213,8 @@ bool isFlagFloat(Exp* rt, UserProc* proc)
     if (first->getOper() == opRegOf) {
         if (firstSub->getOper() == opIntConst) {
             int regNum = ((Const*)firstSub)->getInt();
-            // Get the register's intrinsic type
-			Register &reg = prog.RTLDict.DetRegMap[regNum];
+            // Get the register's intrinsic type (note how ugly this is).
+	    Register &reg = proc->getProg()->pFE->getDecoder()->getRTLDict().DetRegMap[regNum];
             Type* rType = reg.g_type();
             bool ret = rType->isFloat();
 	    delete rType;
@@ -1227,3 +1235,20 @@ bool isFlagFloat(Exp* rt, UserProc* proc)
     }       
     return false;
 }
+
+	// analyse calls
+void analyseCalls(PBB pBB, UserProc *proc)
+{
+	std::list<RTL*>* rtls = pBB->getRTLs();
+	for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 
+		it++) {
+		if ((*it)->getKind() != CALL_RTL) continue;
+		HLCall *call = (HLCall*)*it;
+		if (call->getDestProc() == NULL && !call->isComputed()) {
+			Proc *p = proc->getProg()->findProc(call->getFixedDest());
+			assert(p);
+			call->setDestProc(p);
+		}
+	}
+}
+

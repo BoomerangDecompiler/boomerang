@@ -33,7 +33,9 @@
 #endif
 
 #include "BinaryFile.h"
+#ifndef WIN32
 #include "ElfBinaryFile.h"
+#endif
 #include "Win32BinaryFile.h"
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"

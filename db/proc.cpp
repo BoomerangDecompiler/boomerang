@@ -63,8 +63,9 @@ Proc::~Proc()
  * PARAMETERS:      uNative - Native address of entry point of procedure
  * RETURNS:         <nothing>
  *============================================================================*/
-Proc::Proc(ADDRESS uNative, Signature *sig)
-     : address(uNative), signature(sig), m_firstCaller(NULL), bytesPopped(0)
+Proc::Proc(Prog *prog, ADDRESS uNative, Signature *sig)
+     : prog(prog), address(uNative), signature(sig), m_firstCaller(NULL), 
+       bytesPopped(0)
 {
 }
 
@@ -423,10 +424,15 @@ std::list<Type>* Proc::getParamTypeList(const std::list<Exp*>& actuals)
 }
 #endif
 
+Prog *Proc::getProg()
+{
+	return prog;
+}
+
 Proc *Proc::getFirstCaller()
 { 
 	if (m_firstCaller == NULL && m_firstCallerAddr != NO_ADDRESS) {
-		m_firstCaller = prog.findProc(m_firstCallerAddr);
+		m_firstCaller = prog->findProc(m_firstCallerAddr);
 		m_firstCallerAddr = NO_ADDRESS;
 	}
 
@@ -440,7 +446,7 @@ Signature *Proc::getSignature()
 }
 
 // deserialize a procedure
-Proc *Proc::deserialize(std::istream &inf)
+Proc *Proc::deserialize(Prog *prog, std::istream &inf)
 {
 	/*
 	 * These values are ordered in the save file because I think they are concrete 
@@ -459,9 +465,9 @@ Proc *Proc::deserialize(std::istream &inf)
 
 	Proc *p = NULL;
 	if (type == 0)
-		p = new LibProc(nam, uAddr);
+		p = new LibProc(prog, nam, uAddr);
 	else
-		p = new UserProc(nam, uAddr);
+		p = new UserProc(prog, nam, uAddr);
 	assert(p);
 
 	int fid;
@@ -506,16 +512,23 @@ bool Proc::deserialize_fid(std::istream &inf, int fid)
  *                  uNative - Native address of entry point of procedure
  * RETURNS:         <nothing>
  *============================================================================*/
-LibProc::LibProc(std::string& name, ADDRESS uNative) : Proc(uNative, NULL)
+LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : 
+	Proc(prog, uNative, NULL)
 {
     // Look up the name in the public map mapLibParam of the prog object
     std::map<std::string, Signature* >::iterator it;
-    it = prog.mapLibParam.find(name);
-    if (it == prog.mapLibParam.end()) {
+    it = prog->mapLibParam.find(name);
+    if (it == prog->mapLibParam.end()) {
         std::cerr << "Could not find parameters for library function " << name <<
           std::endl;
         // Get a default library signature
-		signature = Signature::DefaultLibrarySignature(name.c_str());
+	if (prog->pBF->GetFormat() == LOADFMT_PE)
+		signature = Signature::instantiate("-win32-pentium", name.c_str());
+	else {
+		std::string s = "-stdc-";
+		s += prog->pFE->getFrontEndId();
+		signature = Signature::instantiate(s.c_str(), name.c_str());
+	} 
     }
     else {
 		signature = (*it).second->clone();
@@ -607,9 +620,10 @@ std::ostream& LibProc::put(std::ostream& os)
  *                  uNative - Native address of entry point of procedure
  * RETURNS:         <nothing>
  *============================================================================*/
-UserProc::UserProc(std::string& name, ADDRESS uNative) :
-	Proc(uNative, new Signature(name.c_str())), cfg(new Cfg()), decoded(false),
-    returnIsSet(false), isSymbolic(false), uniqueID(0)
+UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
+	Proc(prog, uNative, new Signature(name.c_str())), 
+	cfg(new Cfg()), decoded(false),
+    	returnIsSet(false), isSymbolic(false), uniqueID(0)
 {
     cfg->setProc(this);              // Initialise cfg.myProc
 }
@@ -1190,7 +1204,7 @@ std::set<Proc*>& UserProc::getCallees()
 {
 	if (calleeAddrSet.begin() != calleeAddrSet.end()) {
 		for (std::set<ADDRESS>::iterator it = calleeAddrSet.begin(); it != calleeAddrSet.end(); it++) {
-			Proc *p = prog.findProc(*it);
+			Proc *p = prog->findProc(*it);
 			if (p)
 				calleeSet.insert(p);
 		}
@@ -1611,7 +1625,7 @@ bool UserProc::findSymbolFor(Exp *e, std::string &sym, TypedExp* &sym_exp)
 			return true;
 		}
 	}
-	return prog.findSymbolFor(e, sym, sym_exp);
+	return prog->findSymbolFor(e, sym, sym_exp);
 }
 
 bool UserProc::generateCode(HLLCode &hll)

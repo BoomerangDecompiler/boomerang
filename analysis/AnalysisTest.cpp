@@ -12,6 +12,8 @@
 #include "AnalysisTest.h"
 #include "prog.h"
 #include "sparcfrontend.h"
+#include "BinaryFile.h"
+#include "BinaryFileStub.h"
 
 #define CCX_SPARC       BOOMDIR "/test/sparc/condcodexform_gcc"
 #define SSL_PATH        BOOMDIR "/frontend/machine/sparc/sparc.ssl"
@@ -45,15 +47,16 @@ int AnalysisTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::setUp () {
-    prog.pBF = BinaryFile::Load(CCX_SPARC);
-    CPPUNIT_ASSERT(prog.pBF != 0);
+    prog = new Prog();
+    prog->pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(prog->pBF != 0);
 
     // Set the text limits
-    prog.getTextLimits();
+    prog->getTextLimits();
 
 	// Set up the front-end object
-	prog.pFE = FrontEnd::getInstanceFor(CCX_SPARC, dlHandle,
-	  prog.textDelta, prog.limitTextHigh, decoder);
+	prog->pFE = new SparcFrontEnd(prog,  prog->textDelta, prog->limitTextHigh);
+	decoder = prog->pFE->getDecoder();
 
 }
 
@@ -65,9 +68,8 @@ void AnalysisTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::tearDown () {
-    prog.pBF->UnLoad();
-    FrontEnd::closeInstance(dlHandle);
-    delete prog.pFE; prog.pFE = 0;
+    prog->pBF->UnLoad();
+    delete prog->pFE; prog->pFE = 0;
 }
 
 /*==============================================================================
@@ -77,17 +79,17 @@ void AnalysisTest::tearDown () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void AnalysisTest::testFlags () {
-    bool readResult = prog.RTLDict.readSSLFile(SSL_PATH, false);
-    CPPUNIT_ASSERT(readResult);
+    
+    CPPUNIT_ASSERT (prog->pBF->GetMachine() == MACHINE_SPARC);
 
     bool gotMain;
-    ADDRESS addr = prog.pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     std::string name("main");
-    UserProc* pProc = new UserProc(name, addr);
+    UserProc* pProc = new UserProc(prog, name, addr);
     std::ofstream dummy;
-    bool res = prog.pFE->processProc(addr, pProc, dummy, false);
+    bool res = prog->pFE->processProc(addr, pProc, dummy, false);
 	CPPUNIT_ASSERT(res);
 
     // Call analysis

@@ -20,10 +20,12 @@
 
 #include "types.h"
 #include "FrontSparcTest.h"
-#include "prog.h"           // For global prog
+#include "prog.h"
 #include "frontend.h"
 #include "sparcfrontend.h"
 #include "cfg.h"
+#include "BinaryFile.h"
+#include "BinaryFileStub.h"
 
 /*==============================================================================
  * FUNCTION:        FrontSparcTest::registerTests
@@ -55,12 +57,15 @@ int FrontSparcTest::countTestCases () const
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontSparcTest::setUp () {
-    prog.pBF = BinaryFile::Load(HELLO_SPARC);
-    CPPUNIT_ASSERT(prog.pBF != 0);
+    prog = new Prog();
+    prog->pBF = new BinaryFileStub();
+    CPPUNIT_ASSERT(prog->pBF != 0);
+    CPPUNIT_ASSERT(prog->pBF->GetMachine() == MACHINE_SPARC);
     // Set the text limits
-    prog.getTextLimits();
-    prog.pFE = FrontEnd::getInstanceFor(HELLO_SPARC, dlHandle, prog.textDelta,
-	  prog.limitTextHigh, decoder);
+    prog->getTextLimits();
+    prog->pFE = new SparcFrontEnd(prog, prog->textDelta,
+	  prog->limitTextHigh);
+    decoder = prog->pFE->getDecoder();
 }
 
 /*==============================================================================
@@ -71,9 +76,8 @@ void FrontSparcTest::setUp () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void FrontSparcTest::tearDown () {
-    prog.pBF->UnLoad();
-    FrontEnd::closeInstance(dlHandle);
-	delete prog.pFE; prog.pFE = 0;
+    prog->pBF->UnLoad();
+    delete prog->pFE; prog->pFE = 0;
 }
 
 /*==============================================================================
@@ -83,15 +87,13 @@ void FrontSparcTest::tearDown () {
 void FrontSparcTest::test1 () {
     std::ostringstream ost;
 
-    bool readResult = prog.RTLDict.readSSLFile(SSL_PATH, false);
-    CPPUNIT_ASSERT(readResult);
-
     bool gotMain;
-    ADDRESS addr = prog.pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     // Decode first instruction
-    DecodeResult inst = decoder->decodeInstruction(addr, prog.textDelta);
+    DecodeResult inst = decoder->decodeInstruction(addr, prog->textDelta);
+    CPPUNIT_ASSERT(inst.rtl != NULL);
     inst.rtl->print(ost);
     
     std::string expected(
@@ -125,14 +127,14 @@ void FrontSparcTest::test1 () {
 
     std::ostringstream o2;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog.textDelta);
+    inst = decoder->decodeInstruction(addr, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string("00010a58 *32* r[9] := 70656\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
-    inst = decoder->decodeInstruction(addr, prog.textDelta);
+    inst = decoder->decodeInstruction(addr, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string("00010a5c *32* r[8] := r[9] | 464\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
@@ -144,7 +146,7 @@ void FrontSparcTest::test2() {
     std::string expected;
 
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x10a60, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a60, prog->textDelta);
     inst.rtl->print(o1);
     // NOTE: this call is to out of range of the program's
     // text limits, is this correct behaviour?  Please check. - trent
@@ -152,19 +154,19 @@ void FrontSparcTest::test2() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x10a64, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a64, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string("00010a64\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x10a68, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a68, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string("00010a68 *32* r[24] := r[0] | 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     std::ostringstream o4;
-    inst = decoder->decodeInstruction(0x10a6c, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a6c, prog->textDelta);
     inst.rtl->print(o4);
     expected = std::string("00010a6c JUMP 0x10a74\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
@@ -176,19 +178,19 @@ void FrontSparcTest::test3() {
     std::string expected;
 
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x10a70, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a70, prog->textDelta);
     inst.rtl->print(o1);
     expected = std::string("00010a70\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x10a74, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a74, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string("00010a74 RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x10a78, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10a78, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string(
         "00010a78 *32* r[tmp] := r[0] + r[0]\n"
@@ -226,29 +228,29 @@ void FrontSparcTest::testBranch() {
     DecodeResult inst;
     std::string expected;
 
-    prog.pBF->UnLoad();                 // Unload hello
-    prog.pBF = BinaryFile::Load(BRANCH_SPARC);
-    CPPUNIT_ASSERT(prog.pBF != 0);
+    prog->pBF->UnLoad();                 // Unload hello
+    prog->pBF = BinaryFile::Load(BRANCH_SPARC);
+    CPPUNIT_ASSERT(prog->pBF != 0);
     // Set the text limits (may well be different from hello)
-    prog.getTextLimits();
+    prog->getTextLimits();
 
     // bne
     std::ostringstream o1;
-    inst = decoder->decodeInstruction(0x10ab0, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10ab0, prog->textDelta);
     inst.rtl->print(o1);
     expected = std::string("00010ab0 JCOND 0x10ac8, condition not equals\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     // bg
     std::ostringstream o2;
-    inst = decoder->decodeInstruction(0x10af8, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10af8, prog->textDelta);
     inst.rtl->print(o2);
     expected = std::string("00010af8 JCOND 0x10b10, condition signed greater\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     // bleu
     std::ostringstream o3;
-    inst = decoder->decodeInstruction(0x10b44, prog.textDelta);
+    inst = decoder->decodeInstruction(0x10b44, prog->textDelta);
     inst.rtl->print(o3);
     expected = std::string(
         "00010b44 JCOND 0x10b54, condition unsigned less or equals\n");
@@ -256,23 +258,23 @@ void FrontSparcTest::testBranch() {
 }
 
 void FrontSparcTest::testDelaySlot() {
-    prog.pBF->UnLoad();
-    prog.pBF = BinaryFile::Load(BRANCH_SPARC);
-    CPPUNIT_ASSERT(prog.pBF != 0);
-    prog.getTextLimits();       // Get the limits for the branch test program
-	if (prog.pFE) delete prog.pFE;
-    prog.pFE = (SparcFrontEnd*)FrontEnd::getInstanceFor(BRANCH_SPARC, dlHandle,
-	  prog.textDelta, prog.limitTextHigh, decoder);
-
+/*    prog->pBF->UnLoad();
+    prog->pBF = BinaryFile::Load(BRANCH_SPARC);
+    CPPUNIT_ASSERT(prog->pBF != 0);
+    prog->getTextLimits();       // Get the limits for the branch test program
+	if (prog->pFE) delete prog->pFE;
+    prog->pFE = (SparcFrontEnd*)FrontEnd::getInstanceFor(BRANCH_SPARC, dlHandle,
+	  prog->textDelta, prog->limitTextHigh, decoder);
+*/
 
     bool gotMain;
-    ADDRESS addr = prog.pFE->getMainEntryPoint(gotMain);
+    ADDRESS addr = prog->pFE->getMainEntryPoint(gotMain);
     CPPUNIT_ASSERT (addr != NO_ADDRESS);
 
     std::string name("testDelaySlot");
-    UserProc* pProc = new UserProc(name, addr);
+    UserProc* pProc = new UserProc(prog, name, addr);
     std::ofstream dummy;
-    bool res = prog.pFE->processProc(addr, pProc, dummy, false);
+    bool res = prog->pFE->processProc(addr, pProc, dummy, false);
 
     CPPUNIT_ASSERT(res == 1);
     Cfg* cfg = pProc->getCFG();

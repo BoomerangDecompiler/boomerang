@@ -174,11 +174,11 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature &candid
 	// must be callee pop
 	if (p->getBytesPopped() == 0) return false;
 
-	// better be win32
-	if (prog.pBF->GetFormat() != LOADFMT_PE) return false;
+	// better be win32 (disabled)
+	//if (prog->pBF->GetFormat() != LOADFMT_PE) return false;
 
-	// better be x86
-	if (std::string(prog.pFE->getFrontEndId()) != "pentium") return false;
+	// better be x86 (disabled)
+	//if (std::string(prog->pFE->getFrontEndId()) != "pentium") return false;
 	
 	// debug
 	std::stringstream os;
@@ -376,8 +376,8 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
 	std::vector<int> &inregs = candidate.getInRegs();
 	std::vector<int> &outregs = candidate.getOutRegs();
 
-	// better be x86
-	if (std::string(prog.pFE->getFrontEndId()) != "pentium") return false;
+	// better be x86 (disabled)
+	//if (std::string(prog->pFE->getFrontEndId()) != "pentium") return false;
 	
 	// debug
 	std::stringstream os;
@@ -992,41 +992,23 @@ Signature *Signature::promote(UserProc *p)
 	return this;
 }
 
-Signature *Signature::DefaultLibrarySignature(const char *nam)
-{
-	if (prog.pBF->GetFormat() == LOADFMT_PE) {
-		return new CallingConvention::Win32Signature(nam);
-	}
-	std::string fe = prog.pFE->getFrontEndId();
-	if (fe == "pentium") {
-		return new CallingConvention::StdC::PentiumSignature(nam);
-	}
-	if (fe == "sparc") {
-		return new CallingConvention::StdC::SparcSignature(nam);
-	}
-	// insert other platforms here
-	assert(false);
-	return NULL;	
-}
-
 Signature *Signature::instantiate(const char *str, const char *nam)
 {
 	std::string s = str;
-	if (s == "-win32") {
-		assert(prog.pBF->GetFormat() == LOADFMT_PE);
+	if (s == "-win32-pentium") {
 		return new CallingConvention::Win32Signature(nam);
 	}
 	if (s == "-stdc") {
-		std::string fe = prog.pFE->getFrontEndId();
-		if (fe == "pentium") {
-			return new CallingConvention::StdC::PentiumSignature(nam);
-		}
-		if (fe == "sparc") {
-			return new CallingConvention::StdC::SparcSignature(nam);
-		}
-		// insert other platforms here
+		// need platform too
 		assert(false);
 	}
+	if (s == "-stdc-pentium") {
+		return new CallingConvention::StdC::PentiumSignature(nam);
+	}
+	if (s == "-stdc-sparc") {
+		return new CallingConvention::StdC::SparcSignature(nam);
+	}
+	std::cerr << "unknown signature: " << s << std::endl;
 	// insert other conventions here
 	assert(false);
 	return NULL;

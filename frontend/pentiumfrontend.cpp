@@ -31,11 +31,11 @@
 #include "BinaryFile.h"
 #include "frontend.h"
 #include "pentiumfrontend.h"
+#include "rtl.h"
 #include "decoder.h"        // prototype for decodeInstruction()
 #include "pentiumdecoder.h"
 #include "register.h"
 #include "type.h"
-#include "rtl.h"
 #include "cfg.h"
 #include "exp.h"
 #include "proc.h"
@@ -834,7 +834,7 @@ void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls,
 bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl)
 {
     if (dest == NO_ADDRESS) return false;
-    const char* p = prog.pBF->SymbolByAddress(dest);
+    const char* p = prog->pBF->SymbolByAddress(dest);
     if (p == NULL) return false;
     std::string name(p);
     if (name == "__xtol") {
@@ -892,8 +892,8 @@ unsigned PentiumFrontEnd::fetch4(unsigned char* ptr)
  *============================================================================*/
 #ifdef DYNAMIC
 extern "C" {
-    PentiumFrontEnd* construct(int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
-        PentiumFrontEnd *fe = new PentiumFrontEnd(delta, uUpper);
+    PentiumFrontEnd* construct(Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder** decoder) {
+        PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
         *decoder = fe->getDecoder();
         return fe;
     }
@@ -908,18 +908,18 @@ extern "C" {
  * PARAMETERS:    Same as the FrontEnd constructor
  * RETURNS:       <N/A>
  *============================================================================*/
-PentiumFrontEnd::PentiumFrontEnd(int delta, ADDRESS uUpper)
-  : FrontEnd(delta, uUpper), idPF(-1)
+PentiumFrontEnd::PentiumFrontEnd(Prog *prog, int delta, ADDRESS uUpper)
+  : FrontEnd(prog, delta, uUpper), idPF(-1)
 {
-	decoder = new PentiumDecoder();
-/*	for (std::map<int, Register, std::less<int> >::iterator it = prog.RTLDict.DetRegMap.begin(); 
-		 it != prog.RTLDict.DetRegMap.end(); it++) {
+	decoder = new PentiumDecoder(prog);
+/*	for (std::map<int, Register, std::less<int> >::iterator it = prog->RTLDict.DetRegMap.begin(); 
+		 it != prog->RTLDict.DetRegMap.end(); it++) {
 		int i = (*it).first;
 		Register &r = (*it).second;
 		if (!strcmp(r.g_name(), "%esp"))
-			prog.symbols[std::string(r.g_name())] = new TypedExp(Type(DATA_ADDRESS), new Unary(opRegOf, new Const(i)));
+			prog->symbols[std::string(r.g_name())] = new TypedExp(Type(DATA_ADDRESS), new Unary(opRegOf, new Const(i)));
 		else
-			prog.symbols[std::string(r.g_name())] = new TypedExp(r.g_type(), new Unary(opRegOf, new Const(i)));
+			prog->symbols[std::string(r.g_name())] = new TypedExp(r.g_type(), new Unary(opRegOf, new Const(i)));
 	} */
 }
 
@@ -943,17 +943,17 @@ NJMCDecoder *PentiumFrontEnd::getDecoder()
 ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain ) 
 {
 	gotMain = true;
-    ADDRESS start = prog.pBF->GetMainEntryPoint();
+    ADDRESS start = prog->pBF->GetMainEntryPoint();
     if( start != NO_ADDRESS ) return start;
 
 	gotMain = false;
-    start = prog.pBF->GetEntryPoint();
+    start = prog->pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
 	return start;  // dont use this pattern
 
-    if ((prog.pBF->GetFormat() == LOADFMT_PE ) ||
-      (prog.pBF->GetFormat() == LOADFMT_EXE)) {
+    if ((prog->pBF->GetFormat() == LOADFMT_PE ) ||
+      (prog->pBF->GetFormat() == LOADFMT_EXE)) {
         int instCount = 100;
         int conseq = 0;
         ADDRESS addr = start;
@@ -962,7 +962,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         // no other instructions between them. This is the "windows" pattern
         do {
             DecodeResult inst =
-              decoder->decodeInstruction(addr, prog.textDelta);
+              decoder->decodeInstruction(addr, prog->textDelta);
             if ((inst.rtl->getKind() == CALL_RTL) &&
                 ((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
                 if (++conseq == 3) {
@@ -981,7 +981,7 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         // will be setting up envp, argv, and argc
         instCount = 120; addr = start; conseq = 0;
         do {
-            DecodeResult inst = getDecoder()->decodeInstruction(addr, prog.textDelta);
+            DecodeResult inst = getDecoder()->decodeInstruction(addr, prog->textDelta);
             if ((conseq >= 3) && (inst.rtl->getKind() == CALL_HRTL) &&
                 ((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
                     // Success. Return the target of the call					

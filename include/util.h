@@ -16,6 +16,8 @@
 #include <string>
 #include "types.h"
 
+class Prog;
+
 // was a workaround
 #define STR(x) (char *)(x.str().c_str())
 // Upper case a C string: s is source, d is dest
@@ -24,8 +26,8 @@ void upperStr(const char* s, char* d);
 std::string operator+(const std::string& s, int i);
 
 // load / save functions
-void load(std::string &location);
-void save(std::string &location);
+void load(Prog *prog, std::string &location);
+void save(Prog *prog, std::string &location);
 
 // helper functions for load/save
 void loadString(std::istream &is, std::string &str);

@@ -26,10 +26,10 @@
 #endif
 
 #include <stdarg.h>         // For varargs
+#include "rtl.h"
 #include "decoder.h"
 #include "exp.h"
 #include "register.h"
-#include "rtl.h"
 #include "proc.h"
 #include "prog.h"
 #include "BinaryFile.h"
@@ -44,7 +44,7 @@
  * PARAMETERS:     None
  * RETURNS:        N/A
  *============================================================================*/
-NJMCDecoder::NJMCDecoder()
+NJMCDecoder::NJMCDecoder(Prog *prog) : prog(prog)
 {}
 
 /*==============================================================================
@@ -60,7 +60,7 @@ NJMCDecoder::NJMCDecoder()
 std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
 {
 	// Get the signature of the instruction and extract its parts
-	std::pair<std::string,unsigned> sig = prog.RTLDict.getSignature(name);
+	std::pair<std::string,unsigned> sig = RTLDict.getSignature(name);
 	std::string opcode = sig.first;
 	unsigned numOperands = sig.second;
 
@@ -83,7 +83,7 @@ std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
 	std::cout << std::endl;
 #endif
 
-	std::list<Exp*>* instance = prog.RTLDict.instantiateRTL(opcode,actuals);
+	std::list<Exp*>* instance = RTLDict.instantiateRTL(opcode,actuals);
 
 	// Delete the memory used for the actuals
 	for (std::vector<Exp*>::iterator it = actuals.begin();
@@ -105,12 +105,12 @@ std::list<Exp*>* NJMCDecoder::instantiate(ADDRESS pc, const char* name, ...)
  *============================================================================*/
 Exp* NJMCDecoder::instantiateNamedParam(char* name, ...)
 {
-    if( prog.RTLDict.ParamSet.find(name) == prog.RTLDict.ParamSet.end() ) {
+    if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         std::cerr << "No entry for named parameter '" << name << "'\n";
         return 0;
     }
-    assert(prog.RTLDict.DetParamMap.find(name) != prog.RTLDict.DetParamMap.end());
-    ParamEntry &ent = prog.RTLDict.DetParamMap[name];
+    assert(RTLDict.DetParamMap.find(name) != RTLDict.DetParamMap.end());
+    ParamEntry &ent = RTLDict.DetParamMap[name];
     if (ent.kind != PARAM_EXPR && ent.kind != PARAM_LAMBDA ) {
         std::cerr << "Attempt to instantiate expressionless parameter '" << name
           << "'\n";
@@ -149,11 +149,11 @@ assert(ent.exp->getOper() == opAssignExp);
  *============================================================================*/
 void NJMCDecoder::substituteCallArgs(char *name, Exp*& exp, ...)
 {
-    if (prog.RTLDict.ParamSet.find(name) == prog.RTLDict.ParamSet.end()) {
+    if (RTLDict.ParamSet.find(name) == RTLDict.ParamSet.end()) {
         std::cerr << "No entry for named parameter '" << name << "'\n";
         return;
     }
-    ParamEntry &ent = prog.RTLDict.DetParamMap[name];
+    ParamEntry &ent = RTLDict.DetParamMap[name];
     /*if (ent.kind != PARAM_EXPR && ent.kind != PARAM_LAMBDA) {
         std::cerr << "Attempt to instantiate expressionless parameter '" << name << "'\n";
         return;
@@ -229,7 +229,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size,
     // Check for a pointer to a label, but not a branch that happens to be
     // to the top of this function (this would a rare function with no
     // prologue).
-    const char* fname = prog.pBF->SymbolByAddress(dest);
+    const char* fname = prog->pBF->SymbolByAddress(dest);
     // FIXME: The test for a branch to the top of a function (recursive call
     // followed by a return) has to be done somewhere else
     if ((fname == 0) /*|| (proc == 0) || (proc->getNativeAddress() == dest)*/) {

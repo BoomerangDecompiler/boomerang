@@ -131,11 +131,21 @@ void Prog::decode()
 				p->setDecoded();
 			else
 				break;
-			// try to promote all the userproc signatures
-			//p->promoteSignature();
-			// do simple analysis on userprocs
-			analysis(p);
 		}
+	}
+}
+
+// Analyse any procedures that are decoded
+void Prog::analyse()
+{
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+		Proc *pProc = *it;
+		if (pProc->isLib()) continue;
+		UserProc *p = (UserProc*)pProc;
+		if (!p->isDecoded()) continue;
+
+		// decoded userproc.. analyse it			
+		analysis(p);
 	}
 }
 
@@ -201,7 +211,7 @@ void Prog::deserialize(std::istream &inf)
 
 					std::string frontend;
 					loadString(inf, frontend);
-					pFE = FrontEnd::createById(frontend, textDelta, limitTextHigh);
+					pFE = FrontEnd::createById(frontend, this, textDelta, limitTextHigh);
 					assert(pFE);
 
                     assert((int)(inf.tellg() - pos) == len);
@@ -211,7 +221,7 @@ void Prog::deserialize(std::istream &inf)
                 {
                     len = loadLen(inf);
                     std::streampos pos = inf.tellg();
-                    Proc *pProc = Proc::deserialize(inf);
+                    Proc *pProc = Proc::deserialize(this, inf);
                     assert((int)(inf.tellg() - pos) == len);
                     assert(pProc);
                     m_procs.push_back(pProc);       // Append this to list of procs
@@ -365,9 +375,9 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/)
     Proc* pProc;
     std::string sname(name);
     if (bLib)
-        pProc = new LibProc(sname, uNative);
+        pProc = new LibProc(this, sname, uNative);
     else
-        pProc = new UserProc(sname, uNative);
+        pProc = new UserProc(this, sname, uNative);
     m_procs.push_back(pProc);       // Append this to list of procs
     m_procLabels[uNative] = pProc;
     if (m_watcher) m_watcher->alert_new(pProc);  // alert the watcher of a new proc
@@ -580,7 +590,7 @@ void Prog::readLibParams()
 
 
 #ifdef WIN32
-    std::string sPath = prog.getProgPath() + "..\\include\\common.hs";
+    std::string sPath = getProgPath() + "..\\include\\common.hs";
 #else
     std::string sPath = BOOMDIR"/include/common.hs";
 #endif
@@ -608,14 +618,16 @@ void Prog::readLibParams()
         }
 
 		Signature *sig = NULL;
-		if (fname[0] == '-') {
-			std::string s = fname;
-			ifs >> fname;
-	        if (ifs.eof()) break;
-			sig = Signature::instantiate(s.c_str(), fname.c_str());
+		std::string signame = fname;
+		if (signame[0] != '-') {
+			signame = "-stdc";
 		} else {
-			sig = Signature::instantiate("-stdc", fname.c_str());
+			ifs >> fname;
+	        	if (ifs.eof()) break;
 		}
+		signame += "-";
+		signame += pFE->getFrontEndId();
+		sig = Signature::instantiate(signame.c_str(), fname.c_str());
 		assert(sig);
 
         if (mapLibParam.find(fname) != mapLibParam.end()) {
@@ -779,36 +791,14 @@ bool Prog::LoadBinary(const char *fname)
 
     getTextLimits();
 
-    switch(pBF->GetMachine()) {
-        case MACHINE_PENTIUM:
-			{
-				bool readResult = RTLDict.readSSLFile(getProgPath() + "../specs/pentium.ssl", false);
-				if (!readResult) {
-					readResult = RTLDict.readSSLFile("frontend/machine/pentium/pentium.ssl", false);
-				}
-				if (!readResult) return false;
-				break;
-			}
-		case MACHINE_SPARC:
-			{
-				bool readResult = RTLDict.readSSLFile(getProgPath() + "../specs/sparc.ssl", false);
-				if (!readResult) {
-					readResult = RTLDict.readSSLFile("frontend/machine/sparc/sparc.ssl", false);
-				}
-				if (!readResult) return false;
-				break;
-			}
-		default:
-			return false;
-    }
 
-	pFE = FrontEnd::instantiate(pBF->GetMachine(), textDelta, limitTextHigh);
+	pFE = FrontEnd::instantiate(pBF->GetMachine(), this, textDelta, limitTextHigh);
 	if (pFE == NULL) return false;
 
-	prog.readLibParams();
+	readLibParams();
 
         bool gotMain;
-        ADDRESS a = prog.pFE->getMainEntryPoint(gotMain);
+        ADDRESS a = pFE->getMainEntryPoint(gotMain);
         if (a == NO_ADDRESS) return false;
 
 	visitProc(a);

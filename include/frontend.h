@@ -44,6 +44,7 @@ typedef BasicBlock* PBB;
 class Exp;
 class TypedExp;
 class Cfg;
+class Prog;
 
 // Control flow types
 enum INSTTYPE {
@@ -65,14 +66,16 @@ protected:
 //    const int NOP_SIZE;         // Size of a no-op instruction (in bytes)
 //    const int NOP_INST;         // No-op pattern
 	std::map<ADDRESS, Proc *> processed;
+    // program being decoded
+    Prog *prog;
 
 public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    FrontEnd(int delta, ADDRESS uUpper);
+    FrontEnd(Prog *prog, int delta, ADDRESS uUpper);
     // If you know which machine you want.
-    static FrontEnd* instantiate(MACHINE machine, int delta, ADDRESS uUpper);
+    static FrontEnd* instantiate(MACHINE machine, Prog *prog, int delta, ADDRESS uUpper);
 
     /**
      * Destructor. Virtual to mute a warning
@@ -83,7 +86,7 @@ virtual ~FrontEnd();
 virtual const char *getFrontEndId() = 0;
 
 // returns a frontend given a string
-static FrontEnd *createById(std::string &str, int delta, ADDRESS uUpper);
+static FrontEnd *createById(std::string &str, Prog *prog, int delta, ADDRESS uUpper);
 
     /*
      * Function to fetch the smallest machine instruction
@@ -102,8 +105,7 @@ virtual NJMCDecoder *getDecoder() = 0;
      * If spec is set, this is a speculative decode
      * Returns true on a good decode
      */
-virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, 
-  bool spec = false, PHELPER helperFunc = NULL);
+virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
 
     /*
      * Locate the starting address of "main", returning a native address
@@ -118,7 +120,7 @@ virtual ADDRESS getMainEntryPoint( bool &gotMain ) = 0;
      * the "construct" function in that library, and returning the result.
      */
 static FrontEnd* getInstanceFor( const char* sName, void*& dlHandle,
-  int delta, ADDRESS uUpper, NJMCDecoder*& decoder);
+  Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder*& decoder);
 
     /*
      * Close the library opened by getInstanceFor

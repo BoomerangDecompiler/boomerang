@@ -6,14 +6,15 @@
 class FrontEnd;
 class SparcFrontEnd;
 class NJMCDecoder;
+class Prog;
 
 
 class FrontSparcTest : public CppUnit::TestCase {
   protected:
+    // program
+    Prog *prog;
     // The decoder object
     NJMCDecoder* decoder;
-    // Handle set by getInstanceFor()
-    void* dlHandle;
 
   public:
     FrontSparcTest(std::string name) : CppUnit::TestCase (name)

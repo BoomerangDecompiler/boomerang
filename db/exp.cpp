@@ -42,9 +42,6 @@
                         // createDotFile functions. Needs -I. to find it
 #include "util.h"
 
-// Global (shame)
-extern Prog prog;
-
 /*==============================================================================
  * FUNCTION:        Const::Const etc
  * OVERVIEW:        Constructors

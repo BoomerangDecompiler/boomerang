@@ -165,7 +165,7 @@ void upperStr(const char* s, char* d)
  * PARAMETERS:    location: string to the project file 
  * RETURNS:       Nothing; the prog is modified as a side effect
  *============================================================================*/
-void load(std::string &location)
+void load(Prog *prog, std::string &location)
 {
     char buf[1024];
     int fid;
@@ -181,7 +181,7 @@ void load(std::string &location)
     // panic if compatibility is bad.
     assert(fid == FID_VERSION);
 
-	prog.deserialize(inf);
+	prog->deserialize(inf);
 
     inf.close();
 }
@@ -192,7 +192,7 @@ void load(std::string &location)
  * PARAMETERS:    location: string to the project file 
  * RETURNS:       Nothing
  *============================================================================*/
-void save(std::string &location)
+void save(Prog *prog, std::string &location)
 {
     int fid;
 
@@ -206,7 +206,7 @@ void save(std::string &location)
     saveValue(ouf, fid, false);
 
 	int len;
-	prog.serialize(ouf, len);
+	prog->serialize(ouf, len);
 
     ouf.close();
 }

@@ -47,7 +47,6 @@
 #include "sparcfrontend.h"
 #include "pentiumfrontend.h"
 #include "prog.h"
-extern Prog prog;
 
 // Check that BOOMDIR is set
 #ifndef WIN32
@@ -64,17 +63,17 @@ extern Prog prog;
  *                uUpper: highest+1 address in the text segment
  * RETURNS:       <N/a>
  *============================================================================*/
-FrontEnd::FrontEnd(int delta, ADDRESS uUpper)
- : delta(delta), uUpper(uUpper)
+FrontEnd::FrontEnd(Prog *prog, int delta, ADDRESS uUpper)
+ : prog(prog), delta(delta), uUpper(uUpper)
 {}
 
-FrontEnd* FrontEnd::instantiate(MACHINE machine, int delta, ADDRESS uUpper)
+FrontEnd* FrontEnd::instantiate(MACHINE machine, Prog *prog, int delta, ADDRESS uUpper)
 {
     switch(machine) {
 	case MACHINE_PENTIUM:
-		return new PentiumFrontEnd(delta, uUpper);
+		return new PentiumFrontEnd(prog, delta, uUpper);
 	case MACHINE_SPARC:
-		return new SparcFrontEnd(delta, uUpper);
+		return new SparcFrontEnd(prog, delta, uUpper);
     }
     return NULL;
 }
@@ -84,12 +83,12 @@ FrontEnd::~FrontEnd()
 {
 }
 
-FrontEnd *FrontEnd::createById(std::string &str, int delta, ADDRESS uUpper)
+FrontEnd *FrontEnd::createById(std::string &str, Prog *prog, int delta, ADDRESS uUpper)
 {
 	if (str == "pentium")
-		return new PentiumFrontEnd(delta, uUpper);
+		return new PentiumFrontEnd(prog, delta, uUpper);
 	if (str == "sparc")
-		return new SparcFrontEnd(delta, uUpper);
+		return new SparcFrontEnd(prog, delta, uUpper);
 	return NULL;
 }
 
@@ -163,7 +162,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             // procedure out edge
             if (processed[uAddr] != NULL) {
                 // Alert the watcher to the problem
-                ProgWatcher *w = prog.getWatcher();
+                ProgWatcher *w = prog->getWatcher();
                 if (w)
                     w->alert_baddecode(uAddr);
 
@@ -200,7 +199,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             if (inst.valid == false)
             {
                 // Alert the watcher to the problem
-                ProgWatcher *w = prog.getWatcher();
+                ProgWatcher *w = prog->getWatcher();
                 if (w)
                     w->alert_baddecode(uAddr);
 
@@ -217,7 +216,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             }
 
             // alert the watcher that we have decoded an instruction
-            ProgWatcher *w = prog.getWatcher();
+            ProgWatcher *w = prog->getWatcher();
             if (w)
                 w->alert_decode(uAddr, inst.numBytes);
             nTotalBytes += inst.numBytes;           
@@ -307,13 +306,13 @@ if (1) {
             {
                 if (rtl_jump->getDest()->getOper() == opMemOf &&
                     rtl_jump->getDest()->getSubExp1()->getOper() == opAddrConst && 
-					prog.pBF->IsDynamicLinkedProcPointer(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr())) {
+					prog->pBF->IsDynamicLinkedProcPointer(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr())) {
                     // jump to a library function
                     // replace with a call ret
-		    std::string func = prog.pBF->GetDynamicProcName(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr());
+		    std::string func = prog->pBF->GetDynamicProcName(((Const*)rtl_jump->getDest()->getSubExp1())->getAddr());
                     HLCall *call = new HLCall(rtl_jump->getAddress());
                     call->setDest(rtl_jump->getDest()->clone());
-					LibProc *lp = prog.getLibraryProc(func.c_str());
+					LibProc *lp = prog->getLibraryProc(func.c_str());
 					assert(lp);
 					call->setDestProc(lp);
                     BB_rtls->push_back(call);
@@ -327,7 +326,7 @@ if (1) {
                     sequentialDecode = false;
                     if (rtl_jump->getAddress() == pProc->getNativeAddress()) {
                         // its a thunk
-                        //Proc *lp = prog.findProc(func.c_str());
+                        //Proc *lp = prog->findProc(func.c_str());
                         pProc->setName(func.c_str());
                         func = std::string("__imp_") + func;
 
@@ -399,10 +398,10 @@ if (1) {
 
 				if (call->getDest()->getOper() == opMemOf &&
 					call->getDest()->getSubExp1()->getOper() == opAddrConst &&
-					prog.pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
+					prog->pBF->IsDynamicLinkedProcPointer(((Const*)call->getDest()->getSubExp1())->getAddr())) {
 					// dynamic linked proc pointers are assumed to be static.
-					const char *nam = prog.pBF->GetDynamicProcName(((Const*)call->getDest()->getSubExp1())->getAddr());
-					Proc *p = prog.getLibraryProc(nam); // get the proc
+					const char *nam = prog->pBF->GetDynamicProcName(((Const*)call->getDest()->getSubExp1())->getAddr());
+					Proc *p = prog->getLibraryProc(nam); // get the proc
 					call->setDestProc(p);
 				}
 
@@ -448,7 +447,7 @@ if (1) {
 
                     // Record the called address as the start of a new
                     // procedure if it didn't already exist.
-                    if (uNewAddr && prog.findProc(uNewAddr) == NULL) {
+                    if (uNewAddr && prog->findProc(uNewAddr) == NULL) {
                         callSet.insert(call);
                         if (processed[uNewAddr] != NULL) {
                             // PROBLEM: A procedure for this address has not been
@@ -467,7 +466,7 @@ if (1) {
                             for (std::list<ADDRESS>::iterator itl = l.begin(); itl != l.end(); itl++)
                                 processed[*itl] = NULL;
                             // visit the new procedure
-                            prog.visitProc(uNewAddr);
+                            prog->visitProc(uNewAddr);
                             // undecode the old procedure
                             p->unDecode();
                             if (p == pProc) {
@@ -479,7 +478,7 @@ if (1) {
                                 return false;
                             }
                         }
-                        //prog.visitProc(uNewAddr);
+                        //prog->visitProc(uNewAddr);
                         // FIXME: settings
 //                        if (progOptions.trace)
 //                            std::cout << "p" << std::hex << uNewAddr << "\t" << std::flush; 
@@ -488,7 +487,7 @@ if (1) {
                     // Check if this is the _exit or exit function. May prevent
                     // us from attempting to decode invalid instructions, and
                     // getting invalid stack height errors
-                    const char* name = prog.pBF->SymbolByAddress(uNewAddr);
+                    const char* name = prog->pBF->SymbolByAddress(uNewAddr);
                     if (name && ((strcmp(name, "_exit") == 0) ||
                                  (strcmp(name,  "exit") == 0))) {
                         // Create the new basic block
@@ -643,7 +642,7 @@ if (1) {
     // Add the resultant coverage to the program's coverage
 //    pProc->addProcCoverage();
 
-    ProgWatcher *w = prog.getWatcher();
+    ProgWatcher *w = prog->getWatcher();
     if (w)
         w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
 
@@ -654,13 +653,13 @@ if (1) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)
-        if (prog.pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
+        if (prog->pBF->IsDynamicLinkedProc(dest) || !spec || (dest < uUpper)) {
             pCfg->addCall(*it);
             // Don't visit the destination of a register call
 			Proc *np = (*it)->getDestProc();
             if (np == NULL && dest != NO_ADDRESS) {
-				prog.visitProc(dest);
-				np = prog.findProc(dest);
+				prog->visitProc(dest);
+				np = prog->findProc(dest);
 			}
 			if (np != NULL) {
 				np->setFirstCaller(pProc);
@@ -878,7 +877,7 @@ typedef FrontEnd* (*constructFcn)(int, ADDRESS, NJMCDecoder**);
 #define TESTMAGIC4(buf,off,a,b,c,d) (buf[off] == a && buf[off+1] == b && \
                                      buf[off+2] == c && buf[off+3] == d)
 FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
-  int delta, ADDRESS uUpper, NJMCDecoder*& decoder) {
+  Prog *prog, int delta, ADDRESS uUpper, NJMCDecoder*& decoder) {
     FILE *f;
     char buf[64];
     std::string libName, machName;
@@ -899,7 +898,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
             machName = "sparc"; 
 #ifndef DYNAMIC
             {
-                SparcFrontEnd *fe = new SparcFrontEnd(delta, uUpper);
+                SparcFrontEnd *fe = new SparcFrontEnd(prog, delta, uUpper);
                 decoder = fe->getDecoder();
                 return fe;
             }
@@ -909,7 +908,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
             machName = "pentium"; 
 #ifndef DYNAMIC
             {
-                PentiumFrontEnd *fe = new PentiumFrontEnd(delta, uUpper);
+                PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
                 decoder = fe->getDecoder();
                 return fe;
             }
@@ -923,7 +922,7 @@ FrontEnd* FrontEnd::getInstanceFor( const char *sName, void*& dlHandle,
         // This test could be strengthened a bit!
         machName = "pentium";
 #ifndef DYNAMIC
-        PentiumFrontEnd *fe = new PentiumFrontEnd(delta, uUpper);
+        PentiumFrontEnd *fe = new PentiumFrontEnd(prog, delta, uUpper);
         decoder = fe->getDecoder();
         return fe;
 #endif

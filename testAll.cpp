@@ -28,9 +28,6 @@
 #include <sstream>
 #include <iostream>
 
-// The ugly global
-Prog prog;
-
 int main(int argc, char** argv)
 {
 //std::cerr << "Prog at " << std::hex << &prog << std::endl;

@@ -22,6 +22,7 @@
 #ifndef SPARCDECODER
 #define SPARCDECODER
 
+class Prog;
 class NJMCDecoder;
 struct DecodeResult;
 
@@ -30,7 +31,8 @@ class SparcDecoder : public NJMCDecoder
 public:
     /* Default constructor
      */
-	SparcDecoder();
+	SparcDecoder(Prog *prog);
+
 
     /*
      * Decodes the machine instruction at pc and returns an RTL instance for

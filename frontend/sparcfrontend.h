@@ -25,7 +25,7 @@ public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    SparcFrontEnd(int delta, ADDRESS uUpper);
+    SparcFrontEnd(Prog *prog, int delta, ADDRESS uUpper);
 
     /**
      * Virtual destructor.
@@ -43,8 +43,7 @@ virtual const char *getFrontEndId() { return "sparc"; }
      * instruction)
      * Returns true on a good decode
      */
-virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-                bool spec = false, PHELPER helperFunc = NULL);
+virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
 
 virtual NJMCDecoder *getDecoder() { return (NJMCDecoder*)decoder; }
 
@@ -98,7 +97,7 @@ private:
 	// This struct represents a single nop instruction. Used as a substitute
 	// delay slot instruction
 	DecodeResult nop_inst;
-
+	
 };
 
 #endif

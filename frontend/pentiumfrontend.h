@@ -19,7 +19,7 @@ public:
     /*
      * Constructor. Takes some parameters to save passing these around a lot
      */
-    PentiumFrontEnd(int delta, ADDRESS uUpper);
+    PentiumFrontEnd(Prog *prog, int delta, ADDRESS uUpper);
 
 virtual ~PentiumFrontEnd();
 

@@ -57,7 +57,6 @@ protected:
 
 public:
 	Signature(const char *nam);
-	static Signature *DefaultLibrarySignature(const char *nam);
 	static Signature *instantiate(const char *str, const char *nam);
 	virtual ~Signature() { }
 

@@ -15,9 +15,6 @@
 #include "prog.h"
 #include <iostream>
 
-// The dreaded Prog global
-Prog prog;
-
 int main(int argc, char** argv)
 {
     CppUnit::TestSuite suite;

@@ -3,7 +3,7 @@
 #include "hllcode.h"
 #include "codegen/chllcode.h"
 
-Prog prog;		// The dreaded global
+//Prog *prog = new Prog();		// The dreaded global
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
@@ -11,15 +11,18 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	std::cerr << "loading..." << std::endl;
-	if (!prog.LoadBinary(argv[1])) {
+	Prog *prog = new Prog();
+	if (!prog->LoadBinary(argv[1])) {
 		std::cerr << "failed." << std::endl;
 		return 1;
 	}
 	std::cerr << "decoding..." << std::endl;
-	prog.decode();
+	prog->decode();
+	std::cerr << "analysing..." << std::endl;
+	prog->analyse();
 	std::cerr << "generating code..." << std::endl;
 	PROGMAP::const_iterator it;
-	for (Proc *pProc = prog.getFirstProc(it); pProc; pProc = prog.getNextProc(it)) {
+	for (Proc *pProc = prog->getFirstProc(it); pProc; pProc = prog->getNextProc(it)) {
 		if (pProc->isLib()) continue;
 		UserProc *p = (UserProc*)pProc;
 		if (p->isDecoded()) {

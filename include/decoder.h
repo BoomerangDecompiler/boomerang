@@ -28,6 +28,8 @@
 class Exp;
 class RTL;
 class BinaryFile;
+class Prog;
+class RTLInstDict;
 
 // These are the instruction classes defined in "A Transformational Approach to
 // Binary Translation of Delayed Branches" for SPARC instructions.
@@ -99,7 +101,7 @@ public:
     /*
      * Constructor
      */
-    NJMCDecoder();
+    NJMCDecoder(Prog *prog);
 
     /*
      * Decodes the machine instruction at pc and returns an RTL instance for
@@ -113,7 +115,14 @@ virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta) = 0;
      */
 virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
+    RTLInstDict& getRTLDict() { return RTLDict; }
+
 protected:
+
+    /*
+     * The program being decoded
+     */
+    Prog *prog;
     
     /*
      * Given an instruction name and a variable list of Exps
@@ -158,6 +167,9 @@ protected:
 	/* decodes a register */
 	Exp* dis_Reg(int regNum);
 
+    // Public dictionary of instruction patterns, and other information
+    // summarised from the SSL file (e.g. source machine's endianness)
+    RTLInstDict RTLDict;
 };
 
 // Function used to guess whether a given

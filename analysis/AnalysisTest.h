@@ -11,12 +11,13 @@
 // Don't #include sparcfrontend.h; it's presently in ../frontend and it would
 // mean that any file #including this file would need -I../frontend
 class SparcFrontEnd;
+class Prog;
 
 class AnalysisTest : public CppUnit::TestCase {
+    // the program
+    Prog *prog;
     // The decoder object
     NJMCDecoder* decoder;
-    // Handle set by getInstanceFor()
-    void* dlHandle;
 
 
   public:
