@@ -2078,8 +2078,9 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass) {
 				*le->getSubExp1()->getSubExp1() == *refSP0 &&
 				le->getSubExp1()->getSubExp2()->isIntConst()) {
 			int le_n = ((Const*)le->getSubExp1()->getSubExp2())->getInt();
-			// now test all the locals to see if this expression 
-			// is an alias to one of them (for example, a member of a compound typed local)
+			// now test all the locals to see if this expression is an alias to one of them (for example,
+			// a member of a compound typed local)
+			// NOTE: Not efficient!
 			for (std::map<Exp*, Exp*,lessExpStar>::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
 				Exp *base = (*it).first;
 				assert(base);
@@ -2093,6 +2094,9 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty, bool lastPass) {
 						*base->getSubExp1()->getSubExp1() == *refSP0 &&
 						base->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
 					int base_n = ((Const*)base->getSubExp1()->getSubExp2()) ->getInt();
+					if (le->getSubExp1()->getOper() == opPlus)
+						// We have m[sp{0} + base_n]. It is probably not what we want...
+						base_n = 0 - base_n;			// Treat m[sp{0} + 20] as m[sp{0} - -20]
 					if (le_n <= base_n && le_n > base_n-size) {
 						if (VERBOSE)
 							LOG << "found alias to " << name.c_str() << ": " << le << "\n";
