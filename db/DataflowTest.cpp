@@ -7,11 +7,20 @@
  * $Revision$
  *
  * 14 Jan 03 - Trent: Created
+ * 17 Apr 03 - Mike: Added testRecursion to track down a nasty bug
  */
+
+#ifndef BOOMDIR
+#error Must define BOOMDIR
+#endif
+
+#define HELLO_PENTIUM       BOOMDIR "/test/pentium/hello"
 
 #include "DataflowTest.h"
 #include "cfg.h"
 #include "rtl.h"
+#include "pentiumfrontend.h"
+#include "boomerang.h"
 
 #include <sstream>
 #include <map>
@@ -37,6 +46,7 @@ void DataflowTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testUseOverBB);
     MYTEST(testUseKill);
     MYTEST(testEndlessLoop);
+    //MYTEST(testRecursion);
 }
 
 int DataflowTest::countTestCases () const
@@ -499,3 +509,139 @@ void DataflowTest::testLocationSet () {
     theReg.setInt(8);
     e = ls2.getNext(ii); CPPUNIT_ASSERT(rof == *e);
 }
+
+/*==============================================================================
+ * FUNCTION:        DataflowTest::testRecursion
+ * OVERVIEW:        Test push of argument (X86 style), then call self
+ *============================================================================*/
+void DataflowTest::testRecursion () {
+    // create Prog
+    BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);  // Don't actually use it
+    FrontEnd *pFE = new PentiumFrontEnd(pBF);
+    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog* prog = new Prog(pBF, pFE);
+    // create UserProc
+    std::string name = "test";
+    UserProc *proc = new UserProc(prog, name, 0);
+    // create CFG
+    Cfg *cfg = proc->getCFG();
+    std::list<RTL*>* pRtls = new std::list<RTL*>();
+    RTL *rtl = new RTL();
+    // push bp
+    // r28 := r28 + -4
+    AssignExp *e = new AssignExp(new Unary(opRegOf, new Const(28)),
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(28)),
+            new Const(-4)));
+    rtl->appendExp(e);
+    // m[r28] := r29
+    e = new AssignExp(
+        new Unary(opMemOf,
+            new Unary(opRegOf, new Const(28))),
+        new Unary(opRegOf, new Const(29)));
+    rtl->appendExp(e);
+    pRtls->push_back(rtl);
+    pRtls = new std::list<RTL*>();
+    // push arg+1
+    // r28 := r28 + -4
+    e = new AssignExp(new Unary(opRegOf, new Const(28)),
+            new Binary(opPlus,
+                new Unary(opRegOf, new Const(28)),
+                new Const(-4)));
+    rtl->appendExp(e);
+    // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
+    // esp+8 is return address; esp+12 is our arg
+    // m[r28] := m[r28+12] + 1
+    e = new AssignExp(new Unary(opMemOf, new Unary(opRegOf, new Const(28))),
+                     new Binary(opPlus,
+                        new Unary(opMemOf,
+                            new Binary(opPlus,
+                                new Unary(opRegOf, new Const(28)),
+                                new Const(12))),
+                        new Const(1)));
+    e->setProc(proc);
+    rtl->appendExp(e);
+    pRtls->push_back(rtl);
+    PBB first = cfg->newBB(pRtls, FALL, 1);
+
+    // The call BB
+    pRtls = new std::list<RTL*>();
+    HLCall* crtl = new HLCall(1);
+    // r28 := r28 + -4
+    e = new AssignExp(new Unary(opRegOf, new Const(28)),
+        new Binary(opPlus, new Unary(opRegOf, new Const(28)), new Const(-4)));
+    crtl->appendExp(e);
+    // m[r28] := pc
+    e = new AssignExp(new Unary(opMemOf, new Unary(opRegOf, new Const(28))),
+        new Terminal(opPC));
+    crtl->appendExp(e);
+    // %pc := (%pc + 5) + 135893848
+    e = new AssignExp(new Terminal(opPC),
+        new Binary(opPlus,
+            new Binary(opPlus,
+                new Terminal(opPC),
+                new Const(5)),
+            new Const(135893848)));
+    e->setProc(proc);
+    crtl->appendExp(e);
+    pRtls->push_back(crtl);
+#if 0
+    // Vector of 1 arg
+    std::vector<Exp*> args;
+    // m[r[28]+8]
+    Exp* a = new Unary(opMemOf, new Binary(opPlus,
+      new Unary(opRegOf, new Const(28)), new Const(8)));
+    args.push_back(a);
+    crtl->setArguments(args);
+#endif
+    crtl->setDestProc(proc);        // Just call self
+    PBB callbb = cfg->newBB(pRtls, CALL, 1);
+    first->setOutEdge(0, callbb);
+    callbb->addInEdge(first);
+    callbb->setOutEdge(0, callbb);
+    callbb->addInEdge(callbb);
+
+    pRtls = new std::list<RTL*>();
+    HLReturn* rrtl = new HLReturn(0x123);
+    // This HLReturn requires the following two sets of semantics to pass the
+    // tests for standard Pentium calling convention
+    // pc = m[r28]
+    e = new AssignExp(new Terminal(opPC),
+        new Unary(opMemOf, new Unary(opRegOf, new Const(28))));
+    rrtl->appendExp(e);
+    // r28 = r28 + 4
+    e = new AssignExp(new Unary(opRegOf, new Const(28)),
+        new Binary(opPlus,
+            new Unary(opRegOf, new Const(28)),
+            new Const(4)));
+    rrtl->appendExp(e);
+    pRtls->push_back(rrtl);
+    PBB ret = cfg->newBB(pRtls, RET, 0);
+    callbb->setOutEdge(0, ret);
+    ret->addInEdge(callbb);
+    cfg->setEntryBB(first);
+
+// Force "verbose" flag (-v)
+Boomerang* boo = Boomerang::get();
+boo->vFlag = true;
+    // decompile the "proc"
+    proc->decompile();
+    // print cfg to a string
+    std::ostringstream st;
+    cfg->print(st, true);
+    std::string s = st.str();
+    // compare it to expected
+    std::string expected;
+    expected =
+      "Fall BB: reach in: \n"
+      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
+      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
+      "Call BB: reach in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
+      "00000001 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
+      "*32* r[24] := r[24] + 1,    used by: *32* r[24] := r[24] + 1, \n"
+      "cfg reachExit: \n";
+    CPPUNIT_ASSERT_EQUAL(expected, s);
+    // clean up
+    delete prog;
+}
+
