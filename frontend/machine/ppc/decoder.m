@@ -60,6 +60,7 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_INDEX   (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
 #define DIS_DISP    (new Binary(opPlus, DIS_RA, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
+#define DIS_S		(new Const(rs))
 
 /*==============================================================================
  * FUNCTION:	   unused
@@ -107,25 +108,20 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| XOb_ ( rd, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
 	| Dsad_ (rs, d, ra) [name] =>
-		stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
+		if (strcmp(name, "stmw") == 0) {
+			// Needs the fourth param s, which is the register number from rs
+			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA, DIS_S);
+		} else
+			stmts = instantiate(pc, name, DIS_RS, DIS_D, DIS_RA);
+		
 	| Dsaui_ (rd, ra, uimm) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_UIMM);
-	// Ddasi includes ADDI and ADDIS, which have special semantics for RA
-	// Ddasi_ is mulli | subfic | addic | addicq | addi | addis
-	| mulli  (rd, ra, simm) =>
-		stmts = instantiate(pc, "MULLI",	DIS_RD, DIS_RA, DIS_SIMM);
-	| subfic  (rd, ra, simm) =>
-		stmts = instantiate(pc, "SUBFIC",	DIS_RD, DIS_RA, DIS_SIMM);
-	| addic  (rd, ra, simm) =>
-		stmts = instantiate(pc, "ADDIC",	DIS_RD, DIS_RA, DIS_SIMM);
-	| addicq  (rd, ra, simm) =>
-		stmts = instantiate(pc, "ADDICQ",	DIS_RD, DIS_RA, DIS_SIMM);
-	| addi   (rd, ra, simm) =>
-		stmts = instantiate(pc, "ADDI",		DIS_RD, DIS_RAZ, DIS_SIMM);
-	| addis  (rd, ra, simm) =>
-		stmts = instantiate(pc, "ADDIS",	DIS_RD, DIS_RAZ, DIS_SIMM);
-	//| Ddasi_ (rd, ra, simm) [name] =>
-	//	stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_SIMM);
+	| Ddasi_ (rd, ra, simm) [name] =>
+		if (strcmp(name, "addi") == 0 || strcmp(name, "addis") == 0) {
+			// Note the DIS_RAZ, since rA could be constant zero
+			stmts = instantiate(pc, name, DIS_RD, DIS_RAZ, DIS_SIMM);
+		} else
+			stmts = instantiate(pc, name, DIS_RD, DIS_RA , DIS_SIMM);
 	| Xsabx_ (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_RB);
 	| Xdab_ (rd, ra, rb) [name] =>
