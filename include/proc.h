@@ -366,7 +366,8 @@ public:
     int  findMaxDepth();                    // Find max memory nesting depth
     // Recalculate dataflow
     void repairDataflow(int memDepth, StatementSet& rs);
-    void findRestoreSet(StatementSet& rs);  // Find set of restoring statements
+    void findRestoreSet_issa(StatementSet& rs);  // Find set of restoring stmts
+    void findRestoreSet(StatementSet& rs);      // Find set of restoring stmts
     void removeRestoreRefs(StatementSet& rs);  // Remove refs to resore stmts
 
     void toSSAform(int memDepth, StatementSet& rs);

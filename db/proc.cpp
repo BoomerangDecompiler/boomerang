@@ -1686,7 +1686,7 @@ void UserProc::recoverReturnLocs() {
     cfg->recoverReturnLocs();
 }
 
-void UserProc::findRestoreSet(StatementSet& restoreSet) {
+void UserProc::findRestoreSet_issa(StatementSet& restoreSet) {
     // Set up a map from location to set of definitions reaching the entry
     std::map<Exp*, StatementSet, lessExpStar> reachEntryDefs;
     StatementSet reachEntry;
@@ -1711,6 +1711,23 @@ void UserProc::findRestoreSet(StatementSet& restoreSet) {
         // It is of the form x = x{refs}
         if (reachEntryDefs[left] == ((RefsExp*)right)->getRefs())
             // We have a restore location
+            restoreSet.insert(s);
+    }
+}
+
+void UserProc::findRestoreSet(StatementSet& restoreSet) {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        Exp* left = s->getLeft();
+        if (left == NULL) continue;
+        Exp* right = s->getRight();
+        if (!right->isSubscript()) continue;
+        if (!(*left == *((RefExp*)right)->getSubExp1())) continue;
+        // It is of the form x = x{ref}
+        if (((RefExp*)right)->getRef() == NULL)
+            // It is of the form x = x{0}, i.e. we have a restore location
             restoreSet.insert(s);
     }
 }

@@ -1126,7 +1126,7 @@ void ExpTest::testSubscriptVar() {
     def1->setNumber(12);
     def1->subscriptVar(left, def1);           // Should do nothing
     std::string expected1;
-    expected1 = "*32* m[r28 - 4] := r28 + r29";
+    expected1 = "0:*32* m[r28 - 4] := r28 + r29";
     std::ostringstream actual1;
     actual1 << s;
     CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
@@ -1134,7 +1134,7 @@ void ExpTest::testSubscriptVar() {
 
     // Subtest 2: Ordinary substitution, on LHS and RHS
     s->subscriptVar(r28, def1);
-    std::string expected2("*32* m[r28{12} - 4] := r28{12} + r29");
+    std::string expected2("0:*32* m[r28{12} - 4] := r28{12} + r29");
     std::ostringstream actual2;
     actual2 << s;
     CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
@@ -1144,7 +1144,7 @@ void ExpTest::testSubscriptVar() {
         new Const(0)));
     def3->setNumber(99);
     s->subscriptVar(r28, def3);
-    std::string expected3("*32* m[r28{99} - 4] := r28{99} + r29");
+    std::string expected3("0:*32* m[r28{99} - 4] := r28{99} + r29");
     std::ostringstream actual3;
     actual3 << s;
     CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());

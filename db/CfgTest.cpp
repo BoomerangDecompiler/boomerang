@@ -276,6 +276,7 @@ void CfgTest::testRenameVars () {
     DOM* d = new DOM;
     cfg->dominators(d);
     cfg->placePhiFunctions(d, 1);
-    prog->numberStatements();           // After placing phi functions!
+    int stmtNumber = 0;
+    pProc->numberStatements(stmtNumber);// After placing phi functions!
     cfg->renameBlockVars(d, 0, 1);      // Block 0, mem depth 1
 }
