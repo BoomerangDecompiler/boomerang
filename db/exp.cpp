@@ -2525,7 +2525,9 @@ Exp *PhiExp::fixCallRefs() {
                     *e->getSubExp1() == *subExp1) {
                     stmtVec.putAt(i, ((RefExp*)e)->getRef());
                 } else {
-                    std::cerr << "cant update phi ref to " << e << std::endl;
+                    if (VERBOSE)
+                        std::cerr << "cant update phi ref to " << e 
+                                  << std::endl;
                 }
             } else {
                 if (call->findReturn(subExp1) == -1) {

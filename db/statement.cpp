@@ -2459,9 +2459,14 @@ void Assign::doReplaceRef(Exp* from, Exp* to) {
     }
     //assert(changeright || changeleft);    // HACK!
     if (!changeright && !changeleft)
-        std::cerr << "Exp::doReplaceRef: could not change " << from << " to " <<
-          to << " in " << std::dec <<
-          dynamic_cast<Statement*>(this)->getNumber() << (Exp*)this << " !!\n";
+        if (VERBOSE) {
+            // I used to be hardline about this and assert fault,
+            // but now I do such weird propagation orders that this can
+            // happen.  It does however mean that some dataflow information
+            // is wrong somewhere.  - trent
+            std::cerr << "could not change " << from << " to " <<
+              to << " in " << std::dec << this << " !!\n";
+        }
     // simplify the expression
     rhs = rhs->simplifyArith();
     lhs = lhs->simplifyArith();
