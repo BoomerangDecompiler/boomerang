@@ -1288,6 +1288,8 @@ void Prog::decompile() {
 
         // For each memory depth
         int maxDepth = proc->findMaxDepth();
+        if (Boomerang::get()->maxMemDepth < maxDepth)
+            maxDepth = Boomerang::get()->maxMemDepth;
         for (int depth = 0; depth <= maxDepth; depth++) {
 
             // Place the phi functions for this memory depth
@@ -1333,8 +1335,23 @@ void Prog::decompile() {
             std::cerr << "\n\n";
         }
 
+        igraph ig;      // FIXME: need to make an attempt to calculate this!
+        //proc->fromSSAform(ig);
 
+        if (Boomerang::get()->vFlag) {
+            std::cerr << "===== After transformation from SSA form =====\n";
+            for (std::list<Proc*>::iterator it = m_procs.begin();
+                  it != m_procs.end(); it++) {
+                Proc *pProc = *it;
+                if (pProc->isLib()) continue;
+                UserProc *p = (UserProc*)pProc;
+                p->print(std::cerr, true);
+            }
+            std::cerr << "===== End after transformation from SSA =====\n\n";
+        }
 
         delete d;
-    }
+
+
+    }       // for each proc
 }
