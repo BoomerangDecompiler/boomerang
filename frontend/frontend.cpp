@@ -79,7 +79,7 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF) {
 }
 
 FrontEnd* FrontEnd::Load(const char *fname) {
-	BinaryFile *pBF = BinaryFile::Load(fname);
+	BinaryFile *pBF = BinaryFileFactory::Load(fname);
 	if (pBF == NULL) return NULL;
 	return instantiate(pBF);
 }

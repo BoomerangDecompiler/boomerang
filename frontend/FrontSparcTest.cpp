@@ -73,7 +73,7 @@ void FrontSparcTest::tearDown () {
 void FrontSparcTest::test1 () {
 	std::ostringstream ost;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_SPARC);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
@@ -140,7 +140,7 @@ void FrontSparcTest::test2() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_SPARC);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
@@ -182,7 +182,7 @@ void FrontSparcTest::test3() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_SPARC);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
@@ -242,7 +242,7 @@ void FrontSparcTest::testBranch() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(BRANCH_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(BRANCH_SPARC);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
@@ -282,7 +282,7 @@ void FrontSparcTest::testBranch() {
 
 void FrontSparcTest::testDelaySlot() {
 	
-	BinaryFile *pBF = BinaryFile::Load(BRANCH_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(BRANCH_SPARC);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);

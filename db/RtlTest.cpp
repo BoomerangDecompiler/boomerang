@@ -211,7 +211,7 @@ void RtlTest::testVisitor()
  * OVERVIEW:		Test the isCompare function
  *============================================================================*/
 void RtlTest::testIsCompare () {
-	BinaryFile *pBF = BinaryFile::Load(SWITCH_SPARC);
+	BinaryFile *pBF = BinaryFileFactory::Load(SWITCH_SPARC);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
 	FrontEnd *pFE = new SparcFrontEnd(pBF);
@@ -237,7 +237,7 @@ void RtlTest::testIsCompare () {
 	pBF->UnLoad();
 	delete pBF;
 	delete pFE;
-	pBF = BinaryFile::Load(SWITCH_PENT);
+	pBF = BinaryFileFactory::Load(SWITCH_PENT);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	pFE = new PentiumFrontEnd(pBF);

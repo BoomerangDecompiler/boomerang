@@ -74,7 +74,7 @@ void FrontPentTest::tearDown () {
 void FrontPentTest::test1 () {
 	std::ostringstream ost;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
@@ -118,7 +118,7 @@ void FrontPentTest::test2() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
@@ -155,7 +155,7 @@ void FrontPentTest::test3() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(HELLO_PENT);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
@@ -188,7 +188,7 @@ void FrontPentTest::testBranch() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFile::Load(BRANCH_PENT);
+	BinaryFile *pBF = BinaryFileFactory::Load(BRANCH_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
@@ -229,7 +229,7 @@ void FrontPentTest::testBranch() {
 void FrontPentTest::testFindMain() {
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
-    BinaryFile* pBF = BinaryFile::Load(FEDORA2_TRUE);
+    BinaryFile* pBF = BinaryFileFactory::Load(FEDORA2_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF); 
     CPPUNIT_ASSERT(pFE != NULL);
@@ -239,7 +239,7 @@ void FrontPentTest::testFindMain() {
     CPPUNIT_ASSERT_EQUAL(expected, addr);
 	pBF->Close();
 
-    pBF = BinaryFile::Load(FEDORA3_TRUE);
+    pBF = BinaryFileFactory::Load(FEDORA3_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
 	pFE = new PentiumFrontEnd(pBF); 
     CPPUNIT_ASSERT(pFE != NULL);
@@ -248,7 +248,7 @@ void FrontPentTest::testFindMain() {
     CPPUNIT_ASSERT_EQUAL(expected, addr);
 	pBF->Close();
 
-    pBF = BinaryFile::Load(SUSE_TRUE);
+    pBF = BinaryFileFactory::Load(SUSE_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
 	pFE = new PentiumFrontEnd(pBF); 
     CPPUNIT_ASSERT(pFE != NULL);

@@ -79,7 +79,7 @@ void LoaderTest::testSparcLoad () {
     std::ostringstream ost;
 
     // Load SPARC hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_SPARC);
+    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_SPARC);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -105,7 +105,7 @@ void LoaderTest::testPentiumLoad () {
     std::ostringstream ost;
 
     // Load Pentium hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_PENTIUM);
+    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_PENTIUM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -133,7 +133,7 @@ void LoaderTest::testHppaLoad () {
     std::ostringstream ost;
 
     // Load HPPA hello world
-    BinaryFile* pBF = BinaryFile::Load(HELLO_HPPA);
+    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_HPPA);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -159,7 +159,7 @@ void LoaderTest::testPalmLoad () {
     std::ostringstream ost;
 
     // Load Palm Starter.prc
-    BinaryFile* pBF = BinaryFile::Load(STARTER_PALM);
+    BinaryFile* pBF = BinaryFileFactory::Load(STARTER_PALM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -186,7 +186,7 @@ void LoaderTest::testWinLoad () {
     std::ostringstream ost;
 
     // Load Windows program calc.exe
-    BinaryFile* pBF = BinaryFile::Load(CALC_WINDOWS);
+    BinaryFile* pBF = BinaryFileFactory::Load(CALC_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -221,21 +221,21 @@ void LoaderTest::testWinLoad () {
     pBF->UnLoad();
 
     // Test loading the "new style" exes, as found in winXP etc
-    pBF = BinaryFile::Load(CALC_WINXP);
+    pBF = BinaryFileFactory::Load(CALC_WINXP);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
     CPPUNIT_ASSERT(addr != NO_ADDRESS);
     pBF->UnLoad();
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
-    pBF = BinaryFile::Load(CALC_WIN2000);
+    pBF = BinaryFileFactory::Load(CALC_WIN2000);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
     CPPUNIT_ASSERT(addr != NO_ADDRESS);
     pBF->UnLoad();
 
     // Test loading the lpq.exe program - console mode PE file
-    pBF = BinaryFile::Load(LPQ_WINDOWS);
+    pBF = BinaryFileFactory::Load(LPQ_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
     CPPUNIT_ASSERT(addr != NO_ADDRESS);

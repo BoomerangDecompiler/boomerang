@@ -61,7 +61,7 @@ void ProgTest::tearDown () {
  * OVERVIEW:		Test setting and reading name
  *============================================================================*/
 void ProgTest::testName () {
-	BinaryFile *pBF = BinaryFile::Load(HELLO_PENTIUM);	// Don't actually use it
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	Prog* prog = new Prog(pBF, pFE);

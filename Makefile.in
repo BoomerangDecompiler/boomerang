@@ -28,8 +28,7 @@ MACH_FE_OBJ=$(patsubst %, frontend/%frontend.o, $(MACHS))
 
 
 C = gcc -g -Wall -O0
-CC = g++ -g -Wall -O0
-CXX=$(CC)
+CXX = g++ -g -Wall -O0
 
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -37,20 +36,48 @@ HOST_GNU_LD = @HOST_GNU_LD@
 # HOST_WINDOWS is true if the host OS is CygWin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
 
-BISONPP=@BISONPP@
-FLEXPP=@FLEXPP@
-
+# LDL is -ldl if needed (Windows does not)
+# EXEEXT is .exe for Windows
+# DLLEXT is .dll for Windows and .so otherwise 
+# RUNPATH is not needed on Windows 
+ifeq ($(HOST_WINDOWS), yes)
+LDL=
+EXEEXT=.exe
+DLLEXT=.dll
+WININCLUDE=-Iwin32make/include
+RUNPATH=
+COPYDLL=libBinaryFile$(DLLEXT)
+else # Non-Windows
+LDL=-ldl
+EXEEXT=
+DLLEXT=.so
+WININCLUDE=
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,"lib"
 else # Assume Solaris
 RUNPATH=-R"lib"
 endif
+COPYDLL=
+endif
+
+# NOTE: "win32make/include" should be after "include" because if there
+# is a generated include/config.h then we prefer to use that
+CXXFLAGS=-Iinclude $(WININCLUDE)
+
+BISONPP=@BISONPP@
+FLEXPP=@FLEXPP@
+
+LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
+# LOADERDLLS is the set of DLL files
+LOADERDLLS=$(patsubst %,lib/lib%$(DLLEXT),$(LOADERS)) $(COPYDLL)
+# LOADERLIBS is the set of "-l" flags passed when linking executables against the DLLs
+LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
 
 .PHONY: test clean all static
 #19 Aug 02 icer: should read lib static test
 #20 Aug 02 icer: should read lib static , the test code is broken
 all: lib static 
-static: boomerang
+static: boomerang$(EXEEXT)
 
 # Make the lib directory if needed
 lib:
@@ -62,9 +89,9 @@ testDyn: lib
 	cd db       && ${MAKE} test
 	cd frontend && ${MAKE} test
 
-test:	lib bigtest
+test:	lib bigtest$(EXEEXT)
 	cd loader   && ${MAKE} test
-	./bigtest
+	./bigtest$(EXEEXT)
 
 # In case you don't have bison++ and flex++ and don't need to mess with the
 # parsers
@@ -85,7 +112,7 @@ clean:
 	cd frontend && ${MAKE} clean
 	cd analysis && ${MAKE} clean
 	cd transform && ${MAKE} clean
-	rm -f *.o codegen/*.o log.o boomerang.o driver.o boomerang testAll.o c/*.o type/*.o
+	rm -f *.o codegen/*.o log.o boomerang.o driver.o boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o c/*.o type/*.o
 
 #20 Aug 02 icer
 #added config.h config.log config.status and analysis/Makefile
@@ -116,30 +143,19 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
+LOADER_OBJS = loader/BinaryFileFactory.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
-    ${TYPEOBJS}
+    ${TYPEOBJS} ${LOADER_OBJS}
 
-lib/libBinaryFile.so:
+$(LOADERDLLS): lib
 	cd loader && make
 
 
-ifeq ($(HOST_WINDOWS), yes)
-LDL=
-RENAME_TO_DLL=mv lib/libBinaryFile.so lib/BinaryFile.dll
-RENAME_FROM_DLL=mv lib/BinaryFile.dll libBinaryFile.so
-else # Non-Windows
-LDL=-ldl
-RENAME_TO_DLL=
-RENAME_FROM_DLL=
-endif
+boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(LOADERDLLS)
+	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(LOADERLIBS) $(RUNPATH) -Llib -lgc -lexpat $(LDL)
 
-boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
-	$(RENAME_TO_DLL)
-	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) -Llib -lgc -lexpat $(LDL)
-	$(RENAME_FROM_DLL)
-
-bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
-	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
+bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERDLLS)
+	$(CXX) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
     $(RUNPATH) -Llib -lcppunit -lgc -lexpat $(LDL)
 
 
@@ -185,16 +201,16 @@ type/TypeTest.o:            EXTRA = -Ifrontend
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $<
 
 $(TEST_OBJS): %.o : %.cpp
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $<
 
 driver.o: driver.cpp include/boomerang.h
-	$(CC) -c -o $@ -Iinclude -Icodegen $(EXTRA) $<
+	$(CXX) $(CXXFLAGS) -c -o $@ -Icodegen $(EXTRA) $<
 
 testAll.o: testAll.cpp
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $< $(INCLUDEALL)
+	$(CXX) $(CXXFLAGS) -c -o $@ $(EXTRA) $< $(INCLUDEALL)
 
 #
 # Dependencies
@@ -229,14 +245,14 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h include/prog.h include/visitor.h include/type.h
 db/managed.o: include/managed.h include/statement.h include/exp.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h include/prog.h \
-    include/proc.h include/statement.h
+    include/proc.h include/statement.h include/BinaryFile.h
 db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
-db/StatementTest.o: db/StatementTest.h include/exp.h include/statement.h include/operator.h
+db/StatementTest.o: db/StatementTest.h include/exp.h include/statement.h include/operator.h include/BinaryFile.h
 db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h include/operator.h
-db/ProgTest.o: db/ProgTest.h include/prog.h
-db/ProcTest.o: db/ProcTest.h include/proc.h
+db/ProgTest.o: db/ProgTest.h include/prog.h include/BinaryFile.h
+db/ProcTest.o: db/ProcTest.h include/proc.h include/BinaryFile.h
 db/StaementTest.o: db/StaementTest.h include/statement.h
-db/CfgTest.o: db/CfgTest.h include/statement.h include/exp.h
+db/CfgTest.o: db/CfgTest.h include/statement.h include/exp.h include/BinaryFile.h
 db/DfaTest.o: db/DfaTest.h include/type.h
 db/table.o: include/types.h db/table.h include/statement.h include/exp.h include/statement.h
 db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h include/proc.h include/prog.h \
@@ -250,12 +266,13 @@ util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
 
 frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h c/ansi-c-parser.h \
-	include/boomerang.h include/proc.h include/exp.h include/prog.h include/signature.h include/cfg.h
+	include/boomerang.h include/proc.h include/exp.h include/prog.h include/signature.h include/cfg.h \
+	include/BinaryFile.h
 frontend/sparcfrontend.o: include/frontend.h include/boomerang.h
 frontend/pentiumfrontend.o: include/frontend.h include/boomerang.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
-frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
-frontend/FrontPentTest.o:  frontend/FrontPentTest.h
+frontend/FrontSparcTest.o: frontend/FrontSparcTest.h include/BinaryFile.h
+frontend/FrontPentTest.o:  frontend/FrontPentTest.h include/BinaryFile.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 frontend/pentiumdecoder.o: include/decoder.h include/rtl.h include/prog.h \
     include/exp.h include/proc.h include/statement.h
@@ -265,8 +282,11 @@ frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h \
     include/frontend.h include/transformer.h include/xmlprogparser.h
+
 analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
 	include/frontend.h include/analysis.h include/exp.h
+analysis/AnalysisTest.o: include/BinaryFile.h include/analysis.h include/prog.h include/proc.h \
+	frontend/sparcfrontend.h analysis/AnalysisTest.h
 
 codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h \
     include/cfg.h include/exp.h include/proc.h include/prog.h \
@@ -279,6 +299,9 @@ type/constraint.o: include/constraint.h include/exp.h include/type.h
 type/type.o: include/type.h
 type/dfa.o: include/type.h
 type/TypeTest.o: type/TypeTest.h include/util.h include/type.h \
-    include/constraint.h
+    include/constraint.h include/BinaryFile.h
 
 include/statement.h: include/managed.h
+
+loader/BinaryFileFactory.o: include/BinaryFile.h loader/ElfBinaryFile.h loader/Win32BinaryFile.h loader/ExeBinaryFile.h loader/HpSomBinaryFile.h loader/PalmBinaryFile.h
+

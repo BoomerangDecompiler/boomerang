@@ -487,15 +487,16 @@ void PalmBinaryFile::GenerateBinFiles(const std::string& path) const
    }
 } 
 
-#ifndef WIN32
 // This function is called via dlopen/dlsym; it returns a new BinaryFile
 // derived concrete object. After this object is returned, the virtual function
 // call mechanism will call the rest of the code in this library
 // It needs to be C linkage so that it its name is not mangled
 extern "C" {
+#ifdef _WIN32
+    __declspec(dllexport)
+#endif
     BinaryFile* construct()
     {
         return new PalmBinaryFile;
     }    
 }
-#endif

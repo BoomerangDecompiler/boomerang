@@ -74,7 +74,7 @@ void CfgTest::tearDown () {
 #define FRONTIER_THIRTEEN 0x080483b9
 
 void CfgTest::testDominators () {
-	BinaryFile *pBF = BinaryFile::Load(FRONTIER_PENTIUM);
+	BinaryFile *pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
@@ -125,7 +125,7 @@ void CfgTest::testDominators () {
 #define SEMI_M	0x80483e2
 
 void CfgTest::testSemiDominators () {
-	BinaryFile* pBF = BinaryFile::Load(SEMI_PENTIUM);
+	BinaryFile* pBF = BinaryFileFactory::Load(SEMI_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
@@ -171,7 +171,7 @@ void CfgTest::testSemiDominators () {
  * OVERVIEW:		Test the placing of phi functions
  *============================================================================*/
 void CfgTest::testPlacePhi () {
-	BinaryFile* pBF = BinaryFile::Load(FRONTIER_PENTIUM);
+	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
@@ -206,7 +206,7 @@ void CfgTest::testPlacePhi () {
  * OVERVIEW:		Test a case where a phi function is not needed
  *============================================================================*/
 void CfgTest::testPlacePhi2 () {
-	BinaryFile* pBF = BinaryFile::Load(IFTHEN_PENTIUM);
+	BinaryFile* pBF = BinaryFileFactory::Load(IFTHEN_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();
@@ -261,7 +261,7 @@ void CfgTest::testPlacePhi2 () {
  * OVERVIEW:		Test the renaming of variables
  *============================================================================*/
 void CfgTest::testRenameVars () {
-	BinaryFile* pBF = BinaryFile::Load(FRONTIER_PENTIUM);
+	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	FrontEnd* pFE = new PentiumFrontEnd(pBF);
 	Type::clearNamedTypes();

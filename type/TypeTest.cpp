@@ -91,7 +91,7 @@ void TypeTest::testNotEqual () {
  * OVERVIEW:		Test type inequality
  *============================================================================*/
 void TypeTest::testCompound() {
-	BinaryFile *pBF = BinaryFile::Load(HELLO_WINDOWS);
+	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_WINDOWS);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF);
 	pFE->readLibraryCatalog();				// Read definitions
 
