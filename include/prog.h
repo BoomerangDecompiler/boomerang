@@ -169,6 +169,7 @@ public:
     // Remove null, unused, and restored statements
     void removeNullStmts();
     void removeUnusedStmts();
+    void removeUnusedLocals();
     void removeRestoreStmts(StatementSet& rs);
 
     // Process constants

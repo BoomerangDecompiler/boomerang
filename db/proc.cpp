@@ -1882,7 +1882,7 @@ void UserProc::addLocals(int n) {
         std::ostringstream os;
         os << "local" << i;
         std::string name = os.str();
-        locals[name] = new IntegerType();   // FIXME one day
+        locals[name] = new IntegerType();   // Fixed by type analysis later
     }
 }
 
@@ -1926,6 +1926,51 @@ void UserProc::countRefs(RefCounter& refCounts) {
                 refCounts[ref]++;
             }
         }
+    }
+}
+
+void UserProc::removeUnusedLocals() {
+    std::set<std::string> usedLocals;
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter ll;
+    // First count any uses of the locals
+    for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+        LocationSet refs;
+        s->addUsedLocs(refs);
+        LocSetIter rr;
+        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
+            if (r->isSubscript())
+                r = ((RefExp*)r)->getSubExp1();
+            if (r->isLocal()) {
+                Const* c = (Const*)((Unary*)r)->getSubExp1();
+                std::string name(c->getStr());
+                usedLocals.insert(name);
+                // std::cerr << "Counted local " << name << "\n";
+            }
+        }
+    }
+    // Now remove the unused ones
+    std::map<std::string, Type*>::iterator it;
+    int nextLocal = 0;
+    for (it = locals.begin(); it != locals.end(); it++) {
+        std::string& name = const_cast<std::string&>(it->first);
+        // std::cerr << "Considering local " << name << "\n";
+        if (usedLocals.find(name) == usedLocals.end()) {
+            locals.erase(it);
+            if (VERBOSE)
+                std::cerr << "Removed unused local " << name << "\n";
+        }
+#if 0   // Ugh - still have to rename the variables.
+        else {
+            if (name.substr(0, 5) == "local") {
+                // Make the locals consequtive
+                std::ostringstream os;
+                os << "local" << nextLocal++;
+                name = os.str();
+            }
+        }
+#endif
     }
 }
 

@@ -154,6 +154,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isSubscript() {return op == opSubscript;}
     // True if this is a phi assignmnet (SSA)
     bool isPhi() {return op == opPhi;}
+    // True if this is a local variable
+    bool isLocal() {return op == opLocal;}
     // Get the index for this var
     int getVarIndex();
     // True if this is a terminal

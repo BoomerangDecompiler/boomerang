@@ -791,6 +791,9 @@ void Prog::decompile() {
     // A final pass to remove return locations not used by any caller
     removeUnusedReturns();
 
+    // A final pass to remove unused locals
+    removeUnusedLocals();
+
     // Now it is OK to transform out of SSA form
     fromSSAform();
 }
@@ -865,6 +868,15 @@ void Prog::removeUnusedReturns() {
         }
         calleeSet = newCalleeSet;
     } while (change);
+}
+
+void Prog::removeUnusedLocals() {
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        UserProc* proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->removeUnusedLocals();
+    }
 }
 
 // Have to transform out of SSA form after the above final pass

@@ -491,6 +491,7 @@ public:
     typedef std::map<Statement*, int> RefCounter;
     void countRefs(RefCounter& refCounts);
     void removeUnusedStatements(RefCounter& refCounts, int depth);
+    void removeUnusedLocals();
     bool propagateAndRemoveStatements();
     void propagateStatements(int memDepth);
     int  findMaxDepth();                    // Find max memory nesting depth
