@@ -20,12 +20,13 @@
 #   changes to ensure that double and quad registers get the correct names
 # 11 Feb 01 - Nathan: Fixed operand names for FTOd and FTOq
 # 11 Feb 01 - Nathan: Renamed decode_sethi to sethi, and sethi to encode_sethi
+# 22 Nov 02 - Mike: pbranch (V9 branches with prediction); RETT -> RETURN
 
 
 fields of instruction (32) 
 inst 0:31 op 30:31 disp30 0:29 rd 25:29 op2 22:24 imm22 0:21 a 29:29 cond 25:28
 disp22 0:21 op3 19:24 rs1 14:18 i 13:13 asi 5:12 rs2 0:4 simm13 0:12 opf 5:13
-cd 25:29
+cd 25:29 disp19 0:18 cc01 20:21
 fds 25:29 fs1s 14:18 fs2s 0:4
 fdd 25:29 fs1d 14:18 fs2d 0:4
 fdq 25:29 fs1q 14:18 fs2q 0:4
@@ -64,7 +65,7 @@ fieldinfo a is [ names [ "" ",a" ] ]
 patterns
  [ TABLE_F2 CALL TABLE_F3 TABLE_F4 ] is op  = {0 to 3}
 patterns
- [ UNIMP Bicc SETHI FBfcc CBccc ] is TABLE_F2 & op2 = [0 2 4 6 7]
+ [ UNIMP Bpcc Bicc SETHI FBfcc CBccc ] is TABLE_F2 & op2 = [0 1 2 4 6 7]
  NOP                              is SETHI & rd = 0 & imm22 = 0
 patterns
  [ ADD  ADDcc  TADDcc   WRxxx
@@ -76,7 +77,7 @@ patterns
    ORN  ORNcc  SRL      CPop1
    XNOR XNORcc SRA      CPop2
    ADDX ADDXcc RDxxx    JMPL
-   _    _      RDPSR    RETT
+   _    _      RDPSR    RETURN
    UMUL UMULcc RDWIM    Ticc
    SMUL SMULcc RDTBR    FLUSH
    SUBX SUBXcc _        SAVE
@@ -140,6 +141,10 @@ patterns
   ibranch is any of [ BN BE  BLE BL  BLEU BCS BNEG BVS
                       BA BNE BG  BGE BGU  BCC BPOS BVC ],
     which is Bicc & cond = {0 to 15}
+
+  pbranch is any of [ BPN BPE  BPLE BPL  BPLEU BPCS BPNEG BPVS
+                      BPA BPNE BPG  BPGE BPGU  BPCC BPPOS BPVC ],
+    which is Bpcc & cond = {0 to 15}
 
   fbranch is any of [ FBN FBNE FBLG FBUL FBL   FBUG FBG   FBU
                       FBA FBE  FBUE FBGE FBUGE FBLE FBULE FBO ],
@@ -227,6 +232,10 @@ relocatable reloc
 constructors
   branch^",a" reloc  { reloc = L + 4 * disp22! } is L: branch & a = 1 & disp22
   branch reloc  { reloc = L + 4 * disp22! } is L: branch & a = 0 & disp22
+  pbranch^",a" cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=1 &
+							cc01 & disp19
+  pbranch      cc01,reloc { reloc = L + 4 * disp19! } is L: pbranch & a=0 &
+							cc01 & disp19
 constructors
   call__  reloc   { reloc = L + 4 * disp30! } is L: CALL & disp30
 constructors
@@ -253,11 +262,11 @@ constructors
   fcompareq fs1q, fs2q # { fs1 = 4 * _, fs2 = 4 * _ }
 constructors
   NOP
-  FLUSH address_
-  JMPL  address_, rd
-  RETT  address_
-  trap  address_
-  UNIMP imm22
+  FLUSH  address_
+  JMPL   address_, rd
+  RETURN address_
+  trap   address_
+  UNIMP  imm22
 constructors
 #  encode_sethi "%hi("val")", rd                   is  SETHI & rd & imm22 = val@[10:31]
   sethi "%hi("val")", rd { val@[0:9] = 0 } is  SETHI & rd & imm22 = val@[10:31]
