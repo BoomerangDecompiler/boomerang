@@ -104,9 +104,8 @@ void Analysis::checkBBflags(PBB pBB, UserProc* proc)
 #endif
 
 /*==============================================================================
- * FUNCTION:        finalSimplify
- * OVERVIEW:        Perform any final simplifications, post analysis. At
- *                  present, this is the removal of idAddrOf / idMemOf pairs
+ * FUNCTION:        simplify
+ * OVERVIEW:        Perform any simplifications, post decoding.
  * PARAMETERS:      pBB: pointer to the BB to be simplified
  * RETURNS:         <none>
  *============================================================================*/
@@ -119,6 +118,9 @@ void Analysis::finalSimplify(PBB pBB)
             Exp* rt = (*rit)->elementAt(i);
             if (!rt->isAssign()) continue;
             rt->simplifyAddr();
+            // Also simplify everything; in particular, stack offsets are
+            // often negative, so we at least canonicalise [esp + -8] to [esp-8]
+            rt->simplify();
         }
     }
 }
@@ -133,8 +135,7 @@ void Analysis::finalSimplify(PBB pBB)
  *                  analysed
  * RETURNS:         <none>
  *============================================================================*/
-void Analysis::analyse(UserProc* proc)
-{
+void Analysis::analyse(UserProc* proc) {
     Cfg* cfg = proc->getCFG();
     std::list<PBB>::iterator it;
     PBB pBB = cfg->getFirstBB(it);
