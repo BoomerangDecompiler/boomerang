@@ -56,7 +56,6 @@ int memXinit[] = {opMemOf, -1};
  *============================================================================*/
 void Analysis::checkBBflags(PBB pBB, UserProc* proc)
 {
-    Cfg* cfg = proc->getCFG();
     std::list<RTL*>* pRtls = pBB->getRTLs();
     if (pRtls == 0)
         return;
@@ -157,6 +156,7 @@ void Analysis::analyse(UserProc* proc)
     }
 
     cfg->simplify();
+	cfg->virtualFunctionCalls(proc->getProg());
 }
 
 #if DEBUG_ANALYSIS
@@ -654,7 +654,6 @@ void Analysis::processSubFlags(RTL* rtl, std::list<RTL*>::reverse_iterator rrit,
         jt = jc->getCond();
     else
         jt = sc->getCond();
-    int size = (*rrit)->getSize();
 	Exp *pHL = NULL;
     OPER op = opWild;
     switch (jt) {
@@ -1215,10 +1214,10 @@ bool Analysis::isFlagFloat(Exp* rt, UserProc* proc)
     }
     // We also assume it's FP if the first argument is an FP variable
     if (first->getOper() == opVar) {
-        char* vname = ((Const*)firstSub)->getStr();
         // FIXME: This is completely broken in proc; assumes v1 etc names.
         // For now, assume integer
-	return false;
+        //char* vname = ((Const*)firstSub)->getStr();
+	    return false;
     }       
     return false;
 }
