@@ -18,7 +18,6 @@
 
 class ProcTest : public CppUnit::TestCase {
   protected:
-    Prog*  m_prog;
     Proc*  m_proc;
     
 
