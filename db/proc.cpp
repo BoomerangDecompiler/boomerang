@@ -871,7 +871,7 @@ void UserProc::generateCode(HLLCode *hll) {
 	hll->AddProcStart(signature);
 	
 	std::map<std::string, Type*>::iterator last = locals.end();
-	last--;
+	if (locals.size()) last--;
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
 		hll->AddLocal((*it).first.c_str(), (*it).second, it == last);
 
