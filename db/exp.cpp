@@ -690,10 +690,10 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opGtr:     os << " > ";  break;
         case opLessEq:  os << " <= "; break;
         case opGtrEq:   os << " >= "; break;
-        case opLessUns: os << " <=u ";break;
+        case opLessUns: os << " <u "; break;
         case opGtrUns:  os << " >u "; break;
-        case opLessEqUns:os << " <=u ";break;
-        case opGtrEqUns: os << " >=u ";break;
+        case opLessEqUns:os<< " <=u ";break;
+        case opGtrEqUns:os << " >=u ";break;
         case opUpper:   os << " GT "; break;
         case opLower:   os << " LT "; break;
         case opShiftL:  os << " << "; break;
@@ -701,8 +701,8 @@ void Binary::print(std::ostream& os, bool withUses) {
         case opShiftRA: os << " >>A "; break;
         case opRotateL: os << " rl "; break;
         case opRotateR: os << " rr "; break;
-        case opRotateLC: os << " rlc "; break;
-        case opRotateRC: os << " rrc "; break;
+        case opRotateLC:os << " rlc "; break;
+        case opRotateRC:os << " rrc "; break;
 
         default:
             LOG << "Binary::print invalid operator " << operStrings[op]
@@ -2408,8 +2408,16 @@ void Unary::addUsedLocs(LocationSet& used) {
 }
 
 void Terminal::addUsedLocs(LocationSet& used) {
-    if (op == opPC || op == opFlags)
-        used.insert(clone());
+    switch (op) {
+        case opPC:
+        case opFlags:
+        // Fall through
+        // The carry flag can be used in some SPARC idioms, etc
+        case opCF:
+            used.insert(clone());
+        default:
+            break;
+    }
 }
 
 

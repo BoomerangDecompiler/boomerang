@@ -1095,23 +1095,6 @@ ROT[IDX].B.EV.IBOD modrm, i8
 ROLS[IDX].B.EV.IBOD   modrm, i8  ROLFLAGS32(r[tmp2], r[tmp1], i8);
 RORS[IDX].B.EV.IBOD   modrm, i8  RORFLAGS32(r[tmp2], r[tmp1], i8);
 
-# These were wrong anyway; they combine with the opcode as well. For example,
-# opcode F2 (REP/REPZ) means "repeat regardless of Z flag" for MOV/LOD/STO,
-# but it means "repeat while Z=1" for CMP/SCA.
-#REPT := { "REP", "REPNE", "REPNZ" };
-
-#REPT[IDX]    
-#            *1* %SKIP := [(%ecx = 0)?1:%SKIP]
-#            *1* %RPT := [(%ecx = 0)?0:1]
-#            *32* %ecx := [(%ecx > 0)?%ecx - 1:%ecx];
-
-#REPTZF := { "REPE", "REPZ" };
-
-#REPTZF[IDX]    
-#            *1* %SKIP := [(%ecx = 0)?1:%SKIP]
-#            *1* %RPT := [(%ecx = 0)?0:1]
-#            *32* %ecx := [(%ecx > 0 and %ZF = 0)?%ecx - 1:%ecx];
-
 RET    
             *32* %pc := m[%esp]{32}
             *32* %esp := %esp + 4;

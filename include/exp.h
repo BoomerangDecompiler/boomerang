@@ -119,8 +119,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
 
     // True if this is a call to a flag function
     bool isFlagCall() {return op == opFlagCall;}
-    // True if this is an assignment to the "flags" abstract location
-    bool isFlagAssgn();
+    // True if this represents the abstract flags location (LHS of flag call)
+    bool isFlags() {return op == opFlags;}
     // True if this is a register location
     bool isRegOf() {return op == opRegOf;}
     // True if this is a register location with a constant index

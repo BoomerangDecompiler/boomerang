@@ -827,6 +827,7 @@ void BranchStatement::doReplaceRef(Exp* from, Exp* to) {
     simplify();
 }
 
+
 // Common to BranchStatement and BoolStatement
 void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
     pCond = pCond->simplifyArith()->simplify();
@@ -835,10 +836,9 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
     pCond->print(os);
     std::string s = os.str();
 
-    if (pCond->getOper() == opFlagCall && 
-        !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-                "SUBFLAGS", 8)) {
-        Exp *e = pCond;
+    if (pCond->getOper() == opFlagCall &&
+          !strncmp(((Const*)pCond->getSubExp1())->getStr(),
+          "SUBFLAGS", 8)) {
         OPER op = opWild;
         switch (jtCond) {
             case BRANCH_JE:    op = opEquals; break;
@@ -855,13 +855,11 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 pCond = new Binary(opLess,
                     pCond->getSubExp2()->getSubExp2()->getSubExp2()
                         ->getSubExp1()->clone(), new Const(0));
-                ;//delete e;
                 break;
             case BRANCH_JPOS:
                 pCond = new Binary(opGtrEq,
                     pCond->getSubExp2()->getSubExp2()->getSubExp2()
                         ->getSubExp1()->clone(), new Const(0));
-                ;//delete e;
                 break;
             case BRANCH_JOF:
             case BRANCH_JNOF:
@@ -870,16 +868,15 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
         }
         if (op != opWild) {
             pCond = new Binary(op,
-                pCond->getSubExp2()->getSubExp1()->clone(), 
+                pCond->getSubExp2()->getSubExp1()->clone(),
                 pCond->getSubExp2()->getSubExp2()->getSubExp1()
                     ->clone());
-            ;//delete e;
         }
     }
-    if (pCond->getOper() == opFlagCall && 
-        !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
-                "LOGICALFLAGS", 12)) {
-        Exp *e = pCond;
+    else if (pCond->getOper() == opFlagCall && 
+          !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+          "LOGICALFLAGS", 12)) {
+        // Exp *e = pCond;
         switch (jtCond) {
             case BRANCH_JE:
                 pCond = new Binary(opEquals,
@@ -2280,6 +2277,10 @@ void Assign::print(std::ostream& os, bool withUses) {
 
 void Assign::getDefinitions(LocationSet &defs) {
     defs.insert(lhs);
+    // Special case: flag calls define %CF (and others)
+    if (lhs->isFlags()) {
+        defs.insert(new Terminal(opCF));
+    }
 }
 
 bool Assign::search(Exp* search, Exp*& result) {
@@ -2343,7 +2344,36 @@ void Assign::doReplaceRef(Exp* from, Exp* to) {
           subsub1->searchReplaceAll(from, to, changeleft));
     }
     //assert(changeright || changeleft);    // HACK!
-    if (!changeright && !changeleft)
+    if (!changeright && !changeleft) {
+        // Could be propagating %flags into %CF
+        Exp* baseFrom = ((RefExp*)from)->getSubExp1();
+        if (baseFrom->isFlags()) {
+            Statement* def = ((RefExp*)from)->getRef();
+            Exp* defRhs = def->getRight();
+            assert(defRhs->isFlagCall());
+            /* When the carry flag is used bare, and was defined in a subtract
+               of the form lhs - rhs, then CF has the value (lhs <u rhs)
+               lhs and rhs are the first and second parameters of the flagcall
+               Note: the flagcall is a binary, with a Const (the name) and a
+               list of expressions:
+                 defRhs
+                 /    \
+            Const      opList
+            "SUBFLAGS"  /   \
+                       P1   opList
+                             /   \
+                            P2  opList
+                                 /   \
+                                P3   opNil
+            */
+            Exp* e = new Binary(opLessUns,
+                ((Binary*)defRhs)->getSubExp2()->getSubExp1(),
+                ((Binary*)defRhs)->getSubExp2()->getSubExp2()->getSubExp1());
+            rhs = rhs->searchReplaceAll(new RefExp(new Terminal(opCF), def),
+              e, changeright);
+        }
+    }
+    if (!changeright && !changeleft) {
         if (VERBOSE) {
             // I used to be hardline about this and assert fault,
             // but now I do such weird propagation orders that this can
@@ -2352,11 +2382,14 @@ void Assign::doReplaceRef(Exp* from, Exp* to) {
             LOG << "could not change " << from << " to " <<
               to << " in " << this << " !!\n";
         }
-    // simplify the expression
-    rhs = rhs->simplifyArith();
-    lhs = lhs->simplifyArith();
-    rhs = rhs->simplify();
-    lhs = lhs->simplify();
+    }
+    if (changeright) {
+        // simplify the expression
+        rhs = rhs->simplifyArith()->simplify();
+    }
+    if (changeleft) {
+        lhs = lhs->simplifyArith()->simplify();
+    }
 }
 
 void Assign::subscriptVar(Exp* e, Statement* def) {
