@@ -360,6 +360,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
             tos = 0;
         }
         if ((*rit)->getNumStmt() == 0) { rit++; continue; }
+#if PROCESS_FNSTSW
         // Check for f(n)stsw
         if (isStoreFsw((*rit)->elementAt(0))) {
             // Check the register - at present we only handle AX
@@ -377,6 +378,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
             // instructions that replace it, so process rest of this BB
             continue;
         }
+#endif
         for (int i=0; i < (*rit)->getNumStmt(); i++) {
             // Get the current Exp
             st = (*rit)->elementAt(i);
@@ -460,7 +462,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 }
 
 
-
+#if 0       // This monstrosity no longer needed. Sniff.
 /*
 // Finite state machine for recognising code handling floating point CCs
 //
@@ -918,7 +920,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 //std::cout << "Return in state " << std::dec << state << std::endl;   // HACK
     return bJoin;           // If joined, abandon this BB
 }
-
+#endif
 
 // Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
 // Insert before rit

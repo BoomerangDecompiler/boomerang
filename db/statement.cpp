@@ -201,6 +201,30 @@ char* Statement::prints() {
     return debug_buffer;
 }
 
+/* This function is designed to find basic flag calls, plus in addition
+// two variations seen with Pentium FP code. These variations involve
+// ANDing and/or XORing with constants. So it should return true for these
+// values of e:
+ ADDFLAGS(...)
+ SETFFLAGS(...) & 0x45
+ (SETFFLAGS(...) & 0x45) ^ 0x40
+*/
+bool hasSetFlags(Exp* e) {
+    if (e->isFlagCall()) return true;
+    OPER op = e->getOper();
+    if (op != opBitAnd && op != opBitXor) return false;
+    Exp* left  = ((Binary*)e)->getSubExp1();
+    Exp* right = ((Binary*)e)->getSubExp2();
+    if (!right->isIntConst()) return false;
+    if (left->isFlagCall()) return true;
+    op = left->getOper();
+    if (op != opBitAnd && op != opBitXor) return false;
+    right = ((Binary*)left)->getSubExp2();
+    left  = ((Binary*)left)->getSubExp1();
+    if (!right->isIntConst()) return false;
+    return left->isFlagCall();
+}
+
 // exclude: a set of statements not to propagate from
 void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
 {
@@ -252,8 +276,13 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                 if (def->isBool())
                     continue;
                 if (isBranch()) {
-                    // propagating to a branch often doesn't give good results
-                    if (def->getLeft()->getOper() != opFlags)
+                    // Propagating to a branch often doesn't give good results,
+                    // unless propagating flags
+                    // Special case for Pentium: allow prop of
+                    // r12 := SETFFLAGS(...) (fflags stored via register AH)
+                    if (!hasSetFlags(def->getRight()))
+                        // ?? Also allow assignments of temps with something
+                        // subscripted
                         if (def->getRight()->getOper() != opSubscript &&
                             !def->getLeft()->isTemp())
                             continue;
@@ -282,11 +311,14 @@ bool Statement::doPropagateTo(int memDepth, Statement* def) {
             Boomerang::get()->numToPropagate--;
     }
 
+    if (VERBOSE) {
+        LOG << "Propagating " << def << "\n"
+            << "       into " << this << "\n";
+    }
     replaceRef(def);
     simplify();
     if (VERBOSE) {
-        LOG << "Propagating " << def->getNumber() << " into " << getNumber() 
-            << ", result is " << this << "\n";
+        LOG << "     result " << this << "\n\n";
     }
     return true;
 }
@@ -858,14 +890,16 @@ void BranchStatement::doReplaceRef(Exp* from, Exp* to) {
 
 
 // Common to BranchStatement and BoolStatement
-void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
+// Return true if this is now a floating point Branch
+bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
     pCond = pCond->simplifyArith()->simplify();
 
     std::stringstream os;
     pCond->print(os);
     std::string s = os.str();
 
-    if (pCond->getOper() == opFlagCall &&
+    OPER condOp = pCond->getOper();
+    if (condOp == opFlagCall &&
           !strncmp(((Const*)pCond->getSubExp1())->getStr(),
           "SUBFLAGS", 8)) {
         OPER op = opWild;
@@ -902,7 +936,7 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                     ->clone());
         }
     }
-    else if (pCond->getOper() == opFlagCall && 
+    else if (condOp == opFlagCall && 
           !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
           "LOGICALFLAGS", 12)) {
         // Exp *e = pCond;
@@ -929,7 +963,7 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                 new Const(0));
         }
     }
-    else if (pCond->getOper() == opFlagCall && 
+    else if (condOp == opFlagCall && 
           !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
           "SETFFLAGS", 9)) {
         // Exp *e = pCond;
@@ -953,12 +987,107 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
                     ->clone());
         }
     }
+    // ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else
+    // Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST
+    // where MASK could be a combination of 1, 4, and 40, and
+    // relop could be == or ~=
+    // There could also be an XOR 40h after the AND
+    // %fflags = 0..0.0 00 >
+    // %fflags = 0..0.1 01 <
+    // %fflags = 1..0.0 40 =
+    // %fflags = 1..1.1 45 not comparable
+    // Example: (SETTFLAGS(...) & 1) ~= 0
+    // left = SETFFLAGS(...) & 1
+    // left1 = SETFFLAGS(...) left2 = int 1, k = 0, mask = 1
+    else if (condOp == opEquals || condOp == opNotEqual) {
+        Exp* left =  ((Binary*)pCond)->getSubExp1();
+        Exp* right = ((Binary*)pCond)->getSubExp2();
+        bool hasXor40 = false;
+        if (left->getOper() == opBitXor && right->isIntConst()) {
+            Exp* r2 = ((Binary*)left)->getSubExp2();
+            if (r2->isIntConst()) {
+                int k2 = ((Const*)r2)->getInt();
+                if (k2 == 0x40) {
+                    hasXor40 = true;
+                    left = ((Binary*)left)->getSubExp1();
+                }
+            }
+        }
+        if (left->getOper() == opBitAnd && right->isIntConst()) {
+            Exp* left1 = ((Binary*)left)->getSubExp1();
+            Exp* left2 = ((Binary*)left)->getSubExp2();
+            int k = ((Const*)right)->getInt();
+            // Only interested in 40, 1
+            k &= 0x41;
+            if (left1->getOper() == opFlagCall &&
+                  left2->isIntConst()) {
+                int mask = ((Const*)left2)->getInt();
+                // Only interested in 1, 40
+                mask &= 0x41;
+                OPER op = opWild;
+                if (hasXor40) {
+                    assert(k == 0);
+                    op = condOp;
+                } else {
+                    switch (mask) {
+                        case 1:
+                            if (condOp == opEquals && k == 0 ||
+                                condOp == opNotEqual && k == 1)
+                                    op = opGtrEq;
+                            else
+                                    op = opLess;
+                            break;
+                        case 40:
+                            if (condOp == opEquals && k == 0 ||
+                                condOp == opNotEqual && k == 0x40)
+                                    op = opNotEqual;
+                            else
+                                    op = opEquals;
+                            break;
+                        case 0x41:
+                            switch (k) {
+                                case 0:
+                                    if (condOp == opEquals) op = opGtr;
+                                    else op = opLessEq;
+                                    break;
+                                case 1:
+                                    if (condOp == opEquals) op = opLess;
+                                    else op = opGtrEq;
+                                    break;
+                                case 0x40:
+                                    if (condOp == opEquals) op = opEquals;
+                                    else op = opNotEqual;
+                                    break;
+                                default:
+                                    std::cerr << "BranchStatement::simplify: "
+                                        "k is " << std::hex << k << "\n";
+                                    assert(0);
+                            }
+                            break;
+                        default:
+                            std::cerr << "BranchStatement::simplify: Mask is "
+                                << std::hex << mask << "\n";
+                            assert(0);
+                    }
+                }
+                if (op != opWild) {
+                    pCond = new Binary(op,
+                        left1->getSubExp2()->getSubExp1(),
+                        left1->getSubExp2()->getSubExp2()->getSubExp1());
+                    return true;      // This is now a float comparison
+                }
+            }
+        }
+    }
+    return false;
 }
 
 
 void BranchStatement::simplify() {
-    if (pCond)
-        condToRelational(pCond, jtCond);
+    if (pCond) {
+        if (condToRelational(pCond, jtCond))
+            bFloat = true;
+    }
 }
 
 void BranchStatement::addUsedLocs(LocationSet& used) {
@@ -1768,7 +1897,8 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 arguments = newargs;
                 assert((int)arguments.size() == sig->getNumParams());
                 implicitArguments = newimpargs;
-                assert((int)implicitArguments.size() == sig->getNumImplicitParams());
+                assert((int)implicitArguments.size() ==
+                  sig->getNumImplicitParams());
                 // 4
                 //LOG << "4\n";
                 m_isComputed = false;
@@ -1998,7 +2128,8 @@ void CallStatement::processConstants(Prog *prog) {
                 break;
             }
         for (unsigned i = 0; i < implicitArguments.size(); i++)
-            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::memOf(Location::regOf(sp))) {
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) ==
+                  *Location::memOf(Location::regOf(sp))) {
                 implicitArguments[i] = new Const(0);
                 break;
             }
@@ -2008,7 +2139,8 @@ void CallStatement::processConstants(Prog *prog) {
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
-        if ((name == "printf" || name == "scanf") && getArgumentExp(0)->isStrConst()) {
+        if ((name == "printf" || name == "scanf") &&
+              getArgumentExp(0)->isStrConst()) {
             char *str = ((Const*)getArgumentExp(0))->getStr();
             // actually have to parse it
             int n = 1;      // Number of %s plus 1 = number of args

@@ -62,6 +62,7 @@ FLOAT
   %st2, %st3, %st4, %st5, %st6, %st7 ][80] -> 32..39;
 
 INTEGER
+# Note: for boomerang, we use the abstract floating point flags %fflags now
 %fsw[16] -> 40, #Float status word(16 Bit register Containing information about
                 #The state of the FPU.  stores the top of stack pointer
                 #information aswell as the exception flags and stack fault
@@ -1805,16 +1806,20 @@ FNSTCW   modrm
             *16* modrm := %fcw;
 
 FSTSW   modrm 
-            *16* modrm := %fsw;
+            *16* modrm := %fflags;
 
 FSTSW.AX    
-            *16* %ax := %fsw;
+            # *16* %ax := %fflags;
+            *8* %ah := %fflags
+            *8* %al := 0;     # Just so we know it's changed  
 
 FNSTSW   modrm 
-            *16* modrm := %fsw;
+            *16* modrm := %fflags;
 
 FNSTSW.AX    
-            *16* %ax := %fsw;
+            # *16* %ax := %fflags;
+            *8* %ah := %fflags
+            *8* %al := 0;     # Just so we know it's changed  
 
 FSUBR.r32   modrm 
             *80* %st := fsize(32,80,modrm) -f %st;
