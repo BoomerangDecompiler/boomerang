@@ -102,7 +102,7 @@ public:
     virtual size_t getImageSize();
 
     // Get a symbol given an address
-    virtual char*   SymbolByAddress(const ADDRESS dwAddr);
+    virtual char*   SymbolByAddress(ADDRESS dwAddr);
     // Lookup the name, return the address
     virtual ADDRESS GetAddressByName(char* pName, bool bNoTypeOK = false);
     // Return true if the address matches the convention for A-line system calls

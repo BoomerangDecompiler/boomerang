@@ -489,7 +489,7 @@ size_t HpSomBinaryFile::getImageSize()
 }
 
 // We at least need to be able to name the main function and system calls
-char* HpSomBinaryFile::SymbolByAddress(const ADDRESS dwAddr)
+char* HpSomBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
     return symbols.Find(dwAddr);
 }
