@@ -208,8 +208,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
         prog->decompile();
     }
 
-    // Note: printing of dotty file has been moved into Prog::decompile()
-    // (want global edges, and no stmts deleted yet)
+    if (dotFile)
+        prog->generateDotFile();
 
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
