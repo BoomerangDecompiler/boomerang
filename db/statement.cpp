@@ -1413,6 +1413,10 @@ void CallStatement::addArgument(Exp *e)
 {
     e = substituteParams(e);
     arguments.push_back(e);
+    // These expressions can end up becoming locals
+    Location *l = dynamic_cast<Location*>(e);
+    if (l)
+        l->setProc(proc);
 }
 
 Type *CallStatement::getArgumentType(int i) {
@@ -1430,6 +1434,13 @@ Type *CallStatement::getArgumentType(int i) {
  *============================================================================*/
 void CallStatement::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
+    std::vector<Exp*>::iterator ll;
+    for (ll = arguments.begin(); ll != arguments.end(); ll++) {
+        Location *l = dynamic_cast<Location*>(*ll);
+        if (l) {
+            l->setProc(proc);
+        }
+    }
 }
 
 /*==============================================================================
@@ -1462,6 +1473,10 @@ void CallStatement::setSigArguments() {
         Exp *e = sig->getArgumentExp(i);
         assert(e);
         arguments[i] = e->clone();
+        Location *l = dynamic_cast<Location*>(e);
+        if (l) {
+            l->setProc(proc);
+        }
     }
     if (sig->hasEllipsis()) {
         // Just guess 4 parameters for now
