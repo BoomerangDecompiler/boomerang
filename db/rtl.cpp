@@ -42,7 +42,6 @@
 #include "hllcode.h"
 #include "util.h"
 #include "boomerang.h"
-
 /******************************************************************************
  * RTL methods.
  * Class RTL represents low-level register transfer lists. 
@@ -215,7 +214,7 @@ void RTL::appendListExp(std::list<Exp*>& le) {
  * FUNCTION:        RTL::appendRTL
  * OVERVIEW:        Append the Exps of another RTL to this object
  * NOTE:            A copy of the Exps in r are appended
- * PARAMETERS:      rtl: RTL whose Exps we are to insert
+ * PARAMETERS:      r: reterence to RTL whose Exps we are to insert
  * RETURNS:         Nothing
  *============================================================================*/
 void RTL::appendRTL(RTL& r) {
@@ -856,4 +855,49 @@ void RTL::simplify() {
         // simplify the resultant expression
         *it = e->simplify();        
     }
+}
+
+/*==============================================================================
+ * FUNCTION:        RTL::isCompare
+ * OVERVIEW:        Return true if this is an unmodified compare instruction
+ *                    of a register with an operand
+ * NOTE:            Will also match a subtract if the flags are set
+ * NOTE:            expOperand, if set, is not cloned
+ * NOTE:            Assumes that the first subtract on the RHS is the actual
+ *                    compare operation
+ * PARAMETERS:      iReg: ref to integer to set with the register index
+ *                  expOperand: ref to ptr to expression of operand
+ * RETURNS:         True if found
+ *============================================================================*/
+bool RTL::isCompare(int& iReg, Exp*& expOperand) {
+    // Expect to see a subtract, then a setting of the flags
+    // Dest of subtract should be a register (could be the always zero register)
+    if (getNumExp() < 2) return false;
+    // Could be first some assignments to temporaries
+    // But the actual compare could also be an assignment to a temporary
+    // So we search for the first RHS with an opMinus, that has a LHS to
+    // a register (whether a temporary or a machine register)
+    int i=0;
+    Exp* rhs;
+    Exp* cur;
+    do {
+        cur = (AssignExp*)elementAt(i);
+        if (!cur->isAssign()) return false;
+        rhs = cur->getSubExp2();
+        i++;
+    } while (rhs->getOper() != opMinus && i < getNumExp());
+    if (rhs->getOper() != opMinus) return false;
+    Exp* lhs = cur->getSubExp1();
+    if (!lhs->isRegOf()) return false;
+    // We have a subtract assigning to a register.
+    // Check if there is a subflags last
+    Exp* last = elementAt(getNumExp()-1);
+    if (!last->isFlagAssgn()) return false;
+    Exp* sub = ((Binary*)rhs)->getSubExp1();
+    // Should be a compare of a register and something (probably a constant)
+    if (!sub->isRegOf()) return false;
+    // Set the register and operand expression, and return true
+    iReg = ((Const*)((Unary*)sub)->getSubExp1())->getInt();
+    expOperand = ((Binary*)rhs)->getSubExp2();
+    return true;
 }

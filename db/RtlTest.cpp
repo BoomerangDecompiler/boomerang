@@ -12,6 +12,19 @@
 #include "RtlTest.h"
 #include "exp.h"
 #include <sstream>
+#include "BinaryFile.h"
+#include "frontend.h"
+#include "sparcfrontend.h"
+#include "pentiumfrontend.h"
+#include "decoder.h"
+
+
+#ifndef BOOMDIR
+#error Must define BOOMDIR
+#endif
+
+#define SWITCH_SPARC        BOOMDIR "/test/sparc/switch_cc"
+#define SWITCH_PENT         BOOMDIR "/test/pentium/switch_cc"
 
 /*==============================================================================
  * FUNCTION:        RtlTest::registerTests
@@ -27,6 +40,7 @@ void RtlTest::registerTests(CppUnit::TestSuite* suite) {
     MYTEST(testAppend);
     MYTEST(testClone);
     MYTEST(testVisitor);
+    MYTEST(testIsCompare);
 }
 
 int RtlTest::countTestCases () const
@@ -181,4 +195,57 @@ void RtlTest::testVisitor()
 
     /* cleanup */
     delete visitor;
+}
+
+/*==============================================================================
+ * FUNCTION:        RtlTest::testIsCompare
+ * OVERVIEW:        Test the isCompare function
+ *============================================================================*/
+void RtlTest::testIsCompare () {
+    BinaryFile *pBF = BinaryFile::Load(SWITCH_SPARC);
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
+    FrontEnd *pFE = new SparcFrontEnd(pBF);
+
+    // Decode second instruction: "sub          %i0, 2, %o1"
+    int iReg;
+    Exp* eOperand = NULL;
+    DecodeResult inst = pFE->decodeInstruction(0x10910);
+    CPPUNIT_ASSERT(inst.rtl != NULL);
+    CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
+    
+    // Decode fifth instruction: "cmp          %o1, 5"
+    inst = pFE->decodeInstruction(0x1091c);
+    CPPUNIT_ASSERT(inst.rtl != NULL);
+    CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == true);
+    CPPUNIT_ASSERT_EQUAL(9, iReg);
+    std::string expected("5");
+    std::ostringstream ost1;
+    eOperand->print(ost1);
+    std::string actual(ost1.str());
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    pBF->UnLoad();
+    delete pBF;
+    delete pFE;
+    pBF = BinaryFile::Load(SWITCH_PENT);
+    CPPUNIT_ASSERT(pBF != 0);
+    CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
+    pFE = new PentiumFrontEnd(pBF);
+
+    // Decode fifth instruction: "cmp    $0x5,%eax"
+    inst = pFE->decodeInstruction(0x80488fb);
+    CPPUNIT_ASSERT(inst.rtl != NULL);
+    CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == true);
+    CPPUNIT_ASSERT_EQUAL(24, iReg);
+    std::ostringstream ost2;
+    eOperand->print(ost2);
+    actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    
+    // Decode instruction: "add    $0x4,%esp"
+    inst = pFE->decodeInstruction(0x804890c);
+    CPPUNIT_ASSERT(inst.rtl != NULL);
+    CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
+    
 }
