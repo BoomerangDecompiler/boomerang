@@ -20,7 +20,7 @@
  * 17 May 02 - Mike: Split off from rtl.cc (was getting too large)
  * 26 Nov 02 - Mike: Generate code for HlReturn with semantics (eg SPARC RETURN)
  * 26 Nov 02 - Mike: In getReturnLoc test for null procDest
- * 03 Dec 02 - Mike: Made a small mod to HLCall::killReach for indirect calls
+ * 03 Dec 02 - Mike: Made a small mod to HLCall::killDef for indirect calls
  * 19 Dec 02 - Mike: Fixed the expressions in HLJcond::setCondType()
  */
 
@@ -1393,7 +1393,7 @@ void HLCall::truncateArguments() {
     // Needs a total rewrite
 }
 
-void HLCall::killReach(StatementSet &reach) {
+void HLCall::killDef(StatementSet &reach) {
     if (procDest == NULL) {
         // Will always be null for indirect calls
         // MVE: we may have a "candidate" callee in the future
@@ -1410,33 +1410,6 @@ void HLCall::killReach(StatementSet &reach) {
         for (ll = li->begin(); ll != li->end(); ll++) {
             // These statements do not reach the end of the call
             reach.removeIfDefines(*ll);
-        }
-        return;
-    }
-
-    // A UserProc
-    // Don't kill anything. The interprocedural analysis handles the effects
-    // of the callee now
-}
-
-void HLCall::killAvail(StatementSet &avail) {
-    if (procDest == NULL) {
-        // Will always be null for indirect calls
-        // MVE: we may have a "candidate" callee in the future
-        // Kills everything. Not clear that this is always "conservative"
-        avail.clear();
-        return;
-    }
-    if (procDest->isLib()) {
-        // A library function. We use the calling convention to find
-        // out what is killed.
-        Prog* prog = procDest->getProg();
-        std::list<Exp*> *li = procDest->getSignature()->getCallerSave(prog);
-        assert(li);
-        std::list<Exp*>::iterator ll;
-        for (ll = li->begin(); ll != li->end(); ll++) {
-            // These statements are not available at the end of the call
-            avail.removeIfDefines(*ll);
         }
         return;
     }
@@ -1987,7 +1960,7 @@ void HLScond::simplify() {
     RTL::simplify();
 }
 
-void HLScond::killReach(StatementSet &reach)
+void HLScond::killDef(StatementSet &reach)
 {
     assert(pDest);
     StatementSet kills;

@@ -1565,7 +1565,7 @@ void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
                         StatementSet temp(inEdge->reachOut);
                         PBB exitBlock =
                           ((UserProc*)dest)->getCFG()->getExitBB();
-                        temp.makeDiff(exitBlock->availOut);
+                        temp.makeKillDiff(exitBlock->availOut);
                         reachin.makeUnion(temp);
                     }
                 } else
@@ -1587,7 +1587,7 @@ void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
                     } else {
                         StatementSet temp(inEdge->reachOut);
                         Cfg* cfgDest = ((UserProc*)dest)->getCFG();
-                        temp.makeDiff(cfgDest->getSavedAvailExit());
+                        temp.makeKillDiff(cfgDest->getSavedAvailExit());
                         temp.makeUnion(cfgDest->getSavedReachExit());
                         reachin.makeUnion(temp);
                     }
@@ -1626,9 +1626,9 @@ std::cerr << "doAvail: call to " << dest->getName() << " from ";call->print(std:
 std::cerr << "doAvail:  avail from call: "; availSet.printNums(std::cerr); std::cerr << "\n";
         PBB exitBlock = ((UserProc*)dest)->getCFG()->getExitBB();
         // - REACHOUT[exit]
-        availSet.makeDiff(exitBlock->reachOut);
+        availSet.makeKillDiff(exitBlock->reachOut);
 std::cerr << "doAvail:    exit reachout: "; exitBlock->reachOut.printNums(std::cerr); std::cerr << "\n";
-std::cerr << "doAvail:   after makeDiff: "; availSet.printNums(std::cerr); std::cerr << "\n";
+std::cerr << "doAvail:after makeKillDiff:"; availSet.printNums(std::cerr); std::cerr << "\n";
         // U AVAILOUT[exit]
         availSet.makeUnion(exitBlock->availOut);
 std::cerr << "doAvail:    exit availout: "; exitBlock->availOut.printNums(std::cerr); std::cerr << "\n";

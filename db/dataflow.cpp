@@ -242,7 +242,7 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
  */
 void Statement::calcReachOut(StatementSet &reach) {
     // calculate kills
-    killReach(reach);
+    killDef(reach);
     // add this def
     if (getLeft() != NULL)
         reach.insert(this);
@@ -253,10 +253,11 @@ void Statement::calcReachOut(StatementSet &reach) {
    If the available set is empty, it will contain anything this assignment
    defines. If the available set is not empty, then it will not contain
    anything this assignment kills.
+   Note: now identical to the above
  */
 void Statement::calcAvailOut(StatementSet &avail) {
     // calculate kills
-    killAvail(avail);
+    killDef(avail);         // Reaching and available defs both killed by defs
     // add this def
     if (getLeft() != NULL)
         avail.insert(this);
@@ -320,7 +321,7 @@ bool Statement::canPropagateToAll() {
     StatementSet defs;     // Set of locations used, except for (max 1) killed
     defs = uses;
     int nold = uses.size();     // Number of statements I use
-    killReach(defs);            // Number used less those killed this stmt
+    killDef(defs);            // Number used less those killed this stmt
     if (nold - defs.size() > 1) {
         // See comment above.
         if (VERBOSE) {
@@ -486,6 +487,14 @@ void StatementSet::makeDiff(StatementSet& other) {
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.erase(*it);
     }
+}
+
+// Killing difference. Kill any element of this where there is an element of
+// other that defines the same location
+void StatementSet::makeKillDiff(StatementSet& other) {
+    StmtSetIter it;
+    for (it = other.sset.begin(); it != other.sset.end(); it++)
+        (*it)->killDef(*this);
 }
 
 // Make this set the intersection of itself and other

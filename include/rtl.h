@@ -361,8 +361,7 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // dataflow analysis
-    virtual void killReach(StatementSet &reach) { }
-    virtual void killAvail(StatementSet &avail) { }
+    virtual void killDef(StatementSet &reach) { }
     virtual void killLive (LocationSet &kill ) { }
     virtual void getDeadStatements(StatementSet &dead) { }
     virtual bool usesExp(Exp *e);
@@ -539,8 +538,7 @@ public:
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
     // dataflow analysis
-    virtual void killReach(StatementSet &reach);
-    virtual void killAvail(StatementSet &avail);
+    virtual void killDef(StatementSet &reach);
     virtual void killLive (LocationSet  &live );
     virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
@@ -724,10 +722,7 @@ public:
     virtual void simplify();
 
     // Statement functions
-    virtual void killReach(StatementSet &reach);
-    virtual void killAvail(StatementSet &avail)
-        { // Same as kill for reaching definitions
-          killReach(avail); }
+    virtual void killDef(StatementSet &reach);
     virtual void killLive (LocationSet &kill );
     virtual void addUsedLocs(LocationSet& used);
     virtual void getDeadStatements(StatementSet &dead);

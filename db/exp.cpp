@@ -2519,7 +2519,7 @@ bool FlagDef::serialize(std::ostream &ouf, int &len)
     return true;
 }
 
-void AssignExp::killReach(StatementSet &reach) {
+void AssignExp::killDef(StatementSet &reach) {
     StatementSet kills;
     StmtSetIter it;
     for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
