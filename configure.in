@@ -96,7 +96,7 @@ AC_MSG_RESULT( $HOST_CYGWIN )
 dnl Checks for elf library (no longer needed)
 dnl AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
 
-AC_CHECK_LIB(stdc++, main)
+AC_CHECK_LIB(stdc++, main,, [AC_MSG_ERROR([library stdc++ is not found...])])
 
 dnl Checks for cppunit library
 AC_LANG_PUSH(C++)
