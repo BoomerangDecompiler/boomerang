@@ -201,6 +201,24 @@ bool isComplete(Exp* e) {
     return true;
 }
 
+// Insert e after assignment to temps in rtl
+void insertAfterTemps(RTL* rtl, Exp* e) {
+    Exp* cur;
+    Exp* lhs;
+    int n = rtl->getNumExp();
+    int i = 0;
+    while (i < n) {
+        cur = rtl->elementAt(i);
+        if (!cur->isAssign()) break;
+        lhs = cur->getSubExp1();
+        if (!lhs->isRegOf()) break;
+        lhs = ((Unary*)lhs)->getSubExp1();
+        if (!lhs->isTemp()) break;
+        i++;
+    }
+    rtl->insertExp(e, i);
+}
+
 /*==============================================================================
  * FUNCTION:      getPrevRtl
  * OVERVIEW:      Get the preceeding RTL to the current one. If we are at the
@@ -800,7 +818,7 @@ forcedCheck:
         std::cout << "ssJmp @ " << std::hex << (*itCurRtl)->getAddress() <<
           ": ";
         ssJmp->print(); std::cout << std::endl;
-        if (ssBound) {std::cout << "ssBound is " << ssBound << "\n";
+        if (ssBound) std::cout << "ssBound is " << ssBound << "\n";
 #endif
 
         // Needn't do any checking until we have found the uppper bound
@@ -903,13 +921,21 @@ forcedCheck:
         if (!bGotUpper || !bGotLower) {
             // Check if we have the upper and lower bounds together
             // ((r[v] GT k1] || (r[v] LT k2))
-            static int arBoth[] = {
-                idOr, opUpper, opRegOf, opIntConst, -1, opIntConst, -1,
-                idLO, opRegOf, opIntConst, -1, opIntConst, -1};
-            if (ssBound->isArrayEqual(sizeof(arBoth) / sizeof(int), arBoth)) {
+            static Binary expBoth(opOr,
+                new Binary(opUpper,
+                    new Terminal(opWildRegOf),
+                    new Terminal(opWildIntConst)),
+                new Binary(opLower,
+                    new Terminal(opWildRegOf),
+                    new Terminal(opWildIntConst)));
+            if (*ssBound == expBoth) {
                 // We have both bounds
-                iLower = ssBound->getIndex(12);
-                iUpper = ssBound->getIndex(6);
+                Exp* sub1 = ssBound->getSubExp1();
+                Exp* sub2 = ssBound->getSubExp2();
+                sub1 = ((Binary*)sub1)->getSubExp2();
+                sub2 = ((Binary*)sub2)->getSubExp2();
+                iUpper = ((Const*)sub1)->getInt();
+                iLower = ((Const*)sub2)->getInt();
                 // Adjust the table by iLower*size
                 int iSize = 4;
                 // We may not know the form as yet!
@@ -927,12 +953,13 @@ forcedCheck:
 
         // Check for upper bound only
         if (!bGotUpper) {
-            static int arUpper[] = {
-                // UP r[ wild] const wild
-                opUpper, opRegOf, opIntConst, -1, opIntConst, -1};
-            if (ssBound->isArrayEqual(sizeof(arUpper) / sizeof(int), arUpper)) {
+            static Binary expUpper(opUpper,
+                new Terminal(opWildRegOf),
+                new Terminal(opWildIntConst));
+            if (*ssBound == expUpper) {
                 bGotUpper = true;
-                iUpper = ssBound->getIndex(5);
+                Exp* sub = ((Binary*)ssBound)->getSubExp2();
+                iUpper = ((Const*)sub)->getInt();
                 // If we haven't seen the instruction defining the switch var
                 // (usually a subtract), then this compare defines it
                 if (!bGotDefines) {
@@ -965,28 +992,27 @@ forcedCheck:
 //              itDefinesSw = itCurRtl;
 
             // Now check if have `r[v] - k'
-            bool bRet = ssJmp->findSubExpr(
-                sizeof(arrRegMinus) / sizeof(int), arrRegMinus, iLower);
+            Exp* result;
+            bool bRet = ssJmp->search(&expRegMinus, result);
             if (bRet) {
                 // We now have the lower bound, and all is done
                 bGotLower = true;
 #if DEBUG_SWITCH
-            std::cout << "Got lower: ssJmp "; ssJmp->print(); std::cout << " -> iLower ";
-            std::cout << dec << iLower << std::endl;
+            std::cout << "Got lower: ssJmp "; ssJmp->print(); std::cout <<
+              " -> iLower " << std::dec << iLower << std::endl;
 #endif
                 iUpper += iLower;
             }
             else {
                 // Could be r[v] + k, where k is positive; in this case
                 // the lower bound is -k
-                bool bRet = ssJmp->findSubExpr(
-                    sizeof(arrRegPlus) / sizeof(int), arrRegPlus, iLower);
+                bool bRet = ssJmp->search(&expRegPlus, temp);
                 if (bRet) {
                     // We now have the lower bound, and all is done
                     iLower = -iLower;
 #if DEBUG_SWITCH
-                    std::cout << "Got lower: ssJmp "; ssJmp->print();
-                    std::cout << " -> iLower " << dec; std::cout << iLower << std::endl;
+                    std::cout << "Got lower: ssJmp " << ssJmp <<
+                      " -> iLower " << std::dec; std::cout << iLower << "\n";
 #endif
                     iUpper += iLower;
                     bGotLower = true;
@@ -1043,31 +1069,32 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
     // r[8] = r[8] - 2
     // Otherwise, assume that there is no lower bound, so we want the result:
     // r[9] = m[r[16] + 572]
-    Exp** pLHS = pProc->newLocal(INTEGER);
+    Exp* pLHS = pProc->newLocal(new IntegerType());
 
     // Want the defining assignment. Assume it's the last RTAssign of the RTL
     int n = (*itDefinesSw)->getNumExp();
     int i=n-1;
-    RTAssgn* pRT = (RTAssgn*)(*itDefinesSw)->elementAt(i);
-    while (pRT->getKind() != RTASSGN)
-        pRT = (RTAssgn*)(*itDefinesSw)->elementAt(--i);
-    if (pRT->getSubExp2()->getOper() == opMinus) {
+    Exp* pRT = (*itDefinesSw)->elementAt(i);
+    while (pRT->isAssign())
+        pRT = (*itDefinesSw)->elementAt(--i);
+    Exp* rhs = ((AssignExp*)pRT)->getSubExp2();
+    if (rhs->getOper() == opMinus) {
         // We want to insert the var assignment before the defining assignment,
         // and from the first subexpression
-        (*itDefinesSw)->insertAfterTemps(pLHS, pRT->getSubExp2()->getSubExpr(0));
+        insertAfterTemps(*itDefinesSw, new AssignExp(pLHS, rhs->getSubExp1()));
     }
     // Check if it's adding a negative constant to a register. If so,
     // assume it's just like the subtract above
-    else if ((pRT->getSubExp2()->isArraySimilar(
-      sizeof(arrRegPlusNegConst) / sizeof(int), arrRegPlusNegConst)) &&
-      (pRT->getSubExp2()->getIndex(5) < 0)) {
-        (*itDefinesSw)->insertAfterTemps(pLHS, pRT->getSubExp2()->getSubExpr(0));
+    else if ((*rhs == expRegPlusNegConst) &&
+      (((Binary*)rhs)->getSubExp2()->isIntConst()) &&
+      (((Const*)((Binary*)rhs)->getSubExp2())->getInt() < 0)) {
+        insertAfterTemps(*itDefinesSw, new AssignExp(pLHS, rhs->getSubExp1()));
     }
     else {
         // We assume that this assign is a load (or something) that defines the
         // switch variable
-        Exp* pRHS = new Exp*(*pRT->getSubExp1());
-        (*itDefinesSw)->insertAssign(pLHS, pRHS, false);
+        Exp* lhs = pRT->getSubExp1();
+        (*itDefinesSw)->appendExp(new AssignExp(pLHS, lhs));
     }
     pSwitchInfo->pSwitchVar = pLHS;
 }
@@ -1079,12 +1106,11 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
  * PARAMETERS:    pBB - Pointer to the BB containing the register jump
  *                delta - (uHost - uNative)
  *                pCfg - Pointer to the Cfg object for the current procedure
- *                targets - queue of targets yet to be visited
+ *                tq- queue of targets yet to be visited
  *                proc - pointer to the Proc object that the switch is in
  * RETURNS:       <nothing>
  *============================================================================*/
-void processSwitch(PBB pBB, int delta, Cfg* pCfg, TARGETS& targets, Proc* proc)
-{
+void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq, Proc* proc) {
     HLNwayJump* jump = (HLNwayJump*)pBB->getRTLs()->back();
     SWITCH_INFO* si = jump->getSwitchInfo();
     // Update the delta field
@@ -1092,10 +1118,11 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TARGETS& targets, Proc* proc)
 
 #if DEBUG_SWITCH
     std::cout << "Found switch statement type " << si->chForm <<
-      " with table at " << std::hex << si->uTable << ", ";
+      " with table at 0x" << std::hex << si->uTable << ", ";
     if (si->iNumTable)
-        std::cout << dec << si->iNumTable << " entries, ";
-    std::cout << "lo= " << dec << si->iLower << ", hi= " << si->iUpper << "\n";
+        std::cout << std::dec << si->iNumTable << " entries, ";
+    std::cout << "lo= " << std::dec << si->iLower << ", hi= " << si->iUpper <<
+      "\n";
 #endif
     ADDRESS uSwitch;
     int iNumOut, iNum;
@@ -1133,7 +1160,7 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TARGETS& targets, Proc* proc)
             // For type R, the table is relative to the branch, so take iOffset
             // For others, iOffset is 0, so no harm
             uSwitch += si->uTable - si->iOffset;
-        visit(pCfg, uSwitch, targets, pBB);
+        tq.visit(pCfg, uSwitch, pBB);
         pCfg->addOutEdge(pBB, uSwitch, true);
     }
 
@@ -1142,6 +1169,7 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TARGETS& targets, Proc* proc)
     // section, before adding the coverage
     // Perhaps should add it to the prog object if outside the current
     // proc's boundaries (but how to decide that?)
+#if 0
 	UserProc* uProc = (UserProc*)proc;
     if (si->chForm == 'H') {
         uProc->addRange(si->uTable, si->uTable + iNum * 8);
@@ -1149,4 +1177,5 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TARGETS& targets, Proc* proc)
     else {
         uProc->addRange(si->uTable, si->uTable + iNum * 4);
     }
+#endif
 }
