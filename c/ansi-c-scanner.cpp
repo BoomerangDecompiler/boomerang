@@ -1800,7 +1800,7 @@ void AnsiCScanner::count()
 		else
 			column++;
 
-	ECHO;
+	//ECHO;
 }
 
 
