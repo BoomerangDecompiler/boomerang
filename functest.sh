@@ -41,4 +41,5 @@ rm -rf functests.out
 ./testOne.sh sparc   sumarray-O4 $BOOMSW
 ./testOne.sh pentium bswap $BOOMSW
 ./testOne.sh pentium testset -O 2 3 4
+./testOne.sh sparc   andn $BOOMSW
 echo === Done ===
