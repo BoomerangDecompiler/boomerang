@@ -150,8 +150,6 @@ void Cfg::computeDF(DOM* d, int n) {
 
 void Cfg::placePhiFunctions(DOM* d, int memDepth) {
     // First free some memory no longer needed
-if (memDepth == 1)
-  std::cerr << "HACK!\n";
     d->dfnum.resize(0);
     d->semi.resize(0);
     d->ancestor.resize(0);
@@ -196,7 +194,6 @@ if (memDepth == 1)
     std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
     for (mm = d->defsites.begin(); mm != d->defsites.end(); mm++) {
         Exp* a = (*mm).first;               // *mm is pair<Exp*, set<int>>
-if (memDepth == 1) std::cerr << "MD1: a is " << a << "\n";
         std::set<int> W = d->defsites[a];   // set copy
         // While W not empty
         while (W.size()) {
