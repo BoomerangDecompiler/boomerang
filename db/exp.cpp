@@ -2470,9 +2470,9 @@ Exp* Binary::polySimplify(bool& bMod) {
 					LOG << "replacing " << this << " with " << res << "\n";
 				if (l->getOper() == opSubscript) {
 					RefExp *r = (RefExp*)l;
-					if (r->getRef() && r->getRef()->isPhi()) {
-						PhiAssign *pa = (PhiAssign*)r->getRef();
-						LOG << "argh: " << pa->getAt(1) << "\n";
+					if (r->getDef() && r->getDef()->isPhi()) {
+						PhiAssign *pa = (PhiAssign*)r->getDef();
+						LOG << "argh: " << pa->getStmtAt(1) << "\n";
 					}
 				}
 				bMod = true;
@@ -2729,14 +2729,14 @@ Exp* RefExp::polySimplify(bool& bMod) {
 	// hack to fixing refs to phis which don't do anything
 	if (def && def->isPhi() && def->getProc()->canProveNow()) {
 		Exp *base = new RefExp(subExp1, NULL);
-		StatementVec::iterator uu;
+		PhiAssign::iterator uu;
 		PhiAssign *phi = (PhiAssign*)def;
 		for (uu = phi->begin(); uu != phi->end(); uu++)
-			if (*uu && (*uu)->isAssign() && *(*uu)->getLeft() == *subExp1) {
+			if (uu->def && uu->def->isAssign() && *uu->def->getLeft() == *subExp1) {
 				bool allZero = true;
-				(*uu)->getRight()->clone()->removeSubscripts(allZero);
+				uu->def->getRight()->clone()->removeSubscripts(allZero);
 				if (allZero) {
-					base = (*uu)->getRight()->clone();
+					base = uu->def->getRight()->clone();
 					break;
 				}
 			}
@@ -2753,13 +2753,13 @@ Exp* RefExp::polySimplify(bool& bMod) {
 		// Experiment MVE: compare 1 to 2, 1 to 3 ... 1 to n instead of
 		// base to 1, base to 2, ... base to n
 		// Seems to work
-		Exp* first = new RefExp(subExp1->clone(), *phi->begin());
+		Exp* first = new RefExp(subExp1->clone(), phi->begin()->def);
 		//for (uu = phi->begin(); allProven && uu != phi->end(); uu++) { // }
 		for (uu = ++phi->begin(); allProven && uu != phi->end(); uu++) {
-			//Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(),
-			//	 *uu), base->clone());
-			Exp* query = new Binary(opEquals, first,
-			  new RefExp(subExp1->clone(), *uu));
+			//Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), uu->base), base->clone());
+			Exp* query = new Binary(opEquals,
+				first,
+				new RefExp(subExp1->clone(), uu->def));
 			if (DEBUG_PROOF)
 				LOG << "attempting to prove " << query << " for ref to phi\n";
 			if (!def->getProc()->prove(query)) {
@@ -2973,7 +2973,7 @@ Exp *Exp::removeSubscripts(bool& allZero)
 	for (xx = locs.begin(); xx != locs.end(); xx++) {
 		if ((*xx)->getOper() == opSubscript) {
 			RefExp *r1 = (RefExp*)*xx;
-			if (r1->getRef() != NULL) {
+			if (r1->getDef() != NULL) {
 				allZero = false;
 			}
 			bool change; 
@@ -2990,8 +2990,7 @@ Exp *Exp::removeSubscripts(bool& allZero)
 //
 
 Exp* RefExp::fromSSA(igraph& ig) {
-	// FIXME: Need to check if the argument is a memof, and if so
-	// deal with that specially (e.g. global)
+	// FIXME: Need to check if the argument is a memof, and if so deal with that specially (e.g. global)
 	// Check to see if it is in the map
 	igraph::iterator it = ig.find(this);
 	if (it == ig.end()) {
@@ -3006,28 +3005,8 @@ Exp* RefExp::fromSSA(igraph& ig) {
 			// pc is just a nuisance at this stage. Make it explicit for
 			// debugging (i.e. to find out why it is still here)
 			return Location::local("pc", NULL);
-		// It is in the map. Delete the current expression, and replace
-		// with a new local
-		std::ostringstream os;
-		os << "local" << ig[this];
-		std::string name = os.str();
-		;//delete this;
-		UserProc *p = def ? def->getProc() : NULL;
-		if (p == NULL)
-			// The below handles all permutations of subscripting, arrays, etc
-			p = findProc();
-		if (p == NULL) {
-			for (igraph::iterator it1 = ig.begin(); it1 != ig.end(); it1++)
-				if ((*it1).first->isLocation())
-					p = ((Location*)(*it1).first)->getProc();
-		}
-		if (p == NULL) std::cerr << "Error: no proc for " << this << "\n";
-		assert(p);
-		Location *loc = Location::local(strdup(name.c_str()), p);
-		Type *ty = subExp1->getType();
-		if (ty)
-			loc->setType(ty);
-		return loc;
+		// It is in the map. Replace with the assigned local
+		return it->second->clone();
 	}
 }
 
@@ -3477,6 +3456,7 @@ void Location::getDefinitions(LocationSet& defs) {
 	}
 }
 
+// Ad hoc type analysis only. Possibly similar to ascendType of the data-flow based type analysis.
 Type *Unary::getType() {
 	switch(op) {
 		case opAddrOf:
@@ -3558,21 +3538,17 @@ Type *RefExp::getType()
 		PhiAssign *phi = (PhiAssign*)def;
 #if 1
 		if (VERBOSE)
-			LOG << "checking statements in " << phi << " for type of " << this 
-				<< "\n";
+			LOG << "checking statements in " << phi << " for type of " << this << "\n";
 #endif
-		StatementVec::iterator uu;
+		PhiAssign::iterator uu;
 		for (uu = phi->begin(); uu != phi->end(); uu++) {
-			Statement *s = *uu;
+			Statement *s = uu->def;
 			if (s && s->getRight() && 
-				(s->getRight()->getOper() != opSubscript ||
-				 ((RefExp*)s->getRight())->getRef() == NULL)) {
+					(s->getRight()->getOper() != opSubscript || ((RefExp*)s->getRight())->getDef() == NULL)) {
 				if (s->getRight()->getType()) {
 #if 1
 					if (VERBOSE)
-						LOG << "returning type " 
-							<< s->getRight()->getType()->getCtype() << " for " 
-							<< this << "\n";
+						LOG << "returning type " << s->getRight()->getType()->getCtype() << " for " << this << "\n";
 #endif
 					return s->getRight()->getType();
 				} else break;
@@ -3619,8 +3595,7 @@ Type *Location::getType()
 					if (n != -1) {
 						Type *ty = proc->getSignature()->getParamType(n);
 #if 0
-						LOG << "type from signature " << ty->getCtype()
-							<< " for " << this << "\n";
+						LOG << "type from signature " << ty->getCtype() << " for " << this << "\n";
 #endif
 						return ty;
 					}
@@ -3631,18 +3606,14 @@ Type *Location::getType()
 					if (ty) {
 						Type *t = ty->getPointsTo();
 #if 0
-						LOG << "type from subexp1 " 
-							<< t->getCtype()
-							<< " for " << this << "\n";
+						LOG << "type from subexp1 " << t->getCtype() << " for " << this << "\n";
 #endif
 						return t;
 					}
 				}
 				if (ty) {
 #if 0
-					LOG << "type (saved) " 
-						<< ty->getCtype()
-						<< " for " << this << "\n";
+					LOG << "type (saved) " << ty->getCtype() << " for " << this << "\n";
 #endif
 					return ty;
 				}
