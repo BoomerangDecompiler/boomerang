@@ -23,6 +23,7 @@
  * 09 Jul 02 - Mike: Fixed machine check for elf files (was checking endianness rather than machine type)
  * 22 Nov 02 - Mike: Quelched warnings
  * 16 Apr 03 - Mike: trace (-t) to cerr not cout now
+ * 28 Jan 05 - G. Krol: Check for thunks to library functions and don't create procs for these
  */
 
 #include <assert.h>
@@ -608,6 +609,34 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						call->setDestProc(p);
 						call->setIsComputed(false);
 					}
+
+#if 0
+					if(	call &&	call->getFixedDest() != NO_ADDRESS ) {
+						ADDRESS callAddr=call->getFixedDest();
+						DecodeResult res=decodeInstruction(callAddr);
+						if (res.valid == false) {
+							LOG << "invalid instruction at called address!\n";
+							break;
+						}
+						RTL *rtl = res.rtl;
+						Statement* s2 = *rtl->getList().begin();
+						s2->setProc(pProc);
+						s2->simplify();
+						GotoStatement* stmt_jump2 = static_cast<GotoStatement*>(s2);
+						if ( s2->getKind() == STMT_CASE &&		// Appears to be case stmt due to indirect branch
+								stmt_jump2->getDest()->getOper() == opMemOf &&
+								stmt_jump2->getDest()->getSubExp1()->getOper() == opIntConst && 
+								pBF->IsDynamicLinkedProcPointer(((Const*)stmt_jump2->getDest()->getSubExp1())->
+									getAddr())) {
+							LOG << "Lib function found in thunk\n";
+							const char *nam = pBF->GetDynamicProcName(((Const*)stmt_jump2->getDest()->getSubExp1())->
+								getAddr());
+							Proc *p = pProc->getProg()->getLibraryProc(nam);
+							call->setDestProc(p);
+							call->setIsComputed(false);
+						}
+   					}
+#endif
 
 					// Treat computed and static calls separately
 					if (call->isComputed()) {
