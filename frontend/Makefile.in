@@ -1,0 +1,106 @@
+######################################################
+# File: Makefile
+# Desc: Makefile for the frontend directory
+#       Makes and tests the frontend.so library, and
+#         the machine dependent decoders
+#
+# Prerequisite libraries: db, util, BinaryFile
+#
+######################################################
+
+# $Revision$
+# 08 Apr 02 - Mike: Created.
+# 10 Apr 02 - Mike: interface -> include
+
+FRONTEND_LIB = ../lib/libfrontend.so
+TEST_OBJS = FrontSparcTest.o FrontPentTest.o # FrontendTest.o 
+LIB_OBJS  = frontend.o njmcDecoder.o
+
+MACHS     = sparc pentium
+MACH_LIBS = $(patsubst %, ../lib/libfront%.so,  $(MACHS))
+MACH_OBJS = $(patsubst %, machine/%/decoder.o,  $(MACHS))
+MACH_SRC  = $(patsubst %, machine/%/decoder.cc, $(MACHS))
+MACH_FE_SRC=$(patsubst %, machine/%/frontendsrc.cc, $(MACHS))
+MACH_FE_OBJ=$(patsubst %, machine/%/frontendsrc.o , $(MACHS))
+
+CC = g++ -g -Wall
+CXX = $(CC)
+
+GENFILES = $(MACH_SRC)
+
+all: testFront
+
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+
+testFront: testFront.o $(FRONTEND_LIB) $(TEST_OBJS) $(MACH_LIBS) \
+        ../include/frontend.h
+	$(CC) -o $@ testFront.o $(TEST_OBJS) -lcppunit -lfrontend -ldb \
+      -lBinaryFile -lutil $(RUNPATH) -L../lib
+
+$(FRONTEND_LIB): $(LIB_OBJS)
+	$(CC) -shared -o $@ $(LIB_OBJS) $(RUNPATH) -L../lib
+
+# A pattern for the machine dependent libraries
+$(MACH_LIBS): ../lib/libfront%.so : machine/%/decoder.o machine/%/frontendsrc.o
+	$(CC) -shared -o $@ $^ $(RUNPATH) -L../lib
+
+# Dependencies
+frontend.o: frontend.cc ../include/frontend.h ../include/decoder.h
+FrontendTest.o: FrontendTest.h
+FrontSparcTest.o: FrontSparcTest.h
+FrontPentTest.o:  FrontPentTest.h
+njmcDecoder.o: njmcDecoder.cc ../include/decoder.h
+
+# Extras
+FrontSparcTest.o: EXTRAS = -I.  # To include frontend.h
+FrontPentTest.o:  EXTRAS = -I.  # To include frontend.h
+frontend.o:       EXTRAS = $(BOOMSET)
+
+# The .m's depend on the .cc's
+DECODER_CCS     = $(patsubst %, machine/%/decoder.cc, $(MACHS))
+
+$(DECODER_CCS):    machine/%/decoder.cc     : machine/%/core.spec \
+                                              machine/%/synth.spec \
+                                              machine/%/dis.spec \
+                                              machine/%/decoder.m
+	mltk.sh $^ 2> mltk.err
+
+# The library objs require -fPIC
+$(LIB_OBJS):
+	$(CC) -c -o $@ -I../include -I. -fPIC $(EXTRAS) $<
+
+# Also the machine dependent decoders
+$(MACH_OBJS) $(MACH_FE_OBJ): %.o : %.cc ../include/decoder.h
+	$(CC) -c -o $@ -I../include -I. -fPIC $<
+
+.cc.o:
+	$(CC) -c -o $@ -I../include $(BOOMSET) $(EXTRAS) $<
+
+
+clean:
+	rm -f testFront *.o $(FRONTEND_LIB) $(MACH_OBJS) $(MACH_FE_OBJS) \
+      $(MACH_LIBS)
+	find . -name *.o -exec rm {} \;
+
+# Clean up generated files
+cleangen:
+	rm -f $(GENFILES)
+
+# Remote: for when making remotely from bison++/flex++ facilities, or just
+# can't be bothered installing these.
+remote:
+	touch $(GENFILES)
+
+test: all
+	./testFront
