@@ -95,9 +95,9 @@ void insertInterference(igraph& ig, Exp* e) {
     igraph::iterator it = ig.find(e);
     if (it == ig.end()) {
         // We will be inserting a new element
-		const std::pair<Exp*, int> temp(e, ++nextVarNum);
+        const std::pair<Exp*, int> temp(e, ++nextVarNum);
         ig.insert(temp);
-	}
+    }
     // else it is already in the map: no need to do anything
 }
 
@@ -1343,7 +1343,7 @@ CallStatement::CallStatement(int returnTypeSize /*= 0*/):
  * RETURNS:       <nothing>
  *============================================================================*/
 CallStatement::~CallStatement() {
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < arguments.size(); i++)
         ;//delete arguments[i];
     for (i = 0; i < returns.size(); i++)
@@ -1505,14 +1505,14 @@ void CallStatement::setSigArguments() {
         if (proc == NULL) return; // do it later
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-        implicitArguments.resize(params.size());
-		unsigned i;
+        implicitArguments.resize(params.size(), NULL);
+        unsigned i;
         for (i = 0; i < params.size(); i++) {
             implicitArguments[i] = params[i]->clone();
             implicitArguments[i]->fixLocationProc(proc);
         }
         std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
-        returns.resize(0);
+        returns.resize(0, NULL);
         for (i = 0; i < rets.size(); i++)
             if (!(*rets[i] == *pDest))
                 returns.push_back(rets[i]->clone());
@@ -1521,8 +1521,8 @@ void CallStatement::setSigArguments() {
         sig = procDest->getSignature();
     
     int n = sig->getNumParams();
-    arguments.resize(n);
-	int i;
+    arguments.resize(n, NULL);
+    int i;
     for (i = 0; i < n; i++) {
         Exp *e = sig->getArgumentExp(i);
         assert(e);
@@ -1542,7 +1542,7 @@ void CallStatement::setSigArguments() {
         procDest->addCaller(this);
 
     n = sig->getNumImplicitParams();
-    implicitArguments.resize(n);
+    implicitArguments.resize(n, NULL);
     for (i = 0; i < n; i++) {
         Exp *e = sig->getImplicitParamExp(i);
         assert(e);
@@ -1594,7 +1594,7 @@ bool CallStatement::returnsStruct() {
 
 bool CallStatement::search(Exp* search, Exp*& result) {
     result = NULL;
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < returns.size(); i++) {
         if (*returns[i] == *search) {
             result = returns[i];
@@ -1628,7 +1628,7 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
     bool change = GotoStatement::searchAndReplace(search, replace);
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < returns.size(); i++) {
         bool ch;
         returns[i] = returns[i]->searchReplaceAll(search, replace, ch);
@@ -1658,7 +1658,7 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
  *============================================================================*/
 bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
     bool found = false;
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < arguments.size(); i++)
         if (arguments[i]->searchAll(search, result))
             found = true;
@@ -1694,7 +1694,7 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
 
     // Print the actual arguments of the call
     os << "(";
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < arguments.size(); i++) {
         if (i != 0)
             os << ", ";
@@ -1755,7 +1755,7 @@ Statement* CallStatement::clone() {
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
     int n = arguments.size();
-	int i;
+    int i;
     for (i=0; i < n; i++)
         ret->arguments.push_back(arguments[i]->clone());
     n = implicitArguments.size();
@@ -1813,7 +1813,7 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 
 void CallStatement::simplify() {
     GotoStatement::simplify();
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
@@ -1848,7 +1848,7 @@ Type *CallStatement::updateType(Exp *e, Type *curType) {
 
 bool CallStatement::usesExp(Exp *e) {
     Exp *where;
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < arguments.size(); i++) {
         if (arguments[i]->search(e, where)) {
             return true;
@@ -1931,7 +1931,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
                     Signature *sig = p->getSignature();
                     // 1
                     //LOG << "1\n";
-                    returns.resize(sig->getNumReturns());
+                    returns.resize(sig->getNumReturns(), NULL);
                     int i;
                     for (i = 0; i < sig->getNumReturns(); i++)
                         returns[i] = sig->getReturnExp(i)->clone();
@@ -1944,7 +1944,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
                       ->getDefaultParams();
                     std::vector<Exp*> oldargs = implicitArguments;
                     std::vector<Exp*> newimpargs;
-                    newimpargs.resize(sig->getNumImplicitParams());
+                    newimpargs.resize(sig->getNumImplicitParams(), NULL);
                     for (i = 0; i < sig->getNumImplicitParams(); i++) {
                         bool gotsub = false;
                         for (unsigned j = 0; j < params.size(); j++)
@@ -1966,7 +1966,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
                     // 3a Do the same with the regular arguments
                     assert(arguments.size() == 0);
                     std::vector<Exp*> newargs;
-                    newargs.resize(sig->getNumParams());
+                    newargs.resize(sig->getNumParams(), NULL);
                     for (i = 0; i < sig->getNumParams(); i++) {
                         bool gotsub = false;
                         for (unsigned j = 0; j < params.size(); j++)
@@ -2002,7 +2002,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
             }
         }
     }
-	unsigned int i;
+    unsigned int i;
     for (i = 0; i < returns.size(); i++)
         if (returns[i]->getOper() == opMemOf) {
             Exp *e = findArgument(returns[i]->getSubExp1());
@@ -2074,7 +2074,7 @@ int CallStatement::getNumArguments()
 
 void CallStatement::setNumArguments(int n) {
     int oldSize = arguments.size();
-    arguments.resize(n);
+    arguments.resize(n, NULL);
     // printf, scanf start with just 2 arguments
     for (int i = oldSize; i < n; i++) {
         arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
@@ -2100,7 +2100,7 @@ void CallStatement::fromSSAform(igraph& ig) {
     if (pDest)
         pDest = pDest->fromSSA(ig);
     int n = arguments.size();
-	int i;
+    int i;
     for (i=0; i < n; i++) {
         arguments[i] = arguments[i]->fromSSA(ig);
     }
@@ -2124,7 +2124,7 @@ void CallStatement::insertArguments(StatementSet& rs) {
     if (procDest->isLib()) return;
     Signature* sig = procDest->getSignature();
     int num = sig->getNumParams();
-    //arguments.resize(num);
+    //arguments.resize(num, NULL);
     // Get the set of definitions that reach this call
     StatementSet rd;
     getBB()->getReachInAt(this, rd, 2);
@@ -2255,9 +2255,10 @@ void CallStatement::processConstants(Prog *prog) {
     if (getDestProc() && getDestProc()->isLib()) {
         int sp = proc->getSignature()->getStackRegister(prog);
         removeReturn(Location::regOf(sp));
-		unsigned int i;
+        unsigned int i;
         for (i = 0; i < implicitArguments.size(); i++)
-            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Location::regOf(sp)) {
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) ==
+                  *Location::regOf(sp)) {
                 implicitArguments[i] = new Const(0);
                 break;
             }
@@ -2942,8 +2943,8 @@ void Assign::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 int Assign::getMemDepth() {
     int d1 = lhs->getMemDepth();
     int d2 = rhs->getMemDepth();
-	if (d1 >= d2) return d1;
-	return d2;
+    if (d1 >= d2) return d1;
+    return d2;
 }
 
 void Assign::fromSSAform(igraph& ig) {
