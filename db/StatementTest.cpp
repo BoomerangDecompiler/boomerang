@@ -1092,7 +1092,7 @@ void StatementTest::testSubscriptVars () {
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     
     // CallStatement with pDest = m[r26], params = m[r27], r28,
-    //   implicit params m[r29], r30, returns r31, m[r28]
+    //   implicit params m[r29], r30, returns r28, m[r28]
     CallStatement* ca = new CallStatement;
     ca->setDest(Location::memOf(Location::regOf(26)));
     std::vector<Exp*> argl;
@@ -1112,6 +1112,29 @@ void StatementTest::testSubscriptVars () {
     "   0 CALL m[r26](m[r27], r28{9} implicit: m[r29], r30) { r28, m[r28{9}] }";
     actual = ost5.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // CallStatement with pDest = r28, params = m[r27], r29,
+    //   implicit params m[r29], r28, returns r31, m[r31]
+    ca = new CallStatement;
+    ca->setDest(Location::regOf(28));
+    argl.clear();
+    argl.push_back(Location::memOf(Location::regOf(27)));
+    argl.push_back(Location::regOf(29));
+    ca->setArguments(argl);
+    argl.clear();
+    argl.push_back(Location::memOf(Location::regOf(29)));
+    argl.push_back(Location::regOf(28));
+    ca->setImpArguments(argl);
+    ca->addReturn(Location::regOf(31));
+    ca->addReturn(Location::memOf(Location::regOf(31)));
+    std::ostringstream ost5a;
+    ca->subscriptVar(srch, &s9);
+    ost5a << ca;
+    expected =
+    "   0 CALL r28{9}(m[r27], r29 implicit: m[r29], r28{9}) { r31, m[r31] }";
+    actual = ost5a.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
 
     // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
     // The {55} one is a bit dodgy to me, but that's how the old subscriptVar

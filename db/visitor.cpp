@@ -439,7 +439,7 @@ void StmtSubscripter::visit(Assign* s, bool& recur) {
 void StmtSubscripter::visit(CallStatement* s, bool& recur) {
     Exp* pDest = s->getDest();
     if (pDest)
-        pDest->accept(mod);
+        s->setDest(pDest->accept(mod));
     // Subscript the ordinary arguments
     std::vector<Exp*>& arguments = s->getArguments();
     int n = arguments.size();
