@@ -181,19 +181,15 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 	os << "</proc>\n";
 }
 
-void Proc::printDetailsXML()
-{
+void Proc::printDetailsXML() {
 	if (!DUMP_XML)
 		return;
 	std::ofstream out((Boomerang::get()->getOutputPath() + getName() + "-details.xml").c_str());
 	out << "<proc name=\"" << getName() << "\">\n";
 	int i;
-	for (i = 0; i < signature->getNumParams(); i++) {
-		out << "   <param name=\"" << signature->getParamName(i) << "\" "
-			<< "exp=\"" << signature->getParamExp(i) << "\" "
-			<< "type=\"" << signature->getParamType(i)->getCtype() << "\"";
-		out << "/>\n";
-	}
+	for (i = 0; i < signature->getNumParams(); i++)
+		out << "   <param name=\"" << signature->getParamName(i) << "\" " << "exp=\"" << signature->getParamExp(i)
+			<< "\" " << "type=\"" << signature->getParamType(i)->getCtype() << "\"\n";
 	for (i = 0; i < signature->getNumReturns(); i++)
 		out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
 			<< "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
@@ -328,12 +324,6 @@ LibProc::LibProc(Prog *prog, std::string& name, ADDRESS uNative) : Proc(prog, uN
 
 LibProc::~LibProc()
 {}
-
-#if 0
-void LibProc::getInternalStatements(StatementList &internal) {
-	 signature->getInternalStatements(internal);
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:		LibProc::put
@@ -677,8 +667,7 @@ void UserProc::numberPhiStatements(int& stmtNum) {
 
 
 // get all statements
-// Get to a statement list, so they come out in a reasonable and consistent
-// order
+// Get to a statement list, so they come out in a reasonable and consistent order
 void UserProc::getStatements(StatementList &stmts) {
 	BB_IT it;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
@@ -1230,9 +1219,8 @@ void UserProc::removeRedundantPhis() {
 			if (VERBOSE) {
 				LOG << "checking " << s << "\n";
 			}
-			// if we can prove that all the statements in the phi define
-			// equal values then we can replace the phi with any one of 
-			// the values, but there's not much point if they're all calls
+			// if we can prove that all the statements in the phi define equal values then we can replace the phi
+			// with any one of the values, but there's not much point if they're all calls
 			PhiExp *p = (PhiExp*)s->getRight();
 			bool hasphi = false;
 			StatementVec::iterator it;
