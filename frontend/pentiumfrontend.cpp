@@ -22,8 +22,7 @@
  * 27 Nov 02 - Mike: Fixed a bug in the floating point fixup code, which was
  *					screwing up registers in flag calls
  * 30 Sep 03 - Mike: processFloatCode ORs mask with 0x04 for compilers that
- *					ignore the C1 status bit (e.g. MSVC)
- *					Also more JE cases
+ *					ignore the C1 status bit (e.g. MSVC). Also more JE cases
  * 04 Aug 04 - Mike: Quick and dirty hack for overlapped registers (X86 only)
 */
 
@@ -359,9 +358,8 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 	while (rit != BB_rtls->end()) {
 		// Check for call.
 		if ((*rit)->isCall()) {
-			// Reset the "top of stack" index. If this is not done, then after
-			// a sequence of calls to functions returning floats, the value will
-			// appear to be returned in registers r[32], then r[33], etc.
+			// Reset the "top of stack" index. If this is not done, then after a sequence of calls to functions
+			// returning floats, the value will appear to be returned in registers r[32], then r[33], etc.
 			tos = 0;
 		}
 		if ((*rit)->getNumStmt() == 0) { rit++; continue; }
@@ -379,8 +377,8 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 				// If returned true, must abandon this BB.
 				break;
 			}
-			// Else we have already skiped past the stsw, and/or any
-			// instructions that replace it, so process rest of this BB
+			// Else we have already skiped past the stsw, and/or any instructions that replace it,
+			// so process rest of this BB
 			continue;
 		}
 #endif
@@ -457,9 +455,8 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 			if (!anOut->isTraversed()) {
 				processFloatCode(anOut, tos, pCfg);
 				if (outs.size() != n)
-					// During the processing, we have added or more likely
-					// deleted a BB, and the vector of out edges has changed.
-					// It's safe to just start the inner for loop again
+					// During the processing, we have added or more likely deleted a BB, and the vector of out edges
+					// has changed.  It's safe to just start the inner for loop again
 					break;
 			}
 		}
@@ -467,7 +464,7 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
 }
 
 
-#if 0		// This monstrosity no longer needed. Sniff.
+#if 0		// This monstrosity no longer needed. Sniff. Cuts out 1/3 of the code in this source file.
 /*
 // Finite state machine for recognising code handling floating point CCs
 //
@@ -491,13 +488,12 @@ void PentiumFrontEnd::processFloatCode(PBB pBB, int& tos, Cfg* pCfg)
  * PARAMETERS:	  rit: iterator to the current RTL (with the stsw in it)
  *				  BB_rtls: list of RTLs for this BB
  *				  pCfg: pointer to Cfg for this proc
- * NOTE:		  parameter rit may well be modified (incrementing it past the
- *					STSW, and any instructions replacing it
+ * NOTE:		  parameter rit may well be modified (incrementing it past the STSW,
+ *					and any instructions replacing it
  * RETURNS:		  True if the current BB is deleted (because 2 BBs were joined)
  *					Also returns true on error, so abandon this BB
  *============================================================================*/
-bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
-  std::list<RTL*>* BB_rtls, PBB pBB, Cfg* pCfg) {
+bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit, std::list<RTL*>* BB_rtls, PBB pBB, Cfg* pCfg) {
 	int state = 0;				// Start in state 0
 	Location *ah = Location::regOf(AH);
 	Unary *notZf = new Unary(opNot, new Terminal(opZF));
@@ -505,15 +501,14 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 		Location::regOf(AH),
 		new Const(7),
 		new Const(7));
-	// Keep a list of iterators representing 
-	// RTLs (this BB) that can be removed
+	// Keep a list of iterators representing RTLs (this BB) that can be removed
 	std::list<std::list<RTL*>::iterator> liIt;
 	liIt.push_front(rit);	// f(n)stsw can be removed
 	// Scan the rest of the RTLs this BB
 	std::list<RTL*>::iterator rit2 = rit;	   // Don't disturb curr loops
 	// Scan each RTL this BB
 	for (rit2++; rit2 != BB_rtls->end(); rit2++) {
-//std::cout << "State now " << std::dec << state << std::endl;
+		// std::cout << "State now " << std::dec << state << std::endl;
 		// Get the first Exp; only interested in assigns
 		if ((*rit2)->getNumStmt() == 0)
 			continue;
@@ -536,10 +531,9 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 				if (e->isIntConst()) {
 					if (op == opBitAnd) {
 						// Note: C1 is the "Z or O/U" bit, and is mostly unused.
-						// Some compilers include this bit (mask 0x04) in their
-						// masks, some don't. To catch them all properly, the
-						// mask below is ORed with 0x04. That way, the test
-						// for 0x45 also tests for 0x41, and so on
+						// Some compilers include this bit (mask 0x04) in their masks, some don't.
+						// To catch them all properly, the mask below is ORed with 0x04.
+						// That way, the test for 0x45 also tests for 0x41, and so on
 						int mask = ((Const*)e)->getInt() | 0x04;
 						if (state == 0 && mask == 0x45) {
 							state = 1;
@@ -554,8 +548,8 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 							liIt.push_front(rit2);
 						}
 						else {
-							std::cerr << "Problem with AND: state is " << state
-							  << ", mask is 0x" << std::hex << mask << "\n";
+							std::cerr << "Problem with AND: state is " << state << ", mask is 0x" << std::hex <<
+								mask << "\n";
 							return true;
 						}
 					}
@@ -575,8 +569,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			}
 			else std::cout << "! Unexpected operator!\n";
 		}
-		// Or might be a compare or decrement: uses ah, assigns to
-		// temp register
+		// Or might be a compare or decrement: uses ah, assigns to temp register
 		else if (lhs->isTemp() && rhs->search(ah, result)) {
 			// Might be a compare, i.e. subtract
 			if (rhs->getOper() == opMinus) {
@@ -616,14 +609,12 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 				}
 			}
 		}
-		// Check for SETX, i.e. <exp> ? 1 : 0
-		// i.e. ?: <exp> int 1 int 0
+		// Check for SETX, i.e. <exp> ? 1 : 0  i.e. ?: <exp> int 1 int 0
 		else if (isSetX(st)) {
 			if (state == 23) {
 				state = 25;
-				// Don't add the set instruction until after the instrs
-				// leading up to here are deleted. Else have problems with
-				// iterators
+				// Don't add the set instruction until after the instrs leading up to here are deleted.
+				// Else have problems with iterators
 			}
 			else {
 				// Check the expression
@@ -672,23 +663,18 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			case 6: case 13: case 15:
 			case 22: case 9: case 18: case 25:
 			// Remove the set instruction and those leading up to it.
-			// The left hand side of the set instruction (modrm) is still
-			// in lhs. It will be needed to build the new set instr below
-			// Ditto for uAddr.
-			// Must decrement rit to the previous RTL
-			// so the next increment will be to an RTL interleaved with
+			// The left hand side of the set instruction (modrm) is still in lhs.
+			// It will be needed to build the new set instr below. Ditto for uAddr.
+			// Must decrement rit to the previous RTL so the next increment will be to an RTL interleaved with
 			// the deleted ones (if any; otherwise, the one after the set)
-			// Also, when inserting a replacement SET instruction, the correct
-			// place is after *rit.
+			// Also, when inserting a replacement SET instruction, the correct place is after *rit.
 			rit--;
 			if (state == 25) {
-				// Keep a copy of the LHS in a new SS. Otherwise, the same SS
-				// will be part of two RTLs, so when they are destroyed, this
-				// SS will get deleted twice, causing segfaults.
+				// Keep a copy of the LHS in a new SS. Otherwise, the same SS will be part of two RTLs,
+				// so when they are destroyed, this SS will get deleted twice, causing segfaults.
 				lhs = lhs->clone();
 			}
-			// Keep assigning to rit. In the end, it will point to the next
-			// RTL after the erased items
+			// Keep assigning to rit. In the end, it will point to the next RTL after the erased items
 			rit = BB_rtls->erase(rit2);
 			while (liIt.size()) {
 				rit = BB_rtls->erase(liIt.front());
@@ -706,8 +692,10 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			return false;
 		case 15:
 			// Emit a floating poin2t "set if LE"
-			emitSet(BB_rtls, rit, uAddr, lhs, new Binary(opOr,
-			  new Terminal(opFLF), new Terminal(opFZF)));
+			emitSet(BB_rtls, rit, uAddr, lhs,
+				new Binary(opOr,
+					new Terminal(opFLF),
+					new Terminal(opFZF)));
 			return false;
 		case 22:
 			// Emit a floating point "set if L"
@@ -715,13 +703,16 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			return false;
 		case 9:
 			// Emit a floating point "set if NE"
-			emitSet(BB_rtls, rit, uAddr, lhs, new Unary(opNot,
-			  new Terminal(opFZF)));
+			emitSet(BB_rtls, rit, uAddr, lhs,
+				new Unary(opNot,
+					new Terminal(opFZF)));
 			return false;
 		case 18:
 			// Emit a floating point "set if GE"
-			emitSet(BB_rtls, rit, uAddr, lhs, new Binary(opOr,
-			  new Terminal(opFGF), new Terminal(opFZF)));
+			emitSet(BB_rtls, rit, uAddr, lhs,
+				new Binary(opOr,
+					new Terminal(opFGF),
+					new Terminal(opFZF)));
 			return false;
 		case 25:
 			State25(lhs, rhs, BB_rtls, rit, uAddr);
@@ -742,33 +733,23 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 		RTL* pRtl;
 		Statement* st;
 		if (pJump->getCond() == BRANCH_JPAR) {
-			// Check the 2nd out edge. It should be the false case, and
-			// should point to either a BB with just a branch in it (a
-			// TWOWAY BB) or one starting with a SET instruction
+			// Check the 2nd out edge. It should be the false case, and should point to either a BB with just
+			// a branch in it (a TWOWAY BB) or one starting with a SET instruction
 			const std::vector<PBB>& v = pBB->getOutEdges();
 			pBBnext = v[1];
-			if ((pBBnext->getType() == TWOWAY) &&
-			  (pBBnext->getRTLs()->size() == 1)) {
-				BranchStatement* pJ = (BranchStatement*)pBBnext->getRTLs()->
-				  front()->getList().back();
-				// Make it a floating branch
-				pJ->setFloat(true);
-				// Make it a signed branch
-				pJ->makeSigned();
-				// Special state, so DO delete the JP
-				state = -24;
-				bJoin = true;		// Need to join since will delete JP
+			if ((pBBnext->getType() == TWOWAY) && (pBBnext->getRTLs()->size() == 1)) {
+				BranchStatement* pJ = (BranchStatement*)pBBnext->getRTLs()->front()->getList().back();
+				pJ->setFloat(true);		// Make it a floating branch
+				pJ->makeSigned();		// Make it a signed branch
+				state = -24;			// Special state, so DO delete the JP
+				bJoin = true;			// Need to join since will delete JP
 			}
-			else if (
-			  (pRtl = pBBnext->getRTLs()->front(),
-			  st = (pRtl->elementAt(0)),
-			  isAssignFromTern(st))) {
+			else if ((pRtl = pBBnext->getRTLs()->front(), st = (pRtl->elementAt(0)), isAssignFromTern(st))) {
 				lhs = ((Assign*)st)->getLeft();
 				uAddr = pRtl->getAddress();
 				state = 25;
-				// Actually generate the set instruction later, after the
-				// instruction leading up to it are deleted. Otherwise have
-				// problems with iterators
+				// Actually generate the set instruction later, after the instruction leading up to it
+				// are deleted. Otherwise have problems with iterators
 				bJoin = true;		// Need to join since will delete JP
 			}
 			else {
@@ -780,10 +761,8 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			}
 		}					
 		else {				// Branch, but not a JP (Jump if parity)
-			// Just need to change the branch to a float type
-			pJump->setFloat(true);
-			// and also make it a signed branch
-			pJump->makeSigned();
+			pJump->setFloat(true);		// Just need to change the branch to a float type
+			pJump->makeSigned();		// and also make it a signed branch
 			state = 24;
 		}
 	}		// if state == 23
@@ -795,8 +774,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 			case 3: state = 21; break;
 			case 4: state = 5;	break;
 			default:
-				std::cerr << "Problem with JE: state is " << std::dec << state
-				  << "\n";
+				std::cerr << "Problem with JE: state is " << std::dec << state << "\n";
 				return true;
 		}
 	}
@@ -808,8 +786,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 		else if (state == 2) state = 5;
 		else {
 			std::cerr << "Problem with JNE: state is " << state << "\n";
-			std::cerr << "pJump to " << std::hex << pJump->getFixedDest() <<
-			  "\n";
+			std::cerr << "pJump to " << std::hex << pJump->getFixedDest() << "\n";
 			return true;
 		}
 	}
@@ -833,10 +810,9 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 	case 26:
 		// We can remove the branch and the instructions leading up to it
 		// (exception: state 24, don't remove the branch).
-		// We must decrement rit now, so that it points to a (hopefully)
-		// valid RTL, and when incremented next time around the while
-		// loop, it will process any instructions that were interspersed
-		// with the ones that will be deleted.
+		// We must decrement rit now, so that it points to a (hopefully) valid RTL,
+		// and when incremented next time around the while loop, it will process any instructions
+		// that were interspersed with the ones that will be deleted.
 		rit--;
 		uAddr = pJumpRtl->getAddress();		// Save addr of branch
 		pDest = pJump->getDest();			// Save dest of branch
@@ -851,8 +827,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 		}
 		break;
 	default:
-		std::cerr << "Error: end of BB in state " << std::dec;
-		std::cerr << state << std::endl;
+		std::cerr << "Error: end of BB in state " << std::dec << state << std::endl;
 		return true;
 	}
 	// Add a new branch, with the appropriate parameters
@@ -916,21 +891,20 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
 	if (bJoin) {
 		// Need to join BBs, because we have deleted a branch
 		// The RTLs for the first are appended to those of the second.
-		// Since pBB could well have RTs that have already been adjusted
-		// for floating point, and pBBnext probably is just a branch, it's
-		// important to get the parameters this way around
+		// Since pBB could well have RTs that have already been adjusted for floating point,
+		// and pBBnext probably is just a branch, it's important to get the parameters this way around
 		pCfg->joinBB(pBBnext, pBB);
 	}
 
-//std::cout << "Return in state " << std::dec << state << std::endl;
+//	std::cout << "Return in state " << std::dec << state << std::endl;
 	return bJoin;			// If joined, abandon this BB
 }
 #endif
 
 // Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
 // Insert before rit
-void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit,
-  ADDRESS uAddr, Exp* lhs, Exp* cond) {
+void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterator& rit, ADDRESS uAddr, Exp* lhs,
+		Exp* cond) {
 
 	Statement* asgn = new Assign(
 		lhs,
@@ -940,19 +914,19 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
 			new Const(0)));
 	RTL* pRtl = new RTL(uAddr);
 	pRtl->appendStmt(asgn);
-//std::cout << "Emit "; pRtl->print(); std::cout << std::endl;
+//	std::cout << "Emit "; pRtl->print(); std::cout << std::endl;
 	// Insert the new RTL before rit
 	BB_rtls->insert(rit, pRtl);
 }
 
-void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls,
-  std::list<RTL*>::iterator& rit, ADDRESS uAddr) {
-	Binary cfOrZf(opOr, new Terminal(opCF), new Terminal(opZF));
-	Unary notZf(opNot, new Terminal(opZF));
-	Unary notCf(opNot, new Terminal(opCF));
-	Binary notCfAndNotZf(opAnd,
+static Binary cfOrZf(opOr, new Terminal(opCF), new Terminal(opZF));
+static Unary notZf(opNot, new Terminal(opZF));
+static Unary notCf(opNot, new Terminal(opCF));
+static Binary notCfAndNotZf(opAnd,
 		new Unary(opNot, new Terminal(opCF)),
 		new Unary(opNot, new Terminal(opZF)));
+void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls,
+  std::list<RTL*>::iterator& rit, ADDRESS uAddr) {
 	// Assume this is a set instruction
 	Exp* exp;
 	exp = rhs->getSubExp1();
@@ -966,18 +940,23 @@ void PentiumFrontEnd::State25(Exp* lhs, Exp* rhs, std::list<RTL*>* BB_rtls,
 	}
 	else if (*exp == notCf) {
 		// Emit a floating point "set if GE"
-		emitSet(BB_rtls, rit, uAddr, lhs, new Binary(opOr,
-			new Terminal(opFGF), new Terminal(opFZF)));
+		emitSet(BB_rtls, rit, uAddr, lhs,
+			new Binary(opOr,
+				new Terminal(opFGF),
+				new Terminal(opFZF)));
 	}
 	else if (*exp == notZf) {
 		// Emit a floating point "set if NZ"
-		emitSet(BB_rtls, rit, uAddr, lhs, new Unary(opNot,
-		  new Terminal(opFZF)));
+		emitSet(BB_rtls, rit, uAddr, lhs,
+			new Unary(opNot,
+				new Terminal(opFZF)));
 	}
 	else if (*exp == cfOrZf) {
 		// Emit a floating poin2t "set if LE"
-		emitSet(BB_rtls, rit, uAddr, lhs, new Binary(opOr,
-		  new Terminal(opFLF), new Terminal(opFZF)));
+		emitSet(BB_rtls, rit, uAddr, lhs,
+			new Binary(opOr,
+				new Terminal(opFLF),
+				new Terminal(opFZF)));
 	}
 	else if (*exp == notCfAndNotZf) {
 		// Emit a floating point "set if G"
@@ -1005,23 +984,26 @@ bool PentiumFrontEnd::helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lr
 	const char* p = pBF->SymbolByAddress(dest);
 	if (p == NULL) return false;
 	std::string name(p);
-	// I believe that __xtol is for gcc, _ftol for earlier MSVC compilers,
-	// _ftol2 for MSVC V7
+	// I believe that __xtol is for gcc, _ftol for earlier MSVC compilers, _ftol2 for MSVC V7
 	if (name == "__xtol" || name == "_ftol" || name == "_ftol2") {
-		// This appears to pop the top of stack, and converts the result to
-		// a 64 bit integer in edx:eax. Truncates towards zero
+		// This appears to pop the top of stack, and converts the result to a 64 bit integer in edx:eax.
+		// Truncates towards zero
 		// r[tmpl] = ftoi(80, 64, r[32])
 		// r[24] = trunc(64, 32, r[tmpl])
 		// r[26] = r[tmpl] >> 32
 		Statement* a = new Assign(new IntegerType(64),
 			Location::tempOf(new Const("tmpl")),
-			new Ternary(opFtoi, new Const(64), new Const(32),
+			new Ternary(opFtoi,
+				new Const(64),
+				new Const(32),
 				Location::regOf(32)));
 		RTL* pRtl = new RTL(addr);
 		pRtl->appendStmt(a);
 		a = new Assign(
 			Location::regOf(24),
-			new Ternary(opTruncs, new Const(64), new Const(32),
+			new Ternary(opTruncs,
+				new Const(64),
+				new Const(32),
 				Location::tempOf(new Const("tmpl"))));
 		pRtl->appendStmt(a);
 		a = new Assign(
@@ -1070,7 +1052,7 @@ PentiumFrontEnd::PentiumFrontEnd(BinaryFile *pBF)
 {
 	decoder = new PentiumDecoder();
 /*	for (std::map<int, Register, std::less<int> >::iterator it = prog->RTLDict.DetRegMap.begin(); 
-		 it != prog->RTLDict.DetRegMap.end(); it++) {
+			it != prog->RTLDict.DetRegMap.end(); it++) {
 		int i = (*it).first;
 		Register &r = (*it).second;
 		if (!strcmp(r.g_name(), "%esp"))
@@ -1091,25 +1073,23 @@ PentiumFrontEnd::~PentiumFrontEnd()
  * PARAMETERS:	None
  * RETURNS:		Native pointer if found; NO_ADDRESS if not
  *============================================================================*/
-ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain ) 
-{
+ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 	gotMain = true;
 	ADDRESS start = pBF->GetMainEntryPoint();
 	if( start != NO_ADDRESS ) return start;
 
 	gotMain = false;
 	start = pBF->GetEntryPoint();
-	if( start == NO_ADDRESS ) return NO_ADDRESS;
+	if (start == NO_ADDRESS)
+		return NO_ADDRESS;
 	
 	int instCount = 100;
 	int conseq = 0;
 	ADDRESS addr = start;
 		
-	// Look for 3 calls in a row in the first 100 instructions, with
-	// no other instructions between them. This is the "windows" pattern
-	// Another windows pattern: call to GetModuleHandleA followed by
-	// a push of eax and then the call to main.
-	// Or a call to __libc_start_main
+	// Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
+	// This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
+	// a push of eax and then the call to main.  Or a call to __libc_start_main
 	ADDRESS dest;
 	do {
 		DecodeResult inst = decodeInstruction(addr);
@@ -1120,37 +1100,28 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 		if (inst.rtl->getList().size())
 			cs = (CallStatement*)(inst.rtl->getList().back());
 		if (cs && cs->getKind() == STMT_CALL &&
-			cs->getDest()->getOper() == opMemOf &&
-			cs->getDest()->getSubExp1()->getOper() == opIntConst &&
-			pBF->IsDynamicLinkedProcPointer(((Const*)cs->getDest()
-					  ->getSubExp1())->getAddr()) &&
-			!strcmp(pBF->GetDynamicProcName(((Const*)cs->getDest()
-						->getSubExp1())->getAddr()), "GetModuleHandleA")) {
+				cs->getDest()->getOper() == opMemOf &&
+				cs->getDest()->getSubExp1()->getOper() == opIntConst &&
+				pBF->IsDynamicLinkedProcPointer(((Const*)cs->getDest() ->getSubExp1())->getAddr()) &&
+				!strcmp(pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()), "GetModuleHandleA"))
+			{
 #if 0
 			std::cerr << "consider " << std::hex << addr << " " <<
-				pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())
-					  ->getAddr()) << std::endl;
+				pBF->GetDynamicProcName(((Const*)cs->getDest()->getSubExp1())->getAddr()) << std::endl;
 #endif
 			int oNumBytes = inst.numBytes;
 			inst = decodeInstruction(addr + oNumBytes);
 			if (inst.valid && inst.rtl->getNumStmt() == 2) {
-				Assign* a = dynamic_cast<Assign*>
-								(inst.rtl->elementAt(1));
+				Assign* a = dynamic_cast<Assign*>(inst.rtl->elementAt(1));
 				if (a && *a->getRight() == *Location::regOf(24)) {
 #if 0
-					std::cerr << "is followed by push eax.. "
-							  << "good" << std::endl;
+					std::cerr << "is followed by push eax.. " << "good" << std::endl;
 #endif
-					inst = decodeInstruction(addr + oNumBytes + 
-										  inst.numBytes);
+					inst = decodeInstruction(addr + oNumBytes + inst.numBytes);
 					if (inst.rtl->getList().size()) {
-						CallStatement *toMain = 
-							dynamic_cast<CallStatement*>(inst.rtl
-													->getList().back());
-						if (toMain && toMain->getFixedDest() 
-													!= NO_ADDRESS) {
-							pBF->AddSymbol(toMain->getFixedDest(), 
-										   "WinMain");
+						CallStatement *toMain = dynamic_cast<CallStatement*>(inst.rtl->getList().back());
+						if (toMain && toMain->getFixedDest() != NO_ADDRESS) {
+							pBF->AddSymbol(toMain->getFixedDest(), "WinMain");
 							gotMain = true;
 							return toMain->getFixedDest();
 						}
@@ -1158,18 +1129,16 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 				}
 			}
 		}
-		if ((cs && cs->getKind() == STMT_CALL) &&
-		  ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
+		if ((cs && cs->getKind() == STMT_CALL) && ((dest = (cs->getFixedDest())) != NO_ADDRESS)) {
 			if (++conseq == 3 && 0) { // this isn't working
 				// Success. Return the target of the last call
-			gotMain = true;
+				gotMain = true;
 				return cs->getFixedDest();
 			}
 			if (pBF->SymbolByAddress(dest) &&
 				strcmp(pBF->SymbolByAddress(dest), "__libc_start_main") == 0) {
-				// This is a gcc 3 pattern. The first parameter will be
-				// a pointer to main. Assume it's the 5 byte push
-				// immediately preceeding this instruction
+				// This is a gcc 3 pattern. The first parameter will be a pointer to main.
+				// Assume it's the 5 byte push immediately preceeding this instruction
 				inst = decodeInstruction(addr-5);
 				assert(inst.valid);
 				assert(inst.rtl->getNumStmt() == 2);
@@ -1190,17 +1159,16 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
 		else
 			addr += inst.numBytes;
 	} while (--instCount);
-#if 0		// Was for finding main in DOS 286 programs
-		// Try another pattern; this one is for DOS programs. In the first
-		// 120 instructions, look for 3 or more pushes, then a call. These
-		// will be setting up envp, argv, and argc
+#if 0	// Was for finding main in DOS 286 programs
+		// Try another pattern; this one is for DOS programs. In the first 120 instructions,
+		// look for 3 or more pushes, then a call. These will be setting up envp, argv, and argc
 		instCount = 120; addr = start; conseq = 0;
 		do {
 			DecodeResult inst = decodeInstruction(addr);
 			if ((conseq >= 3) && (inst.rtl->getKind() == CALL_HRTL) &&
-				((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
-					// Success. Return the target of the call					
-					return ((HLCall*)inst.rtl)->getFixedDest();
+					((HLCall*)inst.rtl)->getFixedDest() != NO_ADDRESS) {
+				// Success. Return the target of the call					
+				return ((HLCall*)inst.rtl)->getFixedDest();
 			}
 			if (is286Push(inst.rtl))
 				conseq++;
@@ -1261,9 +1229,8 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
 						if (strncmp(str, "%SKIP", 5) == 0) {
 							toBranches(addr, lastRtl, cfg, rtl, bb, it);
 							noinc = true;		// toBranches inc's it
-							// Abandon this BB; if there are other string instr
-							// this BB, they will appear in new BBs near the
-							// end of the list
+							// Abandon this BB; if there are other string instr this BB, they will appear in new BBs
+							// near the end of the list
 							break;
 						}
 						else
