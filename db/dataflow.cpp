@@ -494,6 +494,7 @@ void Statement::updateDfForErase() {
  *============================================================================*/
 std::ostream& operator<<(std::ostream& os, Statement* s) {
     if (s == NULL) {os << "NULL "; return os;}
+    os << s->getNumber() << ":";
     s->print(os, true);
     return os;
 }
@@ -637,6 +638,19 @@ void StatementSet::printNums(std::ostream& os) {
         if (++it != sset.end())
             os << " ";
     }
+}
+
+bool StatementSet::operator<(const StatementSet& o) const {
+    if (sset.size() < o.sset.size()) return true;
+    if (sset.size() > o.sset.size()) return false;
+    std::set<Statement*, lessExpStar>::iterator it1;
+    std::set<Statement*, lessExpStar>::const_iterator it2;
+    for (it1 = sset.begin(), it2 = o.sset.begin(); it1 != sset.end();
+      it1++, it2++) {
+        if (*it1 < *it2) return true;
+        if (*it1 > *it2) return false;
+    }
+    return false;
 }
 
 
@@ -978,7 +992,7 @@ bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
         replaceRef(def);
     if (VERBOSE) {
         if (twoRefs) std::cerr << "Special: ";
-        std::cerr << "Propagating " << def->getNumber() <<
+        std::cerr << "Propagating " << std::dec << def->getNumber() <<
           " into " << getNumber() <<
           ", result is " << this << "\n";
     }
