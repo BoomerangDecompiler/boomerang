@@ -2592,7 +2592,7 @@ void ReturnStatement::simplify() {
 
 void ReturnStatement::setSigArguments() {
     for (int i = 0; i < proc->getSignature()->getNumReturns(); i++)
-        returns.push_back(proc->getSignature()->getReturnExp(i));
+        returns.push_back(proc->getSignature()->getReturnExp(i)->clone());
 }
 
 void ReturnStatement::removeReturn(int n)

@@ -892,6 +892,13 @@ protected:
  * ReturnStatement: represents a high level return.
  *============================================================================*/
 class ReturnStatement: public GotoStatement {
+protected:
+    // number of bytes that this return pops
+    int nBytesPopped;
+
+    // value returned
+    std::vector<Exp*> returns;
+
 public:
     ReturnStatement();
     ~ReturnStatement();
@@ -954,13 +961,7 @@ public:
     void removeReturn(int n);
     void addReturn(Exp *e);
 
-protected:
-    // number of bytes that this return pops
-    int nBytesPopped;
-
-    // value returned
-    std::vector<Exp*> returns;
-};
+};  // class ReturnStatement
 
 
 /*==============================================================================
