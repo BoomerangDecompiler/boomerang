@@ -2611,3 +2611,11 @@ Exp* Exp::killFill() {
     }
     return res;
 }
+
+bool Exp::isTemp() {
+    if (op == opTemp) return true;
+    if (op != opRegOf) return false;
+    // Some old code has r[tmpb] instead of just tmpb
+    Exp* sub = ((Unary*)this)->getSubExp1();
+    return sub->op == opTemp;
+}
