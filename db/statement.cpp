@@ -1968,11 +1968,11 @@ void CallStatement::setSigArguments() {
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
         arguments.resize(params.size());
-        for (int i = 0; i < params.size(); i++)
+        for (unsigned i = 0; i < params.size(); i++)
             arguments[i] = params[i]->clone();
         std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
         returns.resize(0);
-        for (int i = 0; i < rets.size(); i++)
+        for (unsigned i = 0; i < rets.size(); i++)
             if (!(*rets[i] == *pDest))
                 returns.push_back(rets[i]->clone());
         return;
@@ -2361,7 +2361,7 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 arguments.resize(sig->getNumParams());
                 for (int i = 0; i < sig->getNumParams(); i++) {
                     bool gotsup = false;
-                    for (int j = 0; j < params.size(); j++)
+                    for (unsigned j = 0; j < params.size(); j++)
                         if (*params[j] == *sig->getParamExp(i)) {
                             arguments[i] = oldargs[j];
                             gotsup = true;

@@ -1928,6 +1928,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
     }
 }
 
+// Note: if depth < 0, consider all depths
 void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
     StatementList stmts;
     getStatements(stmts);
@@ -1946,7 +1947,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 for (int i = 0; i < call->getNumReturns(); i++)
                     returns.push_back(call->getReturnExp(i));
                 for (int i = 0; i < (int)returns.size(); i++)
-                    if (returns[i]->getMemDepth() <= depth)
+                    if (depth < 0 || returns[i]->getMemDepth() <= depth)
                         call->removeReturn(returns[i]);
                 s = stmts.getNext(ll);
                 continue;
@@ -1957,7 +1958,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 s = stmts.getNext(ll);
                 continue;
             }
-            if (s->getLeft() && s->getLeft()->getMemDepth() > depth) {
+            if (s->getLeft() && depth > 0 &&
+                  s->getLeft()->getMemDepth() > depth) {
                 s = stmts.getNext(ll);
                 continue;
             }
