@@ -382,8 +382,8 @@ public:
     virtual Exp* getRight() { return pCond; }
 
     // special print functions
-    virtual void printAsUse(std::ostream &os);
-    virtual void printAsUseBy(std::ostream &os);
+    //virtual void printAsUse(std::ostream &os);
+    //virtual void printAsUseBy(std::ostream &os);
 
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
@@ -489,12 +489,14 @@ public:
     bool returnsStruct();
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
+    void setSigArguments();         // Set arguments based on signature
     std::vector<Exp*>& getArguments();            // Return call's arguments
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
-    int getNumArguments() { return arguments.size(); }
+    int  getNumArguments() { return arguments.size(); }
     void setNumArguments(int i);
     Type *getArgumentType(int i);
+    void updateArgUses(Statement* def, Exp* left);  // Update arguments to {1 2} format
     void truncateArguments();
     void clearLiveEntry();
 
@@ -543,6 +545,7 @@ public:
     virtual void getDeadStatements(StatementSet &dead);
     virtual bool usesExp(Exp *e);
     virtual void addUsedLocs(LocationSet& used);
+            void setPhase1();       // Set up for phase 1 of SW93
 
     // dataflow related functions
     virtual bool canPropagateToAll() { return false; }
@@ -559,8 +562,8 @@ public:
     virtual Exp* getRight() { return NULL; }
 
     // special print functions
-    virtual void printAsUse(std::ostream &os);
-    virtual void printAsUseBy(std::ostream &os);
+    //virtual void printAsUse(std::ostream &os);
+    //virtual void printAsUseBy(std::ostream &os);
 
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
@@ -603,6 +606,10 @@ private:
     Proc* procDest;
     // Destination name of call (used in serialization)
     std::string destStr;
+    // The conjugate return block (see SW93)
+    // When this is still nill, we have not started phase 1, or are back
+    // to standard ("phase 0")
+    PBB returnBlock;
 
     Exp *returnLoc;
     StatementList internal;
@@ -731,8 +738,8 @@ public:
     virtual Exp* getRight() { return getCondExpr(); }
     virtual bool usesExp(Exp *e);
     virtual void print(std::ostream &os) { print(os, false); }
-    virtual void printAsUse(std::ostream &os);
-    virtual void printAsUseBy(std::ostream &os);
+    //virtual void printAsUse(std::ostream &os);
+    //virtual void printAsUseBy(std::ostream &os);
     virtual void processConstants(Prog *prog);
     virtual bool search(Exp *search, Exp *&result);
     virtual void searchAndReplace(Exp *search, Exp *replace);
@@ -740,11 +747,11 @@ public:
     virtual void doReplaceUse(Statement *use);
 
 private:
-    JCOND_TYPE jtCond;             // the condition for jumping
+    JCOND_TYPE jtCond;             // the condition for setting true
     Exp* pCond;                    // Exp representation of the high level
                                    // condition: e.g. r[8] == 5
     bool bFloat;                   // True if condition uses floating point CC
-    Exp* pDest;
+    Exp* pDest;                    // The location assigned (with 0 or 1)
 };
 
 /* 

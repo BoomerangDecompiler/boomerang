@@ -71,24 +71,20 @@ Terminal::Terminal(OPER op) : Exp(op) {}
 Terminal::Terminal(Terminal& o) : Exp(o.op) {}      // Copy constructor
 
 Unary::Unary(OPER op)
-    : Exp(op)
-{
+    : Exp(op) {
     subExp1 = 0;        // Initialise the pointer
 }
 Unary::Unary(OPER op, Exp* e)
-    : Exp(op)
-{
+    : Exp(op) {
     subExp1 = e;        // Initialise the pointer
 }
 Unary::Unary(Unary& o)
-    : Exp(o.op)
-{
+    : Exp(o.op) {
     subExp1 = o.subExp1->clone();
 }
 
 Binary::Binary(OPER op)
-    : Unary(op)
-{
+    : Unary(op) {
     subExp2 = 0;        // Initialise the 2nd pointer. The first
                         // pointer is initialised in the Unary constructor
 }
@@ -149,6 +145,15 @@ AssignExp::AssignExp(AssignExp& o) : Binary(opAssignExp), size(o.size)
 FlagDef::FlagDef(Exp* params, RTL* rtl)
     : Unary(opFlagDef, params), rtl(rtl) {}
 
+UsesExp::UsesExp(Exp* e, Statement* def) : Unary(opSubscript, e) {
+    stmtSet.insert(def);
+}
+UsesExp::UsesExp(Exp* e) : Unary(opSubscript, e) {
+}
+UsesExp::UsesExp(UsesExp& o) : Unary(o) {
+    stmtSet = o.stmtSet;
+}
+
 /*==============================================================================
  * FUNCTION:        Unary::~Unary etc
  * OVERVIEW:        Destructors.
@@ -177,18 +182,15 @@ FlagDef::~FlagDef() {
  * NOTE:            If an expression already exists, it is deleted
  * RETURNS:         <nothing>
  *============================================================================*/
-void Unary::setSubExp1(Exp* e)
-{
+void Unary::setSubExp1(Exp* e) {
     if (subExp1 != 0) delete subExp1;
     subExp1 = e;
 }
-void Binary::setSubExp2(Exp* e)
-{
+void Binary::setSubExp2(Exp* e) {
     if (subExp2 != 0) delete subExp2;
     subExp2 = e;
 }
-void Ternary::setSubExp3(Exp* e)
-{
+void Ternary::setSubExp3(Exp* e) {
     if (subExp3 != 0) delete subExp3;
     subExp3 = e;
 }
@@ -298,36 +300,36 @@ Exp* Terminal::clone()
 {
     return new Terminal(*this);
 }
-Exp* Unary::clone()
-{
+Exp* Unary::clone() {
     Unary* c = new Unary(op);
     c->subExp1 = subExp1->clone();
     return c;
 }
-Exp* Binary::clone()
-{
+Exp* Binary::clone() {
     Binary* c = new Binary(op);
     c->subExp1 = subExp1->clone();
     c->subExp2 = subExp2->clone();
     return c;
 }
 
-Exp* Ternary::clone()
-{
+Exp* Ternary::clone() {
     Ternary* c = new Ternary(op);
     c->subExp1 = subExp1->clone();
     c->subExp2 = subExp2->clone();
     c->subExp3 = subExp3->clone();
     return c;
 }
-Exp* TypedExp::clone()
-{
+Exp* TypedExp::clone() {
     TypedExp* c = new TypedExp(type, subExp1->clone());
     return c;
 }
-Exp* AssignExp::clone()
-{
+Exp* AssignExp::clone() {
     AssignExp* c = new AssignExp(size, subExp1->clone(), subExp2->clone());
+    return c;
+}
+Exp* UsesExp::clone() {
+    UsesExp* c = new UsesExp(subExp1->clone());
+    c->stmtSet = stmtSet;
     return c;
 }
 
@@ -339,8 +341,8 @@ Exp* AssignExp::clone()
  * PARAMETERS:      Ref to other Exp
  * RETURNS:         True if equal
  *============================================================================*/
-bool Const::operator==(const Exp& o) const
-{
+bool Const::operator==(const Exp& o) const {
+    // Note: the casts of o to Const& are needed, else op is protected! Duh.
     if (((Const&)o).op == opWild) return true;
     if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
     if (op != ((Const&)o).op) return false;
@@ -354,8 +356,7 @@ bool Const::operator==(const Exp& o) const
     }
     return false;
 }
-bool Unary::operator==(const Exp& o) const
-{
+bool Unary::operator==(const Exp& o) const {
     //if (op == opWild) return true;
     if (((Unary&)o).op == opWild) return true;
     if (((Unary&)o).op == opWildRegOf && op == opRegOf) return true;
@@ -364,16 +365,15 @@ bool Unary::operator==(const Exp& o) const
     if (op != ((Unary&)o).op) return false;
     return *subExp1 == *((Unary&)o).getSubExp1();
 }
-bool Binary::operator==(const Exp& o) const
-{
+bool Binary::operator==(const Exp& o) const {
     //if (op == opWild) return true;
     if (((Binary&)o).op == opWild) return true;
-    if (op != ((Binary&)o).op) return false;
+    if (op != ((Binary&)o).op)     return false;
     if (!( *subExp1 == *((Binary&)o).getSubExp1())) return false;
     return *subExp2 == *((Binary&)o).getSubExp2();
 }
-bool Ternary::operator==(const Exp& o) const
-{
+
+bool Ternary::operator==(const Exp& o) const {
     //if (op == opWild) return true;
     if (((Ternary&)o).op == opWild) return true;
     if (op != ((Ternary&)o).op) return false;
@@ -381,18 +381,16 @@ bool Ternary::operator==(const Exp& o) const
     if (!( *subExp2 == *((Ternary&)o).getSubExp2())) return false;
     return *subExp3 == *((Ternary&)o).getSubExp3();
 }
-bool Terminal::operator==(const Exp& o) const
-{
+bool Terminal::operator==(const Exp& o) const {
     if (op == opWildIntConst) return ((Terminal&)o).op == opIntConst;
-    if (op == opWildMemOf) return ((Terminal&)o).op == opMemOf;
-    if (op == opWildRegOf) return ((Terminal&)o).op == opRegOf;
-    if (op == opWildAddrOf) return ((Terminal&)o).op == opAddrOf;
+    if (op == opWildMemOf)    return ((Terminal&)o).op == opMemOf;
+    if (op == opWildRegOf)    return ((Terminal&)o).op == opRegOf;
+    if (op == opWildAddrOf)   return ((Terminal&)o).op == opAddrOf;
     return ((op == opWild) ||           // Wild matches anything
-      (((Terminal&)o).op == opWild) ||
-      (op ==((Terminal&)o).op));
+            (((Terminal&)o).op == opWild) ||
+            (op == ((Terminal&)o).op));
 }
-bool TypedExp::operator==(const Exp& o) const
-{
+bool TypedExp::operator==(const Exp& o) const {
     //if (op == opWild) return true;
     if (((TypedExp&)o).op == opWild) return true;
     if (((TypedExp&)o).op != opTypedExp) return false;
@@ -400,8 +398,7 @@ bool TypedExp::operator==(const Exp& o) const
     if (*type != *((TypedExp&)o).type) return false;
     return *((Unary*)this)->getSubExp1() == *((Unary&)o).getSubExp1();
 }
-bool AssignExp::operator==(const Exp& o) const
-{
+bool AssignExp::operator==(const Exp& o) const {
     if (op == opWild) return true;
     if (((AssignExp&)o).op == opWild) return true;
     if (((AssignExp&)o).op != opAssignExp) return false;
@@ -410,6 +407,24 @@ bool AssignExp::operator==(const Exp& o) const
            *((Binary*)this)->getSubExp2() == *((Binary&)o).getSubExp2();
 }
 
+bool UsesExp::operator==(const Exp& o) const {
+    if (op == opWild) return true;
+    if (((UsesExp&)o).op == opWild) return true;
+    if (((UsesExp&)o).op != opSubscript) return false;
+    if (!( *subExp1 == *((UsesExp&)o).subExp1)) return false;
+    return stmtSet == ((UsesExp&)o).stmtSet;
+}
+
+// Compare, ignoring subscripts
+bool Exp::operator*=(const Exp& o) const {
+    const Exp* one = this;
+    if (op == opSubscript)
+        one = ((UsesExp*)this)->getSubExp1();
+    Exp* two = const_cast<Exp*>(&o);
+    if (two->isSubscript())
+        two = ((UsesExp*)two)->getSubExp1();
+    return *one == *two;
+}
 
 /*==============================================================================
  * FUNCTION:        Const::operator%=() etc
@@ -536,10 +551,11 @@ bool AssignExp::operator<  (const Exp& o) const {        // Type sensitive
  * PARAMETERS:      Ref to an output stream
  * RETURNS:         <nothing>
  *============================================================================*/
+
 //  //  //  //
 //  Const   //
 //  //  //  //
-void Const::print(std::ostream& os) {
+void Const::print(std::ostream& os, bool withUses) {
     switch (op) {
         case opIntConst:
             os << std::dec << u.i;
@@ -553,31 +569,32 @@ void Const::print(std::ostream& os) {
             os << "\"" << u.p << "\"";
             break;
         default:
-            std::cerr << "Const::print invalid operator " << operStrings[op] << std::endl;
+            std::cerr << "Const::print invalid operator " << operStrings[op] <<
+              std::endl;
             assert(0);
     }
 }
 
-void Const::printNoQuotes(std::ostream& os) {
+void Const::printNoQuotes(std::ostream& os, bool withUses) {
     if (op == opStrConst)
         os << u.p;
     else
-        print(os);
+        print(os, withUses);
 }
 
 //  //  //  //
 //  Binary  //
 //  //  //  //
-void Binary::printr(std::ostream& os) {
+void Binary::printr(std::ostream& os, bool withUses) {
     // The "r" is for recursive: the idea is that we don't want parentheses at
     // the outer level, but a subexpression (recursed from a higher level), we
     // want the parens (at least for standard infix operators)
     switch (op) {
         case opSize:
         case opList:        // Otherwise, you get (a, (b, (c, d)))
-        // There may be others
+            // There may be others
             // These are the noparen cases
-            print(os); return;
+            print(os, withUses); return;
         default:
             break;
     }
@@ -586,21 +603,21 @@ void Binary::printr(std::ostream& os) {
     os << "(" << this << ")";
 }
 
-void Binary::print(std::ostream& os)
-{
+void Binary::print(std::ostream& os, bool withUses) {
     Exp* p1; Exp* p2;
     p1 = ((Binary*)this)->getSubExp1();
     p2 = ((Binary*)this)->getSubExp2();
     // Special cases
     switch (op) {
         case opSize:
-            // {size} is printed after the expression
-            p2->printr(os); os << "{"; p1->printr(os); os << "}";
+            // *size* is printed after the expression
+            p2->printr(os, withUses); os << "*"; p1->printr(os, withUses);
+            os << "*";
             return;
         case opFlagCall:
             // The name of the flag function (e.g. ADDFLAGS) should be enough
-            ((Const*)p1)->printNoQuotes(os);
-            os << "( "; p2->printr(os); os << " )";
+            ((Const*)p1)->printNoQuotes(os, withUses);
+            os << "( "; p2->printr(os, withUses); os << " )";
             return;
         case opExpTable:
         case opNameTable:
@@ -614,20 +631,18 @@ void Binary::print(std::ostream& os)
         case opList:
             // Because "," is the lowest precedence operator, we don't need
             // printr here. Also, same as UQBT, so easier to test
-            p1->print(os);
+            p1->print(os, withUses);
             if (!p2->isNil())
                 os << ", "; 
-            p2->print(os);
+            p2->print(os, withUses);
             return;
-        case opSubscript:
-            p1->printr(os); os << "."; p2->print(os);
-            return;
+
         default:
             break;
     }
 
     // Ordinary infix operators. Emit parens around the binary
-    p1->printr(os);
+    p1->printr(os, withUses);
     switch (op) {
         case opPlus:    os << " + ";  break;
         case opMinus:   os << " - ";  break;
@@ -672,14 +687,15 @@ void Binary::print(std::ostream& os)
             assert(0);
     }
 
-    p2->printr(os);
+    p2->printr(os, withUses);
 
 }
+
 
 //  //  //  //  //
 //   Terminal   //
 //  //  //  //  //
-void Terminal::print(std::ostream& os) {
+void Terminal::print(std::ostream& os, bool withUses) {
     switch (op) {
         case opPC:      os << "%pc";   break;
     case opFlags:   os << "%flags"; break;
@@ -708,7 +724,7 @@ void Terminal::print(std::ostream& os) {
 //  //  //  //
 //   Unary  //
 //  //  //  //
-void Unary::print(std::ostream& os) {
+void Unary::print(std::ostream& os, bool withUses) {
     Exp* p1 = ((Unary*)this)->getSubExp1();
     switch (op) {
         //  //  //  //  //  //  //
@@ -723,10 +739,10 @@ void Unary::print(std::ostream& os) {
                 case opVar:   os << "v["; break;
                 default: break;     // Suppress compiler warning
             }
-            if (op == opVar) ((Const*)p1)->printNoQuotes(os);
+            if (op == opVar) ((Const*)p1)->printNoQuotes(os, withUses);
             // Use print, not printr, because this is effectively the top
             // level again (because the [] act as parentheses)
-            else p1->print(os);
+            else p1->print(os, withUses);
             os << "]";
             break;
 
@@ -738,11 +754,11 @@ void Unary::print(std::ostream& os) {
                  if (op == opNot)  os << "~";
             else if (op == opLNot) os << "L~";
             else                   os << "-";
-            p1->printr(os);
+            p1->printr(os, withUses);
             return;
 
         case opSignExt:
-            p1->printr(os);
+            p1->printr(os, withUses);
             os << "!";          // Operator after expression
             return;
 
@@ -772,13 +788,13 @@ void Unary::print(std::ostream& os) {
                 case opSuccessor: os << "succ("; break;
                 default: break;         // For warning
             }
-            p1->printr(os);
+            p1->printr(os, withUses);
             os << ")";
             return;
 
         //  Misc    //
         case opSgnEx:      // Different because the operator appears last
-            p1->printr(os);
+            p1->printr(os, withUses);
             os << "! ";
             return;
         case opTemp:
@@ -787,15 +803,16 @@ void Unary::print(std::ostream& os) {
         case opLocal:
         case opParam:
             // Print a more concise form than param["foo"] (just foo)
-            ((Const*)p1)->printNoQuotes(os);
+            ((Const*)p1)->printNoQuotes(os, withUses);
             return;
     case opPhi:
             os << "phi(";
-            p1->print(os);
+            p1->print(os, withUses);
             os << ")";
             return;
         default:
-            std::cerr << "Unary::print invalid operator " << operStrings[op] << std::endl;
+            std::cerr << "Unary::print invalid operator " << operStrings[op] <<
+              std::endl;
             assert(0);
     }
 }
@@ -803,7 +820,7 @@ void Unary::print(std::ostream& os) {
 //  //  //  //
 //  Ternary //
 //  //  //  //
-void Ternary::printr(std::ostream& os) {
+void Ternary::printr(std::ostream& os, bool withUses) {
     // The function-like operators don't need parentheses
     switch (op) {
         // The "function-like" ternaries
@@ -811,7 +828,7 @@ void Ternary::printr(std::ostream& os) {
         case opSgnEx:   case opFsize:   case opItof:
         case opFtoi:    case opFround:  case opOpTable:
             // No paren case
-            print(os); return;
+            print(os, withUses); return;
         default:
             break;
     }
@@ -819,7 +836,7 @@ void Ternary::printr(std::ostream& os) {
     os << "(" << this << ")";
 }
 
-void Ternary::print(std::ostream& os) {
+void Ternary::print(std::ostream& os, bool withUses) {
     Exp* p1 = ((Ternary*)this)->getSubExp1();
     Exp* p2 = ((Ternary*)this)->getSubExp2();
     Exp* p3 = ((Ternary*)this)->getSubExp3();
@@ -842,26 +859,26 @@ void Ternary::print(std::ostream& os) {
             }
             // Use print not printr here, since , has the lowest precendence
             // of all. Also it makes it the same as UQBT, so it's easier to test
-            p1->print(os); os << ",";
-            p2->print(os); os << ",";
-            p3->print(os); os << ")";
+            p1->print(os, withUses); os << ",";
+            p2->print(os, withUses); os << ",";
+            p3->print(os, withUses); os << ")";
             return;
         default:
             break;
     }
     // Else must be ?: or @ (traditional ternary operators)
-    p1->printr(os);
+    p1->printr(os, withUses);
     if (op == opTern) {
         os << " ? ";
-        p2->printr(os);
+        p2->printr(os, withUses);
         os << " : ";        // Need wide spacing here
-        p3->print(os);
+        p3->print(os, withUses);
     } 
     else if (op == opAt) {
             os << "@";
-            p2->printr(os);
+            p2->printr(os, withUses);
             os << ":";
-            p3->printr(os);
+            p3->printr(os, withUses);
     } else {
         std::cerr << "Ternary::print invalid operator " << operStrings[op] <<
           std::endl;
@@ -872,34 +889,39 @@ void Ternary::print(std::ostream& os) {
 //  //  //  //
 // TypedExp //
 //  //  //  //
-void TypedExp::print(std::ostream& os) {
+void TypedExp::print(std::ostream& os, bool withUses) {
     os << "*" << std::dec << type->getSize() << "* ";
     Exp* p1 = ((Ternary*)this)->getSubExp1();
-    p1->print(os);
+    p1->print(os, withUses);
 }
 
 //  //  //  //
 // AssignExp //
 //  //  //  //
-void AssignExp::print(std::ostream& os) {
+void AssignExp::print(std::ostream& os, bool withUses) {
     os << "*" << std::dec << size << "* ";
     Exp* p1 = ((Binary*)this)->getSubExp1();
-    p1->print(os);
+    p1->print(os, withUses);
     os << " := ";
     Exp* p2 = ((Binary*)this)->getSubExp2();
-    p2->print(os);
+    p2->print(os, withUses);
 }
 
 void AssignExp::getDefinitions(LocationSet &defs) {
     defs.insert(getLeft());
 }
 
-void AssignExp::printAsUse(std::ostream &os) {
-    print(os);
-}
 
-void AssignExp::printAsUseBy(std::ostream &os) {
-    print(os);
+//  //  //  //
+// UsesExp  //
+//  //  //  //
+void UsesExp::print(std::ostream& os, bool withUses) {
+    subExp1->print(os, withUses);
+    if (withUses) {
+        os << "{";
+        stmtSet.printNums(os);
+        os << "}";
+    }
 }
 
 /*==============================================================================
@@ -911,11 +933,12 @@ void AssignExp::printAsUseBy(std::ostream &os) {
 static char debug_buffer[200];
 char* Exp::prints() {
       std::ostringstream ost;
-      print(ost);
+      print(ost, true);
       strncpy(debug_buffer, ost.str().c_str(), 199);
       debug_buffer[199] = '\0';
       return debug_buffer;
 }
+
 
 /*==============================================================================
  * FUNCTION:        Exp::createDotFile etc
@@ -1181,10 +1204,9 @@ Exp* Exp::getGuard() {
  * RETURNS:         <nothing>
  *============================================================================*/
 void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
-  bool once)
-{
+  bool once) {
     bool compare;
-    compare = (*search == *pSrc);       // Consider type
+    compare = (*search == *pSrc);           // Consider type
     if (compare) {
         li.push_back(&pSrc);                // Success
         if (once)
@@ -1206,41 +1228,31 @@ void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li,
  *                  once: true if not all occurrences to be found, false for all
  * RETURNS:         <nothing>
  *============================================================================*/
-void Exp::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+void Exp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     return;         // Const and Terminal do not override this
 }
-void Unary::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+void Unary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     subExp1->doSearch(search, subExp1, li, once);
 }
-void Binary::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+void Binary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     getSubExp1()->doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     subExp2->doSearch(search, subExp2, li, once);
 }
 void Ternary::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+  std::list<Exp**>& li, bool once) {
     getSubExp1()->doSearch(search, subExp1, li, once);
     if (once && li.size()) return;
     getSubExp2()->doSearch(search, subExp2, li, once);
     if (once && li.size()) return;
     subExp3->doSearch(search, subExp3, li, once);
 }
-void TypedExp::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+void TypedExp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     subExp1->doSearch(search, subExp1, li, once);
 }
-void AssignExp::doSearchChildren(Exp* search, 
-  std::list<Exp**>& li, bool once)
-{
+void AssignExp::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
     subExp1->doSearch(search, subExp1, li, once);
+    if (once && li.size()) return;
     subExp2->doSearch(search, subExp2, li, once);
 }
 
@@ -1275,8 +1287,7 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * RETURNS:         the result (often this, but possibly changed)
  *============================================================================*/
 Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change,
-  bool once /* = false */ )
-{
+  bool once /* = false */ ) {
     std::list<Exp**> li;
     Exp* top = this;        // top may change; that's why we have to return it
     doSearch(search, top, li, false);
@@ -2179,13 +2190,13 @@ Exp* AssignExp::simplifyAddr() {
 /*==============================================================================
  * FUNCTION:        Exp::printt
  * OVERVIEW:        Print an infix representation of the object to the given
- *                  file stream, with it's type in <angle brackets>.
+ *                  file stream, with its type in <angle brackets>.
  * PARAMETERS:      Output stream to send the output to
  * RETURNS:         <nothing>
  *============================================================================*/
-void Exp::printt(std::ostream& os /*= cout*/)
+void Exp::printt(std::ostream& os /*= cout*/, bool withUses /* = false */)
 {
-    print(os);
+    print(os, withUses);
     if (op != opTypedExp) return;
     Type* t = ((TypedExp*)this)->getType();
     os << "<" << std::dec << t->getSize();
@@ -2240,9 +2251,9 @@ std::ostream& operator<<(std::ostream& os, Exp* p)
 {
 #if 1
     // Useful for debugging, but can clutter the output
-    p->printt(os);
+    p->printt(os, true);
 #else
-    p->print(os);
+    p->print(os, true);
 #endif
     return os;
 }
@@ -2281,7 +2292,8 @@ Exp *Exp::deserialize(std::istream &inf)
                         e = new Const(strdup(s.c_str()));
                         break;
                     default:
-                        std::cerr << "WARNING: unknown const expression type, ignoring, data will be lost!" << std::endl;
+                        std::cerr << "WARNING: unknown const expression type, "
+                            "ignoring, data will be lost!" << std::endl;
                 }
             }
             break;
@@ -2333,7 +2345,8 @@ Exp *Exp::deserialize(std::istream &inf)
             }
             break;
         default:
-            std::cerr << "WARNING: unknown expression type, ignoring, data will be lost!" << std::endl;
+            std::cerr << "WARNING: unknown expression type, ignoring, "
+                "data will be lost!" << std::endl;
     }
 
     if (e) {
@@ -2512,14 +2525,16 @@ void AssignExp::killReach(StatementSet &reach) {
     for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
         if (s->getLeft() == NULL) continue;     // Should never happen?
         bool isKilled = false;
-        if (*s->getLeft() == *subExp1)
+        // Note: *= is "subscript insensitive" comparison. If attempt to
+        // redo global dataflow in SSA form, may need to change this
+        if (*s->getLeft() *= *subExp1)
             isKilled = true;
         // MVE: Check this for conservatism
         isKilled |= mayAlias(s->getLeft(), subExp1, getSize());
         if (isKilled)
-        kills.insert(s);
+            kills.insert(s);
     }
-    reach.make_diff(kills);
+    reach.makeDiff(kills);
 }
 
 // Liveness is killed by a definition
@@ -2533,18 +2548,19 @@ void AssignExp::killLive(LocationSet &live) {
     }
 }
 
+// MVE: I don't think that this will be needed any more
 void AssignExp::getDeadStatements(StatementSet &dead)
 {
     StatementSet reach;
-    getReachIn(reach);
+    getReachIn(reach, 2);
     StmtSetIter it;
     for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
-    if (s->getLeft() == NULL) continue;
+        if (s->getLeft() == NULL) continue;
         bool isKilled = false;
         if (*s->getLeft() == *subExp1)
             isKilled = true;
         if (s->getLeft()->isMemOf() && subExp1->isMemOf())
-            isKilled = true; // might alias, very conservative
+            isKilled = true; // might alias, very "conservative"
         if (isKilled && s->getNumUsedBy() == 0)
         dead.insert(s);
     }
@@ -2562,8 +2578,8 @@ bool AssignExp::usesExp(Exp *e) {
         ((Unary*)subExp1)->getSubExp1()->search(e, where)));
 }
 
-void AssignExp::doReplaceUse(Statement *use) 
-{
+
+void AssignExp::doReplaceUse(Statement *use) {
     Exp *left = use->getLeft();
     Exp *right = use->getRight();
     assert(left);
@@ -2571,10 +2587,12 @@ void AssignExp::doReplaceUse(Statement *use)
     bool changeright = false;
     subExp2 = subExp2->searchReplaceAll(left, right, changeright);
     bool changeleft = false;
-    if (subExp1->isMemOf()) {
-        Exp *e = subExp1->getSubExp1()->clone();
+    Exp* baseSub1 = subExp1;
+    if (left->isSubscript()) baseSub1 = ((UsesExp*)subExp1)->getSubExp1();
+    if (baseSub1->isMemOf()) {
+        Exp *e = baseSub1->getSubExp1()->clone();
         e = e->searchReplaceAll(left, right, changeleft);
-        subExp1->setSubExp1(e);
+        baseSub1->setSubExp1(e);
     }
     // The below assertion can fail when dataflow caching is used. For example,
     // the pentium stuff with ebp and esp causes a substitution into r29 = r29
@@ -2668,10 +2686,13 @@ void AssignExp::addUsedLocs(LocationSet& used) {
     Exp* left = getSubExp1();
     Exp* right = getSubExp2();
     right->addUsedLocs(used);
-    if (left->isMemOf()) {
+    Exp* baseLeft = left;
+    if (left->isSubscript())        // Should always be
+        baseLeft = ((UsesExp*)left)->getSubExp1();
+    if (baseLeft->isMemOf()) {
         // We also use any expr like m[exp] on the LHS (but not the outer m[])
-        left = ((Unary*)left)->getSubExp1();
-        left->addUsedLocs(used);
+        Exp* baseLeftChild = ((Unary*)baseLeft)->getSubExp1();
+        baseLeftChild->addUsedLocs(used);
     }
 }
 
@@ -2690,7 +2711,9 @@ void Unary::addUsedLocs(LocationSet& used) {
         default:
             break;
     }
+    subExp1->addUsedLocs(used);
 }
+
 
 void Binary::addUsedLocs(LocationSet& used) {
     subExp1->addUsedLocs(used);
@@ -2701,4 +2724,139 @@ void Ternary::addUsedLocs(LocationSet& used) {
     subExp1->addUsedLocs(used);
     subExp2->addUsedLocs(used);
     subExp3->addUsedLocs(used);
+}
+
+void UsesExp::addUsedLocs(LocationSet& used) {
+    used.insert(clone());           // We want to see these
+    if (subExp1->isMemOf()) {
+        Exp* grandChild = ((Unary*)subExp1)->getSubExp1();
+        grandChild->addUsedLocs(used);
+    }
+}
+
+
+/*==============================================================================
+ * FUNCTION:        Unary::updateUses etc
+ * OVERVIEW:        Update the "uses" information inherent in each Exp
+ * PARAMETERS:      def: ptr to Statement defining a location
+ *                  left: the location being defined
+ * RETURNS:         <nothing>
+ *============================================================================*/
+//  //  //  //
+//  Unary   //
+//  //  //  //
+Exp* Unary::updateUses(Statement* def, Exp* left) {
+    // I think it's possible that left could change from non subscripted to
+    // subscripted during this call
+    Exp* trueLeft = left;
+    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
+    if (*trueLeft == *this)
+        return new UsesExp(this, def);
+    subExp1 = subExp1->updateUses(def, left);
+    return this;
+}
+
+//  //  //  //
+//  Binary  //
+//  //  //  //
+Exp* Binary::updateUses(Statement* def, Exp* left) {
+    // I think it's possible that left could change from non subscripted to
+    // subscripted during this call
+    Exp* trueLeft = left;
+    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
+    if (*trueLeft == *this)
+        return new UsesExp(this, def);
+    subExp1 = subExp1->updateUses(def, left);
+    subExp2 = subExp2->updateUses(def, left);
+    return this;            // This won't have changed
+}
+
+//  //  //  //  //
+//  AssignExp   //
+//  //  //  //  //
+void AssignExp::subscriptLeft(Statement* self) {
+    subExp1 = new UsesExp(subExp1, self);
+}
+
+Exp* AssignExp::updateUses(Statement* def, Exp* left) {
+    // No need to test for equality to left
+    // No need to subscript the "outer" LHS; done in subscriptLeft (above)
+    // However, need to update aa iff LHS is m[aa]
+    Unary* baseLHS = (Unary*)((UsesExp*)subExp1)->getSubExp1();
+    if (baseLHS->isMemOf())
+        // Beware. Consider left == m[r[28]], baseLHS is the same.
+        // If we call subExp1->updateUses, we will double subscript our
+        // LHS (violating a basic property of SSA form)
+        // If we call baseLHS->updateUses, we would get a
+        // subscript of a subscript, also not what we want!
+        // Don't call setSubExp1 either, since it deletes the old
+        // expression (old expression is always needed)
+        baseLHS->setSubExp1ND(baseLHS->getSubExp1()->updateUses(def, left));
+    subExp2 = subExp2->updateUses(def, left);
+    return this;
+}
+
+//  //  //  //
+//  UsesExp //
+//  //  //  //
+Exp* UsesExp::updateUses(Statement* def, Exp* left) {
+    // I think it's possible that left could change from non subscripted to
+    // subscripted during this call
+    Exp* trueLeft = left;
+    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
+    if (*trueLeft == *subExp1) {
+        // This means that we have a match with the current expression,
+        // and we need to append the use to our StatementList
+        stmtSet.insert(def);
+    } else
+        subExp1 = subExp1->updateUses(def, left);
+    return this;
+}
+
+//  //  //  //
+// Ternary  //
+//  //  //  //
+Exp* Ternary::updateUses(Statement* def, Exp* left) {
+    Exp* trueLeft = left;
+    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
+    if (*trueLeft == *this)
+        return new UsesExp(this, def);
+    subExp1 = subExp1->updateUses(def, left);
+    subExp2 = subExp2->updateUses(def, left);
+    subExp3 = subExp3->updateUses(def, left);
+    return this;
+}
+
+// Might be a useful framework for various tests one day
+void Exp::check() {
+    Ternary* t = dynamic_cast<Ternary*>(this);
+    if (t) {
+        t->getSubExp1()->check();
+        t->getSubExp2()->check();
+        t->getSubExp3()->check();
+    } else {
+        Binary* b = dynamic_cast<Binary*>(this);
+        if (b) {
+            b->getSubExp1()->check();
+            b->getSubExp2()->check();
+        } else {
+            Unary* u = dynamic_cast<Unary*>(this);
+            if (u) {
+                if (op == opSubscript) {
+                    UsesExp* u = dynamic_cast<UsesExp*>(this);
+                    if (u) std::cerr << ".";
+                    else
+                        std::cerr << "Here it is!!!\n";
+                }
+                u->getSubExp1()->check();
+            } else {
+                Terminal* t = dynamic_cast<Terminal*>(this);
+                if (t == NULL) {
+                    Const* c = dynamic_cast<Const*>(this);
+                    if (c == NULL)
+                        std::cerr << "None of the above: " << this << "\n";
+                }
+            }
+        }
+    }
 }

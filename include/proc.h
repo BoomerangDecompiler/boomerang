@@ -354,7 +354,7 @@ public:
     // perform the "on the way down" processing for the proc
     void    decompile_down();
     // Initialise the staements, e.g. proc, bb pointers
-    void initStatements();
+    void initStatements(int& stmtNum);
     bool nameStackLocations();
     bool nameRegisters();
     void replaceExpressionsWithGlobals();
@@ -362,7 +362,10 @@ public:
     bool removeNullStatements();
     bool removeDeadStatements();
     bool propagateAndRemoveStatements();
-    void recalcDataflow();       // Recalculate dataflow
+    void propagateStatements();
+    //void computeDataflow();       // Recalculate dataflow
+
+    void toSSAform();
 
     // promote the signature if possible
     void promoteSignature();
@@ -385,6 +388,8 @@ public:
     // get internal statements
     // Note: assignment causes shallow copy of list
     virtual void getInternalStatements(StatementList &sl) {sl = internal;}
+    // Calculate uses info
+    void computeUses();
 
 //
 //  SSA
@@ -425,11 +430,6 @@ private:
     void    checkMemSize(Exp* e);
 
 public:
-
-    /*
-     * Return the coverage of this procedure in bytes.
-     */
-//    unsigned getCoverage() {return cover.totalCover();}
 
     /*
      * Sets the parameters that have been recovered for this procedure through

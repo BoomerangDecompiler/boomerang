@@ -30,7 +30,7 @@
 #include "operator.h"   // Declares the OPER enum
 #include "types.h"      // For ADDRESS, etc
 #include "type.h"       // The Type class for typed expressions
-#include "dataflow.h"   // Exp derived from Statement
+#include "dataflow.h"   // AssignExp derived from Statement
 
 class UseSet;
 class DefSet;
@@ -66,14 +66,16 @@ virtual		~Exp() {}
     void    setOper(OPER x) {op = x;}     // A few simplifications use this
 
     // Print the expression to the given stream
-	// Don't default to std::cout because it makes debugging harder
-virtual void print(std::ostream& os) = 0;
-	void	 print() {print(std::cout);}
-    void     printt(std::ostream& os = std::cout);    // Print with <type>
+virtual void print(std::ostream& os, bool withUses = false) = 0;
+             // Print with <type>
+    void     printt(std::ostream& os = std::cout, bool withUses = false);
     void     printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
     char*    prints();      // Print to string (for debugging)
              // Recursive print: don't want parens at the top level
-virtual void printr(std::ostream& os) = 0;    // Recursive print
+virtual void printr(std::ostream& os, bool withUses = false) {
+                print(os, withUses);}       // But most classes want standard
+             // Print with the "{1 2 3}" uses info
+        void printWithUses(std::ostream& os) {print(os, true);}
 
     // Display as a dotty graph
     void    createDotFile(char* name);
@@ -98,6 +100,8 @@ virtual bool operator< (const Exp& o)  const= 0;
 // Type insensitive less than. Class TypedExp overrides
 virtual bool operator<<(const Exp& o) const
     {return (*this < o);}
+// Comparison ignoring subscripts
+        bool operator*=(const Exp& o) const;
 
 // Return the number of subexpressions. This is only needed in rare cases,
 // Could use polymorphism for all those cases, but this is easier
@@ -140,7 +144,9 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     // True if is a post-var expression (var_op' in SSL file)
     bool isPostVar() {return op == opPostVar;}
     // True if this is an opSize (size case; deprecated)
-    bool isSizeCast() { return op == opSize;}
+    bool isSizeCast() {return op == opSize;}
+    // True if this is a subscripted expression (SSA)
+    bool isSubscript() {return op == opSubscript;}
     // True if this is a phi operation (SSA)
     bool isPhi() {return op == opPhi;}
     // Get the index for this var
@@ -225,7 +231,17 @@ virtual Exp* fixSuccessor() {return this;}
 		Exp* killFill();
 
     // Do the work of finding used locations
-    virtual void addUsedLocs(LocationSet& used) {};
+    virtual void addUsedLocs(LocationSet& used) {}
+
+    // Update the "uses" information implicit in expressions
+    // def is a statement defining left (pass left == getLeft(def))
+    virtual Exp* updateUses(Statement* def, Exp* left) {return this;}
+
+    // Get number of definitions (statements this expression depends on)
+    virtual int getNumUses() {return 0;}
+
+    // Consistency check. Might be useful another day
+    void check();
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len) = 0;
@@ -275,16 +291,16 @@ public:
     void setStr(char* p)    {u.p = p;}
     void setAddr(ADDRESS a) {u.a = a;}
 
-    void    print(std::ostream& os);
-    void    printNoQuotes(std::ostream& os);
-    void    printr(std::ostream& os) {print (os);}
-    // Nothing to destruct: Don't deallocate the string passed to constructor
+    void    print(std::ostream& os, bool withUses = false);
+    void    printNoQuotes(std::ostream& os, bool withUses = false);
+    // Print "recursive" (extra parens not wanted at outer levels)
 
     void    appendDotFile(std::ofstream& of);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
 
+    // Nothing to destruct: Don't deallocate the string passed to constructor
 };
 
 /*==============================================================================
@@ -304,8 +320,7 @@ public:
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
 
-    void    print(std::ostream& os);
-    void    printr(std::ostream& os) {print (os);}
+    void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
 	// serialization
@@ -342,13 +357,12 @@ virtual     ~Unary();
     int getArity() {return 1;}
 
     // Print
-    void    print(std::ostream& os);
-    // Only binary and higher arity get parentheses, so printr == print
-    void    printr(std::ostream& os) {print (os);}
+    void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
     // Set first subexpression
     void    setSubExp1(Exp* e);
+    void    setSubExp1ND(Exp* e) {subExp1 = e;}
     // Get first subexpression
     Exp*    getSubExp1();
     // "Become" subexpression 1 (delete all but that subexpression)
@@ -368,6 +382,10 @@ virtual Exp* fixSuccessor();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    // Update the "uses" information implicit in expressions
+    // def is a statement defining left (pass left == getLeft(def))
+    virtual Exp* updateUses(Statement* def, Exp* left);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -402,8 +420,8 @@ virtual     ~Binary();
     int getArity() {return 2;}
 
     // Print
-    void    print(std::ostream& os);
-    void    printr(std::ostream& os);
+    void    print(std::ostream& os, bool withUses = false);
+    void    printr(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
     // Set second subexpression
@@ -428,6 +446,10 @@ virtual     ~Binary();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    // Update the "uses" information implicit in expressions
+    // def is a statement defining left (pass left == getLeft(def))
+    virtual Exp* updateUses(Statement* def, Exp* left);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -461,8 +483,8 @@ virtual     ~Ternary();
     int getArity() {return 3;}
 
     // Print
-    void    print(std::ostream& os);
-    void    printr(std::ostream& os);
+    void    print(std::ostream& os, bool withUses = false);
+    void    printr(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
     // Set third subexpression
@@ -484,6 +506,10 @@ virtual     ~Ternary();
 
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
+
+    // Update the "uses" information implicit in expressions
+    // def is a statement defining left (pass left == getLeft(def))
+    virtual Exp* updateUses(Statement* def, Exp* left);
 
 	// serialization
 	virtual bool serialize(std::ostream &ouf, int &len);
@@ -518,8 +544,7 @@ public:
     bool    operator<<(const Exp& o) const;
 
 
-    void    print(std::ostream& os);
-    void    printr(std::ostream& os) {print(os);}     // Printr same as print
+    void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the type
@@ -561,8 +586,7 @@ public:
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
 
-    virtual void print(std::ostream& os);
-    void    printr(std::ostream& os) {print(os);}     // Printr same as print
+    virtual void print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the size
@@ -589,30 +613,33 @@ public:
     virtual void killLive(LocationSet &live);
     virtual void getDeadStatements(StatementSet &dead);
 	virtual bool usesExp(Exp *e);
+    virtual void subscriptLeft(Statement* self);
     virtual void addUsedLocs(LocationSet& used);
+    // Update the "uses" information implicit in expressions
+    // def is a statement defining left (pass left == getLeft(def))
+    virtual Exp* updateUses(Statement* def, Exp* left);
 
-
-        virtual bool isDefinition() { return true; }
-        virtual void getDefinitions(LocationSet &defs);
+    virtual bool isDefinition() { return true; }
+    virtual void getDefinitions(LocationSet &defs);
         
         // get how to access this value
-        virtual Exp* getLeft() { return subExp1; }
+    virtual Exp* getLeft() { return subExp1; }
 	virtual Type* getLeftType() { return NULL; }
 
         // get how to replace this statement in a use
         virtual Exp* getRight() { return subExp2; }
 
 	// special print functions
-        virtual void printAsUse(std::ostream &os);
-        virtual void printAsUseBy(std::ostream &os);
+    //virtual void printAsUse(std::ostream &os);
+    //virtual void printAsUseBy(std::ostream &os);
 
 	// inline any constants in the statement
 	virtual void processConstants(Prog *prog);
 
-        // general search
-        virtual bool search(Exp* search, Exp*& result) {
-            return Exp::search(search, result);
-        }
+    // general search
+    virtual bool search(Exp* search, Exp*& result) {
+        return Exp::search(search, result);
+    }
 
 	// general search and replace
 	virtual void searchAndReplace(Exp *search, Exp *replace) {
@@ -621,8 +648,8 @@ public:
 	    assert(e == this);
 	}
  
-        // update type for expression
-        virtual Type *updateType(Exp *e, Type *curType);
+    // update type for expression
+    virtual Type *updateType(Exp *e, Type *curType);
 
 protected:
 	virtual void doReplaceUse(Statement *use);
@@ -645,6 +672,33 @@ virtual     ~FlagDef();                         // Destructor
 	virtual bool serialize(std::ostream &ouf, int &len);
 };
 
+/*==============================================================================
+ * UsesExp is a subclass of Unary, holding an ordinary Exp pointer, and
+ *  a StatementSet
+ * This is used for subscripting SSA variables. Example:
+ * m[1000] becomes m[1000]{3} if defined at statement 3
+ * m[r[28]+4] becomes m[r[28]{2 8}]{3} if r[28] is defined at 2 and 8, and
+ * the memof is defined at 3. The integers are really pointers to statements,
+ * printed as the statement number for compactness
+ *============================================================================*/
+class UsesExp : public Unary {
+    StatementSet    stmtSet;            // A set of pointers to statements
+
+public:
+            // Constructor with expression (e) and statement defining it (def)
+            UsesExp(Exp* e, Statement* def);
+            UsesExp(Exp* e);
+            UsesExp(UsesExp& o);
+virtual Exp* clone();
+    bool    operator==(const Exp& o) const;
+    void    print(std::ostream& os, bool withUses = false);
+    Exp*    updateUses(Statement* def, Exp* left);
+virtual int getNumUses() {return stmtSet.size();}
+    Statement* getFirstUses() {StmtSetIter it; return stmtSet.getFirst(it);}
+    void    addUsedLocs(LocationSet& used);
+};
+
+    
 /*
  * A class for comparing Exp*s (comparing the actual expressions)
  * Type sensitive
@@ -684,8 +738,8 @@ public:
     LocationSet() {}                        // Default constructor
     LocationSet(const LocationSet& o);      // Copy constructor
     LocationSet& operator=(const LocationSet& o); // Assignment
-    void make_union(LocationSet& other);    // Set union
-    void make_diff (LocationSet& other);    // Set difference
+    void makeUnion(LocationSet& other);    // Set union
+    void makeDiff (LocationSet& other);    // Set difference
     void clear() {sset.clear();}            // Clear the set
     Exp* getFirst(LocSetIter& it);          // Get the first Statement
     Exp* getNext (LocSetIter& it);          // Get next
@@ -696,7 +750,7 @@ public:
     int  size() const {return sset.size();}  // Number of elements
     bool operator==(const LocationSet& o) const; // Compare
     void substitute(Statement& s);          // Substitute the statement to all
-    void print();                           // Print to cerr for debugging
+    void prints();                          // Print to cerr for debugging
     bool find(Exp* e);                      // Return true if the location exists in the set
 };
 

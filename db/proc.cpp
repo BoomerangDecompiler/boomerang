@@ -896,10 +896,11 @@ void UserProc::generateCode(HLLCode *hll) {
 void UserProc::print(std::ostream &out, bool withDF) {
     signature->print(out);
     cfg->print(out, withDF);
+    out << "\n";
 }
 
 // initialise all statements
-void UserProc::initStatements() {
+void UserProc::initStatements(int& stmtNum) {
     if (stmts_init)
         return;         // Already done
     stmts_init = true;  // Only do this once
@@ -915,11 +916,16 @@ void UserProc::initStatements() {
                 if (e == NULL) continue;
                 e->setProc(this);
                 e->setBB(bb);
+                e->setNumber(++stmtNum);
             }
             if (rtl->getKind() == CALL_RTL) {
                 HLCall *call = (HLCall*)rtl;
                 call->setProc(this);   // Different statement to its assignments
                 call->setBB(bb);
+                call->setNumber(++stmtNum);
+                // Take this opportunity to set up the parameters now
+                call->setSigArguments();
+                // FIXME: Likely not needed now:
                 StatementList &internal = call->getInternalStatements();
                 StmtListIter it1;
                 for (Statement* s1 = internal.getFirst(it1); s1;
@@ -932,6 +938,7 @@ void UserProc::initStatements() {
                 HLJcond *jcond = (HLJcond*)rtl;
                 jcond->setProc(this);
                 jcond->setBB(bb);
+                jcond->setNumber(++stmtNum);
             }
         }
     }
@@ -1012,6 +1019,7 @@ void UserProc::removeStatement(Statement *stmt) {
     }
 }
 
+#if 0
 // Perform "on the way down" decompilation processing
 // This is for coping with cycles in the call graph
 // At present, we summarise the dataflow (so that call statements which call
@@ -1130,12 +1138,14 @@ void UserProc::decompile_down() {
         std::cerr << "\n--\n";
     }
 }
+#endif
 
 // decompile this userproc
 void UserProc::decompile() {
     // Prevent infinite loops when there are cycles in the call graph
     if (decompiled_down) return;
 
+#if 0
     if (VERBOSE)
         std::cerr << "decompiling (down): " << getName() << std::endl;
     // This is code that we can perform "on the way down" to the bottom
@@ -1145,6 +1155,7 @@ void UserProc::decompile() {
     // This solves problems with recursion and other cycles in the call graph
     decompile_down();
 
+#endif
     // Done "on the way down" processing for this proc
     decompiled_down = true;
 
@@ -1164,20 +1175,21 @@ void UserProc::decompile() {
     }
 
     if (VERBOSE) {
-        std::cerr << "decompiling (back): " << getName() << std::endl;
+        std::cerr << "decompiling: " << getName() << std::endl;
         print(std::cerr, false);    // First time no df so it's readable!
     }
+
+    // compute uses/usedby info
+    //computeUses();        // No, now in initStatements and "repaired"
+
     bool change = true;
     if (!Boomerang::get()->noDataflow) {
         while (change) {
             change = false;
-            recalcDataflow();
+            //recalcDataflow();
             if (VERBOSE) print(std::cerr, true);
-            bool propagate;
-            do {
-                propagate = propagateAndRemoveStatements();
-                change |= propagate;
-            } while (propagate);
+            propagateStatements();
+            if (VERBOSE) print(std::cerr, true);
             if (!Boomerang::get()->noRemoveNull) {
                 change |= removeNullStatements();
                 change |= removeDeadStatements();
@@ -1198,8 +1210,8 @@ void UserProc::decompile() {
 
     // promoteSignature has converted some register and memory locations
     // to "param1" etc (opParam). Redo the liveness to reflect this change
-    cfg->computeLiveness();
-    LocationSet* le = cfg->getLiveEntry();
+    //cfg->computeLiveness();
+    //LocationSet* le = cfg->getLiveEntry();
     // Above is unused... not finished
     // Get the live set on entry to this procedure. It could well be
     // shorter than it was
@@ -1399,7 +1411,7 @@ bool UserProc::removeNullStatements() {
             StatementSet &reachout = s->getBB()->getReachOut();
             if (reachout.remove(s))
                 //cfg->computeReaches();      // Highly sus: do all or none!
-                recalcDataflow();
+                //recalcDataflow();
             change = true;
         }
     }
@@ -1482,7 +1494,7 @@ bool UserProc::removeDeadStatements() {
                 StatementSet &reachout = s1->getBB()->getReachOut();
                 reachout.remove(s1);
                 //cfg->computeReaches();      // Highly sus: do all or none!
-                recalcDataflow();
+                //recalcDataflow();
                 change = true;
             }
         }
@@ -1586,7 +1598,7 @@ bool UserProc::propagateAndRemoveStatements() {
                 cfg->computeReaches();
 #else
             reachout.remove(s);
-            recalcDataflow();       // Fix alias problems
+            //recalcDataflow();       // Fix alias problems
 #endif
             if (VERBOSE) {
                 // debug: print
@@ -1596,6 +1608,37 @@ bool UserProc::propagateAndRemoveStatements() {
         }
     }
     return change;
+}
+
+void UserProc::propagateStatements() {
+    StatementList stmts;
+    getStatements(stmts);
+    // propagate any statements that can be
+    StmtListIter it;
+    int oldNumProp, numProp = 0;
+    do {
+        oldNumProp = numProp;
+        numProp = 0;
+        for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+            LocationSet exps;
+            s->addUsedLocs(exps);
+            LocSetIter ll;
+            for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
+                if (e->getNumUses() == 1) {
+                    // Can propagate TO this statement
+                    Statement* def = ((UsesExp*)e)->getFirstUses();
+                    s->replaceUse(def);
+                    numProp++;
+                    if (VERBOSE) {
+                        std::cerr << "Propagating " << def->getNumber() <<
+                          " into " << s->getNumber() <<
+                          ", result is " << s << "\n";
+                    }
+                }
+            }
+        }
+std::cerr << "Propagated " << numProp << " statements\n";
+    } while (numProp != oldNumProp);
 }
 
 void UserProc::promoteSignature() {
@@ -1610,6 +1653,7 @@ Exp* UserProc::newLocal(Type* ty) {
     return new Unary(opLocal, new Const(strdup(name.c_str())));
 }
 
+#if 0
 void UserProc::recalcDataflow() {
     if (VERBOSE) std::cerr << "Recalculating dataflow\n";
     cfg->computeLiveness();
@@ -1623,35 +1667,29 @@ void UserProc::recalcDataflow() {
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         s->calcUseLinks();
 }
-
-//
-//  SSA code
-//
-
-#if SSA
-bool UserProc::isSSAForm() {
-    LocationSet defs;
-    // TODO: add params to defs
-    return cfg->getSSADefs(defs);
-}
-
-void UserProc::transformToSSAForm() {
-    LocationSet defs;
-    // TODO: add params to defs
-    cfg->SSATransform(defs);
-    // minimise the SSA form
-    do cfg->simplify();
-    while (cfg->minimiseSSAForm());
-}
-
-void UserProc::transformFromSSAForm() {
-    cfg->revSSATransform();
-}
 #endif
+
+void UserProc::computeUses() {
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->clearUses();
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->calcUseLinks();
+}
 
 void UserProc::getReturnSet(LocationSet &ret)
 {
     if (returnSet.size()) {
         ret = returnSet;
     }
+}
+
+//
+//  SSA code
+//
+
+void UserProc::toSSAform() {
+    getCFG()->toSSAform();
 }

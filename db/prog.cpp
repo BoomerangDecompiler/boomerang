@@ -56,7 +56,8 @@
 #include "boomerang.h"
 
 Prog::Prog()
-    : pBF(NULL),
+    : interProcDFAphase(0),
+      pBF(NULL),
       pFE(NULL),
       globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
@@ -65,7 +66,8 @@ Prog::Prog()
 }
 
 Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
-    : pBF(pBF),
+    : interProcDFAphase(0),
+      pBF(pBF),
       pFE(pFE),
       globalMap(NULL),
       m_watcher(NULL),  // First numbered proc will be 1, no initial watcher
@@ -73,7 +75,8 @@ Prog::Prog(BinaryFile *pBF, FrontEnd *pFE)
 }
 
 Prog::Prog(const char* name)
-    : pBF(NULL),
+    : interProcDFAphase(0),
+      pBF(NULL),
       pFE(NULL),
       globalMap(NULL),
       m_name(name),
@@ -126,7 +129,8 @@ void Prog::analyse() {
         if (!p->isDecoded()) continue;
 
         // need to do this somewhere
-        p->getCFG()->sortByAddress();
+        // MVE: I don't think we need to at all
+        //p->getCFG()->sortByAddress();
 
         // decoded userproc.. analyse it
         analysis->analyse(p);
@@ -136,6 +140,22 @@ void Prog::analyse() {
 
 // Do decompilation
 void Prog::decompile() {
+int stmtNumber = 0;
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+         it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+
+        // Initialise (number, etc) the statements of this proc
+        p->initStatements(stmtNumber);
+    }
+
+    // First do forward-flow global dataflow
+    forwardGlobalDataflow();
+
+    //int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
@@ -143,7 +163,47 @@ void Prog::decompile() {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
 
-        // decoded userproc.. decompile it          
+        // Initialise (number, etc) the statements of this proc
+      //p->initStatements(stmtNumber);
+
+        // Put this proc into implicit SSA form
+        p->toSSAform();
+    }
+
+#if 0
+PROGMAP::iterator pp;
+std::list<PBB> workList;            // List of BBs still to be processed
+// Set of the same; used for quick membership test
+std::set<PBB> workSet;
+for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+    UserProc* proc = (UserProc*)pp->second;
+    if (proc->isLib()) continue;
+    Cfg* cfg = proc->getCFG();
+    cfg->appendBBs(workList, workSet);
+}
+while (workList.size()) {
+    PBB currBB = workList.front();
+    workList.erase(workList.begin());
+    std::list<RTL*>* rtls = currBB->getRTLs();
+    for (std::list<RTL*>::iterator rit = rtls->begin();
+      rit != rtls->end(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator ee = rtl->getList().begin();
+          ee != rtl->getList().end(); ee++)
+            (*ee)->check();
+    }
+}
+std::cerr << "Checked!\n";
+#endif
+
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+      it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+
+        // decoded userproc.. decompile it
         p->decompile();
     }
 }
@@ -627,5 +687,110 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
     }
     return NULL;
 #endif
+}
+
+void updateWorkList(PBB currBB, std::list<PBB>&workList,
+  std::set<PBB>& workSet) {
+    // Insert outedges of currBB into the worklist, unless already there
+    std::vector<PBB>& outs = currBB->getOutEdges();
+    int n = outs.size();
+    for (int i=0; i < n; i++) {
+        PBB currOut = outs[i];
+        if (workSet.find(currOut) != workSet.end()) {
+            workList.push_front(currOut);
+            workSet.insert(currOut);
+        }
+    }
+}
+
+// Calculate global dataflow. The whole program is treated as one large
+// dataflow problem
+// This is done only once (as a global dataflow problem); dataflow may be
+// recalculated repeatedly one proc at a time as substitutions are made
+// This is fine, since the global dataflow has one main objective: set up
+// the sets of locations used by a procedure (parameters), and the locations
+// that it defines (possible return locations).
+void Prog::forwardGlobalDataflow() {
+    PROGMAP::iterator pp;
+    std::list<PBB> workList;            // List of BBs still to be processed
+    // Set of the same; used for quick membership test
+    std::set<PBB> workSet; 
+    // Sort the BBs into approximatly preorder
+    // Note: the ideal order differs for phase 1 and 2
+    // This order should be ideal for phase 2, and so-so for phase 1
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->establishDFTOrder();
+        cfg->sortByFirstDFT();
+        // Insert all BBs into the worklist and workset. For many programs,
+        // it would be enough to insert the first BB of main, but some may
+        // have BBs that don't have explicit in-edges
+        cfg->appendBBs(workList, workSet);
+    }
+
+    // Set up for phase 1
+std::cerr << "Global DFA: phase 1\n";
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->setReturnInterprocEdges();
+        // Clear the dataflow info for this proc's cfg
+        cfg->clearDataflow();
+    }
+    bool change;
+int iter=0;
+    while (workList.size()) {
+        PBB currBB = workList.front();
+        workList.erase(workList.begin());
+        workSet.erase(currBB);
+        StatementSet out;
+        change  = currBB->calcReaches(1);   // Reaching definitions
+        change |= currBB->calcAvailable(1); // Available definitions
+        if (change) updateWorkList(currBB, workList, workSet);
+//std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
+    };
+
+    // Phase 2
+std::cerr << "Global DFA: phase 2\n";
+    workSet.clear();            // Should be clear already
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        // Clear the dataflow info for this proc's cfg
+        proc->getCFG()->clearDataflow();
+        // Clear the return interprocedural edges
+        cfg->clearReturnInterprocEdges();
+        // Set the call interprocedural edges
+        cfg->setCallInterprocEdges();
+        cfg->appendBBs(workList, workSet);
+    }
+iter=0;
+    while (workList.size()) {
+        PBB currBB = workList.front();
+        workList.erase(workList.begin());
+        workSet.erase(currBB);
+        change = currBB->calcReaches(2);   // Reaching definitions
+        // Don't need available definitions in phase 2
+        if (change) updateWorkList(currBB, workList, workSet);
+//std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
+    };
+
+    // For now, stay in phase 2. Going to "standard" ("phase 0") dataflow
+    // won't work (I think). MVE
+#if 0
+std::cerr << "Global DFA: phase 0\n";
+    interProcDFAphase = 0;
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->clearCallInterprocEdges();
+    }
+#endif
+
 }
 

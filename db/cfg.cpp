@@ -686,7 +686,8 @@ void Cfg::sortByFirstDFT()
     m_listBB.sort(BasicBlock::lessFirstDFT);
 #else
     updateVectorBB();
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
         m_vectorBB[(*it)->m_DFTfirst-1] = *it;
     m_listBB.clear();
     for (int i = 0; i < m_vectorBB.size(); i++)
@@ -975,7 +976,7 @@ bool Cfg::compressCfg()
                 HLJcond *prior = dynamic_cast<HLJcond*>(bb->m_pRtls->back());
                 assert(jcond && prior);
                 StatementSet reach;
-                jcond->getReachIn(reach);       // What is this?
+                jcond->getReachIn(reach, 0);       // What is this?
                 bool allReach = true;
                 StmtSetIter sit;
                 StatementSet& priorUses = prior->getUses();
@@ -1404,56 +1405,44 @@ void Cfg::computePostDominators() {
 }
 #endif
 
-/*==============================================================================
- * FUNCTION:        Cfg::computeDataflow
- * OVERVIEW:        Computes the reaches/use information for every bb.
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>
- *============================================================================*/
-void Cfg::computeReaches() {
+void Cfg::clearDataflow() {
     for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++)
+      it != m_listBB.end(); it++) {
         (*it)->reachOut.clear();
-    bool change = true;
-    while(change) {
-        change = false;
-        for (std::list<PBB>::iterator it = m_listBB.begin(); 
-          it != m_listBB.end(); it++) {
-            StatementSet out;
-            (*it)->calcReachOut(out);
-            if (!(out == (*it)->reachOut)) {
-                (*it)->reachOut = out;          // Copy the set
-                change = true;
-            }
-        }
+        (*it)->availOut.clear();
     }
 }
 
-void Cfg::computeAvailable() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++)
-        (*it)->availOut.clear();
-    bool change = true;
-    while(change) {
+void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
+    // Append my list of BBs to the worklist
+    worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
+    // Do the same for the workset
+    std::list<PBB>::iterator it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++)
+        workset.insert(*it);
+}
+
+bool Cfg::computeAvailable(int phase) {
+    bool change, anychange = false;
+    do {
         change = false;
         for (std::list<PBB>::iterator it = m_listBB.begin(); 
           it != m_listBB.end(); it++) {
             StatementSet out;
-            (*it)->calcAvailOut(out);
+            (*it)->calcAvailOut(out, phase);
             if (!(out == (*it)->availOut)) {
                 (*it)->availOut = out;      // Copy the set
-                change = true;
+                change = anychange = true;
             }
         }
-    }
+    } while (change);
+    return anychange;
 }
 
+#if 0           // Probably don't need this now
 void Cfg::computeLiveness() {
-    for (std::list<PBB>::iterator it = m_listBB.begin(); 
-      it != m_listBB.end(); it++)
-        (*it)->liveIn.clear();
-    bool change = true;
-    while(change) {
+    bool change;
+    do {
         change = false;
         for (std::list<PBB>::iterator it = m_listBB.begin(); 
           it != m_listBB.end(); it++) {
@@ -1464,20 +1453,43 @@ void Cfg::computeLiveness() {
                 change = true;
             }
         }
-    }
+    } while (change);
 }
+#endif
 
-void Cfg::computeDataflow() {
+#if 0       // Probably only need computeReaches now
+bool Cfg::computeDataflow() {
     computeReaches();
     computeAvailable();
     computeLiveness();
     StatementList stmts;
     myProc->getStatements(stmts);
     StmtListIter it;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->clearUses();
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-        s->calcUseLinks();
+}
+#endif
+
+void Cfg::setCallInterprocEdges() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
+        (*it)->setCallInterprocEdges();
+}
+
+void Cfg::clearCallInterprocEdges() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
+        (*it)->clearCallInterprocEdges();
+}
+
+void Cfg::setReturnInterprocEdges() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
+        (*it)->setReturnInterprocEdges();
+}
+
+void Cfg::clearReturnInterprocEdges() {
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
+        (*it)->clearReturnInterprocEdges();
 }
 
 /*==============================================================================
@@ -1550,8 +1562,7 @@ void Cfg::addNewOutEdge(PBB pFromBB, PBB pNewOutEdge)
 }
 
 // serialize the CFG
-bool Cfg::serialize(std::ostream &ouf, int &len)
-{
+bool Cfg::serialize(std::ostream &ouf, int &len) {
     std::streampos st = ouf.tellp();
 
     saveFID(ouf, FID_CFG_WELLFORMED);
@@ -1559,7 +1570,8 @@ bool Cfg::serialize(std::ostream &ouf, int &len)
 
     // save BBs
     int n = 0;
-    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++)
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++)
         (*it)->m_nindex = n++;
     for (
 #ifndef WIN32
@@ -2250,112 +2262,9 @@ void Cfg::generateDotFile(const char *str)
     of.close();
 }
 
-//
-// SSA code
-//
-
-#if SSA
-bool Cfg::getSSADefs(LocationSet &defs) {
-	bool ssa = true;
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) 
-		ssa &= (*it)->getSSADefs(defs);
-	return ssa;
+void Cfg::toSSAform() {
+    BB_IT it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        (*it)->toSSAform();
+    }
 }
-
-void Cfg::getAllUses(Exp *def, LocationSet &uses) {
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
-      bit++) 
-		(*bit)->getUsesOf(uses, def);
-}
-
-void Cfg::getAllUses(LocationSet &uses) {
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
-      bit++) 
-		(*bit)->getUses(uses);
-}
-
-void Cfg::propagateForward(Exp *e) {
-	LocationSet defs;
-	assert(getSSADefs(defs));
-
-	Location d;
-	assert(defs.find(*e, d));
-
-	if (d.getRight()->isPhi())
-		return;
-
-	if (isUsedInPhi(e))
-		return;	
-
-	LocationSet u;
-	getAllUses(e, u);
-
-	for (LocationSet::iterator it = u.begin(); it != u.end(); it++) {
-		assert(*(*it).getExp() == *e);
-		Exp* &use = (*it).getExp();
-		delete use;
-		use = d.getRight()->clone();
-	}
-
-	// important to remove it so the subscripting will be maintained
-	d.remove();
-
-	simplify();
-
-	//SSACounts counts;
-	//unTraverse();
-	//getEntryBB()->SSAsubscript(counts);
-}
-
-bool Cfg::isUsedInPhi(Exp *e) {
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) 
-		if ((*it)->isUsedInPhi(e)) return true;
-	return false;
-}
-
-
-void Cfg::SSATransform(LocationSet &defs) {
-	if (getSSADefs(defs))
-		return;
-
-	// make a unique set of definitions
-	std::set<Exp*> udefs;
-	for (LocationSet::iterator it = defs.begin(); it != defs.end(); it++) {
-		Exp *def = (*it).getLeft();
-		bool found = false;
-		for (std::set<Exp*>::iterator sit = udefs.begin(); sit != udefs.end();
-          sit++)
-			if (*(*sit) == *def) {
-				found = true;
-				break;
-			}
-		if (!found)
-			udefs.insert(def);
-	}
-
-	for (std::list<PBB>::iterator bit = m_listBB.begin(); bit != m_listBB.end();
-      bit++) 
-		(*bit)->SSAaddPhiFunctions(udefs);
-
-	SSACounts counts;
-	counts.clearMaxes();
-	unTraverse();
-	getEntryBB()->SSAsubscript(counts);
-}
-
-void Cfg::revSSATransform() {
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) 
-		(*it)->revSSATransform();	
-}
-
-bool Cfg::minimiseSSAForm() {
-	bool change = true;
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
-      it++) 
-		change &= (*it)->minimiseSSAForm();
-	return change;
-}
-#endif

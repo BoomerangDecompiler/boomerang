@@ -19,6 +19,7 @@
  * $Revision$
  * 20 Jun 02 - Trent: Quick and dirty implementation for debugging
  * 28 Jun 02 - Trent: Starting to look better
+ * 22 May 03 - Mike: delete -> free() to keep valgrind happy
  */
 
 #include <assert.h>
@@ -566,7 +567,7 @@ void CHLLCode::AddLabel(int indLevel, int ord)
 {
     char s[1024];
     sprintf(s, "L%d:", ord);
-    lines.push_back(strdup(s));
+    lines.push_back(strdup(s));     // See below
 }
 
 void CHLLCode::RemoveLabel(int ord)
@@ -576,7 +577,7 @@ void CHLLCode::RemoveLabel(int ord)
     for (std::list<char*>::iterator it = lines.begin();
          it != lines.end(); it++)
         if (!strcmp(*it, s)) {
-            delete *it;
+            free (*it);             // Note: allocated in strdup (above)
             lines.erase(it);
             break;
         }

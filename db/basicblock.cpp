@@ -69,7 +69,8 @@ BasicBlock::BasicBlock()
         m_iNumInEdges(0),
         m_iNumOutEdges(0),
         m_iTraversed(false),
-    m_returnVal(NULL),
+        m_returnVal(NULL),
+        returnBlock(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
 traversed(UNTRAVERSED), hllLabel(false),
@@ -129,6 +130,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
         m_iNumOutEdges(bb.m_iNumOutEdges),
         m_iTraversed(false),
         m_returnVal(bb.m_returnVal),
+        returnBlock(bb.returnBlock),
 // From Doug's code
 ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), 
 numForwardInEdges(bb.numForwardInEdges), traversed(bb.traversed), 
@@ -163,7 +165,8 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
         m_iNumInEdges(0),
         m_iNumOutEdges(iNumOutEdges),
         m_iTraversed(false),
-    m_returnVal(NULL),
+        m_returnVal(NULL),
+        returnBlock(NULL),
 // From Doug's code
 ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
 traversed(UNTRAVERSED), hllLabel(false),
@@ -184,7 +187,7 @@ usType(Structured)
 /*==============================================================================
  * FUNCTION:        BasicBlock::storeUseDefineStruct
  * OVERVIEW:        Stores the type info of every register in this BB. This is 
- *          done by inserting the used/defined places for each register
+ *                  done by inserting the used/defined places for each register
  * PARAMETERS:      BBBlock 
  * RETURNS:         <nothing>
  *============================================================================*/
@@ -409,7 +412,8 @@ static char debug_buffer[1000];
 char* BasicBlock::prints() {   
     std::ostringstream ost; 
     print(ost);       
-    // Static buffer may overflow; that's OK, we just print the first 999 bytes
+    // Static buffer may overflow; that's OK, we just copy and print the first
+    // 999 bytes
     strncpy(debug_buffer, ost.str().c_str(), 999);
     debug_buffer[999] = '\0';
     return debug_buffer; 
@@ -442,12 +446,12 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
     if (withDF) {
         os << " reach in: ";
         StatementSet reachin;
-        getReachIn(reachin);
+        getReachIn(reachin, 2);
         StmtSetIter it;
         Statement* s = reachin.getFirst(it);
         while (s) {
             s->printAsUse(os);
-            os << ", ";
+            os << " ";
             s = reachin.getNext(it);
         }
     }
@@ -467,46 +471,6 @@ void BasicBlock::print(std::ostream& os, bool withDF) {
         }
         os << std::endl;
     }
-}
-
-// These are now the only two user level functions that are in the
-// BasicBlock class. Perhaps these will be moved to the Cfg class
-// for uniformity, or there will be other reasons - MVE
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::addInterProcOutEdge
- * OVERVIEW:        Adds an interprocedural out-edge to the basic block pBB that
- *                  represents this address.  The local inter-procedural boolean
- *                  is updated as well.  The mapping between addresses and basic
- *                  blocks is done when the  graph is well-formed.
- *                  NOTE: this code was changed to only decrease the # of out
- *                  edges by one so to avoid interprocedural links that are not
- *                  supported by the well-form graph routine.  We need to think
- *                  how to support this in a nice way, so for the moment,
- *                  decrease out-edges works ok.
- * PARAMETERS:      addr -
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::addInterProcOutEdge(ADDRESS addr) {
-//  m_OutEdges.push_back((PBB)addr);
-//  m_OutEdgeInterProc[m_OutEdges.size()-1] = true;
-    m_iNumOutEdges--;
-}
-
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::addProcOutEdge 
- * OVERVIEW:        This function was proposed but never completed
- * PARAMETERS:      uAddr -
- * RETURNS:         <nothing>
- *============================================================================*/
-bool BasicBlock::addProcOutEdge (ADDRESS uAddr) {
-    // This is a bit problematic. I tried writing one at one stage,
-    // and ended up with circular dependencies... Perhaps we don't
-    // need this function; you can just use getProcAddr() to find
-    // the destintion of the call
-    std::cerr << "AddProcOutEdge not implemented yet\n";
-    return true;
 }
 
 /*==============================================================================
@@ -728,15 +692,15 @@ unsigned BasicBlock::DFTOrder(int& first, int& last) {
 }
 
 /*==============================================================================
- * FUNCTION:        BasicBlock::DFTOrder
- * OVERVIEW:        Traverse this node and recurse on its parents in a reverse 
- *          depth first manner. Records the times at which this node was 
- *          first visited and last visited
- * PARAMETERS:      first - the number of nodes that have been visited
- *                  last - the number of nodes that have been visited for the
- *                    last time during this traversal
- * RETURNS:         the number of nodes (including this one) that were traversed
- *                  from this node
+ * FUNCTION:      BasicBlock::RevDFTOrder
+ * OVERVIEW:      Traverse this node and recurse on its parents in a reverse 
+ *                  depth first manner. Records the times at which this node was 
+ *                  first visited and last visited
+ * PARAMETERS:    first - the number of nodes that have been visited
+ *                last - the number of nodes that have been visited for the
+ *                  last time during this traversal
+ * RETURNS:       the number of nodes (including this one) that were traversed
+ *                from this node
  *============================================================================*/
 unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
     first++;
@@ -1047,7 +1011,7 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 {
     // is this a goto to the ret block?
     if (dest->getType() == RET) { // WAS: check about size of ret bb
-	hll->AddReturnStatement(indLevel, dest->getReturnVal());
+        hll->AddReturnStatement(indLevel, dest->getReturnVal());
     } else { 
         if (loopHead && (loopHead == dest || loopHead->loopFollow == dest)) {
             if (loopHead == dest)
@@ -1117,13 +1081,13 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             WriteBB(hll, indLevel);
             return;
         } else {
-	    // unset its traversed flag
-	    traversed = UNTRAVERSED;
+            // unset its traversed flag
+            traversed = UNTRAVERSED;
 
-	    emitGotoAndLabel(hll, indLevel, this);
-	    return;
+            emitGotoAndLabel(hll, indLevel, this);
+            return;
         }
-	
+        
     switch(sType) {
         case Loop:
         case LoopCond:
@@ -1145,8 +1109,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 }
                 hll->AddPretestedLoopHeader(indLevel, cond);
 
-		// write the code for the body of the loop
-		PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? 
+                // write the code for the body of the loop
+                PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? 
                                 m_OutEdges[BTHEN] : m_OutEdges[BELSE];
                 loopBody->generateCode(hll, indLevel + 1, latchNode, 
                     followSet, gotoSet);
@@ -1198,7 +1162,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                         latchNode->traversed = DFS_CODEGEN;
                         latchNode->WriteBB(hll, indLevel+1);
                     }
-			
+                        
                     hll->AddPosttestedLoopEnd(indLevel, getCond());
                 } else {
                     assert(lType == Endless);
@@ -1252,18 +1216,18 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
                 if (usType == Structured)
                     followSet.push_back(condFollow);
-	
+        
                 // Otherwise, for a jump into/outof a loop body, the follow is 
                 // added to the goto set.  The temporary follow is set for any 
                 // unstructured conditional header branch that is within the 
                 // same loop and case.
-		else {
-		    if (usType == JumpInOutLoop) {
-		        // define the loop header to be compared against
-			PBB myLoopHead = (sType == LoopCond ? this : loopHead);
+                else {
+                    if (usType == JumpInOutLoop) {
+                        // define the loop header to be compared against
+                            PBB myLoopHead = (sType == LoopCond ? this : loopHead);
                         gotoSet.push_back(condFollow);
                         gotoTotal++;
-	
+        
                         // also add the current latch node, and the loop header
                         // of the follow if they exist
                         if (latch) {
@@ -1318,7 +1282,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 if (succ->traversed == DFS_CODEGEN || 
                     (loopHead && succ == loopHead->loopFollow))
                     emitGotoAndLabel(hll, indLevel + 1, succ);
-                else	
+                else        
                     succ->generateCode(hll, indLevel + 1, latch, followSet, 
                                     gotoSet);
 
@@ -1339,7 +1303,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 
                     // generate the closing bracket
                     hll->AddIfElseCondEnd(indLevel);
-               	} else {
+                       } else {
                     // generate the closing bracket
                     hll->AddIfCondEnd(indLevel);
                 }
@@ -1382,7 +1346,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                 // original follow
                 if (!tmpCondFollow)
                     tmpCondFollow = condFollow;
-			
+                        
                 if (tmpCondFollow->traversed == DFS_CODEGEN)
                     emitGotoAndLabel(hll, indLevel, tmpCondFollow);
                 else
@@ -1390,8 +1354,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
                         followSet, gotoSet);
             }
             break;
-	} 
-	case Seq:
+        } 
+        case Seq:
             // generate code for the body of this block
             WriteBB(hll, indLevel);
 
@@ -1418,21 +1382,22 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
             PBB child = m_OutEdges[0];
             if (child->traversed == DFS_CODEGEN || 
                 ((child->loopHead != loopHead) && 
-		 (!child->allParentsGenerated() || 
+                 (!child->allParentsGenerated() || 
                   isIn(followSet, child))) ||
-	        (latch && latch->loopHead->loopFollow == child) ||
-		!(caseHead == child->caseHead || 
+                (latch && latch->loopHead->loopFollow == child) ||
+                !(caseHead == child->caseHead || 
                   (caseHead && child == caseHead->condFollow)))
                 emitGotoAndLabel(hll, indLevel, m_OutEdges[0]);
             else
                 m_OutEdges[0]->generateCode(hll, indLevel, latch,
                      followSet, gotoSet);
-	    break;
+            break;
     }
 }
 
-void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin) {
-    getReachIn(reachin);
+void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin,
+  int phase) {
+    getReachIn(reachin, phase);
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
@@ -1469,8 +1434,9 @@ void BasicBlock::getReachInAt(Statement *stmt, StatementSet &reachin) {
     }
 }
 
-void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin) {
-    getAvailIn(availin);
+void BasicBlock::getAvailInAt(Statement *stmt, StatementSet &availin,
+  int phase) {
+    getAvailIn(availin, phase);
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
       rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
@@ -1539,16 +1505,16 @@ void BasicBlock::getLiveOutAt(Statement *stmt, LocationSet &liveout) {
     }
 }
 
-void BasicBlock::calcReachOut(StatementSet &reach) {
+void BasicBlock::calcReachOut(StatementSet &reach, int phase) {
     /* hopefully we can be sure that NULL is not a valid assignment,
        so this will calculate the reach set after every statement */
-    getReachInAt(NULL, reach);
+    getReachInAt(NULL, reach, phase);
 }
 
-void BasicBlock::calcAvailOut(StatementSet &avail) {
+void BasicBlock::calcAvailOut(StatementSet &avail, int phase) {
     /* hopefully we can be sure that NULL is not a valid assignment,
        so this will calculate the available definitions after every statement */
-    getAvailInAt(NULL, avail);
+    getAvailInAt(NULL, avail, phase);
 }
 
 void BasicBlock::calcLiveIn(LocationSet &live) {
@@ -1557,46 +1523,267 @@ void BasicBlock::calcLiveIn(LocationSet &live) {
     getLiveOutAt(NULL, live);
 }
 
-// Definitions that reach the start of this BB are the union of the definitions
-// that reach its predecessors
-void BasicBlock::getReachIn(StatementSet &reachin) {
-    reachin.clear();
-    for (unsigned i = 0; i < m_InEdges.size(); i++) {
-        StatementSet &in = m_InEdges[i]->reachOut;
-        reachin.make_union(in);
+// Check if this is a post-call BB (a return block in [SW93] terms)
+bool BasicBlock::isPostCall() {
+    // Check in edges for a call. Could be other in-edges
+    for (int i=0; i<m_iNumInEdges; i++) {
+        if (m_InEdges[i]->m_nodeType == CALL)
+            return true;
+    }
+    return false;
+}
+
+/*==============================================================================
+ * FUNCTION:        BasicBlock::computeReaches
+ * OVERVIEW:        Computes the reaching definitions for this BB
+ * PARAMETERS:      phase: 1=phase 1, 2=phase 2
+ * RETURNS:         <nothing>
+ *============================================================================*/
+bool BasicBlock::calcReaches(int phase) {
+    bool change = false;
+    StatementSet out;
+    calcReachOut(out, phase);
+    if (!(out == reachOut)) {
+        reachOut = out;          // Copy the set
+        change = true;
+    }
+    return change;
+}
+
+/*==============================================================================
+ * FUNCTION:        BasicBlock::calcAvailable
+ * OVERVIEW:        Computes the available definitions for this BB
+ * PARAMETERS:      phase: 1=phase 1, 2=phase 2
+ * RETURNS:         <nothing>
+ *============================================================================*/
+bool BasicBlock::calcAvailable(int phase) {
+    bool change = false;
+    StatementSet out;
+    calcAvailOut(out, phase);
+    if (!(out == availOut)) {
+        availOut = out;          // Copy the set
+        change = true;
+    }
+    return change;
+}
+
+// Definitions that reach the start of this BB are usually the union of the
+// definitions that reach its predecessors
+// There is an exception for post-call blocks (BBs after call blocks, called
+// return blocks in the literature)
+void BasicBlock::getReachIn(StatementSet &reachin, int phase) {
+    if (isPostCall() && (phase != 0)) {
+        if (phase == 1) {
+            // REACHIN[return] = REACHOUT[exit] U
+            //   REACHOUT[call] - AVAILOUT[exit]
+            // Note we have to union all reaching defs from return edges
+            // (in-edges from exit blocks), since there could be more than
+            // one call edge flowing into this post-call BB (e.g. some branch
+            // BBs have been optimised away)
+            // Can't union everything and take away all available definitions
+            // from return nodes, because one callee may kill a def that others
+            // don't; in that case, the def still reaches the post-call BB
+            reachin.clear();
+            // For each call in-edge, add its reach set, less its particular
+            // callee's available set. For others, just add its reach out set.
+            for (unsigned i = 0; i < m_InEdges.size(); i++) {
+                PBB inEdge = m_InEdges[i];
+                if (inEdge->m_nodeType == CALL) {
+                    Proc* dest = inEdge->getDestProc();
+                        // MVE: check that return locations are handled
+                    if (dest->isLib()) {
+                        // Just union them in, as per any regular in-edge
+                        reachin.makeUnion(inEdge->reachOut);
+                    } else {
+                        StatementSet temp(inEdge->reachOut);
+                        PBB exitBlock =
+                          ((UserProc*)dest)->getCFG()->getExitBB();
+                        temp.makeDiff(exitBlock->availOut);
+                        reachin.makeUnion(temp);
+                    }
+                } else
+                    // Just union it in: either from a return edge, or from
+                    // an intra-procedural jump, flow-through (etc) edge
+                    reachin.makeUnion(inEdge->reachOut);
+            }
+        } else {
+            // Phase 2
+            // REACHIN[return] = PREACH[P] U REACHOUT[call] - PAVAIL[P]
+            reachin.clear();
+            for (unsigned i = 0; i < m_InEdges.size(); i++) {
+                PBB inEdge = m_InEdges[i];
+                if (inEdge->m_nodeType == CALL) {
+                    Proc* dest = inEdge->getDestProc();
+                    if (dest->isLib()) {
+                        // Just union it in, like an ordinary in-edge
+                        reachin.makeUnion(inEdge->reachOut);
+                    } else {
+                        StatementSet temp(inEdge->reachOut);
+                        Cfg* cfgDest = ((UserProc*)dest)->getCFG();
+                        temp.makeDiff(*cfgDest->getAvailExit());
+                        temp.makeUnion(*cfgDest->getReachExit());
+                        reachin.makeUnion(temp);
+                    }
+                } else
+                    // Just union it in: has to be an intra-procedural jump,
+                    // flow-through (etc) edge
+                    reachin.makeUnion(inEdge->reachOut);
+            }
+        }
+    } else {
+        // Standard situation: find the union of predecessors
+        reachin.clear();
+        for (unsigned i = 0; i < m_InEdges.size(); i++) {
+            StatementSet &in = m_InEdges[i]->reachOut;
+            reachin.makeUnion(in);
+        }
     }
 }
 
-// Definitions that are available at the start of this BB are the intersection
-// of the definitions that are available at its predecessors
-void BasicBlock::getAvailIn(StatementSet &availin) {
-    if (m_InEdges.size() == 0) {
-        availin.clear();
-        return;
-    }
-    // Make equal to first, then intersect with the rest
-    // Have to to it this way, since we can't represent the universal set
-    availin = m_InEdges[0]->availOut;
-    for (unsigned i = 1; i < m_InEdges.size(); i++) {
-        StatementSet &in = m_InEdges[i]->availOut;
-        availin.make_isect(in);
+void BasicBlock::doAvail(StatementSet& availSet, PBB inEdge) {
+    if (inEdge->m_nodeType == CALL) {
+        Proc* dest = inEdge->getDestProc();
+        if (dest->isLib()) {
+            // Treat lib calls like any ordinary in-edge
+            availSet = inEdge->availOut;
+            return;
+        }
+        // AVAILOUT[call]
+        availSet = inEdge->availOut;
+        PBB exitBlock = ((UserProc*)dest)->getCFG()->getExitBB();
+        // - REACHOUT[exit]
+        availSet.makeDiff(exitBlock->reachOut);
+        // U AVAILOUT[exit]
+        availSet.makeUnion(exitBlock->availOut);
+    } else if (inEdge->m_nodeType != RET) {
+        // Non call in-edge; just copy the available set to intersect with the
+        // rest, except for return edges. These are considered with the special
+        // case for CALL basic blocks, above.
+        availSet = inEdge->availOut;
     }
 }
 
-// Vartiables that are live at the end of this BB are the union of the
+// Definitions that are available at the start of this BB are usually the
+// intersection of the definitions that are available at its predecessors
+// There is an exception for post-call blocks (BBs after call blocks, called
+// return blocks in the literature)
+void BasicBlock::getAvailIn(StatementSet &availin, int phase) {
+    if (isPostCall() && (phase != 0)) {
+        // Phase 1: AVAILIN[return] = AVAILOUT[exit] U
+        //    AVAILOUT[call] - REACHOUT[exit]
+        availin.clear();            // in case there is only a libproc, say
+        doAvail(availin, m_InEdges[0]);
+        for (unsigned i = 1; i < m_InEdges.size(); i++) {
+            StatementSet temp;
+            doAvail(temp, m_InEdges[i]);
+            availin.makeIsect(temp);
+        }
+    } else {
+        // Standard situation: find the intersection of alailable defs of
+        // in-edges
+        if (m_InEdges.size() == 0) {
+            availin.clear();
+            return;
+        }
+        // Make equal to first, then intersect with the rest
+        // Have to to it this way, since we can't represent the universal set
+        availin = m_InEdges[0]->availOut;
+        for (unsigned i = 1; i < m_InEdges.size(); i++) {
+            StatementSet &in = m_InEdges[i]->availOut;
+            availin.makeIsect(in);
+        }
+    }
+}
+
+// Variables that are live at the end of this BB are the union of the
 // variables that are live at the start of its successors
 void BasicBlock::getLiveOut(LocationSet &liveout) {
     liveout.clear();
     for (unsigned i = 0; i < m_OutEdges.size(); i++) {
         LocationSet &out = m_OutEdges[i]->liveIn;
-        liveout.make_union(out);
+        liveout.makeUnion(out);
     }
 }
 
+// Get the destination proc
+// Note: this must be a call BB!
+Proc* BasicBlock::getDestProc() {
+    // The last RTL should be a HLCall
+    HLCall* call = (HLCall*)m_pRtls->back();
+    assert(call->getKind() == CALL_RTL);
+    Proc* proc = call->getDestProc();
+    if (proc == NULL) {
+        std::cerr << "Indirect calls not handled yet\n";
+        assert(0);
+    }
+    return proc;
+}
 
+/*
+ * Set the interprocedural outedge to the callee entry BB
+ */
+void BasicBlock::setCallInterprocEdges() {
+    if (m_nodeType != CALL) return;
+    Proc* proc = getDestProc();
+    if (proc->isLib()) return;      // Leave it alone
+    m_iNumOutEdges = 2;
+    PBB entry = ((UserProc*)proc)->getCFG()->getEntryBB();
+    m_OutEdges[1] = entry;
+    entry->m_iNumInEdges++;
+    entry->m_InEdges.push_back(this);
+}
 
-void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order)
-{
+// Kill the interprocedural outedges from call BBs
+void BasicBlock::clearCallInterprocEdges() {
+    if (m_nodeType != CALL) return;
+    Proc* proc = getDestProc();
+    if (proc->isLib()) return;  // Just ignore it
+    m_iNumOutEdges = 1;
+    m_OutEdges.resize(1);
+    PBB entry = ((UserProc*)proc)->getCFG()->getEntryBB();
+    entry->m_iNumInEdges = 0;
+    entry->m_InEdges.clear();       // Could get called several times
+}
+
+/*
+ * Set the interprocedural outedge from the callee exit to the post-call block
+ */
+void BasicBlock::setReturnInterprocEdges() {
+    if (m_nodeType != CALL) return;
+    Proc* proc = getDestProc();
+    if (proc->isLib()) return;      // Leave it alone
+    PBB exitBB = ((UserProc*)proc)->getCFG()->getExitBB();
+    exitBB->m_iNumOutEdges = 1;
+    exitBB->m_OutEdges.resize(1);
+    PBB postCall = m_OutEdges[0];
+    exitBB->m_OutEdges[0] = postCall;
+    postCall->m_iNumInEdges++;
+    postCall->m_InEdges.push_back(exitBB);
+}
+
+// Kill the interprocedural outedges from exit BBs to post-call BBs
+void BasicBlock::clearReturnInterprocEdges() {
+    if (m_nodeType != CALL) return;
+    Proc* proc = getDestProc();
+    if (proc->isLib()) return;  // Just ignore it
+    PBB exitBB = ((UserProc*)proc)->getCFG()->getExitBB();
+    m_iNumOutEdges = 1;
+    m_OutEdges.resize(1);
+    exitBB->m_iNumOutEdges = 0;
+    exitBB->m_OutEdges.clear();       // Could get called several times
+    PBB postCall = m_OutEdges[0];
+    std::vector<PBB>::iterator it;
+    for (it = postCall->m_InEdges.begin(); it != postCall->m_InEdges.end();
+      it++) {
+        if (*it == exitBB) {
+            postCall->m_InEdges.erase(it);
+            break;
+        }
+    }
+    postCall->m_iNumInEdges--;
+}
+
+void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order) {
     // timestamp the current node with the current time and set its traversed 
     // flag
     traversed = DFS_LNUM;
@@ -1645,11 +1832,11 @@ void BasicBlock::setRevOrder(std::vector<PBB> &order)
     // Set this node as having been traversed during the post domimator 
     // DFS ordering traversal
     traversed = DFS_PDOM;
-	
+        
     // recurse on unvisited children 
     for (unsigned int i = 0; i < m_InEdges.size(); i++)
-	if (m_InEdges[i]->traversed != DFS_PDOM)
-	    m_InEdges[i]->setRevOrder(order);
+        if (m_InEdges[i]->traversed != DFS_PDOM)
+            m_InEdges[i]->setRevOrder(order);
 
     // add this node to the ordering structure and record the post dom. order
     // of this node as its index within this ordering structure
@@ -1749,7 +1936,7 @@ bool BasicBlock::inLoop(PBB header, PBB latch)
    assert(header == latch || 
           ((header->loopStamps[0] > latch->loopStamps[0] && 
             latch->loopStamps[1] > header->loopStamps[1]) ||
-	  (header->loopStamps[0] < latch->loopStamps[0] && 
+          (header->loopStamps[0] < latch->loopStamps[0] && 
            latch->loopStamps[1] < header->loopStamps[1])));
    // this node is in the loop if it is the latch node OR
    // this node is within the header and the latch is within this when using 
@@ -1767,3 +1954,56 @@ bool BasicBlock::inLoop(PBB header, PBB latch)
            latch->revLoopStamps[1] < revLoopStamps[1]);
 }
 
+void BasicBlock::toSSAform() {
+    // This set will be the set of reaching definitions before the current
+    // statement
+    StatementSet reachin;
+    getReachIn(reachin, 2);
+    StmtSetIter ssi;
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+      rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            Statement *s = dynamic_cast<Statement*>(*it);
+            if (s == NULL) continue;
+
+            // We have a statement, which is also an expression (usually an
+            // assignment expression)
+            // Subscript the LHS to point to self as definition
+            s->subscriptLeft(s);
+            for (Statement* rd = reachin.getFirst(ssi); rd;
+              rd = reachin.getNext(ssi)) {
+                Exp* left = rd->getLeft();
+                assert(left);           // Definitions must have a left!
+                // Update the expression (*it)'s uses info
+                (*it)->updateUses(rd, left);
+            }
+            // Update reachin to be the input for the next statement in this BB
+            s->calcReachOut(reachin);
+        }
+
+        for (Statement* rd = reachin.getFirst(ssi); rd;
+          rd = reachin.getNext(ssi)) {
+            Exp* left = rd->getLeft();
+            if (rtl->getKind() == CALL_RTL) {
+                HLCall *call = (HLCall*)rtl;
+                call->updateArgUses(rd, left);
+                call->calcReachOut(reachin);
+            }
+#if 0       // Note: we don't seem to use the "high level expression" any more
+            // It always seems to be "opFlags"
+            else if (rtl->getKind() == JCOND_RTL) {
+                // Fix up the HL expression
+                HLJcond* jc = (HLJcond*)rtl;
+                jc->setCondExpr(jc->getCondExpr()->updateUses(rd, left));
+            }
+            else if (rtl->getKind() == SCOND_RTL) {
+                // HL expression
+                HLScond* sc = (HLScond*)rtl;
+                sc->setCondExpr(sc->getCondExpr()->updateUses(rd, left));
+            }
+#endif
+        }
+    }
+}

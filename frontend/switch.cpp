@@ -441,8 +441,7 @@ bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc, BinaryFile* pBF) {
     ssJmp = pDest->clone();                 // Copy the desintation of the jump
 
 #if DEBUG_SWITCH
-    std::cout << std::hex << uJump << ":ssJmp begins with "; ssJmp->print();
-    std::cout << std::endl;
+    std::cout << std::hex << uJump << ":ssJmp begins with " << ssJmp << "\n";
 #endif
 
     // Check if the memory load is part of the jump instruction (e.g.
@@ -614,8 +613,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
 #if DEBUG_SWITCH
                     std::cout << "isSwitch @ " << std::hex <<
                       pRtl->getAddress();
-                    std::cout << ": ssBound now "; ssBound->print();
-                    std::cout << std::endl;
+                    std::cout << ": ssBound now " << ssBound << "\n";
 #endif
 
                     continue;
@@ -657,8 +655,8 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
 
 #if DEBUG_SWITCH
                 std::cout << "isSwitch @ " << std::hex <<
-                  (*itCurRtl)->getAddress() << ": ssBound now ";
-                ssBound->print(); std::cout << std::endl;
+                  (*itCurRtl)->getAddress() << ": ssBound now " <<
+                  ssBound << std::endl;
 #endif
 
                 // Force a check. There may be no instructions after
@@ -681,8 +679,8 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
             if (ssBound->getOper() == opNot) {
                 ssBound = ssBound->getSubExp1();
 #if DEBUG_SWITCH
-                std::cout << "Popping opNot from ssBound: now ";
-                ssBound->print(); std::cout << std::endl;
+                std::cout << "Popping opNot from ssBound: now " << ssBound
+                  << std::endl;
 #endif
             }
         }
@@ -837,8 +835,7 @@ std::cerr << "FIXME: Supposed to OR current ssBound (" << ssBound << ") with a b
 forcedCheck:
 #if DEBUG_SWITCH
         std::cout << "ssJmp @ " << std::hex << (*itCurRtl)->getAddress() <<
-          ": ";
-        ssJmp->print(); std::cout << std::endl;
+          ": " << ssJmp << std::endl;
         if (ssBound) std::cout << "ssBound is " << ssBound << "\n";
 #endif
 
@@ -850,8 +847,7 @@ forcedCheck:
 
 #if DEBUG_SWITCH
             std::cout << "isSwitch @ " << std::hex << (*itCurRtl)->getAddress()
-              << ": ";
-            ssJmp->print(); std::cout << std::endl;
+              << ": " << ssJmp << std::endl;
 #endif
 
             // Simplify the expression, by removing all {size} and sign extend
@@ -1007,8 +1003,7 @@ forcedCheck:
 
 #if DEBUG_SWITCH
             std::cout << "Post form @ " << std::hex << (*itCurRtl)->getAddress()
-              << ": ";
-            ssJmp->print(); std::cout << std::endl;
+              << ": " << ssJmp << std::endl;
 #endif
 
             // Save the "switch variable" so we can return it in a SWITCH_INFO
@@ -1028,7 +1023,7 @@ forcedCheck:
                 bGotLower = true;
                 iLower = ((Const*)((Binary*)ssJmp)->getSubExp2())->getInt();
 #if DEBUG_SWITCH
-            std::cout << "Got lower: ssJmp "; ssJmp->print(); std::cout <<
+            std::cout << "Got lower: ssJmp " << ssJmp <<
               " -> iLower " << std::dec << iLower << std::endl;
 #endif
                 iUpper += iLower;

@@ -202,15 +202,6 @@ public:
     bool isJumpReqd();
 
     /*
-     * Adds an interprocedural out-edge to the basic block pBB that 
-     * represents this address.  The mapping between addresses and 
-     * basic blocks is done when the graph is well-formed. 
-     * Returns true if successful.
-     */
-    void addInterProcOutEdge(ADDRESS adr);
-    bool addProcOutEdge (ADDRESS addr);
-
-    /*
      * Get the address associated with the BB
      * Note that this is not always the same as getting the address
      * of the first RTL (e.g. if the first RTL is a delay instruction of
@@ -378,14 +369,6 @@ private:
      */
     void setRTLs(std::list<RTL*>* rtls);
 
-#if 0
-    /*
-     * Build the sets of locations that reach to and propagate through this
-     * basic block. Returns true if there was a change in the reach out set.
-     */
-    bool buildReachInOutSets(const BITSET* callDefines = NULL);
-#endif
-
 	// serialize the basic block
 	bool serialize(std::ostream &ouf, int &len);
 
@@ -403,7 +386,8 @@ public:
 
 /* high level structuring */
 	SBBTYPE		m_structType;   // structured type of this node
-	SBBTYPE		m_loopCondType;	// type of conditional to treat this loop header as (if any)
+	SBBTYPE		m_loopCondType;	// type of conditional to treat this loop
+                                // header as (if any)
 	PBB			m_loopHead;     // head of the most nested enclosing loop
 	PBB			m_caseHead;		// head of the most nested enclosing case
 	PBB			m_condFollow;	// follow of a conditional header
@@ -432,18 +416,24 @@ protected:
 public:
 
 	/* stuff for data flow analysis */
+
+    bool isPostCall();
+    static void doAvail(StatementSet& s, PBB inEdge);
+
     /* Reaching definitions: forward flow, any path */
-	void getReachInAt(Statement *stmt, StatementSet &reachin);
-	void getReachIn(StatementSet &reachin);
-	void calcReachOut(StatementSet &reach);
+	void getReachInAt(Statement *stmt, StatementSet &reachin, int phase);
+	void getReachIn(StatementSet &reachin, int phase);
+	void calcReachOut(StatementSet &reach, int phase);
+    bool calcReaches(int phase);
     StatementSet &getReachOut() { return reachOut; }
         
     /* As above, for available definitions. These are used for the second
      * condition allowing copy propagation
      * Forward flow, all paths */
-	void getAvailInAt(Statement *stmt, StatementSet &availin);
-	void getAvailIn(StatementSet &availin);
-	void calcAvailOut(StatementSet &avail);
+	void getAvailInAt(Statement *stmt, StatementSet &availini, int phase);
+	void getAvailIn(StatementSet &availin, int phase);
+	void calcAvailOut(StatementSet &avail, int phase);
+    bool calcAvailable(int phase);
     StatementSet &getAvailOut() { return availOut; }
 
     /* As above, for live locations. These are used for parameters and return
@@ -453,47 +443,35 @@ public:
 	void calcLiveIn(LocationSet &live);
     LocationSet &getLiveIn() { return liveIn; }
 
+    /**
+     * As above, for dead locations. These are used for killing liveness through
+     * a call. Backwards flow, all paths
+     */
+	void getDeadOutAt(Statement *stmt, LocationSet &deadout);
+	void getDeadOut(LocationSet &deadout);
+	void calcDeadIn(LocationSet &dead);
+    LocationSet &getDeadIn() { return deadIn; }
+
     /* set the return value */
     void setReturnVal(Exp *e);
     Exp *getReturnVal() { return m_returnVal; }
+
+    /**
+      * Set up for phases 1 or 2 of [SW93] (or clear them)
+      */
+    Proc* getDestProc();
+    void   setCallInterprocEdges();
+    void clearCallInterprocEdges();
+    void   setReturnInterprocEdges();
+    void clearReturnInterprocEdges();
 
 //
 //  SSA
 //
 
-    /* Get all the definitions in this BB.  Returns true if the
-     * BB is in SSA form.
+    /* Transform the CFG to SSA form.
      */
-    bool getSSADefs(LocationSet &defs);
-
-    /* Return true if this expression is used in a phi
-     */
-    bool isUsedInPhi(Exp *e);
-    /* Subscript the definitions in this BB to SSA form.
-     */
-    void SSAsubscript(SSACounts counts);
-
-    /* Set the parameters of a phi function based on current
-     * counts.
-     */
-    void SSAsetPhiParams(SSACounts &counts);
-
-    /* Add phi functions in every BB with more than one in edge for every def.
-     * takes a map of unique definitions (lhs of assigns) to subscript values.
-     */
-    void SSAaddPhiFunctions(std::set<Exp*> &defs);
-
-    /* Minimise the number of phi functions in this node.
-     * returns true if anything changed.
-     */
-    bool minimiseSSAForm();
-
-    /* Reverse the SSA transformation on this node.
-     */
-    void revSSATransform();
-    void getUsesOf(LocationSet &uses, Exp *e);
-    void getDefs(LocationSet &defs, Exp *before_use = NULL);
-
+    void toSSAform();
 
 protected:
     // This is the set of statements whose definitions reach the end of this BB
@@ -508,14 +486,17 @@ protected:
     // at the start of the BB
     LocationSet liveIn;
 
+    // This is the set of locations that are dead (defined before being used
+    // along all paths from the start of the procedure to the statement)
+    // at the start of the BB
+    LocationSet deadIn;
+
     Exp* m_returnVal;
 
-    /*
-     * This field is used to test our assumption that the
-     * substitution for a register in this BB is the same no matter
-     * which entry to this BB is taken.
-     */
-    std::map<Exp*,Exp*> regSubs;
+    // If this is a call BB, this holds a pointer to the BB that the call
+    // conventionally falls through to (in [SW93] dataflow analysis, the out
+    // edge of a call is the entry BB of the callee (in phase 1)
+    PBB returnBlock;
 
     /* Control flow analysis stuff, lifted from Doug Simon's honours thesis.
      */
@@ -577,8 +558,7 @@ protected:
     bool hasBackEdgeTo(BasicBlock *dest);
 
     // establish if this bb has any back edges leading FROM it
-    bool hasBackEdge() 
-    {
+    bool hasBackEdge() {
         for (unsigned int i = 0; i < m_OutEdges.size(); i++)
             if (hasBackEdgeTo(m_OutEdges[i])) 
                 return true;
@@ -606,7 +586,7 @@ protected:
 public:
     void generateCode(HLLCode *hll, int indLevel, PBB latch, 
                       std::list<PBB> &followSet, std::list<PBB> &gotoSet);
-};
+};  // class BasicBlock
 
     // A type for the ADDRESS to BB map
 typedef std::map<ADDRESS, PBB, std::less<ADDRESS> >   MAPBB;
@@ -808,7 +788,8 @@ public:
     bool establishDFTOrder();
 
     /*
-     * Performs establishDFTOrder on the inverse of the graph (ie, flips the graph)
+     * Performs establishDFTOrder on the inverse of the graph (ie, flips the
+     * graph)
      */
     bool establishRevDFTOrder();
 
@@ -891,10 +872,12 @@ public:
     /*
      * Compute reaches/use information
      */
-    void computeReaches();          // Compute reaching definitions
-    void computeAvailable();        // Compute available definitions
-    void computeLiveness();         // Compute live locations
-    void computeDataflow();         // Calls the above 3
+    void clearDataflow();
+    // Compute dataflow for this Cfg, return true if a change
+    //bool computeDataflow();
+    bool computeReaches(int phase);
+    bool computeAvailable(int phase);
+    //bool computeLiveness();
     void updateLiveEntryDefs();
     void clearLiveEntryDefsUsedby();
     // Summary information for this cfg
@@ -904,6 +887,11 @@ public:
         return (exitBB == NULL) ? NULL : &exitBB->availOut; }
     LocationSet *getLiveEntry() {
         return (entryBB == NULL) ? NULL : &entryBB->liveIn; }
+    void   setCallInterprocEdges();
+    void clearCallInterprocEdges();
+    void   setReturnInterprocEdges();
+    void clearReturnInterprocEdges();
+    void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
 
     /*
      * Virtual Function Call analysis
@@ -934,35 +922,9 @@ public:
 //  SSA
 //
 
-    /* Get all the definitions in this CFG.
-     * Returns true if the CFG is in SSA form.
-     */
-    bool getSSADefs(LocationSet &defs);
-
     /* Transform the CFG to SSA form.
      */
-    void SSATransform(LocationSet &defs);
-
-    /* Transform the CFG from SSA form.
-     */
-    void revSSATransform();
-
-    /* Minimise the CFG, returns true if anything changed
-     */
-    bool minimiseSSAForm();
-    /* Get all uses of a given expression
-     */
-    void getAllUses(Exp *def, LocationSet &uses);
-    void getAllUses(LocationSet &uses);
-
-    /* Propogate a given expression forward in the CFG
-     */
-    void propagateForward(Exp *e);
-
-    /* Return true if this expression is used in a phi
-     */
-    bool isUsedInPhi(Exp *e);
-
+    void toSSAform();
 
 private:
 

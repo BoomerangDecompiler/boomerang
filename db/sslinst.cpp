@@ -23,6 +23,7 @@
  * 27 Apr 02 - Mike: Mods for boomerang
  * 17 Jul 02 - Mike: readSSLFile resets internal state as well
  * 04 Feb 03 - Mike: Fixed a bug with instantiating NOP (could cause bus error?)
+ * 22 May 03 - Mike: Fixed a small memory leak (char* opcode)
  */
 
 /*==============================================================================
@@ -337,8 +338,7 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
  * PARAMETERS:       name -
  * RETURNS:          the signature (name + number of operands)
  *============================================================================*/
-std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name)
-{
+std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
     // Take the argument, convert it to upper case and remove any _'s and .'s
     char *opcode = new char[strlen(name) + 1];
     upperStr(name, opcode);
@@ -353,7 +353,10 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name)
         it = idict.find("NOP");     // At least, don't cause segfault
     } 
 
-    return std::pair<std::string,unsigned>(opcode,(it->second).params.size());
+    std::pair<std::string, unsigned> ret;
+    ret = std::pair<std::string,unsigned>(opcode,(it->second).params.size());
+    delete [] opcode;
+    return ret;
 }
 
 /*==============================================================================

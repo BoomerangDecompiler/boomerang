@@ -25,6 +25,7 @@
 
 #include <set>
 #include <list>
+#include <ostream>
 
 class Exp;
 class BasicBlock;
@@ -43,9 +44,9 @@ class StatementSet {
     std::set<Statement*> sset;          // For now, use use standard sets
 
 public:
-    void make_union(StatementSet& other);    // Set union
-    void make_diff (StatementSet& other);    // Set difference
-    void make_isect(StatementSet& other);    // Set intersection
+    void makeUnion(StatementSet& other);    // Set union
+    void makeDiff (StatementSet& other);    // Set difference
+    void makeIsect(StatementSet& other);    // Set intersection
     bool isSubSetOf(StatementSet& other);    // subset relation
 
     int size() {return sset.size();}        // Number of elements
@@ -61,7 +62,8 @@ public:
     void clear() {sset.clear();}            // Clear the set
     bool operator==(const StatementSet& o) const // Compare
         { return sset == o.sset;}
-    void print();                           // Print to std::cerr (for debug)
+    void prints();                          // Print to std::cerr (for debug)
+    void printNums(std::ostream& os);       // Print statements as numbers
 };
 
 // Ugh - we also need lists of Statements for the internal statements
@@ -85,7 +87,7 @@ public:
     StmtListIter StatementList::remove(StmtListIter it) {
         return slist.erase(it); }
     bool exists(Statement* s);  // Find; returns false if not found
-    void print();                           // Print to cerr (for debugging)
+    void prints();                          // Print to cerr (for debugging)
 };
 
 // NOTE: class LocationSet is defined in exp.h (problems with #include ordering)
@@ -96,25 +98,25 @@ public:
  */
 class Statement {
 protected:
-    PBB pbb;  // contains a pointer to the enclosing BB
+    PBB     pbb;  // contains a pointer to the enclosing BB
     UserProc *proc; // procedure containing this statement
-    // The following pointers are initially null, but if non null are
-    // considered valid
+    // The following 2 are soon to be deleted!
     StatementSet uses;          // ud chain: my uses' defs
     StatementSet usedBy;        // du chain: my def's uses
+    int     number;             // Statement number for printing
 public:
 
-    Statement() : pbb(NULL), proc(NULL) { }
+    Statement() : pbb(NULL), proc(NULL), number(0) { }
     virtual ~Statement() {
     }
 
-    void setProc(UserProc *p) { proc = p; }
+    void        setProc(UserProc *p) { proc = p; }
 
     // calculates the reaching definitions set after this statement
     virtual void calcReachOut(StatementSet &reachout);
 
     // gets the reaching definitions set before this statement
-    virtual void getReachIn(StatementSet &reachin);
+    virtual void getReachIn(StatementSet &reachin, int phase);
 
     // removes any statement from the reaching definitions set which is
     // killed by this statement
@@ -125,7 +127,7 @@ public:
 
     // get the available definitions (not reassigned on any path) before
     // this statement
-    virtual void getAvailIn(StatementSet& availin);
+    virtual void getAvailIn(StatementSet& availin, int phase);
 
     // removes any statement from the available definitions set which is
     // killed by this statement
@@ -172,6 +174,9 @@ public:
     // Adds (inserts) all locations (registers or memory) used by this statement
     virtual void addUsedLocs(LocationSet& used) = 0;
 
+    // Subscript the left hand side to "point to self"
+    virtual void subscriptLeft(Statement* self) {};
+
     // returns the statement which is used by this statement and has a
     // left like the given expression
     // MVE: is this useful?
@@ -206,13 +211,14 @@ public:
     virtual void propagateToAll();
 
     // replaces a use of the given statement with an expression
-    virtual void replaceUse(Statement *use);
+            void replaceUse(Statement *use);
 
     // statements should be printable (for debugging)
-    virtual void print(std::ostream &os) = 0;
-    virtual void printWithUses(std::ostream& os);
-    virtual void printAsUse(std::ostream &os) = 0;
-    virtual void printAsUseBy(std::ostream &os) = 0;
+    virtual void print(std::ostream &os, bool withUses = false) = 0;
+    virtual void printWithUses(std::ostream& os) {print(os, true);}
+            void printAsUse(std::ostream &os)   {os << std::dec << number;}
+            void printAsUseBy(std::ostream &os) {os << std::dec << number;}
+            void printNum(std::ostream &os)     {os << std::dec << number;}
             char* prints();      // For use in a debugger
 
     // inline / decode any constants in the statement
@@ -226,6 +232,12 @@ public:
 
     // update the type information for an expression in this statement
     virtual Type *updateType(Exp *e, Type *curType) = 0;
+
+    // get the statement number
+    int     getNumber() {return number;}
+
+    // update the statement number
+    void    setNumber(int num) {number = num;}
 
 protected:
     virtual void doReplaceUse(Statement *use) = 0;

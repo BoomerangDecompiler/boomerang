@@ -95,7 +95,7 @@ HLJump::~HLJump() {
  *                  be of the Exp form:
  *                     opIntConst dest
  * PARAMETERS:      <none>
- * RETURNS:         Fixed dest or -1 if there isn't one
+ * RETURNS:         Fixed dest or NO_ADDRESS if there isn't one
  *============================================================================*/
 ADDRESS HLJump::getFixedDest() {
     if (pDest->getOper() != opIntConst) return NO_ADDRESS;
@@ -198,9 +198,10 @@ void HLJump::print(std::ostream& os /*= cout*/, bool withDF) {
         RTL::print(os, withDF);
 
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << " ";
+    os << " " << std::setfill(' ');
+    os << "     ";                  // Where the statement number would be
     if (getKind() == RET_RTL) {
-        os << "RET\n";             // RET is a special case of a JUMP_RTL
+        os << "RET\n";              // RET is a special case of a JUMP_RTL
         return;
     }
 
@@ -560,7 +561,8 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
     if (expList.size() != 0)
         RTL::print(os, withDF);
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << " ";
+    os << " " << std::setfill(' ');
+    os << std::setw(4) << std::dec << number << " ";
     os << "JCOND ";
     if (pDest == NULL)
         os << "*no dest*";
@@ -571,8 +573,7 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
         os << "0x" << std::hex << getFixedDest();
     }
     os << ", condition ";
-    switch (jtCond)
-    {
+    switch (jtCond) {
         case HLJCOND_JE:    os << "equals"; break;
         case HLJCOND_JNE:   os << "not equals"; break;
         case HLJCOND_JSL:   os << "signed less"; break;
@@ -590,10 +591,16 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
         case HLJCOND_JPAR:  os << "parity"; break;
     }
     if (bFloat) os << " float";
+    if (withDF) {
+        os << "\tuses: ";
+        uses.printNums(os);
+    }
     os << std::endl;
+#if 0       // This is always %flags now
     if (pCond) {
         os << "High level: " << pCond << std::endl;
     }
+#endif
 }
 
 /*==============================================================================
@@ -675,6 +682,7 @@ bool HLJcond::usesExp(Exp *e) {
 }
 
 // special print functions
+#if 0
 void HLJcond::printAsUse(std::ostream &os) {
     os << "JCOND ";
     if (pCond)
@@ -690,6 +698,7 @@ void HLJcond::printAsUseBy(std::ostream &os) {
     else
         os << "<empty cond>";
 }
+#endif
 
 // process any constants in the statement
 void HLJcond::processConstants(Prog *prog) {
@@ -951,7 +960,7 @@ void HLNwayJump::simplify() {
 HLCall::HLCall(ADDRESS instNativeAddr, int returnTypeSize /*= 0*/,
   std::list<Exp*>* le /*= NULL*/): HLJump(instNativeAddr, le), 
       returnTypeSize(returnTypeSize), returnAfterCall(false), 
-      returnLoc(NULL) {
+      returnBlock(NULL), returnLoc(NULL) {
     kind = CALL_RTL;
     postCallExpList = NULL;
     procDest = NULL;
@@ -1000,6 +1009,28 @@ Type *HLCall::getArgumentType(int i) {
  *============================================================================*/
 void HLCall::setArguments(std::vector<Exp*>& arguments) {
     this->arguments = arguments;
+}
+
+/*==============================================================================
+ * FUNCTION:      HLCall::setSigArguments
+ * OVERVIEW:      Set the arguments of this call based in signature info
+ * PARAMETERS:    None
+ * RETURNS:       <nothing>
+ *============================================================================*/
+void HLCall::setSigArguments() {
+    int n = procDest->getSignature()->getNumParams();
+    arguments.resize(n);
+    for (int i = 0; i < n; i++) {
+        Exp *e = procDest->getSignature()->getArgumentExp(i);
+        assert(e);
+        arguments[i] = e->clone();
+    }
+    if (procDest->getSignature()->hasEllipsis()) {
+        // Just guess 10 parameters for now
+        //for (int i = 0; i < 10; i++)
+            arguments.push_back(procDest->getSignature()->
+                            getArgumentExp(arguments.size())->clone());
+    }
 }
 
 /*==============================================================================
@@ -1157,7 +1188,8 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
         RTL::print(os, withDF);
 
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << " ";
+    os << " " << std::setfill(' ');
+    os << std::dec << std::setw(4) << number << " ";    // Statement number
 
     // Print the return location if there is one
     if (getReturnLoc() != NULL)
@@ -1170,7 +1202,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
             os << "*no dest*";
     else {
         // But Trent hacked out the opAddrConst (opCodeAddr) stuff... Sigh.
-        // I'd like to retain the 0xHEX notation, if only to retaing the
+        // I'd like to retain the 0xHEX notation, if only to retain the
         // existing tests
         if (pDest->isIntConst())
             os << "0x" << std::hex << ((Const*)pDest)->getInt();
@@ -1185,21 +1217,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
             os << ", ";
         os << arguments[i];
     }
-    os << ")";
-    if (withDF) {
-        os << "   uses: ";
-        StmtSetIter it;
-        for (Statement* s = uses.getFirst(it); s; s = uses.getNext(it)) {
-            s->printAsUse(os);
-            os << ", ";
-        }
-        os << "   used by: ";
-        for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
-            s->printAsUseBy(os);
-            os << ", ";
-        }
-    }
-    os << std::endl;
+    os << ")\n";
 
     // Print the post call RTLs, if any
     if (postCallExpList) {
@@ -1211,6 +1229,7 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
         }
     }
     
+    // FIXME: VERY LIKELY WE DON'T WANT THIS ANY MORE
     if (withDF) {
         StatementList &internal = getInternalStatements();
         StmtListIter it;
@@ -1366,6 +1385,7 @@ void HLCall::decompile() {
         if (p != NULL)
             p->decompile();
 
+        // FIXME: Very likely don't want this now:
         // This is now "on the way back up" for this call
         if (procDest && !procDest->isLib()) {
             // Copy the live-on-entry-to-the-dest-of-this-call info
@@ -1375,6 +1395,7 @@ void HLCall::decompile() {
             liveEntry = *((UserProc*)procDest)->getCFG()->getLiveEntry();
         }
         procDest->getInternalStatements(internal);
+#if 0       // Done in HLCall::setSigArguments() now
         assert(arguments.size() == 0);
         int n = procDest->getSignature()->getNumParams();
         arguments.resize(n);
@@ -1389,6 +1410,7 @@ void HLCall::decompile() {
                 arguments.push_back(procDest->getSignature()->
                                 getArgumentExp(arguments.size())->clone());
         }
+#endif
         // init return location
         setIgnoreReturnLoc(false);
     } else {
@@ -1440,6 +1462,7 @@ return;
     }
 }
 
+#if 0
 void HLCall::printAsUse(std::ostream &os) {
     // Print the return location if there is one
     if (getReturnLoc() != NULL)
@@ -1467,14 +1490,13 @@ void HLCall::printAsUse(std::ostream &os) {
 void HLCall::printAsUseBy(std::ostream &os) {
     printAsUse(os);
 }
-
+#endif
 
 void HLCall::killReach(StatementSet &reach) {
     if (procDest == NULL) {
         // Will always be null for indirect calls
         // MVE: we may have a "candidate" callee in the future
-        // Kills everything. Not clear that this is always "conservative"
-        reach.clear();
+        // Kill nothing. For calls, underestimating kills is safe
         return;
     }
     if (procDest->isLib()) {
@@ -1492,11 +1514,8 @@ void HLCall::killReach(StatementSet &reach) {
     }
 
     // A UserProc
-    LocationSet defs;
-    getDefinitions(defs);
-    LocSetIter it;
-    for (Exp *e = defs.getFirst(it); e; e = defs.getNext(it))
-        reach.removeIfDefines(e);
+    // Don't kill anything. The interprocedural analysis handles the effects
+    // of the callee now
 }
 
 void HLCall::killAvail(StatementSet &avail) {
@@ -1556,9 +1575,10 @@ void HLCall::killLive(LocationSet &live) {
 }
 
 
+// MVE: Probably not needed, and probably not correct
 void HLCall::getDeadStatements(StatementSet &dead) {
     StatementSet reach;
-    getReachIn(reach);
+    getReachIn(reach, 2);
     StmtSetIter it;
     if (procDest && procDest->isLib()) {
         for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
@@ -1620,6 +1640,7 @@ bool HLCall::isDefinition()
     return defs.size() != 0;
 }
 
+// MVE: likely not correct to use this any more
 void HLCall::getDefinitions(LocationSet &defs)
 {
     if (procDest) {
@@ -1731,6 +1752,14 @@ void HLCall::setNumArguments(int n) {
     // printf, scanf start with just 2 arguments
     for (int i = oldSize; i < n; i++) {
         arguments[i] = procDest->getSignature()->getArgumentExp(i)->clone();
+    }
+}
+
+// Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})
+void HLCall::updateArgUses(Statement* def, Exp* left) {
+    int n = arguments.size();
+    for (int i = 0; i < n; i++) {
+        arguments[i] = arguments[i]->updateUses(def, left);
     }
 }
 
@@ -1942,7 +1971,8 @@ void HLScond::setCondExpr(Exp* pss) {
  *============================================================================*/
 void HLScond::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
-    os << " ";
+    os << " " << std::setfill(' ');
+    os << std::setw(4) << number << " ";
     os << "SCOND ";
     getDest()->print(os);
     os << " := CC(";
@@ -1967,11 +1997,13 @@ void HLScond::print(std::ostream& os /*= cout*/, bool withDF) {
     os << ")";
     if (bFloat) os << ", float";
     os << std::endl;
+#if 0       // This is always %flags now
     if (pCond) {
         os << "High level: ";
         pCond->print(os);
         os << std::endl;
     }
+#endif
 }
 
 /*==============================================================================
@@ -2078,11 +2110,12 @@ void HLScond::killLive(LocationSet &live) {
     }
 }
 
+// Probably not needed, and probably not right
 void HLScond::getDeadStatements(StatementSet &dead)
 {
     assert(pDest);
     StatementSet reach;
-    getReachIn(reach);
+    getReachIn(reach, 2);
     StmtSetIter it;
     for (Statement* s = reach.getFirst(it); s; s = reach.getNext(it)) {
         if (s->getLeft() && *s->getLeft() == *pDest && 
@@ -2109,6 +2142,7 @@ bool HLScond::usesExp(Exp *e)
         ((Unary*)pDest)->getSubExp1()->search(e, where)));
 }
 
+#if 0
 void HLScond::printAsUse(std::ostream &os)
 {
     os << "SCOND ";
@@ -2124,6 +2158,7 @@ void HLScond::printAsUseBy(std::ostream &os)
 {
     printAsUse(os);
 }
+#endif
 
 void HLScond::processConstants(Prog *prog)
 {
@@ -2163,3 +2198,12 @@ void HLScond::addUsedLocs(LocationSet& used) {
         pCond->addUsedLocs(used);
 }
 
+
+/*==============================================================================
+ * FUNCTION:         CallBB:setPhase1
+ * OVERVIEW:         Set up for phase 1 of [SW93]. Basuically, keeps a copy
+ *                   of the outedge in returnBlock, and points the outedge
+ *                   to the actual callee entry BB
+ * PARAMETERS:       none
+ * RETURNS:          <nothing>
+ *============================================================================*/

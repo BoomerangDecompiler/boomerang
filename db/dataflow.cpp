@@ -57,7 +57,9 @@ Statement *Statement::findDef(Exp *e) {
 // Also calculates usedBy
 void Statement::calcUses(StatementSet &uses) {
     StatementSet reachIn;
-    getReachIn(reachIn);
+    // Assume (for now) that calculation of uses is interprocedural, and
+    // everything is still set up for phase 2
+    getReachIn(reachIn, 2);
     StmtSetIter it;
     for (Statement* s = reachIn.getFirst(it); s; s = reachIn.getNext(it)) {
         assert(s);
@@ -95,6 +97,7 @@ void Statement::calcUseLinks() {
 
 // replace a use in this statement
 void Statement::replaceUse(Statement *use) {
+#if 0
     if (VERBOSE) {
         std::cerr << "replace ";
         use->printAsUse(std::cerr);
@@ -117,7 +120,7 @@ void Statement::replaceUse(Statement *use) {
     // However, we are now using whatever *use was using
     // Actually, it's possible *use had uses on it's left that will not be
     // propagated in the replacement, we have to remove these later - trent
-    uses.make_union(use->uses);
+    uses.makeUnion(use->uses);
     // Fix the du chains that pointed in to the statement that will
     // be removed; they now point to this 
     StmtSetIter ii;
@@ -127,10 +130,12 @@ void Statement::replaceUse(Statement *use) {
         // They now point to this
         s->usedBy.insert(this);
     }
+#endif
 
     // do the replacement
     doReplaceUse(use);
 
+#if 0
     // remove any uses that are not actually used by this statement
     bool change = true;
     while (change) {
@@ -150,19 +155,20 @@ void Statement::replaceUse(Statement *use) {
         printAsUse(std::cerr);
         std::cerr << std::endl;
     }
+#endif
 }
 
 /* Get everything that reaches this assignment.
    To get the reachout, use getReachIn(reachset), calcReachOut(reachset).
  */
-void Statement::getReachIn(StatementSet &reachin) {
+void Statement::getReachIn(StatementSet &reachin, int phase) {
     assert(pbb);
-    pbb->getReachInAt(this, reachin);
+    pbb->getReachInAt(this, reachin, phase);
 }
 
-void Statement::getAvailIn(StatementSet &availin) {
+void Statement::getAvailIn(StatementSet &availin, int phase) {
     assert(pbb);
-    pbb->getAvailInAt(this, availin);
+    pbb->getAvailInAt(this, availin, phase);
 }
 
 void Statement::getLiveOut(LocationSet &liveout) {
@@ -341,7 +347,8 @@ bool Statement::canPropagateToAll() {
         if (sdest == this) 
             return false; // can't propagate to self
         StatementSet destIn;
-        sdest->getReachIn(destIn);
+        // Note: this all needs changing. Can propagate anything with SSA!
+        sdest->getReachIn(destIn, 2);
         StmtSetIter dd;
         for (Statement* reachDest = destIn.getFirst(dd); reachDest;
           reachDest = destIn.getNext(dd)) {
@@ -446,29 +453,6 @@ void Statement::updateDfForErase() {
     }
 }
 
-void Statement::printWithUses(std::ostream& os) {
-    print(os);
-    os << "   uses: ";
-    StmtSetIter it;
-    for (Statement* s = uses.getFirst(it); s; s = uses.getNext(it)) {
-        s->printAsUse(os);
-        os << ", ";
-    }
-    os << "   used by: ";
-    for (Statement* s = usedBy.getFirst(it); s; s = usedBy.getNext(it)) {
-        s->printAsUseBy(os);
-        os << ", ";
-    }
-#if 0       // Note: if you change this, you need to update DataflowTest.cpp!
-    os << "   reach: ";
-    StatementSet reachIn;
-    getReachIn(reachIn);
-    for (Statement* s = reachIn.getFirst(it); s; s = reachIn.getNext(it)) {
-        s->print(os);
-        os << ", ";
-    }
-#endif
-}
 
 /*==============================================================================
  * FUNCTION:        operator<<
@@ -480,7 +464,7 @@ void Statement::printWithUses(std::ostream& os) {
  *============================================================================*/
 std::ostream& operator<<(std::ostream& os, Statement* s) {
     if (s == NULL) {os << "NULL "; return os;}
-    s->print(os);
+    s->print(os, true);
     return os;
 }
 
@@ -489,7 +473,7 @@ std::ostream& operator<<(std::ostream& os, Statement* s) {
 //
 
 // Make this set the union of itself and other
-void StatementSet::make_union(StatementSet& other) {
+void StatementSet::makeUnion(StatementSet& other) {
     StmtSetIter it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.insert(*it);
@@ -497,7 +481,7 @@ void StatementSet::make_union(StatementSet& other) {
 }
 
 // Make this set the difference of itself and other
-void StatementSet::make_diff(StatementSet& other) {
+void StatementSet::makeDiff(StatementSet& other) {
     StmtSetIter it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.erase(*it);
@@ -505,7 +489,7 @@ void StatementSet::make_diff(StatementSet& other) {
 }
 
 // Make this set the intersection of itself and other
-void StatementSet::make_isect(StatementSet& other) {
+void StatementSet::makeIsect(StatementSet& other) {
     StmtSetIter it, ff;
     for (it = sset.begin(); it != sset.end(); it++) {
         ff = other.sset.find(*it);
@@ -596,12 +580,24 @@ bool StatementSet::removeIfDefines(StatementSet& given) {
 }
 
 // Print to cerr, for debugging
-void StatementSet::print() {
+void StatementSet::prints() {
     StmtSetIter it;
     for (it = sset.begin(); it != sset.end(); it++)
         std::cerr << *it << ",\t";
     std::cerr << "\n";
 }
+
+// Print just the numbers to stream os
+void StatementSet::printNums(std::ostream& os) {
+    StmtSetIter it;
+    os << std::dec;
+    for (it = sset.begin(); it != sset.end(); ) {
+        (*it)->printNum(os);
+        if (++it != sset.end())
+            os << " ";
+    }
+}
+
 
 //
 // LocationSet methods
@@ -624,7 +620,7 @@ LocationSet::LocationSet(const LocationSet& o) {
         sset.insert((*it)->clone());
 }
 
-void LocationSet::print() {
+void LocationSet::prints() {
     LocSetIter it;
     for (it = sset.begin(); it != sset.end(); it++)
         std::cerr << *it << ",\t";
@@ -660,7 +656,7 @@ void LocationSet::removeIfDefines(StatementSet& given) {
 }
 
 // Make this set the union of itself and other
-void LocationSet::make_union(LocationSet& other) {
+void LocationSet::makeUnion(LocationSet& other) {
     LocSetIter it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.insert(*it);
@@ -668,7 +664,7 @@ void LocationSet::make_union(LocationSet& other) {
 }
 
 // Make this set the set difference of itself and other
-void LocationSet::make_diff(LocationSet& other) {
+void LocationSet::makeDiff(LocationSet& other) {
     LocSetIter it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.erase(*it);
@@ -753,9 +749,9 @@ void LocationSet::substitute(Statement& s) {
             }
         }
     }
-    make_diff(removeSet);       // Remove the items to be removed
-    make_diff(removeAndDelete); // These are to be removed as well
-    make_union(insertSet);      // Insert the items to be added
+    makeDiff(removeSet);       // Remove the items to be removed
+    makeDiff(removeAndDelete); // These are to be removed as well
+    makeUnion(insertSet);      // Insert the items to be added
     // Now delete the expressions that are no longer needed
     LocSetIter dd;
     for (Exp* e = removeAndDelete.getFirst(dd); e;
@@ -820,7 +816,7 @@ Statement* StatementList::getPrev(StmtListRevIter& it) {
     return *it;         // Else return the previous element
 }
 
-void StatementList::print() {
+void StatementList::prints() {
     StmtListIter it;
     for (it = slist.begin(); it != slist.end(); it++) {
         std::cerr << *it << ",\t";
@@ -830,7 +826,7 @@ void StatementList::print() {
 static char debug_buffer[200];
 char* Statement::prints() {
       std::ostringstream ost;
-      print(ost);
+      print(ost, true);
       strncpy(debug_buffer, ost.str().c_str(), 199);
       debug_buffer[199] = '\0';
       return debug_buffer;
