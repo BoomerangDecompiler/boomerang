@@ -550,7 +550,8 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
             // An opFlagCall is assumed to be a Binary with a string and an
             // opList of parameters
             ss = (Binary*) ((Binary*)*rt)->getSubExp2();
-        }
+        } else
+            ss = NULL;
 
         /* Look for usages of post-variables' referents
          * Trickier than you'd think, as we need to make sure to skip over
