@@ -329,6 +329,17 @@ int CompoundType::getOffsetTo(int n)
     return offset;
 }
 
+int CompoundType::getOffsetTo(const char *member)
+{
+    int offset = 0;
+    for (unsigned i = 0; i < types.size(); i++) {
+        if (names[i] == member)
+            return offset;
+        offset += types[i]->getSize();
+    }
+    return -1;
+}
+
 int CompoundType::getOffsetRemainder(int n)
 {
     int r = n;
@@ -517,6 +528,82 @@ bool CompoundType::operator<(const Type& other) const {
     if (id > other.getId()) return false;
     return getSize() < other.getSize();
 }
+
+/*==============================================================================
+ * FUNCTION:        *Type::match
+ * OVERVIEW:        Match operation.
+ * PARAMETERS:      pattern - Type to match
+ * RETURNS:         Exp list of bindings if match or NULL
+ *============================================================================*/
+Exp *Type::match(Type *pattern)
+{
+    if (pattern->isNamed()) {
+        LOG << "type match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
+        return new Binary(opList, 
+            new Binary(opEquals, 
+                new Unary(opVar, new Const((char*)pattern->asNamed()->getName())), 
+                new TypeVal(this->clone())), 
+            new Terminal(opNil));
+    }
+    return NULL;
+}
+
+Exp *IntegerType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *FloatType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *BooleanType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *CharType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *VoidType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *FuncType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *PointerType::match(Type *pattern)
+{
+    if (pattern->isPointer()) {
+        LOG << "got pointer match: " << this->getCtype() << " to " << pattern->getCtype() << "\n";
+        return points_to->match(pattern->asPointer()->getPointsTo());
+    }
+    return Type::match(pattern);
+}
+
+Exp *ArrayType::match(Type *pattern)
+{
+    if (pattern->isArray())
+        return base_type->match(pattern);
+    return Type::match(pattern);
+}
+
+Exp *NamedType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
+Exp *CompoundType::match(Type *pattern)
+{
+    return Type::match(pattern);
+}
+
 
 /*==============================================================================
  * FUNCTION:        *Type::getCtype
@@ -828,6 +915,14 @@ FloatType *Type::asFloat()
     if (ty->isNamed())
         ty = ((NamedType*)ty)->resolvesTo();
     FloatType *res = dynamic_cast<FloatType*>(ty);
+    assert(res);
+    return res;
+}
+
+NamedType *Type::asNamed()
+{
+    Type *ty = this;
+    NamedType *res = dynamic_cast<NamedType*>(ty);
     assert(res);
     return res;
 }

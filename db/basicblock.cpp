@@ -1927,7 +1927,9 @@ assert(glo);
                 ADDRESS aglo = glo->getAddress();
                 ADDRESS pfunc = prog->readNative4(aglo);  
                 bool newFunc =  prog->findProc(pfunc) == NULL;
-                prog->decodeFunction(pfunc);
+                if (Boomerang::get()->noDecodeChildren)
+                    return false;
+                prog->decodeExtraEntrypoint(pfunc);
                 // If this was not decoded, then this is a significant
                 // change, and we want to redecode the present function once
                 // that callee has been decoded

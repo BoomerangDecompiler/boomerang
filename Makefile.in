@@ -71,7 +71,9 @@ remote:
 	touch db/sslparser.cpp db/sslparser.h \
         c/ansi-c-parser.cpp c/ansi-c-scanner.cpp  \
         c/ansi-c-parser.h   c/ansi-c-scanner.h \
-        db/sslscanner.cpp   db/sslscanner.h
+        db/sslscanner.cpp   db/sslscanner.h \
+        transform/transformation-parser.cpp transform/transformation-scanner.cpp \
+        transform/transformation-parser.h transform/transformation-scanner.h
 
 clean:
 	cd util     && ${MAKE} clean
@@ -79,6 +81,7 @@ clean:
 	cd db       && ${MAKE} clean
 	cd frontend && ${MAKE} clean
 	cd analysis && ${MAKE} clean
+	cd transform && ${MAKE} clean
 	rm -f *.o codegen/*.o boomerang testAll.o c/*.o
 
 #20 Aug 02 icer
@@ -103,13 +106,15 @@ DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/statement.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
   db/sslinst.o db/insnameelem.o db/signature.o db/managed.o \
   c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o log.o
+TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o \
+  transform/transformation-parser.o transform/transformation-scanner.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o
-STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
+STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
     ${TYPEOBJS}
 
 lib/libBinaryFile.so:
@@ -136,6 +141,12 @@ c/ansi-c-parser.cpp c/ansi-c-parser.h: c/ansi-c.y c/ansi-c.l
 
 c/ansi-c-scanner.cpp c/ansi-c-scanner.h: c/ansi-c.l c/ansi-c.y
 	cd c ; ${FLEXPP} -oansi-c-scanner.cpp -hansi-c-scanner.h ansi-c.l
+
+transform/transformation-parser.cpp transform/transformation-parser.h: transform/transformation.y transform/transformation.l
+	cd transform ; ${BISONPP} -d -v -otransformation-parser.cpp -htransformation-parser.h transformation.y
+
+transform/transformation-scanner.cpp transform/transformation-scanner.h: transform/transformation.l transform/transformation.y
+	cd transform ; ${FLEXPP} -otransformation-scanner.cpp -htransformation-scanner.h transformation.l
 
 # The .cpp's depend on the .m's
 $(MACH_SRC): frontend/%decoder.cpp : frontend/machine/%/core.spec \
@@ -200,6 +211,8 @@ db/sslparser.o: db/sslparser.cpp db/sslparser.h db/sslscanner.h include/rtl.h \
 db/sslscanner.o: db/sslscanner.cpp db/sslscanner.h
 c/ansi-c-parser.o: c/ansi-c-parser.cpp c/ansi-c-parser.h c/ansi-c-scanner.h
 c/ansi-c-scanner.o: c/ansi-c-scanner.cpp c/ansi-c-scanner.h
+transform/transformation-parser.o: transform/transformation-parser.cpp transform/transformation-parser.h transform/transformation-scanner.h
+transform/transformation-scanner.o: transform/transformation-scanner.cpp transform/transformation-scanner.h
 db/insnameelem.o: db/insnameelem.h
 db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/proc.h include/prog.h include/type.h \
@@ -221,6 +234,10 @@ db/table.o: include/types.h db/table.h include/statement.h include/exp.h \
 db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h \
     include/proc.h include/prog.h include/register.h include/type.h
 
+transform/transformer.o: include/transformer.h transform/generic.h transform/rdi.h transform/transformation-parser.h
+transform/generic.o: include/transformer.h transform/generic.h
+transform/rdi.o: include/transformer.h transform/rdi.h
+
 util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
 
@@ -240,7 +257,7 @@ frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
 
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h \
-    include/frontend.h
+    include/frontend.h include/transformer.h
 analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
 	include/frontend.h include/analysis.h include/exp.h
 

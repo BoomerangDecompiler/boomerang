@@ -1,0 +1,51 @@
+######################################################
+# File: Makefile
+# Desc: Makefile for the transformation (transform) directory
+#
+######################################################
+
+# $Revision$
+# 18 Apr 04 - Trent: Created.
+
+LIB_OBJS = transform.o
+LIB=../lib/transform.so
+
+CC = g++ -g
+CXX = $(CC)
+
+all: $(LIB) testTransform
+
+# HOST_GNU_LD is true if the linker on this host machine is GNU
+HOST_GNU_LD = @HOST_GNU_LD@
+
+BOOMDIR="$(shell pwd)/.."
+BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
+LIBDIR=$(BOOMDIR)/lib
+ifeq ($(HOST_GNU_LD), yes)
+RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+else # Assume Solaris
+RUNPATH=-R$(LIBDIR)
+endif
+
+testTransform: testTransform.o TransformTest.o $(LIB)
+	$(CC) -o $@ testTransform.o TransformTest.o -ltransform -lcppunit $(RUNPATH) -L../lib
+
+$(LIB): $(LIB_OBJS)
+	$(CC) -o $@ -shared $(LIB_OBJS) $(RUNPATH) -L../lib
+
+TransformTest.o: TransformTest.h
+transform.o: ../include/transformer.h
+
+# Make these objects with -fPIC
+$(LIB_OBJS): %.o : %.cpp
+	$(CC) -c -fPIC -I../include $(EXTRAS) -o $@ $<
+
+# Others without -fPIC
+.cpp.o:
+	$(CC) -c -I../include -o $@ $<
+
+clean:
+	rm -f testTransform *.o $(LIB)
+
+test: all
+	./testTransform

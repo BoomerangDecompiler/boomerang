@@ -2,6 +2,7 @@
   (hard coded in FrontEnd::readLibraryCatalog()) */
 
 typedef unsigned int UINT;
+typedef int INT;
 typedef unsigned int SIZE_T;
 typedef unsigned int LONG;
 typedef const void *LPCVOID;
@@ -13,6 +14,7 @@ typedef const short LPCWSTR[];
 typedef short LPWSTR[];
 typedef int DWORD;
 typedef int HWND;
+typedef int HMENU;
 typedef int HFONT;
 typedef int HLOCAL;
 typedef int HINSTANCE;
@@ -115,6 +117,7 @@ typedef struct {
     int x;
     int y;
 } POINT;
+typedef POINT *LPPOINT;
 
 typedef struct {
     int cx;
@@ -129,9 +132,15 @@ typedef struct {
     DWORD time;
     POINT pt;
 } MSG;
-typedef MSG *PMSG;
+typedef MSG *LPMSG;
 
 BOOL GetMessageA(      
+    LPMSG lpMsg,
+    HWND hWnd,
+    UINT wMsgFilterMin,
+    UINT wMsgFilterMax
+);
+BOOL GetMessageW(
     LPMSG lpMsg,
     HWND hWnd,
     UINT wMsgFilterMin,
@@ -385,4 +394,107 @@ int wsprintfA(
 char *_gcvt(double value, int digits, char *buffer);  /* Convert flt to str */
 int MulDiv(int number, int numerator, int denominator);
 HFONT CreateFontIndirectA(void* lf);
+
+typedef DWORD LCID;
+LCID GetThreadLocale();
+HLOCAL LocalReAlloc(
+  HLOCAL hMem,
+  SIZE_T uBytes,
+  UINT uFlags
+);
+UINT GetProfileIntA(
+  LPCSTR lpAppName,
+  LPCSTR lpKeyName,
+  INT nDefault
+);
+UINT GetProfileIntW(
+  LPCWSTR lpAppName,
+  LPCWSTR lpKeyName,
+  INT nDefault
+);
+DWORD GetProfileStringA(
+  LPCSTR lpAppName,
+  LPCSTR lpKeyName,
+  LPCSTR lpDefault,
+  LPSTR lpReturnedString,
+  DWORD nSize
+);
+DWORD GetProfileStringW(
+  LPCWSTR lpAppName,
+  LPCWSTR lpKeyName,
+  LPCWSTR lpDefault,
+  LPWSTR lpReturnedString,
+  DWORD nSize
+);
+DWORD GetSysColor(
+  int nIndex
+);
+BOOL GetWindowRect(      
+    HWND hWnd,
+    LPRECT lpRect
+);
+BOOL InvalidateRect(
+  HWND hWnd,
+  LPRECT lpRect,
+  BOOL bErase
+);
+HWND GetDlgItem(      
+    HWND hDlg,
+    int nIDDlgItem
+);
+BOOL EnableWindow(      
+    HWND hWnd,
+    BOOL bEnable
+);
+int MapWindowPoints(
+  HWND hWndFrom,
+  HWND hWndTo,
+  LPPOINT lpPoints,
+  UINT cPoints
+);
+BOOL OffsetRect(
+  LPRECT lprc,
+  int dx,
+  int dy
+);
+BOOL SetWindowPos(      
+    HWND hWnd,
+    HWND hWndInsertAfter,
+    int X,
+    int Y,
+    int cx,
+    int cy,
+    UINT uFlags
+);
+HMENU GetMenu(      
+    HWND hWnd
+);
+HMENU GetSubMenu(      
+    HMENU hMenu,
+    int nPos
+);
+DWORD CheckMenuItem(      
+    HMENU hmenu,
+    UINT uIDCheckItem,
+    UINT uCheck
+);
+BOOL SetDlgItemTextA(
+    HWND hDlg,
+    int nIDDlgItem,
+    LPCSTR lpString
+);
+BOOL SetDlgItemTextW(
+    HWND hDlg,
+    int nIDDlgItem,
+    LPCWSTR lpString
+);
+BOOL CheckRadioButton(      
+    HWND hDlg,
+    int nIDFirstButton,
+    int nIDLastButton,
+    int nIDCheckButton
+);
+HCURSOR SetCursor(      
+    HCURSOR hCursor
+);
 

@@ -86,6 +86,7 @@ public:
     void    remProc(UserProc* proc);    // Remove the given UserProc
     char*   getName();                  // Get the name of this program
     int     getNumProcs();              // # of procedures stored in prog
+    int     getNumUserProcs();          // # of user procedures stored in prog
     Proc*   getProc(int i) const;       // returns pointer to indexed proc
     // Find the Proc with given address
     Proc*   findProc(ADDRESS uAddr) const;
@@ -131,12 +132,7 @@ public:
 
     const char *getRegName(int idx) { return pFE->getRegName(idx); }
 
-    void decodeFunction(ADDRESS a) { 
-        if (findProc(a) == NULL) {
-            pFE->decode(this, a);
-            analyse();
-        }
-    }
+    void decodeExtraEntrypoint(ADDRESS a); 
 
     void decodeFragment(UserProc* proc, ADDRESS a) {
         pFE->decodeFragment(proc, a); }

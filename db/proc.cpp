@@ -1064,7 +1064,7 @@ std::set<UserProc*>* UserProc::decompile() {
     int maxDepth = findMaxDepth() + 1;
     if (Boomerang::get()->maxMemDepth < maxDepth)
         maxDepth = Boomerang::get()->maxMemDepth;
-	int depth;
+    int depth;
     for (depth = 0; depth <= maxDepth; depth++) {
 
         if (VERBOSE)
@@ -1195,7 +1195,7 @@ std::set<UserProc*>* UserProc::decompile() {
         return decompile();
     }
 
-    // Only remove unused statements after decoding as much as possible of the
+    // Only remove unused statements after decompiling as much as possible of the
     // proc
     for (depth = 0; depth <= maxDepth; depth++) {
         // Remove unused statements

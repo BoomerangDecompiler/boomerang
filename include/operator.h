@@ -187,6 +187,7 @@ enum OPER
     opTrue,
     opFalse,
     opTypeOf,               // Unary: takes a location, makes a type variable
+    opKindOf,
     opTypeVal,              // Wraps a Type into a type value (TypeVal)
 
     //---------------------- "The line" --------------------------//

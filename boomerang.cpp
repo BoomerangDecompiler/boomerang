@@ -5,6 +5,7 @@
 #include "frontend.h"
 #include "hllcode.h"
 #include "codegen/chllcode.h"
+#include "transformer.h"
 #include "boomerang.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
@@ -263,6 +264,11 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
 int Boomerang::decompile(const char *fname)
 {
+    time_t start;
+    time(&start);
+    std::cerr << "setting up transformers...\n";
+    ExpTransformer::loadAll();
+
     std::cerr << "loading...\n";
     FrontEnd *fe = FrontEnd::Load(fname);
     if (fe == NULL) {
@@ -292,9 +298,11 @@ int Boomerang::decompile(const char *fname)
         for (unsigned i = 0; i < entrypoints.size(); i++) {
             std::cerr<< "decoding extra entrypoint " << std::hex <<
               entrypoints[i] << "\n";
-            prog->decodeFunction(entrypoints[i]);
+            prog->decodeExtraEntrypoint(entrypoints[i]);
         }
     }
+
+    std::cerr << "found " << prog->getNumUserProcs() << " procs\n";
 
     std::cerr << "analysing...\n";
     prog->analyse();
@@ -323,6 +331,19 @@ int Boomerang::decompile(const char *fname)
     std::ofstream out((getOutputPath() + "code").c_str());
     prog->generateCode(out);
     out.close();
+
+    time_t end;
+    time(&end);
+    int hours = (end-start) / 60 / 60;
+    int mins = (end-start) / 60 - hours * 60;
+    int secs = (end-start) - hours * 60 * 60 - mins * 60 * 60;
+    std::cerr << "completed in ";
+    if (hours)
+        std::cerr << hours << " hours ";
+    if (mins)
+        std::cerr << mins << " mins ";
+    if (secs)
+        std::cerr << secs << " secs.\n";
 
     return 0;
 }

@@ -40,9 +40,11 @@ class BooleanType;
 class CharType;
 class IntegerType;
 class FloatType;
+class NamedType;
 class PointerType;
 class ArrayType;
 class CompoundType;
+class Exp;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
     eArray, eNamed, eCompound};    // For operator< only
@@ -85,6 +87,7 @@ virtual bool isCompound() const { return false; }
     CharType *asChar();
     IntegerType *asInteger();
     FloatType *asFloat();
+    NamedType *asNamed();
     PointerType *asPointer();
     ArrayType *asArray();
     CompoundType *asCompound();
@@ -110,6 +113,7 @@ virtual bool    operator!=(const Type& other) const;    // Considers sign
 virtual bool    operator< (const Type& other) const = 0;// Considers sign
         bool    operator*=(const Type& other) const {   // Consider only
                     return id == other.id;}              // broad type
+virtual Exp *match(Type *pattern);
 
     // Access functions
 virtual int     getSize() const = 0;
@@ -137,6 +141,7 @@ virtual Type *clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -159,6 +164,7 @@ virtual Type *clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -184,6 +190,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
         bool    isSigned() { return signd; }
@@ -209,6 +216,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -229,6 +237,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -247,6 +256,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -272,6 +282,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -301,6 +312,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -327,6 +339,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 
@@ -355,6 +368,7 @@ virtual bool isCompound() const { return true; }
         Type *getTypeAtOffset(int n);
         const char *getNameAtOffset(int n);
         int getOffsetTo(int n);
+        int getOffsetTo(const char *member);
         int getOffsetRemainder(int n);
 
 virtual Type* clone() const;
@@ -362,6 +376,7 @@ virtual Type* clone() const;
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
+virtual Exp *match(Type *pattern);
 
 virtual int     getSize() const;
 

@@ -2187,11 +2187,19 @@ void CallStatement::insertArguments(StatementSet& rs) {
 Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
 {
     if (t == NULL) return e;
-    if (t->isNamed())
+    NamedType *nt = NULL;
+    if (t->isNamed()) {
+        nt = (NamedType*)t;
         t = ((NamedType*)t)->resolvesTo();
+    }
     if (t == NULL) return e;
     // char* and a constant
     if (e->isIntConst()) {
+        if (nt->getName() == "LPCWSTR") {
+            ADDRESS u = ((Const*)e)->getAddr();
+            // TODO
+            LOG << "posible wide char string at " << u << "\n";
+        }
         if (t->resolvesToPointer()) {
             PointerType *pt = t->asPointer();
             Type *points_to = pt->getPointsTo();
@@ -2220,7 +2228,8 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     LOG << "found function pointer with constant value "
                         << "of type " << pt->getCtype() 
                         << ".  Decoding address " << a << "\n";
-                prog->decodeFunction(a);
+                if (!Boomerang::get()->noDecodeChildren)
+                    prog->decodeExtraEntrypoint(a);
                 Proc *p = prog->findProc(a);
                 if (p) {
                     Signature *sig = points_to->asFunc()->getSignature()->clone();
@@ -2237,7 +2246,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
             }
         } else if (t->resolvesToFloat()) {
             e = new Ternary(opItof, new Const(32), new Const(t->getSize()), e);
-        }
+        } 
     }
 #if 0
     if (t->isPointer() && e->getOper() != opAddrOf) {

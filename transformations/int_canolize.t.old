@@ -1,0 +1,9 @@
+x - n becomes x + (-n)
+n + (-n) becomes 0
+x + 0 becomes x
+(x + a) + b where (kind(a) == opIntConst) && (kind(b) == opIntConst) becomes x + (a + b)
+(x - a) + b where (kind(a) == opIntConst) && (kind(b) == opIntConst) becomes x + ((-a) + b)
+(x * k) - x becomes x * (k-1)
+x + (x * k) becomes x * (k+1)
+a + (a*n) where kind(n) == opIntConst becomes a*(n+1)
+(a*n)*m where (kind(n) == opIntConst) && (kind(m) == opIntConst) becomes a*(n*m)

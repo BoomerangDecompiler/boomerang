@@ -320,6 +320,13 @@ int Prog::getNumProcs() {
     return m_procs.size();
 }
 
+int Prog::getNumUserProcs() {
+    int n = 0;
+    for (std::list<Proc*>::const_iterator it = m_procs.begin(); it != m_procs.end(); it++)
+        if (!(*it)->isLib())
+            n++;
+    return n;
+}
 
 /*==============================================================================
  * FUNCTION:    Prog::getProc
@@ -704,6 +711,12 @@ void Prog::insertArguments(StatementSet& rs) {
     }
 }
 
+void Prog::decodeExtraEntrypoint(ADDRESS a) { 
+    if (findProc(a) == NULL) {
+        pFE->decode(this, a);
+        analyse();
+    }
+}
 
 void Prog::decompile() {
     assert(m_procs.size());
@@ -1035,6 +1048,8 @@ Exp* Global::getInitialValue(Prog* prog) {
         for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i)
             e = new Binary(opList, prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType), e);
         LOG << "calced init for array global: " << e << "\n";
+        if (e->getOper() == opNil)
+            e = NULL;
     }
     if (e == NULL) 
         e = prog->readNativeAs(uaddr, type);

@@ -6563,6 +6563,8 @@ LIBDIR=$srcdir/lib
 
           ac_config_files="$ac_config_files util/Makefile"
 
+          ac_config_files="$ac_config_files transform/Makefile"
+
           ac_config_files="$ac_config_files loader/Makefile"
 
           ac_config_files="$ac_config_files db/Makefile"
@@ -7099,6 +7101,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "util/Makefile" ) CONFIG_FILES="$CONFIG_FILES util/Makefile" ;;
+  "transform/Makefile" ) CONFIG_FILES="$CONFIG_FILES transform/Makefile" ;;
   "loader/Makefile" ) CONFIG_FILES="$CONFIG_FILES loader/Makefile" ;;
   "db/Makefile" ) CONFIG_FILES="$CONFIG_FILES db/Makefile" ;;
   "frontend/Makefile" ) CONFIG_FILES="$CONFIG_FILES frontend/Makefile" ;;

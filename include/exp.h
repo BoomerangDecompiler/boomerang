@@ -209,6 +209,10 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
                                op == opParam; }
                  
 
+    // Matches this expression to the pattern, if successful returns
+    // a list of variable bindings, otherwise returns NULL
+    virtual Exp *match(Exp *pattern);
+
     //  //  //  //  //  //  //
     //  Search and Replace  //
     //  //  //  //  //  //  //
@@ -252,7 +256,7 @@ virtual Exp*& refSubExp2();
 virtual Exp*& refSubExp3();
 virtual void  setSubExp1(Exp* e) {};
 virtual void  setSubExp2(Exp* e) {};
-virtual void  setSubExp4(Exp* e) {};
+virtual void  setSubExp3(Exp* e) {};
 
     // Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
 virtual int getMemDepth() {return 0;}
@@ -474,6 +478,8 @@ virtual void    printx(int ind);
     Exp*&   refSubExp1();
 virtual int getMemDepth();
 
+    virtual Exp* match(Exp *pattern); 
+        
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
@@ -549,6 +555,8 @@ virtual void    printx(int ind);
     // Get a reference to subexpression 2
     Exp*&   refSubExp2();
 virtual int getMemDepth();
+
+    virtual Exp* match(Exp *pattern); 
 
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
@@ -752,6 +760,7 @@ virtual int getNumRefs() {return 1;}
     bool    references(Statement* s) {return def == s;}
 virtual Exp* polySimplify(bool& bMod);
     virtual Type*   getType();
+    virtual Exp *match(Exp *pattern);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);
@@ -836,6 +845,7 @@ virtual void    print(std::ostream& os, bool withUses = false);
 virtual void    printx(int ind);
     virtual Exp*  genConstraints(Exp* restrictTo) {
         assert(0); return NULL;} // Should not be constraining constraints
+    virtual Exp *match(Exp *pattern);
 
     // Visitation
     virtual bool accept(ExpVisitor* v);

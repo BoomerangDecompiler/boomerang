@@ -54,6 +54,7 @@
                         // createDotFile functions. Needs -I. to find it
 #include "util.h"
 #include "boomerang.h"
+#include "transformer.h"
 #include <iomanip>          // For std::setw etc
 
 /*==============================================================================
@@ -902,13 +903,14 @@ void Unary::print(std::ostream& os, bool withUses) {
                 break;
             }
             // Else fall through
-        case opMemOf: case opAddrOf:  case opVar: case opTypeOf:
+        case opMemOf: case opAddrOf:  case opVar: case opTypeOf: case opKindOf:
             switch (op) {
                 case opRegOf: os << "r["; break;    // e.g. r[r2]
                 case opMemOf: os << "m["; break;
                 case opAddrOf:os << "a["; break;
                 case opVar:   os << "v["; break;
                 case opTypeOf:os << "T["; break;
+                case opKindOf:os << "K["; break;
                 default: break;     // Suppress compiler warning
             }
             if (op == opVar) ((Const*)p1)->printNoQuotes(os, withUses);
@@ -1348,6 +1350,79 @@ Exp* Exp::getGuard() {
 }
 
 /*==============================================================================
+ * FUNCTION:        Exp::match
+ * OVERVIEW:        Matches this expression to the given patten
+ * PARAMETERS:      pattern to match
+ * RETURNS:         list of variable bindings, or NULL if matching fails
+ *============================================================================*/
+Exp* Exp::match(Exp *pattern) {
+    if (*this == *pattern)
+        return new Terminal(opNil);
+    if (pattern->getOper() == opVar) {
+        return new Binary(opList, 
+            new Binary(opEquals, pattern->clone(), this->clone()), 
+            new Terminal(opNil));
+    }
+    return NULL;
+}
+Exp* Unary::match(Exp *pattern) {
+    if (op == pattern->getOper()) {
+        return subExp1->match(pattern->getSubExp1());
+    }
+    return Exp::match(pattern);
+}
+Exp* Binary::match(Exp *pattern) {
+    if (op == pattern->getOper()) {
+        Exp *b_lhs = subExp1->match(pattern->getSubExp1());
+        if (b_lhs == NULL)
+            return NULL;
+        Exp *b_rhs = subExp2->match(pattern->getSubExp2());
+        if (b_rhs == NULL)
+            return NULL;
+        if (b_lhs->getOper() == opNil)
+            return b_rhs;
+        if (b_rhs->getOper() == opNil)
+            return b_lhs;
+#if 0
+        LOG << "got lhs list " << b_lhs << " and rhs list " << b_rhs << "\n";
+#endif
+        Exp *result = new Terminal(opNil);
+        for (Exp *l = b_lhs; l->getOper() != opNil; l = l->getSubExp2())
+            for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
+                if (*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1() &&
+                    !(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
+#if 0
+                    LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " << r->getSubExp1()->getSubExp2() << "\n";
+#endif
+                    return NULL;  // must be agreement between LHS and RHS
+                } else
+                    result = new Binary(opList, l->getSubExp1()->clone(), result);
+        for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
+            result = new Binary(opList, r->getSubExp1()->clone(), result);
+        return result;
+    }
+    return Exp::match(pattern);
+}
+Exp* RefExp::match(Exp *pattern) {
+    Exp *r = Unary::match(pattern);
+//    if (r)
+        return r;
+/*    r = subExp1->match(pattern);
+    if (r) {
+        bool change;
+        r = r->searchReplaceAll(subExp1->clone(), this->clone(), change);
+        return r;
+    }
+    return Exp::match(pattern); */
+}
+Exp* TypeVal::match(Exp *pattern) {
+    if (op == pattern->getOper()) {
+        return val->match(pattern->getType());
+    }
+    return Exp::match(pattern);
+}
+
+/*==============================================================================
  * FUNCTION:        Exp::doSearch
  * OVERVIEW:        Search for the given subexpression
  * NOTE:            Caller must free the list li after use, but not the
@@ -1740,11 +1815,20 @@ Exp* Exp::simplify() {
 #if DEBUG_SIMP
     Exp* save = clone();
 #endif
-    bool bMod;                  // True if simplified at this or lower level
+    bool bMod = false;                  // True if simplified at this or lower level
     Exp* res = this;
+    //res = ExpTransformer::applyAllTo(res, bMod);
+    //return res;
     do {
         bMod = false;
+        //Exp *before = res->clone();
         res = res->polySimplify(bMod);// Call the polymorphic simplify
+     /*   if (bMod) {
+            LOG << "polySimplify hit: " << before << " to " << res << "\n";
+            // polySimplify is now redundant, if you see this in the log you
+            // need to update one of the files in the transformations directory
+            // to include a rule for the reported transform.
+        } */
     } while (bMod);             // If modified at this (or a lower) level, redo
     // The below is still important. E.g. want to canonicalise sums, so we
     // know that a + K + b is the same as a + b + K
@@ -2355,7 +2439,7 @@ Exp* Binary::polySimplify(bool& bMod) {
                                 new Const((char*)nam))),
                         new Const(r / 8));
                 if (VERBOSE)
-                    LOG << "replacing " << this << " with " << res << "\n";
+                    LOG << "(trans1) replacing " << this << " with " << res << "\n";
                 bMod = true;
                 return res;
             }
@@ -3641,6 +3725,7 @@ Exp* Location::polySimplify(bool& bMod) {
 
     if (res->getOper() == opMemOf && 
         res->getSubExp1()->getOper() == opAddrOf) {
+        LOG << "polySimplify " << res << "\n";
         res = res->getSubExp1()->getSubExp1();
         bMod = true;
         return res;
