@@ -1,4 +1,4 @@
 stdio.h
-gcc_3.h
-gcc_2.9.h
+gcc3.h
+gcc2.9.h
 math.h
