@@ -241,6 +241,8 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 'a':
                         printAST = true;
                         break;
+                    default:
+                        help();
                 }
                 break;
             case 'm':
