@@ -637,14 +637,12 @@ Global* Prog::getGlobal(char *nam) {
 void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
     Global* global;
     
-    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
-    {
+    for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
         if ((*it)->getAddress() == uaddr) {
 			if (knownType) (*it)->meetType(knownType);
             return;
 		}
-        else if ((*it)->getAddress() < uaddr &&
-				(*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr) {
+        else if ((*it)->getAddress() < uaddr && (*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr) {
 			if (knownType) (*it)->meetType(knownType);
             return;
 		}
