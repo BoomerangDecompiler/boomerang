@@ -1114,6 +1114,11 @@ SAHF
             *1* %PF := %ah@[2:2]
             *1* %CF := %ah@[0:0];
 
+SEG.CS      _;          # Sometimes used for extended NOP
+SEG.DS      _;
+SEG.ES      _;
+SEG.SS      _;
+
 SETB.B   modrm 
             *8* modrm := [%CF?1:0];
 
