@@ -30,11 +30,7 @@
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
 			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine="copy Debug/boomerang.exe
-"
-				AdditionalDependencies="Debug/boomerang.exe"
-				Outputs="boomerang.exe"/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libexpat.lib gc.lib comctl32.lib"
