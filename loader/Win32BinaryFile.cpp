@@ -10,6 +10,7 @@
  */
 
 /* File: Win32BinaryFile.cc
+ * $Revision$
  * Desc: This file contains the implementation of the class Win32BinaryFile.
  */
 
@@ -230,6 +231,14 @@ bool Win32BinaryFile::RealLoad(const char* sName)
         id++;
     }
 
+    // Was hoping that _main or main would turn up here for Borland
+    // console mode programs. No such luck.
+    // I think IDA Pro must find it by a combination of FLIRT and some
+    // pattern matching
+    //PEExportDtor* eid = (PEExportDtor*)
+    //  (LMMH(m_pPEHeader->ExportTableRVA) + base);
+
+
     // Give the entry point a symbol
     ADDRESS entry = GetMainEntryPoint();
     if (entry != NO_ADDRESS) {
@@ -310,7 +319,7 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
             return it->first;
         it++;
     }
-    return 0;
+    return NO_ADDRESS;
 }
 
 void Win32BinaryFile::AddSymbol(ADDRESS uNative, const char *pName)

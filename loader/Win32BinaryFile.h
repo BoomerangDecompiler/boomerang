@@ -135,6 +135,23 @@ typedef struct {
     DWord firstThunk;       // RVA of start of import address table (IAT)
 } PEImportDtor;
 
+typedef struct {
+    DWord   flags;          // Reserved; 0
+    DWord   stamp;          // Time/date stamp export data was created
+    SWord   verMajor;       // Version number can be ...
+    SWord   verMinor;       //   ... set by user
+    DWord   name;           // RVA of the ascii string containing the name of
+                            //   the DLL
+    DWord   base;           // Starting ordinal number for exports in this
+                            //  image. Usually set to 1.
+    DWord   numEatEntries;  // Number of entries in EAT (Export ADdress Table)
+    DWord   numNptEntries;  // Number of entries in NPT (Name Pointer Table)
+                            //  (also #entries in the Ordinal Table)
+    DWord   eatRVA;         // RVA of the EAT
+    DWord   nptRVA;         // RVA of the NPT
+    DWord   otRVA;          // RVA of the OT
+} PEExportDtor;
+
 //#ifdef WIN32
 #pragma pack(4)
 //#endif
