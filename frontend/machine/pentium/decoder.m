@@ -332,22 +332,22 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
     | NOP() =>
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.CS() =>        // For now, treat as a 1 byte NOP
+    | SEG.CS() =>        // For now, treat seg.cs as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.DS() =>        // For now, treat as a 1 byte NOP
+    | SEG.DS() =>        // For now, treat seg.ds as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.ES() =>        // For now, treat as a 1 byte NOP
+    | SEG.ES() =>        // For now, treat seg.es as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.FS() =>        // For now, treat as a 1 byte NOP
+    | SEG.FS() =>        // For now, treat seg.fs as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.GS() =>        // For now, treat as a 1 byte NOP
+    | SEG.GS() =>        // For now, treat seg.gs as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
-    | SEG.SS() =>
+    | SEG.SS() =>        // For now, treat seg.ss as a 1 byte NOP
         stmts = instantiate(pc,  "NOP");
 
     | XCHGeAXod(r32) =>
@@ -1289,11 +1289,10 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 
     | CALL.Jvod(relocd) =>
         stmts = instantiate(pc,  "CALL.Jvod", dis_Num(relocd));
-        // Fix the last assignment, which is %pc := %pc + K + reloc
+        // Fix the last assignment, which is now %pc := %pc + (K + hostPC)
         Assign* last = (Assign*)stmts->back();
         Const*& reloc = (Const*&)((Binary*)last->getRight())->refSubExp2();
         assert(reloc->isIntConst());
-        assert(reloc->getInt() == (int)relocd);
         // Subtract off the host pc
         reloc->setInt(reloc->getInt() - hostPC);
         
