@@ -17,6 +17,7 @@
  * $Revision$
  *
  * 26 Apr 02 - Mike: Changes for boomerang
+ * 18 Nov 02 - Mike: Mods for MOV.Ed.Iv^od etc. Also suppressed warning re name
 */
 
 #include <assert.h>
@@ -953,10 +954,10 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 //        unused(reg); unused(cr);
 //        Exps = instantiate(pc,  "UNIMP");
 
-    | MOV.Eb.Ivod(Eaddr, i32) =>
+    | MOV.Ed.Ivod(Eaddr, i32) =>
         Exps = instantiate(pc,  "MOV.Eb.Ivod", DIS_EADDR32, DIS_I32);
 
-    | MOV.Eb.Ivow(Eaddr, i16) =>
+    | MOV.Ew.Ivow(Eaddr, i16) =>
         Exps = instantiate(pc,  "MOV.Eb.Ivow", DIS_EADDR16, DIS_I16);
 
     | MOV.Eb.Ib(Eaddr, i8) =>
@@ -1256,7 +1257,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
         unused(seg); unused(off);
         Exps = instantiate(pc, "NOP");
 
-    | CALL.Jvod(relocd) [name] =>
+    | CALL.Jvod(relocd) =>
         HLCall* newCall = new HLCall(pc, 0, 0);
 
         // Set the destination

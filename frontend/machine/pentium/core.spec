@@ -8,25 +8,8 @@
 #
 
 # 386-core.spec (based on pentium-core.spec, NJMC v0.5)
-# 19 Jan 98 - Cristina
-#	removed all escape opcodes with bytes D8..DF as the first byte; those
-#		742, 923, 951, 1011, 1050, and associated constructors.
-# 22 Jan 98 - Cristina
-#	added LEA and lfp constructors as they're missing (missing from original 
-#		pentium spec also).
-#	changed Mem for Eaddr in the constructors CALL.Ev^ov and CALL.Ep^ov 
-#		as register indirections are allowed (i.e. mod = 3).
-#	added LEAVE constructor 
-# 29 Jan 98 - Mike
-#	changed order of CS and IP in the call and jmp constructors
-# 2 Feb 98 - Cristina
-#	MOViw took a r32 instead of a r16.  Changed as per 386-names.spec
-# 21 Oct 98 - Mike: lower case register names
-# 03 Nov 98 - Mike: fixed LEA; Abs32 is now Mem (was Eaddr)
-# 04 Nov 98 - Mike: changed SETb to Eaddr (was Mem)
-# 28 Jan 99 - Mike: changed CMPS to not use address size prefix (av)
-# 25 Apr 01 - Mike: REP and REPNE are true prefixes now; REP MOVSB is one instr
-# 17 Oct 01 - Mike: Added PUSH.Ix^ow (66 6A dd, 8 bit operand, 16 bit push)
+# 18 Oct 01 - Mike: Added PUSH.Ix^ow (66 6A dd, 8 bit operand, 16 bit push)
+# 18 Nov 02 - Mike: Fixed MOV.Ew.Iv^ow and MOV.Ed.Iv^od (was Eb)
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -440,8 +423,8 @@ MOVib          r8,  i8!    is      MOVib & r8; i8
 MOViw          r16, i16!   is  ow; MOViv & r16; i16
 MOVid          r32, i32!   is  od; MOViv & r32; i32
 MOV.Eb.Ib      Eaddr, i8!  is      MOV.Eb.Ib; Eaddr & reg_opcode = 0 ...; i8
-MOV.Eb.Iv^ow   Eaddr, i16! is  ow; MOV.Ev.Iv; Eaddr & reg_opcode = 0 ...; i16
-MOV.Eb.Iv^od   Eaddr, i32! is  od; MOV.Ev.Iv; Eaddr & reg_opcode = 0 ...; i32
+MOV.Ew.Iv^ow   Eaddr, i16! is  ow; MOV.Ev.Iv; Eaddr & reg_opcode = 0 ...; i16
+MOV.Ed.Iv^od   Eaddr, i32! is  od; MOV.Ev.Iv; Eaddr & reg_opcode = 0 ...; i32
 MOV.Cd.Rd      cr, reg     is  MOV.Cd.Rd; mod = 3 & r_m = reg & reg_opcode = cr
 MOV.Rd.Cd      reg, cr     is  MOV.Rd.Cd; mod = 3 & r_m = reg & reg_opcode = cr
 MOV.Dd.Rd      dr, reg     is  MOV.Dd.Rd; mod = 3 & r_m = reg & reg_opcode = dr
