@@ -87,6 +87,9 @@ TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o \
 	analysis/AnalysisTest.o loader/BinaryFileStub.o \
         c/CTest.o
 
+# Needed because the test header files are in all these different directories
+INCLUDEALL = -Idb -Ifrontend -Ianalysis -Ic
+
 UTIL_OBJS = 	  util/util.o
 DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   db/table.o db/dataflow.o db/register.o db/sslparser.o db/exp.o db/rtl.o \
@@ -94,7 +97,7 @@ DB_OBJS = db/basicblock.o db/proc.o db/sslscanner.o db/cfg.o db/prog.o \
   c/ansi-c-parser.o c/ansi-c-scanner.o boomerang.o
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
-	frontend/pentiumfrontend.o
+	frontend/pentiumfrontend.o frontend/switch.o
 AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS}
@@ -143,6 +146,8 @@ c/CTest.o:	EXTRA = $(BOOMSET)
 db/ProgTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ProcTest.o:				EXTRA = $(BOOMSET) -Ifrontend
 db/ParserTest.o:			EXTRA = $(BOOMSET)
+db/ExpTest.o:				EXTRA = $(BOOMSET)
+db/RtlTest.o:               EXTRA = $(BOOMSET) -Ifrontend
 
 # Compile ordinary files
 $(STATIC_OBJS): %.o : %.cpp
@@ -155,7 +160,7 @@ driver.o: driver.cpp include/boomerang.h
 	$(CC) -c -o $@ -Iinclude -Icodegen $(EXTRA) $<
 
 testAll.o: testAll.cpp
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $< -Idb -Ifrontend -Ianalysis -Ic
+	$(CC) -c -o $@ -Iinclude $(EXTRA) $< $(INCLUDEALL)
 
 #
 # Dependencies
@@ -180,8 +185,9 @@ db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
 	include/exp.h include/prog.h include/type.h
 db/dataflow.o: include/exp.h include/cfg.h include/dataflow.h include/proc.h
 db/RtlTest.o: db/RtlTest.h include/exp.h include/rtl.h
-db/ExpTest.o: db/ExpTest.h include/exp.h
-db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h
+db/ExpTest.o: db/ExpTest.h include/exp.h include/operator.h
+db/ParserTest.o: db/ParserTest.h db/sslparser.h include/prog.h \
+    include/operator.h
 db/ProgTest.o: db/ProgTest.h include/prog.h
 db/ProcTest.o: db/ProcTest.h include/proc.h
 db/TypeTest.o: db/TypeTest.h include/util.h include/type.h
@@ -192,10 +198,14 @@ util/util.o: include/util.h
 
 frontend/frontend.o: frontend/frontend.cpp include/frontend.h \
 	include/decoder.h c/ansi-c-parser.h
+frontend/sparcfrontend.o: include/frontend.h
+frontend/pentiumfrontend.o: include/frontend.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
+frontend/switch.o: include/exp.h include/operator.h
+
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h
 analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
