@@ -624,7 +624,14 @@ RTL* HLJcond::clone() {
     ret->m_isComputed = m_isComputed;
     ret->bFloat = bFloat;
     ret->numNativeBytes = numNativeBytes;
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
+}
+Statement* HLJcond::cloneStmt() {
+    return (Statement*)(HLJcond*)clone();
 }
 
 // visit this rtl
@@ -1192,10 +1199,6 @@ bool HLCall::searchAll(Exp* search, std::list<Exp *>& result) {
  * RETURNS:         Nothing
  *============================================================================*/
 void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
-    // Calls can all have semantics (e.g. call/restore)
-    if (expList.size() != 0)
-        RTL::print(os, withDF);
-
     os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
     os << " " << std::setfill(' ');
     os << std::dec << std::setw(4) << number << " ";    // Statement number
@@ -1227,7 +1230,16 @@ void HLCall::print(std::ostream& os /*= cout*/, bool withDF) {
         os << arguments[i];
     }
     os << ")\n";
+}
 
+// This function is needed because the class hierarchy is wrong.
+// HLCalls are Statements, and yet have statements inside them. Ugh.
+void HLCall::printFull(std::ostream& os /*= cout*/, bool withDF) {
+    // Calls can all have semantics (e.g. call/restore)
+    if (expList.size() != 0)
+        RTL::print(os, withDF);
+
+    print(os, withDF);
     // Print the post call RTLs, if any
     if (postCallExpList) {
         for (std::list<Exp*>::iterator it = postCallExpList->begin();
@@ -1300,10 +1312,26 @@ RTL* HLCall::clone() {
     HLCall* ret = new HLCall(nativeAddr, returnTypeSize, &le);
     ret->pDest = pDest->clone();
     ret->m_isComputed = m_isComputed;
-    ret->arguments = arguments;
+    int n = arguments.size();
+    for (int i=0; i < n; i++)
+        ret->arguments.push_back(arguments[i]->clone());
     ret->numNativeBytes = numNativeBytes;
-    ret->returnLoc = returnLoc;
+    if (returnLoc)
+        ret->returnLoc = returnLoc->clone();
+    if (postCallExpList) {
+        ret->postCallExpList = new std::list<Exp*>;
+        for (it = postCallExpList->begin(); it != postCallExpList->end();
+          it++)
+            ret->postCallExpList->push_back((*it)->clone());
+    }
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
+}
+Statement* HLCall::cloneStmt() {
+    return (Statement*)(HLCall*)clone();
 }
 
 // visit this rtl
@@ -1636,14 +1664,15 @@ void HLCall::insertArguments(StatementSet& rs) {
     // Get the set of definitions that reach this call
     StatementSet rd;
     getBB()->getReachInAt(this, rd, 2);
+    StatementSet empty;
     for (int i=0; i<num; i++) {
         Exp* loc = sig->getArgumentExp(i)->clone();
         // Needs to be subscripted with everything that reaches the parameters
         // FIXME: need to be sensible about memory depths
         loc->updateRefs(rd, 0, rs);
-        propagateTo(0);
+        propagateTo(0, empty);
         loc->updateRefs(rd, 1, rs);
-        propagateTo(1);
+        propagateTo(1, empty);
         arguments.push_back(loc);
     }
 }
@@ -1971,7 +2000,14 @@ RTL* HLScond::clone() {
     else ret->pCond = NULL;
     ret->bFloat = bFloat;
     ret->numNativeBytes = numNativeBytes;
+    // Statement members
+    ret->pbb = pbb;
+    ret->proc = proc;
+    ret->number = number;
     return ret;
+}
+Statement* HLScond::cloneStmt() {
+    return (Statement*)(HLScond*)clone();
 }
 
 // visit this rtl
