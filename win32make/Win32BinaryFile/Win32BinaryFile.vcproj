@@ -12,7 +12,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
+			OutputDirectory="..\..\Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
@@ -34,7 +34,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/Win32BinaryFile.dll"
 				LinkIncremental="2"
-				ModuleDefinitionFile="..\..\lib\BinaryFile.lib"
+				ModuleDefinitionFile="..\..\Debug\BinaryFile.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/Win32BinaryFile.pdb"
 				SubSystem="2"
@@ -63,7 +63,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
+			OutputDirectory="..\..\Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="2"
 			CharacterSet="2">
@@ -81,6 +81,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/Win32BinaryFile.dll"
 				LinkIncremental="1"
+				ModuleDefinitionFile="..\..\Release\BinaryFile.lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

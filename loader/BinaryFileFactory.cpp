@@ -59,14 +59,14 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	fread (buf, sizeof(buf), 1, f);
 	if( TESTMAGIC4(buf,0, '\177','E','L','F') ) {
 		/* ELF Binary */
-		libName = "libElfBinaryFile";
+		libName = "ElfBinaryFile";
 	} else if( TESTMAGIC2( buf,0, 'M','Z' ) ) { /* DOS-based file */
 		int peoff = LMMH(buf[0x3C]);
 		if( peoff != 0 && fseek(f, peoff, SEEK_SET) != -1 ) {
 			fread( buf, 4, 1, f );
 			if( TESTMAGIC4( buf,0, 'P','E',0,0 ) ) {
 				/* Win32 Binary */
-				libName = "libWin32BinaryFile";
+				libName = "Win32BinaryFile";
 			} else if( TESTMAGIC2( buf,0, 'N','E' ) ) {
 				/* Win16 / Old OS/2 Binary */
 			} else if( TESTMAGIC2( buf,0, 'L','E' ) ) {
@@ -77,16 +77,16 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 		}
 		/* Assume MS-DOS Real-mode binary. */
 		if( libName.size() == 0 )
-			libName = "libExeBinaryFile";
+			libName = "ExeBinaryFile";
 	} else if( TESTMAGIC4( buf,0x3C, 'a','p','p','l' ) ||
 			   TESTMAGIC4( buf,0x3C, 'p','a','n','l' ) ) {
 		/* PRC Palm-pilot binary */
-		libName = "libPalmBinaryFile";
+		libName = "PalmBinaryFile";
 	} else if( buf[0] == 0x02 && buf[2] == 0x01 &&
 			   (buf[1] == 0x10 || buf[1] == 0x0B) &&
 			   (buf[3] == 0x07 || buf[3] == 0x08 || buf[4] == 0x0B) ) {
 		/* HP Som binary (last as it's not really particularly good magic) */
-		libName = "libHpSomBinaryFile";
+		libName = "HpSomBinaryFile";
 	} else {
 		fprintf( stderr, "Unrecognised binary file\n" );
 		fclose(f);
@@ -94,8 +94,8 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	}
 	
 // Load the specific loader library
-	libName = std::string("lib/") + libName;
 #ifndef _WIN32
+	libName = std::string("lib/lib") + libName;
 #ifdef	__CYGWIN__
 	libName += ".dll";		// Cygwin wants .dll, but is otherwise like Unix
 #else
@@ -111,7 +111,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	// Use the handle to find the "construct" function
 	constructFcn pFcn = (constructFcn) dlsym(dlHandle, "construct");
 #else
-	libName += ".dll";
+	libName += ".dll";		// Example: ElfBinaryFile.dll (same dir as boomerang.exe)
 	HMODULE hModule = LoadLibrary(libName.c_str());
 	if(hModule == NULL) {
 		int err = GetLastError();
