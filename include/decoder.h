@@ -146,21 +146,23 @@ protected:
 	Exp* instantiateNamedParam(char *name, ...);
 
 	/*
-	 * In the event that it's necessary to synthesize the call of
-	 * a named parameter generated with instantiateNamedParam(),
-	 * this substituteCallArgs() will substitute the arguments that
-	 * follow into the expression.
+	 * In the event that it's necessary to synthesize the call of a named parameter generated with
+	 * instantiateNamedParam(), this method will substitute the arguments that * follow into the expression.
 	 * Should only be used after e = instantiateNamedParam(name, ..);
 	 */
-	void substituteCallArgs(char *name, Exp*& exp, ...);
+	void	substituteCallArgs(char *name, Exp*& exp, ...);
 
 	/*
-	 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to
-	 * other procedures
+	 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
 	 */
-	void unconditionalJump(const char* name, int size, ADDRESS relocd,
-		int delta, ADDRESS pc, std::list<Statement*>* stmts,
-		DecodeResult& result);
+	void	unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
+		std::list<Statement*>* stmts, DecodeResult& result);
+
+	/*
+	 * Generate an unconditional jump to a computed location, such as %LR
+	 */
+	void	computedJump(const char* name, int size, Exp* dest, ADDRESS pc,
+		std::list<Statement*>* stmts, DecodeResult& result);
 
 	/*
 	 * String for the constructor names (displayed with use "-c")
@@ -168,12 +170,12 @@ protected:
 	char	constrName[84];
 
 	/* decodes a number */
-	Exp* dis_Num(unsigned num);
+	Exp*	dis_Num(unsigned num);
 	/* decodes a register */
-	Exp* dis_Reg(int regNum);
+	Exp*	dis_Reg(int regNum);
 
-	// Public dictionary of instruction patterns, and other information
-	// summarised from the SSL file (e.g. source machine's endianness)
+	// Public dictionary of instruction patterns, and other information summarised from the SSL file
+	// (e.g. source machine's endianness)
 	RTLInstDict RTLDict;
 };
 
