@@ -60,14 +60,15 @@ void CTest::testSignature () {
     std::istringstream os("int printf(char *fmt, ...);");
     AnsiCParser *p = new AnsiCParser(os, false);
     p->yyparse("-stdc-pentium");
-    CPPUNIT_ASSERT(p->signatures.size() == 1);
+    CPPUNIT_ASSERT_EQUAL(1, (int)p->signatures.size());
     Signature *sig = p->signatures.front();
-    CPPUNIT_ASSERT(std::string(sig->getName()) == "printf");
-    CPPUNIT_ASSERT(*sig->getReturnType() == IntegerType());
+    CPPUNIT_ASSERT_EQUAL(std::string("printf"), std::string(sig->getName()));
+    CPPUNIT_ASSERT(*sig->getReturnType(0) == IntegerType());
     Type *t = new PointerType(new CharType());
-    CPPUNIT_ASSERT(sig->getNumParams() == 1);
+    // Um, are there two parameters for printf now? Some extra first parameter?
+    CPPUNIT_ASSERT_EQUAL(1, sig->getNumParams());
     CPPUNIT_ASSERT(*sig->getParamType(0) == *t);
-    CPPUNIT_ASSERT(std::string(sig->getParamName(0)) == "fmt");
+    CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(0)));
     CPPUNIT_ASSERT(sig->hasEllipsis());
     delete t;
 }
