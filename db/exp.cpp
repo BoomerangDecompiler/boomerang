@@ -2571,6 +2571,23 @@ Exp* Binary::polySimplify(bool& bMod) {
         }
     }
 
+    // Check for 0 - (0 <u exp1) & exp2 => exp2
+    if (op == opBitAnd && opSub1 == opMinus) {
+        Exp* leftOfMinus = ((Binary*)subExp1)->getSubExp1();
+        if (leftOfMinus->isIntConst() && ((Const*)leftOfMinus)->getInt() == 0) {
+            Exp* rightOfMinus = ((Binary*)subExp1)->getSubExp2();
+            if (rightOfMinus->getOper() == opLessUns) {
+                Exp* leftOfLess = ((Binary*)rightOfMinus)->getSubExp1();
+                if (leftOfLess->isIntConst() &&
+                  ((Const*)leftOfLess)->getInt() == 0) {
+                    res = becomeSubExp2();
+                    bMod = true;
+                    return res;
+                }
+            }
+        }
+    }
+
     return res;
 }
 
