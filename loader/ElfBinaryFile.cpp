@@ -36,7 +36,6 @@
 #include <sys/types.h>      // Next three for open()
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>         // Close()
 #include <iostream>
 #include <assert.h>
 #include "config.h"
