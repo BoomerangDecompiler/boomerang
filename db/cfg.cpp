@@ -1852,6 +1852,8 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
 	hll->RemoveUnusedLabels(Ordering.size());
 }
 
+#define BBINDEX 0				// Non zero to print <index>: before <statement number>
+#define BACK_EDGES 0			// Non zero to generate green back edges
 void Cfg::generateDotFile(std::ofstream& of) {
 	ADDRESS aret = NO_ADDRESS;
 	// The nodes
@@ -1859,12 +1861,13 @@ void Cfg::generateDotFile(std::ofstream& of) {
 	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
 		of << "	   " << "bb" << std::hex << (*it)->getLowAddr() << " [" << "label=\"";
 		char* p = (*it)->getStmtNumber();
+#if BBINDEX
 		of << std::dec << indices[*it];
 		if (p[0] != 'b')
 			// If starts with 'b', no statements (something like bb8101c3c).
-			of << ":" << (*it)->getStmtNumber();
-		else
-			of << " ";
+			of << ":";
+#endif
+		of << p << " ";
 		switch((*it)->getType()) {
 			case ONEWAY: of << "oneway"; break;
 			case TWOWAY: 
@@ -1877,8 +1880,16 @@ void Cfg::generateDotFile(std::ofstream& of) {
 				else
 					of << "twoway";
 				break;
-			case NWAY: of << "nway\" shape=trapezium];\n";
+			case NWAY: {
+				of << "nway";
+				Exp* de = (*it)->getDest();
+				if (de) {
+					of << "\\n";
+					of << de;
+				}
+				of << "\" shape=trapezium];\n";
 				continue;
+			}
 			case CALL: {
 				of << "call";
 				Proc* dest = (*it)->getDestProc();
@@ -1922,7 +1933,6 @@ void Cfg::generateDotFile(std::ofstream& of) {
 			of << " [color = \"blue\"];\n";
 		}
 	}
-#define BACK_EDGES 1
 #if BACK_EDGES
 	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
 		std::vector<PBB>& inEdges = (*it)->getInEdges();
@@ -2636,14 +2646,6 @@ Statement* Cfg::findImplicitParamAssign(Parameter* param) {
 
 void Cfg::removeImplicitAssign(Exp* x) {
 	std::map<Exp*, Statement*, lessExpStar>::iterator it = implicitMap.find(x);
-if (it == implicitMap.end()) {
-  bool eq = *x == *(implicitMap.begin()->first);
-  std::cerr << "removeImplicitAssign of " << x << " failed; in the implicit map:\n";
-  for (it = implicitMap.begin(); it != implicitMap.end(); it++)
-    std::cerr << it->first << ", \t";
-  std::cerr << "\n" << std::flush;
-  assert(0);
-}
 	// assert(it != implicitMap.end());
 	implicitMap.erase(it);
 }

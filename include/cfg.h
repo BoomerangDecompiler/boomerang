@@ -313,13 +313,16 @@ public:
 	/*
 	 * Resets the DFA sets of this BB.
 	 */
-	void resetDFASets();
+	void	resetDFASets();
 
 	/* get the condition */
-	Exp *getCond();
+	Exp		*getCond();
 
 	/* set the condition */
-	void setCond(Exp *e);
+	void	setCond(Exp *e);
+
+	/* Get the destination expression, if any */
+	Exp*	getDest();
 
 	/* Check if there is a jump if equals relation */
 	bool isJmpZ(PBB dest);
