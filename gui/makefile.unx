@@ -12,10 +12,12 @@
 # RPM packages wxGTK.XXX.rpm and wxGTK-devel.XXX.rpm
 # under Linux.
 #
+# 19 Mar 02 - Mike: Added proper dependencies
 
 CC = gcc
 
-PROGRAM = mdi
+PROGRAM = TestPlugin/TestPlugin boomerang
+all:    $(PROGRAM)
 
 OBJECTS = $(PROGRAM).o
 
@@ -26,10 +28,15 @@ OBJECTS = $(PROGRAM).o
 .cpp.o :
 	$(CC) -c `wx-config --cflags` -o $@ $<
 
-all:    $(PROGRAM)
 
-$(PROGRAM):	$(OBJECTS)
-	$(CC) -o $(PROGRAM) $(OBJECTS) `wx-config --libs`
+#$(PROGRAM):	$(OBJECTS)
+#	$(CC) -o $(PROGRAM) $(OBJECTS) `wx-config --libs`
+
+TestPlugin/TestPlugin: TestPlugin/TestPlugin.o
+	$(CC) -o $@ $^ `wx-config --libs`
+
+boomerang: boomerang.o Preferences.o Project.o Plugin.o
+	$(CC) -o $@ $^ `wx-config --libs`
 
 clean: 
 	rm -f *.o $(PROGRAM)
