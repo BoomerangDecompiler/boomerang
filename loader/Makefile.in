@@ -73,6 +73,7 @@ microX86dis.o: microX86dis.c
 ../lib/libBinaryFile.so:        EXTRAS =              $(LDL)
 ../lib/libWin32BinaryFile.so:   EXTRAS = BinaryFile.o microX86dis.o
 ../lib/libExeBinaryFile.so:     EXTRAS = BinaryFile.o
+../lib/libPalmBinaryFile.so:    EXTRAS = BinaryFile.o
 
 # This pattern generates all the main dependencies
 $(ALLLIB): ../lib/lib%.so : %.o
