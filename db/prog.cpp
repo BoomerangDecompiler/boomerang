@@ -443,14 +443,18 @@ void Prog::globalUsed(ADDRESS uaddr)
                     globals[i]->getType()->getSize() / 8 > uaddr)
             return;
     if (uaddr < 0x10000) {
-        // This happens in windows code because you can pass a low value integer instead 
-        // of a string to some functions.
-        LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
+        // This happens in windows code because you can pass a low value
+        // integer instead of a string to some functions.
+        LOG << "warning: ignoring stupid request for global at address " <<
+          uaddr << "\n";
         return;
     }
     const char *nam = newGlobal(uaddr); 
     Type *ty = guessGlobalType(nam, uaddr);
     globals.push_back(new Global(ty, uaddr, nam));
+    if (VERBOSE)
+        LOG << "globalUsed: name " << nam << ", address " << 
+          uaddr << ", guessed type " << ty->getCtype() << "\n";
 }
 
 Type *Prog::guessGlobalType(const char *nam, ADDRESS u)
