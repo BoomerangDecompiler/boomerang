@@ -86,14 +86,19 @@ dnl Check for eXpat includes
 dnl Want to check default-includes PLUS the boomerang include/ directory
 AC_CHECK_HEADER(expat.h,,
     [AC_CHECK_HEADER(expat.h,,
-        [AC_MSG_WARN(Header file expat.h not found: eXpat not installed,)]
-        [AC_MSG_WARN(or you need to copy expat.h to the include/ directory)],
-        ./include)])
+        [AC_MSG_WARN()]
+        [AC_MSG_WARN(Header file expat.h not found: eXpat not installed...)]
+        [AC_MSG_WARN(or you need to copy expat.h to boomerang's include/ dir)]
+        [AC_MSG_WARN()])],
+        ./include)
 
 dnl Check for eXpat library
 AC_CHECK_LIB(expat, XML_ExpatVersion, ,
-    [AC_MSG_WARN(eXpat library not found: expat not installed, or you)]
-    [AC_MSG_WARN(need to copy libexpat.o or similar to boomerang's lib/ dir)],)
+    [AC_CHECK_FILE(lib/libexpat.a, ,
+        [AC_MSG_WARN()]
+        [AC_MSG_WARN(eXpat library not found: expat not installed... or you)]
+        [AC_MSG_WARN(need to copy libexpat.a (etc) to boomerang's lib/ dir)]
+        [AC_MSG_WARN()]) ],)
 
 dnl Checks for header files.
 dnl AC_HEADER_STDC
