@@ -1652,6 +1652,17 @@ int BasicBlock::whichPred(PBB pred) {
 
 // Switch High Level patterns
 
+// With array processing, we get a new form, call it form 'a' (don't
+// confuse with form 'A'):
+// Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
+static Unary* forma = new RefExp(
+        new Binary(opArraySubscript,
+            new RefExp(
+                new Terminal(opWild),
+                (Statement*)-1),
+            new Terminal(opWild)),
+        (Statement*)-1);
+
 // Pattern: m[<expr> * 4 + T ]
 static Location* formA  = Location::memOf(
         new Binary(opPlus,
@@ -1661,7 +1672,7 @@ static Location* formA  = Location::memOf(
             new Terminal(opWildIntConst)));
 
 // Pattern: m[<expr> * 4 + T ] + T
-static Binary* formO  = new Binary(opPlus,
+static Exp* formO  = new Binary(opPlus,
     Location::memOf(
         new Binary(opPlus,
             new Binary(opMult,
@@ -1672,7 +1683,7 @@ static Binary* formO  = new Binary(opPlus,
 
 // Pattern: %pc + m[%pc  + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static Binary* formR = new Binary(opPlus,
+static Exp* formR = new Binary(opPlus,
     new Terminal(opPC),
     Location::memOf(new Binary(opPlus,
         new Terminal(opPC),
@@ -1684,7 +1695,7 @@ static Binary* formR = new Binary(opPlus,
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static Binary* formr = new Binary(opPlus,
+static Exp* formr = new Binary(opPlus,
     new Terminal(opPC),
     Location::memOf(new Binary(opPlus,
         new Terminal(opPC),
@@ -1694,8 +1705,8 @@ static Binary* formr = new Binary(opPlus,
                 new Const(4)),
         new Terminal(opWildIntConst)))));
 
-static Exp* hlForms[] = {formA, formO, formR, formr};
-static char chForms[] = {   'A',   'O',   'R',   'r'};
+static Exp* hlForms[] = {forma, formA, formO, formR, formr};
+static char chForms[] = {  'a',  'A',   'O',   'R',   'r'};
 
 
 // Vcall high level patterns
@@ -1738,6 +1749,19 @@ static Exp* hlVfc[] = {vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none};
 
 void findSwParams(char form, Exp* e, Exp*& expr, ADDRESS& T) {
     switch (form) {
+        case 'a': {
+            // Pattern: <base>{}[<index>]{}
+            e = ((RefExp*)e)->getSubExp1();
+            Exp* base = ((Binary*)e)->getSubExp1();
+            base = ((RefExp*)base)->getSubExp1();
+            Exp* con = ((Location*)base)->getSubExp1();
+            char* gloName = ((Const*)con)->getStr();
+            UserProc* p = ((Location*)base)->getProc();
+            Prog* prog = p->getProg();
+            T = (ADDRESS)prog->getGlobalAddr(gloName);
+            expr = ((Binary*)e)->getSubExp2();
+            break;
+        }
         case 'A': {
             // Pattern: m[<expr> * 4 + T ]
             if (e->isSubscript()) e = e->getSubExp1();
