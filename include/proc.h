@@ -448,6 +448,9 @@ public:
     void numberStatements(int& stmtNum);
     bool nameStackLocations();
     bool nameRegisters();
+    void removeRedundantPhis();
+    void trimReturns();
+    void trimParameters();
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters();   // must be in SSA form

@@ -1006,37 +1006,15 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
         }
         
         if (depth == 0) {
-            if (VERBOSE)
-                std::cerr << "attempting to prove esp = esp + 4 for " << getName() << std::endl;
-            prove(new Binary(opEquals,
-                          new Unary(opRegOf, new Const(28)),
-                          new Binary(opPlus,
-                              new Unary(opRegOf, new Const(28)),
-                              new Const(4))));
-            std::set<Exp*> preserved;
-            for (int i = 0; i < signature->getNumReturns(); i++) {
-                Exp *p = signature->getReturnExp(i);
-                Exp *e = new Binary(opEquals, p->clone(), p->clone());
-                if (VERBOSE)
-                    std::cerr << "attempting to prove " << p << " is preserved by " 
-                              << getName() << std::endl;
-                if (prove(e)) {
-                    preserved.insert(p);    
-                }
-            }
-            for (std::set<Exp*>::iterator it = preserved.begin(); it != preserved.end(); it++)
-                signature->removeReturn(*it);
-            StatementList stmts;
-            getStatements(stmts);
-            StmtListIter it;
-            for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
-                s->fixCallRefs();
+            trimReturns();
+            removeRedundantPhis();
+            //trimParameters();
         }
 
         // Print if requested
         if (Boomerang::get()->debugPrintSSA && depth == 0) {
             std::cerr << "=== Debug Print SSA for " << getName()
-              << " at memory depth " << depth << " (after removing preserved registers) ===\n";
+              << " at memory depth " << depth << " (after trimming return set) ===\n";
             print(std::cerr, true);
             std::cerr << "=== End Debug Print SSA for " <<
               getName() << " at depth " << depth << " ===\n\n";
@@ -1139,6 +1117,110 @@ int UserProc::findMaxDepth() {
         }
     }
     return maxDepth;
+}
+
+void UserProc::removeRedundantPhis()
+{
+    if (VERBOSE)
+        std::cerr << "removing redundant phi statements" << std::endl;
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        if (s->isPhi()) {
+            // if we can prove that all the statements in the phi define
+            // equal values then we can replace the phi with any one of 
+            // the values, but there's not much point if they're all calls
+            PhiExp *p = (PhiExp*)s->getRight();
+            StmtSetIter it;
+            bool allsame = true;
+            Statement *s1 = p->getFirstRef(it);  
+            Statement *noncall = s1;
+            if (!p->isLastRef(it))
+                for (Statement *s2 = p->getNextRef(it); !p->isLastRef(it); 
+                     s2 = p->getNextRef(it)) {
+                    if (noncall && noncall->isCall() && s2 && !s2->isCall())
+                        noncall = s2;
+                    Exp *e = new Binary(opEquals, 
+                                 new RefExp(s->getLeft()->clone(), s1),
+                                 new RefExp(s->getLeft()->clone(), s2));
+                    if (!prove(e)) {
+                        allsame = false; break;
+                    }
+                }
+            if (allsame && (noncall == NULL || !noncall->isCall())) {
+                s->searchAndReplace(s->getRight(), 
+                   new RefExp(s->getLeft(), noncall));
+            }
+        }
+}
+
+void UserProc::trimReturns() {
+    if (VERBOSE)
+        std::cerr << "attempting to prove esp = esp + 4 for " << getName() << std::endl;
+    prove(new Binary(opEquals,
+                  new Unary(opRegOf, new Const(28)),
+                  new Binary(opPlus,
+                      new Unary(opRegOf, new Const(28)),
+                      new Const(4))));
+    std::set<Exp*> preserved;
+    for (int i = 0; i < signature->getNumReturns(); i++) {
+        Exp *p = signature->getReturnExp(i);
+        Exp *e = new Binary(opEquals, p->clone(), p->clone());
+        if (VERBOSE)
+            std::cerr << "attempting to prove " << p << " is preserved by " 
+                      << getName() << std::endl;
+        if (prove(e)) {
+            preserved.insert(p);    
+        }
+    }
+    for (std::set<Exp*>::iterator it = preserved.begin(); 
+         it != preserved.end(); it++)
+        signature->removeReturn(*it);
+    StatementList stmts;
+    getStatements(stmts);
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->fixCallRefs();
+}
+
+void UserProc::trimParameters() {
+    StatementList stmts;
+    getStatements(stmts);
+
+    assert(false); // TODO
+
+    bool referenced[signature->getNumParams()];
+    for (int i = 0; i < signature->getNumParams(); i++)
+        referenced[i] = false;
+#if 0
+    // find parameters that are referenced
+    StmtListIter it;
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        for (int i = 0; i < signature->getNumParams(); i++) {
+            RefExp *r = new RefExp(signature->getParamExp(i), NULL);
+            bool ch = s->search(r, new Unary(opParam, new Const((char*)signature->getParamName(i))));
+        }
+    }
+
+    // replace expressions with parameters in the return value
+    for (int i = 0; i < signature->getNumParams(); i++) { 
+        Exp *e = cfg->getReturnVal();
+        if (e == NULL) break;
+        e = e->clone();
+        bool change = false;
+        RefExp *r = new RefExp(signature->getParamExp(i), NULL);
+        e = e->searchReplaceAll(r, new Unary(opParam, 
+                         new Const((char*)signature->getParamName(i))), change);
+        if (change) cfg->setReturnVal(e->clone());
+    }
+
+    for (int i = 0; i < signature->getNumParam(); i++) {
+        Exp *e = signature->getParamExp(i);
+
+        
+    }
+#endif
 }
 
 void UserProc::replaceExpressionsWithGlobals() {
@@ -1785,29 +1867,17 @@ bool UserProc::prover(Exp *query)
                 Statement *s = r->getRef();
                 CallStatement *call = dynamic_cast<CallStatement*>(s);
                 if (call) {
-                    Proc *dest = call->getDestProc();
-                    if (dest) {
-                        Exp *right = dest->getProven(r->getSubExp1());
-                        if (right) {
-                            right = right->clone();
-                            if (VERBOSE)
-                                std::cerr << "using proven (or induction) for " 
-                                          << dest->getName() << " " << r->getSubExp1() 
-                                          << " = " << right << std::endl;
-                            LocationSet locs;
-                            right->addUsedLocs(locs);
-                            LocSetIter xx;
-                            for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-                                int i = dest->getSignature()->findParam(x);
-                                if (i != -1) {
-                                    Exp *a = call->getArguments()[i];
-                                    bool change;
-                                    right = right->searchReplace(x, a->clone(), change);
-                                }
-                            }
-                            query->setSubExp1(right);
-                            change = true;
-                        }
+                    Exp *right = call->getProven(r->getSubExp1());
+                    if (right) {
+                        right = right->clone();
+                        if (VERBOSE)
+                            std::cerr << "using proven (or induction) for " 
+                                      << call->getDestProc()->getName() << " " 
+                                      << r->getSubExp1() 
+                                      << " = " << right << std::endl;
+                        right = call->substituteParams(right);
+                        query->setSubExp1(right);
+                        change = true;
                     }
                 } else if (s && s->getRight()) {
                     if (s->getRight()->getOper() == opPhi) {

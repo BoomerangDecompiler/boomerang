@@ -2011,6 +2011,20 @@ Exp *CallStatement::getProven(Exp *e) {
     return procDest->getProven(e);
 }
 
+Exp *CallStatement::substituteParams(Exp *e)
+{
+    e = e->clone();
+    LocationSet locs;
+    e->addUsedLocs(locs);
+    LocSetIter xx;
+    for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
+        Exp *r = findArgument(x);
+        bool change;
+        e = e->searchReplaceAll(x, r->clone(), change);
+    }
+    return e;
+}
+
 Exp *CallStatement::findArgument(Exp *e) {
     assert(procDest);
     int n = procDest->getSignature()->findParam(e);

@@ -846,6 +846,7 @@ public:
     Exp *getReturnExp(int i);
     int findReturn(Exp *e);
     Exp *getProven(Exp *e);
+    Exp *substituteParams(Exp *e);
     Exp *findArgument(Exp *e);
     Exp* getArgumentExp(int i) { return arguments[i]; }
     void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
