@@ -75,6 +75,8 @@ remote:
         db/sslscanner.cpp   db/sslscanner.h \
         transform/transformation-parser.cpp transform/transformation-scanner.cpp \
         transform/transformation-parser.h transform/transformation-scanner.h
+# Also touch the decoders, since the user won't have the NJMC toolkit
+	touch frontend/pentiumdecoder.cpp frontend/sparcdecoder.cpp frontend/ppcdecoder.cpp
 
 clean:
 	cd util     && ${MAKE} clean
