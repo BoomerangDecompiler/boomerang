@@ -749,7 +749,7 @@ public:
     virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
-    virtual bool propagateToAll() { assert(false); }
+    virtual bool propagateToAll() { assert(false); return false;}
 
     virtual bool isDefinition();
     virtual void getDefinitions(LocationSet &defs);
@@ -959,7 +959,7 @@ public:
     void setBasicBlock(PBB bb) { pBB = bb; }
 
     // visitor functions, 
-    // returns true to continue iteratoring the container
+    // returns true to continue iterating the container
     virtual bool visit(RTL *rtl);   // By default, visits all statements
     virtual bool visit(Assign *stmt) = 0;
     virtual bool visit(GotoStatement *stmt) = 0;
