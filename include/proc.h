@@ -430,6 +430,13 @@ public:
     void deleteCFG();
 
     /*
+     * Returns an abstract syntax tree for the procedure in the
+     * internal representation.  This function actually _calculates_
+     * this value and is expected to do so expensively.
+     */ 
+    Statement *getAST();
+
+    /*
      * Returns whether or not this procedure can be decoded (i.e. has
      * it already been decoded).
      */

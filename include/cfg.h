@@ -892,6 +892,13 @@ public:
     void structure();
 
     /*
+     * Resolves goto/branch destinations to statements
+     * Good to do this late, as removing statements doesn't
+     * update this information.
+     */
+    void resolveGotos();
+
+    /*
      * Virtual Function Call analysis
      */
     void virtualFunctionCalls(Prog* prog);

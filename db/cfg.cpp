@@ -1956,6 +1956,37 @@ void Cfg::structure() {
     checkConds();
 }
 
+void Cfg::resolveGotos()
+{
+    for (std::list<PBB>::iterator it = m_listBB.begin(); 
+         it != m_listBB.end(); it++) {
+        PBB bb = *it;
+        std::list<RTL*> *rtls = bb->getRTLs();
+        if (rtls && rtls->size() > 0) {
+            RTL *rtl = rtls->back();
+            if (rtl->getNumStmt() > 0) {
+                Statement *last = rtl->elementAt(rtl->getNumStmt()-1);
+                PBB dest = NULL;
+                if (last->getKind() == STMT_GOTO || 
+                    last->getKind() == STMT_BRANCH)
+                    dest = bb->getOutEdge(0);
+                if (dest) {
+                    std::list<RTL*> *drtls = dest->getRTLs();
+                    if (drtls && drtls->size() > 0) {
+                        for (std::list<RTL*>::iterator it = drtls->begin();
+                             it != drtls->end(); it++)
+                            if ((*it)->getNumStmt() > 0) {
+                                GotoStatement *g = (GotoStatement*)last;
+                                g->setDestStmt((*it)->elementAt(0));
+                                break;
+                            }
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Cfg::removeUnneededLabels(HLLCode *hll) {
     for (unsigned int i = 0; i < Ordering.size(); i++)
         if (!Ordering[i]->hllLabel)

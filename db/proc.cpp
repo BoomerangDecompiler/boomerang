@@ -645,6 +645,30 @@ void UserProc::deleteCFG() {
     cfg = NULL;
 }
 
+Statement *UserProc::getAST()
+{
+    int num = 1000;
+    BlockStatement *init = new BlockStatement();
+    init->setNumber(num++);
+    BB_IT it;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        BlockStatement *b = new BlockStatement();
+        b->setNumber(num++);
+        std::list<RTL*> *rtls = bb->getRTLs();
+        for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+          rit++) {
+            RTL *rtl = *rit;
+            for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
+              it != rtl->getList().end(); it++) {
+                b->addStatement(*it);
+            }
+        }
+        if (b->getNumStatements() > 0)
+            init->addStatement(b);
+    }
+    return init;
+}
+
 /*==============================================================================
  * FUNCTION:        UserProc::setDecoded
  * OVERVIEW:        

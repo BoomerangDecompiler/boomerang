@@ -25,12 +25,14 @@
 #define _STATEMENT_H_
 
 /* Class hierarchy:           Statement (abstract)
-                              /   |   \
-                             /    |    \
-                 GotoStatement  Assign  BoolStatement
-         _______/   |   \____ \____________
-        /           |        \             \
-BranchStatement CaseStatement CallStatement ReturnStatement
+                              /  |  \ +------------+-----------------+
+                             /   |   \              \                 \
+                 GotoStatement Assign BoolStatement  BlockStatement    |
+         _______/   |   \____ \____________                        +---+-+
+        /           |        \             \                     /        \
+BranchStatement CaseStatement CallStatement ReturnStatement    /           |
+                                                             /             |
+                                                     IfStatement  LoopStatement
 */
 
 #include <vector>
@@ -188,6 +190,9 @@ enum STMT_KIND {
     STMT_BOOL,                  // For "setCC" instructions that set destination
                                 // to 1 or 0 depending on the condition codes.
     STMT_CASE,                  // Used to represent switch statements.
+    STMT_BLOCK,
+    STMT_IF,
+    STMT_LOOP,
 };
 
 //  //  //  //  //  //  //  //  //  //  //  //  //  //
@@ -205,9 +210,10 @@ protected:
     UserProc *proc;     // procedure containing this statement
     int     number;     // Statement number for printing
     STMT_KIND kind;     // Statement kind (e.g. STMT_BRANCH)
+    Statement *parent;  // The statement that contains this one
 public:
 
-    Statement() : pbb(NULL), proc(NULL), number(0) { }
+    Statement() : pbb(NULL), proc(NULL), number(0), parent(NULL) { }
     virtual ~Statement() {
     }
 
@@ -231,6 +237,10 @@ public:
 
     // true if this statement is any kind of assign
     bool isAssign() {return kind == STMT_ASSIGN;}
+
+    bool isBlock() { return kind == STMT_BLOCK; }
+
+    bool isGoto() { return kind == STMT_GOTO; }
 
     // true if this statement is an ordinary (non flags) assignment
     bool isOrdinaryAssign();
@@ -321,6 +331,7 @@ public:
             void printAsUseBy(std::ostream &os) {os << std::dec << number;}
             void printNum(std::ostream &os)     {os << std::dec << number;}
             char* prints();      // For use in a debugger
+    virtual void printAST(std::ostream &os) { }
 
     // inline / decode any constants in the statement
     virtual void processConstants(Prog *prog) = 0;
@@ -408,6 +419,7 @@ public:
 
     virtual void print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
+    virtual void printAST(std::ostream &os);
 
     // Get and set the size
     int     getSize();
@@ -502,6 +514,9 @@ protected:
                                 // destination address. NOTE: This should be
                                 // removed, once CaseStatement and HLNwayCall
                                 // are implemented properly.
+    Statement *sDest;           // This eventually gets resolved to the 
+                                // actual statement that is the destination 
+                                // of the goto.
 public:
     GotoStatement();
     GotoStatement(ADDRESS jumpDest);
@@ -518,6 +533,8 @@ public:
     void setDest(Exp* pd);
     void setDest(ADDRESS addr);
     virtual Exp* getDest();
+    Statement* getDestStmt() { return sDest; }
+    void setDestStmt(Statement *stmt) { sDest = stmt; }
 
     // Return the fixed destination of this CTI. For dynamic CTIs, returns -1.
     ADDRESS getFixedDest();
@@ -532,6 +549,7 @@ public:
     bool isComputed();
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
+    virtual void printAST(std::ostream &os);
 
     // general search
     virtual bool search(Exp*, Exp*&);
@@ -629,6 +647,7 @@ public:
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
     virtual void print(std::ostream& os) { print(os, true); }
+    virtual void printAST(std::ostream &os);
 
     // general search
     virtual bool search(Exp *search, Exp *&result);
@@ -822,6 +841,7 @@ public:
     //Exp* getReturnLoc();                // FIXME Get location used for return value
 
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
+    virtual void printAST(std::ostream &os);
 
     // general search
     virtual bool search(Exp *search, Exp *&result);
@@ -924,6 +944,7 @@ public:
 
     // print
     virtual void print(std::ostream& os = std::cout, bool withDF = false);
+    virtual void printAST(std::ostream &os);
 
     // From SSA form
     virtual void fromSSAform(igraph& igm);
@@ -1059,6 +1080,111 @@ public:
     // from SSA form
     virtual void fromSSAform(igraph& ig);
 
+};
+
+class BlockStatement : public Statement {
+private:
+    std::vector<Statement*> statements;
+
+public:
+    BlockStatement() { kind = STMT_BLOCK; }
+    virtual ~BlockStatement();
+    void addStatement(Statement *stmt) { statements.push_back(stmt); }
+    int getNumStatements() { return statements.size(); }
+    Statement *getStatement(int n) { return statements[n]; }
+
+    virtual Statement* clone();
+    virtual bool accept(StmtVisitor*);
+    virtual bool isDefinition() { return false; }
+    virtual Exp* getLeft() { return NULL; }
+    virtual Type* getLeftType() { return NULL; }
+    virtual Exp* getRight() { return NULL; }
+    virtual bool usesExp(Exp*);
+    virtual void addUsedLocs(LocationSet&);
+    virtual void fixCallRefs();
+    virtual void subscriptVar(Exp*, Statement*);
+    virtual void print(std::ostream&, bool = false);
+    virtual void processConstants(Prog*);
+    virtual bool search(Exp*, Exp*&);
+    virtual bool searchAndReplace(Exp*, Exp*);
+    virtual Type* updateType(Exp*, Type*);
+    virtual void fromSSAform(igraph&);
+    virtual void generateCode(HLLCode*, BasicBlock*, int);
+    virtual void simplify();
+    virtual void doReplaceRef(Exp*, Exp*);
+    virtual void printAST(std::ostream &os);
+};
+
+class IfStatement : public Statement {
+private:
+    Statement *pThen;
+    Statement *pElse;
+    Exp *cond;
+
+public:
+    IfStatement() : pThen(NULL), pElse(NULL), cond(NULL) { kind = STMT_IF; }
+    IfStatement(Statement *pThen, Statement *pElse, Exp *cond) : 
+                    pThen(pThen), pElse(pElse), cond(cond) { kind = STMT_IF; }
+    virtual ~IfStatement();
+
+    virtual Statement* clone();
+    virtual bool accept(StmtVisitor*);
+    virtual bool isDefinition() { return false; }
+    virtual Exp* getLeft() { return NULL; }
+    virtual Type* getLeftType() { return NULL; }
+    virtual Exp* getRight() { return NULL; }
+    virtual bool usesExp(Exp*);
+    virtual void addUsedLocs(LocationSet&);
+    virtual void fixCallRefs();
+    virtual void subscriptVar(Exp*, Statement*);
+    virtual void print(std::ostream&, bool = false);
+    virtual void processConstants(Prog*);
+    virtual bool search(Exp*, Exp*&);
+    virtual bool searchAndReplace(Exp*, Exp*);
+    virtual Type* updateType(Exp*, Type*);
+    virtual void fromSSAform(igraph&);
+    virtual void generateCode(HLLCode*, BasicBlock*, int);
+    virtual void simplify();
+    virtual void doReplaceRef(Exp*, Exp*);
+    virtual void printAST(std::ostream &os);
+};
+
+typedef enum { pretested, posttested, infinite } LoopType;
+
+class LoopStatement : public Statement {
+private:
+    LoopType loop_type;
+    Statement *pBody;
+    Exp *cond;
+
+public:
+    LoopStatement() : loop_type(infinite), pBody(NULL), 
+                      cond(NULL) { kind = STMT_LOOP; }
+    LoopStatement(LoopType loop_type, Statement *pBody, Exp *cond) : 
+                      loop_type(loop_type), pBody(pBody), 
+                      cond(cond) { kind = STMT_LOOP; }
+    virtual ~LoopStatement();
+
+    virtual Statement* clone();
+    virtual bool accept(StmtVisitor*);
+    virtual bool isDefinition() { return false; }
+    virtual Exp* getLeft() { return NULL; }
+    virtual Type* getLeftType() { return NULL; }
+    virtual Exp* getRight() { return NULL; }
+    virtual bool usesExp(Exp*);
+    virtual void addUsedLocs(LocationSet&);
+    virtual void fixCallRefs();
+    virtual void subscriptVar(Exp*, Statement*);
+    virtual void print(std::ostream&, bool = false);
+    virtual void processConstants(Prog*);
+    virtual bool search(Exp*, Exp*&);
+    virtual bool searchAndReplace(Exp*, Exp*);
+    virtual Type* updateType(Exp*, Type*);
+    virtual void fromSSAform(igraph&);
+    virtual void generateCode(HLLCode*, BasicBlock*, int);
+    virtual void simplify();
+    virtual void doReplaceRef(Exp*, Exp*);
+    virtual void printAST(std::ostream &os);
 };
 
 /* 

@@ -36,6 +36,7 @@ void Boomerang::help() {
     std::cerr << "-dr: debug - debug unused Returns\n";
     std::cerr << "-ds: debug - print after conversion to SSA form\n";
     std::cerr << "-dt: debug - debug type analysis\n";
+    std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-h: this help\n";
@@ -81,6 +82,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
     }
     std::list<ADDRESS> entrypoints;
     bool decodeMain = true;
+    bool printAST = false;
     for (int i=1; i < argc-1; i++) {
         if (argv[i][0] != '-')
             usage();
@@ -170,6 +172,9 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     case 't':       // debug type analysis
                         debugTA = true;
                         break;
+                    case 'a':
+                        printAST = true;
+                        break;
                 }
                 break;
             case 'm':
@@ -207,6 +212,25 @@ int Boomerang::commandLine(int argc, const char **argv) {
 
     if (dotFile)
         prog->generateDotFile();
+
+    if (printAST) {
+        std::cerr << "printing AST..." << std::endl;
+        PROGMAP::const_iterator it;
+        for (Proc *p = prog->getFirstProc(it); p; p = prog->getNextProc(it))
+            if (!p->isLib()) {
+                UserProc *u = (UserProc*)p;
+                u->getCFG()->compressCfg();
+                u->getCFG()->resolveGotos();
+                char s[1024];
+                sprintf(s, "ast-%s.dot", u->getName());
+                std::ofstream of(s);
+                Statement *a = u->getAST();
+                of << "digraph " << u->getName() << " {" << std::endl;
+                a->printAST(of);
+                of << "}" << std::endl;
+                of.close();
+            }
+    }
 
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
