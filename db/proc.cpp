@@ -1031,7 +1031,8 @@ void UserProc::decompile() {
 #endif
 
     if (VERBOSE) {
-        print(std::cerr /*,true*/);
+        print(std::cerr, false);    // First time no df so it's readable!
+        print(std::cerr, true);
     }
     bool change = true;
     while (change) {
