@@ -730,7 +730,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         // Create the basic block
                         pBB = pCfg->newBB(BB_rtls, RET, 0);
 
-                        retAddr = pBB->getLowAddr();
+                        retAddr = pRtl->getAddress();
 
                         // If this ret pops anything other than the return
                         // address, this information can be useful in the proc
@@ -743,6 +743,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                         std::list<Statement*> *stmt_list = new std::list<Statement*>;
                         stmt_list->push_back(new GotoStatement(retAddr));
                         BB_rtls->push_back(new RTL(uAddr, stmt_list));
+                        targetQueue.visit(pCfg, retAddr, pBB);
                         pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
                         pCfg->addOutEdge(pBB, retAddr, true);
                     }

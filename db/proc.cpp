@@ -1020,11 +1020,6 @@ std::set<UserProc*>* UserProc::decompile() {
 
     printXML();
 
-    if (Boomerang::get()->noDecompile) {
-        decompiled = true;
-        return cycleSet;
-    }
-
     // Print if requested
     if (VERBOSE) {
         LOG << "=== Debug Print for " << getName()
@@ -1035,6 +1030,13 @@ std::set<UserProc*>* UserProc::decompile() {
     }
  
     processFloatConstants();
+
+    printXML();
+
+    if (Boomerang::get()->noDecompile) {
+        decompiled = true;
+        return cycleSet;
+    }
 
     // For each memory depth
     int maxDepth = findMaxDepth() + 1;
@@ -2424,6 +2426,7 @@ bool UserProc::prove(Exp *query)
 bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, 
                       std::map<PhiExp*, Exp*> &cache, PhiExp* lastPhi)
 {
+    std::map<CallStatement*, Exp*> callwd;
     Exp *phiInd = query->getSubExp2()->clone();
 
     if (lastPhi && cache.find(lastPhi) != cache.end() &&
@@ -2476,16 +2479,26 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                     Exp *right = call->getProven(r->getSubExp1());
                     if (right) {
                         right = right->clone();
-                        if (VERBOSE)
-                            LOG << "using proven (or induction) for " 
-                                << call->getDestProc()->getName() << " " 
-                                << r->getSubExp1() 
-                                << " = " << right << "\n";
-                        right = call->substituteParams(right);
-                        if (VERBOSE)
-                            LOG << "right with subs: " << right << "\n";
-                        query->setSubExp1(right);
-                        change = true;
+                        if (callwd.find(call) != callwd.end() && 
+                            *callwd[call] == *query) {
+                            LOG << "found call loop to " 
+                                << call->getDestProc()->getName() << " "
+                                << query << "\n";
+                            query = new Terminal(opFalse);
+                            change = true;
+                        } else {
+                            callwd[call] = query->clone();
+                            if (VERBOSE)
+                                LOG << "using proven (or induction) for " 
+                                    << call->getDestProc()->getName() << " " 
+                                    << r->getSubExp1() 
+                                    << " = " << right << "\n";
+                            right = call->substituteParams(right);
+                            if (VERBOSE)
+                                LOG << "right with subs: " << right << "\n";
+                            query->setSubExp1(right);
+                            change = true;
+                        }
                     }
                 } else if (s && s->getRight()) {
                     if (s->getRight()->getOper() == opPhi) {

@@ -1848,7 +1848,7 @@ void Cfg::generateDotFile(std::ofstream& of) {
     // The nodes
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) {
-        of << "    " << (*it)->getStmtNumber() << " [";
+        of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " [";
         of << "label=\"";
         char* p = (*it)->getStmtNumber();
         if (p[0] != 'b')
@@ -1893,8 +1893,8 @@ void Cfg::generateDotFile(std::ofstream& of) {
       it++) {
         std::vector<PBB>& outEdges = (*it)->getOutEdges();
         for (unsigned int j = 0; j < outEdges.size(); j++) {
-            of << "    " << (*it)->getStmtNumber() << " -> ";
-            of << outEdges[j]->getStmtNumber();
+            of << "    " << "bb" << std::hex << (*it)->getLowAddr() << " -> ";
+            of << "bb" << std::hex << outEdges[j]->getLowAddr();
             if ((*it)->getType() == TWOWAY) {
                 if (j == 0)
                     of << " [label=\"true\"]";

@@ -716,19 +716,20 @@ void Prog::decompile() {
         proc->decompile();
     }
 
-    if (VERBOSE)
-        LOG << "removing unused returns\n";
+    if (!Boomerang::get()->noDecompile) {
+        if (VERBOSE)
+            LOG << "removing unused returns\n";
 
-    // A final pass to remove return locations not used by any caller
-    removeUnusedReturns();
+        // A final pass to remove return locations not used by any caller
+        removeUnusedReturns();
 
-    // print XML after removing returns
-    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-        UserProc* proc = (UserProc*)(*pp);
-        if (proc->isLib()) continue;
-        proc->printXML();
+        // print XML after removing returns
+        for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+            UserProc* proc = (UserProc*)(*pp);
+            if (proc->isLib()) continue;
+            proc->printXML();
+        }
     }
-
 
 if (DEBUG_TA)
     typeAnalysis();
