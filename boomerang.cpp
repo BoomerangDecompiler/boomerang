@@ -15,7 +15,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noRemoveLabels(false), noDataflow(false), noDecompile(false),
     traceDecoder(false), dotFile(NULL), numToPropagate(-1),
     noPromote(false), propOnlyToAll(false), debugGen(false),
-    debugPrintSSA(false), maxMemDepth(99), debugSwitch(false),
+    maxMemDepth(99), debugSwitch(false),
     noParameterNames(false), debugLiveness(false), debugUnusedRets(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false)
@@ -54,7 +54,6 @@ void Boomerang::help() {
     std::cerr << "-dg: debug - debug code generation\n";
     std::cerr << "-dl: debug - debug liveness (from SSA) code\n";
     std::cerr << "-dr: debug - debug unused Returns\n";
-    std::cerr << "-ds: debug - print after conversion to SSA form\n";
     std::cerr << "-dt: debug - debug type analysis\n";
     std::cerr << "-da: debug - print AST before code generation\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
@@ -222,9 +221,6 @@ int Boomerang::commandLine(int argc, const char **argv) {
                         break;
                     case 'r':       // debug counting unused Returns
                         debugUnusedRets = true;
-                        break;
-                    case 's':       // debug print SSA form
-                        debugPrintSSA = true;
                         break;
                     case 't':       // debug type analysis
                         debugTA = true;

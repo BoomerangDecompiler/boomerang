@@ -74,7 +74,6 @@ public:
     bool noPromote;
     bool propOnlyToAll;
     bool debugGen;
-    bool debugPrintSSA;
     int maxMemDepth;
     bool debugSwitch;
     bool noParameterNames;
