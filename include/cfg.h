@@ -757,7 +757,7 @@ public:
 	/*
 	 * Virtual Function Call analysis
 	 */
-	void virtualFunctionCalls();
+	void virtualFunctionCalls(Prog* prog);
 
     std::vector<PBB> m_vectorBB; // faster access
 
