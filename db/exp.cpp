@@ -1957,6 +1957,19 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+    // check for (x - a) + b where a and b are constants, becomes x + -a+b
+    if (op == opPlus && opSub1 == opMinus && opSub2 == opIntConst &&
+        subExp1->getSubExp2()->getOper() == opIntConst) {
+        int n = ((Const*)subExp2)->getInt();
+        res = ((Binary*)res)->becomeSubExp1();
+        res->setOper(opPlus);
+        ((Const*)res->getSubExp2())->setInt(
+            (-((Const*)res->getSubExp2())->getInt()) + n);
+        bMod = true;
+        return res;
+    }
+
+
     // Turn a + -K into a - K (K is int const > 0)
     // Also a - -K into a + K (K is int const > 0)
     // Does not count as a change

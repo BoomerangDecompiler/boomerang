@@ -1728,15 +1728,22 @@ bool UserProc::prover(Exp *query)
             // move constants to the right
             Exp *plus = query->getSubExp1();
             Exp *s1s2 = plus->getSubExp2();
-            if (plus->getOper() == opPlus && s1s2->isIntConst()) {
+            if (!change && plus->getOper() == opPlus && s1s2->isIntConst()) {
                 query->refSubExp2() = new Binary(opPlus, query->getSubExp2(),
                                         new Unary(opNeg, s1s2->clone()));
                 query->refSubExp1() = ((Binary*)plus)->becomeSubExp1();
                 change = true;
             }
+            if (!change && plus->getOper() == opMinus && s1s2->isIntConst()) {
+                query->refSubExp2() = new Binary(opPlus, query->getSubExp2(),
+                                        s1s2->clone());
+                query->refSubExp1() = ((Binary*)plus)->becomeSubExp1();
+                change = true;
+            }
+
 
             // substitute using a statement that has the same left as the query
-            if (query->getSubExp1()->getOper() == opSubscript) {
+            if (!change && query->getSubExp1()->getOper() == opSubscript) {
                 RefExp *r = (RefExp*)query->getSubExp1();
                 Statement *s = r->getRef();
                 if (s && s->getRight()) {
@@ -1744,13 +1751,17 @@ bool UserProc::prover(Exp *query)
                         // for a phi, we have to prove the query for every 
                         // statement
                         PhiExp *p = (PhiExp*)s->getRight();
+                        std::cerr << "found " << p << " prove for each" 
+                                  << std::endl;
                         StmtSetIter it;
                         bool ok = true;
                         for (Statement *s1 = p->getFirstRef(it); 
                                         !p->isLastRef(it);
                                         s1 = p->getNextRef(it)) {
-                            r->setDef(s1);
-                            if (!prover(query)) { ok = false; break; }
+                            if (s1 != NULL) { // note: this is a hack, remove
+                                r->setDef(s1);
+                                if (!prover(query)) { ok = false; break; }
+                            }
                         }
                         if (ok) query = new Terminal(opTrue);
                         else query = new Terminal(opFalse);
@@ -1762,7 +1773,16 @@ bool UserProc::prover(Exp *query)
                 }
             }
         }
+
+        Exp *old = query->clone();
+
         query = query->simplify();
+
+        if (change && !(*old == *query)) {
+            old->print(std::cerr, true);
+            std::cerr << std::endl;
+        }
+        delete old;
     }
     return query->getOper() == opTrue;
 }
