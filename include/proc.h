@@ -337,7 +337,7 @@ class UserProc : public Proc {
 	 * Set of callees (Procedures that this procedure calls). Used for
 	 * call graph, among other things
 	 */
-	std::set<Proc*> calleeSet;
+	std::list<Proc*> calleeList;
  
 	 /*
 	 * Set if visited on the way down the call tree during decompile()
@@ -646,7 +646,7 @@ public:
 	/*
 	 * Get the callees
 	 */
-	std::set<Proc*>& getCallees() { return calleeSet; }
+	std::list<Proc*>& getCallees() { return calleeList; }
 
 	/*
 	 * Add to the set of callees
@@ -656,7 +656,7 @@ public:
 	/*
 	 * Add to a set of callee Procs
 	 */
-	void addCallees(std::set<UserProc*>& callees);
+	void addCallees(std::list<UserProc*>& callees);
 
 	/*
 	 * return true if this procedure contains the given address

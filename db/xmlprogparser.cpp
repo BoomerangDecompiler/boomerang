@@ -2357,7 +2357,7 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 	}
 
 
-	for (std::set<Proc*>::iterator it = proc->calleeSet.begin(); it != proc->calleeSet.end(); it++)
+	for (std::list<Proc*>::iterator it = proc->calleeList.begin(); it != proc->calleeList.end(); it++)
 	out << "<callee proc=\"" << (int)(*it) << "\"/>\n";
 
 	persistToXML(out, proc->cfg);

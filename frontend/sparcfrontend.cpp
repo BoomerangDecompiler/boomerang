@@ -232,7 +232,7 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  * RETURNS:			 true if next instruction is to be fetched sequentially from this one
  *============================================================================*/
 bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult& delay_inst,
-		std::list<RTL*>*& BB_rtls, UserProc* proc, std::set<CallStatement*>& callSet, std::ofstream &os,
+		std::list<RTL*>*& BB_rtls, UserProc* proc, std::list<CallStatement*>& callList, std::ofstream &os,
 		bool isPattern/* = false*/) {
 
 	// Aliases for the call and delay RTLs
@@ -294,7 +294,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 		// need to be analysed later.
 		// This set will be used later to call prog.visitProc (so the proc
 		// will get decoded)
-		callSet.insert((CallStatement*)inst.rtl->getList().back());
+		callList.push_back((CallStatement*)inst.rtl->getList().back());
 
 		if (returnBB) {
 			// Handle the call but don't add any outedges from it just yet.
@@ -449,7 +449,7 @@ if (0)			// SETTINGS!
  * RETURNS:			 true if next instruction is to be fetched sequentially from this one
  *============================================================================*/
 bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, DecodeResult& delay_inst,
-		std::list<RTL*>*& BB_rtls, TargetQueue& tq, UserProc* proc, std::set<CallStatement*>& callSet) {
+		std::list<RTL*>*& BB_rtls, TargetQueue& tq, UserProc* proc, std::list<CallStatement*>& callList) {
 
 	Cfg* cfg = proc->getCFG();
 
@@ -509,7 +509,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 			newBB->setJumpReqd();
 
 			// Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
-			callSet.insert(call_stmt);
+			callList.push_back(call_stmt);
 
 			return false;
 		}
@@ -518,7 +518,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 			cfg->addOutEdge(newBB, address);
 		}
 		// Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
-		callSet.insert(call_stmt);
+		callList.push_back(call_stmt);
 	}
 #if 0
 	else if(last->getKind() == STMT_CASE) {
@@ -808,7 +808,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 	// disregarded if this is a speculative decode that fails (i.e. an illegal
 	// instruction is found). If not, this set will be used to add to the set
 	// of calls to be analysed in the cfg, and also to call prog.visitProc()
-	std::set<CallStatement*> callSet;
+	std::list<CallStatement*> callList;
 
 	// Indicates whether or not the next instruction to be decoded is the
 	// lexical successor of the current one. Will be true for all NCTs and for
@@ -983,7 +983,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 						((CallStatement*)last)->setReturnAfterCall(true);
 						sequentialDecode = false;
 						case_CALL(address, inst, nop_inst, BB_rtls,
-						  proc, callSet, os, true);
+						  proc, callList, os, true);
 						break;
 					}
 					// Next class of interest is if it assigns to %o7
@@ -1014,7 +1014,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 									(*((Binary*)rhs)->getSubExp1() == *o7)) {
 								// Get the constant
 								int K = ((Const*)((Binary*)rhs)->getSubExp2()) ->getInt();
-								case_CALL(address, inst, nop_inst, BB_rtls, proc, callSet, os, true);
+								case_CALL(address, inst, nop_inst, BB_rtls, proc, callList, os, true);
 								// We don't generate a goto; instead, we just decode from the new address
 								// Note: the call to case_CALL has already incremented address by 8, so don't do again
 								address += K;
@@ -1026,7 +1026,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 								// after this call
 								((CallStatement*)last)->setReturnAfterCall(true);
 								sequentialDecode = false;
-								case_CALL(address, inst, nop_inst, BB_rtls, proc, callSet, os, true);
+								case_CALL(address, inst, nop_inst, BB_rtls, proc, callList, os, true);
 								break;
 							}
 						}
@@ -1044,7 +1044,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
 						// This is a call followed by an NCT/NOP
 						sequentialDecode = case_CALL(address, inst,
-							delay_inst, BB_rtls, proc, callSet, os);
+							delay_inst, BB_rtls, proc, callList, os);
 					}
 					else {
 						// This is a non-call followed by an NCT/NOP
@@ -1100,7 +1100,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
 						// Add this call site to the set of call sites which
 						// need to be analysed later.
-						callSet.insert((CallStatement*)inst.rtl->getList().back());
+						callList.push_back((CallStatement*)inst.rtl->getList().back());
 					}
 					else {
 						PBB pBB = cfg->newBB(BB_rtls,ONEWAY, 1);
@@ -1142,7 +1142,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 				case NOP:
 				case NCT: {
 					sequentialDecode = case_DD(address, pBF->getTextDelta(), inst, delay_inst, BB_rtls,
-						targetQueue, proc, callSet);
+						targetQueue, proc, callList);
 					break;
 				}
 				default:
@@ -1283,8 +1283,8 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 
 	// Add the callees to the set of CallStatements to proces for parameter
 	// recovery, and also to the Prog object
-	for (std::set<CallStatement*>::iterator it = callSet.begin();
-	  it != callSet.end(); it++) {
+	for (std::list<CallStatement*>::iterator it = callList.begin();
+	  it != callList.end(); it++) {
 		ADDRESS dest = (*it)->getFixedDest();
 		// Don't speculatively decode procs that are outside of the main text
 		// section, apart from dynamically linked ones (in the .plt)

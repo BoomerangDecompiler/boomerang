@@ -173,7 +173,7 @@ void UserProc::printCallGraphXML(std::ostream &os, int depth, bool recurse)
 		os << "	  ";
 	os << "<proc name=\"" << getName() << "\">\n";
 	if (recurse) {
-		for (std::set<Proc*>::iterator it = calleeSet.begin(); it != calleeSet.end(); it++) 
+		for (std::list<Proc*>::iterator it = calleeList.begin(); it != calleeList.end(); it++) 
 			(*it)->printCallGraphXML(os, depth+1, !wasVisited && !(*it)->isVisited());
 	}
 	for (i = 0; i < depth; i++)
@@ -556,7 +556,13 @@ void UserProc::setEntryBB() {
  * RETURNS:			<nothing>
  *============================================================================*/
 void UserProc::addCallee(Proc* callee) {
-	calleeSet.insert(callee);
+    // is it already in? (this is much slower than using a set)
+    std::list<Proc*>::iterator cc;
+	for (cc = calleeList.begin(); cc != calleeList.end(); cc++)
+		if(*cc == callee)
+            return; // it's already in
+
+	calleeList.push_back(callee);
 }
 
 void UserProc::generateCode(HLLCode *hll) {
@@ -1698,8 +1704,9 @@ void UserProc::trimParameters(int depth) {
 						// in case, also for the expression (e.g. r8{0})
 						(s->usesExp(p) || s->usesExp(params[i]))) {
 					referenced[i] = true;
-					if (DEBUG_UNUSED_RETS_PARAMS)
-						LOG << "Parameter " << p << " used by statement " << s->getNumber() << "\n";
+					if (DEBUG_UNUSED_RETS_PARAMS) {
+						LOG << "Parameter " << p << " used by statement " << s->getNumber() << " : " << s->getKind() << "\n";
+					}
 				}
 				if (!referenced[i] && excluded.find(s) == excluded.end() &&
 						s->isPhi() && *s->getLeft() == *pe) {
@@ -3365,12 +3372,14 @@ void Proc::addCallers(std::set<UserProc*>& callers) {
 	}
 }
 
-void UserProc::addCallees(std::set<UserProc*>& callees) {
-	std::set<Proc*>::iterator it;
-	for (it = calleeSet.begin(); it != calleeSet.end(); it++) {
+void UserProc::addCallees(std::list<UserProc*>& callees) {
+    // SLOW SLOW SLOW
+    // this function is evil now... REALLY evil... hope it doesn't get called too often
+	std::list<Proc*>::iterator it;
+	for (it = calleeList.begin(); it != calleeList.end(); it++) {
 		UserProc* callee = (UserProc*)(*it);
 		if (callee->isLib()) continue;
-		callees.insert(callee);
+		addCallee(callee);
 	}
 }
 
@@ -3599,7 +3608,7 @@ public:
 	bool aggregateUsed;
 	std::map<std::string, Type*> locals;		// r
 	std::map<Exp*,Exp*,lessExpStar> symbolMap;	// r
-	std::set<Proc*> calleeSet;
+	std::list<Proc*> calleeList;
 	bool decompileSeen;
 	bool decompiled;
 	bool isRecursive;
@@ -3626,7 +3635,7 @@ Memo *UserProc::makeMemo(int mId)
 	m->aggregateUsed = aggregateUsed;
 	m->locals = locals;
 	m->symbolMap = symbolMap;
-	m->calleeSet = calleeSet;
+	m->calleeList = calleeList;
 	m->decompileSeen = decompileSeen;
 	m->decompiled = decompiled;
 	m->isRecursive = isRecursive;
@@ -3667,7 +3676,7 @@ void UserProc::readMemo(Memo *mm, bool dec)
 	aggregateUsed = m->aggregateUsed;
 	locals = m->locals;
 	symbolMap = m->symbolMap;
-	calleeSet = m->calleeSet;
+	calleeList = m->calleeList;
 	decompileSeen = m->decompileSeen;
 	decompiled = m->decompiled;
 	isRecursive = m->isRecursive;

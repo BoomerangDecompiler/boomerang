@@ -276,7 +276,7 @@ void case_unhandled_stub(ADDRESS addr)
  *============================================================================*/
 bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
     DecodeResult& delay_inst, list<HRTL*>*& BB_rtls, 
-    UserProc* proc, SET_CALLS& callSet, ofstream &os, bool isPattern = false )
+    UserProc* proc, std::list<CallStatement*>& callList, ofstream &os, bool isPattern = false )
 {
     // Aliases for the call and delay RTLs
     HLCall* call_rtl = static_cast<HLCall*>(inst.rtl);
@@ -320,7 +320,7 @@ bool case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
         // need to be analysed later.
         // This set will be used later to call prog.visitProc (so the proc
         // will get decoded)
-        callSet.insert((HLCall*)inst.rtl);
+        callList.push_back((HLCall*)inst.rtl);
 
         if (call_rtl->isReturnAfterCall()) {
             // Handle the call but don't add any outedges from it just yet.
@@ -493,7 +493,7 @@ void case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
  *============================================================================*/
 bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
     DecodeResult& delay_inst, list<HRTL*>*& BB_rtls, Cfg* cfg,
-    TARGETS& targets, UserProc* proc, SET_CALLS& callSet, int size)
+    TARGETS& targets, UserProc* proc, std::list<CallStatement*>& callList, int size)
 {
     // Assume that if we find a call in the delay slot, it's actually a pattern
     // such as move/call/move
@@ -559,7 +559,7 @@ bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
 
             // Add this call to the list of calls to analyse. We won't be able
             // to analyse it's callee(s), of course.
-            callSet.insert(rtl_call);
+            callList.push_back(rtl_call);
 
             return false;
         }
@@ -573,7 +573,7 @@ bool case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
         }
         // Add this call to the list of calls to analyse. We won't be able
         // to analyse its callee(s), of course.
-        callSet.insert(rtl_call);
+        callList.push_back(rtl_call);
     }
     else if(inst.rtl->getKind() == NWAYJUMP_HRTL) {
 
@@ -843,7 +843,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
     // if this is a speculative decode that fails (i.e. an illegal instruction
     // is found). If not, this set will be used to add to the set of calls to
     // be analysed in the cfg, and also to call prog.visitProc()
-    SET_CALLS callSet;
+    std::list<CallStatement*> callList;
 
     // Indicates whether or not the next instruction to be decoded is the
     // lexical successor of the current one. Will be true for all NCTs and for
@@ -984,7 +984,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
                 if (rtl->getKind() == CALL_HRTL) {
                     // This is a call followed by a return, e.g. a BL to printf
                     case_CALL_NCT(address, inst, nop_inst, BB_rtls, proc,
-                      callSet, os);
+                      callList, os);
                 } else {
                     BB_rtls->push_back(rtl_jump);
                     PBB pBB = cfg->newBB(BB_rtls, ONEWAY, 1);
@@ -1017,7 +1017,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
 
                         // This is a call followed by an NCT/NOP
                         sequentialDecode = case_CALL_NCT(address, inst,
-                            delay_inst, BB_rtls, proc, callSet, os);
+                            delay_inst, BB_rtls, proc, callList, os);
                     }
                     else {
                         // This is a non-call followed by an NCT/NOP
@@ -1070,7 +1070,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
 
                         // Add this call site to the set of call sites which
                         // need to be analysed later.
-                        callSet.insert((HLCall*)inst.rtl);
+                        callList.push_back((HLCall*)inst.rtl);
                     }
                     else {
                         PBB pBB = cfg->newBB(BB_rtls,ONEWAY, 1);
@@ -1116,7 +1116,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
                 case NCT:
                 {
                     sequentialDecode = case_DD_NCT(address, delta, inst,
-                        delay_inst, BB_rtls, cfg, targets, proc, callSet, 8);
+                        delay_inst, BB_rtls, cfg, targets, proc, callList, 8);
                     break;
                 }
                 default:
@@ -1131,7 +1131,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
                 DecodeResult delay_inst = nop_inst;
                     
                 sequentialDecode = case_DD_NCT(address, delta, inst,
-                  delay_inst, BB_rtls, cfg, targets, proc, callSet, 4);
+                  delay_inst, BB_rtls, cfg, targets, proc, callList, 4);
                 break;
             }
 
@@ -1339,7 +1339,7 @@ bool FrontEndSrc::processProc(ADDRESS address, UserProc* proc, ofstream &os,
 
     // Add the callees to the set of HLCalls to proces for CSR, and also
     // to the Prog object
-    for (SCIT it = callSet.begin(); it != callSet.end(); it++) {
+    for (std::list<CallStatement*>::iterator it = callList.begin(); it != callList.end(); it++) {
         ADDRESS dest = (*it)->getFixedDest();
         // Don't speculatively decode procs that are outside of the main text
         // section, apart from dynamically linked ones (in the .plt)

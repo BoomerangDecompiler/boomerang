@@ -1119,14 +1119,16 @@ void Prog::removeUnusedReturns() {
 				proc->removeUnusedStatements(refCounts, -1);
 			}
 			change |= thisChange;
+
 			if (thisChange) {
-				std::set<UserProc*> thisProcCallees;
+				std::list<UserProc*> thisProcCallees;
 				proc->addCallees(thisProcCallees);
 				newCalleeSet.insert(thisProcCallees.begin(), thisProcCallees.end());
-				std::set<UserProc*>::iterator cc;
+				std::list<UserProc*>::iterator cc;
 				for (cc = thisProcCallees.begin(); cc != thisProcCallees.end(); cc++)
 					(*cc)->addCallers(callerSet);
 			}
+
 		}
 		calleeSet = newCalleeSet;
 	} while (change);
@@ -1216,8 +1218,8 @@ void Prog::printCallGraph() {
 			if (!p->isLib()) {
 				n++;
 				UserProc *u = (UserProc*)p;
-				std::set<Proc*> &calleeSet = u->getCallees();
-				for (std::set<Proc*>::reverse_iterator it1 = calleeSet.rbegin(); it1 != calleeSet.rend(); it1++) {
+				std::list<Proc*> &calleeList = u->getCallees();
+				for (std::list<Proc*>::reverse_iterator it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
 					queue.push_front(*it1);
 					spaces[*it1] = n;
 					parent[*it1] = p;
@@ -1245,8 +1247,8 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
 		f << " __nodecode __incomplete void " << proc->getName() << "();\n";
 
     	UserProc *u = (UserProc*)proc;
-    	std::set<Proc*> &calleeSet = u->getCallees();
-    	for (std::set<Proc*>::iterator it1 = calleeSet.begin(); it1 != calleeSet.end(); it1++) {
+    	std::list<Proc*> &calleeList = u->getCallees();
+    	for (std::list<Proc*>::iterator it1 = calleeList.begin(); it1 != calleeList.end(); it1++) {
             printProcsRecursive(*it1,indent+1,f,seen);
         }
        	for (int i = 0; i < indent; i++)

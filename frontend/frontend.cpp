@@ -374,7 +374,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 	// We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
 	// that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
 	// to be analysed in the cfg, and also to call newProc()
-	std::set<CallStatement*> callSet;
+	std::list<CallStatement*> callList;
 
 	// Indicates whether or not the next instruction to be decoded is the lexical successor of the current one.
 	// Will be true for all NCTs and for CTIs with a fall through branch.
@@ -558,7 +558,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							//lp->setName(func.c_str());
 							Boomerang::get()->alert_update_signature(pProc);
 						}
-						callSet.insert(call);
+						callList.push_back(call);
 						ss = sl.end(); ss--;	// get out of the loop
 						break;
 					}
@@ -665,7 +665,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 							pCfg->addOutEdge(pBB, uAddr + inst.numBytes);
 						// Add this call to the list of calls to analyse. We won't
 						// be able to analyse it's callee(s), of course.
-						callSet.insert(call);
+						callList.push_back(call);
 					}
 					else {		// Static call
 						// Find the address of the callee.
@@ -688,11 +688,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 						// Add this non computed call site to the set of call sites which need to be analysed later.
 						//pCfg->addCall(call);
-						callSet.insert(call);
+						callList.push_back(call);
 
 						// Record the called address as the start of a new procedure if it didn't already exist.
 						if (uNewAddr && pProc->getProg()->findProc(uNewAddr) == NULL) {
-							callSet.insert(call);
+							callList.push_back(call);
 							//newProc(pProc->getProg(), uNewAddr);
 							if (Boomerang::get()->traceDecoder)
 								LOG << "p" << uNewAddr << "\t";
@@ -816,8 +816,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 	//	  w->alert_done(pProc, initAddr, lastAddr, nTotalBytes);
 
 	// Add the callees to the set of CallStatements to process for CSR, and also to the Prog object
-	std::set<CallStatement*>::iterator it;
-	for (it = callSet.begin(); it != callSet.end(); it++) {
+	std::list<CallStatement*>::iterator it;
+	for (it = callList.begin(); it != callList.end(); it++) {
 		ADDRESS dest = (*it)->getFixedDest();
 		// Don't speculatively decode procs that are outside of the main text section, apart from dynamically
 		// linked ones (in the .plt)

@@ -778,9 +778,9 @@ LRESULT CALLBACK TreeView(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			while (DeleteMenu(callsMenu, 0, MF_BYPOSITION))
 				;
 			if (u) {
-				std::set<Proc*> &calls = u->getCallees();
+				std::list<Proc*> &calls = u->getCallees();
 				n = 34001;
-				for (std::set<Proc*>::iterator it = calls.begin(); it != calls.end(); it++, n++)
+				for (std::list<Proc*>::iterator it = calls.begin(); it != calls.end(); it++, n++)
 					AppendMenu(callsMenu, MF_STRING, n, (*it)->getName());
 			}
 			TreeView_Select(hTreeView, tvhti.hItem, TVGN_CARET);

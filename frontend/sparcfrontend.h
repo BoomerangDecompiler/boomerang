@@ -61,13 +61,13 @@ private:
 	void	case_unhandled_stub(ADDRESS addr);
 
 	bool	case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
-				UserProc* proc, std::set<CallStatement*>& callSet, std::ofstream &os, bool isPattern = false);
+				UserProc* proc, std::list<CallStatement*>& callList, std::ofstream &os, bool isPattern = false);
 
 	void	case_SD(ADDRESS& address, int delta, ADDRESS hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
 				std::list<RTL*>*& BB_rtls, Cfg* cfg, TargetQueue& tq, std::ofstream &os);
 
 	bool	case_DD(ADDRESS& address, int delta, DecodeResult& inst, DecodeResult& delay_inst,
-				std::list<RTL*>*& BB_rtls, TargetQueue& tq, UserProc* proc, std::set<CallStatement*>& callSet);
+				std::list<RTL*>*& BB_rtls, TargetQueue& tq, UserProc* proc, std::list<CallStatement*>& callList);
 
 	bool	case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
 				std::list<RTL*>*& BB_rtls, Cfg* cfg, TargetQueue& tq);
