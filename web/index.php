@@ -51,6 +51,8 @@ Ethics</a> of decompilation<br>
 <a href="FAQ.html">FAQ</a><br>
 <h2><a name="News"></a>News</h2>
 <b>1 Oct 03: </b>We now require the Boehm garbage collector.
+Over time, we will remove code for freeing objects. Some of this can
+get arduous.<br>
 <br>
 <b>12/Aug/03: </b>Boomerang is working well enough now to correctly
 decompile most of the simple test programs in the test/ directory
@@ -66,7 +68,8 @@ by itself has enough power to do what we need, at least in terms of
 dataflow analysis. And it doesn't need global analysis, saving memory
 requirements. The old dataflow code is gone, as is the "implicit" SSA,
 replaced by more standard SSA code (using dominance frontiers and all
-that).<br>
+that). The global optimisation (see comments for 30/May) therefore no
+longer happens.<br>
 There has also been a redesign. The multiple inheritance (e.g. HLCall
 from Statement and RTL) has gone. Now, an RTL is a list of Statements
 (previously, a list of expressions (class Exp)). Assignments are no
@@ -76,7 +79,8 @@ been removed as well.<br>
 We also have a theorem prover now. This is powerful enough to prove
 whether a register is saved, even in the presence of recursion.<br>
 It is expected that parameters and return location(s) will be working
-fairly well soon. BoolStatements (e.g. created from the Pentium setz
+fairly well soon. BoolStatements (e.g. created from the Pentium <span
+ style="font-family: monospace;">setz</span>
 instruction) work now.<br>
 <br>
 <b>30/May/03: </b> There has been a lot of development behind the
@@ -213,7 +217,6 @@ some things (not just variable names and comments, though these are
 obviously very important) require expert intervention.<br>
 <br>
 <br>
-<br>
 <h2><a name="whereAt"></a>31/May/2002: Where the code was at</h2>
 You certainly can't decompile anything; that will be the case for
 probably months. You won't be able to use boomerang to recover your
@@ -245,15 +248,17 @@ Solaris, others should work), or as a GUI tool under Windows. To make
 on Unix, you need the following tools:<br>
 </p>
 <ul>
-  <li><b>gcc version 3.1</b> (3.0 might work; 2.96 has a prayer).
+  <li><b>gcc version 3.1</b> (3.0 might work; 2.96 has a chance).
 Because of the strstream / stringstream issue, it's not worth
 attempting to compile it on older versions.</li>
-  <li><b>CVS</b>, obviously<br>
+  <li><b>CVS</b>, obviously.<br>
   </li>
   <li><b>cppunit</b> (from <a href="http://cppunit.sourceforge.net">cppunit.sourceforge.net</a>).
 This is needed for testing. I suppose you could make boomerang without
 it, but it's integral to develoopment.</li>
-  <li>The Boehm garbage collector; see <a href=http://www.hpl.hp.com/personal/Hans_Boehm/gc/>http://www.hpl.hp.com/personal/Hans_Boehm/gc/</a>.
+  <li>The Boehm garbage collector; see <a
+ href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/">http://www.hpl.hp.com/personal/Hans_Boehm/gc/</a>.
+  </li>
   <li><font color="#999999"><b>wxWindows</b> (from <a
  href="http://wxwindows.org">wxwindows.org</a>). It's not absoluitely
 needed right now, but (at present), this is the toolkit that we will
@@ -303,7 +308,7 @@ analyses, etc.</font><br>
  width="769" height="812"> <a href="http://sourceforge.net"><img
  src="sflogo.png" width="125" height="37" border="0"
  alt="SourceForge.net Logo"> </a><br>
-<div align="left"><small>Last modified: 12/Aug/03: News</small><br>
+<div align="left"><small>Last modified: 1/Oct/03: News</small><br>
 </div>
 </div>
 <br>
