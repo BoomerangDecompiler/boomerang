@@ -55,6 +55,8 @@
 #include "boomerang.h"
 #include "dom.h"
 
+typedef std::map<Statement*, int> RefCounter;
+
 /************************
  * Proc methods.
  ***********************/
@@ -1054,7 +1056,6 @@ for (zz=cycleSet->begin(); zz != cycleSet->end(); zz++)
 
     // Remove unused statements
     // FIXME: refCounts doesn't have to be parameter when remove global
-    typedef std::map<Statement*, int> RefCounter;
     RefCounter refCounts;           // The map
     // Count the references first
     countRefs(refCounts);
@@ -1123,11 +1124,26 @@ void UserProc::removeRedundantPhis()
 {
     if (VERBOSE)
         std::cerr << "removing redundant phi statements" << std::endl;
+
+    // some phis are just not used
+    RefCounter refCounts;
+    countRefs(refCounts);
+
     StatementList stmts;
     getStatements(stmts);
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        if (s->isPhi() && refCounts[s] == 0 && 
+            signature->findReturn(s->getLeft()) == -1) {
+            if (VERBOSE)
+                std::cerr << "removing unused statement " << s << std::endl;
+            removeStatement(s);
+        }
+
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
         if (s->isPhi()) {
+            if (VERBOSE)
+                std::cerr << "checking " << s << std::endl;
             // if we can prove that all the statements in the phi define
             // equal values then we can replace the phi with any one of 
             // the values, but there's not much point if they're all calls
@@ -1185,23 +1201,28 @@ void UserProc::trimReturns() {
 }
 
 void UserProc::trimParameters() {
+
+    if (VERBOSE)
+        std::cerr << "Trimming parameters for " << getName() << std::endl;
+
     StatementList stmts;
     getStatements(stmts);
 
+    // find parameters that are referenced (ignore calls to this)
     int nparams = signature->getNumParams();
+    std::vector<Exp*> params;
     bool referenced[nparams];
     for (int i = 0; i < nparams; i++) {
         referenced[i] = false;
+        params.push_back(signature->getParamExp(i));
     }
 
-    // find parameters that are referenced (ignore calls to this)
     StmtListIter it;
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) 
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
             for (int i = 0; i < nparams; i++) 
                 if (!referenced[i]) {
-                    RefExp *r = new RefExp(signature->getParamExp(i)->clone(), 
-                                    NULL);
+                    RefExp *r = new RefExp(params[i]->clone(), NULL);
                     Exp *result;
                     bool ch = s->search(r, result);
                     if (ch) referenced[i] = true;
@@ -1212,17 +1233,21 @@ void UserProc::trimParameters() {
     for (int i = 0; i < nparams; i++)
         if (!referenced[i]) {
             if (VERBOSE) 
-                std::cerr << "removing unused parameter " << i << std::endl;
-            removeParameter(i);
+                std::cerr << "removing unused parameter " << params[i] 
+                          << std::endl;
+            removeParameter(params[i]);
         }
 }
 
-void UserProc::removeParameter(int n)
+void UserProc::removeParameter(Exp *e)
 {
-    signature->removeParameter(n);
-    for (std::set<CallStatement*>::iterator it = callerSet.begin();
-         it != callerSet.end(); it++)
-        (*it)->removeArgument(n);
+    int n = signature->findParam(e);
+    if (n != -1) {
+        signature->removeParameter(n);
+        for (std::set<CallStatement*>::iterator it = callerSet.begin();
+             it != callerSet.end(); it++)
+            (*it)->removeArgument(n);
+    }
 }
 
 void UserProc::replaceExpressionsWithGlobals() {

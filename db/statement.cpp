@@ -2547,7 +2547,7 @@ void CallStatement::setNumArguments(int n) {
 
 void CallStatement::removeArgument(int i)
 {
-    for (int j = i; j < arguments.size(); j++)
+    for (int j = i+1; j < arguments.size(); j++)
         arguments[j-1] = arguments[j];
     arguments.resize(arguments.size()-1);
 }

@@ -456,7 +456,7 @@ public:
     void removeRedundantPhis();
     void trimReturns();
     void trimParameters();
-    void removeParameter(int i);
+    void removeParameter(Exp *e);
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters();   // must be in SSA form
