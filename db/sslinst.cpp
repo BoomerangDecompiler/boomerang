@@ -252,8 +252,8 @@ void RTLInstDict::print(std::ostream& os /*= std::cout*/)
         // print the parameters
         std::list<std::string>& params = (*p).second.params;
         int i = params.size();
-        for (std::list<std::string>::iterator s = params.begin();s != params.end();
-                s++,i--)
+        for (std::list<std::string>::iterator s = params.begin();
+          s != params.end(); s++,i--)
             os << *s << (i != 1 ? "," : "");
         os << "\n";
     
@@ -261,7 +261,24 @@ void RTLInstDict::print(std::ostream& os /*= std::cout*/)
         RTL& rtlist = (*p).second.rtl;
         rtlist.print(os);
         os << "\n";
-    }   
+    }
+
+#if 0
+    // Detailed register map
+    os << "\nDetailed register map\n";
+    std::map<int, Register, std::less<int> >::iterator rr;
+    for (rr = DetRegMap.begin(); rr != DetRegMap.end(); rr++) {
+        int n = rr->first;
+        Register* pr = &rr->second;
+        os << "number " << n <<
+          " name " << pr->g_name() <<
+          " size " << std::dec << pr->g_size() <<
+          " address 0x" << std::hex << (unsigned)pr->g_address() <<
+          " mappedIndex " << std::dec << pr->g_mappedIndex() <<
+          " mappedOffset " << pr->g_mappedOffset() <<
+          " flt " << pr->isFloat() << "\n";
+    }
+#endif
 }
 
 /*==============================================================================
@@ -404,7 +421,7 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty)
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
 std::list<Statement*>* RTLInstDict::instantiateRTL(std::string& name,
-  std::vector<Exp*>& actuals) {
+  ADDRESS natPC, std::vector<Exp*>& actuals) {
     // If -f is in force, use the fast (but not as precise) name instead
     const std::string* lname = &name;
     // FIXME: settings
@@ -418,7 +435,7 @@ if (0) {
     assert( idict.find(*lname) != idict.end() ); /* lname is in dictionary */
     TableEntry& entry = idict[*lname];
 
-    return instantiateRTL( entry.rtl, entry.params, actuals );
+    return instantiateRTL( entry.rtl, natPC, entry.params, actuals );
 }
 
 /*==============================================================================
@@ -431,7 +448,7 @@ if (0) {
  *                   actuals - the actual parameter values
  * RETURNS:          the instantiated list of Exps
  *============================================================================*/
-std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, 
+std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC,
         std::list<std::string>& params, std::vector<Exp*>& actuals) {
     assert(params.size() == actuals.size());
 

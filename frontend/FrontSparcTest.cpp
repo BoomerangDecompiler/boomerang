@@ -90,8 +90,8 @@ void FrontSparcTest::test1 () {
     inst.rtl->print(ost);
     
     std::string expected(
-        "00010684    0 *i32* tmp := r14 + -112\n"
-        "            0 *i32* m[r14 + 0] := r16\n"
+        "00010684    0 *i32* tmp := r14 - 112\n"
+        "            0 *i32* m[r14] := r16\n"
         "            0 *i32* m[r14 + 4] := r17\n"
         "            0 *i32* m[r14 + 8] := r18\n"
         "            0 *i32* m[r14 + 12] := r19\n"
@@ -165,13 +165,13 @@ void FrontSparcTest::test2() {
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x10698);
     inst.rtl->print(o3);
-    expected = std::string("00010698    0 *i32* r8 := 0 | 0\n");
+    expected = std::string("00010698    0 *i32* r8 := 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     std::ostringstream o4;
     inst = pFE->decodeInstruction(0x1069c);
     inst.rtl->print(o4);
-    expected = std::string("0001069c    0 *i32* r24 := 0 | r8\n");
+    expected = std::string("0001069c    0 *i32* r24 := r8\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
     delete pFE;
@@ -205,7 +205,7 @@ void FrontSparcTest::test3() {
     inst = pFE->decodeInstruction(0x106a8);
     inst.rtl->print(o3);
     expected = std::string(
-        "000106a8    0 *i32* tmp := 0 + 0\n"
+        "000106a8    0 *i32* tmp := 0\n"
         "            0 *i32* r8 := r24\n"
         "            0 *i32* r9 := r25\n"
         "            0 *i32* r10 := r26\n"
@@ -215,7 +215,7 @@ void FrontSparcTest::test3() {
         "            0 *i32* r14 := r30\n"
         "            0 *i32* r15 := r31\n"
         "            0 *i32* r0 := tmp\n"
-        "            0 *i32* r16 := m[r14 + 0]\n"
+        "            0 *i32* r16 := m[r14]\n"
         "            0 *i32* r17 := m[r14 + 4]\n"
         "            0 *i32* r18 := m[r14 + 8]\n"
         "            0 *i32* r19 := m[r14 + 12]\n"
@@ -309,8 +309,8 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o1;
     bb->print(o1);
     std::string expected("Call BB:\n"
-        "00010a80    0 *i32* tmp := r14 + -120\n"
-        "            0 *i32* m[r14 + 0] := r16\n"
+        "00010a80    0 *i32* tmp := r14 - 120\n"
+        "            0 *i32* m[r14] := r16\n"
         "            0 *i32* m[r14 + 4] := r17\n"
         "            0 *i32* m[r14 + 8] := r18\n"
         "            0 *i32* m[r14 + 12] := r19\n"
@@ -337,9 +337,9 @@ void FrontSparcTest::testDelaySlot() {
         "            0 *i32* r14 := tmp\n"
         "00010a84    0 *i32* r16 := 70656\n"
         "00010a88    0 *i32* r16 := r16 | 808\n"
-        "00010a8c    0 *i32* r8 := 0 | r16\n"
+        "00010a8c    0 *i32* r8 := r16\n"
         "00010a90    0 *i32* tmp := r30\n"
-        "            0 *i32* r9 := r30 + -20\n"
+        "            0 *i32* r9 := r30 - 20\n"
         "00010a90    0 CALL 0x21868( implicit: )\n");
     std::string actual(o1.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -349,9 +349,9 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o2;
     bb->print(o2);
     expected = std::string("Call BB:\n"
-        "00010a98    0 *i32* r8 := 0 | r16\n"
+        "00010a98    0 *i32* r8 := r16\n"
         "00010a9c    0 *i32* tmp := r30\n"
-        "            0 *i32* r9 := r30 + -24\n"
+        "            0 *i32* r9 := r30 - 24\n"
         "00010a9c    0 CALL 0x21868( implicit: )\n");
     actual = std::string(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -361,8 +361,8 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o3;
     bb->print(o3);
     expected = std::string("Twoway BB:\n"
-    "00010aa4    0 *i32* r8 := m[r30 + -20]\n"
-    "00010aa8    0 *i32* r16 := 0 | 5\n"
+    "00010aa4    0 *i32* r8 := m[r30 - 20]\n"
+    "00010aa8    0 *i32* r16 := 5\n"
     "00010aac    0 *i32* tmp := r16\n"
     "            0 *i32* r0 := r16 - r8\n"
     "            0 ** %flags := SUBFLAGS( tmp, r8, r0 )\n"

@@ -917,7 +917,7 @@ void ExpTest::testList () {
 
     // 1 element list
     l1 = new Binary(opList,
-        new Unary(opParam, new Const("a")),
+        new Location(opParam, new Const("a"), NULL),
         new Terminal(opNil));
     o1 << l1;
     std::string expected1("a");
@@ -927,9 +927,9 @@ void ExpTest::testList () {
 
     // 2 element list
     l2 = new Binary(opList,
-        new Unary(opParam, new Const("a")),
+        new Location(opParam, new Const("a"), NULL),
         new Binary(opList,
-            new Unary(opParam, new Const("b")),
+            new Location(opParam, new Const("b"), NULL),
             new Terminal(opNil)));
     o2 << l2;
     std::string expected2("a, b");
@@ -939,11 +939,11 @@ void ExpTest::testList () {
 
     // 3 element list
     l3 = new Binary(opList,
-        new Unary(opParam, new Const("a")),
+        new Location(opParam, new Const("a"), NULL),
         new Binary(opList,
-            new Unary(opParam, new Const("b")),
+            new Location(opParam, new Const("b"), NULL),
             new Binary(opList,
-                new Unary(opParam, new Const("c")),
+                new Location(opParam, new Const("c"), NULL),
                 new Terminal(opNil))));
     o3 << l3;
     std::string expected3("a, b, c");
@@ -953,13 +953,13 @@ void ExpTest::testList () {
 
     // 4 element list
     l4 = new Binary(opList,
-        new Unary(opParam, new Const("a")),
+        new Location(opParam, new Const("a"), NULL),
         new Binary(opList,
-            new Unary(opParam, new Const("b")),
+            new Location(opParam, new Const("b"), NULL),
             new Binary(opList,
-                new Unary(opParam, new Const("c")),
+                new Location(opParam, new Const("c"), NULL),
                 new Binary(opList,
-                    new Unary(opParam, new Const("d")),
+                    new Location(opParam, new Const("d"), NULL),
                     new Terminal(opNil)))));
     o4 << l4;
     std::string expected4("a, b, c, d");
@@ -975,14 +975,14 @@ void ExpTest::testList () {
 void ExpTest::testParen () {
     Assign a(
         Location::regOf(
-            new Unary(opParam, new Const("rd"))),
+            new Location(opParam, new Const("rd"), NULL)),
         new Binary(opBitAnd,
             Location::regOf(
-                new Unary(opParam, new Const("rs1"))),
+                new Location(opParam, new Const("rs1"), NULL)),
             new Binary(opMinus,
                 new Binary(opMinus,
                     new Const(0),
-                    new Unary(opParam, new Const("reg_or_imm"))),
+                    new Location(opParam, new Const("reg_or_imm"), NULL)),
                 new Const(1))));
     std::string expected("   0 ** r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
     std::ostringstream o;
