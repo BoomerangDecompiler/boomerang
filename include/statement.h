@@ -234,7 +234,7 @@ virtual bool		searchAndReplace(Exp *search, Exp *replace) = 0;
 virtual void		fromSSAform(igraph& igm) = 0;
 
 		// Propagate to this statement
-		bool		propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
+		bool		propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1, bool limit = true);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -254,7 +254,8 @@ virtual void		fixSuccessor() {}
 virtual void		genConstraints(LocationSet& cons) {}
 
 		// Data flow based type analysis
-virtual	void		dfaTypeAnalysis(bool& ch) {}
+virtual	void		dfaTypeAnalysis(bool& ch) {}			// Use the type information in this Statement
+		Type*		meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc) = 0;
