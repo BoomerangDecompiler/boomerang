@@ -179,13 +179,39 @@ void Prog::generateDotFile() {
 }
 
 void Prog::generateCode(std::ostream &os) {
+    HLLCode *code = Boomerang::getHLLCode();
+    for (std::vector<Global*>::iterator it1 = globals.begin(); 
+         it1 != globals.end(); it1++) {
+        Exp *e = NULL;
+        ADDRESS uaddr = (*it1)->getAddress();
+        Type *ty = (*it1)->getType();
+        PSectionInfo si = pBF->GetSectionInfoByAddr(uaddr);
+        if (!si->bBss) {
+            int n = 0;
+            switch(ty->getSize()) {
+            case 8:
+                n = *(char*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                break;
+            case 16:
+                n = *(short*)(uaddr + si->uHostAddr - si->uNativeAddr);
+                break;
+            case 32:
+            default:
+                n = *(int*)(uaddr + si->uHostAddr - si->uNativeAddr);
+            }
+            e = new Const(n);
+        } 
+        code->AddGlobal((*it1)->getName(), (*it1)->getType(), e);
+    }
+    code->print(os);
+    delete code;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-        HLLCode *code = Boomerang::getHLLCode(p);
+        code = Boomerang::getHLLCode(p);
         p->generateCode(code);
         code->print(os);
         delete code;
@@ -513,6 +539,16 @@ bool Prog::isWin32() {
 const char *Prog::getGlobal(ADDRESS uaddr)
 {
     return pBF->SymbolByAddress(uaddr);
+}
+
+void Prog::globalUsed(ADDRESS uaddr)
+{
+    const char *nam = getGlobal(uaddr);
+    assert(nam);
+    int sz = pBF->GetSizeByName(nam);
+    Type *ty = new IntegerType(sz*8);
+    if (sz == 0) ty = new IntegerType();
+    globals.push_back(new Global(ty, uaddr, nam));
 }
 
 void Prog::makeGlobal(ADDRESS uaddr, const char *name)

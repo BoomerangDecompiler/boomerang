@@ -715,10 +715,27 @@ void CHLLCode::AddLocal(const char *name, Type *type)
     lines.push_back(strdup(s));
 }
 
+void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
+{
+    char s[1024];
+    s[0] = 0;
+    appendType(s, type);
+    strcat(s, " ");
+    strcat(s, name);
+    if (init) {
+        strcat(s, " = ");
+        appendExp(s, init);
+    }
+    strcat(s, ";");
+    lines.push_back(strdup(s));
+}
+
 void CHLLCode::print(std::ostream &os)
 {
     for (std::list<char*>::iterator it = lines.begin(); it != lines.end();
          it++) os << *it << std::endl;
+    if (m_proc == NULL)
+        os << std::endl;
 }
 
 void CHLLCode::AddLineComment(char* cmt) {

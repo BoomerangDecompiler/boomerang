@@ -1043,6 +1043,8 @@ std::set<UserProc*>* UserProc::decompile() {
             processConstants();
             removeRedundantPhis();
         }
+        // recognising globals early prevents them from becoming parameters
+        replaceExpressionsWithGlobals();
         addNewParameters();
         cfg->renameBlockVars(0, depth);
         trimParameters(depth);
@@ -1306,6 +1308,11 @@ void UserProc::addNewParameters() {
                         std::cerr << "ignoring local " << e << std::endl;
                     continue;
                 }
+                if (e->getOper() == opGlobal) {
+                    if (VERBOSE)
+                        std::cerr << "ignoring global " << e << std::endl;
+                    continue;
+                }
                 if (VERBOSE)
                     std::cerr << "Found new parameter " << e << std::endl;
                 addParameter(e);
@@ -1415,14 +1422,17 @@ void UserProc::replaceExpressionsWithGlobals() {
     StmtListIter it;
     for (Statement*s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         Exp *memof;
-        const char *global;
         
         if (s->search(match, memof)) { 
-            if (memof->getSubExp1()->getOper() == opIntConst &&
-                (global = 
-                    prog->getGlobal(((Const*)memof->getSubExp1())->getInt()))) {
-                s->searchAndReplace(memof, 
-                    new Unary(opGlobal, new Const((char*)global)));
+            if (memof->getSubExp1()->getOper() == opIntConst) {
+                ADDRESS u = ((Const*)memof->getSubExp1())->getInt();
+                const char *global = prog->getGlobal(u);
+                if (global) {
+                    Unary *g = new Unary(opGlobal, new Const((char*)global));
+                    bool change = s->searchAndReplace(memof, g);
+                    if (change)
+                        prog->globalUsed(u);
+                }
             }
         }
     }
@@ -1855,6 +1865,11 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 continue;
             }
             if (s->getLeft() && s->getLeft()->getMemDepth() > depth) {
+                s = stmts.getNext(ll);
+                continue;
+            }
+            if (s->getLeft() && s->getLeft()->getOper() == opGlobal) {
+                // assignments to globals must always be kept
                 s = stmts.getNext(ll);
                 continue;
             }

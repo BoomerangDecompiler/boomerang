@@ -102,6 +102,9 @@ public:
 	virtual void AddProcEnd();
 	virtual void AddLocal(const char *name, Type *type);
 
+	virtual void AddGlobal(const char *name, Type *type,
+                                Exp *init = NULL);
+
     // comments
     virtual void AddLineComment(char* cmt);
 

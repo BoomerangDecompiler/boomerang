@@ -24,6 +24,7 @@
 #include <map>
 #include "BinaryFile.h"
 #include "frontend.h"
+#include "type.h"
 
 class RTLInstDict;
 class Proc;
@@ -44,6 +45,26 @@ public:
         virtual void alert_baddecode(ADDRESS pc) = 0;
         virtual void alert_done(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) = 0;
         virtual void alert_progress(unsigned long off, unsigned long size) = 0;
+};
+
+class Global {
+private:
+    Type *type;
+    ADDRESS uaddr;
+    std::string nam;
+
+public:
+    Global(Type *type, ADDRESS uaddr, const char *nam) : type(type), 
+                                                         uaddr(uaddr),
+                                                         nam(nam) { }
+    ~Global() { 
+        if (type) 
+            delete type; 
+    }
+
+    Type *getType() { return type; }
+    ADDRESS getAddress() { return uaddr; }
+    const char *getName() { return nam.c_str(); }
 };
 
 class Prog {
@@ -184,6 +205,9 @@ public:
     // Get a global variable if possible
     const char *getGlobal(ADDRESS uaddr);
 
+    // Indicate that a given global has been seen used in the program.
+    void globalUsed(ADDRESS uaddr);
+
     // Make a global variable
     void makeGlobal(ADDRESS uaddr, const char *name);
 
@@ -214,6 +238,8 @@ protected:
     BinaryFile* pBF;
     // Pointer to the FrontEnd object for the project
     FrontEnd *pFE;
+    // globals to print at code generation time
+    std::vector<Global*> globals;
     // Map of addresses to global symbols
     std::map<ADDRESS, const char*> *globalMap;
     std::string      m_name;            // name of the program

@@ -941,6 +941,8 @@ public:
     // of LHS of assignment)
     virtual void subscriptVar(Exp* e, Statement* def);
 
+    virtual void doReplaceRef(Exp* from, Exp* to);
+
     int getNumBytesPopped() { return nBytesPopped; }
     void setNumBytesPopped(int n) { nBytesPopped = n; }
 

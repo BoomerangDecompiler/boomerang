@@ -40,7 +40,7 @@ public:
 	return boomerang;
     }
 
-    static HLLCode *getHLLCode(UserProc *p);
+    static HLLCode *getHLLCode(UserProc *p = NULL);
 
     // performs command line operation
     int commandLine(int argc, const char **argv);

@@ -2318,37 +2318,6 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
           change);
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
-#if 0       // Call later
-    processConstants(proc->getProg());
-    if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
-        // functions like printf almost always have too many args
-        std::string name(getDestProc()->getName());
-        if ((name == "printf" || name == "scanf") &&
-          getArgumentExp(0)->isStrConst()) {
-            char *str = ((Const*)getArgumentExp(0))->getStr();
-            // actually have to parse it
-            int n = 1;      // Number of %s plus 1 = number of args
-            char *p = str;
-            while ((p = strchr(p, '%'))) {
-                // special hack for scanf
-                if (name == "scanf") {
-                    setArgumentExp(n, new Unary(opAddrOf, 
-                        new Unary(opMemOf, getArgumentExp(n))));
-                }
-                p++;
-                switch(*p) {
-                    case '%':
-                        break;
-                        // TODO: there's type information here
-                    default: 
-                        n++;
-                }
-                p++;
-            }
-            setNumArguments(n);
-        }
-    }
-#endif
 }
 
 void CallStatement::setNumArguments(int n) {
@@ -2629,6 +2598,14 @@ bool ReturnStatement::usesExp(Exp *e) {
 void ReturnStatement::subscriptVar(Exp* e, Statement* def) {
     for (unsigned i = 0; i < returns.size(); i++) {
         returns[i] = returns[i]->expSubscriptVar(e, def);
+    }
+}
+
+void ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
+    bool change = false;
+    for (unsigned i = 0; i < returns.size(); i++) {
+        returns[i] = returns[i]->searchReplaceAll(from, to, change);
+        returns[i] = returns[i]->simplifyArith()->simplify();
     }
 }
  
