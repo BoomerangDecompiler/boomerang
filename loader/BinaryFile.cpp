@@ -33,9 +33,7 @@
 #endif
 
 #include "BinaryFile.h"
-#ifndef WIN32
 #include "ElfBinaryFile.h"
-#endif
 #include "Win32BinaryFile.h"
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
@@ -151,8 +149,8 @@ BinaryFile* BinaryFile::getInstanceFor( const char *sName )
         return NULL;
     }
     
-#ifndef WIN32
-    // Load the specific loader library
+#ifndef WIN32           // Note: For now, Win32 statically links to all loaders
+// Load the specific loader library
     libName = std::string(LIBDIR) + "/" + libName;
     void* dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
     if (dlHandle == NULL) {
@@ -172,6 +170,8 @@ BinaryFile* BinaryFile::getInstanceFor( const char *sName )
     }
     // Call the construct function
     res = (*pFcn)();
+#else
+    res = new ElfBinaryFile;
 #endif
 
     fclose(f);

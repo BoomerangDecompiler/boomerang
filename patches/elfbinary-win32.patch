@@ -1,0 +1,53 @@
+Subject: Include ElfBinaryFile.h end create ElfBinaryFile for defined(WIN32)
+
+Without this BinaryFile::getInstanceFor("test\pentium\*")
+returns NULL if WIN32 is defined.
+
+ElfBinaryFile.cpp file can be compiled with vc7 with unistd.h commented out.
+Possibly it isn't needed at all here.
+
+>From : Anatoli Koutsevol <Anatoli.Koutsevol@MarkovProcesses.com>
+
+Index: loader/BinaryFile.cpp
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/loader/BinaryFile.cpp,v
+retrieving revision 1.7
+diff -u -r1.7 BinaryFile.cpp
+--- loader/BinaryFile.cpp	1 Feb 2004 04:40:28 -0000	1.7
++++ loader/BinaryFile.cpp	1 Feb 2004 19:40:23 -0000
+@@ -33,9 +33,7 @@
+ #endif
+ 
+ #include "BinaryFile.h"
+-#ifndef WIN32
+ #include "ElfBinaryFile.h"
+-#endif
+ #include "Win32BinaryFile.h"
+ #include "PalmBinaryFile.h"
+ #include "HpSomBinaryFile.h"
+@@ -172,6 +170,8 @@
+     }
+     // Call the construct function
+     res = (*pFcn)();
++#else
++    res = new ElfBinaryFile;
+ #endif
+ 
+     fclose(f);
+Index: loader/ElfBinaryFile.cpp
+===================================================================
+RCS file: /cvsroot/boomerang/boomerang/loader/ElfBinaryFile.cpp,v
+retrieving revision 1.20
+diff -u -r1.20 ElfBinaryFile.cpp
+--- loader/ElfBinaryFile.cpp	30 Jan 2004 11:27:47 -0000	1.20
++++ loader/ElfBinaryFile.cpp	1 Feb 2004 19:40:28 -0000
+@@ -36,7 +36,9 @@
+ #include <sys/types.h>      // Next three for open()
+ #include <sys/stat.h>
+ #include <fcntl.h>
++#ifndef WIN32
+ #include <unistd.h>         // Close()
++#endif
+ #include <iostream>
+ #include <assert.h>
+ #include "config.h"
