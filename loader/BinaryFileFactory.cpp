@@ -96,11 +96,14 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 // Load the specific loader library
 	libName = std::string("lib/") + libName;
 #ifndef _WIN32
+#ifdef	__CYGWIN__
+	libName += ".dll";		// Cygwin wants .dll, but is otherwise like Unix
+#else
 	libName += ".so";
+#endif
 	void* dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
 	if (dlHandle == NULL) {
-		fprintf( stderr, "Could not open dynamic loader library %s\n",
-			libName.c_str());
+		fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());
 		fprintf( stderr, "%s\n", dlerror());
 		fclose(f);
 		return NULL;
@@ -112,8 +115,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	HMODULE hModule = LoadLibrary(libName.c_str());
 	if(hModule == NULL) {
 		int err = GetLastError();
-		fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n",
-			libName.c_str(), err);
+		fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
 		fclose(f);
 		return NULL;
 	}
@@ -122,8 +124,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 #endif
 
 	if (pFcn == NULL) {
-		fprintf( stderr, "Loader library %s does not have a construct "
-			"function\n", libName.c_str());
+		fprintf( stderr, "Loader library %s does not have a construct function\n", libName.c_str());
 		fclose(f);
 		return NULL;
 	}

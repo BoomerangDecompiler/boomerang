@@ -34,7 +34,6 @@ CXX=$(CC)
 
 # HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
-HOST_CYGWIN = @HOST_CYGWIN@
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -66,7 +65,6 @@ endif
 
 LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile
 LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
-LOADERSOS=$(patsubst %,../lib/lib%.so,$(LOADERS))
 BASEDLL=../lib/libBinaryFile$(DLLEXT)
 ALLDLLS=$(LOADERDLLS) $(BASEDLL)
 ALLLIBS=$(patsubst %,-l%,$(LOADERS)) -lBinaryFile
@@ -109,13 +107,6 @@ $(BASEDLL) : BinaryFile.o
 # This pattern generates all the main dependencies
 $(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
 	$(CC) -o $@ -shared $< $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib
-
-ifeq ($(HOST_CYGWIN), yes)
-all: $(LOADERSOS)
-$(LOADERSOS): %.so : %.dll
-	echo dollar less is $<, dollar at is $@
-	ln -s $< $@
-endif
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
