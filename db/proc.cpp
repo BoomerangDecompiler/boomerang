@@ -3444,7 +3444,7 @@ void UserProc::typeAnalysis(Prog* prog) {
 
 bool UserProc::searchAndReplace(Exp *search, Exp *replace)
 {
-    bool ch;
+    bool ch = false;
     StatementList stmts;
     getStatements(stmts);
     StatementList::iterator it;
