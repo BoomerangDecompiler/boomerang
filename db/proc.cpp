@@ -55,6 +55,8 @@
 typedef std::map<Statement*, int> RefCounter;
 
 #define DEBUG_PROOF (Boomerang::get()->debugProof)
+#define DEBUG_UNUSED_RETS (Boomerang::get()->debugUnusedRets)
+#define DEBUG_UNUSED_STMT (Boomerang::get()->debugUnusedStmt)
 
 /************************
  * Proc methods.
@@ -856,6 +858,9 @@ void UserProc::generateCode(HLLCode *hll) {
     }
     removeUnusedLocals();
 
+    // Note: don't try to remove unused statements here; that requires the
+    // RefExps, which are all gone now (transformed out of SSA form)!
+
     if (VERBOSE || Boomerang::get()->printRtl)
         printToLog();
 
@@ -980,27 +985,33 @@ void UserProc::removeStatement(Statement *stmt) {
 }
 
 void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
-    PBB bb = s->getBB();         // Get our enclosing BB
-    std::list<RTL*> *rtls = bb->getRTLs();
-    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-          rit++) {
-        std::list<Statement*>& stmts = (*rit)->getList();
-        for (std::list<Statement*>::iterator it = stmts.begin(); 
-              it != stmts.end(); it++) {
-            if (*it == s) {
-                std::ostringstream os;
-                os << "local" << tempNum;
-                Assign* as = new Assign(
-                    Location::local(strdup(os.str().c_str()), this),
-                    right);
-                stmts.insert(++it, as);
-                return;
-            }
-        }
+    std::list<Statement*>::iterator it;
+    std::list<Statement*>* stmts;
+    if (s == NULL) {
+        // This means right is supposed to be a parameter. We can insert the
+        // assignment at the start of the entryBB
+        PBB entryBB = cfg->getEntryBB();
+        std::list<RTL*> *rtls = entryBB->getRTLs();
+        assert(rtls->size());       // Entry BB should have at least 1 RTL
+        stmts = &rtls->front()->getList();
+        it = stmts->begin();
+    } else {
+        // An ordinary definition; put the assignment at the end of s's BB
+        PBB bb = s->getBB();         // Get the enclosing BB for s
+        std::list<RTL*> *rtls = bb->getRTLs();
+        assert(rtls->size());       // If s is defined here, there should be
+                                    // at least 1 RTL
+        stmts = &rtls->back()->getList();
+        it = stmts->end();          // Insert before the end
     }
-    assert(0);
+    std::ostringstream os;
+    os << "local" << tempNum;
+    Assign* as = new Assign(
+        Location::local(strdup(os.str().c_str()), this),
+        right);
+    stmts->insert(it, as);
+    return;
 }
-
 
 // Decompile this UserProc
 std::set<UserProc*>* UserProc::decompile() {
@@ -1237,7 +1248,6 @@ std::set<UserProc*>* UserProc::decompile() {
     for (depth = 0; depth <= maxDepth; depth++) {
         // Remove unused statements
         RefCounter refCounts;           // The map
-        refCounts.clear();
         // Count the references first
         countRefs(refCounts);
         // Now remove any that have no used
@@ -1318,9 +1328,8 @@ int UserProc::findMaxDepth() {
     return maxDepth;
 }
 
-void UserProc::removeRedundantPhis()
-{
-    if (VERBOSE)
+void UserProc::removeRedundantPhis() {
+    if (VERBOSE || DEBUG_UNUSED_STMT)
         LOG << "removing redundant phi statements" << "\n";
 
     // some phis are just not used
@@ -1334,6 +1343,7 @@ void UserProc::removeRedundantPhis()
         Statement* s = *it;
         if (s->isPhi()) {
             bool unused = false;
+            PhiExp *p = (PhiExp*)s->getRight();
             if (refCounts[s] == 0)
                 unused = true;
             else if (refCounts[s] == 1) {
@@ -1347,7 +1357,6 @@ void UserProc::removeRedundantPhis()
                 if (theReturnStatement)
                     usedInRet = theReturnStatement->usesExp(r);
                 delete r;
-                PhiExp *p = (PhiExp*)s->getRight();
                 if (usedInRet) {
                     bool allZeroOrSelfCall = true;
                     StatementVec::iterator it1;
@@ -1358,17 +1367,47 @@ void UserProc::removeRedundantPhis()
                             allZeroOrSelfCall = false;
                     }
                     if (allZeroOrSelfCall) {
-                        if (VERBOSE)
-                            LOG << "removing using shakey hack:\n";
+                        if (VERBOSE || DEBUG_UNUSED_STMT)
+                            LOG << "removing phi using shakey hack:\n";
                         unused = true;
                         removeReturn(p->getSubExp1());
                     }
                 }
+            } else {
+#if 0       // NO! This essentially knocks out ALL the phis (I think). MVE
+            // More thought required.
+                // Check to see if all the refs are to either the same thing
+                // or to NULL. If so, they will (would have been?) removed in
+                // the fromSSA code. Removing them here allows some pesky
+                // statements (e.g. assignments to %pc) to be removed
+                LocationSet refs;
+                p->addUsedLocs(refs);
+                Exp* first = *refs.begin();
+                bool same = true;
+                LocationSet::iterator rr;
+                for (rr = refs.begin(); rr != refs.end(); rr++) {
+                    if (!(**rr *= *first)) {       // Ref-insensitive compare
+                        same = false;
+                        break;
+                    }
+                }
+                if (same) {
+                    // Is the left of the phi assignment the same base variable
+                    // as all the operands (or the operand is NULL) ?
+                    if (*s->getLeft() *= *first) {
+                        if (DEBUG_UNUSED_STMT)
+                            LOG << "Removing phi: left and all refs same or 0: "
+                              << s << "\n";
+                        // Just removing the refs will work, or removing the
+                        // whole phi
+                        removeStatement(s);
+                    }
+                }
+#endif
             }
             if (unused) {
-                if (VERBOSE) {
-                    LOG << "removing unused statement " << s << "\n";
-                }
+                if (DEBUG_UNUSED_STMT)
+                    LOG << "removing redundant phi " << s << "\n";
                 removeStatement(s);
             }
         }
@@ -2621,7 +2660,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
             ((PhiExp*)s->getRight())->simplifyRefs();
             s->simplify();
         }
-        if (s->isReturn())
+        if (DEBUG_UNUSED_STMT || DEBUG_UNUSED_RETS && s->isReturn())
             LOG << "counting references in " << s << "\n";
         LocationSet refs;
 #define IGNORE_IMPLICITS 1
@@ -2635,7 +2674,7 @@ void UserProc::countRefs(RefCounter& refCounts) {
             if (((Exp*)*rr)->isSubscript()) {
                 Statement *ref = ((RefExp*)*rr)->getRef();
                 refCounts[ref]++;
-                if (s->isReturn())
+                if (DEBUG_UNUSED_STMT || DEBUG_UNUSED_RETS && s->isReturn())
                     LOG << "counted ref to " << *rr << "\n";
                 
             }
@@ -2657,8 +2696,8 @@ void UserProc::removeUnusedLocals() {
         LocationSet::iterator rr;
         for (rr = refs.begin(); rr != refs.end(); rr++) {
             Exp* r = *rr;
-            //if (r->isSubscript())
-                //r = ((RefExp*)r)->getSubExp1();
+            if (r->isSubscript())
+                r = ((RefExp*)r)->getSubExp1();
             if (r->isLocal()) {
                 Const* c = (Const*)((Unary*)r)->getSubExp1();
                 std::string name(c->getStr());
@@ -2716,8 +2755,8 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 for (i = 0; i < call->getNumReturns(); i++)
                     returns.push_back(call->getReturnExp(i));
                 for (i = 0; i < (int)returns.size(); i++)
-                    //if (depth < 0 || returns[i]->getMemDepth() <= depth)
-                    if (returns[i]->getMemDepth() <= depth)
+                    if (depth < 0 || returns[i]->getMemDepth() <= depth)
+                    //           if (returns[i]->getMemDepth() <= depth)
                         call->removeReturn(returns[i]);
                 ll++;
                 continue;
@@ -2773,7 +2812,7 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 StatementSet::iterator dd;
                 for (dd = refs.begin(); dd != refs.end(); dd++)
                     refCounts[*dd]--;
-                if (VERBOSE)
+                if (DEBUG_UNUSED_STMT)
                     LOG << "Removing unused statement " << s->getNumber() 
                         << " " << s << "\n";
                 removeStatement(s);
@@ -2828,10 +2867,16 @@ void UserProc::fromSSAform() {
         if (same) {
             // Is the left of the phi assignment the same base variable as all
             // the operands?
-            if (*s->getLeft() *= *first)
-                // Just removing the refs will work
+            if (*s->getLeft() *= *first) {
+                if (DEBUG_UNUSED_STMT)
+                    LOG << "Removing phi: left and all refs same or 0: " <<
+                      s << "\n";
+                // Just removing the refs will work, or removing the whole phi
+                // NOTE: Removing the phi here may cause other statments to be
+                // not used. Soon I want to remove the phi's earlier, so this
+                // code can be removed. - MVE
                 removeStatement(s);
-            else
+            } else
                 // Just need to replace the phi by an expression,
                 // e.g. local0 = phi(r24{3}, r24{5}) becomes 
                 //      local0 = r24
@@ -3177,7 +3222,7 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
     // We have a reference to a return of the call statement
     UserProc* proc = (UserProc*) call->getDestProc();
     //if (proc->isLib()) return;
-    if (Boomerang::get()->debugUnusedRets) {
+    if (DEBUG_UNUSED_RETS) {
         LOG << " @@ Counted use of return location " << loc 
             << " for call to ";
         if (proc) 
@@ -3205,7 +3250,7 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
 }
 
 void UserProc::countUsedReturns(ReturnCounter& rc) {
-    if (Boomerang::get()->debugUnusedRets)
+    if (DEBUG_UNUSED_RETS)
         LOG << " @@ Counting used returns in " << getName() << "\n";
     StatementList stmts;
     getStatements(stmts);
@@ -3252,7 +3297,7 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
         if (signature->isPromoted() && !(*stackExp == **it))
             // Only remove stack pointer if promoted
             continue;
-        if (Boomerang::get()->debugUnusedRets)
+        if (DEBUG_UNUSED_RETS)
             LOG << " @@ Removing unused return " << *it <<
             " in " << getName() << "\n";
         removeReturn(*it);
