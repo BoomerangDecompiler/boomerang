@@ -922,7 +922,7 @@ bool PentiumFrontEnd::processStsw(std::list<RTL*>::iterator& rit,
         pCfg->joinBB(pBBnext, pBB);
     }
 
-//std::cout << "Return in state " << std::dec << state << std::endl;   // HACK
+//std::cout << "Return in state " << std::dec << state << std::endl;
     return bJoin;           // If joined, abandon this BB
 }
 #endif
@@ -940,7 +940,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL*>* BB_rtls, std::list<RTL*>::iterato
             new Const(0)));
     RTL* pRtl = new RTL(uAddr);
     pRtl->appendStmt(asgn);
-//std::cout << "Emit "; pRtl->print(); std::cout << std::endl;     // HACK
+//std::cout << "Emit "; pRtl->print(); std::cout << std::endl;
     // Insert the new RTL before rit
     BB_rtls->insert(rit, pRtl);
 }
@@ -1113,6 +1113,9 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
     ADDRESS dest;
     do {
         DecodeResult inst = decodeInstruction(addr);
+        if (inst.rtl == NULL)
+            // Must have gotten out of step
+            break;
         CallStatement* cs = NULL;
         if (inst.rtl->getList().size())
             cs = (CallStatement*)(inst.rtl->getList().back());
@@ -1179,7 +1182,13 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint( bool &gotMain )
         }
         else 
             conseq = 0;         // Must be consequitive
-        addr += inst.numBytes;
+        GotoStatement* gs = (GotoStatement*)cs;
+        if (gs && gs->getKind() == STMT_GOTO)
+            // Example: Borland often starts with a branch around some debug
+            // info
+            addr = gs->getFixedDest();
+        else
+            addr += inst.numBytes;
     } while (--instCount);
 #if 0       // Was for finding main in DOS 286 programs
         // Try another pattern; this one is for DOS programs. In the first
