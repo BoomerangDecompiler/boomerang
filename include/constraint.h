@@ -18,26 +18,21 @@
  * 22 Aug 03 - Mike: Created
  */
 
-#include <list>
-
-#include "exp.h"
+#include "statement.h"
 
 
 
 class Constraints {
-    std::list<Exp*> conList;
+    LocationSet conSet;
 
 public:
-typedef std::list<Exp*>::iterator handle;
-
     Constraints() {}
     ~Constraints();
 
-    std::list<Exp*>& getConstraints() {return conList;}
-    handle  getPos();
-    void    printSince(handle);
+    LocationSet& getConstraints() {return conSet;}
+    void    addConstraints(LocationSet& con) {conSet.makeUnion(con);}
     // Solve the constraints. If they can be solved, return true and put
-    // a copy of the solution (in the form of a list of T<location> = <type>)
+    // a copy of the solution (in the form of a set of T<location> = <type>)
     // into soln
-    bool    solve(std::list<Exp*>& soln);
+    bool    solve(LocationSet& soln);
 };

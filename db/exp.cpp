@@ -2849,7 +2849,7 @@ bool lessTI::operator()(const Exp* x, const Exp* y) const {
 //  //  //  //  //
 
 
-bool Const::constrainTo(Exp* con, std::list<Exp*>& cons) {
+Exp* Const::constrainTo(Exp* con) {
     if (con->isTypeVal()) {
         // con is a constant type, or possibly a partial type such as
         // ptr(alpha)
@@ -2873,7 +2873,13 @@ bool Const::constrainTo(Exp* con, std::list<Exp*>& cons) {
             default:
                 break;
         }
-        return match;
+        if (!match) {
+            // This constant will require a cast. So we generate a constraint
+            // as a sign to the back end
+            return new Binary(opEquals,
+                new Unary(opTypeOf, this->clone()),
+                con->clone());
+        }
     }
     // con is a type variable, which is constrained by this constant
     Type* t;
@@ -2895,43 +2901,63 @@ bool Const::constrainTo(Exp* con, std::list<Exp*>& cons) {
     }
     TypeVal* tv = new TypeVal(t);
     Exp* e = new Binary(opEquals, con, tv);
-    cons.push_back(e);
-    return true;
+    return e;
 }
 
-bool Binary::constrainTo(Exp* con, std::list<Exp*>& cons) {
+Exp* Binary::constrainTo(Exp* con) {
+    Exp* con1;
+    Exp* con2;
+    Exp* res = NULL;
+    IntegerType* intType = new IntegerType;
+    TypeVal intVal(intType);
     switch (op) {
         case opFPlus:
         case opFMinus:
         case opFMult:
         case opFDiv: {
             FloatType* ft = new FloatType();
-            TypeVal* ftv = new TypeVal(ft->clone());
-            if (!subExp1->constrainTo(ftv, cons))
+            TypeVal* ftv = new TypeVal(ft);
+            if (subExp1->constrainTo(ftv)) {
+                // Constrain con to be float
+                Exp* e = new Binary(opEquals, con->clone(), ftv);
+                return e;
+            } else {
                 if (VERBOSE || DEBUG_TA)
                     std::cerr << "Floating point operator " << operStrings[op]
                       << " constraint failure with first operand " << subExp1
                       << "\n";
-            // Constrain con to be float
-            Exp* e = new Binary(opEquals, con, ftv);
-            cons.push_back(e);
+                delete ftv;     // Also deletes ft
+            }
             break;
         }
 
-        case opPlus:
-
+        case opPlus: {
+            if (con->isTypeVal()) {
+                // int + int
+                con1 = subExp1->constrainTo(&intVal);
+                con2 = subExp2->constrainTo(&intVal);
+                if (con1 && con2) {
+                    res = new Binary(opAnd,
+                        con1->clone(),
+                        con2->clone());
+                    // FIXME: MORE!
+                }
+            }
+        }
+            
+                
         default:
             break;
     }
-    return false;
+    return NULL;
 }
 
-bool PhiExp::constrainTo(Exp* con, std::list<Exp*>& cons) {
-    return false;
+Exp* PhiExp::constrainTo(Exp* con) {
+    return NULL;
 }
-bool Unary::constrainTo(Exp* con, std::list<Exp*>& cons) {
-    return false;
+Exp* Unary::constrainTo(Exp* con) {
+    return NULL;
 }
-bool Ternary::constrainTo(Exp* con, std::list<Exp*>& cons) {
-    return false;
+Exp* Ternary::constrainTo(Exp* con) {
+    return NULL;
 }

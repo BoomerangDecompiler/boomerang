@@ -162,6 +162,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     int getVarIndex();
     // True if this is a terminal
     virtual bool isTerminal() { return false; }
+    // True if this is an equality (== or !=)
+    bool isEquality() {return op == opEquals || op == opNotEqual;}
     // True if this is a comparison
     bool isComparison() { return op == opEquals || op == opNotEqual ||
                                  op == opGtr || op == opLess ||
@@ -264,8 +266,7 @@ virtual Exp* simplifyAddr() {return this;}
 
     // Constrain this Exp with the type variable given in con
     // Add any generated constraints to cons
-    // Returns false if a constraint is impossible
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons) {return false;}
+    virtual Exp*  constrainTo(Exp* con) {return NULL;}
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len) = 0;
@@ -324,7 +325,7 @@ public:
     // Print "recursive" (extra parens not wanted at outer levels)
 
     void    appendDotFile(std::ofstream& of);
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+    virtual Exp*  constrainTo(Exp* con);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -428,7 +429,7 @@ virtual int getMemDepth();
     virtual Exp* fromSSA(igraph& ig);
 
     // Type analysis
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+    virtual Exp*  constrainTo(Exp* con);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
@@ -496,7 +497,7 @@ virtual int getMemDepth();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Type analysis
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+    virtual Exp*  constrainTo(Exp* con);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -563,7 +564,7 @@ virtual int getMemDepth();
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
 
     // Type analysis
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+    virtual Exp* constrainTo(Exp* con);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
@@ -705,7 +706,7 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     virtual Exp* fromSSA(igraph& ig);
     //bool    references(Statement* s) {return stmtVec.exists(s);}
     StatementVec& getRefs() {return stmtVec;}
-    virtual bool constrainTo(Exp* con, std::list<Exp*>& cons);
+    virtual Exp* constrainTo(Exp* con);
 };
 
 /*==============================================================================
@@ -723,7 +724,7 @@ virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    bool    constrainTo(Exp* con, std::list<Exp*>& cons) {
+    Exp*    constrainTo(Exp* con) {
         assert(0); return false;} // Should not be constraining constraints
 };
     

@@ -41,7 +41,7 @@ BranchStatement CaseStatement CallStatement ReturnStatement    /           |
 #include <map>
 #include <ostream>
 #include <iostream>     // For std::cerr
-//#include "exp.h"
+//#include "exp.h"      // No! This is the bottom of the #include hierarchy
 #include "exphelp.h"    // For lessExpStar
 #include "types.h"
 
@@ -90,6 +90,7 @@ public:
         { return sset == o.sset;}
     bool operator<(const StatementSet& o) const;    // Compare if less
     char* prints();                         // Print to std::cerr (for debug)
+    void  print(std::ostream& os);          // Print to os
     void printNums(std::ostream& os);       // Print statements as numbers
     bool isLast(StmtSetIter& it);           // returns true if it is at end
 };  // class StatementSet
@@ -169,6 +170,7 @@ public:
     bool operator==(const LocationSet& o) const; // Compare
     void substitute(Statement& s);          // Substitute the statement to all
     char* prints();                         // Print to cerr for debugging
+    void  print(std::ostream& os);          // Print to os
     // Return true if the location exists in the set
     bool find(Exp* e);
     // Find a location with a different def, but same expression
@@ -375,7 +377,7 @@ public:
     virtual void fixSuccessor() {}
 
     // generateConstraints
-    virtual void generateConstraints(std::list<Exp*>& cons) {}
+    virtual void generateConstraints(LocationSet& cons) {}
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
@@ -384,8 +386,10 @@ protected:
     bool mayAlias(Exp *e1, Exp *e2, int size);
 };          // class Statement
 
-// Print the Statement poited to by p
-std::ostream& operator<<(std::ostream& os, Statement* s);
+// Print the Statement (etc) poited to by p
+std::ostream& operator<<(std::ostream& os, Statement* p);
+std::ostream& operator<<(std::ostream& os, StatementSet* p);
+std::ostream& operator<<(std::ostream& os, LocationSet* p);
 
 
 
@@ -488,7 +492,7 @@ public:
     virtual void fixSuccessor();
 
     // generateConstraints
-    virtual void generateConstraints(std::list<Exp*>& cons);
+    virtual void generateConstraints(LocationSet& cons);
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to);
@@ -868,7 +872,7 @@ public:
     Proc* getDestProc();
 
     // generateConstraints
-    virtual void generateConstraints(std::list<Exp*>& cons);
+    virtual void generateConstraints(LocationSet& cons);
 
     // serialize this rtl
     virtual bool serialize_rest(std::ostream &ouf);

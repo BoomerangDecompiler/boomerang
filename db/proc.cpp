@@ -2542,32 +2542,34 @@ void UserProc::typeAnalysis(Prog* prog) {
     if (DEBUG_TA)
         std::cerr << "Procedure " << getName() << "\n";
     Constraints consObj;
-    std::list<Exp*>& cons = consObj.getConstraints();
+    LocationSet cons;
     StatementList stmts;
     getStatements(stmts);
     StmtListIter ss;
     // For each statement this proc
     for (Statement* s = stmts.getFirst(ss); s; s = stmts.getNext(ss)) {
-        Constraints::handle h = consObj.getPos();
+        cons.clear();
         s->generateConstraints(cons);
-        if (DEBUG_TA) {
-            std::cerr << s << "\n";
-            consObj.printSince(h);
-        }
+        consObj.addConstraints(cons);
+        if (DEBUG_TA)
+            std::cerr << s << "\n" << &cons << "\n";
     }
 
-    std::list<Exp*> soln;
+    LocationSet soln;
     if (consObj.solve(soln)) {
-        std::list<Exp*>::iterator it;
-        for (it = soln.begin(); it != soln.end(); it++) {
-            Exp* tVar = ((Binary*)*it)->getSubExp1();
-            assert(tVar->getOper() == opTypeOf);
-            Exp* loc = ((Unary*)tVar)->getSubExp1();
-            Type* t = ((TypeVal*)((Binary*)*it)->getSubExp2())->getType();
+        LocSetIter cc;
+        for (Exp* con = soln.getFirst(cc); con; con = soln.getNext(cc)) {
+            assert(con->isEquality());
+            Exp* t = ((Binary*)con)->getSubExp1();
+            if (t->isSubscript())
+                t = ((RefExp*)t)->getSubExp1();
+            assert(t->getOper() == opTypeOf);
+            Exp* loc = ((Unary*)t)->getSubExp1();
+            Type* ty = ((TypeVal*)((Binary*)con)->getSubExp2())->getType();
             if (loc->isSubscript() && (loc = ((RefExp*)loc)->getSubExp1(),
                   loc->isGlobal())) {
                 char* nam = ((Const*)((Unary*)loc)->getSubExp1())->getStr();
-                prog->setGlobalType(nam, t->clone());
+                prog->setGlobalType(nam, ty->clone());
             }
         }
     }

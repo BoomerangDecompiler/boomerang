@@ -19,33 +19,18 @@
  */
 
 #include "constraint.h"
+#include "exp.h"
 
 Constraints::~Constraints() {
-    handle ii;
-    for (ii = conList.begin(); ii != conList.end(); ii++) {
-        delete *ii;
+    LocSetIter cc;
+    for (Exp* c = conSet.getFirst(cc); c; c = conSet.getNext(cc)) {
+        delete c;
     }
 }
 
-// Return an iterator to the current position in the list (or NULL)
-Constraints::handle Constraints::getPos() {
-    if (conList.size() == 0) return NULL;
-    return --conList.end();
-}
-
-// Print all new constraints since h was end() to std::cerr
-void Constraints::printSince(handle h) {
-    if (h == NULL) h = conList.begin();
-    else h++;
-    for (handle ii = h; ii != conList.end(); ii++) {
-        std::cerr << *ii << "\n";
-    }
-    std::cerr << "\n";
-}
-
-bool Constraints::solve(std::list<Exp*>& soln) {
+bool Constraints::solve(LocationSet& soln) {
     // For now:
-    soln = conList;
+    soln = conSet;
     return true;
 }
 
