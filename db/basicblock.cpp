@@ -1509,7 +1509,8 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                 if (!u->isSubscript()) continue;
                 // Interference if we can find a live variable which differs
                 // only in the reference
-                if (liveLocs.findDifferentRef((RefExp*)u)) {
+                Exp *dr;
+                if (liveLocs.findDifferentRef((RefExp*)u, dr)) {
                     // We have an interference. Record it, but only if new
                     igraph::iterator gg = ig.find(u);
                     if (gg == ig.end()) {
@@ -1517,16 +1518,12 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                         std::ostringstream sto;
                         sto << "local" << localNum-1;
                         std::string local = sto.str();
-                        Type *ty = NULL;
-                        if (((RefExp*)u)->getRef() &&
-                            ((RefExp*)u)->getRef()->getLeft() &&
-                            ((RefExp*)u)->getRef()->getLeft()->isLocation())
-                            ty = ((Location*)((RefExp*)u)->getRef()->
-                                                        getLeft())->getType();
+                        Type *ty = u->getType();
                         if (ty)
                             s->getProc()->setLocalType(local.c_str(), ty);
+                        s->getProc()->setLocalExp(local.c_str(), u);
                         if (VERBOSE || Boomerang::get()->debugLiveness) {
-                            LOG << "Interference of " << u <<
+                            LOG << "Interference of " << dr << " with " << u <<
                             ", assigned " << local.c_str();
                             if (ty)
                                 LOG << " with type " << ty->getCtype();

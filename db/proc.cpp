@@ -260,6 +260,8 @@ void UserProc::printUseGraph()
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
+        if (s->isPhi())
+            out << s->getNumber() << " [shape=diamond];\n";
         LocationSet refs;
         s->addUsedLocs(refs);
         LocationSet::iterator rr;
@@ -845,8 +847,8 @@ void UserProc::generateCode(HLLCode *hll) {
     cfg->structure();
     replaceExpressionsWithGlobals();
     if (!Boomerang::get()->noLocals) {
-        while (nameStackLocations())
-            replaceExpressionsWithSymbols();
+//        while (nameStackLocations())
+//            replaceExpressionsWithSymbols();
         while (nameRegisters())
             replaceExpressionsWithSymbols();
     }
@@ -1056,12 +1058,18 @@ std::set<UserProc*>* UserProc::decompile() {
         maxDepth = Boomerang::get()->maxMemDepth;
     for (int depth = 0; depth <= maxDepth; depth++) {
 
+        if (VERBOSE)
+            LOG << "placing phi functions at depth " << depth << "\n";
         // Place the phi functions for this memory depth
         cfg->placePhiFunctions(depth, this);
 
+        if (VERBOSE)
+            LOG << "numbering phi statements at depth " << depth << "\n";
         // Number them
         numberPhiStatements(stmtNumber);
 
+        if (VERBOSE)
+            LOG << "renaming block variables at depth " << depth << "\n";
         // Rename variables
         cfg->renameBlockVars(0, depth);
 
@@ -1087,8 +1095,10 @@ std::set<UserProc*>* UserProc::decompile() {
         // recognising globals early prevents them from becoming parameters
         replaceExpressionsWithGlobals();
         int nparams = signature->getNumParams();
-        addNewParameters();
-        trimParameters(depth);
+        if (depth > 0) {
+            addNewParameters();
+            //trimParameters(depth);
+        }
 
         // if we've added new parameters, need to do propagations up to this depth
         // it's a recursive function thing.
@@ -1115,9 +1125,14 @@ std::set<UserProc*>* UserProc::decompile() {
                   getName() << " at depth " << depth << " ===\n\n";
             }
         }
+        // replacing expressions with Parameters as we go
+        if (!Boomerang::get()->noParameterNames) {
+            replaceExpressionsWithParameters(-1);
+            cfg->renameBlockVars(0, depth, true);
+        }
 
         // recognising locals early prevents them from becoming returns
-        replaceExpressionsWithLocals();
+        replaceExpressionsWithLocals(depth == maxDepth);
         addNewReturns(depth);
         cfg->renameBlockVars(0, depth, true);
         printXML();
@@ -1162,6 +1177,7 @@ std::set<UserProc*>* UserProc::decompile() {
 
         // Remove unused statements
         RefCounter refCounts;           // The map
+        refCounts.clear();
         // Count the references first
         countRefs(refCounts);
         // Now remove any that have no used
@@ -1185,7 +1201,8 @@ std::set<UserProc*>* UserProc::decompile() {
     if (!Boomerang::get()->noParameterNames) {
         for (int i = maxDepth; i >= 0; i--) {
             replaceExpressionsWithParameters(i);
-            replaceExpressionsWithLocals();
+            replaceExpressionsWithLocals(true);
+            cfg->renameBlockVars(0, i, true);
         }
         trimReturns();
         trimParameters();
@@ -1438,11 +1455,13 @@ void UserProc::trimReturns() {
             }
         }
     }
-    if (stdret)
-        removeReturn(new Terminal(opPC));
-    for (std::set<Exp*>::iterator it = preserved.begin(); 
-         it != preserved.end(); it++)
-        removeReturn(*it);
+    if (!signature->isPromoted()) {
+        if (stdret)
+            removeReturn(new Terminal(opPC));
+        for (std::set<Exp*>::iterator it = preserved.begin(); 
+             it != preserved.end(); it++)
+            removeReturn(*it);
+    }
     removeRedundantPhis();
     fixCallRefs();
 }
@@ -1587,6 +1606,9 @@ void UserProc::addNewParameters() {
 }
 
 void UserProc::trimParameters(int depth) {
+
+    if (signature->isPromoted())
+        return;
 
     if (VERBOSE)
         LOG << "Trimming parameters for " << getName() << "\n";
@@ -1793,6 +1815,9 @@ void UserProc::replaceExpressionsWithGlobals() {
     StatementList stmts;
     getStatements(stmts);
 
+    if (VERBOSE)
+        LOG << "replacing expressions with globals\n";
+
     // start with calls because that's where we have the most types
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) 
@@ -1940,26 +1965,66 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
     StatementList stmts;
     getStatements(stmts);
 
-    // replace expressions in regular statements with parameters
+    if (VERBOSE)
+        LOG << "replacing expressions with parameters at depth " << depth 
+            << "\n";
+
+    bool found = false;
+    // start with calls because that's where we have the most types
     StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) 
+        if ((*it)->isCall()) {
+            CallStatement *call = (CallStatement*)*it;
+            for (int i = 0; i < call->getNumArguments(); i++) {
+                Type *ty = call->getArgumentType(i);
+                Exp *e = call->getArgumentExp(i);
+                if (ty && ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                if (ty && ty->isPointer() && e->getOper() != opAddrOf &&
+                           e->getMemDepth() == 0) {
+                    Location *pe = Location::memOf(e);
+                    pe->setProc(this);
+                    if (pe->getType() && 
+                        *pe->getType() == *((PointerType*)ty)->getPointsTo()) {
+                        Exp *ne = new Unary(opAddrOf, pe);
+                        if (VERBOSE)
+                            LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
+                        call->setArgumentExp(i, ne);
+                        found = true;
+                    }
+                }
+            }
+        }
+    if (found)
+        cfg->renameBlockVars(0, 1, true);
+
+    // replace expressions in regular statements with parameters
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         for (int i = 0; i < signature->getNumParams(); i++) 
-            if (signature->getParamExp(i)->getMemDepth() == depth) {
+            if (signature->getParamExp(i)->getMemDepth() == depth ||
+                depth < 0) {
                 Exp *r = signature->getParamExp(i)->clone();
                 r = r->expSubscriptVar(new Terminal(opWild), NULL);
+                if (r->getOper() == opSubscript)
+                    r = r->getSubExp1();
                 Exp* replace = Location::param(
                             strdup((char*)signature->getParamName(i)), this);
-                if (VERBOSE)
-                    LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
-                s->searchAndReplace(r, replace);
+                Exp *n;
+                if (s->search(r, n)) {
+                    if (VERBOSE)
+                        LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
+                    s->searchAndReplace(r, replace);
+                    if (VERBOSE)
+                        LOG << "after: " << s << "\n";
+                }
             }
     }
 }
 
 Exp *UserProc::getLocalExp(Exp *le, Type *ty)
 {
-    Exp *e;
+    Exp *e = NULL;
     if (symbolMap.find(le) == symbolMap.end()) {
         if (le->getOper() == opMemOf && le->getSubExp1()->getOper() == opMinus &&
             *le->getSubExp1()->getSubExp1() == *new RefExp(Location::regOf(signature->getStackRegister(prog)), NULL) &&
@@ -1982,35 +2047,59 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
                     ty = ((NamedType*)ty)->resolvesTo();
                 if (ty) {
                     int size = ty->getSize() / 8;    // getSize() returns bits!
-                    if (base->getOper() == opMemOf && base->getSubExp1()->getOper() == opMinus &&
+                    if (base->getOper() == opMemOf && 
+                        base->getSubExp1()->getOper() == opMinus &&
                         *base->getSubExp1()->getSubExp1() == 
-                                                *new RefExp(Location::regOf(signature->getStackRegister(prog)), NULL) &&
-                        base->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-                        int base_n = ((Const*)base->getSubExp1()->getSubExp2())->getInt();
+                             *new RefExp(Location::regOf(
+                                signature->getStackRegister(prog)), NULL) &&
+                        base->getSubExp1()->getSubExp2()->getOper() == 
+                                                                opIntConst) {
+                        int base_n = ((Const*)base->getSubExp1()->getSubExp2())
+                                                                ->getInt();
                         if (le_n <= base_n && le_n > base_n-size) {
                             if (VERBOSE)
                                 LOG << "found alias to " << name.c_str() << ": " << le << "\n";
+                            int n = base_n - le_n;
+                            return Location::memOf(new Binary(opPlus, 
+                                                    new Unary(opAddrOf, 
+                                                        local->clone()),
+                                                    new Const(n)));
+#if 0
                             if (ty->isCompound()) {
                                 CompoundType *compound = (CompoundType*)ty;
                                 return new Binary(opMemberAccess, local->clone(), 
                                                     new Const((char*)compound->getNameAtOffset((base_n - le_n)*8)));
                             } else
                                 assert(false);
+#endif
                         }
                     }
                 }
             }
         }
             
-        e = newLocal(ty ? ty->clone() : new IntegerType());
-        symbolMap[le->clone()] = e;
-        e->clone();
+        if (ty) {
+            // the default of just assigning an int type is bad.. 
+            // if the locals is not an int then assigning it this type 
+            // early results in aliases to this local not being recognised 
+            e = newLocal(ty->clone());
+            symbolMap[le->clone()] = e;
+            e->clone();
+        }
     } else {
         e = symbolMap[le]->clone();
         if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
             std::string name = ((Const*)e->getSubExp1())->getStr();
+            Type *nty = ty;
             Type *ty = locals[name];
             assert(ty);
+            if (nty && !(*ty == *nty) && nty->getSize() >= ty->getSize()) {
+                if (VERBOSE)
+                    LOG << "updating type of " << name.c_str() << " to " 
+                        << nty->getCtype() << "\n";
+                ty = nty;
+                locals[name] = ty;
+            }
             if (ty->isNamed())
                 ty = ((NamedType*)ty)->resolvesTo();
             if (ty) {
@@ -2026,9 +2115,16 @@ Exp *UserProc::getLocalExp(Exp *le, Type *ty)
     return e;
 }
 
-void UserProc::replaceExpressionsWithLocals() {
+void UserProc::replaceExpressionsWithLocals(bool lastPass) {
     StatementList stmts;
     getStatements(stmts);
+
+    if (VERBOSE) {
+        LOG << "replacing expressions with locals";
+        if (lastPass)
+            LOG << " last pass";
+        LOG << "\n";
+    }
 
     int sp = signature->getStackRegister(prog);
     if (getProven(Location::regOf(sp)) == NULL)
@@ -2065,10 +2161,12 @@ void UserProc::replaceExpressionsWithLocals() {
                         }
                     }
                     e = getLocalExp(Location::memOf(e->clone()), pty);
-                    Exp *ne = new Unary(opAddrOf, e);
-                    if (VERBOSE)
-                        LOG << "replacing param " << olde << " with " << ne << " in " << call << "\n";
-                    call->setArgumentExp(i, ne);
+                    if (e) {
+                        Exp *ne = new Unary(opAddrOf, e);
+                        if (VERBOSE)
+                            LOG << "replacing argument " << olde << " with " << ne << " in " << call << "\n";
+                        call->setArgumentExp(i, ne);
+                    }
                 }
             }
         }
@@ -2079,21 +2177,28 @@ void UserProc::replaceExpressionsWithLocals() {
                 new Terminal(opWild)));
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        Exp *result;
-        bool ch;
-        do {
-            ch = s->search(l, result);
-            if (ch && 
-                result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-                Exp *e = getLocalExp(result);
-                Exp* search = result->clone();
-                if (VERBOSE)
-                    LOG << "replacing " << search << " with " << e << " in " << s << "\n";
-                s->searchAndReplace(search, e);
-                delete search;
+        std::list<Exp*> results;
+        s->searchAll(l, results);
+        for (std::list<Exp*>::iterator it1 = results.begin(); 
+                                       it1 != results.end(); it1++) {
+            Exp *result = *it1;
+            if (result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+                Type *ty = result->getType();
+                if (ty == NULL && s->isAssign())
+                    ty = s->getRight()->getType();
+                if (ty == NULL && lastPass)
+                    ty = new IntegerType();
+                Exp *e = getLocalExp(result, ty);
+                if (e) {
+                    Exp* search = result->clone();
+                    if (VERBOSE)
+                        LOG << "replacing " << search << " with " << e << " in " 
+                            << s << "\n";
+                    s->searchAndReplace(search, e);
+                    s->simplify();
+                }
             }
-        } while (ch);
-        s->simplify();
+        }
     }
 }
 
@@ -2118,7 +2223,12 @@ bool UserProc::nameStackLocations() {
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())
 					->getStr();
+            if (memref->getType() != NULL)
+                locals[name] = memref->getType();
             locals[name] = s->updateType(memref, locals[name]);
+            if (VERBOSE)
+                LOG << "updating type of " << name.c_str() << " to " 
+                    << locals[name]->getCtype() << "\n";
             found = true;
         }
     }
@@ -2147,8 +2257,13 @@ bool UserProc::nameRegisters() {
             assert(symbolMap.find(memref) != symbolMap.end());
             std::string name = ((Const*)symbolMap[memref]->getSubExp1())->
               getStr();
+            if (memref->getType() != NULL)
+                locals[name] = memref->getType();
             locals[name] = s->updateType(memref, locals[name]);
             found = true;
+            if (VERBOSE)
+                LOG << "updating type of " << name.c_str() << " to " 
+                    << locals[name]->getCtype() << "\n";
         }
     }
     delete match;
@@ -2207,12 +2322,12 @@ void UserProc::propagateStatements(int memDepth, int toDepth) {
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
-        //if (s->isPhi()) continue;
+        if (s->isPhi()) continue;
         // We can propagate to ReturnStatements now, and "return 0"
         // if (s->isReturn()) continue;
         s->propagateTo(memDepth, empty, toDepth);
     }
-    LOG << "out propagate statements\n";
+    simplify();
 }
 
 void UserProc::promoteSignature() {
@@ -2224,6 +2339,13 @@ Exp* UserProc::newLocal(Type* ty) {
     os << "local" << locals.size();
     std::string name = os.str();
     locals[name] = ty;
+    if (ty == NULL) {
+        LOG << "null type passed to newLocal\n";
+        assert(false);
+    }
+    if (VERBOSE)
+        LOG << "assigning type " << ty->getCtype() << " to " << name.c_str()
+            << "\n";
     return Location::local(strdup(name.c_str()), this);
 }
 
@@ -2237,6 +2359,14 @@ Type *UserProc::getLocalType(const char *nam)
 void UserProc::setLocalType(const char *nam, Type *ty)
 {
     locals[nam] = ty;
+    if (VERBOSE)
+        LOG << "updating type of " << nam << " to " << ty->getCtype() << "\n";
+}
+
+void UserProc::setLocalExp(const char *nam, Exp *e)
+{
+    Exp *le = Location::local(strdup(nam), this);
+    symbolMap[e] = le;
 }
 
 Exp *UserProc::getLocalExp(const char *nam)
@@ -2255,8 +2385,13 @@ void UserProc::addLocals(int b, int n) {
         std::ostringstream os;
         os << "local" << i;
         std::string name = os.str();
-        if (locals.find(name) == locals.end())
-            locals[name] = new IntegerType();   // Fixed by type analysis later
+        if (locals.find(name) == locals.end()) {
+            Exp *e = getLocalExp(name.c_str());
+            if (e && e->getType())
+                locals[name] = e->getType();
+            else
+                locals[name] = new IntegerType();   // Fixed by type analysis later
+        }
     }
 }
 
@@ -2266,6 +2401,8 @@ void UserProc::countRefs(RefCounter& refCounts) {
     StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
+        if (s->isPhi())
+            ((PhiExp*)s->getRight())->simplifyRefs();
         LocationSet refs;
         s->addUsedLocs(refs);
         LocationSet::iterator rr;
@@ -2373,6 +2510,13 @@ void UserProc::removeUnusedStatements(RefCounter& refCounts, int depth) {
                 // assignments to memof anything must always be kept
                 ll++;
                 continue;
+            }
+            if (s->getLeft()->getOper() == opParam) {
+                // we actually want to remove this if no-one is using it
+                // otherwise we'll create an interference that we can't
+                // handle
+                //ll++;
+                //continue;
             }
             if (s->getLeft()->getOper() == opMemberAccess ||
                 s->getLeft()->getOper() == opArraySubscript) {
@@ -2852,6 +2996,8 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 }
 
 bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
+    if (signature->isPromoted())
+        return 0;
     std::set<Exp*, lessExpStar> removes;    // Else iterators confused
     std::set<Exp*, lessExpStar>& useSet = rc[this];
     for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -2944,4 +3090,17 @@ void UserProc::typeAnalysis(Prog* prog) {
         }
     }
 
+}
+
+bool UserProc::searchAndReplace(Exp *search, Exp *replace)
+{
+    bool ch;
+    StatementList stmts;
+    getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        ch |= s->searchAndReplace(search, replace);   
+    }
+    return ch; 
 }

@@ -155,7 +155,7 @@ typedef std::set<Exp*, lessExpStar>::iterator iterator;
     bool find(Exp* e);
     // Find a location with a different def, but same expression
     // For example, pass r28{10}, return true if r28{20} in the set
-    bool findDifferentRef(RefExp* e);
+    bool findDifferentRef(RefExp* e, Exp *&dr);
     void addSubscript(Statement* def);      // Add a subscript to all elements
 };  // class LocationSet
 

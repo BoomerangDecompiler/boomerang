@@ -296,6 +296,8 @@ virtual Exp* simplifyAddr() {return this;}
     //   sub1 = <ptr> and sub2 = <int> and Tr = <ptr>
     virtual Exp*  genConstraints(Exp* result);
 
+    virtual Type *getType() { return NULL; }
+
 };  // Class Exp
 
 // Not part of the Exp class, but logically belongs with it:
@@ -447,6 +449,8 @@ virtual Exp* polySimplify(bool& bMod);
     // Type analysis
     virtual Exp*  genConstraints(Exp* restrictTo);
 
+    virtual Type*   getType();
+
 };  // class Unary
 
 /*==============================================================================
@@ -514,6 +518,8 @@ virtual Exp* polySimplify(bool& bMod);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
+
+    virtual Type*   getType();
 
 private:
     Exp* constrainSub(TypeVal* typeVal1, TypeVal* typeVal2);
@@ -616,8 +622,8 @@ public:
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the type
-    Type*   getType();
-    void    setType(Type* ty);
+    virtual Type*   getType();
+    virtual void    setType(Type* ty);
 
     // polySimplify
 virtual Exp* polySimplify(bool& bMod);
@@ -670,6 +676,7 @@ virtual int getNumRefs() {return 1;}
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return def == s;}
 virtual Exp* polySimplify(bool& bMod);
+    virtual Type*   getType();
 };
 
 /*==============================================================================
@@ -722,6 +729,7 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
 
     // polySimplify
 virtual Exp* polySimplify(bool& bMod);
+    void simplifyRefs();
 };
 
 /*==============================================================================
@@ -734,8 +742,8 @@ public:
     TypeVal(Type* ty);
     ~TypeVal();
 
-    Type*   getType() {return val;}
-    void    setType(Type* t) {val = t;}
+    virtual Type*   getType() {return val;}
+    virtual void    setType(Type* t) {val = t;}
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
@@ -771,8 +779,9 @@ public:
     virtual void addUsedLocs(LocationSet& used);
     virtual void getDefinitions(LocationSet& defs);
 
-    Type *getType();
-    void setType(Type *t) { ty = t; }
+    virtual Type *getType();
+    virtual void setType(Type *t) { ty = t; }
+virtual int getMemDepth();
 };
     
 #endif // __EXP_H__

@@ -204,6 +204,12 @@ char* Statement::prints() {
 // exclude: a set of statements not to propagate from
 void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
 {
+    // don't propagate to flag assigns
+    if (isFlagAssgn())
+        return;
+    // don't propagate into temp definitions
+    if (isAssign() && getLeft()->isTemp())
+        return;
     bool change;
     int changes = 0;
     // Repeat substituting into s while there is a single reference
@@ -245,6 +251,13 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
                     continue;
                 if (def->isBool())
                     continue;
+                if (isBranch()) {
+                    // propagating to a branch often doesn't give good results
+                    if (def->getLeft()->getOper() != opFlags)
+                        if (def->getRight()->getOper() != opSubscript &&
+                            !def->getLeft()->isTemp())
+                            continue;
+                }
                 change = doPropagateTo(memDepth, def);
             }
         }
@@ -270,6 +283,7 @@ bool Statement::doPropagateTo(int memDepth, Statement* def) {
     }
 
     replaceRef(def);
+    simplify();
     if (VERBOSE) {
         LOG << "Propagating " << def->getNumber() << " into " << getNumber() 
             << ", result is " << this << "\n";
@@ -913,6 +927,30 @@ void condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
             pCond = new Binary(op,
                 pCond->getSubExp2()->getSubExp1()->clone(),
                 new Const(0));
+        }
+    }
+    else if (pCond->getOper() == opFlagCall && 
+          !strncmp(((Const*)pCond->getSubExp1())->getStr(), 
+          "SETFFLAGS", 9)) {
+        // Exp *e = pCond;
+        OPER op = opWild;
+        switch (jtCond) {
+            case BRANCH_JE:   op = opEquals; break;
+            case BRANCH_JNE:  op = opNotEqual; break;
+            case BRANCH_JMI:  op = opLess; break;
+            case BRANCH_JPOS: op = opGtrEq; break;
+            case BRANCH_JSL:  op = opLess; break;
+            case BRANCH_JSLE: op = opLessEq; break;
+            case BRANCH_JSGE: op = opGtrEq; break;
+            case BRANCH_JSG:  op = opGtr; break;
+            default:
+                break;
+        }
+        if (op != opWild) {
+            pCond = new Binary(op,
+                pCond->getSubExp2()->getSubExp1()->clone(),
+                pCond->getSubExp2()->getSubExp2()->getSubExp1()
+                    ->clone());
         }
     }
 }
@@ -2471,6 +2509,10 @@ void Assign::simplify() {
     lhs = lhs->simplify();
     rhs = rhs->simplify();
 
+    if (lhs->getOper() == opMemOf) {
+        lhs->refSubExp1() = lhs->getSubExp1()->simplifyArith();
+    }
+
     // this hack finds address constants.. it should go away when
     // Mike writes some decent type analysis.
     if (lhs->getOper() == opMemOf && 
@@ -2483,7 +2525,13 @@ void Assign::simplify() {
         for (int i = 0; phi && i < phi->getNumRefs(); i++) 
             if (phi->getAt(i)) {
                 Assign *def = dynamic_cast<Assign*>(phi->getAt(i));
-                if (def && def->rhs->getOper() == opIntConst) {
+                if (def && (def->rhs->getOper() == opIntConst ||
+                       (def->rhs->getOper() == opMinus &&
+                        def->rhs->getSubExp1()->getOper() == opSubscript &&
+                        ((RefExp*)def->rhs->getSubExp1())->getRef() == NULL &&
+                        def->rhs->getSubExp1()->getSubExp1()->getOper() == 
+                                                                    opRegOf &&
+                        def->rhs->getSubExp2()->getOper() == opIntConst))) {
                     Exp *ne = new Unary(opAddrOf, Location::memOf(def->rhs)); 
                     if (VERBOSE)
                         LOG << "replacing " << def->rhs << " with " 
@@ -2525,6 +2573,15 @@ void Assign::simplify() {
             llhs->setType(lrhs->getType());
     }
 
+    if (lhs->isLocation() && rhs->getOper() == opAddrOf &&
+        rhs->getSubExp1()->isLocation()) {
+        Location *llhs = (Location*)lhs;
+        Location *lrhs = (Location*)rhs->getSubExp1();
+        if (lrhs->getType())
+            llhs->setType(new PointerType(lrhs->getType()));
+    }
+
+
     if (lhs->isLocation() && rhs->getOper() == opSubscript &&
         ((RefExp*)rhs)->getRef() &&
         ((RefExp*)rhs)->getRef()->isAssign() &&
@@ -2535,6 +2592,13 @@ void Assign::simplify() {
             llhs->setType(lrhs->getType());
     }
 
+    if (lhs->getType() && lhs->getType()->isFloat() && 
+        rhs->getOper() == opIntConst) {
+        if (lhs->getType()->getSize() == 32) {
+            unsigned n = ((Const*)rhs)->getInt();
+            rhs = new Const(*(float*)&n);
+        }
+    }
 }
 
 void Assign::simplifyAddr() {

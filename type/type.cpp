@@ -729,4 +729,14 @@ Type *NamedType::resolvesTo() const
     return ty;
 }
 
+void ArrayType::fixBaseType(Type *b)
+{
+    if (base_type == NULL)
+        base_type = b;
+    else {
+        assert(base_type->isArray());
+        ((ArrayType*)base_type)->fixBaseType(b);
+    }
+}
+
 #endif  // #ifndef __TYPE_H__

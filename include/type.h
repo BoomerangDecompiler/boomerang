@@ -248,6 +248,8 @@ public:
 virtual ~ArrayType();
 virtual bool isArray() const { return true; }
         Type *getBaseType() { return base_type; }
+        void setBaseType(Type *b) { base_type = b; }
+        void fixBaseType(Type *b);
         unsigned getLength() { return length; }
         void setLength(unsigned n) { length = n; }
         bool isUnbounded();

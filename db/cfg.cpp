@@ -1374,6 +1374,8 @@ void Cfg::addNewOutEdge(PBB pFromBB, PBB pNewOutEdge)
 }
 
 void Cfg::simplify() {
+    if (VERBOSE)
+        LOG << "simplifying...\n";
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
       it++) 
         (*it)->simplify();
@@ -2160,10 +2162,13 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
     for (Statement* S = bb->getFirstStmt(rit, sit); S;
                     S = bb->getNextStmt(rit, sit)) {
         // if S is not a phi function
-        if (!S->isPhi()) {
+        if (1) { //!S->isPhi()) {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
-            S->addUsedLocs(locs);
+            if (S->isPhi()) {
+                if (S->getLeft()->getOper() == opMemOf)
+                    S->getLeft()->getSubExp1()->addUsedLocs(locs);
+            } else S->addUsedLocs(locs);
             LocationSet::iterator xx;
             for (xx = locs.begin(); xx != locs.end(); xx++) {
                 Exp* x = *xx;
@@ -2177,7 +2182,10 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
                     else
                         def = Stack[x].top();
                     // Replace the use of x with x{def} in S
-                    S->subscriptVar(x, def);
+                    if (S->isPhi())
+                        S->getLeft()->refSubExp1() = 
+                            S->getLeft()->getSubExp1()->expSubscriptVar(x, def);
+                    else S->subscriptVar(x, def);
                 }
             }
         }

@@ -123,6 +123,7 @@ public: \
 %type<type_ident_list> type_ident_list;
 %type<sig> signature;
 %type<mods> symbol_mods;
+%type<type> array_modifier;
 
 %start translation_unit
 %%
@@ -299,26 +300,32 @@ symbol_mods: NODECODE symbol_mods
            | /* */
            { $$ = new SymbolMods(); }
 
+array_modifier: '[' CONSTANT ']'
+          { $$ = new ArrayType(NULL, $2);
+          }
+          | '[' ']'
+          { $$ = new ArrayType(NULL);
+          } 
+          | array_modifier '[' CONSTANT ']'
+          { $$ = new ArrayType($1, $3);
+          }
+          | array_modifier '[' ']'
+          { $$ = new ArrayType($1);
+          }
+          ;
+
 type_ident: type IDENTIFIER
           { $$ = new TypeIdent();
             $$->ty = $1;
             $$->nam = $2;
           }
-          | type IDENTIFIER '[' CONSTANT ']'
+          | type IDENTIFIER array_modifier
           { $$ = new TypeIdent();
-            $$->ty = new ArrayType($1, $4);
+            ((ArrayType*)$3)->fixBaseType($1);
+            $$->ty = $3;
             $$->nam = $2;
           }
-          | type IDENTIFIER '[' CONSTANT ']' '[' CONSTANT ']'
-          { $$ = new TypeIdent();
-            $$->ty = new ArrayType(new ArrayType($1, $4), $7);
-            $$->nam = $2;
-          }
-          | type IDENTIFIER '[' ']'
-          { $$ = new TypeIdent();
-            $$->ty = new ArrayType($1);
-            $$->nam = $2;
-          }
+          ;
 
 type_ident_list: type_ident ';' type_ident_list 
           { $$ = $3;
@@ -350,6 +357,14 @@ type: CHAR
     { $$ = new VoidType(); }
     | type '*'
     { $$ = new PointerType($1); }
+    | type '[' CONSTANT ']'
+    { // This isn't C, but it makes defining pointers to arrays easier
+      $$ = new ArrayType($1, $3); 
+    }
+    | type '[' ']'
+    { // This isn't C, but it makes defining pointers to arrays easier
+      $$ = new ArrayType($1); 
+    }
     | IDENTIFIER
     { //$$ = Type::getNamedType($1); 
       //if ($$ == NULL)

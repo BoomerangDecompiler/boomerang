@@ -1392,7 +1392,7 @@ bool Exp::search(Exp* search, Exp*& result)
 bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
 {
     std::list<Exp**> li;
-    result.clear();
+    //result.clear();   // why?
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to
     // re-use the same search routine
@@ -2188,14 +2188,14 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
-    // check for loc + n where loc is a pointer to a compound type
-    // becomes &loc.m + r where m is the member at offset n and 
+    // check for exp + n where exp is a pointer to a compound type
+    // becomes &exp.m + r where m is the member at offset n and 
     // r is n - the offset to member m
     if (op == opPlus && subExp1->getOper() == opSubscript &&
         ((RefExp*)subExp1)->getRef() == NULL &&
-        subExp1->getSubExp1()->isLocation() && opSub2 == opIntConst) {
+        subExp1->getSubExp1()->getType() && opSub2 == opIntConst) {
         int n = ((Const*)subExp2)->getInt();
-        Location *l = (Location*)subExp1->getSubExp1();
+        Exp *l = subExp1->getSubExp1();
         Type *ty = l->getType();
         if (ty && ty->isPointer()) { 
             Type *pty = ((PointerType*)ty)->getPointsTo();
@@ -2297,7 +2297,7 @@ Exp* Ternary::polySimplify(bool& bMod) {
         return res;
     }
 
-    if (op == opSgnEx && subExp3->getOper() == opIntConst) {
+    if ((op == opSgnEx || op == opZfill) && subExp3->getOper() == opIntConst) {
         res = this->becomeSubExp3();
         bMod = true;
         return res;
@@ -2365,7 +2365,12 @@ Exp* TypedExp::polySimplify(bool& bMod) {
 
 Exp* RefExp::polySimplify(bool& bMod) {
     Exp *res = this;
-    Exp *subExp1 = getSubExp1()->polySimplify(bMod);
+
+    Exp *tmp = subExp1->polySimplify(bMod);
+    if (bMod) {
+        subExp1 = tmp;
+        return res;
+    }
 
     /* This is a nasty hack.  We assume that %DF{0} is 0.
      * This happens when string instructions are used without
@@ -2402,10 +2407,19 @@ Exp* RefExp::polySimplify(bool& bMod) {
                 }
             }
         bool allProven = true;
-        for (uu = phi->begin(); uu != phi->end(); uu++) {
-            Exp *query = new Binary(opEquals, new RefExp(subExp1, *uu), base);
+        LocationSet used;
+        base->addUsedLocs(used);
+        if (used.size() == 0) {
+            allProven = false;
+        } else {
+            LOG << "attempting to simplify ref to " << phi << " with base "
+                << base << "\n";
+        }
+        for (uu = phi->begin(); allProven && uu != phi->end(); uu++) {
+            Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), *uu), base->clone());
             LOG << "attempting to prove " << query << " for ref to phi\n";
             if (!def->getProc()->prove(query)) {
+                LOG << "not proven\n";
                 allProven = false;
                 break;
             }
@@ -2427,28 +2441,6 @@ Exp* PhiExp::polySimplify(bool& bMod) {
 
     if (stmtVec.begin() != stmtVec.end()) {
         StatementVec::iterator uu;
-        for (uu = stmtVec.begin(); uu != stmtVec.end(); ) {
-            if (*uu && (*uu)->getRight() && 
-                (*uu)->getRight()->getOper() == opSubscript &&
-                *(*uu)->getRight()->getSubExp1() == *subExp1) {
-                if (((RefExp*)(*uu)->getRight())->getRef() == stmt) {
-                    if (VERBOSE)
-                        LOG << "removing statement " << *uu << " from phi at " 
-                            << stmt->getNumber() << "\n";
-                    uu = stmtVec.remove(uu);
-                    continue;
-                }
-                if (VERBOSE)
-                    LOG << "replacing " << (*uu)->getNumber() << " with ";
-                *uu = ((RefExp*)(*uu)->getRight())->getRef();
-                if (VERBOSE) {
-                    int n = 0;
-                    if (*uu) n = (*uu)->getNumber();
-                    LOG << n << " in phi at " << stmt->getNumber() << "\n";
-                }
-            }
-            uu++;
-        }
         bool allSame = true;
         for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
             if (*uu != *stmtVec.begin()) {
@@ -2486,6 +2478,37 @@ Exp* PhiExp::polySimplify(bool& bMod) {
     }
 
     return res;
+}
+
+void PhiExp::simplifyRefs()
+{
+    if (stmtVec.begin() != stmtVec.end()) {
+        StatementVec::iterator uu;
+        for (uu = stmtVec.begin(); uu != stmtVec.end(); ) {
+            if (*uu && (*uu)->getRight() && 
+                (*uu)->getRight()->getOper() == opSubscript &&
+                *(*uu)->getRight()->getSubExp1() == *subExp1) {
+                if (((RefExp*)(*uu)->getRight())->getRef() == stmt) {
+                    if (VERBOSE)
+                        LOG << "removing statement " << *uu << " from phi at " 
+                            << stmt->getNumber() << "\n";
+                    uu = stmtVec.remove(uu);
+                    continue;
+                }
+                if (VERBOSE)
+                    LOG << "replacing " << (*uu)->getNumber() << " with ";
+                *uu = ((RefExp*)(*uu)->getRight())->getRef();
+                if (VERBOSE) {
+                    int n = 0;
+                    if (*uu) n = (*uu)->getNumber();
+                    LOG << n << " in phi at " << stmt->getNumber() 
+                        << " result is: " << stmt << "\n";
+                    
+                }
+            }
+            uu++;
+        }
+    }
 }
 
 /*==============================================================================
@@ -2778,14 +2801,16 @@ Exp *Exp::removeSubscripts(bool& allZero)
 Exp *Unary::fixCallRefs()
 {
     subExp1 = subExp1->fixCallRefs();
-    return this->simplify();
+    Exp *res = this->simplify();
+    return res;
 }
 
 Exp *Binary::fixCallRefs()
 {
     subExp1 = subExp1->fixCallRefs();
     subExp2 = subExp2->fixCallRefs();
-    return this->simplify();
+    Exp *res = this->simplify();
+    return res;
 }
 
 Exp *Ternary::fixCallRefs()
@@ -2793,7 +2818,8 @@ Exp *Ternary::fixCallRefs()
     subExp1 = subExp1->fixCallRefs();
     subExp2 = subExp2->fixCallRefs();
     subExp3 = subExp3->fixCallRefs();
-    return this->simplify();
+    Exp *res = this->simplify();
+    return res;
 }
 
 Exp *RefExp::fixCallRefs() {
@@ -2808,7 +2834,8 @@ Exp *RefExp::fixCallRefs() {
                 LOG << "fixcall refs replacing " << this << " with " << e 
                     << "\n";
             ;//delete this;
-            return e->simplify();
+            e = e->simplify();
+            return e;
         } else {
             if (call->findReturn(subExp1) == -1) {
                 if (VERBOSE) {
@@ -2819,7 +2846,8 @@ Exp *RefExp::fixCallRefs() {
             }
         }
     }
-    return this->simplify();
+    Exp *res = this->simplify();
+    return res;
 }
 
 // This is a hack.  If we have a phi which has one of its
@@ -2918,7 +2946,8 @@ Exp *PhiExp::fixCallRefs() {
             }
         }
     }
-    return this->simplify();
+    Exp *res = this->simplify();
+    return res;
 }
 
 //
@@ -2990,10 +3019,7 @@ Exp* Exp::fromSSAleft(igraph& ig, Statement* d) {
 // Return the memory nesting depth
 // Examples: r[24] returns 0; m[r[24 + m[r[25]] + 4] returns 2
 int Unary::getMemDepth() {
-    if (op == opMemOf)
-        return subExp1->getMemDepth() + 1;
-    else
-        return subExp1->getMemDepth();
+    return subExp1->getMemDepth();
 }
 
 int Binary::getMemDepth() {
@@ -3009,7 +3035,13 @@ int Ternary::getMemDepth() {
     return std::max(std::max(d1, d2), d3);
 }
 
-    
+int Location::getMemDepth() {
+    if (op == opMemOf)
+        return subExp1->getMemDepth() + 1;
+    else if (subExp1)
+        return subExp1->getMemDepth();
+    return 0;
+}
 
 // A helper file for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const Exp* x, const Exp* y) const {
@@ -3271,6 +3303,14 @@ Exp* Ternary::genConstraints(Exp* result) {
 Exp* Location::polySimplify(bool& bMod) {
     Exp *res = Unary::polySimplify(bMod);
 
+
+    if (res->getOper() == opMemOf && 
+        res->getSubExp1()->getOper() == opAddrOf) {
+        res = res->getSubExp1()->getSubExp1();
+        bMod = true;
+        return res;
+    }
+
     if (res->getOper() == opMemOf &&
         res->getSubExp1()->getOper() == opPlus &&
         res->getSubExp1()->getSubExp1()->getOper() == opGlobal &&
@@ -3362,34 +3402,44 @@ Exp* Location::polySimplify(bool& bMod) {
         return res;
     }
 
-    // check for m[a[loc] + n] where loc is an array and n is an int,
-    // becomes loc[n / b] where b is the size of the base type in bytes
+    // check for m[exp + x] where exp is a pointer to an array
+    // becomes exp[x / b] where b is the size of the base type in bytes
     if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->getOper() == opAddrOf &&
-        res->getSubExp1()->getSubExp1()->getSubExp1()->isLocation() &&
-        res->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-        int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
-        Location *l = (Location*)res->getSubExp1()->getSubExp1()->getSubExp1();
+        res->getSubExp1()->getSubExp1()->getType()) {
+        Exp *x = res->getSubExp1()->getSubExp2();
+        Exp *l = res->getSubExp1()->getSubExp1();
         Type *ty = l->getType();
-        if (ty->isNamed())
+        if (ty && ty->isNamed())
             ty = ((NamedType*)ty)->resolvesTo();
-        if (ty->isArray()) {
-            res = new Binary(opArraySubscript, l, 
-                            new Const(n / (((ArrayType*)ty)->getBaseType()->getSize()/8)));
-            bMod = true;
-            return res;
+        if (ty && ty->isPointer()) {
+            ty = ((PointerType*)ty)->getPointsTo();
+            if (ty && ty->isNamed())
+                ty = ((NamedType*)ty)->resolvesTo();
+            if (ty && ty->isArray()) {
+                int b = ((ArrayType*)ty)->getBaseType()->getSize() / 8;
+                int br = ((ArrayType*)ty)->getBaseType()->getSize() % 8;
+                assert(br == 0);
+                res = new Binary(opArraySubscript, Location::memOf(l), 
+                        new Binary(opDivs, x, new Const(b)));
+                if (VERBOSE)
+                    LOG << "foo replacing " << this << " with " << res << "\n";
+                bMod = true;
+                return res;
+            }
         }
     }
 
-    // check for m[loc + x * n] where loc is a pointer and n is an int that
+#if 0
+    // This is a Cism
+    // check for m[exp + x * n] where exp is a pointer and n is an int that
     // is the size of the base of the pointer
     if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->isLocation() &&
+        res->getSubExp1()->getSubExp1()->getType() &&
         (res->getSubExp1()->getSubExp2()->getOper() == opMult ||
          res->getSubExp1()->getSubExp2()->getOper() == opMults) &&
         res->getSubExp1()->getSubExp2()->getSubExp2()->getOper() == opIntConst)
     {
-        Location *loc = (Location*)res->getSubExp1()->getSubExp1();
+        Exp *loc = res->getSubExp1()->getSubExp1();
         Type *ty = loc->getType();
         int n = ((Const*)res->getSubExp1()->getSubExp2()->
                               getSubExp2())->getInt();
@@ -3397,25 +3447,97 @@ Exp* Location::polySimplify(bool& bMod) {
             ((PointerType*)ty)->getPointsTo()->getSize() == n*8) {
             res = new Binary(opArraySubscript, loc, 
                              res->getSubExp1()->getSubExp2()->getSubExp1());
+            if (VERBOSE)
+                LOG << "foo replacing " << this << " with " << res << "\n";
             bMod = true;
             return res;
         }
     }
 
-    // this is a bit of a Cism.. turn m[loc + n] into loc[n/b] where loc
-    // is a pointer and b is the size of the base type of the pointer
+    // this is a bit of a Cism.. turn m[exp + n] into m[a[exp[i]] + r] 
+    // where exp is a pointer and i is n / the size of the base type of the 
+    // pointer and r is n % the size of the base type of the pointer.
     if (res->getOper() == opMemOf && res->getSubExp1()->getOper() == opPlus &&
-        res->getSubExp1()->getSubExp1()->isLocation() &&
+        res->getSubExp1()->getSubExp1()->getType() &&
         res->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
         int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
-        Location *l = (Location*)res->getSubExp1()->getSubExp1();
+        Exp *l = res->getSubExp1()->getSubExp1();
         Type *ty = l->getType();
         if (ty && ty->isNamed())
             ty = ((NamedType*)ty)->resolvesTo();
         if (ty && ty->isPointer()) {
-            res = new Binary(opArraySubscript, l, 
-                            new Const(n / (((PointerType*)ty)->getPointsTo()->getSize()/8)));
-            bMod = true;
+            Type *base = ((PointerType*)ty)->getPointsTo();
+            int idxbits = (n*8) / base->getSize(); 
+            int rembits = (n*8) % base->getSize();
+            if ((idxbits % 8) == 0 && (rembits % 8) == 0) {
+                res = new Binary(opArraySubscript, l, new Const(idxbits / 8));
+                res = Location::memOf(new Binary(opPlus, 
+                        new Unary(opAddrOf, res), new Const(rembits / 8)));
+                if (VERBOSE)
+                    LOG << "foo replacing " << this << " with " << res << "\n";
+                bMod = true;
+                return res;
+            }
+        }
+    }
+#endif
+
+    // this is a very complex pattern :)
+    // replace:  1 r31 = a           where a is an array pointer
+    //           2 r31 = phi{1 4}
+    //           3 m[r31{2}] = x
+    //           4 r31 = r31{2} + b  where b is the size of the base of the 
+    //                               array pointed at by a
+    // with:     1 r31 = 0
+    //           2 r31 = phi{1 4}
+    //           3 m[a][r31{2}] = x
+    //           4 r31 = r31{2} + 1
+    // I just assume this can only happen in a loop.. 
+    if (res->getOper() == opMemOf && 
+        res->getSubExp1()->getOper() == opSubscript &&
+        ((RefExp*)res->getSubExp1())->getRef() &&
+        ((RefExp*)res->getSubExp1())->getRef()->isPhi()) {
+        Statement *phistmt = ((RefExp*)res->getSubExp1())->getRef();
+        PhiExp *phi = (PhiExp*)phistmt->getRight();
+        if (phi->getNumRefs() == 2 && 
+            phi->getAt(0) && phi->getAt(1) &&
+            phi->getAt(0)->isAssign() &&
+            phi->getAt(1)->isAssign()) {
+            Assign *a1 = (Assign*)phi->getAt(0);
+            Assign *a4 = (Assign*)phi->getAt(1);
+            if (a1->getRight()->getType() &&
+                a4->getRight()->getOper() == opPlus &&
+                a4->getRight()->getSubExp1()->getOper() == opSubscript &&
+                ((RefExp*)a4->getRight()->getSubExp1())->getRef() == phistmt &&
+                *a4->getRight()->getSubExp1()->getSubExp1() == 
+                                                        *phi->getSubExp1() &&
+                a4->getRight()->getSubExp2()->getOper() == opIntConst) {
+                Type *ty = a1->getRight()->getType();
+                int b = ((Const*)a4->getRight()->getSubExp2())->getInt();
+                if (ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                if (ty->isPointer()) {
+                    ty = ((PointerType*)ty)->getPointsTo();
+                    if (ty->isNamed())
+                        ty = ((NamedType*)ty)->resolvesTo();
+                    if (ty->isArray() && 
+                        b*8 == ((ArrayType*)ty)->getBaseType()->getSize()) {
+                        if (VERBOSE)
+                            LOG << "doing complex pattern on " << res 
+                                << " using " << a1 << " and " << a4 << "\n";
+                        ((Const*)a4->getRight()->getSubExp2())->setInt(1);
+                        res = new Binary(opArraySubscript, 
+                                Location::memOf(a1->getRight()->clone()), 
+                                res->getSubExp1()->clone());
+                        a1->setRight(new Const(0));
+                        if (VERBOSE)
+                            LOG << "replaced with " << res << " using " 
+                                << a1 << " and " << a4 << "\n";
+                        bMod = true;
+                        return res;
+                    }
+                }
+            }
         }
     }
 
@@ -3435,6 +3557,64 @@ void Location::getDefinitions(LocationSet& defs) {
     if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
         defs.insert(Location::regOf(0));
     }
+}
+
+Type *Unary::getType() {
+    switch(op) {
+        case opAddrOf:
+            if (subExp1->getType()) {
+                return new PointerType(subExp1->getType());
+            }
+            break;
+        default:
+            break;
+    } 
+    return NULL;
+}
+
+Type *Binary::getType() {
+    switch(op) {
+        case opArraySubscript:
+            if (subExp1->getType()) {
+                ArrayType *ty = dynamic_cast<ArrayType*>(subExp1->getType());
+                assert(ty);
+                return ty->getBaseType();
+            }
+            break;
+        default:
+            break;
+    } 
+    return NULL;
+}
+
+Type *RefExp::getType()
+{
+    if (subExp1->getType())
+        return subExp1->getType();
+    if (def && def->getRight() && def->getRight()->getType())
+        return def->getRight()->getType();
+    if (def && def->isPhi()) {
+        PhiExp *phi = (PhiExp*)def->getRight();
+#if 0
+        if (VERBOSE)
+            LOG << "checking statements in " << phi << " for type of " << this 
+                << "\n";
+#endif
+        StatementVec::iterator uu;
+        for (uu = phi->begin(); uu != phi->end(); uu++) {
+            Statement *s = *uu;
+            if (s && s->getRight() && s->getRight()->getType()) {
+#if 0
+                if (VERBOSE)
+                    LOG << "returning type " 
+                        << s->getRight()->getType()->getCtype() << " for " 
+                        << this << "\n";
+#endif
+                return s->getRight()->getType();
+            }
+        }
+    }
+    return NULL;
 }
 
 Type *Location::getType()
@@ -3468,11 +3648,47 @@ Type *Location::getType()
                 if (allZero) {
                     int n = proc->getSignature()->findParam(e);
                     if (n != -1) {
-                        return proc->getSignature()->getParamType(n);
+                        Type *ty = proc->getSignature()->getParamType(n);
+                        if (ty->isArray()) {
+                            // we actually mean the first element of the array
+                            ty = ((ArrayType*)ty)->getBaseType();
+                        }
+#if 0
+                        LOG << "type from signature " << ty->getCtype()
+                            << " for " << this << "\n";
+#endif
+                        return ty;
                     }
                 }
-                if (ty)
+                if (subExp1->getType()) {
+                    PointerType *ty = 
+                            dynamic_cast<PointerType*>(subExp1->getType());
+                    if (ty) {
+                        Type *t = ty->getPointsTo();
+                        if (t->isArray()) {
+                            // we actually mean the first element of the array
+                            t = ((ArrayType*)t)->getBaseType();
+                        }
+#if 0
+                        LOG << "type from subexp1 " 
+                            << t->getCtype()
+                            << " for " << this << "\n";
+#endif
+                        return t;
+                    }
+                }
+                if (ty) {
+                    if (ty->isArray()) {
+                        // we actually mean the first element of the array
+                        ty = ((ArrayType*)ty)->getBaseType();
+                    }
+#if 0
+                    LOG << "type (saved) " 
+                        << ty->getCtype()
+                        << " for " << this << "\n";
+#endif
                     return ty;
+                }
             }
             break;
         default:

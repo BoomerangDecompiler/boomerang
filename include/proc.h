@@ -495,7 +495,7 @@ public:
     void replaceExpressionsWithGlobals();
     void replaceExpressionsWithSymbols();
     void replaceExpressionsWithParameters(int depth);   // must be in SSA form
-    void replaceExpressionsWithLocals();
+    void replaceExpressionsWithLocals(bool lastPass = false);
     bool removeNullStatements();
     bool removeDeadStatements();
     typedef std::map<Statement*, int> RefCounter;
@@ -610,6 +610,7 @@ public:
 
     // return a local's exp
     Exp *getLocalExp(const char *nam);
+    void setLocalExp(const char *nam, Exp *e);
 
     /*
      * Add new locals, local<b> to local<n-1>
@@ -690,6 +691,9 @@ public:
     void printSSAXML();
     void printXML();
     void printUseGraph();
+
+
+    bool searchAndReplace(Exp *search, Exp *replace);
 
 private:
     
