@@ -219,12 +219,17 @@ void Prog::decompile() {
     }
 #endif
 
+    removeNullStmts();        // Remove null statements
+
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
     reverseGlobalDataflow();
     recoverParameters();
     insertArguments();
     recoverReturnLocs();
-    removeNullUnusedStmts();        // Remove null and unused statements
+    repairDataflow();   // HACK! Do it ALL again, with params and return locs
+    if (VERBOSE)
+        std::cerr << "After HACK repair, before remove unused statements\n";
+    removeUnusedStmts();        // Remove unused statements
     fromSSAform();
 
     // Remove interprocedural edges for structuring algorithms
@@ -1003,7 +1008,6 @@ void Prog::decompileProcs() {
             if (depth > depths[i]) continue;
             proc->propagateStatements(depth);
         }
-
         if (VERBOSE) {
             std::cerr << "===== After propagate at memory depth " <<
               depth << " =====\n";
@@ -1050,28 +1054,39 @@ void Prog::decompileProcs() {
     }
 } 
 
-void Prog::removeNullUnusedStmts() {
-    // Remove null and unused statements
+void Prog::removeNullStmts() {
+    // Remove null statements
+    if (VERBOSE) std::cerr << "Removing null statements\n";
     UserProc* proc;
     std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
-        if (!Boomerang::get()->noRemoveNull) {
+        if (!Boomerang::get()->noRemoveNull)
             proc->removeNullStatements();
+    }
+}
+
+void Prog::removeUnusedStmts() {
+    // Remove unused statements
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        if (!Boomerang::get()->noRemoveNull)
             proc->removeUnusedStatements();
-        }
     }
 
     if (VERBOSE) {
-        std::cerr << "===== After removing null and unused statements "
+        std::cerr << "===== After removing unused statements "
           "=====\n";
         for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
             proc = (UserProc*)(*pp);
             if (proc->isLib()) continue;
                 proc->print(std::cerr, true);
         }
-        std::cerr << "===== End after removing null and unused "
+        std::cerr << "===== End after removing unused "
           "statements =====\n\n";
     }
 }
@@ -1086,3 +1101,29 @@ void Prog::recoverReturnLocs() {
         proc->recoverReturnLocs();
     }
 }
+
+// Not currently used
+void Prog::processConstants() {
+    // Process constants
+    if (VERBOSE) std::cerr << "Processing constants\n";
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->processConstants();
+    }
+}
+
+void Prog::repairDataflow() {
+    // A hell of a hack!!
+    if (VERBOSE) std::cerr << "Repairing dataflow\n";
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->repairDataflow(1);
+    }
+}
+

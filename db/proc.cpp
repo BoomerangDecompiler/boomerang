@@ -1118,7 +1118,10 @@ void UserProc::complete() {
     if (!Boomerang::get()->noPromote)
         promoteSignature();
     // simplify the procedure (currently just to remove a[m['s)
-    simplify();
+    // Not now! I think maybe only pa/risc needs this, and it nobbles
+    // the a[m[xx]] that processConstants() does (just above)
+    // If needed, move this to after m[xxx] are converted to variables
+//    simplify();
 
 }
 
@@ -1311,7 +1314,7 @@ bool UserProc::removeNullStatements() {
             // A statement of the form x := x
             // Note that Statement::updateDfForErase() will propagate the DF
             if (VERBOSE) {
-                std::cerr << "removing null code: ";
+                std::cerr << "removing null stmt: " << e->getNumber() << " ";
                 e->print(std::cerr);
                 std::cerr << std::endl;
             }
@@ -1497,71 +1500,8 @@ void UserProc::propagateStatements(int memDepth) {
     getStatements(stmts);
     // propagate any statements that can be
     StmtListIter it;
-    int oldNumProp, numProp = 0;
-    oldNumProp = numProp;
-    numProp = 0; bool change;
-    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        // Repeat substituting into s while there is a single reference
-        // component in this statement
-        do {
-            LocationSet exps;
-            s->addUsedLocs(exps);
-            LocSetIter ll;
-            change = false;
-            for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-#if 1
-                if (e->getNumUses() == 2) {
-                    // Check for a special case induced by recursion
-                    // FIXME: Need to extend the hack for two refs, where
-                    // they define the same thing. May need to iterate
-                    // propagations if this succeeds!
-                    if (!((RefsExp*)e)->references(s)) continue;
-                    if (!(*s->getLeft() == *((RefsExp*)e)->getSubExp1()))
-                        continue;
-                    // It's passed these 2 tests; allow propagation to s
-                    // Can propagate TO s (if memory depths are suitable)
-                    StmtSetIter dummy;
-                    Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
-                    if (def == s)
-                        // We want the other one; we know there are just 2
-                        def = ((RefsExp*)e)->getNextUses(dummy);
-                    // Check the depth of the definition (an assignment)
-                    // This checks the depth for the left and right sides, and
-                    // gives the max for both. Example: can't propagate
-                    // tmp := m[x] to foo := tmp if memDepth == 0
-                    int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
-                    if (depth > memDepth)
-                        continue;
-                    s->specialReplaceRef(def);
-                    numProp++; change = true;
-                    if (VERBOSE) {
-                        std::cerr << "Special hack propagating " <<
-                          def->getNumber() << " into " << s->getNumber() <<
-                          ", result is " << s << "\n";
-                    }
-                }
-#endif
-                if (e->getNumUses() != 1) continue;
-                // Can propagate TO s (if memory depths are suitable)
-                StmtSetIter dummy;
-                Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
-                // Check the depth of the definition (an assignment)
-                // This checks the depth for the left and right sides, and
-                // gives the max for both. Example: can't propagate
-                // tmp := m[x] to foo := tmp if memDepth == 0
-                int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
-                if (depth > memDepth)
-                    continue;
-                s->replaceRef(def);
-                numProp++; change = true;
-                if (VERBOSE) {
-                    std::cerr << "Propagating " << def->getNumber() <<
-                      " into " << s->getNumber() <<
-                      ", result is " << s << "\n";
-                }
-            }
-        } while (change);
-    }
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it))
+        s->propagateTo(memDepth);
 }
 
 void UserProc::promoteSignature() {
@@ -1632,6 +1572,10 @@ void UserProc::removeUnusedStatements() {
         }
     }
     for (Statement* s = stmts.getFirst(ll); s; s = stmts.getNext(ll)) {
+        HLCall* call = dynamic_cast<HLCall*>(s);
+        if (call)
+            // Never delete a call statement
+            continue;
         if (useCounts[s] == 0) {
             if (VERBOSE)
                 std::cerr << "Removing unused statement " << s->getNumber() <<
@@ -1676,15 +1620,19 @@ void UserProc::recoverParameters() {
     int numParams = 0;
     for (Exp* loc = le->getFirst(ll); loc; loc = le->getNext(ll)) {
         if (!(*loc *= sp)) {    // Not stack pointer (ignoring subscripts)?
+            if (VERBOSE)
+                std::cerr << "Found param " << signature->getNumParams() <<
+                  ": " << loc << "\n";
             signature->addParameter(loc);
             numParams++;
         }
     }
-    for (int n = 0; n < numParams; n++) {
-        if (VERBOSE) std::cerr << "Found param " << n << std::endl;
-        cfg->searchAndReplace(signature->getParamExp(n),
-            new Unary(opParam, new Const((char *)signature->getParamName(n))));
-    }
+
+
+//    for (int n = 0; n < numParams; n++) {
+//        cfg->searchAndReplace(signature->getParamExp(n),
+//            new Unary(opParam, new Const((char *)signature->getParamName(n))));
+//    }
 }
 
 void UserProc::insertArguments() {

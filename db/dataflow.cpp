@@ -97,7 +97,6 @@ void Statement::calcUseLinks() {
 
 // replace a use in this statement
 void Statement::replaceRef(Statement *def) {
-int src=def->getNumber(); int tgt=getNumber();
     Exp* lhs = def->getLeft();
     Exp* rhs = def->getRight();
     assert(lhs);
@@ -119,7 +118,6 @@ int src=def->getNumber(); int tgt=getNumber();
 // special replace a use in this statement (where this statement has a
 // component with two refs)
 void Statement::specialReplaceRef(Statement *def) {
-int src=def->getNumber(); int tgt=getNumber();
     Exp* lhs = def->getLeft();
     Exp* rhs = def->getRight();
     assert(lhs);
@@ -865,3 +863,68 @@ char* Statement::prints() {
 void Statement::getDefinitions(LocationSet &def) {
     assert(false);
 }
+
+void Statement::propagateTo(int memDepth) {
+    bool change;
+    // Repeat substituting into s while there is a single reference
+    // component in this statement
+    do {
+        LocationSet exps;
+        addUsedLocs(exps);
+        LocSetIter ll;
+        change = false;
+        for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
+#if 1
+            if (e->getNumUses() == 2) {
+                // Check for a special case induced by recursion
+                // FIXME: Need to extend the hack for two refs, where
+                // they define the same thing. May need to iterate
+                // propagations if this succeeds!
+                if (!((RefsExp*)e)->references(this)) continue;
+                if (!(*getLeft() == *((RefsExp*)e)->getSubExp1()))
+                    continue;
+                // It's passed these 2 tests; allow propagation to s
+                // Can propagate TO s (if memory depths are suitable)
+                StmtSetIter dummy;
+                Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
+                if (def == this)
+                    // We want the other one; we know there are just 2
+                    def = ((RefsExp*)e)->getNextUses(dummy);
+                // Check the depth of the definition (an assignment)
+                // This checks the depth for the left and right sides, and
+                // gives the max for both. Example: can't propagate
+                // tmp := m[x] to foo := tmp if memDepth == 0
+                int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
+                if (depth > memDepth)
+                    continue;
+                specialReplaceRef(def);
+                change = true;
+                if (VERBOSE) {
+                    std::cerr << "Special hack propagating " <<
+                      def->getNumber() << " into " << getNumber() <<
+                      ", result is " << this << "\n";
+                }
+            }
+#endif
+            if (e->getNumUses() != 1) continue;
+            // Can propagate TO s (if memory depths are suitable)
+            StmtSetIter dummy;
+            Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
+            // Check the depth of the definition (an assignment)
+            // This checks the depth for the left and right sides, and
+            // gives the max for both. Example: can't propagate
+            // tmp := m[x] to foo := tmp if memDepth == 0
+            int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
+            if (depth > memDepth)
+                continue;
+            replaceRef(def);
+            change = true;
+            if (VERBOSE) {
+                std::cerr << "Propagating " << def->getNumber() <<
+                  " into " << getNumber() <<
+                  ", result is " << this << "\n";
+            }
+        }
+    } while (change);
+}
+

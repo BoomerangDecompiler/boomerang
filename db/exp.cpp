@@ -2765,7 +2765,7 @@ Exp* Unary::updateRefs(StatementSet& defs, int memDepth) {
     }
     // Recurse (in case a memof, addrof etc)
     // Recurse even if memory depths don't match; we want to subscript all
-    // the parameters to m[]'s
+    // the parameters of the m[]'s
     subExp1 = subExp1->updateRefs(defs, memDepth);
     return res;
 }
@@ -2844,9 +2844,13 @@ Exp* RefsExp::fromSSA(igraph& ig) {
     // deal with that specially (e.g. global)
     // Check to see if it is in the map
     igraph::iterator it = ig.find(this);
-    if (it == ig.end())
-        // It is not in the map. Just remove the opSubscript
-        return becomeSubExp1();
+    if (it == ig.end()) {
+        // It is not in the map. Remove the opSubscript
+        Exp* ret = becomeSubExp1();
+        // ret could be a memof, etc, which could need subscripts removed from
+        ret->fromSSA(ig);
+        return ret;
+    }
     else {
         // It is in the map. Delete the current expression, and replace
         // with a new local

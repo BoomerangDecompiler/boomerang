@@ -285,6 +285,10 @@ public:
     // To/from SSA form
     virtual void   toSSAform(StatementSet& reachin, int memDepth) = 0;
     virtual void fromSSAform(igraph& igm) = 0;
+
+    // Propagate to this statement
+    void propagateTo(int memDepth);
+
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to) = 0;
     bool calcMayAlias(Exp *e1, Exp *e2, int size);

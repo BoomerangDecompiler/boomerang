@@ -1038,8 +1038,8 @@ void HLCall::setSigArguments() {
         arguments[i] = e->clone();
     }
     if (procDest->getSignature()->hasEllipsis()) {
-        // Just guess 10 parameters for now
-        //for (int i = 0; i < 10; i++)
+        // Just guess 4 parameters for now
+        for (int i = 0; i < 4; i++)
             arguments.push_back(procDest->getSignature()->
                             getArgumentExp(arguments.size())->clone());
     }
@@ -1627,9 +1627,19 @@ void HLCall::insertArguments() {
     if (procDest->isLib()) return;
     Signature* sig = procDest->getSignature();
     int num = sig->getNumParams();
-    arguments.resize(num);
+    //arguments.resize(num);
+    // Get the set of definitions that reach this call
+    StatementSet rd;
+    getBB()->getReachInAt(this, rd, 2);
     for (int i=0; i<num; i++) {
-        arguments[i] = sig->getArgumentExp(i)->clone();
+        Exp* loc = sig->getArgumentExp(i)->clone();
+        // Needs to be subscripted with everything that reaches the parameters
+        // FIXME: need to be sensible about memory depths
+        loc->updateRefs(rd, 0);
+        propagateTo(0);
+        loc->updateRefs(rd, 1);
+        propagateTo(1);
+        arguments.push_back(loc);
     }
 }
 

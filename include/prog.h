@@ -167,6 +167,7 @@ public:
 
     // Do decompilation
     void decompile();
+void decompile1();
 
     // All that used to be done in UserProc::decompile, but now done globally.
     // propagation, recalc DFA, remove null and unused statements, compressCfg,
@@ -174,7 +175,14 @@ public:
     void decompileProcs();
 
     // Remove null and unused statements
-    void removeNullUnusedStmts();
+    void removeNullStmts();
+    void removeUnusedStmts();
+
+    // Process constants
+    void processConstants();
+
+    // Repair dataflow... a hack
+    void repairDataflow();
 
     // Generate dotty file
     void generateDotFile();
