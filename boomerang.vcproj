@@ -40,7 +40,8 @@
 				AdditionalDependencies="libexpat.lib gc.lib comctl32.lib"
 				OutputFile="$(OutDir)/boomerang.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="lib"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/boomerang.pdb"
 				SubSystem="2"
@@ -151,6 +152,9 @@
 				RelativePath=".\loader\BinaryFile.cpp">
 			</File>
 			<File
+				RelativePath=".\loader\BinaryFileFactory.cpp">
+			</File>
+			<File
 				RelativePath=".\boomerang.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -217,24 +221,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\loader\ElfBinaryFile.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\loader\ExeBinaryFile.cpp">
-			</File>
-			<File
 				RelativePath=".\db\exp.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -270,9 +256,6 @@
 				RelativePath=".\transform\generic.cpp">
 			</File>
 			<File
-				RelativePath=".\loader\HpSomBinaryFile.cpp">
-			</File>
-			<File
 				RelativePath=".\db\insnameelem.cpp">
 			</File>
 			<File
@@ -293,9 +276,6 @@
 			</File>
 			<File
 				RelativePath=".\frontend\njmcDecoder.cpp">
-			</File>
-			<File
-				RelativePath=".\loader\PalmBinaryFile.cpp">
 			</File>
 			<File
 				RelativePath=".\frontend\pentiumdecoder.cpp">
@@ -473,9 +453,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\loader\Win32BinaryFile.cpp">
-			</File>
-			<File
 				RelativePath=".\windows.cpp">
 			</File>
 			<File
@@ -511,9 +488,6 @@
 				RelativePath=".\include\BinaryFile.h">
 			</File>
 			<File
-				RelativePath=".\include\BinaryFileStub.h">
-			</File>
-			<File
 				RelativePath=".\include\boomerang.h">
 			</File>
 			<File
@@ -538,12 +512,6 @@
 				RelativePath=".\include\decoder.h">
 			</File>
 			<File
-				RelativePath=".\loader\ElfBinaryFile.h">
-			</File>
-			<File
-				RelativePath=".\loader\ExeBinaryFile.h">
-			</File>
-			<File
 				RelativePath=".\include\exp.h">
 			</File>
 			<File
@@ -554,9 +522,6 @@
 			</File>
 			<File
 				RelativePath=".\include\hllcode.h">
-			</File>
-			<File
-				RelativePath=".\loader\HpSomBinaryFile.h">
 			</File>
 			<File
 				RelativePath=".\db\insnameelem.h">
@@ -575,9 +540,6 @@
 			</File>
 			<File
 				RelativePath=".\db\operstrings.h">
-			</File>
-			<File
-				RelativePath=".\loader\PalmBinaryFile.h">
 			</File>
 			<File
 				RelativePath=".\frontend\pentiumdecoder.h">
@@ -638,9 +600,6 @@
 			</File>
 			<File
 				RelativePath=".\include\util.h">
-			</File>
-			<File
-				RelativePath=".\loader\Win32BinaryFile.h">
 			</File>
 		</Filter>
 		<Filter
