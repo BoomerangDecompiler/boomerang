@@ -9,19 +9,21 @@
 # 20 May 02 - Trent: Created
 # 31 May 02 - Mike: Make lib directory if needed
 
+.PHONY: test clean
+
 all: lib test
 
 # Make the lib directory if needed
 lib:
 	mkdir lib
 
-test: lib /dev/null
+test: lib
 	cd util     && ${MAKE} test
 	cd loader   && ${MAKE} test
 	cd db       && ${MAKE} test
 	cd frontend && ${MAKE} test
 
-clean: /dev/null
+clean:
 	cd util     && ${MAKE} clean
 	cd loader   && ${MAKE} clean
 	cd db       && ${MAKE} clean
