@@ -83,7 +83,8 @@ private:
 	std::list<char *> lines;
 
         void indent(std::ostringstream& str, int indLevel);
-        void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec);
+        void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
+            bool uns = false);
         void appendType(std::ostringstream& str, Type *typ);
         void openParen(std::ostringstream& str, PREC outer, PREC inner) {
             if (inner < outer) str << "("; }

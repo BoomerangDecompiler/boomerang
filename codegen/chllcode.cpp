@@ -68,9 +68,11 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel)
 
 // Append code for the given expression exp to stream str
 // The current operator precedence is curPrec; add parens around this
-// expression if 
+// expression if necessary
+// uns = cast operands to unsigned if necessary
 
-void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
+void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec,
+    bool uns /* = false */ ) {
 
     if (exp == NULL) return;
 
@@ -79,14 +81,37 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
     Binary  *b = (Binary*)exp;
     Ternary *t = (Ternary*)exp;
     
-    switch(exp->getOper()) {
-        case opIntConst:
-            str << std::dec << c->getInt(); break;
+    OPER op = exp->getOper();
+    // First, a crude cast if unsigned
+    if (uns && op != opIntConst) {
+        str << "(unsigned)(";
+    }
+
+    switch(op) {
+        case opIntConst: {
+            int K = c->getInt();
+            if (uns && K < 0) {
+                // An unsigned constant
+                if ((unsigned)K % 100 == 0) {
+                    // A multiple of 100; use 4000000000U style
+                    char num[16];
+                    sprintf(num, "%u", K);
+                    str << num << "U";
+                } else {
+                    // Output it in 0xF0000000 style
+                    str << "0x" << std::hex << K;
+                }
+            } else
+                // Just a plain vanilla int
+                str << std::dec << c->getInt();
+            break;
+        }
         case opLongConst:
             // sprintf(s, "%lld", c->getLong());
             //strcat(str, s);
             str << std::dec << c->getLong(); break;
         case opFltConst:
+            // What to do with precision here?
             str << c->getFlt(); break;
         case opStrConst:
             str << "\"" << c->getStr() << "\""; break;
@@ -132,33 +157,33 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
         case opLess:
         case opLessUns:
             openParen(str, curPrec, PREC_REL);
-            appendExp(str, b->getSubExp1(), PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL, op == opLessUns);
             str << " < ";
-            appendExp(str, b->getSubExp2(), PREC_REL);
+            appendExp(str, b->getSubExp2(), PREC_REL, op == opLessUns);
             closeParen(str, curPrec, PREC_REL);
             break;
         case opGtr:
         case opGtrUns:
             openParen(str, curPrec, PREC_REL);
-            appendExp(str, b->getSubExp1(), PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL, op == opGtrUns);
             str << " > ";
-            appendExp(str, b->getSubExp2(), PREC_REL);
+            appendExp(str, b->getSubExp2(), PREC_REL, op == opGtrUns);
             closeParen(str, curPrec, PREC_REL);
             break;
         case opLessEq:
         case opLessEqUns:
             openParen(str, curPrec, PREC_REL);
-            appendExp(str, b->getSubExp1(), PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL, op == opLessEqUns);
             str << " <= ";
-            appendExp(str, b->getSubExp2(), PREC_REL);
+            appendExp(str, b->getSubExp2(), PREC_REL, op == opLessEqUns);
             closeParen(str, curPrec, PREC_REL);
             break;
         case opGtrEq:
         case opGtrEqUns:
             openParen(str, curPrec, PREC_REL);
-            appendExp(str, b->getSubExp1(), PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL, op == opGtrEqUns);
             str << " >= ";
-            appendExp(str, b->getSubExp2(), PREC_REL);
+            appendExp(str, b->getSubExp2(), PREC_REL, op == opGtrEqUns);
             closeParen(str, curPrec, PREC_REL);
             break;
         case opAnd:
@@ -601,6 +626,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
                 std::endl;
             assert(false);
     }
+
+    // Finally, close the crude cast if unsigned
+    if (uns && op != opIntConst) {
+        str << ")";
+    }
+
 }
 
 void CHLLCode::appendType(std::ostringstream& str, Type *typ)
