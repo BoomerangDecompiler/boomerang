@@ -33,7 +33,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
     noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
-    loadBeforeDecompile(false), saveBeforeDecompile(false)
+    loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false)
 {
     outputPath = "./output/";
 }
@@ -96,10 +96,8 @@ void Boomerang::help() {
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
     std::cerr << "-E <addr>: decode ONLY the procedure at addr\n";
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
-    std::cerr << "-ic: decode through type 0 indirect calls\n";
-    std::cerr << "-o <output path>: where to generate output (defaults to "
-        "./output/)\n";
     std::cerr << "-h: this help\n";
+    std::cerr << "-ic: decode through type 0 indirect calls\n";
     std::cerr << "-m <num>: max memory depth\n";
     std::cerr << "-nb: no simplifications for branches\n";
     std::cerr << "-nn: no removal of null and unused statements\n";
@@ -111,6 +109,9 @@ void Boomerang::help() {
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-nm: don't decode the 'main' procedure\n";
+    std::cerr << "-o <output path>: where to generate output (defaults to "
+        "./output/)\n";
+    std::cerr << "-O: handle Overlapped registers (for X86 only)\n";
     std::cerr << "-p <num>: only do num propogations\n";
 //  std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to log before code generation\n";
@@ -580,6 +581,7 @@ int Boomerang::commandLine(int argc, const char **argv)
                 if (outputPath[outputPath.size()-1] != '/')
                     outputPath += '/';
                 break;
+            case 'O': overlapped = true; break;
             case 'p':
                 if (argv[i][2] == 'a') {
                     propOnlyToAll = true;

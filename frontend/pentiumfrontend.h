@@ -77,6 +77,11 @@ private:
     void    processStringInst(UserProc* proc);
 
     /*
+     * Process for overlapped registers
+     */
+    void    processOverlapped(UserProc* proc);
+
+    /*
      * Check a HLCall for a helper function, and replace with appropriate
      *  semantics if possible
      */

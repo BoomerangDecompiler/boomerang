@@ -99,6 +99,7 @@ public:
     bool debugUnusedStmt;
     bool loadBeforeDecompile;
     bool saveBeforeDecompile;
+    bool overlapped;
 };
 
 #define VERBOSE  (Boomerang::get()->vFlag)

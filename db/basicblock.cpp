@@ -348,6 +348,11 @@ void BasicBlock::printToLog(bool withDF) {
     LOG << st.str().c_str();
 }
 
+// Another attempt at printing BBs that gdb doesn't like to print
+void printBB(PBB bb) {
+    bb->print(std::cerr);
+}
+
 /*==============================================================================
  * FUNCTION:        BasicBlock::getLowAddr
  * OVERVIEW:        Get the lowest real address associated with this BB. Note
@@ -1671,6 +1676,18 @@ static Location* formA  = Location::memOf(
                 new Const(4)),
             new Terminal(opWildIntConst)));
 
+// With array processing, we get a new form, call it form 'o' (don't
+// confuse with form 'O'):
+// Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
+// NOT COMPLETED YET!
+static Unary* formo = new RefExp(
+        new Binary(opArraySubscript,
+            new RefExp(
+                new Terminal(opWild),
+                (Statement*)-1),
+            new Terminal(opWild)),
+        (Statement*)-1);
+
 // Pattern: m[<expr> * 4 + T ] + T
 static Exp* formO  = new Binary(opPlus,
     Location::memOf(
@@ -1705,8 +1722,8 @@ static Exp* formr = new Binary(opPlus,
                 new Const(4)),
         new Terminal(opWildIntConst)))));
 
-static Exp* hlForms[] = {forma, formA, formO, formR, formr};
-static char chForms[] = {  'a',  'A',   'O',   'R',   'r'};
+static Exp* hlForms[] = {forma, formA, formo, formO, formR, formr};
+static char chForms[] = {  'a',  'A',   'o',   'O',   'R',   'r'};
 
 
 // Vcall high level patterns

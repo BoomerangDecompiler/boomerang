@@ -24,6 +24,7 @@
  * 30 Sep 03 - Mike: processFloatCode ORs mask with 0x04 for compilers that
  *                  ignore the C1 status bit (e.g. MSVC)
  *                  Also more JE cases
+ * 04 Aug 04 - Mike: Quick and dirty hack for overlapped registers (X86 only)
 */
 
 #include <assert.h>
@@ -192,6 +193,9 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc,
 
     // Process away %rpt and %skip
     processStringInst(pProc);
+
+    // Process code for side effects of overlapped registers
+    processOverlapped(pProc);
 
     return true;
 }
@@ -1272,5 +1276,192 @@ void PentiumFrontEnd::processStringInst(UserProc* proc) {
             lastRtl = false;
         }
         if (!noinc) it++;
+    }
+}
+
+void PentiumFrontEnd::processOverlapped(UserProc* proc) {
+    if (Boomerang::get()->overlapped == false) return;
+    // For each statement, we are looking for assignments to registers in
+    //   these ranges:
+    // eax - ebx (24-27) (eax, ecx, edx, ebx)
+    //  ax -  bx ( 0- 3) ( ax,  cx,  dx,  bx)
+    //  al -  bl ( 8-11) ( al,  cl,  dl,  bl)
+    //  ah -  bh (12-15) ( ah,  ch,  dh,  bh)
+    StatementList stmts;
+    proc->getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        if (!s->isAssign()) continue;
+        Exp* lhs = s->getLeft();
+        if (!lhs->isRegOf()) continue;
+        Const* c = (Const*)((Location*)lhs)->getSubExp1();
+        assert(c->isIntConst());
+        int r = c->getInt();
+        int off = r&3;        // Offset into the array of 4 registers
+        Assign* a;
+        switch (r) {
+            case 24: case 25: case 26: case 27:
+            //  eax      ecx      edx      ebx
+            // Emit *16* r<off> := trunc(32, 16, r<24+off>)
+            a = new Assign(
+                new IntegerType(16),
+                Location::regOf(off),
+                new Ternary(opTruncu,
+                    new Const(32),
+                    new Const(16),
+                    Location::regOf(24+off)));
+            proc->insertStatementAfter(s, a);
+
+            // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
+            a = new Assign(
+                new IntegerType(8),
+                Location::regOf(8+off),
+                new Ternary(opTruncu,
+                    new Const(32),
+                    new Const(8),
+                    Location::regOf(24+off)));
+            proc->insertStatementAfter(s, a);
+
+            // Emit *8* r<12+off> := r<24+off>@[15:8]
+            a = new Assign(
+                new IntegerType(8),
+                Location::regOf(12+off),
+                new Ternary(opAt,
+                    Location::regOf(24+off),
+                    new Const(15),
+                    new Const(8)));
+            proc->insertStatementAfter(s, a);
+            break;
+
+            case 0: case 1: case 2: case 3:
+            //  ax      cx      dx      bx
+            // Emit *32* r<24+off> := r<24+off> & 0xFFFF0000
+            //      *32* r<24+off> := r<24+off> | zfill(16, 32, r<off>)
+            // Note: emit backwards
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitOr,
+                    Location::regOf(24+off),
+                    new Ternary(opZfill,
+                        new Const(16),
+                        new Const(32),
+                        Location::regOf(off))));
+            proc->insertStatementAfter(s, a);
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitAnd,
+                    Location::regOf(24+off),
+                    new Const(0xFFFF0000)));
+            proc->insertStatementAfter(s, a);
+            
+            // Emit *8* r<8+off> := trunc(16, 8, r<off>)
+            a = new Assign(
+                new IntegerType(8),
+                Location::regOf(off),
+                new Ternary(opTruncu,
+                    new Const(16),
+                    new Const(8),
+                    Location::regOf(24+off)));
+            proc->insertStatementAfter(s, a);
+
+            // Emit *8* r<12+off> := r<off>@[15:8]
+            a = new Assign(
+                new IntegerType(8),
+                Location::regOf(12+off),
+                new Ternary(opAt,
+                    Location::regOf(off),
+                    new Const(15),
+                    new Const(8)));
+            proc->insertStatementAfter(s, a);
+            break;
+
+
+            case 8: case 9: case 10: case 11:
+            //  al      cl       dl       bl
+            // Emit *32* r<24+off> := r<24+off> & 0xFFFF0000
+            //      *32* r<24+off> := r<24+off> | zfill(8, 32, r<8+off>)
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitOr,
+                    Location::regOf(24+off),
+                    new Ternary(opZfill,
+                        new Const(8),
+                        new Const(32),
+                        Location::regOf(8+off))));
+            proc->insertStatementAfter(s, a);
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitAnd,
+                    Location::regOf(24+off),
+                    new Const(0xFFFF0000)));
+            proc->insertStatementAfter(s, a);
+
+            // Emit *16* r<off> := r<off> & 0xFF00
+            //      *16* r<off> := r<off> | zfill(8, 16, r<8+off>)
+            a = new Assign(
+                new IntegerType(16),
+                Location::regOf(off),
+                new Binary(opBitOr,
+                    Location::regOf(off),
+                    new Ternary(opZfill,
+                        new Const(8),
+                        new Const(16),
+                        Location::regOf(8+off))));
+            proc->insertStatementAfter(s, a);
+            a = new Assign(
+                new IntegerType(16),
+                Location::regOf(off),
+                new Binary(opBitAnd,
+                    Location::regOf(off),
+                    new Const(0xFF00)));
+            proc->insertStatementAfter(s, a);
+            break;
+
+            case 12: case 13: case 14: case 15:
+            //   ah       ch       dh       bh
+            // Emit *32* r<24+off> := r<24+off> & 0xFFFF00FF
+            //      *32* r<24+off> := r<24+off> | r<12+off> << 8
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitOr,
+                    Location::regOf(24+off),
+                    new Binary(opShiftL,
+                        Location::regOf(12+off),
+                        new Const(8))));
+            proc->insertStatementAfter(s, a);
+            a = new Assign(
+                new IntegerType(32),
+                Location::regOf(24+off),
+                new Binary(opBitAnd,
+                    Location::regOf(24+off),
+                    new Const(0xFFFF00FF)));
+            proc->insertStatementAfter(s, a);
+
+            // Emit *16* r<off> := r<off> & 0x00FF
+            //      *16* r<off> := r<off> | r<12+off> << 8
+            a = new Assign(
+                new IntegerType(16),
+                Location::regOf(off),
+                new Binary(opBitOr,
+                    Location::regOf(off),
+                    new Binary(opShiftL,
+                        Location::regOf(12+off),
+                        new Const(8))));
+            proc->insertStatementAfter(s, a);
+            a = new Assign(
+                new IntegerType(16),
+                Location::regOf(off),
+                new Binary(opBitAnd,
+                    Location::regOf(off),
+                    new Const(0x00FF)));
+            proc->insertStatementAfter(s, a);
+            break;
+        }
     }
 }

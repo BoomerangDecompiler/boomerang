@@ -473,6 +473,8 @@ public:
     void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform();
     void insertAssignAfter(Statement* s, int tempNum, Exp* right);
+    // Insert statement a after statement s
+    void insertStatementAfter(Statement* s, Statement* a);
     void typeAnalysis(Prog* prog);
 
     // For the final pass of removing returns that are never used
