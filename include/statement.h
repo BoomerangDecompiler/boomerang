@@ -82,12 +82,12 @@ enum STMT_KIND {
 	STMT_ASSIGN = 0,
 	STMT_PHIASSIGN,
 	STMT_IMPASSIGN,
-	STMT_BOOLASSIGN,				// For "setCC" instructions that set destination
+	STMT_BOOLASSIGN,			// For "setCC" instructions that set destination
+								// to 1 or 0 depending on the condition codes.
 	STMT_CALL,
 	STMT_RET,
 	STMT_BRANCH,
 	STMT_GOTO,
-								// to 1 or 0 depending on the condition codes.
 	STMT_CASE,					// Used to represent switch statements.
 };
 
