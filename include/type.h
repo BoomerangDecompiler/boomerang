@@ -354,6 +354,8 @@ virtual bool	isPointer() const { return true; }
 		Type	*getPointsTo() { return points_to; }
 static PointerType* newPtrAlpha();
 		bool	pointsToAlpha();
+		int		pointerDepth();		// Return 2 for **x
+		Type*	getFinalPointsTo();	// Return x for **x
 
 virtual Type*	clone() const;
 

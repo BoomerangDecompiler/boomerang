@@ -911,8 +911,28 @@ PointerType* PointerType::newPtrAlpha() {
 
 // Note: alpha is therefore a "reserved name" for types
 bool PointerType::pointsToAlpha() {
+	// void* counts as alpha* (and may replace it soon)
+	if (points_to->isVoid()) return true;
 	if (!points_to->isNamed()) return false;
 	return strncmp(((NamedType*)points_to)->getName(), "alpha", 5) == 0;
+}
+
+int PointerType::pointerDepth() {
+	int d = 1;
+	Type* pt = points_to;
+	while (pt->isPointer()) {
+		pt = pt->asPointer()->getPointsTo();
+		d++;
+	}
+	return d;
+}
+
+Type* PointerType::getFinalPointsTo() {
+	Type* pt = points_to;
+	while (pt->isPointer()) {
+		pt = pt->asPointer()->getPointsTo();
+	}
+	return pt;
 }
 
 Type *NamedType::resolvesTo() const

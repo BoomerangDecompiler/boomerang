@@ -248,9 +248,22 @@ Type* PointerType::meetWith(Type* other, bool& ch) {
 			bool baseCh = false;
 			Type* thisBase = getPointsTo();
 			Type* otherBase = otherPtr->getPointsTo();
-			if (otherBase->isPointer())
-				// Don't recurse infinately. Just union the pointers
+			if (otherBase->isPointer()) {
+if (thisBase->asPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
+  std::cerr << "HACK! BAD POINTER 1\n";
+if (otherBase->asPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
+  std::cerr << "HACK! BAD POINTER 2\n";
+				if (*thisBase == *otherBase)
+					return this;
+				if (pointerDepth() == otherPtr->pointerDepth()) {
+					Type* fType = getFinalPointsTo();
+					if (fType->isVoid()) return other;
+					Type* ofType = otherPtr->getFinalPointsTo();
+					if (ofType->isVoid()) return this;
+					if (*fType == *ofType) return this;
+				}
 				return createUnion(other, ch);
+			}
 			thisBase = thisBase->meetWith(otherBase, baseCh);
 			if (thisBase->isUnion()) {
 				// The bases did not meet successfully. Union the pointers.
@@ -324,12 +337,12 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 
 Type* Type::createUnion(Type* other, bool& ch) {
 	char name[20];
-	sprintf(name, "x%d", ++nextUnionNumber);
 	if (isUnion()) {
 		if (((UnionType*)this)->findType(other))
 			// The type already exists; no change
 			return this;
 		ch = true;
+		sprintf(name, "x%d", ++nextUnionNumber);
 		((UnionType*)this)->addType(other, name);
 		return this;
 	}
@@ -338,9 +351,11 @@ Type* Type::createUnion(Type* other, bool& ch) {
 			// The type already exists in the other union
 			return other;
 		ch = true;
+		sprintf(name, "x%d", ++nextUnionNumber);
 		((UnionType*)other)->addType(this, name);
 		return other;
 	}
+	sprintf(name, "x%d", ++nextUnionNumber);
 	UnionType* u = new UnionType;
 	u->addType(this, name);
 	sprintf(name, "x%d", ++nextUnionNumber);

@@ -603,10 +603,15 @@ void UserProc::generateCode(HLLCode *hll) {
 
 	hll->AddProcStart(signature);
 	
+	// Local variables
 	std::map<std::string, Type*>::iterator last = locals.end();
 	if (locals.size()) last--;
-	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-		hll->AddLocal((*it).first.c_str(), (*it).second, it == last);
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
+		Type* locType = it->second;
+		if (locType->isVoid())
+			locType = new IntegerType();
+		hll->AddLocal(it->first.c_str(), locType, it == last);
+	}
 
 	std::list<PBB> followSet, gotoSet;
 	getEntryBB()->generateCode(hll, 1, NULL, followSet, gotoSet);
