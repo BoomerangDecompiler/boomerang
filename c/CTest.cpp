@@ -65,10 +65,10 @@ void CTest::testSignature () {
     CPPUNIT_ASSERT_EQUAL(std::string("printf"), std::string(sig->getName()));
     CPPUNIT_ASSERT(*sig->getReturnType(0) == IntegerType());
     Type *t = new PointerType(new CharType());
-    // Um, are there two parameters for printf now? Some extra first parameter?
-    CPPUNIT_ASSERT_EQUAL(1, sig->getNumParams());
-    CPPUNIT_ASSERT(*sig->getParamType(0) == *t);
-    CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(0)));
+    // Pentium signatures have esp prepended to the list of parameters
+    CPPUNIT_ASSERT_EQUAL(2, sig->getNumParams());
+    CPPUNIT_ASSERT(*sig->getParamType(1) == *t);
+    CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(1)));
     CPPUNIT_ASSERT(sig->hasEllipsis());
     delete t;
 }
