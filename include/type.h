@@ -58,6 +58,7 @@ virtual bool isChar() const { return false; }
 virtual bool isInteger() const { return false; }
 virtual bool isFloat() const { return false; }
 virtual bool isPointer() const { return false; }
+virtual bool isArray() const { return false; }
 virtual bool isNamed() const { return false; }
 
     // cloning
@@ -228,6 +229,32 @@ public:
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
         Type *getPointsTo() { return points_to; }
+
+virtual Type* clone() const;
+
+virtual bool    operator==(const Type& other) const;
+//virtual bool    operator-=(const Type& other) const;
+virtual bool    operator< (const Type& other) const;
+
+virtual int     getSize() const;
+
+virtual const char *getCtype() const;
+
+virtual	bool serialize(std::ostream &ouf, int &len);
+virtual	bool deserialize_fid(std::istream &inf, int fid);
+};
+
+class ArrayType : public Type {
+private:
+    Type *base_type;
+    unsigned length;
+
+public:
+	ArrayType(Type *p, unsigned length);
+virtual ~ArrayType();
+virtual bool isArray() const { return true; }
+        Type *getBaseType() { return base_type; }
+        unsigned getLength() { return length; }
 
 virtual Type* clone() const;
 

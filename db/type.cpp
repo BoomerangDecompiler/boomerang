@@ -71,6 +71,10 @@ PointerType::PointerType(Type *p) : points_to(p)
 {
 }
 
+ArrayType::ArrayType(Type *p, unsigned length) : base_type(p), length(length)
+{
+}
+
 NamedType::NamedType(const char *name) : name(name)
 {
 }
@@ -112,6 +116,11 @@ CharType::~CharType()
 PointerType::~PointerType()
 {
 	delete points_to;
+}
+
+ArrayType::~ArrayType()
+{
+	delete base_type;
 }
 
 NamedType::~NamedType()
@@ -166,6 +175,12 @@ Type *PointerType::clone() const
     return t;
 }
 
+Type *ArrayType::clone() const
+{
+    ArrayType *t = new ArrayType(base_type->clone(), length);
+    return t;
+}
+
 Type *NamedType::clone() const
 {
     NamedType *t = new NamedType(name.c_str());
@@ -211,6 +226,11 @@ int FuncType::getSize() const
 int PointerType::getSize() const
 {
     return points_to->getSize();
+}
+
+int ArrayType::getSize() const
+{
+    return base_type->getSize() * length;
 }
 
 int NamedType::getSize() const
@@ -269,6 +289,12 @@ bool FuncType::operator==(const Type& other) const
 bool PointerType::operator==(const Type& other) const
 {
     return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
+}
+
+bool ArrayType::operator==(const Type& other) const
+{
+    return other.isArray() && *base_type == *((ArrayType&)other).base_type &&
+           ((ArrayType&)other).length == length;
 }
 
 bool NamedType::operator==(const Type& other) const
@@ -361,6 +387,11 @@ bool PointerType::operator<(const Type& other) const
     return (*points_to < other);
 }
 
+bool ArrayType::operator<(const Type& other) const
+{
+    return (*base_type < other);
+}
+
 bool NamedType::operator<(const Type& other) const
 {
     return (name < ((NamedType&)other).name);
@@ -442,6 +473,15 @@ const char *PointerType::getCtype() const
      std::string s = points_to->getCtype();
      s += "*";
      return s.c_str(); // memory..
+}
+
+const char *ArrayType::getCtype() const
+{
+    std::string s = base_type->getCtype();
+    std::ostringstream ost;
+    ost << "[" << length << "]";
+    s += ost.str().c_str();
+    return s.c_str(); // memory..
 }
 
 const char *NamedType::getCtype() const
@@ -648,6 +688,11 @@ bool PointerType::serialize(std::ostream &ouf, int &len)
 	return true;
 }
 
+bool ArrayType::serialize(std::ostream &ouf, int &len)
+{
+    return true;
+}
+
 bool NamedType::serialize(std::ostream &ouf, int &len)
 {
 	std::streampos st = ouf.tellp();
@@ -782,6 +827,12 @@ bool CharType::deserialize_fid(std::istream &inf, int fid)
 }
 
 bool PointerType::deserialize_fid(std::istream &inf, int fid)
+{
+    skipFID(inf, fid);
+    return false;
+}
+
+bool ArrayType::deserialize_fid(std::istream &inf, int fid)
 {
     skipFID(inf, fid);
     return false;
