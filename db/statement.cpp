@@ -228,6 +228,22 @@ bool hasSetFlags(Exp* e) {
 }
 
 // exclude: a set of statements not to propagate from
+// memDepth: the max level of expressions to propagate FROM
+// toDepth: the exact level that we will propagate TO (unless toDepth == -1)
+// Reasoning is as follows: you can't safely propagate and memory expression
+// until all its subexpressions (expressions at lower memory depths) are
+// propagated. Examples:
+// 1: r28 = r28-4
+// 2: m[m[r28]+4] = 10
+// 3: r28 = r28-4
+// 4: r25 = m[m[r28]+4]   // Appears defined in 2 if don't consider FROM depths
+// 5: r24 = r28
+// 6: m[r24] = r[28]
+// 6: m[r25] = 4
+// 7: m[m[m[r24]]+m[r25]] = 99
+// Ordinarily would subst m[r24] first, at level 2... ugh, can't think of an
+// example where it would matter.
+
 void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth) 
 {
 #if 0       // If don't propagate into flag assigns, some converting to locals
@@ -236,13 +252,18 @@ void Statement::propagateTo(int memDepth, StatementSet& exclude, int toDepth)
     if (isFlagAssgn())
         return;
 #endif
-    // don't propagate into temp definitions
+    // don't propagate into temp definitions (? why?)
     if (isAssign() && getLeft()->isTemp())
         return;
     bool change;
     int changes = 0;
-    // Repeat substituting into s while there is a single reference
-    // component in this statement
+    // Repeat substituting into this statement while there is a single reference
+    // component in it
+    // But all RefExps will have just one component. Maybe calls (later) will
+    // have more than one ref
+    // Example: y := a{2,3} + b{4} + c{0}
+    // can substitute b{4} into this, but not a. Can't do c either, since there
+    // is no definition (it's a parameter).
     do {
         LocationSet exps;
         addUsedLocs(exps);
@@ -1878,6 +1899,25 @@ void CallStatement::addUsedLocs(LocationSet& used) {
     for (i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
             returns[i]->getSubExp1()->addUsedLocs(used);
+}
+
+void CallStatement::addUsedLocsFinal(LocationSet& used) {
+    if (procDest == NULL && pDest)
+        pDest->addUsedLocs(used);
+
+    unsigned int i;
+    for (i = 0; i < arguments.size(); i++) {
+        arguments[i]->addUsedLocs(used);
+    }
+
+    // Don't count implicit arguments; this is final code
+     
+    // Also only count the first return location
+    if (returns.size() != 0) {
+        if (returns[0]->isMemOf())
+            returns[0]->getSubExp1()->addUsedLocs(used);
+    }
+
 }
 
 void CallStatement::fixCallRefs() {

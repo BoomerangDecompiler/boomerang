@@ -59,6 +59,7 @@ char* Signature::conventionName(callconv cc) {
     switch (cc) {
         case CONV_C:        return "stdc";
         case CONV_PASCAL:   return "pascal";
+        case CONV_THISCALL: return "thiscall";
         default:            return "??";
     }
 }
@@ -66,6 +67,7 @@ char* Signature::conventionName(callconv cc) {
 namespace CallingConvention {
 
     class Win32Signature : public Signature {
+    // Win32Signature is for non-thiscall signatures: all parameters pushed
     public:
         Win32Signature(const char *nam);
         Win32Signature(Signature &old);
@@ -87,6 +89,18 @@ namespace CallingConvention {
 
         virtual bool isPromoted() { return true; }
     };
+
+    class Win32TcSignature : public Win32Signature {
+    // Win32TcSignature is for "thiscall" signatures, i.e. those that have
+    // register ecx as the first parameter
+    // Only needs to override a few member functions; the rest can inherit
+    // from Win32Signature
+    public:
+        Win32TcSignature(const char *nam);
+        Win32TcSignature(Signature &old);
+        virtual Exp *getArgumentExp(int n);
+    };
+
 
     namespace StdC {
         class PentiumSignature : public Signature {
@@ -133,14 +147,29 @@ namespace CallingConvention {
     };
 };
 
-CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam)
+CallingConvention::Win32Signature::Win32Signature(const char *nam)
+  : Signature(nam)
 {
     Signature::addReturn(Location::regOf(28));
     Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
                                     Location::regOf(28), NULL);
 }
 
-CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old)
+CallingConvention::Win32Signature::Win32Signature(Signature &old)
+  : Signature(old)
+{
+}
+
+CallingConvention::Win32TcSignature::Win32TcSignature(const char *nam)
+  : Win32Signature(nam)
+{
+    Signature::addReturn(Location::regOf(28));
+    Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
+                                    Location::regOf(28), NULL);
+}
+
+CallingConvention::Win32TcSignature::Win32TcSignature(Signature &old)
+  : Win32Signature(old)
 {
 }
 
@@ -245,6 +274,20 @@ Exp *CallingConvention::Win32Signature::getArgumentExp(int n) {
     if (params.size() != 0 && *params[0]->getExp() == *esp)
         n--;
     Exp *e = Location::memOf(new Binary(opPlus, esp, new Const((n+1) * 4)));
+    return e;
+}
+
+Exp* CallingConvention::Win32TcSignature::getArgumentExp(int n) {
+    if (n < (int)params.size())
+        return Signature::getArgumentExp(n);
+    Exp *esp = Location::regOf(28);
+    if (params.size() != 0 && *params[0]->getExp() == *esp)
+        n--;
+    if (n == 0)
+        // It's the first parameter, register ecx
+        return Location::regOf(25);
+    // Else, it is m[esp+4n)]
+    Exp *e = Location::memOf(new Binary(opPlus, esp, new Const(n * 4)));
     return e;
 }
 
@@ -870,6 +913,8 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
                 // For now, assume the only pascal calling convention pentium
                 // signatures will be Windows
                 return new CallingConvention::Win32Signature(nam);
+            else if (cc == CONV_THISCALL)
+                return new CallingConvention::Win32TcSignature(nam);
             else
                 return new CallingConvention::StdC::PentiumSignature(nam);
         case PLAT_SPARC:
