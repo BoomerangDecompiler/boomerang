@@ -81,6 +81,13 @@ ADDRESS Win32BinaryFile::GetEntryPoint()
 // This pattern should work for "old style" and "new style" PE executables,
 // as well as console mode PE files
 ADDRESS Win32BinaryFile::GetMainEntryPoint() {
+	ADDRESS aMain = GetAddressByName ("main", true);
+	if (aMain != NO_ADDRESS)
+		return aMain;
+	aMain = GetAddressByName ("_main", true);		// Example: MinGW
+	if (aMain != NO_ADDRESS)
+		return aMain;
+
 	// Start at program entry point
 	unsigned p = LMMH(m_pPEHeader->EntrypointRVA);
 	unsigned lim = p + 0x200;
@@ -359,6 +366,7 @@ ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
 	// Use linear search
 	std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
 	while (it != dlprocptrs.end()) {
+		// std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
 		if (strcmp(it->second.c_str(), pName) == 0)
 			return it->first;
 		it++;
