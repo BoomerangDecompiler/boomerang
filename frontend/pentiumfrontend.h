@@ -61,9 +61,15 @@ private:
 	int idPF;              // Parity flag
 
     /*
+     * Little simpler, just replaces FPUSH and FPOP with more complex
+     * semantics.
+     */
+    void    processFloatCode(Cfg* pCfg);
+
+    /*
      * Process a BB and its successors for floating point code
      */
-	void 	processFloatCode(PBB pBB, int& tos, Cfg* pCfg);
+    void    processFloatCode(PBB pBB, int& tos, Cfg* pCfg);
 
     /*
      * Process away %rpt and %skip in string instructions

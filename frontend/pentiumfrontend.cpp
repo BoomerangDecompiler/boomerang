@@ -190,7 +190,10 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
     pCfg->unTraverse();
     // This will get done twice; no harm
     pProc->setEntryBB();
-	int tos = 0;
+
+    processFloatCode(pCfg);
+
+    int tos = 0;
     processFloatCode(pProc->getEntryBB(), tos, pCfg); 
 
     // Process away %rpt and %skip
@@ -239,6 +242,84 @@ std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns()
         returns.push_back(new Terminal(opPC));
     }
     return returns;
+}
+
+void PentiumFrontEnd::processFloatCode(Cfg* pCfg)
+{
+    BB_IT it;
+    for (PBB pBB = pCfg->getFirstBB(it); pBB; pBB = pCfg->getNextBB(it)) {
+        std::list<RTL*>::iterator rit;
+        Statement* st;
+
+        // Loop through each RTL this BB
+        std::list<RTL*>* BB_rtls = pBB->getRTLs();
+        if (BB_rtls == 0) {
+            // For example, incomplete BB
+            return;
+        }
+        rit = BB_rtls->begin();
+        while (rit != BB_rtls->end()) {
+            for (int i=0; i < (*rit)->getNumStmt(); i++) {
+                // Get the current Exp
+                st = (*rit)->elementAt(i);
+                if (st->isFpush()) {
+                    (*rit)->insertStmt(new Assign(80, new Unary(opTemp, 
+                                                          new Const("tmpD9")), 
+                                                      Unary::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
+                                                      Unary::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(38), 
+                                                      Unary::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(37), 
+                                                      Unary::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(36), 
+                                                      Unary::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(35), 
+                                                      Unary::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(34), 
+                                                      Unary::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(33), 
+                                                      Unary::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
+                                                      new Unary(opTemp, 
+                                                          new Const("tmpD9"))), 
+                                                      i++);
+                    // Remove the FPUSH
+                    (*rit)->deleteStmt(i);
+                    i--;
+                    continue;
+                }
+                else if (st->isFpop()) {
+                    (*rit)->insertStmt(new Assign(80, new Unary(opTemp, 
+                                                          new Const("tmpD9")), 
+                                                      Unary::regOf(32)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(32), 
+                                                      Unary::regOf(33)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(33), 
+                                                      Unary::regOf(34)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(34), 
+                                                      Unary::regOf(35)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(35), 
+                                                      Unary::regOf(36)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(36), 
+                                                      Unary::regOf(37)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(37), 
+                                                      Unary::regOf(38)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(38), 
+                                                      Unary::regOf(39)), i++);
+                    (*rit)->insertStmt(new Assign(80, Unary::regOf(39), 
+                                                      new Unary(opTemp, 
+                                                          new Const("tmpD9"))), 
+                                                      i++);
+                    // Remove the FPOP
+                    (*rit)->deleteStmt(i);
+                    i--;
+                    continue;
+                }
+            }
+            rit++;
+        }
+    }
 }
 
 /*==============================================================================
