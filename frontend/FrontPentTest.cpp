@@ -90,15 +90,15 @@ void FrontPentTest::test1 () {
     inst.rtl->print(ost);
     
     std::string expected(
-        "08048918 *32* r[28] := r[28] - 4\n"
-        "         *32* m[r[28]] := r[29]\n");
+        "08048918    0 *32* r28 := r28 - 4\n"
+        "            0 *32* m[r28] := r29\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
 
     std::ostringstream o2;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
-    expected = std::string("08048919 *32* r[29] := r[28]\n");
+    expected = std::string("08048919    0 *32* r29 := r28\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
@@ -106,8 +106,8 @@ void FrontPentTest::test1 () {
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
     expected = std::string(
-        "0804891b *32* r[28] := r[28] - 4\n"
-        "         *32* m[r[28]] := 134517752\n");
+        "0804891b    0 *32* r28 := r28 - 4\n"
+        "            0 *32* m[r28] := 134517752\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -129,23 +129,23 @@ void FrontPentTest::test2() {
     inst = pFE->decodeInstruction(0x8048925);
     inst.rtl->print(o1);
     expected = std::string(
-        "08048925 *32* r[tmp1] := r[28]\n"
-        "         *32* r[28] := r[28] + 4\n"
-        "         *32* %flags := ADDFLAGS32( r[tmp1], 4, r[28] )\n");
+        "08048925    0 *32* tmp1 := r28\n"
+        "            0 *32* r28 := r28 + 4\n"
+        "            0 *32* %flags := ADDFLAGS32( tmp1, 4, r28 )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x8048928);
     inst.rtl->print(o2);
     expected = std::string(
-        "08048928 *32* r[24] := r[24] ^ r[24]\n"
-        "         *32* %flags := LOGICALFLAGS32( r[24] )\n");
+        "08048928    0 *32* r24 := r24 ^ r24\n"
+        "            0 *32* %flags := LOGICALFLAGS32( r24 )\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x804892a);
     inst.rtl->print(o3);
-    expected = std::string("0804892a JUMP 0x804892c\n");
+    expected = std::string("0804892a      JUMP 0x804892c\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -167,18 +167,18 @@ void FrontPentTest::test3() {
     inst = pFE->decodeInstruction(0x804892c);
     inst.rtl->print(o1);
     expected = std::string(
-        "0804892c *32* r[28] := r[29]\n"
-        "         *32* r[29] := m[r[28]]\n"
-        "         *32* r[28] := r[28] + 4\n");
+        "0804892c    0 *32* r28 := r29\n"
+        "            0 *32* r29 := m[r28]\n"
+        "            0 *32* r28 := r28 + 4\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x804892d);
     inst.rtl->print(o2);
     expected = std::string(
-      "0804892d *32* %pc := m[r[28]]\n"
-      "         *32* r[28] := r[28] + 4\n"
-      "0804892d RET\n");
+      "0804892d    0 *32* %pc := m[r28]\n"
+      "            0 *32* r28 := r28 + 4\n"
+      "0804892d      RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     delete pFE;
@@ -200,7 +200,8 @@ void FrontPentTest::testBranch() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x8048979);
     inst.rtl->print(o1);
-    expected = std::string("08048979 JCOND 0x8048988, condition not equals\n"
+    expected = std::string("08048979    0 JCOND 0x8048988, condition "
+      "not equals\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, o1.str());
 
@@ -209,7 +210,7 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x80489c1);
     inst.rtl->print(o2);
     expected = std::string(
-      "080489c1 JCOND 0x80489d5, condition signed greater\n"
+      "080489c1    0 JCOND 0x80489d5, condition signed greater\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
@@ -218,7 +219,7 @@ void FrontPentTest::testBranch() {
     inst = pFE->decodeInstruction(0x8048a1b);
     inst.rtl->print(o3);
     expected = std::string(
-        "08048a1b JCOND 0x8048a2a, condition unsigned less or equals\n"
+        "08048a1b    0 JCOND 0x8048a2a, condition unsigned less or equals\n"
         "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 

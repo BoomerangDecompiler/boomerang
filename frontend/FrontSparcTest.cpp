@@ -93,46 +93,46 @@ void FrontSparcTest::test1 () {
     inst.rtl->print(ost);
     
     std::string expected(
-        "00010a54 *32* r[tmp] := r[14] + -112\n"
-        "         *32* m[r[14] + 0] := r[16]\n"
-        "         *32* m[r[14] + 4] := r[17]\n"
-        "         *32* m[r[14] + 8] := r[18]\n"
-        "         *32* m[r[14] + 12] := r[19]\n"
-        "         *32* m[r[14] + 16] := r[20]\n"
-        "         *32* m[r[14] + 20] := r[21]\n"
-        "         *32* m[r[14] + 24] := r[22]\n"
-        "         *32* m[r[14] + 28] := r[23]\n"
-        "         *32* m[r[14] + 32] := r[24]\n"
-        "         *32* m[r[14] + 36] := r[25]\n"
-        "         *32* m[r[14] + 40] := r[26]\n"
-        "         *32* m[r[14] + 44] := r[27]\n"
-        "         *32* m[r[14] + 48] := r[28]\n"
-        "         *32* m[r[14] + 52] := r[29]\n"
-        "         *32* m[r[14] + 56] := r[30]\n"
-        "         *32* m[r[14] + 60] := r[31]\n"
-        "         *32* r[24] := r[8]\n"
-        "         *32* r[25] := r[9]\n"
-        "         *32* r[26] := r[10]\n"
-        "         *32* r[27] := r[11]\n"
-        "         *32* r[28] := r[12]\n"
-        "         *32* r[29] := r[13]\n"
-        "         *32* r[30] := r[14]\n"
-        "         *32* r[31] := r[15]\n"
-        "         *32* r[14] := r[tmp]\n");
+        "00010a54    0 *32* tmp := r14 + -112\n"
+        "            0 *32* m[r14 + 0] := r16\n"
+        "            0 *32* m[r14 + 4] := r17\n"
+        "            0 *32* m[r14 + 8] := r18\n"
+        "            0 *32* m[r14 + 12] := r19\n"
+        "            0 *32* m[r14 + 16] := r20\n"
+        "            0 *32* m[r14 + 20] := r21\n"
+        "            0 *32* m[r14 + 24] := r22\n"
+        "            0 *32* m[r14 + 28] := r23\n"
+        "            0 *32* m[r14 + 32] := r24\n"
+        "            0 *32* m[r14 + 36] := r25\n"
+        "            0 *32* m[r14 + 40] := r26\n"
+        "            0 *32* m[r14 + 44] := r27\n"
+        "            0 *32* m[r14 + 48] := r28\n"
+        "            0 *32* m[r14 + 52] := r29\n"
+        "            0 *32* m[r14 + 56] := r30\n"
+        "            0 *32* m[r14 + 60] := r31\n"
+        "            0 *32* r24 := r8\n"
+        "            0 *32* r25 := r9\n"
+        "            0 *32* r26 := r10\n"
+        "            0 *32* r27 := r11\n"
+        "            0 *32* r28 := r12\n"
+        "            0 *32* r29 := r13\n"
+        "            0 *32* r30 := r14\n"
+        "            0 *32* r31 := r15\n"
+        "            0 *32* r14 := tmp\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
 
     std::ostringstream o2;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o2);
-    expected = std::string("00010a58 *32* r[9] := 70656\n");
+    expected = std::string("00010a58    0 *32* r9 := 70656\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     addr += inst.numBytes;
     inst = pFE->decodeInstruction(addr);
     inst.rtl->print(o3);
-    expected = std::string("00010a5c *32* r[8] := r[9] | 464\n");
+    expected = std::string("00010a5c    0 *32* r8 := r9 | 464\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -156,7 +156,7 @@ void FrontSparcTest::test2() {
     // This call is to out of range of the program's
     // text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
-    expected = std::string("00010a60 CALL 0x21668()\n");
+    expected = std::string("00010a60    0 CALL 0x21668()\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
     std::ostringstream o2;
@@ -168,13 +168,13 @@ void FrontSparcTest::test2() {
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x10a68);
     inst.rtl->print(o3);
-    expected = std::string("00010a68 *32* r[24] := 0 | 0\n");
+    expected = std::string("00010a68    0 *32* r24 := 0 | 0\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     std::ostringstream o4;
     inst = pFE->decodeInstruction(0x10a6c);
     inst.rtl->print(o4);
-    expected = std::string("00010a6c JUMP 0x10a74\n");
+    expected = std::string("00010a6c      JUMP 0x10a74\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o4.str()));
 
     delete pFE;
@@ -201,40 +201,40 @@ void FrontSparcTest::test3() {
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x10a74);
     inst.rtl->print(o2);
-    expected = std::string("00010a74 RET\n");
+    expected = std::string("00010a74      RET\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
     std::ostringstream o3;
     inst = pFE->decodeInstruction(0x10a78);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010a78 *32* r[tmp] := 0 + 0\n"
-        "         *32* r[8] := r[24]\n"
-        "         *32* r[9] := r[25]\n"
-        "         *32* r[10] := r[26]\n"
-        "         *32* r[11] := r[27]\n"
-        "         *32* r[12] := r[28]\n"
-        "         *32* r[13] := r[29]\n"
-        "         *32* r[14] := r[30]\n"
-        "         *32* r[15] := r[31]\n"
-        "         *32* r[0] := r[tmp]\n"
-        "         *32* r[16] := m[r[14] + 0]\n"
-        "         *32* r[17] := m[r[14] + 4]\n"
-        "         *32* r[18] := m[r[14] + 8]\n"
-        "         *32* r[19] := m[r[14] + 12]\n"
-        "         *32* r[20] := m[r[14] + 16]\n"
-        "         *32* r[21] := m[r[14] + 20]\n"
-        "         *32* r[22] := m[r[14] + 24]\n"
-        "         *32* r[23] := m[r[14] + 28]\n"
-        "         *32* r[24] := m[r[14] + 32]\n"
-        "         *32* r[25] := m[r[14] + 36]\n"
-        "         *32* r[26] := m[r[14] + 40]\n"
-        "         *32* r[27] := m[r[14] + 44]\n"
-        "         *32* r[28] := m[r[14] + 48]\n"
-        "         *32* r[29] := m[r[14] + 52]\n"
-        "         *32* r[30] := m[r[14] + 56]\n"
-        "         *32* r[31] := m[r[14] + 60]\n"
-        "         *32* r[0] := r[tmp]\n");
+        "00010a78    0 *32* tmp := 0 + 0\n"
+        "            0 *32* r8 := r24\n"
+        "            0 *32* r9 := r25\n"
+        "            0 *32* r10 := r26\n"
+        "            0 *32* r11 := r27\n"
+        "            0 *32* r12 := r28\n"
+        "            0 *32* r13 := r29\n"
+        "            0 *32* r14 := r30\n"
+        "            0 *32* r15 := r31\n"
+        "            0 *32* r0 := tmp\n"
+        "            0 *32* r16 := m[r14 + 0]\n"
+        "            0 *32* r17 := m[r14 + 4]\n"
+        "            0 *32* r18 := m[r14 + 8]\n"
+        "            0 *32* r19 := m[r14 + 12]\n"
+        "            0 *32* r20 := m[r14 + 16]\n"
+        "            0 *32* r21 := m[r14 + 20]\n"
+        "            0 *32* r22 := m[r14 + 24]\n"
+        "            0 *32* r23 := m[r14 + 28]\n"
+        "            0 *32* r24 := m[r14 + 32]\n"
+        "            0 *32* r25 := m[r14 + 36]\n"
+        "            0 *32* r26 := m[r14 + 40]\n"
+        "            0 *32* r27 := m[r14 + 44]\n"
+        "            0 *32* r28 := m[r14 + 48]\n"
+        "            0 *32* r29 := m[r14 + 52]\n"
+        "            0 *32* r30 := m[r14 + 56]\n"
+        "            0 *32* r31 := m[r14 + 60]\n"
+        "            0 *32* r0 := tmp\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
     delete pFE;
@@ -256,7 +256,7 @@ void FrontSparcTest::testBranch() {
     std::ostringstream o1;
     inst = pFE->decodeInstruction(0x10ab0);
     inst.rtl->print(o1);
-    expected = std::string("00010ab0 JCOND 0x10ac8, condition not equals\n"
+    expected = std::string("00010ab0    0 JCOND 0x10ac8, condition not equals\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o1.str()));
 
@@ -264,7 +264,8 @@ void FrontSparcTest::testBranch() {
     std::ostringstream o2;
     inst = pFE->decodeInstruction(0x10af8);
     inst.rtl->print(o2);
-    expected = std::string("00010af8 JCOND 0x10b10, condition signed greater\n"
+    expected = std::string("00010af8    0 JCOND 0x10b10, condition "
+      "signed greater\n"
       "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o2.str()));
 
@@ -273,7 +274,7 @@ void FrontSparcTest::testBranch() {
     inst = pFE->decodeInstruction(0x10b44);
     inst.rtl->print(o3);
     expected = std::string(
-        "00010b44 JCOND 0x10b54, condition unsigned less or equals\n"
+        "00010b44    0 JCOND 0x10b54, condition unsigned less or equals\n"
         "High level: %flags\n");
     CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
@@ -307,38 +308,38 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o1;
     bb->print(o1);
     std::string expected("Call BB:\n"
-        "00010a80 *32* r[tmp] := r[14] + -120\n"
-        "         *32* m[r[14] + 0] := r[16]\n"
-        "         *32* m[r[14] + 4] := r[17]\n"
-        "         *32* m[r[14] + 8] := r[18]\n"
-        "         *32* m[r[14] + 12] := r[19]\n"
-        "         *32* m[r[14] + 16] := r[20]\n"
-        "         *32* m[r[14] + 20] := r[21]\n"
-        "         *32* m[r[14] + 24] := r[22]\n"
-        "         *32* m[r[14] + 28] := r[23]\n"
-        "         *32* m[r[14] + 32] := r[24]\n"
-        "         *32* m[r[14] + 36] := r[25]\n"
-        "         *32* m[r[14] + 40] := r[26]\n"
-        "         *32* m[r[14] + 44] := r[27]\n"
-        "         *32* m[r[14] + 48] := r[28]\n"
-        "         *32* m[r[14] + 52] := r[29]\n"
-        "         *32* m[r[14] + 56] := r[30]\n"
-        "         *32* m[r[14] + 60] := r[31]\n"
-        "         *32* r[24] := r[8]\n"
-        "         *32* r[25] := r[9]\n"
-        "         *32* r[26] := r[10]\n"
-        "         *32* r[27] := r[11]\n"
-        "         *32* r[28] := r[12]\n"
-        "         *32* r[29] := r[13]\n"
-        "         *32* r[30] := r[14]\n"
-        "         *32* r[31] := r[15]\n"
-        "         *32* r[14] := r[tmp]\n"
-        "00010a84 *32* r[16] := 70656\n"
-        "00010a88 *32* r[16] := r[16] | 808\n"
-        "00010a8c *32* r[8] := 0 | r[16]\n"
-        "00010a90 *32* r[tmp] := r[30]\n"
-        "         *32* r[9] := r[30] + -20\n"
-        "00010a90 CALL 0x21868()\n");
+        "00010a80    0 *32* tmp := r14 + -120\n"
+        "            0 *32* m[r14 + 0] := r16\n"
+        "            0 *32* m[r14 + 4] := r17\n"
+        "            0 *32* m[r14 + 8] := r18\n"
+        "            0 *32* m[r14 + 12] := r19\n"
+        "            0 *32* m[r14 + 16] := r20\n"
+        "            0 *32* m[r14 + 20] := r21\n"
+        "            0 *32* m[r14 + 24] := r22\n"
+        "            0 *32* m[r14 + 28] := r23\n"
+        "            0 *32* m[r14 + 32] := r24\n"
+        "            0 *32* m[r14 + 36] := r25\n"
+        "            0 *32* m[r14 + 40] := r26\n"
+        "            0 *32* m[r14 + 44] := r27\n"
+        "            0 *32* m[r14 + 48] := r28\n"
+        "            0 *32* m[r14 + 52] := r29\n"
+        "            0 *32* m[r14 + 56] := r30\n"
+        "            0 *32* m[r14 + 60] := r31\n"
+        "            0 *32* r24 := r8\n"
+        "            0 *32* r25 := r9\n"
+        "            0 *32* r26 := r10\n"
+        "            0 *32* r27 := r11\n"
+        "            0 *32* r28 := r12\n"
+        "            0 *32* r29 := r13\n"
+        "            0 *32* r30 := r14\n"
+        "            0 *32* r31 := r15\n"
+        "            0 *32* r14 := tmp\n"
+        "00010a84    0 *32* r16 := 70656\n"
+        "00010a88    0 *32* r16 := r16 | 808\n"
+        "00010a8c    0 *32* r8 := 0 | r16\n"
+        "00010a90    0 *32* tmp := r30\n"
+        "            0 *32* r9 := r30 + -20\n"
+        "00010a90    0 CALL 0x21868()\n");
     std::string actual(o1.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -347,10 +348,10 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o2;
     bb->print(o2);
     expected = std::string("Call BB:\n"
-        "00010a98 *32* r[8] := 0 | r[16]\n"
-        "00010a9c *32* r[tmp] := r[30]\n"
-        "         *32* r[9] := r[30] + -24\n"
-        "00010a9c CALL 0x21868()\n");
+        "00010a98    0 *32* r8 := 0 | r16\n"
+        "00010a9c    0 *32* tmp := r30\n"
+        "            0 *32* r9 := r30 + -24\n"
+        "00010a9c    0 CALL 0x21868()\n");
     actual = std::string(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -359,13 +360,13 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o3;
     bb->print(o3);
     expected = std::string("Twoway BB:\n"
-    "00010aa4 *32* r[8] := m[r[30] + -20]\n"
-    "00010aa8 *32* r[16] := 0 | 5\n"
-    "00010aac *32* r[tmp] := r[16]\n"
-    "         *32* r[0] := r[16] - r[8]\n"
-    "         *32* %flags := SUBFLAGS( r[tmp], r[8], r[0] )\n"
-    "00010ab0 *32* r[8] := 70656\n"
-    "00010ab0 JCOND 0x10ac8, condition not equals\n"
+    "00010aa4    0 *32* r8 := m[r30 + -20]\n"
+    "00010aa8    0 *32* r16 := 0 | 5\n"
+    "00010aac    0 *32* tmp := r16\n"
+    "            0 *32* r0 := r16 - r8\n"
+    "            0 *32* %flags := SUBFLAGS( tmp, r8, r0 )\n"
+    "00010ab0    0 *32* r8 := 70656\n"
+    "00010ab0    0 JCOND 0x10ac8, condition not equals\n"
     "High level: %flags\n");
     actual = std::string(o3.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -375,8 +376,8 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o4;
     bb->print(o4);
     expected = std::string("L1: Twoway BB:\n"
-        "00010ac8 *32* r[8] := 70656\n"
-        "00010ac8 JCOND 0x10ad8, condition equals\n"
+        "00010ac8    0 *32* r8 := 70656\n"
+        "00010ac8    0 JCOND 0x10ad8, condition equals\n"
         "High level: %flags\n");
     actual = std::string(o4.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -386,8 +387,8 @@ void FrontSparcTest::testDelaySlot() {
     std::ostringstream o5;
     bb->print(o5);
     expected = std::string("Call BB:\n"
-        "00010ab8 *32* r[8] := r[8] | 816\n"
-        "00010ab8 CALL 0x21874()\n");
+        "00010ab8    0 *32* r8 := r8 | 816\n"
+        "00010ab8    0 CALL 0x21874()\n");
     actual = std::string(o5.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 

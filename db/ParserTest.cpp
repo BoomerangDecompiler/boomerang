@@ -72,11 +72,18 @@ void ParserTest::testRead () {
  * OVERVIEW:        Test parsing an expression
  *============================================================================*/
 void ParserTest::testExp () {
-    std::string s("*32* r[0] := 5 + 6");
+    std::string s("*32* r0 := 5 + 6");
     Exp *e = SSLParser::parseExp(s.c_str());
     CPPUNIT_ASSERT(e);
     std::ostringstream ost;
     e->print(ost);
     CPPUNIT_ASSERT_EQUAL (s, std::string(ost.str()));
+    std::string s2 = "*32* r[0] := 5 + 6";
+    e = SSLParser::parseExp(s2.c_str());
+    CPPUNIT_ASSERT(e);
+    std::ostringstream ost2;
+    e->print(ost2);
+    // Still should print to string s, not s2
+    CPPUNIT_ASSERT_EQUAL (s, std::string(ost2.str()));
 }
 

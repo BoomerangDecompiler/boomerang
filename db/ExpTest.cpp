@@ -120,11 +120,12 @@ void ExpTest::test99 () {
  * FUNCTION:        ExpTest::testRegOf2
  * OVERVIEW:        Tests r[2], which is used in many tests. Also tests opRegOf,
  *                  and ostream::operator&(Exp*)
+ * NOTE:            r[2] prints as r2, as of June 2003
  *============================================================================*/
 void ExpTest::testRegOf2 () {
     std::ostringstream ost;
     ost << m_rof2;
-    CPPUNIT_ASSERT_EQUAL (std::string("r[2]"), std::string(ost.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("r2"), std::string(ost.str()));
 }
 
 /*==============================================================================
@@ -135,49 +136,49 @@ void ExpTest::testBinaries () {
     std::ostringstream ost1;
     Binary* b = new Binary(opPlus, m_99->clone(), m_rof2->clone());
     b->print(ost1);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 + r[2]"), std::string(ost1.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 + r2"), std::string(ost1.str()));
     delete b;
 
     std::ostringstream ost2;
     b = new Binary(opMinus, m_99->clone(), m_rof2->clone());
     b->print(ost2);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 - r[2]"), std::string(ost2.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 - r2"), std::string(ost2.str()));
     delete b;
 
     std::ostringstream ost3;
     b = new Binary(opMult, m_99->clone(), m_rof2->clone());
     b->print(ost3);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 * r[2]"), std::string(ost3.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 * r2"), std::string(ost3.str()));
     delete b;
 
     std::ostringstream ost4;
     b = new Binary(opDiv, m_99->clone(), m_rof2->clone());
     b->print(ost4);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 / r[2]"), std::string(ost4.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 / r2"), std::string(ost4.str()));
     delete b;
 
     std::ostringstream ost5;
     b = new Binary(opMults, m_99->clone(), m_rof2->clone());
     b->print(ost5);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 *! r[2]"), std::string(ost5.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 *! r2"), std::string(ost5.str()));
     delete b;
 
     std::ostringstream ost6;
     b = new Binary(opDivs, m_99->clone(), m_rof2->clone());
     b->print(ost6);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 /! r[2]"), std::string(ost6.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 /! r2"), std::string(ost6.str()));
     delete b;
 
     std::ostringstream ost7;
     b = new Binary(opMod, m_99->clone(), m_rof2->clone());
     b->print(ost7);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 % r[2]"), std::string(ost7.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 % r2"), std::string(ost7.str()));
     delete b;
 
     std::ostringstream ost8;
     b = new Binary(opMods, m_99->clone(), m_rof2->clone());
     b->print(ost8);
-    CPPUNIT_ASSERT_EQUAL (std::string("99 %! r[2]"), std::string(ost8.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("99 %! r2"), std::string(ost8.str()));
     delete b;
 }
 
@@ -201,7 +202,7 @@ void ExpTest::testUnaries () {
     std::ostringstream ost3;
     u = new Unary(opNeg, m_rof2->clone());
     u->print(ost3);
-    CPPUNIT_ASSERT_EQUAL (std::string("-r[2]"), std::string(ost3.str()));
+    CPPUNIT_ASSERT_EQUAL (std::string("-r2"), std::string(ost3.str()));
     delete u;
 
 }
@@ -211,13 +212,13 @@ void ExpTest::testUnaries () {
  *============================================================================*/
 void ExpTest::testIsAssign () {
     std::ostringstream ost;
-    // r[2] := 99
+    // r2 := 99
     AssignExp a(32, m_rof2->clone(), m_99->clone());
     a.print(ost);
-std::string expected("*32* r[2] := 99");
+std::string expected("*32* r2 := 99");
 std::string actual (ost.str());
 CPPUNIT_ASSERT_EQUAL(expected, actual);
-//    CPPUNIT_ASSERT_EQUAL (std::string("*32* r[2] := 99"), std::string(ost.str()));
+//    CPPUNIT_ASSERT_EQUAL (std::string("*32* r2 := 99"), std::string(ost.str()));
     CPPUNIT_ASSERT(a.isAssign());
 }
 
@@ -250,13 +251,13 @@ void ExpTest::testIsAfpTerm () {
  *============================================================================*/
 void ExpTest::testIsFlagCall () {
     std::ostringstream ost;
-    // FLAG addFlags(r[2] , 99)
+    // FLAG addFlags(r2 , 99)
     Binary fc(opFlagCall, new Const("addFlags"),
         new Binary(opList, m_rof2->clone(), m_99->clone()));
-    // Ordinary assign r[2] := 99
+    // Ordinary assign r2 := 99
     AssignExp as(32, m_rof2->clone(), m_99->clone());
     fc.print(ost);
-    std::string expected("addFlags( r[2], 99 )");
+    std::string expected("addFlags( r2, 99 )");
     std::string actual(ost.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     CPPUNIT_ASSERT (fc.isFlagCall());
@@ -304,7 +305,7 @@ void ExpTest::testSearchReplace1() {
     Exp* p; bool change;
     p = new Ternary(opAt, m_rof2->clone(), new Const(15), new Const(8));
     p = p->searchReplace(m_99, m_rof2, change);
-    std::string expected("r[2]@15:8");
+    std::string expected("r2@15:8");
     std::ostringstream ost;
     p->print(ost);
     std::string actual(ost.str());
@@ -337,7 +338,7 @@ void ExpTest::testSearchReplace3() {
     Const three(3);
     Exp* p = m_rof2->clone();
     p = p->searchReplaceAll(&two, &three, change);
-    std::string expected("r[3]");
+    std::string expected("r3");
     std::ostringstream ost;
     p->print(ost);
     std::string actual(ost.str());
@@ -352,7 +353,7 @@ void ExpTest::testSearchReplace4() {
     // Note recursion. OK to use the all function, since it does the search
     // first.
     p = p->searchReplaceAll(&two, m_rof2, change);
-    std::string expected("r[r[2]]");
+    std::string expected("r[r2]");
     std::ostringstream ost;
     p->print(ost);
     std::string actual(ost.str());
@@ -367,7 +368,7 @@ void ExpTest::testSearchReplace4() {
 void ExpTest::testSearch1() {
     Const two(2);
     Exp* result;
-    // Search inside r[2] for const 2
+    // Search inside r2 for const 2
     CPPUNIT_ASSERT(m_rof2->search(&two, result));
     CPPUNIT_ASSERT(*result == two);
 
@@ -376,18 +377,18 @@ void ExpTest::testSearch1() {
     CPPUNIT_ASSERT(! m_rof2->search(m_99, result));
 
     // Note: opDiv's enum has value 3
-    Binary e(opMult, m_rof2->clone(), m_99->clone());   // r[2] / 99
+    Binary e(opMult, m_rof2->clone(), m_99->clone());   // r2 / 99
     Const three(3);
     CPPUNIT_ASSERT(! e.search(&three, result));
 }
 
 void ExpTest::testSearch2() {
     // Search using wildcards
-    Binary e(opDivs, m_rof2->clone(), m_99->clone());   // r[2] /! 99
+    Binary e(opDivs, m_rof2->clone(), m_99->clone());   // r2 /! 99
     Exp* result;
     Unary search(opRegOf, new Terminal(opWild));    // r[?]
     CPPUNIT_ASSERT(e.search(&search, result));
-    CPPUNIT_ASSERT(*result == *m_rof2);             // Should be r[2]
+    CPPUNIT_ASSERT(*result == *m_rof2);             // Should be r2
 
     Const three(3);
     CPPUNIT_ASSERT(! e.search(&three, result));
@@ -396,7 +397,7 @@ void ExpTest::testSearch2() {
 
 void ExpTest::testSearch3() {
     // A more complex expression:
-    // (r[2] * 99) + (m[1000] * 4)
+    // (r2 * 99) + (m[1000] * 4)
     Exp* result;
     Binary e(opPlus, new Binary(opMult, m_rof2->clone(), m_99->clone()),
         new Binary(opMult, new Unary(opMemOf, new Const(1000)), new Const(4)));
@@ -413,7 +414,7 @@ void ExpTest::testSearch3() {
 
 void ExpTest::testSearchAll() {
     // A more complex expression:
-    // (r[2] * 99) + (r[8] * 4)
+    // (r2 * 99) + (r8 * 4)
     Unary search(opRegOf, new Terminal(opWild));    // r[?]
     std::list<Exp*> result;
     Binary e(opPlus, new Binary(opMult, m_rof2->clone(), m_99->clone()),
@@ -523,7 +524,7 @@ void ExpTest::testSimplifyArith() {
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
     delete e;
 
-    // m[(r[28] + -4) + 8]
+    // m[(r28 + -4) + 8]
     Exp* mm = new Unary(opMemOf,
         new Binary(opPlus,
             new Binary(opPlus,
@@ -533,7 +534,7 @@ void ExpTest::testSimplifyArith() {
     mm = mm->simplifyArith();
     std::ostringstream ost2;
     mm->print(ost2);
-    expected = "m[r[28] + 4]";
+    expected = "m[r28 + 4]";
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
     delete mm;
     
@@ -624,10 +625,10 @@ void ExpTest::testSimplifyBinary() {
     delete b;
 
     // Test commute
-    // 77 * r[2]
+    // 77 * r2
     b = new Binary(opMults, new Const(77), m_rof2->clone());
     b = b->simplify();
-    // r[2] * 77
+    // r2 * 77
     Binary exp(opMults, m_rof2->clone(), new Const(77));
     CPPUNIT_ASSERT(*b == exp);
 
@@ -637,7 +638,7 @@ void ExpTest::testSimplifyBinary() {
     CPPUNIT_ASSERT(*b == *m_rof2);
     delete b;
 
-    // 0 | r[2]
+    // 0 | r2
     b = new Binary(opBitOr, new Const(0), m_rof2->clone());
     b = b->simplify();
     CPPUNIT_ASSERT(*b == *m_rof2);
@@ -656,9 +657,9 @@ void ExpTest::testSimplifyBinary() {
     delete b;
 
     // Add negative constant
-    // r[2] + -99
+    // r2 + -99
     b = new Binary(opPlus, m_rof2->clone(), new Const(-99));
-    // r[2] - 99
+    // r2 - 99
     Exp* expb2 = new Binary(opMinus, m_rof2->clone(), new Const(99));
 #if OLD_WAY
     b = b->simplify();
@@ -718,7 +719,7 @@ void ExpTest::testSimplifyAddr() {
     std::ostringstream ost;
     e->print(ost);
     std::string actual(ost.str());
-    std::string expected("1000 - (r[2]@0:15)");
+    std::string expected("1000 - (r2@0:15)");
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
     // Now test at top level
@@ -923,7 +924,7 @@ void ExpTest::testClone () {
     e2->print(o1);
     c2->print(o2);
     delete e2;
-    std::string expected("*32* r[8] := r[9] + 99*16* x := y");
+    std::string expected("*32* r8 := r9 + 99*16* x := y");
     std::string a1(o1.str());
     std::string a2(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, a1); // Originals
@@ -966,7 +967,7 @@ void ExpTest::testFixSuccessor() {
 	std::ostringstream o1;
 	Exp* e = b->fixSuccessor();
 	e->print(o1);
-	std::string expected("99 - r[2]");
+	std::string expected("99 - r2");
 	std::string actual(o1.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 	delete e;
@@ -976,7 +977,7 @@ void ExpTest::testFixSuccessor() {
 	std::ostringstream o2;
 	e = u->fixSuccessor();
 	e->print(o2);
-	expected = "r[3]";
+	expected = "r3";
 	actual = o2.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 	delete e;
@@ -987,7 +988,7 @@ void ExpTest::testFixSuccessor() {
  * OVERVIEW:        Test removal of zero fill, sign extend, truncates
  *============================================================================*/
 void ExpTest::testKillFill() {
-	// r[18] + sgnex(16,32,m[r[16] + 16])
+	// r18 + sgnex(16,32,m[r16 + 16])
 	Binary e(opPlus,
 		new Unary(opRegOf, new Const(18)),
 		new Ternary(opSgnEx, new Const(16), new Const(32),
@@ -996,7 +997,7 @@ void ExpTest::testKillFill() {
 					new Unary(opRegOf, new Const(16)),
 					new Const(16)))));
 	Exp* res = e.killFill();
-	std::string expected("r[18] + m[r[16] + 16]");
+	std::string expected("r18 + m[r16 + 16]");
 	std::ostringstream ost1;
 	res->print(ost1);
 	std::string actual(ost1.str());
@@ -1011,7 +1012,7 @@ void ExpTest::testKillFill() {
                     new Const(16))));
 	// Try again but at top level
 	res = e2->killFill();
-	expected = "m[r[16] + 16]";
+	expected = "m[r16 + 16]";
 	std::ostringstream ost2;
 	res->print(ost2);
 	actual = ost2.str();
@@ -1026,7 +1027,7 @@ void ExpTest::testKillFill() {
  *============================================================================*/
 void ExpTest::testAssociativity() {
     
-    // (r[8] + m[m[r[8] + 12] + -12]) + 12
+    // (r8 + m[m[r8 + 12] + -12]) + 12
     Binary e1(opPlus,
         new Binary(opPlus,
             new Unary(opRegOf, new Const(8)),
@@ -1038,7 +1039,7 @@ void ExpTest::testAssociativity() {
                             new Const(12))),
                     new Const(-12)))),
         new Const(12));
-    // (r[8] + 12) + m[m[r[8] + 12] + -12]
+    // (r8 + 12) + m[m[r8 + 12] + -12]
     Binary e2(opPlus,
         new Binary(opPlus,
             new Unary(opRegOf, new Const(8)),
