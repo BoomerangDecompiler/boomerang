@@ -52,6 +52,7 @@ class ExpTest : public CppUnit::TestCase {
     void testSimplifyUnary();
     void testSimplifyBinary();
     void testSimplifyAddr();
+    void testSimpConstr();
 
     void testBecome();
     void testLess();

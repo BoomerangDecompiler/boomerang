@@ -56,6 +56,8 @@ MYTEST(testFixSuccessor);
     MYTEST(testSimplifyUnary);
     MYTEST(testSimplifyBinary);
     MYTEST(testSimplifyAddr);
+    MYTEST(testSimpConstr);
+
     MYTEST(testBecome);
     MYTEST(testLess);
     MYTEST(testMapOfExp);
@@ -392,7 +394,7 @@ void ExpTest::testSearchAll() {
     CPPUNIT_ASSERT(*result.back() == rof8);
 }
 /*==============================================================================
- * FUNCTION:        UtilTest::testAccumulate
+ * FUNCTION:        ExpTest::testAccumulate
  * OVERVIEW:        Test the Accumulate function
  *============================================================================*/
 void ExpTest::testAccumulate () {
@@ -440,7 +442,7 @@ void ExpTest::testAccumulate () {
 }  
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testPartitionTerms
+ * FUNCTION:        ExpTest::testPartitionTerms
  * OVERVIEW:        Test the partitionTerms function
  *============================================================================*/
 void ExpTest::testPartitionTerms() {
@@ -472,7 +474,7 @@ void ExpTest::testPartitionTerms() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testSimplifyArith
+ * FUNCTION:        ExpTest::testSimplifyArith
  * OVERVIEW:        Test the simplifyArith function
  *============================================================================*/
 void ExpTest::testSimplifyArith() {
@@ -522,7 +524,7 @@ void ExpTest::testSimplifyArith() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testSimplifyUnary
+ * FUNCTION:        ExpTest::testSimplifyUnary
  * OVERVIEW:        Test the simplifyArith function
  *============================================================================*/
 void ExpTest::testSimplifyUnary() {
@@ -559,7 +561,7 @@ void ExpTest::testSimplifyUnary() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testSimplifyBinary
+ * FUNCTION:        ExpTest::testSimplifyBinary
  * OVERVIEW:        Test the simplifyArith function
  *============================================================================*/
 void ExpTest::testSimplifyBinary() {
@@ -711,7 +713,7 @@ void ExpTest::testSimplifyBinary() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testSimplifyBinary
+ * FUNCTION:        ExpTest::testSimplifyBinary
  * OVERVIEW:        Test the simplifyArith function
  *============================================================================*/
 void ExpTest::testSimplifyAddr() {
@@ -752,7 +754,31 @@ void ExpTest::testSimplifyAddr() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testBecome
+ * FUNCTION:        ExpTest::testSimpConstr
+ * OVERVIEW:        Test the simplifyConstraint functions
+ *============================================================================*/
+void ExpTest::testSimpConstr() {
+    // (Tlocal1{16} = <int>) or (Tlocal1{16} = <alpha2*>)
+    // gets substituted into
+    // (<char*> = <int>) or (<char*> = <alpha2*>)
+    Exp* e = new Binary(opOr,
+        new Binary(opEquals,
+            new TypeVal(new PointerType(new CharType())),
+            new TypeVal(new IntegerType())),
+        new Binary(opEquals,
+            new TypeVal(new PointerType(new CharType())),
+            new TypeVal(PointerType::newPtrAlpha())));
+    e = e->simplifyConstraint();
+    std::string expected("<char*> = <alpha0*>");
+    std::ostringstream ost;
+    e->print(ost);
+    std::string actual = ost.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    delete e;
+}
+
+/*==============================================================================
+ * FUNCTION:        ExpTest::testBecome
  * OVERVIEW:        Test the becomeSubExp2 function
  *============================================================================*/
 void ExpTest::testBecome() {
@@ -785,7 +811,7 @@ void ExpTest::testBecome() {
 }
 
 /*==============================================================================
- * FUNCTION:        UtilTest::testLess
+ * FUNCTION:        ExpTest::testLess
  * OVERVIEW:        Various tests of the operator< function
  *============================================================================*/
 void ExpTest::testLess() {
@@ -819,7 +845,7 @@ void ExpTest::testLess() {
     // TypedExp later
 }
 /*==============================================================================
- * FUNCTION:        UtilTest::testMapOfExp
+ * FUNCTION:        ExpTest::testMapOfExp
  * OVERVIEW:        Test maps of Exp*s; exercises some comparison operators
  *============================================================================*/
 void ExpTest::testMapOfExp() {
