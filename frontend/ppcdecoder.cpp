@@ -54,7 +54,7 @@
 #define DIS_NZRA	(dis_RegLhs(ra))
 #define DIS_NZRB	(dis_RegLhs(rb))
 #define DIS_ADDR	(new Const(addr))
-#define DIS_RELADDR (new Const(pc + reladdr))
+#define DIS_RELADDR (new Const(reladdr - delta))
 
 // MVE: Used any more?
 #define DIS_INDEX   (new Binary(opPlus, \
@@ -381,7 +381,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               unsigned uimm = (MATCH_w_32_0 & 0xffff) /* UIMM at 0 */;
               nextPC = 4 + MATCH_p; 
               
-#line 157 "frontend/machine/ppc/decoder.m"
+#line 156 "frontend/machine/ppc/decoder.m"
               
 
               		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_UIMM);
@@ -412,7 +412,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
                 sign_extend((MATCH_w_32_0 & 0xffff) /* SIMM at 0 */, 16);
               nextPC = 4 + MATCH_p; 
               
-#line 154 "frontend/machine/ppc/decoder.m"
+#line 153 "frontend/machine/ppc/decoder.m"
               
 
               		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_SIMM);
@@ -446,9 +446,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 #line 139 "frontend/machine/ppc/decoder.m"
               
 
-              		//stmts = instantiate(pc, name, DIS_RELADDR);
+              		Exp* dest = DIS_RELADDR;
 
-              		stmts = instantiate(pc,	 "bl", DIS_RELADDR);
+              		stmts = instantiate(pc, name, dest);
 
               		CallStatement* newCall = new CallStatement;
 
@@ -458,13 +458,11 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
               		// Set the destination expression
 
-              		newCall->setDest(DIS_RELADDR);
+              		newCall->setDest(dest);
 
               		result.rtl = new RTL(pc, stmts);
 
               		result.rtl->appendStmt(newCall);
-
-              		::unused(name);	// FIXME: Needed?
 
               
 
@@ -1671,7 +1669,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     { 
       nextPC = MATCH_p; 
       
-#line 161 "frontend/machine/ppc/decoder.m"
+#line 160 "frontend/machine/ppc/decoder.m"
       
       		stmts = NULL;
 
@@ -1722,7 +1720,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
       unsigned rb = (MATCH_w_32_0 >> 11 & 0x1f) /* B at 0 */;
       nextPC = 4 + MATCH_p; 
       
-#line 151 "frontend/machine/ppc/decoder.m"
+#line 150 "frontend/machine/ppc/decoder.m"
       
 
       		stmts = instantiate(pc, name, DIS_CRFD, DIS_NZRA, DIS_NZRB);
@@ -1853,7 +1851,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
   
 }
 
-#line 166 "frontend/machine/ppc/decoder.m"
+#line 165 "frontend/machine/ppc/decoder.m"
 
 	result.numBytes = nextPC - hostPC;
 	if (result.valid && result.rtl == 0)	// Don't override higher level res
