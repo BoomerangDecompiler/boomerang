@@ -882,12 +882,18 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 		prog->decodeExtraEntrypoint(entrypoints[i]);
 	}
 
+	prog->finishDecode();
+
 	Boomerang::get()->alert_end_decode();
 
 	std::cerr << "found " << std::dec << prog->getNumUserProcs() << " procs\n";
 
-	std::cerr << "analysing...\n";
-	prog->analyse();
+	// GK: The analysis which was performed was not exactly very "analysing", and so
+	// it has been moved to prog::finishDecode, UserProc::assignProcsToCalls and
+	// UserProc::finalSimplify
+	// FIXME: add some real analysis
+	//std::cerr << "analysing...\n";
+ 	//prog->analyse();
 
 	if (generateSymbols) {
 		prog->printSymbols();

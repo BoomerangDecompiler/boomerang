@@ -128,6 +128,9 @@ public:
 
 	// Well form all the procedures/cfgs in this program
 	bool wellForm();
+	
+	// last fixes after decoding everything
+	void finishDecode();
 
 	// Analyse any decoded procedures
 	void analyse();

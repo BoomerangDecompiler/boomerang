@@ -479,6 +479,12 @@ public:
 	void	replaceExpressionsWithParameters(int depth);   // must be in SSA form
 	void	replaceExpressionsWithLocals(bool lastPass = false);
 
+	// find the procs the calls point to
+	void assignProcsToCalls();
+	
+	// perform final simplifications
+	void finalSimplify();
+	
 private:
 	void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp,
 		StatementList& stmts);

@@ -140,12 +140,10 @@ TRANSFORM_OBJS = transform/rdi.o transform/transformer.o transform/generic.o \
 FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o \
 	frontend/sparcdecoder.o frontend/pentiumdecoder.o frontend/sparcfrontend.o \
 	frontend/pentiumfrontend.o frontend/ppcdecoder.o frontend/ppcfrontend.o
-AN_OBJS = analysis/analysis.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
 LOADER_OBJS = loader/BinaryFileFactory.o
-STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${AN_OBJS} \
-    ${TYPEOBJS} ${LOADER_OBJS}
+STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS}
 
 $(LOADERDLLS): lib
 	cd loader && make
@@ -284,11 +282,6 @@ frontend/sparcdecoder.o: include/decoder.h include/rtl.h include/prog.h \
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h \
     include/frontend.h include/transformer.h include/xmlprogparser.h
-
-analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
-	include/frontend.h include/analysis.h include/exp.h
-analysis/AnalysisTest.o: include/BinaryFile.h include/analysis.h include/prog.h include/proc.h \
-	frontend/sparcfrontend.h analysis/AnalysisTest.h
 
 codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h \
     include/cfg.h include/exp.h include/proc.h include/prog.h \

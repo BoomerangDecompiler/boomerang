@@ -1113,13 +1113,11 @@ std::set<UserProc*>* UserProc::decompile()
 	// Check for indirect jumps or calls not already removed by propagation of
 	// constants
 	if (cfg->decodeIndirectJmp(this)) {
-		// There was at least one indirect jump or call found and decoded.
-		// That means that most of what has been done to this function so far
-		// is invalid. So redo everything. Very expensive!!
+		// There was at least one indirect jump or call found and decoded. That means that most of what has been
+		// done to this function so far is invalid. So redo everything. Very expensive!!
 		LOG << "=== About to restart decompilation of " << getName() <<
 			" because indirect jumps or calls have been removed\n\n";
-		Analysis a;
-		a.analyse(this);		// Get rid of this soon
+		assignProcsToCalls();
 		return decompile();	 // Restart decompiling this proc
 	}
 
@@ -1501,6 +1499,66 @@ void UserProc::fixCallRefs()
 	simplify();
 	if (VERBOSE)
 		LOG << "end fixCallRefs for " << getName() << "\n\n";
+}
+
+/*
+ * Find the procs the calls point to.
+ * To be called after decoding all procs.
+ * was in: analyis.cpp
+ */
+void UserProc::assignProcsToCalls()
+{
+	std::list<PBB>::iterator it;
+	PBB pBB = cfg->getFirstBB(it);
+	while (pBB)
+	{
+    	std::list<RTL*>* rtls = pBB->getRTLs();
+    	if (rtls == NULL)
+    		continue;
+    	for (std::list<RTL*>::iterator it2 = rtls->begin(); it2 != rtls->end(); it2++) {
+    		if (!(*it2)->isCall()) continue;
+    		CallStatement* call = (CallStatement*)(*it2)->getList().back();
+    		if (call->getDestProc() == NULL && !call->isComputed()) {
+    			Proc *p = prog->findProc(call->getFixedDest());
+    			if (p == NULL) {
+    				std::cerr << "Cannot find proc for dest " << call->getFixedDest() << " in call at "
+    					<< (*it2)->getAddress() << "\n";
+    				assert(p);
+    			}
+    			call->setDestProc(p);
+    		}
+    		call->setSigArguments();
+    	}
+
+		pBB = cfg->getNextBB(it);
+	}
+}
+
+/*
+ * Perform final simplifications
+ * was in: analyis.cpp
+ */
+void UserProc::finalSimplify()
+{
+	std::list<PBB>::iterator it;
+	PBB pBB = cfg->getFirstBB(it);
+	while (pBB)
+	{
+    	std::list<RTL*>* pRtls = pBB->getRTLs();
+    	if (pRtls == NULL)
+    		continue;
+    	std::list<RTL*>::iterator rit;
+    	for (rit = pRtls->begin(); rit != pRtls->end(); rit++) {
+    		for (int i=0; i < (*rit)->getNumStmt(); i++) {
+    			Statement* rt = (*rit)->elementAt(i);
+    			rt->simplifyAddr();
+    			// Also simplify everything; in particular, stack offsets are
+    			// often negative, so we at least canonicalise [esp + -8] to [esp-8]
+    			rt->simplify();
+    		}
+    	}
+		pBB = cfg->getNextBB(it);
+	}
 }
 
 void UserProc::addNewReturns(int depth) {
