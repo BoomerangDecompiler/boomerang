@@ -59,7 +59,7 @@ char* operStrings[] = {
     "opRotateRC",             // Rotate right through carry
     "opTargetInst",           // Target specific instruction (Unary)
 
-    "opAssign",               // Assignment
+    "opAssignExp",            // Assignment
     "opTypedExp",             // Typed expression
 	"opNamedExp",			  // Named  expression (binary, subExp1 = Const("name"), subExp2 = exp)
     "opGuard",                // Guarded expression (should be assignment)
@@ -84,6 +84,7 @@ char* operStrings[] = {
     "opParam",                // Parameter param`'
 	"opArg",				  // Used a temporary for arguments to calls
 	"opLocal",				  // Represents a local, takes a string
+    "opGlobal",               // Represents a global; takes a string
     "opExpand",               // Expandable expression
     "opTemp",                 // Temp register name
     "opSize",                 // Size override
@@ -121,7 +122,7 @@ char* operStrings[] = {
     "opIntConst",             // integer constant
     "opFltConst",             // floating point constant
     "opStrConst",             // string constant
-    "opAddrConst",            // address constant
+    //"opAddrConst",            // address constant
     "opCodeAddr",             // opAddrConst for addresses in code segment
 
 
