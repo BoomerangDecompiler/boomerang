@@ -17,48 +17,10 @@
  
 # $Revision$
 # Jun-Dec 97 - Shane: Created
-#    Dec 98 - Shawn: Added floating points
-# 05 Mar 99 - Mike: FiTOs_ etc are no longer unary operators; use itof etc
-# 09 Mar 99 - Mike: notice that sqrt is inconsistent with 386... needs work
-# 10 Mar 99 - Mike: SQRTs -> sqrt()
-# 19 Mar 99 - Mike: re-fixed bit numbers e.g. rd[30:31] -> rd[31:31]
-# 24 Mar 99 - Mike: renamed floating point flags to agree with standard names
-# 24 May 99 - Doug: Added use of r[tmp] to SAVE and RESTORE. The semantics
-#                     weren't before this as they ignored the effect of the
-#                     window change of the locations in the addition.
-#                   Added non-window version of RESTORE that only records the
-#                     ADD semantics
-# 13 Jul 99 - Mike: Added LDQF, changed floating point multiword load/stores
-#                   to not do word at a time
-# 03 Nov 99 - Mike: Fixed ANDN, ORN etc instructions
-# 19 Jan 00 - Mike: Added INTEGER and FLOAT keywords to @REGISTER section
-# 12 Jul 00 - Mike: Changed order of args to CONV_FUNCs (from, to, operand)
-#                     Also changed stores to use trunc()
-# 30 Aug 00 - Mike: Changed loads to use zfill() or sgnex()
-# 05 Sep 00 - Mike: Result of float comparison is tmpf or tmpd now
-# 06 Sep 00 - Mike: Fixed semantics of FNEG
-# 25 Sep 00 - Mike: Arg to SETFFLAGS was incorrect
-# 13 Oct 00 - Mike: DIV and DIVS semantics are 32/32 => 32 for now
-# 20 Nov 00 - Mike: Args to SETFFLAGS are the operands, not the result, now.
-#                     Therefore can use these args in a sub-like if stmt
-# 22 Nov 00 - Mike: DIV, MUL semantics are back to 64/32, but with quick
-#                     versions (Q suffix); also fixed MAX32BIT etc with "-1"
-# 30 Nov 00 - Mike: Changed some {size} to zfill etc
-# 31 Jan 01 - Mike: Removed @DEFINITION section (UQDBT only)
-# 01 Feb 01 - Nathan: Removed STDFQ (privledged) and LDQF (non-existent)
-# 01 Feb 01 - Nathan: Changed floating point op params to match .spec
-# 02 Feb 01 - Nathan: Added operand section
-# 02 Feb 01 - Nathan: Removed alt. address space instructions (priv & broken)
-# 16 Feb 01 - Nathan: Added fetch-execute cycle
-# 22 Feb 01 - Mike: LDDF now {64} (was {32})
-# 23 Feb 01 - Nathan: Fixed control-flow instructions, save, restore
-# 27 Feb 01 - Nathan: Fixed most of the alu instructions
-# 07 Mar 01 - Simon: Modified table syntax and removed |= symbol
-# 15 Mar 01 - Mike: Floating point operators now use just -f, not -fd/-fq etc
 # 30 Apr 01 - Nathan: Minor clean-up to trap instructions, changed logicals to 
 #                   use 0- rather than !
 # 21 Jun 01 - Nathan: Fixed precedence problem in LDD & STD
-
+# 26 Nov 02 - Mike: Added RETURN (V9) instruction
 
 NWINDOWS    := 8;            # Number of windows (register windows)-
                              # implementation dependent
@@ -522,6 +484,32 @@ RESTORE  rs1, reg_or_imm, rd
                         *32* %i6 := m[%sp+56]
                         *32* %i7 := m[%sp+60]
                         *32* r[rd] := r[tmp]; # repeat
+
+RETURN  addr
+                        *32* %o0 := %i0
+                        *32* %o1 := %i1
+                        *32* %o2 := %i2
+                        *32* %o3 := %i3
+                        *32* %o4 := %i4
+                        *32* %o5 := %i5
+                        *32* %o6 := %i6
+                        *32* %o7 := %i7
+                        *32* %l0 := m[%sp+0]
+                        *32* %l1 := m[%sp+4]
+                        *32* %l2 := m[%sp+8]
+                        *32* %l3 := m[%sp+12]
+                        *32* %l4 := m[%sp+16]
+                        *32* %l5 := m[%sp+20]
+                        *32* %l6 := m[%sp+24]
+                        *32* %l7 := m[%sp+28]
+                        *32* %i0 := m[%sp+32]
+                        *32* %i1 := m[%sp+36]
+                        *32* %i2 := m[%sp+40]
+                        *32* %i3 := m[%sp+44]
+                        *32* %i4 := m[%sp+48]
+                        *32* %i5 := m[%sp+52]
+                        *32* %i6 := m[%sp+56]
+                        *32* %i7 := m[%sp+60];
 
 # Jump instructions- uses COND table for correct boolean expression. 
 # Always executes delay instr. on branch
