@@ -611,12 +611,7 @@ std::ostream& LibProc::put(std::ostream& os) {
 
 Exp *LibProc::getProven(Exp *left)
 {
-    for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); 
-         it != proven.end(); it++) 
-        if (*(*it)->getSubExp1() == *left)
-            return (*it)->getSubExp2();
-    // not found, try the signature
-    // Shouldn't this only be for library functions?
+    // Just use the signature information (all we have, after all)
     return signature->getProven(left);
 }
 

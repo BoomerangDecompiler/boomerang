@@ -179,7 +179,7 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, Proc& proc);
     
-    Exp *getProven(Exp *left);
+    virtual Exp *getProven(Exp *left) = 0;
 
     // Set an equation as proven. Useful for some sorts of testing
     void setProven(Exp* fact) {proven.insert(fact);}
@@ -268,6 +268,8 @@ public:
      */
     virtual bool isAggregateUsed() {return false;}
 
+    virtual Exp* getProven(Exp* left);
+
     /*
      * Prints this procedure to an output stream.
      */
@@ -279,7 +281,7 @@ protected:
     friend class XMLProgParser;
     LibProc() : Proc() { }
 
-};
+};      // class LibProc
 
 /*==============================================================================
  * UserProc class.
@@ -652,6 +654,8 @@ public:
      */
     virtual bool isAggregateUsed() {return aggregateUsed;}
 
+    virtual Exp* getProven(Exp* left);
+
     virtual void printCallGraphXML(std::ostream &os, int depth,
                                    bool recurse = true);
     void printDecodedXML();
@@ -683,5 +687,5 @@ protected:
     UserProc() : Proc(), cfg(NULL), decoded(false), analysed(false), decompileSeen(false), decompiled(false), isRecursive(false) { }
     void setCFG(Cfg *c) { cfg = c; }
     void addDef(Exp *e) { definesSet.insert(e); }
-};      /* UserProc */
+};      // class UserProc
 #endif
