@@ -29,6 +29,7 @@ public:
         out << str << std::flush;  
         return *this; 
     }
+    virtual ~FileLogger() {};
 protected:
     std::ofstream out;
 };

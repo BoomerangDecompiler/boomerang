@@ -19,6 +19,7 @@ public:
     virtual Log &operator<<(double d);
     virtual Log &operator<<(ADDRESS a);
     virtual Log &operator<<(LocationSet *l);
+    virtual ~Log() {};
 };
 
 #endif
