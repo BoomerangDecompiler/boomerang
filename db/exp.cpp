@@ -934,7 +934,7 @@ void Unary::print(std::ostream& os, bool withUses) {
         case opNot:     case opLNot:    case opNeg: case opFNeg:
                  if (op == opNot)  os << "~";
             else if (op == opLNot) os << "L~";
-            else if (op == opFNeg) os << "~f";
+            else if (op == opFNeg) os << "~f ";
             else                   os << "-";
             p1->printr(os, withUses);
             return;
@@ -3323,8 +3323,9 @@ Exp* RefExp::fromSSA(igraph& ig) {
         std::string name = os.str();
         ;//delete this;
         UserProc *p = def ? def->getProc() : NULL;
-        if (p == NULL && subExp1->isLocation())
-            p = ((Location*)subExp1)->getProc();
+        if (p == NULL)
+            // The below handles all permutations of subscripting etc
+            p = findProc();
         if (p == NULL) {
             for (igraph::iterator it1 = ig.begin(); it1 != ig.end(); it1++)
                 if ((*it1).first->isLocation())
@@ -4058,6 +4059,19 @@ void Exp::fixLocationProc(UserProc* p) {
     FixProcVisitor fpv;
     fpv.setProc(p);
     accept(&fpv);
+}
+
+// GetProcVisitor class
+
+bool GetProcVisitor::visit(Location* l) {
+    proc = l->getProc();
+    return proc == NULL;        // Continue recursion only if failed so far
+}
+
+UserProc* Exp::findProc() {
+    GetProcVisitor gpv;
+    accept(&gpv);
+    return gpv.getProc();
 }
 
 bool SetConscripts::visit(Const* c) {

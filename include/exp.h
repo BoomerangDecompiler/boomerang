@@ -324,6 +324,7 @@ virtual Exp* simplifyConstraint() {return this;}
     // implement it for new functions
     virtual bool accept(ExpVisitor* v) = 0;
     void         fixLocationProc(UserProc* p);
+    UserProc*    findProc();
     void         setConscripts(int n);  // Set the constant subscripts
 
 };  // Class Exp
@@ -930,6 +931,18 @@ public:
     virtual bool visit(Location *e);
     // All other virtual functions inherit from ExpVisitor, i.e. they just
     // visit their children recursively
+};
+
+// This class is more or less the opposite of the above. It finds a proc by
+// visiting the whole expression if necessary
+class GetProcVisitor : public ExpVisitor {
+    UserProc* proc;         // The result (or NULL)
+
+public:
+                 GetProcVisitor() {proc = NULL;}    // Constructor
+    UserProc*    getProc() {return proc;}
+    virtual bool visit(Location *e);
+    // All others inherit and visit their children
 };
 
 // This class visits subexpressions, and if a Const, sets a new conscript
