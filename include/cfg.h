@@ -352,61 +352,11 @@ public:
 	 */
 	void simplify();
 
-#if 0
-    /*
-     * Build the set of locations that are defined by this BB as well as the set
-     * of locations that are used before definition or don't have a definition
-     * in this BB.
-     */
-    void buildUseDefSets(LocationMap& locMap, LocationFilter* filter,
-        Proc* proc);
-
-    /*
-     * Build the set of locations used before definition in the subgraph headed
-     * by this BB.
-     */
-    void buildRecursiveUseUndefSet();
-#endif
-
-#if 0
-    /*
-     * Return a reference to the liveOut set of this BB.
-     */
-    BITSET& getLiveOuts();
-
-    /*
-     * Return a set which is liveOut & !useSet
-     */
-    BITSET getLiveOutUnuseds() const;
-
-    /*
-     * Return a reference to the set of locations used before definition in the
-     * subgraph headed by this BB.
-     */
-    BITSET& getRecursiveUseUndefSet();
-#endif
 
     /*
      * Print any data flow analysis info gathered for this BB.
      */
     std::ostream& printDFAInfo(std::ostream& os);
-
-#if 0
-    /*
-     * Set the returnLoc member appropriately given the return location
-     */
-    void setReturnLoc(LocationMap& locMap, Exp* loc);
-
-    /*
-     * Return true if this node is dominated by that node
-     */
-    bool isDominatedBy(PBB pbb) { return dominators.test(pbb->m_index); }
-
-    /*
-     * Return true if the location represented by this bit is defined in this BB
-     */
-    bool isDefined(int bit);
-#endif
 
     /*
      *  given an address, returns the outedge which corresponds to that address
@@ -529,73 +479,13 @@ public:
         std::set<Statement*> &getLiveOut() { return liveout; }
         void calcUses();
 
+	/* set the return value */
+	void setReturnVal(Exp *e);
+
 protected:
         std::set<Statement*> liveout;
 
-/* others to come later for analysis purposes */
-
-#if 0
-    /*
-     * The set of dominators of this bb.
-     */
-    BITSET dominators;
-
-    /*
-     * A vector of dominators of this bb.
-     */
-    std::vector<PBB> m_dominatedBy;
-
-    /*
-     * The set of post dominators of this bb.
-     */
-    BITSET postdominators;
-
-    /*
-     * A vector of postdominators of this bb.
-     */
-    std::vector<PBB> m_postdominatedBy;
-
-    /*
-     * The set of locations that are live on entry to this BB on any inedge.
-     */
-    BITSET liveIn;
-
-    /*
-     * The set of locations that are live on exit from this BB.
-     */
-    BITSET liveOut;
-
-    /*
-     * The set of locations that are assigned to in this BB.
-     */
-    BITSET defSet;
-
-    /*
-     * The set of locations that are used in this BB.
-     */
-    BITSET useSet;
-
-    /*
-     * The set of locations that are used before being defined in this BB.
-     * Ignores the liveIn definitions.
-     */
-    BITSET useUndefSet;
-
-    /*
-     * The set of locations that are used before definition in the subgraph
-     * headed by this BB.
-     * = useUndefSet | Union(all outedge recursiveUseUndefSet & ~liveOut)
-     * (see buildRecursiveUseUndefSet())
-     */
-    BITSET recursiveUseUndefSet;
-#endif
-
-    /*
-     * If this is a CALL BB, (eventually including computed calls), this bitset
-     * has the return location determined by analyseCaller
-    * Do we want this here?
-     */
-    Exp* returnLoc;
+    Exp* m_returnVal;
 
     /*
      * This field is used to test our assumption that the
@@ -603,16 +493,7 @@ protected:
      * which entry to this BB is taken.
      */
     std::map<Exp*,Exp*> regSubs;
-    
 
-#if 0
-public:
-    /*
-     * Bernard: This data structure is used in each basic block in order
-     * to store the used/define chains for each register
-     */	 
-    BBBlock * usedDefineStruct;
-#endif
 };
 
     // A type for the ADDRESS to BB map
@@ -907,9 +788,10 @@ public:
     std::ostream& printDFAInfo(std::ostream& os);
 
     /*
-     * Set the return location for a geven procedure
+     * Set the return value for this CFG 
+     * (assumes there is only one exit bb)
      */
-    void setReturnLoc(Proc* proc, Exp* loc);
+    void setReturnVal(Exp *e);
 
     /*
      * Structures the control flow graph

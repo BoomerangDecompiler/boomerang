@@ -33,6 +33,7 @@
 #include "prog.h"
 #include "hllcode.h"
 #include "chllcode.h"
+#include "signature.h"
 
 #include <sstream>
 
@@ -577,9 +578,9 @@ void CHLLToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*
 	if (t == ':') {
 		code->appendNL(s);
 	}
-	if (t == ')') {
-		s += ' ';
-	}
+//	if (t == ')') {
+//		s += ' ';
+//	}
 }
 
 void CControlToken::appendString(std::string &s, CTok &context, std::list<CHLLToken*>::iterator &it, CHLLCode *code)
@@ -786,13 +787,17 @@ void CHLLCode::appendNL(std::string &s)
 
 void CHLLCode::toString(std::string &s)
 {
-	s = "";
+	std::ostringstream os;
+	m_proc->getSignature()->print(os);
+	os << "{\n";
+	s = os.str();
 	indent = 1;
 	CTok context = (CTok)0;
 	for (std::list<CHLLToken*>::iterator it = tokens.begin(); it != tokens.end(); it++) {
 		(*it)->setPos(s.length());
 		(*it)->appendString(s, context, it, this);	
 	}
+	s += "}\n";
 }
 
 bool CHLLCode::isLabelAt(int nCharIndex)

@@ -160,6 +160,11 @@ virtual ~BinaryFile() {}			// Virtual destructor
     // Find the end of a section, given an address in the section
     PSectionInfo GetSectionInfoByAddr(ADDRESS uEntry) const;
 
+    // returns true if the given address is in a read only section
+    bool isReadOnly(ADDRESS uEntry) { 
+        return GetSectionInfoByAddr(uEntry)->bReadOnly;
+    }
+
 // Symbol table functions
     // Lookup the address, return the name, or 0 if not found
     virtual char* SymbolByAddress(ADDRESS uNative);

@@ -66,7 +66,8 @@ BasicBlock::BasicBlock()
         m_bJumpReqd(false),
         m_iNumInEdges(0),
         m_iNumOutEdges(0),
-        m_iTraversed(false)
+        m_iTraversed(false),
+	m_returnVal(NULL)
 {
 }
 
@@ -93,6 +94,7 @@ BasicBlock::~BasicBlock()
         delete m_pRtls;
         m_pRtls = NULL;
     }
+    if (m_returnVal) delete m_returnVal;
 }
 
 
@@ -119,7 +121,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
         m_iNumInEdges(bb.m_iNumInEdges),
         m_iNumOutEdges(bb.m_iNumOutEdges),
         m_iTraversed(false),
-        returnLoc(bb.returnLoc)
+        m_returnVal(bb.m_returnVal)
 {
     setRTLs(bb.m_pRtls);
 }
@@ -324,6 +326,12 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls)
     HLCall* call = (HLCall*)*(m_pRtls->rbegin());
     if (call->getKind() == CALL_RTL)
         call->setBB(this);
+}
+
+void BasicBlock::setReturnVal(Exp *e)
+{
+    if (m_returnVal) delete m_returnVal; 
+    m_returnVal = e; 
 }
 
 /*==============================================================================
@@ -787,241 +795,6 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2)
 {
     return bb1->m_DFTlast < bb2->m_DFTlast;
 }
-
-#if 0
-/*==============================================================================
- * FUNCTION:        BasicBlock::buildDefinedSet
- * OVERVIEW:        Build the set of locations that are defined by this BB as
- *                  well as the set of locations that are used before definition
- *                  or don't have a definition in this BB.
- *                  Also initialises the liveOut set to be equal to the defined
- *                  set.
- * PARAMETERS:      locMap - a map between locations and integers
- *                  filter - a filter to restrict which locations are
- *                    considered
- *                  proc - Proc object that this BB is contained in
- * RETURNS:         <nothing>
- *============================================================================*/
-void BasicBlock::buildUseDefSets(LocationMap& locMap, LocationFilter* filter,
-    Proc* proc)
-{
-    assert(!m_bIncomplete);
-    assert(m_pRtls != NULL);
-
-    // Summarise the set of location definitions and uses for all the RTLs.
-    for (std::list<RTL*>::const_iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-    {
-        (*it)->getUseDefLocations(locMap,filter,defSet,useSet,useUndefSet,proc);
-    }
-
-    // Set the live out set to be equal to the just built defined set.
-    liveOut = defSet;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::buildLiveInOutSets
- * OVERVIEW:        Build the set of locations that are live into and out of
- *                  this basic block.
- *                  This implements the inner loop of Algorithm 10.3 given on
- *                  page 631 of "Compilers: Principles, Techniques and Tools"
- *                  (i.e the 'dragon book').
- *                  This method assumes that all definitions (recall
- *                  that we are only interested in locations that
- *                  could be parameters or retrun values) are killed
- *                  by a call.
- * PARAMETERS:      callDefines - this is the set of locations that will
- *                    be considered as defined by a call. This will
- *                    typically be only the possible return locations
- *                    and it will only be non-NULL when
- *                    analysing a procedure as a callee so that we
- *                    don't determine uses of a return location after
- *                    a call as a
- *                    use-without-defintion. If this parameter is
- *                    NULL, then we assume the enclosing procedure is
- *                    being analysed as a caller and as such a call
- *                    kills all definitions (since we are only
- *                    considering parameter and return locations).
- * RETURNS:         true if there was a change in the live out set
- *============================================================================*/
-bool BasicBlock::buildLiveInOutSets(const BITSET* callDefines /*= NULL*/)
-{
-    std::vector<PBB>::iterator it = m_InEdges.begin();
-    while (it != m_InEdges.end()) {
-
-        // Reset the live ins to empty if the predecessor is a call
-        // and we are analysing the enclosing procedure as a caller
-        if (callDefines == NULL &&
-          ((*it)->m_nodeType == CALL || (*it)->m_nodeType == COMPCALL)) {
-            // Don't reset it to empty; set it the the return location (if any)
-            liveIn = (*it)->returnLoc;
-        }
-
-        // Set liveIn to be the intersection of itself and the
-        // live outs of the current predecessor
-        liveIn = (liveIn & (*it)->liveOut);
-
-        it++;
-    }
-
-    BITSET oldOut = liveOut;
-    liveOut = defSet | liveIn;
-
-    // Add the call defs to live out if analysing as a callee
-    if ((callDefines != NULL) &&
-      ((m_nodeType == CALL) || (m_nodeType == COMPCALL)))
-        liveOut |= (*callDefines);
-
-    return liveOut != oldOut;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::buildRecursiveUseUndefSet
- * OVERVIEW:        Build the set of locations used before definition in the
- *                  subgraph headed by this BB. 
- * NOTE:            This has the word "Recursive" in it because when examining a
- *                   recursive function, there will be BBs where the answer will
- *                   depend on whether this function returns a value, and that's
- *                   what we hope to answer with this set. But recursive calls
- *                   always have parallel paths where the return value is used,
- *                   so that's why this set has the OR of all the child sets
- * PARAMETERS:      <none>
- * RETURNS:         <nothing>, but changes member recursiveUseUndefSet
- *============================================================================*/
-void BasicBlock::buildRecursiveUseUndefSet()
-{
-    // Note that "child" is used in the sense of a "child in the CFG", i.e. a
-    // successor or out-edge BB (not in the sense of being called)
-    recursiveUseUndefSet = useUndefSet;
-
-    m_iTraversed = true;
-
-    for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end();
-         it++)
-    {
-        PBB child = *it;
-        if (child->m_iTraversed == false)
-            child->buildRecursiveUseUndefSet();
-
-        // We stop considering locations used before definition after this
-        // BB if it is a call BB as a call kills all definitions.
-        // If this is not a call BB, then we add to the
-        // used-but-not-defined set all the locations of the child in
-        // the same category that are not in this BB's live out set.
-        if (m_nodeType != CALL && m_nodeType != COMPCALL)
-            recursiveUseUndefSet |= 
-                (child->recursiveUseUndefSet & ~liveOut);
-    }
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::getLiveOuts
- * OVERVIEW:        Return a reference to the liveOut set of this BB.
- * PARAMETERS:      <none>
- * RETURNS:         the set of live outs
- *============================================================================*/
-BITSET& BasicBlock::getLiveOuts()
-{
-    return liveOut;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::getLiveOutUnuseds
- * OVERVIEW:        Return a set of locations that are live but not used
- * PARAMETERS:      <none>
- * RETURNS:         the set as above
- *============================================================================*/
-BITSET BasicBlock::getLiveOutUnuseds() 
-{
-    return liveOut & ~useSet;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::getRecursiveUseUndefSet()
- * OVERVIEW:        Return a reference to the set of locations used 
- *                  before definition in the subgraph headed by this BB.
- * PARAMETERS:      <none>
- * RETURNS:         the set of locations used before definition in the subgraph
- *                  headed by this BB
- *============================================================================*/
-BITSET& BasicBlock::getRecursiveUseUndefSet()
-{
-    return recursiveUseUndefSet;
-}
-
-/*==============================================================================
- * FUNCTION:        BasicBlock::setReturnLoc
- * OVERVIEW:        Set the returnLoc BITSET appropriately, given the analysed
- *                    return location
- * NOTE:            Only makes sense if this is a CALL (or COMPCALL) BB
- * NOTE:            Do we really need this?
- * PARAMETERS:      loc: reference to the return location
- * RETURNS:         nothing
- *============================================================================*/
-void BasicBlock::setReturnLoc(Exp* loc)
-{
-    returnLoc = loc;
-}
-#endif
-
-#if 0
-/*==============================================================================
- * FUNCTION:        BasicBlock::isDefined
- * OVERVIEW:        Return true if the location represented by the given bit
- *                    is defined in this BB
- * PARAMETERS:      bit - bit representing the location to check
- * RETURNS:         True if the location is defined in this BB
- *============================================================================*/
-bool BasicBlock::isDefined(int bit)
-{
-    return defSet.test(bit);
-}
-#endif
-
-#if 0
-/*==============================================================================
- * FUNCTION:        BasicBlock::printDFAInfo
- * OVERVIEW:        Display the defined, live in and live out sets of this BB.
- * PARAMETERS:      os - the stream to use
- * RETURNS:         the given output stream
- *============================================================================*/
-std::ostream& BasicBlock::printDFAInfo(std::ostream& os) 
-{
-    assert(m_pRtls != NULL);
-
-//  os << "Basic block: " << std::hex << getLowAddr() << " .. " << getHiAddr() << std::endl;
-    os << "===================" << std::endl;
-    for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-        (*it)->print(os);
-    os << "                  defined: ";
-    locMap.printBitset(cout,defSet);
-    cout << std::endl;
-    os << "                  live-in: ";
-    locMap.printBitset(cout,liveIn);
-    cout << std::endl;
-    os << "                 live-out: ";
-    locMap.printBitset(cout,liveOut);
-    cout << std::endl;
-    os << "                     used: ";
-    locMap.printBitset(cout,useSet);
-    cout << std::endl;
-    os << "      used undefd (local): ";
-    locMap.printBitset(cout,useUndefSet);
-    cout << std::endl;
-//    os << "     used undefd (global): ";
-//    locMap.printBitset(cout,useUndefSet & ~liveIn);
-//    cout << std::endl;
-    // Note: there may be a bit of a bug with this, or at least the result as
-    // printed is confusing; when the return value has been found, then
-    // it defines the return location in the call, so the return location is
-    // live on output, so the bit is not turned on for printing!
-    // It may still be useful for calling from a debugger, so this code stays
-    // MVE: Not sure if the above is valid now that I have removed "& ~liveIn"
-    os << "used undefd (recursively): ";
-    locMap.printBitset(cout,recursiveUseUndefSet /*& ~liveIn*/);
-    cout << std::endl;
-    return os;
-}
-#endif
 
 /*==============================================================================
  * FUNCTION:        BasicBlock::getCallDest
@@ -1499,7 +1272,7 @@ void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond)
 
 			// generate a ret if this is one
 			if (m_nodeType == RET) {
-				hll.AddReturnStatement(this, NULL);
+				hll.AddReturnStatement(this, m_returnVal);
 				return;
 			}
 

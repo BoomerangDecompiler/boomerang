@@ -50,6 +50,8 @@
 #include "pentiumfrontend.h"
 #include "prog.h"
 #include "signature.h"
+#include "boomerang.h"
+#include "ansi-c-parser.h"
 
 // Check that BOOMDIR is set
 #ifndef WIN32
@@ -109,12 +111,41 @@ FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF)
 	return NULL;
 }
 
+void FrontEnd::readLibraryCatalog(const char *sPath)
+{
+    std::ifstream inf(sPath);
+    if (!inf.good())
+    {
+        std::cerr << "can't open `" << sPath << "'" << std::endl;
+        exit(1);
+    }
+
+    while (!inf.eof()) {
+        std::string sFile;
+	inf >> sFile;
+	size_t j = sFile.find('#');
+	if (j != -1)
+            sFile = sFile.substr(0, j);
+	if (sFile == "") continue;
+	std::string sPath = Boomerang::get()->getProgPath() + "signatures/" + sFile;
+        readLibrarySignatures(sPath.c_str());
+    }
+    inf.close();
+}
+
+void FrontEnd::readLibraryCatalog()
+{
+    std::string sList = Boomerang::get()->getProgPath() + "signatures/common.hs";
+    readLibraryCatalog(sList.c_str());
+    sList = Boomerang::get()->getProgPath() + "signatures/" + getFrontEndId() + ".hs";
+    readLibraryCatalog(sList.c_str());
+}
+
 Prog *FrontEnd::decode() {
     Prog *prog = new Prog;
     prog->pBF = pBF;
     prog->pFE = this;
-    std::string sPath = prog->getProgPath() + "include/common.hs";
-    readLibParams(sPath.c_str());
+    readLibraryCatalog();
 
     bool gotMain;
     ADDRESS a = getMainEntryPoint(gotMain);
@@ -151,13 +182,12 @@ DecodeResult& FrontEnd::decodeInstruction(ADDRESS pc) {
 }
 
 /*==============================================================================
- * FUNCTION:       FrontEnd::readLibParams
- * OVERVIEW:       Read the include/common.hs file, and store the results in a
- *                 map from string (function name) to signature
- * PARAMETERS:     None
+ * FUNCTION:       FrontEnd::readLibrarySignatures
+ * OVERVIEW:       Read the library signatures from a file
+ * PARAMETERS:     The file to read from
  * RETURNS:        <nothing>
  *============================================================================*/
-void FrontEnd::readLibParams(const char *sPath)
+void FrontEnd::readLibrarySignatures(const char *sPath)
 {
     std::ifstream ifs;
 
@@ -169,109 +199,27 @@ void FrontEnd::readLibParams(const char *sPath)
         exit(1);
     }
 
-    std::string fname;
-    std::string s;
+    AnsiCParser *p = new AnsiCParser(ifs, false);
+    std::string s = "-stdc-";
+    s += getFrontEndId();
+    p->yyparse(s.c_str());
 
-    while (!ifs.eof())
-    {
-        ifs >> fname;
-        if (ifs.eof()) break;
-        while (fname[0] == '#')
-        {
-            // Comment. Ignore till end of line
-            ifs.ignore(100, '\n');
-            ifs >> fname;
-            continue;
-        }
+    for (std::list<Signature*>::iterator it = p->signatures.begin();
+	 it != p->signatures.end(); it++)
+	    librarySignatures[(*it)->getName()] = *it;
 
-	Signature *sig = NULL;
-	std::string signame = fname;
-	if (signame[0] != '-') {
-	    signame = "-stdc";
-	} else {
-	    ifs >> fname;
-	    if (ifs.eof()) break;
-	}
-	signame += "-";
-	signame += getFrontEndId();
-	sig = Signature::instantiate(signame.c_str(), fname.c_str());
-	assert(sig);
-
-        if (mapLibParam.find(fname) != mapLibParam.end()) {
-
-            std::cerr << "entry for `" << fname << "' already read from `";
-            std::cerr << sPath << "'\n";
-	    *((char *)0) = 1;
-        }
-
-        mapLibParam[fname] = sig;
-
-	bool isret = true;
-
-        while (!ifs.eof()) {
-            char c;
-            ifs.get(c);
-            while (((c == ' ') || (c == '\t')) && !ifs.eof()) {
-                ifs.get(c);
-            }
-            if (c == '\n' || ifs.eof()) {
-                break;
-            }
-            // last char (c) was not white space or a newline
-            ifs.putback(c);
-            ifs >> s;
-			if (s == "")   // EOF does this
-				break;
-            Type* ty = NULL;
-            switch(s[0]) {
-                case 'i':
-                    ty = new IntegerType(32, true); break;
-                case 's':
-                    ty = new IntegerType(16, true); break;
-                case 'b':
-                    ty = new IntegerType(8, true); break;
-                case 'p':
-                    if (s[1] == 'd')
-                        ty = new PointerType(new VoidType());
-                    else
-                        // Must be pf, pointer to function
-                        ty = new PointerType(new FuncType());
-                    break;
-                case 'f':
-                    if (s[1] == 's')
-                        // fs: floating point, single precision
-                        ty = new FloatType(32);
-                    else
-                        // fd: floating point, double precision
-                        ty = new FloatType(64);
-                    break;
-                case '.':
-                    // FIX
-     		    break;
-                case 'v':
-                    ty = new VoidType(); break;
-                default:
-		    assert(false);
-            }
-	    if (isret) {
-                assert(ty);
-	        sig->setReturnType(ty);
-	        isret = false;
-	    } else if (ty) {
-	        sig->addParameter(ty);
-	    }
-        }
-    }
+    delete p;
+    ifs.close();
 }
 
 // get a library signature by name
 Signature *FrontEnd::getLibSignature(const char *name)
 {
     Signature *signature;
-    // Look up the name in the mapLibParam map
-    std::map<std::string, Signature* >::iterator it;
-    it = mapLibParam.find(name);
-    if (it == mapLibParam.end()) {
+    // Look up the name in the librarySignatures map
+    std::map<std::string, Signature*>::iterator it;
+    it = librarySignatures.find(name);
+    if (it == librarySignatures.end()) {
 #if 0
         std::cerr << "Could not find parameters for library function " << name << std::endl;
 #endif

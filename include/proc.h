@@ -392,6 +392,9 @@ public:
 	// remove internal statements
 	void removeInternalStatements();
 
+	// inline constants
+	void inlineConstants();
+
 	// get internal statements
         virtual void getInternalStatements(std::list<Statement*> &internal);
 

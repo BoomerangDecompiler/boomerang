@@ -27,6 +27,7 @@
 class Exp;
 class BasicBlock;
 typedef BasicBlock *PBB;
+class Prog;
 
 /* Statements define values that are used in expressions.
  * They are akin to "definition" in the Dragon Book.
@@ -100,6 +101,9 @@ public:
     virtual void printWithUses(std::ostream& os) = 0;
     virtual void printAsUse(std::ostream &os) = 0;
     virtual void printAsUseBy(std::ostream &os) = 0;
+
+    // inline any constants in the statement
+    virtual void inlineConstants(Prog *prog) = 0;
 
 protected:
     virtual void doReplaceUse(Statement *use) = 0;

@@ -19,6 +19,6 @@ class CTest : public CppUnit::TestCase {
     void setUp ();
     void tearDown ();
 
-    void test1();
+    void testSignature();
 };
 

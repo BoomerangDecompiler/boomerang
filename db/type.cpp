@@ -343,12 +343,12 @@ bool PointerType::operator<(const Type& other) const
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to a constant string of char
  *============================================================================*/
-std::string VoidType::getCtype() const
+const char *VoidType::getCtype() const
 {
     return "void";
 }
 
-std::string FuncType::getCtype() const
+const char *FuncType::getCtype() const
 {
     if (signature == NULL)
 	return "void (void)"; 
@@ -359,10 +359,10 @@ std::string FuncType::getCtype() const
        s += signature->getParamType(i)->getCtype(); 
     }
     s += ")";
-    return s;
+    return s.c_str();
 }
 
-std::string IntegerType::getCtype() const
+const char *IntegerType::getCtype() const
 {
     if (signd) {
         switch(size) {
@@ -385,7 +385,7 @@ std::string IntegerType::getCtype() const
     }
 }
 
-std::string FloatType::getCtype() const
+const char *FloatType::getCtype() const
 {
     switch (size) {
         case 32: return "float"; break;
@@ -394,17 +394,17 @@ std::string FloatType::getCtype() const
     }
 }
 
-std::string BooleanType::getCtype() const
+const char *BooleanType::getCtype() const
 {
      return "bool";
 }
 
-std::string CharType::getCtype() const
+const char *CharType::getCtype() const
 {
      return "char";
 }
 
-std::string PointerType::getCtype() const
+const char *PointerType::getCtype() const
 {
      std::string s = points_to->getCtype();
      s += "*";

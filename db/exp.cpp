@@ -2378,17 +2378,22 @@ void AssignExp::doReplaceUse(Statement *use)
     assert(left);
     assert(right);
     bool changeright = false;
-    subExp2 = subExp2->searchReplaceAll(left, right->clone(), changeright);
+    subExp2 = subExp2->searchReplaceAll(left, right, changeright);
     bool changeleft = false;
     if (subExp1->isMemOf()) {
-	Exp *e = subExp1->getSubExp1();
-	e = e->searchReplaceAll(left, right->clone(), changeleft);
-	if (e != subExp1->getSubExp1()) subExp1->setSubExp1(e);
+	Exp *e = subExp1->getSubExp1()->clone();
+	e = e->searchReplaceAll(left, right, changeleft);
+	subExp1->setSubExp1(e);
     }
     assert(changeright || changeleft);
     // simplify the expression
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
     simplify();
+}
+
+void AssignExp::inlineConstants(Prog *prog)
+{
+    // TODO
 }
 

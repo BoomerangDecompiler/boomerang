@@ -42,9 +42,6 @@
 #include "prog.h"           // For findProc()
 #include "util.h"
 
-// Prototype this procedure, to avoid dependency problems
-//void Proc::setReturnType(const SemStr& retLoc, const ReturnLocations& retSpec);
-
 void delete_lrtls(std::list<RTL*>* pLrtl);
 void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
     std::list<RTL*>::iterator end);
@@ -1746,4 +1743,15 @@ void Cfg::simplify()
 void Cfg::print(std::ostream &out, bool withDF) {
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
         (*it)->print(out, withDF);
+}
+
+void Cfg::setReturnVal(Exp *e)
+{
+    bool onlyOneReturnBB = true;
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
+        if ((*it)->getType() == RET) {
+		assert(onlyOneReturnBB);
+		(*it)->setReturnVal(e);
+		onlyOneReturnBB = false;
+	}
 }

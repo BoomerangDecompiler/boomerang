@@ -73,9 +73,8 @@ protected:
     BinaryFile *pBF;
     // Next numbered proc will use this
     int m_iNumberedProc;        
-    // Public map from function name (string) to signature (list of Types).
-    // One day we may named library parameters).
-    std::map<std::string, Signature* > mapLibParam;
+    // Public map from function name (string) to signature.
+    std::map<std::string, Signature*> librarySignatures;
 
 
 public:
@@ -116,7 +115,11 @@ virtual int     getInst(int addr);
     /*
      * Read library signatures from a file.
      */
-    void readLibParams(const char *sPath);
+    void readLibrarySignatures(const char *sPath);
+    // read from a catalog
+    void readLibraryCatalog(const char *sPath);
+    // read from default catalog
+    void readLibraryCatalog();
 
     // lookup a library signature by name
     Signature *getLibSignature(const char *name);

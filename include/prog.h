@@ -84,9 +84,8 @@ public:
     bool    isProcLabel (ADDRESS addr); // Checks if addr is a label or not
     // Create a dot file for all CFGs
     bool    createDotFile(const char*, bool bMainOnly = false) const;
-    void    setArgv0(const char* p);    // Set the argv[0] pointer
-    std::string& getProgPath();        // Get path to the translator executable
-    std::string  getNameNoPath() const;      // Get the program name with no path
+    // get the filename of this program
+    std::string  getNameNoPath() const;
     // This pair of functions allows the user to iterate through all the procs
     // The procs will appear in order of native address
     Proc*   getFirstProc(PROGMAP::const_iterator& it);
@@ -125,6 +124,9 @@ public:
 	// Do decompilation
 	void decompile();
 
+	// Generate code
+	void generateCode(std::ostream &os);
+
         // Print this program (primarily for debugging)
         void print(std::ostream &out, bool withDF = false);
 
@@ -137,6 +139,9 @@ public:
     // lookup a library procedure by name
     LibProc *getLibraryProc(const char *nam);
 
+    // get a string constant at a give address if appropriate
+    char *getStringConstant(ADDRESS uaddr);
+
     // Pointer to the BinaryFile object for the program, which contains the
     // program image. Created in main()
     BinaryFile* pBF;
@@ -144,15 +149,6 @@ public:
 	// Pointer to the FrontEnd object for the project, which is used to decode
 	// procedures.
 	FrontEnd *pFE;
-
-	// The filename being decompiled
-	std::string filename;
-
-	// The name of the project
-	std::string project;
-
-	// The full location of the project file
-	std::string location;
 
     // Public object that keeps track of the coverage of the source program's
     // text segment
@@ -164,11 +160,10 @@ public:
     bool        bRegisterCall;
 
 protected:
-    std::string      m_name;                 // name of the executable
-    std::list<Proc*> m_procs;                // list of procedures
+    std::string      m_name;            // name of the program
+    std::list<Proc*> m_procs;           // list of procedures
     PROGMAP     m_procLabels;           // map from address to Proc*
-    std::string      m_progPath;             // String with the path to this exec
-	ProgWatcher *m_watcher;				// used for status updates
+    ProgWatcher *m_watcher;		// used for status updates
 }; 
 
 #endif

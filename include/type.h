@@ -65,7 +65,7 @@ virtual bool    operator< (const Type& other) const = 0;// Considers sign
 virtual int     getSize() const = 0;
 
     // Format functions
-virtual std::string getCtype() const = 0;   // Get the C type, e.g. "unsigned int16"
+virtual const char *getCtype() const = 0;   // Get the C type, e.g. "unsigned int16"
 
 virtual std::string getTempName() const; // Get a temporary name for the type
 
@@ -89,7 +89,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
@@ -111,7 +111,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
@@ -135,7 +135,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
@@ -160,7 +160,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual std::string getTempName() const;
 
@@ -182,7 +182,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
@@ -202,7 +202,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
@@ -217,6 +217,7 @@ public:
 	PointerType(Type *p);
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
+        Type *getPointsTo() { return points_to; }
 
 virtual Type* clone() const;
 
@@ -226,7 +227,7 @@ virtual bool    operator< (const Type& other) const;
 
 virtual int     getSize() const;
 
-virtual std::string getCtype() const;
+virtual const char *getCtype() const;
 
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);

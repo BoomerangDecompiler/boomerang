@@ -452,6 +452,7 @@ public:
 
     void setArguments(std::vector<Exp*>& arguments); // Set call's arguments
     std::vector<Exp*>& getArguments();            // Return call's arguments
+    Type *getArgumentType(int i);
 
     Exp* getReturnLoc();                // Get location used for return value
 
@@ -517,6 +518,9 @@ public:
 	// special print functions
         virtual void printAsUse(std::ostream &os);
         virtual void printAsUseBy(std::ostream &os);
+
+	// inline any constants in the statement
+	virtual void inlineConstants(Prog *prog);
 
 	// simplify all the uses/defs in this RTL
 	virtual void simplify();

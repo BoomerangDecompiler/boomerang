@@ -49,6 +49,7 @@ private:
 public: 
     Parameter(Type *type, const char *name, bool out = false) : type(type),
    	 name(name), out(out) { }
+    ~Parameter() { delete type; }
 
     Type *getType() { return type; }
     const char *getName() { return name.c_str(); }
@@ -60,6 +61,9 @@ protected:
     std::string name;						// name of procedure
     std::vector<Parameter*> params;
     Type *rettype;
+    bool ellipsis;
+
+    void updateReturnValue(UserProc *p, Statement *stmt);
 
 public:
     Signature(const char *nam);
@@ -89,6 +93,7 @@ public:
     virtual void addParameter(const char *nam = NULL);
     virtual void addParameter(Type *type, const char *nam = NULL);
     virtual void addParameter(Parameter *param) { params.push_back(param); }
+    virtual void addEllipsis() { ellipsis = true; }
     // set the number of parameters using defaults
     virtual void setNumParams(unsigned int n);
 
@@ -99,6 +104,7 @@ public:
     virtual Type *getParamType(unsigned int n);
     // accessor for argument expressions
     virtual Exp *getArgumentExp(unsigned int n);
+    virtual bool hasEllipsis() { return ellipsis; }
 
     // analysis determines parameters / return type
     virtual void analyse(UserProc *p);

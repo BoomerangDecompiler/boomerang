@@ -42,6 +42,7 @@
 #include "exp.h"
 #include "rtl.h"
 #include "BinaryFile.h"		// For SymbolByAddress()
+#include "boomerang.h"
 
 #define DIS_ROI     (dis_RegImm(roi))
 #define DIS_ADDR    (dis_Eaddr(addr))
@@ -2817,7 +2818,8 @@ DWord SparcDecoder::getDword(ADDRESS lc)
  *============================================================================*/
 SparcDecoder::SparcDecoder() : NJMCDecoder()
 {
-  RTLDict.readSSLFile("frontend/machine/sparc/sparc.ssl");
+  std::string file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
+  RTLDict.readSSLFile(file.c_str());
 }
 
 // For now...

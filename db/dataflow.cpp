@@ -71,6 +71,9 @@ void Statement::replaceUse(Statement *use)
 
     // do the replacement
     doReplaceUse(use);
+    std::cerr << "   after: ";
+    printAsUse(std::cerr);
+    std::cerr << std::endl;
     // update statements that use this statement
     std::set<Statement*> tmp_useBy;
     for (std::set<Statement*>::iterator it = useBy.begin(); 

@@ -53,6 +53,8 @@
 #include "prog.h"
 #include "signature.h"
 #include "analysis.h"
+#include "hllcode.h"
+#include "chllcode.h"
 
 Prog::Prog()
     : pBF(NULL),
@@ -77,9 +79,6 @@ Prog::~Prog()
 Prog::Prog(const char* name)
     : pBF(NULL),
       pFE(NULL),
-      filename(""),
-      project(""),
-      location(""),
       m_name(name),
       m_watcher(NULL)   // First numbered proc will be 1, no initial watcher
 {
@@ -139,6 +138,22 @@ void Prog::decompile()
 	}
 }
 
+void Prog::generateCode(std::ostream &os)
+{
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+        CHLLCode code(p);
+        if (p->generateCode(code)) {
+            std::string str;
+            code.toString(str);
+	    os << str << std::endl;
+        }
+    }
+}
+
 // Print this program, mainly for debugging
 void Prog::print(std::ostream &out, bool withDF)
 {
@@ -178,13 +193,13 @@ void Prog::deserialize(std::istream &inf)
 
     while ((fid = loadFID(inf)) != -1) {
         switch (fid) {
-            case FID_PROJECT_NAME:
-                loadString(inf, project);
-                break;
-            case FID_FILENAME:
-                loadString(inf, filename);
-                break;
-			case FID_SYMBOL:				
+//            case FID_PROJECT_NAME:
+//                loadString(inf, project);
+//                break;
+//            case FID_FILENAME:
+//                loadString(inf, filename);
+//                break;
+	    case FID_SYMBOL:				
 				{
 					len = loadLen(inf);
                     std::streampos pos = inf.tellg();
@@ -196,7 +211,7 @@ void Prog::deserialize(std::istream &inf)
 					symbols[s] = (TypedExp*)e;
 				}
 				break;
-			case FID_FRONTEND:
+	     case FID_FRONTEND:
 				{
 					len = loadLen(inf);
                     std::streampos pos = inf.tellg();
@@ -247,10 +262,10 @@ bool Prog::serialize(std::ostream &ouf, int &len)
     saveValue(ouf, nProcs, false);
 
     // write information about Prog    
-    saveFID(ouf, FID_PROJECT_NAME);
-    saveString(ouf, project);
-    saveFID(ouf, FID_FILENAME);
-    saveString(ouf, filename);
+//    saveFID(ouf, FID_PROJECT_NAME);
+//    saveString(ouf, project);
+//    saveFID(ouf, FID_FILENAME);
+//    saveString(ouf, filename);
 
 	// write frontend like info
 	{
@@ -332,9 +347,6 @@ bool Prog::serialize(std::ostream &ouf, int &len)
 // clear the current project
 void Prog::clear()
 {   
-    project = std::string("");
-    location = std::string("");
-    filename = std::string("");
     m_name = std::string("");
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
         if (*it)
@@ -467,6 +479,13 @@ LibProc *Prog::getLibraryProc(const char *nam)
 	return (LibProc*)newProc(nam, NO_ADDRESS, true);
 }
 
+// get a string constant at a give address if appropriate
+char *Prog::getStringConstant(ADDRESS uaddr)
+{
+    if (pBF->isReadOnly(uaddr))
+        return (char *)(uaddr + pBF->getTextDelta());
+    return NULL;
+}
 
 /*==============================================================================
  * FUNCTION:    Prog::findContainingProc
@@ -502,47 +521,6 @@ bool Prog::isProcLabel (ADDRESS addr)
         return false;
     return true;
 }
-
-/*==============================================================================
- * FUNCTION:    Prog::setArgv0
- * OVERVIEW:    Accepts argv[0] from main. This makes it easier to find
- *              some files, such as common.h.
- * PARAMETERS:  Pointer to the "zeroth" parameter, i.e. argv[0], which
- *              has a complete path (though not necessarily absolute)
- *              to the executable.
- * RETURNS:     <nothing>
- *============================================================================*/
-void Prog::setArgv0(const char* p)
-{
-    m_progPath = p;
-    // Chop off after the last slash
-    size_t j = m_progPath.rfind("/");
-    if (j != m_progPath.length())
-    {
-        // Do the chop; keep the trailing slash
-        m_progPath = m_progPath.substr(0, j+1);
-    }
-    else {
-        std::cerr << "? No slash in argv[0]!" << std::endl;
-        exit(1);
-    }
-}
-
-/*==============================================================================
- * FUNCTION:       Prog::getProgPath
- * OVERVIEW:       Returns the path to the current executable. The path has a
- *                 trailing slash, or is empty (if called without a path, e.g.
- *                 "uqbtss foo" as opposed to "../uqbtss foo")
- * PARAMETERS:     None
- * PRECONDITION:   Must have called SetArgv[0] after construction of Prog object
- * RETURNS:        A pointer to argv[0]
- *============================================================================*/
-std::string& Prog::getProgPath()
-{
-    return m_progPath;
-}
-
-
 
 /*==============================================================================
  * FUNCTION:    Prog::getNameNoPath

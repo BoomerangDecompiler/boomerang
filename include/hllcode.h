@@ -35,7 +35,7 @@ protected:
 public:
 	// constructors
 	HLLCode() { }
-	HLLCode(UserProc *p) : m_proc(p), showAllLabels(true) { }
+	HLLCode(UserProc *p) : m_proc(p), showAllLabels(false) { }
 
 	// destructor
 	virtual ~HLLCode() { }

@@ -24,7 +24,7 @@ suite->addTest(new CppUnit::TestCaller<CTest> ("testC", \
 
 void CTest::registerTests(CppUnit::TestSuite* suite) {
 
-    MYTEST(test1);
+    MYTEST(testSignature);
 }
 
 int CTest::countTestCases () const
@@ -51,18 +51,24 @@ void CTest::tearDown () {
 }
 
 /*==============================================================================
- * FUNCTION:        CTest::test1
+ * FUNCTION:        CTest::testSignature
  * OVERVIEW:        Test
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void CTest::test1 () {
-    std::istringstream os("int printf(char *fmt);");
+void CTest::testSignature () {
+    std::istringstream os("int printf(char *fmt, ...);");
     AnsiCParser *p = new AnsiCParser(os, false);
-    p->yyparse();
+    p->yyparse("-stdc-pentium");
     CPPUNIT_ASSERT(p->signatures.size() == 1);
     Signature *sig = p->signatures.front();
-    CPPUNIT_ASSERT(!strcmp(sig->getName(),"printf"));
+    CPPUNIT_ASSERT(std::string(sig->getName()) == "printf");
     CPPUNIT_ASSERT(*sig->getReturnType() == IntegerType());
+    Type *t = new PointerType(new CharType());
+    CPPUNIT_ASSERT(sig->getNumParams() == 1);
+    CPPUNIT_ASSERT(*sig->getParamType(0) == *t);
+    CPPUNIT_ASSERT(std::string(sig->getParamName(0)) == "fmt");
+    CPPUNIT_ASSERT(sig->hasEllipsis());
+    delete t;
 }
 

@@ -567,6 +567,9 @@ public:
         virtual void printAsUse(std::ostream &os);
         virtual void printAsUseBy(std::ostream &os);
 
+	// inline any constants in the statement
+	virtual void inlineConstants(Prog *prog);
+
 protected:
 	virtual void doReplaceUse(Statement *use);
 };

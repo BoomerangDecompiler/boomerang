@@ -917,6 +917,13 @@ std::vector<Exp*>& HLCall::getArguments()
     return arguments;
 }
 
+Type *HLCall::getArgumentType(int i)
+{
+    assert(i < arguments.size());
+    assert(procDest);
+    return procDest->getSignature()->getParamType(i);
+}
+
 /*==============================================================================
  * FUNCTION:      HLCall::setArguments
  * OVERVIEW:      Set the arguments of this call.
@@ -1382,6 +1389,27 @@ void HLCall::printWithUses(std::ostream& os)
 {
     // TODO
     assert(false);
+}
+
+void HLCall::inlineConstants(Prog *prog)
+{
+    for (int i = 0; i < arguments.size(); i++) {
+        Type *t = getArgumentType(i);
+	// char* and a constant
+	if ((arguments[i]->isAddrConst() || arguments[i]->isIntConst()) && 
+	    t && t->isPointer() && 
+	    ((PointerType*)t)->getPointsTo()->isChar()) {
+	    char *str = 
+	        prog->getStringConstant(((Const*)arguments[i])->getAddr());
+	    if (str) {
+		 std::string s(str);
+		 while (s.find('\n') != -1)
+		     s.replace(s.find('\n'), 1, "\\n");
+	         delete arguments[i];
+		 arguments[i] = new Const(strdup(s.c_str()));
+	    }
+	}
+    }
 }
 
 /**********************************
