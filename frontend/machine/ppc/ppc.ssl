@@ -1,0 +1,203 @@
+#
+# Copyright (C) 1997, Shane Sendall
+# Copyright (C) 1998-2001, The University of Queensland
+# Copyright (C) 2001, Sun Microsystems, Inc
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+# File: sparc.ssl
+# Desc: This file contains a semantic description of the SPARC V8 processor.
+
+# --------------------------------------------------------------------------
+# SPARC RTL
+# --------------------------------------------------------------------------
+ 
+
+MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
+MAX32BIT    := 2**32 - 1;    # a word of all 1's
+MAXSIGN32   := 2**31 - 1;    # all bits except sign bit are set
+SIGN_32_NEG := -2**31;
+WORD        := 4;            # size of word in bytes (for now)
+
+ENDIANNESS BIG;
+
+# register mapping
+# normal registers have a mapping to a Cardinal
+# special register maps to -1
+
+INTEGER
+[ %g0 , %g1 , %g2 , %g3 , %g4 , %g5 , %g6 , %g7,
+  %g8 , %g9 , %g10, %g11, %g12, %g13, %g14, %g15,
+  %g16, %g17, %g18, %g19, %g20, %g21, %g22, %g23,
+  %g24, %g25, %g26, %g27, %g28, %g29, %g30, %g31 ][32] -> 0..31,
+  [%CR0, %CR1, %CR2, %CR3, %CR4, %CR5, %CR6, %CR7] [4] -> 64..71; #condition registers
+
+FLOAT
+[ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
+  %f8 , %f9 , %f10, %f11, %f12, %f13, %f14, %f15,
+  %f16, %f17, %f18, %f19, %f20, %f21, %f22, %f23,
+  %f24, %f25, %f26, %f27, %f28, %f29, %f30, %f31 ][64] -> 32..63;
+
+INTEGER
+[ %pc, %npc][32] -> -1, # control regs
+[ %XERSO, %XEROV, %XERCA] [1] -> -1,   #XER flags mapped out, most likely wrong but leave till figure out right way
+[ %LR, %CTR, %XER] [32] -> -1;   #link register, counter register
+
+
+SETXER(value) {
+	*32* %XER := value
+	*1* %XERCA := %XER@[29:29]
+	*1* %XEROV := %XER@[30:30]
+	*1* %XERSO := %XER@[31:31]
+};
+
+SETCR0(rd) {
+   *1* %CR0@[3:3] := %XERSO
+   *1* %CR0@[2:2] := [rd = 0?1:0]
+   *1* %CR0@[1:1] := [rd > 0?1:0]
+   *1* %CR0@[0:0] := [rd < 0?1:0]
+};
+
+
+
+#Arithmetic operations
+
+ADD		 rd, ra, rb						*32* rd := ra + rb;
+
+ADD.		 rd, ra, rb						*32* rd := ra + rb
+			 	 	 						SETCR0(rd);
+
+ADDE		 rd, ra, rb						*32* rd := ra + rb + %XERCA;
+
+ADDE.		 rd, ra, rb						*32* rd := ra + rb + %XERCA
+			 	 	 						SETCR0(rd);
+
+ADDI		 rd, rs, simm					*32* rd := rs + sgnex(16,32,simm);
+
+ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
+
+ADDME		 rd, ra	 						*32* rd := ra + %XERCA - 1;
+			 	 							
+ADDME.		 rd, ra	 						*32* rd := ra + %XERCA - 1
+			 	 							SETCR0(rd);
+
+ADDZE		 rd, ra							*32* rd:= ra + %XERCA;
+
+ADDZE.		 rd, ra							*32* rd:= ra + %XERCA
+			 	 							SETCR0(rd);
+
+DIVW	 	 rd, ra, rb						*32* rd := ra / rb;
+
+DIVW.	 	 rd, ra, rb						*32* rd := ra / rb
+			 	 	 						SETCR0(rd);
+
+DIVWU	 	 rd, ra, rb						*32* rd := ra / rb;
+
+DIVWU.	 	 rd, ra, rb						*32* rd := ra / rb
+			 	 	 						SETCR0(rd);
+
+MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
+
+MULLW	 	 rd, ra, rb						*32* rd := ra * rb;
+
+MULLW.	 	 rd, ra, rb						*32* rd := ra * rb
+			 	 	 						SETCR0(rd);
+
+SUBF	 	 rd, ra, rb						*32* rd := rb - ra;
+
+SUBFE	 	 rd, ra, rb						*32* rd := rb + %XERCA - ra;
+
+NOP                                    _;
+
+
+#Logical ops
+
+NEG			 rd, ra							*32* rd := 0 - ra;
+
+NEG.			 rd, ra							*32* rd := 0 - ra
+				 	 							SETCR0(rd);
+
+LOG :=  {"AND","OR"};
+LOGC :=  {"ANDC","ORC"};
+LOGCDOT :=  {"ANDC.","ORC."};
+LOGX := {"AND","OR","XOR"};
+LOGXDOT := {"AND.","OR.","XOR."};
+LOGOR := {"OR","XOR"};
+LOGORI := {"ORI","XORI"};
+LOGORIS := {"ORIS","XORIS"};
+NLOG := {"NAND","NOR","EQV"};
+LOGOP := {"&","|","^"};
+
+
+LOGX[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] rb;
+LOGXDOT[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] rb
+				   	   	   						   SETCR0(rd);
+LOGORI[IDX]	   rd, rs, uimm					   *32* rd := rs LOGOP[IDX] zfill(16,32,uimm);
+
+LOGC[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] (0 - rb - 1);
+
+LOGORIS[IDX]	   rd, rs, uimm					   *32* rd := rs LOGOP[IDX] (uimm << 16);
+
+ANDI			   rd, rs, uimm					   *32* rd := rs & zfill(16,32,uimm)
+				   	   	   						   SETCR0(rd);
+ANDIS. 			   rd, rs, uimm    				   *32* rd := rs & (uimm << 16)
+				   	   	   						   SETCR0(rd);
+
+LOGCDOT[IDX]	   rd, ra, rb					   *32* rd := ra LOGOP[IDX] (0 - rb - 1)
+				   	   	   						   SETCR0(rd);
+
+
+NLOG[IDX]	   rd, ra, rb					   *32* rd := 0 - (ra LOGOP[IDX] rb) - 1;
+
+NLOG[IDX].	   rd, ra, rb					   *32* rd := 0 - (ra LOGOP[IDX] rb) - 1
+		   	   	   						   SETCR0(rd);
+
+
+
+
+#Memory access
+
+STWU    rs, d, ra					   *32* m[ra + d] := rs
+									   *32* ra := ra + d;
+
+STW    rs, eaddr					   *32* m[eaddr] := rs;
+
+LWZ	   rd, eaddr					   *32* rd := m[eaddr];
+
+LWZX   rd, eaddr					   *32* rd := m[eaddr];
+
+
+BCLR   	   							   *32* %pc := %LR;
+
+MFSPR  rd, spr						   *32* rd := [spr >> 5 & 1?[spr >> 8 & 1?%CTR:%XER]:%LR];
+
+MTLR   rs  							   *32* %LR := rs;
+
+MTXER  rs							   SETXER(rs);
+
+MTCTR rs							   *32* %CTR := rs;
+
+BL	reloc 							   *32* %LR := %pc + 4 
+									   *32* %pc := reloc;
+
+# comparisons
+
+CMPI crfd, ra, simm					   *4* crfd := [ra < sgnex(16,32,simm)?8:[ra > sgnex(16,32,simm)?4:2]] | %XERSO;
+
+CMPLI crfd, ra, uimm				   *4* crfd := [ra <u zfill(16,32,uimm)?8:[ra >u zfill(16,32,uimm)?4:2]] | %XERSO;
+
+CMP crfd, ra, rb					   *4* crfd := [ra < rb?8:[ra > rb?4:2]] | %XERSO;
+
+CMPL crfd, ra, rb				   *4* crfd := [ra <u rb?8:[ra >u rb?4:2]] | %XERSO;
+
+
+#condition register manipulation
+
+CRLOG := {"CRAND","CROR","CRXOR"};
+CRNLOG := {"CRAND","CROR","CRXOR"};
+
+
+
