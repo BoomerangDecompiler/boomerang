@@ -1003,6 +1003,7 @@ public:
     std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
 
     void findInterferences(igraph& ig, int& tempNum);
+    void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
 };              /* Cfg */
 
 #endif

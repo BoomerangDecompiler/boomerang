@@ -2415,11 +2415,7 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
     std::list<PBB> workList;            // List of BBs still to be processed
     // Set of the same; used for quick membership test
     std::set<PBB> workSet; 
-    // This will work faster starting from the last BB, since this is
-    // a backwards flow problem
-    PBB last = m_listBB.back();
-    workList.push_back(last);
-    workSet.insert(last);
+    appendBBs(workList, workSet);
 
     bool change;
     while (workList.size()) {
@@ -2431,3 +2427,15 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
         if (change) updateWorkListRev(currBB, workList, workSet);
     }
 }
+
+void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
+    // Append my list of BBs to the worklist
+    // It will be best to do this in reverse order (more children before
+    // parents in the CFG)
+    worklist.insert(worklist.end(), m_listBB.rbegin(), m_listBB.rend());
+    // Do the same for the workset
+    std::list<PBB>::iterator it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++)
+        workset.insert(*it);
+}
+
