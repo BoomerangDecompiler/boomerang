@@ -16,8 +16,7 @@ else
 		echo Result for $1 $2: No boomerang output! >> functest.res
 	else
 		cp functest/$2/$2.c functest.c
-		# if test/$1/$2.sed exists, use it to make "known error" corrections
-		# to the source code
+		# if test/$1/$2.sed exists, use it to make "known error" corrections to the source code
 		if [[ -f test/$1/$2.sed ]]; then
 			echo Warning... $1/$2.sed used >> functest.res
 			sed -f test/$1/$2.sed functest.c > functest.tmp
