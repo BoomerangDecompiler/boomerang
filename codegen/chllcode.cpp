@@ -1010,7 +1010,7 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
         appendType(s, type);
         s << " " << name;
     }
-    if (init) {
+    if (init && !init->isNil()) {
         s << " = ";
         if (type->isArray())
             s << "{ ";
