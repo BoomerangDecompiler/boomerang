@@ -786,6 +786,36 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
     return true;
 }
 
+std::vector<Exp*> &SparcFrontEnd::getDefaultParams()
+{
+    static std::vector<Exp*> params;
+    if (params.size() == 0) {
+        // init arguments and return set to be all 31 machine registers
+        // Important: because o registers are save in i registers, and
+        // i registers have higher register numbers (e.g. i1=r25, o1=r9)
+        // it helps the prover to process higher register numbers first!
+        // But do r30 first (%i6, saves %o6, the stack pointer)
+        params.push_back(Unary::regOf(30));
+        params.push_back(Unary::regOf(31));
+        for (int r=29; r>0; r--) {
+            params.push_back(Unary::regOf(r));
+        }
+    }
+    return params;
+}
+
+std::vector<Exp*> &SparcFrontEnd::getDefaultReturns()
+{
+    static std::vector<Exp*> returns;
+    if (returns.size() == 0) {
+        returns.push_back(Unary::regOf(30));
+        returns.push_back(Unary::regOf(31));
+        for (int r=29; r>0; r--) {
+            returns.push_back(Unary::regOf(r));
+        }
+    }
+    return returns;
+}
 
 /*==============================================================================
  * FUNCTION:         SparcFrontEnd::processProc
@@ -807,21 +837,6 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
  *============================================================================*/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
   std::ofstream &os, bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
-
-    // init arguments and return set to be all 31 machine registers
-    // Was important: because o registers are save in i registers, and
-    // i registers have higher register numbers (e.g. i1=r25, o1=r9)
-    // it helps the prover to process higher register numbers first!
-    // But do r30 first (%i6, saves %o6, the stack pointer)
-    Signature *sig = proc->getSignature();
-    sig->addParameter(Unary::regOf(30));
-    sig->addReturn   (Unary::regOf(30));
-    sig->addParameter(Unary::regOf(31));
-    sig->addReturn   (Unary::regOf(31));
-    for (int r=29; r>0; r--) {
-        sig->addParameter(Unary::regOf(r));
-        sig->addReturn   (Unary::regOf(r));
-    }
 
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)

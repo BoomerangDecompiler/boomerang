@@ -1906,8 +1906,9 @@ void CallStatement::addReturn(Exp *e)
 }
 
 Exp *CallStatement::getProven(Exp *e) {
-    assert(procDest);
-    return procDest->getProven(e);
+    if (procDest)
+        return procDest->getProven(e);
+    return NULL;
 }
 
 Exp *CallStatement::substituteParams(Exp *e)
@@ -1940,8 +1941,9 @@ void CallStatement::addArgument(Exp *e)
 
 Type *CallStatement::getArgumentType(int i) {
     assert(i < (int)arguments.size());
-    assert(procDest);
-    return procDest->getSignature()->getParamType(i);
+    if (procDest)
+        return procDest->getSignature()->getParamType(i);
+    return NULL;
 }
 
 /*==============================================================================
@@ -1961,25 +1963,44 @@ void CallStatement::setArguments(std::vector<Exp*>& arguments) {
  * RETURNS:       <nothing>
  *============================================================================*/
 void CallStatement::setSigArguments() {
-    if (procDest == NULL) return;
-    int n = procDest->getSignature()->getNumParams();
+    Signature *sig;
+    if (procDest == NULL) {
+        // computed calls must have their arguments initialized to something 
+        std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
+        arguments.resize(params.size());
+        for (int i = 0; i < params.size(); i++)
+            arguments[i] = params[i]->clone();
+        std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
+        returns.resize(0);
+        for (int i = 0; i < rets.size(); i++)
+            if (!(*rets[i] == *pDest))
+                returns.push_back(rets[i]->clone());
+        return;
+    } else 
+        sig = procDest->getSignature();
+    
+    int n = sig->getNumParams();
     arguments.resize(n);
     for (int i = 0; i < n; i++) {
-        Exp *e = procDest->getSignature()->getArgumentExp(i);
+        Exp *e = sig->getArgumentExp(i);
         assert(e);
         arguments[i] = e->clone();
     }
-    if (procDest->getSignature()->hasEllipsis()) {
+    if (sig->hasEllipsis()) {
         // Just guess 4 parameters for now
         for (int i = 0; i < 4; i++)
-            arguments.push_back(procDest->getSignature()->
-                            getArgumentExp(arguments.size())->clone());
+            arguments.push_back(sig->getArgumentExp(
+                                    arguments.size())->clone());
     }
-    procDest->addCaller(this);
+    if (procDest)
+        procDest->addCaller(this);
 
     // initialize returns
-    for (int i = 0; i < procDest->getSignature()->getNumReturns(); i++)
-        returns.push_back(procDest->getSignature()->getReturnExp(i)->clone());
+    for (int i = 0; i < sig->getNumReturns(); i++)
+        returns.push_back(sig->getReturnExp(i)->clone());
+
+    if (procDest == NULL)
+        delete sig;
 }
 
 #if 0
@@ -2277,6 +2298,9 @@ bool CallStatement::usesExp(Exp *e) {
 
 // Add all locations that this call uses
 void CallStatement::addUsedLocs(LocationSet& used) {
+    if (procDest == NULL && pDest)
+        pDest->addUsedLocs(used);
+
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i]->addUsedLocs(used);
     
@@ -2302,15 +2326,13 @@ bool CallStatement::isDefinition()
 }
 
 void CallStatement::getDefinitions(LocationSet &defs) {
-    if (procDest) {
-        for (int i = 0; i < getNumReturns(); i++)
-            defs.insert(getReturnExp(i));
-    } else {
-        // TODO: computed call
-    }
+    for (int i = 0; i < getNumReturns(); i++)
+        defs.insert(getReturnExp(i));
 }
 
 void CallStatement::subscriptVar(Exp* e, Statement* def) {
+    if (procDest == NULL && pDest)
+        pDest = pDest->expSubscriptVar(e, def);
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->expSubscriptVar(e, def);
     }
@@ -2318,6 +2340,47 @@ void CallStatement::subscriptVar(Exp* e, Statement* def) {
 
 void CallStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
+    if (procDest == NULL && pDest) {
+        pDest = pDest->searchReplaceAll(from, to, change);
+        std::cerr << "propagated into call dest " << pDest << std::endl;
+        if (pDest->getOper() == opGlobal || 
+            (pDest->getOper() == opSubscript && 
+             pDest->getSubExp1()->getOper() == opGlobal)) {
+            Exp *e = pDest;
+            if (pDest->getOper() == opSubscript)
+                e = pDest->getSubExp1();
+            char *nam = ((Const*)e->getSubExp1())->getStr();
+            Proc *p = proc->getProg()->findProc(nam);
+            std::cerr << "this is a global " << nam << std::endl;
+            if (p) {
+                std::cerr << "this is a proc " << p->getName() << std::endl;
+                procDest = p;
+                Signature *sig = procDest->getSignature();
+                std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
+                std::vector<Exp*> oldargs = arguments;
+                arguments.resize(sig->getNumParams());
+                for (int i = 0; i < sig->getNumParams(); i++) {
+                    bool gotsup = false;
+                    for (int j = 0; j < params.size(); j++)
+                        if (*params[j] == *sig->getParamExp(i)) {
+                            arguments[i] = oldargs[j];
+                            gotsup = true;
+                            break;
+                        }
+                    if (!gotsup) {
+                        arguments[i] = sig->getParamExp(i)->clone();
+                        if (arguments[i]->getOper() == opMemOf) {
+                            arguments[i]->refSubExp1() = 
+                                substituteParams(arguments[i]->getSubExp1());
+                        }
+                    }
+                }
+                returns.resize(sig->getNumReturns());
+                for (int i = 0; i < sig->getNumReturns(); i++)
+                    returns[i] = sig->getReturnExp(i)->clone();
+            }
+        }
+    }
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to,
           change);
@@ -2421,8 +2484,8 @@ void CallStatement::processConstants(Prog *prog) {
         Exp *esp = Unary::regOf(28);
         if (getDestProc()->getSignature()->getNumParams() >= 1 &&
             *getDestProc()->getSignature()->getParamExp(0) == *esp) {
-            getDestProc()->removeParameter(esp);
-            getDestProc()->removeReturn(esp);
+            removeArgument(0);
+            removeReturn(esp);
         }
         delete esp;
     }

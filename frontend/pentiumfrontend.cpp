@@ -172,27 +172,6 @@ void PentiumFrontEnd::bumpRegisterAll(Exp* e, int min, int max, int delta, int m
 bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
 
-    // init arguments and return set
-    Signature *sig = pProc->getSignature();
-    sig->addParameter(Unary::regOf(24/*eax*/));
-    sig->addParameter(Unary::regOf(25/*ecx*/));
-    sig->addParameter(Unary::regOf(26/*edx*/));
-    sig->addParameter(Unary::regOf(27/*ebx*/));
-    sig->addParameter(Unary::regOf(28/*esp*/));
-    sig->addParameter(Unary::regOf(29/*ebp*/));
-    sig->addParameter(Unary::regOf(30/*esi*/));
-    sig->addParameter(Unary::regOf(31/*edi*/));
-    sig->addParameter(new Unary(opMemOf, Unary::regOf(28)));
-    sig->addReturn(Unary::regOf(24/*eax*/));
-    sig->addReturn(Unary::regOf(25/*ecx*/));
-    sig->addReturn(Unary::regOf(26/*edx*/));
-    sig->addReturn(Unary::regOf(27/*ebx*/));
-    sig->addReturn(Unary::regOf(28/*esp*/));
-    sig->addReturn(Unary::regOf(29/*ebp*/));
-    sig->addReturn(Unary::regOf(30/*esi*/));
-    sig->addReturn(Unary::regOf(31/*edi*/));
-    sig->addReturn(new Terminal(opPC));
-
     // Call the base class to do most of the work
     // Pass the address of our helperFunc function, to check for pentium
     // specific helper functions
@@ -212,6 +191,40 @@ bool PentiumFrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream 
     processFloatCode(pProc->getEntryBB(), tos, pCfg); 
 
     return true;
+}
+
+std::vector<Exp*> &PentiumFrontEnd::getDefaultParams()
+{
+    static std::vector<Exp*> params;
+    if (params.size() == 0) {
+        params.push_back(Unary::regOf(24/*eax*/));
+        params.push_back(Unary::regOf(25/*ecx*/));
+        params.push_back(Unary::regOf(26/*edx*/));
+        params.push_back(Unary::regOf(27/*ebx*/));
+        params.push_back(Unary::regOf(28/*esp*/));
+        params.push_back(Unary::regOf(29/*ebp*/));
+        params.push_back(Unary::regOf(30/*esi*/));
+        params.push_back(Unary::regOf(31/*edi*/));
+        params.push_back(new Unary(opMemOf, Unary::regOf(28)));
+    }
+    return params;
+}
+
+std::vector<Exp*> &PentiumFrontEnd::getDefaultReturns()
+{
+    static std::vector<Exp*> returns;
+    if (returns.size() == 0) {
+        returns.push_back(Unary::regOf(24/*eax*/));
+        returns.push_back(Unary::regOf(25/*ecx*/));
+        returns.push_back(Unary::regOf(26/*edx*/));
+        returns.push_back(Unary::regOf(27/*ebx*/));
+        returns.push_back(Unary::regOf(28/*esp*/));
+        returns.push_back(Unary::regOf(29/*ebp*/));
+        returns.push_back(Unary::regOf(30/*esi*/));
+        returns.push_back(Unary::regOf(31/*edi*/));
+        returns.push_back(new Terminal(opPC));
+    }
+    return returns;
 }
 
 /*==============================================================================

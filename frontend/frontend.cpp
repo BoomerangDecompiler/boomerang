@@ -324,6 +324,15 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     PBB pBB;                    // Pointer to the current basic block
     INSTTYPE type;              // Cfg type of instruction (e.g. IRET)
 
+    std::vector<Exp*> &params = getDefaultParams();
+    for (std::vector<Exp*>::iterator it = params.begin(); 
+         it != params.end(); it++)
+        pProc->getSignature()->addParameter((*it)->clone());
+    std::vector<Exp*> &returns = getDefaultReturns();
+    for (std::vector<Exp*>::iterator it = returns.begin(); 
+         it != returns.end(); it++)
+        pProc->getSignature()->addReturn((*it)->clone());
+    
     // Declare a queue of targets not yet processed yet. This has to be
     // individual to the procedure!
     TargetQueue targetQueue;

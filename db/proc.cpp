@@ -1440,8 +1440,12 @@ void Proc::removeReturn(Exp *e)
 {
     signature->removeReturn(e);
     for (std::set<CallStatement*>::iterator it = callerSet.begin();
-         it != callerSet.end(); it++)
+         it != callerSet.end(); it++) {
+            if (VERBOSE)
+                std::cerr << "removing return " << e << " from " << *it 
+                          << std::endl;
             (*it)->removeReturn(e);
+    }
 }
 
 void UserProc::removeReturn(Exp *e)
@@ -1460,8 +1464,12 @@ void Proc::removeParameter(Exp *e)
     if (n != -1) {
         signature->removeParameter(n);
         for (std::set<CallStatement*>::iterator it = callerSet.begin();
-             it != callerSet.end(); it++)
+             it != callerSet.end(); it++) {
+            if (VERBOSE)
+                std::cerr << "removing argument " << e << " in pos " << n 
+                          << " from " << *it << std::endl;
             (*it)->removeArgument(n);
+        }
     }
 }
 

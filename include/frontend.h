@@ -125,6 +125,9 @@ virtual int     getInst(int addr);
     // return a signature that matches the architecture best
     Signature *getDefaultSignature(const char *name);
 
+    virtual std::vector<Exp*> &getDefaultParams() = 0;
+    virtual std::vector<Exp*> &getDefaultReturns() = 0;
+
     /*
      * Decode all undecoded procedures and return a new program containing
      * them.

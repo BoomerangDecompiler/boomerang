@@ -41,6 +41,9 @@ virtual const char *getFrontEndId() { return "sparc"; }
      */
 virtual bool    processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool spec = false, PHELPER helperFunc = NULL);
 
+virtual std::vector<Exp*> &getDefaultParams();
+virtual std::vector<Exp*> &getDefaultReturns();
+
 virtual ADDRESS getMainEntryPoint( bool &gotMain );
 
 private:

@@ -199,11 +199,17 @@ public:
     // Get the front end id used to make this prog
     const char *getFrontEndId();
 
+    Signature *getDefaultSignature(const char *name);
+
+    std::vector<Exp*> &getDefaultParams();
+    std::vector<Exp*> &getDefaultReturns();
+
     // Returns true if this is a win32 program
     bool isWin32();
 
     // Get a global variable if possible
     const char *getGlobal(ADDRESS uaddr);
+    ADDRESS getGlobal(char *nam);
 
     // Indicate that a given global has been seen used in the program.
     void globalUsed(ADDRESS uaddr);
