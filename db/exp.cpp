@@ -67,16 +67,16 @@
 
 // Derived class constructors
 
-Const::Const(int i)		: Exp(opIntConst),	  conscript(0) {u.i = i;}
-Const::Const(QWord ll): Exp(opLongConst), conscript(0) {u.ll= ll;}
-Const::Const(double d)	: Exp(opFltConst),	  conscript(0) {u.d = d;}
-Const::Const(char* p)	: Exp(opStrConst),	  conscript(0) {u.p = p;}
-Const::Const(Proc* p)	: Exp(opFuncConst),	  conscript(0) {u.pp = p;}
+Const::Const(int i)		: Exp(opIntConst),	conscript(0), type(new VoidType) {u.i = i;}
+Const::Const(QWord ll)	: Exp(opLongConst),	conscript(0), type(new VoidType) {u.ll= ll;}
+Const::Const(double d)	: Exp(opFltConst),	conscript(0), type(new VoidType) {u.d = d;}
+Const::Const(char* p)	: Exp(opStrConst),	conscript(0), type(new VoidType) {u.p = p;}
+Const::Const(Proc* p)	: Exp(opFuncConst),	conscript(0), type(new VoidType) {u.pp = p;}
 // Note: this is bad. We need a way of constructing true unsigned constants
-Const::Const(ADDRESS a)	 : Exp(opIntConst),	  conscript(0) {u.a = a;}
+Const::Const(ADDRESS a)	: Exp(opIntConst),	conscript(0), type(new VoidType) {u.a = a;}
 
 // Copy constructor
-Const::Const(Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript;}
+Const::Const(Const& o) : Exp(o.op) {u = o.u; conscript = o.conscript; type = o.type;}
 
 Terminal::Terminal(OPER op) : Exp(op) {}
 Terminal::Terminal(Terminal& o) : Exp(o.op) {}		// Copy constructor
@@ -318,6 +318,7 @@ Exp* Ternary::becomeSubExp3() {
  * RETURNS:			Pointer to cloned object
  *============================================================================*/
 Exp* Const::clone() {
+	// Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC
 	return new Const(*this);
 }
 Exp* Terminal::clone() {
