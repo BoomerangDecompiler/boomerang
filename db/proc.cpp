@@ -1067,7 +1067,6 @@ std::set<UserProc*>* UserProc::decompile() {
     if (Boomerang::get()->maxMemDepth < maxDepth)
         maxDepth = Boomerang::get()->maxMemDepth;
     int depth;
-    bool convert = false;  // True when indirect call converted to direct
     for (depth = 0; depth <= maxDepth; depth++) {
 
         if (VERBOSE)
@@ -1145,8 +1144,8 @@ std::set<UserProc*>* UserProc::decompile() {
         }
 
         // recognising locals early prevents them from becoming returns
-// But with indirect procs in a loop, the propagaton is not yet complete
-//    replaceExpressionsWithLocals(depth == maxDepth);
+        // But with indirect procs in a loop, the propagaton is not yet complete
+        // replaceExpressionsWithLocals(depth == maxDepth);
         addNewReturns(depth);
         cfg->renameBlockVars(0, depth, true);
         printXML();
@@ -1172,15 +1171,44 @@ std::set<UserProc*>* UserProc::decompile() {
               getName() << " at depth " << depth << " ===\n\n";
         }
 
+#define RESTART_DATAFLOW 0
         // Propagate at this memory depth
-        for (int td = maxDepth; td >= 0; td--) {
-            if (VERBOSE)
-                LOG << "propagating at depth " << depth << " to depth " 
-                          << td << "\n";
-            convert |= propagateStatements(depth, td);
-            for (int i = 0; i <= depth; i++)
-                cfg->renameBlockVars(0, i, true);
-        }
+        bool convert;           // True when indirect call converted to direct
+#if RESTART_DATAFLOW
+        do {
+#endif
+            convert = false;
+            for (int td = maxDepth; td >= 0; td--) {
+                if (VERBOSE)
+                    LOG << "propagating at depth " << depth << " to depth " 
+                              << td << "\n";
+                convert |= propagateStatements(depth, td);
+                for (int i = 0; i <= depth; i++)
+                    cfg->renameBlockVars(0, i, true);
+            }
+            // If you have an indirect to direct call conversion, some
+            // propagations that were blocked by the indirect call might now
+            // succeed, and may be needed to prevent alias problems
+            if (VERBOSE && convert)
+                LOG << "\nAbout to restart propagations and dataflow at depth "
+                    << depth << " due to conversion of indirect to direct "
+                    "call(s)\n\n";
+#if RESTART_DATAFLOW
+            if (convert) {
+                depth = 0;      // Start again from depth 0
+                stripRefs();
+                LOG << "\nAfter strip:\n";
+                printToLog(true);
+                LOG << "\nDone after strip:\n\n";
+                cfg->renameBlockVars(0, 0, true);    // Initial dataflow level 0
+                LOG << "\nAfter initial rename:\n";
+                printToLog(true);
+                LOG << "\nDone after initial rename:\n\n";
+            }
+
+        } while (convert);
+#endif
+
         printXML();
         if (VERBOSE) {
             LOG << "=== After propagate for " << getName() <<
@@ -1193,12 +1221,12 @@ std::set<UserProc*>* UserProc::decompile() {
 
     // Check for indirect jumps or calls not already removed by propagation of
     // constants
-    if (cfg->decodeIndirectJmp(this) || convert) {
+    if (cfg->decodeIndirectJmp(this)) {
         // There was at least one indirect jump or call found and decoded.
         // That means that most of what has been done to this function so far
         // is invalid. So redo everything. Very expensive!!
         LOG << "=== About to restart decompilation of " << 
-          getName() << " because indirect calls have been removed\n\n";
+          getName() << " because indirect jumps or calls have been removed\n\n";
         Analysis a;
         a.analyse(this);        // Get rid of this soon
         return decompile();     // Restart decompiling this proc
@@ -1859,7 +1887,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                 Type *ty = call->getArgumentType(i);
                 Exp *e = call->getArgumentExp(i);
                 if (ty && ty->resolvesToPointer() && 
-                    e->getOper() == opIntConst) {
+                      e->getOper() == opIntConst) {
                     Type *pty = ty->asPointer()->getPointsTo();
                     if (pty->resolvesToArray() && 
                         pty->asArray()->isUnbounded()) {
@@ -1870,8 +1898,10 @@ void UserProc::replaceExpressionsWithGlobals() {
                             Type *nt = call->getArgumentType(i+1);
                             if (nt->isNamed())
                                 nt = ((NamedType*)nt)->resolvesTo();
-                            if (nt->isInteger() && call->getArgumentExp(i+1)->isIntConst())
-                                a->setLength(((Const*)call->getArgumentExp(i+1))->getInt());
+                            if (nt->isInteger() && call->getArgumentExp(i+1)->
+                              isIntConst())
+                                a->setLength(((Const*)call->
+                                  getArgumentExp(i+1))->getInt());
                         }
                     }
                     ADDRESS u = ((Const*)e)->getInt();
@@ -1881,18 +1911,21 @@ void UserProc::replaceExpressionsWithGlobals() {
                         ADDRESS r = u - prog->getGlobalAddr((char*)gloName);
                         Exp *ne;
                         if (r) {
-                            Location *g = Location::global(strdup(gloName), this);
+                            Location *g = Location::global(strdup(gloName),
+                              this);
                             ne = new Binary(opPlus,
                                 new Unary(opAddrOf, g),
                                 new Const(r));
                         } else {
                             prog->setGlobalType((char*)gloName, pty);
-                            Location *g = Location::global(strdup(gloName), this);
+                            Location *g = Location::global(strdup(gloName),
+                              this);
                             ne = new Unary(opAddrOf, g);
                         }
                         call->setArgumentExp(i, ne);
                         if (VERBOSE)
-                            LOG << "replacing argument " << e << " with " << ne << " in " << call << "\n";
+                            LOG << "replacing argument " << e << " with " <<
+                              ne << " in " << call << "\n";
                     }
                 }
             }
@@ -2076,8 +2109,6 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
         LOG << "replacing expressions with parameters at depth " << depth 
             << "\n";
 
-    int sp = signature->getStackRegister(prog);
-
     bool found = false;
     // start with calls because that's where we have the most types
     StatementList::iterator it;
@@ -2089,14 +2120,14 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
                 Exp *e = call->getArgumentExp(i);
                 if (ty && ty->resolvesToPointer() && e->getOper() != opAddrOf 
                        && e->getMemDepth() == 0) {
-                    if (e->getOper() == opMinus && 
-                        *e->getSubExp1() == *new RefExp(Location::regOf(sp), NULL) &&
-                        e->getSubExp2()->getOper() == opIntConst) {
+                    // Check for an expression representing the address of a
+                    // local variable. NOTE: machine dependent
+                    if (signature->isAddrOfStackLocal(prog, e)) {
                         // don't do locals here!
                         continue;
                     }
+
                     Location *pe = Location::memOf(e, this);
-                    pe->setProc(this);
                     Exp *ne = new Unary(opAddrOf, pe);
                     if (VERBOSE)
                         LOG << "replacing argument " << e << " with " << ne <<
@@ -3330,5 +3361,22 @@ bool UserProc::searchAndReplace(Exp *search, Exp *replace)
         ch |= s->searchAndReplace(search, replace);   
     }
     return ch; 
+}
+
+unsigned fudge(StatementList::iterator x) {
+  StatementList::iterator y = x;
+  return *(unsigned*)&y;
+}
+void UserProc::stripRefs() {
+    StatementList stmts, delList;
+    getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        if ((*it)->stripRefs())
+            delList.append(*it);
+    }
+    // Now delete the phis; somewhat inefficient at present
+    for (it = delList.begin(); it != delList.end(); it++)
+        removeStatement(*it);
 }
 
