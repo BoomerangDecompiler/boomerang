@@ -346,7 +346,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
   bool frag /* = false */, bool spec /* = false */,
   PHELPER helperFunc /* = NULL */) {
     PBB pBB;                    // Pointer to the current basic block
-    INSTTYPE type;              // Cfg type of instruction (e.g. IRET)
 
     if (!frag && !pProc->getSignature()->isPromoted()) {
         if (VERBOSE)
@@ -519,6 +518,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                 }
 
                 case STMT_CASE: {
+                    // MVE: check if this can happen any more
                     if (stmt_jump->getDest()->getOper() == opMemOf &&
                         stmt_jump->getDest()->getSubExp1()->getOper() ==
                           opIntConst && 
@@ -577,16 +577,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
                     #endif
                     {
                         // Not a switch statement
-                        std::string sKind("JUMP");
-                        if (type == I_COMPCALL) sKind = "CALL";
-                        LOG << "Warning: COMPUTED " << sKind.c_str() << " at "
-                          << uAddr << "\n";
+                        // Note: a computed call is handled as a CallStatement
+                        LOG << "Warning: COMPUTED JUMP at " << uAddr << "\n";
                     }
                     sequentialDecode = false;
                     BB_rtls = NULL;    // New RTLList for next BB
                     break;     
                 }
-
 
 
                 case STMT_BRANCH: {
