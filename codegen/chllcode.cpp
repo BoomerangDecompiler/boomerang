@@ -66,8 +66,12 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel)
         str << ' ';
 }
 
-void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
-{
+// Append code for the given expression exp to stream str
+// The current operator precedence is curPrec; add parens around this
+// expression if 
+
+void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec) {
+
     if (exp == NULL) return;
 
     Const   *c = (Const*)exp;
@@ -81,7 +85,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
         case opLongConst:
             // sprintf(s, "%lld", c->getLong());
             //strcat(str, s);
-// Check that this works!
             str << std::dec << c->getLong(); break;
         case opFltConst:
             str << c->getFlt(); break;
@@ -99,8 +102,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
                     // an array
                     break;
             }
+            openParen(str, curPrec, PREC_UNARY);
             str << "&";
-            appendExp(str, sub);
+            appendExp(str, sub, PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         }
         case opParam:
@@ -111,124 +116,154 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
             str << c->getStr();
             break;
         case opEquals:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_EQUAL);
+            appendExp(str, b->getSubExp1(), PREC_EQUAL);
             str << " == ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_EQUAL);
+            closeParen(str, curPrec, PREC_EQUAL);
             break;
         case opNotEqual:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_EQUAL);
+            appendExp(str, b->getSubExp1(), PREC_EQUAL);
             str << " != ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_EQUAL);
+            closeParen(str, curPrec, PREC_EQUAL);
             break;
         case opLess:
         case opLessUns:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL);
             str << " < ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_REL);
+            closeParen(str, curPrec, PREC_REL);
             break;
         case opGtr:
         case opGtrUns:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL);
             str << " > ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_REL);
+            closeParen(str, curPrec, PREC_REL);
             break;
         case opLessEq:
         case opLessEqUns:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL);
             str << " <= ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_REL);
+            closeParen(str, curPrec, PREC_REL);
             break;
         case opGtrEq:
         case opGtrEqUns:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_REL);
+            appendExp(str, b->getSubExp1(), PREC_REL);
             str << " >= ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_REL);
+            closeParen(str, curPrec, PREC_REL);
             break;
         case opAnd:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_LOG_AND);
+            appendExp(str, b->getSubExp1(), PREC_LOG_AND);
             str << " && ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_LOG_AND);
+            closeParen(str, curPrec, PREC_LOG_AND);
             break;
         case opOr:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_LOG_OR);
+            appendExp(str, b->getSubExp1(), PREC_LOG_OR);
             str << " || ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_LOG_OR);
+            closeParen(str, curPrec, PREC_LOG_OR);
             break;
         case opBitAnd:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_BIT_AND);
+            appendExp(str, b->getSubExp1(), PREC_BIT_AND);
             str << " & ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_BIT_AND);
+            closeParen(str, curPrec, PREC_BIT_AND);
             break;
         case opBitOr:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_BIT_IOR);
+            appendExp(str, b->getSubExp1(), PREC_BIT_IOR);
             str << " | ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_BIT_IOR);
+            closeParen(str, curPrec, PREC_BIT_IOR);
             break;
         case opBitXor:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_BIT_XOR);
+            appendExp(str, b->getSubExp1(), PREC_BIT_XOR);
             str << " ^ ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_BIT_XOR);
+            closeParen(str, curPrec, PREC_BIT_XOR);
             break;
         case opNot:
-            str << "~(";
-            appendExp(str, u->getSubExp1());
-            str << ")";
+            openParen(str, curPrec, PREC_UNARY);
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         case opLNot:
-            str << "!(";
-            appendExp(str, u->getSubExp1());
-            str << ")";
+            openParen(str, curPrec, PREC_UNARY);
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         case opNeg:
         case opFNeg:
-            str << "-(";
-            appendExp(str, u->getSubExp1());
-            str << ")";
+            openParen(str, curPrec, PREC_UNARY);
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         case opAt:
         {
-            str << "(((";
-            appendExp(str, t->getSubExp1());
-            str << ")";
+            openParen(str, curPrec, PREC_BIT_AND);
+            str << "(";         // Since >> lower than &
+            appendExp(str, t->getSubExp1(), PREC_BIT_SHIFT);
             c = dynamic_cast<Const*>(t->getSubExp3());
             assert(c && c->getOper() == opIntConst);
             int last = c->getInt();
-            str << ">>" << std::dec << last; 
+            str << ">>" << std::dec << last << ")";
             c = dynamic_cast<Const*>(t->getSubExp2());
             assert(c && c->getOper() == opIntConst);
             unsigned int mask = (1 << (c->getInt() - last + 1)) - 1;
             str << "&0x" << std::hex << mask;
+            closeParen(str, curPrec, PREC_BIT_AND);
             break;
         }
         case opPlus:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_ADD);
+            appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " + ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_ADD);
+            closeParen(str, curPrec, PREC_ADD);
             break;
         case opMinus:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_ADD);
+            appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " - ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_ADD);
+            closeParen(str, curPrec, PREC_ADD);
             break;
         case opMemOf:
+            openParen(str, curPrec, PREC_UNARY);
             if (u->getSubExp1()->getType()) {
                 Exp *l = u->getSubExp1();
                 Type *ty = l->getType();
                 if (ty->isPointer()) {
                     str << "*";
-                    appendExp(str, l);
+                    appendExp(str, l, PREC_UNARY);
+                    closeParen(str, curPrec, PREC_UNARY);
                     break;
                 }
                 str << "*(";
                 appendType(str, ty);
-                str << "*)(";
-                appendExp(str, l);
-                str << ")";
+                str << "*)";
+                openParen(str, curPrec, PREC_UNARY);
+                appendExp(str, l, PREC_UNARY);
+                closeParen(str, curPrec, PREC_UNARY);
                 break;
             }
-            str << "*(int*)(";
-            appendExp(str, u->getSubExp1());
-            str << ")";
+            str << "*(int*)";
+            appendExp(str, u->getSubExp1(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         case opRegOf:
             {
@@ -245,7 +280,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
                 else {
 // What is this doing in the back end???
                     str << "r[";
-                    appendExp(str, u->getSubExp1());
+                    appendExp(str, u->getSubExp1(), PREC_NONE);
                     str << "]";
                 }
             }
@@ -255,91 +290,112 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
 // Doesn't this need a name as well?
             break;
         case opItof:
-            str << "(float)(";
-            appendExp(str, t->getSubExp3());
-            str << ")";
+            str << "(float)";
+            openParen(str, curPrec, PREC_UNARY);
+            appendExp(str, t->getSubExp3(), PREC_UNARY);
+            closeParen(str, curPrec, PREC_UNARY);
             break;
         case opFsize:
    // needs work!
-            appendExp(str, t->getSubExp3());
+            appendExp(str, t->getSubExp3(), curPrec);
             break;
         case opMult:
         case opMults:       // FIXME: check types
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_MULT);
+            appendExp(str, b->getSubExp1(), PREC_MULT);
             str << " * ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_MULT);
+            closeParen(str, curPrec, PREC_MULT);
             break;
         case opDiv:
         case opDivs:        // FIXME: check types
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_MULT);
+            appendExp(str, b->getSubExp1(), PREC_MULT);
             str << " / ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_MULT);
+            closeParen(str, curPrec, PREC_MULT);
             break;
         case opMod:
         case opMods:        // Fixme: check types
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_MULT);
+            appendExp(str, b->getSubExp1(), PREC_MULT);
             str << " % ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_MULT);
+            closeParen(str, curPrec, PREC_MULT);
             break;
         case opShiftL:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_BIT_SHIFT);
+            appendExp(str, b->getSubExp1(), PREC_BIT_SHIFT);
             str << " << ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_BIT_SHIFT);
+            closeParen(str, curPrec, PREC_BIT_SHIFT);
             break;
         case opShiftR:
         case opShiftRA:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_BIT_SHIFT);
+            appendExp(str, b->getSubExp1(), PREC_BIT_SHIFT);
             str << " >> ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_BIT_SHIFT);
+            closeParen(str, curPrec, PREC_BIT_SHIFT);
             break;
         case opTern:
-            appendExp(str, t->getSubExp1());
+            openParen(str, curPrec, PREC_COND);
+            appendExp(str, t->getSubExp1(), PREC_COND);
             str << " ? ";
-            appendExp(str, t->getSubExp2());
+            appendExp(str, t->getSubExp2(), PREC_COND);
             str << " : ";
-            appendExp(str, t->getSubExp3());
+            appendExp(str, t->getSubExp3(), PREC_COND);
+            closeParen(str, curPrec, PREC_COND);
             break;
         case opFPlus:
         case opFPlusd:
         case opFPlusq:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_ADD);
+            appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " + ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_ADD);
+            openParen(str, curPrec, PREC_ADD);
             break;
         case opFMinus:
         case opFMinusd:
         case opFMinusq:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_ADD);
+            appendExp(str, b->getSubExp1(), PREC_ADD);
             str << " - ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_ADD);
+            openParen(str, curPrec, PREC_ADD);
             break;
         case opFMult:
         case opFMultd:
         case opFMultq:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_MULT);
+            appendExp(str, b->getSubExp1(), PREC_MULT);
             str << " * ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_MULT);
+            closeParen(str, curPrec, PREC_MULT);
             break;
         case opFDiv:
         case opFDivd:
         case opFDivq:
-            appendExp(str, b->getSubExp1());
+            openParen(str, curPrec, PREC_MULT);
+            appendExp(str, b->getSubExp1(), PREC_MULT);
             str << " / ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_MULT);
+            closeParen(str, curPrec, PREC_MULT);
             break;
         case opFround:
             str << "fround(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opFtrunc:
             str << "ftrunc(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opFabs:
             str << "fabs(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opFMultsd:
@@ -384,7 +440,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
                 Binary *l = (Binary*)b->getSubExp2();
                 for (; l && l->getOper() == opList; 
                      l = (Binary*)l->getSubExp2()) {
-                    appendExp(str, l->getSubExp1());
+                    appendExp(str, l->getSubExp1(), PREC_NONE);
                     if (l->getSubExp2()->getOper() == opList)
                         str << ", ";
                 }
@@ -403,39 +459,40 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
             //  ((Const*)t->getSubExp2())->getInt());
             //strcat(str, s); */
             str << "(";
-            appendExp(str, t->getSubExp3());
+            appendExp(str, t->getSubExp3(), PREC_NONE);
             str << ")";
             break;
         case opTypedExp:
             if (u->getSubExp1()->getOper() == opTypedExp &&
                 *((TypedExp*)u)->getType() ==
                 *((TypedExp*)u->getSubExp1())->getType()) {
-                appendExp(str, u->getSubExp1());
+                appendExp(str, u->getSubExp1(), curPrec);
             } else if (u->getSubExp1()->getOper() == opMemOf) {
                 str << "*(";
                 appendType(str, ((TypedExp*)u)->getType());
                 str << "*)(";
-                appendExp(str, u->getSubExp1()->getSubExp1());
+                appendExp(str, u->getSubExp1()->getSubExp1(), PREC_NONE);
                 str << ")";
             } else {
                 str << "(";
                 appendType(str, ((TypedExp*)u)->getType());
-                str << ")(";
-                appendExp(str, u->getSubExp1());
                 str << ")";
+                openParen(str, curPrec, PREC_UNARY);
+                appendExp(str, u->getSubExp1(), PREC_UNARY);
+                closeParen(str, curPrec, PREC_UNARY);
             }
             break;
         case opSgnEx: {
             str << "/* opSgnEx */ (int) ";
             Exp* s = t->getSubExp3();
-            appendExp(str, s);
+            appendExp(str, s, curPrec);
             break;
         }
         case opTruncu:
         case opTruncs: {
             str << "/* opTruncs/u */ (int) ";
             Exp* s = t->getSubExp3();
-            appendExp(str, s);
+            appendExp(str, s, curPrec);
             break;
         }
         case opMachFtr: {
@@ -453,43 +510,43 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
             str << "/* Fflags() */ "; break;
         case opPow:
             str << "pow(";
-            appendExp(str, b->getSubExp1());
+            appendExp(str, b->getSubExp1(), PREC_COMMA);
             str << ", ";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_COMMA);
             str << ")";
             break;
         case opLog2:
             str << "log2(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opLog10:
             str << "log10(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opSin:
             str << "sin(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opCos:
             str << "cos(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opTan:
             str << "tan(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opArcTan:
             str << "atan(";
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), PREC_NONE);
             str << ")";
             break;
         case opSubscript:
-            appendExp(str, u->getSubExp1());
+            appendExp(str, u->getSubExp1(), curPrec);
             std::cerr << "subscript in code generation of proc " <<
               m_proc->getName() << " exp (without subscript): " << str.str().c_str()
                 << "\n";
@@ -507,23 +564,21 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp)
                 // local11.lhHeight (where local11 is a register)
                 //assert(ty->resolvesToCompound());
                 if (b->getSubExp1()->getOper() == opMemOf) {
-                    appendExp(str, b->getSubExp1()->getSubExp1());
+                    appendExp(str, b->getSubExp1()->getSubExp1(), PREC_PRIM);
                     str << "->";
                 } else {
-                    appendExp(str, b->getSubExp1());
+                    appendExp(str, b->getSubExp1(), PREC_PRIM);
                     str << ".";
                 }
                 str << ((Const*)b->getSubExp2())->getStr();
             }
             break;
         case opArraySubscript:
-            if (b->getSubExp1()->getOper() == opMemOf)
-                str << "(";
-            appendExp(str, b->getSubExp1());
-            if (b->getSubExp1()->getOper() == opMemOf)
-                str << ")";
+            openParen(str, curPrec, PREC_PRIM);
+            appendExp(str, b->getSubExp1(), PREC_PRIM);
+            closeParen(str, curPrec, PREC_PRIM);
             str << "[";
-            appendExp(str, b->getSubExp2());
+            appendExp(str, b->getSubExp2(), PREC_PRIM);
             str << "]";
             break;
         default:
@@ -560,7 +615,7 @@ void CHLLCode::AddPretestedLoopHeader(int indLevel, Exp *cond)
     std::ostringstream s;
     indent(s, indLevel);
     s << "while (";
-    appendExp(s, cond);
+    appendExp(s, cond, PREC_NONE);
     s << ") {";
     // Note: removing the strdup() causes weird problems.
     // Looks to me that it should work (with no real operator delete(),
@@ -605,7 +660,7 @@ void CHLLCode::AddPosttestedLoopEnd(int indLevel, Exp *cond)
     std::ostringstream s;
     indent(s, indLevel);
     s << "} while (";
-    appendExp(s, cond);
+    appendExp(s, cond, PREC_NONE);
     s << ");";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -615,7 +670,7 @@ void CHLLCode::AddCaseCondHeader(int indLevel, Exp *cond)
     std::ostringstream s;
     indent(s, indLevel);
     s << "switch(";
-    appendExp(s, cond);
+    appendExp(s, cond, PREC_NONE);
     s << ") {";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -625,7 +680,7 @@ void CHLLCode::AddCaseCondOption(int indLevel, Exp *opt)
     std::ostringstream s;
     indent(s, indLevel);
     s << "case ";
-    appendExp(s, opt);
+    appendExp(s, opt, PREC_NONE);
     s << ":";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -659,7 +714,7 @@ void CHLLCode::AddIfCondHeader(int indLevel, Exp *cond)
     std::ostringstream s;
     indent(s, indLevel);
     s << "if (";
-    appendExp(s, cond);
+    appendExp(s, cond, PREC_NONE);
     s << ") {";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -677,7 +732,7 @@ void CHLLCode::AddIfElseCondHeader(int indLevel, Exp *cond)
     std::ostringstream s;
     indent(s, indLevel);
     s << "if (";
-    appendExp(s, cond);
+    appendExp(s, cond, PREC_NONE);
     s << ") {";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -747,14 +802,18 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn)
     std::ostringstream s;
     indent(s, indLevel);
     if (asgn->getLeft()->getOper() == opMemOf && asgn->getSize() != 32) 
-        appendExp(s, new TypedExp(new IntegerType(asgn->getSize()), asgn->getLeft()));
+        appendExp(s,
+            new TypedExp(
+                new IntegerType(asgn->getSize()),
+                asgn->getLeft()), PREC_ASSIGN);
     else if (asgn->getLeft()->getOper() == opGlobal &&
              ((Location*)asgn->getLeft())->getType()->isArray())
-        appendExp(s, new Binary(opArraySubscript, asgn->getLeft(), new Const(0)));
+        appendExp(s, new Binary(opArraySubscript, asgn->getLeft(),
+            new Const(0)), PREC_ASSIGN);
     else
-        appendExp(s, asgn->getLeft());
+        appendExp(s, asgn->getLeft(), PREC_ASSIGN);
     s << " = ";
-    appendExp(s, asgn->getRight());
+    appendExp(s, asgn->getRight(), PREC_ASSIGN);
     s << ";";
     lines.push_back(strdup(s.str().c_str()));
 }
@@ -766,7 +825,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
     indent(s, indLevel);
     if (defs.size() >= 1) {
         LocationSet::iterator it = defs.begin();
-        appendExp(s, (Exp*)*it);
+        appendExp(s, (Exp*)*it, PREC_ASSIGN);
         s << " = ";
         defs.remove((Exp*)*it);
     }
@@ -783,7 +842,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
             }
         }
         if (ok)
-            appendExp(s, args[i]);
+            appendExp(s, args[i], PREC_COMMA);
         if (i < args.size() - 1) s << ", ";
     }
     s << ");";
@@ -792,7 +851,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
         s << " // OUT: ";
     }
     for (; it != defs.end(); it++) {
-        appendExp(s, *it);
+        appendExp(s, *it, PREC_COMMA);
         s << ", ";
     }
     std::string str = s.str();  // Copy the whole string
@@ -810,10 +869,10 @@ void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp,
     std::ostringstream s;
     indent(s, indLevel);
     s << "(*";
-    appendExp(s, exp);
+    appendExp(s, exp, PREC_NONE);
     s << ")(";
     for (unsigned int i = 0; i < args.size(); i++) {
-        appendExp(s, args[i]);
+        appendExp(s, args[i], PREC_COMMA);
         if (i < args.size() - 1) s << ", ";
     }
     s << ");";
@@ -828,7 +887,7 @@ void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns)
     s << "return";
     if (returns.size() >= 1) {
         s << " ";
-        appendExp(s, returns[0]);
+        appendExp(s, returns[0], PREC_NONE);
     }
     s << ";";
     if (returns.size() > 1) {
@@ -837,7 +896,7 @@ void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns)
     for (unsigned i = 1; i < returns.size(); i++) {
         if (i != 1)
             s << ", ";
-        appendExp(s, returns[i]);
+        appendExp(s, returns[i], PREC_NONE);
     }
     if (returns.size() > 1) {
         s << "*/";
@@ -897,7 +956,7 @@ void CHLLCode::AddLocal(const char *name, Type *type)
             (e->getSubExp1()->getOper() == opParam ||
              e->getSubExp1()->getOper() == opGlobal)) {
             s << " = ";
-            appendExp(s, e->getSubExp1());
+            appendExp(s, e->getSubExp1(), PREC_NONE);
             s << ";";
         } else {
             s << "; // ";
@@ -935,7 +994,7 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
     // Don't attempt to initialise arrays yet; complex syntax required
     if (init && !type->isArray()) {
         s << " = ";
-        appendExp(s, init);
+        appendExp(s, init, PREC_ASSIGN);
     }
     s << ";";
     lines.push_back(strdup(s.str().c_str()));

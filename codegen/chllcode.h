@@ -22,6 +22,7 @@
 #define _CHLLCODE_H_
 
 #include <string>
+#include <sstream>
 
 class BasicBlock;
 class Exp;
@@ -29,13 +30,65 @@ class Proc;
 class Assign;
 class LocationSet;
 
+// Operator precedence
+/*
+Operator Name               Associativity   Operators
+Primary scope resolution    left to right   ::
+Primary                     left to right   ()  [ ]  .  -> dynamic_cast typeid
+Unary                       right to left   ++  --  +  -  !  ~  &  *
+                                            (type_name)  sizeof new delete
+C++ Pointer to Member       left to right   .* ->*
+Multiplicative              left to right   *  /  %
+Additive                    left to right   +  -
+Bitwise Shift               left to right   <<  >>
+Relational                  left to right   <  >  <=  >=
+Equality                    left to right   ==  !=
+Bitwise AND                 left to right   &
+Bitwise Exclusive OR        left to right   ^
+Bitwise Inclusive OR        left to right   |
+Logical AND                 left to right   &&
+Logical OR                  left to right   ||
+Conditional                 right to left   ? :
+Assignment                  right to left   =  +=  -=  *=   /=  <<=  >>=  %=
+                                            &=  ^=  |=
+Comma                       left to right   ,
+*/
+
+enum PREC {
+    PREC_NONE=0,            // Outer level (no parens required)
+    PREC_COMMA,             // Comma
+    PREC_ASSIGN,            // Assignment
+    PREC_COND,              // Conditional
+    PREC_LOG_OR,            // Logical OR
+    PREC_LOG_AND,           // Logical AND
+    PREC_BIT_IOR,           // Bitwise Inclusive OR
+    PREC_BIT_XOR,           // Bitwise Exclusive OR
+    PREC_BIT_AND,           // Bitwise AND
+    PREC_EQUAL,             // Equality
+    PREC_REL,               // Relational
+    PREC_BIT_SHIFT,         // Bitwise Shift
+    PREC_ADD,               // Additive
+    PREC_MULT,              // Multiplicative
+    PREC_PTR_MEM,           // C++ Pointer to Member
+    PREC_UNARY,             // Unary
+    PREC_PRIM,              // Primary
+    PREC_SCOPE              // Primary scope resolution
+};
+
+
+
+
 class CHLLCode : public HLLCode {
 private:
 	std::list<char *> lines;
 
         void indent(std::ostringstream& str, int indLevel);
-        void appendExp(std::ostringstream& str, Exp *exp);
+        void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec);
         void appendType(std::ostringstream& str, Type *typ);
+        void openParen(std::ostringstream& str, PREC outer, PREC inner) {
+            if (inner < outer) str << "("; }
+        void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
+            if (inner < outer) str << ")"; }
 
         std::map<std::string, Type*> locals;
 
