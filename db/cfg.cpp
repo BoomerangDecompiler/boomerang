@@ -2185,7 +2185,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
 				if (s.find(y) == s.end()) {
 					// Insert trivial phi function for a at top of block y
 					// a := phi()
-					Statement* as = new PhiAssign(/*Ta,*/ a->clone());
+					Statement* as = new PhiAssign(a->clone());
 					PBB Ybb = BBs[y];
 					Ybb->prependStmt(as, proc);
 					// A_phi[a] <- A_phi[a] U {y}
@@ -2299,7 +2299,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 			else
 				def = Stack[a].top();
 			// "Replace jth operand with a_i"
-			pa->putAt(j, def);
+			pa->putAt(j, def, a);
 		}
 	}
 	// For each child X of n
@@ -2326,8 +2326,7 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
 //			Liveness			 //
 ////////////////////////////////////
 
-void updateWorkListRev(PBB currBB, std::list<PBB>&workList,
-  std::set<PBB>& workSet) {
+void updateWorkListRev(PBB currBB, std::list<PBB>&workList, std::set<PBB>& workSet) {
 	// Insert inedges of currBB into the worklist, unless already there
 	std::vector<PBB>& ins = currBB->getInEdges();
 	int n = ins.size();
@@ -2340,7 +2339,7 @@ void updateWorkListRev(PBB currBB, std::list<PBB>&workList,
 	}
 }
 
-void Cfg::findInterferences(igraph& ig, int& tempNum) {
+void Cfg::findInterferences(igraph& ig) {
 	if (m_listBB.size() == 0) return;
 
 	std::list<PBB> workList;			// List of BBs still to be processed
@@ -2354,7 +2353,7 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
 		workList.erase(--workList.end());
 		workSet.erase(currBB);
 		// Calculate live locations and interferences
-		change = currBB->calcLiveness(ig, tempNum, myProc);
+		change = currBB->calcLiveness(ig, myProc);
 		if (change) {
 			if (DEBUG_LIVENESS) {
 				LOG << "Revisiting BB ending with stmt ";
@@ -2368,7 +2367,7 @@ void Cfg::findInterferences(igraph& ig, int& tempNum) {
 					LOG << last->getNumber();
 				else
 					LOG << "<none>";
-				LOG << " due to change (tempNum now " << tempNum << ")\n";
+				LOG << " due to change\n";
 			}
 			updateWorkListRev(currBB, workList, workSet);
 		}
