@@ -2424,68 +2424,73 @@ void XMLProgParser::persistToXML(std::ostream &out, Type *ty)
 {
 	VoidType *v = dynamic_cast<VoidType*>(ty);
 	if (v) { 
-	out << "<voidtype id=\"" << (int)ty << "\"/>\n";
-	return;
+		out << "<voidtype id=\"" << (int)ty << "\"/>\n";
+		return;
 	}
 	FuncType *f = dynamic_cast<FuncType*>(ty);
 	if (f) {
-	out << "<functype id=\"" << (int)ty << "\">\n";
-	persistToXML(out, f->signature);
-	out << "</functype>\n";
-	return;
+		out << "<functype id=\"" << (int)ty << "\">\n";
+		persistToXML(out, f->signature);
+		out << "</functype>\n";
+		return;
 	}
 	IntegerType *i = dynamic_cast<IntegerType*>(ty);
 	if (i) {
-	out << "<integertype id=\"" << (int)ty << "\" size=\"" << i->size << "\" signedness=\"" << i->signedness << "\"/>\n";
-	return;
+		out << "<integertype id=\"" << (int)ty << "\" size=\"" << i->size << "\" signedness=\"" << i->signedness << "\"/>\n";
+		return;
 	}
 	FloatType *fl = dynamic_cast<FloatType*>(ty);
 	if (fl) {
-	out << "<floattype id=\"" << (int)ty << "\" size=\"" << fl->size << "\"/>\n";
-	return;
+		out << "<floattype id=\"" << (int)ty << "\" size=\"" << fl->size << "\"/>\n";
+		return;
 	}
 	BooleanType *b = dynamic_cast<BooleanType*>(ty);
 	if (b) {
-	out << "<booleantype id=\"" << (int)ty << "\"/>\n";
-	return;
+		out << "<booleantype id=\"" << (int)ty << "\"/>\n";
+		return;
 	}
 	CharType *c = dynamic_cast<CharType*>(ty);
 	if (c) {
-	out << "<chartype id=\"" << (int)ty << "\"/>\n";
-	return;
+		out << "<chartype id=\"" << (int)ty << "\"/>\n";
+		return;
 	}
 	PointerType *p = dynamic_cast<PointerType*>(ty);
 	if (p) {
-	out << "<pointertype id=\"" << (int)ty << "\">\n";
-	persistToXML(out, p->points_to);
-	out << "</pointertype>\n";
-	return;
+		out << "<pointertype id=\"" << (int)ty << "\">\n";
+		persistToXML(out, p->points_to);
+		out << "</pointertype>\n";
+		return;
 	}
 	ArrayType *a = dynamic_cast<ArrayType*>(ty);
 	if (a) {
-	out << "<arraytype id=\"" << (int)ty << "\" length=\"" << (int)a->length << "\">\n";
-	out << "<basetype>\n";
-	persistToXML(out, a->base_type);
-	out << "</basetype>\n";
-	out << "</arraytype>\n";
-	return;
+		out << "<arraytype id=\"" << (int)ty << "\" length=\"" << (int)a->length << "\">\n";
+		out << "<basetype>\n";
+		persistToXML(out, a->base_type);
+		out << "</basetype>\n";
+		out << "</arraytype>\n";
+		return;
 	}
 	NamedType *n = dynamic_cast<NamedType*>(ty);
 	if (n) {
-	out << "<namedtype id=\"" << (int)ty << "\" name=\"" << n->name << "\"/>\n";
-	return;
+		out << "<namedtype id=\"" << (int)ty << "\" name=\"" << n->name << "\"/>\n";
+		return;
 	}
 	CompoundType *co = dynamic_cast<CompoundType*>(ty);
 	if (co) {
-	out << "<compoundtype id=\"" << (int)ty << "\">\n";
-	for (unsigned i = 0; i < co->names.size(); i++) {
-		out << "<member name=\"" << co->names[i] << "\">\n";
-		persistToXML(out, co->types[i]);
-		out << "</member>\n";
+		out << "<compoundtype id=\"" << (int)ty << "\">\n";
+		for (unsigned i = 0; i < co->names.size(); i++) {
+			out << "<member name=\"" << co->names[i] << "\">\n";
+			persistToXML(out, co->types[i]);
+			out << "</member>\n";
+		}
+		out << "</compoundtype>\n";
+		return;
 	}
-	out << "</compoundtype>\n";
-	return;
-	}	 
+	SizeType *sz = dynamic_cast<SizeType*>(ty);
+	if (sz) {
+		out << "<sizetype id=\"" << (int)ty << "\" size=\"" << sz->getSize() << "\"/>\n";
+		return;
+	}
 	std::cerr << "unknown type in persistToXML\n";
 	assert(false);
 }
@@ -2730,171 +2735,174 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 {
 	BoolAssign *b = dynamic_cast<BoolAssign*>(stmt);
 	if (b) {
-	out << "<boolasgn id=\"" << (int)stmt << "\" number=\"" << b->number << "\"";
-	if (b->parent)
-		out << " parent=\"" << (int)b->parent << "\"";
-	if (b->proc)
-		out << " proc=\"" << (int)b->proc << "\"";
-	out << " jtcond=\"" << b->jtCond << "\"";
-	out << " float=\"" << (int)b->bFloat << "\"";
-	out << " size=\"" << b->size << "\"";
-	out << ">\n";
-	if (b->pCond) {
-		out << "<cond>\n";
-		persistToXML(out, b->pCond);
-		out << "</cond>\n";
-	}
-	out << "</boolasgn>\n";
-	return;
+		out << "<boolasgn id=\"" << (int)stmt << "\" number=\"" << b->number << "\"";
+		if (b->parent)
+			out << " parent=\"" << (int)b->parent << "\"";
+		if (b->proc)
+			out << " proc=\"" << (int)b->proc << "\"";
+		out << " jtcond=\"" << b->jtCond << "\"";
+		out << " float=\"" << (int)b->bFloat << "\"";
+		out << " size=\"" << b->size << "\"";
+		out << ">\n";
+		if (b->pCond) {
+			out << "<cond>\n";
+			persistToXML(out, b->pCond);
+			out << "</cond>\n";
+		}
+		out << "</boolasgn>\n";
+		return;
 	}
 	ReturnStatement *r = dynamic_cast<ReturnStatement*>(stmt);
 	if (r) {
-	out << "<returnstmt id=\"" << (int)stmt << "\" number=\"" << r->number 
-		<< "\" computed=\"" << (int)r->m_isComputed << "\"";
-	if (r->parent)
-		out << " parent=\"" << (int)r->parent << "\"";
-	if (r->proc)
-		out << " proc=\"" << (int)r->proc << "\"";
-	out << " bytesPopped=\"" << r->nBytesPopped << "\"";
-	out << " retAddr=\"" << (int)r->retAddr << "\"";
-	out << ">\n";
+		out << "<returnstmt id=\"" << (int)stmt << "\" number=\"" << r->number 
+			<< "\" computed=\"" << (int)r->m_isComputed << "\"";
+		if (r->parent)
+			out << " parent=\"" << (int)r->parent << "\"";
+		if (r->proc)
+			out << " proc=\"" << (int)r->proc << "\"";
+		out << " bytesPopped=\"" << r->nBytesPopped << "\"";
+		out << " retAddr=\"" << (int)r->retAddr << "\"";
+		out << ">\n";
 
-	for (unsigned i = 0; i < r->returns.size(); i++) {
-		out << "<returnexp>\n";
-		persistToXML(out, r->returns[i]);
-		out << "</returnexp>\n";
-	}
+		for (unsigned i = 0; i < r->returns.size(); i++) {
+			out << "<returnexp>\n";
+			persistToXML(out, r->returns[i]);
+			out << "</returnexp>\n";
+		}
 
-	out << "</returnstmt>\n";
-	return;
+		out << "</returnstmt>\n";
+		return;
 	}
 	CallStatement *c = dynamic_cast<CallStatement*>(stmt);
 	if (c) {
-	out << "<callstmt id=\"" << (int)stmt << "\" number=\"" << c->number 
-		<< "\" computed=\"" << (int)c->m_isComputed << "\"";
-	if (c->parent)
-		out << " parent=\"" << (int)c->parent << "\"";
-	if (c->proc)
-		out << " proc=\"" << (int)c->proc << "\"";
-	out << " returnTypeSize=\"" << c->returnTypeSize << "\"";
-	out << " returnAfterCall=\"" << (int)c->returnAfterCall << "\"";
-	out << ">\n";
-
-	if (c->pDest) {
-		out << "<dest";
-		if (c->procDest) 
-		out << " proc=\"" << (int)c->procDest << "\"";
+		out << "<callstmt id=\"" << (int)stmt << "\" number=\"" << c->number 
+			<< "\" computed=\"" << (int)c->m_isComputed << "\"";
+		if (c->parent)
+			out << " parent=\"" << (int)c->parent << "\"";
+		if (c->proc)
+			out << " proc=\"" << (int)c->proc << "\"";
+		out << " returnTypeSize=\"" << c->returnTypeSize << "\"";
+		out << " returnAfterCall=\"" << (int)c->returnAfterCall << "\"";
 		out << ">\n";
-		persistToXML(out, c->pDest);
-		out << "</dest>\n";
-	}
 	
-	for (unsigned i = 0; i < c->arguments.size(); i++) {
-		out << "<argument>\n";
-		persistToXML(out, c->arguments[i]);
-		out << "</argument>\n";
-	}
+		if (c->pDest) {
+			out << "<dest";
+			if (c->procDest) 
+				out << " proc=\"" << (int)c->procDest << "\"";
+			out << ">\n";
+			persistToXML(out, c->pDest);
+			out << "</dest>\n";
+		}
+	
+		for (unsigned i = 0; i < c->arguments.size(); i++) {
+			out << "<argument>\n";
+			persistToXML(out, c->arguments[i]);
+			out << "</argument>\n";
+		}
 
-	for (unsigned i = 0; i < c->implicitArguments.size(); i++) {
-		out << "<implicitarg>\n";
-		persistToXML(out, c->implicitArguments[i]);
-		out << "</implicitarg>\n";
-	}
+		for (unsigned i = 0; i < c->implicitArguments.size(); i++) {
+			out << "<implicitarg>\n";
+			persistToXML(out, c->implicitArguments[i]);
+			out << "</implicitarg>\n";
+		}
 
-	for (unsigned i = 0; i < c->returns.size(); i++) {
-		out << "<returnexp>\n";
-		persistToXML(out, c->returns[i]);
-		out << "</returnexp>\n";
-	}
+		for (unsigned i = 0; i < c->returns.size(); i++) {
+			out << "<returnexp>\n";
+			persistToXML(out, c->returns[i]);
+			out << "</returnexp>\n";
+		}
 
-	out << "</callstmt>\n";
-	return;
+		out << "</callstmt>\n";
+		return;
 	}
 	CaseStatement *ca = dynamic_cast<CaseStatement*>(stmt);
 	if (ca) {
-	out << "<casestmt id=\"" << (int)stmt << "\" number=\"" << ca->number 
-		<< "\" computed=\"" << (int)ca->m_isComputed << "\"";
-	if (ca->parent)
-		out << " parent=\"" << (int)ca->parent << "\"";
-	if (ca->proc)
-		out << " proc=\"" << (int)ca->proc << "\"";
-	out << ">\n";
-	if (ca->pDest) {
-		out << "<dest>\n";
-		persistToXML(out, ca->pDest);
-		out << "</dest>\n";
-	}
-	// TODO
-	// SWITCH_INFO* pSwitchInfo;   // Ptr to struct with info about the switch
-	out << "</casestmt>\n";
-	return;
+		out << "<casestmt id=\"" << (int)stmt << "\" number=\"" << ca->number 
+			<< "\" computed=\"" << (int)ca->m_isComputed << "\"";
+		if (ca->parent)
+			out << " parent=\"" << (int)ca->parent << "\"";
+		if (ca->proc)
+			out << " proc=\"" << (int)ca->proc << "\"";
+		out << ">\n";
+		if (ca->pDest) {
+			out << "<dest>\n";
+			persistToXML(out, ca->pDest);
+			out << "</dest>\n";
+		}
+		// TODO
+		// SWITCH_INFO* pSwitchInfo;   // Ptr to struct with info about the switch
+		out << "</casestmt>\n";
+		return;
 	}
 	BranchStatement *br = dynamic_cast<BranchStatement*>(stmt);
 	if (br) {
-	out << "<branchstmt id=\"" << (int)stmt << "\" number=\"" << br->number 
-		<< "\" computed=\"" << (int)br->m_isComputed << "\""
-		<< " jtcond=\"" << br->jtCond << "\" float=\"" << (int)br->bFloat << "\"";
-	if (br->parent)
-		out << " parent=\"" << (int)br->parent << "\"";
-	if (br->proc)
-		out << " proc=\"" << (int)br->proc << "\"";
-	out << ">\n";
-	if (br->pDest) {
-		out << "<dest>\n";
-		persistToXML(out, br->pDest);
-		out << "</dest>\n";
-	}
-	if (br->pCond) {
-		out << "<cond>\n";
-		persistToXML(out, br->pCond);
-		out << "</cond>\n";
-	}
-	out << "</branchstmt>\n";
-	return;
+		out << "<branchstmt id=\"" << (int)stmt << "\" number=\"" << br->number 
+			<< "\" computed=\"" << (int)br->m_isComputed << "\""
+			<< " jtcond=\"" << br->jtCond << "\" float=\"" << (int)br->bFloat << "\"";
+		if (br->parent)
+			out << " parent=\"" << (int)br->parent << "\"";
+		if (br->proc)
+			out << " proc=\"" << (int)br->proc << "\"";
+		out << ">\n";
+		if (br->pDest) {
+			out << "<dest>\n";
+			persistToXML(out, br->pDest);
+			out << "</dest>\n";
+		}
+		if (br->pCond) {
+			out << "<cond>\n";
+			persistToXML(out, br->pCond);
+			out << "</cond>\n";
+		}
+		out << "</branchstmt>\n";
+		return;
 	}
 	GotoStatement *g = dynamic_cast<GotoStatement*>(stmt);
 	if (g) {
-	out << "<gotostmt id=\"" << (int)stmt << "\" number=\"" << g->number << "\""
-		<< " computed=\"" << (int) g->m_isComputed << "\"";
-	if (g->parent)
-		out << " parent=\"" << (int)g->parent << "\"";
-	if (g->proc)
-		out << " proc=\"" << (int)g->proc << "\"";
-	out << ">\n";
-	if (g->pDest) {
-		out << "<dest>\n";
-		persistToXML(out, g->pDest);
-		out << "</dest>\n";
+		out << "<gotostmt id=\"" << (int)stmt << "\" number=\"" << g->number << "\""
+			<< " computed=\"" << (int) g->m_isComputed << "\"";
+		if (g->parent)
+			out << " parent=\"" << (int)g->parent << "\"";
+		if (g->proc)
+			out << " proc=\"" << (int)g->proc << "\"";
+		out << ">\n";
+		if (g->pDest) {
+			out << "<dest>\n";
+			persistToXML(out, g->pDest);
+			out << "</dest>\n";
+		}
+		out << "</gotostmt>\n";
+		return;
 	}
-	out << "</gotostmt>\n";
-	return;
+	PhiAssign *p = dynamic_cast<PhiAssign*>(stmt);
+	if (p) {
 	}
 	Assign *a = dynamic_cast<Assign*>(stmt);
 	if (a) {
-	out << "<assign id=\"" << (int)stmt << "\" number=\"" << a->number << "\"";
-	if (a->parent)
-		out << " parent=\"" << (int)a->parent << "\"";
-	if (a->proc)
-		out << " proc=\"" << (int)a->proc << "\"";
-	out << ">\n";
-	out << "<lhs>\n";
-	persistToXML(out, a->lhs);
-	out << "</lhs>\n";
-	out << "<rhs>\n";
-	persistToXML(out, a->rhs);
-	out << "</rhs>\n";
-	if (a->type) {
-		out << "<type>\n";
-		persistToXML(out, a->type);
-		out << "</type>\n";
-	}
-	if (a->guard) {
-		out << "<guard>\n";
-		persistToXML(out, a->guard);
-		out << "/guard>\n";
-	}
-	out << "</assign>\n";
-	return;
+		out << "<assign id=\"" << (int)stmt << "\" number=\"" << a->number << "\"";
+		if (a->parent)
+			out << " parent=\"" << (int)a->parent << "\"";
+		if (a->proc)
+			out << " proc=\"" << (int)a->proc << "\"";
+		out << ">\n";
+		out << "<lhs>\n";
+		persistToXML(out, a->lhs);
+		out << "</lhs>\n";
+		out << "<rhs>\n";
+		persistToXML(out, a->rhs);
+		out << "</rhs>\n";
+		if (a->type) {
+			out << "<type>\n";
+			persistToXML(out, a->type);
+			out << "</type>\n";
+		}
+		if (a->guard) {
+			out << "<guard>\n";
+			persistToXML(out, a->guard);
+			out << "/guard>\n";
+		}
+		out << "</assign>\n";
+		return;
 	}
 	std::cerr << "unknown stmt in persistToXML\n";
 	assert(false);

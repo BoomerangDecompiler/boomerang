@@ -446,3 +446,127 @@ NTSTATUS
     PUNICODE_STRING  SymbolicLinkName,
     PUNICODE_STRING  DeviceName
     );
+
+NTSTATUS 
+  RtlAppendUnicodeStringToString(
+    PUNICODE_STRING  Destination,
+    PUNICODE_STRING  Source
+    );
+
+NTSTATUS 
+  RtlQueryRegistryValues(
+    ULONG  RelativeTo,
+    PCWSTR  Path,
+    PRTL_QUERY_REGISTRY_TABLE  QueryTable,
+    PVOID  Context,
+    PVOID  Environment
+    );
+
+NTSTATUS 
+  RtlUnicodeStringToAnsiString(
+    PANSI_STRING  DestinationString,
+    PUNICODE_STRING  SourceString,
+    BOOLEAN  AllocateDestinationString
+    );
+
+NTSTATUS 
+  IoReportResourceUsage(
+    PUNICODE_STRING  DriverClassName,
+    PDRIVER_OBJECT  DriverObject,
+    PCM_RESOURCE_LIST  DriverList,
+    ULONG  DriverListSize,
+    PDEVICE_OBJECT  DeviceObject,
+    PCM_RESOURCE_LIST  DeviceList,
+    ULONG  DeviceListSize,
+    BOOLEAN  OverrideConflict,
+    PBOOLEAN  ConflictDetected
+    );
+
+struct CONFIGURATION_INFORMATION {
+    ULONG DiskCount;
+    ULONG FloppyCount;
+    ULONG CDRomCount;
+    ULONG TapeCount;
+    ULONG ScsiPortCount;
+    ULONG SerialCount;
+    ULONG ParallelCount;
+    BOOLEAN AtDiskPrimaryAddressClaimed;
+    BOOLEAN AtDiskSecondaryAddressClaimed;
+};
+
+typedef CONFIGURATION_INFORMATION *PCONFIGURATION_INFORMATION;
+
+PCONFIGURATION_INFORMATION 
+  IoGetConfigurationInformation();
+
+void 
+  ExFreePool(
+    PVOID P
+    );
+
+NTSTATUS 
+  IoRegisterShutdownNotification(
+    PDEVICE_OBJECT  DeviceObject
+    );
+
+void
+  IoDeleteDevice(
+    PDEVICE_OBJECT  DeviceObject
+    );
+
+NTSTATUS 
+  RtlIntegerToUnicodeString(
+    ULONG  Value,
+    ULONG  Base,
+    PUNICODE_STRING  String
+    );
+
+NTSTATUS 
+  KeWaitForSingleObject(
+    PVOID  Object,
+    KWAIT_REASON  WaitReason,
+    KPROCESSOR_MODE  WaitMode,
+    BOOLEAN  Alertable,
+    PLARGE_INTEGER  Timeout
+    );
+
+UCHAR 
+  READ_PORT_UCHAR(
+    PUCHAR  Port
+    );
+
+void
+  WRITE_PORT_UCHAR(
+    PUCHAR  Port,
+    UCHAR  Value
+    );
+
+void
+  KeStallExecutionProcessor(
+    ULONG  MicroSeconds
+    );
+
+ULONG 
+  KeQueryTimeIncrement(
+    );
+
+BOOLEAN 
+  HalTranslateBusAddress(
+    INTERFACE_TYPE  InterfaceType,
+    ULONG  BusNumber,
+    PHYSICAL_ADDRESS  BusAddress,
+    PULONG  AddressSpace,
+    PPHYSICAL_ADDRESS  TranslatedAddress
+    );
+
+SIZE_T 
+  RtlCompareMemory(
+    const VOID  *Source1,
+    const VOID  *Source2,
+    SIZE_T  Length
+    );
+
+BOOLEAN 
+  KeCancelTimer(
+    PKTIMER  Timer
+    );

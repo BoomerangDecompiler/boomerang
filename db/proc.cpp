@@ -955,6 +955,10 @@ void UserProc::getStatements(StatementList &stmts) {
 			for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
 				RTL *rtl = *rit;
 				for (std::list<Statement*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+					if ((*it)->getBB() == NULL)
+						(*it)->setBB(bb);
+					if ((*it)->getProc() == NULL)
+						(*it)->setProc(this);
 					stmts.append(*it);
 				}
 			}
@@ -2587,7 +2591,10 @@ bool UserProc::nameRegisters() {
 			if (symbolMap.find(memref) == symbolMap.end()) {
 				if (VERBOSE)
 					LOG << "register found: " << memref << "\n";
-				symbolMap[memref->clone()] = newLocal(new IntegerType());
+				Type *ty = memref->getType();
+				if (ty == NULL)
+					ty = new IntegerType();
+				symbolMap[memref->clone()] = newLocal(ty);
 			}
 			assert(symbolMap.find(memref) != symbolMap.end());
 			std::string name = ((Const*)symbolMap[memref]->getSubExp1())->getStr();

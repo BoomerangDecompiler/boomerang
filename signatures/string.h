@@ -1,5 +1,9 @@
+
+typedef unsigned int size_t;
+
 int strcmp(char *s1, char *s2);
 int strncmp(char *s1, char *s2, unsigned int n);
+char *strncpy(char *dest, const char *src, size_t n);
 char *strcpy(char *dst, char *src);
 void *memset(void *s, int c, unsigned int n);
 void *memmove(void *s1, const void *s2, unsigned int n);
@@ -12,3 +16,5 @@ wchar_t *lstrcpyW(wchar_t *dst, wchar_t *src);
 char *_strrev( char *string );
 wchar_t *_wcsrev( wchar_t *string );
 unsigned char *_mbsrev( unsigned char *string );
+char *strchr(const char *s, int c);
+char *strrchr(const char *s, int c);

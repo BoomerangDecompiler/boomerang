@@ -146,6 +146,7 @@ FlagDef::FlagDef(Exp* params, RTL* rtl)
 	: Unary(opFlagDef, params), rtl(rtl) {}
 
 RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
+	assert(e);
 }
 
 TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
@@ -3449,7 +3450,7 @@ Type *Binary::getType() {
 					LOG << "subExp1 not of array/ptr type: " << this << "\n";
 					if (sty)
 						LOG << "it has a type: " << sty->getCtype() << "\n";
-					assert(false);
+					return NULL;
 				}
 				if (sty->resolvesToArray())
 					return sty->asArray()->getBaseType();
@@ -3493,7 +3494,7 @@ Type *Ternary::getType() {
 
 Type *RefExp::getType()
 {
-	if (subExp1->getType())
+	if (subExp1 && subExp1->getType())
 		return subExp1->getType();
 	if (def && def->getRight() && def->getRight()->getType())
 		return def->getRight()->getType();
@@ -3532,7 +3533,7 @@ Type *Location::getType()
 	if (proc == NULL && subExp1->getOper() == opSubscript && subExp1->getSubExp1()->isLocation())
 		proc = ((Location*)subExp1->getSubExp1())->getProc();
 	if (proc == NULL)
-		return NULL;
+		return ty;
 	char *nam = NULL;
 	if (subExp1->getOper() == opStrConst)
 		nam = ((Const*)subExp1)->getStr();

@@ -4,12 +4,18 @@ typedef unsigned int size_t;
 int printf(char *fmt, ...);
 int scanf(char *fmt, ...);
 char *getenv(char *name);
+FILE *fopen(const char *path, const char *mode);
+int fseek(FILE *stream, long offset, int whence);
 int fread(char *ptr, int size, int nitems, FILE *stream);
 int fwrite(char *ptr, int size, int nitems, FILE *stream);
 int fclose(FILE *stream);
 int puts(char *s);
+char *fgets(char *s, int size, FILE *stream);
 void perror(const char *s);
 int fprintf(FILE *stream, const char *format, ...);
+int sscanf(const char *str, const char *format, ...);
+
+int atoi(const char *nptr);
 
 int getc_unlocked(FILE *stream);
 int getchar_unlocked(void);

@@ -1496,9 +1496,8 @@ void Cfg::findImmedPDom() {
 		if (oEdges.size() > 1)
 			for (unsigned int j = 0; j < oEdges.size(); j++) {
 				succNode = oEdges[j];
-				if (curNode->hasBackEdgeTo(succNode) && 
-					curNode->getOutEdges().size() > 1 &&
-					succNode->immPDom->ord < curNode->immPDom->ord)
+				if (curNode->hasBackEdgeTo(succNode) && curNode->getOutEdges().size() > 1 &&
+					succNode->immPDom && succNode->immPDom->ord < curNode->immPDom->ord)
 					curNode->immPDom = 
 						commonPDom(succNode->immPDom, curNode->immPDom);
 				else
@@ -1559,8 +1558,7 @@ void Cfg::determineLoopType(PBB header, bool* &loopNodes) {
 		// if the header is a two way node then it must have a conditional 
 		// follow (since it can't have any backedges leading from it). If this 
 		// follow is within the loop then this must be an endless loop
-		assert(header->getCondFollow());
-		if (loopNodes[header->getCondFollow()->ord]) {
+		if (header->getCondFollow() && loopNodes[header->getCondFollow()->ord]) {
 			header->setLoopType(Endless);
 
 			// retain the fact that this is also a conditional header
@@ -1846,14 +1844,14 @@ void Cfg::checkConds() {
 			  curNode->getUnstructType() == Structured) {
 			// latching nodes will already have been reset to Seq structured 
 			// type
-			assert(curNode->hasBackEdge());
-
-			if (curNode->hasBackEdgeTo(curNode->getOutEdges()[BTHEN])) {
-				curNode->setCondType(IfThen);
-				curNode->setCondFollow(curNode->getOutEdges()[BELSE]);
-			} else {
-				curNode->setCondType(IfElse);
-				curNode->setCondFollow(curNode->getOutEdges()[BTHEN]);
+			if (curNode->hasBackEdge()) {
+				if (curNode->hasBackEdgeTo(curNode->getOutEdges()[BTHEN])) {
+					curNode->setCondType(IfThen);
+					curNode->setCondFollow(curNode->getOutEdges()[BELSE]);
+				} else {
+					curNode->setCondType(IfElse);
+					curNode->setCondFollow(curNode->getOutEdges()[BTHEN]);
+				}
 			}
 		}
 	}
