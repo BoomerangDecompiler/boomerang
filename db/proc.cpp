@@ -904,18 +904,41 @@ void UserProc::removeStatement(Statement *stmt) {
     PBB bb = stmt->getBB();         // Get our enclosing BB
     std::list<RTL*> *rtls = bb->getRTLs();
     for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
-      rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Statement*>::iterator it = rtl->getList().begin(); 
-          it != rtl->getList().end(); it++) {
+          rit++) {
+        std::list<Statement*>& stmts = (*rit)->getList();
+        for (std::list<Statement*>::iterator it = stmts.begin(); 
+              it != stmts.end(); it++) {
             if (*it == stmt) {
-                //stmt->updateDfForErase();
-                rtl->getList().erase(it);
+                stmts.erase(it);
                 return;
             }
         }
     }
 }
+
+void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
+    PBB bb = s->getBB();         // Get our enclosing BB
+    std::list<RTL*> *rtls = bb->getRTLs();
+    for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end();
+          rit++) {
+        std::list<Statement*>& stmts = (*rit)->getList();
+        for (std::list<Statement*>::iterator it = stmts.begin(); 
+              it != stmts.end(); it++) {
+            if (*it == s) {
+                std::ostringstream os;
+                os << "local" << tempNum;
+                Assign* as = new Assign(
+                    new Unary(opLocal,
+                        new Const(strdup(os.str().c_str()))),
+                    right);
+                stmts.insert(++it, as);
+                return;
+            }
+        }
+    }
+    assert(0);
+}
+
 
 // Decompile this UserProc
 std::set<UserProc*>* UserProc::decompile() {
@@ -1878,14 +1901,75 @@ void UserProc::fromSSAform() {
     igraph ig;
     int tempNum = locals.size();
     cfg->findInterferences(ig, tempNum);
+
+    // First rename the variables (including phi's, but don't remove)
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
-        if (s->isPhi()) {
-std::cerr << "   * * * Warning: ignoring " << s << " * * *\n";
-            removeStatement(s);
-        } else
-            s->fromSSAform(ig);
+        s->fromSSAform(ig);
     }
+
+    // Now remove the phi's
+    for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
+        if (!s->isPhi()) continue;
+        // Check that the base variables are all the same as the LHS
+        PhiExp* p = (PhiExp*)s->getRight();
+        LocationSet refs;
+        p->addUsedLocs(refs);
+        Exp* left = s->getLeft();
+        bool same = true;
+        LocSetIter rr;
+        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
+            if (!(*r *= *left)) {       // Ref-insensitive compare
+                same = false;
+                break;
+            }
+        }
+        if (same)
+            // Just removing the refs will work
+            removeStatement(s);
+        else {
+            // Need copies
+            if (Boomerang::get()->debugLiveness)
+                std::cerr << "Phi statement " << s <<
+                  " requires copies, using temp" << tempNum << "\n";
+            // For each definition ref'd in the phi
+            StmtVecIter rr;
+            int j; Statement* def;
+            for (j=0, def = p->getFirstRef(rr); !p->isLastRef(rr);
+                  j++, def = p->getNextRef(rr)) {
+                // Start with the original name, in the left of the phi
+                // (note: this has not been renamed above)
+                Exp* right = p->getSubExp1()->clone();
+                // Wrap it in a ref to def
+                right = new RefExp(right, def);
+                // Check the interference graph for a new name
+                if (ig.find(right) != ig.end()) {
+                    std::ostringstream os;
+                    os << "local" << ig[right];
+                    delete right;
+                    right = new Unary(opLocal,
+                        new Const(strdup(os.str().c_str())));
+                } else {
+                    // Just take off the reference
+                    RefExp* old = (RefExp*)right;
+                    right = right->getSubExp1();
+                    old->setSubExp1ND(NULL);
+                    delete old;
+                }
+                // Insert a new assignment, to local<tempNum>, from right
+                insertAssignAfter(def, tempNum, right);
+            }
+            // Replace the RHS of the phi with the new temp
+            std::ostringstream os;
+            os << "local" << tempNum++;
+            std::string name = os.str();
+            ((Assign*)s)->setRight(new Unary(opLocal,
+              new Const(strdup(name.c_str()))));
+        }
+    }
+
+    // Add the resulting locals to the proc, so they will be declared
     addLocals(tempNum);
+
 }
 
 void UserProc::insertArguments(StatementSet& rs) {

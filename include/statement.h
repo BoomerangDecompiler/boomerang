@@ -426,6 +426,9 @@ public:
     // get how to replace this statement in a use
     virtual Exp* getRight() { return rhs; }
 
+    // set the rhs to something new
+    void         setRight(Exp* e);
+
     // inline any constants in the statement
     virtual void processConstants(Prog *prog);
 

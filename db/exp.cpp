@@ -2713,7 +2713,7 @@ Exp* RefExp::fromSSA(igraph& ig) {
 }
 
 Exp* PhiExp::fromSSA(igraph& ig) {
-    // FIXME: More required
+    // Nothing to be done yet; see UserProc::fromSSAform()
     return this;
 }
 

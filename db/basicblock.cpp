@@ -1557,18 +1557,24 @@ bool BasicBlock::calcLiveness(igraph& ig, int& localNum) {
                     igraph::iterator gg = ig.find(u);
                     if (gg == ig.end()) {
                         ig[u] = localNum++;
-                        if (VERBOSE)
-                            std::cerr << "Interference with " << u <<
+                        if (VERBOSE || Boomerang::get()->debugLiveness)
+                            std::cerr << "Interference of " << u <<
                             ", assigned local" << std::dec << localNum-1
                             << "\n";
                     }
-                }
-                // Add the uses one at a time. Note: don't use makeUnion,
-                // because then we don't discover interferences from the
-                // same statement, e.g.
-                // blah := r24{2} + r24{3}
-                liveLocs.insert(u);
+                // Don't add the interfering variable to liveLocs, otherwise
+                // we could register other interferences that will not exist
+                // once this one is renamed
+                } else
+                    // Add the uses one at a time. Note: don't use makeUnion,
+                    // because then we don't discover interferences from the
+                    // same statement, e.g.
+                    // blah := r24{2} + r24{3}
+                    liveLocs.insert(u);
             }
+            if (Boomerang::get()->debugLiveness)
+                std::cerr << " ## Liveness: at top of " << s <<
+                  ", liveLocs is " << liveLocs.prints() << "\n";
         }
     }
     // liveIn is what we calculated last time
@@ -1607,6 +1613,10 @@ void BasicBlock::getLiveOut(LocationSet &liveout) {
             // This will leak
             RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
             liveout.insert(r);
+            if (Boomerang::get()->debugLiveness)
+                std::cerr << " ## Liveness: adding " << std::dec << r <<
+                  " due to ref to phi " << *it << " in BB at " << std::hex <<
+                  getLowAddr() << "\n";
         }
     }
 }

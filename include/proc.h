@@ -479,6 +479,7 @@ public:
 
     void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform();
+    void insertAssignAfter(Statement* s, int tempNum, Exp* right);
 
     // Insert actual arguments to match formals
     void insertArguments(StatementSet& rs);

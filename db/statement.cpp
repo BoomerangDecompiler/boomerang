@@ -2931,6 +2931,11 @@ void Assign::fromSSAform(igraph& ig) {
     rhs = rhs->fromSSA(ig);
 }
 
+void Assign::setRight(Exp* e) {
+    if (rhs) delete rhs;
+    rhs = e;
+}
+
 bool Assign::serialize(std::ostream &ouf, int &len) {
     std::streampos st = ouf.tellp();
 
