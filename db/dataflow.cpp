@@ -274,6 +274,11 @@ void Statement::calcLiveIn(LocationSet &live) {
     killLive(live);
     // add all locations that this statement uses (register or memory)
     addUsedLocs(live);
+    // Now substitute. If any of the locations in the live set use this
+    // statement's left hand side, do the substitution
+    // (Since live is a set of locations, this will only happend for
+    // memofs)
+    live.substitute(*this);
 }
 
 
@@ -619,7 +624,7 @@ LocationSet::LocationSet(const LocationSet& o) {
 }
 
 void LocationSet::print() {
-    std::set<Exp*, lessExpStar>::const_iterator it;
+    LocSetIter it;
     for (it = sset.begin(); it != sset.end(); it++)
         std::cerr << *it << ",\t";
     std::cerr << "\n";
@@ -630,7 +635,7 @@ void LocationSet::remove(Exp* given) {
     if (it == sset.end()) return;
 //std::cerr << "LocationSet::remove at " << std::hex << (unsigned)this << " of " << *it << "\n";
 //std::cerr << "before: "; print();
-    // NOTE: if the below is commented out, things go crazy. Valgrind says that
+    // NOTE: if the below uncommented, things go crazy. Valgrind says that
     // the deleted value gets used next in LocationSet::operator== ?!
     //delete *it;         // These expressions were cloned when created
     sset.erase(it);
@@ -658,6 +663,14 @@ void LocationSet::make_union(LocationSet& other) {
     LocSetIter it;
     for (it = other.sset.begin(); it != other.sset.end(); it++) {
         sset.insert(*it);
+    }
+}
+
+// Make this set the set difference of itself and other
+void LocationSet::make_diff(LocationSet& other) {
+    LocSetIter it;
+    for (it = other.sset.begin(); it != other.sset.end(); it++) {
+        sset.erase(*it);
     }
 }
 
@@ -689,6 +702,64 @@ bool LocationSet::operator==(const LocationSet& o) const {
 
 bool LocationSet::find(Exp* e) {
     return sset.find(e) != sset.end();
+}
+
+// Substitute s into all members of the set
+void LocationSet::substitute(Statement& s) {
+    Exp* lhs = s.getLeft();
+    if (lhs == NULL) return;
+    Exp* rhs = s.getRight();
+    if (rhs == NULL) return;        // ? Will this ever happen?
+    LocSetIter it;
+    // Note: it's important not to change the pointer in the set of pointers
+    // to expressions, without removing and inserting again. Otherwise, the
+    // set becomes out of order, and operations such as set comparison fail!
+    // To avoid any funny behaviour when iterating the loop, we use the follow-
+    // ing two sets
+    LocationSet removeSet;          // These will be removed after the loop
+    LocationSet removeAndDelete;    // These will be removed then deleted
+    LocationSet insertSet;          // These will be inserted after the loop
+    bool change;
+    for (it = sset.begin(); it != sset.end(); it++) {
+        Exp* loc = *it;
+        Exp* replace;
+        if (loc->search(lhs, replace)) {
+            if (rhs->isTerminal()) {
+                // This is no longer a location of interest (e.g. %pc)
+                removeSet.insert(loc);
+                continue;
+            }
+            loc = loc->clone()->searchReplaceAll(lhs, rhs, change);
+            if (change) {
+                loc = loc->simplifyArith();
+                loc = loc->simplify();
+                // If the result is no longer a register or memory (e.g.
+                // r[28]-4), then delete this expression and insert any
+                // components it uses (in the example, just r[28])
+                if (!loc->isRegOf() && !loc->isMemOf()) {
+                    // Note: can't delete the expression yet, because the
+                    // act of insertion into the remove set requires silent
+                    // calls to the compare function
+                    removeAndDelete.insert(*it);
+                    loc->addUsedLocs(insertSet);
+                    continue;
+                }
+                // Else we just want to replace it
+                // Regardless of whether the top level expression pointer has
+                // changed, remove and insert it from the set of pointers
+                removeSet.insert(*it);      // Note: remove the unmodified ptr
+                insertSet.insert(loc);
+            }
+        }
+    }
+    make_diff(removeSet);       // Remove the items to be removed
+    make_diff(removeAndDelete); // These are to be removed as well
+    make_union(insertSet);      // Insert the items to be added
+    // Now delete the expressions that are no longer needed
+    LocSetIter dd;
+    for (Exp* e = removeAndDelete.getFirst(dd); e;
+      e = removeAndDelete.getNext(dd))
+        delete e;               // Plug that memory leak
 }
 
 //
@@ -763,3 +834,4 @@ char* Statement::prints() {
       debug_buffer[199] = '\0';
       return debug_buffer;
 }
+

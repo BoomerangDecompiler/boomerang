@@ -681,6 +681,7 @@ public:
     LocationSet(const LocationSet& o);      // Copy constructor
     LocationSet& operator=(const LocationSet& o); // Assignment
     void make_union(LocationSet& other);    // Set union
+    void make_diff (LocationSet& other);    // Set difference
     void clear() {sset.clear();}            // Clear the set
     Exp* getFirst(LocSetIter& it);          // Get the first Statement
     Exp* getNext (LocSetIter& it);          // Get next
@@ -690,6 +691,7 @@ public:
     void removeIfDefines(StatementSet& given);// Remove locs defined in given
     int  size() const {return sset.size();}  // Number of elements
     bool operator==(const LocationSet& o) const; // Compare
+    void substitute(Statement& s);          // Substitute the statement to all
     void print();                           // Print to cerr for debugging
     bool find(Exp* e);                      // Return true if the location exists in the set
 };
