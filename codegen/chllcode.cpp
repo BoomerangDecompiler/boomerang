@@ -36,6 +36,7 @@
 #include "chllcode.h"
 #include "signature.h"
 #include "boomerang.h"
+#include "type.h"
 
 #include <sstream>
 
@@ -89,6 +90,9 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opStrConst:
             sprintf(s, "\"%s\"", c->getStr());
             strcat(str, s);
+            break;
+        case opFuncConst:
+            strcat(str, c->getFuncName());
             break;
         case opAddrOf:
             strcat(str, "&");
@@ -360,7 +364,6 @@ void CHLLCode::appendExp(char *str, Exp *exp)
         case opLoge:
         case opSqrt:
         case opExecute:
-        case opCodeAddr:
         case opAFP:
         case opAGP:
             // not implemented
@@ -769,7 +772,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc,
         bool ok = true;
         if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() 
               && args[i]->isIntConst()) {
-            Proc *p = proc->getProg()->findProc(((Const*)args[i])->getAddr());
+            Proc *p = proc->getProg()->findProc(((Const*)args[i])->getInt());
             if (p) {
                 strcat(s, p->getName());
                 ok = false;
@@ -922,15 +925,29 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init)
         strcat(s, "[");
         sprintf(s + strlen(s), "%d", ((ArrayType*)type)->getLength());
         strcat(s, "]");
-        // Don't attempt to initialise arrays; complex syntax required
+    } else if (type->isPointer() &&
+      ((PointerType*)type)->getPointsTo()->resolvesToFunc()) {
+        // These are even more different to declare than to print. Example:
+        // void (void)* global0 = foo__1B;   ->
+        // void (*global0)(void) = foo__1B;
+        PointerType* pt = (PointerType*)type;
+        FuncType* ft = (FuncType*)pt->getPointsTo();
+        const char *ret, *param;
+        ft->getReturnAndParam(ret, param);
+        strcat(s, ret);
+        strcat(s, " (*");
+        strcat(s, name);
+        strcat(s, ")");
+        strcat(s, param);
     } else {
         appendType(s, type);
         strcat(s, " ");
         strcat(s, name);
-        if (init) {
-            strcat(s, " = ");
-            appendExp(s, init);
-        }
+    }
+    // Don't attempt to initialise arrays yet; complex syntax required
+    if (init && !type->isArray()) {
+        strcat(s, " = ");
+        appendExp(s, init);
     }
     strcat(s, ";");
     lines.push_back(strdup(s));
