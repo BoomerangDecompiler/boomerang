@@ -318,6 +318,10 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
     bool gotcorrectret2 = false;
     std::list<Statement*> internal;
     p->getInternalStatements(internal);
+    for (std::list<Statement*>::iterator it1 = 
+            p->getCFG()->getLiveOut().begin(); 
+         it1 != p->getCFG()->getLiveOut().end(); it1++)
+        internal.push_back(*it1);
     for (std::list<Statement*>::iterator it = internal.begin();
          it != internal.end(); it++) {
         AssignExp *e = dynamic_cast<AssignExp*>(*it);
