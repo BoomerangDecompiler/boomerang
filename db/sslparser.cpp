@@ -2289,7 +2289,7 @@ case 102:
             Ternary* t = new Ternary(opTern, yyvsp[-6].exp, yyvsp[-4].exp, yyvsp[-2].exp);
             Exp* e = t;
             if (yyvsp[0].num != STD_SIZE) {
-			    e = new TypedExp(new IntegerType(yyvsp[0].num), t);                
+	        e = new TypedExp(new IntegerType(yyvsp[0].num), t);                
             }
             yyval.exp = e;
         ;

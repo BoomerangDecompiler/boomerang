@@ -222,6 +222,7 @@ void Prog::generateCode(std::ostream &os) {
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
+        p->getCFG()->compressCfg();
         code = Boomerang::getHLLCode(p);
         p->generateCode(code);
         code->print(os);

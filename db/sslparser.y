@@ -871,7 +871,7 @@ exp_term:
             Ternary* t = new Ternary(opTern, $2, $4, $6);
             Exp* e = t;
             if ($8 != STD_SIZE) {
-			    e = new TypedExp(new IntegerType($8), t);                
+	        e = new TypedExp(new IntegerType($8), t);                
             }
             $$ = e;
         }

@@ -124,10 +124,10 @@ Ternary::Ternary(Ternary& o)
     subExp3 = o.subExp3->clone();
 }
 
-TypedExp::TypedExp() : Unary(opTypedExp), type(NULL) {}
-TypedExp::TypedExp(Exp* e1) : Unary(opTypedExp, e1), type(NULL) {}
+TypedExp::TypedExp() : Unary(opTypedExp), type(NULL) { }
+TypedExp::TypedExp(Exp* e1) : Unary(opTypedExp, e1), type(NULL) { }
 TypedExp::TypedExp(Type* ty, Exp* e1) : Unary(opTypedExp, e1),
-    type(ty) {}
+    type(ty) { }
 TypedExp::TypedExp(TypedExp& o) : Unary(opTypedExp)
 {
     subExp1 = o.subExp1->clone();
@@ -632,6 +632,7 @@ void Binary::print(std::ostream& os, bool withUses) {
             // *size* is printed after the expression
             p2->printr(os, withUses); os << "*"; p1->printr(os, withUses);
             os << "*";
+            assert(false); // thought this was deprecated.
             return;
         case opFlagCall:
             // The name of the flag function (e.g. ADDFLAGS) should be enough
@@ -1785,7 +1786,7 @@ Exp* Binary::polySimplify(bool& bMod) {
         bMod = true;
         return res;
     }
-
+        
     if (op == opEquals && *subExp1 == *subExp2) {
         // x == x: result is true
         delete this;
@@ -2115,6 +2116,20 @@ Exp* Ternary::polySimplify(bool& bMod) {
         *subExp1 == *subExp3->getSubExp2() &&
         *subExp2 == *subExp3->getSubExp1()) {
         res = this->becomeSubExp3();
+        bMod = true;
+        return res;
+    }
+
+    return res;
+}
+
+Exp* TypedExp::polySimplify(bool& bMod) {
+    Exp *res = this;
+    Exp *subExp1 = getSubExp1();
+    
+    if (subExp1->getOper() == opRegOf) {
+        // type cast on a reg of.. hmm.. let's remove this
+        res = ((Unary*)res)->becomeSubExp1();
         bMod = true;
         return res;
     }

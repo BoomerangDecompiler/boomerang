@@ -1256,13 +1256,14 @@ void UserProc::trimReturns() {
     if (VERBOSE)
         std::cerr << "Trimming return set for " << getName() << std::endl;
 
+    int sp = signature->getStackRegister(prog);
+
     for (int n = 0; n < 2; n++) {   
         // may need to do multiple times due to dependencies
 
         // Special case for 32-bit stack-based machines (e.g. Pentium).
         // RISC machines generally preserve the stack pointer (so special
         // case required)
-        int sp = signature->getStackRegister(prog);
         for (int p = 0; !stdsp && p < 5; p++) {
             if (VERBOSE)
                 std::cerr << "attempting to prove sp = sp + " << 4 + p*4 << 
@@ -1292,9 +1293,26 @@ void UserProc::trimReturns() {
             }
         }
     }
-    if (stdsp)
-        // FIXME: Pentium specific
-        removeReturn(new Unary(opRegOf, new Const(28)));
+    if (stdsp) {
+        Unary *regsp = Unary::regOf(sp);
+        // I've been removing sp from the return set as it makes 
+        // the output look better, but this only works for recursive
+        // procs (because no other proc call them and fixCallRefs can
+        // replace refs to the call with a valid expression).  Not
+        // removing sp will make basically every procedure that doesn't
+        // preserve sp return it, and take it as a parameter.  Maybe a 
+        // later pass can get rid of this.  Trent 22/8/2003
+        //removeReturn(regsp);
+        // also check for any locals that slipped into the returns
+        for (int i = 0; i < signature->getNumReturns(); i++) {
+            Exp *e = signature->getReturnExp(i);
+            if (e->getOper() == opMemOf && 
+                e->getSubExp1()->getOper() == opMinus &&
+                *e->getSubExp1()->getSubExp1() == *regsp &&
+                e->getSubExp1()->getSubExp2()->isIntConst())
+                preserved.insert(e);
+        }
+    }
     if (stdret)
         removeReturn(new Terminal(opPC));
     for (std::set<Exp*>::iterator it = preserved.begin(); 
@@ -2202,7 +2220,8 @@ bool UserProc::prove(Exp *query)
 
     proven.insert(original);
     std::set<PhiExp*> lastPhis;
-    if (!prover(query, lastPhis)) {
+    std::map<PhiExp*, Exp*> cache;
+    if (!prover(query, lastPhis, cache)) {
         proven.erase(original);
         delete original;
         return false;
@@ -2212,9 +2231,18 @@ bool UserProc::prove(Exp *query)
     return true;
 }
 
-bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
+bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, 
+                      std::map<PhiExp*, Exp*> &cache, PhiExp* lastPhi)
 {
     Exp *phiInd = query->getSubExp2()->clone();
+
+    if (lastPhi && cache.find(lastPhi) != cache.end() &&
+        *cache[lastPhi] == *phiInd) {
+        if (VERBOSE)
+            std::cerr << "true - in the cache" << std::endl;
+        return true;
+    } 
+
     query = query->clone();
     bool change = true;
     bool swapped = false;
@@ -2259,6 +2287,9 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                                       << r->getSubExp1() 
                                       << " = " << right << std::endl;
                         right = call->substituteParams(right);
+                        if (VERBOSE)
+                            std::cerr << "right with subs: " << right 
+                                      << std::endl;
                         query->setSubExp1(right);
                         change = true;
                     }
@@ -2269,21 +2300,22 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                         PhiExp *p = (PhiExp*)s->getRight();
                         StmtVecIter it;
                         bool ok = true;
-                        if (lastPhis.find(p) != lastPhis.end()) {
+                        if (lastPhis.find(p) != lastPhis.end() ||
+                            p == lastPhi) {
                             if (VERBOSE)
                                 std::cerr << "phi loop detected ";
-                            ok = (p == lastPhi && 
-                                  *query->getSubExp2() == *phiInd);
+                            ok = //(p == lastPhi && 
+                                (*query->getSubExp2() == *phiInd);
                             if (ok && VERBOSE)
                                 std::cerr << "(set true due to induction)" 
                                           << std::endl;
                             if (!ok && VERBOSE)
                                 std::cerr << "(set false " << 
                                     query->getSubExp2() << " != " << 
-                                    phiInd << ")" << std::endl;
+                                    phiInd << " or wrong phi)" << std::endl;
                         } else {
                             if (VERBOSE)
-                                std::cerr << "found " << p << " prove for each" 
+                                std::cerr << "found " << s << " prove for each" 
                                           << std::endl;
                             for (Statement *s1 = p->getFirstRef(it); 
                                             !p->isLastRef(it);
@@ -2295,7 +2327,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                                     std::cerr << "proving for " << e 
                                               << std::endl;
                                 lastPhis.insert(lastPhi);
-                                if (!prover(e, lastPhis, p)) { 
+                                if (!prover(e, lastPhis, cache, p)) { 
                                     ok = false; 
                                     delete e; 
                                     break; 
@@ -2303,9 +2335,13 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                                 lastPhis.erase(lastPhi);
                                 delete e;
                             }
+                            if (ok)
+                                cache[p] = query->getSubExp2()->clone();
                         }
-                        if (ok) query = new Terminal(opTrue);
-                        else query = new Terminal(opFalse);
+                        if (ok)
+                            query = new Terminal(opTrue);
+                        else 
+                            query = new Terminal(opFalse);
                         change = true;
                     } else {
                         query->setSubExp1(s->getRight()->clone());
@@ -2357,6 +2393,9 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
                 change = true;
                 swapped = true;
             }
+        } else if (query->isIntConst()) {
+            Const *c = (Const*)query;
+            query = new Terminal(c->getInt() ? opTrue : opFalse);
         }
 
         Exp *old = query->clone();
@@ -2369,6 +2408,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis, PhiExp* lastPhi)
         }
         delete old;
     }
+    
     return query->getOper() == opTrue;
 }
 
@@ -2394,7 +2434,11 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
         std::cerr << "Counted use of return location " << loc <<
           " for call to " << proc->getName() << " at " << def->getNumber() <<
           " in " << getName() << "\n";
-    rc[proc].insert(loc);
+    // we want to count the return that corresponds to this loc
+    // this can be a different expression to loc because replacements
+    // are done in the call's return list as part of decompilation
+    Exp *ret = proc->getSignature()->getReturnExp(call->findReturn(loc));
+    rc[proc].insert(ret);
 }
 
 void UserProc::countUsedReturns(ReturnCounter& rc) {

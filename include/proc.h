@@ -514,8 +514,7 @@ public:
     // prove any arbitary property of this procedure
     bool prove(Exp *query);
     // helper function, should be private
-    bool prover(Exp *query, std::set<PhiExp*> &lastPhis, 
-                PhiExp *lastPhi = NULL);    
+    bool prover(Exp *query, std::set<PhiExp*> &lastPhis, std::map<PhiExp*, Exp*> &cache, PhiExp *lastPhi = NULL);    
 
     // promote the signature if possible
     void promoteSignature();
