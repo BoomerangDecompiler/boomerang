@@ -502,8 +502,12 @@ SCASB
 SCASv^ov  is  ov; SCASv
 rep^.SCASB      is rep ; SCASB
 rep^.SCASv^ov   is rep; ov; SCASv 
-SEG.FS      # Make this a one byte NOP for now
-SEG.GS      # Allows scanning of Windows startup code
+SEG.CS      # Make these one byte NOPs for now
+SEG.DS      # Allows scanning Windows startup code,
+SEG.ES      # and they are occasionally used as
+SEG.FS      # part of multibyte NOPs
+SEG.GS
+SEG.SS
 SETb^cond  Eaddr  is  SETb & ... cond; Eaddr
 SGDT  Mem  is (grp7; Mem) & SGDT
 SIDT  Mem  is (grp7; Mem) & SIDT
