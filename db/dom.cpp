@@ -150,6 +150,8 @@ void Cfg::computeDF(DOM* d, int n) {
 
 void Cfg::placePhiFunctions(DOM* d, int memDepth) {
     // First free some memory no longer needed
+if (memDepth == 1)
+  std::cerr << "HACK!\n";
     d->dfnum.resize(0);
     d->semi.resize(0);
     d->ancestor.resize(0);
@@ -158,6 +160,8 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
     d->parent.resize(0);
     d->best.resize(0);
     d->bucket.resize(0);
+    d->defsites.clear();            // Clear defsites map
+    d->A_orig.clear();              // and A_orig
 
     // Set the sizes of needed vectors
     int numBB = d->indices.size();
@@ -192,6 +196,7 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
     std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
     for (mm = d->defsites.begin(); mm != d->defsites.end(); mm++) {
         Exp* a = (*mm).first;               // *mm is pair<Exp*, set<int>>
+if (memDepth == 1) std::cerr << "MD1: a is " << a << "\n";
         std::set<int> W = d->defsites[a];   // set copy
         // While W not empty
         while (W.size()) {
@@ -214,9 +219,10 @@ void Cfg::placePhiFunctions(DOM* d, int memDepth) {
                     // A_phi[a] <- A_phi[a] U {y}
                     s.insert(y);
                     // if a !elementof A_orig[y]
-                    if (d->A_orig[y].find(a) == d->A_orig[y].end())
+                    if (d->A_orig[y].find(a) == d->A_orig[y].end()) {
                         // W <- W U {y}
                         W.insert(y);
+                    }
                 }
             }
         }
@@ -270,9 +276,13 @@ void Cfg::renameBlockVars(DOM* d, int n, int memDepth) {
             // if S is not a phi function, then quit the loop (no more phi's)
             if (!ae || !ae->isPhi()) break;
             Exp* a = ae->getLeft();
+            // Only consider variables of the current memory depth
+            // (since we only have reaching defs for these)
+            if (a->getMemDepth() != memDepth) continue;
             Statement* def;
-            if (d->Stack[a].empty())
+            if (d->Stack[a].empty()) {
                 def = NULL;
+            }
             else
                 def = d->Stack[a].top();
             // "Replace jth operand with a_i"
