@@ -92,7 +92,9 @@ public:
     // 
     void updateUses() {
         if (uses == NULL) {
-            uses = new std::set<Statement*>; calcUses(*uses); } }
+            uses = new std::set<Statement*>; calcUses(*uses); 
+        } 
+    }
     void calcUses(std::set<Statement*> &uses);
     int getNumUses() { 
         updateUses();

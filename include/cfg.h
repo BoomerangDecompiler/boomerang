@@ -454,10 +454,10 @@ public:
      */
     void setProc(UserProc* proc);
 
-	/*
-	 * clear this CFG of all basic blocks, ready for decode
-	 */
-	void clear();
+    /*
+     * clear this CFG of all basic blocks, ready for decode
+     */
+    void clear();
 
     /*
      * Equality operator.
@@ -743,30 +743,30 @@ public:
     void updateLiveness();
     std::set<Statement*> &getLiveOut() { return liveout; }
 
-	/*
-	 * Virtual Function Call analysis
-	 */
-	void virtualFunctionCalls(Prog* prog);
+    /*
+     * Virtual Function Call analysis
+     */
+    void virtualFunctionCalls(Prog* prog);
 
     std::vector<PBB> m_vectorBB; // faster access
 
-	// serialize the CFG
-	bool serialize(std::ostream &ouf, int &len);
+    // serialize the CFG
+    bool serialize(std::ostream &ouf, int &len);
 
-	// deserialize a CFG
-	bool deserialize(std::istream &inf);
+    // deserialize a CFG
+    bool deserialize(std::istream &inf);
 
-	/* make the given BB into a call followed by a ret 
-	 * and remove all the orphaned nodes.
-	 */
-	void makeCallRet(PBB head, Proc *p);
+    /* make the given BB into a call followed by a ret 
+     * and remove all the orphaned nodes.
+     */
+    void makeCallRet(PBB head, Proc *p);
 
-	/* return a bb given an address */
-	PBB bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
+    /* return a bb given an address */
+    PBB bbForAddr(ADDRESS addr) { return m_mapBB[addr]; }
 
-	/* Simplify all the expressions in the CFG
-	 */
-	void simplify();
+    /* Simplify all the expressions in the CFG
+     */
+    void simplify();
 
 private:
 

@@ -1024,6 +1024,7 @@ void UserProc::getInternalStatements(std::list<Statement*> &internal)
 void UserProc::decompile() {
     if (decompiled) return;
     decompiled = true;
+    std::cerr << "decompiling " << getName() << std::endl;
     // The following loop could be a lot quicker if we just checked each BB,
     // and just looked at the last rtl of each CALL BB
     std::set<Statement*> stmts;
@@ -1065,6 +1066,7 @@ void UserProc::decompile() {
     if (VERBOSE) {
         print(std::cout /*,true*/);
     }
+    std::cerr << "decompiled " << getName() << std::endl;
 }
 
 // Flush the dataflow for the whole proc. Needed because of aliasing problems.
