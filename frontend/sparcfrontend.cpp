@@ -49,6 +49,7 @@
 #include "sparcfrontend.h"
 #include "BinaryFile.h"     // E.g. IsDynamicallyLinkedProc
 #include "boomerang.h"
+#include "signature.h"
 
 /*==============================================================================
  * FUNCTION:         warnDCTcouple
@@ -806,6 +807,22 @@ bool SparcFrontEnd::case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
  *============================================================================*/
 bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
   std::ofstream &os, bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
+
+    // init arguments and return set to be all 31 machine registers
+    // Important: because o registers are save in i registers, and
+    // i registers have higher register numbers (e.g. i1=r25, o1=r9)
+    // it helps the prover to process higher register numbers first!
+    // But do r30 first (%i6, saves %o6, the stack pointer)
+    Signature *sig = proc->getSignature();
+    sig->addParameter(Unary::regOf(30));
+    sig->addReturn   (Unary::regOf(30));
+    sig->addParameter(Unary::regOf(31));
+    sig->addReturn   (Unary::regOf(31));
+    for (int r=29; r>0; r--) {
+        sig->addParameter(Unary::regOf(r));
+        sig->addReturn   (Unary::regOf(r));
+    }
+
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;

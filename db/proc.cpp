@@ -1146,12 +1146,17 @@ void UserProc::removeRedundantPhis()
 }
 
 void UserProc::trimReturns() {
+    // Special case for 32-bit stack-based machines (e.g. Pentium).
+    // RISC machines generally preserve the stack pointer (so special
+    // case required)
     if (VERBOSE)
-        std::cerr << "attempting to prove esp = esp + 4 for " << getName() << std::endl;
+        std::cerr << "attempting to prove sp = sp + 4 for " << getName() <<
+          std::endl;
+    int sp = signature->getStackRegister(prog);
     prove(new Binary(opEquals,
-                  new Unary(opRegOf, new Const(28)),
+                  Unary::regOf(sp),
                   new Binary(opPlus,
-                      new Unary(opRegOf, new Const(28)),
+                      Unary::regOf(sp),
                       new Const(4))));
     std::set<Exp*> preserved;
     for (int i = 0; i < signature->getNumReturns(); i++) {
