@@ -583,7 +583,7 @@ void GotoStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     if (pDest == NULL)
         os << "*no dest*";
     else if (pDest->getOper() != opIntConst)
-         pDest->print(os);
+         pDest->print(os, withDF);
     else
         os << "0x" << std::hex << getFixedDest();
 }
@@ -1150,11 +1150,6 @@ void BranchStatement::simplify() {
     }
 }
 
-void BranchStatement::subscriptVar(Exp* e, Statement* def) {
-    if (pCond)
-        pCond = pCond->expSubscriptVar(e, def);
-}
-
 /**********************************
  * CaseStatement methods
  **********************************/
@@ -1291,14 +1286,6 @@ bool CaseStatement::usesExp(Exp *e) {
     if (pSwitchInfo->pSwitchVar)
         return *pSwitchInfo->pSwitchVar == *e;
     return false;
-}
-
-void CaseStatement::subscriptVar(Exp* e, Statement* def) {
-    if (pDest)
-        pDest = pDest->expSubscriptVar(e, def);
-    else if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-        pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->expSubscriptVar(
-          e, def);
 }
 
 bool CaseStatement::doReplaceRef(Exp* from, Exp* to) {
@@ -1903,30 +1890,6 @@ void CallStatement::getDefinitions(LocationSet &defs) {
     }
 }
 
-void CallStatement::subscriptVar(Exp* e, Statement* def) {
-#if 0
-    LOG << "callstatement subscriptvar " << e << " to "; 
-    if (def == NULL)
-        LOG << "0\n";
-    else
-        LOG << def->getNumber() << "\n";
-#endif
-    if (procDest == NULL && pDest)
-        pDest = pDest->expSubscriptVar(e, def);
-	unsigned int i;
-    for (i = 0; i < returns.size(); i++) 
-        if (returns[i]->getOper() == opMemOf) {
-            returns[i]->refSubExp1() = 
-                returns[i]->getSubExp1()->expSubscriptVar(e, def);
-        }
-    for (i = 0; i < arguments.size(); i++) {
-        arguments[i] = arguments[i]->expSubscriptVar(e, def);
-    }
-    for (i = 0; i < implicitArguments.size(); i++) {
-        implicitArguments[i] = implicitArguments[i]->expSubscriptVar(e, def);
-    }
-}
-
 bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
     bool convertIndirect = false;
@@ -2060,7 +2023,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to, change);
         if (change) {
             arguments[i] = arguments[i]->simplifyArith()->simplify();
-            if (0 & VERBOSE)
+            if (1 & VERBOSE)
                 LOG << "doReplaceRef: updated argument[" << i << "] with " <<
                   arguments[i] << "\n";
         }
@@ -2471,12 +2434,6 @@ bool ReturnStatement::usesExp(Exp *e) {
     return false;
 }
 
-void ReturnStatement::subscriptVar(Exp* e, Statement* def) {
-    for (unsigned i = 0; i < returns.size(); i++) {
-        returns[i] = returns[i]->expSubscriptVar(e, def);
-    }
-}
-
 bool ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
     bool change = false;
     for (unsigned i = 0; i < returns.size(); i++) {
@@ -2582,7 +2539,7 @@ void BoolStatement::setCondExpr(Exp* pss) {
 void BoolStatement::print(std::ostream& os /*= cout*/, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
     os << "BOOL ";
-    pDest->print(os);
+    pDest->print(os, withDF);
     os << " := CC(";
     switch (jtCond)
     {
@@ -2712,12 +2669,6 @@ bool BoolStatement::doReplaceRef(Exp* from, Exp* to) {
     simplify();
     return false;
 }
-
-void BoolStatement::subscriptVar(Exp* e, Statement* def) {
-    if (pCond) pCond = pCond->expSubscriptVar(e, def);
-    if (pDest) pDest = pDest->expSubscriptVar(e, def);
-}
-
 
 void BoolStatement::setDest(std::list<Statement*>* stmts) {
     assert(stmts->size() == 1);
@@ -2946,12 +2897,12 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace) {
     return change;
 }
 
-void Assign::print(std::ostream& os, bool withUses) {
+void Assign::print(std::ostream& os, bool withDF) {
     os << std::setw(4) << std::dec << number << " ";
     os << "*" << type << "* ";
-    if (lhs) lhs->print(os, withUses);
+    if (lhs) lhs->print(os, withDF);
     os << " := ";
-    if (rhs) rhs->print(os, withUses);
+    if (rhs) rhs->print(os, withDF);
 }
 
 void Assign::getDefinitions(LocationSet &defs) {
@@ -3074,19 +3025,6 @@ bool Assign::doReplaceRef(Exp* from, Exp* to) {
         lhs = lhs->simplifyArith()->simplify();
     }
     return false;
-}
-
-void Assign::subscriptVar(Exp* e, Statement* def) {
-    // Replace all e with e{def} (on the RHS or in memofs in the LHS)
-    // NOTE: don't use searchReplace. It deletes the original, which could
-    // already be used as a key in a map!
-    rhs = rhs->expSubscriptVar(e, def);
-    if (lhs->isMemOf()) {
-        Exp* subLeft = ((Unary*)lhs)->getSubExp1();
-        Exp* temp = subLeft->expSubscriptVar(e, def);
-        if (subLeft != temp)
-            ((Unary*)lhs)->setSubExp1ND(temp);
-    }
 }
 
 // Not sure if anything needed here
@@ -3332,65 +3270,78 @@ bool BoolStatement::accept(StmtExpVisitor* v) {
 // Visiting from class StmtModifier
 // Modify all the various expressions in a statement
 bool Assign::accept(StmtModifier* v) {
-    v->visit(this);
+    bool recur;
+    v->visit(this, recur);
     v->mod->clearMod();
-    if (lhs) lhs = lhs->accept(v->mod);
-    if (rhs) rhs = rhs->accept(v->mod);
+    if (recur) lhs = lhs->accept(v->mod);
+    if (recur) rhs = rhs->accept(v->mod);
     if (VERBOSE && v->mod->isMod())
         LOG << "Assignment changed: now " << this << "\n";
     return true;
 }
 
 bool GotoStatement::accept(StmtModifier* v) {
-    v->visit(this);
-    if (pDest)
+    bool recur;
+    v->visit(this, recur);
+    if (pDest && recur)
         pDest = pDest->accept(v->mod);
     return true;
 }
 
 bool BranchStatement::accept(StmtModifier* v) {
-    v->visit(this);
-    if (pDest)
+    bool recur;
+    v->visit(this, recur);
+    if (pDest && recur)
         pDest = pDest->accept(v->mod);
+    if (pCond && recur)
+        pCond = pCond->accept(v->mod);
     return true;
 }
 
 bool CaseStatement::accept(StmtModifier* v) {
-    v->visit(this);
-    if (pSwitchInfo && pSwitchInfo->pSwitchVar)
+    bool recur;
+    v->visit(this, recur);
+    if (pSwitchInfo && pSwitchInfo->pSwitchVar && recur)
         pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->accept(v->mod);
     return true;
 }
 
 bool CallStatement::accept(StmtModifier* v) {
-    v->visit(this);
-    if (pDest)
+    bool recur;
+    v->visit(this, recur);
+    if (pDest && recur)
         pDest = pDest->accept(v->mod);
     std::vector<Exp*>::iterator it;
-    for (it = arguments.begin(); it != arguments.end(); it++)
+    for (it = arguments.begin(); recur && it != arguments.end(); it++)
         *it = (*it)->accept(v->mod);
-    for (it = implicitArguments.begin(); it != implicitArguments.end(); it++)
+    for (it = implicitArguments.begin(); recur && it != implicitArguments.end();
+      it++)
         *it = (*it)->accept(v->mod);
-    for (it = returns.begin(); it != returns.end(); it++)
+    for (it = returns.begin(); recur && it != returns.end(); it++)
         *it = (*it)->accept(v->mod);
     return true;
 }
 
 bool ReturnStatement::accept(StmtModifier* v) {
-    v->visit(this);
+    bool recur;
+    v->visit(this, recur);
     std::vector<Exp*>::iterator it;
-    for (it = returns.begin(); it != returns.end(); it++)
+    for (it = returns.begin(); recur && it != returns.end(); it++)
         *it = (*it)->accept(v->mod);
     return true;
 }
 
 bool BoolStatement::accept(StmtModifier* v) {
-    v->visit(this);
-    if (pCond)
+    bool recur;
+    v->visit(this, recur);
+    if (pCond && recur)
         pCond = pCond->accept(v->mod);
+    if (pDest && recur)
+        pDest = pDest->accept(v->mod);
     return true;
 }
 
+// Fix references to the returns of call statements
 void Statement::fixCallRefs() {
     CallRefsFixer crf;
     StmtModifier sm(&crf);
@@ -3404,3 +3355,11 @@ void Statement::addUsedLocs(LocationSet& used, bool final /* = false */) {
     UsedLocsVisitor ulv(&ulf, final);
     accept(&ulv);
 }
+
+// For all expressions in this Statement, replace any e with e{def}
+void Statement::subscriptVar(Exp* e, Statement* def) {
+    ExpSubscripter es(e, def);
+    StmtSubscripter ss(&es);
+    accept(&ss);
+}
+

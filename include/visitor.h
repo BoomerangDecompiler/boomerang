@@ -138,17 +138,17 @@ public:
     // Most times these won't be needed
     // Note: you only need to override the ones that make a cange.
     // preVisit comes before modifications to the children (if any)
-virtual Exp* preVisit(Unary *e,    bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(Binary *e,   bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(Ternary *e,  bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(TypedExp *e, bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(FlagDef *e,  bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(RefExp *e,   bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(PhiExp *e,   bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(Location *e, bool& norecur) {norecur = false; return e;}
-virtual Exp* preVisit(Const *e                  ) {                 return e;}
-virtual Exp* preVisit(Terminal *e               ) {                 return e;}
-virtual Exp* preVisit(TypeVal *e                ) {                 return e;}
+virtual Exp* preVisit(Unary *e,    bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(Binary *e,   bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(Ternary *e,  bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(TypedExp *e, bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(FlagDef *e,  bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(RefExp *e,   bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(PhiExp *e,   bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(Location *e, bool& recur) {recur = true; return e;}
+virtual Exp* preVisit(Const *e                ) {              return e;}
+virtual Exp* preVisit(Terminal *e             ) {              return e;}
+virtual Exp* preVisit(TypeVal *e              ) {              return e;}
 
     // postVisit comes after modifications to the children (if any)
 virtual Exp* postVisit(Unary *e)    {return e;}
@@ -249,20 +249,20 @@ public:
     virtual     ~StmtModifier() {}
     // This class' visitor functions don't return anything. Maybe we'll need
     // return values at a later stage.
-    virtual void visit(Assign *stmt)         {};
-    virtual void visit(GotoStatement *stmt)  {};
-    virtual void visit(BranchStatement *stmt){};
-    virtual void visit(CaseStatement *stmt)  {};
-    virtual void visit(CallStatement *stmt)  {};
-    virtual void visit(ReturnStatement *stmt){};
-    virtual void visit(BoolStatement *stmt)  {};
+virtual void visit(Assign *s,         bool& recur) {recur = true;}
+virtual void visit(GotoStatement *s,  bool& recur) {recur = true;}
+virtual void visit(BranchStatement *s,bool& recur) {recur = true;}
+virtual void visit(CaseStatement *s,  bool& recur) {recur = true;}
+virtual void visit(CallStatement *s,  bool& recur) {recur = true;}
+virtual void visit(ReturnStatement *s,bool& recur) {recur = true;}
+virtual void visit(BoolStatement *s,  bool& recur) {recur = true;}
 };
 
 class StripPhis : public StmtModifier {
     bool    del;            // Set true if this statment is to be deleted
 public:
                  StripPhis(ExpModifier* em) : StmtModifier(em) {del = false;} 
-    virtual void visit(Assign* stmt);
+    virtual void visit(Assign* stmt, bool& recur);
     bool    getDelete() {return del;}
 };
 
@@ -270,7 +270,7 @@ public:
 class StripRefs : public ExpModifier {
 public:
             StripRefs() {}
-    virtual Exp* preVisit(RefExp* ei, bool& norecur);
+    virtual Exp* preVisit(RefExp* ei, bool& recur);
     // All other virtual functions inherit and do nothing
 };
 
@@ -284,22 +284,22 @@ class CallRefsFixer : public ExpModifier {
     unsigned    unchanged;
 public:
              CallRefsFixer() { mask = 1; unchanged = (unsigned)-1;}
-virtual Exp* preVisit(Unary *e,    bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(Binary *e,   bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(Ternary *e,  bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(TypedExp *e, bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(FlagDef *e,  bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(RefExp *e,   bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(PhiExp *e,   bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
-virtual Exp* preVisit(Location *e, bool& norecur) {
-    norecur = false; mask <<= 1; return e;}
+virtual Exp* preVisit(Unary *e,    bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(Binary *e,   bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(Ternary *e,  bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(TypedExp *e, bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(FlagDef *e,  bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(RefExp *e,   bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(PhiExp *e,   bool& recur) {
+    recur = true; mask <<= 1; return e;}
+virtual Exp* preVisit(Location *e, bool& recur) {
+    recur = true; mask <<= 1; return e;}
 virtual Exp* preVisit(Const *e)     { mask <<= 1; return e;}
 virtual Exp* preVisit(Terminal *e)  { mask <<= 1; return e;}
 virtual Exp* preVisit(TypeVal *e)   { mask <<= 1; return e;}
@@ -357,9 +357,18 @@ class ExpSubscripter : public ExpModifier {
 public:
                 ExpSubscripter(Exp* s, Statement* d) {
                     search = s; def = d; }
-    virtual Exp* preVisit(Location *e, bool& norecur);
+    virtual Exp* preVisit(Location *e, bool& recur);
     virtual Exp* preVisit(Terminal *e);
-    virtual Exp* preVisit(RefExp *e,   bool& norecur);
+    virtual Exp* preVisit(RefExp *e,   bool& recur);
 };
 
-#endif  // #ifndef __VISIOR_H__
+class StmtSubscripter : public StmtModifier {
+public:
+                StmtSubscripter(ExpModifier* em) : StmtModifier(em) {}
+    virtual     ~StmtSubscripter() {}
+
+    virtual void visit(Assign *s,        bool& recur);
+    virtual void visit(CallStatement *s, bool& recur);
+};
+
+#endif  // #ifndef __VISITOR_H__

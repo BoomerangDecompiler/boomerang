@@ -171,31 +171,6 @@ public:
             void addUsedLocs(LocationSet& used, bool final = false);
     void fixCallRefs();
 
-    // Subscript all occurrences of e with definition def (except for top level
-    // of LHS of assignment)
-    virtual void subscriptVar(Exp* e, Statement* def) = 0;
-
-    // returns the statement which is used by this statement and has a
-    // left like the given expression
-    // MVE: is this useful?
-    //virtual Statement *findDef(Exp *e);
-
-    // 
-    // get my uses' definitions (ud chain)
-    // 
-    //void calcUses(StatementSet &uses);
-    //int getNumUses() { return uses.size(); }
-    //StatementSet &getUses() { return uses; }
-    //void clearUses() {uses.clear(); usedBy.clear();}
- 
-    // 
-    // usedBy: du chain (my def's uses)
-    //
-    //void calcUsedBy(StatementSet &usedBy);
-    //int getNumUsedBy() { return usedBy.size(); }
-
-    // update my data flow (I'm about to be deleted)
-    //void updateDfForErase();
 
     // get/set the enclosing BB
     PBB getBB() { return pbb; }
@@ -208,7 +183,7 @@ public:
             void specialReplaceRef(Statement* def);
 
     // statements should be printable (for debugging)
-    virtual void print(std::ostream &os, bool withUses = false) = 0;
+    virtual void print(std::ostream &os, bool withDF = false) = 0;
     virtual void printWithUses(std::ostream& os) {print(os, true);}
             void printAsUse(std::ostream &os)   {os << std::dec << number;}
             void printAsUseBy(std::ostream &os) {os << std::dec << number;}
@@ -264,6 +239,9 @@ public:
     // statement was a phi (and to be deleted)
     bool    stripRefs();
 
+    // For all expressions in this Statement, replace all e with e{def}
+    void    subscriptVar(Exp* e, Statement* def);
+
 protected:
     // Returns true if an indirect call is converted to direct:
     virtual bool doReplaceRef(Exp* from, Exp* to) = 0;
@@ -312,7 +290,7 @@ public:
     bool    operator==(const Statement& o) const;
     bool    operator< (const Statement& o) const;
 
-    virtual void print(std::ostream& os, bool withUses = false);
+    virtual void print(std::ostream& os, bool withDF = false);
     void    appendDotFile(std::ofstream& of);
 
     // Get and set the type
@@ -351,9 +329,6 @@ public:
  
     // update type for expression
     virtual Type *updateType(Exp *e, Type *curType);
-
-    // subscript one variable
-    void subscriptVar(Exp* e, Statement* def);
 
     // memory depth
     int getMemDepth();
@@ -455,7 +430,6 @@ public:
     virtual Type* getLeftType() {return NULL;};
     virtual Exp* getRight() {return NULL;}
     virtual bool usesExp(Exp*) {return false;}
-    virtual void subscriptVar(Exp*, Statement*) {}
     virtual void processConstants(Prog*) {}
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
     virtual void fromSSAform(igraph&) {}
@@ -544,7 +518,6 @@ public:
 
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
     virtual bool canPropagateToAll() { return false; }
@@ -639,7 +612,6 @@ public:
     
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void subscriptVar(Exp* e, Statement* def);
 protected:
     virtual bool doReplaceRef(Exp* from, Exp* to);
 public:
@@ -707,6 +679,7 @@ public:
     Exp* findArgument(Exp* e);
     Exp* getArgumentExp(int i);
     Exp* getImplicitArgumentExp(int i);
+    std::vector<Exp*>&  getImplicitArguments() {return implicitArguments;}
     int  getNumImplicitArguments() {return implicitArguments.size();}
     void setArgumentExp(int i, Exp *e);
     void setNumArguments(int i);
@@ -753,7 +726,6 @@ public:
 
     // dataflow analysis
     virtual bool usesExp(Exp *e);
-    virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
     virtual bool propagateToAll() { assert(false); return false;}
@@ -842,10 +814,6 @@ public:
     // returns true if this statement uses the given expression
     virtual bool usesExp(Exp *e);
 
-    // Subscript all occurrences of e with definition def (except for top level
-    // of LHS of assignment)
-    virtual void subscriptVar(Exp* e, Statement* def);
-
     virtual bool doReplaceRef(Exp* from, Exp* to);
 
     int getNumBytesPopped() { return nBytesPopped; }
@@ -923,8 +891,6 @@ public:
     virtual void simplify();
 
     // Statement functions
-    virtual void subscriptVar(Exp* e, Statement* def);
-    //virtual void getDeadStatements(StatementSet &dead);
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &def);
     virtual Exp* getLeft() { return getDest(); }

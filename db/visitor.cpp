@@ -111,12 +111,13 @@ bool StmtSetConscripts::visit(BoolStatement* stmt) {
     return true;
 }
 
-void StripPhis::visit(Assign* s) {
+void StripPhis::visit(Assign* s, bool& recur) {
     del = s->isPhi();
+    recur = true;
 }
 
-Exp* StripRefs::preVisit(RefExp* e, bool& norecur) {
-    norecur = false;
+Exp* StripRefs::preVisit(RefExp* e, bool& recur) {
+    recur = false;
     return e->getSubExp1();     // Do the actual stripping of references!
 }
 
@@ -391,12 +392,12 @@ bool UsedLocsVisitor::visit(BoolStatement* s, bool& override) {
 //
 // Expression subscripter
 //
-Exp* ExpSubscripter::preVisit(Location* e, bool& norecur) {
+Exp* ExpSubscripter::preVisit(Location* e, bool& recur) {
     if (*e == *search) {
-        norecur = !e->isMemOf();     // Don't double subscript unless m[...]
+        recur = e->isMemOf();     // Don't double subscript unless m[...]
         return new RefExp(e, def);
     }
-    norecur = false;
+    recur = true;
     return e;
 }
 
@@ -406,14 +407,54 @@ Exp* ExpSubscripter::preVisit(Terminal* e) {
     return e;
 }
 
-Exp* ExpSubscripter::preVisit(RefExp* e, bool& norecur) {
+Exp* ExpSubscripter::preVisit(RefExp* e, bool& recur) {
     Exp* base = e->getSubExp1();
     if (*base == *search) {
-        norecur = true;     // Don't recurse; would double subscript
+        recur = false;     // Don't recurse; would double subscript
         e->setDef(def);
         return e;
     }
-    norecur = false;
+    recur = true;
     return e;
+}
+
+// The Statement subscripter class
+void StmtSubscripter::visit(Assign* s, bool& recur) {
+    Exp* rhs = s->getRight();
+    s->setRight(rhs->accept(mod));
+    // Don't subscript the LHS of an assign, ever
+    Exp* lhs = s->getLeft();
+    if (lhs->isMemOf()) {
+        Exp*& child = ((Location*)lhs)->refSubExp1();
+        child = child->accept(mod);   
+    }
+    recur = false;
+}
+
+void StmtSubscripter::visit(CallStatement* s, bool& recur) {
+    Exp* pDest = s->getDest();
+    if (pDest)
+        pDest->accept(mod);
+    // Subscript the ordinary arguments
+    std::vector<Exp*>& arguments = s->getArguments();
+    int n = arguments.size();
+    for (int i=0; i < n; i++)
+        arguments[i] = arguments[i]->accept(mod);
+    // Subscript the implicit arguments
+    std::vector<Exp*>& implicits = s->getImplicitArguments();
+    n = implicits.size();
+    for (int i=0; i < n; i++)
+        implicits[i] = implicits[i]->accept(mod);
+    // Returns are like the LHS of an assignment; don't subscript them
+    // directly (only if m[x], and then only subscript the x's)
+    n = s->getNumReturns();
+    for (int i=0; i < n; i++) {
+        Exp* r = s->getReturnExp(i);
+        if (r->isMemOf()) {
+            Exp*& x = ((Location*)r)->refSubExp1();
+            x = x->accept(mod);
+        }
+    }
+    recur = false;          // Don't do the usual accept logic
 }
 
