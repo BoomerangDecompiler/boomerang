@@ -67,6 +67,14 @@ if ${HOST_LD} -v 2>&1 </dev/null | egrep '(GNU|with BFD)' 1>&5; then
 fi
 AC_MSG_RESULT( $HOST_GNU_LD )
 
+dnl -------------------
+AC_MSG_CHECKING( [if host is Cygwin] )
+HOST_CYGWIN=no
+if uname -o 2>&1 | egrep "Cygwin" 1>&5; then
+	HOST_CYGWIN=yes
+fi
+AC_MSG_RESULT( $HOST_CYGWIN )
+
 
 dnl Checks for elf library (no longer needed)
 dnl AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
@@ -153,6 +161,7 @@ LIBDIR=$srcdir/lib
 AC_SUBST(PREFIX)
 AC_SUBST(LIBDIR)
 AC_SUBST(HOST_GNU_LD)
+AC_SUBST(HOST_CYGWIN)
 
 
 AC_CONFIG_FILES(          Makefile)

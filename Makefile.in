@@ -31,8 +31,11 @@ C = gcc -g -Wall -O0
 CC = g++ -g -Wall -O0
 CXX=$(CC)
 
-# HOST_GNU_LD is true if the linker on this host machine is GNU
+# HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
+
+# HOST_CYGWIN is true if the host OS is CygWin
+HOST_CYGWIN = @HOST_CYGWIN@
 
 BISONPP=@BISONPP@
 FLEXPP=@FLEXPP@
@@ -121,12 +124,22 @@ bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
     $(RUNPATH) -Llib -lcppunit -lgc -lexpat -ldl
 
-# Leave -ldl last for convenience of commenting out (e.g. for Cygwin):
+
+ifeq ($(HOST_CYGWIN), yes)
+LDL=
+RENAME_TO_DLL=mv lib/libBinaryFile.so lib/BinaryFile.dll
+RENAME_FROM_DLL=mv lib/BinaryFile.dll libBinaryFile.so
+else # Non-cygwin
+LDL=-ldl
+RENAME_TO_DLL=
+RENAME_FROM_DLL=
+endif
+
 boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
-	# mv lib/libBinaryFile.so lib/BinaryFile.dll    # Cygwin only
+	$(RENAME_TO_DLL)
 	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) \
-	  -Llib -lgc -lexpat -ldl
-	# mv lib/BinaryFile.dll libBinaryFile.so        # Cygwin only
+	  -Llib -lgc -lexpat $(LDL)
+	$(RENAME_FROM_DLL)
 
 db/sslparser.cpp db/sslparser.h: db/sslparser.y db/sslscanner.l
 	cd db ; ${BISONPP} -d -v -osslparser.cpp -hsslparser.h sslparser.y
