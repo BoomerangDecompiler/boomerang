@@ -18,7 +18,11 @@
  * $Revision$
  *
  * 28 Apr 02 - Mike: getTempType() returns a Type* now
+ * 26 Aug 03 - Mike: Fixed operator< (had to re-introduce an enum... ugh)
  */
+
+#ifndef __TYPE_H_
+#define __TYPE_H_
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -39,43 +43,45 @@
  * PARAMETERS:      <none>
  * RETURNS:         <Not applicable>
  *============================================================================*/
-Type::Type()
+Type::Type(eType id) : id(id)
 {
 }
 
-VoidType::VoidType()
+VoidType::VoidType() : Type(eVoid)
 {
 }
 
-FuncType::FuncType(Signature *sig) : signature(sig)
+FuncType::FuncType(Signature *sig) : Type(eFunc), signature(sig)
 {
 }
 
-IntegerType::IntegerType(int sz, bool sign) : size(sz), signd(sign)
+IntegerType::IntegerType(int sz, bool sign) : Type(eInteger), size(sz),
+  signd(sign)
 {
 }
 
-FloatType::FloatType(int sz) : size(sz)
+FloatType::FloatType(int sz) : Type(eFloat), size(sz)
 {
 }
 
-BooleanType::BooleanType()
+BooleanType::BooleanType() : Type(eBoolean)
 {
 }
 
-CharType::CharType()
+CharType::CharType() : Type(eChar)
 {
 }
 
-PointerType::PointerType(Type *p) : points_to(p)
+PointerType::PointerType(Type *p) : Type(ePointer), points_to(p)
 {
 }
 
-ArrayType::ArrayType(Type *p, unsigned length) : base_type(p), length(length)
+ArrayType::ArrayType(Type *p, unsigned length) : Type(eArray), base_type(p),
+  length(length)
 {
 }
 
-NamedType::NamedType(const char *name) : name(name)
+NamedType::NamedType(const char *name) : Type(eNamed), name(name)
 {
 }
 
@@ -338,62 +344,61 @@ bool FloatType::operator-=(const Type& other) const
 */
 /*==============================================================================
  * FUNCTION:        *Type::operator<
- * OVERVIEW:        Defines an ordering between Type's (and hence SemStr's).
+ * OVERVIEW:        Defines an ordering between Type's
+ *                    (and hence sets etc of Exp* using lessExpStar).
  * PARAMETERS:      other - Type being compared to
  * RETURNS:         this is less than other
  *============================================================================*/
-bool IntegerType::operator<(const Type& other) const
-{
-    if (other.isInteger()) {
-  	if (size > ((IntegerType&)other).size)
-		return false;
-	if (signd && ((IntegerType&)other).signd)
-		return false;
-    }
+bool IntegerType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+  	if (size < ((IntegerType&)other).size) return true;
+  	if (size > ((IntegerType&)other).size) return false;
+	return (signd < ((IntegerType&)other).signd);
+}
+
+bool FloatType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+	return (size < ((FloatType&)other).size);
+}
+
+bool VoidType::operator<(const Type& other) const {
+    return id < other.getId();
+}
+
+bool FuncType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+    // FIXME: Need to compare signatures
     return true;
 }
 
-bool FloatType::operator<(const Type& other) const
-{
-    if (other.isFloat()) {
-  	if (size > ((FloatType&)other).size)
-		return false;
-    }
+bool BooleanType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
     return true;
 }
 
-bool VoidType::operator<(const Type& other) const
-{
-    return true;
+bool CharType::operator<(const Type& other) const {
+    return id < other.getId();
 }
 
-bool FuncType::operator<(const Type& other) const
-{
-    return true;
+bool PointerType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+    return (*points_to < *((PointerType&)other).points_to);
 }
 
-bool BooleanType::operator<(const Type& other) const
-{
-    return true;
+bool ArrayType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
+    return (*base_type < *((ArrayType&)other).base_type);
 }
 
-bool CharType::operator<(const Type& other) const
-{
-    return true;
-}
-
-bool PointerType::operator<(const Type& other) const
-{
-    return (*points_to < other);
-}
-
-bool ArrayType::operator<(const Type& other) const
-{
-    return (*base_type < other);
-}
-
-bool NamedType::operator<(const Type& other) const
-{
+bool NamedType::operator<(const Type& other) const {
+    if (id < other.getId()) return true;
+    if (id > other.getId()) return false;
     return (name < ((NamedType&)other).name);
 }
 
@@ -844,4 +849,14 @@ bool NamedType::deserialize_fid(std::istream &inf, int fid)
     return false;
 }
 
+int NamedType::nextAlpha = 0;
+NamedType* NamedType::getAlpha() {
+    std::ostringstream ost;
+    ost << "alpha" << nextAlpha++;
+    return new NamedType(strdup(ost.str().c_str()));
+}
 
+PointerType* PointerType::getPtrAlpha() {
+    return new PointerType(NamedType::getAlpha());
+}
+#endif  // #ifndef __TYPE_H__

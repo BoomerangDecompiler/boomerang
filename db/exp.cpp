@@ -1757,8 +1757,6 @@ Exp* Binary::polySimplify(bool& bMod) {
             case opBitOr:       k1 = k1 | k2; break;
             case opBitAnd:      k1 = k1 & k2; break;
             case opBitXor:      k1 = k1 ^ k2; break;
-            case opAnd:         k1 = k1 && k2; break;
-            case opOr:          k1 = k1 || k2; break;
             case opEquals:      k1 = (k1 == k2); break;
             case opNotEqual:    k1 = (k1 != k2); break;
             case opLess:        k1 = (k1 <  k2); break;
@@ -1798,8 +1796,19 @@ Exp* Binary::polySimplify(bool& bMod) {
     // Might want to commute to put an integer constant on the RHS
     // Later simplifications can rely on this (ADD other ops as necessary)
     if (opSub1 == opIntConst && 
-        (op == opPlus || op == opMult   || op == opMults || op == opBitOr ||
-         op == opOr   || op == opBitAnd || op == opAnd)) {
+          (op == opPlus || op == opMult   || op == opMults || op == opBitOr ||
+           op == opBitAnd )) {
+        commute();
+        // Swap opSub1 and opSub2 as well
+        OPER t = opSub1;
+        opSub1 = opSub2;
+        opSub2 = t;
+        // This is not counted as a modification
+    }
+
+    // Similarly for boolean constants
+    if (subExp1->isBoolConst() && !subExp2->isBoolConst() &&
+          (op == opAnd || op == opOr)) {
         commute();
         // Swap opSub1 and opSub2 as well
         OPER t = opSub1;
@@ -1841,20 +1850,34 @@ Exp* Binary::polySimplify(bool& bMod) {
         op = op == opPlus ? opMinus : opPlus;
     }
 
-    // Check for exp + 0  or  exp - 0  or  exp | 0 or exp OR 0
-    int k;
-    if ((op == opPlus || op == opMinus || op == opBitOr || (op == opOr)) &&
+    // Check for exp + 0  or  exp - 0  or  exp | 0
+    if ((op == opPlus || op == opMinus || op == opBitOr) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0) {
-        res = ((Unary*)res)->becomeSubExp1();
+        res = ((Binary*)res)->becomeSubExp1();
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp or false
+    if (op == opOr && subExp2->isFalse()) {
+        res = ((Binary*)res)->becomeSubExp1();
         bMod = true;
         return res;
     }
        
-    // Check for exp * 0  or exp & 0  or exp AND 0 
-    if ((op == opMult || op == opMults || op == opBitAnd || (op == opAnd)) &&
+    // Check for exp * 0  or exp & 0
+    if ((op == opMult || op == opMults || op == opBitAnd) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() == 0) {
         delete res;
         res = new Const(0);
+        bMod = true;
+        return res;
+    }
+
+    // Check for exp and false
+    if (op == opAnd && subExp2->isFalse()) {
+        delete res;
+        res = new Terminal(opFalse);
         bMod = true;
         return res;
     }
@@ -1877,13 +1900,26 @@ Exp* Binary::polySimplify(bool& bMod) {
 
     // Check for exp AND TRUE (logical AND)
     if ((op == opAnd) &&
-      opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) {
+      // Is the below really needed?
+      (opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) ||
+       subExp2->isTrue()) {
         res = ((Unary*)res)->becomeSubExp1();
         bMod = true;
         return res;
     }
 
+    // Check for exp OR TRUE (logical OR)
+    if ((op == opOr) &&
+      (opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) ||
+       subExp2->isTrue()) {
+        delete res;
+        res = new Terminal(opTrue);
+        bMod = true;
+        return res;
+    }
+
     // Check for [exp] << k where k is a positive integer const
+    int k;
     if (op == opShiftL && opSub2 == opIntConst &&
       ((k = ((Const*)subExp2)->getInt(), (k >= 0 && k < 32)))) {
         res->setOper(opMult);
@@ -2912,6 +2948,33 @@ Exp* Const::genConstraints(Exp* result) {
     return e;
 }
 
+Exp* Unary::genConstraints(Exp* result) {
+    switch (op) {
+        case opRegOf:
+        case opParam:
+        case opGlobal:
+            return new Binary(opEquals,
+                new Unary(opTypeOf, this->clone()),
+                result->clone());
+        default:
+            break;
+    }
+    return new Terminal(opTrue);
+}
+
+Exp* RefExp::genConstraints(Exp* result) {
+    OPER subOp = subExp1->getOper();
+    switch (subOp) {
+        case opRegOf:
+            return new Binary(opEquals,
+                new Unary(opTypeOf, this->clone()),
+                result->clone());
+        default:
+            break;
+    }
+    return new Terminal(opTrue);
+}
+
 Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
     Exp* con1 = subExp1->genConstraints(typeVal1);
     Exp* con2 = subExp2->genConstraints(typeVal2);
@@ -2948,8 +3011,9 @@ Exp* Binary::genConstraints(Exp* result) {
         }
 
         case opPlus: {
-            Type* ptrType = 0;      // FIXME!
-            TypeVal ptrVal(ptrType);
+            // A pointer to anything
+            Type* ptrType = PointerType::getPtrAlpha();
+            TypeVal ptrVal(ptrType);    // Type value of ptr to anything
             if (!restrictTo || restrictTo && restrictTo->isInteger()) {
                 // int + int -> int
                 res = constrainSub(&intVal, &intVal);
@@ -2979,7 +3043,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 else     res = res2;
             }
 
-            if (res) return res;
+            if (res) return res->simplify();
             else return new Terminal(opFalse);
         }
             
@@ -3015,7 +3079,7 @@ Exp* Binary::genConstraints(Exp* result) {
                 else     res = res2;
             }
 
-            if (res) return res;
+            if (res) return res->simplify();
             else return new Terminal(opFalse);
         }
             
@@ -3027,9 +3091,6 @@ Exp* Binary::genConstraints(Exp* result) {
 }
 
 Exp* PhiExp::genConstraints(Exp* result) {
-    return new Terminal(opTrue);
-}
-Exp* Unary::genConstraints(Exp* result) {
     return new Terminal(opTrue);
 }
 Exp* Ternary::genConstraints(Exp* result) {

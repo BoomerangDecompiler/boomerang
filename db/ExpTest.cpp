@@ -650,25 +650,21 @@ void ExpTest::testSimplifyBinary() {
     CPPUNIT_ASSERT(*b == *expb2);
     delete b; delete expb2;
 
-    std::string expected("(((0 + v[a]) - 0) | 0) or 0");
+    std::string expected("((0 + v[a]) - 0) | 0");
     std::ostringstream ost;
     Exp* e =
-        new Binary(opOr,
-            new Binary(opBitOr,
-                new Binary(opMinus,
-                    new Binary(opPlus,
-                        new Const(0),
-                        new Unary(opVar,
-                            new Const("a")
-                        )
-                    ),
-                    new Const(0)
+        new Binary(opBitOr,
+            new Binary(opMinus,
+                new Binary(opPlus,
+                    new Const(0),
+                    new Unary(opVar,
+                        new Const("a")
+                    )
                 ),
                 new Const(0)
             ),
             new Const(0)
         );
-    // Make sure we got it right!
     e->print(ost);
     CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
     // The above should simplify to just "v[a]"
@@ -694,6 +690,20 @@ void ExpTest::testSimplifyBinary() {
     CPPUNIT_ASSERT_EQUAL(expected, ost3.str());
     delete as;
 
+    // (false and true) or (Tr24 = <int>)
+    e = new Binary(opOr,
+        new Binary(opAnd,
+            new Terminal(opFalse),
+            new Terminal(opTrue)),
+        new Binary(opEquals,
+            new Unary(opTypeOf, Unary::regOf(24)),
+            new TypeVal(new IntegerType())));
+    e = e->simplify();
+    expected = "Tr24 = <int>";
+    std::ostringstream ost4;
+    e->print(ost4);
+    CPPUNIT_ASSERT_EQUAL(expected, ost4.str());
+    delete e;
 }
 
 /*==============================================================================

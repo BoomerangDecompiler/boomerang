@@ -33,15 +33,20 @@
 
 class Signature;
 
-class Type
-{
+enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer,
+    eArray, eNamed};    // For operator< only
+
+class Type {
+protected:
+    eType id;
 private:
     static std::map<std::string, Type*> namedTypes;
 
 public:
     // Constructors
-                Type();
+            Type(eType id);
 virtual		~Type();
+    eType   getId() const {return id;}
 
     static void addNamedType(const char *name, Type *type);
     static Type *getNamedType(const char *name);
@@ -229,6 +234,7 @@ public:
 virtual ~PointerType();
 virtual bool isPointer() const { return true; }
         Type *getPointsTo() { return points_to; }
+static  PointerType* getPtrAlpha();
 
 virtual Type* clone() const;
 
@@ -273,12 +279,15 @@ virtual	bool deserialize_fid(std::istream &inf, int fid);
 class NamedType : public Type {
 private:
     std::string name;
+    static int nextAlpha;
 
 public:
 	NamedType(const char *name);
 virtual ~NamedType();
 virtual bool isNamed() const { return true; }
         const char *getName() { return name.c_str(); }
+        // Get a new type variable, e.g. alpha0, alpha55
+static  NamedType *getAlpha();
 
 virtual Type* clone() const;
 
@@ -293,5 +302,6 @@ virtual const char *getCtype() const;
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
+
 
 #endif  // __TYPE_H__

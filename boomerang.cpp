@@ -41,7 +41,7 @@ void Boomerang::help() {
     std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-h: this help\n";
     std::cerr << "-m <num>: max memory depth\n";
-    std::cerr << "-nb: no simplications for branches\n";
+    std::cerr << "-nb: no simplifications for branches\n";
     std::cerr << "-nn: no removal of null and unused statements\n";
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-np: no replacement of expressions with parameter names\n";
@@ -51,7 +51,7 @@ void Boomerang::help() {
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-nm: don't decode the 'main' procedure\n";
     std::cerr << "-p <num>: only do num propogations\n";
-    std::cerr << "-pa: only propagate if can propagate to all\n";
+//  std::cerr << "-pa: only propagate if can propagate to all\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation"
                     "\n";
     std::cerr << "-t: trace every instruction decoded\n";

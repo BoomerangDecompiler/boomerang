@@ -2509,11 +2509,6 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
     std::set<Exp*, lessExpStar> removes;    // Else iterators confused
     std::set<Exp*, lessExpStar>& useSet = rc[this];
-std::cerr << "removeUnusedReturns for " << getName() << ": useSet is " ;
-std::set<Exp*, lessExpStar>::iterator zz;
-for (zz = useSet.begin(); zz != useSet.end(); zz++)
-  std::cerr << *zz << ", ";
-std::cerr << "\n";  // HACK!
     for (int i = 0; i < signature->getNumReturns(); i++) {
         Exp *ret = signature->getReturnExp(i);
         if (useSet.find(ret) == useSet.end())
@@ -2567,7 +2562,8 @@ void UserProc::typeAnalysis(Prog* prog) {
     if (consObj.solve(soln)) {
         LocSetIter cc;
         for (Exp* con = soln.getFirst(cc); con; con = soln.getNext(cc)) {
-            assert(con->isEquality());
+            //assert(con->isEquality());
+if (!con->isEquality()) continue;
             Exp* t = ((Binary*)con)->getSubExp1();
             if (t->isSubscript())
                 t = ((RefExp*)t)->getSubExp1();

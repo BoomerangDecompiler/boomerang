@@ -431,8 +431,8 @@ char* StatementSet::prints() {
     std::ostringstream ost;
     StmtSetIter it;
     for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) ost << ", ";
-        ost << *it << "\t";
+        if (it != sset.begin()) ost << ",\t";
+        ost << *it;
     }
     ost << "\n";
     strncpy(debug_buffer, ost.str().c_str(), 199);
@@ -443,8 +443,8 @@ char* StatementSet::prints() {
 void StatementSet::print(std::ostream& os) {
     StmtSetIter it;
     for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) os << ", ";
-        os << *it << "\t";
+        if (it != sset.begin()) os << ",\t";
+        os << *it;
     }
     os << "\n";
 }
@@ -505,8 +505,8 @@ char* LocationSet::prints() {
     std::ostringstream ost;
     LocSetIter it;
     for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) ost << ", ";
-        ost << *it << "\t";
+        if (it != sset.begin()) ost << ",\t";
+        ost << *it;
     }
     ost << "\n";
     strncpy(debug_buffer, ost.str().c_str(), 199);
@@ -517,8 +517,8 @@ char* LocationSet::prints() {
 void LocationSet::print(std::ostream& os) {
     LocSetIter it;
     for (it = sset.begin(); it != sset.end(); it++) {
-        if (it != sset.begin()) os << ", ";
-        os << *it << "\t";
+        if (it != sset.begin()) os << ",\t";
+        os << *it;
     }
     os << "\n";
 }
@@ -3388,6 +3388,9 @@ void CallStatement::genConstraints(LocationSet& cons) {
                     p++;
                 } while (cont);
                 if (t) {
+                    // scanf takes addresses of these
+                    if (name == "scanf")
+                        t = new PointerType(t);
                     // Generate a constraint for the parameter
                     TypeVal* tv = new TypeVal(t);
                     Exp* con = new Binary(opEquals,

@@ -159,6 +159,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isLocal() {return op == opLocal;}
     // True if this is a global variable
     bool isGlobal() {return op == opGlobal;}
+    // True if this is a typeof
+    bool isTypeOf() {return op == opTypeOf;}
     // Get the index for this var
     int getVarIndex();
     // True if this is a terminal
@@ -167,6 +169,8 @@ virtual int getArity() {return 0;}      // Overridden for Unary, Binary, etc
     bool isTrue() {return op == opTrue;}
     // True if this is the constant "false"
     bool isFalse() {return op == opFalse;}
+    // True if this is a boolean constant
+    bool isBoolConst() {return op == opTrue || op == opFalse;}
     // True if this is an equality (== or !=)
     bool isEquality() {return op == opEquals || op == opNotEqual;}
     // True if this is a comparison
@@ -679,6 +683,7 @@ virtual int getNumRefs() {return 1;}
     virtual Exp* expSubscriptVar(Exp* e, Statement* def);
     Exp*    addSubscript(Statement* def) {this->def = def; return this;}
     void    setDef(Statement* def) {this->def = def;}
+    virtual Exp*  genConstraints(Exp* restrictTo);
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return def == s;}
 };
@@ -738,6 +743,7 @@ public:
     ~TypeVal();
 
     Type*   getType() {return val;}
+    void    setType(Type* t) {val = t;}
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     bool    operator< (const Exp& o) const;
