@@ -161,7 +161,8 @@ testAll.o: testAll.cpp
 # Dependencies
 #
 
-db/exp.o: include/exp.h include/operator.h
+db/exp.o: include/exp.h include/operator.h include/types.h include/dataflow.h \
+    include/cfg.h include/rtl.h include/proc.h include/prog.h db/operstrings.h
 db/prog.o: include/prog.h
 db/proc.o: include/proc.h include/hllcode.h include/dataflow.h include/exp.h \
     include/cfg.h include/rtl.h include/prog.h include/signature.h
