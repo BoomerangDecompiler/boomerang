@@ -16,7 +16,8 @@
  * $Revision$
  * 
  * 15 Jul 02 - Trent: Created.
- * 18 Jul 02 = Mike: Changed addParameter's last param to deflt to "", not NULL
+ * 18 Jul 02 - Mike: Changed addParameter's last param to deflt to "", not NULL
+ * 02 Jan 03 - Mike: Fixed SPARC getParamExp and getArgExp
  */
 
 #include <assert.h>
@@ -370,14 +371,11 @@ Exp *CallingConvention::StdC::PentiumSignature::getParamExp(int n)
 
 Exp *CallingConvention::StdC::PentiumSignature::getArgumentExp(int n)
 {
-    // MVE: I have no idea what this was supposed to be.
-    // If it was for the actual parameters, then I suggest it
-    // should be as follows:
 	Exp *esp = new Unary(opRegOf, new Const(28));
-    if (n == 0)
-	    return new Unary(opMemOf, esp);
+        //if (n == 0)
+	//    return new Unary(opMemOf, esp);
 	return new Unary(opMemOf, new Binary(opPlus, esp, 
-				new Const((int)(n * 4))));
+				new Const((int)((n+1) * 4))));
 }
 
 Signature *CallingConvention::StdC::PentiumSignature::promote(UserProc *p)
@@ -494,17 +492,39 @@ Exp *CallingConvention::StdC::SparcSignature::getReturnExp()
 	// function
 	// For most things, the return value ends up in %o0, from the caller's
 	// perspective. For most callees (with save/restore), the actual assign-
-	// ment will be to %i0 (register 24).
+	// ment will be to %i0 (register 24), and the restore will copy %i0 to %o0.
 	return new Unary(opRegOf, new Const(8));
 }
 
 Exp *CallingConvention::StdC::SparcSignature::getParamExp(int n)
 {
-	return new Unary(opRegOf, new Const((int)(24 + n)));
+    // Note: although it looks like actual parameters are in %i0, %i1 etc in
+    // most SPARC procedures, this is a result of the semantics of the commonly
+    // seen (but not essential) SAVE instruction. So in reality, both formal
+    // and actual parameters are seen in %o0, %o1, ... at the start of the
+    // procedure
+    // return new Unary(opRegOf, new Const((int)(24 + n)));
+    if (n >= 6) {
+        // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
+        // m[%esp+96], etc.
+        return new Unary(opMemOf,
+            new Binary(opPlus,
+                new Unary(opRegOf, new Const(14)),      // %o6 == %sp
+                new Const(92 + (n-6)*4)));
+    }
+	return new Unary(opRegOf, new Const((int)(8 + n)));
 }
 
 Exp *CallingConvention::StdC::SparcSignature::getArgumentExp(int n)
 {
+    if (n >= 6) {
+        // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
+        // m[%esp+96], etc.
+        return new Unary(opMemOf,
+            new Binary(opPlus,
+                new Unary(opRegOf, new Const(14)),      // %o6 == %sp
+                new Const(92 + (n-6)*4)));
+    }
 	return new Unary(opRegOf, new Const((int)(8 + n)));
 }
 
