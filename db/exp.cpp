@@ -663,6 +663,13 @@ void Binary::print(std::ostream& os, bool withUses) {
             ((Const*)p2)->printNoQuotes(os, withUses);
             return;
 
+        case opArraySubscript:
+            p1->print(os, withUses);
+            os << "[";
+            p2->print(os, withUses);
+            os << "]";
+            return;
+
         default:
             break;
     }

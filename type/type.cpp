@@ -317,6 +317,28 @@ const char *CompoundType::getNameAtOffset(int n)
     return NULL;
 }
 
+int CompoundType::getOffsetTo(int n)
+{
+    int offset = 0;
+    for (unsigned i = 0; i < n; i++) {
+        offset += types[i]->getSize();
+    }
+    return offset;
+}
+
+int CompoundType::getOffsetRemainder(int n)
+{
+    int r = n;
+    int offset = 0;
+    for (unsigned i = 0; i < types.size(); i++) {
+        offset += types[i]->getSize();
+        if (offset > n)
+            break;
+        r -= types[i]->getSize();
+    }
+    return r;
+}
+
 /*==============================================================================
  * FUNCTION:        Type::parseType
  * OVERVIEW:        static Constructor from string

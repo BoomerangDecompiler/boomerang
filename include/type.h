@@ -310,6 +310,8 @@ virtual bool isCompound() const { return true; }
         const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
         Type *getTypeAtOffset(int n);
         const char *getNameAtOffset(int n);
+        int getOffsetTo(int n);
+        int getOffsetRemainder(int n);
 
 virtual Type* clone() const;
 

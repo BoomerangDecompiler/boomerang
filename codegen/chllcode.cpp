@@ -460,6 +460,12 @@ void CHLLCode::appendExp(char *str, Exp *exp)
                 strcat(str, ((Const*)b->getSubExp2())->getStr());
             }
             break;
+        case opArraySubscript:
+            appendExp(str, b->getSubExp1());
+            strcat(str, "[");
+            appendExp(str, b->getSubExp2());
+            strcat(str, "]");
+            break;
         default:
             // others
             OPER op = exp->getOper();

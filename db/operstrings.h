@@ -91,6 +91,7 @@ char* operStrings[] = {
     "opGlobal",               // Represents a global; takes a string
     "opExpand",               // Expandable expression
     "opMemberAccess",         // . and -> in C
+    "opArraySubscript",       // [] in C
     "opTemp",                 // Temp register name
     "opSize",                 // Size override
     "opCastIntStar",          // Cast to int*
