@@ -952,7 +952,7 @@ void UserProc::insertAssignAfter(Statement* s, int tempNum, Exp* right) {
                 std::ostringstream os;
                 os << "local" << tempNum;
                 Assign* as = new Assign(
-                    Location::local(strdup(os.str().c_str())),
+                    Location::local(strdup(os.str().c_str()), this),
                     right);
                 stmts.insert(++it, as);
                 return;
@@ -1286,6 +1286,7 @@ void UserProc::removeRedundantPhis()
         }
     }
 
+#if 0
     stmts.clear();
     getStatements(stmts);
 
@@ -1337,6 +1338,7 @@ void UserProc::removeRedundantPhis()
             }
         }
     }
+#endif
 }
 
 void UserProc::trimReturns() {
@@ -1398,6 +1400,8 @@ void UserProc::trimReturns() {
         // returns set of every procedure in the program until such
         // time as this final pass is made, and then they will be 
         // removed.  Trent 22/9/2003
+        // Instead, what we can do is replace r28 in the return statement
+        // of this procedure with what we've proven it to be.
         //removeReturn(regsp);
         // also check for any locals that slipped into the returns
         for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -1407,6 +1411,18 @@ void UserProc::trimReturns() {
                 *e->getSubExp1()->getSubExp1() == *regsp &&
                 e->getSubExp1()->getSubExp2()->isIntConst())
                 preserved.insert(e);
+            if (*e == *regsp) {
+                assert(returnStatements.size() == 1);
+                ReturnStatement *ret = returnStatements[0];
+                Exp *e = getProven(regsp)->clone();
+                e = e->expSubscriptVar(new Terminal(opWild), NULL);
+                if (!(*e == *ret->getReturnExp(i))) {
+                    if (VERBOSE)
+                        LOG << "replacing in return statement " 
+                            << ret->getReturnExp(i) << " with " << e << "\n";
+                    ret->setReturnExp(i, e);
+                }
+            }
         }
     }
     if (stdret)
@@ -1757,7 +1773,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                     const char *global = prog->getGlobal(u);
                     if (global) {
                         prog->setGlobalType((char*)global, pty);
-                        Unary *g = Location::global(strdup(global));
+                        Unary *g = Location::global(strdup(global), this);
                         Exp *ne = new Unary(opAddrOf, g);
                         call->setArgumentExp(i, ne);
                         if (VERBOSE)
@@ -1789,87 +1805,10 @@ void UserProc::replaceExpressionsWithGlobals() {
                         if (ty == NULL || ty->getSize() != bits)
                             prog->setGlobalType((char*)global, new IntegerType(bits));
                     }
-                    Unary *g = Location::global(global);
+                    Unary *g = Location::global(global, this);
                     Exp* memofCopy = memof->clone();
                     s->searchAndReplace(memofCopy, g);
                     delete memofCopy; delete g;
-                }
-            }
-            if ((*rr)->getOper() == opMemOf &&
-                (*rr)->getSubExp1()->getOper() == opPlus &&
-                (*rr)->getSubExp1()->getSubExp1()->getOper() == opGlobal &&
-                (*rr)->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-                Exp *globalExp = (*rr)->getSubExp1()->getSubExp1();
-                const char *global = ((Const*)globalExp->getSubExp1())->
-                                                         getStr();
-                Type *ty = prog->getGlobalType((char*)global);
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                PointerType *pty = dynamic_cast<PointerType*>(ty);
-                Type *points_to = NULL;
-                if (pty) {
-                    points_to = pty->getPointsTo();
-                    if (points_to->isNamed())
-                        points_to = ((NamedType*)points_to)->resolvesTo();
-                }
-                if (points_to && points_to->isCompound()) {
-                    CompoundType *compound = (CompoundType*)points_to;
-                    int n = ((Const*)(*rr)->getSubExp1()->getSubExp2())->
-                                            getInt();
-                    if (compound->getSize() > n*8) {
-                        Exp *ne = new Binary(opMemberAccess, 
-                                             globalExp->clone(), 
-                                             new Const((char*)compound->
-                                                        getNameAtOffset(n*8)));
-                        if (VERBOSE) 
-                            LOG << "replacing " << *rr << " with " << ne 
-                                << "\n";
-                        s->searchAndReplace((*rr)->clone(), ne);
-                    }
-                }
-            }
-            if ((*rr)->getOper() == opMemOf &&
-                (*rr)->getSubExp1()->getOper() == opPlus &&
-                (*rr)->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
-                (*rr)->getSubExp1()->getSubExp1()->getOper() == opPlus &&
-                (*rr)->getSubExp1()->getSubExp1()->getSubExp1()->getOper() 
-                                                             == opGlobal) {
-                Exp *globalExp = (*rr)->getSubExp1()->getSubExp1()->
-                                        getSubExp1();
-                const char *global = ((Const*)globalExp->getSubExp1())->
-                                                         getStr();
-                Type *ty = prog->getGlobalType((char*)global);
-                if (ty->isNamed())
-                    ty = ((NamedType*)ty)->resolvesTo();
-                PointerType *pty = dynamic_cast<PointerType*>(ty);
-                Type *points_to = NULL;
-                if (pty) {
-                    points_to = pty->getPointsTo();
-                    if (points_to->isNamed())
-                        points_to = ((NamedType*)points_to)->resolvesTo();
-                }
-                if (points_to && points_to->isCompound()) {
-                    CompoundType *compound = (CompoundType*)points_to;
-                    int n = ((Const*)(*rr)->getSubExp1()->getSubExp2())->
-                                            getInt();
-                    if (compound->getSize() > n*8) {
-                        int r = compound->getOffsetRemainder(n*8);
-                        Exp *ne = Location::memOf(new Binary(opPlus,
-                                      new Binary(opPlus, 
-                                          new Unary(opAddrOf, 
-                                              new Binary(opMemberAccess, 
-                                                  globalExp->clone(), 
-                                                  new Const((char*)compound->
-                                                      getNameAtOffset(n*8)))),
-                                          (*rr)->getSubExp1()->getSubExp1()->
-                                                 getSubExp2()->clone()),
-                                          new Const(r/8)));
-                        ne = ne->simplify();
-                        if (VERBOSE) 
-                            LOG << "replacing " << *rr << " with " << ne 
-                                << "\n";
-                        s->searchAndReplace((*rr)->clone(), ne);
-                    }
                 }
             }
         }
@@ -1887,7 +1826,7 @@ void UserProc::replaceExpressionsWithGlobals() {
                     prog->globalUsed(u);
                     const char *global = prog->getGlobal(u);
                     if (global) {
-                        Unary *g = Location::global(strdup(global));
+                        Unary *g = Location::global(strdup(global), this);
                         Exp* memofCopy = memof->clone();
                         s->searchAndReplace(memofCopy, g);
                         delete memofCopy; delete g;
@@ -1895,6 +1834,8 @@ void UserProc::replaceExpressionsWithGlobals() {
                 }
             }
         }
+
+        s->simplify();
     }
 }
 
@@ -2074,6 +2015,7 @@ void UserProc::replaceExpressionsWithLocals() {
                 delete search;
             }
         } while (ch);
+        s->simplify();
     }
 }
 
@@ -2204,7 +2146,7 @@ Exp* UserProc::newLocal(Type* ty) {
     os << "local" << locals.size();
     std::string name = os.str();
     locals[name] = ty;
-    return Location::local(strdup(name.c_str()));
+    return Location::local(strdup(name.c_str()), this);
 }
 
 Type *UserProc::getLocalType(const char *nam)
@@ -2212,6 +2154,11 @@ Type *UserProc::getLocalType(const char *nam)
     if (locals.find(nam) == locals.end())
         return NULL;
     return locals[nam];
+}
+
+void UserProc::setLocalType(const char *nam, Type *ty)
+{
+    locals[nam] = ty;
 }
 
 Exp *UserProc::getLocalExp(const char *nam)
@@ -2445,7 +2392,7 @@ void UserProc::fromSSAform() {
                     std::ostringstream os;
                     os << "local" << ig[right];
                     delete right;
-                    right = Location::local(strdup(os.str().c_str()));
+                    right = Location::local(strdup(os.str().c_str()), this);
                 } else {
                     // Just take off the reference
                     RefExp* old = (RefExp*)right;
@@ -2460,7 +2407,7 @@ void UserProc::fromSSAform() {
             std::ostringstream os;
             os << "local" << tempNum++;
             std::string name = os.str();
-            ((Assign*)s)->setRight(Location::local(strdup(name.c_str())));
+            ((Assign*)s)->setRight(Location::local(strdup(name.c_str()), this));
         }
     }
 
@@ -2534,6 +2481,8 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
             LOG << "true - in the cache\n";
         return true;
     } 
+
+    std::set<Statement*> refsTo;
 
     query = query->clone();
     bool change = true;
@@ -2644,23 +2593,11 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                             query = new Terminal(opFalse);
                         change = true;
                     } else {
-                        bool refloop = false;
-                        Statement *s1 = s;
-                        std::set<Statement*> seen;
-                        seen.insert(s1);
-                        while (s1 &&
-                               s1->getRight() && 
-                               s1->getRight()->isSubscript()) {
-                            s1 = ((RefExp*)s1->getRight())->getRef();
-                            if (seen.find(s1) != seen.end()) {
-                                refloop = true;
-                                break;
-                            }
-                            seen.insert(s1);
-                        }
-                        if (refloop) {
+                        if (s && refsTo.find(s) != refsTo.end()) {
                             LOG << "detected ref loop " << s << "\n";
+                            assert(false);
                         } else {
+                            refsTo.insert(s);
                             query->setSubExp1(s->getRight()->clone());
                             change = true;
                         }
@@ -2716,6 +2653,7 @@ bool UserProc::prover(Exp *query, std::set<PhiExp*>& lastPhis,
                 query->refSubExp2() = e;
                 change = true;
                 swapped = true;
+                refsTo.clear();
             }
         } else if (query->isIntConst()) {
             Const *c = (Const*)query;

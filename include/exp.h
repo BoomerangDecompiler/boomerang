@@ -741,8 +741,10 @@ virtual Exp* clone();
 
 class Location : public Unary {
 protected:
+    UserProc *proc;
+
     // Constructor, with ID and subexpression
-            Location(OPER op, Exp* e);
+            Location(OPER op, Exp* e, UserProc *proc = NULL);
 public:
     // Copy constructor
             Location(Location& o);
@@ -750,12 +752,18 @@ public:
     static Location* regOf(int r) {return new Location(opRegOf, new Const(r));}
     static Location* regOf(Exp *e) {return new Location(opRegOf, e);}
     static Location* memOf(Exp *e) {return new Location(opMemOf, e);}
-    static Location* global(const char *nam) {return new Location(opGlobal, 
-                                                        new Const((char*)nam));}
-    static Location* local(const char *nam) {return new Location(opLocal, 
-                                                        new Const((char*)nam));}
+    static Location* global(const char *nam, UserProc *p) {return new Location(opGlobal, new Const((char*)nam), p);}
+    static Location* local(const char *nam, UserProc *p) {return new Location(opLocal, new Const((char*)nam), p);}
     static Location* param(const char *nam) {return new Location(opParam, 
                                                         new Const((char*)nam));}
+    // Clone
+    virtual Exp* clone();
+
+    void setProc(UserProc *p) { proc = p; }
+
+    virtual Exp* polySimplify(bool& bMod);
+    virtual void addUsedLocs(LocationSet& used);
+    virtual void getDefinitions(LocationSet& defs);
 };
     
 #endif // __EXP_H__

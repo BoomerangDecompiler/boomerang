@@ -79,6 +79,7 @@ Terminal::Terminal(Terminal& o) : Exp(o.op) {}      // Copy constructor
 Unary::Unary(OPER op)
     : Exp(op) {
     subExp1 = 0;        // Initialise the pointer
+    assert(op != opRegOf);
 }
 Unary::Unary(OPER op, Exp* e)
     : Exp(op) {
@@ -151,13 +152,14 @@ PhiExp::PhiExp(PhiExp& o) : Unary(opPhi, subExp1)
 TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty)
 { }
 
-Location::Location(OPER op, Exp *exp) : Unary(op, exp)
+Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), 
+                                                        proc(proc)
 {
     assert(op == opRegOf || op == opMemOf || op == opLocal ||
            op == opGlobal || op == opParam);
 }
 
-Location::Location(Location& o) : Unary(o.op, o.subExp1->clone())
+Location::Location(Location& o) : Unary(o.op, o.subExp1->clone()), proc(o.proc)
 {
 }
 
@@ -337,6 +339,10 @@ Exp* TypeVal::clone() {
     return c;
 }
 
+Exp* Location::clone() {
+    Location* c = new Location(op, subExp1->clone(), proc);
+    return c;
+}
 
 /*==============================================================================
  * FUNCTION:        Const::operator==() etc
@@ -1921,6 +1927,16 @@ Exp* Binary::polySimplify(bool& bMod) {
         return res;
     }
 
+    // Check for exp * x / x
+    if ((op == opDiv || op == opDivs) &&
+        (opSub1 == opMult || opSub1 == opMults) &&
+        *subExp2 == *subExp1->getSubExp2()) {
+        res = ((Unary*)res)->becomeSubExp1();
+        res = ((Unary*)res)->becomeSubExp1();
+        bMod = true;
+        return res;
+    }
+
     // Check for exp AND -1 (bitwise AND)
     if ((op == opBitAnd) &&
       opSub2 == opIntConst && ((Const*)subExp2)->getInt() == -1) {
@@ -1954,6 +1970,14 @@ Exp* Binary::polySimplify(bool& bMod) {
     if (op == opShiftL && opSub2 == opIntConst &&
       ((k = ((Const*)subExp2)->getInt(), (k >= 0 && k < 32)))) {
         res->setOper(opMult);
+        ((Const*)subExp2)->setInt(1 << k);
+        bMod = true;
+        return res;
+    }
+
+    if (op == opShiftR && opSub2 == opIntConst &&
+      ((k = ((Const*)subExp2)->getInt(), (k >= 0 && k < 32)))) {
+        res->setOper(opDiv);
         ((Const*)subExp2)->setInt(1 << k);
         bMod = true;
         return res;
@@ -2512,20 +2536,6 @@ bool Exp::isTemp() {
 }
 
 void Unary::addUsedLocs(LocationSet& used) {
-    switch (op) {
-        // We are interested in r[], m[], and variables (named arguments,
-        // locals, and globals)
-        case opRegOf:   case opMemOf:
-        case opArg:     case opLocal:   case opGlobal:  case opParam:
-            // We want to add this expression
-            used.insert(clone());
-            // We also need to recurse, in case we have m[m[...]] or m[r[...]]
-            if (op == opMemOf)
-                subExp1->addUsedLocs(used);
-            break;
-        default:
-            break;
-    }
     subExp1->addUsedLocs(used);
 }
 
@@ -2677,10 +2687,12 @@ bool PhiExp::hasGlobalFuncParam(Prog *prog)
                 return true;
             }
         }
+#if 0
         // BAD: this can loop forever if we have a phi loop
         if (u->isPhi() && u->getRight() != this &&
             ((PhiExp*)u->getRight())->hasGlobalFuncParam(prog))
             return true;
+#endif
     }
     return false;
 }
@@ -2694,9 +2706,11 @@ Exp *PhiExp::fixCallRefs() {
     Prog *prog = NULL;
     for (unsigned i=0; i < n; i++) {
         Statement* u = stmtVec.getAt(i);
-        CallStatement *call = dynamic_cast<CallStatement*>(u);
-        if (call)
-            prog = call->getProc()->getProg();
+        if (u) {
+            CallStatement *call = dynamic_cast<CallStatement*>(u);
+            if (call)
+                prog = call->getProc()->getProg();
+        }
     }
     if (prog) 
         oneIsGlobalFunc = hasGlobalFuncParam(prog);
@@ -2762,7 +2776,8 @@ Exp* RefExp::fromSSA(igraph& ig) {
         os << "local" << ig[this];
         std::string name = os.str();
         ;//delete this;
-        return Location::local(strdup(name.c_str()));
+        return Location::local(strdup(name.c_str()), 
+                               def ? def->getProc() : NULL);
     }
 }
 
@@ -3084,3 +3099,108 @@ Exp* PhiExp::genConstraints(Exp* result) {
 Exp* Ternary::genConstraints(Exp* result) {
     return new Terminal(opTrue);
 }
+
+Exp* Location::polySimplify(bool& bMod) {
+    Exp *res = Unary::polySimplify(bMod);
+
+    if (res->getOper() == opMemOf &&
+        res->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp1()->getOper() == opGlobal &&
+        res->getSubExp1()->getSubExp2()->getOper() == opIntConst) { 
+        assert(proc);
+        Prog *prog = proc->getProg();
+        Exp *globalExp = res->getSubExp1()->getSubExp1();
+        const char *global = ((Const*)globalExp->getSubExp1())->getStr();
+        Type *ty = prog->getGlobalType((char*)global);
+        if (ty->isNamed())
+            ty = ((NamedType*)ty)->resolvesTo();
+        PointerType *pty = dynamic_cast<PointerType*>(ty);
+        Type *points_to = NULL;
+        if (pty) {
+            points_to = pty->getPointsTo();
+            if (points_to->isNamed())
+                points_to = ((NamedType*)points_to)->resolvesTo();
+        }
+        if (points_to && points_to->isCompound()) {
+            CompoundType *compound = (CompoundType*)points_to;
+            int n = ((Const*)res->getSubExp1()->getSubExp2())->getInt();
+            if (compound->getSize() > n*8) {
+                Exp *ne = new Binary(opMemberAccess, 
+                                     globalExp->clone(), 
+                                     new Const((char*)compound->
+                                                getNameAtOffset(n*8)));
+                if (VERBOSE) 
+                    LOG << "replacing " << res << " with " << ne 
+                        << "\n";
+                bMod = true;
+                res = ne;
+                return res;
+            }
+        }
+    }
+
+    if (res->getOper() == opMemOf &&
+        res->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
+        res->getSubExp1()->getSubExp1()->getOper() == opPlus &&
+        res->getSubExp1()->getSubExp1()->getSubExp1()->getOper() == opGlobal) {
+        assert(proc);
+        Prog *prog = proc->getProg();
+        Exp *globalExp = res->getSubExp1()->getSubExp1()->getSubExp1();
+        const char *global = ((Const*)globalExp->getSubExp1())->
+                                                 getStr();
+        Type *ty = prog->getGlobalType((char*)global);
+        if (ty->isNamed())
+            ty = ((NamedType*)ty)->resolvesTo();
+        PointerType *pty = dynamic_cast<PointerType*>(ty);
+        Type *points_to = NULL;
+        if (pty) {
+            points_to = pty->getPointsTo();
+            if (points_to->isNamed())
+                points_to = ((NamedType*)points_to)->resolvesTo();
+        }
+        if (points_to && points_to->isCompound()) {
+            CompoundType *compound = (CompoundType*)points_to;
+            int n = ((Const*)res->getSubExp1()->getSubExp2())->
+                                    getInt();
+            if (compound->getSize() > n*8) {
+                int r = compound->getOffsetRemainder(n*8);
+                Exp *ne = Location::memOf(new Binary(opPlus,
+                              new Binary(opPlus, 
+                                  new Unary(opAddrOf, 
+                                      new Binary(opMemberAccess, 
+                                          globalExp->clone(), 
+                                          new Const((char*)compound->
+                                              getNameAtOffset(n*8)))),
+                                  res->getSubExp1()->getSubExp1()->
+                                         getSubExp2()->clone()),
+                                  new Const(r/8)));
+                ne = ne->simplify();
+                if (VERBOSE) 
+                    LOG << "replacing " << res << " with " << ne 
+                        << "\n";
+                bMod = true;
+                res = ne;
+                return res;
+            }
+        }
+    }
+
+    return res;
+}
+
+void Location::addUsedLocs(LocationSet& used) {
+    // We want to add this expression
+    used.insert(clone());
+    // We also need to recurse, in case we have m[m[...]] or m[r[...]]
+    if (op == opMemOf)
+        subExp1->addUsedLocs(used);
+}
+
+void Location::getDefinitions(LocationSet& defs) {
+    // This is a hack to fix aliasing (replace with something general)
+    if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
+        defs.insert(Location::regOf(0));
+    }
+}
+

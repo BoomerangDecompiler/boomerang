@@ -44,6 +44,22 @@
 
 extern char debug_buffer[];      // For prints functions
 
+void Statement::setProc(UserProc *p)
+{
+    proc = p;
+    LocationSet exps;
+    addUsedLocs(exps);
+    LocationSet defs;
+    getDefinitions(defs);
+    exps.makeUnion(defs);
+    LocationSet::iterator ll;
+    for (ll = exps.begin(); ll != exps.end(); ll++) {
+        Location *l = dynamic_cast<Location*>(*ll);
+        if (l)
+            l->setProc(p);
+    }
+}
+
 // replace a use in this statement
 void Statement::replaceRef(Statement *def) {
     Exp* lhs = def->getLeft();
@@ -1860,7 +1876,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     proc->getProg()->globalUsed(u);
                     const char *nam = proc->getProg()->getGlobal(u);
                     if (nam)
-                        e = Location::global(nam);
+                        e = Location::global(nam, proc);
                 }
             }
             if (points_to->isFunc()) {
@@ -1881,7 +1897,7 @@ Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
                     else
                         p->setName(sig->getName());
                     p->setSignature(sig);
-                    e = Location::global(p->getName());
+                    e = Location::global(p->getName(), proc);
                 }
             }
         } else if (t->isFloat()) {
@@ -2444,6 +2460,46 @@ void Assign::simplify() {
     // simplify the resultant expression
     lhs = lhs->simplify();
     rhs = rhs->simplify();
+
+    // this hack finds address constants.. it should go away when
+    // Mike writes some decent type analysis.
+    if (lhs->getOper() == opMemOf && 
+        lhs->getSubExp1()->getOper() == opSubscript) {
+        RefExp *ref = (RefExp*)lhs->getSubExp1();
+        Statement *phist = ref->getRef();
+        PhiExp *phi = NULL;
+        if (phist && phist->getRight())
+            phi = dynamic_cast<PhiExp*>(phist->getRight());
+        for (int i = 0; phi && i < phi->getNumRefs(); i++) 
+            if (phi->getAt(i)) {
+                Assign *def = dynamic_cast<Assign*>(phi->getAt(i));
+                if (def && def->rhs->getOper() == opIntConst) {
+                    Exp *ne = new Unary(opAddrOf, Location::memOf(def->rhs)); 
+                    if (VERBOSE)
+                        LOG << "replacing " << def->rhs << " with " 
+                            << ne << " in " << def << "\n";
+                    def->rhs = ne;
+                }
+                if (def && def->rhs->getOper() == opAddrOf &&
+                    def->rhs->getSubExp1()->getOper() == opSubscript &&
+                    def->rhs->getSubExp1()->getSubExp1()->getOper() 
+                                                      == opGlobal &&
+                    rhs->getOper() == opIntConst) {
+                    Type *ty = proc->getProg()->getGlobalType(
+                                 ((Const*)def->rhs->getSubExp1()->
+                                                    getSubExp1()->
+                                                    getSubExp1())->getStr());
+                    if (ty && ty->isArray()) {
+                        Type *bty = ((ArrayType*)ty)->getBaseType();
+                        if (bty->isFloat()) {
+                            int n = ((Const*)rhs)->getInt(); 
+                            rhs = new Const(*(float*)&n);
+                        }
+                    }
+                }
+            }
+    }
+
 }
 
 void Assign::simplifyAddr() {
@@ -2477,11 +2533,9 @@ void Assign::getDefinitions(LocationSet &defs) {
     if (lhs->isFlags()) {
         defs.insert(new Terminal(opCF));
     }
-    // This is a hack to fix aliasing (replace with something general)
-    if (lhs->getOper() == opRegOf &&
-        ((Const*)lhs->getSubExp1())->getInt() == 24) {
-        defs.insert(Location::regOf(0));
-    }
+    Location *loc = dynamic_cast<Location*>(lhs);
+    if (loc)
+        loc->getDefinitions(defs);
 }
 
 bool Assign::search(Exp* search, Exp*& result) {

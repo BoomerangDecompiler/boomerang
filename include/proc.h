@@ -604,6 +604,7 @@ public:
 
     // return a local's type
     Type *getLocalType(const char *nam);
+    void setLocalType(const char *nam, Type *ty);
 
     // return a local's exp
     Exp *getLocalExp(const char *nam);

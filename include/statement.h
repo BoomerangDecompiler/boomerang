@@ -98,7 +98,7 @@ public:
     }
 
     bool        operator==(Statement& o);
-    void        setProc(UserProc *p) { proc = p; }
+    void        setProc(UserProc *p);
     UserProc*   getProc() {return proc;}
 
     virtual Statement*  clone() = 0;            // Make copy of self
@@ -825,6 +825,7 @@ public:
 
     int getNumReturns() { return returns.size(); }
     Exp *getReturnExp(int n) { return returns[n]; }
+    void setReturnExp(int n, Exp *e) { returns[n] = e; }
     void setSigArguments();   // Set returns based on signature
     void removeReturn(int n);
     void addReturn(Exp *e);
