@@ -2996,8 +2996,8 @@ void UserProc::countUsedReturns(ReturnCounter& rc) {
 }
 
 bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
-    if (signature->isPromoted())
-        return 0;
+//    if (signature->isPromoted())
+//        return 0;
     std::set<Exp*, lessExpStar> removes;    // Else iterators confused
     std::set<Exp*, lessExpStar>& useSet = rc[this];
     for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -3006,7 +3006,15 @@ bool UserProc::removeUnusedReturns(ReturnCounter& rc) {
             removes.insert(ret);
     }
     std::set<Exp*, lessExpStar>::iterator it;
+    Exp* stackExp = NULL;
+    if (signature->isPromoted()) {
+        stackExp = Location::regOf(signature->getStackRegister());
+        assert(stackExp);
+    }
     for (it = removes.begin(); it != removes.end(); it++) {
+        if (signature->isPromoted() && !(*stackExp == **it))
+            // Only remove stack pointer if promoted
+            continue;
         if (Boomerang::get()->debugUnusedRets)
             LOG << " @@ Removing unused return " << *it <<
             " in " << getName() << "\n";
