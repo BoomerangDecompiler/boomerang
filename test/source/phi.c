@@ -3,8 +3,13 @@
 
 int fib (int x)
 {
-    if (x > 1)
-        return (fib(x - 1) + fib(x - 2));
+    int z;
+    if (x > 1) {
+        x = fib(x-1);
+        z = fib(x-1);
+        printf("%d", x+z);
+        return x;
+    }
     else {
         /* Force a definition of eax */
         if (x == 1) return strlen("x");
