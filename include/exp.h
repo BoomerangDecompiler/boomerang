@@ -238,7 +238,8 @@ virtual Exp* fixSuccessor() {return this;}
 
     // Update the "uses" information implicit in expressions
     // defs is a StatementSet of definitions reaching this statement
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth) {return this;}
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
+        StatementSet& rs) {return this;}
     // Add a subscript to this; may return a new Exp
     virtual Exp* addSubscript(Statement* def);
 
@@ -255,6 +256,8 @@ virtual Exp* fixSuccessor() {return this;}
     virtual bool serialize(std::ostream &ouf, int &len) = 0;
     static Exp *deserialize(std::istream &inf);
 
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs) {};
 };
 
 // Not part of the Exp class, but logically belongs with it:
@@ -331,7 +334,8 @@ public:
     void    print(std::ostream& os, bool withUses = false);
     void    appendDotFile(std::ofstream& of);
 
-    Exp*    updateRefs(StatementSet& defs, int memDepth);
+    Exp*    updateRefs(StatementSet& defs, int memDepth,
+                StatementSet& rs);
     
     // Do the work of finding used locations
     virtual void addUsedLocs(LocationSet& used);
@@ -397,13 +401,17 @@ virtual Exp* fixSuccessor();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
+                StatementSet& rs);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
+
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
 
 };
 
@@ -463,13 +471,17 @@ virtual int getMemDepth();
     virtual void addUsedLocs(LocationSet& used);
 
     // Update the "uses" information implicit in expressions
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
+                StatementSet& rs);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
+
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
 
 };
 
@@ -526,13 +538,17 @@ virtual int getMemDepth();
 
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
+                StatementSet& rs);
 
     // Convert from SSA form
     virtual Exp* fromSSA(igraph& ig);
 
     // serialization
     virtual bool serialize(std::ostream &ouf, int &len);
+
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
 
 };
 
@@ -623,7 +639,11 @@ public:
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
-    virtual Exp* updateRefs(StatementSet& defs, int memDepth);
+    virtual Exp* updateRefs(StatementSet& defs, int memDepth,
+                StatementSet& rs);
+    // Remove refs to statements defining restored locations
+    virtual void removeRestoreRefs(StatementSet& rs) {
+        doRemoveRestoreRefs(rs);}
 
     virtual bool isDefinition() { return true; }
     virtual void getDefinitions(LocationSet &defs);
@@ -654,12 +674,17 @@ public:
     virtual Type *updateType(Exp *e, Type *curType);
 
     // to/from SSA form
-    virtual void   toSSAform(StatementSet& reachin, int memDepth)
-        {updateRefs(reachin, memDepth);}
+    virtual void   toSSAform(StatementSet& reachin, int memDepth,
+      StatementSet& rs)
+        {updateRefs(reachin, memDepth, rs);}
     virtual void fromSSAform(igraph& ig);
+
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
 
 protected:
     virtual void doReplaceRef(Exp* from, Exp* to);
+
 };
 
 /*==============================================================================
@@ -699,7 +724,7 @@ public:
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
-    Exp*    updateRefs(StatementSet& defs, int memDepth);
+    Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
@@ -709,6 +734,8 @@ virtual Exp* addSubscript(Statement* def) {
     virtual Exp* fromSSA(igraph& ig);
     bool    references(Statement* s) {return stmtSet.exists(s);}
     StatementSet& getRefs() {return stmtSet;}
+    // Remove refs that define restored locations
+    virtual void doRemoveRestoreRefs(StatementSet& rs);
 };
 
     

@@ -492,7 +492,7 @@ public:
     /**
      * Transform the CFG to/from SSA form.
      */
-    void toSSAform(int memDepth);
+    void toSSAform(int memDepth, StatementSet& rs);
     void fromSSAform();
 
 protected:
@@ -930,6 +930,8 @@ public:
     // Summary information at end of phase 1 for this cfg
     StatementSet *getReachExit() {
         return exitBB ? &exitBB->reachOut : NULL;}
+    void    getReachEntry(StatementSet& ss) {
+        if (entryBB) entryBB->getReachIn(ss, 2); }
     StatementSet *getAvailExit() {
         return exitBB ? &exitBB->availOut : NULL;}
     LocationSet *getLiveEntry() {
@@ -974,13 +976,14 @@ public:
 
     /**
      * Transform the CFG to SSA form.
+     * rs is the set of restored definitions
      */
-    void toSSAform(int memDepth);
+    void toSSAform(int memDepth, StatementSet& rs);
 
     /*
      * Insert actual arguments to match formal parameters
      */
-    void insertArguments();
+    void insertArguments(StatementSet& rs);
 
 private:
 

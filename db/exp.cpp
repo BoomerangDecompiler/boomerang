@@ -2567,7 +2567,7 @@ void AssignExp::doReplaceRef(Exp* from, Exp* to) {
         ((Unary*)subExp1)->setSubExp1ND(
           subsub1->searchReplaceAll(from, to, changeleft));
     }
-    assert(changeright || changeleft);
+    //assert(changeright || changeleft);    // HACK!
     // simplify the expression
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
@@ -2717,17 +2717,22 @@ Exp* Exp::addSubscript(Statement* def) {
  * OVERVIEW:        Update the references ("uses" (rhymes with "fuses"))
  *                    information inherent in each component of an expression
  * PARAMETERS:      defs: ref to a StatementSet of statements reaching this
+ *                  memDepth: don't do anything if this is not of the correct
+ *                    memory depth, e.g. 2 means m[m[x]]
+ *                  rs: StatementSet of definitions to ignore (because they
+ *                    restore a saved location)
  * RETURNS:         <nothing>
  *============================================================================*/
 //  //  //  //
 //  Unary   //
 //  //  //  //
-Exp* Unary::updateRefs(StatementSet& defs, int memDepth) {
+Exp* Unary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     // Only consider expressions that are of the correct "memory nesting depth"
     Exp* res = this;
     if (getMemDepth() == memDepth) {
         StmtSetIter it;
         for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+            if (rs.exists(s)) continue;
             Exp* left = s->getLeft();
             assert(left);           // A definition must have a left
             if (*left == *this)
@@ -2739,23 +2744,23 @@ Exp* Unary::updateRefs(StatementSet& defs, int memDepth) {
     // Recurse (in case a memof, addrof etc)
     // Recurse even if memory depths don't match; we want to subscript all
     // the parameters of the m[]'s
-    subExp1 = subExp1->updateRefs(defs, memDepth);
+    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
     return res;
 }
 
 //  //  //  //
 //  Binary  //
 //  //  //  //
-Exp* Binary::updateRefs(StatementSet& defs, int memDepth) {
-    subExp1 = subExp1->updateRefs(defs, memDepth);
-    subExp2 = subExp2->updateRefs(defs, memDepth);
+Exp* Binary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
+    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
+    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
     return this;
 }
 
 //  //  //  //  //
 //  AssignExp   //
 //  //  //  //  //
-Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth) {
+Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     // No need to test for equality to left
     // However, need to update aa iff LHS is m[aa]
     if (subExp1->isMemOf())
@@ -2767,15 +2772,15 @@ Exp* AssignExp::updateRefs(StatementSet& defs, int memDepth) {
         // Don't call setSubExp1 either, since it deletes the old
         // expression (old expression is always needed)
         ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateRefs(defs, memDepth));
-    subExp2 = subExp2->updateRefs(defs, memDepth);
+          updateRefs(defs, memDepth, rs));
+    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
     return this;
 }
 
 //  //  //  //
 //  RefsExp //
 //  //  //  //
-Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth) {
+Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     // The left of any definition can't be a RefsExp
     // (LHS not subscripted any more)
     // Note: we don't want to double subscript, so only subscript if
@@ -2783,28 +2788,29 @@ Exp* RefsExp::updateRefs(StatementSet& defs, int memDepth) {
     // This is important if toSSAform gets called more than once
     if (subExp1->getOper() == opMemOf || subExp1->getOper() == opAddrOf)
         ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
-          updateRefs(defs, memDepth));
+          updateRefs(defs, memDepth, rs));
     return this;
 }
 
 //  //  //  //
 // Ternary  //
 //  //  //  //
-Exp* Ternary::updateRefs(StatementSet& defs, int memDepth) {
-    subExp1 = subExp1->updateRefs(defs, memDepth);
-    subExp2 = subExp2->updateRefs(defs, memDepth);
-    subExp3 = subExp3->updateRefs(defs, memDepth);
+Exp* Ternary::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
+    subExp1 = subExp1->updateRefs(defs, memDepth, rs);
+    subExp2 = subExp2->updateRefs(defs, memDepth, rs);
+    subExp3 = subExp3->updateRefs(defs, memDepth, rs);
     return this;
 }
 
 //  //  //  //
 // Terminal //
 //  //  //  //
-Exp* Terminal::updateRefs(StatementSet& defs, int memDepth) {
+Exp* Terminal::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
     if (memDepth != 0) return this;
     StmtSetIter it;
     Exp* res = this;
     for (Statement* s = defs.getFirst(it); s; s = defs.getNext(it)) {
+        if (rs.exists(s)) continue;     // Ignore
         Exp* left = s->getLeft();
         assert(left);           // A definition must have a left
         if (*left == *this)
@@ -2812,6 +2818,54 @@ Exp* Terminal::updateRefs(StatementSet& defs, int memDepth) {
     }
     return res;
 }
+
+/*==============================================================================
+ * FUNCTION:        Unary::doRemoveRestoreRefs etc
+ * OVERVIEW:        Remove refs to statements defining restored locations
+ * PARAMETERS:      rs: a ref to a StatementSet with statements that define
+ *                    restored locations
+ * RETURNS:         <nothing>
+ *============================================================================*/
+//  //  //  //
+//  RefsExp //
+//  //  //  //
+void RefsExp::doRemoveRestoreRefs(StatementSet& rs) {
+    stmtSet.makeDiff(rs);               // Just use set difference
+    subExp1->doRemoveRestoreRefs(rs);   // Also recurse (e.g. m[..]{7})
+}
+
+//  //  //  //
+//  Unary   //
+//  //  //  //
+void Unary::doRemoveRestoreRefs(StatementSet& rs) {
+    subExp1->doRemoveRestoreRefs(rs);
+}
+
+//  //  //  //
+//  Binary  //
+//  //  //  //
+void Binary::doRemoveRestoreRefs(StatementSet& rs) {
+    subExp1->doRemoveRestoreRefs(rs);
+    subExp2->doRemoveRestoreRefs(rs);
+}
+
+//  //  //  //  //
+//  AssignExp   //
+//  //  //  //  //
+void AssignExp::doRemoveRestoreRefs(StatementSet& rs) {
+    subExp1->doRemoveRestoreRefs(rs);
+    subExp2->doRemoveRestoreRefs(rs);
+}
+
+//  //  //  //
+// Ternary  //
+//  //  //  //
+void Ternary::doRemoveRestoreRefs(StatementSet& rs) {
+    subExp1->doRemoveRestoreRefs(rs);
+    subExp2->doRemoveRestoreRefs(rs);
+    subExp3->doRemoveRestoreRefs(rs);
+}
+
 
 //
 // From SSA form

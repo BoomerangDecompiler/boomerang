@@ -2297,21 +2297,21 @@ void Cfg::generateDotFile(std::ofstream& of) {
     }
 }
 
-void Cfg::toSSAform(int memDepth) {
+void Cfg::toSSAform(int memDepth, StatementSet& rs) {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        (*it)->toSSAform(memDepth);
+        (*it)->toSSAform(memDepth, rs);
     }
 }
 
-void Cfg::insertArguments() {
+void Cfg::insertArguments(StatementSet& rs) {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
         if ((*it)->getType() == CALL) {
             // The last RTL should be a HLCall
             HLCall* call = (HLCall*)(*it)->m_pRtls->back();
             assert(call->getKind() == CALL_RTL);
-            call->insertArguments();
+            call->insertArguments(rs);
         }
     }
 }

@@ -1605,10 +1605,10 @@ void HLCall::setNumArguments(int n) {
 }
 
 // Update the arguments to be in implicit SSA form (e.g. m[esp{1}]{2 3})
-void HLCall::toSSAform(StatementSet& reachin, int memDepth) {
+void HLCall::toSSAform(StatementSet& reachin, int memDepth, StatementSet& rs) {
     int n = arguments.size();
     for (int i = 0; i < n; i++) {
-        arguments[i] = arguments[i]->updateRefs(reachin, memDepth);
+        arguments[i] = arguments[i]->updateRefs(reachin, memDepth, rs);
     }
 }
 
@@ -1620,9 +1620,16 @@ void HLCall::fromSSAform(igraph& ig) {
     }
 }
 
+void HLCall::removeRestoreRefs(StatementSet& rs) {
+    int n = arguments.size();
+    for (int i=0; i < n; i++) {
+        arguments[i]->doRemoveRestoreRefs(rs);
+    }
+}
+
 // Insert actual arguments to match the formal parameters
 // This is called very late, after all propagation
-void HLCall::insertArguments() {
+void HLCall::insertArguments(StatementSet& rs) {
     if (procDest == NULL) return;
     if (procDest->isLib()) return;
     Signature* sig = procDest->getSignature();
@@ -1635,9 +1642,9 @@ void HLCall::insertArguments() {
         Exp* loc = sig->getArgumentExp(i)->clone();
         // Needs to be subscripted with everything that reaches the parameters
         // FIXME: need to be sensible about memory depths
-        loc->updateRefs(rd, 0);
+        loc->updateRefs(rd, 0, rs);
         propagateTo(0);
-        loc->updateRefs(rd, 1);
+        loc->updateRefs(rd, 1, rs);
         propagateTo(1);
         arguments.push_back(loc);
     }

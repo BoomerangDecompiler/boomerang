@@ -882,7 +882,7 @@ void Statement::propagateTo(int memDepth) {
         LocSetIter ll;
         change = false;
         for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
-#if 0
+#if 1   // Experimental: get rid of defs caught up in recursion
             if (e->getNumRefs() == 2) {
                 // Check for two special cases induced by recursion
                 // Get the two definitions we reference
@@ -932,6 +932,26 @@ bool Statement::doPropagateTo(int memDepth, Statement* def, bool twoRefs) {
     int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
     if (depth > memDepth)
         return false;
+
+// The following is a special hack to prevent propagating memof's involving
+// statement 119 (hard wired!). Might be useful for experimentation.
+// Might be more useful to prevent only propagating 119 into 103...
+#if 0
+if (memDepth == 1) {
+  LocationSet ls;
+  def->addUsedLocs(ls);
+  LocSetIter cc;
+  for (Exp* com = ls.getFirst(cc); com; com = ls.getNext(cc))
+    if (com->isSubscript()) {
+      StmtSetIter dd;
+      RefsExp* re = (RefsExp*)com;
+      for (Statement* d = re->getFirstRef(dd); d; d = re->getNextRef(dd))
+        if (d->getNumber() == 119)
+          std::cerr << "SPECIAL HACK: Not propagating " << def->getNumber() <<
+            " to " << number << ", def is " << def << "\n";
+          return false; }}   // HACK!!! 
+#endif
+  
     if (twoRefs)
         // A special version of replaceRef is needed, which wraps the LHS
         // with two refs
