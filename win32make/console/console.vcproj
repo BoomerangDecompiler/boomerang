@@ -117,9 +117,6 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath="..\..\analysis\analysis.cpp">
-			</File>
-			<File
 				RelativePath="..\..\c\ansi-c-parser.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -351,6 +348,12 @@
 				RelativePath="..\..\db\sslscanner.cpp">
 			</File>
 			<File
+				RelativePath="..\..\frontend\st20decoder.cpp">
+			</File>
+			<File
+				RelativePath="..\..\frontend\st20frontend.cpp">
+			</File>
+			<File
 				RelativePath="..\..\db\statement.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -521,6 +524,12 @@
 			</File>
 			<File
 				RelativePath="..\..\include\signature.h">
+			</File>
+			<File
+				RelativePath="..\..\frontend\st20decoder.h">
+			</File>
+			<File
+				RelativePath="..\..\frontend\st20frontend.h">
 			</File>
 			<File
 				RelativePath="..\..\include\statement.h">
