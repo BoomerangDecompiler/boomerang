@@ -34,7 +34,7 @@ class Type;
 class Signature;
 class Assign;
 class LocationSet;
-class ReturnInfo;
+struct ReturnInfo;
 
 class HLLCode {
 protected:
