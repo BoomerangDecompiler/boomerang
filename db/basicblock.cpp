@@ -19,6 +19,7 @@
  * Dec 97 - created by Mike
  * 18 Apr 02 - Mike: Changes for boomerang
  * 04 Dec 02 - Mike: Added isJmpZ
+ * 09 Jan 02 - Mike: Untabbed, reformatted
 */
 
 
@@ -55,20 +56,20 @@
 BasicBlock::BasicBlock()
     :
         m_DFTfirst(0),
-		m_structType(NONE),	m_loopCondType(NONE),
-		m_loopHead(NULL), m_caseHead(NULL),
-		m_condFollow(NULL), m_loopFollow(NULL),
-		m_latchNode(NULL),
+        m_structType(NONE), m_loopCondType(NONE),
+        m_loopHead(NULL), m_caseHead(NULL),
+        m_condFollow(NULL), m_loopFollow(NULL),
+        m_latchNode(NULL),
         m_nodeType(INVALID),
         m_pRtls(NULL),
         m_iLabelNum(0),
-		m_labelneeded(false),
+        m_labelneeded(false),
         m_bIncomplete(true),
         m_bJumpReqd(false),
         m_iNumInEdges(0),
         m_iNumOutEdges(0),
         m_iTraversed(false),
-	m_returnVal(NULL)
+    m_returnVal(NULL)
 {
 }
 
@@ -78,8 +79,7 @@ BasicBlock::BasicBlock()
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-BasicBlock::~BasicBlock()
-{
+BasicBlock::~BasicBlock() {
     if (m_pRtls)
     {
         // Delete the RTLs
@@ -107,14 +107,14 @@ BasicBlock::~BasicBlock()
  *============================================================================*/
 BasicBlock::BasicBlock(const BasicBlock& bb)
     :   m_DFTfirst(0),
-		m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
-		m_loopHead(bb.m_loopHead), m_caseHead(bb.m_caseHead),
-		m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
-		m_latchNode(bb.m_latchNode),
+        m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
+        m_loopHead(bb.m_loopHead), m_caseHead(bb.m_caseHead),
+        m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
+        m_latchNode(bb.m_latchNode),
         m_nodeType(bb.m_nodeType),
         m_pRtls(NULL),
         m_iLabelNum(bb.m_iLabelNum),
-		m_labelneeded(false),
+        m_labelneeded(false),
         m_bIncomplete(bb.m_bIncomplete),
         m_bJumpReqd(bb.m_bJumpReqd),
         m_InEdges(bb.m_InEdges),
@@ -137,20 +137,20 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
  *============================================================================*/
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
     :   m_DFTfirst(0),
-		m_structType(NONE),	m_loopCondType(NONE),
-		m_loopHead(NULL), m_caseHead(NULL),
-		m_condFollow(NULL), m_loopFollow(NULL),
-		m_latchNode(NULL),  
+        m_structType(NONE), m_loopCondType(NONE),
+        m_loopHead(NULL), m_caseHead(NULL),
+        m_condFollow(NULL), m_loopFollow(NULL),
+        m_latchNode(NULL),  
         m_nodeType(bbType),
         m_pRtls(NULL),
         m_iLabelNum(0),
-		m_labelneeded(false),
+        m_labelneeded(false),
         m_bIncomplete(false),
         m_bJumpReqd(false),
         m_iNumInEdges(0),
         m_iNumOutEdges(iNumOutEdges),
         m_iTraversed(false),
-	m_returnVal(NULL)
+    m_returnVal(NULL)
 {
     m_OutEdges.reserve(iNumOutEdges);               // Reserve the space;
                                                     // values added with
@@ -318,8 +318,7 @@ void BasicBlock::setTraversed(bool bTraversed) {
  * PARAMETERS:      rtls - a list of RTLs
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::setRTLs(std::list<RTL*>* rtls)
-{
+void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
     // should we delete old ones here?  breaks some things - trent
     m_pRtls = rtls;
 
@@ -330,8 +329,7 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls)
         call->setBB(this);
 }
 
-void BasicBlock::setReturnVal(Exp *e)
-{
+void BasicBlock::setReturnVal(Exp *e) {
     if (m_returnVal) delete m_returnVal; 
     m_returnVal = e; 
 }
@@ -342,8 +340,7 @@ void BasicBlock::setReturnVal(Exp *e)
  * PARAMETERS:      <none>
  * RETURNS:         the type of the basic block
  *============================================================================*/
-BBTYPE BasicBlock::getType() 
-{
+BBTYPE BasicBlock::getType() {
     return m_nodeType;
 }
 
@@ -356,8 +353,7 @@ BBTYPE BasicBlock::getType()
  *                  iNumOutEdges - new number of inedges
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges)
-{
+void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
     m_nodeType = bbType;
     m_iNumOutEdges = iNumOutEdges;
 }
@@ -370,8 +366,7 @@ void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges)
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::setJumpReqd()
-{
+void BasicBlock::setJumpReqd() {
     m_bJumpReqd = true;
 }
 
@@ -381,8 +376,7 @@ void BasicBlock::setJumpReqd()
  * PARAMETERS:      <none>
  * RETURNS:         True if a jump is required
  *============================================================================*/
-bool BasicBlock::isJumpReqd() 
-{
+bool BasicBlock::isJumpReqd() {
     return m_bJumpReqd;
 }
 
@@ -393,8 +387,7 @@ bool BasicBlock::isJumpReqd()
  * PARAMETERS:      os - stream to output to
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::print(std::ostream& os, bool withDF) 
-{
+void BasicBlock::print(std::ostream& os, bool withDF) {
     if (m_iLabelNum) os << "L" << std::dec << m_iLabelNum << ": ";
     switch(m_nodeType)
     {
@@ -458,8 +451,7 @@ void BasicBlock::print(std::ostream& os, bool withDF)
  * PARAMETERS:      addr -
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::addInterProcOutEdge(ADDRESS addr)
-{
+void BasicBlock::addInterProcOutEdge(ADDRESS addr) {
 //  m_OutEdges.push_back((PBB)addr);
 //  m_OutEdgeInterProc[m_OutEdges.size()-1] = true;
     m_iNumOutEdges--;
@@ -472,8 +464,7 @@ void BasicBlock::addInterProcOutEdge(ADDRESS addr)
  * PARAMETERS:      uAddr -
  * RETURNS:         <nothing>
  *============================================================================*/
-bool BasicBlock::addProcOutEdge (ADDRESS uAddr)
-{
+bool BasicBlock::addProcOutEdge (ADDRESS uAddr) {
     // This is a bit problematic. I tried writing one at one stage,
     // and ended up with circular dependencies... Perhaps we don't
     // need this function; you can just use getProcAddr() to find
@@ -496,8 +487,7 @@ bool BasicBlock::addProcOutEdge (ADDRESS uAddr)
  * PARAMETERS:      <none>
  * RETURNS:         the lowest real address associated with this BB
  *============================================================================*/
-ADDRESS BasicBlock::getLowAddr() 
-{
+ADDRESS BasicBlock::getLowAddr() {
     assert(m_pRtls != NULL);
     ADDRESS a = m_pRtls->front()->getAddress();
     if ((a == 0) && (m_pRtls->size() > 1))
@@ -523,8 +513,7 @@ ADDRESS BasicBlock::getLowAddr()
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-ADDRESS BasicBlock::getHiAddr() 
-{
+ADDRESS BasicBlock::getHiAddr() {
     assert(m_pRtls != NULL);
     return m_pRtls->back()->getAddress();
 }
@@ -535,8 +524,7 @@ ADDRESS BasicBlock::getHiAddr()
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-std::list<RTL*>* BasicBlock::getRTLs() 
-{
+std::list<RTL*>* BasicBlock::getRTLs() {
     return m_pRtls;
 }
 
@@ -546,8 +534,7 @@ std::list<RTL*>* BasicBlock::getRTLs()
  * PARAMETERS:      <none>
  * RETURNS:         a constant reference to the vector of in edges
  *============================================================================*/
-std::vector<PBB>& BasicBlock::getInEdges()
-{
+std::vector<PBB>& BasicBlock::getInEdges() {
     return m_InEdges;
 }
 
@@ -557,8 +544,7 @@ std::vector<PBB>& BasicBlock::getInEdges()
  * PARAMETERS:      <none>
  * RETURNS:         a constant reference to the vector of out edges
  *============================================================================*/
-std::vector<PBB>& BasicBlock::getOutEdges()
-{
+std::vector<PBB>& BasicBlock::getOutEdges() {
     return m_OutEdges;
 }
 
@@ -570,8 +556,7 @@ std::vector<PBB>& BasicBlock::getOutEdges()
  *                  pNewInEdge: pointer to BB that will be a new parent
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::setInEdge(int i, PBB pNewInEdge)
-{
+void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
     m_InEdges[i] = pNewInEdge;
 }
 
@@ -585,15 +570,14 @@ void BasicBlock::setInEdge(int i, PBB pNewInEdge)
  *                  pNewOutEdge: pointer to BB that will be the new successor
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::setOutEdge(int i, PBB pNewOutEdge)
-{
-	if (m_OutEdges.size() == 0) {
-		assert(i == 0);
-		m_OutEdges.push_back(pNewOutEdge);
-	} else {
-		assert(i < (int)m_OutEdges.size());
-		m_OutEdges[i] = pNewOutEdge;
-	}
+void BasicBlock::setOutEdge(int i, PBB pNewOutEdge) {
+    if (m_OutEdges.size() == 0) {
+        assert(i == 0);
+        m_OutEdges.push_back(pNewOutEdge);
+    } else {
+        assert(i < (int)m_OutEdges.size());
+        m_OutEdges[i] = pNewOutEdge;
+    }
 }
 
 /*==============================================================================
@@ -603,10 +587,9 @@ void BasicBlock::setOutEdge(int i, PBB pNewOutEdge)
  * PARAMETERS:      i: index (0 based) of the desired out edge
  * RETURNS:         the i-th out edge; 0 if there is no such out edge
  *============================================================================*/
-PBB BasicBlock::getOutEdge(unsigned int i)
-{
-  if (i < m_OutEdges.size()) return m_OutEdges[i];
-  else return 0;
+PBB BasicBlock::getOutEdge(unsigned int i) {
+    if (i < m_OutEdges.size()) return m_OutEdges[i];
+    else return 0;
 }
 
 /*==============================================================================
@@ -618,13 +601,12 @@ PBB BasicBlock::getOutEdge(unsigned int i)
  * RETURNS:         
  *============================================================================*/
 
-PBB BasicBlock::getCorrectOutEdge(ADDRESS a) 
-{
-  std::vector<PBB>::iterator it;
-  for (it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
-    if ((*it)->getLowAddr() == a) return *it; 
-  }
-  return 0;
+PBB BasicBlock::getCorrectOutEdge(ADDRESS a) {
+    std::vector<PBB>::iterator it;
+    for (it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
+        if ((*it)->getLowAddr() == a) return *it; 
+    }
+    return 0;
 }
 
 
@@ -635,8 +617,7 @@ PBB BasicBlock::getCorrectOutEdge(ADDRESS a)
  * PARAMETERS:      pNewInEdge: pointer to BB that will be a new parent
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::addInEdge(PBB pNewInEdge)
-{
+void BasicBlock::addInEdge(PBB pNewInEdge) {
     m_InEdges.push_back(pNewInEdge);
     m_iNumInEdges++;
 }
@@ -651,8 +632,7 @@ void BasicBlock::addInEdge(PBB pNewInEdge)
  *                    if (pred) deleteInEdge(it) else it++;
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::deleteInEdge(std::vector<PBB>::iterator& it)
-{
+void BasicBlock::deleteInEdge(std::vector<PBB>::iterator& it) {
     it = m_InEdges.erase(it);
     m_iNumInEdges--;
 }
@@ -663,8 +643,7 @@ void BasicBlock::deleteInEdge(std::vector<PBB>::iterator& it)
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-unsigned BasicBlock::getCoverage()
-{
+unsigned BasicBlock::getCoverage() {
     assert(m_pRtls != NULL);
     unsigned uTotal = 0;
     std::list<RTL*>::iterator it;
@@ -686,16 +665,15 @@ unsigned BasicBlock::getCoverage()
  * RETURNS:         the number of nodes (including this one) that were traversed
  *                  from this node
  *============================================================================*/
-unsigned BasicBlock::DFTOrder(int& first, int& last)
-{
+unsigned BasicBlock::DFTOrder(int& first, int& last) {
     first++;
     m_DFTfirst = first;
 
     unsigned numTraversed = 1;
     m_iTraversed = true;
 
-    for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end();
-         it++) {
+    for (std::vector<PBB>::iterator it = m_OutEdges.begin();
+      it != m_OutEdges.end(); it++) {
 
         PBB child = *it;
         if (child->m_iTraversed == false)
@@ -719,8 +697,7 @@ unsigned BasicBlock::DFTOrder(int& first, int& last)
  * RETURNS:         the number of nodes (including this one) that were traversed
  *                  from this node
  *============================================================================*/
-unsigned BasicBlock::RevDFTOrder(int& first, int& last)
-{
+unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
     first++;
     m_DFTrevfirst = first;
 
@@ -749,8 +726,7 @@ unsigned BasicBlock::RevDFTOrder(int& first, int& last)
  *                  bb2 - last BB
  * RETURNS:         bb1.address < bb2.address
  *============================================================================*/
-bool BasicBlock::lessAddress(PBB bb1, PBB bb2)
-{
+bool BasicBlock::lessAddress(PBB bb1, PBB bb2) {
     return bb1->getLowAddr() < bb2->getLowAddr();
 }
 
@@ -762,8 +738,7 @@ bool BasicBlock::lessAddress(PBB bb1, PBB bb2)
  *                  bb2 - last BB
  * RETURNS:         bb1.first_DFS < bb2.first_DFS
  *============================================================================*/
-bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2)
-{
+bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
     return bb1->m_DFTfirst < bb2->m_DFTfirst;
 }
 
@@ -775,8 +750,7 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2)
  * PARAMETERS:      <none>
  * RETURNS:         <nothing>
  *============================================================================*/
-void BasicBlock::resetDFASets()
-{
+void BasicBlock::resetDFASets() {
     liveOut.reset();
     defSet.reset();
     useSet.reset();
@@ -793,8 +767,7 @@ void BasicBlock::resetDFASets()
  *                  bb2 - last BB
  * RETURNS:         bb1.last_DFS < bb2.last_DFS
  *============================================================================*/
-bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2)
-{
+bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2) {
     return bb1->m_DFTlast < bb2->m_DFTlast;
 }
 
@@ -805,8 +778,7 @@ bool BasicBlock::lessLastDFT(PBB bb1, PBB bb2)
  * PARAMETERS:      <none>
  * RETURNS:         Native destination of the call, or -1
  *============================================================================*/
-ADDRESS BasicBlock::getCallDest()
-{
+ADDRESS BasicBlock::getCallDest() {
     if (m_nodeType != CALL)
         return (ADDRESS)-1;
     std::list<RTL*>::reverse_iterator it;
@@ -818,46 +790,45 @@ ADDRESS BasicBlock::getCallDest()
 }
 
 // serialize this BB
-bool BasicBlock::serialize(std::ostream &ouf, int &len)
-{
-	std::streampos st = ouf.tellp();
+bool BasicBlock::serialize(std::ostream &ouf, int &len) {
+    std::streampos st = ouf.tellp();
 
-	saveFID(ouf, FID_BB_TYPE);
-	saveValue(ouf, (char)m_nodeType);
+    saveFID(ouf, FID_BB_TYPE);
+    saveValue(ouf, (char)m_nodeType);
 
-	int ncount = 0;
-	for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) 
-		ncount++;
-	if (ncount) {
-		saveFID(ouf, FID_BB_OUTEDGES);
-		saveLen(ouf, ncount * 4);
-		saveValue(ouf, ncount, false);
-		for (
+    int ncount = 0;
+    for (std::vector<PBB>::iterator it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) 
+        ncount++;
+    if (ncount) {
+        saveFID(ouf, FID_BB_OUTEDGES);
+        saveLen(ouf, ncount * 4);
+        saveValue(ouf, ncount, false);
+        for (
 #ifndef WIN32
-			std::vector<PBB>::iterator 
+            std::vector<PBB>::iterator 
 #endif
-			it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
-			saveValue(ouf, (*it)->m_nindex, false);
-		}
-	}
+            it = m_OutEdges.begin(); it != m_OutEdges.end(); it++) {
+            saveValue(ouf, (*it)->m_nindex, false);
+        }
+    }
 
-	if (m_pRtls) {
-		for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
-			saveFID(ouf, FID_BB_RTL);
-			std::streampos pos = ouf.tellp();
-			int len = -1;
-			saveLen(ouf, -1, true);
-			std::streampos posa = ouf.tellp();
+    if (m_pRtls) {
+        for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
+            saveFID(ouf, FID_BB_RTL);
+            std::streampos pos = ouf.tellp();
+            int len = -1;
+            saveLen(ouf, -1, true);
+            std::streampos posa = ouf.tellp();
 
-			assert((*it)->serialize(ouf, len));
+            assert((*it)->serialize(ouf, len));
 
-			std::streampos now = ouf.tellp();
-			assert((int)(now - posa) == len);
-			ouf.seekp(pos);
-			saveLen(ouf, len, true);
-			ouf.seekp(now);
-		}
-	}
+            std::streampos now = ouf.tellp();
+            assert((int)(now - posa) == len);
+            ouf.seekp(pos);
+            saveLen(ouf, len, true);
+            ouf.seekp(now);
+        }
+    }
 
     saveFID(ouf, FID_BB_END);
     saveLen(ouf, 0);
@@ -867,13 +838,12 @@ bool BasicBlock::serialize(std::ostream &ouf, int &len)
 }
 
 // deserialize a BB
-bool BasicBlock::deserialize(std::istream &inf)
-{
+bool BasicBlock::deserialize(std::istream &inf) {
     int fid;
     int i, l, j;
     char ch;
 
-	m_nOutEdges.clear();
+    m_nOutEdges.clear();
 
     while ((fid = loadFID(inf)) != -1 && fid != FID_BB_END) {
         switch (fid) {
@@ -883,14 +853,14 @@ bool BasicBlock::deserialize(std::istream &inf)
                 m_nodeType = (BBTYPE)ch;
                 break;
             case FID_BB_OUTEDGES:
-				l = loadLen(inf);
-				loadValue(inf, i, false);
-				assert(l == i * 4);
-				for (j = 0; j < i; j++) {
-					int o;
-					loadValue(inf, o, false);
-					m_nOutEdges.push_back(o);
-				}
+                l = loadLen(inf);
+                loadValue(inf, i, false);
+                assert(l == i * 4);
+                for (j = 0; j < i; j++) {
+                    int o;
+                    loadValue(inf, o, false);
+                    m_nOutEdges.push_back(o);
+                }
                 break;
             case FID_BB_RTL:
                 {
@@ -924,14 +894,14 @@ bool BasicBlock::deserialize(std::istream &inf)
 
     Exp* returnLoc;
 
-	*/
-			default:
-				skipFID(inf, fid);
-		}
-	}
-	assert(loadLen(inf) == 0);
+    */
+            default:
+                skipFID(inf, fid);
+        }
+    }
+    assert(loadLen(inf) == 0);
 
-	return true;
+    return true;
 }
 
 /*
@@ -944,46 +914,42 @@ bool BasicBlock::deserialize(std::istream &inf)
  *
  */
 
-/* is this the loop latch node */
-bool BasicBlock::isLatchNode() 
-{ 
-	return (m_loopHead != NULL) && (m_loopHead->m_latchNode == this); 
+/* Is this the loop latch node? */
+bool BasicBlock::isLatchNode() { 
+    return (m_loopHead != NULL) && (m_loopHead->m_latchNode == this); 
 }
 
-/* get the condition */
-Exp *BasicBlock::getCond()
-{
-	// the condition will be in the last rtl
-	assert(m_pRtls);
-	RTL *last = m_pRtls->back();
-	// it should be a HLJcond
-	assert(last->getKind() == JCOND_RTL);
-	HLJcond *j = (HLJcond*)last;
-	Exp *e = j->getCondExpr();	
-	return e;
+/* Get the condition */
+Exp *BasicBlock::getCond() {
+    // the condition will be in the last rtl
+    assert(m_pRtls);
+    RTL *last = m_pRtls->back();
+    // it should be a HLJcond
+    assert(last->getKind() == JCOND_RTL);
+    HLJcond *j = (HLJcond*)last;
+    Exp *e = j->getCondExpr();  
+    return e;
 }
 
-void BasicBlock::setCond(Exp *e)
-{
-	// the condition will be in the last rtl
-	assert(m_pRtls);
-	RTL *last = m_pRtls->back();
-	// it should be a HLJcond
-	assert(last->getKind() == JCOND_RTL);
-	HLJcond *j = (HLJcond*)last;
-	j->setCondExpr(e);
+void BasicBlock::setCond(Exp *e) {
+    // the condition will be in the last rtl
+    assert(m_pRtls);
+    RTL *last = m_pRtls->back();
+    // it should be a HLJcond
+    assert(last->getKind() == JCOND_RTL);
+    HLJcond *j = (HLJcond*)last;
+    j->setCondExpr(e);
 }
 
 /* Check for branch if equal relation */
-bool BasicBlock::isJmpZ(PBB dest)
-{
-	// The condition will be in the last rtl
-	assert(m_pRtls);
-	RTL *last = m_pRtls->back();
-	// It should be a HLJcond
-	assert(last->getKind() == JCOND_RTL);
-	HLJcond *j = (HLJcond*)last;
-	JCOND_TYPE jt = j->getCond();
+bool BasicBlock::isJmpZ(PBB dest) {
+    // The condition will be in the last rtl
+    assert(m_pRtls);
+    RTL *last = m_pRtls->back();
+    // It should be a HLJcond
+    assert(last->getKind() == JCOND_RTL);
+    HLJcond *j = (HLJcond*)last;
+    JCOND_TYPE jt = j->getCond();
     if ((jt != HLJCOND_JE) && (jt != HLJCOND_JNE)) return false;
     PBB trueEdge = m_OutEdges[0];
     if (jt == HLJCOND_JE)
@@ -994,406 +960,402 @@ bool BasicBlock::isJmpZ(PBB dest)
     }
 }
 
-/* get the loop body */
-BasicBlock *BasicBlock::getLoopBody()
-{
-	assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP || m_structType == ENDLESSLOOP);
-	assert(m_iNumOutEdges == 2);
-	if (m_OutEdges[0] != m_loopFollow)
-		return m_OutEdges[0];
-	return m_OutEdges[1];
+/* Get the loop body */
+BasicBlock *BasicBlock::getLoopBody() {
+    assert(m_structType == PRETESTLOOP || m_structType == POSTTESTLOOP ||
+      m_structType == ENDLESSLOOP);
+    assert(m_iNumOutEdges == 2);
+    if (m_OutEdges[0] != m_loopFollow)
+        return m_OutEdges[0];
+    return m_OutEdges[1];
 }
 
-bool BasicBlock::isAncestorOf(BasicBlock *other)
-{           
+bool BasicBlock::isAncestorOf(BasicBlock *other) {           
     return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
-    		(m_DFTrevlast < other->m_DFTrevlast && m_DFTrevfirst > other->m_DFTrevfirst);
+      (m_DFTrevlast < other->m_DFTrevlast &&
+       m_DFTrevfirst > other->m_DFTrevfirst);
 }
 
-void BasicBlock::simplify()
-{
-	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
-		(*it)->simplify();
+void BasicBlock::simplify() {
+    for (std::list<RTL*>::iterator it = m_pRtls->begin();
+      it != m_pRtls->end(); it++)
+        (*it)->simplify();
 }
         
-bool BasicBlock::hasBackEdgeTo(BasicBlock* dest)
-{
-//	assert(HasEdgeTo(dest) || dest == this);
-	return dest == this || dest->isAncestorOf(this);
+bool BasicBlock::hasBackEdgeTo(BasicBlock* dest) {
+//  assert(HasEdgeTo(dest) || dest == this);
+    return dest == this || dest->isAncestorOf(this);
 }
 
-bool BasicBlock::allParentsTraversed()
-{
-	for (int i = 0; i < m_iNumInEdges; i++)
-		if (!m_InEdges[i]->m_iTraversed && m_InEdges[i]->hasBackEdgeTo(this))
-			return false;
-	return true;
+bool BasicBlock::allParentsTraversed() {
+    for (int i = 0; i < m_iNumInEdges; i++)
+        if (!m_InEdges[i]->m_iTraversed && m_InEdges[i]->hasBackEdgeTo(this))
+            return false;
+    return true;
 }
 
 // generate code for the body of this BB
-void BasicBlock::generateBodyCode(HLLCode &hll, bool dup)
-{
-	if (!dup)
-		hll.AddLabel(this);	
-	if (m_pRtls)
-		for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) 
-			(*it)->generateCode(hll, this);
+void BasicBlock::generateBodyCode(HLLCode &hll, bool dup) {
+    if (!dup)
+        hll.AddLabel(this); 
+    if (m_pRtls)
+        for (std::list<RTL*>::iterator it = m_pRtls->begin();
+          it != m_pRtls->end(); it++) 
+            (*it)->generateCode(hll, this);
 }
 
 
-// generate code for this BB, belonging to the loop specified by latch (initially NULL) 
-void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond)
-{
-	if (hll.gotoSetContains(this) && !isLatchNode() && 
-		((latch && this == latch->m_loopHead->m_loopFollow) || !allParentsTraversed())) {
-		hll.AddGoto(this, this);
-		return;
-	} else if (hll.followSetContains(this)) {
-		if (this != hll.getEnclFollow()) {
-			hll.AddGoto(this, this);
-		}
-		return;
-	}
+// Generate code for this BB, belonging to the loop specified by latch
+// (initially NULL) 
+void BasicBlock::generateCode(HLLCode &hll, BasicBlock *latch, bool loopCond) {
+    if (hll.gotoSetContains(this) && !isLatchNode() && 
+      ((latch && this == latch->m_loopHead->m_loopFollow) ||
+        !allParentsTraversed())
+    ) {
+        hll.AddGoto(this, this);
+        return;
+    } else if (hll.followSetContains(this)) {
+        if (this != hll.getEnclFollow()) {
+            hll.AddGoto(this, this);
+        }
+        return;
+    }
 
-	if (m_iTraversed) {
-//		assert(m_sType == Loop && m_lType == PostTested && m_latchNode == this);
-		return;
-	}
-	m_iTraversed = true;
+    if (m_iTraversed) {
+//      assert(m_sType == Loop && m_lType == PostTested && m_latchNode == this);
+        return;
+    }
+    m_iTraversed = true;
 
-	if (isLatchNode()) {
-		// some stuff about indentation level.. this is a little too language specific, so I need to
-		// abstract this - trent.
-		generateBodyCode(hll); // or generate a goto
-		return;
-	}
+    if (isLatchNode()) {
+        // Some stuff about indentation level.. this is a little too language
+        // specific, so I need to abstract this - trent.
+        generateBodyCode(hll); // or generate a goto
+        return;
+    }
 
-	if (m_structType == NONE && m_iNumOutEdges > 1) {
-		// we know it has to be a conditional
-		m_structType = IFGOTO;
-		m_condFollow = m_OutEdges[1];
-	}
+    if (m_structType == NONE && m_iNumOutEdges > 1) {
+        // we know it has to be a conditional
+        m_structType = IFGOTO;
+        m_condFollow = m_OutEdges[1];
+    }
 
-	switch(loopCond ? m_loopCondType : m_structType) {
-		case PRETESTLOOP:
-			// add the follow of the loop (if it exists) to the follow set
-			if (m_loopFollow)
-				hll.addtoFollowSet(m_loopFollow);
+    switch(loopCond ? m_loopCondType : m_structType) {
+        case PRETESTLOOP:
+            // add the follow of the loop (if it exists) to the follow set
+            if (m_loopFollow)
+                hll.addtoFollowSet(m_loopFollow);
 
-			assert(m_latchNode->m_OutEdges.size() == 1);
-			// add anything before the loop test
-			generateBodyCode(hll);
-			// add the header
-			hll.AddPretestedLoopHeader(this, getCond());
-			// add the code for the body of the loop
-			getLoopBody()->generateCode(hll, m_latchNode);
-			// add the code for the latch if not already added
-			if (!m_latchNode->isTraversed()) {
-				m_latchNode->setTraversed(true);
-				m_latchNode->generateBodyCode(hll);
-			}
-			// add the stuff before the loop again (code duplication, yum)
-			generateBodyCode(hll, true);
-			// close the loop
-			hll.AddPretestedLoopEnd(this);
+            assert(m_latchNode->m_OutEdges.size() == 1);
+            // add anything before the loop test
+            generateBodyCode(hll);
+            // add the header
+            hll.AddPretestedLoopHeader(this, getCond());
+            // add the code for the body of the loop
+            getLoopBody()->generateCode(hll, m_latchNode);
+            // add the code for the latch if not already added
+            if (!m_latchNode->isTraversed()) {
+                m_latchNode->setTraversed(true);
+                m_latchNode->generateBodyCode(hll);
+            }
+            // add the stuff before the loop again (code duplication, yum)
+            generateBodyCode(hll, true);
+            // close the loop
+            hll.AddPretestedLoopEnd(this);
 
-			// write the code for the follow of the loop (if it exists)
-			if (m_loopFollow)
-			{
-				// remove the follow from the follow set
-				hll.removeLastFollow();
+            // write the code for the follow of the loop (if it exists)
+            if (m_loopFollow) {
+                // remove the follow from the follow set
+                hll.removeLastFollow();
 
-				if (!m_loopFollow->isTraversed())
-					m_loopFollow->generateCode(hll, latch);
-				else
-					hll.AddGoto(this, m_loopFollow);
-			}
-			break;
-		case POSTTESTLOOP:
-			// add the follow of the loop (if it exists) to the follow set
-			if (m_loopFollow)
-				hll.addtoFollowSet(m_loopFollow);
+                if (!m_loopFollow->isTraversed())
+                    m_loopFollow->generateCode(hll, latch);
+                else
+                    hll.AddGoto(this, m_loopFollow);
+            }
+            break;
+        case POSTTESTLOOP:
+            // add the follow of the loop (if it exists) to the follow set
+            if (m_loopFollow)
+                hll.addtoFollowSet(m_loopFollow);
 
-			// add the header
-			hll.AddPosttestedLoopHeader(this);
-			// ensure there is a conditional if more than one out edge
-			if (m_OutEdges.size() == 2 && m_loopCondType == NONE) {
-				m_loopCondType = IFGOTO;
-			}
-			// add code for the conditional (if any)
-			if (m_loopCondType != NONE) {
-				// a conditional inside a loop is a pain
-				setTraversed(false);
-				generateCode(hll, m_latchNode, true);
-			} else {
-				// add code for loop body
-				generateBodyCode(hll);
-				getLoopBody()->generateCode(hll, m_latchNode);
-			}
+            // add the header
+            hll.AddPosttestedLoopHeader(this);
+            // ensure there is a conditional if more than one out edge
+            if (m_OutEdges.size() == 2 && m_loopCondType == NONE) {
+                m_loopCondType = IFGOTO;
+            }
+            // add code for the conditional (if any)
+            if (m_loopCondType != NONE) {
+                // a conditional inside a loop is a pain
+                setTraversed(false);
+                generateCode(hll, m_latchNode, true);
+            } else {
+                // add code for loop body
+                generateBodyCode(hll);
+                getLoopBody()->generateCode(hll, m_latchNode);
+            }
 
-			// add the code for the latch if not already added
-			if (!m_latchNode->isTraversed()) {
-				m_latchNode->setTraversed(true);
-				m_latchNode->generateBodyCode(hll);
-			}
-			// close the loop
-			hll.AddPosttestedLoopEnd(this, getCond());				
+            // add the code for the latch if not already added
+            if (!m_latchNode->isTraversed()) {
+                m_latchNode->setTraversed(true);
+                m_latchNode->generateBodyCode(hll);
+            }
+            // close the loop
+            hll.AddPosttestedLoopEnd(this, getCond());              
 
-			// write the code for the follow of the loop (if it exists)
-			if (m_loopFollow)
-			{
-				// remove the follow from the follow set
-				hll.removeLastFollow();
+            // write the code for the follow of the loop (if it exists)
+            if (m_loopFollow) {
+                // remove the follow from the follow set
+                hll.removeLastFollow();
 
-				if (!m_loopFollow->isTraversed())
-					m_loopFollow->generateCode(hll, latch);
-				else
-					hll.AddGoto(this, m_loopFollow);
-			}
-			break;
-		case ENDLESSLOOP:
-			// add the follow of the loop (if it exists) to the follow set
-			if (m_loopFollow)
-				hll.addtoFollowSet(m_loopFollow);
-			// add the header
-			hll.AddEndlessLoopHeader(this);
-			// add code for the conditional (if any)
-			if (m_loopCondType != NONE) {
-				// a conditional inside a loop is a pain
-				setTraversed(false);
-				generateCode(hll, m_latchNode, true);
-			} else {
-				// add code for loop body
-				generateBodyCode(hll);
-				getLoopBody()->generateCode(hll, m_latchNode);
-			}
-			// add the code for the latch if not already added
-			if (!m_latchNode->isTraversed()) {
-				m_latchNode->setTraversed(true);
-				m_latchNode->generateBodyCode(hll);
-			}
-			// close the loop
-			hll.AddEndlessLoopEnd(this);
+                if (!m_loopFollow->isTraversed())
+                    m_loopFollow->generateCode(hll, latch);
+                else
+                    hll.AddGoto(this, m_loopFollow);
+            }
+            break;
+        case ENDLESSLOOP:
+            // add the follow of the loop (if it exists) to the follow set
+            if (m_loopFollow)
+                hll.addtoFollowSet(m_loopFollow);
+            // add the header
+            hll.AddEndlessLoopHeader(this);
+            // add code for the conditional (if any)
+            if (m_loopCondType != NONE) {
+                // a conditional inside a loop is a pain
+                setTraversed(false);
+                generateCode(hll, m_latchNode, true);
+            } else {
+                // add code for loop body
+                generateBodyCode(hll);
+                getLoopBody()->generateCode(hll, m_latchNode);
+            }
+            // add the code for the latch if not already added
+            if (!m_latchNode->isTraversed()) {
+                m_latchNode->setTraversed(true);
+                m_latchNode->generateBodyCode(hll);
+            }
+            // close the loop
+            hll.AddEndlessLoopEnd(this);
 
-			// write the code for the follow of the loop (if it exists)
-			if (m_loopFollow)
-			{
-				// remove the follow from the follow set
-				hll.removeLastFollow();
+            // write the code for the follow of the loop (if it exists)
+            if (m_loopFollow) {
+                // remove the follow from the follow set
+                hll.removeLastFollow();
 
-				if (!m_loopFollow->isTraversed())
-					m_loopFollow->generateCode(hll, latch);
-				else
-					hll.AddGoto(this, m_loopFollow);
-			}
-			break;
-		case JUMPINOUTLOOP:
-			break;
-		case JUMPINTOCASE:
-			break;
-		case IFGOTO:
-			// add code for the header
-			generateBodyCode(hll);
-			// add the if header
-			hll.AddIfCondHeader(this, getCond());
-			// ensure that the follow is one of the out edges
-			if (m_condFollow != m_OutEdges[0] && m_condFollow != m_OutEdges[1]) {
-				// hopefully the condition hasn't been incorrectly flipped.
-				m_condFollow = m_OutEdges[1];
-			}
-			// ensure out edge 0 is not the follow
-			if (m_condFollow == m_OutEdges[0]) {
-				// swap the condition and the out edges
-				Exp *e = new Unary(opLNot, getCond()->clone());
-				e = e->simplify();
-				setCond(e);
-				PBB tmp = m_OutEdges[0];
-				m_OutEdges[0] = m_OutEdges[1];
-				m_OutEdges[1] = tmp;
-			}
-			// add a goto for the body
-			hll.AddGoto(this, m_OutEdges[0]);
-			// add if end
-			hll.AddIfCondEnd(this);
-			// add code for the follow
-			m_condFollow->generateCode(hll, latch);
-			break;
-		case IFTHEN:
-			// add code for the header
-			generateBodyCode(hll);		
-			// ensure out edge 0 is not the follow
-			if (m_condFollow == m_OutEdges[0]) {
-				// swap the condition and the out edges
-				Exp *e = new Unary(opLNot, getCond()->clone());
-				e = e->simplify();
-				setCond(e);
-				PBB tmp = m_OutEdges[0];
-				m_OutEdges[0] = m_OutEdges[1];
-				m_OutEdges[1] = tmp;
-			}
-			// add the if header
-			hll.AddIfCondHeader(this, getCond());
-			// add code or goto for the body of the if
-			hll.addtoFollowSet(m_condFollow);
-			assert(m_condFollow != m_OutEdges[0]);
-			if (m_OutEdges[0]->isTraversed() || (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
-				hll.AddGoto(this, m_OutEdges[0]);
-			else {
-				m_OutEdges[0]->generateCode(hll, latch);
-			}
-			// add if end
-			hll.AddIfCondEnd(this);
-			// remove the follow
-			assert(hll.getEnclFollow() == m_condFollow);
-			hll.removeLastFollow();
-			// add code for the follow
-			m_condFollow->generateCode(hll, latch);
-			break;
-		case IFTHENELSE:
-			// add code for the header
-			generateBodyCode(hll);
-			// add the if header
-			hll.AddIfElseCondHeader(this, getCond());
-			// add code or goto for the then body of the if
-			assert(m_condFollow != m_OutEdges[0]);
-			hll.addtoFollowSet(m_condFollow);
-			if (m_OutEdges[0]->isTraversed() || (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
-				hll.AddGoto(this, m_OutEdges[0]);
-			else {
-				m_OutEdges[0]->generateCode(hll, latch);
-			}
-			// add if else
-			hll.AddIfElseCondOption(this);
-			// add code or goto for the then body of the if
-			assert(m_condFollow != m_OutEdges[1]);
-			if (m_OutEdges[1]->isTraversed() || (m_loopHead && m_OutEdges[1] == m_loopHead->m_loopFollow))
-				hll.AddGoto(this, m_OutEdges[1]);
-			else {
-				m_OutEdges[1]->generateCode(hll, latch);
-			}
-			// add if end
-			hll.AddIfElseCondEnd(this);
-			// remove the follow
-			assert(hll.getEnclFollow() == m_condFollow);
-			hll.removeLastFollow();
-			// add code for the follow
-			m_condFollow->generateCode(hll, latch);
-			break;
-		case IFELSE:
-			assert(false);
-			break;
-		case CASE:
-			assert(false);
-			hll.addtoFollowSet(m_condFollow);
+                if (!m_loopFollow->isTraversed())
+                    m_loopFollow->generateCode(hll, latch);
+                else
+                    hll.AddGoto(this, m_loopFollow);
+            }
+            break;
+        case JUMPINOUTLOOP:
+            break;
+        case JUMPINTOCASE:
+            break;
+        case IFGOTO:
+            // add code for the header
+            generateBodyCode(hll);
+            // add the if header
+            hll.AddIfCondHeader(this, getCond());
+            // ensure that the follow is one of the out edges
+            if (m_condFollow != m_OutEdges[0] && m_condFollow != m_OutEdges[1])
+                // Hopefully the condition hasn't been incorrectly flipped.
+                m_condFollow = m_OutEdges[1];
+            // ensure out edge 0 is not the follow
+            if (m_condFollow == m_OutEdges[0]) {
+                // swap the condition and the out edges
+                Exp *e = new Unary(opLNot, getCond()->clone());
+                e = e->simplify();
+                setCond(e);
+                PBB tmp = m_OutEdges[0];
+                m_OutEdges[0] = m_OutEdges[1];
+                m_OutEdges[1] = tmp;
+            }
+            // add a goto for the body
+            hll.AddGoto(this, m_OutEdges[0]);
+            // add if end
+            hll.AddIfCondEnd(this);
+            // add code for the follow
+            m_condFollow->generateCode(hll, latch);
+            break;
+        case IFTHEN:
+            // add code for the header
+            generateBodyCode(hll);      
+            // ensure out edge 0 is not the follow
+            if (m_condFollow == m_OutEdges[0]) {
+                // swap the condition and the out edges
+                Exp *e = new Unary(opLNot, getCond()->clone());
+                e = e->simplify();
+                setCond(e);
+                PBB tmp = m_OutEdges[0];
+                m_OutEdges[0] = m_OutEdges[1];
+                m_OutEdges[1] = tmp;
+            }
+            // add the if header
+            hll.AddIfCondHeader(this, getCond());
+            // add code or goto for the body of the if
+            hll.addtoFollowSet(m_condFollow);
+            assert(m_condFollow != m_OutEdges[0]);
+            if (m_OutEdges[0]->isTraversed() ||
+              (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
+                hll.AddGoto(this, m_OutEdges[0]);
+            else {
+                m_OutEdges[0]->generateCode(hll, latch);
+            }
+            // add if end
+            hll.AddIfCondEnd(this);
+            // remove the follow
+            assert(hll.getEnclFollow() == m_condFollow);
+            hll.removeLastFollow();
+            // add code for the follow
+            m_condFollow->generateCode(hll, latch);
+            break;
+        case IFTHENELSE:
+            // add code for the header
+            generateBodyCode(hll);
+            // add the if header
+            hll.AddIfElseCondHeader(this, getCond());
+            // add code or goto for the then body of the if
+            assert(m_condFollow != m_OutEdges[0]);
+            hll.addtoFollowSet(m_condFollow);
+            if (m_OutEdges[0]->isTraversed() ||
+              (m_loopHead && m_OutEdges[0] == m_loopHead->m_loopFollow))
+                hll.AddGoto(this, m_OutEdges[0]);
+            else {
+                m_OutEdges[0]->generateCode(hll, latch);
+            }
+            // add if else
+            hll.AddIfElseCondOption(this);
+            // add code or goto for the then body of the if
+            assert(m_condFollow != m_OutEdges[1]);
+            if (m_OutEdges[1]->isTraversed() ||
+              (m_loopHead && m_OutEdges[1] == m_loopHead->m_loopFollow))
+                hll.AddGoto(this, m_OutEdges[1]);
+            else {
+                m_OutEdges[1]->generateCode(hll, latch);
+            }
+            // add if end
+            hll.AddIfElseCondEnd(this);
+            // remove the follow
+            assert(hll.getEnclFollow() == m_condFollow);
+            hll.removeLastFollow();
+            // add code for the follow
+            m_condFollow->generateCode(hll, latch);
+            break;
+        case IFELSE:
+            assert(false);
+            break;
+        case CASE:
+            assert(false);
+            hll.addtoFollowSet(m_condFollow);
 
-			break;
-		case NONE:
-			// add code for the body
-			generateBodyCode(hll);
+            break;
+        case NONE:
+            // add code for the body
+            generateBodyCode(hll);
 
-			// generate a ret if this is one
-			if (m_nodeType == RET) {
-				hll.AddReturnStatement(this, m_returnVal);
-				return;
-			}
+            // generate a ret if this is one
+            if (m_nodeType == RET) {
+                hll.AddReturnStatement(this, m_returnVal);
+                return;
+            }
 
-			// get child
-			BasicBlock *child = getOutEdge(0);
-			if (!child) return;
+            // get child
+            BasicBlock *child = getOutEdge(0);
+            if (!child) return;
 
-			// if the child has already been traversed
-			if (child->isTraversed()) {
-				hll.AddGoto(this, child);
-				return;
-			}
+            // if the child has already been traversed
+            if (child->isTraversed()) {
+                hll.AddGoto(this, child);
+                return;
+            }
 
-			// or the child is the latch
-			if (latch && latch->m_loopHead->m_loopFollow == child) {
-				hll.AddGoto(this, child);
-				return;
-			}
+            // or the child is the latch
+            if (latch && latch->m_loopHead->m_loopFollow == child) {
+                hll.AddGoto(this, child);
+                return;
+            }
 
-			// or the child is not in the same loop
-			if (child->m_loopHead != m_loopHead) {
-				// but has more than one untraversed parent or is a follow
-				if (!child->allParentsTraversed() || hll.followSetContains(child)) {
-					hll.AddGoto(this, child);
-					return;
-				}
-			}
+            // or the child is not in the same loop
+            if (child->m_loopHead != m_loopHead) {
+                // but has more than one untraversed parent or is a follow
+                if (!child->allParentsTraversed() ||
+                  hll.followSetContains(child)) {
+                    hll.AddGoto(this, child);
+                    return;
+                }
+            }
 
-			// or the child is not in the same case
-			if (child->m_caseHead != m_caseHead) {
-				hll.AddGoto(this, child);
-				return;
-			}
+            // or the child is not in the same case
+            if (child->m_caseHead != m_caseHead) {
+                hll.AddGoto(this, child);
+                return;
+            }
 
-			// or the child is the follow of this case, add a goto
-			if (m_caseHead && child == m_caseHead->m_condFollow) {
-				hll.AddGoto(this, child);
-				return;
-			}
+            // or the child is the follow of this case, add a goto
+            if (m_caseHead && child == m_caseHead->m_condFollow) {
+                hll.AddGoto(this, child);
+                return;
+            }
 
-			// otherwise, add the code
-			child->generateCode(hll, latch);
-			
-			break;
-	}	
+            // otherwise, add the code
+            child->generateCode(hll, latch);
+            
+            break;
+    }   
 }
 
-void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein)
-{
+void BasicBlock::getLiveInAt(Statement *stmt, std::set<Statement*> &livein) {
     getLiveIn(livein);
     for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
-		    rit != m_pRtls->end(); rit++) {
+      rit != m_pRtls->end(); rit++) {
         RTL *rtl = *rit;
-	for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
-		it != rtl->getList().end(); it++) {
-	    if (*it == (AssignExp*)stmt)
-	        return;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            if (*it == (AssignExp*)stmt) return;
             Statement *e = dynamic_cast<Statement*>(*it);
-	    if (e == NULL) continue;
+            if (e == NULL) continue;
             e->setBB(this);
-	    e->calcLiveOut(livein);
-	}
+            e->calcLiveOut(livein);
+        }
         if (rtl->getKind() == CALL_RTL) {
-	    HLCall *call = (HLCall*)rtl;
-	    if (call == stmt) return;
-	    call->setBB(this);
-	    call->calcLiveOut(livein);
-	    std::list<Statement*> &stmts = call->getInternalStatements();
-	    for (std::list<Statement*>::iterator it1 = stmts.begin();
-	         it1 != stmts.end(); it1++) {
-		if (stmt == *it1) return;
-	        (*it1)->setBB(this);
-	        (*it1)->calcLiveOut(livein);
-	    } 
-	}
-	if (rtl->getKind() == JCOND_RTL) {
-	    HLJcond *jcond = (HLJcond*)rtl;
-	    if (jcond == stmt) return;
-	    jcond->setBB(this);
-	    jcond->calcLiveOut(livein);
-	}
+            HLCall *call = (HLCall*)rtl;
+            if (call == stmt) return;
+            call->setBB(this);
+            call->calcLiveOut(livein);
+            std::list<Statement*> &stmts = call->getInternalStatements();
+            for (std::list<Statement*>::iterator it1 = stmts.begin();
+              it1 != stmts.end(); it1++) {
+                if (stmt == *it1) return;
+                (*it1)->setBB(this);
+                (*it1)->calcLiveOut(livein);
+            } 
+        }
+        if (rtl->getKind() == JCOND_RTL) {
+            HLJcond *jcond = (HLJcond*)rtl;
+            if (jcond == stmt) return;
+            jcond->setBB(this);
+            jcond->calcLiveOut(livein);
+        }
     }
 }
 
-void BasicBlock::calcLiveOut(std::set<Statement*> &live)
-{
+void BasicBlock::calcLiveOut(std::set<Statement*> &live) {
     /* hopefully we can be sure that NULL is not a valid assignment,
        so this will calculate the live set after every assignment */
     getLiveInAt(NULL, live);
 }
 
-void BasicBlock::getLiveIn(std::set<Statement*> &livein)
-{
+void BasicBlock::getLiveIn(std::set<Statement*> &livein) {
     for (unsigned i = 0; i < m_InEdges.size(); i++) {
         std::set<Statement*> &in = m_InEdges[i]->getLiveOut();
         // set union, C++ doesn't have one!
         for (std::set<Statement*>::iterator it = in.begin(); 
-        	it != in.end(); it++) {
+          it != in.end(); it++) {
             assert(*it);
-	    livein.insert(*it);
+            livein.insert(*it);
         }
     }
 }
