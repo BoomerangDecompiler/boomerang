@@ -1654,6 +1654,9 @@ FILD.lsI64   modrm
 FINCSTP    
             FPUSH;
 
+FINIT
+            _ ;               # No operation; may find in startup code
+
 FIST.lsI16   modrm 
             *16* modrm := ftoi(80,16,%st);
 
