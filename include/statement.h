@@ -201,7 +201,7 @@ public:
     void setBB(PBB bb) { pbb = bb; }
 
     // replaces a use of the given statement with an expression
-            void replaceRef(Statement *use);
+            bool replaceRef(Statement *use);
     // special version of the above for the "special hack"
     // (see Proc::propagateStatements, where numUses == 2)
             void specialReplaceRef(Statement* def);
@@ -237,7 +237,7 @@ public:
     virtual void fromSSAform(igraph& igm) = 0;
 
     // Propagate to this statement
-    void propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
+    bool propagateTo(int memDepth, StatementSet& exclude, int toDepth = -1);
 
     // code generation
     virtual void generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -260,8 +260,9 @@ public:
     int    setConscripts(int n);
 
 protected:
-    virtual void doReplaceRef(Exp* from, Exp* to) = 0;
-    bool doPropagateTo(int memDepth, Statement* def);
+    // Returns true if an indirect call is converted to direct:
+    virtual bool doReplaceRef(Exp* from, Exp* to) = 0;
+    bool doPropagateTo(int memDepth, Statement* def, bool& convert);
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
     Exp *processConstant(Exp *e, Type *ty, Prog *prog);
@@ -372,7 +373,7 @@ public:
     virtual void genConstraints(LocationSet& cons);
 
 protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
 
 };      // class Assign
 
@@ -454,7 +455,7 @@ public:
     virtual void processConstants(Prog*) {}
     virtual Type* updateType(Exp* e, Type* curType) {return curType;}
     virtual void fromSSAform(igraph&) {}
-    virtual void doReplaceRef(Exp*, Exp*) {}
+    virtual bool doReplaceRef(Exp*, Exp*) {return false;}
 };      // class GotoStatement
 
 /*==============================================================================
@@ -570,7 +571,7 @@ public:
     virtual void genConstraints(LocationSet& cons);
 
 protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
 
 private:
     BRANCH_TYPE jtCond;         // The condition for jumping
@@ -635,7 +636,7 @@ public:
     virtual void addUsedLocs(LocationSet& used);
     virtual void subscriptVar(Exp* e, Statement* def);
 protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
 public:
 
     // simplify all the uses/defs in this RTL
@@ -748,7 +749,7 @@ public:
     virtual void subscriptVar(Exp* e, Statement* def);
 
     // dataflow related functions
-    virtual void propagateToAll() { assert(false); }
+    virtual bool propagateToAll() { assert(false); }
 
     virtual bool isDefinition();
     virtual void getDefinitions(LocationSet &defs);
@@ -778,7 +779,7 @@ public:
     void    insertArguments(StatementSet& rs);
 
 protected:
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
 
 };      // class CallStatement
 
@@ -842,7 +843,7 @@ public:
     // of LHS of assignment)
     virtual void subscriptVar(Exp* e, Statement* def);
 
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
 
     int getNumBytesPopped() { return nBytesPopped; }
     void setNumBytesPopped(int n) { nBytesPopped = n; }
@@ -933,7 +934,7 @@ public:
     virtual bool searchAll(Exp* search, std::list<Exp*>& result);
     virtual bool searchAndReplace(Exp *search, Exp *replace);
     virtual Type* updateType(Exp *e, Type *curType);
-    virtual void doReplaceRef(Exp* from, Exp* to);
+    virtual bool doReplaceRef(Exp* from, Exp* to);
     // from SSA form
     virtual void fromSSAform(igraph& ig);
 
