@@ -74,11 +74,9 @@ void Analysis::finalSimplify(PBB pBB)
 
 /*==============================================================================
  * FUNCTION:		analyse
- * OVERVIEW:		THis was originally to perform any higher level analysis
- *					on a procedure. At present, it is only a few miscallaneous
- *					details
- * PARAMETERS:		proc: pointer to a Proc object for the procedure being
- *					analysed
+ * OVERVIEW:		This was originally to perform any higher level analysis
+ *					on a procedure. At present, it is only a few miscallaneous details
+ * PARAMETERS:		proc: pointer to a Proc object for the procedure being analysed
  * RETURNS:			<none>
  *============================================================================*/
 void Analysis::analyse(UserProc* proc) {
@@ -106,8 +104,7 @@ static int findDefsCallDepth = 0;
 
 /*==============================================================================
  * FUNCTION:		copySwap4
- * OVERVIEW:		Load a 4 byte word from little to big endianness,
- *					or vice versa
+ * OVERVIEW:		Load a 4 byte word from little to big endianness, or vice versa
  *					Similar to _swap4 macro, but this for translate time
  * NOTE:			Processes char at a time, so avoids alignment hassles
  * PARAMETERS:		w: Pointer to source word
@@ -124,8 +121,7 @@ int Analysis::copySwap4(int* w)
 
 /*==============================================================================
  * FUNCTION:		copySwap2
- * OVERVIEW:		Load a 2 byte short word from little to big endianness,
- *					or vice versa
+ * OVERVIEW:		Load a 2 byte short word from little to big endianness, or vice versa
  *					Similar to _swap2 macro, but this for translate time
  * NOTE:			Processes char at a time, so avoids alignment hassles
  * PARAMETERS:		w: Pointer to source short word
@@ -141,21 +137,18 @@ int Analysis::copySwap2(short* h)
 }
 
 
-	// analyse calls
-void Analysis::analyseCalls(PBB pBB, UserProc *proc)
-{
+// Analyse calls
+void Analysis::analyseCalls(PBB pBB, UserProc *proc) {
 	std::list<RTL*>* rtls = pBB->getRTLs();
 	if (rtls == NULL)
 		return;
-	for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); 
-	  it++) {
+	for (std::list<RTL*>::iterator it = rtls->begin(); it != rtls->end(); it++) {
 		if (!(*it)->isCall()) continue;
 		CallStatement* call = (CallStatement*)(*it)->getList().back();
 		if (call->getDestProc() == NULL && !call->isComputed()) {
 			Proc *p = proc->getProg()->findProc(call->getFixedDest());
 			if (p == NULL) {
-				LOG << "cannot find proc for dest " 
-					<< call->getFixedDest() << " in call at " 
+				std::cerr << "Cannot find proc for dest " << call->getFixedDest() << " in call at " 
 					<< (*it)->getAddress() << "\n";
 				assert(p);
 			}
