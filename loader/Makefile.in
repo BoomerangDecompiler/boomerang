@@ -42,8 +42,8 @@ all:    $(ALLLIB)
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
-# HOST_CYGWIN is "yes" if the host OS is Cygwin
-HOST_CYGWIN = @HOST_CYGWIN@
+# HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
+HOST_WINDOWS = @HOST_WINDOWS@
 
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,"lib"
@@ -52,9 +52,9 @@ RUNPATH=-R"lib"
 endif
 
 # LDL is -ldl if needed (Cygwin does not)
-ifeq ($(HOST_CYGWIN), yes)
+ifeq ($(HOST_WINDOWS), yes)
 LDL=
-else # Non-cygwin
+else # Non-Windows
 LDL=-ldl
 endif
 

@@ -34,8 +34,8 @@ CXX=$(CC)
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
-# HOST_CYGWIN is true if the host OS is CygWin
-HOST_CYGWIN = @HOST_CYGWIN@
+# HOST_WINDOWS is true if the host OS is CygWin or MinGW
+HOST_WINDOWS = @HOST_WINDOWS@
 
 BISONPP=@BISONPP@
 FLEXPP=@FLEXPP@
@@ -121,11 +121,11 @@ lib/libBinaryFile.so:
 	cd loader && make
 
 
-ifeq ($(HOST_CYGWIN), yes)
+ifeq ($(HOST_WINDOWS), yes)
 LDL=
 RENAME_TO_DLL=mv lib/libBinaryFile.so lib/BinaryFile.dll
 RENAME_FROM_DLL=mv lib/BinaryFile.dll libBinaryFile.so
-else # Non-cygwin
+else # Non-Windows
 LDL=-ldl
 RENAME_TO_DLL=
 RENAME_FROM_DLL=
@@ -133,8 +133,7 @@ endif
 
 boomerang: lib driver.o ${STATIC_OBJS} lib/libBinaryFile.so
 	$(RENAME_TO_DLL)
-	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) \
-	  -Llib -lgc -lexpat $(LDL)
+	$(CC) -o $@ driver.o $(STATIC_OBJS) -lBinaryFile $(RUNPATH) -Llib -lgc -lexpat $(LDL)
 	$(RENAME_FROM_DLL)
 
 bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
