@@ -1899,10 +1899,10 @@ Type* HLScond::getLeftType()
 
 bool HLScond::usesExp(Exp *e)
 {
-    Exp *tmp;
-    if (getDest() && getDest()->search(e, tmp)) return true;
-    if (pCond && pCond->search(e, tmp)) return true;
-    return false;
+    assert(pDest && pCond);
+    Exp *where = 0;
+    return (pCond->search(e, where) || (pDest->isMemOf() && 
+        ((Unary*)pDest)->getSubExp1()->search(e, where)));
 }
 
 void HLScond::printAsUse(std::ostream &os)
