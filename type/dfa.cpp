@@ -194,7 +194,7 @@ void UserProc::dfaTypeAnalysis() {
 Type* VoidType::meetWith(Type* other, bool& ch) {
 	// void meet x = x
 	ch |= !other->isVoid();
-	return other;
+	return other->clone();
 }
 
 Type* FuncType::meetWith(Type* other, bool& ch) {
@@ -267,7 +267,7 @@ Type* CharType::meetWith(Type* other, bool& ch) {
 	// Also allow char to merge with integer
 	if (other->isInteger()) {
 		ch = true;
-		return other;
+		return other->clone();
 	}
 	return createUnion(other, ch);
 }
@@ -282,9 +282,8 @@ Type* PointerType::meetWith(Type* other, bool& ch) {
 			ch = true;
 		} else {
 			// We have a meeting of two pointers. First, see if the base types will meet
-			bool baseCh = false;
-			Type* thisBase = getPointsTo();
-			Type* otherBase = otherPtr->getPointsTo();
+			Type* thisBase = points_to;
+			Type* otherBase = otherPtr->points_to;
 			if (otherBase->isPointer()) {
 if (thisBase->isPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
   std::cerr << "HACK! BAD POINTER 1\n";
@@ -296,24 +295,18 @@ if (thisBase == otherBase)	// Note: compare pointers
 					return this;
 				if (pointerDepth() == otherPtr->pointerDepth()) {
 					Type* fType = getFinalPointsTo();
-					if (fType->isVoid()) return other;
+					if (fType->isVoid()) return other->clone();
 					Type* ofType = otherPtr->getFinalPointsTo();
 					if (ofType->isVoid()) return this;
 					if (*fType == *ofType) return this;
 				}
-				return createUnion(other, ch);
 			}
-			thisBase = thisBase->meetWith(otherBase, baseCh);
-			if (thisBase->isUnion()) {
-				// The bases did not meet successfully. Union the pointers.
-				return createUnion(other, ch);
-			} else {
-				// The bases did meet successfully. Return a pointer to this possibly changed type.
-				if (baseCh) {
-					ch = true;
-					setPointsTo(thisBase);
-				}
+			if (thisBase->isCompatibleWith(otherBase)) {
+				points_to = points_to->meetWith(otherBase, ch);
+				return this;
 			}
+			// The bases did not meet successfully. Union the pointers.
+			return createUnion(other, ch);
 		}
 		return this;
 	}
@@ -367,7 +360,6 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 
 Type* UnionType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
-	if (*this == *other) return this;
 	std::list<UnionElement>::iterator it;
 	if (other->isUnion()) {
 		ch = true;
@@ -383,20 +375,17 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	// Other is a non union type
 	for (it = li.begin(); it != li.end(); it++) {
 		Type* curr = it->type->clone();
-		bool thisCh = false;
-		curr = curr->meetWith(other, thisCh);
-		if (!curr->isUnion()) {
-			// These types met successfully. Replace the current union type with this one
-			it->type = curr;
-			ch = thisCh;
+		if (curr->isCompatibleWith(other)) {
+			it->type = curr->meetWith(other, ch);
+assert(!it->type->isUnion());
 			return this;
 		}
 	}
 
-	// Other did not meet with any of my component types. Add a new one
+	// Other is not compatible with any of my component types. Add a new type
 	char name[20];
 	sprintf(name, "x%d", ++nextUnionNumber);
-	addType(other, name);
+	addType(other->clone(), name);
 	ch = true;
 	return this;
 }
@@ -415,11 +404,13 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 	ch = true;
 	if (other->isInteger() || other->isFloat() || other->isPointer()) {
 		if (other->getSize() == 0) {
-			other->setSize(max(size, other->getSize()));
-			return other;
+			other->setSize(size);
+			return other->clone();
 		}
 		if (other->getSize() == size)
-			return other;
+			return other->clone();
+LOG << "Warning: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
+return other->clone();
 	}
 	return createUnion(other, ch);
 }
@@ -427,14 +418,14 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 Type* Type::createUnion(Type* other, bool& ch) {
 	// Note: this should not be a UnionType
 	if (other->isUnion())
-		return other->meetWith(this, ch);		// Put all the hard union logic in one place
+		return other->meetWith(this, ch)->clone();		// Put all the hard union logic in one place
 
 	char name[20];
 	sprintf(name, "x%d", ++nextUnionNumber);
 	UnionType* u = new UnionType;
-	u->addType(this, name);
+	u->addType(this->clone(), name);
 	sprintf(name, "x%d", ++nextUnionNumber);
-	u->addType(other, name);
+	u->addType(other->clone(), name);
 	ch = true;
 	return u;
 }
@@ -549,16 +540,16 @@ Type* sigmaSum(Type* ta, Type* tb) {
 	if (ta->isPointer()) {
 		if (tb->isPointer())
 			return ta->createUnion(tb, ch);
-		return ta;
+		return ta->clone();
 	}
 	if (ta->isInteger()) {
 		if (tb->isPointer())
-			return tb;
-		return tb;
+			return tb->clone();
+		return tb->clone();
 	}
 	if (tb->isPointer())
-		return tb;
-	return ta;
+		return tb->clone();
+	return ta->clone();
 }
 
 
@@ -573,17 +564,17 @@ Type* sigmaAddend(Type* tc, Type* to) {
 		if (to->isPointer())
 			return new IntegerType;
 		if (to->isInteger())
-			return tc;
-		return to;
+			return tc->clone();
+		return to->clone();
 	}
 	if (tc->isInteger()) {
 		if (to->isPointer())
 			return tc->createUnion(to, ch);
-		return to;
+		return to->clone();
 	}
 	if (to->isPointer())
 		return new IntegerType;
-	return tc;
+	return tc->clone();
 }
 
 //					tc=
@@ -596,16 +587,16 @@ Type* deltaSubtrahend(Type* tc, Type* tb) {
 	if (tc->isPointer()) {
 		if (tb->isPointer())
 			return tc->createUnion(tb, ch);
-		return tc;
+		return tc->clone();
 	}
 	if (tc->isInteger()) {
 		if (tb->isPointer())
-			return tb;
-		return tc;
+			return tb->clone();
+		return tc->clone();
 	}
 	if (tb->isPointer())
-		return tb;
-	return tc;
+		return tb->clone();
+	return tc->clone();
 }
 
 //					tc=
@@ -623,10 +614,10 @@ Type* deltaSubtractor(Type* tc, Type* ta) {
 		return new IntegerType;
 	}
 	if (tc->isInteger())
-		return ta;
+		return ta->clone();
 	if (ta->isPointer())
-		return tc;
-	return ta;
+		return tc->clone();
+	return ta->clone();
 }
 
 //					ta=
@@ -640,19 +631,19 @@ Type* deltaDifference(Type* ta, Type* tb) {
 		if (tb->isPointer())
 			return new IntegerType;
 		if (tb->isInteger())
-			return ta;
-		return tb;
+			return ta->clone();
+		return tb->clone();
 	}
 	if (ta->isInteger()) {
 		if (tb->isPointer())
 			return ta->createUnion(tb, ch);
 		if (tb->isInteger())
-			return tb;
+			return tb->clone();
 		return new IntegerType;
 	}
 	if (tb->isPointer())
 		return new IntegerType;
-	return ta;
+	return ta->clone();
 }
 
 //	//	//	//	//	//	//	//	//	//	//
@@ -995,4 +986,101 @@ bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 		}
 	}
 	return ch;
+}
+
+
+bool VoidType::isCompatibleWith(Type* other) {
+	return true;		// Void is compatible with any type
+}
+
+bool SizeType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	int otherSize = other->getSize();
+	if (otherSize == size || otherSize == 0) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	//return false;
+	// For now, size32 and double will be considered compatible (helps test/pentium/global2)
+return true;
+}
+
+bool IntegerType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isInteger()) return true;
+	if (other->isChar()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool FloatType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isFloat()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool CharType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isChar()) return true;
+	if (other->isInteger()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool BooleanType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isBoolean()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool FuncType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (*this == *other) return true;		// MVE: should not compare names!
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool PointerType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (!other->isPointer()) return false;
+	return points_to->isCompatibleWith(other->asPointer()->points_to);
+}
+
+bool NamedType::isCompatibleWith(Type* other) {
+	return resolvesTo()->isCompatibleWith(other);
+}
+
+bool ArrayType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	return false;
+}
+
+bool UnionType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	std::list<UnionElement>::iterator it;
+	if (other->isUnion()) {
+		UnionType* otherUnion = (UnionType*)other;
+		for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
+			if (isCompatibleWith(it->type)) return true;
+		return false;
+	}
+	// Other is not a UnionType
+	for (it = li.begin(); it != li.end(); it++)
+		if (other->isCompatibleWith(it->type)) return true;
+	return false;
+}
+
+bool CompoundType::isCompatibleWith(Type* other) {
+	if (other->isVoid()) return true;
+	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (!other->isCompound()) return false;
+	CompoundType* otherComp = (CompoundType*)other;
+	int n = otherComp->getNumTypes();
+	if (n != (int)types.size()) return false;		// Is a subcompound compatible with its supercompound?
+	for (int i=0; i < n; i++)
+		if (!types[i]->isCompatibleWith(otherComp->types[i])) return false;
+	return true;
 }

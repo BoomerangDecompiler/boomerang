@@ -1358,6 +1358,8 @@ void UnionType::readMemo(Memo *mm, bool dec)
 }
 
 void UnionType::addType(Type *n, const char *str) {
+if (n->isFloat() && isCompatibleWith(n))
+ std::cerr << "HACK!\n";
 	if (n->isUnion()) {
 		UnionType* utp = (UnionType*)n;
 		// Note: need to check for name clashes eventually
