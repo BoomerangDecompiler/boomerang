@@ -7,7 +7,7 @@
 #
 
 # File: ppc.ssl
-# Desc: This file contains a semantic description of the SPARC V8 processor.
+# Desc: This file contains a semantic description of the PPC processor.
 
 # --------------------------------------------------------------------------
 # PPC RTL
@@ -65,12 +65,12 @@ SETCR0(rd) {
 
 ADD			 rd, ra, rb						*32* rd := ra + rb;
 
-ADD.		 rd, ra, rb						*32* rd := ra + rb
+ADDq		 rd, ra, rb						*32* rd := ra + rb
 			 	 	 						SETCR0(rd);
 
 ADDE		 rd, ra, rb						*32* rd := ra + rb + %XERCA;
 
-ADDE.		 rd, ra, rb						*32* rd := ra + rb + %XERCA
+ADDEq		 rd, ra, rb						*32* rd := ra + rb + %XERCA
 			 	 	 						SETCR0(rd);
 
 ADDI		 rd, rs, simm					*32* rd := rs + simm;
@@ -79,29 +79,29 @@ ADDIS		 rd, rs, simm					*32* rd := rs + (simm << 16);
 
 ADDME		 rd, ra	 						*32* rd := ra + %XERCA - 1;
 			 	 							
-ADDME.		 rd, ra	 						*32* rd := ra + %XERCA - 1
+ADDMEq		 rd, ra	 						*32* rd := ra + %XERCA - 1
 			 	 							SETCR0(rd);
 
 ADDZE		 rd, ra							*32* rd:= ra + %XERCA;
 
-ADDZE.		 rd, ra							*32* rd:= ra + %XERCA
+ADDZEq		 rd, ra							*32* rd:= ra + %XERCA
 			 	 							SETCR0(rd);
 
 DIVW	 	 rd, ra, rb						*32* rd := ra / rb;
 
-DIVW.	 	 rd, ra, rb						*32* rd := ra / rb
+DIVWq	 	 rd, ra, rb						*32* rd := ra / rb
 			 	 	 						SETCR0(rd);
 
 DIVWU	 	 rd, ra, rb						*32* rd := ra / rb;
 
-DIVWU.	 	 rd, ra, rb						*32* rd := ra / rb
+DIVWUq	 	 rd, ra, rb						*32* rd := ra / rb
 			 	 	 						SETCR0(rd);
 
 MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
 
 MULLW	 	 rd, ra, rb						*32* rd := ra * rb;
 
-MULLW.	 	 rd, ra, rb						*32* rd := ra * rb
+MULLWq	 	 rd, ra, rb						*32* rd := ra * rb
 			 	 	 						SETCR0(rd);
 
 SUBF	 	 rd, ra, rb						*32* rd := rb - ra;
@@ -115,10 +115,10 @@ NOP											_;
 
 NEG			 rd, ra							*32* rd := 0 - ra;
 
-NEG.		 rd, ra							*32* rd := 0 - ra
+NEGq		 rd, ra							*32* rd := 0 - ra
 			 	 							SETCR0(rd);
 
-# Note: the "and." instruction comes out as "AND"^"Rc" or "ANDRc" here. However, "andi." comes out as "ANDI"
+# Note: the "andq" instruction comes out as "AND"^"Rc" or "ANDRc" here. However, "andiq" comes out as "ANDI"
 LOGDOT	:= {"ANDRc",	"ORRc",		"XORRc"};			# Logicals that set flags as well
 LOG		:= {"AND",		"OR",		"XOR",	LOGDOT};	# All logicals with uncomplemented operands
 LOGI	:= {"ANDI",		"ORI",		"XORI"};			# Immediate with dot
@@ -129,7 +129,7 @@ NLOG	:= {"NAND",		"NOR",		"EQV", NLOGDOT};	# All negated logicals
 LOGOP	:= {  "&","|", "^",	"&", "|", "^"};
 LOGC	:= {"ANDC",	"ORC", "ANDCRc","ORCRc"};			# Note: no XORCR
 LOGCOP	:= {  "&",	 "|",	 "&",	  "|"};
-LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORCR.
+LOGCDOT	:= {"ANDCRc","ORCRc"};							# Note: no XORCRq
 
 
 LOG[IDX]		rd, ra, rb				*32* rd := ra LOGOP[IDX] rb;
@@ -195,6 +195,6 @@ CR_OP	:= {  "&",		  "|",        "^"};
 
 CRLOG[IDX]	d, a, b			*1* d :=   a CR_OP[IDX]  b;
 CRNLOG[IDX]	d, a, b			*1* d := ~(a CR_OP[IDX]  b);
-CRLOGC[IDX]	d, a, b			*1* d :=   a CR_OP[IDX] ~b;
+CRLOGC[IDX]	d, a, b			*1* d :=   a CR_OP[IDX] (~b);
 
 

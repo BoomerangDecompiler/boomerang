@@ -24,6 +24,8 @@
 # No testing has been done yet, but my visual inspection of the generators
 # and the prototypes indicates that all is well.
 
+# MVE: Periods (dot characters) are bad news for SSL files. So the letter "q" is used instead (means set flags).
+
 
 fields of instruction (32)
  OPCD 26:31
@@ -123,7 +125,7 @@ fieldinfo BIcr is [ guaranteed names [ cr0 cr1 cr2 cr3 cr4 cr5 cr6 cr7 ] ]
 
 ## suffix op fields
 
-fieldinfo Rc is [ names [ "" "." ] ]
+fieldinfo Rc is [ names [ "" "q" ] ]
 fieldinfo OE is [ names [ "" "o" ] ]
 fieldinfo LK is [ names [ "" "l" ] ]
 fieldinfo AA is [ names [ "" "a" ] ]
@@ -132,9 +134,9 @@ fieldinfo AA is [ names [ "" "a" ] ]
 
 patterns
  [ _      _      tdi    twi    _      _      _      mulli
-   subfic _      Cmpli  Cmpi   addic  addic. addi   addis
+   subfic _      Cmpli  Cmpi   addic  addicq addi   addis
    bc     Sc     b      cr_dx  rlwimi rlwinm _      rlwnm
-   ori    oris   xori   xoris  andi.  andis. rl_64  ab_dx
+   ori    oris   xori   xoris  andiq  andisq rl_64  ab_dx
    lwz    lwzu   lbz    lbzu   stw    stwu   stb    stbu
    lhz    lhzu   lha    lhau   sth    sthu   lmw    stmw
    lfs    lfsu   lfd    lfdu   stfs   stfsu  stfd   stfdu
@@ -160,12 +162,12 @@ sc is Sc & BO = 0 & BI = 0 & BD = 0 & LK = 0 & AA = 1
 Ddad_ is lwz | lwzu | lbz | lbzu | lhz | lhzu | lha | lhau | lmw
 Ddaf_ is lfs | lfsu | lfd | lfdu
 
-Ddasi_ is mulli | subfic | addic | addic. | addi | addis
+Ddasi_ is mulli | subfic | addic | addicq | addi | addis
 
 Dsad_ is stw | stwu | stb | stbu | sth | sthu | stmw
 Dsaf_ is stfs | stfsu | stfd | stfdu
 
-Dsaui_ is ori | oris | xori | xoris | andi. | andis.
+Dsaui_ is ori | oris | xori | xoris | andiq | andisq
 
 cmpi  is Cmpi  & Lz = 0
 cmpli is Cmpli & Lz = 0
@@ -216,7 +218,7 @@ Xsab0_ is any of [ ecowx stbux stbx stdux stdx
  & ab_dx
  & Rc = 0
 
-Xsab1_ is any of [ stdcx. stwcx. ],
+Xsab1_ is any of [ stdcxq stwcxq ],
  which is Xo1 = [   214    150   ]
  & ab_dx
  & Rc = 1
@@ -556,7 +558,7 @@ constructors
 discard tdi DSld_ DSst_ # ld ldu lwa std stdu
 discard cntlzd^Rc extsw^Rc fcfid^Rc fctid^Rc fctidz^Rc
 discard ldarx ldux ldx lwaux lwax  slbia slbie
-discard sld^Rc srad^Rc srd^Rc stdcx. stdux stdx td
+discard sld^Rc srad^Rc srd^Rc stdcxq stdux stdx td
 discard divd^OE^Rc divdu^OE^Rc mulhd^Rc mulhdu^Rc mulld^OE^Rc
 discard sradi^Rc MD_^Rc MDS_^Rc
 
@@ -569,17 +571,17 @@ constructors
    subi   D,A,v   is addi(   D, A, -v )
    subis  D,A,v   is addis(  D, A, -v )
    subic  D,A,v   is addic(  D, A, -v )
-   subic. D,A,v   is addic.( D, A, -v )
+   subicq D,A,v   is addicq( D, A, -v )
 
    sub   D,A,B is subf(   D, B, A )
-   sub.  D,A,B is subf.(  D, B, A )
+   subq  D,A,B is subfq(  D, B, A )
    subo  D,A,B is subfo(  D, B, A )
-   subo. D,A,B is subfo.( D, B, A )
+   suboq D,A,B is subfoq( D, B, A )
 
    subc   D,A,B is subfc(   D, B, A )
-   subc.  D,A,B is subfc.(  D, B, A )
+   subcq  D,A,B is subfcq(  D, B, A )
    subco  D,A,B is subfco(  D, B, A )
-   subco. D,A,B is subfco.( D, B, A )
+   subcoq D,A,B is subfcoq( D, B, A )
 
 ## Section F.3
 
