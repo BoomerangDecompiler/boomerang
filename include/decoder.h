@@ -182,11 +182,16 @@ bool isFuncPrologue(ADDRESS hostPC);
 /*==============================================================================
  * These are the macros that each of the .m files depend upon.
  *============================================================================*/
-#ifdef  DEBUG_DECODER
-#define SHOW_ASM(output) cout<< hex << pc << dec << ": " << output << endl;
-#else
-#define SHOW_ASM(output)
-#endif
+#define DEBUG_DECODER (Boomerang::get()->debugDecoder)
+#define SHOW_ASM(output) if (DEBUG_DECODER) \
+    std::cerr << std::hex << pc << std::dec << ": " << output << std::endl;
+#define DEBUG_STMTS \
+    std::list<Statement*>& lst = result.rtl->getList(); \
+    if (DEBUG_DECODER) { \
+        std::list<Statement*>::iterator ii; \
+        for (ii = lst.begin(); ii != lst.end(); ii++) \
+            std::cerr << "          " << *ii << "\n"; \
+    }
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an

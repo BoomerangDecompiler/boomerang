@@ -228,7 +228,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         result.rtl = new RTL(pc, stmts);
         result.rtl->appendStmt(newCall);
         result.type = SD;
-        SHOW_ASM("call__ ")
+        SHOW_ASM("call__ " << std::hex << (addr - delta))
+        DEBUG_STMTS
 
     | call_(addr) =>
         /*
@@ -245,7 +246,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         result.rtl->appendStmt(newCall);
         result.type = DD;
 
-        SHOW_ASM("call_ ")
+        SHOW_ASM("call_ " << dis_Eaddr(addr))
+        DEBUG_STMTS
 
 
     | ret() =>
@@ -256,6 +258,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         result.rtl->appendStmt(new ReturnStatement);
         result.type = DD;
         SHOW_ASM("ret_")
+        DEBUG_STMTS
 
     | retl() =>
         /*
@@ -265,6 +268,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         result.rtl->appendStmt(new ReturnStatement);
         result.type = DD;
         SHOW_ASM("retl_")
+        DEBUG_STMTS
 
     | branch^",a" (tgt) [name] => 
         /*
@@ -313,7 +317,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
         result.rtl = rtl;
         jump->setDest(tgt - delta);
-        SHOW_ASM(name << " " << hex << tgt-delta)
+        SHOW_ASM(name << " " << std::hex << tgt-delta)
+        DEBUG_STMTS
         
     | branch (tgt) [name] => 
         /*
@@ -360,7 +365,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
         result.rtl = rtl;
         jump->setDest(tgt - delta);
-        SHOW_ASM(name << " " << hex << tgt-delta)
+        SHOW_ASM(name << " " << std::hex << tgt-delta)
+        DEBUG_STMTS
 
 	| BPA (cc01, tgt) =>			/* Can see bpa xcc,tgt in 32 bit code */
 		unused(cc01);				// Does not matter because is unconditional
@@ -370,7 +376,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         result.rtl = new RTL(pc, stmts);
         result.rtl->appendStmt(jump);
         jump->setDest(tgt - delta);
-        SHOW_ASM("BPA " << hex << tgt-delta)
+        SHOW_ASM("BPA " << std::hex << tgt-delta)
+        DEBUG_STMTS
 
 	| pbranch (cc01, tgt) [name] =>
         if (cc01 != 0) {		/* If 64 bit cc used, can't handle */
@@ -409,8 +416,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
         result.rtl = rtl;
         jump->setDest(tgt - delta);
-        SHOW_ASM(name << " " << hex << tgt-delta)
-
+        SHOW_ASM(name << " " << std::hex << tgt-delta)
+        DEBUG_STMTS
 
     | JMPL (addr, rd) =>
         /*
@@ -426,9 +433,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
         jump->setDest(dis_Eaddr(addr));
         unused(rd);
         SHOW_ASM("JMPL ")
-#if DEBUG_DECODER
-        jump->getDest()->print();
-#endif
+        DEBUG_STMTS
 
 
     //  //  //  //  //  //  //  //
