@@ -20,6 +20,7 @@
  * Doug Simon (C++ version) Jan 1998
  * 29 Apr 02 - Mike: Mods for boomerang; removed &~, |~, and ^~ operators
  * 09 May 02 - Mike: ASSIGNSIZE is an num now
+ * 05 May 04 - Mike: ASSIGNSIZE replaced by ASSIGNTYPE (text)
  */
 
 %name SSLScanner
@@ -85,9 +86,9 @@ public: \
 "FAST"       { return SSLParser::FAST; }
 "FETCHEXEC"  { return SSLParser::FETCHEXEC; }
 
-"*"[0-9]+"*" {
-               yylval.num = strtol(yytext+1, 0, 10);
-               return SSLParser::ASSIGNSIZE;
+"*"[a-z]?[0-9]*"*" {
+                yylval.str = strdup(yytext);
+                return SSLParser::ASSIGNTYPE;
              }
 
 "or"    |

@@ -3179,6 +3179,7 @@ void Assign::genConstraints(LocationSet& cons) {
 
 void CallStatement::genConstraints(LocationSet& cons) {
     Proc* dest = getDestProc();
+    if (dest == NULL) return;
     Signature* destSig = dest->getSignature();
     // Generate a constraint for the type of each actual argument to be equal
     // to the type of each formal parameter (hopefully, these are already

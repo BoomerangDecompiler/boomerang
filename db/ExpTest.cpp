@@ -691,7 +691,7 @@ void ExpTest::testSimplifyBinary() {
                 Location::regOf(29),
                 new Const(-4))));
     as->simplify();
-    expected = "   0 *32* r27 := m[r29 - 4]";
+    expected = "   0 ** r27 := m[r29 - 4]";
     std::ostringstream ost3;
     as->print(ost3);
     CPPUNIT_ASSERT_EQUAL(expected, ost3.str());
@@ -982,7 +982,7 @@ void ExpTest::testParen () {
                     new Const(0),
                     new Unary(opParam, new Const("reg_or_imm"))),
                 new Const(1))));
-    std::string expected("   0 *32* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
+    std::string expected("   0 ** r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)");
     std::ostringstream o;
     a.print(o);
     // a.createDotFile("andn.dot");
@@ -1122,7 +1122,7 @@ void ExpTest::testSubscriptVar() {
     def1->setNumber(12);
     def1->subscriptVar(left, def1);           // Should do nothing
     std::string expected1;
-    expected1 = "   0 *32* m[r28 - 4] := r28 + r29";
+    expected1 = "   0 ** m[r28 - 4] := r28 + r29";
     std::ostringstream actual1;
     actual1 << s;
     CPPUNIT_ASSERT_EQUAL(expected1, actual1.str());
@@ -1130,7 +1130,7 @@ void ExpTest::testSubscriptVar() {
 
     // Subtest 2: Ordinary substitution, on LHS and RHS
     s->subscriptVar(r28, def1);
-    std::string expected2("   0 *32* m[r28{12} - 4] := r28{12} + r29");
+    std::string expected2("   0 ** m[r28{12} - 4] := r28{12} + r29");
     std::ostringstream actual2;
     actual2 << s;
     CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
@@ -1140,7 +1140,7 @@ void ExpTest::testSubscriptVar() {
         new Const(0)));
     def3->setNumber(99);
     s->subscriptVar(r28, def3);
-    std::string expected3("   0 *32* m[r28{99} - 4] := r28{99} + r29");
+    std::string expected3("   0 ** m[r28{99} - 4] := r28{99} + r29");
     std::ostringstream actual3;
     actual3 << s;
     CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());

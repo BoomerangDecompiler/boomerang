@@ -64,6 +64,7 @@ class SSLScanner;
     int             num;
     double          dbl;
     Statement*      regtransfer;
+    Type*           typ;
     
     Table*          tab;
     InsNameElem*    insel;
@@ -162,7 +163,7 @@ protected: \
  *============================================================================*/
 
 %token <str> COND_OP BIT_OP ARITH_OP LOG_OP
-%token <str> NAME 
+%token <str> NAME ASSIGNTYPE
 %token <str> REG_ID REG_NUM COND_TNAME DECOR
 %token <str> FARITH_OP FPUSH FPOP
 %token <str> TEMP SHARES CONV_FUNC TRUNC_FUNC TRANSCEND FABS_FUNC
@@ -175,7 +176,7 @@ protected: \
 %token       MEM_IDX TOK_INTEGER TOK_FLOAT FAST OPERAND
 %token       FETCHEXEC CAST_OP FLAGMACRO SUCCESSOR
 
-%token <num> NUM  ASSIGNSIZE
+%token <num> NUM
 %token <dbl> FLOATNUM      // I'd prefer type double here!
 
 %token 
@@ -197,6 +198,7 @@ protected: \
 %type <exp> exp var_op exp_term
 %type <str> bin_oper param
 %type <regtransfer> rt assign_rt
+%type <typ> assigntype
 %type <num> cast 
 %type <tab> table_expr
 %type <insel> name_contract instr_name instr_elem
@@ -281,13 +283,12 @@ operand:
         // In terms of DetParamMap[].kind, they are PARAM_EXP unless there
         // actually are parameters in square brackets, in which case it is
         // PARAM_LAMBDA
-        // Example: indexA  rs1, rs2 *32* r[rs1] + r[rs2]
+        // Example: indexA  rs1, rs2 *i32* r[rs1] + r[rs2]
         //$1       $2             $3           $4      $5
-    |   param list_parameter func_parameter ASSIGNSIZE exp {
+    |   param list_parameter func_parameter assigntype exp {
             std::map<std::string, InsNameElem*> m;
             ParamEntry &param = Dict.DetParamMap[$1];
-            Type* ty = new IntegerType($4);
-            Statement* asgn = new Assign(ty, new Terminal(opNil), $5);
+            Statement* asgn = new Assign($4, new Terminal(opNil), $5);
             // Note: The below 2 copy lists of strings (to be deleted below!)
             param.params = *$2;
             param.funcParams = *$3;
@@ -822,18 +823,16 @@ list_actualparameter:
 assign_rt:
         // Size   guard =>   lhs    :=    rhs
         //  $1     $2         $4          $6
-        ASSIGNSIZE exp THEN var_op EQUATE exp {
-            Type* ty = new IntegerType($1);
-            Assign* a = new Assign(ty, $4, $6);
+        assigntype exp THEN var_op EQUATE exp {
+            Assign* a = new Assign($1, $4, $6);
             a->setGuard($2);
             $$ = a;
         }
         // Size     lhs     :=   rhs
         // $1       $2      $3   $4
-    |   ASSIGNSIZE var_op EQUATE exp {
+    |   assigntype var_op EQUATE exp {
             // update the size of any generated RT's
-            Type* ty = new IntegerType($1);
-            $$ = new Assign(ty, $2, $4);
+            $$ = new Assign($1, $2, $4);
         }
 
         // FPUSH and FPOP are special "transfers" with just a Terminal
@@ -848,10 +847,9 @@ assign_rt:
                 new Terminal(opFpop));
         }
         // ? Just a RHS?
-    |   ASSIGNSIZE exp {
+    |   assigntype exp {
         //  $1      $2
-            Type* ty = new IntegerType($1);
-            $$ = new Assign(ty, NULL, $2);
+            $$ = new Assign($1, NULL, $2);
         }
     ;
 
@@ -1155,6 +1153,32 @@ esize:
             $$ = $1;
         }
     ;
+
+assigntype:
+        ASSIGNTYPE {
+            char c = $1[1];
+            if (c == '*') $$ = new IntegerType;
+            if (isdigit(c)) {
+                int size;
+                // Skip star (hence +1)
+                sscanf($1+1, "%d", &size);
+                $$ = new IntegerType(size);
+            } else {
+                int size;
+                // Skip star and letter
+                sscanf($1+2, "%d", &size);
+                if (size == 0) size = STD_SIZE;
+                switch (c) {
+                    case 'i': $$ = new IntegerType(size); break;
+                    case 'f': $$ = new FloatType(size); break;
+                    case 'c': $$ = new CharType; break;
+                    default:
+                        std::cerr << "Unexpected char " << c <<
+                            " in assign type\n";
+                        $$ = new IntegerType;
+                }
+            }
+        }
 
 // Section for indicating which instructions to substitute when using -f (fast
 // but not quite as exact instruction mapping)

@@ -722,17 +722,21 @@ void Prog::decompile() {
     assert(m_procs.size());
 
     if (VERBOSE) 
-        LOG << "Decompiling " << (int)m_procs.size() << " procedures\n";
+        LOG << (int)m_procs.size() << " procedures\n";
 
-    UserProc* entryProc = (UserProc*) m_procs.front();
-    if (entryProc && !entryProc->isLib()) {
+    std::list<Proc*>::iterator pp;
+    UserProc* entryProc;
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        entryProc = (UserProc*) *pp;
+        if (entryProc == NULL) continue;    // Probably not needed
+        if (entryProc->isLib()) continue;
         if (VERBOSE)
-            LOG << "starting with " << entryProc->getName() << "\n";
+            LOG << "Starting with " << entryProc->getName() << "\n";
         entryProc->decompile();
+        break;          // Only decompile top function in this loop
     }
 
     // Just in case there are any Procs not in the call graph
-    std::list<Proc*>::iterator pp;
     if (!Boomerang::get()->noDecodeChildren) {
         for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
             UserProc* proc = (UserProc*)(*pp);

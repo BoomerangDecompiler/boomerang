@@ -1,7 +1,7 @@
 #ifndef YY_SSLParser_h_included
 #define YY_SSLParser_h_included
 
-#line 1 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 1 "/usr/local/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/home/50/trent/bison++-1.21-8/bison.h" */
+/* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "sslparser.h"
 #line 36 "sslparser.y"
 
@@ -45,6 +45,7 @@ typedef union {
     int             num;
     double          dbl;
     Statement*      regtransfer;
+    Type*           typ;
     
     Table*          tab;
     InsNameElem*    insel;
@@ -121,7 +122,7 @@ protected: \
      */ \
     bool bFloat;
 
-#line 14 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 14 "/usr/local/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_SSLParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -172,32 +173,32 @@ protected: \
 
 #ifndef YY_SSLParser_PURE
 
-/* #line 63 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 177 "sslparser.h"
+/* #line 63 "/usr/local/lib/bison.h" */
+#line 178 "sslparser.h"
 
-#line 63 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 63 "/usr/local/lib/bison.h"
 /* YY_SSLParser_PURE */
 #endif
 
-/* #line 65 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 184 "sslparser.h"
+/* #line 65 "/usr/local/lib/bison.h" */
+#line 185 "sslparser.h"
 
-#line 65 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
-/* #line 67 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 191 "sslparser.h"
+/* #line 67 "/usr/local/lib/bison.h" */
+#line 192 "sslparser.h"
 
-#line 67 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 67 "/usr/local/lib/bison.h"
 /* YY_SSLParser_DEBUG */
 #endif
 #ifndef YY_SSLParser_LSP_NEEDED
 
-/* #line 70 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 199 "sslparser.h"
+/* #line 70 "/usr/local/lib/bison.h" */
+#line 200 "sslparser.h"
 
-#line 70 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 70 "/usr/local/lib/bison.h"
  /* YY_SSLParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -272,60 +273,60 @@ extern YY_SSLParser_STYPE YY_SSLParser_LVAL;
 #endif
 
 
-/* #line 143 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 277 "sslparser.h"
+/* #line 143 "/usr/local/lib/bison.h" */
+#line 278 "sslparser.h"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
 #define	LOG_OP	261
 #define	NAME	262
-#define	REG_ID	263
-#define	REG_NUM	264
-#define	COND_TNAME	265
-#define	DECOR	266
-#define	FARITH_OP	267
-#define	FPUSH	268
-#define	FPOP	269
-#define	TEMP	270
-#define	SHARES	271
-#define	CONV_FUNC	272
-#define	TRUNC_FUNC	273
-#define	TRANSCEND	274
-#define	FABS_FUNC	275
-#define	BIG	276
-#define	LITTLE	277
-#define	NAME_CALL	278
-#define	NAME_LOOKUP	279
-#define	ENDIANNESS	280
-#define	COVERS	281
-#define	INDEX	282
-#define	NOT	283
-#define	THEN	284
-#define	LOOKUP_RDC	285
-#define	BOGUS	286
-#define	ASSIGN	287
-#define	TO	288
-#define	COLON	289
-#define	S_E	290
-#define	AT	291
-#define	ADDR	292
-#define	REG_IDX	293
-#define	EQUATE	294
-#define	MEM_IDX	295
-#define	TOK_INTEGER	296
-#define	TOK_FLOAT	297
-#define	FAST	298
-#define	OPERAND	299
-#define	FETCHEXEC	300
-#define	CAST_OP	301
-#define	FLAGMACRO	302
-#define	SUCCESSOR	303
-#define	NUM	304
-#define	ASSIGNSIZE	305
+#define	ASSIGNTYPE	263
+#define	REG_ID	264
+#define	REG_NUM	265
+#define	COND_TNAME	266
+#define	DECOR	267
+#define	FARITH_OP	268
+#define	FPUSH	269
+#define	FPOP	270
+#define	TEMP	271
+#define	SHARES	272
+#define	CONV_FUNC	273
+#define	TRUNC_FUNC	274
+#define	TRANSCEND	275
+#define	FABS_FUNC	276
+#define	BIG	277
+#define	LITTLE	278
+#define	NAME_CALL	279
+#define	NAME_LOOKUP	280
+#define	ENDIANNESS	281
+#define	COVERS	282
+#define	INDEX	283
+#define	NOT	284
+#define	THEN	285
+#define	LOOKUP_RDC	286
+#define	BOGUS	287
+#define	ASSIGN	288
+#define	TO	289
+#define	COLON	290
+#define	S_E	291
+#define	AT	292
+#define	ADDR	293
+#define	REG_IDX	294
+#define	EQUATE	295
+#define	MEM_IDX	296
+#define	TOK_INTEGER	297
+#define	TOK_FLOAT	298
+#define	FAST	299
+#define	OPERAND	300
+#define	FETCHEXEC	301
+#define	CAST_OP	302
+#define	FLAGMACRO	303
+#define	SUCCESSOR	304
+#define	NUM	305
 #define	FLOATNUM	306
 
 
-#line 143 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 143 "/usr/local/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -366,13 +367,14 @@ public:
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 371 "sslparser.h"
+/* #line 182 "/usr/local/lib/bison.h" */
+#line 372 "sslparser.h"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
 static const int LOG_OP;
 static const int NAME;
+static const int ASSIGNTYPE;
 static const int REG_ID;
 static const int REG_NUM;
 static const int COND_TNAME;
@@ -415,69 +417,68 @@ static const int CAST_OP;
 static const int FLAGMACRO;
 static const int SUCCESSOR;
 static const int NUM;
-static const int ASSIGNSIZE;
 static const int FLOATNUM;
 
 
-#line 182 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 182 "/usr/local/lib/bison.h"
  /* decl const */
 #else
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
-/* #line 185 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 429 "sslparser.h"
+/* #line 185 "/usr/local/lib/bison.h" */
+#line 430 "sslparser.h"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
 	,LOG_OP=261
 	,NAME=262
-	,REG_ID=263
-	,REG_NUM=264
-	,COND_TNAME=265
-	,DECOR=266
-	,FARITH_OP=267
-	,FPUSH=268
-	,FPOP=269
-	,TEMP=270
-	,SHARES=271
-	,CONV_FUNC=272
-	,TRUNC_FUNC=273
-	,TRANSCEND=274
-	,FABS_FUNC=275
-	,BIG=276
-	,LITTLE=277
-	,NAME_CALL=278
-	,NAME_LOOKUP=279
-	,ENDIANNESS=280
-	,COVERS=281
-	,INDEX=282
-	,NOT=283
-	,THEN=284
-	,LOOKUP_RDC=285
-	,BOGUS=286
-	,ASSIGN=287
-	,TO=288
-	,COLON=289
-	,S_E=290
-	,AT=291
-	,ADDR=292
-	,REG_IDX=293
-	,EQUATE=294
-	,MEM_IDX=295
-	,TOK_INTEGER=296
-	,TOK_FLOAT=297
-	,FAST=298
-	,OPERAND=299
-	,FETCHEXEC=300
-	,CAST_OP=301
-	,FLAGMACRO=302
-	,SUCCESSOR=303
-	,NUM=304
-	,ASSIGNSIZE=305
+	,ASSIGNTYPE=263
+	,REG_ID=264
+	,REG_NUM=265
+	,COND_TNAME=266
+	,DECOR=267
+	,FARITH_OP=268
+	,FPUSH=269
+	,FPOP=270
+	,TEMP=271
+	,SHARES=272
+	,CONV_FUNC=273
+	,TRUNC_FUNC=274
+	,TRANSCEND=275
+	,FABS_FUNC=276
+	,BIG=277
+	,LITTLE=278
+	,NAME_CALL=279
+	,NAME_LOOKUP=280
+	,ENDIANNESS=281
+	,COVERS=282
+	,INDEX=283
+	,NOT=284
+	,THEN=285
+	,LOOKUP_RDC=286
+	,BOGUS=287
+	,ASSIGN=288
+	,TO=289
+	,COLON=290
+	,S_E=291
+	,AT=292
+	,ADDR=293
+	,REG_IDX=294
+	,EQUATE=295
+	,MEM_IDX=296
+	,TOK_INTEGER=297
+	,TOK_FLOAT=298
+	,FAST=299
+	,OPERAND=300
+	,FETCHEXEC=301
+	,CAST_OP=302
+	,FLAGMACRO=303
+	,SUCCESSOR=304
+	,NUM=305
 	,FLOATNUM=306
 
 
-#line 185 "/home/50/trent/bison++-1.21-8/bison.h"
+#line 185 "/usr/local/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -530,6 +531,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/home/50/trent/bison++-1.21-8/bison.h" */
-#line 535 "sslparser.h"
+/* #line 236 "/usr/local/lib/bison.h" */
+#line 536 "sslparser.h"
 #endif

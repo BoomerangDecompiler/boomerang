@@ -53,16 +53,16 @@
 
 
 /* % here is the declaration from section1 %header{  */ 
-#line 28 "sslscanner.l"
+#line 29 "sslscanner.l"
 #include "sslparser.h"
 #define MAX_LINE 1024      // the longest SSL spec line
-#line 42 "sslscanner.l"
-#define YY_SSLScanner_CONSTRUCTOR_PARAM  std::istream &ins, bool trace
 #line 43 "sslscanner.l"
-#define YY_SSLScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins)
+#define YY_SSLScanner_CONSTRUCTOR_PARAM  std::istream &ins, bool trace
 #line 44 "sslscanner.l"
-#define YY_SSLScanner_CONSTRUCTOR_CODE 
+#define YY_SSLScanner_CONSTRUCTOR_INIT  : theLine(1), traceLines(trace), in(ins)
 #line 45 "sslscanner.l"
+#define YY_SSLScanner_CONSTRUCTOR_CODE 
+#line 46 "sslscanner.l"
 #define YY_SSLScanner_INPUT_CODE  if (in.eof()) {  \
     result = 0; \
 } else { \
@@ -70,16 +70,16 @@
     result=in.gcount(); \
 } \
 return result;
-#line 52 "sslscanner.l"
+#line 53 "sslscanner.l"
 #define YY_SSLScanner_MEMBERS  \
 public: \
     int theLine;        /* the current line number */\
     char lineBuf[MAX_LINE]; /* the current line */ \
     bool traceLines;    /* echo each lines as it is scanned */ \
     std::istream &in;
-#line 59 "sslscanner.l"
+#line 60 "sslscanner.l"
 #define YY_SSLScanner_LEX_PARAM  YY_SSLParser_STYPE &yylval 
-#line 61 "sslscanner.l"
+#line 62 "sslscanner.l"
 #line 52 "//usr/local/lib/flexskel.h"
 
 #ifdef YY_USE_CLASS
@@ -404,7 +404,7 @@ class YY_SSLScanner_CLASS YY_SSLScanner_INHERIT
 /* declaration of externs for public use of yylex scanner */
 
 /* % here is the declaration from section2 %header{ */ 
-#line 320 "sslscanner.l"
+#line 321 "sslscanner.l"
 #endif
 #line 375 "//usr/local/lib/flexskel.h"
 

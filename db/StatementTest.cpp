@@ -151,10 +151,10 @@ void StatementTest::testFlow () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: \n"
-      "Ret BB: reach in: *32* r[24] := 5, \n"
+      "00000000 ** r[24] := 5   uses:    used by: \n"
+      "Ret BB: reach in: ** r[24] := 5, \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := 5, \n";
+      "cfg reachExit: ** r[24] := 5, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -202,11 +202,11 @@ void StatementTest::testKill () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: \n"
-      "         *32* r[24] := 6   uses:    used by: \n"
-      "Ret BB: reach in: *32* r[24] := 6, \n"
+      "00000000 ** r[24] := 5   uses:    used by: \n"
+      "         ** r[24] := 6   uses:    used by: \n"
+      "Ret BB: reach in: ** r[24] := 6, \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := 6, \n";
+      "cfg reachExit: ** r[24] := 6, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -254,11 +254,11 @@ void StatementTest::testUse () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: *32* r[28] := r[24], \n"
-      "         *32* r[28] := r[24]   uses: *32* r[24] := 5,    used by: \n"
-      "Ret BB: reach in: *32* r[24] := 5, *32* r[28] := r[24], \n"
+      "00000000 ** r[24] := 5   uses:    used by: ** r[28] := r[24], \n"
+      "         ** r[28] := r[24]   uses: ** r[24] := 5,    used by: \n"
+      "Ret BB: reach in: ** r[24] := 5, ** r[28] := r[24], \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := 5, *32* r[28] := r[24], \n";
+      "cfg reachExit: ** r[24] := 5, ** r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -310,12 +310,12 @@ void StatementTest::testUseOverKill () {
     std::string expected;
     expected = 
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: \n"
-      "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
-      "         *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
-      "Ret BB: reach in: *32* r[24] := 6, *32* r[28] := r[24], \n"
+      "00000000 ** r[24] := 5   uses:    used by: \n"
+      "         ** r[24] := 6   uses:    used by: ** r[28] := r[24], \n"
+      "         ** r[28] := r[24]   uses: ** r[24] := 6,    used by: \n"
+      "Ret BB: reach in: ** r[24] := 6, ** r[28] := r[24], \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := 6, *32* r[28] := r[24], \n";
+      "cfg reachExit: ** r[24] := 6, ** r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -369,12 +369,12 @@ void StatementTest::testUseOverBB () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: \n"
-      "         *32* r[24] := 6   uses:    used by: *32* r[28] := r[24], \n"
-      "Ret BB: reach in: *32* r[24] := 6, \n"
-      "00000000 *32* r[28] := r[24]   uses: *32* r[24] := 6,    used by: \n"
+      "00000000 ** r[24] := 5   uses:    used by: \n"
+      "         ** r[24] := 6   uses:    used by: ** r[28] := r[24], \n"
+      "Ret BB: reach in: ** r[24] := 6, \n"
+      "00000000 ** r[28] := r[24]   uses: ** r[24] := 6,    used by: \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := 6, *32* r[28] := r[24], \n";
+      "cfg reachExit: ** r[24] := 6, ** r[28] := r[24], \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -423,11 +423,11 @@ void StatementTest::testUseKill () {
     std::string expected;
     expected  = 
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
-      "         *32* r[24] := r[24] + 1   uses: *32* r[24] := 5,    used by: \n"
-      "Ret BB: reach in: *32* r[24] := r[24] + 1, \n"
+      "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
+      "         ** r[24] := r[24] + 1   uses: ** r[24] := 5,    used by: \n"
+      "Ret BB: reach in: ** r[24] := r[24] + 1, \n"
       "00000123 RET\n"
-      "cfg reachExit: *32* r[24] := r[24] + 1, \n";
+      "cfg reachExit: ** r[24] := r[24] + 1, \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
     delete prog;
@@ -479,10 +479,10 @@ void StatementTest::testEndlessLoop () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
-      "Oneway BB: reach in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
-      "00000000 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
-      "*32* r[24] := r[24] + 1,    used by: *32* r[24] := r[24] + 1, \n"
+      "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
+      "Oneway BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
+      "00000000 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
+      "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
       "cfg reachExit: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
@@ -712,11 +712,11 @@ void StatementTest::testRecursion () {
     std::string expected;
     expected =
       "Fall BB: reach in: \n"
-      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
-      "00000000 *32* r[24] := 5   uses:    used by: *32* r[24] := r[24] + 1, \n"
-      "Call BB: reach in: *32* r[24] := 5, *32* r[24] := r[24] + 1, \n"
-      "00000001 *32* r[24] := r[24] + 1   uses: *32* r[24] := 5, "
-      "*32* r[24] := r[24] + 1,    used by: *32* r[24] := r[24] + 1, \n"
+      "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
+      "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
+      "Call BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
+      "00000001 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
+      "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
       "cfg reachExit: \n";
     CPPUNIT_ASSERT_EQUAL(expected, s);
     // clean up
@@ -745,7 +745,7 @@ void StatementTest::testClone () {
     a2->print(o1);
     c2->print(o2);
     delete a2;
-    std::string expected("   0 *32* r8 := r9 + 99   0 *16* x := y");
+    std::string expected("   0 ** r8 := r9 + 99   0 *i16* x := y");
     std::string act1(o1.str());
     std::string act2(o2.str());
     CPPUNIT_ASSERT_EQUAL(expected, act1); // Originals
@@ -765,10 +765,10 @@ void StatementTest::testIsAssign () {
         Location::regOf(2),
         new Const(99));
     a.print(ost);
-    std::string expected("   0 *32* r2 := 99");
+    std::string expected("   0 ** r2 := 99");
     std::string actual (ost.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
-//    CPPUNIT_ASSERT_EQUAL (std::string("*32* r2 := 99"), std::string(ost.str()));
+//    CPPUNIT_ASSERT_EQUAL (std::string("** r2 := 99"), std::string(ost.str()));
     CPPUNIT_ASSERT(a.isAssign());
 
     CallStatement* c = new CallStatement;
@@ -797,7 +797,7 @@ void StatementTest::testIsFlagAssgn () {
             Location::regOf(10),
             new Const(4)));
     fc.print(ost);
-    std::string expected("   0 *32* %flags := addFlags( r2, 99 )");
+    std::string expected("   0 ** %flags := addFlags( r2, 99 )");
     std::string actual(ost.str());
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     CPPUNIT_ASSERT (    fc.isFlagAssgn());
