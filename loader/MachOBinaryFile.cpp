@@ -357,7 +357,8 @@ bool MachOBinaryFile::RealLoad(const char* sName)
     }
 
     // Give the entry point a symbol
-	ADDRESS entry = GetMainEntryPoint();
+	// ADDRESS entry = GetMainEntryPoint();
+	entrypoint = GetMainEntryPoint();
 
 	fclose(fp);
 	return true;
