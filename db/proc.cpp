@@ -1777,13 +1777,11 @@ bool UserProc::prover(Exp *query)
                             right->addUsedLocs(locs);
                             LocSetIter xx;
                             for (Exp* x = locs.getFirst(xx); x; x = locs.getNext(xx)) {
-                                for (int i = 0; i != dest->getSignature()->getNumParams(); i++) {
-                                    if (*dest->getSignature()->getParamExp(i) == *x) {
-                                        Exp *a = call->getArguments()[i];
-                                        bool change;
-                                        right = right->searchReplace(x, a->clone(), change);
-                                        break;
-                                    }
+                                int i = dest->getSignature()->findParam(x);
+                                if (i != -1) {
+                                    Exp *a = call->getArguments()[i];
+                                    bool change;
+                                    right = right->searchReplace(x, a->clone(), change);
                                 }
                             }
                             query->setSubExp1(right);

@@ -106,6 +106,7 @@ public:
     virtual const char *getParamName(int n);
     virtual Exp *getParamExp(int n);
     virtual Type *getParamType(int n);
+    virtual int findParam(Exp *e);
     // accessor for argument expressions
     virtual Exp *getArgumentExp(int n);
     virtual bool hasEllipsis() { return ellipsis; }

@@ -820,6 +820,14 @@ Type *Signature::getParamType(int n)
     return params[n]->getType();
 }
 
+int Signature::findParam(Exp *e)
+{
+    for (int i = 0; i < getNumParams(); i++)
+        if (*getParamExp(i) == *e)
+            return i;
+    return -1;
+}
+
 void Signature::addReturn(Type *type, Exp *exp)
 {
     addReturn(new Return(type, exp));
