@@ -1774,8 +1774,7 @@ Exp *Cfg::getReturnVal() {
     return e;
 }
 
-void Cfg::setTimeStamps()
-{
+void Cfg::setTimeStamps() {
     // set DFS tag
     for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
          it++) (*it)->traversed = DFS_TAG;
@@ -1798,8 +1797,7 @@ void Cfg::setTimeStamps()
 
 // Finds the common post dominator of the current immediate post dominator
 // and its successor's immediate post dominator
-PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom)
-{
+PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
     if (!curImmPDom)
         return succImmPDom;
     if (!succImmPDom)
@@ -1818,8 +1816,7 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom)
  * Adapted version of the dominators algorithm by Hecht and Ullman; finds
  * immediate post dominators only.
  * Note: graph should be reducible */
-void Cfg::findImmedPDom()
-{
+void Cfg::findImmedPDom() {
     PBB curNode, succNode;  // the current Node and its successor
 
     // traverse the nodes in order (i.e from the bottom up)
@@ -1864,8 +1861,7 @@ void Cfg::findImmedPDom()
 }
 
 // Structures all conditional headers (i.e. nodes with more than one outedge)
-void Cfg::structConds()
-{
+void Cfg::structConds() {
     // Process the nodes in order
     for (unsigned int i = 0; i < Ordering.size(); i++) {
         PBB curNode = Ordering[i];
@@ -1896,8 +1892,7 @@ void Cfg::structConds()
 // Pre: The loop induced by (head,latch) has already had all its member nodes 
 //      tagged
 // Post: The type of loop has been deduced
-void Cfg::determineLoopType(PBB header, bool* &loopNodes)
-{
+void Cfg::determineLoopType(PBB header, bool* &loopNodes) {
     assert(header->getLatchNode());
 
     // if the latch node is a two way node then this must be a post tested 
@@ -1935,8 +1930,7 @@ void Cfg::determineLoopType(PBB header, bool* &loopNodes)
 // Pre: The loop headed by header has been induced and all it's member nodes 
 //      have been tagged
 // Post: The follow of the loop has been determined.
-void Cfg::findLoopFollow(PBB header, bool* &loopNodes)
-{
+void Cfg::findLoopFollow(PBB header, bool* &loopNodes) {
     assert(header->getStructType() == Loop || 
            header->getStructType() == LoopCond);
     loopType lType = header->getLoopType();
@@ -2010,8 +2004,7 @@ void Cfg::findLoopFollow(PBB header, bool* &loopNodes)
 // Pre: header has been detected as a loop header and has the details of the 
 //      latching node
 // Post: the nodes within the loop have been tagged
-void Cfg::tagNodesInLoop(PBB header, bool* &loopNodes)
-{
+void Cfg::tagNodesInLoop(PBB header, bool* &loopNodes) {
     assert(header->getLatchNode());
 
     // traverse the ordering structure from the header to the latch node 
@@ -2041,8 +2034,7 @@ void Cfg::tagNodesInLoop(PBB header, bool* &loopNodes)
 //       it is a member (possibly none).
 // The header of each loop stores information on the latching node as well as 
 // the type of loop it heads.
-void Cfg::structLoops()
-{
+void Cfg::structLoops() {
     for (int i = Ordering.size() - 1; i >= 0; i--) {
         PBB curNode = Ordering[i];  // the current node under investigation
         PBB latch = NULL;           // the latching node of the loop
@@ -2114,8 +2106,7 @@ void Cfg::structLoops()
 // detects conditionals that are in fact the head of a jump into/outof a loop 
 // or into a case body.  Only forward jumps are considered as unstructured 
 // backward jumps will always be generated nicely.
-void Cfg::checkConds()
-{
+void Cfg::checkConds() {
     for (unsigned int i = 0; i < Ordering.size(); i++) {
         PBB curNode = Ordering[i];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
@@ -2219,8 +2210,7 @@ void Cfg::checkConds()
     }
 }
 
-void Cfg::structure()
-{
+void Cfg::structure() {
     setTimeStamps();
     findImmedPDom();
     structConds();
@@ -2228,15 +2218,13 @@ void Cfg::structure()
     checkConds();
 }
 
-void Cfg::removeUnneededLabels(HLLCode *hll)
-{
+void Cfg::removeUnneededLabels(HLLCode *hll) {
     for (unsigned int i = 0; i < Ordering.size(); i++)
         if (!Ordering[i]->hllLabel)
             hll->RemoveLabel(Ordering[i]->ord);
 }
 
-void Cfg::generateDotFile(const char *str)
-{
+void Cfg::generateDotFile(const char *str) {
     assert(str);
     std::ofstream of(str);
     of << "digraph Cfg {" << std::endl;
@@ -2281,5 +2269,12 @@ void Cfg::toSSAform() {
     BB_IT it;
     for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
         (*it)->toSSAform();
+    }
+}
+
+void Cfg::fromSSAform() {
+    BB_IT it;
+    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+        (*it)->fromSSAform();
     }
 }

@@ -366,6 +366,7 @@ public:
     //void computeDataflow();       // Recalculate dataflow
 
     void toSSAform();
+    void fromSSAform();
 
     // promote the signature if possible
     void promoteSignature();

@@ -596,11 +596,9 @@ void HLJcond::print(std::ostream& os /*= cout*/, bool withDF) {
         uses.printNums(os);
     }
     os << std::endl;
-#if 0       // This is always %flags now
     if (pCond) {
         os << "High level: " << pCond << std::endl;
     }
-#endif
 }
 
 /*==============================================================================
@@ -1875,13 +1873,11 @@ void HLScond::print(std::ostream& os /*= cout*/, bool withDF) {
     os << ")";
     if (bFloat) os << ", float";
     os << std::endl;
-#if 0       // This is always %flags now
     if (pCond) {
         os << "High level: ";
         pCond->print(os);
         os << std::endl;
     }
-#endif
 }
 
 /*==============================================================================

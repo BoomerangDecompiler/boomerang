@@ -62,6 +62,8 @@ public:
     const char *dotFile;
     int numToPropagate;
     bool noPromote;
+    bool debugPrintReach;
+    bool debugPrintSSA;
 };
 
 #define VERBOSE Boomerang::get()->vFlag

@@ -2006,26 +2006,146 @@ void BasicBlock::toSSAform() {
                 }
             }
         }
-#if 0   // Note: we don't seem to use the "high level expression" any more
-        // It always seems to be "opFlags"
         else if (rtl->getKind() == JCOND_RTL) {
             // Fix up the HL expression
             HLJcond* jc = (HLJcond*)rtl;
-            for (Statement* rd = reachin.getFirst(ssi); rd;
-              rd = reachin.getNext(ssi)) {
-                Exp* left = rd->getLeft();
-                jc->setCondExpr(jc->getCondExpr()->updateUses(rd, left));
-            }
+            jc->setCondExprND(jc->getCondExpr()->updateUses(reachin));
         }
         else if (rtl->getKind() == SCOND_RTL) {
             // HL expression
             HLScond* sc = (HLScond*)rtl;
-            for (Statement* rd = reachin.getFirst(ssi); rd;
-              rd = reachin.getNext(ssi)) {
-                Exp* left = rd->getLeft();
-                sc->setCondExpr(sc->getCondExpr()->updateUses(rd, left));
+            sc->setCondExprND(sc->getCondExpr()->updateUses(reachin));
+        }
+    }
+}
+
+void BasicBlock::fromSSAform() {
+    // Generate the interference graph
+    LivenessAnalysis();
+}
+
+typedef std::set<PBB> BBSet;
+// The interference graph type. We use just a set of subscripted locations.
+// Suppose that r[24]{3} interferes with r[24]{5}; we store the expression
+// which compares as less (here r[24]{3}) in the set, and give this a
+// different variable from all other r[24]s (if any). Note: v may be an
+// unsubscripted variable (effectively r[24]{0})
+typedef std::set<Exp*, lessExpStar> igraph;
+void  LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
+
+void BasicBlock::LivenessAnalysis() {
+    // Algorithm adapted from "Modern Compiler Implementation in Java",
+    // Andrew W. Appel, Cambridge University Press 2002
+    BBSet M;                                    // Already worked blocks
+    igraph ig;                                  // Interference graph
+    for (std::list<RTL*>::iterator rit = m_pRtls->begin(); 
+      rit != m_pRtls->end(); rit++) {
+        RTL *rtl = *rit;
+        for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+          it != rtl->getList().end(); it++) {
+            Statement *s = dynamic_cast<Statement*>(*it);
+            if (s == NULL) continue;
+            LocationSet uses;
+            s->addUsedLocs(uses);
+            LocSetIter ll;
+            for (Exp* v = uses.getFirst(ll); v; v = uses.getNext(ll)) {
+                M.clear();
+                if (v->isSubscript() && ((UsesExp*)v)->getNumUses() > 1) {
+                    StmtSetIter ssi;
+                    UsesExp* ue = (UsesExp*)v;
+                    for (Statement* ss = ue->getFirstUse(ssi); ss;
+                      ss = ue->getNextUse(ssi)) {
+                        PBB p = ss->getBB();
+                        LiveOutAtBlock(p, v, M, ig);
+                    }
+                } else
+                    LiveInAtStatement(s, v, M, ig);
             }
         }
-#endif
     }
+std::cerr << "Interference graph:";
+std::set<Exp*, lessExpStar>::iterator xx;
+for (xx = ig.begin(); xx != ig.end(); xx++)
+  std::cerr << *xx << ", ";
+std::cerr << "\n";
+}
+
+void BasicBlock::LiveOutAtBlock(PBB n, Exp* v, BBSet& M, igraph& ig) {
+    std::cerr << v << " is live-out at BB 0x" << std::hex << n->getLowAddr() << "\n";
+    // Check if already walked block
+    if (M.find(n) == M.end()) {
+        M.insert(n);
+        // Let s be the last statement in n
+        RTL *rtl = n->m_pRtls->back();
+        Exp* e = rtl->getList().back();
+        Statement *s = dynamic_cast<Statement*>(e);
+        LiveOutAtStatement(s, v, M, ig);
+    }
+}
+
+void BasicBlock::LiveInAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig) {
+    std::cerr << v << " is live-in at statement " << s << "\n";
+    // if s is the first statement of some block n
+    PBB n = s->getBB();
+    RTL *rtl = n->m_pRtls->front();
+    Statement* firsts;
+    Exp* firste = rtl->getList().front();
+    firsts = dynamic_cast<Statement*>(firste);
+    if (s == firsts) {          // Is s first statement?
+        std::cerr << v << " is live-in at BB 0x" << std::hex << n->getLowAddr() << "\n";
+        // For each predecessor p of n
+        int numPred = n->m_iNumInEdges;
+        for (int i=0; i < numPred; i++) {
+            PBB p = n->m_InEdges[i];
+            LiveOutAtBlock(p, v, M, ig);
+        }
+    } else {
+        // Let sdash be the statement preceeding s
+        // What a pain!
+        Statement* sdash = NULL;
+        Statement* cur;
+        for (std::list<RTL*>::iterator rit = n->m_pRtls->begin(); 
+          rit != n->m_pRtls->end(); rit++) {
+            RTL *rtl = *rit;
+            for (std::list<Exp*>::iterator it = rtl->getList().begin(); 
+              it != rtl->getList().end(); it++) {
+                cur = dynamic_cast<Statement*>(*it);
+                if (cur == NULL) continue;
+                if (cur == s) break;
+                sdash = cur;
+            }
+            if (cur == s) break;
+            if (rtl->getKind() == CALL_RTL) {
+                std::list<Exp*>* le = ((HLCall*)rtl)->getPostCallExpList();
+                if (le) {
+                    std::list<Exp*>::iterator pp;
+                    for (pp = le->begin(); pp != le->end(); pp++) {
+                        cur = dynamic_cast<Statement*>(*pp);
+                        if (cur == s) break;
+                        sdash = cur;
+                    }
+                }
+            }
+        }
+        assert(cur == s);
+        assert(sdash);
+        LiveOutAtStatement(sdash, v, M, ig);
+    }
+}
+
+void BasicBlock::LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig) {
+    std::cerr << v << " is live-out at statement " << s << "\n";
+    Exp* w = s->getLeft();          // Let w be variable s defines
+    if (!(*v == *w)) {
+        // Add (v, w) to the interference graph
+        // We get the numbers and add the one that is least (as defined
+        // by Exp::operator<())
+        if (*v < *w)
+            ig.insert(v);
+        else
+            ig.insert(w);
+    }
+    // If v not element of W (boils down to else)
+    else
+        LiveInAtStatement(s, v, M, ig);
 }

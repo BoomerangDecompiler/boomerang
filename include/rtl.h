@@ -326,6 +326,8 @@ public:
     // Set and return the Exp representing the HL condition
     Exp* getCondExpr();
     void setCondExpr(Exp* pe);
+    // As above, no delete (for subscripting)
+    void setCondExprND(Exp* e) { pCond = e; }
     
     // Probably only used in front386.cc: convert this from an unsigned to a
     // signed conditional branch
@@ -694,6 +696,8 @@ public:
     // Set and return the Exp representing the HL condition
     Exp* getCondExpr();
     void setCondExpr(Exp* pss);
+    // As above, no delete (for subscripting)
+    void setCondExprND(Exp* e) { pCond = e; }
 
     Exp* getDest();                 // Return the destination of the set
     int getSize();                  // Return the size of the assignment

@@ -140,7 +140,7 @@ void Prog::analyse() {
 
 // Do decompilation
 void Prog::decompile() {
-int stmtNumber = 0;
+    int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
@@ -155,31 +155,36 @@ int stmtNumber = 0;
     // First do forward-flow global dataflow
     forwardGlobalDataflow();
 
-PROGMAP::iterator pp;
-std::list<PBB> workList;            // List of BBs still to be processed
-// Set of the same; used for quick membership test
-std::set<PBB> workSet;
-for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
-        UserProc* proc = (UserProc*)pp->second;
+    if (Boomerang::get()->debugPrintReach) {
+        std::cerr << "====== Debug Print Reaching and Available Definitions "
+                     "======\n";
+        PROGMAP::iterator pp;
+        std::list<PBB> workList;            // List of BBs still to be processed
+        // Set of the same; used for quick membership test
+        std::set<PBB> workSet;
+        for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+            UserProc* proc = (UserProc*)pp->second;
             if (proc->isLib()) continue;
-                Cfg* cfg = proc->getCFG();
-                    cfg->appendBBs(workList, workSet);
-}
-StatementSet ss;
-while (workList.size()) {
-    PBB currBB = workList.front();
-    workList.erase(workList.begin());
-    currBB->print(std::cerr);
-
-    std::cerr << "reach out: ";
-    currBB->getReachOut().printNums(std::cerr); std::cerr << "\n";
-    std::cerr << "avail out: ";
-    currBB->getAvailOut().printNums(std::cerr); std::cerr << "\n\n";
-}
+            Cfg* cfg = proc->getCFG();
+            cfg->appendBBs(workList, workSet);
+        }
+        StatementSet ss;
+        while (workList.size()) {
+            PBB currBB = workList.front();
+            workList.erase(workList.begin());
+            currBB->print(std::cerr);
+            std::cerr << "reach out: ";
+            currBB->getReachOut().printNums(std::cerr); std::cerr << "\n";
+            std::cerr << "avail out: ";
+            currBB->getAvailOut().printNums(std::cerr); std::cerr << "\n\n";
+        }
+        std::cerr << "===== End debug reaching and available definitions print "
+                     "=====\n\n";
+    }
 
     
-    if (Boomerang::get()->noDecompile)
-        std::cerr << "----- begin ssa form -----" << std::endl;
+    if (Boomerang::get()->debugPrintSSA)
+        std::cerr << "====== Debug Print SSA Form (no propagations) ======\n";
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
@@ -189,41 +194,16 @@ while (workList.size()) {
 
         // Put this proc into implicit SSA form
         p->toSSAform();
-
-        if (Boomerang::get()->noDecompile)
+        if (Boomerang::get()->debugPrintSSA)
             p->print(std::cerr, true);
     }
 
+    if (Boomerang::get()->debugPrintSSA)
+        std::cerr << "====== End Debug Print SSA Form ======\n\n";
+
     if (Boomerang::get()->noDecompile) {
-        std::cerr << "----- end ssa form -----" << std::endl;
         return;
     }
-
-#if 0
-PROGMAP::iterator pp;
-std::list<PBB> workList;            // List of BBs still to be processed
-// Set of the same; used for quick membership test
-std::set<PBB> workSet;
-for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
-    UserProc* proc = (UserProc*)pp->second;
-    if (proc->isLib()) continue;
-    Cfg* cfg = proc->getCFG();
-    cfg->appendBBs(workList, workSet);
-}
-while (workList.size()) {
-    PBB currBB = workList.front();
-    workList.erase(workList.begin());
-    std::list<RTL*>* rtls = currBB->getRTLs();
-    for (std::list<RTL*>::iterator rit = rtls->begin();
-      rit != rtls->end(); rit++) {
-        RTL *rtl = *rit;
-        for (std::list<Exp*>::iterator ee = rtl->getList().begin();
-          ee != rtl->getList().end(); ee++)
-            (*ee)->check();
-    }
-}
-std::cerr << "Checked!\n";
-#endif
 
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
@@ -760,7 +740,6 @@ void Prog::forwardGlobalDataflow() {
     }
 
     // Set up for phase 1
-std::cerr << "Global DFA: phase 1\n";
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
         UserProc* proc = (UserProc*)pp->second;
         if (proc->isLib()) continue;
@@ -771,7 +750,6 @@ std::cerr << "Global DFA: phase 1\n";
         cfg->clearAvailable();
     }
     bool change;
-int iter=0;
     // Phase 1
     while (workList.size()) {
         PBB currBB = workList.front();
@@ -781,11 +759,9 @@ int iter=0;
         change  = currBB->calcReaches(1);   // Reaching definitions
         change |= currBB->calcAvailable(1); // Available definitions
         if (change) updateWorkList(currBB, workList, workSet);
-//std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
     };
 
     // Set up for Phase 2
-std::cerr << "Global DFA: phase 2\n";
     workSet.clear();            // Should be clear already
     for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
         UserProc* proc = (UserProc*)pp->second;
@@ -802,7 +778,6 @@ std::cerr << "Global DFA: phase 2\n";
         cfg->setCallInterprocEdges();
         cfg->appendBBs(workList, workSet);
     }
-iter=0;
     // Phase 2
     while (workList.size()) {
         PBB currBB = workList.front();
@@ -811,8 +786,14 @@ iter=0;
         change = currBB->calcReaches(2);   // Reaching definitions
         // Don't need available definitions in phase 2
         if (change) updateWorkList(currBB, workList, workSet);
-//std::cerr << "Prog::computeGlobalDataflow: change is " << change << " for iteration " << ++iter << "\n";
     };
 
+    // Reset to address order (so prints are easier to read)
+    for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
+        UserProc* proc = (UserProc*)pp->second;
+        if (proc->isLib()) continue;
+        Cfg* cfg = proc->getCFG();
+        cfg->sortByAddress();
+    }
 }
 

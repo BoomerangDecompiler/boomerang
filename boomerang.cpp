@@ -11,13 +11,13 @@ Boomerang *Boomerang::boomerang = NULL;
 Boomerang::Boomerang() : vFlag(false), printRtl(false), 
     noBranchSimplify(false), noRemoveInternal(false),
     noRemoveNull(false), noLocals(false), noRemoveLabels(false), 
+    traceDecoder(false), dotFile(NULL), numToPropagate(-1), noPromote(false),
     noDataflow(false), noDecompile(false), noDecompileUp(false),
-    traceDecoder(false), dotFile(NULL), numToPropagate(-1), noPromote(false)
+    debugPrintReach(false), debugPrintSSA(false)
 {
 }
 
-HLLCode *Boomerang::getHLLCode(UserProc *p)
-{
+HLLCode *Boomerang::getHLLCode(UserProc *p) {
     return new CHLLCode(p);
 }
 
@@ -44,6 +44,8 @@ void Boomerang::help() {
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-p num: only do num propogations\n";
     std::cerr << "-e <addr>: decode the procedure beginning at addr\n";
+    std::cerr << "-dr: debug - print reaching and available definitions\n";
+    std::cerr << "-ds: debug - print after conversion to SSA form\n";
     exit(1);
 }
         
@@ -132,6 +134,16 @@ int Boomerang::commandLine(int argc, const char **argv) {
                     entrypoints.push_back(addr);
                 }
                 break;
+            case 'd':
+                switch(argv[i][2]) {
+                    case 'r':       // debug print reaching and avail defs
+                        debugPrintReach = true;
+                        break;
+                    case 's':       // debug print SSA form
+                        debugPrintSSA = true;
+                        break;
+                }
+                break;
             default:
                 help();
         }
@@ -160,8 +172,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
         std::cerr << "generating dot file..." << std::endl;
         prog->generateDotFile();
     }
-    std::cerr << "generating code..." << std::endl;
-    prog->generateCode(std::cout);
+    if (!noDecompile) {
+        std::cerr << "generating code..." << std::endl;
+        prog->generateCode(std::cout);
+    }
 
     return 0;
 }

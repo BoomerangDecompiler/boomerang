@@ -292,12 +292,10 @@ Exp* Ternary::becomeSubExp3() {
  * PARAMETERS:      <none>
  * RETURNS:         Pointer to cloned object
  *============================================================================*/
-Exp* Const::clone()
-{
+Exp* Const::clone() {
     return new Const(*this);
 }
-Exp* Terminal::clone()
-{
+Exp* Terminal::clone() {
     return new Terminal(*this);
 }
 Exp* Unary::clone() {
@@ -698,7 +696,7 @@ void Binary::print(std::ostream& os, bool withUses) {
 void Terminal::print(std::ostream& os, bool withUses) {
     switch (op) {
         case opPC:      os << "%pc";   break;
-    case opFlags:   os << "%flags"; break;
+        case opFlags:   os << "%flags"; break;
         case opCF:      os << "%CF";   break;
         case opZF:      os << "%ZF";   break;
         case opOF:      os << "%OF";   break;
@@ -2703,7 +2701,7 @@ void Unary::addUsedLocs(LocationSet& used) {
 }
 
 void Terminal::addUsedLocs(LocationSet& used) {
-    if (op == opPC)
+    if (op == opPC || op == opFlags)
         used.insert(clone());
 }
 

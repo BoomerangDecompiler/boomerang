@@ -688,6 +688,8 @@ virtual int getNumUses() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 virtual Exp* addSubscript(Statement* def) {
                 stmtSet.insert(def); return this;}
+    Statement* getFirstUse(StmtSetIter it) {return stmtSet.getFirst(it);}
+    Statement* getNextUse (StmtSetIter it) {return stmtSet.getNext (it);}
 };
 
 /*
@@ -743,7 +745,8 @@ public:
     bool operator==(const LocationSet& o) const; // Compare
     void substitute(Statement& s);          // Substitute the statement to all
     void prints();                          // Print to cerr for debugging
-    bool find(Exp* e);                      // Return true if the location exists in the set
+    // Return true if the location exists in the set
+    bool find(Exp* e);
 };
 
 #endif // __EXP_H__

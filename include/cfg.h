@@ -469,9 +469,24 @@ public:
 //  SSA
 //
 
-    /* Transform the CFG to SSA form.
+    /**
+     * Transform the CFG to/from SSA form.
      */
     void toSSAform();
+    void fromSSAform();
+    /*
+     * Types and functions needed for fromSSA()
+     */
+    void LivenessAnalysis();
+    typedef std::set<PBB> BBSet;
+    // The interference graph type. We use just a set of subscripted locations.
+    // Suppose that r[24]{3} interferes with r[24]{5}; we store the expression
+    // with the LARGER subscript (here r[24]{5}) in the set, and give this a
+    // different variable from all other r[24]s (if any)
+    typedef std::set<Exp*, lessExpStar> igraph;
+static void LiveOutAtBlock(PBB n, Exp* v, BBSet& M, igraph& ig);
+static void  LiveInAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
+static void LiveOutAtStatement(Statement* s, Exp* v, BBSet& M, igraph& ig);
 
 protected:
     // This is the set of statements whose definitions reach the end of this BB
@@ -935,9 +950,11 @@ public:
 //  SSA
 //
 
-    /* Transform the CFG to SSA form.
+    /**
+     * Transform the CFG to/from SSA form.
      */
     void toSSAform();
+    void fromSSAform();
 
 private:
 
