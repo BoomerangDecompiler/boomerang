@@ -180,9 +180,7 @@ Prog *FrontEnd::decode(bool decodeMain)
         assert(fty);
         main->setSignature(fty->getSignature()->clone());
         main->getSignature()->setName("main");
-    }
-
-    if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
+    } else if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
         Proc *main = prog->findProc(a);
         assert(main);
         FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("WinMain"));
