@@ -331,7 +331,7 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
                 // Note that this hack can cause strange symbol names to appear
                 val = addrPLT + 0x10*i;
                 if (!warned) { warned = true;
-                    std::cerr << "Warning: gcc 3.3.3 hack used!\n";
+                    std::cerr << "Warning: dynamic symbol table hack used!\n";
                 }
             }
 #define ECHO_SYMS 0
