@@ -215,6 +215,8 @@ protected:
     ProgWatcher *m_watcher;             // used for status updates
     // Next numbered proc will use this
     int m_iNumberedProc;
+    // A map to make fixing dataflow much easier/faster
+    std::map<Exp*, Statement*, lessExpStar> memOfAssigns;
 }; 
 
 #endif

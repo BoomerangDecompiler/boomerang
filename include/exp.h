@@ -36,7 +36,6 @@ class UseSet;
 class DefSet;
 class RTL;              // For class FlagDef
 class BasicBlock;	    // For class AssignExp
-class LessExpStar;      // For sets of Exp* that behave like sets of Exp
 typedef BasicBlock* PBB;
 
 /*==============================================================================
@@ -206,7 +205,12 @@ virtual Exp*& refSubExp2();
 virtual Exp*& refSubExp3();
 virtual void  setSubExp1(Exp* e) {};
 virtual void  setSubExp2(Exp* e) {};
-virtual void  setSubExp3(Exp* e) {};
+virtual void  setSubExp4(Exp* e) {};
+
+    //  //  //  //
+    //  Parent  //
+    //  //  //  //
+virtual Exp*    getParent(Exp* sub) {return NULL;}
 
     //  //  //  //  //  //  //
     //  Guarded assignment  //
@@ -371,6 +375,9 @@ virtual     ~Unary();
     Exp*&   refSubExp1();
 virtual Exp* fixSuccessor();
 
+    // Parent
+    Exp*    getParent(Exp* sub);
+
     // Search children
     void doSearchChildren(Exp* search,
       std::list<Exp**>& li, bool once);
@@ -435,6 +442,9 @@ virtual     ~Binary();
     // Get a reference to subexpression 2
     Exp*&   refSubExp2();
 
+    // Parent
+    Exp*    getParent(Exp* sub);
+
     // Search children
     void doSearchChildren(Exp* search, 
       std::list<Exp**>& li, bool once);
@@ -495,6 +505,9 @@ virtual     ~Ternary();
     Exp*    becomeSubExp3();
     // Get a reference to subexpression 3
     Exp*&   refSubExp3();
+
+    // Parent
+    Exp*    getParent(Exp* sub);
 
     // Search children
     void doSearchChildren(Exp* search, 
@@ -610,7 +623,6 @@ public:
     virtual void killLive(LocationSet &live);
     virtual void getDeadStatements(StatementSet &dead);
 	virtual bool usesExp(Exp *e);
-    virtual void subscriptLeft(Statement* self);
     virtual void addUsedLocs(LocationSet& used);
     // Update the "uses" information implicit in expressions
     // def is a statement defining left (pass left == getLeft(def))
@@ -695,7 +707,6 @@ virtual int getNumUses() {return stmtSet.size();}
     void    addUsedLocs(LocationSet& used);
 };
 
-    
 /*
  * A class for comparing Exp*s (comparing the actual expressions)
  * Type sensitive
@@ -720,6 +731,7 @@ public:
         }
 };
 
+    
 // This should be in dataflow.h; here because of #include ordering issues
 // For liveness, we need sets of locations (registers or memory)
 typedef std::set<Exp*, lessExpStar>::iterator LocSetIter;

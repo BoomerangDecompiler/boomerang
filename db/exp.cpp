@@ -2584,11 +2584,13 @@ void AssignExp::doReplaceUse(Statement *use) {
     Exp *right = use->getRight();
     assert(left);
     assert(right);
+    Exp* lpar = getParent(left);
+    if (lpar) left = lpar;    // Want to replace the subscript, if present
     bool changeright = false;
     subExp2 = subExp2->searchReplaceAll(left, right, changeright);
     bool changeleft = false;
     Exp* baseSub1 = subExp1;
-    if (left->isSubscript()) baseSub1 = ((UsesExp*)subExp1)->getSubExp1();
+    if (subExp1->isSubscript()) baseSub1 = ((UsesExp*)subExp1)->getSubExp1();
     if (baseSub1->isMemOf()) {
         Exp *e = baseSub1->getSubExp1()->clone();
         e = e->searchReplaceAll(left, right, changeleft);
@@ -2774,24 +2776,19 @@ Exp* Binary::updateUses(Statement* def, Exp* left) {
 //  //  //  //  //
 //  AssignExp   //
 //  //  //  //  //
-void AssignExp::subscriptLeft(Statement* self) {
-    subExp1 = new UsesExp(subExp1, self);
-}
-
 Exp* AssignExp::updateUses(Statement* def, Exp* left) {
     // No need to test for equality to left
-    // No need to subscript the "outer" LHS; done in subscriptLeft (above)
     // However, need to update aa iff LHS is m[aa]
-    Unary* baseLHS = (Unary*)((UsesExp*)subExp1)->getSubExp1();
-    if (baseLHS->isMemOf())
-        // Beware. Consider left == m[r[28]], baseLHS is the same.
+    if (subExp1->isMemOf())
+        // Beware. Consider left == m[r[28]].
         // If we call subExp1->updateUses, we will double subscript our
         // LHS (violating a basic property of SSA form)
-        // If we call baseLHS->updateUses, we would get a
+        // If we call left->updateUses, we would get a
         // subscript of a subscript, also not what we want!
         // Don't call setSubExp1 either, since it deletes the old
         // expression (old expression is always needed)
-        baseLHS->setSubExp1ND(baseLHS->getSubExp1()->updateUses(def, left));
+        ((Unary*)subExp1)->setSubExp1ND(subExp1->getSubExp1()->
+          updateUses(def, left));
     subExp2 = subExp2->updateUses(def, left);
     return this;
 }
@@ -2800,11 +2797,7 @@ Exp* AssignExp::updateUses(Statement* def, Exp* left) {
 //  UsesExp //
 //  //  //  //
 Exp* UsesExp::updateUses(Statement* def, Exp* left) {
-    // I think it's possible that left could change from non subscripted to
-    // subscripted during this call
-    Exp* trueLeft = left;
-    if (left->isSubscript()) trueLeft = ((UsesExp*)left)->getSubExp1();
-    if (*trueLeft == *subExp1) {
+    if (*left == *subExp1) {
         // This means that we have a match with the current expression,
         // and we need to append the use to our StatementList
         stmtSet.insert(def);
@@ -2859,4 +2852,30 @@ void Exp::check() {
             }
         }
     }
+}
+
+// Getparent
+
+Exp* Unary::getParent(Exp* sub) {
+    if (*sub == *subExp1) return this;
+    return subExp1->getParent(sub);
+}
+
+Exp* Binary::getParent(Exp* sub) {
+    if (*sub == *subExp1) return this;
+    if (*sub == *subExp2) return this;
+    Exp* res = subExp1->getParent(sub);
+    if (res) return res;
+    return subExp2->getParent(sub);
+}
+
+Exp* Ternary::getParent(Exp* sub) {
+    if (*sub == *subExp1) return this;
+    if (*sub == *subExp2) return this;
+    if (*sub == *subExp3) return this;
+    Exp* res = subExp1->getParent(sub);
+    if (res) return res;
+    res = subExp2->getParent(sub);
+    if (res) return res;
+    return subExp3->getParent(sub);
 }

@@ -1986,8 +1986,6 @@ void BasicBlock::toSSAform() {
 
             // We have a statement, which is also an expression (usually an
             // assignment expression)
-            // Subscript the LHS to point to self as definition
-            s->subscriptLeft(s);
             for (Statement* rd = reachin.getFirst(ssi); rd;
               rd = reachin.getNext(ssi)) {
                 Exp* left = rd->getLeft();
@@ -2012,7 +2010,6 @@ void BasicBlock::toSSAform() {
                 std::list<Exp*>::iterator pp;
                 for (pp = le->begin(); pp != le->end(); pp++) {
                     Statement* s = dynamic_cast<Statement*>(*pp);
-                    s->subscriptLeft(s);
                     for (Statement* rd = reachin.getFirst(ssi); rd;
                       rd = reachin.getNext(ssi)) {
                         Exp* left = rd->getLeft();
@@ -2023,7 +2020,6 @@ void BasicBlock::toSSAform() {
                     s->calcReachOut(reachin);
                 }
             }
-call->print(std::cerr, true);
         }
 #if 0   // Note: we don't seem to use the "high level expression" any more
         // It always seems to be "opFlags"

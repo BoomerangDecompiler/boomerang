@@ -1185,7 +1185,7 @@ void UserProc::decompile() {
             if (VERBOSE) print(std::cerr, true);
             if (!Boomerang::get()->noRemoveNull) {
                 change |= removeNullStatements();
-                change |= removeDeadStatements();
+                //change |= removeDeadStatements(); // Broken now
             }
         }
     }
@@ -1630,10 +1630,7 @@ void UserProc::propagateStatements() {
                 }
             }
         }
-std::cerr << "Propagated " << numProp << " statements\n";
-std::cerr << "(last time was " << oldNumProp << "\n";
     } while (numProp != oldNumProp);
-std::cerr << "End propagateStatements\n";
 }
 
 void UserProc::promoteSignature() {

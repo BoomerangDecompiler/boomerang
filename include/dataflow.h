@@ -27,7 +27,9 @@
 #include <list>
 #include <ostream>
 
-class Exp;
+
+class Exp;              // Can't #include exp.h, since AssignExp is derived
+                        // from Statement, so must #include dataflow.h in exp.h
 class BasicBlock;
 typedef BasicBlock *PBB;
 class Prog;
@@ -92,8 +94,6 @@ public:
     bool exists(Statement* s);  // Find; returns false if not found
     void prints();                          // Print to cerr (for debugging)
 };
-
-// NOTE: class LocationSet is defined in exp.h (problems with #include ordering)
 
 
 /* Statements define values that are used in expressions.
