@@ -550,10 +550,10 @@ void StatementTest::testEndlessLoop () {
 	std::string expected;
 	expected =
 	  "Fall BB: reach in: \n"
-	  "00000000 ** r[24] := 5   uses:    used by: ** r[24] := r[24] + 1, \n"
-	  "Oneway BB: reach in: ** r[24] := 5, ** r[24] := r[24] + 1, \n"
-	  "00000000 ** r[24] := r[24] + 1   uses: ** r[24] := 5, "
-	  "** r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
+	  "00000000 *v* r[24] := 5\n"
+	  "Oneway BB:\n"
+	  "00000000 *v* r[24] := r[24] + 1   uses: ** r[24] := 5, "
+	  "*v* r[24] := r[24] + 1,    used by: ** r[24] := r[24] + 1, \n"
 	  "cfg reachExit: \n";
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
@@ -818,7 +818,7 @@ void StatementTest::testClone () {
 	c2->print(o2);
 	a3->print(o1);
 	c3->print(o2);
-	std::string expected("   0 ** r8 := r9 + 99   0 *i16* x := y"
+	std::string expected("   0 *v* r8 := r9 + 99   0 *i16* x := y"
 		"   0 *u16* z := q");
 	std::string act1(o1.str());
 	std::string act2(o2.str());
@@ -837,10 +837,10 @@ void StatementTest::testIsAssign () {
 		Location::regOf(2),
 		new Const(99));
 	a.print(ost);
-	std::string expected("   0 ** r2 := 99");
+	std::string expected("   0 *v* r2 := 99");
 	std::string actual (ost.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
-//	  CPPUNIT_ASSERT_EQUAL (std::string("** r2 := 99"), std::string(ost.str()));
+//	  CPPUNIT_ASSERT_EQUAL (std::string("*v* r2 := 99"), std::string(ost.str()));
 	CPPUNIT_ASSERT(a.isAssign());
 
 	CallStatement* c = new CallStatement;
@@ -869,7 +869,7 @@ void StatementTest::testIsFlagAssgn () {
 			Location::regOf(10),
 			new Const(4)));
 	fc.print(ost);
-	std::string expected("   0 ** %flags := addFlags( r2, 99 )");
+	std::string expected("   0 *v* %flags := addFlags( r2, 99 )");
 	std::string actual(ost.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	CPPUNIT_ASSERT (	fc.isFlagAssgn());
@@ -1065,7 +1065,7 @@ void StatementTest::testSubscriptVars () {
 	std::ostringstream ost1;
 	a->subscriptVar(srch, &s9);
 	ost1 << a;
-	std::string expected = "   1 ** m[r28{9} - 4] := m[r28{9} - 8] * r26";
+	std::string expected = "   1 *v* m[r28{9} - 4] := m[r28{9} - 8] * r26";
 	std::string actual = ost1.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1264,7 +1264,7 @@ void StatementTest::testCallRefsFixer () {
  * OVERVIEW:		Test the visitor code that strips out size casts
  *============================================================================*/
 void StatementTest::testStripSizes () {
-	// ** r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
+	// *v* r24 := m[zfill(8,32,local5) + param6]*8**8* / 16
 	// The double size casting happens as a result of substitution
 	Exp* lhs = Location::regOf(24);
 	Exp* rhs = new Binary(opDiv,
@@ -1283,7 +1283,7 @@ void StatementTest::testStripSizes () {
 	Statement* s = new Assign(lhs, rhs);
 	s->stripSizes();
 	std::string expected(
-	  "   0 ** r24 := m[zfill(8,32,local5) + param6] / 16");
+	  "   0 *v* r24 := m[zfill(8,32,local5) + param6] / 16");
 	std::string actual;
 	std::ostringstream ost;
 	ost << s;

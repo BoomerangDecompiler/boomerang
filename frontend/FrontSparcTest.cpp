@@ -365,7 +365,7 @@ void FrontSparcTest::testDelaySlot() {
 	"00010aa8    0 *32* r16 := 5\n"
 	"00010aac    0 *32* tmp := r16\n"
 	"            0 *32* r0 := r16 - r8\n"
-	"            0 ** %flags := SUBFLAGS( tmp, r8, r0 )\n"
+	"            0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n"
 	"00010ab0    0 *32* r8 := 70656\n"
 	"00010ab0    0 BRANCH 0x10ac8, condition not equals\n"
 	"High level: %flags\n");

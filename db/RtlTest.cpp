@@ -81,7 +81,7 @@ void RtlTest::testAppend () {
 	std::ostringstream ost;
 	r.print(ost);
 	std::string actual(ost.str());
-	std::string expected("00000000    0 ** r8 := r9 + 99\n");
+	std::string expected("00000000    0 *v* r8 := r9 + 99\n");
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	// No! appendExp does not copy the expression, so deleting the RTL will
 	// delete the expression(s) in it.
@@ -112,7 +112,7 @@ void RtlTest::testClone () {
 	delete r;			// And r2 should still stand!
 	r2->print(o2);
 	delete r2;
-	std::string expected("00001234    0 ** r8 := r9 + 99\n"
+	std::string expected("00001234    0 *v* r8 := r9 + 99\n"
 						 "            0 *j16* x := y\n");
 
 	std::string act1(o1.str());
@@ -292,7 +292,7 @@ void RtlTest::testSetConscripts() {
 	RTL* rtl = new RTL(0x1000, &list);
 	rtl->setConscripts(0, false);
 	std::string expected(
-		"00001000    0 ** m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+		"00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
 		"            0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");
 	std::ostringstream ost;
 	rtl->print(ost);
