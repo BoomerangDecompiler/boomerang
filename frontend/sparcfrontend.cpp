@@ -236,9 +236,9 @@ void SparcFrontEnd::case_unhandled_stub(ADDRESS addr)
  *                   proc - the enclosing procedure
  *                   callSet - a set of pointers to CallStatements for procs yet to
  *                     be processed
+ *                   os - output stream for rtls
  *                   isPattern - true if the call is an idiomatic pattern (e.g.
  *                      a move_call_move pattern)
- *                   os - output stream for rtls
  * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set NULL
  * RETURNS:          true if next instruction is to be fetched sequentially from
  *                      this one
@@ -254,7 +254,7 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst,
 
     Cfg* cfg = proc->getCFG();
 
-    // Emit the delay instruction, unless a the delay instruction is a nop,
+    // Emit the delay instruction, unless the delay instruction is a nop,
     // or we have a pattern, or are followed by a restore
     if ((delay_inst.type != NOP) && !call_stmt->isReturnAfterCall()) {
         delay_rtl->updateAddress(address);
@@ -572,7 +572,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst,
 
 /*==============================================================================
  * FUNCTION:         case_SCD
- * OVERVIEW:         Handles all static conditional delayed non-anulled branches
+ * OVERVIEW:         Handles all Static Conditional Delayed non-anulled branches
  * PARAMETERS:       address - the native address of the DD
  *                   delta - the offset of the above address from the logical
  *                     address at which the procedure starts (i.e. the one
@@ -809,7 +809,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
   std::ofstream &os, bool spec /* = false */, PHELPER helperFunc /* = NULL */) {
 
     // init arguments and return set to be all 31 machine registers
-    // Important: because o registers are save in i registers, and
+    // Was important: because o registers are save in i registers, and
     // i registers have higher register numbers (e.g. i1=r25, o1=r9)
     // it helps the prover to process higher register numbers first!
     // But do r30 first (%i6, saves %o6, the stack pointer)
@@ -827,10 +827,10 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
     // This has to be individual to the procedure! (so not a global)
     TargetQueue targetQueue;
 
-    // Similarly, we have a set of CallStatement pointers. These may be disregarded
-    // if this is a speculative decode that fails (i.e. an illegal instruction
-    // is found). If not, this set will be used to add to the set of calls to
-    // be analysed in the cfg, and also to call prog.visitProc()
+    // Similarly, we have a set of CallStatement pointers. These may be
+    // disregarded if this is a speculative decode that fails (i.e. an illegal
+    // instruction is found). If not, this set will be used to add to the set
+    // of calls to be analysed in the cfg, and also to call prog.visitProc()
     std::set<CallStatement*> callSet;
 
     // Indicates whether or not the next instruction to be decoded is the
@@ -878,7 +878,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                 std::cerr << "Invalid instruction at " << std::hex << address
                   << ": ";
                 std::cerr << std::setfill('0') << std::setw(2);
-				int delta = pBF->getTextDelta();
+                int delta = pBF->getTextDelta();
                 for (int j=0; j<inst.numBytes; j++)
                     std::cerr << std::setfill('0') << std::setw(2) <<
                       (unsigned)*(unsigned char*)(address+delta + j) << " ";
@@ -992,10 +992,10 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                 if (last->getKind() == STMT_CALL) {
                     // Check the delay slot of this call. First case of interest
                     // is when the instruction is a restore, e.g.
-					// 142c8:  40 00 5b 91        call         exit
-    				// 142cc:  91 e8 3f ff        restore      %g0, -1, %o0
+                    // 142c8:  40 00 5b 91        call         exit
+                    // 142cc:  91 e8 3f ff        restore      %g0, -1, %o0
                     if (((SparcDecoder*)decoder)->
-					  isRestore(address+4+pBF->getTextDelta())) {
+                      isRestore(address+4+pBF->getTextDelta())) {
                         // Give the address of the call; I think that this is
                         // actually important, if faintly annoying
                         delay_inst.rtl->updateAddress(address);
@@ -1011,18 +1011,18 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                     }
                     // Next class of interest is if it assigns to %o7
                     // (could be a move, add, and possibly others). E.g.:
-					// 14e4c:  82 10 00 0f        mov          %o7, %g1
-    				// 14e50:  7f ff ff 60        call         blah
-    				// 14e54:  9e 10 00 01        mov          %g1, %o7
-					// Note there could be an unrelated instruction between the
-					// first move and the call (move/x/call/move in UQBT terms)
-					// In boomerang, we leave the semantics of the moves there
-					// (to be likely removed by dataflow analysis) and merely
-					// insert a return BB after the call
-					int nd = delay_inst.rtl->getNumStmt();
-					// Note that if an add, there may be an assignment to a
-					// temp register first. So look at last RT
-                    Statement* a = delay_inst.rtl->elementAt(nd-1);	// Look at last
+                    // 14e4c:  82 10 00 0f        mov          %o7, %g1
+                    // 14e50:  7f ff ff 60        call         blah
+                    // 14e54:  9e 10 00 01        mov          %g1, %o7
+                    // Note there could be an unrelated instruction between the
+                    // first move and the call (move/x/call/move in UQBT terms)
+                    // In boomerang, we leave the semantics of the moves there
+                    // (to be likely removed by dataflow analysis) and merely
+                    // insert a return BB after the call
+                    int nd = delay_inst.rtl->getNumStmt();
+                    // Note that if an add, there may be an assignment to a
+                    // temp register first. So look at last RT
+                    Statement* a = delay_inst.rtl->elementAt(nd-1); // Look at last
                     if (a && a->isAssign()) {
                         Exp* lhs = a->getLeft();
                         if (lhs->isRegN(15)) {       // %o7 is r[15]
@@ -1042,19 +1042,20 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                                   proc, callSet, os, true);
                                 // We don't generate a goto; instead, we just
                                 // decode from the new address
-								// Note: the call to case_CALL has already
-								//  incremented address by 8, so don't do again
+                                // Note: the call to case_CALL has already
+                                //  incremented address by 8, so don't do again
                                 address += K;
-								break;
+                                break;
                             } else {
-                                // We assume this is some sort of move/x/call/                                  // move pattern. The overall effect is to
+                                // We assume this is some sort of move/x/call/
+                                // move pattern. The overall effect is to
                                 // pop one return address, we we emit a return
                                 // after this call
                                 ((CallStatement*)last)->setReturnAfterCall(true);
                                 sequentialDecode = false;
                                 case_CALL(address, inst, nop_inst, BB_rtls,
                                   proc, callSet, os, true);
-								break;
+                                break;
                             }
                         }
                     }
@@ -1076,7 +1077,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                     else {
                         // This is a non-call followed by an NCT/NOP
                         case_SD(address, pBF->getTextDelta(),
-						  pBF->getLimitTextHigh(), inst, delay_inst,
+                          pBF->getLimitTextHigh(), inst, delay_inst,
                           BB_rtls, cfg, targetQueue, os);
 
                         // There is no fall through branch.
@@ -1179,8 +1180,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                 break;
             }
 
-            case SCD:
-            {
+            case SCD: {
                 // Always execute the delay instr, and branch if
                 // condition is met.
                 // Normally, the delayed instruction moves in front
@@ -1260,8 +1260,8 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                 case NCT:
                 {
                     sequentialDecode = case_SCDAN(address, pBF->getTextDelta(),
-					  pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
-					  targetQueue);
+                      pBF->getLimitTextHigh(), inst, delay_inst, BB_rtls, cfg,
+                      targetQueue);
                     break;
                 }
 
@@ -1313,39 +1313,6 @@ if (0)          // SETTINGS
         sequentialDecode = true;
     }
 
-#if 0
-    // This pass is to remove single nops between ranges.
-    // These will be assumed to be padding for alignments of BBs
-    // Possibly removes a lot of ranges that could otherwise be combined
-    ADDRESS a1, a2;
-    COV_CIT ii;
-    Coverage temp;
-    if (proc->getFirstGap(a1, a2, ii)) {
-        do {
-            int gap = a2 - a1;
-            if (gap < 8) {
-                bool allNops = true;
-                for (int i=0; i < gap; i+= 4) {
-                    // Beware endianness! getDword will work properly
-                    if (getDword(a1+i+pBF->getTextDelta()) != 0x01000000) {
-                        allNops = false;
-                        break;
-                    }
-                }
-                if (allNops)
-                    // Remove this gap, by adding a range equal to the gap
-                    // Note: it's not safe to add the range now, so we put
-                    // the range into a temp Coverage object to be added later
-                    //temp.addRange(a1, a2);
-            }
-        } while (proc->getNextGap(a1, a2, ii));
-    }
-    // Now add the ranges in temp
-    //proc->addRanges(temp);
-
-    // Add the resultant coverage to the program's coverage
-    //proc->addProcCoverage();
-#endif
 
     // Add the callees to the set of CallStatements to proces for parameter recovery,
     // and also to the Prog object
@@ -1363,8 +1330,8 @@ if (0)          // SETTINGS
         }
     }
 
-	// MVE: Not 100% sure this is the right place for this
-	proc->setEntryBB();
+    // MVE: Not 100% sure this is the right place for this
+    proc->setEntryBB();
 
     return true;
 }
@@ -1743,5 +1710,5 @@ ADDRESS SparcFrontEnd::getMainEntryPoint( bool &gotMain )
     start = pBF->GetEntryPoint();
     if( start == NO_ADDRESS ) return NO_ADDRESS;
 
-	return start;
+    return start;
 }
