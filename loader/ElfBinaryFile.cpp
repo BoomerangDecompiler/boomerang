@@ -306,22 +306,21 @@ void ElfBinaryFile::AddSyms(const char* sSymSect, const char* sStrSect)
     // Index 0 is a dummy entry
     for (int i = 1; i < nSyms; i++)
     {
-//        if (ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
-            ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
-            int name = elfRead4(&m_pSym[i].st_name);
-            if (name == 0)  /* Silly symbols with no names */ continue;
-            std::string str(GetStrPtr(idx, name));
-            // Hack off the "@@GLIBC_2.0" of Linux, if present
-            unsigned pos;
-            if ((pos = str.find("@@")) != std::string::npos)
-                str.erase(pos);
-            std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
-            // Ensure no overwriting
-            if (aa == m_SymA.end()) {
-                //std::cerr << "Elf AddSym: about to add " << str << " to address " << std::hex << val << std::dec << std::endl;
-                m_SymA[val] = str;
-            }
-//        }
+        ADDRESS val = (ADDRESS) elfRead4((int*)&m_pSym[i].st_value);
+        int name = elfRead4(&m_pSym[i].st_name);
+        if (name == 0)  /* Silly symbols with no names */ continue;
+        std::string str(GetStrPtr(idx, name));
+        // Hack off the "@@GLIBC_2.0" of Linux, if present
+        unsigned pos;
+        if ((pos = str.find("@@")) != std::string::npos)
+            str.erase(pos);
+        std::map<ADDRESS, std::string>::iterator aa = m_SymA.find(val);
+        // Ensure no overwriting (except functions)
+        if (aa == m_SymA.end() || 
+            ELF32_ST_TYPE(m_pSym[i].st_info) == STT_FUNC) {
+            //std::cerr << "Elf AddSym: about to add " << str << " to address " << std::hex << val << std::dec << std::endl;
+            m_SymA[val] = str;
+        }
     }
     ADDRESS uMain = GetMainEntryPoint();
     if (m_SymA.find(uMain) == m_SymA.end())

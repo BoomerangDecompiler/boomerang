@@ -42,6 +42,7 @@
 #include "prog.h"           // For findProc()
 #include "util.h"
 #include "hllcode.h"
+#include "boomerang.h"
 
 void delete_lrtls(std::list<RTL*>* pLrtl);
 void erase_lrtls(std::list<RTL*>* pLrtl, std::list<RTL*>::iterator begin,
@@ -931,9 +932,92 @@ bool Cfg::compressCfg()
  *============================================================================*/
 bool Cfg::compressCfg()
 {
+    // must be well formed
+    if (!m_bWellFormed) return false;
+
+#if 1
+    // replace never taken branches with oneways
+    bool change = true;
+    while (change && !Boomerang::get()->noBranchSimplify) {
+        change = false;
+        for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++) 
+            if ((*it)->getType() == TWOWAY) {
+                PBB bb = *it;
+                PBB prev = NULL;
+                while (bb->getInEdges().size() == 1) {
+                    prev = bb;
+                    bb = bb->getInEdges()[0];
+                    if (bb->getType() == TWOWAY) break;
+                }
+                if (bb->getType() != TWOWAY || bb == *it)
+                    continue;
+                HLJcond *jcond = dynamic_cast<HLJcond*>((*it)->m_pRtls->back());
+                HLJcond *prior = dynamic_cast<HLJcond*>(bb->m_pRtls->back());
+                assert(jcond && prior);
+                std::set<Statement*> live;
+                jcond->getLiveIn(live);
+                bool allLive = true;
+                for (std::set<Statement*>::iterator sit = prior->getUses()->begin();
+                     sit != prior->getUses()->end(); sit++) 
+                    if (live.find(*sit) == live.end()) { allLive = false; break; }
+                if (!allLive) continue;
+                Exp *priorcond = prior->getCondExpr()->clone();
+                Exp *revpriorcond = new Unary(opNot, prior->getCondExpr()->clone());
+                Exp *cond = jcond->getCondExpr();
+                revpriorcond = revpriorcond->simplify();
+                if (bb->getOutEdges()[0] != prev) {
+                    Exp *tmp = priorcond;
+                    priorcond = revpriorcond;
+                    revpriorcond = tmp;
+                }
+                std::cerr << "consider branch: ";
+                cond->print(std::cerr);
+                std::cerr << " inside ";
+                priorcond->print(std::cerr);
+                std::cerr << std::endl;
+                bool alwaysTrue = (*cond == *priorcond);
+                bool alwaysFalse = (*cond == *revpriorcond);
+                // consider some other possibilities
+                if ((cond->getOper() == opLess && 
+                     priorcond->getOper() == opLessEq) ||
+                    (cond->getOper() == opGtr && 
+                     priorcond->getOper() == opGtrEq) ||
+                    (cond->getOper() == opLessUns && 
+                     priorcond->getOper() == opLessEqUns) ||
+                    (cond->getOper() == opGtrUns && 
+                     priorcond->getOper() == opGtrEqUns)) {
+                    if (*cond->getSubExp1() == *priorcond->getSubExp1() &&
+                        *cond->getSubExp2() == *priorcond->getSubExp2())
+                        alwaysTrue = true;
+                }
+                assert(!(alwaysTrue && alwaysFalse));
+                if (alwaysTrue) {
+                    std::cerr << "found always true branch: ";
+                    jcond->print(std::cerr, false);
+                    std::cerr << std::endl;
+                    (*it)->m_nodeType = ONEWAY;
+                    (*it)->deleteEdge((*it)->m_OutEdges[1]);
+                    *(--(*it)->m_pRtls->end()) = new HLJump(jcond->getAddress(),
+                        (*it)->m_OutEdges[0]->getLowAddr());
+                    delete jcond;
+                    change = true;
+                } else if (alwaysFalse) {
+                    std::cerr << "found always false branch: ";
+                    jcond->print(std::cerr, false);
+                    std::cerr << std::endl;
+                    (*it)->m_nodeType = ONEWAY;
+                    (*it)->deleteEdge((*it)->m_OutEdges[0]);
+                    *(--(*it)->m_pRtls->end()) = new HLJump(jcond->getAddress(),
+                        (*it)->m_OutEdges[0]->getLowAddr());
+                    delete jcond;
+                    change = true;
+                }
+            }
+    }
+#endif
+    
     // Find A -> J -> B  where J is a BB that is only a jump
     // Then A -> B
-    if (!m_bWellFormed) return false;
     for (BB_IT it = m_listBB.begin(); it != m_listBB.end(); it++)
     {
         for (std::vector<PBB>::iterator it1 = (*it)->m_OutEdges.begin();
@@ -2058,6 +2142,7 @@ void Cfg::removeUnneededLabels(HLLCode *hll)
 
 void Cfg::generateDotFile(const char *str)
 {
+    assert(str);
     std::ofstream of(str);
     of << "digraph Cfg {" << std::endl;
     for (unsigned int i = 0; i < Ordering.size(); i++) {

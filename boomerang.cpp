@@ -102,8 +102,10 @@ int Boomerang::commandLine(int argc, const char **argv) {
     prog->analyse();
     std::cerr << "decompiling..." << std::endl;
     prog->decompile();
-    std::cerr << "generating dot file..." << std::endl;
-    prog->generateDotFile();
+    if (dotFile) {
+        std::cerr << "generating dot file..." << std::endl;
+        prog->generateDotFile();
+    }
     std::cerr << "generating code..." << std::endl;
     prog->generateCode(std::cout);
 

@@ -744,7 +744,7 @@ void HLJcond::doReplaceUse(Statement *use)
 
 void HLJcond::simplify()
 {
-    if (pCond && !Boomerang::get()->noBranchSimplify) {
+    if (pCond) {
         Exp *e = pCond->simplifyArith()->clone();
         delete pCond;
         pCond = e->simplify();

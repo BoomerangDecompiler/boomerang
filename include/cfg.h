@@ -256,11 +256,13 @@ public:
      * Add an in-edge
      */
     void addInEdge(PBB newInEdge);
+    void deleteEdge(PBB edge);
 
     /*
      * Delete an in-edge
      */
     void deleteInEdge(std::vector<PBB>::iterator& it);
+    void deleteInEdge(PBB edge);
 
     /*
      * If this is a call BB, find the fixed destination (if any)
