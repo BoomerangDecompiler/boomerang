@@ -18,3 +18,8 @@ typedef unsigned __int64   QWord;
 #if defined(_MSC_VER)
 #pragma warning(disable:4390)
 #endif
+
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+// For MSVC 5 or 6: warning about debug into truncated to 255 chars
+#pragma warning(disable:4786)
+#endif

@@ -42,6 +42,11 @@ public: \
   #include "cfg.h"
   #include "proc.h"
   #include "signature.h"
+  // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
+  #if defined(_MSC_VER) && _MSC_VER <= 1100
+  #include "rtl.h"
+  #endif
+
   class AnsiCScanner;
 
   class TypeIdent {

@@ -2,11 +2,11 @@
 
 /*  A Bison++ parser, made from ansi-c.y  */
 
- /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
+ /* with Bison++ version bison++ Version 1.21-7, adapted from GNU bison by coetmeur@icdc.fr
   */
 
 
-#line 1 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 1 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -26,12 +26,16 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
-#define __MSDOS_AND_ALIKE
+#ifndef _MSDOS
+#ifdef MSDOS
+#define _MSDOS
 #endif
-#if defined(_WINDOWS) && defined(_MSC_VER)
-#define __HAVE_NO_ALLOCA
-#define __MSDOS_AND_ALIKE
+#endif
+/* turboc */
+#ifdef __MSDOS__
+#ifndef _MSDOS
+#define _MSDOS
+#endif
 #endif
 
 #ifndef alloca
@@ -41,7 +45,7 @@
 #elif (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc)  || defined (__sgi)
 #include <alloca.h>
 
-#elif defined (__MSDOS_AND_ALIKE)
+#elif defined (_MSDOS)
 #include <malloc.h>
 #ifndef __TURBOC__
 /* MS C runtime lib */
@@ -80,8 +84,8 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 85 "ansi-c-parser.cpp"
+/* #line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 89 "ansi-c-parser.cpp"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
     platform plat, callconv cc
@@ -108,6 +112,11 @@ public: \
   #include "cfg.h"
   #include "proc.h"
   #include "signature.h"
+  // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
+  #if defined(_MSC_VER) && _MSC_VER <= 1100
+  #include "rtl.h"
+  #endif
+
   class AnsiCScanner;
 
   class TypeIdent {
@@ -155,7 +164,7 @@ public: \
   };
 
 
-#line 115 "ansi-c.y"
+#line 120 "ansi-c.y"
 typedef union {
    int ival;
    char *str;
@@ -172,11 +181,11 @@ typedef union {
    callconv cc;
 } yy_AnsiCParser_stype;
 #define YY_AnsiCParser_STYPE yy_AnsiCParser_stype
-#line 131 "ansi-c.y"
+#line 136 "ansi-c.y"
 
 #include "ansi-c-scanner.h"
 
-#line 73 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_AnsiCParser_BISON 1
 #ifndef YY_AnsiCParser_COMPATIBILITY
@@ -222,36 +231,36 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 117 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 227 "ansi-c-parser.cpp"
+/* #line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 236 "ansi-c-parser.cpp"
 
-#line 117 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /*  YY_AnsiCParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 236 "ansi-c-parser.cpp"
+/* #line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 245 "ansi-c-parser.cpp"
 
-#line 121 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 123 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 243 "ansi-c-parser.cpp"
+/* #line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 252 "ansi-c-parser.cpp"
 
-#line 123 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* YY_AnsiCParser_DEBUG */
 #endif
 
 
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 128 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 253 "ansi-c-parser.cpp"
+/* #line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 262 "ansi-c-parser.cpp"
 
-#line 128 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 
@@ -361,8 +370,8 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 366 "ansi-c-parser.cpp"
+/* #line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 375 "ansi-c-parser.cpp"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -439,7 +448,7 @@ typedef
 #define	RETURN	331
 
 
-#line 236 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -471,7 +480,7 @@ typedef
 #ifndef YY_AnsiCParser_USE_CONST_TOKEN
 #define YY_AnsiCParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 #ifndef YY_AnsiCParser_ENUM_TOKEN
@@ -481,12 +490,12 @@ typedef
 
 class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT
 {
-public: 
+public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 490 "ansi-c-parser.cpp"
+/* #line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 499 "ansi-c-parser.cpp"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -563,13 +572,13 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 280 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 283 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 573 "ansi-c-parser.cpp"
+/* #line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 582 "ansi-c-parser.cpp"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -646,7 +655,7 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,RETURN=331
 
 
-#line 283 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -679,8 +688,8 @@ public:
 /* other declare folow */
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 684 "ansi-c-parser.cpp"
+/* #line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 693 "ansi-c-parser.cpp"
 const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
 const int YY_AnsiCParser_CLASS::PREDEFINE=259;
 const int YY_AnsiCParser_CLASS::PREIF=260;
@@ -757,7 +766,7 @@ const int YY_AnsiCParser_CLASS::BREAK=330;
 const int YY_AnsiCParser_CLASS::RETURN=331;
 
 
-#line 314 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* const YY_AnsiCParser_CLASS::token */
 #endif
 /*apres const  */
@@ -770,8 +779,8 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 775 "ansi-c-parser.cpp"
+/* #line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 784 "ansi-c-parser.cpp"
 
 
 #define	YYFINAL		149
@@ -861,14 +870,14 @@ static const short yyrhs[] = {    90,
 
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyrline[] = { 0,
-   152,   156,   158,   162,   164,   166,   168,   172,   175,   179,
-   183,   187,   192,   196,   200,   202,   206,   210,   215,   218,
-   221,   224,   227,   232,   248,   262,   266,   268,   282,   296,
-   308,   312,   324,   338,   353,   372,   378,   384,   392,   396,
-   400,   404,   407,   410,   414,   417,   420,   423,   428,   433,
-   441,   445,   451,   453,   455,   457,   459,   461,   463,   465,
-   467,   469,   471,   473,   475,   477,   481,   485,   490,   492,
-   498
+   157,   161,   163,   167,   169,   171,   173,   177,   180,   184,
+   188,   192,   197,   201,   205,   207,   211,   215,   220,   223,
+   226,   229,   232,   237,   253,   267,   271,   273,   287,   301,
+   313,   317,   329,   343,   358,   377,   383,   389,   397,   401,
+   405,   409,   412,   415,   419,   422,   425,   428,   433,   438,
+   446,   450,   456,   458,   460,   462,   464,   466,   468,   470,
+   472,   474,   476,   478,   480,   482,   486,   490,   495,   497,
+   503
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
@@ -1014,7 +1023,7 @@ static const short yycheck[] = {     7,
     58,    -1,    60,    61
 };
 
-#line 325 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -1030,7 +1039,7 @@ static const short yycheck[] = {     7,
    as one case of the switch.  */ 
 
 #if YY_AnsiCParser_USE_GOTO != 0
-/* 
+/*
  SUPRESSION OF GOTO : on some C++ compiler (sun c++)
   the goto is strictly forbidden if any constructor/destructor
   is used in the whole function (very stupid isn't it ?)
@@ -1041,19 +1050,19 @@ static const short yycheck[] = {     7,
 #define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
                      for(;;) switch(yy_gotostate) { case yygotostart: {
 #define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } } 
+#define YYENDGOTO } }
 #define YYBEGINDECLARELABEL enum yy_labels {yygotostart
 #define YYDECLARELABEL(lb) ,lb
 #define YYENDDECLARELABEL  };
 #else
 /* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO 
+#define YYBEGINGOTO
 #define YYLABEL(lb) lb:
 #define YYENDGOTO
-#define YYBEGINDECLARELABEL 
+#define YYBEGINDECLARELABEL
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL 
+#define YYENDDECLARELABEL
 #endif
 /* LABEL DECLARATION */
 YYBEGINDECLARELABEL
@@ -1066,44 +1075,15 @@ YYBEGINDECLARELABEL
   YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
   YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
   YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-  YYDECLARELABEL(yyerrhandle)  
+  YYDECLARELABEL(yyerrhandle)
 YYENDDECLARELABEL
-/* ALLOCA SIMULATION */
-/* __HAVE_NO_ALLOCA */
-#ifdef __HAVE_NO_ALLOCA
-int __alloca_free_ptr(char *ptr,char *ref)
-{if(ptr!=ref) free(ptr);
- return 0;}
-
-#define __ALLOCA_alloca(size) malloc(size)
-#define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
-
-#ifdef YY_AnsiCParser_LSP_NEEDED
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		    __ALLOCA_free(yyls,yylsa)+\
-		   (num))
-#else
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		   (num))
-#endif
-#else
-#define __ALLOCA_return(num) return(num)
-#define __ALLOCA_alloca(size) alloca(size)
-#define __ALLOCA_free(ptr,ref) 
-#endif
-
-/* ENDALLOCA SIMULATION */
 
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (YY_AnsiCParser_CHAR = YYEMPTY)
 #define YYEMPTY         -2
 #define YYEOF           0
-#define YYACCEPT        __ALLOCA_return(0)
-#define YYABORT         __ALLOCA_return(1)
+#define YYACCEPT        return(0)
+#define YYABORT         return(1)
 #define YYERROR         YYGOTO(yyerrlab1)
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -1330,21 +1310,18 @@ YYLABEL(yynewstate)
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  YY_AnsiCParser_ERROR("parser stack overflow");
-	  __ALLOCA_return(2);
+	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
       __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
-      __ALLOCA_free(yyss1,yyssa);
-      yyvs = (YY_AnsiCParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
+      yyvs = (YY_AnsiCParser_STYPE *) alloca (yystacksize * sizeof (*yyvsp));
       __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
-      __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_AnsiCParser_LSP_NEEDED
-      yyls = (YY_AnsiCParser_LTYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yylsp));
+      yyls = (YY_AnsiCParser_LTYPE *) alloca (yystacksize * sizeof (*yylsp));
       __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
-      __ALLOCA_free(yyls1,yylsa);
 #endif
 #endif /* no yyoverflow */
 
@@ -1502,122 +1479,122 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 1507 "ansi-c-parser.cpp"
+/* #line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 1484 "ansi-c-parser.cpp"
 
   switch (yyn) {
 
 case 1:
-#line 153 "ansi-c.y"
+#line 158 "ansi-c.y"
 { ;
     break;}
 case 2:
-#line 157 "ansi-c.y"
+#line 162 "ansi-c.y"
 { ;
     break;}
 case 3:
-#line 159 "ansi-c.y"
+#line 164 "ansi-c.y"
 { ;
     break;}
 case 4:
-#line 163 "ansi-c.y"
+#line 168 "ansi-c.y"
 { ;
     break;}
 case 5:
-#line 165 "ansi-c.y"
+#line 170 "ansi-c.y"
 { ;
     break;}
 case 6:
-#line 167 "ansi-c.y"
+#line 172 "ansi-c.y"
 { ;
     break;}
 case 7:
-#line 169 "ansi-c.y"
+#line 174 "ansi-c.y"
 { ;
     break;}
 case 8:
-#line 174 "ansi-c.y"
+#line 179 "ansi-c.y"
 { yyval.cc = CONV_C; ;
     break;}
 case 9:
-#line 176 "ansi-c.y"
+#line 181 "ansi-c.y"
 { yyval.cc = CONV_PASCAL; ;
     break;}
 case 10:
-#line 180 "ansi-c.y"
+#line 185 "ansi-c.y"
 { yyval.num_list = yyvsp[0].num_list;
           yyval.num_list->push_front(yyvsp[-2].ival);
         ;
     break;}
 case 11:
-#line 184 "ansi-c.y"
+#line 189 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
           yyval.num_list->push_back(yyvsp[0].ival);
         ;
     break;}
 case 12:
-#line 188 "ansi-c.y"
+#line 193 "ansi-c.y"
 { yyval.num_list = new std::list<int>();
         ;
     break;}
 case 13:
-#line 193 "ansi-c.y"
+#line 198 "ansi-c.y"
 { yyval.param_list = yyvsp[0].param_list;
             yyval.param_list->push_front(yyvsp[-2].param);
           ;
     break;}
 case 14:
-#line 197 "ansi-c.y"
+#line 202 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>(); 
             yyval.param_list->push_back(yyvsp[0].param);
           ;
     break;}
 case 15:
-#line 201 "ansi-c.y"
+#line 206 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>();
     break;}
 case 16:
-#line 203 "ansi-c.y"
+#line 208 "ansi-c.y"
 { yyval.param_list = new std::list<Parameter*>();
     break;}
 case 17:
-#line 207 "ansi-c.y"
+#line 212 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
       yyval.param->setExp(yyvsp[-2].exp);
     ;
     break;}
 case 18:
-#line 211 "ansi-c.y"
+#line 216 "ansi-c.y"
 { yyval.param = yyvsp[0].param;
     ;
     break;}
 case 19:
-#line 216 "ansi-c.y"
+#line 221 "ansi-c.y"
 { yyval.exp = Location::regOf(yyvsp[-1].ival);
     ;
     break;}
 case 20:
-#line 219 "ansi-c.y"
+#line 224 "ansi-c.y"
 { yyval.exp = Location::memOf(yyvsp[-1].exp);
     ;
     break;}
 case 21:
-#line 222 "ansi-c.y"
+#line 227 "ansi-c.y"
 { yyval.exp = new Binary(opPlus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 22:
-#line 225 "ansi-c.y"
+#line 230 "ansi-c.y"
 { yyval.exp = new Binary(opMinus, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 23:
-#line 228 "ansi-c.y"
+#line 233 "ansi-c.y"
 { yyval.exp = new Const(yyvsp[0].ival);
     ;
     break;}
 case 24:
-#line 233 "ansi-c.y"
+#line 238 "ansi-c.y"
 {  if (yyvsp[0].type_ident->ty->isArray() || 
             (yyvsp[0].type_ident->ty->isNamed() && 
              ((NamedType*)yyvsp[0].type_ident->ty)->resolvesTo() &&
@@ -1635,7 +1612,7 @@ case 24:
      ;
     break;}
 case 25:
-#line 249 "ansi-c.y"
+#line 254 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
        sig->addReturn(yyvsp[-7].type);
        for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1651,15 +1628,15 @@ case 25:
      ;
     break;}
 case 26:
-#line 263 "ansi-c.y"
+#line 268 "ansi-c.y"
 { yyval.param = new Parameter(new VoidType, "..."); ;
     break;}
 case 27:
-#line 267 "ansi-c.y"
+#line 272 "ansi-c.y"
 { Type::addNamedType(yyvsp[-1].type_ident->nam.c_str(), yyvsp[-1].type_ident->ty); ;
     break;}
 case 28:
-#line 269 "ansi-c.y"
+#line 274 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, NULL);
            sig->addReturn(yyvsp[-8].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1675,7 +1652,7 @@ case 28:
          ;
     break;}
 case 29:
-#line 283 "ansi-c.y"
+#line 288 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam.c_str());
            sig->addReturn(yyvsp[-4].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1691,7 +1668,7 @@ case 29:
          ;
     break;}
 case 30:
-#line 297 "ansi-c.y"
+#line 302 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
            for (std::list<TypeIdent*>::iterator it = yyvsp[-2].type_ident_list->begin();
                    it != yyvsp[-2].type_ident_list->end(); it++) {
@@ -1703,13 +1680,13 @@ case 30:
          ;
     break;}
 case 31:
-#line 309 "ansi-c.y"
+#line 314 "ansi-c.y"
 {
            signatures.push_back(yyvsp[-1].sig);
          ;
     break;}
 case 32:
-#line 313 "ansi-c.y"
+#line 318 "ansi-c.y"
 {
            yyvsp[-6].sig->setPreferedReturn(yyvsp[-4].type_ident->ty);
            yyvsp[-6].sig->setPreferedName(yyvsp[-4].type_ident->nam.c_str());
@@ -1721,7 +1698,7 @@ case 32:
          ;
     break;}
 case 33:
-#line 325 "ansi-c.y"
+#line 330 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
            for (std::list<Parameter*>::iterator it = yyvsp[-1].param_list->begin();
@@ -1737,7 +1714,7 @@ case 33:
          ;
     break;}
 case 34:
-#line 339 "ansi-c.y"
+#line 344 "ansi-c.y"
 { Signature *sig = Signature::instantiate(plat, yyvsp[-4].cc,
               yyvsp[-3].type_ident->nam.c_str()); 
            sig->addReturn(yyvsp[-3].type_ident->ty);
@@ -1754,7 +1731,7 @@ case 34:
          ;
     break;}
 case 35:
-#line 354 "ansi-c.y"
+#line 359 "ansi-c.y"
 { CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam.c_str()); 
            if (yyvsp[-4].custom_options->exp)
                sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
@@ -1773,13 +1750,13 @@ case 35:
          ;
     break;}
 case 36:
-#line 373 "ansi-c.y"
+#line 378 "ansi-c.y"
 { SymbolRef *ref = new SymbolRef(yyvsp[-2].ival, yyvsp[-1].str);
               refs.push_back(ref);
             ;
     break;}
 case 37:
-#line 379 "ansi-c.y"
+#line 384 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-2].ival);
              sym->nam = yyvsp[-1].type_ident->nam;
              sym->ty = yyvsp[-1].type_ident->ty;
@@ -1787,7 +1764,7 @@ case 37:
            ;
     break;}
 case 38:
-#line 385 "ansi-c.y"
+#line 390 "ansi-c.y"
 { Symbol *sym = new Symbol(yyvsp[-3].ival);
              sym->sig = yyvsp[-1].sig;
              sym->mods = yyvsp[-2].mods;
@@ -1795,64 +1772,64 @@ case 38:
            ;
     break;}
 case 39:
-#line 393 "ansi-c.y"
+#line 398 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->noDecode = true;
            ;
     break;}
 case 40:
-#line 397 "ansi-c.y"
+#line 402 "ansi-c.y"
 { yyval.mods = yyvsp[0].mods;
              yyval.mods->incomplete = true;
            ;
     break;}
 case 41:
-#line 401 "ansi-c.y"
+#line 406 "ansi-c.y"
 { yyval.mods = new SymbolMods(); ;
     break;}
 case 42:
-#line 405 "ansi-c.y"
+#line 410 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->exp = yyvsp[-1].exp;
            ;
     break;}
 case 43:
-#line 408 "ansi-c.y"
+#line 413 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); yyval.custom_options->sp = yyvsp[-1].ival;
            ;
     break;}
 case 44:
-#line 411 "ansi-c.y"
+#line 416 "ansi-c.y"
 { yyval.custom_options = new CustomOptions(); ;
     break;}
 case 45:
-#line 415 "ansi-c.y"
+#line 420 "ansi-c.y"
 { yyval.type = new ArrayType(NULL, yyvsp[-1].ival);
           ;
     break;}
 case 46:
-#line 418 "ansi-c.y"
+#line 423 "ansi-c.y"
 { yyval.type = new ArrayType(NULL);
           ;
     break;}
 case 47:
-#line 421 "ansi-c.y"
+#line 426 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival);
           ;
     break;}
 case 48:
-#line 424 "ansi-c.y"
+#line 429 "ansi-c.y"
 { yyval.type = new ArrayType(yyvsp[-2].type);
           ;
     break;}
 case 49:
-#line 429 "ansi-c.y"
+#line 434 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-1].type;
             yyval.type_ident->nam = yyvsp[0].str;
           ;
     break;}
 case 50:
-#line 434 "ansi-c.y"
+#line 439 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             ((ArrayType*)yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
             yyval.type_ident->ty = yyvsp[0].type;
@@ -1860,94 +1837,94 @@ case 50:
           ;
     break;}
 case 51:
-#line 442 "ansi-c.y"
+#line 447 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-2].type_ident);
           ;
     break;}
 case 52:
-#line 446 "ansi-c.y"
+#line 451 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
             yyval.type_ident_list->push_back(yyvsp[-1].type_ident);
           ;
     break;}
 case 53:
-#line 452 "ansi-c.y"
+#line 457 "ansi-c.y"
 { yyval.type = new CharType(); ;
     break;}
 case 54:
-#line 454 "ansi-c.y"
+#line 459 "ansi-c.y"
 { yyval.type = new IntegerType(16); ;
     break;}
 case 55:
-#line 456 "ansi-c.y"
+#line 461 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 56:
-#line 458 "ansi-c.y"
+#line 463 "ansi-c.y"
 { yyval.type = new IntegerType(8, false); ;
     break;}
 case 57:
-#line 460 "ansi-c.y"
+#line 465 "ansi-c.y"
 { yyval.type = new IntegerType(16, false); ;
     break;}
 case 58:
-#line 462 "ansi-c.y"
+#line 467 "ansi-c.y"
 { yyval.type = new IntegerType(32, false); ;
     break;}
 case 59:
-#line 464 "ansi-c.y"
+#line 469 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 60:
-#line 466 "ansi-c.y"
+#line 471 "ansi-c.y"
 { yyval.type = new IntegerType(64); ;
     break;}
 case 61:
-#line 468 "ansi-c.y"
+#line 473 "ansi-c.y"
 { yyval.type = new IntegerType(64, false); ;
     break;}
 case 62:
-#line 470 "ansi-c.y"
+#line 475 "ansi-c.y"
 { yyval.type = new FloatType(32); ;
     break;}
 case 63:
-#line 472 "ansi-c.y"
+#line 477 "ansi-c.y"
 { yyval.type = new FloatType(64); ;
     break;}
 case 64:
-#line 474 "ansi-c.y"
+#line 479 "ansi-c.y"
 { yyval.type = new VoidType(); ;
     break;}
 case 65:
-#line 476 "ansi-c.y"
+#line 481 "ansi-c.y"
 { yyval.type = new PointerType(yyvsp[-1].type); ;
     break;}
 case 66:
-#line 478 "ansi-c.y"
+#line 483 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-3].type, yyvsp[-1].ival); 
     ;
     break;}
 case 67:
-#line 482 "ansi-c.y"
+#line 487 "ansi-c.y"
 { // This isn't C, but it makes defining pointers to arrays easier
       yyval.type = new ArrayType(yyvsp[-2].type); 
     ;
     break;}
 case 68:
-#line 486 "ansi-c.y"
+#line 491 "ansi-c.y"
 { //$$ = Type::getNamedType($1); 
       //if ($$ == NULL)
       yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
 case 69:
-#line 491 "ansi-c.y"
+#line 496 "ansi-c.y"
 { yyval.type = yyvsp[0].type; ;
     break;}
 case 70:
-#line 493 "ansi-c.y"
+#line 498 "ansi-c.y"
 {
       char tmp[1024];
       sprintf(tmp, "struct %s", yyvsp[0].str);
@@ -1955,7 +1932,7 @@ case 70:
     ;
     break;}
 case 71:
-#line 499 "ansi-c.y"
+#line 504 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
            it != yyvsp[-1].type_ident_list->end(); it++) {
@@ -1966,7 +1943,7 @@ case 71:
     break;}
 }
 
-#line 811 "/home/44/trent/bison++-1.21-8/bison.cc"
+#line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2167,9 +2144,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/home/44/trent/bison++-1.21-8/bison.cc" */
-#line 2172 "ansi-c-parser.cpp"
-#line 508 "ansi-c.y"
+/* #line 982 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 2149 "ansi-c-parser.cpp"
+#line 513 "ansi-c.y"
 
 #include <stdio.h>
 

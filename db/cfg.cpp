@@ -1447,7 +1447,8 @@ void Cfg::findImmedPDom() {
     PBB curNode, succNode;  // the current Node and its successor
 
     // traverse the nodes in order (i.e from the bottom up)
-    for (int i = revOrdering.size() - 1; i >= 0; i--) {
+	unsigned int i;
+    for (i = revOrdering.size() - 1; i >= 0; i--) {
         curNode = revOrdering[i];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
         for (unsigned int j = 0; j < oEdges.size(); j++) {
@@ -1458,7 +1459,7 @@ void Cfg::findImmedPDom() {
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (unsigned int i = 0; i < Ordering.size(); i++) {
+    for (i = 0; i < Ordering.size(); i++) {
         curNode = Ordering[i];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
         if (oEdges.size() > 1)
@@ -1469,7 +1470,7 @@ void Cfg::findImmedPDom() {
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (unsigned int i = 0; i < Ordering.size(); i++) {
+    for (i = 0; i < Ordering.size(); i++) {
         curNode = Ordering[i];
         std::vector<PBB> &oEdges = curNode->getOutEdges();
         if (oEdges.size() > 1)
@@ -2028,7 +2029,7 @@ void Cfg::dominators() {
         }
         bucket[p].clear();
     }
-    for (int i=1; i < N-1; i++) {
+    for (i=1; i < N-1; i++) {
         /* Now all the deferred dominator calculations, based on the second
             clause of the Dominator Theorem, are performed. */
         int n = vertex[i];
@@ -2114,7 +2115,8 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
     A_orig.resize(numBB);
 
     // We need to create A_orig for the current memory depth
-    for (int n=0; n < numBB; n++) {
+	int n;
+    for (n=0; n < numBB; n++) {
         BasicBlock::rtlit rit; StatementList::iterator sit;
         PBB bb = BBs[n];
         for (Statement* s = bb->getFirstStmt(rit, sit); s;
@@ -2129,7 +2131,7 @@ void Cfg::placePhiFunctions(int memDepth, UserProc* proc) {
     }
 
     // For each node n
-    for (int n=0; n < numBB; n++) {
+    for (n=0; n < numBB; n++) {
         // For each variable a in A_orig[n]
         std::set<Exp*, lessExpStar>& s = A_orig[n];
         std::set<Exp*, lessExpStar>::iterator aa;
@@ -2247,8 +2249,9 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
         // Suppose n is the jth predecessor of Y
         int j = Ybb->whichPred(bb);
         // For each phi-function in Y
-        for (Statement* S = Ybb->getFirstStmt(rit, sit); S;
-                        S = Ybb->getNextStmt(rit, sit)) {
+		Statement* S;
+        for (S = Ybb->getFirstStmt(rit, sit); S;
+             S = Ybb->getNextStmt(rit, sit)) {
             Assign* ae = dynamic_cast<Assign*>(S);
             // if S is not a phi function, then quit the loop (no more phi's)
             // wrong: do not quit the loop, there's an optimisation that 
@@ -2277,8 +2280,8 @@ void Cfg::renameBlockVars(int n, int memDepth, bool clearStack /* = false */ ) {
             renameBlockVars(X, memDepth);
     }
     // For each statement S in block n
-    for (Statement* S = bb->getFirstStmt(rit, sit); S;
-                    S = bb->getNextStmt(rit, sit)) {
+    for (S = bb->getFirstStmt(rit, sit); S;
+         S = bb->getNextStmt(rit, sit)) {
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs);
