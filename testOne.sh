@@ -1,18 +1,19 @@
 #!/bin/bash
+# testOne.sh functional test script version $version$
 # Call with test platform, test-program, arguments
 # e.g. "./testOne.sh pentium hello"
 # or   "./testOne.sh sparc fibo 10" 
 echo $*
-rm -f functest/code
+rm -f functest/$2.c
 ./boomerang -o functest test/$1/$2 2>/dev/null >/dev/null
 ret=$?
 if [[ ret -ge 128 ]]; then
     echo Boomerang failed with signal $((ret-128)) > functest.res
 else
-    if [[ ! -f functest/code ]]; then
+    if [[ ! -f functest/$2.c ]]; then
         echo $1 $2: No boomerang output! > functest.res
     else
-        cp functest/code functest.c
+        cp functest/$2.c functest.c
         # if test/$1/$2.sed exists, use it to make "known error" corrections
         # to the source code
         if [[ -f test/$1/$2.sed ]]; then
