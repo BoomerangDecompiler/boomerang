@@ -1600,7 +1600,8 @@ void setupDecompiler()
 void doDecompile(struct decompile_params *params)
 {
 	someUnknown = false;
-	Boomerang::get()->decompile(params->target, params->name);
+	if (Boomerang::get()->decompile(params->target, params->name))
+		MessageBox(NULL, "Load failed", "", MB_ICONSTOP);
 	if (decodeDlg)
 		SendMessage(decodeDlg, WM_COMMAND, IDOK, 0);
 	hDecompilerThread = NULL;
