@@ -549,7 +549,10 @@ public:
 	 */
 	bool isUsedInPhi(Exp *e);
 
+	/* stuff for new data flow analysis */
 	void getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein);
+	void getLiveIn(std::set<AssignExp*> &livein);
+	void calcLiveOut(std::set<AssignExp*> &live);
 
 protected:
 

@@ -1929,7 +1929,7 @@ void BasicBlock::getLiveOut(DefSet &liveOut)
 
 void BasicBlock::getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein)
 {
-	livein.clear();
+	getLiveIn(livein);
 	for (std::list<RTL*>::iterator rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
 		RTL *rtl = *rit;
 		switch(rtl->getKind()) {
@@ -1937,8 +1937,10 @@ void BasicBlock::getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein)
 				{
 					for (std::list<Exp*>::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
 						Exp *e = *it;
+						if (e == asgn)
+							return;
 						if (e->isAssign()) {
-							((AssignExp*)e)->calcLive(livein);
+							((AssignExp*)e)->calcLiveOut(livein);
 						}
 					}
 				}
@@ -1948,6 +1950,25 @@ void BasicBlock::getLiveInAt(AssignExp *asgn, std::set<AssignExp*> &livein)
 				livein.clear();		
 				break;
 		}
+	}
+}
+
+void BasicBlock::calcLiveOut(std::set<AssignExp*> &live)
+{
+	/* hopefully we can be sure that NULL is not a valid assignment,
+	   so this will calculate the live set after every assignment */
+	getLiveInAt(NULL, live);
+}
+
+void BasicBlock::getLiveIn(std::set<AssignExp*> &livein)
+{
+	for (int i = 0; i < m_InEdges.size(); i++) {
+		std::set<AssignExp*> in;
+		m_InEdges[i]->getLiveIn(in);
+		m_InEdges[i]->calcLiveOut(in);
+		// set union, C++ doesn't have one!
+		for (std::set<AssignExp*>::iterator it = in.begin(); it != in.end(); it++)
+			livein.insert(*it);
 	}
 }
 

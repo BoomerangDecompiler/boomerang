@@ -2422,7 +2422,13 @@ void FlagDef::getUsesOf(UseSet &uses, Exp* &ref, Exp *e)
 	assert(false); // flagdefs should never make it to this stage of analysis
 }
 
-void AssignExp::calcLive(std::set<AssignExp*> &live)
+
+/* calculates the definitions that are "live" after this assignment.
+   If the live set is empty, it will contain anything this assignment defines.
+   If the live set is not empty, then it will not contain anything this
+      assignment kills.
+ */
+void AssignExp::calcLiveOut(std::set<AssignExp*> &live)
 {
 	if (subExp1->isMemOf()) {
 		// could point to anything (VERY conservative here)
@@ -2440,6 +2446,9 @@ void AssignExp::calcLive(std::set<AssignExp*> &live)
 	}
 }
 
+/* get everything that is live before this assignment.
+   To get the liveout, use getLiveIn(liveset), calcLiveOut(liveset).
+ */
 void AssignExp::getLiveIn(std::set<AssignExp*> &livein)
 {
 	assert(pbb);
