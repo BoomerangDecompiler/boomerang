@@ -801,6 +801,9 @@ IMUL.Ibod   reg32, modrm, i8
             *32* reg32 := modrm{32} *! sgnex(8,32,i8)
             IMULTFLAGS32(reg32);
 
+INT3
+			_ ;			# Not expected to be seen in correct code, but decode anyway
+
 COND1 := { "~%CF & ~%ZF", "~%CF & ~%ZF", "~%CF", "~%CF", "%CF",
             "%CF", "%CF | %ZF", "%CF | %ZF", "%CF", "~%cx", "%ZF",
             "%ZF", "~(%NF ^ %OF) & ~%ZF", "~(%NF ^ %OF) & ~%ZF",

@@ -1111,10 +1111,12 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 	| INT.Ib(i8) =>
 		stmts = instantiate(pc,	 "INT.Ib", DIS_I8);
 
+	| INT3() =>
+		stmts = instantiate(pc,  "INT3");
+		LOG << "Warning: encountered INT3 instruction\n";
+
 // Removing because an invalid instruction is better than trying to
 // instantiate this. -trent
-//	  | INT3() =>
-//		  stmts = instantiate(pc,  "INT3");
 
 //	  | INSvod() =>
 //		  stmts = instantiate(pc,  "INSvod");
