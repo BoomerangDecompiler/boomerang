@@ -136,7 +136,8 @@ void Prog::analyse() {
     delete analysis;
 }
 
-void Prog::numberStatements() {
+// Globally initialise all statements
+void Prog::initStatements() {
     int stmtNumber = 0;
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
@@ -147,8 +148,11 @@ void Prog::numberStatements() {
 
         // Sort by address, so the statement numbers will be sensible
         p->getCFG()->sortByAddress();
-        // Initialise (number, etc) the statements of this proc
-        p->initStatements(stmtNumber);
+        // Initialise (set BB, proc, give lib calls parameters, etc) the
+        // statements of this proc
+        p->initStatements();
+        // Also number them
+        p->numberStatements(stmtNumber);
     }
 }
 
@@ -175,7 +179,7 @@ void Prog::toSSAform() {
 
 // Do decompilation
 void Prog::decompile_issa() {
-    numberStatements();
+    initStatements();
     forwardGlobalDataflow();
 
     if (Boomerang::get()->debugPrintReach) {
@@ -1274,6 +1278,8 @@ void Prog::decompile() {
         // Sort by address, so printouts make sense
         Cfg* cfg = proc->getCFG();
         cfg->sortByAddress();
+        // Initialise statements
+        proc->initStatements();
 
         // Compute dominance frontier
         DOM* d = new DOM;
@@ -1289,7 +1295,7 @@ void Prog::decompile() {
 
             // Number the statements
             int stmtNumber = 0;
-            proc->initStatements(stmtNumber); 
+            proc->numberStatements(stmtNumber); 
 
 
             // Rename variables

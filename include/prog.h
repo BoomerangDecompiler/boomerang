@@ -171,8 +171,8 @@ public:
     // Remove interprocedural edges
     void removeInterprocEdges();
 
-    // Number the statements
-    void numberStatements();
+    // Initialise and number all statements globally
+    void initStatements();
 
     // Convert to SSA form
     void toSSAform();

@@ -900,7 +900,7 @@ void UserProc::print(std::ostream &out, bool withDF) {
 }
 
 // initialise all statements
-void UserProc::initStatements(int& stmtNum) {
+void UserProc::initStatements() {
     BB_IT it;
     BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
     for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
@@ -908,7 +908,6 @@ void UserProc::initStatements(int& stmtNum) {
               s = bb->getNextStmt(rit, ii, cii)) {
             s->setProc(this);
             s->setBB(bb);
-            s->setNumber(++stmtNum);
             HLCall* call = dynamic_cast<HLCall*>(s);
             if (call) {
                 // Temporary hack for lib procs!
@@ -929,6 +928,16 @@ void UserProc::initStatements(int& stmtNum) {
                 }
             }
         }
+    }
+}
+
+void UserProc::numberStatements(int& stmtNum) {
+    BB_IT it;
+    BasicBlock::rtlit rit; BasicBlock::elit ii, cii;
+    for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
+        for (Statement* s = bb->getFirstStmt(rit, ii, cii); s;
+          s = bb->getNextStmt(rit, ii, cii))
+            s->setNumber(++stmtNum);
     }
 }
 
