@@ -10,9 +10,9 @@
 # 31 May 02 - Mike: Make lib directory if needed
 
 # LIBDIR isn't used at present; problem is it isn't absolute
-LIBDIR=@LIBDIR@
+LIBDIR=./lib
 # HOST_GNU_LD is true if the linker on this host machine is GNU
-HOST_GNU_LD = @HOST_GNU_LD@
+HOST_GNU_LD = yes
 
 # Choose the RUNPATH variable
 BOOMDIR="$(shell pwd)/.."
