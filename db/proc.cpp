@@ -2374,8 +2374,11 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
     // we want to count the return that corresponds to this loc
     // this can be a different expression to loc because replacements
     // are done in the call's return list as part of decompilation
-    Exp *ret = proc->getSignature()->getReturnExp(call->findReturn(loc));
-    rc[proc].insert(ret);
+    int n = call->findReturn(loc);
+    if (n != -1) {
+        Exp *ret = proc->getSignature()->getReturnExp(n);
+        rc[proc].insert(ret);
+    }
 }
 
 void UserProc::countUsedReturns(ReturnCounter& rc) {
