@@ -37,6 +37,9 @@
 #include "util.h"
 #include "cfg.h"
 #include "proc.h"
+#include "boomerang.h"
+
+#define VERBOSE Boomerang::get()->vFlag
 
 namespace CallingConvention {
 
@@ -731,22 +734,22 @@ Signature *Signature::promote(UserProc *p)
 {
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::Win32Signature(*this);
-        delete this;
         sig->analyse(p);
+        delete this;
         return sig;
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::StdC::PentiumSignature(*this);
-        delete this;
         sig->analyse(p);
+        delete this;
         return sig;
     }
 
     if (CallingConvention::StdC::SparcSignature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::StdC::SparcSignature(*this);
-        delete this;
         sig->analyse(p);
+        delete this;
         return sig;
     }
 
@@ -791,21 +794,26 @@ void Signature::getInternalStatements(std::list<Statement*> &stmts)
 
 void Signature::analyse(UserProc *p)
 {
-    std::cerr << "accepted promotion" << std::endl;
-    std::cerr << "searching for creation of return value" << std::endl;
+    if (VERBOSE) {
+        std::cerr << "accepted promotion" << std::endl;
+        std::cerr << "searching for creation of return value" << std::endl;
+    }
     std::list<Statement*> internal;
     p->getInternalStatements(internal);
     for (std::list<Statement*>::iterator it = internal.begin();
       it != internal.end(); it++) {
         if ((*it)->getLeft() && *(*it)->getLeft() == *getReturnExp()) {
-            std::cerr << "found: ";
-            (*it)->printAsUse(std::cerr);
-            std::cerr << std::endl;
+            if (VERBOSE) {
+                std::cerr << "found: ";
+                (*it)->printAsUse(std::cerr);
+                std::cerr << std::endl;
+            }
             p->eraseInternalStatement(*it);
             updateParams(p, *it);
         }
     }
-    std::cerr << "searching for arguments in statements" << std::endl;
+    if (VERBOSE)
+        std::cerr << "searching for arguments in statements" << std::endl;
     std::set<Statement*> stmts;
     p->getStatements(stmts);
     for (std::set<Statement*>::iterator it = stmts.begin();
@@ -823,51 +831,55 @@ void Signature::updateParams(UserProc *p, Statement *stmt, bool checklive)
 {
     if (stmt->getLeft() && *stmt->getLeft() == *getReturnExp()) {
         std::set<Statement*> &liveout = p->getCFG()->getLiveOut();
-    Exp *right = stmt->getRight();
-    if (right == NULL) right = stmt->getLeft();
-    if (right && liveout.find(stmt) != liveout.end()) {
-        rettype = new IntegerType();
-        std::cerr << "setting return value to ";
-        right->print(std::cerr);
-        std::cerr << std::endl;
-        p->getCFG()->setReturnVal(right->clone());
-    }
+        Exp *right = stmt->getRight();
+        if (right == NULL) right = stmt->getLeft();
+        if (right && liveout.find(stmt) != liveout.end()) {
+            rettype = new IntegerType();
+            if (VERBOSE) {
+                std::cerr << "setting return value to ";
+                right->print(std::cerr);
+                std::cerr << std::endl;
+            }
+            p->getCFG()->setReturnVal(right->clone());
+        }
     }
     int i;
     if (usesNewParam(p, stmt, checklive, i)) {
-    int n = getNumParams();
-        setNumParams(i+1);
-    for (; n < getNumParams(); n++) {
-        std::cerr << "found param " << n << std::endl;
-        p->getCFG()->searchAndReplace(getParamExp(n), 
-            new Unary(opParam, new Const((char *)getParamName(n))));
-    }
+        int n = getNumParams();
+            setNumParams(i+1);
+        for (; n < getNumParams(); n++) {
+            if (VERBOSE) std::cerr << "found param " << n << std::endl;
+            p->getCFG()->searchAndReplace(getParamExp(n), 
+                new Unary(opParam, new Const((char *)getParamName(n))));
+        }
     }
 }
 
-bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive, int &n)
-{
+bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive,
+  int &n) {
     n = getNumParams() - 1;
-    std::cerr << "searching ";
-    stmt->printAsUse(std::cerr);
-    std::cerr << std::endl;
+    if (VERBOSE) {
+        std::cerr << "searching ";
+        stmt->printAsUse(std::cerr);
+        std::cerr << std::endl;
+    }
     std::set<Statement*> livein;
     stmt->getLiveIn(livein);
     for (int i = getNumParams(); i < 10; i++)
-            if (stmt->usesExp(getParamExp(i))) {
-        bool ok = true;
-        if (checklive) {
-            bool hasDef = false;
-                for (std::set<Statement*>::iterator it1 = livein.begin();
-                     it1 != livein.end(); it1++)
-                    if (*(*it1)->getLeft() == *getParamExp(i)) {
-                        hasDef = true; break; 
-                }
-                if (hasDef) ok = false;
-        }
-        if (ok) {
-            n = i;
-        }
+        if (stmt->usesExp(getParamExp(i))) {
+            bool ok = true;
+            if (checklive) {
+                bool hasDef = false;
+                    for (std::set<Statement*>::iterator it1 = livein.begin();
+                      it1 != livein.end(); it1++)
+                        if (*(*it1)->getLeft() == *getParamExp(i)) {
+                            hasDef = true; break; 
+                        }
+                    if (hasDef) ok = false;
+            }
+            if (ok) {
+                n = i;
+            }
         }
     return n > (getNumParams() - 1);
 }
@@ -877,13 +889,11 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checklive, int &
 Exp* Signature::getFirstArgLoc(BinaryFile* pBF) {
     MACHINE mach = pBF->GetMachine();
     switch (mach) {
-        case MACHINE_SPARC:
-        {
+        case MACHINE_SPARC: {
             CallingConvention::StdC::SparcSignature sig("");
             return sig.getArgumentExp(0);
         }
-        case MACHINE_PENTIUM:
-        {
+        case MACHINE_PENTIUM: {
             //CallingConvention::StdC::PentiumSignature sig("");
             //Exp* e = sig.getArgumentExp(0);
             // For now, need to work around how the above appears to be the
