@@ -10,11 +10,7 @@
  * 22 Aug 03 - Mike: Extended for Constraint tests
  */
 
-#ifndef BOOMDIR
-#error Must define BOOMDIR
-#endif
-
-#define HELLO_WINDOWS       BOOMDIR "/test/windows/hello.exe"
+#define HELLO_WINDOWS       "test/windows/hello.exe"
 
 #include <iostream>
 #include "TypeTest.h"

@@ -26,9 +26,10 @@
 # 16 Jul 02 - Mike: Removed prog again; no longer needed for serialise code
 # 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
 # 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
+# 20 Jul 04 - Mike: Removed BOOMDIR (paths relative now)
 
-C = gcc -Wall -g -O0
-CC = g++ -Wall -g -O0
+C = gcc -Wall -g -O4
+CC = g++ -Wall -g -O4
 CXX=$(CC)
 
 ALLLIBSRC =  $(wildcard *BinaryFile.cpp)
@@ -44,15 +45,10 @@ HOST_GNU_LD = @HOST_GNU_LD@
 # LDL is -ldl if needed (Cygwin does not)
 LDL = -ldl
 
-# Relative paths
-#BOOMDIR="$(shell pwd)/.."
-BOOMDIR="."
-BOOMSET=-DBOOMDIR=\"$(BOOMDIR)\"
-LIBDIR=$(BOOMDIR)/lib
 ifeq ($(HOST_GNU_LD), yes)
-RUNPATH=-Wl,-rpath -Wl,$(LIBDIR)
+RUNPATH=-Wl,-rpath -Wl,"lib"
 else # Assume Solaris
-RUNPATH=-R$(LIBDIR)
+RUNPATH=-R"lib"
 endif
 
 
@@ -60,10 +56,10 @@ testLoader: testLoader.o LoaderTest.o microX86dis.o
 	$(CC) -o $@ $^  -lcppunit -lBinaryFile $(RUNPATH) -L../lib
 
 testLoader.o: testLoader.cpp
-	$(CC) -c -o $@ -I../include $(BOOMSET) $<
+	$(CC) -c -o $@ -I../include $<
 
 LoaderTest.o: LoaderTest.cpp LoaderTest.h
-	$(CC) -c -o $@ -I../include $(BOOMSET) $<
+	$(CC) -c -o $@ -I../include $<
 
 microX86dis.o: microX86dis.c
 	$(C) -c -o $@ -fPIC $<
@@ -83,7 +79,7 @@ $(ALLLIB): ../lib/lib%.so : %.o
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp
-	$(CC) -c -fPIC -I../include $(BOOMSET) -o $@ $<
+	$(CC) -c -fPIC -I../include -o $@ $<
 
 # Dependencies
 ../lib/libElfBinaryFile.so: SymTab.o

@@ -9,11 +9,7 @@
  * 13 May 02 - Mike: Created
  */
 
-#ifndef BOOMDIR
-#error Must define BOOMDIR
-#endif
-
-#define SPARC_SSL		BOOMDIR "/frontend/machine/sparc/sparc.ssl"
+#define SPARC_SSL		"frontend/machine/sparc/sparc.ssl"
 
 #include "ParserTest.h"
 #include "sslparser.h"

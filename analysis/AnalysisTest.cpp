@@ -17,7 +17,7 @@
 #include "BinaryFileStub.h"
 #include "analysis.h"
 
-#define CCX_SPARC       BOOMDIR "/test/sparc/condcodexform_gcc"
+#define CCX_SPARC       "test/sparc/condcodexform_gcc"
 
 /*==============================================================================
  * FUNCTION:        AnalysisTest::registerTests

@@ -10,11 +10,7 @@
  * 18 Jul 02 - Mike: Set up prog.pFE before calling readLibParams
  */
 
-//#ifndef BOOMDIR
-//#error Must define BOOMDIR
-//#endif
-
-#define HELLO_PENTIUM		BOOMDIR "/test/pentium/hello"
+#define HELLO_PENTIUM		"test/pentium/hello"
 
 #include "ProgTest.h"
 #include "BinaryFile.h"

@@ -10,11 +10,7 @@
  * 10 Mar 03 - Mike: Mods to not use Prog::pBF (no longer public)
  */
 
-#ifndef BOOMDIR
-#error Must define BOOMDIR
-#endif
-
-#define HELLO_PENTIUM       BOOMDIR "/test/pentium/hello"
+#define HELLO_PENTIUM       "test/pentium/hello"
 
 #include "ProcTest.h"
 #include "BinaryFile.h"
