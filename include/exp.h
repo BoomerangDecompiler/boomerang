@@ -95,7 +95,7 @@ virtual bool operator%=(const Exp& o) const;
 // Sign insensitive equality
 virtual bool operator-=(const Exp& o) const;
 // Type sensitive less than
-virtual bool operator< (const Exp& o)  const= 0;
+virtual bool operator< (const Exp& o)  const = 0;
 // Type insensitive less than. Class TypedExp overrides
 virtual bool operator<<(const Exp& o) const
     {return (*this < o);}
@@ -741,6 +741,7 @@ public:
             RefsExp(RefsExp& o);
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
+    bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
     Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return stmtSet.size();}
@@ -774,6 +775,7 @@ public:
             RefExp(RefExp& o);
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
+    bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
     Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return 1;}
@@ -807,6 +809,7 @@ public:
             PhiExp(PhiExp& o);
 virtual Exp* clone();
     bool    operator==(const Exp& o) const;
+    bool    operator< (const Exp& o) const;
     void    print(std::ostream& os, bool withUses = false);
     Exp*    updateRefs(StatementSet& defs, int memDepth, StatementSet& rs);
 virtual int getNumRefs() {return stmtSet.size();}

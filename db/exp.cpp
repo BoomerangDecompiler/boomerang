@@ -588,6 +588,28 @@ bool AssignExp::operator<  (const Exp& o) const {        // Type sensitive
     return *subExp2 < *((Binary&)o).getSubExp2();
 }
 
+bool RefExp::operator< (const Exp& o) const {
+    if (opSubscript < o.getOper()) return true;
+    if (opSubscript > o.getOper()) return false;
+    if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
+    if (*((Unary&)o).getSubExp1() < *subExp1) return false;
+    return def < ((RefExp&)o).def;
+}
+
+bool RefsExp::operator< (const Exp& o) const {
+    if (opSubscript < o.getOper()) return true;
+    if (opSubscript > o.getOper()) return false;
+    if (*subExp1 < *((Unary&)o).getSubExp1()) return true;
+    if (*((Unary&)o).getSubExp1() < *subExp1) return false;
+    return stmtSet < ((RefsExp&)o).stmtSet;
+}
+
+bool PhiExp::operator< (const Exp& o) const {
+    if (opPhi < o.getOper()) return true;
+    if (opPhi > o.getOper()) return false;
+    return stmtSet < ((PhiExp&)o).stmtSet;
+}
+
 
 
 
@@ -2671,7 +2693,8 @@ void AssignExp::doReplaceRef(Exp* from, Exp* to) {
     //assert(changeright || changeleft);    // HACK!
     if (!changeright && !changeleft)
         std::cerr << "Exp::doReplaceRef: could not change " << from << " to " <<
-          to << " in " << (Exp*)this << " !!\n";
+          to << " in " << std::dec <<
+          dynamic_cast<Statement*>(this)->getNumber() << (Exp*)this << " !!\n";
     // simplify the expression
     subExp2 = subExp2->simplifyArith();
     subExp1 = subExp1->simplifyArith();
