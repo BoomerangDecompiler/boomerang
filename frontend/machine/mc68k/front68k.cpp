@@ -439,7 +439,7 @@ void processProc(ADDRESS uAddr, int delta, ADDRESS uUpper, UserProc* pProc,
             // coverage, but also will cause subtle problems like add a call
             // to the list of calls to be processed, then delete the call RTL
             // (e.g. Pentium 134.perl benchmark)
-            if (sequentialDecode && pCfg->isLabel(uAddr)) {
+            if (sequentialDecode && pCfg->existsBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     PBB pBB = pCfg->newBB(BB_rtls, FALL, 1);

@@ -1317,11 +1317,6 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc,
                 break;
             }
 
-            // Display RTL representation if asked
-            //if (progOptions.rtl && (inst.rtl != NULL))
-if (0)          // SETTINGS
-                inst.rtl->print(os);
-
             // If sequentially decoding, check if the next address happens to
             // be the start of an existing BB. If so, finish off the current BB
             // (if any RTLs) as a fallthrough, and  no need to decode again
@@ -1330,7 +1325,7 @@ if (0)          // SETTINGS
             // coverage, but also will cause subtle problems like add a call
             // to the list of calls to be processed, then delete the call RTL
             // (e.g. Pentium 134.perl benchmark)
-            if (sequentialDecode && cfg->isLabel(address)) {
+            if (sequentialDecode && cfg->existsBB(address)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     PBB pBB = cfg->newBB(BB_rtls, FALL, 1);
