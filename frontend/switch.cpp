@@ -66,7 +66,9 @@
 #include "proc.h"                   // For nextVar()
 #include "prog.h"                   // For prog.cover
 #include "frontend.h"
-#include "../db/operstrings.h"        // HACK!!!
+#include "signature.h"
+
+extern char* operStrings[];
 
 typedef std::list<RTL*>::iterator               RTLList_IT;
 
@@ -377,7 +379,7 @@ bool getPrevRtl(PBB& pCurBB, RTLList_IT& itRtl, bool& bNegate) {
  *                Also creates a new SWITCH_INFO struct and fills it with info
  *                about this switch; last RTL this BB retains a pointer to this
  *============================================================================*/
-bool isSwitch(PBB pSwitchBB, Exp*& pDest, UserProc* pProc) {
+bool isSwitch(PBB pSwitchBB, Exp* pDest, UserProc* pProc) {
 
     // return false;                // Use to disable switch analysis
 
@@ -411,7 +413,9 @@ bool isSwitch(PBB pSwitchBB, Exp*& pDest, UserProc* pProc) {
     iOffset = 0;                    // Needed only for type R
     uCopyPC = 0;                    // Needed only for type "r"; no call yet
     // Get the register that contains the function return value
-    const int iFuncRetReg = getFuncRetReg();    // e.g. 8 for sparc
+    // e.g. 8 for sparc
+    const int iFuncRetReg = ((Const*)((Unary*)
+      pProc->getSignature()->getReturnExp()))->getInt();
 	int iDest;
 	int n;
     Exp* pRHS;
@@ -1107,10 +1111,12 @@ void setSwitchInfo(PBB pSwitchBB, char chForm, int iLower, int iUpper,
  *                delta - (uHost - uNative)
  *                pCfg - Pointer to the Cfg object for the current procedure
  *                tq- queue of targets yet to be visited
- *                proc - pointer to the Proc object that the switch is in
+ *                pBF - pointer to the BinaryFile object
  * RETURNS:       <nothing>
  *============================================================================*/
-void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq, Proc* proc) {
+void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq,
+  BinaryFile* pBF) {
+
     HLNwayJump* jump = (HLNwayJump*)pBB->getRTLs()->back();
     SWITCH_INFO* si = jump->getSwitchInfo();
     // Update the delta field
@@ -1146,15 +1152,14 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq, Proc* proc) {
     
     for (int i=0; i < iNum; i++) {
         // Get the destination address from the
-        // switch table. Note: assumes that the
-        // table is in the .text section!
+        // switch table.
         if (si->chForm == 'H') {
-            int iValue = ((ADDRESS*)(si->uTable+delta))[i*2];
+            int iValue = pBF->readNative4(si->uTable + i*2);
             if (iValue == -1) continue;
-            uSwitch = fetch4((unsigned char*)(si->uTable + delta + i*8 + 4));
+            uSwitch = pBF->readNative4(si->uTable + i*8 + 4);
         }
         else
-            uSwitch = fetch4((unsigned char*) (si->uTable + delta + i*4));
+            uSwitch = pBF->readNative4(si->uTable + i*4);
         if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
             // Offset: add table address to make a real pointer to code
             // For type R, the table is relative to the branch, so take iOffset
@@ -1164,18 +1169,4 @@ void processSwitch(PBB pBB, int delta, Cfg* pCfg, TargetQueue& tq, Proc* proc) {
         pCfg->addOutEdge(pBB, uSwitch, true);
     }
 
-    // Update the coverage
-    // Note! Should verify that the switch statement is in the code
-    // section, before adding the coverage
-    // Perhaps should add it to the prog object if outside the current
-    // proc's boundaries (but how to decide that?)
-#if 0
-	UserProc* uProc = (UserProc*)proc;
-    if (si->chForm == 'H') {
-        uProc->addRange(si->uTable, si->uTable + iNum * 8);
-    }
-    else {
-        uProc->addRange(si->uTable, si->uTable + iNum * 4);
-    }
-#endif
 }
