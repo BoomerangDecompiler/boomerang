@@ -20,15 +20,17 @@
 #line 21 "ansi-c-parser.h"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_CONSTRUCTOR_PARAM  \
-    std::istream &in, bool trace
+    std::istream &in, bool trace = false
 #define YY_AnsiCParser_CONSTRUCTOR_INIT 
 #define YY_AnsiCParser_CONSTRUCTOR_CODE  \
     theScanner = new AnsiCScanner(in, trace); \
     if (trace) yydebug = 1; else yydebug = 0;
 #define YY_AnsiCParser_MEMBERS  \
 private:        \
-    AnsiCScanner *theScanner;
-#line 30 "ansi-c.y"
+    AnsiCScanner *theScanner; \
+public: \
+    std::list<Signature*> signatures;
+#line 33 "ansi-c.y"
 
   #include <list>
   #include <string>
@@ -39,7 +41,7 @@ private:        \
   class AnsiCScanner;
 
 
-#line 55 "ansi-c.y"
+#line 58 "ansi-c.y"
 typedef union {
    int ival;
    char *str;
@@ -103,21 +105,21 @@ typedef union {
 #ifndef YY_AnsiCParser_PURE
 
 /* #line 63 "/usr/local/lib/bison.h" */
-#line 107 "ansi-c-parser.h"
+#line 109 "ansi-c-parser.h"
 
 #line 63 "/usr/local/lib/bison.h"
 /* YY_AnsiCParser_PURE */
 #endif
 
 /* #line 65 "/usr/local/lib/bison.h" */
-#line 114 "ansi-c-parser.h"
+#line 116 "ansi-c-parser.h"
 
 #line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
 /* #line 67 "/usr/local/lib/bison.h" */
-#line 121 "ansi-c-parser.h"
+#line 123 "ansi-c-parser.h"
 
 #line 67 "/usr/local/lib/bison.h"
 /* YY_AnsiCParser_DEBUG */
@@ -125,7 +127,7 @@ typedef union {
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
 /* #line 70 "/usr/local/lib/bison.h" */
-#line 129 "ansi-c-parser.h"
+#line 131 "ansi-c-parser.h"
 
 #line 70 "/usr/local/lib/bison.h"
  /* YY_AnsiCParser_LSP_NEEDED*/
@@ -203,7 +205,7 @@ extern YY_AnsiCParser_STYPE YY_AnsiCParser_LVAL;
 
 
 /* #line 143 "/usr/local/lib/bison.h" */
-#line 207 "ansi-c-parser.h"
+#line 209 "ansi-c-parser.h"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -312,7 +314,7 @@ public:
 /* static const int token ... */
 
 /* #line 182 "/usr/local/lib/bison.h" */
-#line 316 "ansi-c-parser.h"
+#line 318 "ansi-c-parser.h"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -385,7 +387,7 @@ static const int RETURN;
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
 /* #line 185 "/usr/local/lib/bison.h" */
-#line 389 "ansi-c-parser.h"
+#line 391 "ansi-c-parser.h"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -506,5 +508,5 @@ public:
 /* END */
 
 /* #line 236 "/usr/local/lib/bison.h" */
-#line 510 "ansi-c-parser.h"
+#line 512 "ansi-c-parser.h"
 #endif

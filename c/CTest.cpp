@@ -9,6 +9,7 @@
  * 03 Dec 02 - Trent: Created
  */
 
+#include <sstream>
 #include "CTest.h"
 
 /*==============================================================================
@@ -56,5 +57,12 @@ void CTest::tearDown () {
  * RETURNS:         <nothing>
  *============================================================================*/
 void CTest::test1 () {
+    std::istringstream os("int printf(char *fmt);");
+    AnsiCParser *p = new AnsiCParser(os);
+    p->yyparse();
+    CPPUNIT_ASSERT(p->signatures.size() == 1);
+    Signature *sig = p->signatures.front();
+    CPPUNIT_ASSERT(!strcmp(sig->getName(),"printf"));
+    CPPUNIT_ASSERT(*sig->getReturnType() == IntegerType());
 }
 

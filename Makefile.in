@@ -101,7 +101,7 @@ STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${FRONT_OBJS} ${AN_OBJS}
 lib/libBinaryFile.so:
 	cd loader && make
 
-bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS}
+bigtest: testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so
 	$(CC) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} lib/libBinaryFile.so \
 	  $(RUNPATH) -Llib -ldl -lcppunit
 
@@ -154,7 +154,7 @@ driver.o: driver.cpp
 	$(CC) -c -o $@ -Iinclude $(EXTRA) $<
 
 testAll.o: testAll.cpp
-	$(CC) -c -o $@ -Iinclude $(EXTRA) $< -Idb -Ifrontend -Ianalysis
+	$(CC) -c -o $@ -Iinclude $(EXTRA) $< -Idb -Ifrontend -Ianalysis -Ic
 
 #
 # Dependencies

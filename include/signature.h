@@ -59,6 +59,7 @@ class Signature {
 protected:
     std::string name;						// name of procedure
     std::vector<Parameter*> params;
+    Type *rettype;
 
 public:
     Signature(const char *nam);

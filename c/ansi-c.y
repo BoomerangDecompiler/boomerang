@@ -14,7 +14,7 @@
 %define DEBUG 1
 
 %define CONSTRUCTOR_PARAM \
-    std::istream &in, bool trace
+    std::istream &in, bool trace = false
 
 %define CONSTRUCTOR_INIT
 
@@ -24,7 +24,10 @@
 
 %define MEMBERS \
 private:        \
-    AnsiCScanner *theScanner;
+    AnsiCScanner *theScanner; \
+public: \
+    std::list<Signature*> signatures;
+    
 
 
 %header{
@@ -110,23 +113,32 @@ type_decl: TYPEDEF type IDENTIFIER ';'
          ;
 
 func_decl: type IDENTIFIER '(' param_list ')' ';'
-         { }
+         { Signature *sig = new Signature($2); 
+           sig->setReturnType($1);
+           for (std::list<Parameter*>::iterator it = $4->begin();
+                it != $4->end(); it++)
+               sig->addParameter(*it);
+           delete $4;
+           signatures.push_back(sig);
+         }
          ;
 
 type: CHAR 
-    { }
+    { $$ = new CharType(); }
     | SHORT 
-    { }
+    { $$ = new IntegerType(16); }
     | INT 
-    { }
+    { $$ = new IntegerType(); }
     | LONG 
-    { }
+    { $$ = new IntegerType(); }
     | FLOAT 
-    { }
+    { $$ = new FloatType(32); }
     | DOUBLE 
-    { }
+    { $$ = new FloatType(32); }
     | VOID
-    { }
+    { $$ = new VoidType(); }
+    | type '*'
+    { $$ = new PointerType($1); }
     ;
 
 

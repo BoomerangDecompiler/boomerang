@@ -47,6 +47,7 @@ virtual		~Type();
 virtual bool isVoid() const { return false; }
 virtual bool isFunc() const { return false; }
 virtual bool isBoolean() const { return false; }
+virtual bool isChar() const { return false; }
 virtual bool isInteger() const { return false; }
 virtual bool isFloat() const { return false; }
 virtual bool isPointer() const { return false; }
@@ -186,6 +187,27 @@ virtual std::string getCtype() const;
 virtual	bool serialize(std::ostream &ouf, int &len);
 virtual	bool deserialize_fid(std::istream &inf, int fid);
 };
+
+class CharType : public Type {
+public:
+	CharType();
+virtual ~CharType();
+virtual bool isChar() const { return true; }
+
+virtual Type* clone() const;
+
+virtual bool    operator==(const Type& other) const;
+//virtual bool    operator-=(const Type& other) const;
+virtual bool    operator< (const Type& other) const;
+
+virtual int     getSize() const;
+
+virtual std::string getCtype() const;
+
+virtual	bool serialize(std::ostream &ouf, int &len);
+virtual	bool deserialize_fid(std::istream &inf, int fid);
+};
+
 
 class PointerType : public Type {
 private:

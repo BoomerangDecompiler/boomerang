@@ -63,6 +63,10 @@ BooleanType::BooleanType()
 {
 }
 
+CharType::CharType()
+{
+}
+
 PointerType::PointerType(Type *p) : points_to(p)
 {
 }
@@ -97,6 +101,10 @@ BooleanType::~BooleanType()
 {
 }
 
+CharType::~CharType()
+{
+}
+
 PointerType::~PointerType()
 {
 	delete points_to;
@@ -123,6 +131,12 @@ Type *FloatType::clone() const
 Type *BooleanType::clone() const
 {
     BooleanType *t = new BooleanType();
+    return t;
+}
+
+Type *CharType::clone() const
+{
+    CharType *t = new CharType();
     return t;
 }
 
@@ -161,6 +175,11 @@ int FloatType::getSize() const
 }
 
 int BooleanType::getSize() const
+{
+    return 1;
+}
+
+int CharType::getSize() const
 {
     return 1;
 }
@@ -211,6 +230,11 @@ bool FloatType::operator==(const Type& other) const
 bool BooleanType::operator==(const Type& other) const
 {
     return other.isBoolean();
+}
+
+bool CharType::operator==(const Type& other) const
+{
+    return other.isChar();
 }
 
 bool VoidType::operator==(const Type& other) const
@@ -303,6 +327,11 @@ bool BooleanType::operator<(const Type& other) const
     return true;
 }
 
+bool CharType::operator<(const Type& other) const
+{
+    return true;
+}
+
 bool PointerType::operator<(const Type& other) const
 {
     return (*points_to < other);
@@ -368,6 +397,11 @@ std::string FloatType::getCtype() const
 std::string BooleanType::getCtype() const
 {
      return "bool";
+}
+
+std::string CharType::getCtype() const
+{
+     return "char";
 }
 
 std::string PointerType::getCtype() const
@@ -532,6 +566,19 @@ bool BooleanType::serialize(std::ostream &ouf, int &len)
 	return true;
 }
 
+bool CharType::serialize(std::ostream &ouf, int &len)
+{
+	std::streampos st = ouf.tellp();
+
+	saveValue(ouf, 'c', false);
+
+	saveFID(ouf, FID_TYPE_END);
+	saveLen(ouf, 0);
+
+	len = ouf.tellp() - st;
+	return true;
+}
+
 bool PointerType::serialize(std::ostream &ouf, int &len)
 {
 	std::streampos st = ouf.tellp();
@@ -570,6 +617,9 @@ Type *Type::deserialize(std::istream &inf)
 		break;
 	    case 'b':
 		t = new BooleanType();
+		break;
+	    case 'c':
+		t = new CharType();
 		break;
 	    case 'p':
 		{
@@ -650,6 +700,12 @@ bool FuncType::deserialize_fid(std::istream &inf, int fid)
 }
 
 bool BooleanType::deserialize_fid(std::istream &inf, int fid)
+{
+    skipFID(inf, fid);
+    return false;
+}
+
+bool CharType::deserialize_fid(std::istream &inf, int fid)
 {
     skipFID(inf, fid);
     return false;

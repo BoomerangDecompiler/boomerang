@@ -55,8 +55,6 @@ namespace CallingConvention {
 		virtual bool deserialize_fid(std::istream &inf, int fid);
 
 		virtual Exp *getReturnExp();
-		virtual Type *getReturnType();
-		virtual void setReturnType(Type *t);
 
 		virtual	Exp *getParamExp(unsigned int n);
 		virtual Exp *getArgumentExp(unsigned int n);
@@ -83,8 +81,6 @@ namespace CallingConvention {
 			virtual bool deserialize_fid(std::istream &inf, int fid);
 
 			virtual Exp *getReturnExp();
-			virtual Type *getReturnType();
-			virtual void setReturnType(Type *t);
 
 			virtual	Exp *getParamExp(unsigned int n);
 			virtual Exp *getArgumentExp(unsigned int n);
@@ -111,8 +107,6 @@ namespace CallingConvention {
 			virtual bool deserialize_fid(std::istream &inf, int fid);
 
 			virtual Exp *getReturnExp();
-			virtual Type *getReturnType();
-			virtual void setReturnType(Type *t);
 
 			virtual	Exp *getParamExp(unsigned int n);
 			virtual Exp *getArgumentExp(unsigned int n);
@@ -235,17 +229,6 @@ bool CallingConvention::Win32Signature::deserialize_fid(std::istream &inf, int f
 Exp *CallingConvention::Win32Signature::getReturnExp()
 {	
 	return new Unary(opRegOf, new Const(24));
-}
-
-Type *CallingConvention::Win32Signature::getReturnType()
-{	
-	return rettype;
-}
-
-void CallingConvention::Win32Signature::setReturnType(Type *t)
-{	
-	if (rettype) delete rettype;
-	rettype = t;
 }
 
 Exp *CallingConvention::Win32Signature::getParamExp(unsigned int n)
@@ -386,17 +369,6 @@ Exp *CallingConvention::StdC::PentiumSignature::getReturnExp()
 	return new Unary(opRegOf, new Const(24));
 }
 
-Type *CallingConvention::StdC::PentiumSignature::getReturnType()
-{
-	return rettype;
-}
-
-void CallingConvention::StdC::PentiumSignature::setReturnType(Type *t)
-{
-	if (rettype) delete rettype;
-	rettype = t;
-}
-
 Exp *CallingConvention::StdC::PentiumSignature::getParamExp(unsigned int n)
 {
 	assert(n < params.size());
@@ -532,17 +504,6 @@ Exp *CallingConvention::StdC::SparcSignature::getReturnExp()
 	return new Unary(opRegOf, new Const(8));
 }
 
-Type *CallingConvention::StdC::SparcSignature::getReturnType()
-{
-	return rettype;
-}
-
-void CallingConvention::StdC::SparcSignature::setReturnType(Type *t)
-{
-	if (rettype) delete rettype;
-	rettype = t;
-}
-
 Exp *CallingConvention::StdC::SparcSignature::getParamExp(unsigned int n)
 {
 	assert(n < params.size());
@@ -569,7 +530,7 @@ Signature *CallingConvention::StdC::SparcSignature::promote(UserProc *p)
 	return this;
 }
 
-Signature::Signature(const char *nam)
+Signature::Signature(const char *nam) : rettype(NULL)
 {
 	name = nam;
 }
@@ -683,13 +644,13 @@ Exp *Signature::getReturnExp()
 
 Type *Signature::getReturnType()
 {
-	static VoidType t;
-	return &t;
+	return rettype;
 }
 
 void Signature::setReturnType(Type *t)
 {
-	assert(false);
+	if (rettype) delete rettype;
+	rettype = t;
 }
 
 const char *Signature::getName()

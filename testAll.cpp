@@ -22,6 +22,7 @@
 #include "FrontSparcTest.h"
 #include "FrontPentTest.h"
 #include "AnalysisTest.h"
+#include "CTest.h"
 
 #include "prog.h"
 
@@ -42,7 +43,8 @@ int main(int argc, char** argv)
     FrontSparcTest fst("FrontSparcTest");
 //    FrontendTest fet("FrontendTest");
     FrontPentTest fpt("FrontPentTest");
-	AnalysisTest ant("AnalysisTest");
+    AnalysisTest ant("AnalysisTest");
+    CTest c("CTest");
 
     expt.registerTests(&suite);
     progt.registerTests(&suite);
@@ -52,7 +54,8 @@ int main(int argc, char** argv)
     typet.registerTests(&suite);
     fst.registerTests(&suite);
     fpt.registerTests(&suite);
-	ant.registerTests(&suite);
+    ant.registerTests(&suite);
+    c.registerTests(&suite);
 
 
     CppUnit::TextTestResult res;
