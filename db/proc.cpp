@@ -1863,22 +1863,33 @@ void UserProc::fromSSAform() {
     // Now remove the phi's
     for (Statement* s = stmts.getFirst(it); s; s = stmts.getNext(it)) {
         if (!s->isPhi()) continue;
-        // Check that the base variables are all the same as the LHS
+        // Check that the base variables are all the same
         PhiExp* p = (PhiExp*)s->getRight();
         LocationSet refs;
         p->addUsedLocs(refs);
-        Exp* left = s->getLeft();
-        bool same = true;
         LocSetIter rr;
-        for (Exp* r = refs.getFirst(rr); r; r = refs.getNext(rr)) {
-            if (!(*r *= *left)) {       // Ref-insensitive compare
+        Exp* r = refs.getFirst(rr);
+        Exp* first = r;
+        bool same = true;
+        while (r) {
+            if (!(*r *= *first)) {       // Ref-insensitive compare
                 same = false;
                 break;
             }
+            r = refs.getNext(rr);
         }
-        if (same)
-            // Just removing the refs will work
-            removeStatement(s);
+        if (same) {
+            // Is the left of the phi assignment the same base variabe as all
+            // the operands?
+            if (*s->getLeft() *= *first)
+                // Just removing the refs will work
+                removeStatement(s);
+            else
+                // Just need to replace the phi by an expression,
+                // e.g. local0 = phi(r24{3}, r24{5}) becomes 
+                //      local0 = r24
+                ((Assign*)s)->setRight(first->getSubExp1()->clone());
+        }
         else {
             // Need copies
             if (Boomerang::get()->debugLiveness)
