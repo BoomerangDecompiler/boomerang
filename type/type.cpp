@@ -937,3 +937,23 @@ bool Type::resolvesToCompound()
 bool Type::isPointerToAlpha() {
     return isPointer() && ((PointerType*)this)->pointsToAlpha();
 }
+
+// A crude shortcut representation of a type
+std::ostream& operator<<(std::ostream& os, Type* t) {
+    if (t == NULL) return os;
+    switch (t->getId()) {
+        case eInteger:
+            os << (((IntegerType*)t)->isSigned() ? 'i' : 'u');
+            os << std::dec << ((IntegerType*)t)->getSize();
+            break;
+        case eFloat:
+            os << 'f';
+            os << std::dec << ((FloatType*)t)->getSize();
+            break;
+        case eChar: os << 'c'; break;
+        case eBoolean: os << 'b'; break;
+        default:
+            os << "?type?";
+    }
+    return os;
+}

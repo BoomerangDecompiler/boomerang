@@ -2962,7 +2962,7 @@ bool Assign::searchAndReplace(Exp* search, Exp* replace) {
 
 void Assign::print(std::ostream& os, bool withUses) {
     os << std::setw(4) << std::dec << number << " ";
-    os << "*" << std::dec << type << "* ";
+    os << "*" << type << "* ";
     if (lhs) lhs->print(os, withUses);
     os << " := ";
     if (rhs) rhs->print(os, withUses);
