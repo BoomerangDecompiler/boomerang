@@ -440,6 +440,9 @@ bool Prog::isWin32() {
 
 const char *Prog::getGlobal(ADDRESS uaddr)
 {
+    for (unsigned i = 0; i < globals.size(); i++)
+        if (globals[i]->getAddress() == uaddr)
+            return globals[i]->getName();
     return pBF->SymbolByAddress(uaddr);
 }
 
@@ -456,8 +459,20 @@ void Prog::globalUsed(ADDRESS uaddr)
     for (unsigned i = 0; i < globals.size(); i++)
         if (globals[i]->getAddress() == uaddr)
             return;
+    if (uaddr < 0x10000) {
+        // This happens in windows code because you can pass a low value integer instead 
+        // of a string to some functions.
+        LOG << "warning: ignoring stupid request for global at address " << uaddr << "\n";
+        return;
+    }
     const char *nam = getGlobal(uaddr);
-    assert(nam);
+    if (nam == NULL) {
+        std::ostringstream os;
+        os << "global" << globals.size();
+        nam = strdup(os.str().c_str());
+        if (VERBOSE)
+            LOG << "adding new global: " << nam << " at address " << uaddr << "\n";
+    }
     int sz = pBF->GetSizeByName(nam);
     Type *ty;
     switch(sz) {
@@ -480,6 +495,13 @@ void Prog::makeGlobal(ADDRESS uaddr, const char *name)
     (*globalMap)[uaddr] = strdup(name);*/
 }
 
+Type *Prog::getGlobalType(char* nam) {
+    for (unsigned i = 0; i < globals.size(); i++)
+        if (!strcmp(globals[i]->getName(), nam))
+            return globals[i]->getType();
+    return NULL;
+}
+
 void Prog::setGlobalType(char* nam, Type* ty) {
     for (unsigned i = 0; i < globals.size(); i++)
         if (!strcmp(globals[i]->getName(), nam))
@@ -489,7 +511,7 @@ void Prog::setGlobalType(char* nam, Type* ty) {
 // get a string constant at a given address if appropriate
 char *Prog::getStringConstant(ADDRESS uaddr) {
     SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
-    if (si)
+    if (si && si->bReadOnly)
         return (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
     return NULL;
 }
@@ -767,6 +789,10 @@ void Prog::removeUnusedReturns() {
                 // It may also be that there are now some parameters unused,
                 // in particular esp
                 proc->trimParameters();
+                // and one more time
+                refCounts.clear();
+                proc->countRefs(refCounts);
+                proc->removeUnusedStatements(refCounts, -1);
             }
             change |= thisChange;
             if (thisChange) {

@@ -168,10 +168,12 @@ void Proc::printDetailsXML()
     std::ofstream out((Boomerang::get()->getOutputPath() + 
                       getName() + "-details.xml").c_str());
     out << "<proc name=\"" << getName() << "\">\n";
-    for (int i = 0; i < signature->getNumParams(); i++)
+    for (int i = 0; i < signature->getNumParams(); i++) {
         out << "   <param name=\"" << signature->getParamName(i) << "\" "
             << "exp=\"" << signature->getParamExp(i) << "\" "
-            << "type=\"" << signature->getParamType(i)->getCtype() << "\"/>\n";
+            << "type=\"" << signature->getParamType(i)->getCtype() << "\"";
+        out << "/>\n";
+    }
     for (int i = 0; i < signature->getNumReturns(); i++)
         out << "   <return exp=\"" << signature->getReturnExp(i) << "\" "
             << "type=\"" << signature->getReturnType(i)->getCtype() << "\"/>\n";
@@ -240,6 +242,7 @@ void UserProc::printXML()
         return;
     printDetailsXML();
     printSSAXML();
+    prog->printCallGraphXML();
 }
 
 /*==============================================================================
@@ -795,12 +798,12 @@ void UserProc::setEntryBB() {
 }
 
 /*==============================================================================
- * FUNCTION:        UserProc::setCallee
+ * FUNCTION:        UserProc::addCallee
  * OVERVIEW:        Add this callee to the set of callees for this proc
  * PARAMETERS:      A pointer to the Proc object for the callee
  * RETURNS:         <nothing>
  *============================================================================*/
-void UserProc::setCallee(Proc* callee) {
+void UserProc::addCallee(Proc* callee) {
     calleeSet.insert(callee);
 }
 
@@ -1044,11 +1047,38 @@ std::set<UserProc*>* UserProc::decompile() {
             processConstants();
             removeRedundantPhis();
         }
+        fixCallRefs();
         // recognising globals early prevents them from becoming parameters
         replaceExpressionsWithGlobals();
+        int nparams = signature->getNumParams();
         addNewParameters();
-        cfg->renameBlockVars(0, depth, true);
         trimParameters(depth);
+
+        // if we've added new parameters, need to do propagations up to this depth
+        // it's a recursive function thing.
+        if (nparams != signature->getNumParams()) {
+            for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
+                // Propagate at this memory depth
+                for (int td = maxDepth; td >= 0; td--) {
+                    if (VERBOSE)
+                        LOG << "propagating at depth " << depth_tmp << " to depth " 
+                                  << td << "\n";
+                    propagateStatements(depth_tmp, td);
+                    for (int i = 0; i <= depth_tmp; i++)
+                        cfg->renameBlockVars(0, i, true);
+                }
+            }
+            cfg->renameBlockVars(0, depth, true);
+            printXML();
+            if (VERBOSE) {
+                LOG << "=== Debug Print SSA for " << getName()
+                  << " at memory depth " << depth
+                  << " (after adding new parameters) ===\n";
+                printToLog(true);
+                LOG << "=== End Debug Print SSA for " <<
+                  getName() << " at depth " << depth << " ===\n\n";
+            }
+        }
 
         // recognising locals early prevents them from becoming returns
         replaceExpressionsWithLocals();
@@ -1076,7 +1106,7 @@ std::set<UserProc*>* UserProc::decompile() {
               getName() << " at depth " << depth << " ===\n\n";
         }
 
-         // Propagate at this memory depth
+        // Propagate at this memory depth
         for (int td = maxDepth; td >= 0; td--) {
             if (VERBOSE)
                 LOG << "propagating at depth " << depth << " to depth " 
@@ -1132,6 +1162,8 @@ std::set<UserProc*>* UserProc::decompile() {
             LOG << "===== End after replacing params =====\n\n";
         }
     }
+
+    processConstants();
 
     printXML();
 
@@ -1253,7 +1285,8 @@ void UserProc::removeRedundantPhis()
             if (hasphi) {
                 if (VERBOSE)
                     LOG << "contains a ref to a phi statement (skipping)\n";
-                continue;
+                // Do we need this?
+                //continue;
             }
             bool allsame = true;
             it = p->begin();
@@ -1297,7 +1330,7 @@ void UserProc::trimReturns() {
         // may need to do multiple times due to dependencies
 
         // Special case for 32-bit stack-based machines (e.g. Pentium).
-        // RISC machines generally preserve the stack pointer (so special
+        // RISC machines generally preserve the stack pointer (so no special
         // case required)
         for (int p = 0; !stdsp && p < 5; p++) {
             if (VERBOSE)
@@ -1337,6 +1370,11 @@ void UserProc::trimReturns() {
         // removing sp will make basically every procedure that doesn't
         // preserve sp return it, and take it as a parameter.  Maybe a 
         // later pass can get rid of this.  Trent 22/8/2003
+        // We handle this now by doing a final pass which removes any
+        // unused returns of a procedure.  So r28 will remain in the 
+        // returns set of every procedure in the program until such
+        // time as this final pass is made, and then they will be 
+        // removed.  Trent 22/9/2003
         //removeReturn(regsp);
         // also check for any locals that slipped into the returns
         for (int i = 0; i < signature->getNumReturns(); i++) {
@@ -1365,6 +1403,10 @@ void UserProc::fixCallRefs()
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         s->fixCallRefs();
+    }
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        s->simplify();
     }
 }
 
@@ -1433,7 +1475,7 @@ void UserProc::addNewParameters() {
         if (s->search(r, result)) {
             bool allZero;
             Exp *e = result->clone()->removeSubscripts(allZero);
-            if (allZero && signature->findParam(e) == -1) {
+            if (allZero && signature->findParam(e) == -1 && signature->findImplicitParam(e) == -1) {
                 //int sp = signature->getStackRegister(prog);
                 if (signature->isStackLocal(prog, e) ||
                     e->getOper() == opLocal)  {
@@ -1463,26 +1505,58 @@ void UserProc::trimParameters(int depth) {
     getStatements(stmts);
 
     // find parameters that are referenced (ignore calls to this)
-    int nparams = signature->getNumParams();
+    int nparams = signature->getNumParams() + signature->getNumImplicitParams();
     std::vector<Exp*> params;
     bool referenced[nparams];
-    for (int i = 0; i < nparams; i++) {
+    for (int i = 0; i < signature->getNumParams(); i++) {
         referenced[i] = false;
         params.push_back(signature->getParamExp(i)->clone()->
                             expSubscriptVar(new Terminal(opWild), NULL));
     }
+    for (int i = 0; i < signature->getNumImplicitParams(); i++) {
+        referenced[i + signature->getNumParams()] = false;
+        params.push_back(signature->getImplicitParamExp(i)->clone()->
+                            expSubscriptVar(new Terminal(opWild), NULL));
+    }
 
+    std::set<Statement*> excluded;
     StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement* s = *it;
+        if (s->isCall() && ((CallStatement*)s)->getDestProc() == this) {
+            CallStatement *call = (CallStatement*)s;
+            for (int i = 0; i < signature->getNumImplicitParams(); i++) {
+                Exp *e = call->getImplicitArgumentExp(i);
+                if (e->isSubscript()) {
+                    Statement *ref = ((RefExp*)e)->getRef();
+                    if (ref != NULL)
+                        excluded.insert(ref);
+                }
+            }
+        }
+    }
+    
+
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         if (!s->isCall() || ((CallStatement*)s)->getDestProc() != this) {
             for (int i = 0; i < nparams; i++) {
-                Exp *p = new Unary(opParam, 
-                            new Const((char*)signature->getParamName(i)));
-                if (!referenced[i] && (s->usesExp(params[i]) || s->usesExp(p)))
+                Exp *p, *pe;
+                if (i < signature->getNumParams()) {
+                    p = new Unary(opParam, 
+                                new Const((char*)signature->getParamName(i)));
+                    pe = signature->getParamExp(i);
+                } else {
+                    p = new Unary(opParam, 
+                                new Const((char*)signature->getImplicitParamName(
+                                                i - signature->getNumParams())));
+                    pe = signature->getImplicitParamExp(i - signature->getNumParams());
+                }
+                if (!referenced[i] && excluded.find(s) == excluded.end() && 
+                    (s->usesExp(params[i]) || s->usesExp(p)))
                     referenced[i] = true;
-                if (!referenced[i] && s->isPhi() && 
-                      *s->getLeft() == *signature->getParamExp(i)) {
+                if (!referenced[i] && excluded.find(s) == excluded.end() &&
+                    s->isPhi() && *s->getLeft() == *pe) {
                     if (VERBOSE)
                         LOG << "searching " << s << " for uses of " 
                                   << params[i] << "\n";
@@ -1544,6 +1618,17 @@ void Proc::removeParameter(Exp *e)
                 LOG << "removing argument " << e << " in pos " << n 
                           << " from " << *it << "\n";
             (*it)->removeArgument(n);
+        }
+    }
+    n = signature->findImplicitParam(e);
+    if (n != -1) {
+        signature->removeImplicitParameter(n);
+        for (std::set<CallStatement*>::iterator it = callerSet.begin();
+             it != callerSet.end(); it++) {
+            if (VERBOSE)
+                LOG << "removing implicit argument " << e << " in pos " << n 
+                          << " from " << *it << "\n";
+            (*it)->removeImplicitArgument(n);
         }
     }
 }
@@ -1639,47 +1724,136 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
         Statement* s = *it;
         for (int i = 0; i < signature->getNumParams(); i++) 
             if (signature->getParamExp(i)->getMemDepth() == depth) {
-            Exp *r = signature->getParamExp(i)->clone();
-            r = r->expSubscriptVar(new Terminal(opWild), NULL);
-            Exp* replace = new Unary(opParam, 
-                new Const(strdup((char*)signature->getParamName(i))));
-            s->searchAndReplace(r, replace);
+                Exp *r = signature->getParamExp(i)->clone();
+                r = r->expSubscriptVar(new Terminal(opWild), NULL);
+                Exp* replace = new Unary(opParam, 
+                    new Const(strdup((char*)signature->getParamName(i))));
+                if (VERBOSE)
+                    LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
+                s->searchAndReplace(r, replace);
+            }
+    }
+}
+
+Exp *UserProc::getLocalExp(Exp *le, Type *ty)
+{
+    Exp *e;
+    if (symbolMap.find(le) == symbolMap.end()) {
+        if (le->getOper() == opMemOf && le->getSubExp1()->getOper() == opMinus &&
+            *le->getSubExp1()->getSubExp1() == *new RefExp(Unary::regOf(signature->getStackRegister(prog)), NULL) &&
+            le->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+            int le_n = ((Const*)le->getSubExp1()->getSubExp2())->getInt();
+            // now test all the locals to see if this expression 
+            // is an alias to one of them (for example, a member
+            // of a compound typed local)
+            for (std::map<Exp*, Exp*,lessExpStar>::iterator it = symbolMap.begin();
+                 it != symbolMap.end(); it++) {
+                Exp *base = (*it).first;
+                assert(base);
+                Exp *local = (*it).second;
+                assert(local->getOper() == opLocal &&
+                       local->getSubExp1()->getOper() == opStrConst);
+                std::string name = ((Const*)local->getSubExp1())->getStr();
+                Type *ty = locals[name];
+                assert(ty);
+                if (ty->isNamed())
+                    ty = ((NamedType*)ty)->resolvesTo();
+                if (ty) {
+                    int size = ty->getSize() / 8;    // getSize() returns bits!
+                    if (base->getOper() == opMemOf && base->getSubExp1()->getOper() == opMinus &&
+                        *base->getSubExp1()->getSubExp1() == 
+                                                *new RefExp(Unary::regOf(signature->getStackRegister(prog)), NULL) &&
+                        base->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+                        int base_n = ((Const*)base->getSubExp1()->getSubExp2())->getInt();
+                        if (le_n <= base_n && le_n > base_n-size) {
+                            if (VERBOSE)
+                                LOG << "found alias to " << name.c_str() << ": " << le << "\n";
+                            if (ty->isCompound()) {
+                                CompoundType *compound = (CompoundType*)ty;
+                                return new Binary(opMemberAccess, local->clone(), 
+                                                    new Const((char*)compound->getNameAtOffset((base_n - le_n)*8)));
+                            } else
+                                assert(false);
+                        }
+                    }
+                }
+            }
+        }
+            
+        e = newLocal(ty ? ty->clone() : new IntegerType());
+        symbolMap[le->clone()] = e;
+        e->clone();
+    } else {
+        e = symbolMap[le]->clone();
+        if (e->getOper() == opLocal && e->getSubExp1()->getOper() == opStrConst) {
+            std::string name = ((Const*)e->getSubExp1())->getStr();
+            Type *ty = locals[name];
+            assert(ty);
+            if (ty->isNamed())
+                ty = ((NamedType*)ty)->resolvesTo();
+            if (ty) {
+                if (ty->isCompound()) {
+                    CompoundType *compound = (CompoundType*)ty;
+                    if (VERBOSE)
+                        LOG << "found reference to first member of compound " << name.c_str() << ": " << le << "\n";
+                    return new Binary(opMemberAccess, e, new Const((char*)compound->getName(0)));
+                }
+            }
         }
     }
+    return e;
 }
 
 void UserProc::replaceExpressionsWithLocals() {
     StatementList stmts;
     getStatements(stmts);
 
-
-    // replace expressions in regular statements with locals
     int sp = signature->getStackRegister(prog);
     if (getProven(Unary::regOf(sp)) == NULL)
         return;    // can't replace if nothing proven about sp
 
+    // start with calls because that's where we have the most types
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) 
+        if ((*it)->isCall()) {
+            CallStatement *call = (CallStatement*)*it;
+            for (int i = 0; i < call->getNumArguments(); i++) {
+                Type *ty = call->getArgumentType(i);
+                Exp *e = call->getArgumentExp(i);
+                if (ty && ty->isPointer() && 
+                    e->getOper() == opMinus && 
+                    *e->getSubExp1() == *new RefExp(Unary::regOf(sp), NULL) &&
+                    e->getSubExp2()->getOper() == opIntConst) {
+                    Exp *olde = e->clone();
+                    e = getLocalExp(new Unary(opMemOf, e->clone()), ((PointerType*)ty)->getPointsTo());
+                    Exp *ne = new Unary(opAddrOf, e);
+                    if (VERBOSE)
+                        LOG << "replacing param " << olde << " with " << ne << " in " << call << "\n";
+                    call->setArgumentExp(i, ne);
+                }
+            }
+        }
+
+    // replace expressions in regular statements with locals
     Exp *l = new Unary(opMemOf, new Binary(opMinus, 
                 new RefExp(Unary::regOf(sp), NULL),
                 new Terminal(opWild)));
-    StatementList::iterator it;
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement* s = *it;
         Exp *result;
-        bool ch = s->search(l, result);
-        if (ch && 
-            result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
-            Exp *e;
-            if (symbolMap.find(result) == symbolMap.end()) {
-                e = newLocal(new IntegerType());
-                symbolMap[result->clone()] = e;
-                // In symbolMap, so don't delete e
-            } else {
-                e = symbolMap[result];
+        bool ch;
+        do {
+            ch = s->search(l, result);
+            if (ch && 
+                result->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+                Exp *e = getLocalExp(result);
+                Exp* search = result->clone();
+                if (VERBOSE)
+                    LOG << "replacing " << search << " with " << e << " in " << s << "\n";
+                s->searchAndReplace(search, e);
+                delete search;
             }
-            Exp* search = result->clone();
-            s->searchAndReplace(search, e);
-            delete search;
-        }
+        } while (ch);
     }
 }
 
@@ -1810,6 +1984,13 @@ Exp* UserProc::newLocal(Type* ty) {
     std::string name = os.str();
     locals[name] = ty;
     return new Unary(opLocal, new Const(strdup(name.c_str())));
+}
+
+Type *UserProc::getLocalType(const char *nam)
+{
+    if (locals.find(nam) == locals.end())
+        return NULL;
+    return locals[nam];
 }
 
 // Add local variables local<nextAvailable> .. local<n-1>

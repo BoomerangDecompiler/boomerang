@@ -31,7 +31,7 @@ public:
 
     void clear();
     void setName(const QString &nam);
-    void addParam(const QString &nam, const QString &ty, const QString &e);
+    void addParam(const QString &nam, const QString &ty, const QString &e, bool implicit = false);
     void addReturn(const QString &ty, const QString &e);
 
 protected:

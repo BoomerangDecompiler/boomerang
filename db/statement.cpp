@@ -1146,36 +1146,43 @@ Exp *CallStatement::substituteParams(Exp *e)
         bool change;
         e = e->searchReplaceAll(*xx, r, change);
     }
-    return e->simplify();
+    return e->simplifyArith()->simplify();
 }
 
 Exp *CallStatement::findArgument(Exp *e) {
     int n = -1;
-    if (!m_isComputed && procDest)
+    if (!m_isComputed && procDest) {
         n = procDest->getSignature()->findParam(e);
-    else {
+        if (n != -1)
+            return arguments[n];
+        n = procDest->getSignature()->findImplicitParam(e);
+        if (n != -1)
+            return implicitArguments[n];
+    } else {
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-        if (params.size() != arguments.size()) {
-            LOG << "eep. " << arguments.size() << " args ";
+        if (params.size() != implicitArguments.size()) {
+            LOG << "eep. " << implicitArguments.size() << " args ";
             if (procDest) {
                 LOG << procDest->getName() << " ";
                 LOG << "(" << procDest->getSignature()->getNumParams()
                           << " params) ";
             } else
                 LOG << "(no dest) ";
-            for (int i = 0; i < (int)arguments.size(); i++)
-                LOG << arguments[i] << " ";
+            for (int i = 0; i < (int)implicitArguments.size(); i++)
+                LOG << implicitArguments[i] << " ";
             LOG << "\n";
         }
-        assert(params.size() == arguments.size());
+        assert(params.size() == implicitArguments.size());
         for (unsigned i = 0; i < params.size(); i++)
             if (*params[i] == *e) {
                 n = i;
                 break;
             }
+        if (n != -1)
+            return implicitArguments[n];
     }
-    if (n == -1) return NULL;
-    return arguments[n];
+    assert(n == -1);
+    return NULL;
 }
 
 void CallStatement::addArgument(Exp *e)
@@ -1213,9 +1220,9 @@ void CallStatement::setSigArguments() {
         if (proc == NULL) return; // do it later
         // computed calls must have their arguments initialized to something 
         std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-        arguments.resize(params.size());
+        implicitArguments.resize(params.size());
         for (unsigned i = 0; i < params.size(); i++)
-            arguments[i] = params[i]->clone();
+            implicitArguments[i] = params[i]->clone();
         std::vector<Exp*> &rets = proc->getProg()->getDefaultReturns();
         returns.resize(0);
         for (unsigned i = 0; i < rets.size(); i++)
@@ -1241,7 +1248,16 @@ void CallStatement::setSigArguments() {
     if (procDest)
         procDest->addCaller(this);
 
+    n = sig->getNumImplicitParams();
+    implicitArguments.resize(n);
+    for (int i = 0; i < n; i++) {
+        Exp *e = sig->getImplicitParamExp(i);
+        assert(e);
+        implicitArguments[i] = e->clone();
+    }
+ 
     // initialize returns
+    returns.clear();
     for (int i = 0; i < sig->getNumReturns(); i++)
         returns.push_back(sig->getReturnExp(i)->clone());
 
@@ -1298,6 +1314,13 @@ bool CallStatement::search(Exp* search, Exp*& result) {
         }
         if (arguments[i]->search(search, result)) return true;
     }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        if (*implicitArguments[i] == *search) {
+            result = implicitArguments[i];
+            return true;
+        }
+        if (implicitArguments[i]->search(search, result)) return true;
+    }
     return false;
 }
 
@@ -1320,6 +1343,11 @@ bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
         arguments[i] = arguments[i]->searchReplaceAll(search, replace, ch);
         change |= ch;
     }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        bool ch;
+        implicitArguments[i] = implicitArguments[i]->searchReplaceAll(search, replace, ch);
+        change |= ch;
+    }
     return change;
 }
 
@@ -1336,7 +1364,10 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
     for (unsigned i = 0; i < arguments.size(); i++)
         if (arguments[i]->searchAll(search, result))
             found = true;
-    for (unsigned i = 0; i < returns.size(); i++)
+    for (unsigned i = 0; i < implicitArguments.size(); i++)
+        if (implicitArguments[i]->searchAll(search, result))
+            found = true;
+     for (unsigned i = 0; i < returns.size(); i++)
         if (returns[i]->searchAll(search, result))
             found = true;
     return found;
@@ -1360,7 +1391,7 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         if (pDest->isIntConst())
             os << "0x" << std::hex << ((Const*)pDest)->getInt();
         else
-            pDest->print(os);       // Could still be an expression
+            pDest->print(os, withDF);       // Could still be an expression
     }
 
     // Print the actual arguments of the call
@@ -1369,6 +1400,12 @@ void CallStatement::print(std::ostream& os /*= cout*/, bool withDF) {
         if (i != 0)
             os << ", ";
         os << arguments[i];
+    }
+    os << " implicit: ";
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        if (i != 0)
+            os << ", ";
+        os << implicitArguments[i];
     }
     os << ")";
 
@@ -1421,6 +1458,9 @@ Statement* CallStatement::clone() {
     int n = arguments.size();
     for (int i=0; i < n; i++)
         ret->arguments.push_back(arguments[i]->clone());
+    n = implicitArguments.size();
+    for (int i=0; i < n; i++)
+        ret->implicitArguments.push_back(implicitArguments[i]->clone());
     // Statement members
     ret->pbb = pbb;
     ret->proc = proc;
@@ -1467,6 +1507,12 @@ void CallStatement::simplify() {
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
+    }
+    for (unsigned i = 0; i < returns.size(); i++) {
+        returns[i] = returns[i]->simplifyArith()->simplify();
+    }
 }
 
 #if 0
@@ -1497,6 +1543,11 @@ bool CallStatement::usesExp(Exp *e) {
             return true;
         }
     }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        if (implicitArguments[i]->search(e, where)) {
+            return true;
+        }
+    }
     for (unsigned int i = 0; i < returns.size(); i++) {
         if (returns[i]->isMemOf() && 
                 returns[i]->getSubExp1()->search(e, where))
@@ -1520,21 +1571,30 @@ void CallStatement::addUsedLocs(LocationSet& used) {
     if (procDest == NULL && pDest)
         pDest->addUsedLocs(used);
 
-    for (unsigned i = 0; i < arguments.size(); i++)
+    for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i]->addUsedLocs(used);
-    
+    }
+
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        implicitArguments[i]->addUsedLocs(used);
+    }
+     
     for (unsigned i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
             returns[i]->getSubExp1()->addUsedLocs(used);
 }
 
 void CallStatement::fixCallRefs() {
+    if (pDest)
+        pDest = pDest->fixCallRefs();
     for (unsigned i = 0; i < arguments.size(); i++)
         arguments[i] = arguments[i]->fixCallRefs();
-
+    for (unsigned i = 0; i < implicitArguments.size(); i++)
+        implicitArguments[i] = implicitArguments[i]->fixCallRefs();
     for (unsigned i = 0; i < returns.size(); i++)
         if (returns[i]->isMemOf())
-            returns[i]->getSubExp1()->fixCallRefs();
+            returns[i]->refSubExp1() = 
+                    returns[i]->getSubExp1()->fixCallRefs();
 }
 
 bool CallStatement::isDefinition() 
@@ -1550,6 +1610,13 @@ void CallStatement::getDefinitions(LocationSet &defs) {
 }
 
 void CallStatement::subscriptVar(Exp* e, Statement* def) {
+#if 0
+    LOG << "callstatement subscriptvar " << e << " to "; 
+    if (def == NULL)
+        LOG << "0\n";
+    else
+        LOG << def->getNumber() << "\n";
+#endif
     if (procDest == NULL && pDest)
         pDest = pDest->expSubscriptVar(e, def);
     for (unsigned i = 0; i < returns.size(); i++) 
@@ -1559,6 +1626,9 @@ void CallStatement::subscriptVar(Exp* e, Statement* def) {
         }
     for (unsigned i = 0; i < arguments.size(); i++) {
         arguments[i] = arguments[i]->expSubscriptVar(e, def);
+    }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) {
+        implicitArguments[i] = implicitArguments[i]->expSubscriptVar(e, def);
     }
 }
 
@@ -1576,8 +1646,10 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 e = pDest->getSubExp1();
             char *nam = ((Const*)e->getSubExp1())->getStr();
             Proc *p = proc->getProg()->findProc(nam);
+            if (p == NULL)
+                p = proc->getProg()->getLibraryProc(nam);
             if (VERBOSE)
-                LOG << "this is a global " << nam << "\n";
+                LOG << "this is a global '" << nam << "'\n";
             if (p) {
                 if (VERBOSE)
                     LOG << "this is a proc " << p->getName() << "\n";
@@ -1585,7 +1657,9 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 // 1) replace the current return set with the return set
                 //    of the new procDest
                 // 2) call fixCallRefs on the enclosing procedure
-                // 3) fix the arguments
+                // 3) fix the arguments (this will only effect the implicit 
+                //    arguments, the regular arguments should be empty at
+                //    this point)
                 // 4) change this to a non-indirect call
                 procDest = p;
                 Signature *sig = p->getSignature();
@@ -1600,7 +1674,27 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                 // 3
                 //LOG << "3\n";
                 std::vector<Exp*> &params = proc->getProg()->getDefaultParams();
-                std::vector<Exp*> oldargs = arguments;
+                std::vector<Exp*> oldargs = implicitArguments;
+                std::vector<Exp*> newimpargs;
+                newimpargs.resize(sig->getNumImplicitParams());
+                for (int i = 0; i < sig->getNumImplicitParams(); i++) {
+                    bool gotsup = false;
+                    for (unsigned j = 0; j < params.size(); j++)
+                        if (*params[j] == *sig->getImplicitParamExp(i)) {
+                            newimpargs[i] = oldargs[j];
+                            gotsup = true;
+                            break;
+                        }
+                    if (!gotsup) {
+                        newimpargs[i] = sig->getImplicitParamExp(i)->clone();
+                        if (newimpargs[i]->getOper() == opMemOf) {
+                            newimpargs[i]->refSubExp1() = 
+                                substituteParams(newimpargs[i]->getSubExp1());
+                        }
+                    }
+                }
+                // do the same with the regular arguments
+                assert(arguments.size() == 0);
                 std::vector<Exp*> newargs;
                 newargs.resize(sig->getNumParams());
                 for (int i = 0; i < sig->getNumParams(); i++) {
@@ -1619,11 +1713,16 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
                         }
                     }
                 }
+                // change em
                 arguments = newargs;
                 assert((int)arguments.size() == sig->getNumParams());
+                implicitArguments = newimpargs;
+                assert((int)implicitArguments.size() == sig->getNumImplicitParams());
                 // 4
                 //LOG << "4\n";
                 m_isComputed = false;
+                proc->addCallee(procDest);
+                procDest->printDetailsXML();
             }
         }
     }
@@ -1640,6 +1739,34 @@ void CallStatement::doReplaceRef(Exp* from, Exp* to) {
         arguments[i] = arguments[i]->searchReplaceAll(from, to, change);
         arguments[i] = arguments[i]->simplifyArith()->simplify();
     }
+    for (unsigned i = 0; i < implicitArguments.size(); i++) 
+        if (!(*implicitArguments[i] == *from)) {
+            implicitArguments[i] = implicitArguments[i]->searchReplaceAll(from, to, change);
+            implicitArguments[i] = implicitArguments[i]->simplifyArith()->simplify();
+        }
+}
+
+Exp* CallStatement::getArgumentExp(int i)
+{
+    assert(i < arguments.size());
+    return arguments[i];
+}
+
+Exp* CallStatement::getImplicitArgumentExp(int i)
+{
+    assert(i < implicitArguments.size());
+    return implicitArguments[i];
+}
+
+void CallStatement::setArgumentExp(int i, Exp *e)
+{
+    assert(i < arguments.size());
+    arguments[i] = e->clone();
+}
+
+int CallStatement::getNumArguments()
+{
+    return arguments.size();
 }
 
 void CallStatement::setNumArguments(int n) {
@@ -1658,11 +1785,24 @@ void CallStatement::removeArgument(int i)
     arguments.resize(arguments.size()-1);
 }
 
+void CallStatement::removeImplicitArgument(int i)
+{
+    for (unsigned j = i+1; j < implicitArguments.size(); j++)
+        implicitArguments[j-1] = implicitArguments[j];
+    implicitArguments.resize(implicitArguments.size()-1);
+}
+
 // Convert from SSA form
 void CallStatement::fromSSAform(igraph& ig) {
+    if (pDest)
+        pDest = pDest->fromSSA(ig);
     int n = arguments.size();
     for (int i=0; i < n; i++) {
         arguments[i] = arguments[i]->fromSSA(ig);
+    }
+    n = implicitArguments.size();
+    for (int i=0; i < n; i++) {
+        implicitArguments[i] = implicitArguments[i]->fromSSA(ig);
     }
     n = returns.size();
     for (int i=0; i < n; i++) {
@@ -1698,70 +1838,108 @@ void CallStatement::insertArguments(StatementSet& rs) {
 #endif
 }
 
+Exp *Statement::processConstant(Exp *e, Type *t, Prog *prog)
+{
+    if (t == NULL) return e;
+    if (t->isNamed())
+        t = ((NamedType*)t)->resolvesTo();
+    if (t == NULL) return e;
+    // char* and a constant
+    if (e->isIntConst()) {
+        if (t->isPointer()) {
+            PointerType *pt = (PointerType*)t;
+            Type *points_to = pt->getPointsTo();
+            if (points_to->isNamed())
+                points_to = ((NamedType*)points_to)->resolvesTo();
+            if (points_to->isChar()) {
+                ADDRESS u = ((Const*)e)->getAddr();
+                char *str = 
+                    prog->getStringConstant(u);
+                if (str) {
+                    std::string s(str);
+                    while (s.find('\n') != (unsigned)-1)
+                        s.replace(s.find('\n'), 1, "\\n");
+                    e = new Const(strdup(s.c_str()));
+                } else {
+                    proc->getProg()->globalUsed(u);
+                    const char *nam = proc->getProg()->getGlobal(u);
+                    if (nam)
+                        e = new Unary(opGlobal, new Const((char*)nam));
+                }
+            }
+            if (points_to->isFunc()) {
+                ADDRESS a = ((Const*)e)->getAddr();
+                if (VERBOSE)
+                    LOG << "found function pointer with constant value "
+                        << "of type " << pt->getCtype() 
+                        << ".  Decoding address " << a << "\n";
+                prog->decode(a);
+            }
+        } else if (t->isFloat()) {
+            e->setOper(opFltConst);
+        }
+    }
+#if 0
+    if (t->isPointer() && e->getOper() != opAddrOf) {
+        e = new Unary(opAddrOf, new Unary(opMemOf, e));
+    }
+#endif
+    
+    return e;
+}
+
+
+Type *Statement::getTypeFor(Exp *e, Prog *prog)
+{
+    Type *ty = NULL;
+    if (e->getOper() == opGlobal) {
+        const char *nam = ((Const*)e->getSubExp1())->getStr();
+        ty = prog->getGlobalType((char*)nam);
+    }
+    if (e->getOper() == opLocal) {
+        const char *nam = ((Const*)e->getSubExp1())->getStr();
+        ty = proc->getLocalType((char*)nam);
+    }
+    if (e->getOper() == opMemberAccess) {
+        Type *tsubexp1 = getTypeFor(e->getSubExp1(), prog);
+        if (tsubexp1 && tsubexp1->isNamed())
+            tsubexp1 = ((NamedType*)tsubexp1)->resolvesTo();
+        CompoundType *compound = dynamic_cast<CompoundType*>(tsubexp1);
+        const char *nam = ((Const*)e->getSubExp2())->getStr();
+        ty = compound->getType((char*)nam);
+    }
+    return ty;
+}
+
 void CallStatement::processConstants(Prog *prog) {
     for (unsigned i = 0; i < arguments.size(); i++) {
         Type *t = getArgumentType(i);
-        if (t == NULL) continue;
-        // char* and a constant
-        if (arguments[i]->isIntConst()) {
-            if (t->isPointer()) {
-                PointerType *pt = (PointerType*)t;
-                if (pt->getPointsTo()->isChar()) {
-                    char *str = 
-                        prog->getStringConstant(((Const*)arguments[i])->getAddr());
-                    if (str) {
-                        std::string s(str);
-                        while (s.find('\n') != (unsigned)-1)
-                            s.replace(s.find('\n'), 1, "\\n");
-                        ;//delete arguments[i];
-                        arguments[i] = new Const(strdup(s.c_str()));
-                    }
-                }
-                if (pt->getPointsTo()->isFunc()) {
-                    ADDRESS a = ((Const*)arguments[i])->getAddr();
-                    prog->decode(a);
-                }
-                if (pt->getPointsTo()->isCompound()) {
-                    CompoundType *c = (CompoundType*)pt->getPointsTo();
-                    for (int i = 0; i < c->getNumTypes(); i++)
-                        if (c->getType(i)->isPointer() &&
-                            ((PointerType*)c->getType(i))->getPointsTo()
-                                                         ->isCompound()) {
-                        ADDRESS a = ((Const*)arguments[i])->getAddr();
-                        LOG << "got a compound at " << a
-                            << " with a func pointer in pos " << i << "\n";
-                        assert(false);
-                    }
-                }
-            } else if (t->isFloat()) {
-                arguments[i]->setOper(opFltConst);
-            }
-        }
-#if 0
-        if (t->isPointer() && arguments[i]->getOper() != opAddrOf) {
-            arguments[i] = new Unary(opAddrOf, 
-                                     new Unary(opMemOf, arguments[i]));
-        }
-#endif
+        Exp *e = arguments[i];
+    
+        arguments[i] = processConstant(e, t, prog);
     }
 
     // hack
     if (getDestProc() && getDestProc()->isLib()) {
-        Exp *esp = Unary::regOf(28);
-        if (getDestProc()->getSignature()->getNumParams() >= 1 &&
-            *getDestProc()->getSignature()->getParamExp(0) == *esp) {
-            removeArgument(0);
-            removeReturn(esp);
-        }
-        ;//delete esp;
+        int sp = proc->getSignature()->getStackRegister(prog);
+        removeReturn(Unary::regOf(sp));
+        for (unsigned i = 0; i < implicitArguments.size(); i++)
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *Unary::regOf(sp)) {
+                implicitArguments[i] = new Const(0);
+                break;
+            }
+        for (unsigned i = 0; i < implicitArguments.size(); i++)
+            if (*getDestProc()->getSignature()->getImplicitParamExp(i) == *new Unary(opMemOf, Unary::regOf(sp))) {
+                implicitArguments[i] = new Const(0);
+                break;
+            }
     }
 
     // This code was in CallStatement:doReplaceRef()
     if (getDestProc() && getDestProc()->getSignature()->hasEllipsis()) {
         // functions like printf almost always have too many args
         std::string name(getDestProc()->getName());
-        if ((name == "printf" || name == "scanf") &&
-          getArgumentExp(0)->isStrConst()) {
+        if ((name == "printf" || name == "scanf") && getArgumentExp(0)->isStrConst()) {
             char *str = ((Const*)getArgumentExp(0))->getStr();
             // actually have to parse it
             int n = 1;      // Number of %s plus 1 = number of args
@@ -2451,6 +2629,15 @@ Exp* Assign::updateRefs(StatementSet& defs, int memDepth, StatementSet& rs) {
 
 // Not sure if anything needed here
 void Assign::processConstants(Prog* prog) {
+#if 0
+    LOG << "processing constants in assign lhs: " << lhs << " type: ";
+    Type *ty = getTypeFor(lhs, prog);
+    if (ty)
+        LOG << ty->getCtype() << "\n";
+    else
+        LOG << "none\n";
+#endif
+    rhs = processConstant(rhs, getTypeFor(lhs, prog), prog);
 }
 
 // generate constraints

@@ -141,6 +141,34 @@ param: type IDENTIFIER
 
 type_decl: TYPEDEF type IDENTIFIER ';'
          { Type::addNamedType($3, $2); }
+         | TYPEDEF type '(' '*' IDENTIFIER ')' '(' param_list ')' ';'
+         { Signature *sig = Signature::instantiate(sigstr, NULL);
+           sig->addReturn($2);
+           for (std::list<Parameter*>::iterator it = $8->begin();
+                it != $8->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete $8;
+           Type::addNamedType($5, new PointerType(new FuncType(sig))); 
+         }
+         | TYPEDEF type IDENTIFIER '(' param_list ')' ';'
+         { Signature *sig = Signature::instantiate(sigstr, NULL);
+           sig->addReturn($2);
+           for (std::list<Parameter*>::iterator it = $5->begin();
+                it != $5->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete $5;
+           Type::addNamedType($3, new FuncType(sig)); 
+         }
          ;
 
 func_decl: type IDENTIFIER '(' param_list ')' ';'
@@ -194,9 +222,9 @@ type: CHAR
     | type '*'
     { $$ = new PointerType($1); }
     | IDENTIFIER
-    { $$ = Type::getNamedType($1); 
-      if ($$ == NULL)
-          $$ = new NamedType($1);
+    { //$$ = Type::getNamedType($1); 
+      //if ($$ == NULL)
+      $$ = new NamedType($1);
     }
     | CONST type
     { $$ = $2; }

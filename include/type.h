@@ -115,6 +115,8 @@ virtual bool isFunc() const { return true; }
 
 virtual Type *clone() const;
 
+        Signature *getSignature() { return signature; }
+
 virtual bool    operator==(const Type& other) const;
 //virtual bool    operator-=(const Type& other) const;
 virtual bool    operator< (const Type& other) const;
@@ -269,6 +271,7 @@ public:
 virtual ~NamedType();
 virtual bool isNamed() const { return true; }
         const char *getName() { return name.c_str(); }
+        Type *resolvesTo() const;
         // Get a new type variable, e.g. alpha0, alpha55
 static  NamedType *getAlpha();
 
@@ -299,7 +302,11 @@ virtual bool isCompound() const { return true; }
             names.push_back(str);
         }
         int getNumTypes() { return types.size(); }
-        Type *getType(int n) { return types[n]; }
+        Type *getType(int n) { assert(n < getNumTypes()); return types[n]; }
+        Type *getType(const char *nam);
+        const char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
+        Type *getTypeAtOffset(int n);
+        const char *getNameAtOffset(int n);
 
 virtual Type* clone() const;
 

@@ -176,32 +176,19 @@ Prog *FrontEnd::decode(bool decodeMain)
         !strcmp(pBF->SymbolByAddress(a), "main"))) {
         Proc *main = prog->findProc(a);
         assert(main);
-        //main->setName("main");
-        main->setSignature(getDefaultSignature("main"));
-        main->getSignature()->addReturn(new IntegerType());
-        main->getSignature()->addParameter(new IntegerType(), "argc");
-        main->getSignature()->addParameter(new PointerType(new PointerType(
-                                           new CharType())), "argv");
+        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("main"));
+        assert(fty);
+        main->setSignature(fty->getSignature()->clone());
+        main->getSignature()->setName("main");
     }
 
     if (gotMain && !strcmp(pBF->SymbolByAddress(a), "WinMain")) {
         Proc *main = prog->findProc(a);
         assert(main);
-        main->setSignature(getDefaultSignature("WinMain"));
-        main->getSignature()->addReturn(new IntegerType());
-        /* HINSTANCE hInstance,
-           HINSTANCE hPrevInstance,
-           LPSTR     lpCmdLine,
-           int       nCmdShow 
-         */
-        Type *ty = Type::getNamedType("HINSTANCE");
-        if (ty == NULL) ty = new NamedType("HINSTANCE");
-        main->getSignature()->addParameter(ty, "hInstance");
-        main->getSignature()->addParameter(ty, "hPrevInstance");
-        ty = Type::getNamedType("LPSTR");
-        if (ty == NULL) ty = new NamedType("LPSTR");
-        main->getSignature()->addParameter(ty, "lpCmdLine");
-        main->getSignature()->addParameter(new IntegerType(), "nCmdShow");
+        FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType("WinMain"));
+        assert(fty);
+        main->setSignature(fty->getSignature()->clone());
+        main->getSignature()->setName("WinMain");
     }
 
     return prog;
@@ -356,7 +343,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
     std::vector<Exp*> &params = getDefaultParams();
     for (std::vector<Exp*>::iterator it = params.begin(); 
          it != params.end(); it++)
-        pProc->getSignature()->addParameter((*it)->clone());
+        pProc->getSignature()->addImplicitParameter((*it)->clone());
     std::vector<Exp*> &returns = getDefaultReturns();
     for (std::vector<Exp*>::iterator it = returns.begin(); 
          it != returns.end(); it++)
@@ -826,7 +813,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
             }
             if (np != NULL) {
                 np->setFirstCaller(pProc);
-                pProc->setCallee(np);
+                pProc->addCallee(np);
             }           
         }
     }

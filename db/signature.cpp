@@ -108,7 +108,8 @@ namespace CallingConvention {
 CallingConvention::Win32Signature::Win32Signature(const char *nam) : Signature(nam)
 {
     Signature::addReturn(Unary::regOf(28));
-    Signature::addParameter(Unary::regOf(28));
+    Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
+                                    Unary::regOf(28), NULL);
 }
 
 CallingConvention::Win32Signature::Win32Signature(Signature &old) : Signature(old)
@@ -119,6 +120,7 @@ Signature *CallingConvention::Win32Signature::clone()
 {
     Win32Signature *n = new Win32Signature(name.c_str());
     n->params = params;
+    n->implicitParams = implicitParams;
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
@@ -236,8 +238,16 @@ Exp *CallingConvention::Win32Signature::getProven(Exp *left)
             case 28:
                 return new Binary(opPlus, Unary::regOf(28), 
                                           new Const(4 + nparams*4));
+            case 26:
+                return Unary::regOf(29);
+            case 27:
+                return Unary::regOf(29);
             case 29:
                 return Unary::regOf(29);
+            case 30:
+                return Unary::regOf(30);
+            case 31:
+                return Unary::regOf(31);
             // there are other things that must be preserved here, look at calling convention
         }
     }
@@ -258,7 +268,8 @@ void CallingConvention::Win32Signature::getInternalStatements(StatementList &stm
 CallingConvention::StdC::PentiumSignature::PentiumSignature(const char *nam) : Signature(nam)
 {
     Signature::addReturn(Unary::regOf(28));
-    Signature::addParameter(Unary::regOf(28));
+    Signature::addImplicitParameter(new PointerType(new IntegerType()), "esp",
+                                    Unary::regOf(28), NULL);
 }
 
 CallingConvention::StdC::PentiumSignature::PentiumSignature(Signature &old) : Signature(old)
@@ -270,6 +281,7 @@ Signature *CallingConvention::StdC::PentiumSignature::clone()
 {
     PentiumSignature *n = new PentiumSignature(name.c_str());
     n->params = params;
+    n->implicitParams = implicitParams;
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
@@ -414,6 +426,7 @@ CallingConvention::StdC::SparcSignature::SparcSignature(Signature &old) :
 Signature *CallingConvention::StdC::SparcSignature::clone() {
     SparcSignature *n = new SparcSignature(name.c_str());
     n->params = params;
+    n->implicitParams = implicitParams;
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
@@ -493,6 +506,7 @@ Signature *Signature::clone()
 {
     Signature *n = new Signature(name.c_str());
     n->params = params;
+    n->implicitParams = implicitParams;
     n->returns = returns;
     n->ellipsis = ellipsis;
     n->rettype = rettype;
@@ -544,7 +558,9 @@ void Signature::addParameter(Type *type, const char *nam /*= NULL*/,
         }
         nam = s.c_str();
     }
-    addParameter(new Parameter(type, nam, e));
+    Parameter *p = new Parameter(type, nam, e); 
+    addParameter(p);
+    addImplicitParametersFor(p);
 }
 
 void Signature::addParameter(Parameter *param)
@@ -612,6 +628,35 @@ Type *Signature::getParamType(int n) {
 int Signature::findParam(Exp *e) {
     for (int i = 0; i < getNumParams(); i++)
         if (*getParamExp(i) == *e)
+            return i;
+    return -1;
+}
+
+int Signature::getNumImplicitParams() {
+    return implicitParams.size();
+}
+
+const char *Signature::getImplicitParamName(int n) {
+    assert(n < (int)implicitParams.size());
+    return implicitParams[n]->getName();
+}
+
+Exp *Signature::getImplicitParamExp(int n) {
+    assert(n < (int)implicitParams.size());
+    return implicitParams[n]->getExp();
+}
+
+Type *Signature::getImplicitParamType(int n) {
+    static IntegerType def;
+    //assert(n < (int)params.size() || ellipsis);
+// With recursion, parameters not set yet. Hack for now:  (do we still need this?  - trent)
+    if (n >= (int)implicitParams.size()) return &def;
+    return implicitParams[n]->getType();
+}
+
+int Signature::findImplicitParam(Exp *e) {
+    for (int i = 0; i < getNumImplicitParams(); i++)
+        if (*getImplicitParamExp(i) == *e)
             return i;
     return -1;
 }
@@ -732,8 +777,14 @@ void Signature::print(std::ostream &out)
         out << "void ";
     out << name << "(";
     for (unsigned i = 0; i < params.size(); i++) {
-        out << params[i]->getType()->getCtype() << " " << params[i]->getExp();
+        out << params[i]->getType()->getCtype() << " " << params[i]->getName() << " " << params[i]->getExp();
         if (i != params.size()-1) out << ", ";
+    }
+    out << "   implicit: ";
+    for (unsigned i = 0; i < implicitParams.size(); i++) {
+        out << implicitParams[i]->getType()->getCtype() << " " << implicitParams[i]->getName() << " " 
+            << implicitParams[i]->getExp();
+        if (i != implicitParams.size()-1) out << ", ";
     }
     out << ") { "; 
     for (unsigned i = 0; i < returns.size(); i++) {
@@ -745,21 +796,9 @@ void Signature::print(std::ostream &out)
 
 void Signature::printToLog()
 {
-    if (returns.size() >= 1)
-        LOG << returns[0]->getType()->getCtype() << " ";
-    else
-        LOG << "void ";
-    LOG << name.c_str() << "(";
-    for (unsigned i = 0; i < params.size(); i++) {
-        LOG << params[i]->getType()->getCtype() << " " << params[i]->getExp();
-        if (i != params.size()-1) LOG << ", ";
-    }
-    LOG << ") { "; 
-    for (unsigned i = 0; i < returns.size(); i++) {
-        LOG << returns[i]->getExp();
-        if (i != returns.size()-1) LOG << ", ";
-    }
-    LOG << " }" << "\n";
+    std::ostringstream os;
+    print(os);
+    LOG << os.str().c_str();
 }
 
 void Signature::getInternalStatements(StatementList &stmts)
@@ -870,6 +909,67 @@ bool Signature::usesNewParam(UserProc *p, Statement *stmt, bool checkreach,
             }
         }
     return n > (getNumParams() - 1);
+}
+
+void Signature::addImplicitParametersFor(Parameter *pn)
+{
+    Type *type = pn->getType();
+    Exp *e = pn->getExp();
+    if (type && type->isNamed()) {
+        type = ((NamedType*)type)->resolvesTo();
+    }
+    if (type && type->isPointer()) { 
+        PointerType *p = (PointerType*)type;
+        /* seems right, if you're passing a pointer to a procedure
+         * then that procedure probably uses what the pointer points
+         * to.  Need to add them as arguments so SSA finds em.
+         */
+        Type *points_to = p->getPointsTo();
+        Type *orig_points_to = points_to;
+        if (points_to && points_to->isNamed()) {
+            points_to = ((NamedType*)points_to)->resolvesTo();
+        }
+        if (points_to) {
+            if (points_to->isCompound()) {
+                CompoundType *c = (CompoundType*)points_to;
+                int base = 0;
+                for (int n = 0; n < c->getNumTypes(); n++) {
+                    Exp *e1 = new Unary(opMemOf, 
+                                    new Binary(opPlus, e->clone(),
+                                        new Const(base / 8)));
+                    e1 = e1->simplify();
+                    addImplicitParameter(c->getType(n), c->getName(n), e1, pn);
+                    base += c->getType(n)->getSize();
+                }
+            } else if (!points_to->isFunc()) 
+                addImplicitParameter(orig_points_to, NULL, 
+                                  new Unary(opMemOf, e->clone()), pn);
+        }
+    }
+}
+
+void Signature::addImplicitParameter(Type *type, const char *nam, Exp *e, Parameter *parent)
+{
+    if (nam == NULL) {
+        std::ostringstream os;
+        os << "implicit" << implicitParams.size();
+        nam = os.str().c_str();
+    }
+    ImplicitParameter *p = new ImplicitParameter(type, nam, e, parent);
+    implicitParams.push_back(p);
+    addImplicitParametersFor(p);
+}
+
+void Signature::addImplicitParameter(Exp *e)
+{
+    addImplicitParameter(new IntegerType(), NULL, e, NULL);
+}
+
+void Signature::removeImplicitParameter(int i)
+{
+    for (unsigned j = i+1; j < implicitParams.size(); j++)
+        implicitParams[j-1] = implicitParams[j];
+    implicitParams.resize(implicitParams.size()-1);
 }
 
 // Special for Mike: find the location where the first outgoing (actual)

@@ -201,6 +201,12 @@ void MainForm::listSelectionChanged(QListViewItem *item)
     updateDetails();
     updateDecoded();
     updateSSA();
+    if (tabWidget2->currentPage() == ssa && ssa->text() == "")
+        tabWidget2->showPage(details);
+    if (tabWidget2->currentPage() == decoded && decoded->text() == "")
+        tabWidget2->showPage(details);
+    if (tabWidget2->currentPage() == code && code->text() == "")
+        tabWidget2->showPage(details);
 }
 
 void MainForm::showLogToggled(bool on)
@@ -364,7 +370,8 @@ bool DetailsHandler::startElement( const QString&, const QString&,
         return TRUE;
     }
     if (qName == "param") {
-        details->addParam(a.value("name"), a.value("type"), a.value("exp"));
+        bool implicit = a.value("implicit") == "true";
+        details->addParam(a.value("name"), a.value("type"), a.value("exp"), implicit);
         return TRUE;
     }
     if (qName == "return") {
@@ -403,6 +410,7 @@ void MainForm::updateDecoded()
     QFile f(fname);
     if (f.open(IO_ReadOnly) == FALSE) {
         std::cerr << "cannot open " << fname << std::endl;
+        decoded->clear();
         return;
     }
     QXmlSimpleReader q;
@@ -483,6 +491,7 @@ void MainForm::updateSSA()
     QFile f(fname);
     if (f.open(IO_ReadOnly) == FALSE) {
         std::cerr << "cannot open " << fname << std::endl;
+        ssa->clear();
         return;
     }
     QXmlSimpleReader q;

@@ -46,9 +46,11 @@ DetailsWidget::DetailsWidget( QWidget* parent, const char* name, WFlags fl )
     QVBoxLayout *v1 = new QVBoxLayout( h2 );
     QLabel *paramsLabel = new QLabel( tr( "Parameters" ), this );
     paramsListView = new QListView( this, "paramsListView" );
+    paramsListView->addColumn( tr( "" ) );
     paramsListView->addColumn( tr( "Name" ) );
     paramsListView->addColumn( tr( "Type" ) );
     paramsListView->addColumn( tr( "Exp" ) );
+    paramsListView->addColumn( tr( "Implict" ) );
     v1->addWidget(paramsLabel);
     v1->addWidget(paramsListView);
 
@@ -98,12 +100,16 @@ void DetailsWidget::setName(const QString &nam)
 
 void DetailsWidget::addParam(const QString &nam, 
                              const QString &ty, 
-                             const QString &e)
+                             const QString &e,
+                             bool implicit)
 {
     QListViewItem *i = new QListViewItem(paramsListView);
-    i->setText(0, nam);
-    i->setText(1, ty);
-    i->setText(2, e);
+    QString n = "%1";
+    i->setText(0, n.arg(paramsListView->childCount()));
+    i->setText(1, nam);
+    i->setText(2, ty);
+    i->setText(3, e);
+    i->setText(4, implicit ? "yes" : "no");
     paramsListView->insertItem(i);
 }
 

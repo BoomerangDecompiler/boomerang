@@ -1,3 +1,40 @@
+
+typedef unsigned int UINT;
+typedef unsigned int SIZE_T;
+typedef const void *LPCVOID;
+typedef void *LPVOID;
+typedef void *PVOID;
+typedef const char *LPCSTR;
+typedef char *LPSTR;
+typedef const short *LPCWSTR;
+typedef short *LPWSTR;
+typedef int DWORD;
+typedef int HWND;
+typedef int HLOCAL;
+typedef int HINSTANCE;
+typedef int HICON;
+typedef int HCURSOR;
+typedef int HBRUSH;
+typedef int HACCEL;
+typedef int WPARAM;
+typedef int LPARAM;
+typedef int LRESULT;
+typedef int ATOM;
+typedef LRESULT WndProc(      
+    HWND hwnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam
+);
+typedef WndProc *WNDPROC;
+
+typedef int WinMain(      
+    HINSTANCE hInstance,
+    HINSTANCE hPrevInstance,
+    LPSTR lpCmdLine,
+    int nCmdShow
+);
+
 HLOCAL LocalFree(HLOCAL hMem);
 DWORD FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPSTR lpBuffer, DWORD nSize, va_list* Arguments);
 int _write(int fd, char *buf, int size);
@@ -212,6 +249,15 @@ BOOL SystemParametersInfoW(
 BOOL SetMenu(HWND hWnd, HMENU hMenu);
 BOOL DestroyWindow(HWND hWnd);
 BOOL DestroyMenu(HMENU hMenu);
+
+typedef int *INT_PTR;
+typedef INT_PTR DlgProc(      
+    HWND hwndDlg,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam
+);
+typedef DlgProc *DLGPROC;
 
 HWND CreateDialogParamA(      
     HINSTANCE hInstance,

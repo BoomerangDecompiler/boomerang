@@ -416,6 +416,11 @@ void CHLLCode::appendExp(char *str, Exp *exp)
             std::cerr << "subscript in code generation of proc " << m_proc->getName() << " exp (without subscript): " << str << std::endl;
             assert(false);
             break;
+        case opMemberAccess:
+            appendExp(str, b->getSubExp1());
+            strcat(str, ".");
+            strcat(str, ((Const*)b->getSubExp2())->getStr());
+            break;
         default:
             // others
             std::cerr << "not implemented " << operStrings[exp->getOper()] << 

@@ -257,6 +257,8 @@ protected:
     bool doPropagateTo(int memDepth, Statement* def);
     bool calcMayAlias(Exp *e1, Exp *e2, int size);
     bool mayAlias(Exp *e1, Exp *e2, int size);
+    Exp *processConstant(Exp *e, Type *ty, Prog *prog);
+    Type *getTypeFor(Exp *e, Prog *prog);
 };          // class Statement
 
 // Print the Statement (etc) poited to by p
@@ -635,10 +637,11 @@ class CallStatement: public GotoStatement {
     bool returnAfterCall;       // True if call is effectively followed by
                                 // a return.
     
-    // The list of locations that reach this call. This list may be
-    // refined at a later stage to match the number of parameters declared
-    // for the called procedure.
+    // The list of arguments passed by this call
     std::vector<Exp*> arguments;
+    // The list of arguments implicitly passed as a result of the calling 
+    // convention of the called procedure or the actual arguments
+    std::vector<Exp*> implicitArguments;
 
     // The set of locations that are defined by this call.
     std::vector<Exp*> returns;
@@ -673,11 +676,13 @@ public:
     Exp *substituteParams(Exp *e);
     Exp *findArgument(Exp *e);
     void addArgument(Exp *e);
-    Exp* getArgumentExp(int i) { return arguments[i]; }
-    void setArgumentExp(int i, Exp *e) { arguments[i] = e; }
-    int  getNumArguments() { return arguments.size(); }
+    Exp* getArgumentExp(int i);
+    Exp* getImplicitArgumentExp(int i);
+    void setArgumentExp(int i, Exp *e);
     void setNumArguments(int i);
+    int  getNumArguments();
     void removeArgument(int i);
+    void removeImplicitArgument(int i);
     Type *getArgumentType(int i);
     void truncateArguments();
     void clearLiveEntry();

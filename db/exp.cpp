@@ -657,6 +657,12 @@ void Binary::print(std::ostream& os, bool withUses) {
             p2->print(os, withUses);
             return;
 
+        case opMemberAccess:
+            p1->print(os, withUses);
+            os << ".";
+            ((Const*)p2)->printNoQuotes(os, withUses);
+            return;
+
         default:
             break;
     }
@@ -2173,6 +2179,51 @@ Exp* TypedExp::polySimplify(bool& bMod) {
     return res;
 }
 
+Exp* PhiExp::polySimplify(bool& bMod) {
+    Exp *res = this;
+    Exp *subExp1 = getSubExp1()->polySimplify(bMod);
+
+    if (stmtVec.begin() != stmtVec.end()) {
+        bool allSame = true;
+        StatementVec::iterator uu;
+        for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+            if (*uu != *stmtVec.begin()) {
+                allSame = false;
+                break;
+            }
+        }
+
+        if (allSame) {
+            if (VERBOSE)
+                LOG << "all the same in " << this << "\n";
+            bMod = true;
+            res = new RefExp(subExp1, *stmtVec.begin());
+            return res;
+        }
+
+        bool onlyOneNotThis = true;
+        Statement *silly = new Assign();
+        Statement *notthis = silly;
+        for (uu = stmtVec.begin(); uu != stmtVec.end(); uu++) {
+            if (*uu == NULL || !(*uu)->isPhi() || (*uu)->getRight() != this)
+                if (notthis != silly) {
+                    onlyOneNotThis = false;
+                    break;
+                } else notthis = *uu;
+        }
+
+        if (onlyOneNotThis && notthis != silly) {
+            if (VERBOSE)
+                LOG << "all but one not this in " << this << "\n";
+            bMod = true;
+            res = new RefExp(subExp1, notthis);
+            return res;
+        }
+    }
+
+    return res;
+}
+
 /*==============================================================================
  * FUNCTION:        Exp::simplifyAddr
  * OVERVIEW:        Just do addressof simplification: a[ m[ any ]] == any,
@@ -2478,14 +2529,14 @@ Exp *Exp::removeSubscripts(bool& allZero)
 Exp *Unary::fixCallRefs()
 {
     subExp1 = subExp1->fixCallRefs();
-    return this;
+    return this->simplify();
 }
 
 Exp *Binary::fixCallRefs()
 {
     subExp1 = subExp1->fixCallRefs();
     subExp2 = subExp2->fixCallRefs();
-    return this;
+    return this->simplify();
 }
 
 Exp *Ternary::fixCallRefs()
@@ -2493,7 +2544,7 @@ Exp *Ternary::fixCallRefs()
     subExp1 = subExp1->fixCallRefs();
     subExp2 = subExp2->fixCallRefs();
     subExp3 = subExp3->fixCallRefs();
-    return this;
+    return this->simplify();
 }
 
 Exp *RefExp::fixCallRefs() {
@@ -2501,10 +2552,13 @@ Exp *RefExp::fixCallRefs() {
     if (call) {
         Exp *e = call->getProven(subExp1);
         if (e) {
-            e = call->substituteParams(e);
+            e = call->substituteParams(e->clone());
             assert(e);
+            if (VERBOSE)
+                LOG << "fixcall refs replacing " << this << " with " << e 
+                    << "\n";
             ;//delete this;
-            return e;
+            return e->simplify();
         } else {
             if (call->findReturn(subExp1) == -1) {
                 if (VERBOSE) {
@@ -2515,22 +2569,83 @@ Exp *RefExp::fixCallRefs() {
             }
         }
     }
-    return this;
+    return this->simplify();
+}
+
+// This is a hack.  If we have a phi which has one of its
+// elements referencing a statement which is defined as a 
+// function address, then we can use this information to
+// resolve references to indirect calls more aggressively.
+// Note that this is not technically correct and will give
+// the wrong result if the callee of an indirect call
+// actually modifies a function pointer in the caller. 
+bool PhiExp::hasGlobalFuncParam(Prog *prog)
+{
+    unsigned n = stmtVec.size();
+    for (unsigned i = 0; i < n; i++) {
+        Statement* u = stmtVec.getAt(i);
+        Exp *right = u->getRight();
+        if (right == NULL)
+            continue;
+        if (right->getOper() == opGlobal ||
+            (right->getOper() == opSubscript &&
+             right->getSubExp1()->getOper() == opGlobal)) {
+            Exp *e = right;
+            if (right->getOper() == opSubscript)
+                e = right->getSubExp1();
+            char *nam = ((Const*)e->getSubExp1())->getStr();
+            Proc *p = prog->findProc(nam);
+            if (p == NULL)
+                p = prog->getLibraryProc(nam);
+            if (p) {
+                if (VERBOSE)
+                    LOG << "statement " << i << " of " << this 
+                        << " is a global func\n";
+                return true;
+            }
+        }
+        // BAD: this can loop forever if we have a phi loop
+        if (u->isPhi() && u->getRight() != this &&
+            ((PhiExp*)u->getRight())->hasGlobalFuncParam(prog))
+            return true;
+    }
+    return false;
 }
 
 Exp *PhiExp::fixCallRefs() {
     std::vector<Statement*> remove;
     std::vector<Statement*> insert;
     unsigned n = stmtVec.size();
+
+    bool oneIsGlobalFunc = false;
+    Prog *prog = NULL;
+    for (unsigned i=0; i < n; i++) {
+        Statement* u = stmtVec.getAt(i);
+        CallStatement *call = dynamic_cast<CallStatement*>(u);
+        if (call)
+            prog = call->getProc()->getProg();
+    }
+    if (prog) 
+        oneIsGlobalFunc = hasGlobalFuncParam(prog);
+
     for (unsigned i=0; i < n; i++) {
         Statement* u = stmtVec.getAt(i);
         CallStatement *call = dynamic_cast<CallStatement*>(u);
         if (call) {
             Exp *e = call->getProven(subExp1);
+            if (call->isComputed() && oneIsGlobalFunc) {
+                e = subExp1->clone();
+                if (VERBOSE)
+                    LOG << "ignoring ref in phi to computed call with "
+                        << "function pointer param " << e << "\n";
+            }
             if (e) {
-                e = call->substituteParams(e);
+                e = call->substituteParams(e->clone());
                 if (e && e->getOper() == opSubscript &&
                     *e->getSubExp1() == *subExp1) {
+                    if (VERBOSE)
+                        LOG << "fixcall refs replacing param " << i << " in "
+                            << this << " with " << e << "\n";
                     stmtVec.putAt(i, ((RefExp*)e)->getRef());
                 } else {
                     if (VERBOSE)
@@ -2548,7 +2663,7 @@ Exp *PhiExp::fixCallRefs() {
             }
         }
     }
-    return this;
+    return this->simplify();
 }
 
 //

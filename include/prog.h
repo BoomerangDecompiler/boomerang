@@ -218,6 +218,9 @@ public:
     // Make a global variable
     void makeGlobal(ADDRESS uaddr, const char *name);
 
+    // Get the type of a global variable
+    Type *getGlobalType(char* nam);
+    
     // Set the type of a global variable
     void setGlobalType(char* name, Type* ty);
 

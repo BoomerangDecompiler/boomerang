@@ -247,7 +247,7 @@ int FuncType::getSize() const
 
 int PointerType::getSize() const
 {
-    return 4; //points_to->getSize(); // yes, it was a good idea at the time
+    return 32; //points_to->getSize(); // yes, it was a good idea at the time
 }
 
 int ArrayType::getSize() const
@@ -257,6 +257,9 @@ int ArrayType::getSize() const
 
 int NamedType::getSize() const
 {
+    Type *ty = resolvesTo();
+    if (ty)
+        return ty->getSize();
     return 0; // don't know
 }
 
@@ -266,6 +269,36 @@ int CompoundType::getSize() const
     for (unsigned i = 0; i < types.size(); i++)
         n += types[i]->getSize();
     return n;
+}
+
+Type *CompoundType::getType(const char *nam)
+{
+    for (unsigned i = 0; i < types.size(); i++)
+        if (names[i] == nam)
+            return types[i];
+    return NULL;
+}
+
+Type *CompoundType::getTypeAtOffset(int n)
+{
+    int offset = 0;
+    for (unsigned i = 0; i < types.size(); i++) {
+        if (offset >= n && n < offset + types[i]->getSize())
+            return getType(i);
+        offset += types[i]->getSize();
+    }
+    return NULL;
+}
+
+const char *CompoundType::getNameAtOffset(int n)
+{
+    int offset = 0;
+    for (unsigned i = 0; i < types.size(); i++) {
+        if (offset >= n && n < offset + types[i]->getSize())
+            return getName(i);
+        offset += types[i]->getSize();
+    }
+    return NULL;
 }
 
 /*==============================================================================
@@ -547,6 +580,7 @@ const char *CompoundType::getCtype() const
         }
         tmp += "; ";
     }
+    tmp += "}";
     return tmp.c_str();
 }
 
@@ -555,7 +589,10 @@ std::map<std::string, Type*> Type::namedTypes;
 // named type accessors
 void Type::addNamedType(const char *name, Type *type)
 {
-    namedTypes[name] = type;
+    if (namedTypes.find(name) != namedTypes.end()) {
+        assert(*type == *namedTypes[name]);
+    } else
+        namedTypes[name] = type->clone();
 }
 
 Type *Type::getNamedType(const char *name)
@@ -645,4 +682,13 @@ bool PointerType::pointsToAlpha() {
     if (!points_to->isNamed()) return false;
     return strncmp(((NamedType*)points_to)->getName(), "alpha", 5) == 0;
 }
+
+Type *NamedType::resolvesTo() const
+{
+    Type *ty = getNamedType(name.c_str());
+    if (ty && ty->isNamed())
+        return ((NamedType*)ty)->resolvesTo();
+    return ty;
+}
+
 #endif  // #ifndef __TYPE_H__

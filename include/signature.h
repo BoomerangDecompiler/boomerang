@@ -27,13 +27,24 @@ private:
     Exp *exp;
 
 public: 
-    Parameter(Type *type, const char *name, Exp *exp = NULL) : type(type),
-   	 name(name), exp(exp) { }
+    Parameter(Type *type, const char *name, Exp *exp = NULL) : type(type), name(name), exp(exp)  { }
     ~Parameter() { delete type; delete exp; }
 
     Type *getType() { return type; }
     const char *getName() { return name.c_str(); }
     Exp *getExp()       { return exp; }
+};
+
+class ImplicitParameter : public Parameter {
+private:
+    Parameter *parent;
+
+public:
+    ImplicitParameter(Type *type, const char *name, Exp *exp, Parameter *parent) : 
+                            Parameter(type, name, exp), parent(parent) { }
+    ~ImplicitParameter() { }
+
+    Parameter *getParent() { return parent; }
 };
 
 class Return {
@@ -56,12 +67,16 @@ class Signature {
 protected:
     std::string name;       // name of procedure
     std::vector<Parameter*> params;
+    std::vector<ImplicitParameter*> implicitParams;
     std::vector<Return*> returns;
     Type *rettype;
     bool ellipsis;
 
     void updateParams(UserProc *p, Statement *stmt, bool checkreach = true);
     bool usesNewParam(UserProc *p, Statement *stmt, bool checkreach, int &n);
+
+    void addImplicitParametersFor(Parameter *p);
+    void addImplicitParameter(Type *type, const char *name, Exp *e, Parameter *parent);
 
 public:
     Signature(const char *nam);
@@ -112,6 +127,17 @@ public:
     virtual Exp *getArgumentExp(int n);
     virtual bool hasEllipsis() { return ellipsis; }
     std::list<Exp*> *getCallerSave(Prog* prog);
+
+    // add a new implicit parameter
+    virtual void addImplicitParameter(Exp *e);
+    virtual void removeImplicitParameter(int i);
+
+    // accessors for implicit params
+    virtual int getNumImplicitParams();
+    virtual const char *getImplicitParamName(int n);
+    virtual Exp *getImplicitParamExp(int n);
+    virtual Type *getImplicitParamType(int n);
+    virtual int findImplicitParam(Exp *e);
 
     // analysis determines parameters / return type
     //virtual void analyse(UserProc *p);

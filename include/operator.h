@@ -113,6 +113,7 @@ enum OPER
     opLocal,                // used to represent a local, takes a string
     opGlobal,               // used to represent a global, takes a string
     opExpand,               // Expandable expression
+    opMemberAccess,         // . and -> in C
     opTemp,                 // Temp register name
     opSize,                 // Size override
     opCastIntStar,          // Cast to int*

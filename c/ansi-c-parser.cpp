@@ -2,11 +2,11 @@
 
 /*  A Bison++ parser, made from ansi-c.y  */
 
- /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
+ /* with Bison++ version bison++ Version 1.21-7, adapted from GNU bison by coetmeur@icdc.fr
   */
 
 
-#line 1 "/usr/local/lib/bison.cc"
+#line 1 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -26,12 +26,16 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
-#define __MSDOS_AND_ALIKE
+#ifndef _MSDOS
+#ifdef MSDOS
+#define _MSDOS
 #endif
-#if defined(_WINDOWS) && defined(_MSC_VER)
-#define __HAVE_NO_ALLOCA
-#define __MSDOS_AND_ALIKE
+#endif
+/* turboc */
+#ifdef __MSDOS__
+#ifndef _MSDOS
+#define _MSDOS
+#endif
 #endif
 
 #ifndef alloca
@@ -41,7 +45,7 @@
 #elif (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc)  || defined (__sgi)
 #include <alloca.h>
 
-#elif defined (__MSDOS_AND_ALIKE)
+#elif defined (_MSDOS)
 #include <malloc.h>
 #ifndef __TURBOC__
 /* MS C runtime lib */
@@ -80,8 +84,8 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "/usr/local/lib/bison.cc" */
-#line 85 "ansi-c-parser.cpp"
+/* #line 77 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 89 "ansi-c-parser.cpp"
 #define YY_AnsiCParser_DEBUG  1
 #define YY_AnsiCParser_PARSE_PARAM  \
     const char *sigstr
@@ -131,7 +135,7 @@ typedef union {
 
 #include "ansi-c-scanner.h"
 
-#line 73 "/usr/local/lib/bison.cc"
+#line 77 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_AnsiCParser_BISON 1
 #ifndef YY_AnsiCParser_COMPATIBILITY
@@ -177,36 +181,36 @@ typedef union {
 
 #ifndef YY_AnsiCParser_PURE
 
-/* #line 117 "/usr/local/lib/bison.cc" */
-#line 182 "ansi-c-parser.cpp"
+/* #line 121 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 186 "ansi-c-parser.cpp"
 
-#line 117 "/usr/local/lib/bison.cc"
+#line 121 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /*  YY_AnsiCParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/usr/local/lib/bison.cc" */
-#line 191 "ansi-c-parser.cpp"
+/* #line 125 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 195 "ansi-c-parser.cpp"
 
-#line 121 "/usr/local/lib/bison.cc"
+#line 125 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* prefix */
 #ifndef YY_AnsiCParser_DEBUG
 
-/* #line 123 "/usr/local/lib/bison.cc" */
-#line 198 "ansi-c-parser.cpp"
+/* #line 127 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 202 "ansi-c-parser.cpp"
 
-#line 123 "/usr/local/lib/bison.cc"
+#line 127 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
 /* YY_AnsiCParser_DEBUG */
 #endif
 
 
 #ifndef YY_AnsiCParser_LSP_NEEDED
 
-/* #line 128 "/usr/local/lib/bison.cc" */
-#line 208 "ansi-c-parser.cpp"
+/* #line 132 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 212 "ansi-c-parser.cpp"
 
-#line 128 "/usr/local/lib/bison.cc"
+#line 132 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* YY_AnsiCParser_LSP_NEEDED*/
 #endif
 
@@ -316,8 +320,8 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/usr/local/lib/bison.cc" */
-#line 321 "ansi-c-parser.cpp"
+/* #line 240 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 325 "ansi-c-parser.cpp"
 #define	PREINCLUDE	258
 #define	PREDEFINE	259
 #define	PREIF	260
@@ -384,7 +388,7 @@ typedef
 #define	RETURN	321
 
 
-#line 236 "/usr/local/lib/bison.cc"
+#line 240 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -416,7 +420,7 @@ typedef
 #ifndef YY_AnsiCParser_USE_CONST_TOKEN
 #define YY_AnsiCParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 #ifndef YY_AnsiCParser_ENUM_TOKEN
@@ -426,12 +430,12 @@ typedef
 
 class YY_AnsiCParser_CLASS YY_AnsiCParser_INHERIT
 {
-public: 
+public:
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/usr/local/lib/bison.cc" */
-#line 435 "ansi-c-parser.cpp"
+/* #line 284 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 439 "ansi-c-parser.cpp"
 static const int PREINCLUDE;
 static const int PREDEFINE;
 static const int PREIF;
@@ -498,13 +502,13 @@ static const int BREAK;
 static const int RETURN;
 
 
-#line 280 "/usr/local/lib/bison.cc"
+#line 284 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* decl const */
 #else
 enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 
-/* #line 283 "/usr/local/lib/bison.cc" */
-#line 508 "ansi-c-parser.cpp"
+/* #line 287 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 512 "ansi-c-parser.cpp"
 	,PREINCLUDE=258
 	,PREDEFINE=259
 	,PREIF=260
@@ -571,7 +575,7 @@ enum YY_AnsiCParser_ENUM_TOKEN { YY_AnsiCParser_NULL_TOKEN=0
 	,RETURN=321
 
 
-#line 283 "/usr/local/lib/bison.cc"
+#line 287 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -604,8 +608,8 @@ public:
 /* other declare folow */
 #if YY_AnsiCParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/usr/local/lib/bison.cc" */
-#line 609 "ansi-c-parser.cpp"
+/* #line 318 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 613 "ansi-c-parser.cpp"
 const int YY_AnsiCParser_CLASS::PREINCLUDE=258;
 const int YY_AnsiCParser_CLASS::PREDEFINE=259;
 const int YY_AnsiCParser_CLASS::PREIF=260;
@@ -672,7 +676,7 @@ const int YY_AnsiCParser_CLASS::BREAK=320;
 const int YY_AnsiCParser_CLASS::RETURN=321;
 
 
-#line 314 "/usr/local/lib/bison.cc"
+#line 318 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* const YY_AnsiCParser_CLASS::token */
 #endif
 /*apres const  */
@@ -685,11 +689,11 @@ YY_AnsiCParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/usr/local/lib/bison.cc" */
-#line 690 "ansi-c-parser.cpp"
+/* #line 329 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 694 "ansi-c-parser.cpp"
 
 
-#define	YYFINAL		54
+#define	YYFINAL		66
 #define	YYFLAG		-32768
 #define	YYNTBASE	74
 
@@ -734,20 +738,23 @@ static const char yytranslate[] = {     0,
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyprhs[] = {     0,
      0,     2,     5,     6,     8,    10,    14,    16,    18,    19,
-    22,    31,    33,    38,    45,    49,    52,    54,    56,    58,
-    60,    63,    65,    67,    69,    71,    74,    76,    79
+    22,    31,    33,    38,    49,    57,    64,    68,    71,    73,
+    75,    77,    79,    82,    84,    86,    88,    90,    93,    95,
+    98
 };
 
 static const short yyrhs[] = {    75,
      0,    76,    75,     0,     0,    79,     0,    80,     0,    78,
     67,    77,     0,    78,     0,    50,     0,     0,    83,     9,
      0,    83,    68,    69,     9,    70,    68,    77,    70,     0,
-    54,     0,    35,    83,     9,    71,     0,    83,     9,    68,
-    77,    70,    71,     0,    83,     9,    71,     0,    81,    82,
-     0,    81,     0,    40,     0,    41,     0,    42,     0,    45,
-    42,     0,    43,     0,    46,     0,    47,     0,    50,     0,
-    83,    69,     0,     9,     0,    48,    83,     0,    51,    72,
-    82,    73,     0
+    54,     0,    35,    83,     9,    71,     0,    35,    83,    68,
+    69,     9,    70,    68,    77,    70,    71,     0,    35,    83,
+     9,    68,    77,    70,    71,     0,    83,     9,    68,    77,
+    70,    71,     0,    83,     9,    71,     0,    81,    82,     0,
+    81,     0,    40,     0,    41,     0,    42,     0,    45,    42,
+     0,    43,     0,    46,     0,    47,     0,    50,     0,    83,
+    69,     0,     9,     0,    48,    83,     0,    51,    72,    82,
+    73,     0
 };
 
 #endif
@@ -755,8 +762,9 @@ static const short yyrhs[] = {    75,
 #if YY_AnsiCParser_DEBUG != 0
 static const short yyrline[] = { 0,
     92,    96,    98,   102,   104,   108,   112,   116,   118,   122,
-   124,   138,   142,   146,   162,   168,   172,   178,   180,   182,
-   184,   186,   188,   190,   192,   194,   196,   201,   203
+   124,   138,   142,   144,   158,   174,   190,   196,   200,   206,
+   208,   210,   212,   214,   216,   218,   220,   222,   224,   229,
+   231
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
@@ -775,73 +783,81 @@ static const char * const yytname[] = {   "$","error","$illegal.","PREINCLUDE",
 
 static const short yyr1[] = {     0,
     74,    75,    75,    76,    76,    77,    77,    77,    77,    78,
-    78,    78,    79,    80,    81,    82,    82,    83,    83,    83,
-    83,    83,    83,    83,    83,    83,    83,    83,    83
+    78,    78,    79,    79,    79,    80,    81,    82,    82,    83,
+    83,    83,    83,    83,    83,    83,    83,    83,    83,    83,
+    83
 };
 
 static const short yyr2[] = {     0,
      1,     2,     0,     1,     1,     3,     1,     1,     0,     2,
-     8,     1,     4,     6,     3,     2,     1,     1,     1,     1,
-     2,     1,     1,     1,     1,     2,     1,     2,     4
+     8,     1,     4,    10,     7,     6,     3,     2,     1,     1,
+     1,     1,     2,     1,     1,     1,     1,     2,     1,     2,
+     4
 };
 
 static const short yydefact[] = {     3,
-    27,     0,    18,    19,    20,    22,     0,    23,    24,     0,
-    25,     0,     1,     3,     4,     5,     0,     0,    21,    28,
-     0,     2,     0,    26,     0,    17,     0,     0,     9,    13,
-    16,    29,     0,    25,    12,     0,     7,     0,    15,     0,
-     9,    10,     0,    14,     6,     0,     0,     0,     9,     0,
-    11,     0,     0,     0
+    29,     0,    20,    21,    22,    24,     0,    25,    26,     0,
+    27,     0,     1,     3,     4,     5,     0,     0,    23,    30,
+     0,     2,     0,    28,     0,     0,    19,     0,     0,     9,
+     9,    13,     0,    18,    31,     0,    27,    12,     0,     7,
+     0,     0,     0,    17,     0,     9,    10,     0,     0,     0,
+    16,     6,     0,    15,     9,     0,     0,     0,     0,     9,
+    14,     0,    11,     0,     0,     0
 };
 
-static const short yydefgoto[] = {    52,
-    13,    14,    36,    37,    15,    16,    26,    27,    38
+static const short yydefgoto[] = {    64,
+    13,    14,    39,    40,    15,    16,    27,    28,    41
 };
 
-static const short yypact[] = {    30,
--32768,    42,-32768,-32768,-32768,-32768,   -34,-32768,-32768,    42,
--32768,   -63,-32768,    30,-32768,-32768,    -8,    -7,-32768,   -59,
-    42,-32768,   -57,-32768,   -58,    42,   -61,    -6,    -5,-32768,
--32768,-32768,   -55,   -53,-32768,   -52,   -47,    -9,-32768,   -50,
-    -5,-32768,   -46,-32768,-32768,    13,   -45,   -44,    -5,   -43,
--32768,    28,    29,-32768
+static const short yypact[] = {    32,
+-32768,     7,-32768,-32768,-32768,-32768,   -36,-32768,-32768,     7,
+-32768,   -62,-32768,    32,-32768,-32768,    -6,    -9,-32768,   -60,
+     7,-32768,   -57,-32768,   -63,   -56,     7,   -61,    -5,    -8,
+    -8,-32768,     5,-32768,-32768,   -54,   -55,-32768,   -52,   -48,
+    -7,   -50,   -49,-32768,   -47,    -8,-32768,   -46,   -45,   -43,
+-32768,-32768,    18,-32768,    -8,   -42,   -41,   -38,   -27,    -8,
+-32768,   -25,-32768,    51,    56,-32768
 };
 
 static const short yypgoto[] = {-32768,
-    16,-32768,   -35,-32768,-32768,-32768,-32768,     6,     5
+    52,-32768,   -24,-32768,-32768,-32768,-32768,    38,    84
 };
 
 
-#define	YYLAST		93
+#define	YYLAST		111
 
 
-static const short yytable[] = {    42,
-    23,    25,    33,     1,    17,    45,    18,    19,    21,    24,
-    29,    32,    30,    50,    20,    39,    -8,    40,    17,    41,
-    44,    47,    46,    49,    48,    28,    51,    53,    54,    22,
-    28,    31,     0,     0,     3,     4,     5,     6,     1,     7,
-     8,     9,    10,     0,    34,    12,     0,     0,    35,     0,
-     1,     0,     0,     0,     0,     0,     0,     0,    43,    24,
-    24,    24,    24,     0,     2,     0,     0,     0,     0,     3,
-     4,     5,     6,     0,     7,     8,     9,    10,     0,    11,
-    12,     3,     4,     5,     6,     0,     7,     8,     9,    10,
-     0,    11,    12
+static const short yytable[] = {    25,
+     1,    47,    23,    36,    31,    19,    42,    32,    24,    21,
+    30,    35,    33,    43,    -8,     1,    44,    45,    46,    49,
+    50,    52,    53,    51,    55,    54,    56,    58,    59,    60,
+    57,     3,     4,     5,     6,    62,     7,     8,     9,    10,
+     1,    37,    12,    61,    63,    38,     3,     4,     5,     6,
+    65,     7,     8,     9,    10,    66,    11,    12,    26,    24,
+    48,    24,    24,    24,    34,    22,     2,     0,     0,     0,
+     0,     3,     4,     5,     6,     0,     7,     8,     9,    10,
+     0,    11,    12,    17,     0,    18,     0,     0,     0,     0,
+     0,     0,     0,    20,     0,     0,     0,    17,     0,     0,
+     0,     0,     0,     0,    29,     0,     0,     0,     0,     0,
+    29
 };
 
 static const short yycheck[] = {     9,
-     9,     9,     9,     9,     0,    41,     2,    42,    72,    69,
-    68,    73,    71,    49,    10,    71,    70,    70,    14,    67,
-    71,     9,    69,    68,    70,    21,    70,     0,     0,    14,
-    26,    26,    -1,    -1,    40,    41,    42,    43,     9,    45,
-    46,    47,    48,    -1,    50,    51,    -1,    -1,    54,    -1,
-     9,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    68,    69,
-    69,    69,    69,    -1,    35,    -1,    -1,    -1,    -1,    40,
-    41,    42,    43,    -1,    45,    46,    47,    48,    -1,    50,
-    51,    40,    41,    42,    43,    -1,    45,    46,    47,    48,
-    -1,    50,    51
+     9,     9,     9,     9,    68,    42,    31,    71,    69,    72,
+    68,    73,    69,     9,    70,     9,    71,    70,    67,    70,
+    70,    46,    69,    71,    68,    71,     9,    70,    70,    68,
+    55,    40,    41,    42,    43,    60,    45,    46,    47,    48,
+     9,    50,    51,    71,    70,    54,    40,    41,    42,    43,
+     0,    45,    46,    47,    48,     0,    50,    51,    68,    69,
+    68,    69,    69,    69,    27,    14,    35,    -1,    -1,    -1,
+    -1,    40,    41,    42,    43,    -1,    45,    46,    47,    48,
+    -1,    50,    51,     0,    -1,     2,    -1,    -1,    -1,    -1,
+    -1,    -1,    -1,    10,    -1,    -1,    -1,    14,    -1,    -1,
+    -1,    -1,    -1,    -1,    21,    -1,    -1,    -1,    -1,    -1,
+    27
 };
 
-#line 325 "/usr/local/lib/bison.cc"
+#line 329 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -857,7 +873,7 @@ static const short yycheck[] = {     9,
    as one case of the switch.  */ 
 
 #if YY_AnsiCParser_USE_GOTO != 0
-/* 
+/*
  SUPRESSION OF GOTO : on some C++ compiler (sun c++)
   the goto is strictly forbidden if any constructor/destructor
   is used in the whole function (very stupid isn't it ?)
@@ -868,19 +884,19 @@ static const short yycheck[] = {     9,
 #define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
                      for(;;) switch(yy_gotostate) { case yygotostart: {
 #define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } } 
+#define YYENDGOTO } }
 #define YYBEGINDECLARELABEL enum yy_labels {yygotostart
 #define YYDECLARELABEL(lb) ,lb
 #define YYENDDECLARELABEL  };
 #else
 /* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO 
+#define YYBEGINGOTO
 #define YYLABEL(lb) lb:
 #define YYENDGOTO
-#define YYBEGINDECLARELABEL 
+#define YYBEGINDECLARELABEL
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL 
+#define YYENDDECLARELABEL
 #endif
 /* LABEL DECLARATION */
 YYBEGINDECLARELABEL
@@ -893,44 +909,15 @@ YYBEGINDECLARELABEL
   YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
   YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
   YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-  YYDECLARELABEL(yyerrhandle)  
+  YYDECLARELABEL(yyerrhandle)
 YYENDDECLARELABEL
-/* ALLOCA SIMULATION */
-/* __HAVE_NO_ALLOCA */
-#ifdef __HAVE_NO_ALLOCA
-int __alloca_free_ptr(char *ptr,char *ref)
-{if(ptr!=ref) free(ptr);
- return 0;}
-
-#define __ALLOCA_alloca(size) malloc(size)
-#define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
-
-#ifdef YY_AnsiCParser_LSP_NEEDED
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		    __ALLOCA_free(yyls,yylsa)+\
-		   (num))
-#else
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		   (num))
-#endif
-#else
-#define __ALLOCA_return(num) return(num)
-#define __ALLOCA_alloca(size) alloca(size)
-#define __ALLOCA_free(ptr,ref) 
-#endif
-
-/* ENDALLOCA SIMULATION */
 
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (YY_AnsiCParser_CHAR = YYEMPTY)
 #define YYEMPTY         -2
 #define YYEOF           0
-#define YYACCEPT        __ALLOCA_return(0)
-#define YYABORT         __ALLOCA_return(1)
+#define YYACCEPT        return(0)
+#define YYABORT         return(1)
 #define YYERROR         YYGOTO(yyerrlab1)
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -1157,21 +1144,18 @@ YYLABEL(yynewstate)
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  YY_AnsiCParser_ERROR("parser stack overflow");
-	  __ALLOCA_return(2);
+	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
       __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
-      __ALLOCA_free(yyss1,yyssa);
-      yyvs = (YY_AnsiCParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
+      yyvs = (YY_AnsiCParser_STYPE *) alloca (yystacksize * sizeof (*yyvsp));
       __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
-      __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_AnsiCParser_LSP_NEEDED
-      yyls = (YY_AnsiCParser_LTYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yylsp));
+      yyls = (YY_AnsiCParser_LTYPE *) alloca (yystacksize * sizeof (*yylsp));
       __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
-      __ALLOCA_free(yyls1,yylsa);
 #endif
 #endif /* no yyoverflow */
 
@@ -1329,8 +1313,8 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/usr/local/lib/bison.cc" */
-#line 1334 "ansi-c-parser.cpp"
+/* #line 783 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 1318 "ansi-c-parser.cpp"
 
   switch (yyn) {
 
@@ -1403,7 +1387,39 @@ case 13:
 { Type::addNamedType(yyvsp[-1].str, yyvsp[-2].type); ;
     break;}
 case 14:
-#line 147 "ansi-c.y"
+#line 145 "ansi-c.y"
+{ Signature *sig = Signature::instantiate(sigstr, NULL);
+           sig->addReturn(yyvsp[-8].type);
+           for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
+                it != yyvsp[-2].param_list->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete yyvsp[-2].param_list;
+           Type::addNamedType(yyvsp[-5].str, new PointerType(new FuncType(sig))); 
+         ;
+    break;}
+case 15:
+#line 159 "ansi-c.y"
+{ Signature *sig = Signature::instantiate(sigstr, NULL);
+           sig->addReturn(yyvsp[-5].type);
+           for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
+                it != yyvsp[-2].param_list->end(); it++)
+               if (std::string((*it)->getName()) != "...")
+                   sig->addParameter(*it);
+               else {
+                   sig->addEllipsis();
+                   delete *it;
+               }
+           delete yyvsp[-2].param_list;
+           Type::addNamedType(yyvsp[-4].str, new FuncType(sig)); 
+         ;
+    break;}
+case 16:
+#line 175 "ansi-c.y"
 { Signature *sig = Signature::instantiate(sigstr, yyvsp[-4].str); 
            sig->addReturn(yyvsp[-5].type);
            for (std::list<Parameter*>::iterator it = yyvsp[-2].param_list->begin();
@@ -1418,74 +1434,74 @@ case 14:
            signatures.push_back(sig);
          ;
     break;}
-case 15:
-#line 163 "ansi-c.y"
+case 17:
+#line 191 "ansi-c.y"
 { yyval.type_ident = new TypeIdent();
             yyval.type_ident->ty = yyvsp[-2].type;
             yyval.type_ident->nam = yyvsp[-1].str;
           ;
     break;}
-case 16:
-#line 169 "ansi-c.y"
+case 18:
+#line 197 "ansi-c.y"
 { yyval.type_ident_list = yyvsp[0].type_ident_list;
             yyval.type_ident_list->push_front(yyvsp[-1].type_ident);
           ;
     break;}
-case 17:
-#line 173 "ansi-c.y"
+case 19:
+#line 201 "ansi-c.y"
 { yyval.type_ident_list = new std::list<TypeIdent*>(); 
             yyval.type_ident_list->push_back(yyvsp[0].type_ident);
           ;
     break;}
-case 18:
-#line 179 "ansi-c.y"
+case 20:
+#line 207 "ansi-c.y"
 { yyval.type = new CharType(); ;
     break;}
-case 19:
-#line 181 "ansi-c.y"
+case 21:
+#line 209 "ansi-c.y"
 { yyval.type = new IntegerType(16); ;
     break;}
-case 20:
-#line 183 "ansi-c.y"
-{ yyval.type = new IntegerType(); ;
-    break;}
-case 21:
-#line 185 "ansi-c.y"
-{ yyval.type = new IntegerType(32, false); ;
-    break;}
 case 22:
-#line 187 "ansi-c.y"
+#line 211 "ansi-c.y"
 { yyval.type = new IntegerType(); ;
     break;}
 case 23:
-#line 189 "ansi-c.y"
-{ yyval.type = new FloatType(32); ;
+#line 213 "ansi-c.y"
+{ yyval.type = new IntegerType(32, false); ;
     break;}
 case 24:
-#line 191 "ansi-c.y"
-{ yyval.type = new FloatType(64); ;
+#line 215 "ansi-c.y"
+{ yyval.type = new IntegerType(); ;
     break;}
 case 25:
-#line 193 "ansi-c.y"
-{ yyval.type = new VoidType(); ;
+#line 217 "ansi-c.y"
+{ yyval.type = new FloatType(32); ;
     break;}
 case 26:
-#line 195 "ansi-c.y"
-{ yyval.type = new PointerType(yyvsp[-1].type); ;
+#line 219 "ansi-c.y"
+{ yyval.type = new FloatType(64); ;
     break;}
 case 27:
-#line 197 "ansi-c.y"
-{ yyval.type = Type::getNamedType(yyvsp[0].str); 
-      if (yyval.type == NULL)
-          yyval.type = new NamedType(yyvsp[0].str);
-    ;
+#line 221 "ansi-c.y"
+{ yyval.type = new VoidType(); ;
     break;}
 case 28:
-#line 202 "ansi-c.y"
-{ yyval.type = yyvsp[0].type; ;
+#line 223 "ansi-c.y"
+{ yyval.type = new PointerType(yyvsp[-1].type); ;
     break;}
 case 29:
-#line 204 "ansi-c.y"
+#line 225 "ansi-c.y"
+{ //$$ = Type::getNamedType($1); 
+      //if ($$ == NULL)
+      yyval.type = new NamedType(yyvsp[0].str);
+    ;
+    break;}
+case 30:
+#line 230 "ansi-c.y"
+{ yyval.type = yyvsp[0].type; ;
+    break;}
+case 31:
+#line 232 "ansi-c.y"
 { CompoundType *t = new CompoundType(); 
       for (std::list<TypeIdent*>::iterator it = yyvsp[-1].type_ident_list->begin();
            it != yyvsp[-1].type_ident_list->end(); it++) {
@@ -1496,7 +1512,7 @@ case 29:
     break;}
 }
 
-#line 811 "/usr/local/lib/bison.cc"
+#line 783 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1568,7 +1584,7 @@ YYLABEL(yyerrlab)   /* here on detecting error */
 	  count = 0;
 	  /* Start X at -yyn if nec to avoid negative indexes in yycheck.  */
 	  for (x = (yyn < 0 ? -yyn : 0);
-	       x < (sizeof(yytname) / sizeof(char *)); x++)
+	       (unsigned)x < (sizeof(yytname) / sizeof(char *)); x++)
 	    if (yycheck[x + yyn] == x)
 	      size += strlen(yytname[x]) + 15, count++;
 	  msg = (char *) malloc(size + 15);
@@ -1580,7 +1596,7 @@ YYLABEL(yyerrlab)   /* here on detecting error */
 		{
 		  count = 0;
 		  for (x = (yyn < 0 ? -yyn : 0);
-		       x < (sizeof(yytname) / sizeof(char *)); x++)
+		       (unsigned)x < (sizeof(yytname) / sizeof(char *)); x++)
 		    if (yycheck[x + yyn] == x)
 		      {
 			strcat(msg, count == 0 ? ", expecting `" : " or `");
@@ -1697,9 +1713,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/usr/local/lib/bison.cc" */
-#line 1702 "ansi-c-parser.cpp"
-#line 213 "ansi-c.y"
+/* #line 982 "/home/02/binary/u1.luna.tools/bison++/lib/bison.cc" */
+#line 1718 "ansi-c-parser.cpp"
+#line 241 "ansi-c.y"
 
 #include <stdio.h>
 

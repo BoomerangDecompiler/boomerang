@@ -426,7 +426,7 @@ virtual int getMemDepth();
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
-    Exp* polySimplify(bool& bMod);
+virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
@@ -494,7 +494,7 @@ virtual int getMemDepth();
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
     // Do the work of simplifying this expression
-    Exp* polySimplify(bool& bMod);
+virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
@@ -561,7 +561,7 @@ virtual int getMemDepth();
     // Search children
     void doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
-    Exp* polySimplify(bool& bMod);
+virtual Exp* polySimplify(bool& bMod);
     Exp* simplifyArith();
     Exp* simplifyAddr();
 
@@ -617,7 +617,7 @@ public:
     void    setType(Type* ty);
 
     // polySimplify
-    Exp* polySimplify(bool& bMod);
+virtual Exp* polySimplify(bool& bMod);
 
 };  // class TypedExp
 
@@ -700,6 +700,7 @@ virtual Exp* clone();
 virtual int getNumRefs() {return stmtVec.size();}
     void    addUsedLocs(LocationSet& used);
     virtual Exp *fixCallRefs();
+    bool    hasGlobalFuncParam(Prog *prog);
 virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     Statement* getAt(int idx) {return stmtVec.getAt(idx);}
     void       putAt(int idx, Statement* d) {stmtVec.putAt(idx, d);}
@@ -712,6 +713,9 @@ virtual Exp*   addSubscript(Statement* def) {assert(0); return NULL; }
     //bool    references(Statement* s) {return stmtVec.exists(s);}
     StatementVec& getRefs() {return stmtVec;}
     virtual Exp*  genConstraints(Exp* restrictTo);
+
+    // polySimplify
+virtual Exp* polySimplify(bool& bMod);
 };
 
 /*==============================================================================
