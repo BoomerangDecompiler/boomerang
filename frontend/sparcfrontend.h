@@ -56,24 +56,24 @@ private:
 
 	void 	case_unhandled_stub(ADDRESS addr);
 
-	bool 	case_CALL_NCT(ADDRESS& address, DecodeResult& inst,
+	bool 	case_CALL(ADDRESS& address, DecodeResult& inst,
 			      DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
 			      UserProc* proc, std::set<HLCall*>& callSet, std::ofstream &os,
 			      bool isPattern = false);
 
-	void 	case_SD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+	void 	case_SD(ADDRESS& address, int delta, ADDRESS hiAddress,
 			    DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
 			    Cfg* cfg, TargetQueue& tq, std::ofstream &os);
 
-	bool 	case_DD_NCT(ADDRESS& address, int delta, DecodeResult& inst,
+	bool 	case_DD(ADDRESS& address, int delta, DecodeResult& inst,
 			    DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls, Cfg* cfg,
 			    TargetQueue& tq, UserProc* proc, std::set<HLCall*>& callSet);
 
-	bool 	case_SCD_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+	bool 	case_SCD(ADDRESS& address, int delta, ADDRESS hiAddress,
 			     DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
 			     Cfg* cfg, TargetQueue& tq);
 
-	bool 	case_SCDAN_NCT(ADDRESS& address, int delta, ADDRESS hiAddress,
+	bool 	case_SCDAN(ADDRESS& address, int delta, ADDRESS hiAddress,
 			       DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL*>*& BB_rtls,
 			       Cfg* cfg, TargetQueue& tq);
 
