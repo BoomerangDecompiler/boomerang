@@ -90,8 +90,7 @@ Exp* listStrToExp(std::list<std::string>* ls);// Convert a STL list of strings t
 
 %define DEBUG 1 
 
-// %define INHERIT : public gc	// This is how to force the parser class to
-								// be declared as derived from class gc
+// %define INHERIT : public gc	// This is how to force the parser class to be declared as derived from class gc
 
 %define PARSE_PARAM \
 	RTLInstDict& Dict
@@ -191,9 +190,8 @@ protected: \
 %right NOT LNOT FCHS
 %left CAST_OP
 %left LOOKUP_RDC
-%left S_E				// Sign extend. Note it effectively has low precedence,
-						// because being a post operator, the whole expression
-						// is already parsed, and hence is sign extended.
+%left S_E				// Sign extend. Note it effectively has low precedence, because being a post operator,
+						// the whole expression is already parsed, and hence is sign extended.
 						// Another reason why ! is deprecated!
 %nonassoc AT
 
@@ -247,16 +245,14 @@ parts:
 		// Optional one-line section declaring endianness
 	|	endianness
 
-		// Optional section describing faster versions of instructions
-		// (e.g. that don't inplement the full specifications, but if they
-		// work, will be much faster)
+		// Optional section describing faster versions of instructions (e.g. that don't inplement the full
+		// specifications, but if they work, will be much faster)
 	|	fastlist
 
 		// Definitions of registers (with overlaps, etc)
 	|	reglist
 
-		// Declaration of "flag functions". These describe the detailed
-		// flag setting semantics for insructions
+		// Declaration of "flag functions". These describe the detailed flag setting semantics for insructions
 	|	flag_fnc
 
 		// Addressing modes (or instruction operands) (optional)
@@ -407,7 +403,7 @@ a_reglist:
 				for (; loc != $2->end(); loc++) {
 					if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
 						yyerror("Name reglist declared twice\n");
-			Dict.addRegister(loc->c_str(), $8, $5, bFloat);
+					Dict.addRegister(loc->c_str(), $8, $5, bFloat);
 				}
 				//delete $2;
 			}
@@ -493,8 +489,7 @@ str_expr:
 str_array:
 		str_array ',' str_expr {
 			// want to append $3 to $1
-			// The following causes a massive warning message about mixing
-			// signed and unsigned
+			// The following causes a massive warning message about mixing signed and unsigned
 			$1->insert($1->end(), $3->begin(), $3->end());
 			//delete $3;
 			$$ = $1;
@@ -541,8 +536,7 @@ name_expand:
 			}
 		}
 	|	NAME {
-			// try and expand $1 from table of names
-			// if fail, expand using '"' NAME '"' rule
+			// try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
 			if (TableDict.find($1) != TableDict.end())
 				if (TableDict[$1]->getType() == NAMETABLE)
 					$$ = new std::deque<std::string>(TableDict[$1]->records);
@@ -616,8 +610,7 @@ instr:
 			$1->getrefmap(indexrefmap);
 		//	   $3			$4
 		} list_parameter rt_list {
-			// This function expands the tables and saves the expanded RTLs
-			// to the dictionary
+			// This function expands the tables and saves the expanded RTLs to the dictionary
 			expandTables($1, $3, $4, Dict);
 		}
 	;
@@ -715,8 +708,8 @@ name_contract:
 
 rt_list:
 		rt_list rt {
-			// append any automatically generated register transfers and clear
-			// the list they were stored in. Do nothing for a NOP (i.e. $2 = 0)
+			// append any automatically generated register transfers and clear the list they were stored in.
+			// Do nothing for a NOP (i.e. $2 = 0)
 			if ($2 != NULL) {
 				$1->appendStmt($2);
 			}
@@ -740,8 +733,7 @@ rt:
 	|	NAME_CALL list_actualparameter ')' {
 			std::ostringstream o;
 			if (Dict.FlagFuncs.find($1) != Dict.FlagFuncs.end()) {
-				// Note: SETFFLAGS assigns to the floating point flags
-				// All others to the integer flags
+				// Note: SETFFLAGS assigns to the floating point flags. All others to the integer flags
 				bool bFloat = strcmp($1, "SETFFLAGS") == 0;
 				OPER op = bFloat ? opFflags : opFlags;
 				$$ = new Assign(
@@ -936,21 +928,20 @@ exp_term:
 					") is too small to use " << $2 << " (" << indexrefmap[$2]->ntokens() << ") as an index.\n";
 				yyerror(STR(o));
 			}
-			// $1 is a map from string to Table*; $2 is a map from string to
-			// InsNameElem*
+			// $1 is a map from string to Table*; $2 is a map from string to InsNameElem*
 			$$ = new Binary(opExpTable, new Const($1), new Const($2));
 		}
 
 		// This is a "lambda" function-like parameter
-		// $1 is the "function" name, and $2 is a list of Exp* for the
-		// actual params
+		// $1 is the "function" name, and $2 is a list of Exp* for the actual params
 	|	NAME_CALL list_actualparameter ')' {
 		std::ostringstream o;
 		if (Dict.ParamSet.find($1) != Dict.ParamSet.end() ) {
 			if (Dict.DetParamMap.find($1) != Dict.DetParamMap.end()) {
 				ParamEntry& param = Dict.DetParamMap[$1];
 				if ($2->size() != param.funcParams.size() ) {
-					o << $1 << " requires " << param.funcParams.size() << " parameters, but received " << $2->size() << ".\n";
+					o << $1 << " requires " << param.funcParams.size() << " parameters, but received " << $2->size()
+						<< ".\n";
 					yyerror(STR(o));
 				} else {
 					// Everything checks out. *phew* 
@@ -980,15 +971,12 @@ exp:
 			$$ = new Unary(opSignExt, $1);
 		}
 
-		// "%prec CAST_OP" just says that this operator has the precedence of
-		// the dummy terminal CAST_OP
-		// It's a "precedence modifier" (see "Context-Dependent Precedence"
-		// in the Bison documantation)
+		// "%prec CAST_OP" just says that this operator has the precedence of the dummy terminal CAST_OP
+		// It's a "precedence modifier" (see "Context-Dependent Precedence" in the Bison documantation)
 	  // $1	 $2
 	|	exp cast %prec CAST_OP {
-			// size casts and the opSize operator were generally deprecated,
-			// but now opSize is used to transmit the size of operands that
-			// could be memOfs from the decoder to type analysis
+			// size casts and the opSize operator were generally deprecated, but now opSize is used to transmit
+			// the size of operands that could be memOfs from the decoder to type analysis
 			if ($2 == STD_SIZE)
 				$$ = $1;
 			else
@@ -1029,7 +1017,7 @@ exp:
 		
 		// See comment above re "%prec LOOKUP_RDC"
 		// Example: OP1[IDX] where OP1 := {	 "&",  "|", "^", ...};
-	   //$1		 $2		 $3	 $4	   $5
+		//$1	 $2		 $3	 $4	   $5
 	|	exp NAME_LOOKUP NAME ']' exp_term %prec LOOKUP_RDC {
 			std::ostringstream o;
 			if (indexrefmap.find($3) == indexrefmap.end()) {
@@ -1059,11 +1047,9 @@ exp:
 	;
 
 location:
-		// This is for constant register numbers. Often, these are special,
-		// in the sense that the register mapping is -1. If so, the
-		// equivalent of a special register is generated, i.e. a Terminal
-		// or opMachFtr (machine specific feature) representing that
-		// register.
+		// This is for constant register numbers. Often, these are special, in the sense that the register mapping
+		// is -1. If so, the equivalent of a special register is generated, i.e. a Terminal or opMachFtr
+		// (machine specific feature) representing that register.
 		REG_ID {
 			bool isFlag = strstr($1, "flags") != 0;
 			std::map<std::string, int>::const_iterator it = Dict.RegMap.find($1);
@@ -1072,8 +1058,7 @@ location:
 				ost << "register `" << $1 << "' is undefined";
 				yyerror(STR(ost));
 			} else if (isFlag || it->second == -1) {
-				// A special register, e.g. %npc or %CF
-				// Return a Terminal for it
+				// A special register, e.g. %npc or %CF. Return a Terminal for it
 				OPER op = strToTerm($1);
 				if (op) {
 					$$ = new Terminal(op);
@@ -1083,8 +1068,7 @@ location:
 				}
 			}
 			else {
-				// A register with a constant reg nmber, e.g. %g2.
-				// In this case, we want to return r[const 2]
+				// A register with a constant reg nmber, e.g. %g2.  In this case, we want to return r[const 2]
 				$$ = Location::regOf(it->second);
 			}
 		}
@@ -1104,8 +1088,7 @@ location:
 		}
 
 	|	NAME {
-		// This is a mixture of the param: PARM {} match
-		// and the value_op: NAME {} match
+		// This is a mixture of the param: PARM {} match and the value_op: NAME {} match
 			Exp* s;
 			std::set<std::string>::iterator it = Dict.ParamSet.find($1);
 			if (it != Dict.ParamSet.end()) {
@@ -1114,8 +1097,7 @@ location:
 				s = new Const(ConstTable[$1]);
 			} else {
 				std::ostringstream ost;
-				ost << "`" << $1 << "' is not a constant, definition or a";
-				ost << " parameter of this instruction\n";
+				ost << "`" << $1 << "' is not a constant, definition or a parameter of this instruction\n";
 				yyerror(STR(ost));
 				s = new Const(0);
 			}
@@ -1186,8 +1168,8 @@ assigntype:
 			}
 		}
 
-// Section for indicating which instructions to substitute when using -f (fast
-// but not quite as exact instruction mapping)
+// Section for indicating which instructions to substitute when using -f (fast but not quite as exact instruction
+// mapping)
 fastlist:
 		FAST fastentries
 	;
@@ -1272,10 +1254,9 @@ int SSLParser::yylex()
 /*==============================================================================
  * FUNCTION:		SSLParser::strToOper
  * OVERVIEW:		Convert a string operator (e.g. "+f") to an OPER (opFPlus)
- * NOTE:			An attempt is made to make this moderately efficient, else
- *					we might have a skip chain of string comparisons
- * NOTE:			This is a member of SSLParser so we can call yyerror and
- *					have line number etc printed out
+ * NOTE:			An attempt is made to make this moderately efficient, else we might have a skip chain of string
+ *					comparisons
+ * NOTE:			This is a member of SSLParser so we can call yyerror and have line number etc printed out
  * PARAMETERS:		s: pointer to the operator C string
  * RETURNS:			An OPER, or -1 if not found (enum opWild)
  *============================================================================*/
@@ -1339,8 +1320,7 @@ OPER SSLParser::strToOper(const char* s) {
 			// execute
 			return opExecute;
 		case 'f':
-			// fsize, ftoi, fround NOTE: ftrunc handled separately
-			// because it is a unary
+			// fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
 			if (s[1] == 's') return opFsize;
 			if (s[1] == 't') return opFtoi;
 			if (s[1] == 'r') return opFround;
@@ -1463,10 +1443,9 @@ OPER strToTerm(char* s) {
 
 /*==============================================================================
  * FUNCTION:		listExpToExp
- * OVERVIEW:		Convert a list of actual parameters in the form of a
- *					  STL list of Exps into one expression (using opList)
- * NOTE:			The expressions in the list are not cloned; they are
- *					  simply copied to the new opList
+ * OVERVIEW:		Convert a list of actual parameters in the form of a STL list of Exps into one expression
+ *					  (using opList)
+ * NOTE:			The expressions in the list are not cloned; they are simply copied to the new opList
  * PARAMETERS:		le: the list of expressions
  * RETURNS:			The opList Expression
  *============================================================================*/
@@ -1478,8 +1457,7 @@ Exp* listExpToExp(std::list<Exp*>* le) {
 		((Binary*)*cur)->setSubExp1(*it);
 		// cur becomes the address of the address of the second subexpression
 		// In other words, cur becomes a reference to the second subexp ptr
-		// Note that declaring cur as a reference doesn't work (remains a
-		// reference to e)
+		// Note that declaring cur as a reference doesn't work (remains a reference to e)
 		cur = &(*cur)->refSubExp2();
 	}
 	*cur = new Terminal(opNil);			// Terminate the chain
@@ -1488,8 +1466,8 @@ Exp* listExpToExp(std::list<Exp*>* le) {
 
 /*==============================================================================
  * FUNCTION:		listStrToExp
- * OVERVIEW:		Convert a list of formal parameters in the form of a
- *					  STL list of strings into one expression (using opList)
+ * OVERVIEW:		Convert a list of formal parameters in the form of a STL list of strings into one expression
+ *					  (using opList)
  * PARAMETERS:		ls - the list of strings
  * RETURNS:			The opList expression
  *============================================================================*/
@@ -1513,8 +1491,7 @@ Exp* listStrToExp(std::list<std::string>* ls) {
  * PARAMETERS:		iname: Parser object representing the instruction name
  *					params: Parser object representing the instruction params
  *					o_rtlist: Original rtlist object (before expanding)
- *					Dict: Ref to the dictionary that will contain the results
- *					  of the parse
+ *					Dict: Ref to the dictionary that will contain the results of the parse
  * RETURNS:			<nothing>
  *============================================================================*/
 static Exp* srchExpr = new Binary(opExpTable,
@@ -1586,11 +1563,10 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 
 /*==============================================================================
  * FUNCTION:		SSLParser::makeSuccessor
- * OVERVIEW:		Make the successor of the given expression, e.g. given
- *					  r[2], return succ( r[2] ) (using opSuccessor)
- *					We can't do the successor operation here, because the
- *					  parameters are not yet instantiated (still of the form
- *					  param(rd)). Actual successor done in Exp::fixSuccessor()
+ * OVERVIEW:		Make the successor of the given expression, e.g. given r[2], return succ( r[2] )
+ *					  (using opSuccessor)
+ *					We can't do the successor operation here, because the parameters are not yet instantiated
+ *					  (still of the form param(rd)). Actual successor done in Exp::fixSuccessor()
  * NOTE:			The given expression should be of the form	r[const]
  * NOTE:			The parameter expresion is copied (not cloned) in the result
  * PARAMETERS:		The expression to find the successor of
