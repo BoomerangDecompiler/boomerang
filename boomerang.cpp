@@ -31,7 +31,7 @@ void Boomerang::usage() {
 void Boomerang::help() {
     std::cerr << "-h: this help\n";
     std::cerr << "-v: verbose\n";
-    std::cerr << "-g <dot file>: generate a dotty graph of the program\n";
+    std::cerr << "-g <dot file>: generate a dotty graph of the program's CFG\n";
     std::cerr << "-r: print rtl for each proc to stderr before code generation\n";
     std::cerr << "-t: trace every instruction decoded\n";
     std::cerr << "-nb: no simplications for branches\n";
@@ -39,7 +39,7 @@ void Boomerang::help() {
     std::cerr << "-nl: no creation of local variables\n";
     std::cerr << "-nr: no removal of unnedded labels\n";
     std::cerr << "-nd: no (reduced) dataflow analysis\n";
-    std::cerr << "-nDu: no decompilation when recursing up the call graph\n";
+//    std::cerr << "-nDu: no decompilation when recursing up the call graph\n";
     std::cerr << "-nD: no decompilation (at all!)\n";
     std::cerr << "-nP: no promotion of signatures (at all!)\n";
     std::cerr << "-p num: only do num propogations\n";
@@ -156,6 +156,7 @@ int Boomerang::commandLine(int argc, const char **argv) {
         std::cerr << "failed." << std::endl;
         return 1;
     }
+
     std::cerr << "decoding..." << std::endl;
     Prog *prog = fe->decode();
     if (entrypoints.size()) {
@@ -165,17 +166,24 @@ int Boomerang::commandLine(int argc, const char **argv) {
             prog->decode(*it);
         }
     }
+
     std::cerr << "analysing..." << std::endl;
     prog->analyse();
-    std::cerr << "decompiling..." << std::endl;
-    prog->decompile();
+
+    if (!noDecompile) {
+        std::cerr << "decompiling..." << std::endl;
+        prog->decompile();
+    }
+
+    std::cerr << "generating code..." << std::endl;
+    prog->generateCode(std::cout);
+
     if (dotFile) {
+        // Note: relies on interprocedural edges and Cfg->Ordering
+        // So this must come after decompilation and after code generation
+        // (or at least after the call to Cfg::setTimeStamps)
         std::cerr << "generating dot file..." << std::endl;
         prog->generateDotFile();
-    }
-    if (!noDecompile) {
-        std::cerr << "generating code..." << std::endl;
-        prog->generateCode(std::cout);
     }
 
     return 0;

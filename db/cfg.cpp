@@ -2222,24 +2222,47 @@ void Cfg::removeUnneededLabels(HLLCode *hll) {
             hll->RemoveLabel(Ordering[i]->ord);
 }
 
-void Cfg::generateDotFile(const char *str) {
-    assert(str);
-    std::ofstream of(str);
-    of << "digraph Cfg {" << std::endl;
-    for (unsigned int i = 0; i < Ordering.size(); i++) {
-        of << "    " << i << " [";
+void Cfg::generateDotFile(std::ofstream& of) {
+    // The caller has put "procname ->" into of; we need to complete that
+    // line first
+    if (m_listBB.size())
+        of << m_listBB.front()->getStmtNumber();
+    else
+        of << "none";
+    of << ";\n";
+
+    // The nodes
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) {
+        of << "    " << (*it)->getStmtNumber() << " [";
         of << "label=\"";
-        switch(Ordering[i]->getType()) {
+        char* p = (*it)->getStmtNumber();
+        if (p[0] != 'b')
+            // If starts with 'b', no statements (something like bb8101c3c).
+            of << (*it)->getStmtNumber() << ": ";
+        switch((*it)->getType()) {
             case ONEWAY: of << "oneway"; break;
             case TWOWAY: 
-                if (Ordering[i]->getCond())
-                    Ordering[i]->getCond()->print(of); 
+                if ((*it)->getCond()) {
+                    of << "\\n";
+                    (*it)->getCond()->print(of);
+                    of << "\" shape=diamond];\n";
+                    continue;
+                }
                 else
                     of << "twoway";
                 break;
             case NWAY: of << "nway"; break;
-            case CALL: of << "call"; break;
-            case RET: of << "ret"; break;
+            case CALL: {
+                of << "call";
+                Proc* dest = (*it)->getDestProc();
+                if (dest) of << "\\n" << dest->getName();
+                break;
+            }
+            case RET: {
+                of << "ret\" shape=triangle];\n";
+                continue;
+            }
             case FALL: of << "fall"; break;
             case COMPJUMP: of << "compjump"; break;
             case COMPCALL: of << "compcall"; break;
@@ -2247,20 +2270,30 @@ void Cfg::generateDotFile(const char *str) {
         }
         of << "\"];\n";
     }
-    for (unsigned int i = 0; i < Ordering.size(); i++) {
-        for (unsigned int j = 0; j < Ordering[i]->getOutEdges().size(); j++) {
-            of << "    " << i << " -> " << Ordering[i]->getOutEdges()[j]->ord;
-            if (Ordering[i]->getType() == TWOWAY) {
+
+    // Now the edges
+    for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end();
+      it++) {
+        std::vector<PBB>& outEdges = (*it)->getOutEdges();
+        for (unsigned int j = 0; j < outEdges.size(); j++) {
+            of << "    " << (*it)->getStmtNumber() << " -> ";
+            of << outEdges[j]->getStmtNumber();
+            if ((*it)->getType() == TWOWAY) {
                 if (j == 0)
-                    of << "[label=\"true\"]";
+                    of << " [label=\"true\"]";
                 else
-                    of << "[label=\"false\"]";
+                    of << " [label=\"false\"]";
+            } else if ((*it)->getType() == CALL) {
+                if (j > 0)
+                    // A call interprocedural edge
+                    of << " [color=blue]";
+            } else if ((*it)->getType() == RET) {
+                // A return interprocedural edge
+                    of << " [color=green]";
             }
             of << ";\n";
         }
     }
-    of << "}";
-    of.close();
 }
 
 void Cfg::toSSAform(int memDepth) {

@@ -472,7 +472,7 @@ public:
     void   setReturnInterprocEdges();
     void clearReturnInterprocEdges();
 
-    /*
+    /**
      * Get first/next statement this BB
      * Somewhat intricate because of the post call semantics; these funcs
      * save a lot of duplicated, easily-bugged code
@@ -481,6 +481,13 @@ public:
     typedef std::list<Exp*>::iterator elit;
     Statement* getFirstStmt(rtlit& rit, elit& it, elit& cit);
     Statement*  getNextStmt(rtlit& rit, elit& it, elit& cit);
+
+    /**
+     * Get the statement number for the first BB as a character array.
+     * If not possible (e.g. because the BB has no statements), return
+     * a unique string (e.g. bb8048c10)
+     */
+    char* getStmtNumber();
 
     /**
      * Transform the CFG to/from SSA form.
@@ -1020,7 +1027,7 @@ private:
 public:
 
     void removeUnneededLabels(HLLCode *hll);
-    void generateDotFile(const char *str);
+    void generateDotFile(std::ofstream& of);
 
 protected:
 

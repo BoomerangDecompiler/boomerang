@@ -203,10 +203,11 @@ void Prog::decompile() {
     // usedby analysis goes about here (if needed)
 
     // What used to be done in UserProc::decompile
-    if (!Boomerang::get()->noDecompile)
-        decompileProcs();
+    decompileProcs();
 
     removeNullStmts();          // Remove null statements
+    // Put unused statements before recovery of parameters, so we don't
+    // get excess parameters. Arguments of calls should be used in the callee.
     removeUnusedStmts();        // Remove unused statements
 
     // Convert from SSA to non-SSA form. First perform reverse global dataflow
@@ -224,14 +225,37 @@ void Prog::decompile() {
 }
 
 void Prog::generateDotFile() {
+    assert(Boomerang::get()->dotFile);
+    std::ofstream of(Boomerang::get()->dotFile);
+    of << "digraph Cfg {" << std::endl;
+
+    // For now, add all the interprocedural edges
     for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
       it++) {
         Proc *pProc = *it;
         if (pProc->isLib()) continue;
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
-        p->getCFG()->generateDotFile(Boomerang::get()->dotFile);
+        p->getCFG()->setCallInterprocEdges();
+        p->getCFG()->setReturnInterprocEdges();
     }
+
+    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
+      it++) {
+        Proc *pProc = *it;
+        if (pProc->isLib()) continue;
+        UserProc *p = (UserProc*)pProc;
+        if (!p->isDecoded()) continue;
+        // Box for the proc name
+        of << "    \"" << p->getName() <<
+          "\" [shape=box,style=filled,color=yellow];\n    " <<
+          p->getName() << " -> ";
+        // Note: Cfg::generateDotFile will complete this line
+        // Generate dotty CFG for this proc
+        p->getCFG()->generateDotFile(of);
+    }
+    of << "}";
+    of.close();
 }
 
 void Prog::generateCode(std::ostream &os) {
