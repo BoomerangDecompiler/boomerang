@@ -352,11 +352,12 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
         if (VERBOSE)
             LOG << "adding default params for " << pProc->getName() << "\n";
         std::vector<Exp*> &params = getDefaultParams();
-        for (std::vector<Exp*>::iterator it = params.begin(); 
+		std::vector<Exp*>::iterator it;
+        for (it = params.begin(); 
              it != params.end(); it++)
             pProc->getSignature()->addImplicitParameter((*it)->clone());
         std::vector<Exp*> &returns = getDefaultReturns();
-        for (std::vector<Exp*>::iterator it = returns.begin(); 
+        for (it = returns.begin(); 
              it != returns.end(); it++)
             pProc->getSignature()->addReturn((*it)->clone());
     }

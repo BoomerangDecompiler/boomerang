@@ -23,9 +23,6 @@
  */
 
 #include <assert.h>
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
-#endif
 
 #include <sstream>
 #include "rtl.h"
@@ -37,6 +34,12 @@
 #include "decoder.h"
 #include "analysis.h"
 #include "boomerang.h"
+
+// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
+#if defined(_MSC_VER) && _MSC_VER <= 1100
+#include "signature.h"		// For MSVC 5.00
+#include "rtl.h"
+#endif
 
 #define DEBUG_ANALYSIS 0        // Non zero for debugging
 

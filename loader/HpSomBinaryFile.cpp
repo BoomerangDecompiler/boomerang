@@ -23,7 +23,7 @@
 
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
-#pragma warning(disable:4786)
+#include "exp.h"		// For MSVC 5.00
 #endif
 
 #include "HpSomBinaryFile.h"
