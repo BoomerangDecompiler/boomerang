@@ -187,13 +187,14 @@ db/DataflowTest.o: db/DataflowTest.h include/dataflow.h
 util/UtilTest.o: util/UtilTest.h include/util.h
 util/util.o: include/util.h
 
-frontend/frontend.o: frontend/frontend.cpp include/frontend.h include/decoder.h c/ansi-c-parser.h
+frontend/frontend.o: frontend/frontend.cpp include/frontend.h \
+	include/decoder.h c/ansi-c-parser.h
 frontend/FrontendTest.o: frontend/FrontendTest.h
 frontend/FrontSparcTest.o: frontend/FrontSparcTest.h
 frontend/FrontPentTest.o:  frontend/FrontPentTest.h
 frontend/njmcDecoder.o: frontend/njmcDecoder.cpp include/decoder.h
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h
-analysis/analysis.o: db/rtl.o db/hrtl.o db/cfg.o db/basicblock.o db/proc.o db/prog.o \
-    frontend/frontend.o include/analysis.h db/exp.o
+analysis/analysis.o: include/rtl.h include/cfg.h include/proc.h include/prog.h \
+	include/frontend.h include/analysis.h include/exp.h
 
