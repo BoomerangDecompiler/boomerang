@@ -358,6 +358,7 @@ void BasicBlock::printToLog(bool withDF) {
  *============================================================================*/
 ADDRESS BasicBlock::getLowAddr() {
     assert(m_pRtls != NULL);
+    if (m_pRtls->size() == 0) return 0;
     ADDRESS a = m_pRtls->front()->getAddress();
     if ((a == 0) && (m_pRtls->size() > 1)) {
         std::list<RTL*>::iterator it = m_pRtls->begin();
