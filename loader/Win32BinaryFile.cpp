@@ -202,7 +202,12 @@ bool Win32BinaryFile::RealLoad(const char* sName)
             if (iatEntry >> 31) {
                 // This is an ordinal number (stupid idea)
                 std::ostringstream ost;
-                ost << dllName << "_" << (iatEntry & 0x7FFFFFFF);                
+                std::string nodots(dllName);
+                int len = nodots.size();
+                for (int j=0; j < len; j++)
+                    if (nodots[j] == '.')
+                        nodots[j] = '_';    // Dots can't be in identifiers
+                ost << nodots << "_" << (iatEntry & 0x7FFFFFFF);                
                 dlprocptrs[paddr] = ost.str();
                 //printf("Added symbol %s value %x\n", ost.str().c_str(),paddr);
             } else {
