@@ -129,10 +129,6 @@ void Prog::analyse() {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
 
-        // need to do this somewhere
-        // MVE: I don't think we need to at all
-        //p->getCFG()->sortByAddress();
-
         // decoded userproc.. analyse it
         analysis->analyse(p);
     }
@@ -149,6 +145,8 @@ void Prog::decompile() {
         UserProc *p = (UserProc*)pProc;
         if (!p->isDecoded()) continue;
 
+        // Sort by address, so the statement numbers will be sensible
+        p->getCFG()->sortByAddress();
         // Initialise (number, etc) the statements of this proc
         p->initStatements(stmtNumber);
     }
@@ -225,6 +223,8 @@ void Prog::decompile() {
     reverseGlobalDataflow();
     recoverParameters();
     insertArguments();
+    recoverReturnLocs();
+    removeNullUnusedStmts();        // Remove null and unused statements
     fromSSAform();
 
     // Remove interprocedural edges for structuring algorithms
@@ -1042,7 +1042,18 @@ void Prog::decompileProcs() {
         }
     }
         
+    // Now all the other things that were in UserProc::decompile()
+    for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+        proc = (UserProc*)(*pp);
+        if (proc->isLib()) continue;
+        proc->complete();
+    }
+} 
+
+void Prog::removeNullUnusedStmts() {
     // Remove null and unused statements
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
@@ -1063,11 +1074,15 @@ void Prog::decompileProcs() {
         std::cerr << "===== End after removing null and unused "
           "statements =====\n\n";
     }
+}
 
-    // Now all the other things that were in UserProc::decompile()
+void Prog::recoverReturnLocs() {
+    // Recover return locations
+    UserProc* proc;
+    std::list<Proc*>::iterator pp;
     for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
         proc = (UserProc*)(*pp);
         if (proc->isLib()) continue;
-        proc->complete();
+        proc->recoverReturnLocs();
     }
-} 
+}

@@ -98,8 +98,6 @@ void Statement::calcUseLinks() {
 // replace a use in this statement
 void Statement::replaceRef(Statement *def) {
 int src=def->getNumber(); int tgt=getNumber();
-if (src==42 && tgt==23)
-  std::cerr << "HACK!\n";
     Exp* lhs = def->getLeft();
     Exp* rhs = def->getRight();
     assert(lhs);
@@ -109,6 +107,30 @@ if (src==42 && tgt==23)
     // Example: 42:r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
     // The bare r28 on the left "short circuits" to the bare r28 in this LHS
     RefsExp re(lhs, def);
+
+    // do the replacement
+    doReplaceRef(&re, rhs);
+
+    // Careful: don't allow re to destruct while lhs is still a part of it!
+    // Else, will delete lhs, which is still a part of def!
+    re.setSubExp1ND(NULL);
+}
+
+// special replace a use in this statement (where this statement has a
+// component with two refs)
+void Statement::specialReplaceRef(Statement *def) {
+int src=def->getNumber(); int tgt=getNumber();
+    Exp* lhs = def->getLeft();
+    Exp* rhs = def->getRight();
+    assert(lhs);
+    assert(rhs);
+    // "Wrap" the LHS in a double ref RefsExp
+    // Example: this == 119 *32* r[29] := m[r[28]{85 119}],
+    //           def ==  85 *32* r[29] := r[28]{83}
+    // In order to substitute into the double ref component, we have to wrap
+    // lhs in a double ref RefsExp
+    RefsExp re(lhs, def);
+    re.addSubscript(this);
 
     // do the replacement
     doReplaceRef(&re, rhs);

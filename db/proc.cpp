@@ -972,7 +972,9 @@ void UserProc::getStatements(StatementList &stmts) {
     }
 }
 
-// remove a statement
+// Remove a statement. This is somewhat inefficient - we have to search the
+// whole BB for the statement. Should use iterators or other context
+// to find out how to erase "in place" (without having to linearly search)
 void UserProc::removeStatement(Statement *stmt) {
     // remove from BB/RTL
     PBB bb = stmt->getBB();         // Get our enclosing BB
@@ -1507,6 +1509,38 @@ void UserProc::propagateStatements(int memDepth) {
             LocSetIter ll;
             change = false;
             for (Exp* e = exps.getFirst(ll); e; e = exps.getNext(ll)) {
+#if 1
+                if (e->getNumUses() == 2) {
+                    // Check for a special case induced by recursion
+                    // FIXME: Need to extend the hack for two refs, where
+                    // they define the same thing. May need to iterate
+                    // propagations if this succeeds!
+                    if (!((RefsExp*)e)->references(s)) continue;
+                    if (!(*s->getLeft() == *((RefsExp*)e)->getSubExp1()))
+                        continue;
+                    // It's passed these 2 tests; allow propagation to s
+                    // Can propagate TO s (if memory depths are suitable)
+                    StmtSetIter dummy;
+                    Statement* def = ((RefsExp*)e)->getFirstUses(dummy);
+                    if (def == s)
+                        // We want the other one; we know there are just 2
+                        def = ((RefsExp*)e)->getNextUses(dummy);
+                    // Check the depth of the definition (an assignment)
+                    // This checks the depth for the left and right sides, and
+                    // gives the max for both. Example: can't propagate
+                    // tmp := m[x] to foo := tmp if memDepth == 0
+                    int depth = (dynamic_cast<AssignExp*>(def))->getMemDepth();
+                    if (depth > memDepth)
+                        continue;
+                    s->specialReplaceRef(def);
+                    numProp++; change = true;
+                    if (VERBOSE) {
+                        std::cerr << "Special hack propagating " <<
+                          def->getNumber() << " into " << s->getNumber() <<
+                          ", result is " << s << "\n";
+                    }
+                }
+#endif
                 if (e->getNumUses() != 1) continue;
                 // Can propagate TO s (if memory depths are suitable)
                 StmtSetIter dummy;
@@ -1655,4 +1689,8 @@ void UserProc::recoverParameters() {
 
 void UserProc::insertArguments() {
     cfg->insertArguments();
+}
+
+void UserProc::recoverReturnLocs() {
+    cfg->recoverReturnLocs();
 }

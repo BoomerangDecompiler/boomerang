@@ -815,21 +815,21 @@ Signature *Signature::promote(UserProc *p)
 {
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::Win32Signature(*this);
-        sig->analyse(p);
+//        sig->analyse(p);
         delete this;
         return sig;
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::StdC::PentiumSignature(*this);
-        sig->analyse(p);
+//        sig->analyse(p);
         delete this;
         return sig;
     }
 
     if (CallingConvention::StdC::SparcSignature::qualified(p, *this)) {
         Signature *sig = new CallingConvention::StdC::SparcSignature(*this);
-        sig->analyse(p);
+//        sig->analyse(p);
         delete this;
         return sig;
     }
@@ -873,6 +873,7 @@ void Signature::getInternalStatements(StatementList &stmts)
 {
 }
 
+// No longer used; may be used again in future
 void Signature::analyse(UserProc *p)
 {
     if (VERBOSE) {

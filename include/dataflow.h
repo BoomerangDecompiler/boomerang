@@ -252,6 +252,9 @@ public:
 
     // replaces a use of the given statement with an expression
             void replaceRef(Statement *use);
+    // special version of the above for the "special hack"
+    // (see Proc::propagateStatements, where numUses == 2)
+            void specialReplaceRef(Statement* def);
 
     // statements should be printable (for debugging)
     virtual void print(std::ostream &os, bool withUses = false) = 0;

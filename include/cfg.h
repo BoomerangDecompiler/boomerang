@@ -938,6 +938,7 @@ public:
     void appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset);
     void appendBBs(std::list<PBB>& allBBs);
     void calcLiveness(igraph& ig);
+    void recoverReturnLocs();
 
     /*
      * Virtual Function Call analysis

@@ -367,6 +367,7 @@ public:
 
     void recoverParameters();       // Find formal parameters
     void insertArguments();         // Insert actual arguments to match formals
+    void recoverReturnLocs();       // Find return locations
 
     // promote the signature if possible
     void promoteSignature();

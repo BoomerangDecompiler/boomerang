@@ -710,6 +710,7 @@ virtual Exp* addSubscript(Statement* def) {
     Statement* getFirstUses(StmtSetIter& it) {return stmtSet.getFirst(it);}
     Statement* getNextUses (StmtSetIter& it) {return stmtSet.getNext (it);}
     virtual Exp* fromSSA(igraph& ig);
+    bool    references(Statement* s) {return stmtSet.exists(s);}
 };
 
     
