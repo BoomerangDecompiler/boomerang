@@ -1913,7 +1913,7 @@ void findConstantValues(Statement* s, std::list<int>& dests) {
 
 // Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
 bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
-#define CHECK_REAL_PHI_LOOPS 0
+#define CHECK_REAL_PHI_LOOPS 1
 #if CHECK_REAL_PHI_LOOPS
 	rtlit rit; StatementList::iterator sit;
 	Statement* s = getFirstStmt(rit, sit);
