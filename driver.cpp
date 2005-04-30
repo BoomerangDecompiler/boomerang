@@ -1,5 +1,5 @@
 #include "boomerang.h"
-#include "gc.h"
+#include "gc/gc.h"
 #ifdef WIN32
 #include <direct.h>		// For Windows mkdir
 #endif
