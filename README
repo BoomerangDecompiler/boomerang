@@ -9,6 +9,7 @@ Note that on a debian system you can usually get away with:
   sudo apt-get install libgc-dev
   sudo apt-get install libexpat-dev
   ./configure
+  make remote
   make
 
 Thanks.
