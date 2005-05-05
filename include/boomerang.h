@@ -249,6 +249,7 @@ static Boomerang *get() {
     bool fastx86;
     bool generateCallGraph;
 	bool generateSymbols;
+    bool noGlobals;
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

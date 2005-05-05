@@ -43,6 +43,18 @@
 #include "rtl.h"
 #endif
 
+bool Type::isCString()
+{
+	if (!resolvesToPointer())
+		return false;
+	Type *p = asPointer()->getPointsTo();
+	if (p->resolvesToChar())
+		return true;
+	if (!p->resolvesToArray())
+		return false;
+	p = p->asArray()->getBaseType();
+	return p->resolvesToChar();
+}
 
 /*==============================================================================
  * FUNCTION:		Type::Type

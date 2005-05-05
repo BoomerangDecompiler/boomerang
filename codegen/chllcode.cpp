@@ -157,17 +157,21 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				Prog* prog = m_proc->getProg();
 				Const* con = (Const*)((Unary*)sub)->getSubExp1();
 				Type* gt = prog->getGlobalType(con->getStr());
-				if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
+				if (gt && (gt->isArray() || gt->isCString())) {
 					// Special C requirement: don't emit "&" for address of
 					// an array or char*
 					appendExp(str, sub, curPrec);
 					break;
 				}
 			}
-			openParen(str, curPrec, PREC_UNARY);
-			str << "&";
-			appendExp(str, sub, PREC_UNARY);
-			closeParen(str, curPrec, PREC_UNARY);
+			if (sub->isMemOf()) {
+				appendExp(str, sub->getSubExp1(), PREC_UNARY);
+			} else {
+				openParen(str, curPrec, PREC_UNARY);
+				str << "&";
+				appendExp(str, sub, PREC_UNARY);
+				closeParen(str, curPrec, PREC_UNARY);
+			}
 			break;
 		}
 		case opParam:
@@ -339,7 +343,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opMemOf:
 			openParen(str, curPrec, PREC_UNARY);
-			if (u->getSubExp1()->getType()) {
+			if (u->getSubExp1()->getType() &&
+			    !u->getSubExp1()->getType()->isVoid()) {
 				Exp *l = u->getSubExp1();
 				Type *ty = l->getType();
 				if (ty->isPointer()) {
@@ -974,11 +979,16 @@ void CHLLCode::RemoveLabel(int ord) {
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	if (asgn->getLeft()->getOper() == opPC)
 		return;
+	Exp *result;
+	if (asgn->getRight()->search(new Terminal(opPC), result))
+		return;
+	if (asgn->getLeft()->isFlags())
+		return;
 
 	std::ostringstream s;
 	indent(s, indLevel);
 	Type* asgnType = asgn->getType();
-	if (asgn->getLeft()->getOper() == opMemOf && asgnType) 
+	if (asgn->getLeft()->getOper() == opMemOf && asgnType && !asgnType->isVoid()) 
 		appendExp(s,
 			new TypedExp(
 				asgnType,
@@ -991,8 +1001,10 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	else
 		appendExp(s, asgn->getLeft(), PREC_ASSIGN);
 	if (asgn->getRight()->getOper() == opPlus && 
-		*asgn->getRight()->getSubExp1() == *asgn->getLeft()) {
+		*asgn->getRight()->getSubExp1() == *asgn->getLeft() &&
+		!asgn->getLeft()->isMemOf()) {
 		// C has special syntax for this, eg += and ++
+		// however it's not always acceptable for assigns to m[]
 		if (asgn->getRight()->getSubExp2()->getOper() == opIntConst &&
 			((Const*)asgn->getRight()->getSubExp2())->getInt() == 1) 
 			s << "++";
@@ -1096,8 +1108,17 @@ void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns) {
 	lines.push_back(strdup(s.str().c_str()));
 }
 
-void CHLLCode::AddProcStart(Signature *signature) {AddProcDec(signature, true);}
-void CHLLCode::AddPrototype(Signature *signature) {AddProcDec(signature, false);}
+void CHLLCode::AddProcStart(Signature *signature, unsigned int addr) {
+	std::ostringstream s;
+	s << "// address: 0x" << std::hex << addr << std::dec; 
+	lines.push_back(strdup(s.str().c_str()));
+	AddProcDec(signature, true);
+}
+
+void CHLLCode::AddPrototype(Signature *signature) {
+	AddProcDec(signature, false);
+}
+
 void CHLLCode::AddProcDec(Signature *signature, bool open) {
 	std::ostringstream s;
 	if (signature->getNumReturns() == 0) {
@@ -1124,7 +1145,7 @@ void CHLLCode::AddProcDec(Signature *signature, bool open) {
 	}
 	s << ")";
 	if (open)
-		s << "{";
+		s << " {";
 	else
 		s << ";";
 	lines.push_back(strdup(s.str().c_str()));

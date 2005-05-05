@@ -360,7 +360,9 @@ UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		// Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 		Proc(prog, uNative, new Signature(name.c_str())),
 		cfg(new Cfg()), decoded(false), analysed(false), nextLocal(0), decompileSeen(false), decompiled(false),
-		isRecursive(false), theReturnStatement(NULL) {
+		isRecursive(false), theReturnStatement(NULL),
+		DFGcount(0)
+{
 	cfg->setProc(this);				 // Initialise cfg.myProc
 }
 
@@ -572,7 +574,8 @@ void UserProc::generateCode(HLLCode *hll) {
 	assert(getEntryBB());
 
 	cfg->structure();
-	replaceExpressionsWithGlobals();
+	if (!Boomerang::get()->noGlobals)
+	    replaceExpressionsWithGlobals();
 	if (!Boomerang::get()->noLocals) {
 //		  while (nameStackLocations())
 //			  replaceExpressionsWithSymbols();
@@ -590,7 +593,7 @@ void UserProc::generateCode(HLLCode *hll) {
 	if (VERBOSE || Boomerang::get()->printRtl)
 		printToLog();
 
-	hll->AddProcStart(signature);
+	hll->AddProcStart(signature, getNativeAddress());
 	
 	// Local variables
 	std::map<std::string, Type*>::iterator last = locals.end();
@@ -642,6 +645,37 @@ void UserProc::printToLog() {
 	}
 	cfg->printToLog();
 	LOG << "\n";
+}
+
+void UserProc::printDFG() { 
+    char fname[1024];
+    sprintf(fname, "%s%s-%i-dfg.dot", Boomerang::get()->getOutputPath().c_str(), getName(), DFGcount);
+    DFGcount++;
+    if (VERBOSE)
+	LOG << "outputing DFG to " << fname << "\n";
+    std::ofstream out(fname);
+    out << "digraph " << getName() << " {\n";
+    StatementList stmts;
+    getStatements(stmts);
+    StatementList::iterator it;
+    for (it = stmts.begin(); it != stmts.end(); it++) {
+        Statement *s = *it;
+	if (s->isPhi())
+	    out << s->getNumber() << " [shape=\"box\"];\n";
+	LocationSet refs;
+	s->addUsedLocs(refs);
+	LocationSet::iterator rr;
+	for (rr = refs.begin(); rr != refs.end(); rr++) {
+	    RefExp* r = dynamic_cast<RefExp*>(*rr);
+	    if (r && r->getDef())
+	        out << r->getDef()->getNumber() 
+		    << " -> " 
+		    << s->getNumber() 
+		    << ";\n";
+	}
+    }
+    out << "}\n";
+    out.close();
 }
 
 // initialise all statements
@@ -1001,6 +1035,7 @@ std::set<UserProc*>* UserProc::decompile() {
 			LOG << "=== Debug Print SSA for " << getName() << " at memory depth " << depth << " (no propagations) ===\n";
 			printToLog();
 			LOG << "=== End Debug Print SSA for " << getName() << " at depth " << depth << " ===\n\n";
+			printDFG();
 		}
 		
 		Boomerang::get()->alert_decompile_SSADepth(this, depth);
@@ -1021,6 +1056,7 @@ std::set<UserProc*>* UserProc::decompile() {
 		fixCallRefs();
 		// recognising globals early prevents them from becoming parameters
 		if (depth == maxDepth)		// Else Sparc problems... MVE
+	            if (!Boomerang::get()->noGlobals)
 			replaceExpressionsWithGlobals();
 		int nparams = signature->getNumParams();
 		if (!signature->isForced()) {
@@ -1129,8 +1165,8 @@ std::set<UserProc*>* UserProc::decompile() {
 	if (cfg->decodeIndirectJmp(this)) {
 		// There was at least one indirect jump or call found and decoded. That means that most of what has been
 		// done to this function so far is invalid. So redo everything. Very expensive!!
-		LOG << "=== About to restart decompilation of " << getName() <<
-			" because indirect jumps or calls have been removed\n\n";
+		LOG << "=== About to decode everything undecoded and restart decompilation of " << getName() << " because indirect jumps or calls have been removed\n\n";
+		getProg()->decodeEverythingUndecoded();
 		assignProcsToCalls();
 		return decompile();	 // Restart decompiling this proc
 	}
@@ -2797,6 +2833,13 @@ void UserProc::removeUnusedLocals() {
 				if (VERBOSE) LOG << "Counted local " << name.c_str() << " in " << s << "\n";
 			}
 		}
+		if (s->getLeft() && s->getLeft()->isLocal()) {
+			Const* c = (Const*)((Unary*)s->getLeft())->getSubExp1();
+			std::string name(c->getStr());
+			usedLocals.insert(name);
+			if (VERBOSE) LOG << "Counted local " << name.c_str() << " on left of " << s << "\n";
+
+		}
 	}
 	// Now remove the unused ones
 	std::map<std::string, Type*>::iterator it;
@@ -3526,7 +3569,7 @@ if (!cc->first->isTypeOf()) continue;
 					// MVE: check this! Especially when a double prec float
 					con->setFlt(*(float*)&val);
 					con->setOper(opFltConst);
-				} else if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->resolvesToChar()) {
+				} else if (ty->isCString()) {
 					// Convert to a string
 					char* str = prog->getStringConstant(val, true);
 					if (str) {

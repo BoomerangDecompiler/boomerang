@@ -440,6 +440,7 @@ public:
 	void	print(std::ostream &out);
 	char	*prints();
 	void	printToLog();
+	void	printDFG();
 
 	// simplify the statements in this proc
 	void	simplify() { cfg->simplify(); }
@@ -706,6 +707,7 @@ private:
 	// frontend/frontend.cpp handling case STMT_RET.
 	// If no return statement, this will be NULL
 	ReturnStatement* theReturnStatement;
+	int DFGcount;
 public:
 	ADDRESS getTheReturnAddr() {
 		return theReturnStatement == NULL ? NO_ADDRESS :

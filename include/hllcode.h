@@ -105,7 +105,7 @@ virtual void	AddIndCallStatement(int indLevel, Exp *exp, std::vector<Exp*> &args
 virtual void	AddReturnStatement(int indLevel, std::vector<Exp*> &returns) = 0;
 
 		// procedure related
-virtual void	AddProcStart(Signature *signature) = 0;
+virtual void	AddProcStart(Signature *signature, unsigned int addr) = 0;
 virtual void	AddProcEnd() = 0;
 virtual void	AddLocal(const char *name, Type *type, bool last = false) = 0;
 virtual void	AddGlobal(const char *name, Type *type, Exp *init = NULL) = 0;

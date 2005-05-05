@@ -3078,10 +3078,12 @@ Exp* RefExp::fromSSA(igraph& ig) {
 		return ret;
 	}
 	else {
+#if 0
 		if (subExp1->isPC())
 			// pc is just a nuisance at this stage. Make it explicit for
 			// debugging (i.e. to find out why it is still here)
 			return Location::local("pc", NULL);
+#endif
 		// It is in the map. Replace with the assigned local
 		return it->second->clone();
 	}
@@ -3179,8 +3181,10 @@ Exp* Const::genConstraints(Exp* result) {
 				match |= t->isFloat();
 				break;
 			case opStrConst:
-				match = (t->isPointer()) &&
-				  ((PointerType*)t)->getPointsTo()->isChar();
+				match = (t->isPointer()) && (
+				  ((PointerType*)t)->getPointsTo()->isChar() ||
+				  (((PointerType*)t)->getPointsTo()->isArray() &&
+				  ((ArrayType*)((PointerType*)t)->getPointsTo())->getBaseType()->isChar()));
 				break;
 			case opFltConst:
 				match = t->isFloat();

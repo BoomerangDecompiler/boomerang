@@ -142,33 +142,15 @@ void Prog::finishDecode()
 		if (pProc->isLib()) continue;
 		UserProc *p = (UserProc*)pProc;
 		if (!p->isDecoded()) continue;
+		if (p->isAnalysed()) continue;
 		
 		p->assignProcsToCalls();
 		p->finalSimplify();
+		p->setAnalysed();
 		
 	}
 
 }
-
-// Analyse any procedures that are decoded
-#if 1
-void Prog::analyse() {
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-		Proc *pProc = *it;
-		pProc->printDetailsXML();
-		if (pProc->isLib()) continue;
-		UserProc *p = (UserProc*)pProc;
-		if (!p->isDecoded()) continue;
-		if (p->isAnalysed()) continue;
-
-		p->setAnalysed();
-
-		// decoded userproc.. analyse it
-		p->getCFG()->sortByAddress();
-		p->printAnalysedXML();
-	}
-}
-#endif
 
 void Prog::generateDotFile() {
 	assert(Boomerang::get()->dotFile);
@@ -947,8 +929,20 @@ void Prog::decodeExtraEntrypoint(ADDRESS a) {
 	Proc* p = findProc(a);
 	if (p == NULL || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
 		pFE->decode(this, a);
-		analyse();
+		finishDecode();
 	}
+}
+
+void Prog::decodeEverythingUndecoded() {
+	std::list<Proc*>::iterator pp;
+	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+		UserProc *up = (UserProc*) *pp;
+		if (up == NULL) continue;	// Probably not needed
+		if (up->isLib()) continue;
+		if (up->isDecoded()) continue;
+		pFE->decode(this, up);
+	}
+	finishDecode();
 }
 
 void Prog::fastx86decompile()
@@ -1420,7 +1414,7 @@ Exp* Global::getInitialValue(Prog* prog) {
 		return NULL;
 	if (si == NULL)
 		return NULL;
-	if (type->isPointer() && ((PointerType*)type)->getPointsTo()->resolvesToChar()) {
+	if (type->isCString()) {
 		char* str = prog->getStringConstant(uaddr, true);
 		if (str) {
 			// Make a global string

@@ -2191,7 +2191,7 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc) {
 		if (t->resolvesToPointer()) {
 			PointerType *pt = t->asPointer();
 			Type *points_to = pt->getPointsTo();
-			if (points_to->resolvesToChar()) {
+			if (t->isCString()) {
 				ADDRESS u = ((Const*)e)->getAddr();
 				char *str = prog->getStringConstant(u, true);
 				if (str) {
@@ -3167,6 +3167,9 @@ void PhiAssign::print(std::ostream& os) {
 	int i, n = defVec.size();
 	if (n != 0) {
 		for (i = 0; i < n; i++) {
+			// HACK, if e is NULL assume it is ment to match lhs
+			if (defVec[i].e == NULL)
+				defVec[i].e = lhs;
 			if (! (*defVec[i].e == *lhs)) {
 				// One of the phi parameters has a different base expression to lhs. Use non simple print.
 				simple = false;
@@ -4084,6 +4087,7 @@ Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
 }
 
 void PhiAssign::putAt(int i, Statement* def, Exp* e) {
+	assert(e); // should be something surely
 	if (i >= (int)defVec.size())
 		defVec.resize(i+1);		// Note: possible to insert uninitialised elements
 	defVec[i].def = def;

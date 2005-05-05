@@ -77,6 +77,8 @@ static Type			*getNamedType(const char *name);
 static Type*		getTempType(const std::string &name);
 static Type*		parseType(const char *str); // parse a C type
 
+bool	isCString();
+
 					// runtime type information
 virtual bool		isVoid()		const { return false; }
 virtual bool		isFunc()		const { return false; }

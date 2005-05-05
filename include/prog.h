@@ -122,6 +122,7 @@ public:
 	const char *getRegName(int idx) { return pFE->getRegName(idx); }
 
 	void decodeExtraEntrypoint(ADDRESS a); 
+	void decodeEverythingUndecoded();
 
 	void decodeFragment(UserProc* proc, ADDRESS a) {
 		pFE->decodeFragment(proc, a); }
@@ -131,9 +132,6 @@ public:
 	
 	// last fixes after decoding everything
 	void finishDecode();
-
-	// Analyse any decoded procedures
-	void analyse();
 
 	// Insert arguments. Assumes all procedures have their formal parameters
 	// recovered

@@ -38,3 +38,6 @@ int fputs_unlocked(const char *s, FILE *stream);
 
 size_t read(int fd, void *buf, size_t count);
 size_t write(int fd, const void *buf, size_t count);
+
+int rename(const char *oldpath, const char *newpath);
+int remove(const char *pathname);

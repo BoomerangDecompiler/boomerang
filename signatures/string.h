@@ -18,3 +18,4 @@ wchar_t *_wcsrev( wchar_t *string );
 unsigned char *_mbsrev( unsigned char *string );
 char *strchr(const char[] *s, char c);
 char *strrchr(const char[] *s, char c);
+char *sprintf(char[] *dst, const char[] *fmt, ...);

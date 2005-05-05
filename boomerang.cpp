@@ -50,7 +50,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
     noDecodeChildren(false), debugProof(false), debugUnusedStmt(false),
     loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false), fastx86(false),  generateCallGraph(false), generateSymbols(false)
+	noLimitPropagations(false), fastx86(false),  generateCallGraph(false), generateSymbols(false), noGlobals(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -150,6 +150,7 @@ void Boomerang::help() {
 	std::cout << "  -nm              : No decoding of the 'main' procedure\n";
 	std::cout << "  -nn              : No removal of NULL and unused statements\n";
 	std::cout << "  -np              : No replacement of expressions with Parameter names\n";
+	std::cout << "  -ng              : No replacement of expressions with Globals\n";
 	std::cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
 	std::cout << "                     DriverMain)\n";
 	std::cout << "  -nr              : No removal of unneeded labels\n";
@@ -686,6 +687,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 						break;
 					case 'R':
 						noRemoveReturns = true;
+						break;
+					case 'g':
+						noGlobals = true;
 						break;
 					default:
 						help();
