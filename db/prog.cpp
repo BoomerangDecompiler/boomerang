@@ -1203,6 +1203,12 @@ void Prog::fromSSAform() {
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
+		if (Boomerang::get()->vFlag) {
+			LOG << "===== Before transformation from SSA form for " << proc->getName() << " =====\n";
+			proc->printToLog();
+			LOG << "===== End before transformation from SSA for " << proc->getName() << " =====\n\n";
+			proc->printDFG();
+		}
 		proc->fromSSAform();
 		if (Boomerang::get()->vFlag) {
 			LOG << "===== After transformation from SSA form for " << proc->getName() << " =====\n";

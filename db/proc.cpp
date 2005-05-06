@@ -661,17 +661,28 @@ void UserProc::printDFG() {
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement *s = *it;
 	if (s->isPhi())
+	    out << s->getNumber() << " [shape=\"triangle\"];\n";
+	if (s->isCall())
 	    out << s->getNumber() << " [shape=\"box\"];\n";
+	if (s->isBranch())
+	    out << s->getNumber() << " [shape=\"diamond\"];\n";
 	LocationSet refs;
 	s->addUsedLocs(refs);
 	LocationSet::iterator rr;
 	for (rr = refs.begin(); rr != refs.end(); rr++) {
 	    RefExp* r = dynamic_cast<RefExp*>(*rr);
-	    if (r && r->getDef())
-	        out << r->getDef()->getNumber() 
-		    << " -> " 
-		    << s->getNumber() 
-		    << ";\n";
+	    if (r) {
+		if (r->getDef())
+	            out << r->getDef()->getNumber();
+		else
+		    out << "input";
+		out << " -> ";
+		if (s->isReturn())
+		    out << "output";
+		else
+		    out << s->getNumber();
+		out << ";\n";
+	    }
 	}
     }
     out << "}\n";
@@ -1230,6 +1241,7 @@ std::set<UserProc*>* UserProc::decompile() {
 			printToLog();
 			LOG << "=== End after replacing expressions, trimming params and returns ===\n";
 			LOG << "===== End after replacing params =====\n\n";
+			printDFG();
 		}
 	}
 
