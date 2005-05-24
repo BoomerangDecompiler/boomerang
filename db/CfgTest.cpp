@@ -184,7 +184,7 @@ void CfgTest::testPlacePhi () {
 	Cfg* cfg = pProc->getCFG();
 
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	prog->analyse();
+	prog->finishDecode();
 
 	cfg->dominators();
 	cfg->placePhiFunctions(1, pProc);
@@ -196,12 +196,13 @@ void CfgTest::testPlacePhi () {
 			new Const(4)));
 
 	// A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-	std::set<int> expected;
-	expected.insert(7);	 expected.insert(8); expected.insert(10);
-	expected.insert(15); expected.insert(20); expected.insert(21);
-	bool result = expected == cfg->getA_phi(e);
-	CPPUNIT_ASSERT_EQUAL(true, result);
-	delete e;
+	std::ostringstream ost;
+	std::set<int>::iterator ii;
+	std::set<int>& A_phi = cfg->getA_phi(e);
+	for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
+		ost << *ii << " ";
+	std::string expected("7 8 10 15 20 21 ");
+	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
 }
 
 /*==============================================================================
@@ -220,7 +221,7 @@ void CfgTest::testPlacePhi2 () {
 	Cfg* cfg = pProc->getCFG();
 
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	prog->analyse();
+	prog->finishDecode();
 
 	cfg->dominators();
 	cfg->placePhiFunctions(1, pProc);
@@ -276,7 +277,7 @@ void CfgTest::testRenameVars () {
 	Cfg* cfg = pProc->getCFG();
 
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-	prog->analyse();
+	prog->finishDecode();
 
 	cfg->dominators();
 	cfg->placePhiFunctions(1, pProc);
