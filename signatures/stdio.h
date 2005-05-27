@@ -18,6 +18,7 @@ int sscanf(const char *str, const char *format, ...);
 int atoi(const char *nptr);
 
 int getc_unlocked(FILE *stream);
+int getc(FILE *stream);
 int getchar_unlocked(void);
 int putc_unlocked(int c, FILE *stream);
 int putchar_unlocked(int c);
