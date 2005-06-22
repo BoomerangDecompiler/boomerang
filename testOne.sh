@@ -12,7 +12,7 @@
 # 06 Feb 05 - Mike: Pass the test-set parameter to testOne.sh
 
 echo $* > functest.res
-rm -f functest/$2.c
+rm -f functest/$2/$2.c
 ./boomerang -o functest $4 test/$1/$2 2>/dev/null >/dev/null
 ret=$?
 if [[ ret -ge 128 ]]; then
