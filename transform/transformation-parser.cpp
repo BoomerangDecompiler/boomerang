@@ -6,7 +6,7 @@
   */
 
 
-#line 1 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 1 "/usr/local/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -80,7 +80,7 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 73 "/usr/local/lib/bison.cc" */
 #line 85 "transformation-parser.cpp"
 #define YY_TransformationParser_DEBUG  1
 #define YY_TransformationParser_PARSE_PARAM 
@@ -125,7 +125,7 @@ typedef union {
 
 #include "transformation-scanner.h"
 
-#line 73 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 73 "/usr/local/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_TransformationParser_BISON 1
 #ifndef YY_TransformationParser_COMPATIBILITY
@@ -171,36 +171,36 @@ typedef union {
 
 #ifndef YY_TransformationParser_PURE
 
-/* #line 117 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 117 "/usr/local/lib/bison.cc" */
 #line 176 "transformation-parser.cpp"
 
-#line 117 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 117 "/usr/local/lib/bison.cc"
 /*  YY_TransformationParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 121 "/usr/local/lib/bison.cc" */
 #line 185 "transformation-parser.cpp"
 
-#line 121 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 121 "/usr/local/lib/bison.cc"
 /* prefix */
 #ifndef YY_TransformationParser_DEBUG
 
-/* #line 123 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 123 "/usr/local/lib/bison.cc" */
 #line 192 "transformation-parser.cpp"
 
-#line 123 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 123 "/usr/local/lib/bison.cc"
 /* YY_TransformationParser_DEBUG */
 #endif
 
 
 #ifndef YY_TransformationParser_LSP_NEEDED
 
-/* #line 128 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 128 "/usr/local/lib/bison.cc" */
 #line 202 "transformation-parser.cpp"
 
-#line 128 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 128 "/usr/local/lib/bison.cc"
  /* YY_TransformationParser_LSP_NEEDED*/
 #endif
 
@@ -310,7 +310,7 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 236 "/usr/local/lib/bison.cc" */
 #line 315 "transformation-parser.cpp"
 #define	SIZEOF	258
 #define	KIND	259
@@ -357,7 +357,7 @@ typedef
 #define	FALSE	300
 
 
-#line 236 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 236 "/usr/local/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -403,7 +403,7 @@ public:
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 280 "/usr/local/lib/bison.cc" */
 #line 408 "transformation-parser.cpp"
 static const int SIZEOF;
 static const int KIND;
@@ -450,12 +450,12 @@ static const int TRUE;
 static const int FALSE;
 
 
-#line 280 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 280 "/usr/local/lib/bison.cc"
  /* decl const */
 #else
 enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
-/* #line 283 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 283 "/usr/local/lib/bison.cc" */
 #line 460 "transformation-parser.cpp"
 	,SIZEOF=258
 	,KIND=259
@@ -502,7 +502,7 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 	,FALSE=300
 
 
-#line 283 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 283 "/usr/local/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -535,7 +535,7 @@ public:
 /* other declare folow */
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 314 "/usr/local/lib/bison.cc" */
 #line 540 "transformation-parser.cpp"
 const int YY_TransformationParser_CLASS::SIZEOF=258;
 const int YY_TransformationParser_CLASS::KIND=259;
@@ -582,7 +582,7 @@ const int YY_TransformationParser_CLASS::TRUE=299;
 const int YY_TransformationParser_CLASS::FALSE=300;
 
 
-#line 314 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 314 "/usr/local/lib/bison.cc"
  /* const YY_TransformationParser_CLASS::token */
 #endif
 /*apres const  */
@@ -595,30 +595,30 @@ YY_TransformationParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/home/50/trent/bison++-1.21-8/bison.cc" */
+/* #line 325 "/usr/local/lib/bison.cc" */
 #line 600 "transformation-parser.cpp"
 
 
-#define	YYFINAL		68
+#define	YYFINAL		72
 #define	YYFLAG		-32768
-#define	YYNTBASE	58
+#define	YYNTBASE	59
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 300 ? yytranslate[x] : 63)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 300 ? yytranslate[x] : 64)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    56,     2,     2,     2,     2,    50,     2,    55,
-    54,    49,    47,    57,    48,    53,    52,     2,     2,     2,
+     2,     2,    57,     2,     2,     2,     2,    50,     2,    56,
+    55,    49,    47,    58,    48,    54,    53,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,    46,    51,     2,     2,     2,     2,     2,     2,
+     2,     2,    46,    52,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+     2,     2,     2,    51,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -641,23 +641,24 @@ static const char yytranslate[] = {     0,
 #if YY_TransformationParser_DEBUG != 0
 static const short yyprhs[] = {     0,
      0,     3,     4,     9,    12,    13,    17,    21,    25,    29,
-    33,    37,    41,    45,    49,    53,    57,    61,    65,    67,
-    71,    73,    77,    81,    85,    88,    91,    93,    97,    99,
-   101,   105,   107
+    33,    37,    41,    45,    49,    53,    57,    61,    65,    69,
+    73,    75,    79,    81,    85,    89,    93,    96,    99,   101,
+   105,   107,   109,   113,   115
 };
 
-static const short yyrhs[] = {    59,
-    58,     0,     0,    61,    60,    11,    61,     0,    10,    61,
-     0,     0,    12,    15,    46,     0,    13,    61,    46,     0,
-    14,    61,    46,     0,    61,    47,    61,     0,    61,    48,
-    61,     0,    61,    49,    61,     0,    61,    50,    61,     0,
-    61,    51,    61,     0,    61,    52,    61,     0,    61,    27,
-    61,     0,    61,    25,    61,     0,    61,    26,    61,     0,
-    61,    53,    61,     0,    15,     0,     9,    61,    54,     0,
-    16,     0,    55,    61,    54,     0,     4,    61,    54,     0,
-     8,    61,    54,     0,    48,    61,     0,    56,    61,     0,
-    62,     0,    61,    57,    61,     0,    44,     0,    45,     0,
-     5,    62,    54,     0,     6,     0,    16,     0
+static const short yyrhs[] = {    60,
+    59,     0,     0,    62,    61,    11,    62,     0,    10,    62,
+     0,     0,    12,    15,    46,     0,    13,    62,    46,     0,
+    14,    62,    46,     0,    62,    47,    62,     0,    62,    48,
+    62,     0,    62,    49,    62,     0,    62,    50,    62,     0,
+    62,    51,    62,     0,    62,    52,    62,     0,    62,    53,
+    62,     0,    62,    27,    62,     0,    62,    28,    62,     0,
+    62,    25,    62,     0,    62,    26,    62,     0,    62,    54,
+    62,     0,    15,     0,     9,    62,    55,     0,    16,     0,
+    56,    62,    55,     0,     4,    62,    55,     0,     8,    62,
+    55,     0,    48,    62,     0,    57,    62,     0,    63,     0,
+    62,    58,    62,     0,    44,     0,    45,     0,     5,    63,
+    55,     0,     6,     0,    16,     0
 };
 
 #endif
@@ -666,8 +667,8 @@ static const short yyrhs[] = {    59,
 static const short yyrline[] = { 0,
     87,    89,    93,    97,    99,   103,   106,   109,   112,   115,
    118,   121,   124,   127,   130,   133,   136,   139,   142,   145,
-   148,   155,   158,   161,   164,   167,   170,   173,   176,   179,
-   184,   187,   190
+   148,   151,   154,   161,   164,   167,   170,   173,   176,   179,
+   182,   185,   190,   193,   196
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","SIZEOF","KIND",
@@ -676,103 +677,115 @@ static const char * const yytname[] = {   "$","error","$illegal.","SIZEOF","KIND
 "LEFT_OP","RIGHT_OP","LE_OP","GE_OP","EQ_OP","NE_OP","AND_OP","OR_OP","MUL_ASSIGN",
 "DIV_ASSIGN","MOD_ASSIGN","ADD_ASSIGN","SUB_ASSIGN","LEFT_ASSIGN","RIGHT_ASSIGN",
 "AND_ASSIGN","XOR_ASSIGN","OR_ASSIGN","TYPE_NAME","STRUCT","UNION","ENUM","ELLIPSIS",
-"TRUE","FALSE","']'","'+'","'-'","'*'","'&'","'^'","'/'","'.'","')'","'('","'!'",
-"','","translation_unit","transformation","optional_where_clause","exp","type",
-""
+"TRUE","FALSE","']'","'+'","'-'","'*'","'&'","'|'","'^'","'/'","'.'","')'","'('",
+"'!'","','","translation_unit","transformation","optional_where_clause","exp",
+"type",""
 };
 #endif
 
 static const short yyr1[] = {     0,
-    58,    58,    59,    60,    60,    61,    61,    61,    61,    61,
-    61,    61,    61,    61,    61,    61,    61,    61,    61,    61,
-    61,    61,    61,    61,    61,    61,    61,    61,    61,    61,
-    62,    62,    62
+    59,    59,    60,    61,    61,    62,    62,    62,    62,    62,
+    62,    62,    62,    62,    62,    62,    62,    62,    62,    62,
+    62,    62,    62,    62,    62,    62,    62,    62,    62,    62,
+    62,    62,    63,    63,    63
 };
 
 static const short yyr2[] = {     0,
      2,     0,     4,     2,     0,     3,     3,     3,     3,     3,
-     3,     3,     3,     3,     3,     3,     3,     3,     1,     3,
-     1,     3,     3,     3,     2,     2,     1,     3,     1,     1,
-     3,     1,     1
+     3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
+     1,     3,     1,     3,     3,     3,     2,     2,     1,     3,
+     1,     1,     3,     1,     1
 };
 
 static const short yydefact[] = {     2,
-     0,     0,    32,     0,     0,     0,     0,     0,    19,    21,
-    29,    30,     0,     0,     0,     2,     5,    27,     0,    33,
-     0,     0,     0,     0,     0,     0,    25,     0,    26,     1,
+     0,     0,    34,     0,     0,     0,     0,     0,    21,    23,
+    31,    32,     0,     0,     0,     2,     5,    29,     0,    35,
+     0,     0,     0,     0,     0,     0,    27,     0,    28,     1,
      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-     0,     0,     0,    23,    31,    24,    20,     6,     7,     8,
-    22,     4,    16,    17,    15,     9,    10,    11,    12,    13,
-    14,    18,    28,     0,     3,     0,     0,     0
+     0,     0,     0,     0,     0,    25,    33,    26,    22,     6,
+     7,     8,    24,     4,    18,    19,    16,    17,     9,    10,
+    11,    12,    13,    14,    15,    20,    30,     0,     3,     0,
+     0,     0
 };
 
 static const short yydefgoto[] = {    30,
-    16,    43,    17,    18
+    16,    45,    17,    18
 };
 
-static const short yypact[] = {    11,
-    11,     5,-32768,    11,    11,   -14,    11,    11,-32768,-32768,
--32768,-32768,    11,    11,    11,    11,    35,-32768,    21,-32768,
-   -52,    54,    68,   -41,    87,   101,   130,   116,   130,-32768,
-    11,    11,    11,    11,    11,    11,    11,    11,    11,    11,
-    11,    11,    -3,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
--32768,   130,   130,   130,   130,   130,   130,   130,   130,   130,
-   130,   130,   130,    11,   130,     9,    18,-32768
+static const short yypact[] = {    12,
+    12,     3,-32768,    12,    12,   -14,    12,    12,-32768,-32768,
+-32768,-32768,    12,    12,    12,    12,    36,-32768,    23,-32768,
+   -53,    70,    82,   -41,   116,   129,   175,   163,   175,-32768,
+    12,    12,    12,    12,    12,    12,    12,    12,    12,    12,
+    12,    12,    12,    12,     0,-32768,-32768,-32768,-32768,-32768,
+-32768,-32768,-32768,   175,   175,   175,   175,   175,   175,   175,
+   175,   175,   175,   175,   175,   175,   175,    12,   175,    10,
+    15,-32768
 };
 
 static const short yypgoto[] = {    22,
--32768,-32768,    -1,    26
+-32768,-32768,    -1,    21
 };
 
 
-#define	YYLAST		187
+#define	YYLAST		233
 
 
 static const short yytable[] = {    19,
-    24,    45,    22,    23,    48,    25,    26,    64,    67,     2,
-     3,    27,    28,    29,     1,     2,     3,    68,     4,     5,
-    20,    66,     6,     7,     8,     9,    10,    21,     0,    52,
-    53,    54,    55,    56,    57,    58,    59,    60,    61,    62,
-    63,     0,     0,     0,    31,    32,    33,    34,     0,     0,
-     0,     0,     0,     0,    11,    12,     0,     0,    13,    32,
-    33,    34,    65,     0,     0,    14,    15,    35,    36,    37,
-    38,    39,    40,    41,    44,     0,     0,    42,    32,    33,
-    34,    35,    36,    37,    38,    39,    40,    41,     0,     0,
-     0,    42,    32,    33,    34,     0,     0,     0,     0,     0,
-    35,    36,    37,    38,    39,    40,    41,    46,     0,     0,
-    42,    32,    33,    34,    35,    36,    37,    38,    39,    40,
-    41,    47,     0,     0,    42,    32,    33,    34,     0,     0,
-     0,     0,    49,    35,    36,    37,    38,    39,    40,    41,
-    32,    33,    34,    42,     0,     0,    50,    35,    36,    37,
-    38,    39,    40,    41,    32,    33,    34,    42,     0,     0,
-     0,     0,    35,    36,    37,    38,    39,    40,    41,    51,
-     0,     0,    42,     0,     0,     0,    35,    36,    37,    38,
-    39,    40,    41,     0,     0,     0,    42
+    24,    47,    22,    23,    50,    25,    26,     2,     3,    71,
+    68,    27,    28,    29,    72,     1,     2,     3,    20,     4,
+     5,    70,    21,     6,     7,     8,     9,    10,     0,    54,
+    55,    56,    57,    58,    59,    60,    61,    62,    63,    64,
+    65,    66,    67,     0,     0,    31,     0,    32,    33,    34,
+    35,     0,     0,     0,     0,    11,    12,     0,     0,    13,
+    32,    33,    34,    35,     0,     0,    69,    14,    15,    36,
+    37,    38,    39,    40,    41,    42,    43,    46,     0,     0,
+    44,     0,    36,    37,    38,    39,    40,    41,    42,    43,
+     0,     0,     0,    44,    32,    33,    34,    35,     0,     0,
+     0,     0,     0,     0,     0,     0,    32,    33,    34,    35,
+     0,     0,     0,     0,     0,     0,    36,    37,    38,    39,
+    40,    41,    42,    43,    48,     0,     0,    44,    36,    37,
+    38,    39,    40,    41,    42,    43,    49,     0,     0,    44,
+    32,    33,    34,    35,     0,     0,     0,     0,     0,     0,
+     0,     0,     0,    32,    33,    34,    35,     0,     0,     0,
+     0,    51,    36,    37,    38,    39,    40,    41,    42,    43,
+     0,     0,     0,    44,    52,    36,    37,    38,    39,    40,
+    41,    42,    43,     0,     0,     0,    44,    32,    33,    34,
+    35,     0,     0,     0,     0,     0,     0,     0,     0,    32,
+    33,    34,    35,     0,     0,     0,     0,     0,     0,    36,
+    37,    38,    39,    40,    41,    42,    43,    53,     0,     0,
+    44,    36,    37,    38,    39,    40,    41,    42,    43,     0,
+     0,     0,    44
 };
 
 static const short yycheck[] = {     1,
-    15,    54,     4,     5,    46,     7,     8,    11,     0,     5,
-     6,    13,    14,    15,     4,     5,     6,     0,     8,     9,
-    16,     0,    12,    13,    14,    15,    16,     2,    -1,    31,
+    15,    55,     4,     5,    46,     7,     8,     5,     6,     0,
+    11,    13,    14,    15,     0,     4,     5,     6,    16,     8,
+     9,     0,     2,    12,    13,    14,    15,    16,    -1,    31,
     32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-    42,    -1,    -1,    -1,    10,    25,    26,    27,    -1,    -1,
-    -1,    -1,    -1,    -1,    44,    45,    -1,    -1,    48,    25,
-    26,    27,    64,    -1,    -1,    55,    56,    47,    48,    49,
-    50,    51,    52,    53,    54,    -1,    -1,    57,    25,    26,
-    27,    47,    48,    49,    50,    51,    52,    53,    -1,    -1,
-    -1,    57,    25,    26,    27,    -1,    -1,    -1,    -1,    -1,
-    47,    48,    49,    50,    51,    52,    53,    54,    -1,    -1,
-    57,    25,    26,    27,    47,    48,    49,    50,    51,    52,
-    53,    54,    -1,    -1,    57,    25,    26,    27,    -1,    -1,
-    -1,    -1,    46,    47,    48,    49,    50,    51,    52,    53,
-    25,    26,    27,    57,    -1,    -1,    46,    47,    48,    49,
-    50,    51,    52,    53,    25,    26,    27,    57,    -1,    -1,
-    -1,    -1,    47,    48,    49,    50,    51,    52,    53,    54,
-    -1,    -1,    57,    -1,    -1,    -1,    47,    48,    49,    50,
-    51,    52,    53,    -1,    -1,    -1,    57
+    42,    43,    44,    -1,    -1,    10,    -1,    25,    26,    27,
+    28,    -1,    -1,    -1,    -1,    44,    45,    -1,    -1,    48,
+    25,    26,    27,    28,    -1,    -1,    68,    56,    57,    47,
+    48,    49,    50,    51,    52,    53,    54,    55,    -1,    -1,
+    58,    -1,    47,    48,    49,    50,    51,    52,    53,    54,
+    -1,    -1,    -1,    58,    25,    26,    27,    28,    -1,    -1,
+    -1,    -1,    -1,    -1,    -1,    -1,    25,    26,    27,    28,
+    -1,    -1,    -1,    -1,    -1,    -1,    47,    48,    49,    50,
+    51,    52,    53,    54,    55,    -1,    -1,    58,    47,    48,
+    49,    50,    51,    52,    53,    54,    55,    -1,    -1,    58,
+    25,    26,    27,    28,    -1,    -1,    -1,    -1,    -1,    -1,
+    -1,    -1,    -1,    25,    26,    27,    28,    -1,    -1,    -1,
+    -1,    46,    47,    48,    49,    50,    51,    52,    53,    54,
+    -1,    -1,    -1,    58,    46,    47,    48,    49,    50,    51,
+    52,    53,    54,    -1,    -1,    -1,    58,    25,    26,    27,
+    28,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    25,
+    26,    27,    28,    -1,    -1,    -1,    -1,    -1,    -1,    47,
+    48,    49,    50,    51,    52,    53,    54,    55,    -1,    -1,
+    58,    47,    48,    49,    50,    51,    52,    53,    54,    -1,
+    -1,    -1,    58
 };
 
-#line 325 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 325 "/usr/local/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -829,9 +842,9 @@ YYENDDECLARELABEL
 /* ALLOCA SIMULATION */
 /* __HAVE_NO_ALLOCA */
 #ifdef __HAVE_NO_ALLOCA
-int __alloca_free_ptr(char *ptr,char *ref);
-//{if(ptr!=ref) free(ptr);
-// return 0;}
+int __alloca_free_ptr(char *ptr,char *ref)
+{if(ptr!=ref) free(ptr);
+ return 0;}
 
 #define __ALLOCA_alloca(size) malloc(size)
 #define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
@@ -1260,8 +1273,8 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 1265 "transformation-parser.cpp"
+/* #line 811 "/usr/local/lib/bison.cc" */
+#line 1278 "transformation-parser.cpp"
 
   switch (yyn) {
 
@@ -1322,46 +1335,56 @@ case 12:
     break;}
 case 13:
 #line 125 "transformation.y"
-{ yyval.exp = new Binary(opBitXor, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opBitOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 14:
 #line 128 "transformation.y"
-{ yyval.exp = new Binary(opDiv, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opBitXor, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 15:
 #line 131 "transformation.y"
-{ yyval.exp = new Binary(opAnd, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opDiv, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 16:
 #line 134 "transformation.y"
-{ yyval.exp = new Binary(opEquals, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opAnd, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 17:
 #line 137 "transformation.y"
-{ yyval.exp = new Binary(opNotEqual, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opOr, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 18:
 #line 140 "transformation.y"
-{ yyval.exp = new Binary(opMemberAccess, yyvsp[-2].exp, yyvsp[0].exp);
+{ yyval.exp = new Binary(opEquals, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 19:
 #line 143 "transformation.y"
-{ yyval.exp = new Const(yyvsp[0].ival);
+{ yyval.exp = new Binary(opNotEqual, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 20:
 #line 146 "transformation.y"
-{ yyval.exp = new Binary(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
+{ yyval.exp = new Binary(opMemberAccess, yyvsp[-2].exp, yyvsp[0].exp);
     ;
     break;}
 case 21:
 #line 149 "transformation.y"
+{ yyval.exp = new Const(yyvsp[0].ival);
+    ;
+    break;}
+case 22:
+#line 152 "transformation.y"
+{ yyval.exp = new Binary(opFlagCall, new Const(yyvsp[-2].str), yyvsp[-1].exp);
+    ;
+    break;}
+case 23:
+#line 155 "transformation.y"
 { 
       if (strlen(yyvsp[0].str) > 2 && yyvsp[0].str[0] == 'o' && yyvsp[0].str[1] == 'p')  
           yyval.exp = new Const(yyvsp[0].str); // treat op* as a string constant
@@ -1369,69 +1392,69 @@ case 21:
           yyval.exp = new Unary(opVar, new Const(yyvsp[0].str));
     ;
     break;}
-case 22:
-#line 156 "transformation.y"
-{ yyval.exp = yyvsp[-1].exp;
-    ;
-    break;}
-case 23:
-#line 159 "transformation.y"
-{ yyval.exp = new Unary(opKindOf, yyvsp[-1].exp);
-    ;
-    break;}
 case 24:
 #line 162 "transformation.y"
-{ yyval.exp = new Unary(opTypeOf, yyvsp[-1].exp);
+{ yyval.exp = yyvsp[-1].exp;
     ;
     break;}
 case 25:
 #line 165 "transformation.y"
-{ yyval.exp = new Unary(opNeg, yyvsp[0].exp);
+{ yyval.exp = new Unary(opKindOf, yyvsp[-1].exp);
     ;
     break;}
 case 26:
 #line 168 "transformation.y"
-{ yyval.exp = new Unary(opLNot, yyvsp[0].exp);
+{ yyval.exp = new Unary(opTypeOf, yyvsp[-1].exp);
     ;
     break;}
 case 27:
 #line 171 "transformation.y"
-{ yyval.exp = new TypeVal(yyvsp[0].type);
+{ yyval.exp = new Unary(opNeg, yyvsp[0].exp);
     ;
     break;}
 case 28:
 #line 174 "transformation.y"
-{ yyval.exp = new Binary(opList, yyvsp[-2].exp, new Binary(opList, yyvsp[0].exp, new Terminal(opNil)));
+{ yyval.exp = new Unary(opLNot, yyvsp[0].exp);
     ;
     break;}
 case 29:
 #line 177 "transformation.y"
-{ yyval.exp = new Terminal(opTrue);
+{ yyval.exp = new TypeVal(yyvsp[0].type);
     ;
     break;}
 case 30:
 #line 180 "transformation.y"
-{ yyval.exp = new Terminal(opFalse);
+{ yyval.exp = new Binary(opList, yyvsp[-2].exp, new Binary(opList, yyvsp[0].exp, new Terminal(opNil)));
     ;
     break;}
 case 31:
-#line 185 "transformation.y"
-{ yyval.type = new PointerType(yyvsp[-1].type);
+#line 183 "transformation.y"
+{ yyval.exp = new Terminal(opTrue);
     ;
     break;}
 case 32:
-#line 188 "transformation.y"
-{ yyval.type = new CompoundType();
+#line 186 "transformation.y"
+{ yyval.exp = new Terminal(opFalse);
     ;
     break;}
 case 33:
 #line 191 "transformation.y"
+{ yyval.type = new PointerType(yyvsp[-1].type);
+    ;
+    break;}
+case 34:
+#line 194 "transformation.y"
+{ yyval.type = new CompoundType();
+    ;
+    break;}
+case 35:
+#line 197 "transformation.y"
 { yyval.type = new NamedType(yyvsp[0].str);
     ;
     break;}
 }
 
-#line 811 "/home/50/trent/bison++-1.21-8/bison.cc"
+#line 811 "/usr/local/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1632,9 +1655,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/home/50/trent/bison++-1.21-8/bison.cc" */
-#line 1637 "transformation-parser.cpp"
-#line 195 "transformation.y"
+/* #line 1010 "/usr/local/lib/bison.cc" */
+#line 1660 "transformation-parser.cpp"
+#line 201 "transformation.y"
 
 #include <stdio.h>
 
