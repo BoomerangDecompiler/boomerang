@@ -1,3 +1,6 @@
+/*
+ *	$Revision$ // 1.12.6.1
+ */
 #ifndef PENTFRONTEND_H
 #define PENTFRONTEND_H
 
@@ -16,28 +19,26 @@ public:
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */
-	PentiumFrontEnd(BinaryFile *pBF);
+					PentiumFrontEnd(BinaryFile *pBF, Prog* prog);
 
-virtual ~PentiumFrontEnd();
+virtual 			~PentiumFrontEnd();
 
-virtual platform getFrontEndId() { return PLAT_PENTIUM; }
+virtual platform	getFrontEndId() { return PLAT_PENTIUM; }
 
 	/*
 	 * processProc. This is the main function for decoding a procedure.
-	 * This overrides the base class processProc to do source machine
-	 * specific things (but often calls the base class to do most of the
-	 * work. Sparc is an exception)
-	 * If spec is true, this is a speculative decode (so give up on any invalid
-	 * instruction)
+	 * This overrides the base class processProc to do source machine specific things (but often calls the base class
+	 * to do most of the work. Sparc is an exception)
+	 * If spec is true, this is a speculative decode (so give up on any invalid instruction)
 	 * Returns true on a good decode
 	 */
-virtual bool	processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os,
-				bool frag = false, bool spec = false);
+virtual bool		processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag = false,
+						bool spec = false);
 
 virtual std::vector<Exp*> &getDefaultParams();
 virtual std::vector<Exp*> &getDefaultReturns();
 
-virtual ADDRESS getMainEntryPoint( bool &gotMain );
+virtual ADDRESS		getMainEntryPoint( bool &gotMain );
 
 private:
 
@@ -49,14 +50,12 @@ private:
 	/*
 	 * Emit a set instruction.
 	 */
-		void	emitSet(std::list<RTL*>* pRtls, std::list<RTL*>::iterator& itRtl, ADDRESS uAddr,
-			Exp* pLHS, Exp* cond);
+	void	emitSet(std::list<RTL*>* pRtls, std::list<RTL*>::iterator& itRtl, ADDRESS uAddr, Exp* pLHS, Exp* cond);
 
 	/*
 	 * Handle the case of being in state 23 and encountering a set instruction.
 	 */
-		void	State25(Exp* pLHS, Exp* pRHS, std::list<RTL*>* pRtls, std::list<RTL*>::iterator& rit,
-				ADDRESS uAddr);
+	void	State25(Exp* pLHS, Exp* pRHS, std::list<RTL*>* pRtls, std::list<RTL*>::iterator& rit, ADDRESS uAddr);
 
 	int idPF;			   // Parity flag
 

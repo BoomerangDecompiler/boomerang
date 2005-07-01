@@ -15,7 +15,8 @@
  *============================================================================*/
 
 /* 
- * $Revision$
+ * $Revision$	// 1.16.2.2
+ *
  * 08 Apr 02 - Mike: Mods for boomerang
  */
 
@@ -55,134 +56,130 @@ enum ICLASS {
  * reference parameters.
  *============================================================================*/
 struct DecodeResult {
-	/*
-	 * Resets all the fields to their default values.
-	 */
-	void reset();
+		/*
+		 * Resets all the fields to their default values.
+		 */
+		void		reset();
 
-	/*
-	 * The number of bytes decoded in the main instruction
-	 */
-	int numBytes;
+		/*
+		 * The number of bytes decoded in the main instruction
+		 */
+		int			numBytes;
 
-	/*
-	 * The RTL constructed (if any).
-	 */
-	RTL* rtl;
+		/*
+		 * The RTL constructed (if any).
+		 */
+		RTL*		rtl;
 
-	/*
-	 * Indicates whether or not a valid instruction was decoded.
-	 */
-	bool valid;
+		/*
+		 * Indicates whether or not a valid instruction was decoded.
+		 */
+		bool		valid;
 
-	/*
-	 * The class of the instruction decoded. Will be one of the classes
-	 * described in "A Transformational Approach to Binary Translation of
-	 * Delayed Branches" (plus two more HPPA specific entries).
-	 * Ignored by machines with no delay slots
-	 */
-	ICLASS type;
+		/*
+		 * The class of the instruction decoded. Will be one of the classes described in "A Transformational Approach
+		 * to Binary Translation of Delayed Branches" (plus two more HPPA specific entries).
+		 * Ignored by machines with no delay slots
+		 */
+		ICLASS type;
 
-	/*
-	 * If true, don't add numBytes and decode there; instead, re-decode
-	 * the current instruction. Needed for instructions like the Pentium
-	 * BSF/BSR, which emit branches (so numBytes needs to be carefully set
-	 * for the fall through out edge after the branch)
-	 */
-	bool reDecode;
+		/*
+		 * If true, don't add numBytes and decode there; instead, re-decode the current instruction. Needed for
+		 * instructions like the Pentium BSF/BSR, which emit branches (so numBytes needs to be carefully set for the
+		 * fall through out edge after the branch)
+		 */
+		bool reDecode;
 
-	/*
-	 * If non zero, this field represents a new native address to be used as
-	 * the out-edge for this instruction's BB. At present, only used for
-	 * the SPARC call/add caller prologue
-	 */
-	ADDRESS forceOutEdge;
+		/*
+		 * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.		 * At present, only used for the SPARC call/add caller prologue
+		 */
+		ADDRESS forceOutEdge;
 
 };
 
 /*==============================================================================
- * The NJMCDecoder class is a class that contains NJMC generated decoding
- * methods.
+ * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
  *============================================================================*/
 class NJMCDecoder {
+protected:
+		Prog*		prog;
 public:
-	/*
-	 * Constructor and destructor
-	 */
-	NJMCDecoder();
-virtual ~NJMCDecoder() {};
+		/*
+		 * Constructor and destructor
+		 */
+					NJMCDecoder(Prog* prog);
+virtual				~NJMCDecoder() {};
 
-	/*
-	 * Decodes the machine instruction at pc and returns an RTL instance for
-	 * the instruction.
-	 */
+		/*
+		 * Decodes the machine instruction at pc and returns an RTL instance for the instruction.
+		 */
 virtual DecodeResult& decodeInstruction (ADDRESS pc, int delta) = 0;
 
-	/*
-	 * Disassembles the machine instruction at pc and returns the number of
-	 * bytes disassembled. Assembler output goes to global _assembly
-	 */
+		/*
+		 * Disassembles the machine instruction at pc and returns the number of bytes disassembled.
+		 * Assembler output goes to global _assembly
+		 */
 virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 
-	RTLInstDict& getRTLDict() { return RTLDict; }
+		RTLInstDict& getRTLDict() { return RTLDict; }
 
-    void computedJump(const char* name, int size, Exp* dest, ADDRESS pc,std::list<Statement*>* stmts, DecodeResult& result);
+		void		computedJump(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
+						DecodeResult& result);
+
+		Prog*		getProg() {return prog;}
 
 protected:
 
-	/*
-	 * Given an instruction name and a variable list of Exps
-	 * representing the actual operands of the instruction, use the
-	 * RTL template dictionary to return the list of Statements
-	 * representing the semantics of the instruction. This method also
-	 * displays a disassembly of the instruction if the relevant
-	 * compilation flag has been set.
-	 */
-	std::list<Statement*>* instantiate(ADDRESS pc, const char* name, ...);
+		/*
+		 * Given an instruction name and a variable list of Exps representing the actual operands of the instruction,
+		 * use the RTL template dictionary to return the list of Statements representing the semantics of the
+		 * instruction. This method also displays a disassembly of the instruction if the relevant compilation flag
+		 * has been set.
+		 */
+		std::list<Statement*>* instantiate(ADDRESS pc, const char* name, ...);
 
-	/*
-	 * Similarly, given a parameter name and a list of Exp*'s
-	 * representing sub-parameters, return a fully substituted
-	 * Exp for the whole expression
-	 */
-	Exp* instantiateNamedParam(char *name, ...);
+		/*
+		 * Similarly, given a parameter name and a list of Exp*'s
+		 * representing sub-parameters, return a fully substituted
+		 * Exp for the whole expression
+		 */
+		Exp* instantiateNamedParam(char *name, ...);
 
-	/*
-	 * In the event that it's necessary to synthesize the call of a named parameter generated with
-	 * instantiateNamedParam(), this method will substitute the arguments that * follow into the expression.
-	 * Should only be used after e = instantiateNamedParam(name, ..);
-	 */
-	void	substituteCallArgs(char *name, Exp*& exp, ...);
+		/*
+		 * In the event that it's necessary to synthesize the call of a named parameter generated with
+		 * instantiateNamedParam(), this method will substitute the arguments that * follow into the expression.
+		 * Should only be used after e = instantiateNamedParam(name, ..);
+		 */
+		void		substituteCallArgs(char *name, Exp*& exp, ...);
 
-	/*
-	 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
-	 */
-	void	unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
-		std::list<Statement*>* stmts, DecodeResult& result);
+		/*
+		 * This used to be the UNCOND_JUMP macro; it's extended to handle jumps to other procedures
+		 */
+		void		unconditionalJump(const char* name, int size, ADDRESS relocd, int delta, ADDRESS pc,
+						std::list<Statement*>* stmts, DecodeResult& result);
 
-	/*
-	 * String for the constructor names (displayed with use "-c")
-	 */
-	char	constrName[84];
+		/*
+		 * String for the constructor names (displayed with use "-c")
+		 */
+		char		constrName[84];
 
-	/* decodes a number */
-	Exp*	dis_Num(unsigned num);
-	/* decodes a register */
-	Exp*	dis_Reg(int regNum);
+		/* decodes a number */
+		Exp*		dis_Num(unsigned num);
+		/* decodes a register */
+		Exp*		dis_Reg(int regNum);
 
-	// Public dictionary of instruction patterns, and other information summarised from the SSL file
-	// (e.g. source machine's endianness)
-	RTLInstDict RTLDict;
+		// Public dictionary of instruction patterns, and other information summarised from the SSL file
+		// (e.g. source machine's endianness)
+		RTLInstDict	RTLDict;
 };
 
-// Function used to guess whether a given
-// pc-relative address is the start of a function
+// Function used to guess whether a given pc-relative address is the start of a function
 
-/*
- * Does the instruction at the given offset correspond to a caller prologue?
- * NOTE: Implemented in the decoder.m files
- */
-bool isFuncPrologue(ADDRESS hostPC);
+		/*
+		 * Does the instruction at the given offset correspond to a caller prologue?
+		 * NOTE: Implemented in the decoder.m files
+		 */
+		bool		isFuncPrologue(ADDRESS hostPC);
 
 
 /*==============================================================================

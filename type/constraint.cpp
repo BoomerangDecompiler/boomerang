@@ -13,7 +13,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.16.6.1
  *
  * 22 Aug 03 - Mike: Created
  */
@@ -22,6 +22,7 @@
 #include "managed.h"
 #include "exp.h"
 #include "boomerang.h"
+#include "log.h"
 #include <sstream>
 
 void ConstraintMap::print(std::ostream& os) {
@@ -39,8 +40,8 @@ extern char debug_buffer[];
 char* ConstraintMap::prints() {
 	std::ostringstream ost;
 	print(ost);
-	strncpy(debug_buffer, ost.str().c_str(), 999);
-	debug_buffer[999] = '\0';
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
 }
 
@@ -86,8 +87,8 @@ void EquateMap::print(std::ostream& os) {
 char* EquateMap::prints() {
 	std::ostringstream ost;
 	print(ost);
-	strncpy(debug_buffer, ost.str().c_str(), 999);
-	debug_buffer[999] = '\0';
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
 }
 
@@ -563,7 +564,7 @@ void Constraints::print(std::ostream& os) {
 char* Constraints::prints() {
 	std::ostringstream ost;
 	print(ost);
-	strncpy(debug_buffer, ost.str().c_str(), 999);
-	debug_buffer[999] = '\0';
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
 }

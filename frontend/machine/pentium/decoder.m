@@ -9,12 +9,11 @@
 
 /*==============================================================================
  * FILE:	   decoder.m
- * OVERVIEW:   This file contains the high level decoding functionality, for
- *				example matching logues, calls, branches, etc. Ordinary
- *				instructions are processed in decoder_low.m
+ * OVERVIEW:   This file contains the high level decoding functionality, for example matching logues, calls, branches,
+ *				etc. Ordinary instructions are processed in decoder_low.m
  *============================================================================*/ 
 /*
- * $Revision$
+ * $Revision$	// 1.33.2.2
  *
  * 26 Apr 02 - Mike: Changes for boomerang
  * 18 Nov 02 - Mike: Mods for MOV.Ed.Iv^od etc. Also suppressed warning re name
@@ -85,22 +84,17 @@ void PentiumDecoder::unused(int x)
 
 /*==============================================================================
  * FUNCTION:	   PentiumDecoder::decodeInstruction
- * OVERVIEW:	   Decodes a machine instruction and returns an RTL instance. In
- *				   most cases a single instruction is decoded. However, if a
- *				   higher level construct that may consist of multiple
- *				   instructions is matched, then there may be a need to return
- *				   more than one RTL. The caller_prologue2 is an example of such
- *				   a construct which encloses an abritary instruction that must
- *				   be decoded into its own RTL.
+ * OVERVIEW:	   Decodes a machine instruction and returns an RTL instance. In most cases a single instruction is
+ *					decoded. However, if a higher level construct that may consist of multiple instructions is matched,
+ *					then there may be a need to return more than one RTL. The caller_prologue2 is an example of such
+ *					a construct which encloses an abritary instruction that must be decoded into its own RTL.
  * PARAMETERS:	   pc - the native address of the pc
- *				   delta - the difference between the above address and the
- *					 host address of the pc (i.e. the address that the pc is at
- *					 in the loaded object file)
- *				   RTLDict - the dictionary of RTL templates used to instantiate
- *					 the RTL for the instruction being decoded
+ *				   delta - the difference between the above address and the host address of the pc (i.e. the address
+ *					that the pc is at in the loaded object file)
+ *				   RTLDict - the dictionary of RTL templates used to instantiate the RTL for the instruction being
+ *					decoded
  *				   proc - the enclosing procedure
- * RETURNS:		   a DecodeResult structure containing all the information
- *					 gathered during decoding
+ * RETURNS:		   a DecodeResult structure containing all the information gathered during decoding
  *============================================================================*/
 static DecodeResult result;
 DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
@@ -483,14 +477,12 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 	| RET.far.Iw(i16) =>
 		stmts = instantiate(pc,	 "RET.far.Iw", DIS_I16);
 		ReturnStatement *ret = new ReturnStatement;
-		ret->setNumBytesPopped(DIS_I16->getAddr());
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(ret);
 
 	| RET.Iw(i16) =>
 		stmts = instantiate(pc,	 "RET.Iw", DIS_I16);
 		ReturnStatement *ret = new ReturnStatement;
-		ret->setNumBytesPopped(DIS_I16->getAddr());
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(ret);
 
@@ -1111,12 +1103,10 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 	| INT.Ib(i8) =>
 		stmts = instantiate(pc,	 "INT.Ib", DIS_I8);
 
-	| INT3() =>
-		stmts = instantiate(pc,  "INT3");
-		LOG << "Warning: encountered INT3 instruction\n";
-
 // Removing because an invalid instruction is better than trying to
 // instantiate this. -trent
+//	  | INT3() =>
+//		  stmts = instantiate(pc,  "INT3");
 
 //	  | INSvod() =>
 //		  stmts = instantiate(pc,  "INSvod");
@@ -1297,8 +1287,9 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 		assert(reloc->isIntConst());
 		// Subtract off the host pc
 		reloc->setInt(reloc->getInt() - hostPC);
+		ADDRESS nativeDest = relocd-delta;
 		
-		if (relocd-delta == pc+5) {
+		if (nativeDest == pc+5) {
 			// This is a call $+5
 			// Use the standard semantics, except for the last statement
 			// (just updates %pc)
@@ -1307,8 +1298,11 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 		} else {
 			CallStatement* call = new CallStatement;
 			// Set the destination
-			call->setDest(relocd-delta);
+			call->setDest(nativeDest);
 			stmts->push_back(call);
+			Proc* destProc = prog->setNewProc(nativeDest);
+			if (destProc == (Proc*)-1) destProc = NULL;		// In case a deleted Proc
+			call->setDestProc(destProc);
 		}
 		result.rtl = new RTL(pc, stmts);
 
@@ -2135,8 +2129,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 }
 
 /*==============================================================================
- * These are machine specific functions used to decode instruction
- * operands into Exp*s.
+ * These are machine specific functions used to decode instruction operands into Exp*s.
  *============================================================================*/
 
 /*==============================================================================
@@ -2312,22 +2305,20 @@ SWord PentiumDecoder::getWord (unsigned lc)
 DWord PentiumDecoder::getDword (unsigned lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-	return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) +
-		(*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
+	return (DWord)(*(Byte *)lc + (*(Byte *)(lc+1) << 8) + (*(Byte *)(lc+2) << 16) + (*(Byte *)(lc+3) << 24));
 }
 
 
 /*==============================================================================
  * FUNCTION:	   PentiumDecoder::PentiumDecoder
- * OVERVIEW:	   Constructor. The code won't work without this (not sure why
- *					the default constructor won't do...)
+ * OVERVIEW:	   Constructor. The code won't work without this (not sure why the default constructor won't do...)
  * PARAMETERS:	   None
  * RETURNS:		   N/A
  *============================================================================*/
-PentiumDecoder::PentiumDecoder() : NJMCDecoder()
+PentiumDecoder::PentiumDecoder(Prog* prog) : NJMCDecoder(prog)
 {
-  std::string file = Boomerang::get()->getProgPath() + "frontend/machine/pentium/pentium.ssl";
-  RTLDict.readSSLFile(file.c_str());
+	std::string file = Boomerang::get()->getProgPath() + "frontend/machine/pentium/pentium.ssl";
+	RTLDict.readSSLFile(file.c_str());
 }
 
 // For now...
@@ -2336,28 +2327,23 @@ int PentiumDecoder::decodeAssemblyInstruction(unsigned, int)
 
 /*==============================================================================
  * FUNCTION:	   genBSFR
- * OVERVIEW:	   Generate statements for the BSF and BSR series
- *				   (Bit Scan Forward/Reverse)
+ * OVERVIEW:	   Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
  * PARAMETERS:	   pc: native PC address (start of the BSF/BSR instruction)
  *				   reg: an expression for the destination register
  *				   modrm: an expression for the operand being scanned
  *				   init: initial value for the dest register
  *				   size: sizeof(modrm) (in bits)
- *				   incdec: either opPlus for Forward scans, or opMinus for
- *					Reverse scans
+ *				   incdec: either opPlus for Forward scans, or opMinus for Reverse scans
  *				   numBytes: number of bytes this instruction
  * RETURNS:		   true if have to exit early (not in last state)
  *============================================================================*/
 static int BSFRstate = 0;		// State number for this state machine
 void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
   OPER incdec, int numBytes) {
-	// Note the horrible hack needed here. We need initialisation code, and
-	// an extra branch, so the %SKIP/%RPT won't work.
-	// We need to emit 6 statements, but these need to be in 3 RTLs, since the
-	// destination of a branch has to be to the start of an RTL.
-	// So we use a state machine, and set numBytes to 0 for the first two
-	// times. That way, this instruction ends up emitting three RTLs, each
-	// with the semantics we need.
+	// Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't
+	// work. We need to emit 6 statements, but these need to be in 3 RTLs, since the destination of a branch has to be
+	// to the start of an RTL.  So we use a state machine, and set numBytes to 0 for the first two times. That way, this
+	// instruction ends up emitting three RTLs, each with the semantics we need.
 	// Note: we don't use pentium.SSL for these.
 	// BSFR1:
 	//	pc+0:	zf := 1
@@ -2426,12 +2412,10 @@ void genBSFR(ADDRESS pc, Exp* dest, Exp* modrm, int init, int size,
 			assert(BSFRstate - BSFRstate);
 	}
 	result.rtl = new RTL(pc + BSFRstate, stmts);
-	// Keep numBytes == 0 until the last state, so we re-decode this
-	// instruction 3 times
+	// Keep numBytes == 0 until the last state, so we re-decode this instruction 3 times
 	if (BSFRstate != 3-1) {
-		// Let the number of bytes be 1. This is important at least for setting
-		// the fallthrough address for the branch (in the first RTL), which
-		// should point to the next RTL
+		// Let the number of bytes be 1. This is important at least for setting the fallthrough address for the branch
+		// (in the first RTL), which should point to the next RTL
 		result.numBytes = 1;
 		result.reDecode = true;		// Decode this instuction again
 	} else {

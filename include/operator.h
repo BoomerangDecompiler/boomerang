@@ -4,7 +4,7 @@
  *				denote what the top level operator is
  *============================================================================*/
 /*
- * $Revision$
+ * $Revision$	// 1.25.6.3
  *
  * 05 Apr 02 - Mike: Created
  * 12 Apr 02 - Mike: INDEX -> OPER
@@ -100,12 +100,13 @@ enum OPER
 	opTern,					// Ternary (i.e. ? : )
 	opAt,					// Bit extraction (expr@first:last in that order)
 
-	opMemOf,				// Represents m[]
 	opRegOf,				// Represents r[]
+	opMemOf,				// Represents m[]
 	opAddrOf,				// Represents a[]
 	opWildMemOf,			// m[wild],
 	opWildRegOf,			// r[wild],
 	opWildAddrOf,			// a[wild],
+	opDefineAll,			// A wild definition
 	opVar,					// Represents l[] (recovered locations)
 	opPhi,					// Represents phi(a1, a2, a3) .. ie SSA form merging
 	opSubscript,			// Represents subscript(e, n) .. ie SSA renaming
@@ -115,16 +116,14 @@ enum OPER
 	opGlobal,				// used to represent a global, takes a string
 	opExpand,				// Expandable expression
 	opMemberAccess,			// . and -> in C
-	opArraySubscript,		// [] in C
+	opArrayIndex,			// [] in C
 	opTemp,					// Temp register name
 	opSize,					// Size specifier
 	opCastIntStar,			// Cast to int*
-	opPostVar,				// Post-instruction variable marker (unary with
-							  // any subexpression). Can arise in some SSL files
-							  // when ticked variables are used
-	opMachFtr,				// A Unary with Const(string) representing a
-							  // machine specific feature (register, instruction							  // or whatever; the analysis better understand it
-							  // and transform it away)
+	opPostVar,				// Post-instruction variable marker (unary with any subexpression). Can arise in some SSL
+							// files when ticked variables are used
+	opMachFtr,				// A Unary with Const(string) representing a machine specific feature (register, instruction
+							// or whatever; the analysis better understand it and transform it away)
 
 	opTruncu,				// Integer truncate (unsigned)
 	opTruncs,				// Integer truncate (signed)
@@ -176,9 +175,10 @@ enum OPER
 	// This is the abstracted floating point flags terminal
 	opFflags,
 
-	// This is an abstract boolean that if true causes the following instruction
-	// to be anulled
+	// This is an abstract boolean that if true causes the following instruction to be anulled
 	opAnull,				// Anull "variable"
+	// This is a special terminal representing "all locations", which in practice means "every location whose definition
+	// reaches here".
 
 
 	// Added for type analysis

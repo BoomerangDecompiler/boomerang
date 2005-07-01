@@ -94,19 +94,23 @@ bool StmtConscriptSetter::visit(ImplicitAssign* stmt) {
 
 bool StmtConscriptSetter::visit(CallStatement* stmt) {
 	SetConscripts sc(curConscript, bClear);
-	std::vector<Exp*>& args = stmt->getArguments();
-	int i, n = args.size();
-	for (i=0; i < n; i++)
-		args[i]->accept(&sc);
+	StatementList& args = stmt->getArguments();
+	StatementList::iterator ss;
+	for (ss = args.begin(); ss != args.end(); ++ss)
+		(*ss)->accept(this);
+#if 0
 	std::vector<Exp*>& impargs = stmt->getImplicitArguments();
 	n = impargs.size();
 	for (i=0; i < n; i++)
 		impargs[i]->accept(&sc);
+#endif
+#if 0		// Note sure...
 	n = stmt->getNumReturns();
 	for (i=0; i < n; i++) {
 		Exp* r = stmt->getReturnExp(i);
 		if (r) r->accept(&sc);
 	}
+#endif
 	curConscript = sc.getLast();
 	return true;
 }
@@ -123,11 +127,9 @@ bool StmtConscriptSetter::visit(CaseStatement* stmt) {
 
 bool StmtConscriptSetter::visit(ReturnStatement* stmt) {
 	SetConscripts sc(curConscript, bClear);
-	int n = stmt->getNumReturns();
-	for (int i=0; i < n; i++) {
-		Exp* r = stmt->getReturnExp(i);
-		r->accept(&sc);
-	}
+	ReturnStatement::iterator rr;
+	for (rr = stmt->begin(); rr != stmt->end(); ++rr)
+		(*rr)->accept(this);
 	curConscript = sc.getLast();
 	return true;
 }
@@ -152,106 +154,52 @@ void PhiStripper::visit(PhiAssign* s, bool& recur) {
 	recur = true;
 }
 
-Exp* CallRefsFixer::postVisit(RefExp* r) {
-	Exp* ret = r;
+Exp* BypassingPropagator::postVisit(RefExp* r) {
 	// If child was modified, simplify now
-	if (!(unchanged & ~mask)) ret = r->simplify();
+	Exp* ret = r;
+	if (!(unchanged & mask)) ret = r->simplify();
 	mask >>= 1;
-	// Note: r will always == ret here, so the below is safe
+	// Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
 	Statement* def = r->getDef();
-	CallStatement *call = dynamic_cast<CallStatement*>(def);
-	if (call) {
-		// Get the right had side of the proven expression (e.g. from r28 = r28 + 4, get r28 + 4)
-		Exp *e = call->getProven(r->getSubExp1());
-		if (e) {
-			// Express e in terms of the arguments passed to this call
-			e = call->substituteParams(e);
-			assert(e);
-			if (VERBOSE)
-				LOG << "fixcall refs replacing " << r << " with " << e << "\n";
-			// e = e->simplify();	// No: simplify the parent
+	CallStatement* call = (CallStatement*)def;
+	if (call && call->isCall()) {
+		bool ch;
+		ret = call->bypassRef((RefExp*)ret, ch);
+		if (ch) {
 			unchanged &= ~mask;
 			mod = true;
-			return e;
-		} else {
-			Exp* subExp1 = r->getSubExp1();
-			if (call->findReturn(subExp1) == -1) {
-				if (VERBOSE && !subExp1->isPC()) {
-					LOG << "nothing proven about " << subExp1 << " and yet it is referenced by " << r <<
-						", and not in returns of " << "\n" << "	" << call << "\n";
-				}
-			}
+			// Now have to recurse to do any propagation or further bypassing that may be required
+			return ret->accept(new BypassingPropagator(enclosingStmt));
 		}
 	}
+	Assign* as = (Assign*)def;
+	if (as && as->isAssign()) {
+		// Propagate everything for now. May need to implement more rules soon.
+		Exp* lhs = as->getLeft();
+		Exp* rhs = as->getRight();
+		bool ch;
+		Exp* old;
+		if (VERBOSE)
+			old = ret->clone();
+		ret = ret->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
+		if (ch) {
+			unchanged &= ~mask;			// Been changed now (so simplify parent)
+			mod = true;
+			if (VERBOSE)
+				LOG << "bypassing propagator propagating " << def << " into " << old << " within stmt " <<
+					(enclosingStmt ? enclosingStmt->getNumber() : 0) << " result " << ret << "\n";
+			// Recursively propagate and/or bypass more if possible
+			return ret->accept(new BypassingPropagator(enclosingStmt));
+		}
+	}
+
+	// Else just leave as is (perhaps simplified)	
 	return ret;
 }
 
-#if 0
-Exp* CallRefsFixer::postVisit(PhiExp* p) {
-	Exp* ret = p;
-	// If child was modified, simplify now
-	if (!(unchanged & mask)) ret = p->simplify();
-	mask >>= 1;
 
-	std::vector<Statement*> remove;
-	std::vector<Statement*> insert;
-	unsigned n = p->getNumRefs();
-
-	bool oneIsGlobalFunc = false;
-	Prog *prog = NULL;
-	unsigned int i;
-	for (i=0; i < n; i++) {
-		Statement* u = p->getAt(i);
-		if (u) {
-			CallStatement *call = dynamic_cast<CallStatement*>(u);
-			if (call)
-				prog = call->getProc()->getProg();
-		}
-	}
-	if (prog)
-		oneIsGlobalFunc = p->hasGlobalFuncParam(prog);
-
-	for (i=0; i < n; i++) {
-		Statement* u = p->getAt(i);
-		CallStatement *call = dynamic_cast<CallStatement*>(u);
-		if (call) {
-			Exp* subExp1 = p->getSubExp1();
-			Exp *e = call->getProven(subExp1);
-			if (call->isComputed() && oneIsGlobalFunc) {
-				e = subExp1->clone();
-				if (VERBOSE)
-					LOG << "ignoring ref in phi to computed call with function pointer param " << e << "\n";
-			}
-			if (e) {
-				e = call->substituteParams(e->clone());
-				if (e && e->getOper() == opSubscript &&
-					*e->getSubExp1() == *subExp1) {
-					if (VERBOSE)
-						LOG << "fixcall refs replacing param " << i << " in "
-							<< p << " with " << e << "\n";
-					p->putAt(i, ((RefExp*)e)->getDef());
-					mod = true;
-				} else {
-					if (VERBOSE)
-						LOG << "cant update phi ref to " << e << "\n";
-				}
-			} else {
-				if (call->findReturn(subExp1) == -1) {
-					if (VERBOSE) {
-						LOG << "nothing proven about " << subExp1 <<
-							" and yet it is referenced by " << p <<
-							", and not in returns of " << "\n" <<
-							"	" << call << "\n";
-					}
-				}
-			}
-		}
-	}
-	return ret;
-}
-#endif
-
-Exp* CallRefsFixer::postVisit(Unary *e)	   {
+Exp* BypassingPropagator::postVisit(Location *e)	   {
+	// ? FIXME: What's this hack for?
 	bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
 	if (isAddrOfMem) return e;
 	Exp* ret = e;
@@ -259,45 +207,57 @@ Exp* CallRefsFixer::postVisit(Unary *e)	   {
 	mask >>= 1;
 	return ret;
 }
-Exp* CallRefsFixer::postVisit(Binary *e)	{
+Exp* SimpExpModifier::postVisit(Location *e)	   {
+	Exp* ret = e;
+	if (!(unchanged & mask)) ret = e->simplify();
+	mask >>= 1;
+	return ret;
+}
+Exp* SimpExpModifier::postVisit(RefExp *e)	   {
+	Exp* ret = e;
+	if (!(unchanged & mask)) ret = e->simplify();
+	mask >>= 1;
+	return ret;
+}
+Exp* SimpExpModifier::postVisit(Unary *e)	   {
+	Exp* ret = e;
+	if (!(unchanged & mask)) ret = e->simplify();
+	mask >>= 1;
+	return ret;
+}
+Exp* SimpExpModifier::postVisit(Binary *e)	{
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplifyArith()->simplify();
 	mask >>= 1;
 	return ret;
 }
-Exp* CallRefsFixer::postVisit(Ternary *e)	 {
+Exp* SimpExpModifier::postVisit(Ternary *e)	 {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
 	mask >>= 1;
 	return ret;
 }
-Exp* CallRefsFixer::postVisit(TypedExp *e)	  {
+Exp* SimpExpModifier::postVisit(TypedExp *e)	  {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
 	mask >>= 1;
 	return ret;
 }
-Exp* CallRefsFixer::postVisit(FlagDef *e)	 {
+Exp* SimpExpModifier::postVisit(FlagDef *e)	 {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
 	mask >>= 1;
 	return ret;
 }
-Exp* CallRefsFixer::postVisit(Location *e)	  {
-	Exp* ret = e;
-	if (!(unchanged & mask)) ret = e->simplify();
-	mask >>= 1;
-	return ret;
-}
-Exp* CallRefsFixer::postVisit(Const *e)	   {
+Exp* SimpExpModifier::postVisit(Const *e)	   {
 	mask >>= 1;
 	return e;
 }
-Exp* CallRefsFixer::postVisit(TypeVal *e)	 {
+Exp* SimpExpModifier::postVisit(TypeVal *e)	 {
 	mask >>= 1;
 	return e;
 }
-Exp* CallRefsFixer::postVisit(Terminal *e)	  {
+Exp* SimpExpModifier::postVisit(Terminal *e)	  {
 	mask >>= 1;
 	return e;
 }
@@ -319,6 +279,7 @@ bool UsedLocsFinder::visit(Terminal* e) {
 		case opPC:
 		case opFlags:
 		case opFflags:
+		case opDefineAll:
 		// Fall through
 		// The carry flag can be used in some SPARC idioms, etc
 		case opDF: case opCF: case opZF: case opNF: case opOF:	// also these
@@ -333,10 +294,14 @@ bool UsedLocsFinder::visit(RefExp* e, bool& override) {
 	used->insert(e);		 // This location is used
 	// However, e's subexpression is NOT used ...
 	override = true;
-	// ... unless that is a m[x], in which case x (not m[x]) is used
+	// ... unless that is a m[x], array[x] or .x, in which case x (not m[x]/array[x]/refd.x) is used
 	Exp* refd = e->getSubExp1();
 	if (refd->isMemOf()) {
-		Exp* x = refd->getSubExp1();
+		Exp* x = ((Location*)refd)->getSubExp1();
+		x->accept(this);
+	}
+	else if (refd->isArrayIndex() || refd->isMemberOf()) {
+		Exp* x = ((Binary*)refd)->getSubExp2();
 		x->accept(this);
 	}
 	return true;
@@ -348,13 +313,20 @@ bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	if (rhs) rhs->accept(ev);
 	// Special logic for the LHS. Note: PPC can have r[tmp + 30] on LHS
 	if (lhs->isMemOf() || lhs->isRegOf()) {
-		Exp* child = ((Location*)lhs)->getSubExp1();
+		Exp* child = ((Location*)lhs)->getSubExp1();	// m[xxx] uses xxx
 		child->accept(ev);
-	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
-		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
-		subExp1->accept(ev);
+	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
+		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();	// array(base, index) and member(base, offset)?? use
+		subExp1->accept(ev);							// base and index
 		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
 		subExp2->accept(ev);
+	} else if (lhs->getOper() == opAt) {				// foo@[first:last] uses foo, first, and last
+		Exp* subExp1 = ((Ternary*)lhs)->getSubExp1();
+		subExp1->accept(ev);
+		Exp* subExp2 = ((Ternary*)lhs)->getSubExp2();
+		subExp2->accept(ev);
+		Exp* subExp3 = ((Ternary*)lhs)->getSubExp3();
+		subExp3->accept(ev);
 	}
 	override = true;				// Don't do the usual accept logic
 	return true;					// Continue the recursion
@@ -365,7 +337,7 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
-	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
 		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
@@ -388,7 +360,7 @@ bool UsedLocsVisitor::visit(ImplicitAssign* s, bool& override) {
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
 		child->accept(ev);
-	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
 		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
@@ -402,38 +374,15 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 	Exp* pDest = s->getDest();
 	if (pDest)
 		pDest->accept(ev);
-	std::vector<Exp*>::iterator it;
-	std::vector<Exp*>& arguments = s->getArguments();
+	StatementList::iterator it;
+	StatementList& arguments = s->getArguments();
 	for (it = arguments.begin(); it != arguments.end(); it++)
-		(*it)->accept(ev);
-	if (!final) {
-		// Ignore the implicit arguments when final
-		int n = s->getNumImplicitArguments();
-		for (int i=0; i < n; i++)
-			s->getImplicitArgumentExp(i)->accept(ev);
-	}
-	// For the final pass, also only consider the first return
-	int n = s->getNumReturns();
-	if (final) {
-		if (n != 0) {
-			Exp* r = NULL;
-			for (int i = 0; r == NULL && i < n; i++)
-				r = s->getReturnExp(i);			
-			// If of form m[x] then x is used
-			if (r && r->isMemOf()) {
-				Exp* x = ((Location*)r)->getSubExp1();
-				x->accept(ev);
-			}
-		}
-	} else {
-		// Otherwise, consider all returns. If of form m[x] then x is used
-		for (int i=0; i < n; i++) {
-			Exp* r = s->getReturnExp(i);
-			if (r && r->isMemOf()) {
-				Exp* x = ((Location*)r)->getSubExp1();
-				x->accept(ev);
-			}
-		} 
+		(*it)->accept(this);
+	if (countCol) {
+		DefCollector::iterator dd;
+		DefCollector* col = s->getDefCollector();
+		for (dd = col->begin(); dd != col->end(); ++dd)
+			(*dd)->accept(this);
 	}
 	override = true;			// Don't do the normal accept logic
 	return true;				// Continue the recursion
@@ -441,23 +390,22 @@ bool UsedLocsVisitor::visit(CallStatement* s, bool& override) {
 
 bool UsedLocsVisitor::visit(ReturnStatement* s, bool& override) {
 	// For the final pass, only consider the first return
-	int n = s->getNumReturns();
-	if (final) {
-		if (n != 0) {
-			Exp* r = NULL;
-			// Find the first non null return
-			for (int i = 0; r == NULL && i < n; i++) {
-				r = s->getReturnExp(i);			
-				r->accept(ev);
-			}
-		}
-	} else {
-		// Otherwise, consider all returns. If of form m[x] then x is used
-		for (int i=0; i < n; i++) {
-			Exp* r = s->getReturnExp(i);
-			if (r) r->accept(ev);
-		} 
+	ReturnStatement::iterator rr;
+	for (rr = s->begin(); rr != s->end(); ++rr)
+		(*rr)->accept(this);
+	// Also consider the reaching definitions to be uses, so when they are the only non-empty component of this
+	// ReturnStatement, they can get propagated to.
+	if (countCol) { 					// But we need to ignore these "uses" unless propagating
+		DefCollector::iterator dd;
+		DefCollector* col = s->getCollector();
+		for (dd = col->begin(); dd != col->end(); ++dd)
+			(*dd)->accept(this);
 	}
+
+	// Insert a phantom use of "everything" here, so that we can find out if any childless calls define something that
+	// may end up being returned
+	((UsedLocsFinder*)ev)->getLocSet()->insert(new Terminal(opDefineAll));
+
 	override = true;			// Don't do the normal accept logic
 	return true;				// Continue the recursion
 }
@@ -470,7 +418,7 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	if (lhs && lhs->isMemOf()) {	// If dest is of form m[x]...
 		Exp* x = ((Location*)lhs)->getSubExp1();
 		x->accept(ev);					// ... then x is used
-	} else if (lhs->getOper() == opArraySubscript || lhs->getOper() == opMemberAccess) {
+	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
 		Exp* subExp2 = ((Binary*)lhs)->getSubExp2();
@@ -575,17 +523,20 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	if (pDest)
 		s->setDest(pDest->accept(mod));
 	// Subscript the ordinary arguments
-	std::vector<Exp*>& arguments = s->getArguments();
-	int n = arguments.size();
-	for (int i=0; i < n; i++)
-		arguments[i] = arguments[i]->accept(mod);
+	StatementList& arguments = s->getArguments();
+	StatementList::iterator ss;
+	for (ss = arguments.begin(); ss != arguments.end(); ++ss)
+		(*ss)->accept(this);
+#if 0
 	// Subscript the implicit arguments
 	std::vector<Exp*>& implicits = s->getImplicitArguments();
 	n = implicits.size();
 	for (int i=0; i < n; i++)
 		implicits[i] = implicits[i]->accept(mod);
-	// Returns are like the LHS of an assignment; don't subscript them
-	// directly (only if m[x], and then only subscript the x's)
+#endif
+	// Returns are like the LHS of an assignment; don't subscript them directly (only if m[x], and then only subscript
+	// the x's)
+#if 0
 	n = s->getNumReturns();
 	for (int i=0; i < n; i++) {
 		Exp* r = s->getReturnExp(i);
@@ -594,6 +545,7 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 			x = x->accept(mod);
 		}
 	}
+#endif
 	recur = false;			// Don't do the usual accept logic
 }
 
@@ -630,8 +582,7 @@ bool ConstFinder::visit(Location* e, bool& override) {
 }
 
 // This is in the POST visit function, because it's important to process any child expressions first.
-// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a NULL definition
-// for r28.
+// Otherwise, for m[r28{0} - 12]{0}, you could be adding an implicit assignment with a NULL definition for r28.
 Exp* ImplicitConverter::postVisit(RefExp* e) {
 	if (e->getDef() == NULL)
 		e->setDef(cfg->findImplicitAssign(e->getSubExp1()));
@@ -647,3 +598,66 @@ void StmtImplicitConverter::visit(PhiAssign* s, bool& recur) {
 			uu->def = cfg->findImplicitAssign(uu->e);
 	recur = false;		// Already done LHS
 }
+
+// Localiser. Subscript a location with the definitions that reach the call, or with {-} if none
+Exp* Localiser::preVisit(RefExp* e, bool& recur) {
+	recur = false;				// Don't recurse into already subscripted variables
+	mask <<= 1;
+	return e;
+}
+
+Exp* Localiser::preVisit(Location* e, bool& recur) {
+	recur = true;
+	int d = e->getMemDepth();
+	if (d <= depth)				// Don't recurse if depth already too low, or equal
+		recur = false;
+	mask <<= 1;
+	return e;
+}
+
+Exp* Localiser::postVisit(Location* e) {
+	Exp* ret = e;
+	if (!(unchanged & mask)) ret = e->simplify();
+	mask >>= 1;
+	int d = ret->getMemDepth();
+	if (d != depth && depth != -1) return e;	// Only subscript at the requested depth, or any if depth == -1
+	Exp* r = call->findDefFor(ret);
+	if (r) {
+		ret = r->clone()->bypassAndPropagate();
+		unchanged &= ~mask;
+		mod = true;
+	} else
+		ret = new RefExp(ret, NULL);				// No definition reaches, so subscript with {-}
+	return ret;
+}
+
+// Want to be able to localise a few terminals, in particular <all>
+Exp* Localiser::postVisit(Terminal* e) {
+	Exp* ret = e;
+	if (!(unchanged & mask)) ret = e->simplify();
+	mask >>= 1;
+	if (depth >= 1) return ret;
+	Exp* r = call->findDefFor(ret);
+	if (r) {
+		ret = r->clone()->bypassAndPropagate();
+		unchanged &= ~mask;
+		mod = true;
+	} else
+		ret = new RefExp(ret, NULL);				// No definition reaches, so subscript with {-}
+	return ret;
+}
+
+#if 0
+Exp* ExpPropagator::postVisit(RefExp* e) {
+	Statement* def = e->getDef();
+	if (def && def->isAssign()) {
+		Exp* lhs = ((Assign*)def)->getLeft();
+		Exp* rhs = ((Assign*)def)->getRight();
+		bool ch;
+		Exp* res = e->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
+		if (ch) unchanged &= ~mask;			// Been changed now (so simplify parent)
+		return res->propagateToExp();		// Recursively propagate more if possible
+	}
+	return e;
+}
+#endif

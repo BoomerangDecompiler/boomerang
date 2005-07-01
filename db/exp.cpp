@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2002, Mike Van Emmerik and Trent Waddington
+ * Copyright (C) 2002-2005 Mike Van Emmerik and Trent Waddington
  */
 /*==============================================================================
  * FILE:	   exp.cpp
  * OVERVIEW:   Implementation of the Exp and related classes.
  *============================================================================*/
 /*
- * $Revision$
+ * $Revision$	// 1.172.2.20
  * 05 Apr 02 - Mike: Created
  * 05 Apr 02 - Mike: Added copy constructors; was crashing under Linux
  * 08 Apr 02 - Mike: Added Terminal subclass
@@ -50,13 +50,15 @@
 #include "proc.h"
 #include "signature.h"
 #include "prog.h"
-#include "operstrings.h"// Defines a large array of strings for the
-						// createDotFile functions. Needs -I. to find it
+#include "operstrings.h"// Defines a large array of strings for the createDotFile etc. functions. Needs -I. to find it
 #include "util.h"
 #include "boomerang.h"
 #include "transformer.h"
 #include "visitor.h"
+#include "log.h"
 #include <iomanip>			// For std::setw etc
+
+extern char debug_buffer[];		 // For prints functions
 
 /*==============================================================================
  * FUNCTION:		Const::Const etc
@@ -149,11 +151,8 @@ RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
 
 TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
 
-Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), 
-														proc(proc), ty(NULL)
-{
-	assert(op == opRegOf || op == opMemOf || op == opLocal ||
-		   op == opGlobal || op == opParam || op == opTemp);
+Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc), ty(NULL) {
+	assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
 	if (proc == NULL) {
 		// eep.. this almost always causes problems
 		Exp *e = exp;
@@ -266,7 +265,6 @@ Type* TypedExp::getType()
 }
 void TypedExp::setType(Type* ty)
 {
-	if (type) ;//delete type;
 	type = ty;
 }
 
@@ -595,8 +593,7 @@ bool TypeVal::operator< (const Exp& o) const {
 
 /*==============================================================================
  * FUNCTION:		Const::operator*=() etc
- * OVERVIEW:		Virtual function to compare myself for equality with
- *					another Exp, *ignoring subscripts*
+ * OVERVIEW:		Virtual function to compare myself for equality with another Exp, *ignoring subscripts*
  * PARAMETERS:		Ref to other Exp
  * RETURNS:			True if equal
  *============================================================================*/
@@ -675,11 +672,14 @@ void Const::print(std::ostream& os) {
 	setLexBegin(os.tellp());
 	switch (op) {
 		case opIntConst:
-			os << std::dec << u.i;
+			if (u.i < -1000 || u.i > 1000)
+				os << "0x" << std::hex << u.i << std::dec;
+			else
+				os << std::dec << u.i;
 			break;
 		case opFltConst:
 			char buf[64];
-			sprintf(buf, "%g", u.d);
+			sprintf(buf, "%.4f", u.d);		// FIXME: needs an intelligent printer
 			os << buf;
 			break;
 		case opStrConst:
@@ -765,7 +765,7 @@ void Binary::print(std::ostream& os) {
 			((Const*)p2)->printNoQuotes(os);
 			return;
 
-		case opArraySubscript:
+		case opArrayIndex:
 			p1->print(os);
 			os << "[";
 			p2->print(os);
@@ -854,7 +854,6 @@ void Terminal::print(std::ostream& os) {
 		case opAnull:	os << "%anul"; break;
 		case opFpush:	os << "FPUSH"; break;
 		case opFpop:	os << "FPOP";  break;
-		// case opPhi:		os << "phi"; break;
 		case opWildMemOf:os<< "m[WILD]"; break;
 		case opWildRegOf:os<< "r[WILD]"; break;
 		case opWildAddrOf:os<< "a[WILD]"; break;
@@ -863,6 +862,7 @@ void Terminal::print(std::ostream& os) {
 		case opNil:		break;
 		case opTrue:	os << "true"; break;
 		case opFalse:	os << "false"; break;
+		case opDefineAll: os << "<all>"; break;
 		default:
 			LOG << "Terminal::print invalid operator " << operStrings[op] << "\n";
 			assert(0);
@@ -1082,7 +1082,8 @@ void TypedExp::print(std::ostream& os) {
 //	RefExp	//
 //	//	//	//
 void RefExp::print(std::ostream& os) {
-	subExp1->print(os);
+	if (subExp1) subExp1->print(os);
+	else os << "<NULL>";
 	os << "{";
 	if (def == (Statement*)-1) os << "WILD";
 	else if (def) def->printNum(os);
@@ -1107,13 +1108,16 @@ void TypeVal::print(std::ostream& os) {
  * PARAMETERS:		<none>
  * RETURNS:			Address of the static buffer
  *============================================================================*/
-extern char debug_buffer[];
 char* Exp::prints() {
 	std::ostringstream ost;
 	print(ost);
-	strncpy(debug_buffer, ost.str().c_str(), 399);
-	debug_buffer[399] = '\0';
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
+}
+
+void Exp::dump() {
+	print(std::cerr);
 }
 
 
@@ -1646,8 +1650,8 @@ Exp* Ternary::simplifyArith() {
 }
 
 Exp* Binary::simplifyArith() {
-	subExp1 = subExp1->simplifyArith();
-	subExp2 = subExp2->simplifyArith();
+	subExp1 = subExp1->simplifyArith();		// FIXME: does this make sense?
+	subExp2 = subExp2->simplifyArith();		// FIXME: ditto
 	if ((op != opPlus) && (op != opMinus))
 		return this;
 
@@ -1945,7 +1949,7 @@ Exp* Unary::polySimplify(bool& bMod) {
 			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
 			if (basesz && (basesz % 8) == 0 && (n % (basesz / 8)) == 0) {
 				bMod = true;
-				return new Binary(opArraySubscript,
+				return new Binary(opArrayIndex,
 					subExp1->getSubExp1()->clone(),
 					new Const(n / (basesz / 8)));
 			}
@@ -1961,7 +1965,7 @@ Exp* Unary::polySimplify(bool& bMod) {
 			int basesz = ((PointerType*)ty)->getPointsTo()->getSize();
 			if (basesz == n * 8) {
 				bMod = true;
-				return new Binary(opArraySubscript,
+				return new Binary(opArrayIndex,
 					subExp1->getSubExp1()->clone(),
 					subExp1->getSubExp2()->getSubExp1()->clone());
 			}
@@ -2170,8 +2174,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 	}
 
 	// Check for exp * x / x
-	if (	(op == opDiv || op == opDivs) &&
-			(opSub1 == opMult || opSub1 == opMults) &&
+	if (	(op == opDiv || op == opDivs) && (opSub1 == opMult || opSub1 == opMults) &&
 			*subExp2 == *subExp1->getSubExp2()) {
 		res = ((Unary*)res)->becomeSubExp1();
 		res = ((Unary*)res)->becomeSubExp1();
@@ -2196,8 +2199,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 	}
 
 	// Check for exp * x % x, becomes 0
-	if (	(op == opMod || op == opMods) &&
-			(opSub1 == opMult || opSub1 == opMults) &&
+	if (	(op == opMod || op == opMods) && (opSub1 == opMult || opSub1 == opMults) &&
 			*subExp2 == *subExp1->getSubExp2()) {
 		res = new Const(0);
 		bMod = true;
@@ -2458,7 +2460,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			subExp2->getOper() == opIntConst) {
 		Type *ty = subExp1->getSubExp1()->getType();
 		if (ty->resolvesToPointer() &&
-			ty->asPointer()->getPointsTo()->resolvesToCompound()) {
+				ty->asPointer()->getPointsTo()->resolvesToCompound()) {
 			res = new Binary(opPlus, subExp1->getSubExp1(), subExp2);
 			res = new Binary(opPlus, res, subExp1->getSubExp2());
 			bMod = true;
@@ -2512,7 +2514,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			if (x->getOper() != opIntConst || ((Const*)x)->getInt() >= b || a->getBaseType()->isArray()) {
 				res = new Binary(opPlus, 
 					new Unary(opAddrOf, 
-						new Binary(opArraySubscript, 
+						new Binary(opArrayIndex, 
 							Location::memOf(l->clone()), 
 							new Binary(opDiv, x->clone(), new Const(b)))),
 					new Binary(opMod, x->clone(), new Const(b)));
@@ -2636,7 +2638,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 			if (rightOfMinus->getOper() == opLessUns) {
 				Exp* leftOfLess = ((Binary*)rightOfMinus)->getSubExp1();
 				if (leftOfLess->isIntConst() &&
-				  ((Const*)leftOfLess)->getInt() == 0) {
+						((Const*)leftOfLess)->getInt() == 0) {
 					res = becomeSubExp2();
 					bMod = true;
 					return res;
@@ -2744,8 +2746,7 @@ Exp* Ternary::polySimplify(bool& bMod) {
 			double d = prog->getFloatConstant(u, ok, ((Const*)subExp1)->getInt());
 			if (ok) {
 				if (VERBOSE) 
-					LOG << "replacing " << subExp3 << " with " << d 
-						<< " in " << this << "\n";
+					LOG << "replacing " << subExp3 << " with " << d << " in " << this << "\n";
 				subExp3 = new Const(d);
 				bMod = true;
 				return res;
@@ -2780,9 +2781,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
 		return res;
 	}
 
-	/* This is a nasty hack.  We assume that %DF{0} is 0.
-	 * This happens when string instructions are used without first clearing the direction flag.  By convention, the
-	 * direction flag is assumed to be clear on entry to a procedure.
+	/* This is a nasty hack.  We assume that %DF{0} is 0.  This happens when string instructions are used without first
+	 * clearing the direction flag.  By convention, the direction flag is assumed to be clear on entry to a procedure.
 	 */
 	if (subExp1->getOper() == opDF && def == NULL) {
 		res = new Const(0);
@@ -2791,63 +2791,16 @@ Exp* RefExp::polySimplify(bool& bMod) {
 	}
 
 	// another hack, this time for aliasing
-	if (subExp1->getOper() == opRegOf && ((Const*)subExp1->getSubExp1())->getInt() == 0 &&
-			def && def->getLeft() && *def->getLeft() == *Location::regOf(24)) {
+	// FIXME: do we really want this now? Pentium specific, and only handles ax/eax (not al or ah)
+	if (subExp1->isRegN(0) &&							// r0 (ax)
+			def && def->isAssign() &&
+			((Assign*)def)->getLeft()->isRegN(24)) {	// r24 (eax)
 		res = new TypedExp(new IntegerType(16), new RefExp(Location::regOf(24), def));
 		bMod = true;
 		return res;
 	}
 
-	// hack to fixing refs to phis which don't do anything
-	if (def && def->isPhi() && def->getProc()->canProveNow()) {
-		Exp *base = new RefExp(subExp1, NULL);
-		PhiAssign::iterator uu;
-		PhiAssign *phi = (PhiAssign*)def;
-		for (uu = phi->begin(); uu != phi->end(); uu++)
-			if (uu->def && uu->def->isAssign() && *uu->def->getLeft() == *subExp1) {
-				bool allZero = true;
-				uu->def->getRight()->clone()->removeSubscripts(allZero);
-				if (allZero) {
-					base = uu->def->getRight()->clone();
-					break;
-				}
-			}
-		bool allProven = true;
-		LocationSet used;
-		base->addUsedLocs(used);
-		if (used.size() == 0) {
-			allProven = false;
-		} else {
-			if (VERBOSE)
-				LOG << "attempting to simplify ref to " << phi << " with base "
-				  << base << "\n";
-		}
-		// Experiment MVE: compare 1 to 2, 1 to 3 ... 1 to n instead of base to 1, base to 2, ... base to n
-		// Seems to work
-		Exp* first = new RefExp(subExp1->clone(), phi->begin()->def);
-		//for (uu = phi->begin(); allProven && uu != phi->end(); uu++) { // }
-		for (uu = ++phi->begin(); allProven && uu != phi->end(); uu++) {
-			//Exp *query = new Binary(opEquals, new RefExp(subExp1->clone(), uu->base), base->clone());
-			Exp* query = new Binary(opEquals,
-				first,
-				new RefExp(subExp1->clone(), uu->def));
-			if (DEBUG_PROOF)
-				LOG << "attempting to prove " << query << " for ref to phi\n";
-			if (!def->getProc()->prove(query)) {
-				if (DEBUG_PROOF) LOG << "not proven\n";
-				allProven = false;
-				break;
-			}
-		}
-		if (allProven) {
-			bMod = true;
-			//res = base->clone();
-			res = first;
-			if (DEBUG_PROOF)
-				LOG << "replacing ref to phi " << def << " with " << res << "\n";
-			return res;
-		}
-	}
+	// Was code here for bypassing phi statements that are now redundant
 
 	return res;
 }
@@ -3050,7 +3003,7 @@ Exp *Exp::removeSubscripts(bool& allZero)
 	for (xx = locs.begin(); xx != locs.end(); xx++) {
 		if ((*xx)->getOper() == opSubscript) {
 			RefExp *r1 = (RefExp*)*xx;
-			if (r1->getDef() != NULL) {
+			if (!(r1->getDef() == NULL || r1->getDef()->getNumber() == 0)) {
 				allZero = false;
 			}
 			bool change; 
@@ -3067,7 +3020,6 @@ Exp *Exp::removeSubscripts(bool& allZero)
 //
 
 Exp* RefExp::fromSSA(igraph& ig) {
-	// FIXME: Need to check if the argument is a memof, and if so deal with that specially (e.g. global)
 	// Check to see if it is in the map
 	igraph::iterator it = ig.find(this);
 	if (it == ig.end()) {
@@ -3080,8 +3032,7 @@ Exp* RefExp::fromSSA(igraph& ig) {
 	else {
 #if 0
 		if (subExp1->isPC())
-			// pc is just a nuisance at this stage. Make it explicit for
-			// debugging (i.e. to find out why it is still here)
+			// pc is just a nuisance at this stage. Make it explicit for debugging (i.e. find out why it is still here)
 			return Location::local("pc", NULL);
 #endif
 		// It is in the map. Replace with the assigned local
@@ -3110,7 +3061,7 @@ Exp* Ternary::fromSSA(igraph& ig) {
 Exp* Exp::fromSSAleft(igraph& ig, Statement* d) {
 	RefExp* r = new RefExp(this, d);	   // "Wrap" in a ref
 	return r->fromSSA(ig);
-	// Note: r will be ;//deleted in fromSSA! Do not ;//delete here!
+	// Note: r will be deleted in fromSSA! Do not delete here!
 }
 
 // Return the memory nesting depth
@@ -3143,7 +3094,7 @@ int Location::getMemDepth() {
 	return 0;
 }
 
-// A helper file for comparing Exp*'s sensibly
+// A helper class for comparing Exp*'s sensibly
 bool lessExpStar::operator()(const Exp* x, const Exp* y) const {
 	return (*x < *y);		// Compare the actual Exps
 }
@@ -3532,6 +3483,7 @@ Exp* Location::polySimplify(bool& bMod) {
 
 void Location::getDefinitions(LocationSet& defs) {
 	// This is a hack to fix aliasing (replace with something general)
+	// HACK! This is x86 specific too. Use -O for overlapped registers!
 	if (op == opRegOf && ((Const*)subExp1)->getInt() == 24) {
 		defs.insert(Location::regOf(0));
 	}
@@ -3553,7 +3505,7 @@ Type *Unary::getType() {
 
 Type *Binary::getType() {
 	switch(op) {
-		case opArraySubscript:
+		case opArrayIndex:
 			if (subExp1->getType()) {
 				Type *sty = subExp1->getType();
 				if (!sty->resolvesToArray() && !sty->resolvesToPointer()) {
@@ -3606,32 +3558,28 @@ Type *RefExp::getType()
 {
 	if (subExp1 && subExp1->getType())
 		return subExp1->getType();
-	if (def && def->getRight() && def->getRight()->getType())
-		return def->getRight()->getType();
+	if (def && def->isAssign() && ((Assign*)def)->getRight()->getType())
+		return ((Assign*)def)->getRight()->getType();
 	if (def && def->isCall()) {
 		CallStatement *call = (CallStatement*)def;
-		int n = call->findReturn(subExp1);
-		if (n != -1 && call->getDestProc()) {
-			return call->getDestProc()->getSignature()->getReturnType(n);
-		}
+		return call->getTypeFor(subExp1);
 	}
 	if (def && def->isPhi()) {
 		PhiAssign *phi = (PhiAssign*)def;
-#if 1
-		if (VERBOSE)
+		if (DEBUG_TA)
 			LOG << "checking statements in " << phi << " for type of " << this << "\n";
-#endif
 		PhiAssign::iterator uu;
 		for (uu = phi->begin(); uu != phi->end(); uu++) {
 			Statement *s = uu->def;
-			if (s && s->getRight() && 
-					(s->getRight()->getOper() != opSubscript || ((RefExp*)s->getRight())->getDef() == NULL)) {
-				if (s->getRight()->getType()) {
+			Assign* as = (Assign*)s;
+			if (as && as->isAssign() && 
+					(as->getRight()->getOper() != opSubscript || ((RefExp*)as->getRight())->getDef() == NULL)) {
+				if (as->getRight()->getType()) {
 #if 1
 					if (VERBOSE)
-						LOG << "returning type " << s->getRight()->getType()->getCtype() << " for " << this << "\n";
+						LOG << "returning type " << as->getRight()->getType()->getCtype() << " for " << this << "\n";
 #endif
-					return s->getRight()->getType();
+					return as->getRight()->getType();
 				} else break;
 			}
 		}
@@ -4065,7 +4013,8 @@ Memo *Terminal::makeMemo(int mId)
 
 void Terminal::readMemo(Memo *mm, bool dec)
 {
-	TerminalMemo *m = dynamic_cast<TerminalMemo*>(mm);
+	// FIXME: not completed
+	// TerminalMemo *m = dynamic_cast<TerminalMemo*>(mm);
 }
 
 class UnaryMemo : public Memo {
@@ -4081,7 +4030,8 @@ Memo *Unary::makeMemo(int mId)
 
 void Unary::readMemo(Memo *mm, bool dec)
 {
-	UnaryMemo *m = dynamic_cast<UnaryMemo*>(mm);
+	// FIXME: not completed
+	// UnaryMemo *m = dynamic_cast<UnaryMemo*>(mm);
 }
 
 class BinaryMemo : public Memo {
@@ -4097,7 +4047,8 @@ Memo *Binary::makeMemo(int mId)
 
 void Binary::readMemo(Memo *mm, bool dec)
 {
-	BinaryMemo *m = dynamic_cast<BinaryMemo*>(mm);
+	// FIXME: not completed
+	// BinaryMemo *m = dynamic_cast<BinaryMemo*>(mm);
 }
 
 class TernaryMemo : public Memo {
@@ -4113,7 +4064,8 @@ Memo *Ternary::makeMemo(int mId)
 
 void Ternary::readMemo(Memo *mm, bool dec)
 {
-	TernaryMemo *m = dynamic_cast<TernaryMemo*>(mm);
+	// FIXME: not completed
+	// TernaryMemo *m = dynamic_cast<TernaryMemo*>(mm);
 }
 
 class TypedExpMemo : public Memo {
@@ -4129,7 +4081,8 @@ Memo *TypedExp::makeMemo(int mId)
 
 void TypedExp::readMemo(Memo *mm, bool dec)
 {
-	TypedExpMemo *m = dynamic_cast<TypedExpMemo*>(mm);
+	// FIXME: not completed
+	// TypedExpMemo *m = dynamic_cast<TypedExpMemo*>(mm);
 }
 
 class FlagDefMemo : public Memo {
@@ -4145,7 +4098,8 @@ Memo *FlagDef::makeMemo(int mId)
 
 void FlagDef::readMemo(Memo *mm, bool dec)
 {
-	FlagDefMemo *m = dynamic_cast<FlagDefMemo*>(mm);
+	// FIXME: not completed
+	// FlagDefMemo *m = dynamic_cast<FlagDefMemo*>(mm);
 }
 
 class RefExpMemo : public Memo {
@@ -4161,7 +4115,8 @@ Memo *RefExp::makeMemo(int mId)
 
 void RefExp::readMemo(Memo *mm, bool dec)
 {
-	RefExpMemo *m = dynamic_cast<RefExpMemo*>(mm);
+	// FIXME: not completed
+	// RefExpMemo *m = dynamic_cast<RefExpMemo*>(mm);
 }
 
 class TypeValMemo : public Memo {
@@ -4177,7 +4132,8 @@ Memo *TypeVal::makeMemo(int mId)
 
 void TypeVal::readMemo(Memo *mm, bool dec)
 {
-	TypeValMemo *m = dynamic_cast<TypeValMemo*>(mm);
+	// FIXME: not completed
+	// TypeValMemo *m = dynamic_cast<TypeValMemo*>(mm);
 }
 
 class LocationMemo : public Memo {
@@ -4193,10 +4149,36 @@ Memo *Location::makeMemo(int mId)
 
 void Location::readMemo(Memo *mm, bool dec)
 {
-	LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
+	// FIXME: not completed
+	// LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
 }
 
 Location* Location::local(const char *nam, UserProc *p) {
 	return new Location(opLocal, new Const((char*)nam), p);
 }
 
+bool Terminal::isMemDepth(int d) {
+	if (op == opDefineAll)
+		return true;			// define-all matches all memory depths
+	return d == 0;
+}
+
+bool Location::isMemDepth(int d) {
+	return d == getMemDepth();
+}
+
+// Don't put in exp.h, as this would require statement.h including before exp.h
+bool RefExp::isImplicitDef() {
+	return def == NULL || def->getKind() == STMT_IMPASSIGN;
+}
+
+Exp* Exp::bypassAndPropagate() {
+	BypassingPropagator bp(NULL);
+	return accept(&bp);
+}
+
+void Exp::bypassAndPropagateComp() {
+	if (op != opMemOf) return;
+	Exp*& sub1 = ((Location*)this)->refSubExp1();
+	sub1 = sub1->bypassAndPropagate();
+}

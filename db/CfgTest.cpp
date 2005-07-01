@@ -4,23 +4,19 @@
  *				tests the Exp and derived classes
  *============================================================================*/
 /*
- * $Revision$
+ * $Revision$	// 1.14.2.1
  *
  * 17 Jul 03 - Mike: Created
  */
-
-#define FRONTIER_PENTIUM		"test/pentium/frontier"
-#define SEMI_PENTIUM			"test/pentium/semi"
-#define IFTHEN_PENTIUM			"test/pentium/ifthen"
 
 #include "CfgTest.h"
 #include <sstream>
 #include <string>
 #include "BinaryFile.h"
 #include "frontend.h"
-#include "pentiumfrontend.h"		// For PentiumFrontEnd
 #include "proc.h"
 #include "prog.h"
+#include "dataflow.h"
 
 /*==============================================================================
  * FUNCTION:		CfgTest::registerTests
@@ -33,11 +29,7 @@ suite->addTest(new CppUnit::TestCaller<CfgTest> ("CfgTest", \
 	&CfgTest::name, *this))
 
 void CfgTest::registerTests(CppUnit::TestSuite* suite) {
-	MYTEST(testDominators);
-	MYTEST(testSemiDominators);
-	MYTEST(testPlacePhi);
-	MYTEST(testPlacePhi2);
-	MYTEST(testRenameVars);
+	// Oops - they were all for dataflow. Need some real Cfg tests!
 }
 
 int CfgTest::countTestCases () const

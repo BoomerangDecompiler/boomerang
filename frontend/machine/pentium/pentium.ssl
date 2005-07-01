@@ -12,10 +12,11 @@
 #       processors. 
 #
 
-# $Revision$
+# $Revision$		// 1.28.2.1
 # 16 Oct 98 - Mike: lower case register names to be consistent with sparc
 # 20 Nov 02 - Mike: Fixed MOV.ED.IVOD and MOV.EW.IVOW
 # 20 Jul 04 - Mike: Fixed FISUB, FISUBR
+# 01 Jul 05 - Mike: FIMUL, FIADD.i64 -> .i16
 
 # Constants defined in hexadecimal (modelling manual) 
 MAX8BITS  := 0xFF;
@@ -1536,11 +1537,11 @@ FARITP[IDX].STi.ST i
             *80* i := i OP3[IDX] %st
             FPOP;
 
+FIADD.i16   modrm 
+            *80* %st := %st +f itof(16,80,modrm);
+
 FIADD.i32   modrm 
             *80* %st := %st +f itof(32,80,modrm);
-
-FIADD.i64   modrm 
-            *80* %st := %st +f itof(64,80,modrm);
 
 FCHS    
             *80* %st := ~f %st;
@@ -1776,11 +1777,11 @@ FMULP.STi.ST   i
             *80* i := %st *f i
             FPOP;
 
+FIMUL.i16   modrm 
+            *80* %st := %st *f itof(16,80,modrm);
+
 FIMUL.i32   modrm 
             *80* %st := %st *f itof(32,80,modrm);
-
-FIMUL.i64   modrm 
-            *80* %st := %st *f itof(64,80,modrm);
 
 FNOP    _ ;
 

@@ -18,7 +18,7 @@
  *============================================================================*/
  
 /*
- * $Revision$
+ * $Revision$	// 1.27.2.2
  *
  * 27 Apr 02 - Mike: Mods for boomerang
  * 17 Jul 02 - Mike: readSSLFile resets internal state as well
@@ -98,16 +98,13 @@ void TableEntry::setRTL(RTL& r) {
 
 /*==============================================================================
  * FUNCTION:		TableEntry::operator=
- * OVERVIEW:		Sets the contents of this object with a deepcopy from
- *					another TableEntry object. Note that this is different from
- *					the semantics of operator= for an RTL which only does a
- *					shallow copy!
+ * OVERVIEW:		Sets the contents of this object with a deepcopy from another TableEntry object.  Note that this is
+ *					different from the semantics of operator= for an RTL which only does a shallow copy!
  * PARAMETERS:		other - the object to copy
  * RETURNS:			a reference to this object
  *============================================================================*/
 const TableEntry& TableEntry::operator=(const TableEntry& other) {
-	for (std::list<std::string>::const_iterator it = other.params.begin(); 
-		 it != other.params.end(); it++)
+	for (std::list<std::string>::const_iterator it = other.params.begin(); it != other.params.end(); it++)
 		params.push_back(*it);
 	rtl = *(new RTL(other.rtl));
 	return *this;
@@ -123,9 +120,8 @@ const TableEntry& TableEntry::operator=(const TableEntry& other) {
 int TableEntry::appendRTL(std::list<std::string>& p, RTL& r) {
 	bool match = (p.size() == params.size());
 	std::list<std::string>::iterator a, b;
-	for (a = params.begin(), b = p.begin();
-	  match && (a != params.end()) && (b != p.end());
-	  match = (*a == *b), a++, b++)
+	for (a = params.begin(), b = p.begin(); match && (a != params.end()) && (b != p.end());
+			match = (*a == *b), a++, b++)
 		;
 	if (match) {
 		rtl.appendRTL(r);
@@ -169,11 +165,9 @@ RTLInstDict::~RTLInstDict()
 
 /*==============================================================================
  * FUNCTION:		RTLInstDict::readSSLFile
- * OVERVIEW:		Read and parse the SSL file, and initialise the expanded
- *					instruction dictionary (this object). This also reads and
- *					sets up the register map and flag functions.
- * PARAMETERS:		SSLFileName - the name of the file containing the SSL
- *					  specification.
+ * OVERVIEW:		Read and parse the SSL file, and initialise the expanded instruction dictionary (this object).
+ *					This also reads and sets up the register map and flag functions.
+ * PARAMETERS:		SSLFileName - the name of the file containing the SSL specification.
  * RETURNS:			the file was successfully read
  *============================================================================*/
 bool RTLInstDict::readSSLFile(const std::string& SSLFileName)
@@ -252,8 +246,7 @@ void RTLInstDict::print(std::ostream& os /*= std::cout*/)
 		// print the parameters
 		std::list<std::string>& params = (*p).second.params;
 		int i = params.size();
-		for (std::list<std::string>::iterator s = params.begin();
-		  s != params.end(); s++,i--)
+		for (std::list<std::string>::iterator s = params.begin(); s != params.end(); s++,i--)
 			os << *s << (i != 1 ? "," : "");
 		os << "\n";
 	
@@ -304,14 +297,12 @@ void RTLInstDict::fixupParams( )
 	}
 }
 
-void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcParams,
-  bool& haveCount, int mark )
+void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcParams, bool& haveCount, int mark )
 {
 	ParamEntry &param = DetParamMap[s];
 
 	if( param.params.size() == 0 ) {
-		std::cerr << "Error in SSL File: Variant operand "
-			 << s << " has no branches. Well that's really useful...\n";
+		std::cerr << "Error in SSL File: Variant operand " << s << " has no branches. Well that's really useful...\n";
 		return;
 	}
 	if( param.mark == mark )
@@ -337,15 +328,13 @@ void RTLInstDict::fixupParamsSub( std::string s, std::list<std::string>& funcPar
 		}
 
 		if (funcParams.size() != sub.funcParams.size() ) {
-			std::cerr << "Error in SSL File: Variant operand " << s
-				 << " does not have a fixed number of functional parameters:\n"
-				 << "Expected " << funcParams.size() << ", but branch "
-				 << *it << " has " << sub.funcParams.size() << ".\n";
+			std::cerr << "Error in SSL File: Variant operand " << s << " does not have a fixed number of functional "
+				"parameters:\n" << "Expected " << funcParams.size() << ", but branch " << *it << " has " <<
+				sub.funcParams.size() << ".\n";
 		} else if (funcParams != sub.funcParams && sub.asgn != NULL ) {
 			/* Rename so all the parameter names match */
 			std::list<std::string>::iterator i,j;
-			for( i = funcParams.begin(), j = sub.funcParams.begin();
-			  i != funcParams.end(); i++, j++ ) {
+			for( i = funcParams.begin(), j = sub.funcParams.begin(); i != funcParams.end(); i++, j++ ) {
 				Exp* match = Location::param(j->c_str());
 				Exp* replace = Location::param(i->c_str());
 				sub.asgn->searchAndReplace( match, replace );
@@ -388,8 +377,7 @@ std::pair<std::string,unsigned> RTLInstDict::getSignature(const char* name) {
 
 /*==============================================================================
  * FUNCTION:		 RTLInstDict::partialType
- * OVERVIEW:		 Scan the Exp* pointed to by exp; if its top level
- *						operator indicates even a partial type, then set
+ * OVERVIEW:		 Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type, then set
  *						the expression's type, and return true
  * NOTE:			 This version only inspects one expression
  * PARAMETERS:		 exp - points to a Exp* to be scanned
@@ -411,11 +399,9 @@ bool RTLInstDict::partialType(Exp* exp, Type& ty)
 
 /*==============================================================================
  * FUNCTION:		 RTLInstDict::instantiateRTL
- * OVERVIEW:		 Returns an instance of a register transfer list for
- *					 the instruction named 'name' with the actuals
+ * OVERVIEW:		 Returns an instance of a register transfer list for the instruction named 'name' with the actuals
  *					 given as the second parameter.
- * PARAMETERS:		 name - the name of the instruction (must correspond to one
- *					   defined in the SSL file).
+ * PARAMETERS:		 name - the name of the instruction (must correspond to one defined in the SSL file).
  *					 actuals - the actual values
  * RETURNS:			 the instantiated list of Exps
  *============================================================================*/
@@ -441,16 +427,15 @@ if (0) {
 
 /*==============================================================================
  * FUNCTION:		 RTLInstDict::instantiateRTL
- * OVERVIEW:		 Returns an instance of a register transfer list for
- *					 the parameterized rtlist with the given formals replaced
- *					 with the actuals given as the third parameter.
+ * OVERVIEW:		 Returns an instance of a register transfer list for the parameterized rtlist with the given formals
+ *					 replaced with the actuals given as the third parameter.
  * PARAMETERS:		 rtl - a register transfer list
  *					 params - a list of formal parameters
  *					 actuals - the actual parameter values
  * RETURNS:			 the instantiated list of Exps
  *============================================================================*/
-std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC,
-		std::list<std::string>& params, std::vector<Exp*>& actuals) {
+std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC, std::list<std::string>& params,
+		std::vector<Exp*>& actuals) {
 	assert(params.size() == actuals.size());
 
 	// Get a deep copy of the template RTL
@@ -477,8 +462,9 @@ std::list<Statement*>* RTLInstDict::instantiateRTL(RTL& rtl, ADDRESS natPC,
 	transformPostVars( newList, true );
 
 	// Perform simplifications, e.g. *1 in Pentium addressing modes
-	for (ss = newList->begin(); ss != newList->end(); ss++)
+	for (ss = newList->begin(); ss != newList->end(); ss++) {
 		(*ss)->simplify();
+	}
 
 	return newList;
 }
@@ -497,18 +483,14 @@ public:
 };
 
 /*
- * Transform an RTL to eliminate any uses of post-variables. Note that
- * the algorithm used expects to deal with simple expressions as post
- * vars, ie r[22], m[r[1]], generally things which aren't parameterized
- * at a higher level. This is ok for the translator (we do substitution
- * first anyway), but may miss some optimizations for the emulator.
- * For the emulaor, if parameters are detected within a postvar,
- * we just force the temporary, which is always safe to do.
- * (The parameter optimise is set to false for the emulator to achieve this).
+ * Transform an RTL to eliminate any uses of post-variables. Note that the algorithm used expects to deal with simple
+ * expressions as post vars, ie r[22], m[r[1]], generally things which aren't parameterized at a higher level. This is
+ * ok for the translator (we do substitution first anyway), but may miss some optimizations for the emulator.
+ * For the emulator, if parameters are detected within a postvar, we just force the temporary, which is always safe to
+ * do.  (The parameter optimise is set to false for the emulator to achieve this).
  */
 
-std::list<Statement*>* RTLInstDict::transformPostVars(
-  std::list<Statement*>* rts, bool optimise ) {
+std::list<Statement*>* RTLInstDict::transformPostVars(std::list<Statement*>* rts, bool optimise) {
 	std::list<Statement*>::iterator rt;
 
 	// Map from var (could be any expression really) to details
@@ -528,12 +510,11 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 	// First pass: Scan for post-variables and usages of their referents
 	for( rt = rts->begin(); rt != rts->end(); rt++ ) {
 		// ss appears to be a list of expressions to be searched
-		// It is either the LHS and RHS of an assignment, 
-		// or it's the parameters of a flag call
+		// It is either the LHS and RHS of an assignment, or it's the parameters of a flag call
 		Binary* ss;
 		if( (*rt)->isAssign()) {
-			Exp* lhs = (*rt)->getLeft();
-			Exp* rhs = (*rt)->getRight();
+			Exp* lhs = ((Assign*)*rt)->getLeft();
+			Exp* rhs = ((Assign*)*rt)->getRight();
 
 			// Look for assignments to post-variables
 			if (lhs && lhs->isPostVar()) {
@@ -543,15 +524,12 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 					el.used = false;
 					el.type = ((Assign*)*rt)->getType();
 					
-					// Constuct a temporary. We should probably be smarter
-					// and actually check that it's not otherwise used here.
-					std::string tmpname = el.type->getTempName() + (tmpcount++)
-					  + "post" ;
-					el.tmp = Location::tempOf(new Const(
-					  (char*)tmpname.c_str()));
+					// Constuct a temporary. We should probably be smarter and actually check that it's not otherwise
+					// used here.
+					std::string tmpname = el.type->getTempName() + (tmpcount++) + "post" ;
+					el.tmp = Location::tempOf(new Const((char*)tmpname.c_str()));
 
-					// Keep a copy of the referrent. For example, if the
-					// lhs is r[0]', base is r[0]
+					// Keep a copy of the referrent. For example, if the lhs is r[0]', base is r[0]
 					el.base = lhs->getSubExp1();
 					el.post = lhs;	   // The whole post-var, e.g. r[0]'
 					el.isNew = true;
@@ -565,27 +543,26 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 					
 				}
 			}
-			// For an assignment, the two expressions to search are the
-			// left and right hand sides (could just put the whole assignment
-			// on, I suppose)
-			ss = new Binary(opList, lhs->clone(),
-					new Binary(opList, rhs->clone(), new Terminal(opNil)));
+			// For an assignment, the two expressions to search are the left and right hand sides (could just put the
+			// whole assignment on, I suppose)
+			ss = new Binary(opList,
+				lhs->clone(),
+				new Binary(opList,
+					rhs->clone(),
+					new Terminal(opNil)));
 		} else if( (*rt)->isFlagAssgn()) {
-			// An opFlagCall is assumed to be a Binary with a string and an
-			// opList of parameters
+			// An opFlagCall is assumed to be a Binary with a string and an opList of parameters
 			ss = (Binary*) ((Binary*)*rt)->getSubExp2();
 		} else
 			ss = NULL;
 
 		/* Look for usages of post-variables' referents
-		 * Trickier than you'd think, as we need to make sure to skip over
-		 * the post-variables themselves. ie match r[0] but not r[0]'
-		 * Note: back with SemStrs, we could use a match expression which
-		 * was a wildcard prepended to the base expression; this would
-		 * match either the base (r[0]) or the post-var (r[0]').
-		 * Can't really use this with Exps, so we search twice; once for
-		 * the base, and once for the post, and if we get more with the
-		 * former, then we have a use of the base (consider r[0] + r[0]')
+		 * Trickier than you'd think, as we need to make sure to skip over the post-variables themselves. ie match
+		 * r[0] but not r[0]'
+		 * Note: back with SemStrs, we could use a match expression which was a wildcard prepended to the base
+		 * expression; this would match either the base (r[0]) or the post-var (r[0]').
+		 * Can't really use this with Exps, so we search twice; once for the base, and once for the post, and if we
+		 * get more with the former, then we have a use of the base (consider r[0] + r[0]')
 		 */
 		for (std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin();
 			 sr != vars.end(); sr++ ) {
@@ -608,8 +585,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 				s->searchAll( sr->second.base, res1 );
 				s->searchAll( sr->second.post, res2 );
 				// Each match of a post will also match the base.
-				// But if there is a bare (non-post) use of the base, there
-				// will be a result in res1 that is not in res2
+				// But if there is a bare (non-post) use of the base, there will be a result in res1 that is not in res2
 				if (res1.size() > res2.size())
 					sr->second.used = true;
 			}
@@ -630,8 +606,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 
 	// Finally: Append assignments where needed from temps to base vars
 	// Example: esp' = esp-4; m[esp'] = modrm; FLAG(esp)
-	// all the esp' are replaced with say tmp1,
-	// you need a "esp = tmp1" at the end to actually make the change
+	// all the esp' are replaced with say tmp1, you need a "esp = tmp1" at the end to actually make the change
 	for( std::map<Exp*,transPost,lessExpStar>::iterator sr = vars.begin();
 	  sr != vars.end(); sr++ ) {
 		if( sr->second.used ) {
@@ -640,8 +615,7 @@ std::list<Statement*>* RTLInstDict::transformPostVars(
 					sr->second.tmp);
 			rts->push_back( te );
 		} else {
-			// The temp is either used (uncloned) in the assignment, or is
-			// deleted here
+			// The temp is either used (uncloned) in the assignment, or is deleted here
 			//delete sr->second.tmp;
 		}
 	}

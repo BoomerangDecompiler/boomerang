@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, Mike Van Emmerik
+ * Copyright (C) 2004-2005, Mike Van Emmerik
  *
  * See the file "LICENSE.TERMS" for information on usage and
  * redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -8,12 +8,12 @@
 
 /*==============================================================================
  * FILE:	   dfa.cpp
- * OVERVIEW:   Implementation of class Type functions related to solving
- *             type analysis in an iterative, data-flow-based manner
+ * OVERVIEW:   Implementation of class Type functions related to solving type analysis in an iterative, data-flow-based
+ *				manner
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.30.2.11
  *
  * 24/Sep/04 - Mike: Created
  */
@@ -25,6 +25,8 @@
 #include "prog.h"
 #include "util.h"
 #include "visitor.h"
+#include "log.h"
+#include "proc.h"
 #include <sstream>
 
 static int nextUnionNumber = 0;
@@ -59,11 +61,11 @@ void UserProc::dfaTypeAnalysis() {
 		ch = false;
 		for (it = stmts.begin(); it != stmts.end(); it++) {
 			bool thisCh = false;
-			(*it)->dfaTypeAnalysis(thisCh, this);
+			(*it)->dfaTypeAnalysis(thisCh);
 			if (thisCh) {
 				ch = true;
 				if (DEBUG_TA)
-					LOG << " Caused change: " << *it << "\n";
+					LOG << " caused change: " << *it << "\n";
 			}
 		}
 		if (!ch)
@@ -71,10 +73,10 @@ void UserProc::dfaTypeAnalysis() {
 			break;
 	}
 	if (ch)
-		LOG << "**** Iteration limit exceeded for dfaTypeAnalysis of procedure " << getName() << " ****\n";
+		LOG << "### WARNING: iteration limit exceeded for dfaTypeAnalysis of procedure " << getName() << " ###\n";
 
 	if (DEBUG_TA) {
-		LOG << "\n *** Results for Data flow based Type Analysis for " << getName() << " ***\n";
+		LOG << "\n ### results for data flow based type analysis for " << getName() << " ###\n";
 		LOG << iter << " iterations\n";
 		for (it = stmts.begin(); it != stmts.end(); it++) {
 			Statement* s = *it;
@@ -91,29 +93,40 @@ void UserProc::dfaTypeAnalysis() {
 			}
 			// If s is a call, also display its return types
 			if (s->isCall()) {
-				std::vector<ReturnInfo>& returns = ((CallStatement*)s)->getReturns();
-				int n = returns.size();
-				if (n) {
-					LOG << "       Returns: ";
-					for (int i=0; i < n; i++)
-						if (returns[i].e) LOG << returns[i].type->getCtype() << " " << returns[i].e << "  ";
-					LOG << "\n";
+				CallStatement* call = (CallStatement*)s;
+				ReturnStatement* rs = call->getCalleeReturn();
+				if (rs == NULL) continue;
+				UseCollector* uc = call->getUseCollector();
+				ReturnStatement::iterator rr;
+				bool first = true;
+				for (rr = rs->begin(); rr != rs->end(); ++rr) {
+					// Intersect the callee's returns with the live locations at the call, i.e. make sure that they
+					// exist in *uc
+					Exp* lhs = ((Assignment*)*rr)->getLeft();
+					if (!uc->exists(lhs))
+						continue;				// Intersection fails
+					if (first)
+						LOG << "       returns: ";
+					else
+						LOG << ", ";
+					LOG << ((Assignment*)*rr)->getType()->getCtype() << " " << ((Assignment*)*rr)->getLeft();
 				}
+				LOG << "\n";
 			}
 		}
-		LOG << "\n *** End results for Data flow based Type Analysis for " << getName() << " ***\n\n";
+		LOG << "\n ### end results for Data flow based Type Analysis for " << getName() << " ###\n\n";
 	}
 
 	// Now use the type information gathered
 	Prog* prog = getProg();
 	if (DEBUG_TA)
-		LOG << " *** Converting expressions to local variables for " << getName() << " ***\n";
+		LOG << " ### mapping expressions to local variables for " << getName() << " ###\n";
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		s->dfaConvertLocals();
+		s->dfaMapLocals();
 	}
 	if (DEBUG_TA)
-		LOG << " *** End converting expressions to local variables for " << getName() << " ***\n";
+		LOG << " ### end mapping expressions to local variables for " << getName() << " ###\n";
 
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
@@ -159,7 +172,7 @@ void UserProc::dfaTypeAnalysis() {
 							}
 							Location *g = Location::global(strdup(gloName), this);
 							if (ty && ty->isArray()) 
-								ne = new Binary(opArraySubscript, g, new Const(0));
+								ne = new Binary(opArrayIndex, g, new Const(0));
 							else 
 								ne = g;
 						}
@@ -180,7 +193,7 @@ void UserProc::dfaTypeAnalysis() {
 						ADDRESS K = (ADDRESS)constK->getInt();
 						Exp* idx = ((Binary*)*rr)->getSubExp1();
 						Exp* arr = new Unary(opAddrOf,
-							new Binary(opArraySubscript,
+							new Binary(opArrayIndex,
 								Location::global(prog->getGlobalName(K), this),
 								idx));
 						// Beware of changing expressions in implicit assignments... map can become invalid
@@ -226,7 +239,7 @@ void UserProc::dfaTypeAnalysis() {
 			ADDRESS K2 = (ADDRESS)((Const*)r)->getInt();
 			Exp* idx = ((Binary*)l)->getSubExp1();
 			// Replace with the array expression
-			Exp* arr = new Binary(opArraySubscript,
+			Exp* arr = new Binary(opArrayIndex,
 				Location::global(prog->getGlobalName(K2), this),
 				idx);
 			s->searchAndReplace(scaledArrayPat, arr);
@@ -241,15 +254,15 @@ void UserProc::dfaTypeAnalysis() {
 	}
 
 	if (VERBOSE) {
-		LOG << "*** After application of DFA Type Analysis for " << getName() << " ***\n";
+		LOG << "### After application of DFA Type Analysis for " << getName() << " ###\n";
 		printToLog();
-		LOG << "*** End application of DFA Type Analysis for " << getName() << " ***\n";
+		LOG << "### End application of DFA Type Analysis for " << getName() << " ###\n";
 	}
 }
 
 // This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
-// In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle
-// overconstraints with unions.
+// In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle overconstraints with
+// unions.
 // Consider various pieces of knowledge about the types. There could be:
 // a) void: no information. Void meet x = x.
 // b) size only: find a size large enough to contain the two types.
@@ -268,7 +281,7 @@ Type* VoidType::meetWith(Type* other, bool& ch) {
 
 Type* FuncType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
-	if (*this == *other) return this;		// NOTE: at present, compares names as well as types and number of parameters
+	if (*this == *other) return this;		// NOTE: at present, compares names as well as types and num parameters
 	return createUnion(other, ch);
 }
 
@@ -296,7 +309,7 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 			return this;
 		}
 		if (size == ((SizeType*)other)->getSize()) return this;
-		LOG << "Integer size " << size << " meet with SizeType size " << ((SizeType*)other)->getSize() << "!\n";
+		LOG << "integer size " << size << " meet with SizeType size " << ((SizeType*)other)->getSize() << "!\n";
 		int oldSize = size;
 		size = max(size, ((SizeType*)other)->getSize());
 		ch = size != oldSize;
@@ -450,7 +463,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 
 	// Other is a non union type
 	if (other->isPointer() && other->asPointer()->getPointsTo() == this) {
-		LOG << "Warning! Attempt to union " << getCtype() << " with pointer to self!\n";
+		LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
 		return this;
 	}
 	for (it = li.begin(); it != li.end(); it++) {
@@ -488,7 +501,7 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 		}
 		if (other->getSize() == size)
 			return other->clone();
-LOG << "Warning: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
+LOG << "WARNING: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
 return other->clone();
 	}
 	return createUnion(other, ch);
@@ -540,20 +553,26 @@ Type* Type::createUnion(Type* other, bool& ch) {
 }
 
 
-void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void CallStatement::dfaTypeAnalysis(bool& ch) {
 	// Iterate through the arguments
-	if (signature) {				// In case an indirect call and VFT analysis failed
-		int n = signature->getNumParams();
-		for (int i=0; i < n; i++) {
-			Exp* e = getArgumentExp(i);
-			// Type* t = signature->getParamType(i);
-			Type* t = signature->getParamType(i);
-			e->descendType(t, ch, proc);
-		}
-		// The destination is a pointer to a function with this function's signature (if any)
-		if (pDest) {
-			pDest->descendType(new FuncType(signature), ch, proc);
-		}
+	StatementList::iterator aa;
+	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
+		// The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
+		// will already be that of the signature, if this is a library call, from updateArguments()
+		((Assign*)*aa)->dfaTypeAnalysis(ch);
+	}
+	// The destination is a pointer to a function with this function's signature (if any)
+	if (pDest)
+		pDest->descendType(new FuncType(signature), ch, proc);
+}
+
+void ReturnStatement::dfaTypeAnalysis(bool& ch) {
+	StatementList::iterator mm, rr;
+	for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
+		((Assign*)*mm)->dfaTypeAnalysis(ch);
+	}
+	for (rr = returns.begin(); rr != returns.end(); ++rr) {
+		((Assign*)*rr)->dfaTypeAnalysis(ch);
 	}
 }
 
@@ -562,9 +581,8 @@ void CallStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 // Ex1 := Ex1 meet Ex0
 // Ex2 := Ex1 meet Ex0
 // ...
-// MVE: Actually, I now believe that I need Ex0 := Ex0 join (Ex1 join Ex2 join ...)
 // The others are correct.
-void PhiAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	iterator it;
 	Type* meetOfArgs = defVec[0].def->getTypeFor(lhs);
 	for (it = ++defVec.begin(); it != defVec.end(); it++) {
@@ -575,32 +593,28 @@ void PhiAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
 	type = type->meetWith(meetOfArgs, ch);
 	for (it = defVec.begin(); it != defVec.end(); it++)
 		it->def->meetWithFor(type, it->e, ch);
-	Assignment::dfaTypeAnalysis(ch, proc);		// Handle the LHS
+	Assignment::dfaTypeAnalysis(ch);			// Handle the LHS
 }
 
-void Assign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void Assign::dfaTypeAnalysis(bool& ch) {
 	Type* tr = rhs->ascendType();
 	type = type->meetWith(tr, ch);
 	rhs->descendType(type, ch, proc);
-	Assignment::dfaTypeAnalysis(ch, proc);		// Handle the LHS
+	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
 }
 
-void Assignment::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void Assignment::dfaTypeAnalysis(bool& ch) {
 	if (lhs->isMemOf())
 		// Push down the fact that the memof is a pointer to the assignment type
 		lhs->descendType(type, ch, proc);
 }
 
-void BranchStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void BranchStatement::dfaTypeAnalysis(bool& ch) {
 	pCond->descendType(new BooleanType(), ch, proc);
 	// Not fully implemented yet?
 }
 
-void BoolAssign::dfaTypeAnalysis(bool& ch, UserProc* proc) {
-	// Not implemented yet
-}
-
-void ReturnStatement::dfaTypeAnalysis(bool& ch, UserProc* proc) {
+void BoolAssign::dfaTypeAnalysis(bool& ch) {
 	// Not implemented yet
 }
 
@@ -755,10 +769,10 @@ Type* Binary::ascendType() {
 
 // Constants and subscripted locations are at the leaves of the expression tree. Just return their stored types.
 Type* RefExp::ascendType() {
-if (def == NULL) {
- std::cerr << "Warning! Null reference in " << this << "\n";
- return new VoidType;
-}
+	if (def == NULL) {
+ 		std::cerr << "Warning! Null reference in " << this << "\n";
+		return new VoidType;
+	}
 	return def->getTypeFor(subExp1);
 }
 Type* Const::ascendType() {
@@ -956,7 +970,7 @@ void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 				// We would expect the stride to be the same size as the base type
 				int stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
 				if (DEBUG_TA && stride*8 != parentType->getSize())
-					LOG << "Type WARNING: apparent array reference at " << this << " has stride " << stride*8 <<
+					LOG << "type WARNING: apparent array reference at " << this << " has stride " << stride*8 <<
 						" bits, but parent type " << parentType->getCtype() << " has size " <<
 						parentType->getSize() << "\n";
 				// The index is integer type
@@ -1001,48 +1015,45 @@ void TypedExp::descendType(Type* parentType, bool& ch, UserProc* proc) {
 void Terminal::descendType(Type* parentType, bool& ch, UserProc* proc) {
 }
 
-// Convert expressions to locals, using the (so far DFA based) type analysis information
+// Map expressions to locals, using the (so far DFA based) type analysis information
 // Basically, descend types, and when you get to m[...] compare with the local high level pattern;
 // when at a sum or difference, check for the address of locals high level pattern that is a pointer
 
-void Statement::dfaConvertLocals() {
-	DfaLocalConverter dlc(proc);
-	StmtDfaLocalConverter sdlc(&dlc);
+void Statement::dfaMapLocals() {
+	DfaLocalMapper dlc(proc);
+	StmtDfaLocalMapper sdlc(&dlc, true);		// True to ignore def collector in return statement
 	accept(&sdlc);
+	if (VERBOSE && dlc.change)
+		LOG << "statement mapped with new local(s): " << number << "\n";
 }
 
-void StmtDfaLocalConverter::visit(Assign* s, bool& recur) {
-	((DfaLocalConverter*)mod)->setType(s->getType());
+void StmtDfaLocalMapper::visit(Assign* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(s->getType());
 	recur = true;
 }
-void StmtDfaLocalConverter::visit(PhiAssign* s, bool& recur) {
-	((DfaLocalConverter*)mod)->setType(s->getType());
+void StmtDfaLocalMapper::visit(PhiAssign* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(s->getType());
 	recur = true;
 }
-void StmtDfaLocalConverter::visit(ImplicitAssign* s, bool& recur) {
-	((DfaLocalConverter*)mod)->setType(s->getType());
+void StmtDfaLocalMapper::visit(ImplicitAssign* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(s->getType());
 	recur = true;
 }
-void StmtDfaLocalConverter::visit(BoolAssign* s, bool& recur) {
-	((DfaLocalConverter*)mod)->setType(s->getType());
+void StmtDfaLocalMapper::visit(BoolAssign* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(s->getType());
 	recur = true;
 }
-void StmtDfaLocalConverter::visit(BranchStatement* s, bool& recur) {
-	((DfaLocalConverter*)mod)->setType(new BooleanType);
-	Exp* pCond = s->getCondExpr();
-	s->setCondExpr(pCond->accept(mod));
+void StmtDfaLocalMapper::visit(BranchStatement* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(new BooleanType);
+	recur = true;
+}
+void StmtDfaLocalMapper::visit(ReturnStatement* s, bool& recur) {
+	ReturnStatement::iterator rr;
+	for (rr = s->begin(); rr != s->end(); ++rr)
+		(*rr)->accept(this);
 	recur = false;
 }
-void StmtDfaLocalConverter::visit(ReturnStatement* s, bool& recur) {
-	int n = s->getNumReturns();
-	for (int i=0; i < n; i++) {
-		Exp* ret = s->getReturnExp(i);
-		((DfaLocalConverter*)mod)->setType(ret->ascendType());
-		s->setReturnExp(i, ret->accept(mod));
-	}
-	recur = false;
-}
-void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
+void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
 	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
 	Exp* pDest = s->getDest();
 	Signature* sig = s->getSignature();
@@ -1050,67 +1061,75 @@ void StmtDfaLocalConverter::visit(CallStatement* s, bool& recur) {
 		FuncType* ft = new FuncType;
 		if (sig)
 			ft->setSignature(sig);
-		((DfaLocalConverter*)mod)->setType(ft);
+		((DfaLocalMapper*)mod)->setType(ft);
 		s->setDest(pDest->accept(mod));
 	}
-	std::vector<Exp*>::iterator it;
-	std::vector<Exp*>& arguments = s->getArguments();
+	StatementList::iterator it;
+	StatementList& arguments = s->getArguments();
 	// Should we get argument types from the signature, or ascend from the argument expression?
 	// Ideally, it should come to the same thing, but consider if the argument is sp-K... sp essentially
 	// always becomes void*, and so the type is lost
-	unsigned n = arguments.size();
-	for (unsigned u=0; u < n; u++) {
-		if (sig)
-			((DfaLocalConverter*)mod)->setType(sig->getParamType(u));
+	unsigned u = 0;
+	for (it = arguments.begin(); it != arguments.end(); ++it, ++u) {
+		Type* pt = NULL;
+		if (sig) 
+			pt = sig->getParamType(u); 	// Could be NULL if we are involved in recursion
+		if (sig && pt)
+			((DfaLocalMapper*)mod)->setType(pt);
 		else
-			((DfaLocalConverter*)mod)->setType(arguments[u]->ascendType());
-		arguments[u] = arguments[u]->accept(mod);
+			((DfaLocalMapper*)mod)->setType(((Assignment*)*it)->getLeft()->ascendType());
+		(*it)->accept(this);
 	}
 #if 0
 	std::vector<Exp*>& implicitArguments = s->getImplicitArguments();
 	for (it = implicitArguments.begin(); recur && it != implicitArguments.end(); it++) {
-		((DfaLocalConverter*)mod)->setType((*it)->ascendType());
+		((DfaLocalMapper*)mod)->setType((*it)->ascendType());
 		*it = (*it)->accept(mod);
 	}
 #endif
+#if 0
 	std::vector<ReturnInfo>::iterator rr;
 	std::vector<ReturnInfo>& returns = s->getReturns();
 	for (rr = returns.begin(); recur && rr != returns.end(); rr++) {
 		if (rr->e == NULL) continue;			// Can be NULL now; just ignore
-		((DfaLocalConverter*)mod)->setType(rr->type);
+		((DfaLocalMapper*)mod)->setType(rr->type);
 		rr->e = rr->e->accept(mod);
 	}
+#endif
 	recur = false;
 }
 
 
-// Convert expressions to locals
-DfaLocalConverter::DfaLocalConverter(UserProc* proc) : parentType(NULL), proc(proc) {
-	sig = proc->getSignature();		// MVE: is this used?
+// Map expressions to locals
+DfaLocalMapper::DfaLocalMapper(UserProc* proc) : parentType(NULL), proc(proc) {
+	sig = proc->getSignature();
 	prog = proc->getProg();
+	change = false;
 }
 
-Exp* DfaLocalConverter::preVisit(Location* e, bool& recur) {
+Exp* DfaLocalMapper::preVisit(Location* e, bool& recur) {
 	// Check if this is an appropriate pattern for local variables	
+	recur = true;
 	if (e->isMemOf()) {
 		if (sig->isStackLocal(proc->getProg(), e)) {
-			recur = false;
-			//mod = true;			// We've made a modification
-			Exp* ret = proc->getLocalExp(e, parentType, true);
+			change = true;			// We've made a mapping
+			Exp* ret = proc->getSymbolExp(e, parentType, true);
 			// ret is now *usually* a local so postVisit won't expect parentType changed
 			// Note: at least one of Trent's hacks can cause m[a[...]] to be returned
 			if (ret->isMemOf())
 				parentType = new PointerType(parentType);
-			return ret;
+			recur = false;			// Don't dig inside m[x] to make m[a[m[x]]] !
+			// Map, don't modify, so don't set e to ret. We want to fall through here to set the parent type, so that
+			// we are consistent and fix the pointer up always in the postVisit function.
 		}
 		// When we recurse into the m[...], the type will be changed
 		parentType = new PointerType(parentType);
 	}
-	recur = true;
 	return e;
 }
-Exp* DfaLocalConverter::postVisit(Location* e) {
+Exp* DfaLocalMapper::postVisit(Location* e) {
 	if (e->isMemOf()) {
+		// We should have set the type to be a pointer in preVisit; undo that change now
 		PointerType* pt = parentType->asPointer();
 		assert(pt);
 		parentType = pt->getPointsTo();
@@ -1118,15 +1137,14 @@ Exp* DfaLocalConverter::postVisit(Location* e) {
 	return e;
 }
 
-Exp* DfaLocalConverter::preVisit(Binary* e, bool& recur) {
+Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
 	// Check for sp -/+ K, but only if TA indicates this is a pointer
 	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, e)) {
-		recur = false;
 		//mod = true;
-		// We have something like sp-K; wrap it in a m[] to get the correct exp for the existing local (if any)
+		// We have something like sp-K; wrap it in a[ m[ ]] to get the correct exp for the existing local (if any)
 		Exp* memOf_e = Location::memOf(e);
-		return new Unary(opAddrOf,
-			proc->getLocalExp(memOf_e, parentType->asPointer()->getPointsTo(), true));
+		proc->getSymbolExp(memOf_e, parentType->asPointer()->getPointsTo(), true);
+		return new Unary(opAddrOf, memOf_e);
 	}
 	recur = true;
 	return e;
@@ -1144,7 +1162,7 @@ bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 			if (thisCh) {
 				ch = true;
 				if (DEBUG_TA)
-					LOG << "  Sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->getName() << "\n";
+					LOG << "  sig caused change: " << (*it)->getType()->getCtype() << " " << (*it)->getName() << "\n";
 			}
 		}
 	}
@@ -1172,6 +1190,7 @@ bool IntegerType::isCompatibleWith(Type* other) {
 	if (other->isInteger()) return true;
 	if (other->isChar()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isSize() && ((SizeType*)other)->getSize() == size) return true;
 	// I am compatible with an array of myself:
 	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
@@ -1182,6 +1201,7 @@ bool FloatType::isCompatibleWith(Type* other) {
 	if (other->isFloat()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
 	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
+	if (other->isSize() && ((SizeType*)other)->getSize() == size) return true;
 	return false;
 }
 
@@ -1199,6 +1219,7 @@ bool BooleanType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isBoolean()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isSize() && ((SizeType*)other)->getSize() == 1) return true;
 	return false;
 }
 
@@ -1206,13 +1227,14 @@ bool FuncType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (*this == *other) return true;		// MVE: should not compare names!
 	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->isSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
 	return false;
 }
 
 bool PointerType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isSize() && other->getSize() == STD_SIZE) return true;
+	if (other->isSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
 	if (!other->isPointer()) return false;
 	return points_to->isCompatibleWith(other->asPointer()->points_to);
 }

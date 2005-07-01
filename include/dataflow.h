@@ -1,0 +1,266 @@
+/*
+ * Copyright (C) 2005, Mike Van Emmerik
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
+ */
+
+/*==============================================================================
+ * FILE:       dataflow.h
+ * OVERVIEW:   Interface for SSA based data flow analysis
+ *============================================================================*/
+
+/*
+ * $Revision$	// 1.39.2.19
+ *
+ * 15 Mar 05 - Mike: Separated from cfg.h
+ */
+
+#ifndef _DATAFLOW_H_
+#define _DATAFLOW_H_
+
+#include <vector>
+#include <map>
+#include <set>
+#include <stack>
+
+#include "exphelp.h"		// For lessExpStar, etc
+#include "managed.h"		// For LocationSet
+
+class Cfg;
+class BasicBlock;
+class Exp;
+class RefExp;
+class Statement;
+class UserProc;
+
+typedef BasicBlock* PBB;
+
+class DataFlow {
+	/******************** Dominance Frontier Data *******************/
+
+		/* These first two are not from Appel; they map PBBs to indices */
+		std::vector<PBB> BBs;				// Pointers to BBs from indices
+		std::map<PBB, int> indices;			// Indices from pointers to BBs
+		/*
+		 * Calculating the dominance frontier
+		 */
+		// If there is a path from a to b in the cfg, then a is an ancestor of b
+		// if dfnum[a] < denum[b]
+		std::vector<int> dfnum;				// Number set in depth first search
+		std::vector<int> semi;				// Semi dominators
+		std::vector<int> ancestor;			// Defines the forest that becomes the spanning tree
+		std::vector<int> idom;				// Immediate dominator
+		std::vector<int> samedom;			// ? To do with deferring
+		std::vector<int> vertex;			// ?
+		std::vector<int> parent;			// Parent in the dominator tree?
+		std::vector<int> best;				// Improves ancestorWithLowestSemi
+		std::vector<std::set<int> > bucket; // Deferred calculation?
+		int			N;						// Current node number in algorithm
+		std::vector<std::set<int> > DF;		// The dominance frontiers
+
+		/*
+		 * Inserting phi-functions
+		 */
+		// Array of sets of locations defined in BB n
+		std::vector<std::set<Exp*, lessExpStar> > A_orig;
+		// Map from expression to set of block numbers
+		std::map<Exp*, std::set<int>, lessExpStar > defsites;
+		// Array of sets of BBs needing phis
+		std::map<Exp*, std::set<int>, lessExpStar> A_phi;
+		// A Boomerang requirement: Statements defining particular subscripted locations
+		std::map<Exp*, Statement*, lessExpStar> defStmts;
+
+		/*
+		 * Renaming variables
+		 */
+		// The stack which remembers the last definition of an expression.
+		// A map from expression (Exp*) to a stack of (pointers to) Statements
+		std::map<Exp*, std::stack<Statement*>, lessExpStar> Stacks;
+
+
+public:
+		/*
+	 	 * Dominance frontier and SSA code
+	 	 */
+		void		DFS(int p, int n);
+		void		dominators(Cfg* cfg);
+		int			ancestorWithLowestSemi(int v);
+		void		Link(int p, int n);
+		void		computeDF(int n);
+		void		placePhiFunctions(int memDepth, UserProc* proc);
+		void		renameBlockVars(UserProc* proc, int n, int memDepth, bool clearStacks = false);
+		bool		doesDominate(int n, int w);
+
+		// For testing:
+		int			pbbToNode(PBB bb) {return indices[bb];}
+		std::set<int>& getDF(int node) {return DF[node];}
+		PBB			nodeToBB(int node) {return BBs[node];} 
+		int			getIdom(int node) {return idom[node];}
+		int			getSemi(int node) {return semi[node];}
+		std::set<int>& getA_phi(Exp* e) {return A_phi[e];}
+
+		// For debugging:
+		void		dumpStacks();
+
+};
+
+/*	*	*	*	*	*	*\
+*						 *
+*	C o l l e c t o r s  *
+*						 *
+\*	*	*	*	*	*	*/
+
+/**
+ * DefCollector class. This class collects all definitions that reach the statement that contains this collector.
+ */
+class DefCollector {
+		/*
+		 * True if initialised. When not initialised, callees should not subscript parameters inserted into the
+		 * associated CallStatement
+		 */
+		bool		initialised;
+		/**
+		 * The set of definitions.
+		 */
+		AssignSet	defs;
+public:
+		/**
+		 * Constructor
+		 */
+					DefCollector() : initialised(false) {}
+
+		/**
+		 * makeCloneOf(): clone the given Collector into this one
+		 */
+		void		makeCloneOf(DefCollector& other);
+
+		/*
+		 * Return true if initialised
+		 */
+		bool		isInitialised() {return initialised;}
+
+		/*
+		 * Clear the location set
+		 */
+		void		clear() {defs.clear(); initialised = false;}
+
+		/*
+		 * Insert a new member (make sure none exists yet)
+		 */
+		void		insert(Assign* a);
+		/*
+		 * Print the collected locations to stream os
+		 */
+		void		print(std::ostream& os);
+
+		/*
+		 * Print to string or stdout (for debugging)
+		 */
+		char*		prints();
+		void		dump();
+
+		/*
+		 * begin() and end() so we can iterate through the locations
+		 */
+		typedef AssignSet::iterator iterator;
+		iterator	begin() {return defs.begin();}
+		iterator	end()	 {return defs.end();}
+		bool		existsOnLeft(Exp* e) {return defs.definesLoc(e);}
+
+		/*
+		 * Update the definitions with the current set of reaching definitions
+		 */
+		void		updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks);
+
+		/**
+		 * Find the definition for a location. If not found, return NULL
+		 */
+		Exp*		findDefFor(Exp* e);
+
+		/**
+		 * Search and replace all occurrences
+		 */
+		void		searchReplaceAll(Exp* from, Exp* to, bool& change);
+};		// class DefCollector
+
+/**
+ * UseCollector class. This class collects all uses (live variables) that will be defined by the statement that 
+ * contains this collector (or the UserProc that contains it).
+ */
+class UseCollector {
+		/*
+		 * True if initialised. When not initialised, callees should not subscript parameters inserted into the
+		 * associated CallStatement
+		 */
+		bool		initialised;
+		/**
+		 * The set of locations. Use lessExpStar to compare properly
+		 */
+		LocationSet	locs;
+public:
+		/**
+		 * Constructor
+		 */
+					UseCollector() : initialised(false) {}
+
+		/**
+		 * makeCloneOf(): clone the given Collector into this one
+		 */
+		void		makeCloneOf(UseCollector& other);
+
+		/*
+		 * Return true if initialised
+		 */
+		bool		isInitialised() {return initialised;}
+
+		/*
+		 * Clear the location set
+		 */
+		void		clear() {locs.clear(); initialised = false;}
+
+		/*
+		 * Insert a new member
+		 */
+		void		insert(Exp* e) {locs.insert(e);}
+		/*
+		 * Print the collected locations to stream os
+		 */
+		void		print(std::ostream& os);
+
+		/*
+		 * Print to string or stderr (for debugging)
+		 */
+		char*		prints();
+		void		dump();
+
+		/*
+		 * begin() and end() so we can iterate through the locations
+		 */
+		typedef LocationSet::iterator iterator;
+		iterator	begin() {return locs.begin();}
+		iterator	end()	 {return locs.end();}
+		bool		exists(Exp* e)	{return locs.exists(e);}			// Note: probably want the NS version...
+		bool		existsNS(Exp* e){return locs.findNS(e) != NULL;}	// No Subscripts version
+		Exp*		findNS(Exp* e)	{return locs.findNS(e);}			// Find the expression (no subscripts)
+		LocationSet& getLocSet() {return locs;}
+public:
+		/*
+		 * Add a new use from Statement u
+		 */
+		void		updateLocs(Statement* u);
+		void		remove(Exp* loc) {							// Remove the given location
+						locs.remove(loc);
+					}
+		void		remove(iterator it) {						// Remove the current location
+						locs.remove(it);
+					}
+		void		fromSSAform(igraph& ig, Statement* def);	// Translate out of SSA form
+		bool		operator==(UseCollector& other);
+};		// class UseCollector
+
+
+#endif	// _DATAFLOW_H_
+

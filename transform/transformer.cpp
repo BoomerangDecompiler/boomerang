@@ -29,6 +29,7 @@
 #include "boomerang.h"
 #include "transformer.h"
 #include "rdi.h"
+#include "log.h"
 #include "transformation-parser.h"
 
 std::list<ExpTransformer*> ExpTransformer::transformers;

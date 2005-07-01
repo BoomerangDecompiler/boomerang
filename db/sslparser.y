@@ -49,6 +49,7 @@
 #include "table.h"
 #include "insnameelem.h"
 #include "util.h"			// E.g. str()
+#include "statement.h"
 
 #ifdef WIN32
 #include <malloc.h>

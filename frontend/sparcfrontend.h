@@ -21,7 +21,7 @@ public:
 	/*
 	 * Constructor. Takes some parameters to save passing these around a lot
 	 */
-	SparcFrontEnd(BinaryFile *pBF);
+	SparcFrontEnd(BinaryFile *pBF, Prog* prog);
 
 	/**
 	 * Virtual destructor.

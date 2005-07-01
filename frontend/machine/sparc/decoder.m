@@ -13,7 +13,7 @@
  *			   SparcDecoder class.
  *============================================================================*/
 
-/* $Revision$
+/* $Revision$	// 1.20.2.2
  *
  * 26 Apr 02 - Mike: Mods for boomerang
  * 19 May 02 - Mike: Added many (int) casts: variables from toolkit are unsgnd
@@ -34,10 +34,10 @@
 #include "signature.h"
 #endif
 
+#include "decoder.h"
 #include "exp.h"
 #include "prog.h"
 #include "proc.h"
-#include "decoder.h"
 #include "sparcdecoder.h"
 #include "rtl.h"
 #include "BinaryFile.h"		// For SymbolByAddress()
@@ -77,16 +77,14 @@ void SparcDecoder::unused(int x)
  *				   name - instruction name (e.g. "BNE,a")
  * RETURNS:		   Pointer to newly created RTL, or NULL if invalid
  *============================================================================*/
-RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
-  const char* name) {
+RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name) {
 	RTL* res = new RTL(pc, stmts);
 	BranchStatement* br = new BranchStatement();
 	res->appendStmt(br);
 	if (name[0] == 'F') {
 		// fbranch is any of [ FBN FBNE FBLG FBUL FBL	FBUG FBG   FBU
 		//					   FBA FBE	FBUE FBGE FBUGE FBLE FBULE FBO ],
-		// fbranches are not the same as ibranches, so need a whole different
-		// set of tests
+		// fbranches are not the same as ibranches, so need a whole different set of tests
 		if (name[2] == 'U')
 			name++;				// Just ignore unordered (for now)
 		switch (name[2]) {
@@ -189,20 +187,16 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
 
 /*==============================================================================
  * FUNCTION:	   SparcDecoder::decodeInstruction
- * OVERVIEW:	   Attempt to decode the high level instruction at a given
- *				   address and return the corresponding HL type (e.g. CallStatement,
- *				   GotoStatement etc). If no high level instruction exists at the
- *				   given address, then simply return the RTL for the low level
- *				   instruction at this address. There is an option to also
+ * OVERVIEW:	   Attempt to decode the high level instruction at a given address and return the corresponding HL type
+ *					(e.g. CallStatement, GotoStatement etc). If no high level instruction exists at the given address,
+ *					then simply return the RTL for the low level instruction at this address. There is an option to also
  *				   include the low level statements for a HL instruction.
  * PARAMETERS:	   pc - the native address of the pc
- *				   delta - the difference between the above address and the
- *					 host address of the pc (i.e. the address that the pc is at
- *					 in the loaded object file)
- *				   proc - the enclosing procedure. This can be NULL for
- *					 those of us who are using this method in an interpreter
- * RETURNS:		   a DecodeResult structure containing all the information
- *					 gathered during decoding
+ *				   delta - the difference between the above address and the host address of the pc (i.e. the address
+ *					that the pc is at in the loaded object file)
+ *				   proc - the enclosing procedure. This can be NULL for those of us who are using this method in an
+ *					interpreter
+ * RETURNS:		   a DecodeResult structure containing all the information gathered during decoding
  *============================================================================*/
 DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) { 
 	static DecodeResult result;
@@ -225,11 +219,15 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		CallStatement* newCall = new CallStatement;
 
 		// Set the destination
-		newCall->setDest(addr - delta);
+		ADDRESS nativeDest = addr - delta;
+		newCall->setDest(nativeDest);
+		Proc* destProc = prog->setNewProc(nativeDest);
+		if (destProc == (Proc*)-1) destProc = NULL;
+		newCall->setDestProc(destProc);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
 		result.type = SD;
-		SHOW_ASM("call__ " << std::hex << (addr - delta))
+		SHOW_ASM("call__ " << std::hex << (nativeDest))
 		DEBUG_STMTS
 
 	| call_(addr) =>
@@ -276,8 +274,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		 * Anulled branch
 		 */
 
-		// First, check for CBxxx branches (branches that depend on
-		// co-processor instructions). These are invalid, as far as we are concerned
+		// First, check for CBxxx branches (branches that depend on co-processor instructions). These are invalid,
+		// as far as we are concerned
 		if (name[0] == 'C') {
 			result.valid = false;
 			result.rtl = new RTL;
@@ -293,8 +291,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
 		}
-		if ((jump == 0) &&
-		  (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0)) {
+		if ((jump == 0) && (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0)) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
@@ -304,8 +301,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			jump = (GotoStatement*) rtl->getList().back();
 		}
 
-		// The class of this instruction depends on whether or not
-		// it is one of the 'unconditional' conditional branches
+		// The class of this instruction depends on whether or not it is one of the 'unconditional' conditional branches
 		// "BA,A" or "BN,A"
 		result.type = SCDAN;
 		if ((strcmp(name,"BA,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
@@ -323,18 +319,16 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		/*
 		 * Non anulled branch
 		 */
-		// First, check for CBxxx branches (branches that depend on
-		// co-processor instructions). These are invalid, as far as
-		// we are concerned
+		// First, check for CBxxx branches (branches that depend on co-processor instructions). These are invalid,
+		// as far as we are concerned
 		if (name[0] == 'C') {
 			result.valid = false;
 			result.rtl = new RTL;
 			result.numBytes = 4;
 			return result;
 		}
-		// Instantiate a GotoStatement for the unconditional branches,
-		// BranchStatement for the rest
-		// NOTE: NJMC toolkit cannot handle embedded else statements!
+		// Instantiate a GotoStatement for the unconditional branches, BranchStatement for the rest
+		// NOTE: NJMC toolkit cannot handle embedded plain else statements!
 		GotoStatement* jump = 0;
 		RTL* rtl = NULL;
 		if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0) {
@@ -342,8 +336,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
 		}
-		if ((jump == 0) &&
-		  (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0)) {
+		if ((jump == 0) && (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0)) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
@@ -353,8 +346,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			jump = (BranchStatement*) rtl->getList().back();
 		}
 
-		// The class of this instruction depends on whether or not
-		// it is one of the 'unconditional' conditional branches
+		// The class of this instruction depends on whether or not it is one of the 'unconditional' conditional branches
 		// "BA" or "BN" (or the pseudo unconditionals BVx)
 		result.type = SCD;
 		if ((strcmp(name,"BA") == 0) || (strcmp(name, "BVC") == 0))
@@ -392,8 +384,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
 		}
-		if ((jump == 0) &&
-		  (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0)) {
+		if ((jump == 0) && (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0)) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
@@ -657,8 +648,7 @@ Exp* SparcDecoder::dis_RegRhs(unsigned r)
 
 /*==============================================================================
  * FUNCTION:		SparcDecoder::dis_RegImm
- * OVERVIEW:		Decode the register or immediate at the given
- *					address.
+ * OVERVIEW:		Decode the register or immediate at the given address.
  * NOTE:			Used via macro DIS_ROI
  * PARAMETERS:		pc - an address in the instruction stream
  * RETURNS:			the register or immediate at the given address
@@ -679,8 +669,7 @@ Exp* SparcDecoder::dis_RegImm(unsigned pc)
  * FUNCTION:		SparcDecoder::dis_Eaddr
  * OVERVIEW:		Converts a dynamic address to a Exp* expression.
  *					E.g. %o7 --> r[ 15 ]
- * PARAMETERS:		pc - the instruction stream address of the dynamic
- *					  address
+ * PARAMETERS:		pc - the instruction stream address of the dynamic address
  *					ignore - redundant parameter on SPARC
  * RETURNS:			the Exp* representation of the given address
  *============================================================================*/
@@ -708,9 +697,8 @@ Exp* SparcDecoder::dis_Eaddr(ADDRESS pc, int ignore /* = 0 */)
 
 /*==============================================================================
  * FUNCTION:	  isFuncPrologue()
- * OVERVIEW:	  Check to see if the instructions at the given offset match
- *					any callee prologue, i.e. does it look like this offset
- *					is a pointer to a function?
+ * OVERVIEW:	  Check to see if the instructions at the given offset match any callee prologue, i.e. does it look
+ *					like this offset is a pointer to a function?
  * PARAMETERS:	  hostPC - pointer to the code in question (host address)
  * RETURNS:		  True if a match found
  *============================================================================*/
@@ -736,8 +724,7 @@ bool SparcDecoder::isFuncPrologue(ADDRESS hostPC)
 
 /*==============================================================================
  * FUNCTION:	  isRestore()
- * OVERVIEW:	  Check to see if the instruction at the given offset is a
- *					restore instruction
+ * OVERVIEW:	  Check to see if the instruction at the given offset is a restore instruction
  * PARAMETERS:	  hostPC - pointer to the code in question (host address)
  * RETURNS:		  True if a match found
  *============================================================================*/
@@ -765,8 +752,8 @@ bool SparcDecoder::isRestore(ADDRESS hostPC) {
  *============================================================================*/
 DWord SparcDecoder::getDword(ADDRESS lc)
 {
-  Byte* p = (Byte*)lc;
-  return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
+	Byte* p = (Byte*)lc;
+	return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 }
 
 /*==============================================================================
@@ -775,10 +762,10 @@ DWord SparcDecoder::getDword(ADDRESS lc)
  * PARAMETERS:	   None
  * RETURNS:		   N/A
  *============================================================================*/
-SparcDecoder::SparcDecoder() : NJMCDecoder()
+SparcDecoder::SparcDecoder(Prog* prog) : NJMCDecoder(prog)
 {
-  std::string file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
-  RTLDict.readSSLFile(file.c_str());
+	std::string file = Boomerang::get()->getProgPath() + "frontend/machine/sparc/sparc.ssl";
+	RTLDict.readSSLFile(file.c_str());
 }
 
 // For now...

@@ -15,16 +15,25 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.1.2.2
  *
  * 28 Jun 05 - Mike: Split off from cfg.h
  */
+
+#ifndef __BASIC_BLOCK_H__
+#define __BASIC_BLOCK_H__
 
 #include "managed.h"			// For LocationSet etc
 
 class Location;
 class HLLCode;
-class SWITCH_INFO;
+class BasicBlock;
+class RTL;
+class Proc;
+class UserProc;
+struct SWITCH_INFO;
+
+typedef BasicBlock* PBB;
 
 /*	*	*	*	*	*	*	*	*	*	*	*	*	*	*	*\
 *															 *
@@ -509,8 +518,8 @@ protected:
 							m_pRtls = new std::list<RTL*>;
 						m_pRtls->push_back(rtl);
 					}
-		void		addLiveIn(Location *e) { liveIn.insert(e); }
+		void		addLiveIn(Exp *e) { liveIn.insert(e); }
 
 };		// class BasicBlock
 
-
+#endif		// #define __BASIC_BLOCK_H__

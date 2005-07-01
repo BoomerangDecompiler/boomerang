@@ -16,7 +16,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.33.2.3
  * 
  * 08 Apr 02 - Mike: Changes for boomerang
  * 13 May 02 - Mike: expList is no longer a pointer
@@ -45,6 +45,7 @@
 #include "util.h"
 #include "boomerang.h"
 #include "visitor.h"
+#include "log.h"
 // For some reason, MSVC 5.00 complains about use of undefined types a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"		// For MSVC 5.00
@@ -85,8 +86,7 @@ RTL::RTL(ADDRESS instNativeAddr, std::list<Statement*>* listStmt /*= NULL*/)
  * PARAMETERS:		other: RTL to copy from
  * RETURNS:			N/a
  *============================================================================*/
-RTL::RTL(const RTL& other)
-  : nativeAddr(other.nativeAddr) {
+RTL::RTL(const RTL& other) : nativeAddr(other.nativeAddr) {
 	std::list<Statement*>::const_iterator it;
 	for (it = other.stmtList.begin(); it != other.stmtList.end(); it++) {
 		stmtList.push_back((*it)->clone());
@@ -99,14 +99,7 @@ RTL::RTL(const RTL& other)
  * PARAMETERS:		<none>
  * RETURNS:			N/a
  *============================================================================*/
-RTL::~RTL() {
-	std::list<Statement*>::iterator it;
-	for (it = stmtList.begin(); it != stmtList.end(); it++) {
-		if (*it != NULL) {
-			//delete *it;
-		}
-	}
-}
+RTL::~RTL() { }
 
 /*==============================================================================
  * FUNCTION:		RTL::operator=
@@ -117,7 +110,7 @@ RTL::~RTL() {
 RTL& RTL::operator=(RTL& other) {
 	if (this != &other) {
 		// Do a deep copy always
-		std::list<Statement*>::iterator it;
+		iterator it;
 		for (it = other.stmtList.begin(); it != other.stmtList.end(); it++)
 			stmtList.push_back((*it)->clone());
 		
@@ -135,7 +128,7 @@ RTL& RTL::operator=(RTL& other) {
  *============================================================================*/
 RTL* RTL::clone() {
 	std::list<Statement*> le;
-	std::list<Statement*>::iterator it;
+	iterator it;
 
 	for (it = stmtList.begin(); it != stmtList.end(); it++) {
 		le.push_back((*it)->clone());
@@ -149,7 +142,7 @@ RTL* RTL::clone() {
 bool RTL::accept(StmtVisitor* visitor) {
 	// Might want to do something at the RTL level:
 	if (!visitor->visit(this)) return false;
-	std::list<Statement*>::iterator it;
+	iterator it;
 	for (it = stmtList.begin(); it != stmtList.end(); it++) {
 		if (! (*it)->accept(visitor)) return false;
 	}
@@ -182,7 +175,7 @@ void RTL::deepCopyList(std::list<Statement*>& dest) {
 void RTL::appendStmt(Statement* s) {
 	if (stmtList.size()) {
 		if (stmtList.back()->isFlagAssgn()) {
-			std::list<Statement*>::iterator it = stmtList.end();
+			iterator it = stmtList.end();
 			stmtList.insert(--it, s);
 			return;
 		}
@@ -210,7 +203,7 @@ void RTL::prependStmt(Statement* s) {
  * RETURNS:			Nothing
  *============================================================================*/
 void RTL::appendListStmt(std::list<Statement*>& le) {
-	std::list<Statement*>::iterator it;
+	iterator it;
 	for (it = le.begin();  it != le.end();	it++) {
 		stmtList.insert(stmtList.end(), (*it)->clone());
 	}
@@ -240,7 +233,7 @@ void RTL::insertStmt(Statement* s, unsigned i) {
 	assert (i < stmtList.size() || stmtList.size() == 0);
 
 	// Find the position
-	std::list<Statement*>::iterator pp = stmtList.begin();
+	iterator pp = stmtList.begin();
 	for (; i > 0; i--, pp++);
 
 	// Do the insertion
@@ -259,7 +252,7 @@ void RTL::updateStmt(Statement *s, unsigned i) {
 	assert (i < stmtList.size());
 
 	// Find the position
-	std::list<Statement*>::iterator pp = stmtList.begin();
+	iterator pp = stmtList.begin();
 	for (; i > 0; i--, pp++);	 
 
 	// Note that sometimes we might update even when we don't know if it's
@@ -278,7 +271,7 @@ void RTL::deleteStmt(unsigned i) {
 	assert (i < stmtList.size());
 
 	// find the position
-	std::list<Statement*>::iterator pp = stmtList.begin();
+	iterator pp = stmtList.begin();
 	for (; i > 0; i--, pp++);	 
 
 	// do the delete
@@ -316,7 +309,7 @@ int RTL::getNumStmt() {
  *					of bounds
  *============================================================================*/
 Statement* RTL::elementAt(unsigned i) {
-	std::list<Statement*>::iterator it;
+	iterator it;
 	for (it = stmtList.begin();	 i > 0 && it != stmtList.end();	 i--, it++);
 	if (it == stmtList.end()) {
 		return NULL;
@@ -339,7 +332,7 @@ void RTL::print(std::ostream& os /*= cout*/) {
 	// Print the statements
 	// First line has 8 extra chars as above
 	bool bFirst = true;
-	std::list<Statement*>::iterator ss;
+	iterator ss;
 	for (ss = stmtList.begin(); ss != stmtList.end(); ss++) {
 		Statement* stmt = *ss;
 		if (bFirst) os << " ";
@@ -353,13 +346,32 @@ void RTL::print(std::ostream& os /*= cout*/) {
 	if (stmtList.empty()) os << std::endl;	   // New line for NOP
 }
 
+void RTL::dump() {
+	print(std::cerr);
+}
+
 extern char debug_buffer[];
+
 char* RTL::prints() {
 	  std::ostringstream ost;
 	  print(ost);
-	  strncpy(debug_buffer, ost.str().c_str(), 199);
-	  debug_buffer[199] = '\0';
+	  strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	  debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	  return debug_buffer;
+}
+
+/*==============================================================================
+ * FUNCTION:		operator<<
+ * OVERVIEW:		Output operator for RTL*
+ *					Just makes it easier to use e.g. std::cerr << myRTLptr
+ * PARAMETERS:		os: output stream to send to
+ *					p: ptr to RTL to print to the stream
+ * RETURNS:			copy of os (for concatenation)
+ *============================================================================*/
+std::ostream& operator<<(std::ostream& os, RTL* r) {
+	if (r == NULL) {os << "NULL "; return os;}
+	r->print(os);
+	return os;
 }
 
 /*==============================================================================
@@ -392,8 +404,7 @@ void RTL::updateAddress(ADDRESS addr) {
  *============================================================================*/
 bool RTL::searchAndReplace(Exp* search, Exp* replace) {
 	bool ch = false;
-	for (std::list<Statement*>::iterator it = stmtList.begin();
-	  it != stmtList.end(); it++)
+	for (iterator it = stmtList.begin(); it != stmtList.end(); it++)
 		ch |= (*it)->searchAndReplace(search, replace);
 	return ch;
 }
@@ -408,8 +419,7 @@ bool RTL::searchAndReplace(Exp* search, Exp* replace) {
  *============================================================================*/
 bool RTL::searchAll(Exp* search, std::list<Exp *> &result) {
 	bool found = false;
-	for (std::list<Statement*>::iterator it = stmtList.begin();
-	  it != stmtList.end(); it++) {
+	for (iterator it = stmtList.begin(); it != stmtList.end(); it++) {
 		Statement *e = *it;
 		Exp* res;
 		if (e->search(search, res)) {
@@ -475,13 +485,13 @@ void RTL::insertAssign(Exp* pLhs, Exp* pRhs, bool prep,
  * RETURNS:			<nothing>
  *============================================================================*/
 void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type	 /* NULL */) {
-	std::list<Statement*>::iterator it;
+	iterator it;
 	// First skip all assignments with temps on LHS
 	for (it = stmtList.begin(); it != stmtList.end(); it++) {
-	Statement *e = *it;
-		if (!e->isAssign())
+		Statement *s = *it;
+		if (!s->isAssign())
 			break;
-		Exp* LHS = e->getLeft();
+		Exp* LHS = ((Assign*)s)->getLeft();
 		if (LHS->isTemp())
 			break;
 	}
@@ -514,7 +524,7 @@ void RTL::insertAfterTemps(Exp* pLhs, Exp* pRhs, Type* type	 /* NULL */) {
  * RETURNS:			A pointer to the type
  *============================================================================*/
 Type* RTL::getType() {
-	std::list<Statement*>::iterator it;
+	iterator it;
 	for (it = stmtList.begin(); it != stmtList.end(); it++) {
 		Statement *e = *it;
 		if (e->isAssign())
@@ -533,7 +543,7 @@ Type* RTL::getType() {
 bool RTL::areFlagsAffected() {
 	if (stmtList.size() == 0) return false;
 	// Get an iterator to the last RT
-	std::list<Statement*>::iterator it = stmtList.end();
+	iterator it = stmtList.end();
 	if (it == stmtList.begin())
 		return false;			// Not expressions at all
 	it--;						// Will now point to the end of the list
@@ -543,14 +553,14 @@ bool RTL::areFlagsAffected() {
 }
 
 void RTL::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
-	for (std::list<Statement*>::iterator it = stmtList.begin();
+	for (iterator it = stmtList.begin();
 	  it != stmtList.end(); it++) {
 		(*it)->generateCode(hll, pbb, indLevel);
 	}
 }
 
 void RTL::simplify() {
-	for (std::list<Statement*>::iterator it = stmtList.begin(); it != stmtList.end(); /*it++*/) {
+	for (iterator it = stmtList.begin(); it != stmtList.end(); /*it++*/) {
 		Statement *s = *it;
 		s->simplify();		  
 		if (s->isBranch()) {
@@ -608,13 +618,10 @@ bool RTL::isCompare(int& iReg, Exp*& expOperand) {
 	do {
 		cur = elementAt(i);
 		if (cur->getKind() != STMT_ASSIGN) return false;
-		rhs = cur->getRight();
+		rhs = ((Assign*)cur)->getRight();
 		i++;
 	} while (rhs->getOper() != opMinus && i < getNumStmt());
 	if (rhs->getOper() != opMinus) return false;
-	// We should be rid of all r[tmp] now...
-	  // Exp* lhs = cur->getLeft();
-	  // if (!lhs->isRegOf()) return false;
 	// We have a subtract assigning to a register.
 	// Check if there is a subflags last
 	Statement* last = elementAt(getNumStmt()-1);
@@ -648,7 +655,7 @@ bool RTL::isCall() {
 
 // Use this slow function when you can't be sure that the HL Statement is last
 Statement* RTL::getHlStmt() {
-	std::list<Statement*>::reverse_iterator rit;
+	reverse_iterator rit;
 	for (rit = stmtList.rbegin(); rit != stmtList.rend(); rit++) {
 		if ((*rit)->getKind() != STMT_ASSIGN)
 			return *rit;

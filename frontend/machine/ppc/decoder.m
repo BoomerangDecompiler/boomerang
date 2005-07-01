@@ -12,7 +12,7 @@
  * OVERVIEW:   Implementation of the PPC specific parts of the PPCDecoder class.
  *============================================================================*/
 
-/* $Revision$
+/* $Revision$	// 1.24.2.1
  *
  * 23/Nov/04 - Jay Sweeney and Alajandro Dubrovsky: Created
  **/
@@ -196,6 +196,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		newCall->setDest(dest);
 		result.rtl = new RTL(pc, stmts);
 		result.rtl->appendStmt(newCall);
+		Proc* destProc = prog->setNewProc(reladdr-delta);
+		if (destProc == (Proc*)-1) destProc = NULL;
+		newCall->setDestProc(destProc);
 
 	| b (reladdr) =>
 		unconditionalJump("b", 4, reladdr, delta, pc, stmts, result);
@@ -420,7 +423,7 @@ DWord PPCDecoder::getDword(ADDRESS lc)
  * PARAMETERS:	   None
  * RETURNS:		   N/A
  *============================================================================*/
-PPCDecoder::PPCDecoder() : NJMCDecoder()
+PPCDecoder::PPCDecoder(Prog* prog) : NJMCDecoder(prog)
 {
   std::string file = Boomerang::get()->getProgPath() + "frontend/machine/ppc/ppc.ssl";
   RTLDict.readSSLFile(file.c_str());

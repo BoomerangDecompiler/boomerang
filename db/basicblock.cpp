@@ -15,7 +15,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.93.2.8
  * Dec 97 - created by Mike
  * 18 Apr 02 - Mike: Changes for boomerang
  * 04 Dec 02 - Mike: Added isJmpZ
@@ -45,6 +45,7 @@
 #include "util.h"
 #include "boomerang.h"
 #include "type.h"
+#include "log.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"		// For MSVC 5.00
@@ -77,12 +78,9 @@ BasicBlock::BasicBlock()
 		m_iNumInEdges(0),
 		m_iNumOutEdges(0),
 		m_iTraversed(false),
-		m_returnVal(NULL),
 // From Doug's code
-ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
-traversed(UNTRAVERSED), hllLabel(false),
-indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
-condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
+ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
+immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
 usType(Structured) 
 {
 }
@@ -109,7 +107,6 @@ BasicBlock::~BasicBlock() {
 		delete m_pRtls;
 		m_pRtls = NULL;
 	}
-	if (m_returnVal) delete m_returnVal;
 }
 
 
@@ -136,14 +133,11 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 		m_iNumInEdges(bb.m_iNumInEdges),
 		m_iNumOutEdges(bb.m_iNumOutEdges),
 		m_iTraversed(false),
-		m_returnVal(bb.m_returnVal),
 // From Doug's code
-ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), 
-numForwardInEdges(bb.numForwardInEdges), traversed(bb.traversed), 
-hllLabel(bb.hllLabel), indentLevel(bb.indentLevel), 
-immPDom(bb.immPDom), loopHead(bb.loopHead), caseHead(bb.caseHead), 
-condFollow(bb.condFollow), loopFollow(bb.loopFollow), 
-latchNode(bb.latchNode), sType(bb.sType), usType(bb.usType) 
+ord(bb.ord), revOrd(bb.revOrd), inEdgesVisited(bb.inEdgesVisited), numForwardInEdges(bb.numForwardInEdges),
+traversed(bb.traversed), hllLabel(bb.hllLabel), indentLevel(bb.indentLevel), immPDom(bb.immPDom), loopHead(bb.loopHead),
+caseHead(bb.caseHead), condFollow(bb.condFollow), loopFollow(bb.loopFollow), latchNode(bb.latchNode), sType(bb.sType),
+usType(bb.usType) 
 {
 	setRTLs(bb.m_pRtls);
 }
@@ -171,17 +165,12 @@ BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 		m_iNumInEdges(0),
 		m_iNumOutEdges(iNumOutEdges),
 		m_iTraversed(false),
-		m_returnVal(NULL),
 // From Doug's code
-ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), 
-traversed(UNTRAVERSED), hllLabel(false),
-indentLevel(0), immPDom(NULL), loopHead(NULL), caseHead(NULL), 
-condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq), 
+ord(-1), revOrd(-1), inEdgesVisited(0), numForwardInEdges(-1), traversed(UNTRAVERSED), hllLabel(false), indentLevel(0),
+immPDom(NULL), loopHead(NULL), caseHead(NULL), condFollow(NULL), loopFollow(NULL), latchNode(NULL), sType(Seq),
 usType(Structured) 
 {
-	m_OutEdges.reserve(iNumOutEdges);				// Reserve the space;
-													// values added with
-													// AddOutEdge()
+	m_OutEdges.reserve(iNumOutEdges);				// Reserve the space; values added with AddOutEdge()
 
 	// Set the RTLs
 	setRTLs(pRtls);
@@ -190,8 +179,8 @@ usType(Structured)
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::getLabel
- * OVERVIEW:		Returns nonzero if this BB has a label, in the sense that a
- *					label is required in the translated source code
+ * OVERVIEW:		Returns nonzero if this BB has a label, in the sense that a label is required in the translated
+ *						source code
  * PARAMETERS:		<none>
  * RETURNS:			An integer unique to this BB, or zero
  *============================================================================*/
@@ -221,9 +210,8 @@ void BasicBlock::setTraversed(bool bTraversed) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::setRTLs
- * OVERVIEW:		Sets the RTLs for a basic block. This is the only place that
- *					the RTLs for a block must be set as we need to add the back
- *					link for a call instruction to its enclosing BB.
+ * OVERVIEW:		Sets the RTLs for a basic block. This is the only place that the RTLs for a block must be set as we
+ *						need to add the back link for a call instruction to its enclosing BB.
  * PARAMETERS:		rtls - a list of RTLs
  * RETURNS:			<nothing>
  *============================================================================*/
@@ -231,13 +219,7 @@ void BasicBlock::setRTLs(std::list<RTL*>* rtls) {
 	// should we delete old ones here?	breaks some things - trent
 	m_pRtls = rtls;
 
-	// Used to set the link between the last instruction (a call) and this BB
-	// if this is a call BB
-}
-
-void BasicBlock::setReturnVal(Exp *e) {
-	if (m_returnVal) delete m_returnVal; 
-	m_returnVal = e; 
+	// Used to set the link between the last instruction (a call) and this BB if this is a call BB
 }
 
 /*==============================================================================
@@ -252,9 +234,8 @@ BBTYPE BasicBlock::getType() {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::updateType
- * OVERVIEW:		Update the type and number of out edges. Used for example
- *					where a COMPJUMP type is updated to an NWAY when a switch
- *					idiom is discovered.
+ * OVERVIEW:		Update the type and number of out edges. Used for example where a COMPJUMP type is updated to an
+ *						NWAY when a switch idiom is discovered.
  * PARAMETERS:		bbType - the new type
  *					iNumOutEdges - new number of inedges
  * RETURNS:			<nothing>
@@ -267,9 +248,8 @@ void BasicBlock::updateType(BBTYPE bbType, int iNumOutEdges) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::setJumpReqd
- * OVERVIEW:		Sets the "jump required" bit. This means that this BB is
- *					an orphan (not generated from input code), and that the
- *					"fall through" out edge needs to be implemented as a jump
+ * OVERVIEW:		Sets the "jump required" bit. This means that this BB is an orphan (not generated from input code),
+ *						and that the "fall through" out edge needs to be implemented as a jump
  * PARAMETERS:		<none>
  * RETURNS:			<nothing>
  *============================================================================*/
@@ -293,15 +273,20 @@ bool BasicBlock::isJumpReqd() {
  * PARAMETERS:		<none>
  * RETURNS:			Address of the static buffer
  *============================================================================*/
-char debug_buffer[5000];
+char debug_buffer[DEBUG_BUFSIZE];
+
 char* BasicBlock::prints() { 
 	std::ostringstream ost; 
 	print(ost);	
-	// Static buffer might have overflowed if we used it directly, hence we
-	// just copy and print the first 4999 bytes
-	strncpy(debug_buffer, ost.str().c_str(), 4999);
-	debug_buffer[4999] = '\0';
+	// Static buffer might have overflowed if we used it directly, hence we just copy and print the first
+	// DEBUG_BUFSIZE-1 bytes
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer; 
+}
+
+void BasicBlock::dump() {
+	print(std::cerr);
 }
 
 /*==============================================================================
@@ -355,15 +340,11 @@ void printBB(PBB bb) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::getLowAddr
- * OVERVIEW:		Get the lowest real address associated with this BB. Note
- *					that although this is usually the address of the first RTL,
- *					it is not always so. For example, if the BB contains just a
- *					delayed branch, and the delay instruction for the branch
- *					does not affect the branch, so the delay instruction is
- *					copied in front of the branch instruction. It's address
- *					will be UpdateAddress()d to 0, since it is "not really
- *					there", so the low address for this BB will be the address
- *					of the branch.
+ * OVERVIEW:		Get the lowest real address associated with this BB. Note that although this is usually the address
+ *						of the first RTL, it is not always so. For example, if the BB contains just a delayed branch,
+ *						and the delay instruction for the branch does not affect the branch, so the delay instruction is
+ *						copied in front of the branch instruction. Its address will be UpdateAddress()d to 0, since it
+ *						is "not really there", so the low address for this BB will be the address of the branch.
  * PARAMETERS:		<none>
  * RETURNS:			the lowest real address associated with this BB
  *============================================================================*/
@@ -373,10 +354,8 @@ ADDRESS BasicBlock::getLowAddr() {
 	if ((a == 0) && (m_pRtls->size() > 1)) {
 		std::list<RTL*>::iterator it = m_pRtls->begin();
 		ADDRESS add2 = (*++it)->getAddress();
-		// This is a bit of a hack for 286 programs, whose main actually starts
-		// at offset 0. A better solution would be to change orphan BBs'
-		// addresses to NO_ADDRESS, but I suspect that this will cause many
-		// problems. MVE
+		// This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
+		// to change orphan BBs' addresses to NO_ADDRESS, but I suspect that this will cause many problems. MVE
 		if (add2 < 0x10)
 			// Assume that 0 is the real address
 			return 0;
@@ -443,8 +422,7 @@ void BasicBlock::setInEdge(int i, PBB pNewInEdge) {
  * FUNCTION:		BasicBlock::setOutEdge
  * OVERVIEW:		Change the given out-edge (0 is first) to the given value
  *					Needed for example when duplicating BBs
- * NOTE:			Cannot add an additional out-edge with this function; use
- *					addOutEdge for this rare case
+ * NOTE:			Cannot add an additional out-edge with this function; use addOutEdge for this rare case
  * PARAMETERS:		i: index (0 based) of out-edge to change
  *					pNewOutEdge: pointer to BB that will be the new successor
  * RETURNS:			<nothing>
@@ -540,14 +518,11 @@ void BasicBlock::deleteEdge(PBB edge) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::DFTOrder
- * OVERVIEW:		Traverse this node and recurse on its children in a depth
- *					first manner. Records the times at which this node was first
- *					visited and last visited
+ * OVERVIEW:		Traverse this node and recurse on its children in a depth first manner. Records the times at which
+ *						this node was first visited and last visited
  * PARAMETERS:		first - the number of nodes that have been visited
- *					last - the number of nodes that have been visited for the
- *						last time during this traversal
- * RETURNS:			the number of nodes (including this one) that were traversed
- *					from this node
+ *					last - the number of nodes that have been visited for the last time during this traversal
+ * RETURNS:			the number of nodes (including this one) that were traversed from this node
  *============================================================================*/
 unsigned BasicBlock::DFTOrder(int& first, int& last) {
 	first++;
@@ -599,8 +574,7 @@ unsigned BasicBlock::RevDFTOrder(int& first, int& last) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::lessAddress
- * OVERVIEW:		Static comparison function that returns true if the first BB
- *					has an address less than the second BB.
+ * OVERVIEW:		Static comparison function that returns true if the first BB has an address less than the second BB.
  * PARAMETERS:		bb1 - first BB
  *					bb2 - last BB
  * RETURNS:			bb1.address < bb2.address
@@ -611,8 +585,8 @@ bool BasicBlock::lessAddress(PBB bb1, PBB bb2) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::lessFirstDFT
- * OVERVIEW:		Static comparison function that returns true if the first BB
- *					has DFT first order less than the second BB.
+ * OVERVIEW:		Static comparison function that returns true if the first BB has DFT first order less than the
+ *						second BB.
  * PARAMETERS:		bb1 - first BB
  *					bb2 - last BB
  * RETURNS:			bb1.first_DFS < bb2.first_DFS
@@ -624,8 +598,8 @@ bool BasicBlock::lessFirstDFT(PBB bb1, PBB bb2) {
 
 /*==============================================================================
  * FUNCTION:		BasicBlock::lessLastDFT
- * OVERVIEW:		Static comparison function that returns true if the first BB
- *					has DFT first order less than the second BB.
+ * OVERVIEW:		Static comparison function that returns true if the first BB has DFT first order less than the
+ *						second BB.
  * PARAMETERS:		bb1 - first BB
  *					bb2 - last BB
  * RETURNS:			bb1.last_DFS < bb2.last_DFS
@@ -647,11 +621,11 @@ ADDRESS BasicBlock::getCallDest() {
 	if (m_pRtls->size() == 0)
 		return (ADDRESS)-1;
 	RTL* lastRtl = m_pRtls->back();
-	std::list<Statement*>::reverse_iterator it;
+	RTL::reverse_iterator rit;
 	std::list<Statement*>& sl = lastRtl->getList();
-	for (it = sl.rbegin(); it != sl.rend(); it++) {
-		if ((*it)->getKind() == STMT_CALL)
-			return ((CallStatement*)(*it))->getFixedDest();
+	for (rit = sl.rbegin(); rit != sl.rend(); rit++) {
+		if ((*rit)->getKind() == STMT_CALL)
+			return ((CallStatement*)(*rit))->getFixedDest();
 	}
 	return (ADDRESS)-1;
 }
@@ -662,7 +636,7 @@ Proc *BasicBlock::getCallDestProc() {
 	if (m_pRtls->size() == 0)
 		return 0;
 	RTL* lastRtl = m_pRtls->back();
-	std::list<Statement*>::reverse_iterator it;
+	RTL::reverse_iterator it;
 	std::list<Statement*>& sl = lastRtl->getList();
 	for (it = sl.rbegin(); it != sl.rend(); it++) {
 		if ((*it)->getKind() == STMT_CALL)
@@ -700,11 +674,38 @@ Statement* BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit) {
 	return NULL;
 }
 
+Statement* BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
+	if (m_pRtls == NULL) return NULL;
+	rit = m_pRtls->rbegin();
+	while (rit != m_pRtls->rend()) {
+		RTL* rtl = *rit;
+		sit = rtl->getList().rbegin();
+		if (sit != rtl->getList().rend())
+			return *sit;
+		rit++;
+	}
+	return NULL;
+}
+
+Statement* BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
+	do {
+		if (++sit != (*rit)->getList().rend())
+			return *sit;
+		if (++rit == m_pRtls->rend())
+			break;
+		sit = (*rit)->getList().rbegin();
+		if (sit != (*rit)->getList().rend())
+			return *sit;
+	} while (1);
+	return NULL;
+}
+
+
 /*
  * Structuring and code generation.
  *
- * This code is whole heartly based on AST by Doug Simon. Portions may be
- * copyright to him and are available under a BSD style license.
+ * This code is whole heartly based on AST by Doug Simon. Portions may be copyright to him and are available under a BSD
+ * style license.
  *
  * Adapted for Boomerang by Trent Waddington, 20 June 2002.
  *
@@ -749,7 +750,7 @@ void BasicBlock::setCond(Exp *e) {
 	RTL *last = m_pRtls->back();
 	// it should contain a BranchStatement
 	std::list<Statement*>& sl = last->getList();
-	std::list<Statement*>::reverse_iterator it;
+	RTL::reverse_iterator it;
 	assert(sl.size());
 	for (it = sl.rbegin(); it != sl.rend(); it++) {
 		if ((*it)->getKind() == STMT_BRANCH) {
@@ -902,18 +903,15 @@ bool BasicBlock::allParentsGenerated()
 	return true;
 }
 
-// Emits a goto statement (at the correct indentation level) with the 
-// destination label for dest. Also places the label just before the 
-// destination code if it isn't already there.	If the goto is to the return 
-// block, emit a 'return' instead.	Also, 'continue' and 'break' statements 
-// are used instead if possible
+// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
+// just before the destination code if it isn't already there.	If the goto is to the return block, it would be nice to
+// emit a 'return' instead (but would have to duplicate the other code in that return BB).	Also, 'continue' and 'break'
+// statements are used instead if possible
 void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 {
 #if 0
-	// Return BB's have statements in them.. although it would be nice
-	// to have a return here.. I don't think it's correct.	Maybe the
-	// code generator can get rid of the return.  Trent 8/8/2003.
-	// is this a goto to the ret block?
+	// Return BB's have other statements in them.. but it would be nice to have a return here. It's not correct to
+	// merely emit a return statement here. Maybe the code generator can get rid of the goto.  Trent 8/8/2003.
 	if (dest->getType() == RET) { // WAS: check about size of ret bb
 		hll->AddReturnStatement(indLevel, dest->getReturnVal());
 	} else { 
@@ -931,16 +929,14 @@ void BasicBlock::emitGotoAndLabel(HLLCode *hll, int indLevel, PBB dest)
 	//}
 }
 
-// Generates code for each non CTI (except procedure calls) statement within 
-// the block.
+// Generates code for each non CTI (except procedure calls) statement within the block.
 void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 {
 	if (DEBUG_GEN)
 		LOG << "Generating code for BB at " << getLowAddr() << "\n";
 
-	// Allocate space for a label to be generated for this node and add this to
-	// the generated code. The actual label can then be generated now or back 
-	// patched later
+	// Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
+	// then be generated now or back patched later
 	hll->AddLabel(indLevel, ord);
 
 	if (m_pRtls) {
@@ -959,15 +955,13 @@ void BasicBlock::WriteBB(HLLCode *hll, int indLevel)
 
 void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch, 
 	std::list<PBB> &followSet, std::list<PBB> &gotoSet) {
-	// If this is the follow for the most nested enclosing conditional, then
-	// don't generate anything. Otherwise if it is in the follow set
-	// generate a goto to the follow
-	PBB enclFollow = followSet.size() == 0 ? NULL : 
-					 followSet.back();
+	// If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
+	// in the follow set generate a goto to the follow
+	PBB enclFollow = followSet.size() == 0 ? NULL : followSet.back();
 
 	if (isIn(gotoSet, this) && !isLatchNode() && 
-		((latch && this == latch->loopHead->loopFollow) || 
-		!allParentsGenerated())) {
+			((latch && this == latch->loopHead->loopFollow) || 
+			!allParentsGenerated())) {
 		emitGotoAndLabel(hll, indLevel, this);
 		return;
 	} else if (isIn(followSet, this)) {
@@ -985,12 +979,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 	} else
 		traversed = DFS_CODEGEN;
 
-	// if this is a latchNode and the current indentation level is
-	// the same as the first node in the loop, then this write out its body 
-	// and return otherwise generate a goto
+	// if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
+	// write out its body and return otherwise generate a goto
 	if (isLatchNode())
-		if (latch && indLevel == latch->loopHead->indentLevel + 
-						(latch->loopHead->lType == PreTested ? 1 : 0)) {
+		if (latch && indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType == PreTested ? 1 : 0)) {
 			WriteBB(hll, indLevel);
 			return;
 		} else {
@@ -1023,21 +1015,17 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				hll->AddPretestedLoopHeader(indLevel, cond);
 
 				// write the code for the body of the loop
-				PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? 
-								m_OutEdges[BTHEN] : m_OutEdges[BELSE];
-				loopBody->generateCode(hll, indLevel + 1, latchNode, 
-					followSet, gotoSet);
+				PBB loopBody = (m_OutEdges[BELSE] == loopFollow) ? m_OutEdges[BTHEN] : m_OutEdges[BELSE];
+				loopBody->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet);
 
-				// if code has not been generated for the latch node, generate 
-				// it now
+				// if code has not been generated for the latch node, generate it now
 				if (latchNode->traversed != DFS_CODEGEN) {
 					latchNode->traversed = DFS_CODEGEN;
 					latchNode->WriteBB(hll, indLevel+1);
 				}
 
-				// rewrite the body of the block (excluding the predicate) at 
-				// the next nesting level after making sure another label 
-				// won't be generated
+				// rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
+				// another label won't be generated
 				hllLabel = false;
 				WriteBB(hll, indLevel+1);
 
@@ -1050,12 +1038,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				else
 					hll->AddPosttestedLoopHeader(indLevel);
 
-				// if this is also a conditional header, then generate code 
-				// for the conditional. Otherwise generate code for the loop 
-				// body.
+				// if this is also a conditional header, then generate code for the conditional. Otherwise generate code
+				// for the loop body.
 				if (sType == LoopCond) {
-					// set the necessary flags so that generateCode can 
-					// successfully be called again on this node
+					// set the necessary flags so that generateCode can successfully be called again on this node
 					sType = Cond;
 					traversed = UNTRAVERSED;
 					generateCode(hll, indLevel + 1, latchNode, followSet, 
@@ -1064,28 +1050,24 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					WriteBB(hll, indLevel+1);
 
 					// write the code for the body of the loop
-					m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, 
-											 followSet, gotoSet);
+					m_OutEdges[0]->generateCode(hll, indLevel + 1, latchNode, followSet, gotoSet);
 				}
 
 				if (lType == PostTested) {
-					// if code has not been generated for the latch node, 
-					// generate it now
+					// if code has not been generated for the latch node, generate it now
 					if (latchNode->traversed != DFS_CODEGEN) {
 						latchNode->traversed = DFS_CODEGEN;
 						latchNode->WriteBB(hll, indLevel+1);
 					}
 						
 					//hll->AddPosttestedLoopEnd(indLevel, getCond());
-					// MVE: the above seems to fail when there is a call in
-					// the middle of the loop (so loop is 2 BBs)
+					// MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
 					// Just a wild stab:
 					hll->AddPosttestedLoopEnd(indLevel, latchNode->getCond());
 				} else {
 					assert(lType == Endless);
 
-					// if code has not been generated for the latch node, 
-					// generate it now
+					// if code has not been generated for the latch node, generate it now
 					if (latchNode->traversed != DFS_CODEGEN) {
 						latchNode->traversed = DFS_CODEGEN;
 						latchNode->WriteBB(hll, indLevel+1);
@@ -1263,9 +1245,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					for (int i = 0; i < gotoTotal; i++)
 						gotoSet.resize(gotoSet.size()-1);
 
-				// do the code generation (or goto emitting) for the new 
-				// conditional follow if it exists, otherwise do it for the 
-				// original follow
+				// do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
+				// it for the original follow
 				if (!tmpCondFollow)
 					tmpCondFollow = condFollow;
 						
@@ -1281,8 +1262,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			// generate code for the body of this block
 			WriteBB(hll, indLevel);
 
-			// return if this is the 'return' block (i.e. has no out edges)
-			// after emmitting a 'return' statement
+			// return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
 			if (getType() == RET) {
 				// This should be emited now, like a normal statement
 				//hll->AddReturnStatement(indLevel, getReturnVal());
@@ -1306,11 +1286,9 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				return;
 			}
 
-			// generate code for its successor if it hasn't already been 
-			// visited and is in the same loop/case and is not the latch 
-			// for the current most enclosing loop.	 The only exception 
-			// for generating it when it is not in the same loop is when 
-			// it is only reached from this node
+			// generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
+			// the latch for the current most enclosing loop.	 The only exception for generating it when it is not in
+			// the same loop is when it is only reached from this node
 			PBB child = m_OutEdges[0];
 			if (child->traversed == DFS_CODEGEN || 
 					((child->loopHead != loopHead) && (!child->allParentsGenerated() || 
@@ -1359,16 +1337,14 @@ void BasicBlock::setLoopStamps(int &time, std::vector<PBB> &order) {
 	// set the the second loopStamp value
 	loopStamps[1] = ++time;
 
-	// add this node to the ordering structure as well as recording its 
-	// position within the ordering
+	// add this node to the ordering structure as well as recording its position within the ordering
 	ord = order.size();
 	order.push_back(this);
 }
 
 void BasicBlock::setRevLoopStamps(int &time)
 {
-	// timestamp the current node with the current time and set its traversed 
-	// flag
+	// timestamp the current node with the current time and set its traversed flag
 	traversed = DFS_RNUM;
 	revLoopStamps[0] = time;
 
@@ -1385,8 +1361,7 @@ void BasicBlock::setRevLoopStamps(int &time)
 
 void BasicBlock::setRevOrder(std::vector<PBB> &order)
 {
-	// Set this node as having been traversed during the post domimator 
-	// DFS ordering traversal
+	// Set this node as having been traversed during the post domimator DFS ordering traversal
 	traversed = DFS_PDOM;
 		
 	// recurse on unvisited children 
@@ -1394,8 +1369,8 @@ void BasicBlock::setRevOrder(std::vector<PBB> &order)
 		if (m_InEdges[i]->traversed != DFS_PDOM)
 			m_InEdges[i]->setRevOrder(order);
 
-	// add this node to the ordering structure and record the post dom. order
-	// of this node as its index within this ordering structure
+	// add this node to the ordering structure and record the post dom. order of this node as its index within this
+	// ordering structure
 	revOrd = order.size();
 	order.push_back(this);
 }
@@ -1410,8 +1385,8 @@ void BasicBlock::setCaseHead(PBB head, PBB follow)
 	if (this != head)
 		caseHead = head;
 
-	// if this is a nested case header, then it's member nodes will already 
-	// have been tagged so skip straight to its follow
+	// if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
+	// follow
 	if (getType() == NWAY && this != head) {
 		if (condFollow->traversed != DFS_CASE && condFollow != follow)
 			condFollow->setCaseHead(head, follow);
@@ -1428,8 +1403,8 @@ void BasicBlock::setCaseHead(PBB head, PBB follow)
 }
 
 void BasicBlock::setStructType(structType s) {
-	// if this is a conditional header, determine exactly which type of 
-	// conditional header it is (i.e. switch, if-then, if-then-else etc.)
+	// if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
+	// if-then-else etc.)
 	if (s == Cond) {
 		if (getType() == NWAY) 
 			cType = Case;
@@ -1458,8 +1433,8 @@ void BasicBlock::setLoopType(loopType l) {
 	assert (sType == Loop || sType == LoopCond);
 	lType = l;
 
-	// set the structured class (back to) just Loop if the loop type is 
-	// PreTested OR it's PostTested and is a single block loop
+	// set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
+	// block loop
 	if (lType == PreTested || (lType == PostTested && this == latchNode))
 		sType = Loop;
 }
@@ -1485,10 +1460,8 @@ bool BasicBlock::inLoop(PBB header, PBB latch) {
 		((header->loopStamps[0] > latch->loopStamps[0] && latch->loopStamps[1] > header->loopStamps[1]) ||
 		(header->loopStamps[0] < latch->loopStamps[0] && latch->loopStamps[1] < header->loopStamps[1])));
 	// this node is in the loop if it is the latch node OR
-	// this node is within the header and the latch is within this when using 
-	// the forward loop stamps OR
-	// this node is within the header and the latch is within this when using 
-	// the reverse loop stamps 
+	// this node is within the header and the latch is within this when using the forward loop stamps OR
+	// this node is within the header and the latch is within this when using the reverse loop stamps 
 	return this == latch ||
 		(header->loopStamps[0] < loopStamps[0] && loopStamps[1] < header->loopStamps[1] &&
 		loopStamps[0] < latch->loopStamps[0] && latch->loopStamps[1] < loopStamps[1]) ||
@@ -1565,7 +1538,7 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 				else
 					ty = r->getDef()->getTypeFor(r->getSubExp1());
 				// Pass true as the last argument below, to ensure that a local is generated (even when ty is NULL)
-				Exp* local = proc->getLocalExp(u, ty, true);
+				Exp* local = proc->getSymbolExp(u, ty, true);
 				ig[u->clone()] = local;
 				if (VERBOSE || DEBUG_LIVENESS) {
 					LOG << "Interference of " << dr << " with " << u << ", assigned " << local;
@@ -1646,18 +1619,18 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 			PhiAssign* pa = (PhiAssign*)*it;
 			// Get the jth operand to the phi function; it has a use from BB *this
 			Statement* def = pa->getStmtAt(j);
-			RefExp* r = new RefExp((*it)->getLeft()->clone(), def);
+			RefExp* r = new RefExp(pa->getLeft()->clone(), def);
 			liveout.insert(r);
 			phiLocs.insert(r);
 			if (DEBUG_LIVENESS)
-				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " << getLowAddr() << "\n";
+				LOG << " ## Liveness: adding " << r << " due to ref to phi " << *it << " in BB at " << getLowAddr() <<
+					"\n";
 		}
 	}
 }
 
-// Basically the "whichPred" function as per Briggs, Cooper, et al
-// (and presumably "Cryton, Ferante, Rosen, Wegman, and Zadek").
-// Return -1 if not found
+// Basically the "whichPred" function as per Briggs, Cooper, et al (and presumably "Cryton, Ferante, Rosen, Wegman, and
+// Zadek").  Return -1 if not found
 int BasicBlock::whichPred(PBB pred) {
 	int n = m_InEdges.size();
 	for (int i=0; i < n; i++) {
@@ -1680,7 +1653,7 @@ int BasicBlock::whichPred(PBB pred) {
 // confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 static Unary* forma = new RefExp(
-		new Binary(opArraySubscript,
+		new Binary(opArrayIndex,
 			new RefExp(
 				new Terminal(opWild),
 				(Statement*)-1),
@@ -1695,12 +1668,11 @@ static Location* formA	= Location::memOf(
 				new Const(4)),
 			new Terminal(opWildIntConst)));
 
-// With array processing, we get a new form, call it form 'o' (don't
-// confuse with form 'O'):
+// With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
 static Unary* formo = new RefExp(
-		new Binary(opArraySubscript,
+		new Binary(opArrayIndex,
 			new RefExp(
 				new Terminal(opWild),
 				(Statement*)-1),
@@ -1747,7 +1719,7 @@ static char chForms[] = {  'a',	 'A',	'o',   'O',	  'R',	 'r'};
 
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
-static Binary* vfc_funcptr = new Binary(opArraySubscript,
+static Binary* vfc_funcptr = new Binary(opArrayIndex,
 	new Location(opGlobal,
 		new Terminal(opWildStrConst), NULL),
 	new Const(0));
@@ -1953,9 +1925,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		// Note: some programs can have the case expression not propagated, because of Mike's heuristic to
 		// "not propagate too much". Example: argc = m[argc * 4 + K] would not be propagated. So do the
 		// propagation again with the "limit" flag set to flase
-		StatementSet exclude;
 		Exp* e = lastStmt->getDest();
-		lastStmt->propagateTo(-1, exclude, e->getMemDepth(), false);
+		lastStmt->propagateTo(-1, e->getMemDepth(), false);
 		e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;
@@ -1963,7 +1934,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			if (*e *= *hlForms[i]) {		// *= compare ignores subscripts
 				form = chForms[i];
 				if (DEBUG_SWITCH)
-					LOG << "Indirect jump matches form " << form << "\n";
+					LOG << "indirect jump matches form " << form << "\n";
 				break;
 			}
 		}
@@ -2095,8 +2066,8 @@ std::cerr << "From statement " << lastStmt << " get e = " << e << ", K1 = " << K
 
 /*==============================================================================
  * FUNCTION:	processSwitch
- * OVERVIEW:	Called when a switch has been identified. Visits the
- *					destinations of the switch, adds out edges to the BB, etc
+ * OVERVIEW:	Called when a switch has been identified. Visits the destinations of the switch, adds out edges to the
+ *				BB, etc
  * PARAMETERS:	proc - Pointer to the UserProc object for this code
  *				swi - Pointer to the SWITCH_INFO struct
  * RETURNS:		<nothing>
@@ -2110,7 +2081,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 	SWITCH_INFO* si = lastStmt->getSwitchInfo();
 
 	if (Boomerang::get()->debugSwitch) {
-		LOG << "Found switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
+		LOG << "found switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
 		if (si->iNumTable)
 			LOG << si->iNumTable << " entries, ";
 		LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
@@ -2140,8 +2111,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 	Prog* prog = proc->getProg();
 	Cfg* cfg = proc->getCFG();
 	for (int i=0; i < iNum; i++) {
-		// Get the destination address from the
-		// switch table.
+		// Get the destination address from the switch table.
 		if (si->chForm == 'H') {
 			int iValue = prog->readNative4(si->uTable + i*2);
 			if (iValue == -1) continue;
@@ -2159,6 +2129,7 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 		if (uSwitch < prog->getLimitTextHigh()) {
 			//tq.visit(cfg, uSwitch, this);
 			cfg->addOutEdge(this, uSwitch, true);
+			// Decode the newly discovered switch code arms
 			prog->decodeFragment(proc, uSwitch);
 		} else {
 			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";

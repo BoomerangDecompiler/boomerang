@@ -1,5 +1,5 @@
 #!/bin/bash
-# testOne.sh functional test script $Revision$
+# testOne.sh functional test script $Revision$ # 1.10.2.1
 # Call with test platform, test-program test-set [,option [,arguments]]
 # test-set is a char usually 1-9 for the various .out files, usually use 1 for .out1
 # e.g. "./testOne.sh pentium hello"

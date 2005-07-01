@@ -6,16 +6,18 @@
  * WARRANTIES.
  *
  */
+
 /*
+ * $Revision$	// 1.24.2.8
+ *
  * 22 Nov 02 - Mike: Re-ordered initialisations to keep gcc quiet
  */
 
 /*==============================================================================
  * FILE:	   chllcode.h
  * OVERVIEW:   Concrete class for the "C" high level language
- *			   This class is provides methods which are specific for the C
- *			   language binding.  I guess this will be the most popular output
- *			   language unless we do C++.
+ *			   This class provides methods which are specific for the C language binding.
+ *			   I guess this will be the most popular output language unless we do C++.
  *============================================================================*/
 
 #ifndef _CHLLCODE_H_
@@ -150,19 +152,19 @@ virtual void	RemoveUnusedLabels(int maxOrd);
 
 		// sequential statements
 virtual void	AddAssignmentStatement(int indLevel, Assign *asgn);
-virtual void	AddCallStatement(int indLevel, Proc *proc, const char *name, std::vector<Exp*> &args,
-		std::vector<ReturnInfo>& rets);
-virtual void	AddIndCallStatement(int indLevel, Exp *exp, std::vector<Exp*> &args);
-virtual void	AddReturnStatement(int indLevel, std::vector<Exp*> &returns);
+virtual void	AddCallStatement(int indLevel, Proc *proc, const char *name, StatementList& args,
+					StatementList* results);
+virtual void	AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList* results);
+virtual void	AddReturnStatement(int indLevel, StatementList* rets);
 
 		// proc related
-virtual void	AddProcStart(Signature *signature, unsigned int addr);
+virtual void	AddProcStart(UserProc* proc);
 virtual void	AddProcEnd();
 virtual void	AddLocal(const char *name, Type *type, bool last = false);
 virtual void	AddGlobal(const char *name, Type *type, Exp *init = NULL);
-virtual void	AddPrototype(Signature *signature);
+virtual void	AddPrototype(UserProc* proc);
 private:
-		void	AddProcDec(Signature *signature, bool open);	// Implement AddProcStart and AddPrototype
+		void	AddProcDec(UserProc* proc, bool open);	// Implement AddProcStart and AddPrototype
 public:
 
 		// comments

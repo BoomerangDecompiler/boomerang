@@ -1,5 +1,8 @@
 #include "boomerang.h"
+//#define GC_DEBUG 1		// Uncomment to debug the garbage collector
 #include "gc/gc.h"
+
+// FIXME: surely not needed here now?
 #ifdef WIN32
 #include <direct.h>		// For Windows mkdir
 #endif

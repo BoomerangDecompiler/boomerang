@@ -31,7 +31,7 @@ class PentiumDecoder : public NJMCDecoder
 public:
 	/* Default constructor
 	 */
-	PentiumDecoder();
+	PentiumDecoder(Prog* prog);
 
 	/*
 	 * Decodes the machine instruction at pc and returns an RTL instance for

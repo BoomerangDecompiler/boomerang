@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998-2001, The University of Queensland
+ * Copyright (C) 1998-2005, The University of Queensland
  * Copyright (C) 2000-2001, Sun Microsystems, Inc  
  * Copyright (C) 2002, Trent Waddington
  *
@@ -12,16 +12,15 @@
 
 /*==============================================================================
  * FILE:		frontend.h
- * OVERVIEW:	This file contains the definition for the FrontEnd class,
- *				which implements the source indendent parts of the front end
- *				of UQBT: decoding machine instructions into a control flow
- *				graph populated with low and high level RTLs.
- *				Also has some prototypes and structs for switch.cc
+ * OVERVIEW:	This file contains the definition for the FrontEnd class, which implements the source indendent parts of
+ *				the front end: decoding machine instructions into a control flow graph populated with low and high level
+ *			    RTLs.
  *============================================================================*/
 
-/* $Revision$
+/* $Revision$	// 1.29.2.2
  *
  * 17 Apr 02 - Mike: Mods to adapt UQBT code to boomerang
+ * 28 Jun 05 - Mike: Added a map of previously decoded indirect jumps and calls needed when restarting the cfg
  */
 
 
@@ -34,6 +33,7 @@
 #include <fstream>
 #include "types.h"
 #include "sigenum.h"   // For enums platform and cc
+#include "BinaryFile.h"
 
 class UserProc;
 class Proc;
@@ -62,14 +62,13 @@ enum INSTTYPE {
 
 // Put the target queue logic into this small class
 class TargetQueue {
-	std::queue<ADDRESS>	 targets;
+		std::queue<ADDRESS> targets;
 
 public:
 
 /*
  * FUNCTION:	visit
- * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to
- *				queue it as a new BB to create later.
+ * OVERVIEW:	Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
  *				Note: at present, it is important to visit an address BEFORE an out edge is added to that address.
  *				This is because adding an out edge enters the address into the Cfg's BB map, and it looks like the
  *				BB has already been visited, and it gets overlooked. It would be better to have a scheme whereby
@@ -77,14 +76,14 @@ public:
  * PARAMETERS:	pCfg - the enclosing CFG
  *				uNewAddr - the address to be checked
  *				pNewBB - set to the lower part of the BB if the address already exists as a non explicit label
- *					(BB has to be split)
+ *				(i.e. the BB has to be split)
  * RETURNS:		<nothing>
  */
 	void visit(Cfg* pCfg, ADDRESS uNewAddr, PBB& pNewBB);
 /*
  * Provide an initial address (can call several times if there are several entry points)
  */
-	void initial(ADDRESS uAddr);
+		void		initial(ADDRESS uAddr);
 
 
 /*
@@ -93,7 +92,12 @@ public:
  * PARAMETERS:	  cfg - the enclosing CFG
  * RETURNS:		  The next address to process, or 0 if none (queue is empty)
  */
-	ADDRESS nextAddress(Cfg* cfg);
+		ADDRESS		nextAddress(Cfg* cfg);
+
+/*
+ * Print (for debugging)
+ */
+		void		dump();
 
 };	// class TargetQueue
 
@@ -102,50 +106,50 @@ typedef bool (*PHELPER)(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl);
 
 class FrontEnd {
 protected:
-//	  const int NOP_SIZE;		  // Size of a no-op instruction (in bytes)
-//	  const int NOP_INST;		  // No-op pattern
-	// decoder
-	NJMCDecoder *decoder;
-	// The binary file
-	BinaryFile *pBF;
-	// Public map from function name (string) to signature.
-	std::map<std::string, Signature*> librarySignatures;
-	std::map<ADDRESS, std::string> refHints;
-	// The queue of addresses still to be processed
-	TargetQueue	targetQueue;
+//	  const int NOP_SIZE;			// Size of a no-op instruction (in bytes)
+//	  const int NOP_INST;			// No-op pattern
+		NJMCDecoder	*decoder;		// The decoder
+		BinaryFile	*pBF;			// The binary file
+		Prog*		prog;			// The Prog object
+		// The queue of addresses still to be processed
+		TargetQueue	targetQueue;
+		// Public map from function name (string) to signature.
+		std::map<std::string, Signature*> librarySignatures;
+		// Map from address to meaningful name
+		std::map<ADDRESS, std::string> refHints;
+		// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
+		std::map<ADDRESS, RTL*> previouslyDecoded;
 public:
-	/*
-	 * Constructor. Takes some parameters to save passing these around a lot
-	 */
-	FrontEnd(BinaryFile *pBF);
-	// Create from a binary file
-	static FrontEnd* instantiate(BinaryFile *pBF);
-	// Load a binary
-	static FrontEnd* Load(const char *fname);
+		/*
+		 * Constructor. Takes some parameters to save passing these around a lot
+		 */
+					FrontEnd(BinaryFile *pBF, Prog* prog);
+		// Create from a binary file
+static FrontEnd*	instantiate(BinaryFile *pBF, Prog* prog);
+		// Load a binary
+static FrontEnd*	Load(const char *fname, Prog* prog);
 
-	// Add a symbol to the loader
-	void AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
+		// Add a symbol to the loader
+		void		AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
 
-	// Add a "hint" that an instruction at the given address references
-	// a named global
-	void addRefHint(ADDRESS addr, const char *nam)
-	{ refHints[addr] = nam; }
+		// Add a "hint" that an instruction at the given address references a named global
+		void		addRefHint(ADDRESS addr, const char *nam) { refHints[addr] = nam; }
 
-	/**
-	 * Destructor. Virtual to mute a warning
-	 */
-	virtual ~FrontEnd();
+		/**
+		 * Destructor. Virtual to mute a warning
+		 */
+virtual				~FrontEnd();
 
-	// returns a symbolic name for a register index
-	const char *getRegName(int idx);
+		// returns a symbolic name for a register index
+		const char	*getRegName(int idx);
 
-	// returns an enum identifer for this frontend's platform
-	virtual platform getFrontEndId() = 0;
+		// returns an enum identifer for this frontend's platform
+virtual platform	getFrontEndId() = 0;
 
-	// returns a frontend given a string
-	static FrontEnd *createById(std::string &str, BinaryFile *pBF);
+		// returns a frontend given a string (unused?)
+static FrontEnd		*createById(std::string &str, BinaryFile *pBFi, Prog* prog);
 
-	bool	isWin32();					// Is this a win32 frontend?
+		bool		isWin32();					// Is this a win32 frontend?
 
 		BinaryFile 	*getBinaryFile() { return pBF; }
 
@@ -240,6 +244,14 @@ static	void		closeInstance(void* dlHandle);
 		 */
 		PBB			createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* pRtl);
 
+		/*
+		 * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and
+		 * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
+		 * incomplete in these cases, and needs to be restarted from scratch
+		 */
+		void		addDecodedRtl(ADDRESS a, RTL* rtl) {
+						previouslyDecoded[a] = rtl; }
+
 };	// class FrontEnd
 
 
@@ -251,24 +263,25 @@ static	void		closeInstance(void* dlHandle);
  * platform name such as sparc or pentium.
  *============================================================================*/
 
-/*
- * Intialise the procedure decoder and analyser.
- */
-void initFront();
+		/*
+		 * Intialise the procedure decoder and analyser.
+		 */
+		void		initFront();
 
-/*
- * Decode one RTL
- */
-RTL* decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder);
+		/*
+		 * Decode one RTL
+		 */
+		RTL*		decodeRtl(ADDRESS address, int delta, NJMCDecoder* decoder);
 
-/*
- * This decodes a given procedure. It performs the analysis to recover switch statements, call
- * parameters and return types etc.
- * If keep is false, discard the decoded procedure (only need this to find code other than main that is reachable
- * from _start, for coverage and speculative decoding)
- * If spec is true, then we are speculatively decoding (i.e. if there is an illegal instruction, we just bail out)
- */
-bool decodeProc(ADDRESS uAddr, FrontEnd& fe, bool keep = true, bool spec = false);
+		/*
+		 * This decodes a given procedure. It performs the analysis to recover switch statements, call
+		 * parameters and return types etc.
+		 * If keep is false, discard the decoded procedure (only need this to find code other than main that is
+		 * reachable from _start, for coverage and speculative decoding)
+		 * If spec is true, then we are speculatively decoding (i.e. if there is an illegal instruction, we just bail
+		 * out)
+		 */
+		bool		decodeProc(ADDRESS uAddr, FrontEnd& fe, bool keep = true, bool spec = false);
 
 
 #endif		// #ifndef __FRONTEND_H__

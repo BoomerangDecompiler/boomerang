@@ -5,6 +5,7 @@
 #include "exp.h"
 #include "hllcode.h"
 #include "cfg.h"
+#include "statement.h"
 
 static int nodecount = 1000;
 

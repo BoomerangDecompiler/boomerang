@@ -15,7 +15,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.44.2.1
  *
  * 28 Apr 02 - Mike: getTempType() returns a Type* now
  * 26 Aug 03 - Mike: Fixed operator< (had to re-introduce an enum... ugh)
@@ -37,6 +37,7 @@
 #include "proc.h"
 #include "signature.h"
 #include "boomerang.h"
+#include "log.h"
 // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
 #if defined(_MSC_VER) && _MSC_VER <= 1100
 #include "signature.h"		// For MSVC 5.00
@@ -707,7 +708,7 @@ const char *FuncType::getCtype(bool final) const {
 	else 
 		s += signature->getReturnType(0)->getCtype(final);
 	s += " (";
-	for (int i = 0; i < signature->getNumParams(); i++) {
+	for (unsigned i = 0; i < signature->getNumParams(); i++) {
 	   if (i != 0) s += ", ";
 	   s += signature->getParamType(i)->getCtype(final); 
 	}
@@ -728,7 +729,7 @@ void FuncType::getReturnAndParam(const char*& ret, const char*& param) {
 		ret = signature->getReturnType(0)->getCtype();
 	std::string s; 
 	s += " (";
-	for (int i = 0; i < signature->getNumParams(); i++) {
+	for (unsigned i = 0; i < signature->getNumParams(); i++) {
 	   if (i != 0) s += ", ";
 	   s += signature->getParamType(i)->getCtype(); 
 	}

@@ -42,10 +42,9 @@
 #include "boomerang.h"
 #include "signature.h"
 
-PPCFrontEnd::PPCFrontEnd(BinaryFile *pBF)
-  : FrontEnd(pBF)
+PPCFrontEnd::PPCFrontEnd(BinaryFile *pBF, Prog* prog) : FrontEnd(pBF, prog)
 {
-	decoder = new PPCDecoder();
+	decoder = new PPCDecoder(prog);
 }
 
 

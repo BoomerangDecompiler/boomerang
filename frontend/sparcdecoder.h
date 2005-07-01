@@ -14,7 +14,8 @@
  *============================================================================*/
 
 /* 
- * $Revision$
+ * $Revision$	// 1.6.6.2
+ *
  * 06 Jun 02 - Trent: Created.
  * 04 Dec 02 - Mike: Added dis_RegLhs() and dis_RegRhs()
  */
@@ -29,9 +30,9 @@ struct DecodeResult;
 class SparcDecoder : public NJMCDecoder
 {
 public:
-	/* Default constructor
+	/* Constructor
 	 */
-	SparcDecoder();
+	SparcDecoder(Prog* prog);
 
 
 	/*
@@ -61,8 +62,7 @@ private:
 	Exp*	dis_RegRhs(unsigned r);
 
 	void	unused(int x);
-	RTL*	createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts,
-			  const char* name);
+	RTL*	createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name);
 	bool	isFuncPrologue(ADDRESS hostPC);
 	DWord	getDword(ADDRESS lc);
 

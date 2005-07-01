@@ -29,6 +29,7 @@
 #include "boomerang.h"
 #include "transformer.h"
 #include "generic.h"
+#include "log.h"
 
 extern char* operStrings[];
 

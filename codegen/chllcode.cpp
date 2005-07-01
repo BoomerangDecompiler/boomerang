@@ -16,7 +16,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.90.2.16
  * 20 Jun 02 - Trent: Quick and dirty implementation for debugging
  * 28 Jun 02 - Trent: Starting to look better
  * 22 May 03 - Mike: delete -> free() to keep valgrind happy
@@ -28,8 +28,8 @@
 #pragma warning(disable:4786)
 #endif
 
-#include "statement.h"
 #include "cfg.h"
+#include "statement.h"
 #include "exp.h"
 #include "proc.h"
 #include "prog.h"
@@ -39,6 +39,7 @@
 #include "boomerang.h"
 #include "type.h"
 #include "util.h"
+#include "log.h"
 #include <sstream>
 
 extern char *operStrings[];
@@ -62,13 +63,21 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
 }
 
 // Append code for the given expression exp to stream str
-// The current operator precedence is curPrec; add parens around this
-// expression if necessary
+// The current operator precedence is curPrec; add parens around this expression if necessary
 // uns = cast operands to unsigned if necessary
 
 void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns /* = false */ ) {
 
 	if (exp == NULL) return;
+
+	// Check if it's mapped to a symbol
+	if (m_proc) {
+		char* sym = m_proc->lookupSym(exp);
+		if (sym) {
+			str << sym;
+			return;
+		}
+	}
 
 	Const	*c = (Const*)exp;
 	Unary	*u = (Unary*)exp;
@@ -157,14 +166,14 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				Prog* prog = m_proc->getProg();
 				Const* con = (Const*)((Unary*)sub)->getSubExp1();
 				Type* gt = prog->getGlobalType(con->getStr());
-				if (gt && (gt->isArray() || gt->isCString())) {
-					// Special C requirement: don't emit "&" for address of
-					// an array or char*
+				if (gt && (gt->isArray() || (gt->isPointer() && gt->asPointer()->getPointsTo()->isChar()))) {
+					// Special C requirement: don't emit "&" for address of an array or char*
 					appendExp(str, sub, curPrec);
 					break;
 				}
 			}
-			if (sub->isMemOf()) {
+			if (sub->isMemOf() && m_proc->lookupSym(sub) == NULL) {
+				// Avoid &*(type*)sub, just emit sub
 				appendExp(str, sub->getSubExp1(), PREC_UNARY);
 			} else {
 				openParen(str, curPrec, PREC_UNARY);
@@ -601,9 +610,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opTypedExp:
 			if (u->getSubExp1()->getOper() == opTypedExp &&
 					*((TypedExp*)u)->getType() == *((TypedExp*)u->getSubExp1())->getType()) {
+				// We have (type)(type)x: recurse with type(x)
 				appendExp(str, u->getSubExp1(), curPrec);
 			} else if (u->getSubExp1()->getOper() == opMemOf) {
+				// We have (tt)m[x]
 				PointerType *pty = dynamic_cast<PointerType*>(u->getSubExp1()->getSubExp1()->getType());
+				// pty = T(x)
 				Type *tt = ((TypedExp*)u)->getType();
 				if (pty != NULL && (*pty->getPointsTo() == *tt ||
 						(tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
@@ -614,11 +626,25 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 					str << "*)";
 				}
 				openParen(str, curPrec, PREC_UNARY);
-				appendExp(str, u->getSubExp1()->getSubExp1(), PREC_UNARY);
+				// Emit x
+				appendExp(str, ((Location*)((TypedExp*)u)->getSubExp1())->getSubExp1(), PREC_UNARY);
 				closeParen(str, curPrec, PREC_UNARY);
 			} else {
+				// Check for (tt)b where tt is a pointer; could be &local
+				Type* tt = ((TypedExp*)u)->getType();
+				Exp* b = u->getSubExp1();
+				if (dynamic_cast<PointerType*>(tt)) {
+					char* sym = m_proc->lookupSym(b);
+					if (sym) {
+						openParen(str, curPrec, PREC_UNARY);
+						str << "&" << sym;
+						closeParen(str, curPrec, PREC_UNARY);
+						break;
+					}
+				}
+				// Otherwise, fall back to (tt)b
 				str << "(";
-				appendType(str, ((TypedExp*)u)->getType());
+				appendType(str, tt);
 				str << ")";
 				openParen(str, curPrec, PREC_UNARY);
 				appendExp(str, u->getSubExp1(), PREC_UNARY);
@@ -728,13 +754,17 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << ((Const*)b->getSubExp2())->getStr();
 			}
 			break;
-		case opArraySubscript:
+		case opArrayIndex:
 			openParen(str, curPrec, PREC_PRIM);
 			appendExp(str, b->getSubExp1(), PREC_PRIM);
 			closeParen(str, curPrec, PREC_PRIM);
 			str << "[";
 			appendExp(str, b->getSubExp2(), PREC_PRIM);
 			str << "]";
+			break;
+		case opDefineAll:
+			str << "<all>";
+			LOG << "ERROR: should not see opDefineAll in codegen\n";
 			break;
 		default:
 			// others
@@ -745,7 +775,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << operStrings[op]+2;
 				break;
 			}
-			LOG << "ERROR: not implemented for codegen " << operStrings[exp->getOper()] << "\n";
+			LOG << "ERROR: not implemented for codegen " << operStrings[op] << "\n";
 			//assert(false);
 	}
 
@@ -753,8 +783,10 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 
 void CHLLCode::appendType(std::ostringstream& str, Type *typ)
 {
-	if (typ == NULL) return;
-	// TODO: decode types
+	if (typ == NULL) {
+		str << "int";			// Default type for C
+		return;
+	}
 	str << typ->getCtype(true);
 }
 
@@ -779,7 +811,7 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 		str << "int " << ident;
 	} else {
 		appendType(str, typ);
-		str << " " << ident;
+		str << " " << (ident ? ident : "<null>");
 	}		
 }
 
@@ -978,7 +1010,7 @@ void CHLLCode::RemoveLabel(int ord) {
 
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	if (asgn->getLeft()->getOper() == opPC)
-		return;
+		return;						// Never want to see assignments to %PC
 	Exp *result;
 	if (asgn->getRight()->search(new Terminal(opPC), result))
 		return;
@@ -988,160 +1020,218 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	std::ostringstream s;
 	indent(s, indLevel);
 	Type* asgnType = asgn->getType();
-	if (asgn->getLeft()->getOper() == opMemOf && asgnType && !asgnType->isVoid()) 
+	Exp* lhs = asgn->getLeft();
+	Exp* rhs = asgn->getRight();
+	if (lhs->isMemOf() && asgnType && !asgnType->isVoid()) 
 		appendExp(s,
 			new TypedExp(
 				asgnType,
-				asgn->getLeft()), PREC_ASSIGN);
-	else if (asgn->getLeft()->getOper() == opGlobal &&
-			 ((Location*)asgn->getLeft())->getType() && 
-			 ((Location*)asgn->getLeft())->getType()->isArray())
-		appendExp(s, new Binary(opArraySubscript, asgn->getLeft(),
+				lhs), PREC_ASSIGN);
+	else if (lhs->getOper() == opGlobal &&
+			 ((Location*)lhs)->getType() && 
+			 ((Location*)lhs)->getType()->isArray())
+		appendExp(s, new Binary(opArrayIndex,
+			lhs,
 			new Const(0)), PREC_ASSIGN);
-	else
-		appendExp(s, asgn->getLeft(), PREC_ASSIGN);
-	if (asgn->getRight()->getOper() == opPlus && 
-		*asgn->getRight()->getSubExp1() == *asgn->getLeft() &&
-		!asgn->getLeft()->isMemOf()) {
+	else if (lhs->getOper() == opAt &&
+			((Ternary*)lhs)->getSubExp2()->isIntConst() &&
+			((Ternary*)lhs)->getSubExp3()->isIntConst()) {
+		// exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
+		Exp* exp1 = ((Ternary*)lhs)->getSubExp1();
+		int n = ((Const*)((Ternary*)lhs)->getSubExp2())->getInt();
+		int m = ((Const*)((Ternary*)lhs)->getSubExp3())->getInt();
+		appendExp(s, exp1, PREC_ASSIGN);
+		s << " = ";
+		int mask = ~((1 << m-n+1)-1 << m);
+		rhs = new Binary(opBitAnd,
+			exp1,
+			new Binary(opBitOr,
+				new Const(mask),
+				new Binary(opShiftL,
+					rhs,
+					new Const(m))));
+		rhs = rhs->simplify();
+		appendExp(s, rhs, PREC_ASSIGN);
+		s << ";";
+		lines.push_back(strdup(s.str().c_str()));
+		return;
+	} else
+		appendExp(s, lhs, PREC_ASSIGN);			// Ordinary LHS
+	if (rhs->getOper() == opPlus && 
+			*rhs->getSubExp1() == *lhs) {
 		// C has special syntax for this, eg += and ++
-		// however it's not always acceptable for assigns to m[]
-		if (asgn->getRight()->getSubExp2()->getOper() == opIntConst &&
-			((Const*)asgn->getRight()->getSubExp2())->getInt() == 1) 
+		// however it's not always acceptable for assigns to m[] (?)
+		if (rhs->getSubExp2()->isIntConst() &&
+				((Const*)rhs->getSubExp2())->getInt() == 1) 
 			s << "++";
 		else {
 			s << " += ";
-			appendExp(s, asgn->getRight()->getSubExp2(), PREC_ASSIGN);
+			appendExp(s, rhs->getSubExp2(), PREC_ASSIGN);
 		}
 	} else {
 		s << " = ";
-		appendExp(s, asgn->getRight(), PREC_ASSIGN);
+		appendExp(s, rhs, PREC_ASSIGN);
 	}
 	s << ";";
 	lines.push_back(strdup(s.str().c_str()));
 }
 
-void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, std::vector<Exp*> &args,
-	std::vector<ReturnInfo>& rets) {
+void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, StatementList &args, StatementList* results)
+{
 	std::ostringstream s;
 	indent(s, indLevel);
-	unsigned n = 0;
-	if (rets.size() >= 1) {
-		for (n = 0; n < rets.size(); n++) {
-			if (rets[n].e) {
-				appendExp(s, rets[n].e, PREC_ASSIGN);
-				s << " = ";
-				break;
-			}
-		}
+	if (results->size() >= 1) {
+		// FIXME: Needs changing if more than one real result (return a struct)
+		Exp* firstRet = ((Assignment*)*results->begin())->getLeft();
+		appendExp(s, firstRet, PREC_ASSIGN);
+		s << " = ";
 	}
 	s << name << "(";
-	for (unsigned int i = 0; i < args.size(); i++) {
-		Type *t = proc->getSignature()->getParamType(i);
+	StatementList::iterator ss;
+	bool first = true;
+	for (ss = args.begin(); ss != args.end(); ++ss) {
+		if (first)
+			first = false;
+		else
+			s << ", ";
+		Type *t = ((Assign*)*ss)->getType();
+		Exp* arg = ((Assign*)*ss)->getRight();
 		bool ok = true;
-		if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() 
-			  && args[i]->isIntConst()) {
-			Proc *p = proc->getProg()->findProc(((Const*)args[i])->getInt());
+		if (t && t->isPointer() && ((PointerType*)t)->getPointsTo()->isFunc() && arg->isIntConst()) {
+			Proc *p = proc->getProg()->findProc(((Const*)arg)->getInt());
 			if (p) {
 				s << p->getName();
 				ok = false;
 			}
 		}
 		if (ok)
-			appendExp(s, args[i], PREC_COMMA);
-		if (i < args.size() - 1) s << ", ";
+			appendExp(s, arg, PREC_COMMA);
 	}
 	s << ");";
-	bool first = true;
-	for (n++; n < rets.size(); n++) 
-		if (rets[n].e) {
+	if (results->size() > 1) {
+		bool first = true;
+		s << " /* OUT: ";
+		for (ss = ++results->begin(); ss != results->end(); ++ss) {
 			if (first)
-				s << " // OUT: ";
+				first = false;
 			else
 				s << ", ";
-			appendExp(s, rets[n].e, PREC_COMMA);
-			first = false;
+			appendExp(s, ((Assignment*)*ss)->getLeft(), PREC_COMMA);
 		}
-	std::string str = s.str();	// Copy the whole string
-	n = str.length();
-	if (str.substr(n-2, 2) == ", ")
-		str = str.substr(0, n-2);
-	lines.push_back(strdup(str.c_str()));
+		s << " */";
+	}
+			
+	lines.push_back(strdup(s.str().c_str()));
 }
 
-// Ugh - almost the same as the above, but it needs to take an expression,
-// not a Proc*
-void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, std::vector<Exp*> &args) {
+// Ugh - almost the same as the above, but it needs to take an expression, // not a Proc*
+void CHLLCode::AddIndCallStatement(int indLevel, Exp *exp, StatementList &args, StatementList* results) {
+//	FIXME: Need to use 'results', since we can infer some defines...
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "(*";
 	appendExp(s, exp, PREC_NONE);
 	s << ")(";
-	for (unsigned int i = 0; i < args.size(); i++) {
-		appendExp(s, args[i], PREC_COMMA);
-		if (i < args.size() - 1) s << ", ";
+	StatementList::iterator ss;
+	bool first = true;
+	for (ss = args.begin(); ss != args.end(); ++ss) {
+		if (first)
+			first = false;
+		else
+			s << ", ";
+		Exp* arg = ((Assign*)*ss)->getRight();
+		appendExp(s, arg, PREC_COMMA);
 	}
 	s << ");";
 	lines.push_back(strdup(s.str().c_str()));
 }
 
 
-void CHLLCode::AddReturnStatement(int indLevel, std::vector<Exp*> &returns) {
+void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
+	// FIXME: should be returning a struct of more than one real return */
+	// The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
+	StatementList::iterator rr;
 	std::ostringstream s;
 	indent(s, indLevel);
 	s << "return";
-	if (returns.size() >= 1) {
+	int n = rets->size();
+	if (n >= 1) {
 		s << " ";
-		appendExp(s, returns[0], PREC_NONE);
+		appendExp(s, ((Assign*)*rets->begin())->getRight(), PREC_NONE);
 	}
 	s << ";";
-	if (returns.size() > 1) {
-		s << "/* ";
-	}
-	for (unsigned i = 1; i < returns.size(); i++) {
-		if (i != 1)
-			s << ", ";
-		appendExp(s, returns[i], PREC_NONE);
-	}
-	if (returns.size() > 1) {
-		s << "*/";
+
+	if (n > 0) {
+		if (n > 1)
+			s << "\t/* ";
+		bool first = true;
+		for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
+			if (first)
+				first = false;
+			else
+				s << ", ";
+			appendExp(s, ((Assign*)*rr)->getRight(), PREC_NONE);
+		}
+		if (n > 1)
+			s << " */";
 	}
 	lines.push_back(strdup(s.str().c_str()));
 }
 
-void CHLLCode::AddProcStart(Signature *signature, unsigned int addr) {
+void CHLLCode::AddProcStart(UserProc* proc) {
 	std::ostringstream s;
-	s << "// address: 0x" << std::hex << addr << std::dec; 
+	s << "// address: 0x" << std::hex << proc->getNativeAddress() << std::dec; 
 	lines.push_back(strdup(s.str().c_str()));
-	AddProcDec(signature, true);
+	AddProcDec(proc, true);
 }
 
-void CHLLCode::AddPrototype(Signature *signature) {
-	AddProcDec(signature, false);
+void CHLLCode::AddPrototype(UserProc* proc) {
+	AddProcDec(proc, false);
 }
 
-void CHLLCode::AddProcDec(Signature *signature, bool open) {
+void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	std::ostringstream s;
-	if (signature->getNumReturns() == 0) {
+	if (strncmp("main", proc->getName(), 4+1) == 0) {
+		// Special case for main()
+		lines.push_back("int main(int argc, char* argv[], char** envp) {");
+		return;
+	}
+	ReturnStatement* returns = proc->getTheReturnStatement();
+	if (returns == NULL || returns->getNumReturns() == 0)
 		s << "void ";
-	}  else {
-		appendType(s, signature->getReturnType(0));
-		if (!signature->getReturnType(0)->isPointer())
+	else {
+		Assign* firstRet = (Assign*)*returns->begin();
+		appendType(s, firstRet->getType());
+		if (!firstRet->getType() || !firstRet->getType()->isPointer())	// NOTE: assumes type *proc( style
 			s << " ";
 	}
-	s << signature->getName() << "(";
-	for (int i = 0; i < signature->getNumParams(); i++) {
-		Type *ty = signature->getParamType(i); 
+	s << proc->getName() << "(";
+	StatementList& parameters = proc->getParameters();
+	StatementList::iterator pp;
+	bool first = true;
+	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+		if (first)
+			first = false;
+		else
+			s << ", ";
+		Assign* as = (Assign*)*pp;
+		Exp* left = as->getLeft();
+		Type *ty = as->getType();
+		if (ty == NULL) {
+			LOG << "ERROR: no type for parameter " << left << "!\n";
+			ty = new IntegerType();
+		}
+		char* name = proc->lookupSym(left);
 		if (ty->isPointer() && ((PointerType*)ty)->getPointsTo()->isArray()) {
-			// C does this by default when you pass an array
+			// C does this by default when you pass an array, i.e. you pass &array meaning array
+			// Replace all m[param] with foo, param with foo, then foo with param
 			ty = ((PointerType*)ty)->getPointsTo();
 			Exp *foo = new Const("foo123412341234");
-			m_proc->searchAndReplace(Location::memOf(Location::param(signature->getParamName(i)), NULL), foo);
-			m_proc->searchAndReplace(Location::param(signature->getParamName(i)), foo);
-			m_proc->searchAndReplace(foo, Location::param(signature->getParamName(i)));
+			m_proc->searchAndReplace(Location::memOf(left, NULL), foo);
+			m_proc->searchAndReplace(left, foo);
+			m_proc->searchAndReplace(foo, left);
 		}
-		appendTypeIdent(s, ty, signature->getParamName(i));
-		if (i != signature->getNumParams() - 1)
-			s << ", ";
+		appendTypeIdent(s, ty, name);
 	}
 	s << ")";
 	if (open)
@@ -1160,9 +1250,9 @@ void CHLLCode::AddLocal(const char *name, Type *type, bool last) {
 	std::ostringstream s;
 	indent(s, 1);
 	appendTypeIdent(s, type, name);
-	Exp *e = m_proc->getLocalExp(name);
+	Exp *e = m_proc->expFromSymbol(name);
 	if (e) {
-	  //if (e->getOper() == opSubscript && ((RefExp*)e)->getRef() == NULL &&
+		// ? Should never see subscripts in the back end!
 		if (e->getOper() == opSubscript && ((RefExp*)e)->isImplicitDef() &&
 			(e->getSubExp1()->getOper() == opParam ||
 			 e->getSubExp1()->getOper() == opGlobal)) {

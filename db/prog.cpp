@@ -16,7 +16,7 @@
  *============================================================================*/
 
 /*
- * $Revision$
+ * $Revision$	// 1.126.2.14
  *
  * 18 Apr 02 - Mike: Mods for boomerang
  * 26 Apr 02 - Mike: common.hs read relative to BOOMDIR
@@ -59,6 +59,7 @@
 #include "ansi-c-parser.h"
 #include "config.h"
 #include "managed.h"
+#include "log.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -74,13 +75,9 @@ Prog::Prog() :
 	// Default constructor
 }
 
-Prog::Prog(BinaryFile *pBF, FrontEnd *pFE) :
-	  pBF(pBF),
-	  pFE(pFE),
-	  globalMap(NULL),
-	  m_iNumberedProc(1),
-	  nextIsEntry(false),
-	  entryProc(NULL) {
+void Prog::setFrontEnd(FrontEnd *pFE) {
+	pBF = pFE->getBinaryFile();
+	this->pFE = pFE;
 	if (pBF && pBF->getFilename()) {
 		m_name = pBF->getFilename();
 		m_rootCluster = new Cluster(getNameNoPath().c_str());
@@ -96,8 +93,7 @@ Prog::Prog(const char* name) :
 	  m_rootCluster(new Cluster(getNameNoPath().c_str())),
 	  nextIsEntry(false),
 	  entryProc(NULL) {
-	// Constructor taking a name. Technically, the allocation of the
-	// space for the name could fail, but this is unlikely
+	// Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
 	  m_path = m_name;
 }
 
@@ -142,12 +138,9 @@ void Prog::finishDecode()
 		if (pProc->isLib()) continue;
 		UserProc *p = (UserProc*)pProc;
 		if (!p->isDecoded()) continue;
-		if (p->isAnalysed()) continue;
 		
 		p->assignProcsToCalls();
 		p->finalSimplify();
-		p->setAnalysed();
-		
 	}
 
 }
@@ -163,8 +156,8 @@ void Prog::generateDotFile() {
 		UserProc *p = (UserProc*)pProc;
 		if (!p->isDecoded()) continue;
 		// Subgraph for the proc name
-		of << "\nsubgraph cluster_" << p->getName() << " {\n" <<
-		  "	   color=gray;\n	label=" << p->getName() << ";\n";
+		of << "\nsubgraph cluster_" << p->getName() << " {\n" << "	   color=gray;\n	label=" << p->getName() <<
+			";\n";
 		// Generate dotty CFG for this proc
 		p->getCFG()->generateDotFile(of);
 	}
@@ -210,7 +203,7 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 		proto = true;
 		UserProc* up = (UserProc*)*it;
 		HLLCode *code = Boomerang::get()->getHLLCode(up);
-		code->AddPrototype(up->getSignature());		// May be the wrong signature if up has ellipsis
+		code->AddPrototype(up);					// May be the wrong signature if up has ellipsis
 		if (cluster == NULL || cluster == m_rootCluster)
 			code->print(os);
 	}
@@ -336,8 +329,7 @@ bool Prog::clusterUsed(Cluster *c)
 
 void Prog::generateCode(std::ostream &os) {
 	HLLCode *code = Boomerang::get()->getHLLCode();
-	for (std::set<Global*>::iterator it1 = globals.begin();
-		 it1 != globals.end(); it1++) {
+	for (std::set<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
 		// Check for an initial value
 		Exp *e = NULL;
 		e = (*it1)->getInitialValue(this);
@@ -361,8 +353,7 @@ void Prog::generateCode(std::ostream &os) {
 
 // Print this program, mainly for debugging
 void Prog::print(std::ostream &out) {
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++) {
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		Proc *pProc = *it;
 		if (pProc->isLib()) continue;
 		UserProc *p = (UserProc*)pProc;
@@ -462,16 +453,15 @@ void Prog::remProc(UserProc* uProc) {
 	// Delete the cfg etc.
 	uProc->deleteCFG();
 
-	// Replace the entry in the procedure map with -1 as a warning not to
-	// decode that address ever again
+	// Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
 	m_procLabels[uProc->getNativeAddress()] = (Proc*)-1;
 
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end();
-	  it++)
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if (*it == uProc) {
 			m_procs.erase(it);
 			break;
 		}
+	}
 
 	// Delete the UserProc object as well
 	delete uProc;
@@ -552,7 +542,7 @@ Signature* Prog::getLibSignature(const char *nam) {
 void Prog::rereadLibSignatures()
 {
 	pFE->readLibraryCatalog();
-	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if ((*it)->isLib()) {
 			(*it)->setSignature(getLibSignature((*it)->getName()));
 			std::set<CallStatement*> &callers = (*it)->getCallers();
@@ -560,6 +550,7 @@ void Prog::rereadLibSignatures()
 				(*it1)->setSigArguments();
 			Boomerang::get()->alert_update_signature(*it);
 		}
+	}
 }
 
 platform Prog::getFrontEndId() {
@@ -723,8 +714,7 @@ void Prog::setGlobalType(const char* nam, Type* ty) {
 // if knownString, it is already known to be a char*
 char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
 	SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
-	// Too many compilers put constants, including string constants, into
-	// read/write sections
+	// Too many compilers put constants, including string constants, into read/write sections
 	//if (si && si->bReadOnly)
 	if (si && !si->bBss) {
 		// At this stage, only support ascii, null terminated, non unicode strings.
@@ -882,8 +872,8 @@ UserProc* Prog::getNextUserProc(std::list<Proc*>::iterator& it) {
 
 /*==============================================================================
  * FUNCTION:	getCodeInfo
- * OVERVIEW:	Lookup the given native address in the code section, returning
- *				  a host pointer corresponding to the same address
+ * OVERVIEW:	Lookup the given native address in the code section, returning a host pointer corresponding to the same
+ *				 address
  * PARAMETERS:	uNative: Native address of the candidate string or constant
  *				last: will be set to one past end of the code section (host)
  *				delta: will be set to the difference between the host and native addresses
@@ -904,8 +894,7 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 		SectionInfo* pSect = pBF->GetSectionInfo(i);
 		if ((!pSect->bCode) && (!pSect->bReadOnly))
 			continue;
-		if ((uAddr < pSect->uNativeAddr) ||
-		  (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
+		if ((uAddr < pSect->uNativeAddr) || (uAddr >= pSect->uNativeAddr + pSect->uSectionSize))
 			continue;			// Try the next section
 		delta = pSect->uHostAddr - pSect->uNativeAddr;
 		last = (const char*) (pSect->uHostAddr + pSect->uSectionSize);
@@ -914,15 +903,6 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 	}
 	return NULL;
 #endif
-}
-
-void Prog::insertArguments(StatementSet& rs) {
-	PROGMAP::iterator pp;
-	for (pp = m_procLabels.begin(); pp != m_procLabels.end(); pp++) {
-		UserProc* proc = (UserProc*)pp->second;
-		if (proc->isLib()) continue;
-		proc->insertArguments(rs);
-	}
 }
 
 void Prog::decodeExtraEntrypoint(ADDRESS a) { 
@@ -945,21 +925,6 @@ void Prog::decodeEverythingUndecoded() {
 	finishDecode();
 }
 
-void Prog::fastx86decompile()
-{
-	std::list<Proc*>::iterator pp;
-	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-		UserProc* proc = (UserProc*)(*pp);
-		if (proc->isLib()) continue;
-		proc->fastx86decompile();
-	}
-
-    generateRTL();
-
-    // Now it is OK to transform out of SSA form
-	fromSSAform();
-}
-
 void Prog::decompile() {
 	assert(m_procs.size());
 
@@ -979,8 +944,8 @@ void Prog::decompile() {
 		if (!entryProc->isDecoded())
 			continue;		// Can happen with -E
 		if (VERBOSE)
-			LOG << "Starting with " << entryProc->getName() << "\n";
-		entryProc->decompile();
+			LOG << "starting with " << entryProc->getName() << "\n";
+		entryProc->decompile(new CycleList);
 		break;			// Only decompile top function in this loop
 	}
 #else
@@ -988,8 +953,8 @@ void Prog::decompile() {
     UserProc* entryUserProc = (UserProc*)entryProc;
 	if (entryUserProc != NULL && !entryUserProc->isLib() && entryUserProc->isDecoded()) {
 		if (VERBOSE)
-			LOG << "Starting with " << entryUserProc->getName() << "\n";
-		entryUserProc->decompile();
+			LOG << "starting with " << entryUserProc->getName() << "\n";
+		entryUserProc->decompile(new CycleList);
     }
 #endif
 
@@ -999,17 +964,25 @@ void Prog::decompile() {
 		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 			UserProc* proc = (UserProc*)(*pp);
 			if (proc->isLib()) continue;
-			proc->decompile();
+			proc->decompile(new CycleList);
 		}
 	}
 
-	if (!Boomerang::get()->noDecompile) {
-		if (VERBOSE)
-			LOG << "removing unused returns\n";
+	// Type analysis, if requested
+	if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
+		std::cerr << "can't use two types of type analysis at once!\n";
+		Boomerang::get()->conTypeAnalysis = false;
+	}
+	globalTypeAnalysis();
 
-		// A final pass to remove return locations not used by any caller
-		if (!Boomerang::get()->noRemoveReturns) 
+
+	if (!Boomerang::get()->noDecompile) {
+		if (!Boomerang::get()->noRemoveReturns) {
+			// A final pass to remove returns not used by any caller
+			if (VERBOSE)
+				LOG << "prog: global removing unused returns\n";
 			removeUnusedReturns();
+		}
 
 		// print XML after removing returns
 		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
@@ -1018,18 +991,6 @@ void Prog::decompile() {
 			proc->printXML();
 		}
 	}
-
-	// Type analysis, if requested
-	if (Boomerang::get()->conTypeAnalysis && Boomerang::get()->dfaTypeAnalysis) {
-		std::cerr << "Can't use two types of type analysis at once!\n";
-		Boomerang::get()->conTypeAnalysis = false;
-	}
-	if (Boomerang::get()->conTypeAnalysis)
-		conTypeAnalysis();
-	// DFA type analysis performed somewhat earlier now (in decompile())
-	//if (Boomerang::get()->dfaTypeAnalysis)
-	//	dfaTypeAnalysis();
-
 
 	if (VERBOSE)
 		LOG << "transforming from SSA\n";
@@ -1044,14 +1005,26 @@ void Prog::decompile() {
 
 void Prog::removeUnusedGlobals() {
 	if (VERBOSE)
-		LOG << "Removing unused globals\n";
+		LOG << "removing unused globals\n";
 
     // seach for used globals
 	std::list<Exp*> usedGlobals;
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if ((*it)->isLib())	continue;
 		UserProc *u = (UserProc*)(*it);
-		u->searchAll(new Location(opGlobal, new Terminal(opWild), u), usedGlobals);
+		Exp* search = new Location(opGlobal, new Terminal(opWild), u);
+		// Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
+		// exist in the program representation)
+		StatementList stmts;
+		StatementList::iterator ss;
+		u->getStatements(stmts);
+		for (ss = stmts.begin(); ss != stmts.end(); ++ss) {
+			Statement* s = *ss;
+			if (s->isImplicit()) continue;			// Ignore the uses in ImplicitAssigns
+			bool found = s->searchAll(search, usedGlobals);
+			if (found && DEBUG_UNUSED)
+				LOG << " a global is used by stmt " << s->getNumber() << "\n";
+		}
 	}
 
 	// make a map to find a global by its name (could be a global var too)
@@ -1065,6 +1038,8 @@ void Prog::removeUnusedGlobals() {
     
     globals.clear();
 	for (std::list<Exp*>::iterator it = usedGlobals.begin(); it != usedGlobals.end(); it++) {
+		if (DEBUG_UNUSED)
+			LOG << " " << *it << " is used\n";
      	name = ((Const*)(*it)->getSubExp1())->getStr();
      	usedGlobal=namedGlobals[name];
      	if(usedGlobal) {
@@ -1076,7 +1051,7 @@ void Prog::removeUnusedGlobals() {
 
 #if 0
 	if (VERBOSE)
-		LOG << "Removing unused globals\n";
+		LOG << "removing unused globals\n";
 	std::list<Exp*> result;
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
 		if ((*it)->isLib())
@@ -1093,7 +1068,7 @@ void Prog::removeUnusedGlobals() {
 		unusedGlobals.erase(((Const*)(*it)->getSubExp1())->getStr());
 	for (std::map<std::string, Global*>::iterator it = unusedGlobals.begin(); it != unusedGlobals.end(); it++) {
 		if (VERBOSE)
-			LOG << "Unused global " << it->first.c_str() << " at address " << it->second->getAddress() << "\n";
+			LOG << "unused global " << it->first.c_str() << " at address " << it->second->getAddress() << "\n";
 		usedGlobals.erase((*it).first);
 	}
 	globals.clear();
@@ -1103,6 +1078,7 @@ void Prog::removeUnusedGlobals() {
 #endif
 }
 
+#if 0
 void Prog::removeUnusedReturns() {
 	// The counter
 	UserProc::ReturnCounter rc;
@@ -1121,8 +1097,8 @@ void Prog::removeUnusedReturns() {
 	bool change;
 	do {
 		rc.clear();
-		// Iterate through the workset, looking for uses of returns from calls in these procs
-		// (initially, all procs; later, callers of procs whose returns set has been reduced
+		// Iterate through the workset, looking for uses of returns from calls in these procs (initially, all procs;
+		// later, callers of procs whose returns set has been reduced
 		// FIXME: the ordering is not consistent; it is affecting whether output is correct or not!!
 		// (so worksets not working)
 		std::set<UserProc*>::iterator it;
@@ -1147,9 +1123,8 @@ void Prog::removeUnusedReturns() {
 		callerSet.clear();
 		change = false;
 
-		// Having globally counted the returns, remove the unused ones
-		// Note: after the first pass, we have only counted those callers which
-		// call procs in calleeSet, so only consider those procs
+		// Having globally counted the returns, remove the unused ones. Note: after the first pass, we have only
+		// counted those callers which call procs in calleeSet, so only consider those procs
 		for (it = calleeSet.begin(); it != calleeSet.end(); it++) {
 			UserProc* proc = *it;
 			if (proc->isLib()) continue;
@@ -1185,6 +1160,37 @@ void Prog::removeUnusedReturns() {
 		calleeSet = newCalleeSet;
 	} while (change);
 }
+#else
+// This is the global removing of unused returns. The initial idea is simple enough: remove some returns according to
+// the formula returns(p) = modifys(p) isect union(live at c) for all c calling p.
+// However, removing returns reduces the uses, leading to three effects:
+// 1) The statement that defines the return, if only used by that return, becomes unused
+// 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
+// 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
+//   the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
+//	 child.
+void Prog::removeUnusedReturns() {
+	// For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
+	// procedures not yet processed.
+	// Define a workset for the procedures who have to have their returns checked
+	std::set<UserProc*> removeRetSet;
+	std::list<Proc*>::iterator pp;
+	for (pp = m_procs.begin(); pp != m_procs.end(); ++pp) {
+		UserProc* proc = (UserProc*)(*pp);
+		if (proc->isLib()) continue;
+		removeRetSet.insert(proc);
+	}
+	std::set<UserProc*>::iterator it;
+	while (removeRetSet.size()) {
+		it = removeRetSet.begin();		// Pick the first element of the set
+		(*it)->removeUnusedReturns(removeRetSet);
+		// Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
+		// procedures
+		removeRetSet.erase(it);			// Remove the current element (may no longer be the first)
+	}
+}
+#endif
+
 
 #if 0		// For time being, this is in UserProc::generateCode()
 void Prog::removeUnusedLocals() {
@@ -1211,16 +1217,16 @@ void Prog::fromSSAform() {
 		}
 		proc->fromSSAform();
 		if (Boomerang::get()->vFlag) {
-			LOG << "===== After transformation from SSA form for " << proc->getName() << " =====\n";
+			LOG << "===== after transformation from SSA form for " << proc->getName() << " =====\n";
 			proc->printToLog();
-			LOG << "===== End after transformation from SSA for " << proc->getName() << " =====\n\n";
+			LOG << "===== end after transformation from SSA for " << proc->getName() << " =====\n\n";
 		}
 	}
 }
 
 void Prog::conTypeAnalysis() {
 	if (VERBOSE || DEBUG_TA)
-		LOG << "=== Start Constraint-based Type Analysis ===\n";
+		LOG << "=== start constraint-based type analysis ===\n";
 	// FIXME: This needs to be done bottom of the call-tree first, with repeat until no change for cycles
 	// in the call graph
 	std::list<Proc*>::iterator pp;
@@ -1230,22 +1236,20 @@ void Prog::conTypeAnalysis() {
 		proc->conTypeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
-		LOG << "=== End Type Analysis ===\n";
+		LOG << "=== end type analysis ===\n";
 }
 
-void Prog::dfaTypeAnalysis() {
+void Prog::globalTypeAnalysis() {
 	if (VERBOSE || DEBUG_TA)
-		LOG << "=== Start Data-flow-based Type Analysis ===\n";
+		LOG << "### start data-flow-based type analysis ###\n";
 	std::list<Proc*>::iterator pp;
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
-		do
-			proc->dfaTypeAnalysis();
-		while (proc->ellipsisProcessing());
+		proc->typeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
-		LOG << "=== End Type Analysis ===\n";
+		LOG << "### end type analysis ###\n";
 }
 
 
@@ -1354,10 +1358,11 @@ void Prog::printCallGraphXML() {
 	Proc *entry = getEntryProc();
 	if (!entry->isLib())
 		entry->printCallGraphXML(f, 2);
-	for (it = m_procs.begin(); it != m_procs.end(); it++)
+	for (it = m_procs.begin(); it != m_procs.end(); it++) {
 		if (!(*it)->isVisited() && !(*it)->isLib()) {
 			(*it)->printCallGraphXML(f, 2);
 		}
+	}
 	f << "	 </callgraph>\n";
 	f << "</prog>\n";
 	f.close();
@@ -1437,7 +1442,7 @@ Exp* Global::getInitialValue(Prog* prog) {
 		e = new Terminal(opNil);
 		for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i)
 			e = new Binary(opList, prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType), e);
-		LOG << "calced init for array global: " << e << "\n";
+		LOG << "calculated init for array global: " << e << "\n";
 		if (e->getOper() == opNil)
 			e = NULL;
 	}
@@ -1482,6 +1487,12 @@ void Global::meetType(Type* ty) {
 	bool ch;
 	type = type->meetWith(ty, ch);
 }
+
+void Prog::reDecode(UserProc* proc) {
+	std::ofstream os;
+	pFE->processProc(proc->getNativeAddress(), proc, os);
+}
+
 
 
 

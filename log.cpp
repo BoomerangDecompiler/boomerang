@@ -1,14 +1,17 @@
-
+/*
+ *$Revision$	// 1.6.6.1
+ */
 #include "log.h"
 #include <sstream>
 #include "statement.h"
+#include "rtl.h"
 #include "exp.h"
 #include "managed.h"
 
 Log &Log::operator<<(Statement *s)
 {
 	std::ostringstream st;
-	st << s;
+	s->print(st);
 	*this << st.str().c_str();
 	return *this;
 }
@@ -16,7 +19,15 @@ Log &Log::operator<<(Statement *s)
 Log &Log::operator<<(Exp *e)
 {
 	std::ostringstream st;
-	st << e;
+	e->print(st);
+	*this << st.str().c_str();
+	return *this;
+}
+
+Log &Log::operator<<(RTL *r)
+{
+	std::ostringstream st;
+	r->print(st);
 	*this << st.str().c_str();
 	return *this;
 }

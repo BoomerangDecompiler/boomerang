@@ -14,6 +14,7 @@
 # 29 Apr 02 - Mike: Added sslparser etc
 # 13 May 02 - Mike: Added RtlTest and ParserTest
 # 04 Jul 02 - Mike: Added type.cpp, TypeType.cpp
+# 01 Jul 05 - Mike: Big merge from boomerang.pole branch
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -22,11 +23,9 @@ BISONPP=bison++
 FLEXPP=flex++
 
 DB_LIB=../lib/libdb.so
-TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o \
-            CfgTest.o
-LIB_OBJS = exp.o prog.o proc.o rtl.o cfg.o basicblock.o register.o \
-           sslparser.o sslscanner.o insnameelem.o sslinst.o table.o type.o \
-           dataflow.o
+TEST_OBJS = ExpTest.o ProcTest.o ProgTest.o RtlTest.o ParserTest.o TypeTest.o CfgTest.o
+LIB_OBJS = exp.o prog.o proc.o rtl.o cfg.o basicblock.o register.o sslparser.o sslscanner.o insnameelem.o sslinst.o \
+	table.o type.o dataflow.o
 
 BOOMDIR="$(shell pwd)/.."
 LIBDIR=$(BOOMDIR)/lib
@@ -50,8 +49,7 @@ testExp: testExp.o exp.o statement.o rtl.o testExpStubs.o ExpTest.o
 testStmt.o: testStmt.cpp
 	$(CC) -c -o $@ -I../include $<
 
-STMT_TEST_OBJS = testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o \
-    proc.o signature.o
+STMT_TEST_OBJS = testStmt.o statement.o exp.o testStmtStubs.o StatementTest.o proc.o signature.o
 testStmt: $(STMT_TEST_OBJS)
 	$(CC) -o $@ $(STMT_TEST_OBJS) -lcppunit
 
@@ -59,13 +57,10 @@ testRtl.o: testRtl.cpp
 	$(CC) -c -o $@ -I../include $<
 
 # This one tests the whole front end!
-RTL_TEST_OBJS=testRtl.o exp.o statement.o rtl.o proc.o prog.o testRtlStubs.o \
-    RtlTest.o ../loader/BinaryFile.o ../frontend/frontend.o \
-    ../frontend/njmcDecoder.o ../frontend/sparcfrontend.o \
-    ../frontend/pentiumfrontend.o ../frontend/sparcdecoder.o \
-    ../frontend/pentiumdecoder.o sslparser.o sslscanner.o register.o table.o \
-    ../util/util.o cfg.o basicblock.o sslinst.o ../c/ansi-c-parser.o \
-    ../c/ansi-c-scanner.o insnameelem.o
+RTL_TEST_OBJS=testRtl.o exp.o statement.o rtl.o proc.o prog.o testRtlStubs.o RtlTest.o ../loader/BinaryFile.o \
+	../frontend/frontend.o ../frontend/njmcDecoder.o ../frontend/sparcfrontend.o ../frontend/pentiumfrontend.o \
+	../frontend/sparcdecoder.o ../frontend/pentiumdecoder.o sslparser.o sslscanner.o register.o table.o ../util/util.o \
+	cfg.o basicblock.o sslinst.o ../c/ansi-c-parser.o ../c/ansi-c-scanner.o insnameelem.o
 testRtl: $(RTL_TEST_OBJS)
 	$(CC) -o $@ $(RTL_TEST_OBJS) -lcppunit -ldl 
 
