@@ -54,7 +54,6 @@
 #include "types.h"
 #include "managed.h"
 #include "dataflow.h"	// For embedded objects DefCollector and UseCollector
-#include "left.h"
 
 class BasicBlock;
 typedef BasicBlock *PBB;
