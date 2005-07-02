@@ -210,6 +210,21 @@
 				RelativePath=".\type\constraint.cpp">
 			</File>
 			<File
+				RelativePath=".\db\dataflow.cpp">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeTypeInfo="TRUE"/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\type\dfa.cpp">
 			</File>
 			<File
@@ -498,6 +513,9 @@
 			</File>
 			<File
 				RelativePath=".\c\ansi-c-scanner.h">
+			</File>
+			<File
+				RelativePath=".\include\basicblock.h">
 			</File>
 			<File
 				RelativePath=".\include\BinaryFile.h">
