@@ -8,9 +8,11 @@
 #include "resource.h"
 #undef NO_ADDRESS
 #include "prog.h"
+#include "proc.h"
 #include "signature.h"
 #include "statement.h"
 #include "boomerang.h"
+#include "log.h"
 
 #define MAX_LOADSTRING 100
 
@@ -820,8 +822,7 @@ LRESULT CALLBACK TabEdit(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 			case ID_STMT_PROPAGATE_TO:
-				StatementSet exclude;
-				stmt->propagateTo(-1, exclude);
+				stmt->propagateTo(-1);
 				stmt->getProc()->updateBlockVars();
 				updateCodeView();
 				break;
@@ -1014,7 +1015,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (u == NULL)
 					break;
 				Boomerang::get()->noDecompile = true;
-				u->decompile();
+				u->decompile(new CycleList);
 				Boomerang::get()->noDecompile = false;
 				updateCodeView();
 			}
@@ -1708,9 +1709,8 @@ LRESULT CALLBACK DebugOptions(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			Boomerang::get()->debugLiveness		= (IsDlgButtonChecked(hDlg, IDC_CHECKL)		== BST_CHECKED);
 			Boomerang::get()->debugSwitch		= (IsDlgButtonChecked(hDlg, IDC_CHECKSA)	== BST_CHECKED);
 			Boomerang::get()->debugProof		= (IsDlgButtonChecked(hDlg, IDC_CHECKPROOF) == BST_CHECKED);
-			Boomerang::get()->debugUnusedRetsAndParams=(IsDlgButtonChecked(hDlg, IDC_CHECKUR)	== BST_CHECKED);
 			Boomerang::get()->debugTA			= (IsDlgButtonChecked(hDlg, IDC_CHECKTA)	== BST_CHECKED);
-			Boomerang::get()->debugUnusedStmt	= (IsDlgButtonChecked(hDlg, IDC_CHECKUS)	== BST_CHECKED);
+			Boomerang::get()->debugUnused		= (IsDlgButtonChecked(hDlg, IDC_CHECKUS)	== BST_CHECKED);
 			Boomerang::get()->printRtl			= (IsDlgButtonChecked(hDlg, IDC_CHECKRTL)	== BST_CHECKED);
 			Boomerang::get()->traceDecoder		= (IsDlgButtonChecked(hDlg, IDC_CHECKTD)	== BST_CHECKED);
 			Boomerang::get()->printAST			= (IsDlgButtonChecked(hDlg, IDC_CHECKAST)	== BST_CHECKED);
@@ -1849,7 +1849,7 @@ void addReturnsToList(Proc *proc, HWND hReturns)
 	lvi.mask = LVIF_TEXT;
 	lvi.iSubItem = 0;
 
-	for (int i = 0; i < proc->getSignature()->getNumReturns(); i++) {
+	for (unsigned i = 0; i < proc->getSignature()->getNumReturns(); i++) {
 		lvi.iItem = i;
 		lvi.pszText = (LPSTR)proc->getSignature()->getReturnType(i)->getCtype();
 		ListView_InsertItem(hReturns, &lvi);
@@ -1866,7 +1866,7 @@ void addParamsToList(Proc *proc, HWND hParams)
 	lvi.mask = LVIF_TEXT;
 	lvi.iSubItem = 0;
 
-	for (int i = 0; i < proc->getSignature()->getNumParams(); i++) {
+	for (unsigned i = 0; i < proc->getSignature()->getNumParams(); i++) {
 		lvi.iItem = i;
 		lvi.pszText = (LPSTR)proc->getSignature()->getParamName(i);
 		ListView_InsertItem(hParams, &lvi);
@@ -1888,7 +1888,7 @@ void addLocalsToList(UserProc *u, HWND hLocals)
 	for (int i = 0; i < u->getNumLocals(); i++) {
 		lvi.iItem = i;
 		lvi.pszText = (LPSTR)u->getLocalName(i);
-		Exp *e = u->getLocalExp(lvi.pszText);
+		Exp *e = u->expFromSymbol(lvi.pszText);
 		ListView_InsertItem(hLocals, &lvi);
 		ListView_SetItemText(hLocals, i, 1, (LPSTR)u->getLocalType(lvi.pszText)->getCtype());
 		std::ostringstream st;
