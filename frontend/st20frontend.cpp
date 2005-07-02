@@ -16,6 +16,9 @@
  *			   dependent features such as delay slots in the process. These
  *			   functions replace Frontend.cc for decoding sparc instructions.
  *============================================================================*/
+/*
+ * $Revision$	// 1.2.2.2
+ */
 /*==============================================================================
  * Dependencies.
  *============================================================================*/
@@ -42,9 +45,7 @@
 #include "boomerang.h"
 #include "signature.h"
 
-ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF)
-  : FrontEnd(pBF)
-{
+ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF, Prog* prog) : FrontEnd(pBF, prog) {
 	decoder = new ST20Decoder();
 }
 

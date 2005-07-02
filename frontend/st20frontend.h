@@ -1,4 +1,6 @@
-
+/*
+ * $Revision$	// 1.1.2.2
+ */
 #ifndef ST20FRONTEND_H
 #define ST20FRONTEND_H
 
@@ -18,7 +20,7 @@ class CallStatement;
 class ST20FrontEnd : public FrontEnd
 {
 public:
-  ST20FrontEnd(BinaryFile *pBF);
+  ST20FrontEnd(BinaryFile *pBF, Prog* prog);
 	/**
 	 * Virtual destructor.
 	 */

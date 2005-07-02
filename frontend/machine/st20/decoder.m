@@ -12,7 +12,7 @@
  * OVERVIEW:   This file contains the high level decoding functionality, for matching ST-20 instructions.
  *============================================================================*/ 
 /*
- * $Revision$
+ * $Revision$	// 1.2.2.2
  *
  * 10 Mar 05 - Mike: Created.
 */
@@ -340,10 +340,10 @@ DWord ST20Decoder::getDword (unsigned lc)
  * PARAMETERS:	   None
  * RETURNS:		   N/A
  *============================================================================*/
-ST20Decoder::ST20Decoder() : NJMCDecoder()
+ST20Decoder::ST20Decoder() : NJMCDecoder(prog)
 {
-  std::string file = Boomerang::get()->getProgPath() + "frontend/machine/st20/st20.ssl";
-  RTLDict.readSSLFile(file.c_str());
+	std::string file = Boomerang::get()->getProgPath() + "frontend/machine/st20/st20.ssl";
+	RTLDict.readSSLFile(file.c_str());
 }
 
 // For now...
