@@ -5003,8 +5003,6 @@ void UserProc::typeAnalysis() {
 	printXML();
 }
 
-#define GC_DEBUG 1
-#include "gc.h"
 // Copy the RTLs for the already decoded Indirect Control Transfer instructions
 RTL* globalRtl = 0;
 void UserProc::copyDecodedICTs() {
@@ -5014,7 +5012,6 @@ void UserProc::copyDecodedICTs() {
 		Statement* last = bb->getLastStmt(rrit, srit);
 		if (!last->isHL_ICT()) continue;
 		RTL* rtl = bb->getLastRtl();
-globalRtl = rtl;
 		if (DEBUG_SWITCH)
 			LOG << "Saving high level switch statement " << rtl << "\n";
 		prog->addDecodedRtl(bb->getHiAddr(), rtl);
