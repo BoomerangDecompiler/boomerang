@@ -920,7 +920,7 @@ void Prog::decodeEverythingUndecoded() {
 		if (up == NULL) continue;	// Probably not needed
 		if (up->isLib()) continue;
 		if (up->isDecoded()) continue;
-		pFE->decode(this, up);
+		pFE->decode(this, up->getNativeAddress());
 	}
 	finishDecode();
 }
