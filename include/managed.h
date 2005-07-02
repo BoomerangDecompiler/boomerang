@@ -80,7 +80,7 @@ class AssignSet {
 
 public:
 typedef std::set<Assign*, lessAssignment>::iterator iterator;
-typedef std::set<Assign*, lessAssignment>::iterator const_iterator;
+typedef std::set<Assign*, lessAssignment>::const_iterator const_iterator;
 
 virtual				~AssignSet() {}
 		void		makeUnion(AssignSet& other);		// Set union
