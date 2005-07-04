@@ -6,6 +6,12 @@
  * loader class dynamically.
 */
 
+#ifndef _WIN32
+#include <dlfcn.h>
+#else
+#include <windows.h>			// include before types.h: name collision of NO_ADDRESS and WinSock.h
+#endif
+
 #include "BinaryFile.h"
 #include "ElfBinaryFile.h"
 #include "Win32BinaryFile.h"
@@ -14,11 +20,6 @@
 #include "ExeBinaryFile.h"
 
 #include <iostream>
-#ifndef _WIN32
-#include <dlfcn.h>
-#else
-#include <windows.h>
-#endif
 
 BinaryFile *BinaryFileFactory::Load( const char *sName )
 {
