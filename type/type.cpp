@@ -863,8 +863,9 @@ void Type::addNamedType(const char *name, Type *type)
 {
 	if (namedTypes.find(name) != namedTypes.end()) {
 		if (*type != *namedTypes[name]) {
-			std::cerr << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
-				namedTypes[name]->getCtype() << "\n" << std::flush;
+			LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
+				namedTypes[name]->getCtype() << "\n";// << std::flush;
+			LOGTAIL;
 			assert(false);
 		}
 	} else {
