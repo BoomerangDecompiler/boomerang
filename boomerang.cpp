@@ -246,7 +246,7 @@ int Boomerang::parseCmd(int argc, const char **argv)
 		Prog *pr = p->parse(fname);
 		if (pr == NULL) {
 			// try guessing
-			pr = p->parse((outputPath + "/" + fname + "/" + fname + ".xml").c_str());
+			pr = p->parse((outputPath + fname + "/" + fname + ".xml").c_str());
 			if (pr == NULL) {
 			std::cerr << "failed to read xml " << fname << "\n";
 			return 1;
@@ -581,8 +581,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 	size_t j = progPath.rfind('/');			// Chop off after the last slash
 	if (j == (size_t)-1) 
 		j = progPath.rfind('\\');			// .. or reverse slash
-	if (j != (size_t)-1)
-	{
+	if (j != (size_t)-1) {
 		// Do the chop; keep the trailing slash or reverse slash
 		progPath = progPath.substr(0, j+1);
 	}
@@ -596,9 +595,9 @@ int Boomerang::commandLine(int argc, const char **argv)
            j = progPath.rfind("Release\\", progPath.length() - (7+1));
 	if (j != std::string::npos)
 		progPath = progPath.substr(0, j);			// Chop off "Release\" or "Debug\"
-	SetCurrentDirectory(progPath.c_str());			//  Note: setcwd() doesn't seem to work
+	SetCurrentDirectory(progPath.c_str());			// Note: setcwd() doesn't seem to work
 #endif
-	outputPath = progPath + "output";				// Default output path (can be overridden with -o below)
+	outputPath = progPath + "output/";				// Default output path (can be overridden with -o below)
 
 	// Parse switches on command line
 	if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
@@ -643,7 +642,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'o': {
 				outputPath = argv[++i];
 				char lastCh = outputPath[outputPath.size()-1];
-				if (lastCh != '/' || lastCh != '\\')
+				if (lastCh != '/' && lastCh != '\\')
 					outputPath += '/';		// Maintain the convention of a trailing slash
 				break;
 			}
@@ -813,8 +812,7 @@ bool Boomerang::setOutputDirectory(const char *path)
 	outputPath = path;
 	// Create the output directory, if needed
 	if (!createDirectory(outputPath)) {
-		std::cerr << "Warning! Could not create path " <<
-		  outputPath << "!\n";
+		std::cerr << "Warning! Could not create path " << outputPath << "!\n";
 		return false;
 	}
 	if (logger == NULL)
@@ -977,13 +975,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	std::cerr << "generating code...\n";
 	prog->generateCode();
 
-	std::cerr << "output written to " << outputPath;
-#ifdef WIN32
-	std::cerr << "\\";
-#else
-	std::cerr << "/";
-#endif
-	std::cerr << prog->getRootCluster()->getName() << "\n";
+	std::cerr << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
 
 	time_t end;
 	time(&end);
