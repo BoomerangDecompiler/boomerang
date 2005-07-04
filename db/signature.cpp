@@ -2033,19 +2033,17 @@ bool CallingConvention::StdC::SparcSignature::argumentCompare(Assignment& a, Ass
 	Exp* la = a.getLeft();
 	Exp* lb = b.getLeft();
 	// %o0-$o5 (r8-r13) are the preferred argument locations
-	int ra, rb;
+	int ra = 0, rb = 0;
 	if (la->isRegOf()) {
 		int r = ((Const*)((Location*)la)->getSubExp1())->getInt();
 		if (r >= 8 && r <= 13)
 			ra = r;
-	} else
-		ra = 0;
+	}
 	if (lb->isRegOf()) {
 		int r = ((Const*)((Location*)lb)->getSubExp1())->getInt();
 		if (r >= 8 && r <= 13)
 			rb = r;
-	} else
-		rb = 0;
+	}
 	if (ra && rb)
 		return ra < rb;						// Both r8-r13: compare within this set
 	if (ra && rb == 0)
