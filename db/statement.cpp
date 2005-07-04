@@ -4274,6 +4274,13 @@ bool lessAssignment::operator()(const Assignment* x, const Assignment* y) const 
 	return (*xx->getLeft() < *yy->getLeft());		// Compare the LHS expressions
 }
 
+// Repeat the above for Assign's; sometimes the compiler doesn't (yet) understand that Assign's are Assignment's
+bool lessAssign::operator()(const Assign* x, const Assign* y) const {
+	Assign* xx = const_cast<Assign*>(x);
+	Assign* yy = const_cast<Assign*>(y);
+	return (*xx->getLeft() < *yy->getLeft());		// Compare the LHS expressions
+}
+
 // Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
 // collector have changed. Does NOT remove preserveds.
 void ReturnStatement::updateModifieds() {
