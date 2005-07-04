@@ -25,13 +25,15 @@ public:
 	virtual Log &operator<<(LocationSet *l);
 			Log &operator<<(std::string& s) {return operator<<(s.c_str());}
 	virtual ~Log() {};
+	virtual void tail();
 };
 
 class FileLogger : public Log {
 protected:
 	std::ofstream out;
 public:
-	FileLogger();		// Implemented in boomerang.cpp
+			FileLogger();		// Implemented in boomerang.cpp
+	void	tail();
 	virtual Log &operator<<(const char *str) { 
 		out << str << std::flush;  
 		return *this; 

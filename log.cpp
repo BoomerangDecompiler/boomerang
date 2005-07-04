@@ -71,3 +71,10 @@ Log &Log::operator<<(ADDRESS a)
 	return *this;
 }
 
+void Log::tail() {
+}
+
+void FileLogger::tail() {
+	out.seekp(-200, std::ios::end);
+	std::cerr << out;
+}

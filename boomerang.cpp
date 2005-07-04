@@ -1013,3 +1013,6 @@ Prog *Boomerang::loadFromXML(const char *fname)
 	XMLProgParser *p = new XMLProgParser();
 	return p->parse(fname);
 }
+void Boomerang::logTail() {
+	logger->tail();
+}
