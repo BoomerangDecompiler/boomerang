@@ -24,6 +24,7 @@
 #include	<map>
 
 class Exp;
+class Assign;
 class Assignment;
 
 /*
@@ -49,6 +50,13 @@ public:
 class lessAssignment : public std::binary_function<Assignment*, Assignment*, bool> {
 public:
 	bool operator()(const Assignment* x, const Assignment* y) const;
+};
+
+// Repeat the above for Assigns; sometimes the #include ordering is such that the compiler doesn't know that an Assign
+// is a subclass of Assignment
+class lessAssign : public std::binary_function<Assign*, Assign*, bool> {
+public:
+	bool operator()(const Assign* x, const Assign* y) const;
 };
 
 // A type for an "interference graph". Needed by various classes to implement the transforation out of SSA form.
