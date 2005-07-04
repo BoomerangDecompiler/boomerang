@@ -247,7 +247,7 @@ void UserProc::dfaTypeAnalysis() {
 
 		// 3) Change the type of any parameters. The types for these will be stored in an ImplicitAssign
 		Exp* lhs;
-		if (s->isImplicit() && (lhs = ((ImplicitAssign*)s)->getLeft()), lhs->isParam()) {
+		if (s->isImplicit() && (lhs = ((ImplicitAssign*)s)->getLeft(), lhs->isParam())) {
 			setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), ((ImplicitAssign*)s)->getType());
 		}
 
@@ -1250,7 +1250,7 @@ bool NamedType::isCompatibleWith(Type* other) {
 bool ArrayType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
 	if (other->isArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
-	if (base_type->isCompatibleWith(other)) return this;		// An array of x is compatible with x
+	if (base_type->isCompatibleWith(other)) return true;		// An array of x is compatible with x
 	if (other->isUnion()) return other->isCompatibleWith(this);
 	return false;
 }
