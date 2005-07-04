@@ -20,6 +20,9 @@
 #include <sys/stat.h>		// For mkdir
 #include <unistd.h>			// For unlink
 #endif
+#ifdef _MSC_VER
+#include <windows.h>		// For SetCurrentDirectory
+#endif
 #include "prog.h"
 #include "proc.h"
 #include "BinaryFile.h"
@@ -574,31 +577,29 @@ int Boomerang::cmdLine()
 int Boomerang::commandLine(int argc, const char **argv) 
 {
 	if (argc < 2) usage();
-#ifdef _MSC_VER				// For the console mode version; Windows GUI will override in windows.cpp
-#ifndef MAX_PATH
-#define MAX_PATH 132
-#endif
-	char filename[MAX_PATH];
-	getcwd(filename, MAX_PATH-10);
-	strcat(filename, "\\");
-	progPath = filename;
-	strcat(filename, "output");
-	outputPath = filename;
-#else
 	progPath = argv[0];
-	// Chop off after the last slash
-	size_t j = progPath.rfind("/");
+	size_t j = progPath.rfind('/');			// Chop off after the last slash
 	if (j == (size_t)-1) 
-		j = progPath.rfind("\\");
+		j = progPath.rfind('\\');			// .. or reverse slash
 	if (j != (size_t)-1)
 	{
-		// Do the chop; keep the trailing slash
+		// Do the chop; keep the trailing slash or reverse slash
 		progPath = progPath.substr(0, j+1);
 	}
 	else {
 		progPath = "./";			// Just assume the current directory
 	}
+#ifdef _MSC_VER						// For the console mode version; Windows GUI will override in windows.cpp
+	// As a special case for MSVC testing, make the program path the parent of the dir with the .exe
+	j = progPath.find("Debug\\", progPath.length() - (5+1));
+	if (j == std::string::npos)
+           j = progPath.rfind("Release\\", progPath.length() - (7+1));
+	if (j != std::string::npos)
+		progPath = progPath.substr(0, j);			// Chop off "Release\" or "Debug\"
+	SetCurrentDirectory(progPath.c_str());			//  Note: setcwd() doesn't seem to work
 #endif
+	outputPath = progPath + "output";				// Default output path (can be overridden with -o below)
+
 	// Parse switches on command line
 	if ((argc == 2) && (strcmp(argv[1], "-h") == 0)) {
 		help();
@@ -639,11 +640,13 @@ int Boomerang::commandLine(int argc, const char **argv)
 					stopBeforeDecompile=true;
 				}
 				break;
-			case 'o':
+			case 'o': {
 				outputPath = argv[++i];
-				if (outputPath[outputPath.size()-1] != '/')
-					outputPath += '/';
+				char lastCh = outputPath[outputPath.size()-1];
+				if (lastCh != '/' || lastCh != '\\')
+					outputPath += '/';		// Maintain the convention of a trailing slash
 				break;
+			}
 			case 'O': overlapped = true; break;
 			case 'p':
 				if (argv[i][2] == 'a') {
