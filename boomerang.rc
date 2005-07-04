@@ -186,9 +186,9 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,52,90,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,106,90,50,14
     CONTROL         "print AST",IDC_CHECKAST,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,91,20,47,10
+                    WS_TABSTOP,91,23,47,10
     CONTROL         "switch analysis",IDC_CHECKSA,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,91,33,65,10
+                    WS_TABSTOP,91,39,65,10
     CONTROL         "decoder",IDC_CHECKD,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,91,7,42,10
     CONTROL         "code generation",IDC_CHECKCG,"Button",BS_AUTOCHECKBOX | 
@@ -197,8 +197,6 @@ BEGIN
                     WS_TABSTOP,7,20,42,10
     CONTROL         "proof engine",IDC_CHECKPROOF,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,33,57,10
-    CONTROL         "unused returns",IDC_CHECKUR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,91,46,65,10
     CONTROL         "type analysis",IDC_CHECKTA,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,46,58,10
     CONTROL         "unused statements",IDC_CHECKUS,"Button",BS_AUTOCHECKBOX | 
@@ -206,9 +204,9 @@ BEGIN
     CONTROL         "rtl before codegen",IDC_CHECKRTL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,72,76,10
     CONTROL         "trace decoding",IDC_CHECKTD,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,91,59,64,10
+                    WS_TABSTOP,91,55,64,10
     CONTROL         "verbose",IDC_CHECKV,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,91,72,42,10
+                    WS_TABSTOP,91,71,42,10
 END
 
 IDD_DECOMPILEOPTIONS DIALOGEX 0, 0, 207, 178
