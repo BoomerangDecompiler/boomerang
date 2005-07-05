@@ -214,7 +214,9 @@ void RtlTest::testIsCompare () {
 	BinaryFile *pBF = BinaryFileFactory::Load(SWITCH_SPARC);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd *pFE = new SparcFrontEnd(pBF, prog);
+	prog->setFrontEnd(pFE);
 
 	// Decode second instruction: "sub		%i0, 2, %o1"
 	int iReg;
@@ -240,7 +242,8 @@ void RtlTest::testIsCompare () {
 	pBF = BinaryFileFactory::Load(SWITCH_PENT);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
-	pFE = new PentiumFrontEnd(pBF);
+	pFE = new PentiumFrontEnd(pBF, prog);
+	prog->setFrontEnd(pFE);
 
 	// Decode fifth instruction: "cmp	$0x5,%eax"
 	inst = pFE->decodeInstruction(0x80488fb);
@@ -281,9 +284,9 @@ void RtlTest::testSetConscripts() {
 			new Const(0)),
 		Location::local("local0", NULL),
 		Location::global("global1", NULL));
-	std::vector<Exp*> args;
-	args.push_back(e1);
-	args.push_back(e2);
+	StatementList args;
+	args.append(new Assign(Location::regOf(8), e1));
+	args.append(new Assign(Location::regOf(9), e2));
 	s2->setArguments(args);
 
 	std::list<Statement*> list;

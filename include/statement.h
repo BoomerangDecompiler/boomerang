@@ -982,7 +982,7 @@ class CallStatement: public GotoStatement {
 		// results
 		UseCollector useCol;
 
-		// A DefCollector object to collect the reaching definitions; used for fixCallBypass/localiseExp etc; also
+		// A DefCollector object to collect the reaching definitions; used for bypassAndPropagate/localiseExp etc; also
 		// the basis for arguments if this is an unanlysed indirect call
 		DefCollector defCol;
 
@@ -1008,17 +1008,18 @@ virtual bool		accept(StmtPartModifier* visitor);
 		// Set implicit arguments: so far, for testing only:
 		//void		setImpArguments(std::vector<Exp*>& arguments);
 //		void		setReturns(std::vector<Exp*>& returns);// Set call's return locs
-		void		setSigArguments();			// Set arguments based on signature
+		void		setSigArguments();				// Set arguments based on signature
 		StatementList& getArguments() {return arguments;}	// Return call's arguments
-		void		updateArguments();			// Update the arguments based on a callee change
+		void		updateArguments();				// Update the arguments based on a callee change
 		//Exp		*getDefineExp(int i);
-		int			findDefine(Exp *e);			// Still needed temporarily for ad hoc type analysis
+		int			findDefine(Exp *e);				// Still needed temporarily for ad hoc type analysis
 		void		removeDefine(Exp *e);
+		void		addDefine(ImplicitAssign* as);	// For testing
 		//void		ignoreReturn(Exp *e);
 		//void		ignoreReturn(int n);
 		//void		addReturn(Exp *e, Type* ty = NULL);
-		void		updateDefines();			// Update the defines based on a callee change
-		StatementList* calcResults();			// Calculate defines(this) isect live(this)
+		void		updateDefines();				// Update the defines based on a callee change
+		StatementList* calcResults();				// Calculate defines(this) isect live(this)
 		ReturnStatement* getCalleeReturn() {return calleeReturn; }
 		void		setCalleeReturn(ReturnStatement* ret) {calleeReturn = ret;}
 		bool		isChildless();

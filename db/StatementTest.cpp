@@ -20,6 +20,7 @@
 #include "boomerang.h"
 #include "exp.h"
 #include "managed.h"
+#include "log.h"
 
 #include <sstream>
 #include <map>
@@ -106,9 +107,11 @@ void StatementTest::testEmpty () {
 	boo->setLogger(new FileLogger());
 
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
-	Prog* prog = new Prog(pBF, pFE);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	prog->setFrontEnd(pFE);
+
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -122,7 +125,7 @@ void StatementTest::testEmpty () {
 	cfg->setEntryBB(bb);
 	proc->setDecoded();		// We manually "decoded"
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -142,10 +145,12 @@ void StatementTest::testEmpty () {
  *============================================================================*/
 void StatementTest::testFlow () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
- 	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
+
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -164,7 +169,7 @@ void StatementTest::testFlow () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(2);
-	rs->addReturn(Location::regOf(24));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -173,7 +178,7 @@ void StatementTest::testFlow () {
 	cfg->setEntryBB(first);		// Also sets exitBB; important!
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -198,10 +203,11 @@ void StatementTest::testFlow () {
  *============================================================================*/
 void StatementTest::testKill () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -225,7 +231,7 @@ void StatementTest::testKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(Location::regOf(24));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -234,7 +240,7 @@ void StatementTest::testKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -257,10 +263,11 @@ void StatementTest::testKill () {
  *============================================================================*/
 void StatementTest::testUse () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -284,7 +291,7 @@ void StatementTest::testUse () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(Location::regOf(28));
+	rs->addReturn(new Assign(Location::regOf(28), new Const(1000)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -293,7 +300,7 @@ void StatementTest::testUse () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -316,10 +323,11 @@ void StatementTest::testUse () {
  *============================================================================*/
 void StatementTest::testUseOverKill () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -348,7 +356,7 @@ void StatementTest::testUseOverKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(2);
-	rs->addReturn(Location::regOf(24));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -357,7 +365,7 @@ void StatementTest::testUseOverKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -380,10 +388,11 @@ void StatementTest::testUseOverKill () {
  *============================================================================*/
 void StatementTest::testUseOverBB () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -414,7 +423,7 @@ void StatementTest::testUseOverBB () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(4);
-	rs->addReturn(Location::regOf(24));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -423,7 +432,7 @@ void StatementTest::testUseOverBB () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -447,10 +456,11 @@ void StatementTest::testUseOverBB () {
  *============================================================================*/
 void StatementTest::testUseKill () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -475,7 +485,7 @@ void StatementTest::testUseKill () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(3);
-	rs->addReturn(Location::regOf(24));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -484,7 +494,7 @@ void StatementTest::testUseKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -507,10 +517,11 @@ void StatementTest::testUseKill () {
  *============================================================================*/
 void StatementTest::testEndlessLoop () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc* proc = (UserProc*) prog->newProc("test", 0x123);
@@ -542,7 +553,7 @@ void StatementTest::testEndlessLoop () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile();
+	proc->decompile(new CycleList);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -579,7 +590,8 @@ void StatementTest::testLocationSet () {
 	ls.insert(rof.clone());							// ls has r8 r12 r24 r31
 	theReg.setInt(12);
 	ls.insert(rof.clone());							// Note: r12 already inserted
-	CPPUNIT_ASSERT_EQUAL(4, ls.size());
+	int size = (int)ls.size();
+	CPPUNIT_ASSERT_EQUAL(4, size);
 	theReg.setInt(8);
 	ii = ls.begin();
 	CPPUNIT_ASSERT(rof == **ii);					// First element should be r8
@@ -596,13 +608,15 @@ void StatementTest::testLocationSet () {
 			new Const(4)), NULL);					// m[r14 + 4]
 	ls.insert(mof.clone());							// ls should be m[r14 + 4] r8 r12 r24 r31
 	ls.insert(mof.clone());
-	CPPUNIT_ASSERT_EQUAL(5, ls.size());				// Should have 5 elements
+	size = (int)ls.size();
+	CPPUNIT_ASSERT_EQUAL(5, size);					// Should have 5 elements
 	ii = ls.begin();
 	CPPUNIT_ASSERT(mof == **ii);					// First element should be m[r14 + 4] now
 	LocationSet ls2 = ls;
 	Exp* e2 = *ls2.begin();
-	CPPUNIT_ASSERT(e2 != *ls.begin());				// Must be cloned
-	CPPUNIT_ASSERT_EQUAL(5, ls2.size());
+	CPPUNIT_ASSERT(!(e2 == *ls.begin()));			// Must be cloned
+	size = (int)ls2.size();
+	CPPUNIT_ASSERT_EQUAL(5, size);
 	CPPUNIT_ASSERT(mof == **ls2.begin());			// First elements should compare equal
 	theReg.setInt(8);
 	e = *(++ls2.begin());							// Second element
@@ -617,7 +631,8 @@ void StatementTest::testLocationSet () {
 		Location::regOf(8),
 		&s20);
 	ls.insert(r1);					// ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
-	CPPUNIT_ASSERT_EQUAL(6, ls.size());
+	size = (int)ls.size();
+	CPPUNIT_ASSERT_EQUAL(6, size);
 	Exp* dummy;
 	CPPUNIT_ASSERT(!ls.findDifferentRef(r1, dummy));
 	CPPUNIT_ASSERT( ls.findDifferentRef(r2, dummy));
@@ -649,11 +664,11 @@ void StatementTest::testWildLocationSet () {
 	ls.insert(&r13_20);
 	ls.insert(&r13_0);
 	RefExp wildr12(rof12.clone(), (Statement*)-1);
-	CPPUNIT_ASSERT(ls.find(&wildr12));
+	CPPUNIT_ASSERT(ls.exists(&wildr12));
 	RefExp wildr13(rof13.clone(), (Statement*)-1);
-	CPPUNIT_ASSERT(ls.find(&wildr13));
+	CPPUNIT_ASSERT(ls.exists(&wildr13));
 	RefExp wildr10(Location::regOf(10), (Statement*)-1);
-	CPPUNIT_ASSERT(!ls.find(&wildr10));
+	CPPUNIT_ASSERT(!ls.exists(&wildr10));
 	// Test findDifferentRef
 	Exp* x;
 	CPPUNIT_ASSERT( ls.findDifferentRef(&r13_10, x));
@@ -677,10 +692,11 @@ void StatementTest::testWildLocationSet () {
  *============================================================================*/
 void StatementTest::testRecursion () {
 	// create Prog
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	// create UserProc
 	std::string name = "test";
 	UserProc *proc = new UserProc(prog, name, 0);
@@ -968,21 +984,22 @@ void StatementTest::testAddUsedLocs () {
 	actual = ost4.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	
-	// CallStatement with pDest = m[r26], params = m[r27], r28{55},
-	//	 implicit params m[r29], r30, returns r31, m[r24]
+	// CallStatement with pDest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
 	l.clear();
 	CallStatement* ca = new CallStatement;
 	ca->setDest(Location::memOf(Location::regOf(26)));
-	std::vector<Exp*> argl;
-	argl.push_back(Location::memOf(Location::regOf(27)));
-	argl.push_back(new RefExp(Location::regOf(28), g));
+	StatementList argl;
+	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
+	argl.append(new Assign(new RefExp(Location::regOf(28), g), new Const(2)));
 	ca->setArguments(argl);
+#if 0
 	argl.clear();
-	argl.push_back(Location::memOf(Location::regOf(29)));
-	argl.push_back(Location::regOf(30));
+	argl.append(new Assign(Location::memOf(Location::regOf(29)), new Const(1)));
+	argl.append(new Assign(Location::regOf(30), new Const(2)));
 	ca->setImpArguments(argl);
-	ca->addReturn(Location::regOf(31));
-	ca->addReturn(Location::memOf(Location::regOf(24)));
+#endif
+	ca->addDefine(new ImplicitAssign(Location::regOf(31)));
+	ca->addDefine(new ImplicitAssign(Location::regOf(24)));
 	ca->addUsedLocs(l);
 	std::ostringstream ost5;
 	l.print(ost5);
@@ -1003,13 +1020,14 @@ void StatementTest::testAddUsedLocs () {
 	// ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
 	l.clear();
 	ReturnStatement* r = new ReturnStatement;
-	r->setDest(Location::memOf(Location::regOf(26)));
-	r->addReturn(Location::regOf(31));
-	r->addReturn(Location::memOf(Location::regOf(24)));
-	r->addReturn(Location::memOf(
-		new Binary(opPlus,
-			new RefExp(Location::regOf(25), g),
-			new RefExp(Location::regOf(26), b))));
+	r->addReturn(new Assign(Location::regOf(31), new Const(100)));
+	r->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	r->addReturn(new Assign(
+		Location::memOf(
+			new Binary(opPlus,
+				new RefExp(Location::regOf(25), g),
+				new RefExp(Location::regOf(26), b))),
+		new Const(5)));
 	r->addUsedLocs(l);
 	std::ostringstream ost6;
 	l.print(ost6);
@@ -1155,20 +1173,21 @@ void StatementTest::testSubscriptVars () {
 	actual = ost4a.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 	
-	// CallStatement with pDest = m[r26], params = m[r27], r28,
-	//	 implicit params m[r29], r30, returns r28, m[r28]
+	// CallStatement with pDest = m[r26], params = m[r27], r28, defines r28, m[r28]
 	CallStatement* ca = new CallStatement;
 	ca->setDest(Location::memOf(Location::regOf(26)));
-	std::vector<Exp*> argl;
-	argl.push_back(Location::memOf(Location::regOf(27)));
-	argl.push_back(Location::regOf(28));
+	StatementList argl;
+	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
+	argl.append(new Assign(Location::regOf(28), new Const(2)));
 	ca->setArguments(argl);
+#if 0
 	argl.clear();
 	argl.push_back(Location::memOf(Location::regOf(29)));
 	argl.push_back(Location::regOf(30));
 	ca->setImpArguments(argl);
-	ca->addReturn(Location::regOf(28));
-	ca->addReturn(Location::memOf(Location::regOf(28)));
+#endif
+	ca->addDefine(new ImplicitAssign(Location::regOf(28)));
+	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(28))));
 	std::ostringstream ost5;
 	ca->subscriptVar(srch, &s9);
 	ost5 << ca;
@@ -1177,20 +1196,21 @@ void StatementTest::testSubscriptVars () {
 	actual = ost5.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-	// CallStatement with pDest = r28, params = m[r27], r29,
-	//	 implicit params m[r29], r28, returns r31, m[r31]
+	// CallStatement with pDest = r28, params = m[r27], r29, defines r31, m[r31]
 	ca = new CallStatement;
 	ca->setDest(Location::regOf(28));
 	argl.clear();
-	argl.push_back(Location::memOf(Location::regOf(27)));
-	argl.push_back(Location::regOf(29));
+	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
+	argl.append(new Assign(Location::regOf(29), new Const(2)));
 	ca->setArguments(argl);
+#if 0
 	argl.clear();
 	argl.push_back(Location::memOf(Location::regOf(29)));
 	argl.push_back(Location::regOf(28));
 	ca->setImpArguments(argl);
-	ca->addReturn(Location::regOf(31));
-	ca->addReturn(Location::memOf(Location::regOf(31)));
+#endif
+	ca->addDefine(new ImplicitAssign(Location::regOf(31)));
+	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(31))));
 	std::ostringstream ost5a;
 	ca->subscriptVar(srch, &s9);
 	ost5a << ca;
@@ -1201,16 +1221,16 @@ void StatementTest::testSubscriptVars () {
 
 
 	// ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
-	// The {55} one is a bit dodgy to me, but that's how the old subscriptVar
-	// code worked
+	// The {55} one is a bit dodgy to me, but that's how the old subscriptVar code worked
 	ReturnStatement* r = new ReturnStatement;
-	r->setDest(Location::memOf(Location::regOf(28)));	// Not used?
-	r->addReturn(Location::regOf(28));
-	r->addReturn(Location::memOf(Location::regOf(28)));
-	r->addReturn(Location::memOf(
-		new Binary(opPlus,
-			new RefExp(Location::regOf(28), g),
-			new RefExp(Location::regOf(26), b))));
+	r->addReturn(new Assign(Location::regOf(28), new Const(1000)));
+	r->addReturn(new Assign(Location::memOf(Location::regOf(28)), new Const(2000)));
+	r->addReturn(new Assign(
+		Location::memOf(
+			new Binary(opPlus,
+				new RefExp(Location::regOf(28), g),
+				new RefExp(Location::regOf(26), b))),
+			new Const(100)));
 	std::ostringstream ost6;
 	r->subscriptVar(srch, &s9);
 	ost6 << r;
@@ -1239,10 +1259,11 @@ void StatementTest::testSubscriptVars () {
  *					  return locations from calls
  *============================================================================*/
 void StatementTest::testCallRefsFixer () {
+	Prog* prog = new Prog;
 	BinaryFile *pBF = BinaryFileFactory::Load(FIB_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
@@ -1255,12 +1276,12 @@ void StatementTest::testCallRefsFixer () {
 	// Initialise statements
 	proc->initStatements();
 	// Compute dominance frontier
-	cfg->dominators();
+	proc->getDataFlow()->dominators(cfg);
 	// Number the statements
 	int stmtNumber = 0;
 	proc->numberStatements(stmtNumber);
-	cfg->renameBlockVars(0, 0);		 // Block 0, mem depth 0
-	cfg->renameBlockVars(0, 1);		 // Block 0, mem depth 1
+	proc->getDataFlow()->renameBlockVars(proc, 0, 0);		 // Block 0, mem depth 0
+	proc->getDataFlow()->renameBlockVars(proc, 0, 1);		 // Block 0, mem depth 1
 	// Find various needed statements
 	StatementList stmts;
 	proc->getStatements(stmts);
@@ -1282,7 +1303,7 @@ void StatementTest::testCallRefsFixer () {
 	// Fake it to be known that r29 is preserved
 	Exp* r29 = Location::regOf(29);
 	proc->setProven(new Binary(opEquals, r29, r29->clone()));
-	(*it)->fixCallRefs();
+	(*it)->bypassAndPropagate();
 	// Now expect r29{30} to be r29{3}
 	expected = "  22 *32* r24 := m[r29{3} + 8]{-}";
 	std::ostringstream ost2;

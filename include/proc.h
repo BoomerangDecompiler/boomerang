@@ -423,9 +423,14 @@ virtual				~UserProc();
 		void		unDecode();
 
 		/*
-		 * Returns a pointer to the CFG.
+		 * Returns a pointer to the CFG object.
 		 */
 		Cfg*		getCFG() { return cfg; }
+
+		/*
+		 * Returns a pointer to the DataFlow object.
+		 */
+		DataFlow*	getDataFlow() {return &df;}
 
 		/*
 		 * Deletes the whole CFG and all the RTLs and Exps associated with it. Also nulls the internal cfg

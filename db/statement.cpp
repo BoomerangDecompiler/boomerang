@@ -4773,3 +4773,6 @@ void ReturnStatement::removeModified(Exp* loc) {
 	returns.removeDefOf(loc);
 }
 
+void CallStatement::addDefine(ImplicitAssign* as) {
+	defines.append(as);
+}

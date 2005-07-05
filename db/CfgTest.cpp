@@ -9,6 +9,10 @@
  * 17 Jul 03 - Mike: Created
  */
 
+#define FRONTIER_PENTIUM		"test/pentium/frontier"
+#define SEMI_PENTIUM			"test/pentium/semi"
+#define IFTHEN_PENTIUM			"test/pentium/ifthen"
+
 #include "CfgTest.h"
 #include <sstream>
 #include <string>
@@ -17,6 +21,7 @@
 #include "proc.h"
 #include "prog.h"
 #include "dataflow.h"
+#include "pentiumfrontend.h"
 
 /*==============================================================================
  * FUNCTION:		CfgTest::registerTests
@@ -24,9 +29,7 @@
  * PARAMETERS:		Pointer to the test suite
  * RETURNS:			<nothing>
  *============================================================================*/
-#define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<CfgTest> ("CfgTest", \
-	&CfgTest::name, *this))
+#define MYTEST(name) suite->addTest(new CppUnit::TestCaller<CfgTest> ("CfgTest", &CfgTest::name, *this))
 
 void CfgTest::registerTests(CppUnit::TestSuite* suite) {
 	// Oops - they were all for dataflow. Need some real Cfg tests!
@@ -68,9 +71,10 @@ void CfgTest::tearDown () {
 void CfgTest::testDominators () {
 	BinaryFile *pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	bool gotMain;
@@ -79,8 +83,8 @@ void CfgTest::testDominators () {
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
-
-	cfg->dominators();
+	DataFlow* df = pProc->getDataFlow();
+	df->dominators(cfg);
 
 	// Find BB "5" (as per Appel, Figure 19.5).
 	BB_IT it;
@@ -95,11 +99,11 @@ void CfgTest::testDominators () {
   //	  FRONTIER_TWELVE << " " << FRONTIER_FOUR << " ";
 	expected << std::hex << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " <<
 		FRONTIER_TWELVE << " " << FRONTIER_FIVE << " ";
-	int n5 = cfg->pbbToNode(bb);
+	int n5 = df->pbbToNode(bb);
 	std::set<int>::iterator ii;
-	std::set<int>& DFset = cfg->getDF(n5);
+	std::set<int>& DFset = df->getDF(n5);
 	for (ii=DFset.begin(); ii != DFset.end(); ii++)
-		actual << std::hex << (unsigned)cfg->nodeToBB(*ii)->getLowAddr() << " ";
+		actual << std::hex << (unsigned)df->nodeToBB(*ii)->getLowAddr() << " ";
 	CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
 
 	pBF->UnLoad();
@@ -120,9 +124,10 @@ void CfgTest::testDominators () {
 void CfgTest::testSemiDominators () {
 	BinaryFile* pBF = BinaryFileFactory::Load(SEMI_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd* pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	bool gotMain;
@@ -132,7 +137,8 @@ void CfgTest::testSemiDominators () {
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
 
-	cfg->dominators();
+	DataFlow* df = pProc->getDataFlow();
+	df->dominators(cfg);
 
 	// Find BB "L (6)" (as per Appel, Figure 19.8).
 	BB_IT it;
@@ -141,12 +147,12 @@ void CfgTest::testSemiDominators () {
 		bb = cfg->getNextBB(it);
 	}
 	CPPUNIT_ASSERT(bb);
-	int nL = cfg->pbbToNode(bb);
+	int nL = df->pbbToNode(bb);
 
 	// The dominator for L should be B, where the semi dominator is D
 	// (book says F)
-	unsigned actual_dom	 = (unsigned)cfg->nodeToBB(cfg->getIdom(nL))->getLowAddr();
-	unsigned actual_semi = (unsigned)cfg->nodeToBB(cfg->getSemi(nL))->getLowAddr();
+	unsigned actual_dom	 = (unsigned)df->nodeToBB(df->getIdom(nL))->getLowAddr();
+	unsigned actual_semi = (unsigned)df->nodeToBB(df->getSemi(nL))->getLowAddr();
 	CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_B, actual_dom);
 	CPPUNIT_ASSERT_EQUAL((unsigned)SEMI_D, actual_semi);
 	// Check the final dominator frontier as well; should be M and B
@@ -154,9 +160,9 @@ void CfgTest::testSemiDominators () {
   //expected << std::hex << SEMI_M << " " << SEMI_B << " ";
 	expected << std::hex << SEMI_B << " " << SEMI_M << " ";
 	std::set<int>::iterator ii;
-	std::set<int>& DFset = cfg->getDF(nL);
+	std::set<int>& DFset = df->getDF(nL);
 	for (ii=DFset.begin(); ii != DFset.end(); ii++)
-		actual << std::hex << (unsigned)cfg->nodeToBB(*ii)->getLowAddr() << " ";
+		actual << std::hex << (unsigned)df->nodeToBB(*ii)->getLowAddr() << " ";
 	CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
 }
 
@@ -167,9 +173,10 @@ void CfgTest::testSemiDominators () {
 void CfgTest::testPlacePhi () {
 	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd* pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
@@ -178,8 +185,9 @@ void CfgTest::testPlacePhi () {
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
 	prog->finishDecode();
 
-	cfg->dominators();
-	cfg->placePhiFunctions(1, pProc);
+	DataFlow* df = pProc->getDataFlow();
+	df->dominators(cfg);
+	df->placePhiFunctions(1, pProc);
 
 	// m[r29 - 8] (x for this program)
 	Exp* e = new Unary(opMemOf,
@@ -190,7 +198,7 @@ void CfgTest::testPlacePhi () {
 	// A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
 	std::ostringstream ost;
 	std::set<int>::iterator ii;
-	std::set<int>& A_phi = cfg->getA_phi(e);
+	std::set<int>& A_phi = df->getA_phi(e);
 	for (ii = A_phi.begin(); ii != A_phi.end(); ++ii)
 		ost << *ii << " ";
 	std::string expected("7 8 10 15 20 21 ");
@@ -204,19 +212,21 @@ void CfgTest::testPlacePhi () {
 void CfgTest::testPlacePhi2 () {
 	BinaryFile* pBF = BinaryFileFactory::Load(IFTHEN_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd* pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
+	DataFlow* df = pProc->getDataFlow();
 
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
 	prog->finishDecode();
 
-	cfg->dominators();
-	cfg->placePhiFunctions(1, pProc);
+	df->dominators(cfg);
+	df->placePhiFunctions(1, pProc);
 
 	// In this program, x is allocated at [ebp-4], a at [ebp-8], and
 	// b at [ebp-12]
@@ -231,7 +241,7 @@ void CfgTest::testPlacePhi2 () {
 		new Binary(opMinus,
 			Location::regOf(29),
 			new Const(8)));
-	std::set<int>& s = cfg->getA_phi(e);
+	std::set<int>& s = df->getA_phi(e);
 	std::set<int>::iterator pp;
 	for (pp = s.begin(); pp != s.end(); pp++)
 		actual << *pp << " ";
@@ -246,7 +256,7 @@ void CfgTest::testPlacePhi2 () {
 			Location::regOf(29),
 			new Const(12)));
  
-	std::set<int>& s2 = cfg->getA_phi(e);
+	std::set<int>& s2 = df->getA_phi(e);
 	for (pp = s2.begin(); pp != s2.end(); pp++)
 		actual2 << *pp << " ";
 	CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
@@ -260,22 +270,24 @@ void CfgTest::testPlacePhi2 () {
 void CfgTest::testRenameVars () {
 	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd* pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog;
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	UserProc* pProc = (UserProc*) prog->getProc(0);
 	Cfg* cfg = pProc->getCFG();
+	DataFlow* df = pProc->getDataFlow();
 
 	// Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
 	prog->finishDecode();
 
-	cfg->dominators();
-	cfg->placePhiFunctions(1, pProc);
+	df->dominators(cfg);
+	df->placePhiFunctions(1, pProc);
 	int stmtNumber = 0;
 	pProc->numberStatements(stmtNumber);// After placing phi functions!
-	cfg->renameBlockVars(0, 1);		 // Block 0, mem depth 1
+	df->renameBlockVars(pProc, 0, 1);		 // Block 0, mem depth 1
 
 	// MIKE: something missing here?
 }

@@ -15,6 +15,7 @@
  */
 
 #include "ExpTest.h"
+#include "statement.h"
 #include <map>
 #include <sstream>		// Gcc >= 3.0 needed
 

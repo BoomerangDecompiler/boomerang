@@ -62,9 +62,10 @@ void ProgTest::tearDown () {
  *============================================================================*/
 void ProgTest::testName () {
 	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF);
+	Prog* prog = new Prog();
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
-	Prog* prog = new Prog(pBF, pFE);
+	prog->setFrontEnd(pFE);
 	std::string actual(prog->getName());
 	std::string expected(HELLO_PENTIUM);
 	CPPUNIT_ASSERT_EQUAL(expected, actual);

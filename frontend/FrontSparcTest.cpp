@@ -78,7 +78,7 @@ void FrontSparcTest::test1 () {
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
+	FrontEnd *pFE = new SparcFrontEnd(pBF, new Prog);
 
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
@@ -145,7 +145,7 @@ void FrontSparcTest::test2() {
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
+	FrontEnd *pFE = new SparcFrontEnd(pBF, new Prog);
 
 	std::ostringstream o1;
 	inst = pFE->decodeInstruction(0x10690);
@@ -187,7 +187,7 @@ void FrontSparcTest::test3() {
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
+	FrontEnd *pFE = new SparcFrontEnd(pBF, new Prog);
 
 	std::ostringstream o1;
 	inst = pFE->decodeInstruction(0x106a0);
@@ -247,7 +247,7 @@ void FrontSparcTest::testBranch() {
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
+	FrontEnd *pFE = new SparcFrontEnd(pBF, new Prog);
 
 	// bne
 	std::ostringstream o1;
@@ -287,11 +287,11 @@ void FrontSparcTest::testDelaySlot() {
 		pBF = new BinaryFileStub();	   // fallback on stub
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
-	FrontEnd *pFE = new SparcFrontEnd(pBF);
-	// decode calls readLibraryCatalog(), which needs to have definitions
-	// for non-sparc architectures cleared
+	Prog* prog = new Prog;
+	FrontEnd *pFE = new SparcFrontEnd(pBF, prog);
+	// decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
 	Type::clearNamedTypes();
-	Prog *prog = new Prog(pFE->getBinaryFile(), pFE);
+	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
 
 	bool gotMain;

@@ -66,9 +66,9 @@ void CTest::testSignature () {
     CPPUNIT_ASSERT_EQUAL(std::string("printf"), std::string(sig->getName()));
     CPPUNIT_ASSERT(*sig->getReturnType(0) == IntegerType());
     Type *t = new PointerType(new CharType());
-    // Pentium signatures used to have esp prepended to the list of parameters;
-    // no more?
-    CPPUNIT_ASSERT_EQUAL(1, sig->getNumParams());
+    // Pentium signatures used to have esp prepended to the list of parameters; no more?
+	int num = sig->getNumParams();
+    CPPUNIT_ASSERT_EQUAL(1, num);
     CPPUNIT_ASSERT(*sig->getParamType(0) == *t);
     CPPUNIT_ASSERT_EQUAL(std::string("fmt"), std::string(sig->getParamName(0)));
     CPPUNIT_ASSERT(sig->hasEllipsis());
