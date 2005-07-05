@@ -1682,7 +1682,7 @@ Proc* CallStatement::getDestProc() {
 
 void CallStatement::setDestProc(Proc* dest) { 
 	assert(dest);
-	assert(procDest == NULL);
+	// assert(procDest == NULL);		// No: not convenient for unit testing
 	procDest = dest;
 }
 

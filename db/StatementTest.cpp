@@ -169,7 +169,7 @@ void StatementTest::testFlow () {
 	rtl = new RTL(0x123);
 	ReturnStatement* rs = new ReturnStatement;
 	rs->setNumber(2);
-	rs->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	rs->addReturn(new Assign(Location::regOf(24), new Const(5)));
 	rtl->appendStmt(rs);
 	pRtls->push_back(rtl);
 	PBB ret = cfg->newBB(pRtls, RET, 0);
@@ -191,7 +191,10 @@ void StatementTest::testFlow () {
 		"Fall BB:\n"
 		"00000000\n"
 		"Ret BB:\n"
-		"00000123    2 RET 5\n\n";
+		"00000123    2 RET *v* r24 := 5\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=5\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -248,10 +251,13 @@ void StatementTest::testKill () {
 	// compare it to expected
 	std::string expected;
 	expected =
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000123    3 RET 6\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000123    3 RET *v* r24 := 0\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=6\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -308,10 +314,13 @@ void StatementTest::testUse () {
 	// compare it to expected
 	std::string expected;
 	expected =
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000123    3 RET 5\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000123    3 RET *v* r28 := 1000\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=5,   r28=5\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -373,10 +382,13 @@ void StatementTest::testUseOverKill () {
 	// compare it to expected
 	std::string expected;
 	expected = 
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000123    4 RET 6\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000123    4 RET *v* r24 := 0\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=6,   r28=6\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -440,11 +452,14 @@ void StatementTest::testUseOverBB () {
 	// compare it to expected
 	std::string expected;
 	expected =
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000000\n"
-	  "00000123    4 RET 6\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000000\n"
+		"00000123    4 RET *v* r24 := 0\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=6,   r28=6\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -502,10 +517,13 @@ void StatementTest::testUseKill () {
 	// compare it to expected
 	std::string expected;
 	expected  = 
-	  "Fall BB:\n"
-	  "00000000\n"
-	  "Ret BB:\n"
-	  "00000123    3 RET 6\n\n";
+		"Fall BB:\n"
+		"00000000\n"
+		"Ret BB:\n"
+		"00000123    3 RET *v* r24 := 0\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: r24=6\n\n";
+
 	CPPUNIT_ASSERT_EQUAL(expected, s);
 	// clean up
 	delete prog;
@@ -933,7 +951,7 @@ void StatementTest::testAddUsedLocs () {
 	a->addUsedLocs(l);
 	std::ostringstream ost1;
 	l.print(ost1);
-	std::string expected = "m[r28 - 8],\tr26,\tr28\n";
+	std::string expected = "r26,\tr28,\tm[r28 - 8]";
 	std::string actual = ost1.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -944,7 +962,7 @@ void StatementTest::testAddUsedLocs () {
 	g->addUsedLocs(l);
 	std::ostringstream ost2;
 	l.print(ost2);
-	expected = "m[r26],\tr26\n";
+	expected = "r26,\tm[r26]";
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -963,7 +981,7 @@ void StatementTest::testAddUsedLocs () {
 	b->addUsedLocs(l);
 	std::ostringstream ost3;
 	l.print(ost3);
-	expected = "m[r26{99}]{55},\tr26{99},\t%flags\n";
+	expected = "r26{99},\tm[r26{99}]{55},\t%flags";
 	actual = ost3.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1192,7 +1210,12 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5 << ca;
 	expected =
-	"   0 CALL m[r26](m[r27], r28{9} implicit: m[r29], r30) { r28, m[r28{9}] }";
+		"   0 {*0* r28, *0* m[r28]} := CALL m[r26](\n"
+		"                *v* m[r27] := 1\n"
+		"                *v* r28 := 2\n"
+		"              )\n"
+		"              Reaching definitions: \n"
+		"              Live variables: ";		// ? No newline?
 	actual = ost5.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1215,7 +1238,12 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5a << ca;
 	expected =
-	"   0 CALL r28{9}(m[r27], r29 implicit: m[r29], r28{9}) { r31, m[r31] }";
+		"   0 {*0* r31, *0* m[r31]} := CALL r28{9}(\n"
+		"                *v* m[r27] := 1\n"
+		"                *v* r29 := 2\n"
+		"              )\n"
+		"              Reaching definitions: \n"
+		"              Live variables: ";
 	actual = ost5a.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 

@@ -117,7 +117,7 @@ void ExpTest::test99 () {
 	std::ostringstream ost;
 	Const *c = new Const(3.14);
 	c->print(ost);
-	CPPUNIT_ASSERT_EQUAL (std::string("3.14"), std::string(ost.str()));
+	CPPUNIT_ASSERT_EQUAL (std::string("3.1400"), std::string(ost.str()));
 	delete c;
 }
 
@@ -794,10 +794,10 @@ void ExpTest::testSimpConstr() {
 			new TypeVal(new PointerType(new CharType())),
 			new TypeVal(new PointerType(new CharType()))),
 		new Binary(opEquals,
-			new Unary(opTypeOf, new Const(123456)),
+			new Unary(opTypeOf, new Const(0x123456)),
 			new TypeVal(new PointerType(new CharType()))));
 	e = e->simplifyConstraint();
-	expected = "T[123456] = <char *>";
+	expected = "T[0x123456] = <char *>";
 	std::ostringstream ost2;
 	e->print(ost2);
 	actual = ost2.str();
@@ -1242,7 +1242,7 @@ void ExpTest::testAddUsedLocs() {
 	// Simple terminal: %pc
 	e = new Terminal(opPC);
 	e->addUsedLocs(l);
-	std::string expected = "%pc\n";
+	std::string expected = "%pc";
 	std::ostringstream ost1;
 	l.print(ost1);
 	std::string actual = ost1.str();
@@ -1252,7 +1252,7 @@ void ExpTest::testAddUsedLocs() {
 	l.clear();
 	e = Location::regOf(28);
 	e->addUsedLocs(l);
-	expected = "r28\n";
+	expected = "r28";
 	std::ostringstream ost2;
 	l.print(ost2);
 	actual = ost2.str();
@@ -1265,7 +1265,7 @@ void ExpTest::testAddUsedLocs() {
 			Location::regOf(28),
 			new Const(4)));
 	e->addUsedLocs(l);
-	expected = "m[r28 - 4],\tr28\n";
+	expected = "r28,\tm[r28 - 4]";
 	std::ostringstream ost3;
 	l.print(ost3);
 	actual = ost3.str();
@@ -1275,7 +1275,7 @@ void ExpTest::testAddUsedLocs() {
 	l.clear();
 	e = new Unary(opAddrOf, e);
 	e->addUsedLocs(l);
-	expected = "m[r28 - 4],\tr28\n";
+	expected = "r28,\tm[r28 - 4]";
 	std::ostringstream ost4;
 	l.print(ost4);
 	actual = ost4.str();
@@ -1287,7 +1287,7 @@ void ExpTest::testAddUsedLocs() {
 		Location::regOf(24),
 		Location::regOf(25));
 	e->addUsedLocs(l);
-	expected = "r24,\tr25\n";
+	expected = "r24,\tr25";
 	std::ostringstream ost5;
 	l.print(ost5);
 	actual = ost5.str();
@@ -1300,7 +1300,7 @@ void ExpTest::testAddUsedLocs() {
 		Location::regOf(25),
 		Location::regOf(26));
 	e->addUsedLocs(l);
-	expected = "r24,\tr25,\tr26\n";
+	expected = "r24,\tr25,\tr26";
 	std::ostringstream ost6;
 	l.print(ost6);
 	actual = ost6.str();
@@ -1312,7 +1312,7 @@ void ExpTest::testAddUsedLocs() {
 	a.setNumber(2);
 	e = new RefExp(Location::regOf(28), &a);
 	e->addUsedLocs(l);
-	expected = "r28{2}\n";
+	expected = "r28{2}";
 	std::ostringstream ost7;
 	l.print(ost7);
 	actual = ost7.str();
@@ -1328,7 +1328,7 @@ void ExpTest::testAddUsedLocs() {
 					Location::regOf(28), &a),
 				new Const(4))), &t);
 	e->addUsedLocs(l);
-	expected = "m[r28{2} - 4]{3},\tr28{2}\n";
+	expected = "r28{2},\tm[r28{2} - 4]{3}";
 	std::ostringstream ost8;
 	l.print(ost8);
 	actual = ost8.str();

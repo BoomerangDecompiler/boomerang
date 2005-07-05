@@ -296,7 +296,13 @@ void RtlTest::testSetConscripts() {
 	rtl->setConscripts(0, false);
 	std::string expected(
 		"00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
-		"            0 CALL printf(\"max is %d\"\\4\\, (local0 > 0\\5\\) ? local0 : global1 implicit: )\n");
+		"            0 CALL printf(\n"
+		"                *v* r8 := \"max is %d\"\\4\\\n"
+		"                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
+		"              )\n"
+		"              Reaching definitions: \n"
+		"              Live variables: \n");
+
 	std::ostringstream ost;
 	rtl->print(ost);
 	std::string actual = ost.str();
