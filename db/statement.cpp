@@ -934,12 +934,21 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			case BRANCH_JUGE:  op = opGtrEqUns; break;
 			case BRANCH_JUG:   op = opGtrUns; break;
 			case BRANCH_JMI:
-				pCond = new Binary(opLess,
+				/*	 pCond
+					 /	  \
+				Const	   opList
+				"SUBFLAGS"	/	\
+						   P1	opList
+								 /	 \
+								P2	opList
+									 /	 \
+									P3	 opNil */
+				pCond = new Binary(opLess,			// P3 < 0
 					pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
 					new Const(0));
 				break;
 			case BRANCH_JPOS:
-				pCond = new Binary(opGtrEq,
+				pCond = new Binary(opGtrEq,			// P3 >= 0
 					pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(),
 					new Const(0));
 				break;
@@ -950,8 +959,8 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 		}
 		if (op != opWild) {
 			pCond = new Binary(op,
-				pCond->getSubExp2()->getSubExp1()->clone(),
-				pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());
+				pCond->getSubExp2()->getSubExp1()->clone(),					// P1
+				pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());	// P2
 		}
 	}
 	else if (condOp == opFlagCall && !strncmp(((Const*)pCond->getSubExp1())->getStr(), "LOGICALFLAGS", 12)) {
@@ -962,13 +971,19 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			case BRANCH_JNE:  op = opNotEqual; break;
 			case BRANCH_JMI:  op = opLess; break;
 			case BRANCH_JPOS: op = opGtrEq; break;
+			// FIXME: This next set is quite shakey. Really, we should put all the individual flag definitions out of
+			// the flag definitions, and substitute these into the equivalent conditions for the branches (a big, ugly
+			// job).
 			case BRANCH_JSL:  op = opLess; break;
 			case BRANCH_JSLE: op = opLessEq; break;
 			case BRANCH_JSGE: op = opGtrEq; break;
 			case BRANCH_JSG:  op = opGtr; break;
-			case BRANCH_JUL:  op = opLessUns; break;
+			// These next few seem to fluke working fine on architectures like X86, SPARC, and 68K which clear the
+			// carry on all logical operations.
+			case BRANCH_JUL:  op = opLessUns; break;	// NOTE: this is equivalent to never branching, since nothing
+														// can be unsigned less than zero
 			case BRANCH_JULE: op = opLessEqUns; break;
-			case BRANCH_JUGE: op = opGtrEqUns; break;
+			case BRANCH_JUGE: op = opGtrEqUns; break;	// Similarly, this is equivalent to always branching
 			case BRANCH_JUG:  op = opGtrUns; break;
 			default:
 				break;
@@ -1001,11 +1016,9 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 					->clone());
 		}
 	}
-	// ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else
-	// Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST
-	// where MASK could be a combination of 1, 4, and 40, and
-	// relop could be == or ~=
-	// There could also be an XOR 40h after the AND
+	// ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else.
+	// Might be of the form (SETFFLAGS(...) & MASK) RELOP INTCONST where MASK could be a combination of 1, 4, and 40,
+	// and relop could be == or ~=.  There could also be an XOR 40h after the AND
 	// %fflags = 0..0.0 00 >
 	// %fflags = 0..0.1 01 <
 	// %fflags = 1..0.0 40 =
@@ -1033,8 +1046,7 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 			int k = ((Const*)right)->getInt();
 			// Only interested in 40, 1
 			k &= 0x41;
-			if (left1->getOper() == opFlagCall &&
-				  left2->isIntConst()) {
+			if (left1->getOper() == opFlagCall && left2->isIntConst()) {
 				int mask = ((Const*)left2)->getInt();
 				// Only interested in 1, 40
 				mask &= 0x41;
@@ -1073,14 +1085,12 @@ bool condToRelational(Exp*& pCond, BRANCH_TYPE jtCond) {
 									else op = opNotEqual;
 									break;
 								default:
-									std::cerr << "BranchStatement::simplify: "
-										"k is " << std::hex << k << "\n";
+									std::cerr << "BranchStatement::simplify: k is " << std::hex << k << "\n";
 									assert(0);
 							}
 							break;
 						default:
-							std::cerr << "BranchStatement::simplify: Mask is "
-								<< std::hex << mask << "\n";
+							std::cerr << "BranchStatement::simplify: Mask is " << std::hex << mask << "\n";
 							assert(0);
 					}
 				}
@@ -1121,8 +1131,7 @@ CaseStatement::CaseStatement() :
 /*==============================================================================
  * FUNCTION:		CaseStatement::~CaseStatement
  * OVERVIEW:		Destructor
- * NOTE:			Don't delete the pSwitchVar; it's always a copy of something
- *					else (so don't delete twice)
+ * NOTE:			Don't delete the pSwitchVar; it's always a copy of something else (so don't delete twice)
  * PARAMETERS:		None
  * RETURNS:			N/a
  *============================================================================*/
@@ -1162,8 +1171,7 @@ bool CaseStatement::searchAndReplace(Exp* search, Exp* replace) {
 	GotoStatement::searchAndReplace(search, replace);
 	bool ch = false;
 	if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-		pSwitchInfo->pSwitchVar =
-		  pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch);
+		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch);
 	return ch;
 }
 
@@ -1177,8 +1185,7 @@ bool CaseStatement::searchAndReplace(Exp* search, Exp* replace) {
  *============================================================================*/
 bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
 	return GotoStatement::searchAll(search, result) ||
-		( pSwitchInfo && pSwitchInfo->pSwitchVar &&
-		  pSwitchInfo->pSwitchVar->searchAll(search, result) );
+		( pSwitchInfo && pSwitchInfo->pSwitchVar && pSwitchInfo->pSwitchVar->searchAll(search, result) );
 }
 
 /*==============================================================================
@@ -1234,8 +1241,7 @@ bool CaseStatement::usesExp(Exp *e) {
 	// Before a switch statement is recognised, pDest is non null
 	if (pDest)
 		return *pDest == *e;
-	// After a switch statement is recognised, pDest is null, and pSwitchInfo->
-	// pSwitchVar takes over
+	// After a switch statement is recognised, pDest is null, and pSwitchInfo->pSwitchVar takes over
 	if (pSwitchInfo->pSwitchVar)
 		return *pSwitchInfo->pSwitchVar == *e;
 	return false;
@@ -1249,8 +1255,7 @@ bool CaseStatement::doReplaceRef(Exp* from, Exp* to) {
 		return false;
 	}
 	assert(pSwitchInfo && pSwitchInfo->pSwitchVar);
-	pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(
-	  from, to, change);
+	pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(from, to, change);
 	pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->simplify();
 	return false;
 }
@@ -1315,38 +1320,6 @@ int CallStatement::findDefine(Exp *e) {
 	}
 	return -1;
 }
-
-#if 0		// No, this will happen from the callee now
-void CallStatement::removeReturn(Exp *e) {
-	if (returns == NULL) return;
-	ReturnStatement::iterator it;
-	for (it = returns->begin(); it != returns->end(); it++) {
-		if ((*it)->getLeft() == e) {
-			returns->erase(it);
-			return;
-		}
-	}
-}
-
-void CallStatement::ignoreReturn(Exp *e)
-{
-	int i = findReturn(e);
-	if (i != -1) {
-		returns[i].e = NULL;
-	}
-}
-
-void CallStatement::ignoreReturn(int n)
-{
-	returns[n].e = NULL;
-}
-
-void CallStatement::addReturn(Assign* a) {
-std::cerr << "Call statement " << number << " having a return " << a << " added!\n";
-	if (returns == NULL) returns = new ReturnStatement;
-	returns->push_back(a);
-}
-#endif
 
 Exp *CallStatement::getProven(Exp *e) {
 	if (procDest)
