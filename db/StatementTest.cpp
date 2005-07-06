@@ -8,10 +8,11 @@
  *
  * 14 Jan 03 - Trent: Created
  * 17 Apr 03 - Mike: Added testRecursion to track down a nasty bug
+ * 06 Jul 05 - Mike: Split testAddUsedLocs into six separate tests for Assign ... Bool
  */
 
 #define HELLO_PENTIUM	   "test/pentium/hello"
-#define FIB_PENTIUM		   "test/pentium/fib"
+#define GLOBAL1_PENTIUM	   "test/pentium/global1"
 
 #include "StatementTest.h"
 #include "cfg.h"
@@ -21,6 +22,7 @@
 #include "exp.h"
 #include "managed.h"
 #include "log.h"
+#include "signature.h"
 
 #include <sstream>
 #include <map>
@@ -60,9 +62,14 @@ void StatementTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(testClone);
 	MYTEST(testIsAssign);
 	MYTEST(testIsFlagAssgn);
-	MYTEST(testAddUsedLocs);
+	MYTEST(testAddUsedLocsAssign);
+	MYTEST(testAddUsedLocsBranch);
+	MYTEST(testAddUsedLocsCase);
+	MYTEST(testAddUsedLocsCall);
+	MYTEST(testAddUsedLocsReturn);
+	MYTEST(testAddUsedLocsBool);
 	MYTEST(testSubscriptVars);
-	MYTEST(testCallRefsFixer);
+	MYTEST(testBypass);
 	MYTEST(testStripSizes);
 	MYTEST(testFindConstants);
 }
@@ -624,21 +631,22 @@ void StatementTest::testLocationSet () {
 		new Binary(opPlus,
 			Location::regOf(14),
 			new Const(4)), NULL);					// m[r14 + 4]
-	ls.insert(mof.clone());							// ls should be m[r14 + 4] r8 r12 r24 r31
+	ls.insert(mof.clone());							// ls should be r8 r12 r24 r31 m[r14 + 4]
 	ls.insert(mof.clone());
 	size = (int)ls.size();
 	CPPUNIT_ASSERT_EQUAL(5, size);					// Should have 5 elements
-	ii = ls.begin();
-	CPPUNIT_ASSERT(mof == **ii);					// First element should be m[r14 + 4] now
+	ii = --ls.end();
+	CPPUNIT_ASSERT(mof == **ii);					// Last element should be m[r14 + 4] now
 	LocationSet ls2 = ls;
 	Exp* e2 = *ls2.begin();
 	CPPUNIT_ASSERT(!(e2 == *ls.begin()));			// Must be cloned
 	size = (int)ls2.size();
 	CPPUNIT_ASSERT_EQUAL(5, size);
-	CPPUNIT_ASSERT(mof == **ls2.begin());			// First elements should compare equal
 	theReg.setInt(8);
+	CPPUNIT_ASSERT(rof == **ls2.begin());			// First elements should compare equal
+	theReg.setInt(12);
 	e = *(++ls2.begin());							// Second element
-	CPPUNIT_ASSERT(rof == *e);						// ... should be r8
+	CPPUNIT_ASSERT(rof == *e);						// ... should be r12
 	Assign s10(new Const(0), new Const(0)), s20(new Const(0), new Const(0));
 	s10.setNumber(10);
 	s20.setNumber(20);
@@ -930,10 +938,10 @@ void StatementTest::testIsFlagAssgn () {
 }
 
 /*==============================================================================
- * FUNCTION:		StatementTest::testAddUsedLocs
+ * FUNCTION:		StatementTest::testAddUsedLocsAssign .. testAddUsedLocsBool
  * OVERVIEW:		Test the finding of locations used by this statement
  *============================================================================*/
-void StatementTest::testAddUsedLocs () {
+void StatementTest::testAddUsedLocsAssign() {
 	// m[r28-4] := m[r28-8] * r26
 	Assign* a = new Assign(
 		Location::memOf(
@@ -965,9 +973,13 @@ void StatementTest::testAddUsedLocs () {
 	expected = "r26,\tm[r26]";
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
 
+void StatementTest::testAddUsedLocsBranch() {
 	// BranchStatement with dest m[r26{99}]{55}, condition %flags
-	l.clear();
+	GotoStatement* g = new GotoStatement();
+	g->setNumber(55);
+	LocationSet l;
 	BranchStatement* b = new BranchStatement;
 	b->setNumber(99);
 	b->setDest(
@@ -981,12 +993,14 @@ void StatementTest::testAddUsedLocs () {
 	b->addUsedLocs(l);
 	std::ostringstream ost3;
 	l.print(ost3);
-	expected = "r26{99},\tm[r26{99}]{55},\t%flags";
-	actual = ost3.str();
+	std::string expected("r26{99},\tm[r26{99}]{55},\t%flags");
+	std::string actual(ost3.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
 
+void StatementTest::testAddUsedLocsCase() {
 	// CaseStatement with pDest = m[r26], switchVar = m[r28 - 12]
-	l.clear();
+	LocationSet l;
 	CaseStatement* c = new CaseStatement;
 	c->setDest(Location::memOf(Location::regOf(26)));
 	SWITCH_INFO si;
@@ -998,48 +1012,53 @@ void StatementTest::testAddUsedLocs () {
 	c->addUsedLocs(l);
 	std::ostringstream ost4;
 	l.print(ost4);
-	expected = "m[r28 - 12],\tm[r26],\tr26,\tr28\n";
-	actual = ost4.str();
+	std::string expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
+	std::string actual(ost4.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
-	
+}
+
+void StatementTest::testAddUsedLocsCall() {
 	// CallStatement with pDest = m[r26], params = m[r27], r28{55}, defines r31, m[r24]
-	l.clear();
+	LocationSet l;
+	GotoStatement* g = new GotoStatement();
+	g->setNumber(55);
 	CallStatement* ca = new CallStatement;
 	ca->setDest(Location::memOf(Location::regOf(26)));
 	StatementList argl;
-	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
-	argl.append(new Assign(new RefExp(Location::regOf(28), g), new Const(2)));
+	argl.append(new Assign(Location::regOf(8), Location::memOf(Location::regOf(27))));
+	argl.append(new Assign(Location::regOf(9), new RefExp(Location::regOf(28), g)));
 	ca->setArguments(argl);
-#if 0
-	argl.clear();
-	argl.append(new Assign(Location::memOf(Location::regOf(29)), new Const(1)));
-	argl.append(new Assign(Location::regOf(30), new Const(2)));
-	ca->setImpArguments(argl);
-#endif
 	ca->addDefine(new ImplicitAssign(Location::regOf(31)));
 	ca->addDefine(new ImplicitAssign(Location::regOf(24)));
 	ca->addUsedLocs(l);
 	std::ostringstream ost5;
 	l.print(ost5);
-	expected =
-	  "m[r26],\tm[r27],\tm[r29],\tr24,\tr26,\tr27,\tr29,\tr30,\tr28{55}\n";
-	actual = ost5.str();
+	std::string expected("r26,\tr27,\tm[r26],\tm[r27],\tr28{55}");
+	std::string actual(ost5.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-	// Now with final
+	// Now with uses in collector
+#if 0		// FIXME: to be completed
 	l.clear();
 	ca->addUsedLocs(l, true);
 	std::ostringstream ost5f;
 	l.print(ost5f);
-	expected = "m[r26],\tm[r27],\tr26,\tr27,\tr28{55}\n";
+	expected = "m[r26],\tm[r27],\tr26,\tr27,\tr28{55}";
 	actual = ost5f.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+#endif
+}
 	
+void StatementTest::testAddUsedLocsReturn() {
 	// ReturnStatement with returns r31, m[r24], m[r25]{55} + r[26]{99}]
-	l.clear();
+	LocationSet l;
+	GotoStatement* g = new GotoStatement();
+	g->setNumber(55);
+	BranchStatement* b = new BranchStatement;
+	b->setNumber(99);
 	ReturnStatement* r = new ReturnStatement;
 	r->addReturn(new Assign(Location::regOf(31), new Const(100)));
-	r->addReturn(new Assign(Location::regOf(24), new Const(0)));
+	r->addReturn(new Assign(Location::memOf(Location::regOf(24)), new Const(0)));
 	r->addReturn(new Assign(
 		Location::memOf(
 			new Binary(opPlus,
@@ -1049,25 +1068,27 @@ void StatementTest::testAddUsedLocs () {
 	r->addUsedLocs(l);
 	std::ostringstream ost6;
 	l.print(ost6);
-	expected="m[r25{55} + r26{99}],\tm[r24],\tr24,\tr31,\tr25{55},\tr26{99}\n";
-	actual = ost6.str();
+	std::string expected("r24,\t<all>,\tr25{55},\tr26{99}");
+	std::string actual(ost6.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
 
+void StatementTest::testAddUsedLocsBool() {
 	// Boolstatement with condition m[r24] = r25, dest m[r26]
-	l.clear();
+	LocationSet l;
 	BoolAssign* bs = new BoolAssign(8);
 	bs->setCondExpr(new Binary(opEquals,
 		Location::memOf(Location::regOf(24)),
 		Location::regOf(25)));
 	std::list<Statement*> stmts;
-	a = new Assign(Location::memOf(Location::regOf(26)), new Terminal(opNil));
+	Assign* a = new Assign(Location::memOf(Location::regOf(26)), new Terminal(opNil));
 	stmts.push_back(a);
 	bs->setLeftFromList(&stmts);
 	bs->addUsedLocs(l);
 	std::ostringstream ost7;
 	l.print(ost7);
-	expected="m[r24],\tr24,\tr25,\tr26\n";
-	actual = ost7.str();
+	std::string expected("r24,\tr25,\tr26,\tm[r24]");
+	std::string actual(ost7.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 	// m[local21 + 16] := phi{0, 372}
@@ -1082,9 +1103,8 @@ void StatementTest::testAddUsedLocs () {
 	pa->putAt(0, NULL, base);
 	pa->putAt(1, &s372, base);
 	pa->addUsedLocs(l);
-	// Note: phis were not considered to use blah if they ref m[blah],
-	// so local21 was not considered used
-	expected = "m[local21 + 16]{-},\tm[local21 + 16]{372},\tlocal21\n";
+	// Note: phis were not considered to use blah if they ref m[blah], so local21 was not considered used
+	expected = "m[local21 + 16]{-},\tm[local21 + 16]{372},\tlocal21";
 	std::ostringstream ost8;
 	l.print(ost8);
 	actual = ost8.str();
@@ -1102,7 +1122,7 @@ void StatementTest::testAddUsedLocs () {
 	ia->addUsedLocs(l);
 	l.print(ost9);
 	actual = ost9.str();
-	expected = "r28{-}\n";
+	expected = "r28{-}";
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 }
@@ -1133,7 +1153,7 @@ void StatementTest::testSubscriptVars () {
 	a->subscriptVar(srch, &s9);
 	ost1 << a;
 	std::string expected = "   1 *v* m[r28{9} - 4] := m[r28{9} - 8] * r26";
-	std::string actual = ost1.str();
+	std::string actual(ost1.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 	// GotoStatement
@@ -1250,6 +1270,7 @@ void StatementTest::testSubscriptVars () {
 
 	// ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
 	// The {55} one is a bit dodgy to me, but that's how the old subscriptVar code worked
+	// FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
 	ReturnStatement* r = new ReturnStatement;
 	r->addReturn(new Assign(Location::regOf(28), new Const(1000)));
 	r->addReturn(new Assign(Location::memOf(Location::regOf(28)), new Const(2000)));
@@ -1262,7 +1283,10 @@ void StatementTest::testSubscriptVars () {
 	std::ostringstream ost6;
 	r->subscriptVar(srch, &s9);
 	ost6 << r;
-	expected="   0 RET r28{9}, m[r28{9}], m[r28{9} + r26{99}]";
+	expected =
+		"   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{9} + r26{99}] := 100\n"
+		"              Modifieds: \n"
+		"              Reaching definitions: ";
 	actual = ost6.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
@@ -1282,13 +1306,12 @@ void StatementTest::testSubscriptVars () {
 }
 
 /*==============================================================================
- * FUNCTION:		StatementTest::testCallRefsFixer
- * OVERVIEW:		Test the visitor code that fixes references that were to
- *					  return locations from calls
+ * FUNCTION:		StatementTest::testBypass
+ * OVERVIEW:		Test the visitor code that fixes references that were to locations defined by calls
  *============================================================================*/
-void StatementTest::testCallRefsFixer () {
+void StatementTest::testBypass () {
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(FIB_PENTIUM);
+	BinaryFile *pBF = BinaryFileFactory::Load(GLOBAL1_PENTIUM);
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
@@ -1296,8 +1319,9 @@ void StatementTest::testCallRefsFixer () {
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
 	CPPUNIT_ASSERT (addr != NO_ADDRESS);
-	UserProc* proc = (UserProc*) prog->findProc("fib");
+	UserProc* proc = (UserProc*) prog->findProc("foo2");
 	assert(proc);
+	proc->promoteSignature();								// Make sure it's a PentiumSignature (needed for bypassing)
 	Cfg* cfg = proc->getCFG();
 	// Sort by address
 	cfg->sortByAddress();
@@ -1308,26 +1332,28 @@ void StatementTest::testCallRefsFixer () {
 	// Number the statements
 	int stmtNumber = 0;
 	proc->numberStatements(stmtNumber);
-	proc->getDataFlow()->renameBlockVars(proc, 0, 0);		 // Block 0, mem depth 0
-	proc->getDataFlow()->renameBlockVars(proc, 0, 1);		 // Block 0, mem depth 1
+	proc->getDataFlow()->renameBlockVars(proc, 0, 0);		// Block 0, mem depth 0
+	proc->getDataFlow()->renameBlockVars(proc, 0, 1);		// Block 0, mem depth 1
 	// Find various needed statements
 	StatementList stmts;
 	proc->getStatements(stmts);
 	StatementList::iterator it = stmts.begin();
 	while (!(*it)->isCall())
 		it++;
-	CallStatement* call = (CallStatement*)*it;	// Statement 20
+	CallStatement* call = (CallStatement*)*it;	// Statement 18, a call to printf
 	call->setDestProc(proc);					// A recursive call
-	// std::cerr << "Call is " << call << "\n";
+	// std::cerr << "Call is "; call->dump();
 	advance(it, 2);
-	Statement* s22 = *it;						// Statement 22
+	Statement* s22 = *it;						// Statement 20
+	s22->bypassAndPropagate();					// r28 should bypass the call
 	// Make sure it's what we expect!
-	std::string expected("  22 *32* r24 := m[r29{20} + 8]{-}");
+	std::string expected("  20 *32* r28 := r28{-} - 16");
 	std::string actual;
 	std::ostringstream ost1;
 	ost1 << s22;
 	actual = ost1.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+#if 0	// No longer needed, but could maybe expand the test one day
 	// Fake it to be known that r29 is preserved
 	Exp* r29 = Location::regOf(29);
 	proc->setProven(new Binary(opEquals, r29, r29->clone()));
@@ -1338,6 +1364,7 @@ void StatementTest::testCallRefsFixer () {
 	ost2 << *it;
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+#endif
 }
 
 /*==============================================================================
