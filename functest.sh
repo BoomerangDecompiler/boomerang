@@ -1,5 +1,5 @@
 #!/bin/bash
-# functest.sh functional test script $Revision$
+# functest.sh functional test script $Revision$	# 1.23.2.1
 # Note: to test with data flow based type analysis, pass a parameter of -Td
 #
 # 02 Feb 05 - Mike: Conditional tests for no type analysis. So all tests should pass whether -Td is passed or not
@@ -35,11 +35,8 @@ then
   echo Skipping switch tests, requires type analysis
   echo
 else
-# There is a serious problem with switch_gcc. Mike is working on it.
-echo Skipping known problem with switch_gcc
-echo
-#./testOne.sh pentium switch_gcc 5 $BOOMSW 2 3 4 5
-#./testOne.sh sparc   switch_gcc 5 $BOOMSW 2 3 4 5
+./testOne.sh pentium switch_gcc 5 $BOOMSW 2 3 4 5
+./testOne.sh sparc   switch_gcc 5 $BOOMSW 2 3 4 5
 ./testOne.sh pentium switch_cc 4 $BOOMSW 2 3 4
 ./testOne.sh sparc   switch_cc 4 $BOOMSW 2 3 4
 ./testOne.sh pentium switch_gcc 1 $BOOMSW
