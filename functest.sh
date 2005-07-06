@@ -44,8 +44,14 @@ else
 ./testOne.sh pentium switch_cc 1 $BOOMSW
 ./testOne.sh sparc   switch_cc 1 $BOOMSW
 fi
+if [ $BOOMSW == "--" ]
+then
+  echo Skipping stattest, now requires type analysis
+  echo
+else
 ./testOne.sh pentium stattest 1 $BOOMSW
 ./testOne.sh sparc   stattest 1 $BOOMSW
+fi
 ./testOne.sh pentium minmax 1 $BOOMSW 2 3 4
 ./testOne.sh sparc   minmax 1 $BOOMSW 2 3 4
 ./testOne.sh pentium minmax2 1 $BOOMSW two
