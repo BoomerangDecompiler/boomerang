@@ -136,7 +136,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o 
 	frontend/st20decoder.o frontend/st20frontend.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
-LOADER_OBJS = loader/BinaryFileFactory.o
+LOADER_OBJS = loader/BinaryFileFactory.o loader/SymTab.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS}
 
 $(LOADERDLLS): lib

@@ -3,10 +3,9 @@
 #
 # Desc: Makefile for the Loader library files.
 #   This loader is lightly adapted from the loader in UQBT
-#   Purpose is to load the input binary file into memory, with calls to
-#   iterate through sections, find entry points, symbols, etc.
-#   The main library is BinaryFile, which calls eactly one of ElfBinaryFile
-#   etc as needed.
+#   Purpose is to load the input binary file into memory, with calls to iterate through sections,
+#	find entry points, symbols, etc.
+#   The main library is BinaryFile, which calls eactly one of ElfBinaryFile etc as needed.
 #
 # Prerequisite libraries: none
 #
@@ -27,6 +26,7 @@
 # 20 Aug 02 - Icer: removed testLoader from being a dependecy of all:
 # 01 Oct 02 - Mike: testLoader restored; removed ElfDetails
 # 20 Jul 04 - Mike: Removed BOOMDIR (paths relative now)
+# 12 Jul 05 - Mike: All use SymTab.o now
 
 C = gcc -Wall -g -O0
 CC = g++ -Wall -g -O0
@@ -78,13 +78,13 @@ HOST_GNU_LD = @HOST_GNU_LD@
 
 
 
-testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o
+testLoader$(EXEEXT): testLoader.o LoaderTest.o microX86dis.o BinaryFileFactory.o SymTab.o
 	$(CC) -o $@ $^  -lcppunit $(ALLLIBS) $(RUNPATH) $(LDL) -L../lib
 
 testLoader.o: testLoader.cpp
 	$(CC) -c -o $@ -I../include $<
 
-LoaderTest.o: LoaderTest.cpp LoaderTest.h ../include/BinaryFile.h
+LoaderTest.o: LoaderTest.cpp LoaderTest.h ../include/BinaryFile.h SymTab.o
 	$(CC) -c -o $@ -I../include $<
 
 microX86dis.o: microX86dis.c
@@ -92,8 +92,6 @@ microX86dis.o: microX86dis.c
 
 # Extra object files, etc
 # These are target specific variables.
-../lib/libElfBinaryFile$(DLLEXT):     EXTRAS = SymTab.o
-../lib/libHpSomBinaryFile$(DLLEXT):   EXTRAS = SymTab.o
 ../lib/libWin32BinaryFile$(DLLEXT):   EXTRAS = microX86dis.o
 
 ../libBinaryFile$(DLLEXT): ../lib/libBinaryFile$(DLLEXT)
@@ -114,13 +112,12 @@ $(ALLOBJS): %.o : %.cpp
 	$(CC) -c $(FPIC) $(CCEXTRAS) -I../include -o $@ $<
 
 # Dependencies
-../lib/libElfBinaryFile$(DLLEXT): SymTab.o
 ../lib/libWin32BinaryFile$(DLLEXT): microX86dis.o
-SymTab.o:   SymTab.h
-Win32BinaryFile.o: Win32BinaryFile.h ../include/BinaryFile.h
-ElfBinaryFile.o: ElfBinaryFile.h ../include/BinaryFile.h
-
-
+Win32BinaryFile.o: Win32BinaryFile.h ../include/BinaryFile.h SymTab.o
+ElfBinaryFile.o: ElfBinaryFile.h ../include/BinaryFile.h SymTab.o
+HpSomBinaryFile.o: SymTab.o
+ExeBinaryFile.o: SymTab.o
+MachOBinaryFile.o: SymTab.o
 
 clean:
 	rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
