@@ -2971,7 +2971,7 @@ void Assign::simplify() {
 		assert(llhs);
 		Type *ty = rhs->getType();
 		llhs->setType(ty);
-		if (VERBOSE)
+		if (DEBUG_TA)
 			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
 	}
 
@@ -2984,7 +2984,7 @@ void Assign::simplify() {
 		else
 			ty = new IntegerType();
 		llhs->setType(ty);
-		if (VERBOSE)
+		if (DEBUG_TA)
 			LOG << "setting type of " << llhs << " to " << ty->getCtype() << "\n";
 	}
 
