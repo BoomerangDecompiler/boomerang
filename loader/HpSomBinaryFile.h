@@ -18,6 +18,7 @@
  * 01 Aug 01 - Mike: GetGlobalPointerInfo() returns unsigned ints now
  * 03 Aug 01 - Mike: Added a few useful structs
  * 10 Aug 01 - Mike: Added GetDynamicGlobalMap()
+ * 12 Jul 05 - Mike: Use new double map SymTab class
 */
 
 #ifndef __HPSOMBINARYFILE_H__
@@ -86,40 +87,38 @@ struct symElem {
 class HpSomBinaryFile : public BinaryFile
 {
 public:
-                  HpSomBinaryFile();          // Constructor
-    virtual       ~HpSomBinaryFile();
-    virtual void  UnLoad();                   // Unload the image
-    virtual bool  Open(const char* sName);    // Open the file for r/w; pv
-    virtual void  Close();                    // Close file opened with Open()
-    virtual bool  PostLoad(void* handle);     // For archive files only
-    virtual LOAD_FMT GetFormat() const;       // Get format i.e. LOADFMT_PALM
-    virtual MACHINE GetMachine() const;       // Get format i.e. MACHINE_HPRISC
-    virtual const char *getFilename() const { return m_pFileName; }
+					HpSomBinaryFile();          // Constructor
+virtual				~HpSomBinaryFile();
+virtual void		UnLoad();                   // Unload the image
+virtual bool		Open(const char* sName);    // Open the file for r/w; pv
+virtual void		Close();                    // Close file opened with Open()
+virtual bool		PostLoad(void* handle);     // For archive files only
+virtual LOAD_FMT	GetFormat() const;       // Get format i.e. LOADFMT_PALM
+virtual MACHINE		GetMachine() const;       // Get format i.e. MACHINE_HPRISC
+virtual const char	*getFilename() const { return m_pFileName; }
 
-    virtual bool isLibrary() const;
-    virtual std::list<const char *> getDependencyList();
-    virtual ADDRESS getImageBase();
-    virtual size_t getImageSize();
+virtual bool		isLibrary() const;
+virtual std::list<const char *> getDependencyList();
+virtual ADDRESS		getImageBase();
+virtual size_t		getImageSize();
 
-    // Get a symbol given an address
-    virtual char*   SymbolByAddress(ADDRESS dwAddr);
-    // Lookup the name, return the address
-    virtual ADDRESS GetAddressByName(char* pName, bool bNoTypeOK = false);
-    // Return true if the address matches the convention for A-line system calls
-    bool          IsDynamicLinkedProc(ADDRESS uNative);
+		// Get a symbol given an address
+virtual const char*	SymbolByAddress(ADDRESS dwAddr);
+		// Lookup the name, return the address
+virtual ADDRESS		GetAddressByName(char* pName, bool bNoTypeOK = false);
+		// Return true if the address matches the convention for A-line system calls
+		bool		IsDynamicLinkedProc(ADDRESS uNative);
 
-    // Specific to BinaryFile objects that implement a "global pointer"
-    // Gets a pair of unsigned integers representing the address of %agp (first)
-    // and the value for GLOBALOFFSET (unused for pa-risc)
-    virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+		// Specific to BinaryFile objects that implement a "global pointer"
+		// Gets a pair of unsigned integers representing the address of %agp (first)
+		// and the value for GLOBALOFFSET (unused for pa-risc)
+virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
 
     // Get a map from ADDRESS to const char*. This map contains the native
     // addresses and symbolic names of global data items (if any) which are
     // shared with dynamically linked libraries. Example: __iob (basis for
-    // stdout).The ADDRESS is the native address of a pointer to the real
-    // dynamic data object.
-    // The caller should delete the returned map.
-    virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
+    // stdout).The ADDRESS is the native address of a pointer to the real dynamic data object.
+virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
 //
 //  --  --  --  --  --  --  --  --  --  --  --
@@ -130,25 +129,25 @@ public:
 
 
     // Analysis functions
-    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+virtual ADDRESS		GetMainEntryPoint();
+virtual ADDRESS		GetEntryPoint();
 
-//    bool        IsDynamicLinkedProc(ADDRESS wNative);
-//    ADDRESS     NativeToHostAddress(ADDRESS uNative);
-  protected:
-    virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+//		bool        IsDynamicLinkedProc(ADDRESS wNative);
+//		ADDRESS     NativeToHostAddress(ADDRESS uNative);
+protected:
+virtual bool		RealLoad(const char* sName); // Load the file; pure virtual
 
     
 private:
-    // Private method to get the start and length of a given subspace
-    std::pair<ADDRESS, int> getSubspaceInfo(const char* ssname);
+		// Private method to get the start and length of a given subspace
+		std::pair<ADDRESS, int> getSubspaceInfo(const char* ssname);
 
-    unsigned char*  m_pImage;                   // Points to loaded image
-    SymTab          symbols;                    // Symbol table object
-//  ADDRESS         mainExport;                 // Export entry for "main"
-    std::set<ADDRESS>    imports;                    // Set of imported proc addr's
-    const char *    m_pFileName;
+		unsigned char* m_pImage;					// Points to loaded image
+		SymTab		symbols;					// Symbol table object
+//		ADDRESS		mainExport;					// Export entry for "main"
+		std::set<ADDRESS> imports;				// Set of imported proc addr's
+		const char *m_pFileName;
 };
 
 #endif      // #ifndef __HPSOMBINARYFILE_H__

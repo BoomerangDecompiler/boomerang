@@ -114,8 +114,7 @@ bool isStub(ADDRESS hostAddr, int& offset) {
 #endif
 
 
-bool HpSomBinaryFile::RealLoad(const char* sName)
-{
+bool HpSomBinaryFile::RealLoad(const char* sName) {
     FILE    *fp;
 
     m_pFileName = sName;
@@ -265,11 +264,8 @@ bool HpSomBinaryFile::RealLoad(const char* sName)
     m_pSections[3].bBss = 1;
     m_pSections[3].bReadOnly = 0;
 
-    // Work through the imports, and find those for which there are stubs
-    // using that import entry. Add the addresses of any such stubs.
-    // Add them to a temporary map of names to addresses, so we can count
-    // them and initialise the size of the symbol table before adding any
-    std::map<char*, ADDRESS> tSyms;
+    // Work through the imports, and find those for which there are stubs using that import entry.
+	// Add the addresses of any such stubs.
     int deltaText = m_pSections[1].uHostAddr - m_pSections[1].uNativeAddr;
     int deltaData = m_pSections[2].uHostAddr - m_pSections[2].uNativeAddr;
     // The "end of data" where r27 points is not necessarily the same as
@@ -286,9 +282,8 @@ bool HpSomBinaryFile::RealLoad(const char* sName)
     // subsection in memory.
     int numDLT = UINT4(DLTable + 0x40);
 
-    // This code was for pattern patching the BOR (Bind On Reference, or library
-    // call stub) routines. It appears to be unnecessary, since as they appear
-    // in the file, the PLT entries point to the BORs
+    // This code was for pattern patching the BOR (Bind On Reference, or library call stub) routines. It appears to be
+	// unnecessary, since as they appear in the file, the PLT entries point to the BORs
 #if 0
     ADDRESS startText = m_pSections[1].uHostAddr;
     ADDRESS endText = startText + m_pSections[1].uSectionSize - 0x10;
@@ -303,7 +298,7 @@ cout << "Found a stub with offset " << dec << offset << endl;
                 u = (offset - minPLT) / sizeof(plt_record);
                 // Add an offset for the DLT entries
                 u += numDLT;
-                tSyms[import_list[u].name + pDlStrings] = host - deltaText;
+                symbols[import_list[u].name + pDlStrings] = host - deltaText;
 cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex << (host - deltaText) << endl;
             }
         }
@@ -312,14 +307,13 @@ cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex 
 
     // For each PLT import table entry, add a symbol
     // u runs through import table; v through $PLT$ subspace
-    // There should be a one to one correspondance between (DLT + PLT) entries
-    // and import table entries. The DLT entries always come first in the import
-    // table
+    // There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
+	// The DLT entries always come first in the import table
     unsigned u = (unsigned)numDLT, v = 0;
     plt_record* PLTs = (plt_record*)(pltStart + deltaData);
     for (; u < numImports; u++, v++) {
 //cout << "Importing " << (pDlStrings+import_list[u].name) << endl;
-        tSyms[pDlStrings + UINT4(&import_list[u].name)] = PLTs[v].value;
+        symbols.Add(PLTs[v].value, pDlStrings + UINT4(&import_list[u].name));
         // Add it to the set of imports; needed by IsDynamicLinkedProc()
         imports.insert(PLTs[v].value);
 //cout << "Added import sym " << (import_list[u].name + pDlStrings) << ", value " << hex << PLTs[v].value << endl;
@@ -330,7 +324,7 @@ cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex 
 //cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex << UINT4(&export_list[u].value) << endl;
         if (strncmp(pDlStrings+UINT4(&export_list[u].name), "main", 4) == 0) {
             // Enter the symbol "_callmain" for this address
-            tSyms["_callmain"] = UINT4(&export_list[u].value);
+            symbols.Add(UINT4(&export_list[u].value), "_callmain");
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
             // +--------+--------+--------+----+------------+-+-+
@@ -342,14 +336,13 @@ cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex 
             // +----------------------+--------+-----+----------+
             //  31                  16|15    11| 10  |9        0
 
-            unsigned bincall = *(unsigned*)
-              (UINT4(&export_list[u].value) + deltaText);
+            unsigned bincall = *(unsigned*) (UINT4(&export_list[u].value) + deltaText);
             int offset = ((((bincall & 1) << 31) >> 15) |     // w
                            ((bincall & 0x1f0000) >> 5) |      // w1
                            ((bincall &        4) << 8) |      // w2@10
                            ((bincall &   0x1ff8) >> 3));      // w2@0..9
             // Address of main is st + 8 + offset << 2
-            tSyms["main"] = UINT4(&export_list[u].value) + 8 + (offset << 2);
+            symbols.Add(UINT4(&export_list[u].value) + 8 + (offset << 2), "main");
             break;
         }
     }
@@ -385,31 +378,13 @@ cout << "Added sym " << (import_list[u].name + pDlStrings) << ", value " << hex 
                 value &= ~3;
 //if (strcmp("main", pNames+SYMBOLNM(u)) == 0) {    // HACK!
 //  cout << "main at " << hex << value << " has type " << SYMBOLTY(u) << endl;}
-            // HP's symbol table is crazy. It seems that imports like printf
-            // have entries of type 3 with the wrong value. So we have to check
-            // whether the symbol has already been entered (assume first one
-            // is correct).
-            std::map<char*, ADDRESS>::iterator it = tSyms.find(pSymName);
-            if (it == tSyms.end())
-                tSyms[pSymName] = value;
+            // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
+			// value. So we have to check whether the symbol has already been entered (assume first one is correct).
+			if (symbols.find(pSymName) == NO_ADDRESS)
+				symbols.Add(value, pSymName);
 //cout << "Symbol " << pNames+SYMBOLNM(u) << ", type " << SYMBOLTY(u) << ", value " << hex << value << ", aux " << SYMBOLAUX(u) << endl;  // HACK!
         }
     }       // if (numSym)
-
-    // Initialise the symbol table
-    if (!symbols.Init(tSyms.size())) {
-        fprintf(stderr, "Error: could not initialise symbol table with %d "
-            "entries\n", tSyms.size());
-        return false;
-    }
-
-    // Enter the values
-    std::map<char*, ADDRESS>::iterator it;
-    for (it = tSyms.begin(); it != tSyms.end(); it++)
-        symbols.Add((*it).second, (*it).first);
-
-    // Sort the symbols; needed for lookup using bsearch
-    symbols.Sort();
 
     return true;
 }
@@ -489,16 +464,15 @@ size_t HpSomBinaryFile::getImageSize()
 }
 
 // We at least need to be able to name the main function and system calls
-char* HpSomBinaryFile::SymbolByAddress(ADDRESS dwAddr)
-{
-    return symbols.Find(dwAddr);
+const char* HpSomBinaryFile::SymbolByAddress(ADDRESS a) {
+    return symbols.find(a);
 }
 
 ADDRESS HpSomBinaryFile::GetAddressByName(char* pName, bool bNoTypeOK /* = false */)
 {
     // For now, we ignore the symbol table and do a linear search of our
     // SymTab table
-    ADDRESS res = symbols.FindSym(pName);
+    ADDRESS res = symbols.find(pName);
     if (res == NO_ADDRESS)
         return 0;           // Till the failure return value is fixed
     return res;
@@ -595,7 +569,7 @@ std::map<ADDRESS, const char*>* HpSomBinaryFile::GetDynamicGlobalMap()
 
 ADDRESS HpSomBinaryFile::GetMainEntryPoint()
 {
-    return symbols.FindSym("main");
+    return symbols.find("main");
 #if 0
     if (mainExport == 0) {
         // This means we didn't find an export table entry for main
