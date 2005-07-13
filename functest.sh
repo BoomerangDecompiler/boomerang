@@ -84,4 +84,7 @@ fi
 #./testOne.sh pentium line1 1 $BOOMSW test/source/line1.c
 #./testOne.sh sparc   line1 1 $BOOMSW test/source/line1.c
 
+echo Known failure:
+./testOne.sh sparc	elfhashtest 1 $BOOMSW
+
 echo === Done ===
