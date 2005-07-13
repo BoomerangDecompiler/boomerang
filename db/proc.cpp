@@ -26,6 +26,7 @@
  * 20 Apr 02 - Mike: Mods for boomerang
  * 31 Jan 03 - Mike: Tabs and indenting
  * 03 Feb 03 - Mike: removeStatement no longer linear searches for the BB
+ * 13 Jul 05 - Mike: Fixed a segfault in copyDecodedICTs with zero lentgth (!) BBs. Also one in the ad-hoc TA
  */
 
 /*==============================================================================
@@ -2934,9 +2935,11 @@ void UserProc::mapExpressionsToLocals(bool lastPass) {
 			int n = ((Const*)result->getSubExp1()->getSubExp2())->getInt();
 			arr->setProc(this);
 			Type *base = new IntegerType();
-			if (s->isAssign() && ((Assign*)s)->getLeft() == result)
-				if(((Assign*)s)->getType()->getSize() != 0)
+			if (s->isAssign() && ((Assign*)s)->getLeft() == result) {
+				Type* at = ((Assign*)s)->getType();
+				if(at && at->getSize() != 0)
 					base = ((Assign*)s)->getType()->clone();
+			}
 			arr->setType(new ArrayType(base, n / (base->getSize() / 8)));
 			if (VERBOSE)
 				LOG << "found a local array using " << n << " bytes\n";
@@ -5010,6 +5013,7 @@ void UserProc::copyDecodedICTs() {
 	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
 		Statement* last = bb->getLastStmt(rrit, srit);
+		if (last == NULL) continue;			// e.g. a BB with just a NOP in it
 		if (!last->isHL_ICT()) continue;
 		RTL* rtl = bb->getLastRtl();
 		if (DEBUG_SWITCH)
