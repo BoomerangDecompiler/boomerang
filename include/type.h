@@ -34,6 +34,7 @@
 #include <vector>
 #include <assert.h>
 #include <list>
+#include <fstream>
 #include "memo.h"
 #include "types.h"			// For STD_SIZE
 
@@ -644,11 +645,31 @@ virtual bool		isCompatibleWith(Type* other);
 };  // class LowerType
 
 
+/**
+ * Class DataInterval. This class is used to represent local variables in procedures, and the global variables for
+ * the program. The concept is that the data space (the current procedure's stack or the global data space) has to
+ * be partitioned into separate variables of various sizes and types. If a new variable is inserted that would cause
+ * an overlap, the types have to be reconciled such that they no longer overlap (generally, the smaller type becomes
+ * member of the larger type, which has to be a structure or an array).
+ * To handle the overlaps, each procedure and the Prog object have a multimap from ADDRESS (stack offset from sp{0} for
+ * locals, or native address for globals), to an object of this class. The reason for the multimap is that it is
+ * necessary to support nested structures: more than one struct could start at any given ADDRESS.
+ * The parentPointer is also needed to support nested structures. For example, when deciding definitively that
+ * there is no overlap (without having to read back to the beginning of the map), and when a struct increases in size
+ * (e.g. there is a new offset larger than any previously seen offset), some elements from the parent struct may have
+ * to migrate from the parent to the newly expanded child.
+ */
+class DataInterval;
+typedef std::map<ADDRESS, DataInterval> DataIntervalMap;
+
+class DataInterval {
+		unsigned	size;				// The size of this type in bytes
+		std::string	name;				// The name of the variable
+};
 
 
 // Not part of the Type class, but logically belongs with it:
-std::ostream& operator<<(std::ostream& os, Type* t);  // Print the Type
-													  //  pointed to by t
+std::ostream& operator<<(std::ostream& os, Type* t);  // Print the Type pointed to by t
 
 
 #endif	// __TYPE_H__

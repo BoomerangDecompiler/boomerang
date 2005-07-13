@@ -96,46 +96,38 @@ PSectionInfo BinaryFile::GetSectionInfoByName(const char* sName)
 	// Overridden if reqd//
 	///////////////////////
 
-char* BinaryFile::SymbolByAddress(ADDRESS uNative)
-{
+const char* BinaryFile::SymbolByAddress(ADDRESS uNative) {
 	return 0;		// Overridden by subclasses that support syms
 }
 
-ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK)
-{
+ADDRESS BinaryFile::GetAddressByName(const char* pName, bool bNoTypeOK) {
 	return 0;
 }
 
-int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK)
-{
+int BinaryFile::GetSizeByName(const char* pName, bool bNoTypeOK) {
 	return 0;
 }
 
 
-bool BinaryFile::IsAddressRelocatable(ADDRESS uNative)
-{
+#if 0
+bool BinaryFile::IsAddressRelocatable(ADDRESS uNative) {
 	return false;
 }
 
-ADDRESS BinaryFile::GetRelocatedAddress(ADDRESS uNative)
-{
+ADDRESS BinaryFile::GetRelocatedAddress(ADDRESS uNative) {
 	return NO_ADDRESS;
 }
 
-#if 0
-WORD  BinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord)
-{
+WORD  BinaryFile::ApplyRelocation(ADDRESS uNative, WORD wWord) {
+	return 0;
+}
+				// Get symbol associated with relocation at address, if any
+const char* BinaryFile::GetRelocSym(ADDRESS uNative) {
 	return 0;
 }
 #endif
-				// Get symbol associated with relocation at address, if any
-const char* BinaryFile::GetRelocSym(ADDRESS uNative)
-{
-	return 0;
-}
 
-bool BinaryFile::IsDynamicLinkedProc(ADDRESS uNative)
-{
+bool BinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
 	return false;
 }
 

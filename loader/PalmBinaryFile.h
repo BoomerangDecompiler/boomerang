@@ -43,17 +43,16 @@ public:
   virtual ADDRESS getImageBase();
   virtual size_t getImageSize();
 
-  // Get a symbol given an address
-  char*         SymbolByAddress(ADDRESS dwAddr);
-  // Return true if the address matches the convention for A-line system calls
-  bool          IsDynamicLinkedProc(ADDRESS uNative);
+  		// Get a symbol given an address
+		const char*	SymbolByAddress(ADDRESS dwAddr);
+  		// Return true if the address matches the convention for A-line system calls
+		bool		IsDynamicLinkedProc(ADDRESS uNative);
 
-  // Specific to BinaryFile objects that implement a "global pointer"
-  // Gets a pair of unsigned integers representing the address of %agp
-  // (first) and the value for GLOBALOFFSET (second)
-  virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+// Specific to BinaryFile objects that implement a "global pointer"
+// Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
+virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
 
-  // Palm specific calls
+// Palm specific calls
   
   // Get the ID number for this application. It's possible that the app uses
   // this number internally, so this needs to be used in the final make

@@ -22,10 +22,14 @@
 #define CALC_WINXP      "test/windows/calcXP.exe"
 #define CALC_WIN2000    "test/windows/calc2000.exe"
 #define LPQ_WINDOWS     "test/windows/lpq.exe"
+#define ELFBINFILE		"lib/libElfBinaryFile.so"
 
 #include "LoaderTest.h"
 //#include "util.h"           // For str()
 #include <iostream>         // For cout
+#ifndef WIN32
+#include <dlfcn.h>          // dlopen, dlsym
+#endif
 
 /*==============================================================================
  * FUNCTION:        LoaderTest::registerTests
@@ -46,6 +50,8 @@ void LoaderTest::registerTests(CppUnit::TestSuite* suite) {
 
     MYTEST(testMicroDis1);
     MYTEST(testMicroDis2);
+
+	MYTEST(testElfHash);
 }
 
 int LoaderTest::countTestCases () const
@@ -207,7 +213,7 @@ void LoaderTest::testWinLoad () {
     CPPUNIT_ASSERT(addr != NO_ADDRESS);
 
     // Test symbol table (imports)
-    char* s = pBF->SymbolByAddress(0x1292060U);
+    const char* s = pBF->SymbolByAddress(0x1292060U);
     if (s == 0)
         actual = "<not found>";
     else
@@ -523,14 +529,14 @@ void LoaderTest::testMicroDis1 () {
         int expected = lengths[i++];
         if (expected != size) {
             std::cout << "At offset 0x" << std::hex <<
-              (ADDRESS)p - (ADDRESS)pent_hello_text << " ("
-	      << (int)*((unsigned char*)p) << " "
-	      << (int)*((unsigned char*)p+1) << " " 
-	      << (int)*((unsigned char*)p+2) << " " 
-	      << (int)*((unsigned char*)p+3) << " " 
-	      << ") expected " <<
-              std::dec << expected << ", actual " << size << std::endl;
-              CPPUNIT_ASSERT_EQUAL(expected, size);
+				(ADDRESS)p - (ADDRESS)pent_hello_text << " ("
+				<< (int)*((unsigned char*)p) << " "
+				<< (int)*((unsigned char*)p+1) << " " 
+				<< (int)*((unsigned char*)p+2) << " " 
+				<< (int)*((unsigned char*)p+3) << " " 
+				<< ") expected " <<
+				std::dec << expected << ", actual " << size << std::endl;
+			CPPUNIT_ASSERT_EQUAL(expected, size);
         }
         p = (void*) ((char*)p + size);
         totalSize += size;
@@ -540,14 +546,29 @@ void LoaderTest::testMicroDis1 () {
 
 void LoaderTest::testMicroDis2 () {
 
-    // Now a special test:
-    // 8048910:  0f be 00            movsbl (%eax),%eax
-    // 8048913:  0f bf 00            movswl (%eax),%eax
+	// Now a special test:
+	// 8048910:  0f be 00			movsbl (%eax),%eax
+	// 8048913:  0f bf 00			movswl (%eax),%eax
 
-    unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
-    unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
-    int size = microX86Dis(movsbl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
-    size = microX86Dis(movswl);
-    CPPUNIT_ASSERT_EQUAL(3, size);
+	unsigned char movsbl[3] = {0x0f, 0xbe, 0x00};
+	unsigned char movswl[3] = {0x0f, 0xbf, 0x00};
+	int size = microX86Dis(movsbl);
+	CPPUNIT_ASSERT_EQUAL(3, size);
+	size = microX86Dis(movswl);
+	CPPUNIT_ASSERT_EQUAL(3, size);
+}
+
+typedef unsigned (*elfHashFcn)(const char*);
+void LoaderTest::testElfHash () {
+#ifndef WIN32
+	void* dlHandle = dlopen(ELFBINFILE, RTLD_LAZY);
+	CPPUNIT_ASSERT(dlHandle);
+	// Use the handle to find the "elf_hash" function
+	elfHashFcn pFcn = (elfHashFcn) dlsym(dlHandle, "elf_hash");
+	CPPUNIT_ASSERT(pFcn);
+	// Call the function with the string "main
+	unsigned act = (*pFcn)("main");
+	unsigned exp = 0x737fe;
+	CPPUNIT_ASSERT_EQUAL(exp, act);
+#endif
 }

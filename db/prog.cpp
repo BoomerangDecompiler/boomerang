@@ -402,7 +402,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 	if (pProc)
 		// Yes, we are done
 		return pProc;
-	char* pName = pBF->SymbolByAddress(uAddr);
+	const char* pName = pBF->SymbolByAddress(uAddr);
 	bool bLib = pBF->IsDynamicLinkedProc(uAddr);
 	if (pName == 0) {
 		// No name. Give it a numbered name

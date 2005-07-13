@@ -104,14 +104,18 @@ typedef struct {
 #define SHF_EXECINSTR	4		// Executable
 
 #define SHT_NOBITS		8		// Bss
+#define SHT_REL			9		// Relocation table (no addend)
+#define SHT_RELA		4		// Relocation table (with addend, e.g. RISC)
+#define SHT_SYMTAB		2		// Symbol table
+#define SHT_DYNSYM		11		// Dynamic symbol table
 
 typedef struct {
-   int		st_name;
-   unsigned st_value;
-   int		st_size;
-unsigned char st_info;
-unsigned char st_other;
-   short	st_shndx;
+	int				st_name;
+	unsigned		st_value;
+	int				st_size;
+	unsigned char	st_info;
+	unsigned char	st_other;
+	short			st_shndx;
 } Elf32_Sym;
 
 typedef struct {
@@ -119,16 +123,16 @@ typedef struct {
 	int r_info;
 } Elf32_Rel;
 
-#define ELF32_ST_BIND(i)             ((i) >> 4)
-#define ELF32_ST_TYPE(i)             ((i) & 0xf)
-#define ELF32_ST_INFO(b, t)          (((b)<<4)+((t)&0xf))
-#define STT_NOTYPE 0    // Symbol table type: none
-#define STT_FUNC 2      // Symbol table type: function
-#define STT_SECTION 3
-#define STB_GLOBAL 1
+#define ELF32_ST_BIND(i)		((i) >> 4)
+#define ELF32_ST_TYPE(i)		((i) & 0xf)
+#define ELF32_ST_INFO(b, t)		(((b)<<4)+((t)&0xf))
+#define STT_NOTYPE	0			// Symbol table type: none
+#define STT_FUNC	2				// Symbol table type: function
+#define STT_SECTION	3
+#define STB_GLOBAL	1
 
 typedef struct {
-	short d_tag;			  /* how to interpret value */
+	short d_tag;				/* how to interpret value */
 	union {
 		int	 d_val;
 		int	 d_ptr;
@@ -141,60 +145,64 @@ typedef struct {
 #define DT_STRTAB	5		// String table
 #define DT_NEEDED	1		// A needed link-type object
 
-
+#define E_REL		1		// Relocatable file type
 
 class ElfBinaryFile : public BinaryFile
 {
 public:
-				ElfBinaryFile(bool bArchive = false);	// Constructor
-  virtual void	UnLoad();						// Unload the image
-  virtual		~ElfBinaryFile();				// Destructor
-	bool		GetNextMember();				// Load next member of archive
-  virtual bool	Open(const char* sName);		// Open the file for r/w; pv
-  virtual void	Close();						// Close file opened with Open()
-  virtual LOAD_FMT GetFormat() const;			// Get format (e.g. LOADFMT_ELF)
-  virtual MACHINE GetMachine() const;			// Get machine (e.g. MACHINE_SPARC)
-  virtual const char *getFilename() const { return m_pFileName; }
-  virtual bool isLibrary() const;
-  virtual std::list<const char *> getDependencyList();
-  virtual ADDRESS getImageBase();
-  virtual size_t getImageSize();
+					ElfBinaryFile(bool bArchive = false);	// Constructor
+virtual void		UnLoad();						// Unload the image
+virtual				~ElfBinaryFile();				// Destructor
+		bool		GetNextMember();				// Load next member of archive
+virtual bool		Open(const char* sName);		// Open the file for r/w; pv
+virtual void		Close();						// Close file opened with Open()
+virtual LOAD_FMT	GetFormat() const;			// Get format (e.g. LOADFMT_ELF)
+virtual MACHINE		GetMachine() const;			// Get machine (e.g. MACHINE_SPARC)
+virtual const char*	getFilename() const { return m_pFileName; }
+virtual bool		isLibrary() const;
+virtual std::list<const char *> getDependencyList();
+virtual ADDRESS		getImageBase();
+virtual size_t		getImageSize();
 
 
-                // Header functions
-//virtual ADDRESS GetFirstHeaderAddress();      // Get ADDRESS of main header
-//    ADDRESS     GetNextHeaderAddress();       // Get any other headers
+		// Header functions
+//virtual ADDRESS	GetFirstHeaderAddress();		// Get ADDRESS of main header
+//		ADDRESS		GetNextHeaderAddress();			// Get any other headers
 
-	int         readNative1(ADDRESS a);         // Read 1 bytes from native addr
-    int         readNative2(ADDRESS a);         // Read 2 bytes from native addr
-    int         readNative4(ADDRESS a);         // Read 4 bytes from native addr
-    QWord       readNative8(ADDRESS a);         // Read 8 bytes from native addr
-    float       readNativeFloat4(ADDRESS a);    // Read 4 bytes as float
-    double      readNativeFloat8(ADDRESS a);    // Read 8 bytes as float
+		int			readNative1(ADDRESS a);			// Read 1 bytes from native addr
+		int			readNative2(ADDRESS a);			// Read 2 bytes from native addr
+		int			readNative4(ADDRESS a);			// Read 4 bytes from native addr
+		QWord		readNative8(ADDRESS a);			// Read 8 bytes from native addr
+		float		readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
+		double		readNativeFloat8(ADDRESS a);	// Read 8 bytes as float
 
-	void		writeNative4(ADDRESS nat, unsigned int n);
+		void		writeNative4(ADDRESS nat, unsigned int n);
 
-                // Symbol functions
-    char*       SymbolByAddress(ADDRESS uAddr); // Get name of symbol
-                // Get value of symbol, if any
-    ADDRESS     GetAddressByName(const char* pName, bool bNoTypeOK = false);
-                // Get the size associated with the symbol
-    int         GetSizeByName(const char* pName, bool bNoTypeOK = false);
-                // Get the size associated with the symbol; guess if necessary
-    int         GetDistanceByName(const char* pName);
-    int         GetDistanceByName(const char* pName, const char* pSectName);
+					// Symbol functions
+		const char* SymbolByAddress(ADDRESS uAddr); // Get name of symbol
+					// Get value of symbol, if any
+		ADDRESS		GetAddressByName(const char* pName, bool bNoTypeOK = false);
+					// Get the size associated with the symbol
+		int			GetSizeByName(const char* pName, bool bNoTypeOK = false);
+					// Get the size associated with the symbol; guess if necessary
+		int			GetDistanceByName(const char* pName);
+		int			GetDistanceByName(const char* pName, const char* pSectName);
+					// Add an extra symbol
+		void		AddSymbol(ADDRESS uNative, const char *pName);
+		void		dumpSymbols();				// For debugging
 
-virtual ADDRESS* GetImportStubs(int& numImports);
+virtual ADDRESS*	GetImportStubs(int& numImports);
 
-				// Relocation functions
-	bool		IsAddressRelocatable(ADDRESS uNative);
-	ADDRESS		GetRelocatedAddress(ADDRESS uNative);
-//	WORD		ApplyRelocation(ADDRESS uNative, WORD wWord);
-				// Get symbol associated with relocation at address, if any
-	const char* GetRelocSym(ADDRESS uNative);
-				// Write an ELF object file for a given procedure
-	void		writeObjectFile(std::string &path, const char* name,
-					void *ptxt, int txtsz, RelocMap& reloc);
+					// Relocation functions
+		bool		IsAddressRelocatable(ADDRESS uNative);
+		ADDRESS		GetRelocatedAddress(ADDRESS uNative);
+		//ADDRESS		ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
+					// Get symbol associated with relocation at address, if any
+		const char* GetRelocSym(ADDRESS uNative);
+					// Write an ELF object file for a given procedure
+		void		writeObjectFile(std::string &path, const char* name, void *ptxt, int txtsz, RelocMap& reloc);
+					// Apply relocations; important when compiled without -fPIC
+		void		applyRelocations();
 
 //
 //	--	--	--	--	--	--	--	--	--	--	--
@@ -205,78 +213,73 @@ virtual ADDRESS* GetImportStubs(int& numImports);
 
 
                 // Analysis functions
-    virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-    virtual ADDRESS GetMainEntryPoint();
-    virtual ADDRESS GetEntryPoint();
+virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+virtual ADDRESS		GetMainEntryPoint();
+virtual ADDRESS		GetEntryPoint();
 
-    bool        IsDynamicLinkedProc(ADDRESS wNative);
-    ADDRESS     NativeToHostAddress(ADDRESS uNative);
-    // Get a map from ADDRESS to const char*. This map contains the native
-    // addresses and symbolic names of global data items (if any) which are
-    // shared with dynamically linked libraries. Example: __iob (basis for
-    // stdout).The ADDRESS is the native address of a pointer to the real
-    // dynamic data object.
-    // The caller should delete the returned map.
-    virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
+		bool        IsDynamicLinkedProc(ADDRESS wNative);
+		ADDRESS     NativeToHostAddress(ADDRESS uNative);
+		// Get a map from ADDRESS to const char*. This map contains the native addresses and symbolic names of global
+		// data items (if any) which are shared with dynamically linked libraries. Example: __iob (basis for stdout).
+		// The ADDRESS is the native address of a pointer to the real dynamic data object.
+virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
-	virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
+virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymTab; }
 
-                // Not meant to be used externally, but sometimes you just
-                // have to have it.
-    char*       GetStrPtr(int idx, int offset); // Calc string pointer
+		// Not meant to be used externally, but sometimes you just have to have it.
+		char*       GetStrPtr(int idx, int offset); // Calc string pointer
 
-                // Similarly here; sometimes you just need to change a section's
-                // link and info fields
-                // idx is the section index; link and info are indices to other
-                // sections that will be idx's sh_link and sh_info respectively
-    void        SetLinkAndInfo(int idx, int link, int info);
+		// Similarly here; sometimes you just need to change a section's link and info fields
+		// idx is the section index; link and info are indices to other
+		// sections that will be idx's sh_link and sh_info respectively
+		void        SetLinkAndInfo(int idx, int link, int info);
 
-	const char* m_pFileName;			// Pointer to input file name
-  protected:
-	virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+		const char* m_pFileName;			// Pointer to input file name
+protected:
+virtual bool		RealLoad(const char* sName); // Load the file; pure virtual
 
-  private:
-    void        Init();                 // Initialise most member variables
-    int         ProcessElfFile();       // Does most of the work
-    void        AddSyms(const char* pSymScn, const char* sStrScn);
-	void        AddRelocsAsSyms(const char* pRelocScn);
-    void        SetRelocInfo(PSectionInfo pSect);
-    bool        ValueByName(const char* pName, SymValue* pVal,
-                    bool bNoTypeOK = false);
-    bool        SearchValueByName(const char* pName, SymValue* pVal);
-    bool        SearchValueByName(const char* pName, SymValue* pVal,
-                    const char* pSectName, const char* pStrName);
-    bool        PostLoad(void* handle); // Called after archive member loaded
+private:
+		void        Init();                 // Initialise most member variables
+		int         ProcessElfFile();       // Does most of the work
+		void        AddSyms(int secIndex);
+		void        AddRelocsAsSyms(int secIndex);
+		void        SetRelocInfo(PSectionInfo pSect);
+		bool        ValueByName(const char* pName, SymValue* pVal, bool bNoTypeOK = false);
+		bool        SearchValueByName(const char* pName, SymValue* pVal);
+		bool        SearchValueByName(const char* pName, SymValue* pVal, const char* pSectName, const char* pStrName);
+		bool        PostLoad(void* handle); // Called after archive member loaded
 
-    // Internal elf reading methods
-    // Read a short with endianness care
-    int         elfRead2(short* ps) const;
-    // Read an int with endianness care
-    int         elfRead4(int*   pi) const;
+		// Internal elf reading methods
+		int         elfRead2(short* ps) const;		// Read a short with endianness care
+		int         elfRead4(int*   pi) const;		// Read an int with endianness care
+		void		elfWrite4(int*	pi, int val);	// Write an int with endianness care
 
-	FILE*		m_fd;					// File stream
-	long		m_lImageSize;			// Size of image in bytes
-    char*       m_pImage;               // Pointer to the loaded image
-    Elf32_Phdr* m_pPhdrs;               // Pointer to program headers
-    Elf32_Shdr* m_pShdrs;               // Array of section header structs
-    char*       m_pStrings;             // Pointer to the string section
-    char        m_elfEndianness;        // 1 = Big Endian
-    std::map<ADDRESS, std::string> m_SymA; // Map from address to symbol name
-    SymTab      m_Reloc;                // Object to store the reloc syms
-    Elf32_Rel*  m_pReloc;               // Pointer to the relocation section
-    Elf32_Sym*  m_pSym;                 // Pointer to loaded symbol section
-    bool        m_bAddend;              // true if reloc table has addend
-    const char* m_pLastName;            // Save pointer to last name looked up
-    ADDRESS     m_uLastAddr;            // Save last address looked up
-    int         m_iLastSize;            // Size associated with that name
-    ADDRESS     m_uPltMin;              // Min address of PLT table
-    ADDRESS     m_uPltMax;              // Max address (1 past last) of PLT
-    std::list<SectionInfo*>  m_EntryPoint;   // A list of one entry point
-    ADDRESS*    m_pImportStubs;         // An array of import stubs
-    ADDRESS     m_uBaseAddr;            // Base image virtual address
-    size_t      m_uImageSize;           // total image size (bytes)
-	ADDRESS		first_extern;			// where the first extern will be placed
-	ADDRESS		next_extern;			// where the next extern will be placed
+		FILE*		m_fd;							// File stream
+		long		m_lImageSize;					// Size of image in bytes
+		char*       m_pImage;						// Pointer to the loaded image
+		Elf32_Phdr* m_pPhdrs;						// Pointer to program headers
+		Elf32_Shdr* m_pShdrs;						// Array of section header structs
+		char*       m_pStrings;						// Pointer to the string section
+		char        m_elfEndianness;				// 1 = Big Endian
+		std::map<ADDRESS, std::string> m_SymTab;	// Map from address to symbol name; contains symbols from the
+													// various elf symbol tables, and possibly some symbols with fake
+													// addresses
+		SymTab      m_Reloc;						// Object to store the reloc syms
+		Elf32_Rel*  m_pReloc;						// Pointer to the relocation section
+		Elf32_Sym*  m_pSym;							// Pointer to loaded symbol section
+		bool        m_bAddend;						// true if reloc table has addend
+		ADDRESS     m_uLastAddr;					// Save last address looked up
+		int         m_iLastSize;					// Size associated with that name
+		ADDRESS     m_uPltMin;						// Min address of PLT table
+		ADDRESS     m_uPltMax;						// Max address (1 past last) of PLT
+		std::list<SectionInfo*>  m_EntryPoint;		// A list of one entry point
+		ADDRESS*    m_pImportStubs;					// An array of import stubs
+		ADDRESS     m_uBaseAddr;					// Base image virtual address
+		size_t      m_uImageSize;					// total image size (bytes)
+		ADDRESS		first_extern;					// where the first extern will be placed
+		ADDRESS		next_extern;					// where the next extern will be placed
+		int*		m_sh_link;						// pointer to array of sh_link values
+		int*		m_sh_info;						// pointer to array of sh_info values
 };
 
 #endif		// #ifndef __ELFBINARYFILE_H__

@@ -359,7 +359,7 @@ bool Win32BinaryFile::PostLoad(void* handle)
 	return false;
 }
 
-char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
+const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
 	if (m_pPEHeader->Subsystem == 1 &&				// native
 		LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)

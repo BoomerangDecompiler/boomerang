@@ -317,7 +317,7 @@ size_t PalmBinaryFile::getImageSize()
 }
 
 // We at least need to be able to name the main function and system calls
-char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
+const char* PalmBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
     if ((dwAddr & 0xFFFFF000) == 0xAAAAA000) {
         // This is the convention used to indicate an A-line system call

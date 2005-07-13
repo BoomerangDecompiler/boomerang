@@ -65,20 +65,20 @@ public:
 												// LOADFMT_MACHO)
   virtual MACHINE GetMachine() const;			// Get machine (i.e.
 												// MACHINE_PPC)
-  virtual const char *getFilename() const { return m_pFileName; }
-  virtual bool isLibrary() const;
-  virtual std::list<const char *> getDependencyList();
-  virtual ADDRESS getImageBase();
-  virtual size_t getImageSize();
+virtual const char	*getFilename() const { return m_pFileName; }
+virtual bool		isLibrary() const;
+virtual std::list<const char *> getDependencyList();
+virtual ADDRESS		getImageBase();
+virtual size_t		getImageSize();
 
-  virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-  virtual ADDRESS GetMainEntryPoint();
-  virtual ADDRESS GetEntryPoint();
-  DWord getDelta();
-  virtual char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
-  virtual ADDRESS GetAddressByName(const char* name,
-	bool bNoTypeOK = false);					// Find addr given name	 
-  virtual void AddSymbol(ADDRESS uNative, const char *pName);
+virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+virtual ADDRESS		GetMainEntryPoint();
+virtual ADDRESS		GetEntryPoint();
+		DWord		getDelta();
+virtual const char*	SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
+virtual ADDRESS		GetAddressByName(const char* name,
+		bool		bNoTypeOK = false);					// Find addr given name	 
+virtual void		AddSymbol(ADDRESS uNative, const char *pName);
 
 //
 //		--		--		--		--		--		--		--		--		--
@@ -94,32 +94,32 @@ protected:
 
 public:
 
-virtual int readNative1(ADDRESS a);         // Read 1 bytes from native addr
-virtual int readNative2(ADDRESS a);			// Read 2 bytes from native addr
-virtual int readNative4(ADDRESS a);			// Read 4 bytes from native addr
-virtual QWord readNative8(ADDRESS a);	// Read 8 bytes from native addr
-virtual float readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
-virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+virtual int			readNative1(ADDRESS a);         // Read 1 bytes from native addr
+virtual int			readNative2(ADDRESS a);			// Read 2 bytes from native addr
+virtual int			readNative4(ADDRESS a);			// Read 4 bytes from native addr
+virtual QWord		readNative8(ADDRESS a);	// Read 8 bytes from native addr
+virtual float		readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
+virtual double		readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
-virtual bool	IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
-virtual const char *GetDynamicProcName(ADDRESS uNative);
+virtual bool		IsDynamicLinkedProc(ADDRESS uNative) { return dlprocs.find(uNative) != dlprocs.end(); }
+virtual const char	*GetDynamicProcName(ADDRESS uNative);
 
-	virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
-    virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
+virtual std::map<ADDRESS, std::string> &getSymbols() { return m_SymA; }
+virtual std::map<std::string, ObjcModule> &getObjcModules() { return modules; }
 
-  protected:
-	virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+protected:
+virtual bool		RealLoad(const char* sName); // Load the file; pure virtual
 
-  private:
+private:
 
-		bool	PostLoad(void* handle); // Called after archive member loaded
-		void	findJumps(ADDRESS curr);// Find names for jumps to IATs
+		bool		PostLoad(void* handle); // Called after archive member loaded
+		void		findJumps(ADDRESS curr);// Find names for jumps to IATs
 
 		struct mach_header *header;      // The Mach-O header
-		char *	base;					// Beginning of the loaded image
-		const char *m_pFileName;
-        ADDRESS entrypoint, loaded_addr;
-        unsigned loaded_size;
+		char *		base;					// Beginning of the loaded image
+		const char	*m_pFileName;
+        ADDRESS		entrypoint, loaded_addr;
+        unsigned	loaded_size;
         std::map<ADDRESS, std::string> m_SymA, dlprocs;
         std::map<std::string, ObjcModule> modules;
 };

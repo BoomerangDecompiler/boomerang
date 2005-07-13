@@ -197,128 +197,124 @@ virtual ADDRESS getImageBase() = 0;
 virtual size_t	getImageSize() = 0;
 
 // Section functions
-	int			GetNumSections() const;		// Return number of sections
-	PSectionInfo GetSectionInfo(int idx) const; // Return section struct
-	// Find section info given name, or 0 if not found
-	PSectionInfo GetSectionInfoByName(const char* sName);
-	// Find the end of a section, given an address in the section
-	PSectionInfo GetSectionInfoByAddr(ADDRESS uEntry) const;
+		int			GetNumSections() const;		// Return number of sections
+		PSectionInfo GetSectionInfo(int idx) const; // Return section struct
+		// Find section info given name, or 0 if not found
+		PSectionInfo GetSectionInfoByName(const char* sName);
+		// Find the end of a section, given an address in the section
+		PSectionInfo GetSectionInfoByAddr(ADDRESS uEntry) const;
 
-	// returns true if the given address is in a read only section
-	bool isReadOnly(ADDRESS uEntry) { 
-		return GetSectionInfoByAddr(uEntry)->bReadOnly;
-	}
-	virtual int readNative1(ADDRESS a) {return 0;}
-	// Read 2 bytes from given native address a; considers endianness
-	virtual int readNative2(ADDRESS a) {return 0;}
-	// Read 4 bytes from given native address a; considers endianness
-	virtual int readNative4(ADDRESS a) {return 0;}
-	// Read 8 bytes from given native address a; considers endianness
-	virtual QWord readNative8(ADDRESS a) {return 0;}
-	// Read 4 bytes as a float; consider endianness
-	virtual float readNativeFloat4(ADDRESS a) {return 0.;}
-	// Read 8 bytes as a float; consider endianness
-	virtual double readNativeFloat8(ADDRESS a) {return 0.;}
+		// returns true if the given address is in a read only section
+		bool isReadOnly(ADDRESS uEntry) { 
+			return GetSectionInfoByAddr(uEntry)->bReadOnly;
+		}
+virtual int			readNative1(ADDRESS a) {return 0;}
+		// Read 2 bytes from given native address a; considers endianness
+virtual int			readNative2(ADDRESS a) {return 0;}
+		// Read 4 bytes from given native address a; considers endianness
+virtual int			readNative4(ADDRESS a) {return 0;}
+		// Read 8 bytes from given native address a; considers endianness
+virtual QWord		readNative8(ADDRESS a) {return 0;}
+		// Read 4 bytes as a float; consider endianness
+virtual float		readNativeFloat4(ADDRESS a) {return 0.;}
+		// Read 8 bytes as a float; consider endianness
+virtual double		readNativeFloat8(ADDRESS a) {return 0.;}
 
 // Symbol table functions
-	// Lookup the address, return the name, or 0 if not found
-	virtual char* SymbolByAddress(ADDRESS uNative);
-	// Lookup the name, return the address. If not found, return NO_ADDRESS
-	virtual ADDRESS GetAddressByName(const char* pName,
-									 bool bNoTypeOK = false);
-	virtual void AddSymbol(ADDRESS uNative, const char *pName) { }
-	// Lookup the name, return the size
-	virtual int GetSizeByName(const char* pName, bool bTypeOK = false);
+		// Lookup the address, return the name, or 0 if not found
+virtual const char* SymbolByAddress(ADDRESS uNative);
+		// Lookup the name, return the address. If not found, return NO_ADDRESS
+virtual ADDRESS		GetAddressByName(const char* pName, bool bNoTypeOK = false);
+virtual void		AddSymbol(ADDRESS uNative, const char *pName) { }
+		// Lookup the name, return the size
+virtual int GetSizeByName(const char* pName, bool bTypeOK = false);
 	// Get an array of addresses of imported function stubs
 	// Set number of these to numImports
-	virtual ADDRESS* GetImportStubs(int& numImports);
+virtual ADDRESS* GetImportStubs(int& numImports);
 
 // Relocation table functions
-	virtual bool	IsAddressRelocatable(ADDRESS uNative);
-	virtual ADDRESS GetRelocatedAddress(ADDRESS uNative);
-	//virtual	WORD	ApplyRelocation(ADDRESS uNative, WORD wWord);
-	// Get symbol associated with relocation at address, if any
-	virtual const char* GetRelocSym(ADDRESS uNative);
+//virtual bool	IsAddressRelocatable(ADDRESS uNative);
+//virtual ADDRESS GetRelocatedAddress(ADDRESS uNative);
+//virtual	ADDRESS	ApplyRelocation(ADDRESS uNative, ADDRESS uWord);
+		// Get symbol associated with relocation at address, if any
+//virtual const char* GetRelocSym(ADDRESS uNative);
 
-	// Specific to BinaryFile objects that implement a "global pointer"
-	// Gets a pair of unsigned integers representing the address of the
-	// abstract global pointer (%agp) (in first) and a constant that will
-	// be available in the csrparser as GLOBALOFFSET (second). At present,
-	// the latter is only used by the Palm machine, to represent the space
-	// allocated below the %a5 register (i.e. the difference between %a5 and
-	// %agp). This value could possibly be used for other purposes.
-	virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
+		// Specific to BinaryFile objects that implement a "global pointer"
+		// Gets a pair of unsigned integers representing the address of the
+		// abstract global pointer (%agp) (in first) and a constant that will
+		// be available in the csrparser as GLOBALOFFSET (second). At present,
+		// the latter is only used by the Palm machine, to represent the space
+		// allocated below the %a5 register (i.e. the difference between %a5 and
+		// %agp). This value could possibly be used for other purposes.
+virtual std::pair<unsigned,unsigned> GetGlobalPointerInfo();
 
-	// Get a map from ADDRESS to const char*. This map contains the native
-	// addresses and symbolic names of global data items (if any) which are
-	// shared with dynamically linked libraries. Example: __iob (basis for
-	// stdout).The ADDRESS is the native address of a pointer to the real
-	// dynamic data object.
-	// The caller should delete the returned map.
-	virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
+		// Get a map from ADDRESS to const char*. This map contains the native addresses and symbolic names of global
+		// data items (if any) which are shared with dynamically linked libraries. Example: __iob (basis for stdout).
+		// The ADDRESS is the native address of a pointer to the real dynamic data object.
+virtual std::map<ADDRESS, const char*>* GetDynamicGlobalMap();
 
 //
 //	--	--	--	--	--	--	--	--	--	--	--
 //
 
-	// Internal information
-	// Dump headers, etc
-	virtual bool	DisplayDetails(const char* fileName, FILE* f = stdout);
+// Internal information
+		// Dump headers, etc
+virtual bool	DisplayDetails(const char* fileName, FILE* f = stdout);
 
-	// Analysis functions
-	virtual bool	IsDynamicLinkedProc(ADDRESS uNative);
-	virtual bool	IsDynamicLinkedProcPointer(ADDRESS uNative);
-	virtual const char *GetDynamicProcName(ADDRESS uNative);
-	virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") = 0;
-	virtual ADDRESS GetMainEntryPoint() = 0;
+		// Analysis functions
+virtual bool		IsDynamicLinkedProc(ADDRESS uNative);
+virtual bool		IsDynamicLinkedProcPointer(ADDRESS uNative);
+virtual const char*	GetDynamicProcName(ADDRESS uNative);
+virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") = 0;
+virtual ADDRESS		GetMainEntryPoint() = 0;
 
-	/*
-	 * Return the "real" entry point, ie where execution of the program begins
-	 */
-	virtual ADDRESS GetEntryPoint() = 0; 
-	// Find section index given name, or -1 if not found
-	int			GetSectionIndexByName(const char* sName);
+		/*
+		 * Return the "real" entry point, ie where execution of the program begins
+		 */
+virtual ADDRESS GetEntryPoint() = 0; 
+		// Find section index given name, or -1 if not found
+		int			GetSectionIndexByName(const char* sName);
 
 
-	virtual bool	RealLoad(const char* sName) = 0;
+virtual bool	RealLoad(const char* sName) = 0;
 
-	virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
+virtual std::map<ADDRESS, std::string> &getFuncSymbols() { return *new std::map<ADDRESS, std::string>(); }
 
-	virtual std::map<ADDRESS, std::string> &getSymbols() { return *new std::map<ADDRESS, std::string>(); }
+virtual std::map<ADDRESS, std::string> &getSymbols() { return *new std::map<ADDRESS, std::string>(); }
 
-    virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::map<std::string, ObjcModule>(); }
+virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::map<std::string, ObjcModule>(); }
 
-    ADDRESS getLimitTextLow() { return limitTextLow; }
-    ADDRESS getLimitTextHigh() { return limitTextHigh; }
+		ADDRESS		getLimitTextLow() { return limitTextLow; }
+		ADDRESS		getLimitTextHigh() { return limitTextHigh; }
 
-	int getTextDelta() { return textDelta; }
+		int			getTextDelta() { return textDelta; }
 
 //
 //	--	--	--	--	--	--	--	--	--	--	--
 //
 
-  protected:
-	// Special load function for archive members
-	virtual bool	PostLoad(void* handle) = 0;		// Called after loading archive member
+protected:
+		// Special load function for archive members
+virtual bool		PostLoad(void* handle) = 0;		// Called after loading archive member
 
-	// Get the lower and upper limits of the text segment
-	void	getTextLimits();
+		// Get the lower and upper limits of the text segment
+		void		getTextLimits();
 
-	// Data
-	bool		m_bArchive;					// True if archive member
-	int			m_iNumSections;				// Number of sections
-	PSectionInfo m_pSections;				// The section info
-	ADDRESS		m_uInitPC;					// Initial program counter
-	ADDRESS		m_uInitSP;					// Initial stack pointer
+		// Data
+		bool		m_bArchive;					// True if archive member
+		int			m_iNumSections;				// Number of sections
+		PSectionInfo m_pSections;				// The section info
+		ADDRESS		m_uInitPC;					// Initial program counter
+		ADDRESS		m_uInitSP;					// Initial stack pointer
 
-	// Public addresses being the lowest used native address (inclusive), and
-	// the highest used address (not inclusive) in the text segment
-	ADDRESS		limitTextLow;
-	ADDRESS		limitTextHigh;
-	// Also the difference between the host and native addresses (host - native)
-	// At this stage, we are assuming that the difference is the same for all
-	// text sections of the BinaryFile image
-	int			textDelta;
+		// Public addresses being the lowest used native address (inclusive), and
+		// the highest used address (not inclusive) in the text segment
+		ADDRESS		limitTextLow;
+		ADDRESS		limitTextHigh;
+		// Also the difference between the host and native addresses (host - native)
+		// At this stage, we are assuming that the difference is the same for all
+		// text sections of the BinaryFile image
+		int			textDelta;
 
 };
 

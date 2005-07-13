@@ -159,73 +159,72 @@ typedef struct {
 class Win32BinaryFile : public BinaryFile
 {
 public:
-				Win32BinaryFile();				// Default constructor
-  virtual		~Win32BinaryFile();				// Destructor
-  virtual bool	Open(const char* sName);		// Open the file for r/w; ???
-  virtual void	Close();						// Close file opened with Open()
-  virtual void	UnLoad();						// Unload the image
-  virtual LOAD_FMT GetFormat() const;			// Get format (i.e.
+					Win32BinaryFile();				// Default constructor
+virtual				~Win32BinaryFile();				// Destructor
+virtual bool		Open(const char* sName);		// Open the file for r/w; ???
+virtual void		Close();						// Close file opened with Open()
+virtual void		UnLoad();						// Unload the image
+virtual LOAD_FMT	GetFormat() const;			// Get format (i.e.
 												// LOADFMT_Win32)
-  virtual MACHINE GetMachine() const;			// Get machine (i.e.
+virtual MACHINE		GetMachine() const;			// Get machine (i.e.
 												// MACHINE_Pentium)
-  virtual const char *getFilename() const { return m_pFileName; }
-  virtual bool isLibrary() const;
-  virtual std::list<const char *> getDependencyList();
-  virtual ADDRESS getImageBase();
-  virtual size_t getImageSize();
+virtual const char*	getFilename() const { return m_pFileName; }
+virtual bool		isLibrary() const;
+virtual std::list<const char *> getDependencyList();
+virtual ADDRESS		getImageBase();
+virtual size_t		getImageSize();
 
-  virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
-  virtual ADDRESS GetMainEntryPoint();
-  virtual ADDRESS GetEntryPoint();
-  DWord getDelta();
-  virtual char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
-  virtual ADDRESS GetAddressByName(const char* name,
-	bool bNoTypeOK = false);					// Find addr given name	 
-  virtual void AddSymbol(ADDRESS uNative, const char *pName);
+virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main");
+virtual ADDRESS		GetMainEntryPoint();
+virtual ADDRESS		GetEntryPoint();
+		DWord		getDelta();
+virtual const char* SymbolByAddress(ADDRESS dwAddr); // Get sym from addr
+virtual ADDRESS		GetAddressByName(const char* name, bool bNoTypeOK = false);		// Find addr given name	 
+virtual void		AddSymbol(ADDRESS uNative, const char *pName);
 
 //
 //		--		--		--		--		--		--		--		--		--
 //
 		// Internal information
 		// Dump headers, etc
-virtual bool	DisplayDetails(const char* fileName, FILE* f = stdout);
+virtual bool		DisplayDetails(const char* fileName, FILE* f = stdout);
 
 protected:
 
-		int win32Read2(short *ps) const; // Read 2 bytes from native addr
-		int win32Read4(int *pi) const;	 // Read 4 bytes from native addr
+		int			win32Read2(short *ps) const; // Read 2 bytes from native addr
+		int			win32Read4(int *pi) const;	 // Read 4 bytes from native addr
 
 public:
 
-virtual int readNative1(ADDRESS a);         // Read 1 bytes from native addr
-virtual int readNative2(ADDRESS a);			// Read 2 bytes from native addr
-virtual int readNative4(ADDRESS a);			// Read 4 bytes from native addr
-virtual QWord readNative8(ADDRESS a);	// Read 8 bytes from native addr
-virtual float readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
-virtual double readNativeFloat8(ADDRESS a); // Read 8 bytes as float
+virtual int			readNative1(ADDRESS a);         // Read 1 bytes from native addr
+virtual int			readNative2(ADDRESS a);			// Read 2 bytes from native addr
+virtual int			readNative4(ADDRESS a);			// Read 4 bytes from native addr
+virtual QWord		readNative8(ADDRESS a);		// Read 8 bytes from native addr
+virtual float		readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
+virtual double		readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
-virtual bool	IsDynamicLinkedProcPointer(ADDRESS uNative);
+virtual bool		IsDynamicLinkedProcPointer(ADDRESS uNative);
 virtual const char *GetDynamicProcName(ADDRESS uNative);
 
-	virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
+virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
 
-  protected:
-	virtual bool  RealLoad(const char* sName); // Load the file; pure virtual
+protected:
+virtual bool  		RealLoad(const char* sName); // Load the file; pure virtual
 
-  private:
+private:
 
-		bool	PostLoad(void* handle); // Called after archive member loaded
-		void	findJumps(ADDRESS curr);// Find names for jumps to IATs
+		bool		PostLoad(void* handle); // Called after archive member loaded
+		void		findJumps(ADDRESS curr);// Find names for jumps to IATs
 
-		Header* m_pHeader;				// Pointer to header
-		PEHeader* m_pPEHeader;			// Pointer to pe header
-		int		m_cbImage;				// Size of image
-		int		m_cReloc;				// Number of relocation entries
-		DWord*	m_pRelocTable;			// The relocation table
-		char *	base;					// Beginning of the loaded image
+		Header* 	m_pHeader;				// Pointer to header
+		PEHeader* 	m_pPEHeader;			// Pointer to pe header
+		int			m_cbImage;				// Size of image
+		int			m_cReloc;				// Number of relocation entries
+		DWord*		m_pRelocTable;			// The relocation table
+		char *		base;					// Beginning of the loaded image
 		// Map from address of dynamic pointers to library procedure names:
 		std::map<ADDRESS, std::string> dlprocptrs;
-		const char *m_pFileName;
+		const char	*m_pFileName;
 
 };
 
