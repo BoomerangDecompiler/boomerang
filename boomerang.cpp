@@ -110,8 +110,9 @@ void Boomerang::help() {
 	std::cout << "  -s <addr> <name> : Define a symbol\n";
 	std::cout << "  -sf <filename>   : Read a symbol/signature file\n";
 	std::cout << "Decoding/decompilation options\n";
-	std::cout << "  -e <addr>        : Decode the procedure beginning at addr\n";
-	std::cout << "  -E <addr>        : Decode ONLY the procedure at addr\n";
+	std::cout << "  -e <addr>        : Decode the procedure beginning at addr, and callees\n";
+	std::cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
+	std::cout << "  Use -e and -E repeatedly for multiple entry points; both imply -nm\n";
 	std::cout << "  -ic              : Decode through type 0 Indirect Calls\n";
 	std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
 	std::cout << "  -Tc              : Use old constraint-based type analysis\n";
@@ -699,12 +700,12 @@ int Boomerang::commandLine(int argc, const char **argv)
 				break;
 			case 'E':
 				noDecodeChildren = true;
-				decodeMain = false;
 				// Fall through
 			case 'e':
 				{
 					ADDRESS addr;
 					int n;
+					decodeMain = false;
 					if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
 						n = sscanf(argv[i+1], "0x%x", &addr);
 					} else {
@@ -881,21 +882,21 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 
 	prog->setNextIsEntry();			// The next proc created will be designated the "entry point"
 	
-	if (decodeMain)
-		std::cerr << "decoding...\n";
-	fe->decode(prog, decodeMain, pname);
+	// Entry points from -e (and -E) switch(es)
+	for (unsigned i = 0; i < entrypoints.size(); i++) {
+		std::cerr<< "decoding specified entrypoint " << std::hex <<
+		  entrypoints[i] << "\n";
+		prog->decodeExtraEntrypoint(entrypoints[i]);
+	}
 
-	if (!noDecodeChildren) {   // MVE: Not sure if this is right...
+	if (entrypoints.size() == 0) {		// no -e or -E given
+		if (decodeMain)
+			std::cerr << "decoding entry point...\n";
+		fe->decode(prog, decodeMain, pname);
+
 		// this causes any undecoded userprocs to be decoded
 		std::cerr << "decoding anything undecoded...\n";
 		fe->decode(prog, NO_ADDRESS);
-	}
-
-	// Entry points from -e (and -E) switch(es)
-	for (unsigned i = 0; i < entrypoints.size(); i++) {
-		std::cerr<< "decoding extra entrypoint " << std::hex <<
-		  entrypoints[i] << "\n";
-		prog->decodeExtraEntrypoint(entrypoints[i]);
 	}
 
 	prog->finishDecode();
