@@ -274,7 +274,7 @@ virtual callconv	getConvention() { return CONV_NONE; }
 
 		// A compare function for arguments and returns. Used for sorting returns in calcReturn() etc
 virtual	bool		argumentCompare(Assignment& a, Assignment& b);
-virtual	bool		returnCompare(Assign& a, Assign& b);
+virtual	bool		returnCompare(Assignment& a, Assignment& b);
 
 
 virtual Memo		*makeMemo(int mId);

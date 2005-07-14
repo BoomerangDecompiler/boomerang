@@ -136,7 +136,7 @@ namespace CallingConvention {
 			virtual bool		isPromoted() { return true; }
 			virtual platform	getPlatform() { return PLAT_PENTIUM; }
 			virtual callconv	getConvention() { return CONV_C; }
-			virtual bool		returnCompare(Assign& a, Assign& b);
+			virtual bool		returnCompare(Assignment& a, Assignment& b);
 			virtual bool		argumentCompare(Assignment& a, Assignment& b);
 		};	// class PentiumSignature
 
@@ -164,7 +164,7 @@ namespace CallingConvention {
 			virtual bool		isPromoted() { return true; }
 			virtual platform	getPlatform() { return PLAT_SPARC; }
 			virtual callconv	getConvention() { return CONV_C; }
-			virtual bool		returnCompare(Assign& a, Assign& b);
+			virtual bool		returnCompare(Assignment& a, Assignment& b);
 			virtual bool		argumentCompare(Assignment& a, Assignment& b);
 		};	// class SparcSignature
 
@@ -1939,7 +1939,7 @@ bool Signature::isOpCompatStackLocal(OPER op) {
 	return false;
 }
 
-bool Signature::returnCompare(Assign& a, Assign& b) {
+bool Signature::returnCompare(Assignment& a, Assignment& b) {
 	return *a.getLeft() < *b.getLeft();			// Default: sort by expression only, no explicit ordering
 }
 
@@ -1947,7 +1947,7 @@ bool Signature::argumentCompare(Assignment& a, Assignment& b) {
 	return *a.getLeft() < *b.getLeft();			// Default: sort by expression only, no explicit ordering
 }
 
-bool CallingConvention::StdC::PentiumSignature::returnCompare(Assign& a, Assign& b) {
+bool CallingConvention::StdC::PentiumSignature::returnCompare(Assignment& a, Assignment& b) {
 	Exp* la = a.getLeft();
 	Exp* lb = b.getLeft();
 	// Eax is the preferred return location
@@ -1966,7 +1966,7 @@ static Unary spPlus64(opMemOf,
 	new Binary(opPlus,
 		Location::regOf(14),
 		new Const(64)));
-bool CallingConvention::StdC::SparcSignature::returnCompare(Assign& a, Assign& b) {
+bool CallingConvention::StdC::SparcSignature::returnCompare(Assignment& a, Assignment& b) {
 	Exp* la = a.getLeft();
 	Exp* lb = b.getLeft();
 	// %o0 (r8) is the preferred return location
