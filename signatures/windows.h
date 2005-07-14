@@ -559,3 +559,6 @@ ULONGLONG VerSetConditionMask(
   BYTE dwConditionMask
 );
 
+int FreeLibrary(unsigned int hModule);
+short* wcscpy(short* dest, short* src);
+int VirtualFree(void* lpAddress, int dwSize, unsigned int dwFreeType);
