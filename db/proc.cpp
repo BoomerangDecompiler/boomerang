@@ -873,10 +873,15 @@ CycleSet* UserProc::decompile(CycleList* path) {
 	if (VERBOSE)
 		LOG << "decompiling " << getName() << "\n";
 	// Prevent infinite loops when there are cycles in the call graph
-	if (status >= PROC_FINAL) return NULL;		// Already decompiled
-	if (status < PROC_DECODED) return NULL;		// FIXME: should just decode it
-	status = PROC_VISITED; 						// We have visited this proc "on the way down"
+	if (status >= PROC_FINAL) {
+		std::cerr << "Error: " << getName() << " already has status PROC_FINAL\n";
+		return NULL;		// Already decompiled
+	}
+	if (status < PROC_DECODED)
+		// Can happen e.g. if a callee is visible only after analysing a switch statement
+		prog->reDecode(this);					// Actually decoding for the first time, not REdecoding
 
+	status = PROC_VISITED; 						// We have visited this proc "on the way down"
 	CycleSet* ret = new CycleSet;
 	path->push_back(this);
 
@@ -1327,9 +1332,7 @@ void UserProc::middleDecompile() {
 		cfg->clear();
 		std::ofstream os;
 		prog->reDecode(this);
-		initialiseDecompile();
-		prePresDecompile();
-		middleDecompile();	 			// Restart decompiling this proc
+		decompile(new CycleList);			// Restart decompiling this proc
 		return;
 	}
 
@@ -4525,8 +4528,8 @@ bool UserProc::filterReturns(Exp* e) {
 		// Would like to handle at least %ZF, %CF one day. For now, filter them out
 		case opZF: case opCF: case opFlags:
 			return true;
-#if 0							// Ugh - if not a return, then not a define in the callers, and then the whole preserved
-								// locations process falls apart
+#if 0							// Ugh - if the stack pointer is not considered a return, then it will not a define in
+								// the callers, and then the whole preserved locations process falls apart
 		case opRegOf: {
 			int sp;
 			if (signature == NULL)
