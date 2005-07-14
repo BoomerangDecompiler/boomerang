@@ -21,6 +21,7 @@
  * 04 Dec 02 - Mike: Added isJmpZ
  * 09 Jan 02 - Mike: Untabbed, reformatted
  * 17 Jun 03 - Mike: Fixed an apparent error in generateCode (getCond)
+ * 14 Jun 05 - Mike: Don't add redundant out edges to an N-way BB if some jump table entries repeat
 */
 
 
@@ -2043,6 +2044,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			}
 			case 1: {
 				// Typical pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
+#if 0	// To be completed; suppress unused variable warnings
 				if (e->isSubscript())
 					e = ((RefExp*)e)->getSubExp1();
 				e = ((Location*)e)->getSubExp1();		// e = m[r27{25} + 8]{-} + 8
@@ -2055,8 +2057,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				Exp* e = ((Binary*)lhs)->getSubExp1();
 				Exp* CK1 = ((Binary*)lhs)->getSubExp2();
 				int K1 = ((Const*)CK1)->getInt();
-//std::cerr << "From statement " << lastStmt << " get e = " << e << ", K1 = " << K1 << ", K2 = " << K2 << "\n";
-// To be completed
+std::cerr << "From statement " << lastStmt << " get e = " << e << ", K1 = " << K1 << ", K2 = " << K2 << "\n";
+#endif
 			}
 		}			 
 			
@@ -2111,6 +2113,15 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 	
 	Prog* prog = proc->getProg();
 	Cfg* cfg = proc->getCFG();
+	// Keep a set of already seen targets. Don't want to have more than one out edge to any successor BB, even if some
+	// of the branch table entries repeat. It is not uncommon to have such repeats, e.g.
+	// switch (x) {
+	//   case 3: case 5:
+	//		do something;
+	//		break;
+	//	 case 4: case 10:
+	//		do something else
+	std::set<ADDRESS> targets;
 	for (int i=0; i < iNum; i++) {
 		// Get the destination address from the switch table.
 		if (si->chForm == 'H') {
@@ -2123,11 +2134,13 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 		else
 			uSwitch = prog->readNative4(si->uTable + i*4);
 		if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r'))
-			// Offset: add table address to make a real pointer to code
-			// For type R, the table is relative to the branch, so take iOffset
-			// For others, iOffset is 0, so no harm
+			// Offset: add table address to make a real pointer to code.  For type R, the table is relative to the
+			// branch, so take iOffset. For others, iOffset is 0, so no harm
 			uSwitch += si->uTable - si->iOffset;
 		if (uSwitch < prog->getLimitTextHigh()) {
+			if (targets.find(uSwitch) != targets.end())
+				continue;			// A repeated target; ignore this out edge
+			targets.insert(uSwitch);
 			//tq.visit(cfg, uSwitch, this);
 			cfg->addOutEdge(this, uSwitch, true);
 			// Decode the newly discovered switch code arms
