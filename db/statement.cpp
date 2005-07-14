@@ -4678,7 +4678,27 @@ StatementList* CallStatement::calcResults() {
 	} else {
 		// For a call with no destination at this late stage, use everything live at the call except for the stack
 		// pointer register. Needs to be sorted
-		assert("not implemented yet" - "not implemented yet");
+		UseCollector::iterator rr;								// Iterates through reaching definitions
+		StatementList::iterator nn;								// Iterates through new results
+		Signature* sig = proc->getSignature();
+		int sp = sig->getStackRegister();
+		for (rr = useCol.begin(); rr != useCol.end(); ++rr) {
+			Exp* loc = *rr;
+			if (proc->filterReturns(loc)) continue;				// Ignore filtered locations
+			if (loc->isRegN(sp)) continue;						// Ignore the stack pointer
+			ImplicitAssign* as = new ImplicitAssign(loc);		// Create an implicit assignment
+			bool inserted = false;
+			for (nn = ret->begin(); nn != ret->end(); ++nn) {
+				// If the new assignment is less than the current one,
+				if (sig->returnCompare(*as, *(Assignment*)*nn)) {
+					nn = ret->insert(nn, as);					// then insert before this position
+					inserted = true;
+					break;
+				}
+			}
+			if (!inserted)
+				ret->insert(ret->end(), as);					// In case larger than all existing elements
+		}
 	}
 	return ret;
 }
