@@ -4814,6 +4814,7 @@ bool UserProc::isLocal(Exp* e) {
 bool UserProc::isLocalOrParam(Exp* e) {
 	if (!e->isMemOf()) return false;			// Don't want say a register
 	Exp* addr = ((Location*)e)->getSubExp1();
+	if (!signature->isPromoted()) return false;	// Prevent an assert failure if using -E
 	int sp = signature->getStackRegister();
 	Exp* initSp = new RefExp(Location::regOf(sp), NULL);	// sp{-}
 	if (*addr == *initSp) return true;			// Accept m[sp{-}]

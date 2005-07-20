@@ -4665,7 +4665,7 @@ StatementList* CallStatement::calcResults() {
 				}
 			}
 		} else {
-			Exp* rsp = Location::regOf(sig->getStackRegister());
+			Exp* rsp = Location::regOf(proc->getSignature()->getStackRegister());
 			StatementList::iterator dd;
 			for (dd = defines.begin(); dd != defines.end(); ++dd) {
 				Exp* lhs = ((Assign*)*dd)->getLeft();
