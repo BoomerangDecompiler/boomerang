@@ -101,23 +101,26 @@ public:
 		// The procs will appear in order of native address
 		Proc*		getFirstProc(PROGMAP::const_iterator& it);
 		Proc*		getNextProc(PROGMAP::const_iterator& it);
-		Proc*		getEntryProc() { return entryProc; }
 
 		// This pair of functions allows the user to iterate through all the UserProcs
 		// The procs will appear in topdown order
 		UserProc*	getFirstUserProc(std::list<Proc*>::iterator& it);
 		UserProc*	getNextUserProc (std::list<Proc*>::iterator& it);
 
+		// list of UserProcs for entry point(s)
+		std::list<UserProc*> entryProcs;	
+
 		// clear the prog object NOTE: deletes everything!
 		void		clear();
 
-		// Lookup the given native address in the code section, returning
-		// a host pointer corresponding to the same address
+		// Lookup the given native address in the code section, returning a host pointer corresponding to the same
+		// address
 		const void* getCodeInfo(ADDRESS uAddr, const char*& last, int& delta);
 
 		const char *getRegName(int idx) { return pFE->getRegName(idx); }
 
-		void		decodeExtraEntrypoint(ADDRESS a); 
+		void		decodeEntryPoint(ADDRESS a);
+		void		setEntryPoint(ADDRESS a);			// As per the above, but don't decode
 		void		decodeEverythingUndecoded();
 		void		decodeFragment(UserProc* proc, ADDRESS a) { pFE->decodeFragment(proc, a); }
 
@@ -257,8 +260,6 @@ public:
 		bool		bRegisterJump;
 		bool		bRegisterCall;
 
-		void		setNextIsEntry() {nextIsEntry = true;}
-
 		void		printSymbols();
 		void		printCallGraph();
 		void		printCallGraphXML();
@@ -287,8 +288,6 @@ protected:
 		std::map<ADDRESS, const char*> *globalMap; // Map of addresses to global symbols
 		int			m_iNumberedProc;		// Next numbered proc will use this
 		Cluster		*m_rootCluster;			// Root of the cluster tree
-		bool		nextIsEntry;			// True if the next Proc created will be the "entry" proc
-		Proc*		entryProc;				// The entry procedure
 
 		friend class XMLProgParser;
 };	// class Prog

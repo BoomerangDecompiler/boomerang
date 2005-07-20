@@ -170,6 +170,7 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 		LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 	if (a == NO_ADDRESS) return;
 
+	prog->setEntryPoint(a);
 	decode(prog, a);
 
 	if (gotMain) {
@@ -203,6 +204,7 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
 			LOG << "starting decode at address " << a << "\n";
 	}
 
+#if 0						// ? Only supposed to be decoding the proc at a!
 	bool change = true;
 	while (change) {
 		change = false;
@@ -227,6 +229,16 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
 		if (Boomerang::get()->noDecodeChildren)
 			break;
 	}
+#else
+	UserProc* p = (UserProc*)prog->findProc(a);
+	if (p->isLib()) {
+		LOG << "NOT decoding library proc at address 0x" << a << "\n";
+		return;
+	}
+	std::ofstream os;
+	processProc(a, p, os);
+	p->setDecoded();
+#endif
 	prog->wellForm();
 }
 
@@ -365,6 +377,8 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  *============================================================================*/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
 		bool spec /* = false */) {
+if (strcmp(pProc->getName(), "getHelp") == 0)
+ std::cerr << "HACK!\n";
 	PBB pBB;					// Pointer to the current basic block
 
 	// We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode

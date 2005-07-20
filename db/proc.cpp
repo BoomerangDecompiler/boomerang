@@ -870,6 +870,7 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 
 // Decompile this UserProc
 CycleSet* UserProc::decompile(CycleList* path) {
+	std::cout << "decompiling " << getName() << "\n";
 	if (VERBOSE)
 		LOG << "decompiling " << getName() << "\n";
 	// Prevent infinite loops when there are cycles in the call graph

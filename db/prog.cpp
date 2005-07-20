@@ -65,13 +65,11 @@
 #include <sys/types.h>
 
 Prog::Prog() :
-	  pBF(NULL),
-	  pFE(NULL),
-	  globalMap(NULL),
-	  m_iNumberedProc(1),
-	  m_rootCluster(new Cluster("prog")),
-	  nextIsEntry(false),
-	  entryProc(NULL) {
+		pBF(NULL),
+		pFE(NULL),
+		globalMap(NULL),
+		m_iNumberedProc(1),
+		m_rootCluster(new Cluster("prog")) {
 	// Default constructor
 }
 
@@ -85,16 +83,14 @@ void Prog::setFrontEnd(FrontEnd *pFE) {
 }
 
 Prog::Prog(const char* name) :
-	  pBF(NULL),
-	  pFE(NULL),
-	  m_name(name),
-	  globalMap(NULL),
-	  m_iNumberedProc(1),
-	  m_rootCluster(new Cluster(getNameNoPath().c_str())),
-	  nextIsEntry(false),
-	  entryProc(NULL) {
+		pBF(NULL),
+		pFE(NULL),
+		m_name(name),
+		globalMap(NULL),
+		m_iNumberedProc(1),
+		m_rootCluster(new Cluster(getNameNoPath().c_str())) {
 	// Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
-	  m_path = m_name;
+	 m_path = m_name;
 }
 
 Prog::~Prog() {
@@ -416,13 +412,13 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 
 
 /*==============================================================================
- * FUNCTION:	   Prog::newProc
- * OVERVIEW:	   Creates a new Proc object, adds it to the list of procs in
- *					this Prog object, and adds the address to the list
- * PARAMETERS:	   name: Name for the proc
- *				   uNative: Native address of the entry point of the proc
- *				   bLib: If true, this will be a libProc; else a UserProc
- * RETURNS:		   A pointer to the new Proc object
+ * FUNCTION:	Prog::newProc
+ * OVERVIEW:	Creates a new Proc object, adds it to the list of procs in this Prog object, and adds the address to
+ *					the list
+ * PARAMETERS:	name: Name for the proc
+ *				uNative: Native address of the entry point of the proc
+ *				bLib: If true, this will be a libProc; else a UserProc
+ * RETURNS:		A pointer to the new Proc object
  *============================================================================*/
 Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 	Proc* pProc;
@@ -435,17 +431,12 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 	m_procLabels[uNative] = pProc;
 	// alert the watchers of a new proc
 	Boomerang::get()->alert_new(pProc);
-	if (nextIsEntry) {
-		nextIsEntry = false;
-		entryProc = pProc;
-	}
 	return pProc;
 }
 
 /*==============================================================================
  * FUNCTION:	   Prog::remProc
- * OVERVIEW:	   Removes the UserProc from this Prog object's list, and
- *					deletes as much as possible of the Proc (Cfg, RTLists, etc)
+ * OVERVIEW:	   Removes the UserProc from this Prog object's list, and deletes as much as possible of the Proc
  * PARAMETERS:	   proc: pointer to the UserProc object to be removed
  * RETURNS:		   <nothing>
  *============================================================================*/
@@ -905,12 +896,23 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 #endif
 }
 
-void Prog::decodeExtraEntrypoint(ADDRESS a) { 
-	Proc* p = findProc(a);
+void Prog::decodeEntryPoint(ADDRESS a) { 
+	Proc* p = (UserProc*)findProc(a);
 	if (p == NULL || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
 		pFE->decode(this, a);
 		finishDecode();
 	}
+	if (p == NULL)
+		p = findProc(a);
+	assert(p);
+	if (!p->isLib())				// -sf procs marked as __nodecode are treated as library procs (?)
+		entryProcs.push_back((UserProc*)p);
+}
+
+void Prog::setEntryPoint(ADDRESS a) {
+	Proc* p = (UserProc*)findProc(a);
+	if (p == NULL || (!p->isLib()))
+		entryProcs.push_back((UserProc*)p);
 }
 
 void Prog::decodeEverythingUndecoded() {
@@ -931,36 +933,18 @@ void Prog::decompile() {
 	if (VERBOSE) 
 		LOG << (int)m_procs.size() << " procedures\n";
 
-	std::list<Proc*>::iterator pp;
-	
-#if 1
-    // what use has the entryProc member variable if we just use the first proc we find?
-	// Certainly, shadowing the member variable was not the right idea.
-	UserProc* entryProc;
-	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
-		entryProc = (UserProc*) *pp;
-		if (entryProc == NULL) continue;	// Probably not needed
-		if (entryProc->isLib()) continue;
-		if (!entryProc->isDecoded())
-			continue;		// Can happen with -E
-		if (VERBOSE)
-			LOG << "starting with " << entryProc->getName() << "\n";
-		entryProc->decompile(new CycleList);
-		break;			// Only decompile top function in this loop
+	// Start decompiling each entry point
+	std::list<UserProc*>::iterator ee;
+	for (ee = entryProcs.begin(); ee != entryProcs.end(); ++ee) {
+		std::cerr << "decompiling entry point " << (*ee)->getName() << "\n";
+		LOG		  << "decompiling entry point " << (*ee)->getName() << "\n";
+		(*ee)->decompile(new CycleList);
 	}
-#else
-    // this should do the job equally well
-    UserProc* entryUserProc = (UserProc*)entryProc;
-	if (entryUserProc != NULL && !entryUserProc->isLib() && entryUserProc->isDecoded()) {
-		if (VERBOSE)
-			LOG << "starting with " << entryUserProc->getName() << "\n";
-		entryUserProc->decompile(new CycleList);
-    }
-#endif
 
-
-	// Just in case there are any Procs not in the call graph
-	if (!Boomerang::get()->noDecodeChildren) {
+	// Just in case there are any Procs not in the call graph. Note that decodeMain now really means "decode main and
+	// all its children and anything else you can find". Cleared if -e or -E given
+	std::list<Proc*>::iterator pp;
+	if (Boomerang::get()->decodeMain) {
 		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 			UserProc* proc = (UserProc*)(*pp);
 			if (proc->isLib()) continue;
@@ -1178,6 +1162,7 @@ void Prog::removeUnusedReturns() {
 	for (pp = m_procs.begin(); pp != m_procs.end(); ++pp) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
+		if (!proc->isDecoded()) continue;		// e.g. use -sf file to just prototype the proc
 		removeRetSet.insert(proc);
 	}
 	std::set<UserProc*>::iterator it;
@@ -1233,6 +1218,7 @@ void Prog::conTypeAnalysis() {
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
+		if (!proc->isDecoded()) continue;
 		proc->conTypeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
@@ -1246,6 +1232,7 @@ void Prog::globalTypeAnalysis() {
 	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
+		if (!proc->isDecoded()) continue;
 		proc->typeAnalysis();
 	}
 	if (VERBOSE || DEBUG_TA)
@@ -1260,12 +1247,14 @@ void Prog::printCallGraph() {
 	std::set<Proc*> seen;
 	std::map<Proc*, int> spaces;
 	std::map<Proc*, Proc*> parent;
-	std::list<Proc*> queue;
-	queue.push_back(getEntryProc());
-	spaces[queue.front()] = 0;
-	while (queue.size()) {
-		Proc *p = queue.front();
-		queue.erase(queue.begin());
+	std::list<Proc*> procList;
+	std::list<UserProc*>::iterator pp;
+	for (pp = entryProcs.begin(); pp != entryProcs.end(); ++pp)
+		procList.push_back(*pp);
+	spaces[procList.front()] = 0;
+	while (procList.size()) {
+		Proc *p = procList.front();
+		procList.erase(procList.begin());
 		if ((unsigned)p == NO_ADDRESS)
 			continue;
 		if (seen.find(p) == seen.end()) {
@@ -1282,7 +1271,7 @@ void Prog::printCallGraph() {
 				UserProc *u = (UserProc*)p;
 				std::list<Proc*> &calleeList = u->getCallees();
 				for (std::list<Proc*>::reverse_iterator it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
-					queue.push_front(*it1);
+					procList.push_front(*it1);
 					spaces[*it1] = n;
 					parent[*it1] = p;
 				}
@@ -1303,7 +1292,7 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
 	for (int i = 0; i < indent; i++)
 		f << "	 ";
 
-	if(!proc->isLib() && fisttime) // geen lib proc
+	if(!proc->isLib() && fisttime) // seen lib proc
 	{
 		f << "0x" << std::hex << proc->getNativeAddress();
 		f << " __nodecode __incomplete void " << proc->getName() << "();\n";
@@ -1330,7 +1319,9 @@ void Prog::printSymbols() {
 	/* Print procs */
     f << "/* Functions: */\n";
     std::set<Proc*> seen;
-    printProcsRecursive(getEntryProc(),0,f,seen);
+	std::list<UserProc*>::iterator pp;
+	for (pp = entryProcs.begin(); pp != entryProcs.end(); ++pp)
+    	printProcsRecursive(*pp, 0, f, seen);
 
     f << "/* Leftovers: */\n";
 	std::list<Proc*>::iterator it; // don't forget the rest
@@ -1355,9 +1346,9 @@ void Prog::printCallGraphXML() {
 	std::ofstream f(fname.c_str());
 	f << "<prog name=\"" << getName() << "\">\n";
 	f << "	 <callgraph>\n";
-	Proc *entry = getEntryProc();
-	if (!entry->isLib())
-		entry->printCallGraphXML(f, 2);
+	std::list<UserProc*>::iterator pp;
+	for (pp = entryProcs.begin(); pp != entryProcs.end(); ++pp)
+		(*pp)->printCallGraphXML(f, 2);
 	for (it = m_procs.begin(); it != m_procs.end(); it++) {
 		if (!(*it)->isVisited() && !(*it)->isLib()) {
 			(*it)->printCallGraphXML(f, 2);

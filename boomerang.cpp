@@ -83,6 +83,8 @@ void Boomerang::usage() {
 }
 
 void Boomerang::helpcmd() {
+	// Column 98 of this source file is column 80 of output (don't use tabs)
+	//            ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
 	std::cout << "Available commands (for use with -k):\n";
 	std::cout << "  decode                             : Loads and decodes the specified binary.\n";
 	std::cout << "  decompile [proc]                   : Decompiles the program or specified proc.\n";
@@ -112,7 +114,7 @@ void Boomerang::help() {
 	std::cout << "Decoding/decompilation options\n";
 	std::cout << "  -e <addr>        : Decode the procedure beginning at addr, and callees\n";
 	std::cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
-	std::cout << "  Use -e and -E repeatedly for multiple entry points; both imply -nm\n";
+	std::cout << "                     Use -e and -E repeatedly for multiple entry points\n";
 	std::cout << "  -ic              : Decode through type 0 Indirect Calls\n";
 	std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
 	std::cout << "  -Tc              : Use old constraint-based type analysis\n";
@@ -149,8 +151,7 @@ void Boomerang::help() {
 	std::cout << "  -nd              : No (reduced) dataflow analysis\n";
 	std::cout << "  -nD              : No decompilation (at all!)\n";
 	std::cout << "  -nl              : No creation of local variables\n";
-	std::cout << "  -nL              : No limiting of propagations using the self-referencing\n";
-	std::cout << "                     heuristic\n";
+	std::cout << "  -nL              : No limit propagations using the self-referencing heuristic\n";
 	std::cout << "  -nm              : No decoding of the 'main' procedure\n";
 	std::cout << "  -nn              : No removal of NULL and unused statements\n";
 	std::cout << "  -np              : No replacement of expressions with Parameter names\n";
@@ -676,9 +677,6 @@ int Boomerang::commandLine(int argc, const char **argv)
 					case 'n':
 						noRemoveNull = true;
 						break;
-					case 'm':
-						decodeMain = false;
-						break;
 					case 'P':
 						noPromote = true;
 						break;
@@ -880,13 +878,10 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	if (objcmodules.size())
 		objcDecode(objcmodules, prog);
 
-	prog->setNextIsEntry();			// The next proc created will be designated the "entry point"
-	
 	// Entry points from -e (and -E) switch(es)
 	for (unsigned i = 0; i < entrypoints.size(); i++) {
-		std::cerr<< "decoding specified entrypoint " << std::hex <<
-		  entrypoints[i] << "\n";
-		prog->decodeExtraEntrypoint(entrypoints[i]);
+		std::cerr<< "decoding specified entrypoint " << std::hex << entrypoints[i] << "\n";
+		prog->decodeEntryPoint(entrypoints[i]);
 	}
 
 	if (entrypoints.size() == 0) {		// no -e or -E given

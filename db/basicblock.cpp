@@ -2036,7 +2036,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 					bool newFunc =	prog->findProc(pfunc) == NULL;
 					if (Boomerang::get()->noDecodeChildren)
 						return false;
-					prog->decodeExtraEntrypoint(pfunc);
+					prog->decodeEntryPoint(pfunc);
 					// If this was not decoded, then this is a significant change, and we want to redecode the present
 					// function once that callee has been decoded
 					return newFunc;

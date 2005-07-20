@@ -239,7 +239,8 @@ virtual void		alert_end_decompile(UserProc *p) {
 		std::vector<std::string> symbolFiles;
 		/// A map to find a name by a given address.
 		std::map<ADDRESS, std::string> symbols;
-		bool		decodeMain;
+		// decodeMain is set when there are no -e or -E switches given
+		bool		decodeMain;					// When true, attempt to decode main, all children, and all procs
 		bool		printAST;
 		bool		dumpXML;
 		bool		noRemoveReturns;
