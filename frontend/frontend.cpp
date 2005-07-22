@@ -170,8 +170,8 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 		LOG << "start: " << a << " gotmain: " << (gotMain ? "true" : "false") << "\n";
 	if (a == NO_ADDRESS) return;
 
-	prog->setEntryPoint(a);
 	decode(prog, a);
+	prog->setEntryPoint(a);
 
 	if (gotMain) {
 		static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
@@ -198,48 +198,47 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 	return;
 }
 
+// Somehow, a == NO_ADDRESS has come to mean decode anything not already decoded
 void FrontEnd::decode(Prog *prog, ADDRESS a) {
 	if (a != NO_ADDRESS) {
 		prog->setNewProc(a);
 		if (VERBOSE)
 			LOG << "starting decode at address " << a << "\n";
-	}
+		UserProc* p = (UserProc*)prog->findProc(a);
+		if (p->isLib()) {
+			LOG << "NOT decoding library proc at address 0x" << a << "\n";
+			return;
+		}
+		std::ofstream os;
+		processProc(a, p, os);
+		p->setDecoded();
 
-#if 0						// ? Only supposed to be decoding the proc at a!
-	bool change = true;
-	while (change) {
-		change = false;
-		PROGMAP::const_iterator it;
-		for (Proc *pProc = prog->getFirstProc(it); pProc != NULL; pProc = prog->getNextProc(it)) {
-			if (pProc->isLib()) continue;
-			UserProc *p = (UserProc*)pProc;
-			if (p->isDecoded()) continue;
+	} else {						// a == NO_ADDRESS
+		bool change = true;
+		while (change) {
+			change = false;
+			PROGMAP::const_iterator it;
+			for (Proc *pProc = prog->getFirstProc(it); pProc != NULL; pProc = prog->getNextProc(it)) {
+				if (pProc->isLib()) continue;
+				UserProc *p = (UserProc*)pProc;
+				if (p->isDecoded()) continue;
 
-			// undecoded userproc.. decode it			
-			change = true;
-			std::ofstream os;
-			int res = processProc(p->getNativeAddress(), p, os);
-			if (res == 1)
-				p->setDecoded();
-			else
-				break;
-			// Break out of the loops if not decoding children
+				// undecoded userproc.. decode it			
+				change = true;
+				std::ofstream os;
+				int res = processProc(p->getNativeAddress(), p, os);
+				if (res == 1)
+					p->setDecoded();
+				else
+					break;
+				// Break out of the loops if not decoding children
+				if (Boomerang::get()->noDecodeChildren)
+					break;
+			}
 			if (Boomerang::get()->noDecodeChildren)
 				break;
 		}
-		if (Boomerang::get()->noDecodeChildren)
-			break;
 	}
-#else
-	UserProc* p = (UserProc*)prog->findProc(a);
-	if (p->isLib()) {
-		LOG << "NOT decoding library proc at address 0x" << a << "\n";
-		return;
-	}
-	std::ofstream os;
-	processProc(a, p, os);
-	p->setDecoded();
-#endif
 	prog->wellForm();
 }
 
