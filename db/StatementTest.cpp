@@ -1315,13 +1315,14 @@ void StatementTest::testBypass () {
 	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
-	pFE->decode(prog);
+	pFE->decode(prog, true);				// Decode main
+	pFE->decode(prog, NO_ADDRESS);			// Decode anything undecoded
 	bool gotMain;
 	ADDRESS addr = pFE->getMainEntryPoint(gotMain);
 	CPPUNIT_ASSERT (addr != NO_ADDRESS);
 	UserProc* proc = (UserProc*) prog->findProc("foo2");
 	assert(proc);
-	proc->promoteSignature();								// Make sure it's a PentiumSignature (needed for bypassing)
+	proc->promoteSignature();			// Make sure it's a PentiumSignature (needed for bypassing)
 	Cfg* cfg = proc->getCFG();
 	// Sort by address
 	cfg->sortByAddress();
