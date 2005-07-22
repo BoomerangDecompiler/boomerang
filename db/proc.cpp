@@ -2098,14 +2098,31 @@ static RefExp* regOfWild = new RefExp(
 
 void UserProc::findFinalParameters() {
 
-	if (signature->isFullSignature())
-		return;
+	parameters.clear();
 
+	if (signature->isForced()) {
+		// Copy from signature
+		int n = signature->getNumParams();
+		for (int i=0; i < n; ++i) {
+			Exp* paramLoc = signature->getParamExp(i)->clone();		// E.g. m[r28 + 4]
+			LocationSet components;
+			LocationSet::iterator cc;
+			paramLoc->addUsedLocs(components);
+			for (cc = components.begin(); cc != components.end(); ++cc)
+				if (*cc != paramLoc)								// Don't subscript outer level
+					paramLoc->expSubscriptVar(*cc, NULL);			// E.g. r28 -> r28{-}
+			ImplicitAssign* ia = new ImplicitAssign(signature->getParamType(i), paramLoc);
+			parameters.append(ia);
+			const char* name = signature->getParamName(i);
+			Exp* param = Location::param(name, this);
+			symbolMap[paramLoc] = param;							// Update name map
+		}
+		return;
+	}
 	if (VERBOSE)
 		LOG << "finding final parameters for " << getName() << "\n";
 
 	int sp = signature->getStackRegister();
-	parameters.clear();
 	signature->setNumParams(0);			// Clear any old ideas
 	StatementList stmts;
 	getStatements(stmts);
@@ -2192,7 +2209,7 @@ void UserProc::findFinalParameters() {
 
 void UserProc::trimParameters(int depth) {
 
-	if (signature->isFullSignature())
+	if (signature->isForced())
 		return;
 
 	if (VERBOSE)
@@ -5027,3 +5044,4 @@ void UserProc::copyDecodedICTs() {
 		prog->addDecodedRtl(bb->getHiAddr(), rtl);
 	}
 }
+

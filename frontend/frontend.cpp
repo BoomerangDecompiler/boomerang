@@ -188,7 +188,8 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 				else {
 					proc->setSignature(fty->getSignature()->clone());
 					proc->getSignature()->setName(name);
-					proc->getSignature()->setFullSig(true);		// Don't add or remove parameters
+					//proc->getSignature()->setFullSig(true);		// Don't add or remove parameters
+					proc->getSignature()->setForced(true);			// Don't add or remove parameters
 				}
 				break;
 			}

@@ -287,6 +287,7 @@ int NamedType::getSize() const {
 int CompoundType::getSize() const {
 	int n = 0;
 	for (unsigned i = 0; i < types.size(); i++)
+		// NOTE: this assumes no padding... perhaps explicit padding will be needed
 		n += types[i]->getSize();
 	return n;
 }

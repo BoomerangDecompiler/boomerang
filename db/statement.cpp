@@ -2786,7 +2786,13 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 //	//	//	//
 
 Assignment::Assignment(Exp* lhs) : type(new VoidType), lhs(lhs) {}
-Assignment::Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {}
+Assignment::Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {
+	if (ADHOC_TYPE_ANALYSIS) {
+		Location* loc = dynamic_cast<Location*>(lhs);
+		if (loc)					// For example: could be %CF! Ugh.
+			loc->setType(ty);
+	}
+}
 Assignment::~Assignment() {}
 
 Assign::Assign(Exp* lhs, Exp* rhs, Exp* guard)
@@ -4483,9 +4489,19 @@ ArgSourceProvider::ArgSourceProvider(CallStatement* call) : call(call) {
 		calleeParams = &((UserProc*)procDest)->getParameters();
 		pp = calleeParams->begin();
 	} else {
-		src = SRC_COL;
-		defCol = call->getDefCollector();
-		cc = defCol->begin();
+		Signature* destSig = NULL;
+		if (procDest)
+			destSig = procDest->getSignature();
+		if (destSig && destSig->isForced()) {
+			src = SRC_LIB;
+			callSig = destSig;
+			n = callSig->getNumParams();
+			i = 0;
+		} else {
+			src = SRC_COL;
+			defCol = call->getDefCollector();
+			cc = defCol->begin();
+		}
 	}
 }
 
@@ -4576,8 +4592,10 @@ bool ArgSourceProvider::exists(Exp* e) {
 
 void CallStatement::updateArguments() {
 	/* If this is a library call, source = signature
-		else if there is a callee, source = callee parameters
-		else no callee, source is def collector in this call.
+		else if there is a callee return, source = callee parameters
+		else
+		  if a forced callee signature, source = signature
+		  else source is def collector in this call.
 		oldArguments = arguments
 		clear arguments
 		for each arg lhs in source
@@ -4708,6 +4726,15 @@ Type* Assignment::getType() {
 		return lhs->getType();
 	else
 		return type;
+}
+
+void Assignment::setType(Type* ty) {
+	type = ty;
+	if (ADHOC_TYPE_ANALYSIS) {
+		Location* loc = dynamic_cast<Location*>(lhs);
+		if (loc)					// For example: could be %CF! Ugh.
+			loc->setType(ty);
+	}
 }
 
 // A temporary HACK for getting rid of the %CF in returns

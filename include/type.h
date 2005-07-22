@@ -649,10 +649,10 @@ virtual bool		isCompatibleWith(Type* other);
  * Class DataInterval. This class is used to represent local variables in procedures, and the global variables for
  * the program. The concept is that the data space (the current procedure's stack or the global data space) has to
  * be partitioned into separate variables of various sizes and types. If a new variable is inserted that would cause
- * an overlap, the types have to be reconciled such that they no longer overlap (generally, the smaller type becomes
+ * an overlap, the types have to be reconciled such that they no longer conflict (generally, the smaller type becomes a
  * member of the larger type, which has to be a structure or an array).
- * To handle the overlaps, each procedure and the Prog object have a multimap from ADDRESS (stack offset from sp{0} for
- * locals, or native address for globals), to an object of this class. The reason for the multimap is that it is
+ * Each procedure and the Prog object have a map from ADDRESS (stack offset from sp{0} for locals, or native address for
+ * globals), to an object of this class. A multimap is not needed, as the type of the entry specifies the overlapping.
  * necessary to support nested structures: more than one struct could start at any given ADDRESS.
  * The parentPointer is also needed to support nested structures. For example, when deciding definitively that
  * there is no overlap (without having to read back to the beginning of the map), and when a struct increases in size

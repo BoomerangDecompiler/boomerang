@@ -376,16 +376,19 @@ private:
 		std::list<Proc*> calleeList;
 	 
 		/**
-		 * A collector for initial parameters (locations used before being defined)
-		 * Note that final parameters don't use this; it's only of use during group decompilation analysis (sorting out
-		 * recursion)
+		 * A collector for initial parameters (locations used before being defined).  Note that final parameters don't
+		 * use this; it's only of use during group decompilation analysis (sorting out recursion)
 		 */
 		UseCollector col;
 
 		/**
 		 * The list of parameters, ordered and filtered.
 		 * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
-		 * The RHS is just ignored; the list is of ImplicitAssigns
+		 * The RHS is just ignored; the list is of ImplicitAssigns.
+		 * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
+		 * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
+		 * so they are not suitable at present (since the addresses regularly get changed as the parameters get
+		 * recreated).
 		 */
 		StatementList parameters;
 

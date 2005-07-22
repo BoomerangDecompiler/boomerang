@@ -110,8 +110,9 @@ protected:
 		Type		*rettype;
 		bool		ellipsis;
 		bool		unknown;
-		bool		bFullSig;			// True if have a full signature from a signature file etc
-		bool		forced;				// True if the signature is forced with a -sf entry
+		//bool		bFullSig;			// True if have a full signature from a signature file etc
+		// True if the signature is forced with a -sf entry, or is otherwise known, e.g. WinMain
+		bool		forced;
 		Type		*preferedReturn;
 		std::string	preferedName;
 		std::vector<int> preferedParams;
@@ -136,7 +137,7 @@ virtual	Signature	*clone();
 
 		bool		isUnknown() { return unknown; }
 		void		setUnknown(bool b) { unknown = b; }
-		void		setFullSig(bool full) {bFullSig = full;}
+//		void		setFullSig(bool full) {bFullSig = full;}
 		bool		isForced() {return forced; }
 		void		setForced(bool f) {forced = f; }
 
@@ -255,7 +256,7 @@ virtual	void		setLibraryDefines(StatementList* defs) {}	// Set the locations def
 virtual bool		isPromoted() { return false; }
 		// Return true if this has a full blown signature, e.g. main/WinMain etc.
 		// Note that many calls to isFullSignature were incorrectly calls to isPromoted()
-		bool		isFullSignature() {return bFullSig;}
+		//bool		isFullSignature() {return bFullSig;}
 
 	// ascii versions of platform, calling convention name
 static char*		platformName(platform plat);
