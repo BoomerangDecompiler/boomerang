@@ -948,6 +948,7 @@ void Prog::decompile() {
 		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 			UserProc* proc = (UserProc*)(*pp);
 			if (proc->isLib()) continue;
+			if (proc->isDecompiled()) continue;
 			proc->decompile(new CycleList);
 		}
 	}
