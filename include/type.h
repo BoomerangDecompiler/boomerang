@@ -500,7 +500,7 @@ virtual bool		isCompound() const { return true; }
 		int			getOffsetTo(const char *member);
 		int			getOffsetRemainder(int n);
 
-virtual Type* clone() const;
+virtual Type*		clone() const;
 
 virtual bool		operator==(const Type& other) const;
 //virtual bool		operator-=(const Type& other) const;
@@ -665,6 +665,7 @@ typedef std::map<ADDRESS, DataInterval> DataIntervalMap;
 class DataInterval {
 		unsigned	size;				// The size of this type in bytes
 		std::string	name;				// The name of the variable
+		Type*		type;				// The type of the variable
 };
 
 

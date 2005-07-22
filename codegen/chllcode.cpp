@@ -1201,8 +1201,12 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		s << "void ";
 	else {
 		Assign* firstRet = (Assign*)*returns->begin();
-		appendType(s, firstRet->getType());
-		if (!firstRet->getType() || !firstRet->getType()->isPointer())	// NOTE: assumes type *proc( style
+		Type* retType = firstRet->getType();
+		if (retType == NULL || retType->isVoid())
+			// There is a real return; make it integer (Remove with AD HOC type analysis)
+			retType = new IntegerType();
+		appendType(s, retType);
+		if (!firstRet->getType()->isPointer())	// NOTE: assumes type *proc( style
 			s << " ";
 	}
 	s << proc->getName() << "(";
