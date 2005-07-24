@@ -67,7 +67,6 @@
 Prog::Prog() :
 		pBF(NULL),
 		pFE(NULL),
-		globalMap(NULL),
 		m_iNumberedProc(1),
 		m_rootCluster(new Cluster("prog")) {
 	// Default constructor
@@ -86,7 +85,6 @@ Prog::Prog(const char* name) :
 		pBF(NULL),
 		pFE(NULL),
 		m_name(name),
-		globalMap(NULL),
 		m_iNumberedProc(1),
 		m_rootCluster(new Cluster(getNameNoPath().c_str())) {
 	// Constructor taking a name. Technically, the allocation of the space for the name could fail, but this is unlikely
@@ -941,10 +939,9 @@ void Prog::decompile() {
 		(*ee)->decompile(new CycleList);
 	}
 
-	// Just in case there are any Procs not in the call graph. Note that decodeMain now really means "decode main and
-	// all its children and anything else you can find". Cleared if -e or -E given
+	// Just in case there are any Procs not in the call graph. 
 	std::list<Proc*>::iterator pp;
-	if (Boomerang::get()->decodeMain) {
+	if (Boomerang::get()->decodeMain && !Boomerang::get()->noDecodeChildren) {
 		for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
 			UserProc* proc = (UserProc*)(*pp);
 			if (proc->isLib()) continue;
@@ -1558,7 +1555,7 @@ public:
 	std::list<Proc*> m_procs;
 	PROGMAP m_procLabels;
 	std::set<Global*> globals;
-	std::map<ADDRESS, const char*> *globalMap;
+	DataIntervalMap globalMap;
 	int m_iNumberedProc;
 	Cluster *m_rootCluster;
 };

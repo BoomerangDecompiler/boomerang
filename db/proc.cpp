@@ -2771,18 +2771,22 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 
 // Return an expression that is equivilent to e in terms of symbols. Creates new symbols as needed.
 Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
+#if 0	// See below
 	// Expression r[sp] (build just once per call)
 	Exp* regSP = Location::regOf(signature->getStackRegister(prog));
 	// The implicit definition for r[sp], if any
 	Statement* defSP = cfg->findTheImplicitAssign(regSP);
-	// The expression r[sp]{0}
+	// The expression r[sp]{0} or r[sp]{-} as appropriate
 	RefExp* refSP0 = new RefExp(regSP, defSP);
+#endif
 
 	Exp *e = NULL;
 	if (symbolMap.find(le) == symbolMap.end()) {
-		if (le->getOper() == opMemOf && signature->isOpCompatStackLocal(le->getSubExp1()->getOper()) &&
-				*le->getSubExp1()->getSubExp1() == *refSP0 &&
-				le->getSubExp1()->getSubExp2()->isIntConst()) {
+		//if (le->getOper() == opMemOf && signature->isOpCompatStackLocal(le->getSubExp1()->getOper()) &&
+		//		*le->getSubExp1()->getSubExp1() == *refSP0 &&
+		//		le->getSubExp1()->getSubExp2()->isIntConst()) {	// }
+#if 0	// This doesn't work any more anyway, because of an ordering issue
+		if (signature->isStackLocal(prog, le)) {
 			int le_n = ((Const*)le->getSubExp1()->getSubExp2())->getInt();
 			// now test all the locals to see if this expression is an alias to one of them (for example,
 			// a member of a compound typed local)
@@ -2829,6 +2833,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 				}
 			}
 		}
+#endif
 		
 		if (ty == NULL && lastPass)
 			ty = new IntegerType();
@@ -2850,7 +2855,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 			Type *ty = locals[name];
 			assert(ty);
 			if (nty && !(*ty == *nty) && nty->getSize() >= ty->getSize()) {
-				if (VERBOSE)
+				if (DEBUG_TA)
 					LOG << "getSymbolExp: updating type of " << name.c_str() << " to " << nty->getCtype() << "\n";
 				ty = nty;
 				locals[name] = ty;
@@ -4011,7 +4016,7 @@ void UserProc::doCountReturns(Statement* def, ReturnCounter& rc, Exp* loc)
 			ret = proc->getSignature()->getReturnExp(n);
 		else {
 			assert(call->isComputed());
-			std::vector<Exp*> &returns = getProg()->getDefaultReturns();
+			std::vector<Exp*> &returns = prog->getDefaultReturns();
 			assert(n < (int)returns.size());
 			ret = returns[n];
 		}

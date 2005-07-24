@@ -371,6 +371,11 @@ private:
 		SymbolMapType symbolMap;
 
 		/*
+		 * The local "symbol table", which is aware of overlaps
+		 */
+		DataIntervalMap	localTable;
+
+		/*
 		 * Set of callees (Procedures that this procedure calls). Used for call graph, among other things
 		 */
 		std::list<Proc*> calleeList;

@@ -22,6 +22,7 @@
  * 07 Jul 02 - Mike: Added a LMMH() so code works on big-endian host
  * 08 Jul 02 - Mike: Changed algorithm to find main; now looks for ordinary
  *				 call up to 10 instructions before an indirect call to exit
+ * 24 Jul 05 - Mike: State machine to recognise main in Borland Builder files
  */
 
 #if defined(_MSC_VER) && _MSC_VER <= 1200
@@ -94,7 +95,8 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	unsigned lim = p + 0x200;
 	unsigned char op1, op2;
 	unsigned addr, lastOrdCall = 0;
-	int gap;			// Number of instructions from the last ordinary call
+	int gap;				// Number of instructions from the last ordinary call
+	int borlandState = 0;	// State machine for Borland
 
 	SectionInfo* si = GetSectionInfoByName(".text");
 	if (si == NULL) si = GetSectionInfoByName("CODE");
@@ -110,25 +112,69 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	while (p < lim) {
 		op1 = *(unsigned char*)(p + base);
 		op2 = *(unsigned char*)(p + base + 1);
-		if (op1 == 0xE8) {
-			// An ordinary call; this could be to winmain/main
-			lastOrdCall = p;
-			gap = 0;
-		}
-		else if (op1 == 0xFF && op2 == 0x15) { // Opcode FF 15 is indirect call
-			// Get the 4 byte address from the instruction
-			addr = LMMH(*(p + base + 2));
-//			const char *c = dlprocptrs[addr].c_str();
-//printf("Checking %x finding %s\n", addr, c);
-			if (dlprocptrs[addr] == "exit") {
-				if (gap <= 10) {
-					// This is it. The instruction at lastOrdCall is (win)main
-					addr = LMMH(*(lastOrdCall + base + 1));
-					addr += lastOrdCall + 5;	// Addr is dest of call
-//printf("*** MAIN AT 0x%x ***\n", addr);
-					return addr + LMMH(m_pPEHeader->Imagebase);
-				}
+		switch (op1) {
+			case 0xE8: {
+				// An ordinary call; this could be to winmain/main
+				lastOrdCall = p;
+				gap = 0;
+				if (borlandState == 1)
+					borlandState++;
+				else
+					borlandState = 0;
+				break;
 			}
+			case 0xFF:
+				if (op2 == 0x15) { 			// Opcode FF 15 is indirect call
+					// Get the 4 byte address from the instruction
+					addr = LMMH(*(p + base + 2));
+//					const char *c = dlprocptrs[addr].c_str();
+//pr	intf("Checking %x finding %s\n", addr, c);
+					if (dlprocptrs[addr] == "exit") {
+						if (gap <= 10) {
+							// This is it. The instruction at lastOrdCall is (win)main
+							addr = LMMH(*(lastOrdCall + base + 1));
+							addr += lastOrdCall + 5;	// Addr is dest of call
+//pr	intf("*** MAIN AT 0x%x ***\n", addr);
+						return addr + LMMH(m_pPEHeader->Imagebase);
+						}
+					}
+				} else
+					borlandState = 0;
+				break;
+			case 0xEB: 					// Short relative jump, e.g. Borland
+				p += op2+2;				// +2 for the instruction itself, and op2 for the displacement
+				gap++;
+				continue;
+			case 0x6A:
+				if (op2 == 0) {			// Push 00
+					// Borland pattern: push 0 / call __ExceptInit / pop ecx / push offset mainInfo / push 0
+					// Borland state before: 0				1			   2			3				4
+					if (borlandState == 0)
+						borlandState = 1;
+					else if (borlandState == 4) {
+						// Borland pattern succeeds. p-4 has the offset of mainInfo
+						ADDRESS mainInfo = LMMH(*(base + p-4));
+						ADDRESS main = readNative4(mainInfo+0x18);		// Address of main is at mainInfo+18
+						return main;
+					}
+				} else
+					borlandState = 0;
+				break;
+			case 0x59:					// Pop ecx
+				if (borlandState == 2)
+					borlandState = 3;
+				else
+					borlandState = 0;
+				break;
+			case 0x68: 					// Push 4 byte immediate
+				if (borlandState == 3)
+					borlandState++;
+				else
+					borlandState = 0;
+				break;
+			default:
+				borlandState = 0;
+				break;
 		}
 		int size = microX86Dis(p + base);
 		if (size == 0x40) {
@@ -139,7 +185,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 		gap++;
 	}
 
-	// For VS.NET, need an o,d favourite: find a call with three pushes in the first 100 instuctions
+	// For VS.NET, need an old favourite: find a call with three pushes in the first 100 instuctions
 	int count = 100;
 	int pushes = 0;
 	p = LMMH(m_pPEHeader->EntrypointRVA);
@@ -540,3 +586,12 @@ extern "C" {
 		return new Win32BinaryFile;
 	}	 
 }
+
+void Win32BinaryFile::dumpSymbols() {
+	std::map<ADDRESS, std::string>::iterator it;
+	std::cerr << std::hex;
+	for (it = dlprocptrs.begin(); it != dlprocptrs.end(); ++it)
+		std::cerr << "0x" << it->first << " " << it->second << "        ";
+	std::cerr << std::dec << "\n";
+}
+

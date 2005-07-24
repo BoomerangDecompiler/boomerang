@@ -148,6 +148,7 @@ void Boomerang::help() {
 	std::cout << "  -du              : Debug removing unused statements etc\n";
 	std::cout << "Restrictions\n";
 	std::cout << "  -nb              : No simplifications for branches\n";
+	std::cout << "  -nc              : No decode children in the call graph (callees)\n";
 	std::cout << "  -nd              : No (reduced) dataflow analysis\n";
 	std::cout << "  -nD              : No decompilation (at all!)\n";
 	std::cout << "  -nl              : No creation of local variables\n";
@@ -662,6 +663,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 					case 'b':
 						noBranchSimplify = true;
 						break;
+					case 'c':
+						noDecodeChildren = true;
+						break;
 					case 'd':
 						noDataflow = true;
 						break;
@@ -889,9 +893,11 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 			std::cerr << "decoding entry point...\n";
 		fe->decode(prog, decodeMain, pname);
 
-		// this causes any undecoded userprocs to be decoded
-		std::cerr << "decoding anything undecoded...\n";
-		fe->decode(prog, NO_ADDRESS);
+		if (!noDecodeChildren) {
+			// this causes any undecoded userprocs to be decoded
+			std::cerr << "decoding anything undecoded...\n";
+			fe->decode(prog, NO_ADDRESS);
+		}
 	}
 
 	prog->finishDecode();

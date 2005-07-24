@@ -377,8 +377,6 @@ Proc* FrontEnd::newProc(Prog *prog, ADDRESS uAddr) {
  *============================================================================*/
 bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bool frag /* = false */,
 		bool spec /* = false */) {
-if (strcmp(pProc->getName(), "getHelp") == 0)
- std::cerr << "HACK!\n";
 	PBB pBB;					// Pointer to the current basic block
 
 	// We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
