@@ -145,7 +145,8 @@ virtual Exp			*match(Type *pattern);
 virtual Type*		mergeWith(Type* other) { assert(0); return 0; }
 
 					// Acccess functions
-virtual int			getSize() const = 0;
+virtual unsigned	getSize() const = 0;
+		unsigned	getBytes() const {return (getSize() + 7) / 8; }
 virtual void		setSize(int sz) {assert(0);}
 
 					// Print and format functions
@@ -192,7 +193,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -221,7 +222,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp 		*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -240,7 +241,7 @@ protected:
 
 class IntegerType : public Type {
 private:
-		int			size;			// Size in bits, e.g. 16
+		unsigned	size;			// Size in bits, e.g. 16
 		int			signedness;		// pos=signed, neg=unsigned, 0=unknown or evenly matched
 
 public:
@@ -257,7 +258,7 @@ virtual bool		operator< (const Type& other) const;
 virtual Type*		mergeWith(Type* other);
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;			// Get size in bits
 virtual void		setSize(int sz) {size = sz;}
 					// Is it signed? 0=no, 1=yes, -1 = don't know
 		bool		isSigned() { return signedness >= 0; }
@@ -285,7 +286,7 @@ protected:
 
 class FloatType : public Type {
 private:
-		int			size;				// Size in bits, e.g. 16
+		unsigned	size;				// Size in bits, e.g. 64
 
 public:
 					FloatType(int sz = 64);
@@ -299,7 +300,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 virtual void		setSize(int sz) {size = sz;}
 
 virtual const char	*getCtype(bool final = false) const;
@@ -329,7 +330,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -353,7 +354,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -386,7 +387,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 virtual void		setSize(int sz) {assert(sz == STD_SIZE);}
 
 virtual const char	*getCtype(bool final = false) const;
@@ -425,7 +426,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -461,7 +462,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
@@ -490,15 +491,15 @@ virtual bool		isCompound() const { return true; }
 						types.push_back(n); 
 						names.push_back(str);
 					}
-		int			getNumTypes() { return types.size(); }
-		Type		*getType(int n) { assert(n < getNumTypes()); return types[n]; }
+		unsigned	getNumTypes() { return types.size(); }
+		Type		*getType(unsigned n) { assert(n < getNumTypes()); return types[n]; }
 		Type		*getType(const char *nam);
-		const char	*getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
-		Type		*getTypeAtOffset(int n);
-		const char	*getNameAtOffset(int n);
-		int			getOffsetTo(int n);
-		int			getOffsetTo(const char *member);
-		int			getOffsetRemainder(int n);
+		const char	*getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
+		Type		*getTypeAtOffset(unsigned n);
+		const char	*getNameAtOffset(unsigned n);
+		unsigned	getOffsetTo(unsigned n);
+		unsigned	getOffsetTo(const char *member);
+		unsigned	getOffsetRemainder(unsigned n);
 
 virtual Type*		clone() const;
 
@@ -507,7 +508,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
@@ -554,7 +555,7 @@ virtual bool		operator==(const Type& other) const;
 virtual bool		operator< (const Type& other) const;
 virtual Exp			*match(Type *pattern);
 
-virtual int			getSize() const;
+virtual unsigned	getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
 
@@ -572,10 +573,10 @@ protected:
 // width of a register or memory transfer)
 class SizeType : public Type {
 private:
-	int				size;				// Size in bits, e.g. 16
+	unsigned		size;				// Size in bits, e.g. 16
 public:
 					SizeType() : Type(eSize) {}
-					SizeType(int sz) : Type(eSize), size(sz) {}
+					SizeType(unsigned sz) : Type(eSize), size(sz) {}
 virtual				~SizeType() {}
 virtual Type*		clone() const;
 virtual bool		operator==(const Type& other) const;
@@ -583,8 +584,8 @@ virtual bool		operator< (const Type& other) const;
 //virtual Exp		  *match(Type *pattern);
 virtual Type*		mergeWith(Type* other);
 
-virtual int			getSize() const;
-virtual void		setSize(int sz) {size = sz;}
+virtual unsigned	getSize() const;
+virtual void		setSize(unsigned sz) {size = sz;}
 virtual bool		isSize() const { return true; }
 virtual bool		isComplete() {return false;}	// Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
@@ -609,7 +610,7 @@ virtual Type*		mergeWith(Type* other);
 		Type		*getBaseType() { return base_type; }
 		void		setBaseType(Type *b) { base_type = b; }
 
-virtual int			getSize() const {return base_type->getSize()/2;}
+virtual unsigned	getSize() const {return base_type->getSize()/2;}
 virtual void		setSize(int sz);		// Does this make sense?
 virtual bool		isUpper() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
@@ -634,7 +635,7 @@ virtual Type*		mergeWith(Type* other);
 		Type		*getBaseType() { return base_type; }
 		void		setBaseType(Type *b) { base_type = b; }
 
-virtual int			getSize() const {return base_type->getSize()/2;}
+virtual unsigned	getSize() const {return base_type->getSize()/2;}
 virtual void		setSize(int sz);		// Does this make sense?
 virtual bool		isLower() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
@@ -653,21 +654,28 @@ virtual bool		isCompatibleWith(Type* other);
  * member of the larger type, which has to be a structure or an array).
  * Each procedure and the Prog object have a map from ADDRESS (stack offset from sp{0} for locals, or native address for
  * globals), to an object of this class. A multimap is not needed, as the type of the entry specifies the overlapping.
- * necessary to support nested structures: more than one struct could start at any given ADDRESS.
- * The parentPointer is also needed to support nested structures. For example, when deciding definitively that
- * there is no overlap (without having to read back to the beginning of the map), and when a struct increases in size
- * (e.g. there is a new offset larger than any previously seen offset), some elements from the parent struct may have
- * to migrate from the parent to the newly expanded child.
  */
-class DataInterval;
-typedef std::map<ADDRESS, DataInterval> DataIntervalMap;
 
-class DataInterval {
+struct DataInterval {
 		unsigned	size;				// The size of this type in bytes
 		std::string	name;				// The name of the variable
 		Type*		type;				// The type of the variable
 };
 
+typedef std::pair<const ADDRESS, DataInterval> DataIntervalEntry;		// For result of find() below
+
+class DataIntervalMap {
+		std::map<ADDRESS, DataInterval> dimap;
+public:
+					DataIntervalMap() {}
+typedef	std::map<ADDRESS, DataInterval>::iterator iterator;
+		DataIntervalEntry* find(ADDRESS addr);		// Find the DataInterval at address addr, or NULL if none
+		void		addItem(ADDRESS addr, char* name, Type* ty);
+		void		expandItem(ADDRESS addr, unsigned size);
+		Exp*		expForAddr(ADDRESS addr);		// Get something like struct1.short2 given 0x1012
+		char*		prints();						// For test and debug
+		void		dump();							// For debug
+};
 
 // Not part of the Type class, but logically belongs with it:
 std::ostream& operator<<(std::ostream& os, Type* t);  // Print the Type pointed to by t

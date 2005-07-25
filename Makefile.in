@@ -262,7 +262,7 @@ db/sslinst.o: include/statement.h include/exp.h include/rtl.h include/cfg.h incl
 db/dataflow.o: include/dataflow.h include/cfg.h include/proc.h include/exp.h include/visitor.h include/basicblock.h
 
 transform/transformer.o: include/transformer.h transform/generic.h transform/rdi.h transform/transformation-parser.h
-transform/generic.o: include/transformer.h transform/generic.h
+transform/generic.o: include/transformer.h transform/generic.h include/type.h
 transform/rdi.o: include/transformer.h transform/rdi.h
 
 util/UtilTest.o: util/UtilTest.h include/util.h

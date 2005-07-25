@@ -2611,7 +2611,7 @@ void UserProc::replaceExpressionsWithGlobals() {
 						continue;					// sp can't base an array
 					Exp *memof = r1;
 					// K1 is the stride
-					int stride = ((Const*)memof->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
+					unsigned stride = ((Const*)memof->getSubExp1()->getSubExp1()->getSubExp2())->getInt();
 					// u is K2
 					ADDRESS u = ((Const*)memof->getSubExp1()->getSubExp2())->getInt();
 					if (VERBOSE)

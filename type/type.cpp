@@ -44,6 +44,8 @@
 #include "rtl.h"
 #endif
 
+extern char debug_buffer[];		 // For prints functions
+
 bool Type::isCString()
 {
 	if (!resolvesToPointer())
@@ -116,10 +118,10 @@ bool ArrayType::isUnbounded() const {
 void ArrayType::setBaseType(Type* b) {
 	// MVE: not sure if this is always the right thing to do
 	if (length != NO_BOUND) {
-		int baseSize = base_type->getSize()/8;		// Old base size (one element) in bytes
+		unsigned baseSize = base_type->getSize()/8;	// Old base size (one element) in bytes
 		if (baseSize == 0) baseSize = 1;			// Count void as size 1
 		baseSize *= length;							// Old base size (length elements) in bytes
-		int newSize = b->getSize()/8;
+		unsigned newSize = b->getSize()/8;
 		if (newSize == 0) newSize = 1;
 		length = baseSize / newSize;				// Preserve same byte size for array
 	}
@@ -263,20 +265,20 @@ Type* LowerType::clone() const
  * PARAMETERS:		<none>
  * RETURNS:			Size of the type (in bits)
  *============================================================================*/
-int IntegerType::getSize() const { return size; }
-int	  FloatType::getSize() const { return size; }
-int BooleanType::getSize() const { return 1; }
-int	   CharType::getSize() const { return 8; }
-int	   VoidType::getSize() const { return 0; }
-int	   FuncType::getSize() const { return 0; /* always nagged me */ }
-int PointerType::getSize() const {
+unsigned IntegerType::getSize() const { return size; }
+unsigned	  FloatType::getSize() const { return size; }
+unsigned BooleanType::getSize() const { return 1; }
+unsigned	   CharType::getSize() const { return 8; }
+unsigned	   VoidType::getSize() const { return 0; }
+unsigned	   FuncType::getSize() const { return 0; /* always nagged me */ }
+unsigned PointerType::getSize() const {
 	//points_to->getSize(); // yes, it was a good idea at the time
 	return STD_SIZE;
 }
-int ArrayType::getSize() const {
+unsigned ArrayType::getSize() const {
 	return base_type->getSize() * length;
 }
-int NamedType::getSize() const {
+unsigned NamedType::getSize() const {
 	Type *ty = resolvesTo();
 	if (ty)
 		return ty->getSize();
@@ -284,14 +286,14 @@ int NamedType::getSize() const {
 		LOG << "WARNING: Unknown size for named type " << name.c_str() << "\n";
 	return 0; // don't know
 }
-int CompoundType::getSize() const {
+unsigned CompoundType::getSize() const {
 	int n = 0;
 	for (unsigned i = 0; i < types.size(); i++)
 		// NOTE: this assumes no padding... perhaps explicit padding will be needed
 		n += types[i]->getSize();
 	return n;
 }
-int UnionType::getSize() const {
+unsigned UnionType::getSize() const {
 	int max = 0;
 	std::list<UnionElement>::const_iterator it;
 	for (it = li.begin(); it != li.end(); it++) {
@@ -300,7 +302,7 @@ int UnionType::getSize() const {
 	}
 	return max;
 }
-int SizeType::getSize() const { return size; }
+unsigned SizeType::getSize() const { return size; }
 
 
 
@@ -322,9 +324,10 @@ Type *UnionType::getType(const char *nam)
 }
 #endif
 
-Type *CompoundType::getTypeAtOffset(int n)
+// Note: n is a BIT offset
+Type *CompoundType::getTypeAtOffset(unsigned n)
 {
-	int offset = 0;
+	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
 		//if (offset >= n && n < offset + types[i]->getSize())
 		if (offset <= n && n < offset + types[i]->getSize())
@@ -335,9 +338,9 @@ Type *CompoundType::getTypeAtOffset(int n)
 	return NULL;
 }
 
-const char *CompoundType::getNameAtOffset(int n)
+const char *CompoundType::getNameAtOffset(unsigned n)
 {
-	int offset = 0;
+	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
 		//if (offset >= n && n < offset + types[i]->getSize())
 		if (offset <= n && n < offset + types[i]->getSize())
@@ -348,30 +351,30 @@ const char *CompoundType::getNameAtOffset(int n)
 	return NULL;
 }
 
-int CompoundType::getOffsetTo(int n)
+unsigned CompoundType::getOffsetTo(unsigned n)
 {
-	int offset = 0;
-	for (int i = 0; i < n; i++) {
+	unsigned offset = 0;
+	for (unsigned i = 0; i < n; i++) {
 		offset += types[i]->getSize();
 	}
 	return offset;
 }
 
-int CompoundType::getOffsetTo(const char *member)
+unsigned CompoundType::getOffsetTo(const char *member)
 {
-	int offset = 0;
+	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
 		if (names[i] == member)
 			return offset;
 		offset += types[i]->getSize();
 	}
-	return -1;
+	return (unsigned)-1;
 }
 
-int CompoundType::getOffsetRemainder(int n)
+unsigned CompoundType::getOffsetRemainder(unsigned n)
 {
-	int r = n;
-	int offset = 0;
+	unsigned r = n;
+	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
 		offset += types[i]->getSize();
 		if (offset > n)
@@ -1528,3 +1531,62 @@ Type* Type::newIntegerLikeType(int size, int signedness) {
 		return new CharType();
 	return new IntegerType(size, signedness);
 }
+
+DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
+	iterator it = dimap.upper_bound(addr);	// Find the first item strictly greater than addr
+	if (it == dimap.begin())
+		return NULL;						// None <= this address, so no overlap possible
+	it--;									// If any item overlaps, it is this one
+	if (it->first + it->second.size > addr)
+		// This is the one that overlaps with addr
+		return &*it;
+	return NULL;
+}
+
+void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty) {
+	DataIntervalEntry* pdie = find(addr);
+	if (pdie == NULL) {
+		DataInterval* pdi = &dimap[addr];	// Add a new entry
+		pdi->size = ty->getBytes();
+		pdi->name = name;
+		pdi->type = ty;
+	} else {
+		// This new type becomes a new member of the existing struct or array
+		if (pdie->second.type->isCompound()) {
+
+		} else if (pdie->second.type->isArray()) {
+
+		} else {
+			LOG << "TYPE ERROR: type " << pdie->second.type->getCtype() << " at address " << pdie->first <<
+				" overlaps with type " << ty->getCtype() << " at address " << addr << "\n";
+		}
+	}
+}
+
+void DataIntervalMap::dump() {
+	std::cerr << prints();
+}
+
+char* DataIntervalMap::prints() {
+	iterator it;
+	std::ostringstream ost;
+	for (it = dimap.begin(); it != dimap.end(); ++it)
+		ost << std::hex << "0x" << it->first << std::dec << " " << it->second.name << " " << it->second.type->getCtype()
+			<< "\n";
+	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
+	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
+	return debug_buffer;
+}
+
+Exp* DataIntervalMap::expForAddr(ADDRESS addr) {
+	DataIntervalEntry* pdie = find(addr);
+	if (pdie == NULL) return NULL;
+	ADDRESS startCurrent = pdie->first;
+	Type* curType = pdie->second.type;
+	while (startCurrent < addr) {
+		if (curType->isCompound()) {
+			
+		}
+	}
+}
+

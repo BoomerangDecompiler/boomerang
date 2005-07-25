@@ -2888,7 +2888,7 @@ void Assign::simplify() {
 					*a4->getRight()->getSubExp1()->getSubExp1() == *phi->getLeft() &&
 					a4->getRight()->getSubExp2()->getOper() == opIntConst) {
 				Type *ty = a1->getRight()->getType();
-				int b = ((Const*)a4->getRight()->getSubExp2())->getInt();
+				unsigned b = ((Const*)a4->getRight()->getSubExp2())->getInt();
 				if (ty->resolvesToPointer()) {
 					ty = ty->asPointer()->getPointsTo();
 					if (ty->resolvesToArray() && b*8 == ty->asArray()->getBaseType()->getSize()) {

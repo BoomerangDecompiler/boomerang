@@ -2474,13 +2474,13 @@ Exp* Binary::polySimplify(bool& bMod) {
 	if (	op == opPlus &&
 			subExp1->getType() &&
 			opSub2 == opIntConst) {
-		int n = ((Const*)subExp2)->getInt();
+		unsigned n = (unsigned)((Const*)subExp2)->getInt();
 		Exp *l = subExp1;
 		Type *ty = l->getType();
 		if (ty->resolvesToPointer() && ty->asPointer()->getPointsTo()->resolvesToCompound()) { 
 			CompoundType *c = ty->asPointer()->getPointsTo()->asCompound();
 			if (n*8 < c->getSize()) {
-				int r = c->getOffsetRemainder(n*8);
+				unsigned r = c->getOffsetRemainder(n*8);
 				assert((r % 8) == 0);
 				const char *nam = c->getNameAtOffset(n*8);
 				if (nam == NULL) nam = "??";
@@ -2651,7 +2651,7 @@ Exp* Binary::polySimplify(bool& bMod) {
 	if (	op == opSize &&
 			subExp2->isLocation()) {
 		Location *loc = (Location*)subExp2;
-		int n = ((Const*)subExp1)->getInt();
+		unsigned n = (unsigned)((Const*)subExp1)->getInt();
 		Type *ty = loc->getType();
 		if (ty == NULL)
 			loc->setType(new SizeType(n));

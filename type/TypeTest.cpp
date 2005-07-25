@@ -8,6 +8,7 @@
  *
  * 09 Apr 02 - Mike: Created
  * 22 Aug 03 - Mike: Extended for Constraint tests
+ * 25 Juk 05 - Mike: DataIntervalMap tests
  */
 
 #define HELLO_WINDOWS		"test/windows/hello.exe"
@@ -37,6 +38,7 @@ void TypeTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(testTypeLong);
 	MYTEST(testNotEqual);
 	MYTEST(testCompound);
+	MYTEST(testDataInterval);
 }
 
 int TypeTest::countTestCases () const
@@ -148,4 +150,46 @@ void TypeTest::testCompound() {
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
+/*==============================================================================
+ * FUNCTION:		TypeTest::testDataInterval
+ * OVERVIEW:		Test the DataIntervalMap class
+ *============================================================================*/
+void TypeTest::testDataInterval() {
+	DataIntervalMap dim;
+	dim.addItem(0x1000, "first", new IntegerType(32, 1));
+	dim.addItem(0x1004, "second", new FloatType(64));
+	std::ostringstream ost;
+	std::string actual(dim.prints());
+	std::string expected("0x1000 first int\n"
+		"0x1004 second double\n");
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
+	DataIntervalEntry* pdie = dim.find(0x1000);
+	expected = "first";
+	CPPUNIT_ASSERT(pdie);
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	pdie = dim.find(0x1003);
+	CPPUNIT_ASSERT(pdie);
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	pdie = dim.find(0x1004);
+	CPPUNIT_ASSERT(pdie);
+	expected = "second";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	
+	pdie = dim.find(0x1007);
+	CPPUNIT_ASSERT(pdie);
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	
+	CompoundType ct;
+	ct.addType(new IntegerType(16, 1), "short1");
+	ct.addType(new IntegerType(16, 1), "short2");
+	ct.addType(new IntegerType(32, 1), "int1");
+	ct.addType(new FloatType(32), "float1");
+	dim.addItem(0x1010, "struct1", &ct);
+}

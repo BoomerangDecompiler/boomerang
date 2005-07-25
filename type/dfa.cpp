@@ -298,7 +298,7 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 		ch |= (signedness > 0 != oldSignedness > 0);		// Changed from signed to not necessarily signed
 		ch |= (signedness < 0 != oldSignedness < 0);		// Changed from unsigned to not necessarily unsigned
 		// Size. Assume 0 indicates unknown size
-		int oldSize = size;
+		unsigned oldSize = size;
 		size = max(size, otherInt->size);
 		ch |= (size != oldSize);
 		return this;
@@ -310,7 +310,7 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 		}
 		if (size == ((SizeType*)other)->getSize()) return this;
 		LOG << "integer size " << size << " meet with SizeType size " << ((SizeType*)other)->getSize() << "!\n";
-		int oldSize = size;
+		unsigned oldSize = size;
 		size = max(size, ((SizeType*)other)->getSize());
 		ch = size != oldSize;
 		return this;
@@ -487,7 +487,7 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 	if (other->isSize()) {
 		if (((SizeType*)other)->size != size) {
 			LOG << "size " << size << " meet with size " << ((SizeType*)other)->size << "!\n";
-			int oldSize = size;
+			unsigned oldSize = size;
 			size = max(size, ((SizeType*)other)->size);
 			ch = size != oldSize;
 		}
@@ -968,7 +968,7 @@ void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 					((Binary*)((Binary*)subExp1)->getSubExp1())->getSubExp2()->isIntConst()) {
 				Exp* leftOfPlus = ((Binary*)subExp1)->getSubExp1();
 				// We would expect the stride to be the same size as the base type
-				int stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
+				unsigned stride =  ((Const*)((Binary*)leftOfPlus)->getSubExp2())->getInt();
 				if (DEBUG_TA && stride*8 != parentType->getSize())
 					LOG << "type WARNING: apparent array reference at " << this << " has stride " << stride*8 <<
 						" bits, but parent type " << parentType->getCtype() << " has size " <<
@@ -1176,7 +1176,7 @@ bool VoidType::isCompatibleWith(Type* other) {
 
 bool SizeType::isCompatibleWith(Type* other) {
 	if (other->isVoid()) return true;
-	int otherSize = other->getSize();
+	unsigned otherSize = other->getSize();
 	if (otherSize == size || otherSize == 0) return true;
 	if (other->isUnion()) return other->isCompatibleWith(this);
 	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());

@@ -22,5 +22,7 @@ class TypeTest : public CppUnit::TestCase {
 	void testTypeLong ();
 	void testNotEqual ();
 	void testCompound();
+
+	void testDataInterval();
 };
 
