@@ -12,6 +12,7 @@
  * 08 Jul 02 - Mike: Test more exe file formats
  * 30 Sep 02 - Trent: split microDis tests
  * 30 Sep 02 - Trent: remove dependancy between microDis test1 and Elf loader
+ * 05 Aug 05 - Mike: added borland test; check address of main (not just != NO_ADDRESS)
  */
 
 #define HELLO_SPARC     "test/sparc/hello"
@@ -22,6 +23,7 @@
 #define CALC_WINXP      "test/windows/calcXP.exe"
 #define CALC_WIN2000    "test/windows/calc2000.exe"
 #define LPQ_WINDOWS     "test/windows/lpq.exe"
+#define SWITCH_BORLAND	"test/windows/switch_borland.exe"
 #define ELFBINFILE		"lib/libElfBinaryFile.so"
 
 #include "LoaderTest.h"
@@ -230,22 +232,46 @@ void LoaderTest::testWinLoad () {
     pBF = BinaryFileFactory::Load(CALC_WINXP);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	std::ostringstream ost1;
+	ost1 << std::hex << addr;
+	actual = ost1.str();
+	expected = "1001f51";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
     pBF = BinaryFileFactory::Load(CALC_WIN2000);
     CPPUNIT_ASSERT(pBF != NULL);
+	expected = "1001680";
     addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	std::ostringstream ost2;
+	ost2 << std::hex << addr;
+	actual = ost2.str();
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
 
     // Test loading the lpq.exe program - console mode PE file
     pBF = BinaryFileFactory::Load(LPQ_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
-    CPPUNIT_ASSERT(addr != NO_ADDRESS);
+	std::ostringstream ost3;
+	ost3 << std::hex << addr;
+	actual = ost3.str();
+	expected = "18c1000";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
+
+	// Borland
+    pBF = BinaryFileFactory::Load(SWITCH_BORLAND);
+    CPPUNIT_ASSERT(pBF != NULL);
+    addr = pBF->GetMainEntryPoint();
+	std::ostringstream ost4;
+	ost4 << std::hex << addr;
+	actual = ost4.str();
+	expected = "401150";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    pBF->UnLoad();
+
 	delete pBF;
 }
 

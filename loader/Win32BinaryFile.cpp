@@ -112,6 +112,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	while (p < lim) {
 		op1 = *(unsigned char*)(p + base);
 		op2 = *(unsigned char*)(p + base + 1);
+//		std::cerr << std::hex << "At " << p << ", ops " << (unsigned)op1 << ", " << (unsigned)op2 << std::dec << "\n";
 		switch (op1) {
 			case 0xE8: {
 				// An ordinary call; this could be to winmain/main
@@ -128,20 +129,23 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 					// Get the 4 byte address from the instruction
 					addr = LMMH(*(p + base + 2));
 //					const char *c = dlprocptrs[addr].c_str();
-//pr	intf("Checking %x finding %s\n", addr, c);
+//					printf("Checking %x finding %s\n", addr, c);
 					if (dlprocptrs[addr] == "exit") {
 						if (gap <= 10) {
 							// This is it. The instruction at lastOrdCall is (win)main
 							addr = LMMH(*(lastOrdCall + base + 1));
 							addr += lastOrdCall + 5;	// Addr is dest of call
-//pr	intf("*** MAIN AT 0x%x ***\n", addr);
-						return addr + LMMH(m_pPEHeader->Imagebase);
+//							printf("*** MAIN AT 0x%x ***\n", addr);
+							return addr + LMMH(m_pPEHeader->Imagebase);
 						}
 					}
 				} else
 					borlandState = 0;
 				break;
 			case 0xEB: 					// Short relative jump, e.g. Borland
+				if (op2 >= 0x80)		// Branch backwards?
+					break;				// Yes, just ignore it
+				// Otherwise, actually follow the branch. May have to modify this some time...
 				p += op2+2;				// +2 for the instruction itself, and op2 for the displacement
 				gap++;
 				continue;
