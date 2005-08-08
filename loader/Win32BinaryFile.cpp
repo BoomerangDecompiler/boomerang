@@ -76,12 +76,9 @@ ADDRESS Win32BinaryFile::GetEntryPoint()
 					 LMMH(m_pPEHeader->Imagebase));
 }
 
-// This is a bit of a hack, but no more than the rest of Windows :-O
-// The pattern is to look for an indirect call (FF 15 opcode) to
-// exit; within 10 instructions before that should be the call
-// to WinMain (with no other calls inbetween)
-// This pattern should work for "old style" and "new style" PE executables,
-// as well as console mode PE files
+// This is a bit of a hack, but no more than the rest of Windows :-O  The pattern is to look for an indirect call (FF 15
+// opcode) to exit; within 10 instructions before that should be the call to WinMain (with no other calls inbetween).
+// This pattern should work for "old style" and "new style" PE executables, as well as console mode PE files.
 ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	ADDRESS aMain = GetAddressByName ("main", true);
 	if (aMain != NO_ADDRESS)
@@ -286,8 +283,8 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 	m_pSections = new SectionInfo[m_iNumSections];
 	SectionInfo *reloc = NULL;
 	for (int i=0; i<m_iNumSections; i++, o++) {
-		//	printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA),
-		//	LMMH(o->PhysicalOffset), LMMH(o->VirtualSize));
+		//	printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA), LMMH(o->PhysicalOffset),
+		//	  LMMH(o->VirtualSize));
 		m_pSections[i].pSectionName = new char[9];
 		strncpy(m_pSections[i].pSectionName, o->ObjectName, 8);
 		if (!strcmp(m_pSections[i].pSectionName, ".reloc"))
@@ -307,40 +304,42 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 
 	// Add the Import Address Table entries to the symbol table
 	PEImportDtor* id = (PEImportDtor*) (LMMH(m_pPEHeader->ImportTableRVA) + base);
-	while (id->name != 0) {
-		char* dllName = LMMH(id->name) + base;
-		unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
-		unsigned* iat = (unsigned*)(LMMH(thunk) + base);
-		unsigned iatEntry = LMMH(*iat);
-		ADDRESS paddr = LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase);
-		while (iatEntry) {
-			if (iatEntry >> 31) {
-				// This is an ordinal number (stupid idea)
-				std::ostringstream ost;
-				std::string nodots(dllName);
-				int len = nodots.size();
-				for (int j=0; j < len; j++)
-					if (nodots[j] == '.')
-						nodots[j] = '_';	// Dots can't be in identifiers
-				ost << nodots << "_" << (iatEntry & 0x7FFFFFFF);				
-				dlprocptrs[paddr] = ost.str();
-				// printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
-			} else {
-				// Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
-				std::string name((const char*)(iatEntry+2+base));
-				dlprocptrs[paddr] = name;
-				if ((unsigned)paddr != (unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase))
-					dlprocptrs[(unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase)]
-						= std::string("old_") + name; // add both possibilities
-				// printf("Added symbol %s value %x\n", name.c_str(), paddr);
-				// printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
-				// 		LMMH(m_pPEHeader->Imagebase));
+	if (m_pPEHeader->ImportTableRVA) {			// If any import table entry exists
+		while (id->name != 0) {
+			char* dllName = LMMH(id->name) + base;
+			unsigned thunk = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
+			unsigned* iat = (unsigned*)(LMMH(thunk) + base);
+			unsigned iatEntry = LMMH(*iat);
+			ADDRESS paddr = LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase);
+			while (iatEntry) {
+				if (iatEntry >> 31) {
+					// This is an ordinal number (stupid idea)
+					std::ostringstream ost;
+					std::string nodots(dllName);
+					int len = nodots.size();
+					for (int j=0; j < len; j++)
+						if (nodots[j] == '.')
+							nodots[j] = '_';	// Dots can't be in identifiers
+					ost << nodots << "_" << (iatEntry & 0x7FFFFFFF);				
+					dlprocptrs[paddr] = ost.str();
+					// printf("Added symbol %s value %x\n", ost.str().c_str(), paddr);
+				} else {
+					// Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
+					std::string name((const char*)(iatEntry+2+base));
+					dlprocptrs[paddr] = name;
+					if ((unsigned)paddr != (unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase))
+						dlprocptrs[(unsigned)iat - (unsigned)base + LMMH(m_pPEHeader->Imagebase)]
+							= std::string("old_") + name; // add both possibilities
+					// printf("Added symbol %s value %x\n", name.c_str(), paddr);
+					// printf("Also added old_%s value %x\n", name.c_str(), (int)iat - (int)base +
+					// 		LMMH(m_pPEHeader->Imagebase));
+				}
+				iat++;
+				iatEntry = LMMH(*iat);
+				paddr+=4;
 			}
-			iat++;
-			iatEntry = LMMH(*iat);
-			paddr+=4;
+			id++;
 		}
-		id++;
 	}
 
 	// Was hoping that _main or main would turn up here for Borland console mode programs. No such luck.
@@ -366,15 +365,13 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 	return true;
 }
 
-// Used above for a hack to find jump instructions pointing to IATs
-// Heuristic: start just before the "start" entry point looking for
-// FF 25 opcodes followed by a pointer to an import entry
-// E.g. FF 25 58 44 40 00  where 00404458 is the IAT for _ftol
-// Note: some are on 0x10 byte boundaries, some on 2 byte boundaries (6 byte jumps packed),
-// and there are often up to 0x30 bytes of statically linked library code (e.g. _atexit, __onexit)
-// with sometimes two static libs in a row. So keep going until there is about 0x60 bytes with no match.
-// Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens
-// in 2^32 ~= 10^-13
+// Used above for a hack to find jump instructions pointing to IATs.
+// Heuristic: start just before the "start" entry point looking for FF 25 opcodes followed by a pointer to an import
+// entry.  E.g. FF 25 58 44 40 00  where 00404458 is the IAT for _ftol.
+// Note: some are on 0x10 byte boundaries, some on 2 byte boundaries (6 byte jumps packed), and there are often up to
+// 0x30 bytes of statically linked library code (e.g. _atexit, __onexit) with sometimes two static libs in a row.
+// So keep going until there is about 0x60 bytes with no match.
+// Note: slight chance of coming across a misaligned match; probability is about 1/65536 times dozens in 2^32 ~= 10^-13
 void Win32BinaryFile::findJumps(ADDRESS curr) {
 	int cnt = 0;			// Count of bytes with no match
 	SectionInfo* sec = GetSectionInfoByName(".text");
@@ -412,7 +409,7 @@ bool Win32BinaryFile::PostLoad(void* handle)
 const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
 	if (m_pPEHeader->Subsystem == 1 &&				// native
-		LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
+			LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
 		return "DriverEntry";
 
 	std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
@@ -423,8 +420,7 @@ const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 
 ADDRESS Win32BinaryFile::GetAddressByName(const char* pName,
 	bool bNoTypeOK /* = false */) {
-	// This is "looking up the wrong way" and hopefully is uncommon
-	// Use linear search
+	// This is "looking up the wrong way" and hopefully is uncommon.  Use linear search
 	std::map<ADDRESS, std::string>::iterator it = dlprocptrs.begin();
 	while (it != dlprocptrs.end()) {
 		// std::cerr << "Symbol: " << it->second.c_str() << " at 0x" << std::hex << it->first << "\n";
@@ -569,18 +565,16 @@ std::list<const char *> Win32BinaryFile::getDependencyList()
 	return std::list<const char *>(); /* FIXME */
 }
 
-DWord Win32BinaryFile::getDelta()
-{
+DWord Win32BinaryFile::getDelta() {
 	// Stupid function anyway: delta depends on section
 	// This should work for the header only
 	//	return (DWord)base - LMMH(m_pPEHeader->Imagebase); 
 	return (DWord)base - (DWord)m_pPEHeader->Imagebase; 
 }
 
-// This function is called via dlopen/dlsym; it returns a new BinaryFile
-// derived concrete object. After this object is returned, the virtual function
-// call mechanism will call the rest of the code in this library
-// It needs to be C linkage so that it its name is not mangled
+// This function is called via dlopen/dlsym; it returns a new BinaryFile derived concrete object. After this object is
+// returned, the virtual function call mechanism will call the rest of the code in this library.  It needs to be C
+// linkage so that it its name is not mangled
 extern "C" {
 #ifdef _WIN32
 	__declspec(dllexport)
