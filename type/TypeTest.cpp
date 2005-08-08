@@ -1,7 +1,6 @@
 /*==============================================================================
  * FILE:	   TypeTest.cc
- * OVERVIEW:   Provides the implementation for the TypeTest class, which
- *				tests the Type class and some utility functions
+ * OVERVIEW:   Provides the implementation for the TypeTest class, which tests the Type class and some utility functions
  *============================================================================*/
 /*
  * $Revision$
@@ -29,7 +28,7 @@
  * RETURNS:			<nothing>
  *============================================================================*/
 #define MYTEST(name) \
-suite->addTest(new CppUnit::TestCaller<TypeTest> ("testUtil", \
+suite->addTest(new CppUnit::TestCaller<TypeTest> ("Type", \
 	&TypeTest::name, *this))
 
 void TypeTest::registerTests(CppUnit::TestSuite* suite) {
@@ -39,6 +38,7 @@ void TypeTest::registerTests(CppUnit::TestSuite* suite) {
 	MYTEST(testNotEqual);
 	MYTEST(testCompound);
 	MYTEST(testDataInterval);
+	MYTEST(testDataIntervalOverlaps);
 }
 
 int TypeTest::countTestCases () const
@@ -158,7 +158,6 @@ void TypeTest::testDataInterval() {
 	DataIntervalMap dim;
 	dim.addItem(0x1000, "first", new IntegerType(32, 1));
 	dim.addItem(0x1004, "second", new FloatType(64));
-	std::ostringstream ost;
 	std::string actual(dim.prints());
 	std::string expected("0x1000 first int\n"
 		"0x1004 second double\n");
@@ -192,4 +191,108 @@ void TypeTest::testDataInterval() {
 	ct.addType(new IntegerType(32, 1), "int1");
 	ct.addType(new FloatType(32), "float1");
 	dim.addItem(0x1010, "struct1", &ct);
+
+	ComplexTypeCompList& ctcl = ct.compForAddress(0x1012, dim);
+	unsigned ua = ctcl.size();
+	unsigned ue = 1;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	ComplexTypeComp& ctc = ctcl.front();
+	ue = 0;
+	ua = ctc.isArray;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	expected = "short2";
+	actual = ctc.u.memberName;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// An array of 10 struct1's
+	ArrayType at(&ct, 10);
+	dim.addItem(0x1020, "array1", &at);
+	ComplexTypeCompList& ctcl2 = at.compForAddress(0x1020+0x3C+8, dim);
+	// Should be 2 components: [5] and .float1
+	ue = 2;
+	ua = ctcl2.size();
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	ComplexTypeComp& ctc0 = ctcl2.front();
+	ComplexTypeComp& ctc1 = ctcl2.back();
+	ue = 1;
+	ua = ctc0.isArray;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	ue = 5;
+	ua = ctc0.u.index;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	ue = 0;
+	ua = ctc1.isArray;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
+	expected = "float1";
+	actual = ctc1.u.memberName;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+}
+
+/*==============================================================================
+ * FUNCTION:		TypeTest::testDataIntervalOverlaps
+ * OVERVIEW:		Test the DataIntervalMap class with overlapping addItems
+ *============================================================================*/
+void TypeTest::testDataIntervalOverlaps() {
+	DataIntervalMap dim;
+	dim.addItem(0x1000, "firstInt", new IntegerType(32, 1));
+	dim.addItem(0x1004, "firstFloat", new FloatType(32));
+	dim.addItem(0x1008, "secondInt", new IntegerType(32, 1));
+	dim.addItem(0x100C, "secondFloat", new FloatType(32));
+	CompoundType ct;
+	ct.addType(new IntegerType(32, 1), "int3");
+	ct.addType(new FloatType(32), "float3");
+	dim.addItem(0x1010, "existingStruct", &ct);
+
+	// First insert a new struct over the top of the existing middle pair
+	CompoundType ctu;
+	ctu.addType(new IntegerType(32, 0), "newInt");		// This int has UNKNOWN sign
+	ctu.addType(new FloatType(32), "newFloat");
+	dim.addItem(0x1008, "replacementStruct", &ctu);
+
+	DataIntervalEntry* pdie = dim.find(0x1008);
+	std::string expected = "struct { int newInt; float newFloat; }";
+	std::string actual = pdie->second.type->getCtype();
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// Attempt a weave; should fail
+	CompoundType ct3;
+	ct3.addType(new FloatType(32), "newFloat3");
+	ct3.addType(new IntegerType(32, 0), "newInt3");
+	dim.addItem(0x1004, "weaveStruct1", &ct3);
+	pdie = dim.find(0x1004);
+	expected = "firstFloat";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// Totally unaligned
+	dim.addItem(0x1001, "weaveStruct2", &ct3);
+	pdie = dim.find(0x1001);
+	expected = "firstInt";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	dim.addItem(0x1004, "firstInt", new IntegerType(32, 1));		// Should fail
+	pdie = dim.find(0x1004);
+	expected = "firstFloat";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// Set up three ints
+	dim.deleteItem(0x1004);
+	dim.addItem(0x1004, "firstInt", new IntegerType(32, 1));	// Definately signed
+	dim.deleteItem(0x1008);
+	dim.addItem(0x1008, "firstInt", new IntegerType(32, 0));	// Unknown signedess
+	// then, add an array over the three integers
+	ArrayType at(new IntegerType(32, 0), 3);
+	dim.addItem(0x1000, "newArray", &at);
+	pdie = dim.find(0x1005);					// Check middle element
+	expected = "newArray";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	pdie = dim.find(0x1000);					// Check first
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+	pdie = dim.find(0x100B);					// Check last
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
 }

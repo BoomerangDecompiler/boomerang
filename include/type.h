@@ -55,9 +55,20 @@ class UpperType;
 class LowerType;
 class Exp;
 class XMLProgParser;
+class DataIntervalMap;
 
 enum eType {eVoid, eFunc, eBoolean, eChar, eInteger, eFloat, ePointer, eArray, eNamed, eCompound, eUnion, eSize,
 		eUpper, eLower};	  // For operator< mostly
+
+// The following two are for Type::compForAddress()
+struct ComplexTypeComp {
+		bool		isArray;
+		union {
+			char*	memberName;			// Member name if offset
+			unsigned index;				// Constant index if array
+		} u;
+};
+typedef std::list<ComplexTypeComp> ComplexTypeCompList;
 
 class Type : public Memoisable {
 protected:
@@ -175,6 +186,9 @@ virtual bool		isCompatibleWith(Type* other) = 0;
 					// Create a union of this Type and other. Set ch true if any change
 		Type*		createUnion(Type* other, bool& ch);
 static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool/Char/Int
+					// From a complex type like an array of structs with a float, return a list of components so you
+					// can construct e.g. myarray1[8].mystruct2.myfloat7
+		ComplexTypeCompList& compForAddress(ADDRESS addr, DataIntervalMap& dim);
 
 protected:
 	friend class XMLProgParser;
@@ -495,6 +509,7 @@ virtual bool		isCompound() const { return true; }
 		Type		*getType(unsigned n) { assert(n < getNumTypes()); return types[n]; }
 		Type		*getType(const char *nam);
 		const char	*getName(unsigned n) { assert(n < getNumTypes()); return names[n].c_str(); }
+		void		setTypeAtOffset(unsigned n, Type* ty);
 		Type		*getTypeAtOffset(unsigned n);
 		const char	*getNameAtOffset(unsigned n);
 		unsigned	getOffsetTo(unsigned n);
@@ -670,11 +685,17 @@ public:
 					DataIntervalMap() {}
 typedef	std::map<ADDRESS, DataInterval>::iterator iterator;
 		DataIntervalEntry* find(ADDRESS addr);		// Find the DataInterval at address addr, or NULL if none
-		void		addItem(ADDRESS addr, char* name, Type* ty);
+		// Add a new data item
+		void		addItem(ADDRESS addr, char* name, Type* ty, bool forced = false);
+		void		deleteItem(ADDRESS addr);		// Mainly for testing?
 		void		expandItem(ADDRESS addr, unsigned size);
-		Exp*		expForAddr(ADDRESS addr);		// Get something like struct1.short2 given 0x1012
 		char*		prints();						// For test and debug
 		void		dump();							// For debug
+
+private:
+		void		enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced);
+		void		replaceComponents(ADDRESS addr, char* name, Type* ty, bool forced);
+		void		checkMatching(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced);
 };
 
 // Not part of the Type class, but logically belongs with it:

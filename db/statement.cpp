@@ -552,7 +552,7 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:		os: stream to write to
  * RETURNS:			Nothing
  *============================================================================*/
-void GotoStatement::print(std::ostream& os /*= cout*/) {
+void GotoStatement::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
 	os << "GOTO ";
 	if (pDest == NULL)
@@ -828,7 +828,7 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:		os: stream
  * RETURNS:			Nothing
  *============================================================================*/
-void BranchStatement::print(std::ostream& os /*= cout*/) {
+void BranchStatement::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
 	os << "BRANCH ";
 	if (pDest == NULL)
@@ -1195,7 +1195,7 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *					indent: number of columns to skip
  * RETURNS:			Nothing
  *============================================================================*/
-void CaseStatement::print(std::ostream& os /*= cout*/) {
+void CaseStatement::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
 	if (pSwitchInfo == NULL) {
 		os << "CASE [";
@@ -1577,7 +1577,7 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  * PARAMETERS:		os: stream to write to
  * RETURNS:			Nothing
  *============================================================================*/
-void CallStatement::print(std::ostream& os /*= cout*/) {
+void CallStatement::print(std::ostream& os) {
 	os << std::setw(4) << std::dec << number << " ";
  
 	// Define(s), if any

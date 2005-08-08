@@ -611,7 +611,7 @@ void UserProc::printParams(std::ostream& out) {
 			out << ", ";
 		out << ((Assign*)*pp)->getLeft();
 	}
-	out << "\n";
+	out << "\nend parameters\n";
 }
 
 char* UserProc::prints() {
@@ -630,13 +630,14 @@ void UserProc::printToLog() {
 	signature->printToLog();
 	std::ostringstream ost;
 	printParams(ost);
-	dumpSymbols(ost);
+	dumpLocals(ost);
 	LOG << ost.str().c_str();
 	symbolMapToLog();
 	LOG << "live variables: ";
 	std::ostringstream ost2;
 	col.print(ost2);
 	LOG << ost2.str().c_str() << "\n";
+	LOG << "end live variables\n";
 	cfg->printToLog();
 	LOG << "\n";
 }
@@ -4442,18 +4443,15 @@ char* UserProc::lookupSym(Exp* e) {
 }
 
 void UserProc::symbolMapToLog() {
+	LOG << "symbols:\n";
 	SymbolMapType::iterator it;
 	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
 		LOG << "  " << it->first << " maps to " << it->second << "\n";
+	LOG << "end symbols\n";
 }
 
-void UserProc::dumpSymbolMap() {
-	SymbolMapType::iterator it;
-	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
-		std::cerr << "  " << it->first << " maps to " << it->second << "\n";
-}
-
-void UserProc::dumpSymbols(std::ostream& os) {
+void UserProc::dumpLocals(std::ostream& os) {
+	os << "locals:\n";
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
 		os << it->second->getCtype() << " " << it->first.c_str() << " ";
 		Exp *e = expFromSymbol((*it).first.c_str());
@@ -4463,11 +4461,18 @@ void UserProc::dumpSymbols(std::ostream& os) {
 		else
 			os << "-\n";
 	}
+	os << "end locals\n";
 }
 
-void UserProc::dumpSymbols() {
+void UserProc::dumpSymbolMap() {
+	SymbolMapType::iterator it;
+	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
+		std::cerr << "  " << it->first << " maps to " << it->second << "\n";
+}
+
+void UserProc::dumpLocals() {
 	std::stringstream ost;
-	dumpSymbols(ost);
+	dumpLocals(ost);
 	std::cerr << ost.str();
 }
 

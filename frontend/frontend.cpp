@@ -1149,12 +1149,12 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 		Statement* s = pRtl->getList().back();		// The last statement should be the ReturnStatement
 		pProc->setTheReturnAddr((ReturnStatement*)s, pRtl->getAddress());
 	} else {
-		// Need to modify *pRtl, since there can sometimes be extra semantics associated with a return (e.g. Pentium
-		// return adds to the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC returning
-		// a value as part of the restore instruction) is assumed to appear in a previous RTL. So we want to replace
-		// this whole return RTL with a branch to THE return statement, which is assumed to have the same semantics
-		// (so for Pentium, all the returns are assumed to add to the stack pointer). If this is proved invalid, then
-		// we need branches to statements, not just to native addresses (RTLs).
+		// We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra
+		// semantics associated with a return (e.g. Pentium return adds to the stack pointer before setting %pc and
+		// branching). Other semantics (e.g. SPARC returning a value as part of the restore instruction) are assumed to
+		// appear in a previous RTL. It is assumed that THE return statement will have the same semantics (NOTE: may
+		// not always be valid). To avoid this assumption, we need branches to statements, not just to native addresses
+		// (RTLs).
 		pRtl->clear();
 		pRtl->appendStmt(new GotoStatement(retAddr));
 		pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);

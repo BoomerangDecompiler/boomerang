@@ -24,5 +24,6 @@ class TypeTest : public CppUnit::TestCase {
 	void testCompound();
 
 	void testDataInterval();
+	void testDataIntervalOverlaps();
 };
 

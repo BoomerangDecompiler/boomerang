@@ -392,15 +392,13 @@ bool Const::operator==(const Exp& o) const {
 	if (((Const&)o).op == opWildIntConst && op == opIntConst) return true;
 	if (((Const&)o).op == opWildStrConst && op == opStrConst) return true;
 	if (op != ((Const&)o).op) return false;
-	if (conscript && conscript != ((Const&)o).conscript ||
-	  ((Const&)o).conscript)
+	if (conscript && conscript != ((Const&)o).conscript || ((Const&)o).conscript)
 		return false;
 	switch (op) {
 		case opIntConst: return u.i == ((Const&)o).u.i;
 		case opFltConst: return u.d == ((Const&)o).u.d;
 		case opStrConst: return (strcmp(u.p, ((Const&)o).u.p) == 0);
-		default: LOG << "Operator== invalid operator " << operStrings[op]
-				   << "\n";
+		default: LOG << "Operator== invalid operator " << operStrings[op] << "\n";
 				 assert(0);
 	}
 	return false;
@@ -465,49 +463,10 @@ bool TypeVal::operator==(const Exp& o) const {
 }
 
 /*==============================================================================
- * FUNCTION:		Const::operator%=() etc
- * OVERVIEW:		Virtual function to compare myself for equality with
- *					another Exp, *ignoring type*
- * NOTE:			This is overridden for TypedExp only
- * PARAMETERS:		Ref to other Exp
- * RETURNS:			True if equal
- *============================================================================*/
-bool Exp::operator%=(const Exp& o) const {
-	const Exp* typeless = &o;
-	if (o.op == opTypedExp)
-		typeless = ((Unary&)o).getSubExp1();
-	return *this == *typeless;
-}
-bool TypedExp::operator%=(const Exp& o) const {
-	const Exp* typeless = &o;
-	if (o.getOper() == opTypedExp)
-		typeless = ((Unary&)o).getSubExp1();
-	return *((Unary*)this)->getSubExp1() == *typeless;
-} 
-
-// As above, but sign insensitive (otherwise, type sensitive)
-bool Exp::operator-=(const Exp& o) const {
-	const Exp* typeless = &o;
-	if (o.op == opTypedExp)
-		typeless = ((Unary&)o).getSubExp1();
-	return *this == *typeless;
-}
-bool TypedExp::operator-=(const Exp& o) const {
-	const Exp* typeless = &o;
-	if (o.getOper() == opTypedExp) {
-		typeless = ((Unary&)o).getSubExp1();
-		// Both exps are typed. Do a sign insensitive type comparison
-		//if (*type -= *((TypedExp&)o).type) return false;
-	}
-	return *((Unary*)this)->getSubExp1() == *typeless;
-} 
-
-/*==============================================================================
  * FUNCTION:		Const::operator<() etc
  * OVERVIEW:		Virtual function to compare myself with another Exp
- * NOTE:			The test for a wildcard is only with this object, not
- *					  the other object (o). So when searching and there could
- *					  be wildcards, use search == *this not *this == search
+ * NOTE:			The test for a wildcard is only with this object, not the other object (o).
+ *					So when searching and there could be wildcards, use search == *this not *this == search
  * PARAMETERS:		Ref to other Exp
  * RETURNS:			True if equal
  *============================================================================*/
@@ -526,8 +485,7 @@ bool Const::operator< (const Exp& o) const {
 			return u.d < ((Const&)o).u.d;
 		case opStrConst:
 			return strcmp(u.p, ((Const&)o).u.p) < 0;
-		default: LOG << "Operator< invalid operator " << operStrings[op]
-				   << "\n";
+		default: LOG << "Operator< invalid operator " << operStrings[op] << "\n";
 				assert(0);
 	}
 	return false;
@@ -659,7 +617,7 @@ bool TypeVal::operator*=(Exp& o) {
 
 /*==============================================================================
  * FUNCTION:		Const::print etc
- * OVERVIEW:		"Print" in infix notation the expression to a stream
+ * OVERVIEW:		"Print" in infix notation the expression to a stream.
  *					Mainly for debugging, or maybe some low level windows
  * PARAMETERS:		Ref to an output stream
  * RETURNS:			<nothing>
@@ -686,8 +644,7 @@ void Const::print(std::ostream& os) {
 			os << "\"" << u.p << "\"";
 			break;
 		default:
-			LOG << "Const::print invalid operator " << operStrings[op] <<
-			  "\n";
+			LOG << "Const::print invalid operator " << operStrings[op] << "\n";
 			assert(0);
 	}
 	if (conscript)
@@ -706,9 +663,8 @@ void Const::printNoQuotes(std::ostream& os) {
 //	Binary	//
 //	//	//	//
 void Binary::printr(std::ostream& os) {
-	// The "r" is for recursive: the idea is that we don't want parentheses at
-	// the outer level, but a subexpression (recursed from a higher level), we
-	// want the parens (at least for standard infix operators)
+	// The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
+	// (recursed from a higher level), we want the parens (at least for standard infix operators)
 	switch (op) {
 		case opSize:
 		case opList:		// Otherwise, you get (a, (b, (c, d)))
@@ -729,10 +685,8 @@ void Binary::print(std::ostream& os) {
 	// Special cases
 	switch (op) {
 		case opSize:
-			// This can still be seen after decoding and before type analysis
-			// after m[...]
-			// *size* is printed after the expression, even though it comes
-			//	from the first subexpression
+			// This can still be seen after decoding and before type analysis after m[...]
+			// *size* is printed after the expression, even though it comes from the first subexpression
 			p2->printr(os); os << "*"; p1->printr(os);
 			os << "*";
 			return;
@@ -751,8 +705,8 @@ void Binary::print(std::ostream& os) {
 			return;
 
 		case opList:
-			// Because "," is the lowest precedence operator, we don't need
-			// printr here. Also, same as UQBT, so easier to test
+			// Because "," is the lowest precedence operator, we don't need printr here.
+			// Also, same as UQBT, so easier to test
 			p1->print(os);
 			if (!p2->isNil())
 				os << ", "; 
@@ -822,8 +776,7 @@ void Binary::print(std::ostream& os) {
 		case opRotateRC:os << " rrc "; break;
 
 		default:
-			LOG << "Binary::print invalid operator " << operStrings[op]
-			  << "\n";
+			LOG << "Binary::print invalid operator " << operStrings[op] << "\n";
 			assert(0);
 	}
 
@@ -900,8 +853,8 @@ void Unary::print(std::ostream& os) {
 				default: break;		// Suppress compiler warning
 			}
 			if (op == opVar) ((Const*)p1)->printNoQuotes(os);
-			// Use print, not printr, because this is effectively the top
-			// level again (because the [] act as parentheses)
+			// Use print, not printr, because this is effectively the top level again (because the [] act as
+			// parentheses)
 			else {
 #if 0		// Problem when attempt to print with conscripts
 				if (op == opMemOf && p1->getOper() == opIntConst)
@@ -1038,8 +991,8 @@ void Ternary::print(std::ostream& os) {
 				case opOpTable: os << "optable("; break;
 				default: break;			// For warning
 			}
-			// Use print not printr here, since , has the lowest precendence
-			// of all. Also it makes it the same as UQBT, so it's easier to test
+			// Use print not printr here, since , has the lowest precendence of all.
+			// Also it makes it the same as UQBT, so it's easier to test
 			if (p1) p1->print(os); else os << "<NULL>"; os << ",";
 			if (p2) p2->print(os); else os << "<NULL>"; os << ",";
 			if (p3) p3->print(os); else os << "<NULL>"; os << ")";
@@ -1061,8 +1014,7 @@ void Ternary::print(std::ostream& os) {
 			os << ":";
 			if (p3) p3->printr(os); else os << "NULL>";
 	} else {
-		LOG << "Ternary::print invalid operator " << operStrings[op] <<
-		  "\n";
+		LOG << "Ternary::print invalid operator " << operStrings[op] << "\n";
 		assert(0);
 	}
 }
@@ -1123,8 +1075,7 @@ void Exp::dump() {
 
 /*==============================================================================
  * FUNCTION:		Exp::createDotFile etc
- * OVERVIEW:		Create a dotty file (use dotty to display the file;
- *					  search the web for "graphviz")
+ * OVERVIEW:		Create a dotty file (use dotty to display the file; search the web for "graphviz"). 
  *					Mainly for debugging
  * PARAMETERS:		Name of the file to create
  * RETURNS:			<nothing>
@@ -1146,8 +1097,7 @@ void Exp::createDotFile(char* name) {
 //	Const	//
 //	//	//	//
 void Const::appendDotFile(std::ofstream& of) {
-	// We define a unique name for each node as "e123456" if the
-	// address of "this" == 0x123456
+	// We define a unique name for each node as "e123456" if the address of "this" == 0x123456
 	of << "e" << std::hex << (int)this << " [shape=record,label=\"{";
 	of << operStrings[op] << "\\n0x" << std::hex << (int)this << " | ";
 	switch (op) {
@@ -1269,8 +1219,7 @@ bool Exp::isRegOfK()
 }
 /*==============================================================================
  * FUNCTION:		Exp::isRegN
- * OVERVIEW:		Returns true if the expression is r[N] where N is the given
- *					  int const
+ * OVERVIEW:		Returns true if the expression is r[N] where N is the given int const
  * PARAMETERS:		N: the specific register to be tested for
  * RETURNS:			True if matches
  *============================================================================*/
@@ -1282,8 +1231,7 @@ bool Exp::isRegN(int N)
 }
 /*==============================================================================
  * FUNCTION:		Exp::isAfpTerm
- * OVERVIEW:		Returns true if is %afp, %afp+k, %afp-k,
- *					  or a[m[<any of these]]
+ * OVERVIEW:		Returns true if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
  * PARAMETERS:		<none>
  * RETURNS:			True if found
  *============================================================================*/
@@ -1293,8 +1241,7 @@ bool Exp::isAfpTerm()
 	if (op == opTypedExp)
 		cur =  ((Unary*)this)->getSubExp1();
 	Exp* p;
-	if ((cur->getOper() == opAddrOf) &&
-	  ((p =	 ((Unary*)cur)->getSubExp1()), p->getOper() == opMemOf))
+	if ((cur->getOper() == opAddrOf) && ((p = ((Unary*)cur)->getSubExp1()), p->getOper() == opMemOf))
 		cur =((Unary*)p	 )->getSubExp1();
 		
 	OPER curOp = cur->getOper();
@@ -1373,9 +1320,10 @@ Exp* Binary::match(Exp *pattern) {
 				if (*l->getSubExp1()->getSubExp1() == *r->getSubExp1()->getSubExp1() &&
 					!(*l->getSubExp1()->getSubExp2() == *r->getSubExp1()->getSubExp2())) {
 #if 0
-					LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " << r->getSubExp1()->getSubExp2() << "\n";
+					LOG << "disagreement in match: " << l->getSubExp1()->getSubExp2() << " != " <<
+						r->getSubExp1()->getSubExp2() << "\n";
 #endif
-					return NULL;  // must be agreement between LHS and RHS
+					return NULL;		// must be agreement between LHS and RHS
 				} else
 					result = new Binary(opList, l->getSubExp1()->clone(), result);
 		for (Exp *r = b_rhs; r->getOper() != opNil; r = r->getSubExp2())
@@ -1406,15 +1354,14 @@ Exp* TypeVal::match(Exp *pattern) {
 /*==============================================================================
  * FUNCTION:		Exp::doSearch
  * OVERVIEW:		Search for the given subexpression
- * NOTE:			Caller must free the list li after use, but not the
- *					  Exp objects that they point to
+ * NOTE:			Caller must free the list li after use, but not the Exp objects that they point to
  * NOTE:			If the top level expression matches, li will contain search
  * NOTE:			Now a static function. Searches pSrc, not this
  * PARAMETERS:		search: ptr to Exp we are searching for 
  *					pSrc: ref to ptr to Exp to search. Reason is that we can then overwrite that pointer
  *					to effect a replacement. So we need to append &pSrc in the list. Can't append &this!
- *					li: list of Exp** where pointers to the matches are found
- *					once: true if not all occurrences to be found, false for all
+ *					li: list of Exp** where pointers to the matches are found once: true if not all occurrences to be
+ *					  found, false for all
  * RETURNS:			<nothing>
  *============================================================================*/
 void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
@@ -1434,8 +1381,7 @@ void Exp::doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once) {
 /*==============================================================================
  * FUNCTION:		Exp::doSearchChildren
  * OVERVIEW:		Search for the given subexpression in all children
- * NOTE:			Virtual function; different implementation for each
- *					subclass of Exp
+ * NOTE:			Virtual function; different implementation for each subclass of Exp
  * NOTE:			Will recurse via doSearch
  * PARAMETERS:		search: ptr to Exp we are searching for
  *					li: list of Exp** where pointers to the matches are found
@@ -1468,8 +1414,7 @@ void Ternary::doSearchChildren(Exp* search, std::list<Exp**>& li, bool once) {
  * NOTE:			If the top level expression matches, return val != this
  * PARAMETERS:		search:	 ptr to Exp we are searching for
  *					replace: ptr to Exp to replace it with
- *					change: ref to boolean, set true if a change made
- *					(else cleared)
+ *					change: ref to boolean, set true if a change made (else cleared)
  * RETURNS:			True if a change made
  *============================================================================*/
 Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
@@ -1481,8 +1426,8 @@ Exp* Exp::searchReplace(Exp* search, Exp* replace, bool& change)
  * FUNCTION:		Exp::searchReplaceAll
  * OVERVIEW:		Search for the given subexpression, and replace wherever found
  * NOTE:			If the top level expression matches, something other than "this" will be returned
- * NOTE:			It is possible with wildcards that in very unusual circumstances a replacement will
- *					be made to something that is already deleted.
+ * NOTE:			It is possible with wildcards that in very unusual circumstances a replacement will be made to
+ *					something that is already deleted.
  * NOTE:			Replacements are cloned. Caller to delete search and replace
  * PARAMETERS:		search:	 ptr to ptr to Exp we are searching for
  *					replace: ptr to Exp to replace it with
@@ -1510,10 +1455,9 @@ Exp* Exp::searchReplaceAll(Exp* search, Exp* replace, bool& change, bool once /*
 
 /*==============================================================================
  * FUNCTION:		Exp::search
- * OVERVIEW:		Search this expression for the given subexpression, and if
- *					  found, return true and return a pointer to the matched
- *					  expression in result (useful when there are wildcards,
- *					  e.g. search pattern is r[?] result is r[2].
+ * OVERVIEW:		Search this expression for the given subexpression, and if found, return true and return a pointer
+ *					  to the matched expression in result (useful when there are wildcards, e.g. search pattern is r[?]
+ *					  result is r[2].
  * PARAMETERS:		search:	 ptr to Exp we are searching for
  *					result:	 ref to ptr to Exp that matched
  * RETURNS:			True if a match was found
@@ -1523,8 +1467,7 @@ bool Exp::search(Exp* search, Exp*& result)
 	std::list<Exp**> li;
 	result = 0;				// In case it fails; don't leave it unassigned
 	// The search requires a reference to a pointer to this object.
-	// This isn't needed for searches, only for replacements, but we want to
-	// re-use the same search routine
+	// This isn't needed for searches, only for replacements, but we want to re-use the same search routine
 	Exp* top = this;
 	doSearch(search, top, li, false);
 	if (li.size()) {
@@ -1536,9 +1479,8 @@ bool Exp::search(Exp* search, Exp*& result)
 
 /*==============================================================================
  * FUNCTION:		Exp::searchAll
- * OVERVIEW:		Search this expression for the given subexpression, and for
- *					  each found, return a pointer to the matched
- *					  expression in result
+ * OVERVIEW:		Search this expression for the given subexpression, and for each found, return a pointer to the
+ *					  matched expression in result
  * PARAMETERS:		search:	 ptr to Exp we are searching for
  *					results:  ref to list of Exp that matched 
  * RETURNS:			True if a match was found
@@ -1549,8 +1491,7 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
 	//result.clear();	// No! Useful when searching for more than one thing
 						// (add to the same list)
 	// The search requires a reference to a pointer to this object.
-	// This isn't needed for searches, only for replacements, but we want to
-	// re-use the same search routine
+	// This isn't needed for searches, only for replacements, but we want to re-use the same search routine
 	Exp* pSrc = this;
 	doSearch(search, pSrc, li, false);
 	std::list<Exp**>::iterator it;
@@ -1561,29 +1502,24 @@ bool Exp::searchAll(Exp* search, std::list<Exp*>& result)
 	return li.size() != 0;
 }
 
-// These simplifying functions don't really belong in class Exp, but they know
-// too much about how Exps work
-// They can't go into util.so, since then util.so and db.so would co-depend
-// on each other for testing at least
+// These simplifying functions don't really belong in class Exp, but they know too much about how Exps work
+// They can't go into util.so, since then util.so and db.so would co-depend on each other for testing at least
 /*==============================================================================
  * FUNCTION:		Exp::partitionTerms
- * OVERVIEW:		Takes an expression consisting on only + and - operators and
- *					partitions its terms into positive non-integer fixed terms,
- *					negative non-integer fixed terms and integer terms. For
- *					example, given:
+ * OVERVIEW:		Takes an expression consisting on only + and - operators and partitions its terms into positive
+ *					non-integer fixed terms, negative non-integer fixed terms and integer terms. For example, given:
  *					   %sp + 108 + n - %sp - 92
  *					the resulting partition will be:
  *					   positives = { %sp, n }
  *					   negatives = { %sp }
  *					   integers	 = { 108, -92 }
  * NOTE:			integers is a vector so we can use the accumulate func
- * NOTE:			Expressions are NOT cloned. Therefore, do not ;//delete the
- *					  expressions in positives or negatives
+ * NOTE:			Expressions are NOT cloned. Therefore, do not delete the expressions in positives or negatives
  * PARAMETERS:		positives - the list of positive terms
  *					negatives - the list of negative terms
  *					integers - the vector of integer terms
- *					negate - determines whether or not to negate the whole
- *					  expression, i.e. we are on the RHS of an opMinus
+ *					negate - determines whether or not to negate the whole expression, i.e. we are on the RHS of an
+ *					opMinus
  * RETURNS:			<nothing>
  *============================================================================*/
 void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
@@ -1625,8 +1561,7 @@ void Exp::partitionTerms(std::list<Exp*>& positives, std::list<Exp*>& negatives,
 
 /*==============================================================================
  * FUNCTION:		[Unary|Binary]::simplifyArith
- * OVERVIEW:		This method simplifies an expression consisting of + and -
- *					at the top level. For example,
+ * OVERVIEW:		This method simplifies an expression consisting of + and - at the top level. For example,
  *					(%sp + 100) - (%sp + 92) will be simplified to 8.
  * NOTE:			Any expression can be so simplified
  * NOTE:			User must ;//delete result
@@ -1663,9 +1598,8 @@ Exp* Binary::simplifyArith() {
 	partitionTerms(positives,negatives,integers,false);
 
 	// Now reduce these lists by cancelling pairs
-	// Note: can't improve this algorithm using multisets, since can't
-	// instantiate multisets of type Exp (only Exp*). The Exp* in the
-	// multisets would be sorted by address, not by value of the expression.
+	// Note: can't improve this algorithm using multisets, since can't instantiate multisets of type Exp (only Exp*).
+	// The Exp* in the multisets would be sorted by address, not by value of the expression.
 	// So they would be unsorted, same as lists!
 	std::list<Exp*>::iterator pp = positives.begin();
 	std::list<Exp*>::iterator nn = negatives.begin();
@@ -1673,8 +1607,7 @@ Exp* Binary::simplifyArith() {
 		bool inc = true;
 		while (nn != negatives.end()) {
 			if (**pp == **nn) {
-				// A positive and a negative that are equal; therefore they
-				// cancel
+				// A positive and a negative that are equal; therefore they cancel
 				pp = positives.erase(pp);	// Erase the pointers, not the Exps
 				nn = negatives.erase(nn);
 				inc = false;				// Don't increment pp now
@@ -1734,10 +1667,8 @@ Exp* Binary::simplifyArith() {
 
 /*==============================================================================
  * FUNCTION:		Exp::Accumulate
- * OVERVIEW:		This method creates an expression that is the sum of all
- *					expressions in a list.
- *					E.g. given the list <4,r[8],m[14]>
- *					the resulting expression is 4+r[8]+m[14].
+ * OVERVIEW:		This method creates an expression that is the sum of all expressions in a list.
+ *					E.g. given the list <4,r[8],m[14]> the resulting expression is 4+r[8]+m[14].
  * NOTE:			static (non instance) function
  * NOTE:			Exps ARE cloned
  * PARAMETERS:		exprs - a list of expressions
@@ -1771,22 +1702,18 @@ Exp* Exp::Accumulate(std::list<Exp*> exprs)
 
 /*==============================================================================
  * FUNCTION:		Exp::simplify
- * OVERVIEW:		Apply various simplifications such as constant folding
- *					Also canonicalise by putting iteger constants on the right
- *					hand side of sums, adding of negative constants changed to
- *					subtracting positive constants, etc.
- *					Changes << k to a multiply
+ * OVERVIEW:		Apply various simplifications such as constant folding. Also canonicalise by putting iteger
+ *					constants on the right hand side of sums, adding of negative constants changed to subtracting
+ *					positive constants, etc.  Changes << k to a multiply
  * NOTE:			User must ;//delete result
  * NOTE:			Address simplification (a[ m[ x ]] == x) is done separately
  * PARAMETERS:		<none>
  * RETURNS:			Ptr to the simplified expression
  *
- * This code is so big, so weird and so lame it's not funny.  What this boils
- * down to is the process of unification.  We're trying to do it with a simple
- * iterative algorithm, but the algorithm keeps getting more and more complex.
- * Eventually I will replace this with a simple theorem prover and we'll have
- * something powerful, but until then, dont rely on this code to do anything
- * critical. - trent 8/7/2002
+ * This code is so big, so weird and so lame it's not funny.  What this boils down to is the process of unification.
+ * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
+ * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then, dont
+ * rely on this code to do anything critical. - trent 8/7/2002
  *============================================================================*/
 #define DEBUG_SIMP 0			// Set to 1 to print every change
 Exp* Exp::simplify() {
@@ -1803,19 +1730,15 @@ Exp* Exp::simplify() {
 		res = res->polySimplify(bMod);// Call the polymorphic simplify
 	 /*	  if (bMod) {
 			LOG << "polySimplify hit: " << before << " to " << res << "\n";
-			// polySimplify is now redundant, if you see this in the log you
-			// need to update one of the files in the transformations directory
-			// to include a rule for the reported transform.
+			// polySimplify is now redundant, if you see this in the log you need to update one of the files in the
+			// transformations directory to include a rule for the reported transform.
 		} */
 	} while (bMod);				// If modified at this (or a lower) level, redo
-	// The below is still important. E.g. want to canonicalise sums, so we
-	// know that a + K + b is the same as a + b + K
-	// No! This slows everything down, and it's slow enough as it is. Call
-	// only where needed:
+	// The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
+	// No! This slows everything down, and it's slow enough as it is. Call only where needed:
 	// res = res->simplifyArith();
 #if DEBUG_SIMP
-	if (!(*res == *save)) std::cout << "simplified " << save << "  to  " << res
-	  << "\n";
+	if (!(*res == *save)) std::cout << "simplified " << save << "  to  " << res << "\n";
 	;//delete save;
 #endif
 	return res;
@@ -1910,10 +1833,10 @@ Exp* Unary::polySimplify(bool& bMod) {
 				((Const*)res)->setInt(k);
 				bMod = true; 
 			} else if (op == subOP) {
-			   res = ((Unary*)res)->becomeSubExp1();
-			   res = ((Unary*)res)->becomeSubExp1();
-			   bMod = true;
-			   break;
+				res = ((Unary*)res)->becomeSubExp1();
+				res = ((Unary*)res)->becomeSubExp1();
+				bMod = true;
+				break;
 			}
 		}
 		break;
@@ -1931,7 +1854,7 @@ Exp* Unary::polySimplify(bool& bMod) {
 			// The below IS bad now. It undoes the simplification of
 			// m[r29 + -4] to m[r29 - 4]
 			// If really needed, do another polySimplify, or swap the order
-			//subExp1 = subExp1->simplifyArith();  // probably bad
+			//subExp1 = subExp1->simplifyArith();		// probably bad
 		}
 		break;
 		default:
@@ -1956,7 +1879,8 @@ Exp* Unary::polySimplify(bool& bMod) {
 		}
 	}
 
-	// Replace m[x + y * k] where x has type pointer and k is a constant equal to the size of the pointed to type with x[y]
+	// Replace m[x + y * k] where x has type pointer and k is a constant equal to the size of the pointed to type with
+	// x[y]
 	if (op == opMemOf && subExp1->getOper() == opPlus && subExp1->getSubExp2()->getOper() == opMult && 
 			subExp1->getSubExp2()->getSubExp2()->isIntConst()) {
 		int n = ((Const*)subExp1->getSubExp2()->getSubExp2())->getInt();
@@ -2216,8 +2140,8 @@ Exp* Binary::polySimplify(bool& bMod) {
 
 	// Check for exp AND TRUE (logical AND)
 	if (	(op == opAnd) &&
-	  		// Is the below really needed?
-	  		(opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) || subExp2->isTrue()) {
+			// Is the below really needed?
+			(opSub2 == opIntConst && ((Const*)subExp2)->getInt() != 0) || subExp2->isTrue()) {
 		res = ((Unary*)res)->becomeSubExp1();
 		bMod = true;
 		return res;
@@ -2390,8 +2314,8 @@ Exp* Binary::polySimplify(bool& bMod) {
 	if (	op == opOr && opSub2 == opEquals &&
 			(opSub1 == opGtrEq || opSub1 == opLessEq || opSub1 == opGtrEqUns || opSub1 == opLessEqUns) &&
 			((*b1->subExp1 == *b2->subExp1 &&
-		  	*b1->subExp2 == *b2->subExp2) || (*b1->subExp1 == *b2->subExp2 &&
-		  	*b1->subExp2 == *b2->subExp1))) {
+			*b1->subExp2 == *b2->subExp2) || (*b1->subExp1 == *b2->subExp2 &&
+			*b1->subExp2 == *b2->subExp1))) {
 		res = ((Binary*)res)->becomeSubExp1();
 		bMod = true;
 		return res;
@@ -2807,8 +2731,8 @@ Exp* RefExp::polySimplify(bool& bMod) {
 
 /*==============================================================================
  * FUNCTION:		Exp::simplifyAddr
- * OVERVIEW:		Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any,
- *					  and also a[ size m[ any ]] == any
+ * OVERVIEW:		Just do addressof simplification: a[ m[ any ]] == any, m[ a[ any ]] = any, and also
+ *					  a[ size m[ any ]] == any
  * TODO:			Replace with a visitor some day
  * PARAMETERS:		<none>
  * RETURNS:			Ptr to the simplified expression
@@ -2860,8 +2784,8 @@ Exp* Ternary::simplifyAddr() {
 
 /*==============================================================================
  * FUNCTION:		Exp::printt
- * OVERVIEW:		Print an infix representation of the object to the given
- *					file stream, with its type in <angle brackets>.
+ * OVERVIEW:		Print an infix representation of the object to the given file stream, with its type in <angle
+ *					  brackets>.
  * PARAMETERS:		Output stream to send the output to
  * RETURNS:			<nothing>
  *============================================================================*/
@@ -2890,11 +2814,10 @@ void Exp::printt(std::ostream& os /*= cout*/)
 
 /*==============================================================================
  * FUNCTION:		Exp::printAsHL
- * OVERVIEW:		Print an infix representation of the object to the given
- *					file stream, but convert r[10] to r10 and v[5] to v5
- * NOTE:			Never modify this function to emit debugging info; the back
- *					  ends rely on this being clean to emit correct C
- *					  If debugging is desired, use operator<<
+ * OVERVIEW:		Print an infix representation of the object to the given file stream, but convert r[10] to r10 and
+ *					  v[5] to v5
+ * NOTE:			Never modify this function to emit debugging info; the back ends rely on this being clean to emit
+ *					  correct C.  If debugging is desired, use operator<<
  * PARAMETERS:		Output stream to send the output to
  * RETURNS:			<nothing>
  *============================================================================*/
@@ -3121,11 +3044,11 @@ Exp* Const::genConstraints(Exp* result) {
 		switch (op) {
 			case opIntConst:
 			case opLongConst:
-				// An integer constant is compatible with any size of integer,
-				// as long is it is in the right range (not checked yet)
+				// An integer constant is compatible with any size of integer, as long is it is in the right range (not
+				// checked yet)
 				match = t->isInteger();
-				// An integer constant can also match a pointer to something
-				// Assume values less than 0x100 can't be a pointer
+				// An integer constant can also match a pointer to something.  Assume values less than 0x100 can't be a
+				// pointer
 				if ((unsigned)u.i >= 0x100)
 					match |= t->isPointer();
 				// We can co-erce 32 bit constants to floats
@@ -3144,8 +3067,7 @@ Exp* Const::genConstraints(Exp* result) {
 				break;
 		}
 		if (match) {
-			// This constant may require a cast or a change of format.
-			// So we generate a constraint.
+			// This constant may require a cast or a change of format. So we generate a constraint.
 			// Don't clone 'this', so it can be co-erced after type analysis
 			return new Binary(opEquals,
 				new Unary(opTypeOf, this),
@@ -3158,8 +3080,7 @@ Exp* Const::genConstraints(Exp* result) {
 	Type* t;
 	switch (op) {
 		case opIntConst: {
-			// We have something like local1 = 1234
-			// Either they are both integer, or both pointer
+			// We have something like local1 = 1234.  Either they are both integer, or both pointer
 			Type* intt = new IntegerType(0);
 			Type* alph = PointerType::newPtrAlpha();
 			return new Binary(opOr,
@@ -3169,8 +3090,7 @@ Exp* Const::genConstraints(Exp* result) {
 						new TypeVal(intt)),
 					new Binary(opEquals,
 						new Unary(opTypeOf,
-							// Note: don't clone 'this', so we can change the
-							// Const after type analysis!
+							// Note: don't clone 'this', so we can change the Const after type analysis!
 							this),
 						new TypeVal(intt))),
 				new Binary(opAnd,
@@ -3301,8 +3221,7 @@ Exp* RefExp::genConstraints(Exp* result) {
 	return new Terminal(opTrue);
 }
 
-// Return a constraint that my subexpressions have to be of type
-// typeval1 and typeval2 respectively
+// Return a constraint that my subexpressions have to be of type typeval1 and typeval2 respectively
 Exp* Binary::constrainSub(TypeVal* typeVal1, TypeVal* typeVal2) {
 	Exp* con1 = subExp1->genConstraints(typeVal1);
 	Exp* con2 = subExp2->genConstraints(typeVal2);
@@ -3430,8 +3349,8 @@ Exp* Binary::genConstraints(Exp* result) {
 		}
 
 		case opSize: {
-			// This used to be considered obsolete, but now, it is used to
-			// carry the size of memOf's from the decoder to here
+			// This used to be considered obsolete, but now, it is used to carry the size of memOf's from the decoder to
+			// here
 			assert(subExp1->isIntConst());
 			int sz = ((Const*)subExp1)->getInt();
 			if (restrictTo) {
@@ -3721,9 +3640,8 @@ bool Ternary::accept(ExpVisitor* v) {
 	return ret;
 }
 
-// All the Unary derived accept functions look the same, but they have to be
-// repeated because the particular visitor function called each time is
-// different for each class (because "this" is different each time)
+// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
+// function called each time is different for each class (because "this" is different each time)
 bool TypedExp::accept(ExpVisitor* v) {
 	bool override, ret = v->visit(this, override);
 	if (override) return ret;
@@ -3749,8 +3667,7 @@ bool Location::accept(ExpVisitor* v) {
 	return ret;
 }
 
-// The following are similar, but don't have children that have to accept
-// visitors
+// The following are similar, but don't have children that have to accept visitors
 bool Terminal::accept(ExpVisitor* v) {return v->visit(this);}
 bool	Const::accept(ExpVisitor* v) {return v->visit(this);}
 bool  TypeVal::accept(ExpVisitor* v) {return v->visit(this);}
@@ -3760,10 +3677,9 @@ bool  TypeVal::accept(ExpVisitor* v) {return v->visit(this);}
 // FixProcVisitor class
 
 void Exp::fixLocationProc(UserProc* p) {
-	// All locations are supposed to have a pointer to the enclosing
-	// UserProc that they are a location of. Sometimes, you have an
-	// arbitrary expression that may not have all its procs set. This
-	// function fixes the procs for all Location subexpresssions.
+	// All locations are supposed to have a pointer to the enclosing UserProc that they are a location of. Sometimes,
+	// you have an arbitrary expression that may not have all its procs set. This function fixes the procs for all
+	// Location subexpresssions.
 	FixProcVisitor fpv;
 	fpv.setProc(p);
 	accept(&fpv);
@@ -3790,10 +3706,8 @@ Exp* Exp::stripSizes() {
 }
 
 Exp* Unary::accept(ExpModifier* v) {
-	// This Unary will be changed in *either* the pre or the post visit
-	// If it's changed in the preVisit step, then postVisit doesn't care
-	// about the type of ret. So let's call it a Unary, and the type system
-	// is happy
+	// This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
+	// postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
 	bool recur;
 	Unary* ret = (Unary*)v->preVisit(this, recur);
 	if (recur) subExp1 = subExp1->accept(v);
@@ -3816,9 +3730,8 @@ Exp* Ternary::accept(ExpModifier* v) {
 }
 
 Exp* Location::accept(ExpModifier* v) {
-	// This looks to be the same source code as Unary::accept, but the
-	// type of "this" is different, which is all important here!
-	// (it makes a call to a different visitor member function).
+	// This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
+	// important here!  (it makes a call to a different visitor member function).
 	bool recur;
 	Location* ret = (Location*)v->preVisit(this, recur);
 	if (recur) subExp1 = subExp1->accept(v);
@@ -3946,8 +3859,7 @@ char* Exp::getAnyStrConst() {
 	return ((Const*)e)->getStr();
 }
 
-// Find the locations used by this expression. Use the UsedLocsFinder visitor
-// class
+// Find the locations used by this expression. Use the UsedLocsFinder visitor class
 void Exp::addUsedLocs(LocationSet& used) {
 	UsedLocsFinder ulf(used);
 	accept(&ulf);
@@ -3959,8 +3871,8 @@ Exp* Exp::expSubscriptVar(Exp* e, Statement* def) {
 	return accept(&es);
 }
 
-// Subscript any occurrences of e with e{0} in this expression
-// Note: subscript with NULL, not implicit assignments as above
+// Subscript any occurrences of e with e{0} in this expression Note: subscript with NULL, not implicit assignments as
+// above
 Exp* Exp::expSubscriptValNull(Exp* e) {
 	return expSubscriptVar(e, NULL);
 }

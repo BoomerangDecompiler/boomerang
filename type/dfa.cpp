@@ -322,13 +322,13 @@ Type* FloatType::meetWith(Type* other, bool& ch) {
 	if (other->isVoid()) return this;
 	if (other->isFloat()) {
 		FloatType* otherFlt = other->asFloat();
-		int oldSize = size;
+		unsigned oldSize = size;
 		size = max(size, otherFlt->size);
 		ch |= size != oldSize;
 		return this;
 	}
 	if (other->isSize()) {
-		int otherSize = other->getSize();
+		unsigned otherSize = other->getSize();
 		ch |= size != otherSize;
 		size = max(size, otherSize);
 		return this;
@@ -538,7 +538,7 @@ Type* LowerType::meetWith(Type* other, bool& ch) {
 }
 
 Type* Type::createUnion(Type* other, bool& ch) {
-	// Note: this should not be a UnionType
+	assert(!isUnion());									// Note: this should not be a UnionType
 	if (other->isUnion())
 		return other->meetWith(this, ch)->clone();		// Put all the hard union logic in one place
 
@@ -599,6 +599,23 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
 void Assign::dfaTypeAnalysis(bool& ch) {
 	Type* tr = rhs->ascendType();
 	type = type->meetWith(tr, ch);
+	// This is a special requirement for locations (locals and some array expressions) whose addresses are taken.
+	// Consider sp-16 when used as a pointer; the type of this depends on an implicit definition of m[sp-16].
+	// But if there is a real definition of m[sp-16], there is no efficient way of finding it. So mutually meet
+	// the types of the two assignments to keep them in sync
+	Cfg* cfg = proc->getCFG();
+	Statement* impDef = cfg->findTheImplicitAssign(lhs);
+	if (impDef) {
+		Type* ty = impDef->getTypeFor(lhs);
+		if (DEBUG_TA)
+			LOG << "before type merge of explicit and implicit assignments for " << lhs << ": were " <<
+				type->getCtype() << " and " << ty->getCtype() << "\n";
+		ty = ty->meetWith(type, ch);
+		type = type->meetWith(ty, ch);
+		if (DEBUG_TA)
+			LOG << " after type merge of explicit and implicit assignments for " << lhs << ":  now " <<
+                type->getCtype() << " and " << ty->getCtype() << "\n";
+	}
 	rhs->descendType(type, ch, proc);
 	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
 }
@@ -865,8 +882,9 @@ void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, this)) {
 		// this is the address of some local
 		Exp* localExp = Location::memOf(this);
-		// FIXME: Note there is a theory problem here; there is currently no reliable way to find the definition for
-		// localExp. For now, ignore all but implicit assignments...
+		// Note there is a theory problem here; there is currently no reliable way to find the definition for localExp.
+		// I believe that this doesn't matter as long as all explicit assignments look for an implicit "shadow" and
+		// mutually meet the types
 		Cfg* cfg = proc->getCFG();
 		Statement* impDef = cfg->findImplicitAssign(localExp);
 		if (impDef)
@@ -1175,67 +1193,67 @@ bool VoidType::isCompatibleWith(Type* other) {
 }
 
 bool SizeType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
+	if (other->resolvesToVoid()) return true;
 	unsigned otherSize = other->getSize();
 	if (otherSize == size || otherSize == 0) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	//return false;
 	// For now, size32 and double will be considered compatible (helps test/pentium/global2)
 return true;
 }
 
 bool IntegerType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isInteger()) return true;
-	if (other->isChar()) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isSize() && ((SizeType*)other)->getSize() == size) return true;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToInteger()) return true;
+	if (other->resolvesToChar()) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == size) return true;
 	// I am compatible with an array of myself:
-	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
+	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
 bool FloatType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isFloat()) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
-	if (other->isSize() && ((SizeType*)other)->getSize() == size) return true;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToFloat()) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == size) return true;
 	return false;
 }
 
 bool CharType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isChar()) return true;
-	if (other->isInteger()) return true;
-	if (other->isSize() && ((SizeType*)other)->getSize() == 8) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToChar()) return true;
+	if (other->resolvesToInteger()) return true;
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == 8) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
 bool BooleanType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isBoolean()) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isSize() && ((SizeType*)other)->getSize() == 1) return true;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToBoolean()) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == 1) return true;
 	return false;
 }
 
 bool FuncType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
+	if (other->resolvesToVoid()) return true;
 	if (*this == *other) return true;		// MVE: should not compare names!
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
 	return false;
 }
 
 bool PointerType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (other->isSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
-	if (!other->isPointer()) return false;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
+	if (!other->resolvesToPointer()) return false;
 	return points_to->isCompatibleWith(other->asPointer()->points_to);
 }
 
@@ -1243,22 +1261,22 @@ bool NamedType::isCompatibleWith(Type* other) {
 	Type* resTo = resolvesTo();
 	if (resTo)
 		return resolvesTo()->isCompatibleWith(other);
-	if (other->isVoid()) return true;
+	if (other->resolvesToVoid()) return true;
 	return (*this == *other);
 }
 
 bool ArrayType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
 	if (base_type->isCompatibleWith(other)) return true;		// An array of x is compatible with x
-	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
 }
 
 bool UnionType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
+	if (other->resolvesToVoid()) return true;
 	std::list<UnionElement>::iterator it;
-	if (other->isUnion()) {
+	if (other->resolvesToUnion()) {
 		if (this == other)				// Note: pointer comparison
 			return true;				// Avoid infinite recursion
 		UnionType* otherUnion = (UnionType*)other;
@@ -1273,9 +1291,9 @@ bool UnionType::isCompatibleWith(Type* other) {
 }
 
 bool CompoundType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
-	if (!other->isCompound()) return false;
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (!other->resolvesToCompound()) return false;
 	CompoundType* otherComp = (CompoundType*)other;
 	int n = otherComp->getNumTypes();
 	if (n != (int)types.size()) return false;		// Is a subcompound compatible with its supercompound?
@@ -1285,16 +1303,16 @@ bool CompoundType::isCompatibleWith(Type* other) {
 }
 
 bool UpperType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isUpper() && base_type->isCompatibleWith(other->asUpper()->base_type)) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToUpper() && base_type->isCompatibleWith(other->asUpper()->base_type)) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
 }
 
 bool LowerType::isCompatibleWith(Type* other) {
-	if (other->isVoid()) return true;
-	if (other->isLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
-	if (other->isUnion()) return other->isCompatibleWith(this);
+	if (other->resolvesToVoid()) return true;
+	if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
+	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
 }
 

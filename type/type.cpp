@@ -329,13 +329,23 @@ Type *CompoundType::getTypeAtOffset(unsigned n)
 {
 	unsigned offset = 0;
 	for (unsigned i = 0; i < types.size(); i++) {
-		//if (offset >= n && n < offset + types[i]->getSize())
 		if (offset <= n && n < offset + types[i]->getSize())
-			//return getType(offset == n ? i : i - 1);
 			return types[i];
 		offset += types[i]->getSize();
 	}
 	return NULL;
+}
+
+// Note: n is a BIT offset
+void CompoundType::setTypeAtOffset(unsigned n, Type* ty) {
+	unsigned offset = 0;
+	for (unsigned i = 0; i < types.size(); i++) {
+		if (offset <= n && n < offset + types[i]->getSize()) {
+			types[i] = ty;
+			return;
+		}
+		offset += types[i]->getSize();
+	}
 }
 
 const char *CompoundType::getNameAtOffset(unsigned n)
@@ -1010,66 +1020,31 @@ void ArrayType::fixBaseType(Type *b)
 	}
 }
 
-VoidType *Type::asVoid()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	VoidType *res = dynamic_cast<VoidType*>(ty);
-	assert(res);
-	return res;
+#define AS_TYPE(x) \
+x##Type *Type::as##x() \
+{						\
+	Type *ty = this;	\
+	if (isNamed())		\
+		ty = ((NamedType*)ty)->resolvesTo();	\
+	x##Type *res = dynamic_cast<x##Type*>(ty);	\
+	assert(res);		\
+	return res;			\
 }
 
-FuncType *Type::asFunc()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	FuncType *res = dynamic_cast<FuncType*>(ty);
-	assert(res);
-	return res;
-}
-
-BooleanType *Type::asBoolean()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	BooleanType *res = dynamic_cast<BooleanType*>(ty);
-	assert(res);
-	return res;
-}
-
-CharType *Type::asChar()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	CharType *res = dynamic_cast<CharType*>(ty);
-	assert(res);
-	return res;
-}
-
-IntegerType *Type::asInteger()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	IntegerType *res = dynamic_cast<IntegerType*>(ty);
-	assert(res);
-	return res;
-}
-
-FloatType *Type::asFloat()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	FloatType *res = dynamic_cast<FloatType*>(ty);
-	assert(res);
-	return res;
-}
-
+AS_TYPE(Void)
+AS_TYPE(Func)
+AS_TYPE(Boolean)
+AS_TYPE(Char)
+AS_TYPE(Integer)
+AS_TYPE(Float)
+AS_TYPE(Pointer)
+AS_TYPE(Array)
+AS_TYPE(Compound)
+AS_TYPE(Union)
+AS_TYPE(Upper)
+AS_TYPE(Lower)
+// Note: don't want to call this->resolve() for this case, since then we (probably) won't have a NamedType and the
+// assert will fail
 NamedType *Type::asNamed()
 {
 	Type *ty = this;
@@ -1078,135 +1053,30 @@ NamedType *Type::asNamed()
 	return res;
 }
 
-PointerType *Type::asPointer()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	PointerType *res = dynamic_cast<PointerType*>(ty);
-	assert(res);
-	return res;
+
+
+#define RESOLVES_TO_TYPE(x)		\
+bool Type::resolvesTo##x()	\
+{							\
+	Type *ty = this;		\
+	if (ty->isNamed())		\
+		ty = ((NamedType*)ty)->resolvesTo(); \
+	return ty && ty->is##x(); \
 }
 
-ArrayType *Type::asArray()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	ArrayType *res = dynamic_cast<ArrayType*>(ty);
-	assert(res);
-	return res;
-}
-
-CompoundType *Type::asCompound()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	CompoundType *res = dynamic_cast<CompoundType*>(ty);
-	assert(res);
-	return res;
-}
-
-UnionType *Type::asUnion()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	UnionType *res = dynamic_cast<UnionType*>(ty);
-	assert(res);
-	return res;
-}
-
-UpperType *Type::asUpper() {
-	Type* ty = this;
-	if (isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	UpperType* res = dynamic_cast<UpperType*>(ty);
-	assert(res);
-	return res;
-}
-
-LowerType *Type::asLower() {
-	Type* ty = this;
-	if (isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	LowerType* res = dynamic_cast<LowerType*>(ty);
-	assert(res);
-	return res;
-}
-
-bool Type::resolvesToVoid()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isVoid();
-}
-
-bool Type::resolvesToFunc()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isFunc();
-}
-
-bool Type::resolvesToBoolean()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isBoolean();
-}
-
-bool Type::resolvesToChar()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isChar();
-}
-
-bool Type::resolvesToInteger()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isInteger();
-}
-
-bool Type::resolvesToFloat()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isFloat();
-}
-
-bool Type::resolvesToPointer()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isPointer();
-}
-
-bool Type::resolvesToArray()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isArray();
-}
-
-bool Type::resolvesToCompound()
-{
-	Type *ty = this;
-	if (ty->isNamed())
-		ty = ((NamedType*)ty)->resolvesTo();
-	return ty && ty->isCompound();
-}
+RESOLVES_TO_TYPE(Void)
+RESOLVES_TO_TYPE(Func)
+RESOLVES_TO_TYPE(Boolean)
+RESOLVES_TO_TYPE(Char)
+RESOLVES_TO_TYPE(Integer)
+RESOLVES_TO_TYPE(Float)
+RESOLVES_TO_TYPE(Pointer)
+RESOLVES_TO_TYPE(Array)
+RESOLVES_TO_TYPE(Compound)
+RESOLVES_TO_TYPE(Union)
+RESOLVES_TO_TYPE(Size)
+RESOLVES_TO_TYPE(Upper)
+RESOLVES_TO_TYPE(Lower)
 
 bool Type::isPointerToAlpha() {
 	return isPointer() && asPointer()->pointsToAlpha();
@@ -1543,7 +1413,8 @@ DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
 	return NULL;
 }
 
-void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty) {
+// With the forced parameter: are we forcing the name, the type, or always both?
+void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty, bool forced /* = false */) {
 	DataIntervalEntry* pdie = find(addr);
 	if (pdie == NULL) {
 		DataInterval* pdi = &dimap[addr];	// Add a new entry
@@ -1551,16 +1422,139 @@ void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty) {
 		pdi->name = name;
 		pdi->type = ty;
 	} else {
-		// This new type becomes a new member of the existing struct or array
-		if (pdie->second.type->isCompound()) {
-
-		} else if (pdie->second.type->isArray()) {
-
+		// There are two basic cases, and an error if the two data types weave
+		if (pdie->first < addr) {
+			// The existing entry comes first. Make sure it ends last (possibly equal last)
+			if (pdie->first + pdie->second.size < addr+ty->getSize()/8) {
+				LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
+					ty->getCtype() << " which weaves after " << pdie->second.name << " at " << pdie->first <<
+					" of type " << pdie->second.type->getCtype() << "\n";
+				return;
+			}
+			enterComponent(pdie, addr, name, ty, forced);
+		} else if (pdie->first == addr) {
+			// Could go either way, depending on where the data items end
+			unsigned endOfCurrent = pdie->first + pdie->second.size;
+			unsigned endOfNew = addr+ty->getSize()/8;
+			if (endOfCurrent < endOfNew)
+				replaceComponents(addr, name, ty, forced);
+			else if (endOfCurrent == endOfNew)
+				checkMatching(pdie, addr, name, ty, forced);		// Size match; check that new type matches old
+			else
+				enterComponent(pdie, addr, name, ty, forced);
 		} else {
-			LOG << "TYPE ERROR: type " << pdie->second.type->getCtype() << " at address " << pdie->first <<
-				" overlaps with type " << ty->getCtype() << " at address " << addr << "\n";
+			// Old starts after new; check it also ends first
+			if (pdie->first + pdie->second.size > addr+ty->getSize()/8) {
+	            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
+	                ty->getCtype() << " which weaves before " << pdie->second.name << " at " << pdie->first <<
+	                " of type " << pdie->second.type->getCtype() << "\n";
+	            return;
+	        }
+			replaceComponents(addr, name, ty, forced);
 		}
 	}
+}
+
+// We are entering an item that already exists in a larger type. Check for compatibility, meet if necessary.
+void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced) {
+	if (pdie->second.type->resolvesToCompound()) {
+		unsigned bitOffset = (addr - pdie->first)*8;
+		Type* memberType = pdie->second.type->asCompound()->getTypeAtOffset(bitOffset);
+		if (memberType->isCompatibleWith(ty)) {
+			bool ch;
+			memberType = memberType->meetWith(ty, ch);
+			pdie->second.type->asCompound()->setTypeAtOffset(bitOffset, memberType);
+		} else
+			LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
+				"existing structure member type " << memberType->getCtype() << "\n";
+	}
+	else if (pdie->second.type->resolvesToArray()) {
+		Type* memberType = pdie->second.type->asArray()->getBaseType();
+		if (memberType->isCompatibleWith(ty)) {
+			bool ch;
+			memberType = memberType->meetWith(ty, ch);
+			pdie->second.type->asArray()->setBaseType(memberType);
+		} else
+			LOG << "TYPE ERROR: At address " << addr << " type " << ty->getCtype() << " is not compatible with "
+				"existing array member type " << memberType->getCtype() << "\n";
+	} else
+		LOG << "TYPE ERROR: Existing type at address " << pdie->first << " is not structure or array type\n";
+}
+
+// We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
+// components out of the way, meeting if necessary
+void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool forced) {
+	unsigned pastLast = addr + ty->getSize()/8;		// This is the byte address just past the overlapping type
+	// First check that the new entry will be compatible with everything it will overlap
+	if (ty->resolvesToCompound()) {
+		iterator it = dimap.upper_bound(addr);
+		if (it != dimap.begin()) it--;
+		while (it != dimap.end() && it->first < pastLast) {
+			unsigned bitOffset = (it->first - addr) * 8;
+			Type* memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
+			if (memberType->isCompatibleWith(it->second.type)) {
+				bool ch;
+				memberType = it->second.type->meetWith(memberType, ch);
+				ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
+			} else {
+				LOG << "TYPE ERROR: At address " << addr << " struct type " << ty->getCtype() << " is not compatible "
+					"with existing type " << it->second.type->getCtype() << "\n";
+				return;
+			}
+			it++;									// Move to next existing record that might overlap ty
+		}
+	} else if (ty->resolvesToArray()) {
+		Type* memberType = ty->asArray()->getBaseType();
+		iterator it = dimap.upper_bound(addr);
+		if (it != dimap.begin()) it--;
+		while (it != dimap.end() && it->first < pastLast) {
+			if (memberType->isCompatibleWith(it->second.type)) {
+				bool ch;
+				memberType = memberType->meetWith(it->second.type, ch);
+				ty->asArray()->setBaseType(memberType);
+			} else {
+				LOG << "TYPE ERROR: At address " << addr << " array type " << ty->getCtype() << " is not compatible "
+					"with existing type " << it->second.type->getCtype() << "\n";
+				return;
+			}
+			it++;
+		}
+	} else {
+		LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype() << " does not resolve to "
+			"compound or array\n";
+		return;
+	}
+
+	// The compound or array type is compatible. Remove the items that it will overlap with
+	iterator it = dimap.upper_bound(addr);			// Find the first item strictly greater than addr
+	if (it != dimap.begin())
+		it--;
+	while (it != dimap.end() && it->first + it->second.size <= pastLast) {
+		/* it = */ dimap.erase(it);
+		it++;										// Even though *it is deleted!
+	}
+
+	DataInterval* pdi = &dimap[addr];				// Finally add the new entry
+	pdi->size = ty->getBytes();
+	pdi->name = name;
+	pdi->type = ty;
+}
+
+void DataIntervalMap::checkMatching(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced) {
+	if (pdie->second.type->isCompatibleWith(ty)) {
+		// Just merge the types and exit
+		pdie->second.type = pdie->second.type->mergeWith(ty);
+		return;
+	}
+	LOG << "TYPE DIFFERENCE (could be OK): At address " << addr << " existing type " << pdie->second.type->getCtype() <<
+		 " but added type " << ty->getCtype() << "\n";
+}
+
+void DataIntervalMap::deleteItem(ADDRESS addr) {
+	iterator it = dimap.find(addr);
+	if (it == dimap.end())
+		return;
+	dimap.erase(it);
 }
 
 void DataIntervalMap::dump() {
@@ -1578,15 +1572,37 @@ char* DataIntervalMap::prints() {
 	return debug_buffer;
 }
 
-Exp* DataIntervalMap::expForAddr(ADDRESS addr) {
-	DataIntervalEntry* pdie = find(addr);
-	if (pdie == NULL) return NULL;
+ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
+	DataIntervalEntry* pdie = dim.find(addr);
+	ComplexTypeCompList* res = new ComplexTypeCompList;
+	if (pdie == NULL) return *res;
 	ADDRESS startCurrent = pdie->first;
 	Type* curType = pdie->second.type;
 	while (startCurrent < addr) {
+		unsigned bitOffset = (addr - startCurrent) * 8;
 		if (curType->isCompound()) {
-			
+			CompoundType* compCurType = curType->asCompound();
+			unsigned rem = compCurType->getOffsetRemainder(bitOffset);
+			startCurrent = addr - (rem/8);
+			ComplexTypeComp ctc;
+			ctc.isArray = false;
+			ctc.u.memberName = strdup(compCurType->getNameAtOffset(bitOffset));
+			res->push_back(ctc);
+			curType = compCurType->getTypeAtOffset(bitOffset);
+		} else if (curType->isArray()) {
+			curType = curType->asArray()->getBaseType();
+			unsigned baseSize = curType->getSize();
+			unsigned index = bitOffset / baseSize;
+			startCurrent += index * baseSize/8;
+			ComplexTypeComp ctc;
+			ctc.isArray = true;
+			ctc.u.index = index;
+			res->push_back(ctc);
+		} else {
+			LOG << "TYPE ERROR: no struct or array at byte address " << addr << "\n";
+			return *res;
 		}
 	}
+	return *res;
 }
 

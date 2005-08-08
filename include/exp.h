@@ -65,17 +65,14 @@ typedef BasicBlock* PBB;
 
 
 /*==============================================================================
- * Exp is an expression class, though it will probably be used to hold many
- * other things (e.g. perhaps transformations). It is a standard tree
- * representation. Exp itself is abstract. A special class Const is used
- * for constants. Unary, Binary, and Ternary hold 1, 2, and 3 subexpressions
- * respectively. For efficiency of representation, these have to be separate
- * classes, derived from Exp.
+ * Exp is an expression class, though it will probably be used to hold many other things (e.g. perhaps transformations).
+ * It is a standard tree representation. Exp itself is abstract. A special class Const is used for constants. Unary,
+ * Binary, and Ternary hold 1, 2, and 3 subexpressions respectively. For efficiency of representation, these have to be
+ * separate classes, derived from Exp.
  *============================================================================*/
 
-// Class Exp is abstract. However, the constructor can be called from the 
-// the constructors of derived classes, and virtual functions not overridden
-// by derived classes can be called
+// Class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
+// functions not overridden by derived classes can be called
 class Exp : public Memoisable {
 protected:
 		OPER		op;			   // The operator (e.g. opPlus)
@@ -89,8 +86,8 @@ public:
 		// Virtual destructor
 virtual				~Exp() {}
 
-		// Return the index. Note: I'd like to make this protected, but then
-		// subclasses don't seem to be able to use it (at least, for subexpressions)
+		// Return the index. Note: I'd like to make this protected, but then subclasses don't seem to be able to use it
+		// (at least, for subexpressions)
 		OPER		getOper() const {return op;}
 		void		setOper(OPER x) {op = x;}	  // A few simplifications use this
 
@@ -121,14 +118,6 @@ virtual Exp*		clone() = 0;
 		// Comparison
 // Type sensitive equality
 virtual bool		operator==(const Exp& o) const = 0;
-// NOTE: All these type insensitive comparisons may go away because only
-// assignments, parameters, and return locations will be typed
-// They are still here in case they are still needed, and because it makes
-// the port from UQBT code easier
-// Type insensitive equality
-virtual bool		operator%=(const Exp& o) const;
-// Sign insensitive equality
-virtual bool		operator-=(const Exp& o) const;
 // Type sensitive less than
 virtual bool		operator< (const Exp& o)  const = 0;
 // Type insensitive less than. Class TypedExp overrides
@@ -137,7 +126,7 @@ virtual bool		operator<<(const Exp& o) const
 // Comparison ignoring subscripts
 virtual bool		operator*=(Exp& o) = 0;
 
-// Return the number of subexpressions. This is only needed in rare cases,
+// Return the number of subexpressions. This is only needed in rare cases.
 // Could use polymorphism for all those cases, but this is easier
 virtual int getArity() {return 0;}		// Overridden for Unary, Binary, etc
 
@@ -268,8 +257,7 @@ virtual void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 		//	//	//	//	//	//	//
 	
 		// These are here so we can (optionally) prevent code clutter.
-		// Using a *Exp (that is known to be a Binary* say), you can just
-		// directly call getSubExp2.
+		// Using a *Exp (that is known to be a Binary* say), you can just directly call getSubExp2.
 		// However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
 virtual Exp*		getSubExp1() {return 0;}
 virtual Exp*		getSubExp2() {return 0;}
@@ -373,8 +361,7 @@ protected:
 std::ostream& operator<<(std::ostream& os, Exp* p);	 // Print the Exp poited to by p
 
 /*==============================================================================
- * Const is a subclass of Exp, and holds either an integer, floating point,
- * string, or address constant
+ * Const is a subclass of Exp, and holds either an integer, floating point, string, or address constant
  *============================================================================*/
 class Const : public Exp {
 		union {
@@ -457,8 +444,7 @@ protected:
 };		// class Const
 
 /*==============================================================================
- * Terminal is a subclass of Exp, and holds special zero arity items such
- * as opFlags (abstract flags register)
+ * Terminal is a subclass of Exp, and holds special zero arity items such as opFlags (abstract flags register)
  *============================================================================*/
 class Terminal : public Exp {
 public:
@@ -749,8 +735,6 @@ virtual Exp* clone();
 
 		// Compare
 virtual bool		operator==(const Exp& o) const;
-virtual bool		operator%=(const Exp& o) const;		// Type insensitive compare
-virtual bool		operator-=(const Exp& o) const;		// Sign insensitive compare
 virtual bool		operator< (const Exp& o) const;
 virtual bool		operator<<(const Exp& o) const;
 virtual bool		operator*=(Exp& o);
@@ -805,10 +789,10 @@ protected:
 };		// class FlagDef
 
 /*==============================================================================
- * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and a pointer to a defining statement
- * (could be a phi assignment).  This is used for subscripting SSA variables. Example:
+ * RefExp is a subclass of Unary, holding an ordinary Exp pointer, and a pointer to a defining statement (could be a
+ * phi assignment).  This is used for subscripting SSA variables. Example:
  *   m[1000] becomes m[1000]{3} if defined at statement 3
- * The integer is really a pointer to the definig statement, printed as the statement number for compactness
+ * The integer is really a pointer to the definig statement, printed as the statement number for compactness.
  *============================================================================*/
 class RefExp : public Unary {
 		Statement*	def;				// The defining statement
@@ -835,9 +819,8 @@ virtual Exp*		fromSSA(igraph& ig);
 virtual Exp*		polySimplify(bool& bMod);
 virtual Type*		getType();
 virtual Exp			*match(Exp *pattern);
-		// Before type analysis, implicit definitions are NULL.
-		// During and after TA, they point to an implicit assignment statement.
-		// Don't implement here, since it would require #including of statement.h
+		// Before type analysis, implicit definitions are NULL.  During and after TA, they point to an implicit
+		// assignment statement.  Don't implement here, since it would require #including of statement.h
 		bool		isImplicitDef();
 
 		// Visitation

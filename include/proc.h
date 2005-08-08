@@ -491,8 +491,8 @@ virtual				~UserProc();
 		void		printDFG();
 		void		symbolMapToLog();			// Print just the symbol map
 		void		dumpSymbolMap();			// For debugging
-		void		dumpSymbols(std::ostream& os);
-		void		dumpSymbols();
+		void		dumpLocals(std::ostream& os);
+		void		dumpLocals();
 		void		dumpIgraph(igraph& ig);
 
 		// simplify the statements in this proc
