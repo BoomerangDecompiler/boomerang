@@ -71,6 +71,16 @@ Log &Log::operator<<(ADDRESS a)
 	return *this;
 }
 
+#if 0		// Mac OS/X possibly needs this
+Log &Log::operator<<(size_t s)
+{
+	std::ostringstream st;
+	st << st;
+	*this << st.str().c_str();
+	return *this;
+}
+#endif
+
 void Log::tail() {
 }
 
