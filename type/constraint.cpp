@@ -350,18 +350,20 @@ std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 	// fixed types
 	substIntoEquates(fixed);
 
-LOG << "\nAfter substitute fixed into equates:\n";
-{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
-LOG << fixed.size() << " fixed: " << fixed.prints();
-LOG << equates.size() << " equates: " << equates.prints();
+	LOG << "\nAfter substitute fixed into equates:\n";
+	{LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+	 for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+	LOG << fixed.size() << " fixed: " << fixed.prints();
+	LOG << equates.size() << " equates: " << equates.prints();
 	// Substitute again the fixed types into the disjunctions
 	// (since there may be more fixed types from the above)
 	substIntoDisjuncts(fixed);
 
-LOG << "\nAfter second substitute fixed into disjunctions:\n";
-{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
-LOG << fixed.size() << " fixed: " << fixed.prints();
-LOG << equates.size() << " equates: " << equates.prints();
+	LOG << "\nAfter second substitute fixed into disjunctions:\n";
+	{LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+	 for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+	LOG << fixed.size() << " fixed: " << fixed.prints();
+	LOG << equates.size() << " equates: " << equates.prints();
 
 	ConstraintMap soln;
 	bool ret = doSolve(disjunctions.begin(), soln, solns);
