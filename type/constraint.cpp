@@ -338,9 +338,10 @@ std::ostringstream os; conSet.print(os); LOG << os.str().c_str();
 		}
 	}
 
-{LOG << "\n" << disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd; for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
-LOG << fixed.size() << " fixed: " << fixed.prints();
-LOG << equates.size() << " equates: " << equates.prints();
+	{LOG << "\n" << (unsigned)disjunctions.size() << " disjunctions: "; std::list<Exp*>::iterator dd;
+	 for (dd = disjunctions.begin(); dd != disjunctions.end(); dd++) LOG << *dd << ",\n"; LOG << "\n";}
+	LOG << fixed.size() << " fixed: " << fixed.prints();
+	LOG << equates.size() << " equates: " << equates.prints();
 
 	// Substitute the fixed types into the disjunctions
 	substIntoDisjuncts(fixed);
