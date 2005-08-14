@@ -71,7 +71,7 @@ Log &Log::operator<<(ADDRESS a)
 	return *this;
 }
 
-#if 0		// Mac OS/X possibly needs this
+#if 0		// Mac OS/X and 64 bit machines possibly need this, but better to just cast the size_t to unsigned
 Log &Log::operator<<(size_t s)
 {
 	std::ostringstream st;
