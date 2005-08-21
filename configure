@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP BISONPP FLEXPP BISONPP  FLEXPP  HOST_CC CXXCPP EGREP REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_CYGWIN LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP BISONPP FLEXPP BISONPP  FLEXPP  HOST_CC CXXCPP EGREP REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_OSX HOST_CYGWIN LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -3172,6 +3172,19 @@ case $host in
 esac
 echo "$as_me:$LINENO: result: $HOST_CYGWIN " >&5
 echo "${ECHO_T}$HOST_CYGWIN " >&6
+
+echo "$as_me:$LINENO: checking if host is OS X " >&5
+echo $ECHO_N "checking if host is OS X ... $ECHO_C" >&6
+case $host in
+ *-apple-darwin*)
+   HOST_OSX=yes
+   ;;
+ *)
+   HOST_OSX=no
+   ;;
+esac
+echo "$as_me:$LINENO: result: $HOST_OSX " >&5
+echo "${ECHO_T}$HOST_OSX " >&6
 
 
 
@@ -7538,6 +7551,7 @@ LIBDIR=$srcdir/lib
 
 
 
+
           ac_config_files="$ac_config_files Makefile"
 
           ac_config_files="$ac_config_files util/Makefile"
@@ -8208,6 +8222,7 @@ s,@PREFIX@,$PREFIX,;t t
 s,@LIBDIR@,$LIBDIR,;t t
 s,@HOST_GNU_LD@,$HOST_GNU_LD,;t t
 s,@HOST_WINDOWS@,$HOST_WINDOWS,;t t
+s,@HOST_OSX@,$HOST_OSX,;t t
 s,@HOST_CYGWIN@,$HOST_CYGWIN,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t

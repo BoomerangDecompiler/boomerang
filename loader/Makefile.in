@@ -35,6 +35,9 @@ CXX=$(CC)
 # HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
 
+# HOST_OSX is true if the hostOS is OS X (*-apple-darwin*)
+HOST_OSX = @HOST_OSX@
+
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
@@ -61,6 +64,14 @@ RUNPATH=-Wl,-rpath -Wl,"lib"
 else # Assume Solaris
 RUNPATH=-R"lib"
 endif
+endif
+
+ifeq ($(HOST_OSX), yes)
+SHARED=-dynamiclib -flat_namespace
+DLLEXT=.dylib
+RUNPATH=
+else # Non-OS X
+SHARED=-shared
 endif
 
 LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile MachOBinaryFile
@@ -100,12 +111,12 @@ microX86dis.o: microX86dis.c
 BinaryFile.o:		CCEXTRAS = -DBUILDING_LIBBINARYFILE
 MachOBinaryFile.o:	CCEXTRAS = -I.
 
-$(BASEDLL) : BinaryFile.o
-	$(CC) -o $@ -shared BinaryFile.o $(OUTIMPLIB)
+$(BASEDLL) : BinaryFile.o SymTab.o
+	$(CC) -o $@ $(SHARED) BinaryFile.o SymTab.o $(OUTIMPLIB)
 
 # This pattern generates all the main dependencies
 $(LOADERDLLS): ../lib/lib%$(DLLEXT) : %.o $(BASEDLL)
-	$(CC) -o $@ -shared $< $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib
+	$(CC) -o $@ $(SHARED) $< SymTab.o $(EXTRAS) -lBinaryFile $(RUNPATH) -L../lib
 
 # Compile all objects with -fPIC
 $(ALLOBJS): %.o : %.cpp

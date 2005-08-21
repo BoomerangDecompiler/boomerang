@@ -90,6 +90,17 @@ case $host in
 esac
 AC_MSG_RESULT( $HOST_CYGWIN )
 
+AC_MSG_CHECKING( [if host is OS X] )
+case $host in
+ *-apple-darwin*)
+   HOST_OSX=yes
+   ;;
+ *)
+   HOST_OSX=no
+   ;;
+esac
+AC_MSG_RESULT( $HOST_OSX )
+
 
 
 
@@ -179,6 +190,7 @@ AC_SUBST(PREFIX)
 AC_SUBST(LIBDIR)
 AC_SUBST(HOST_GNU_LD)
 AC_SUBST(HOST_WINDOWS)
+AC_SUBST(HOST_OSX)
 AC_SUBST(HOST_CYGWIN)
 
 
