@@ -13,6 +13,7 @@ dnl 12 Apr 02 - Mike: Created
 dnl 15 Oct 02 - Sebastian Apel: checks for libelf, libcppunit and AC_PREREQ inserted
 dnl 06 Mar 03 - Mike: Removed need for libelf
 dnl 27 Jun 04 - Mike: Added XMLWF for eXpat XML parser
+dnl 22 Aug 05 - Mike: Some improvements for OS X, and finding things like libexpat.a
 
 AC_PREREQ(2.52)
 AC_INIT(LICENSE.TERMS)
@@ -111,33 +112,115 @@ dnl AC_CHECK_LIB(elf, elf_begin, , [AC_MSG_ERROR("library 'elf' not found")])
 
 AC_CHECK_LIB(stdc++, main,, [AC_MSG_ERROR([library stdc++ is not found...])])
 
-dnl Checks for cppunit library
+dnl Check for eXpat includes
+dnl Want to check default-includes PLUS the Boomerang include/ directory, and some of the usual places it might already
+dnl be installed
+AC_CHECK_HEADER(expat.h,,
+    [AC_CHECK_FILE(include/expat.h,,
+		[AC_PATH_PROG(EXPAT_HDR_PATH, expat.h, :,
+			[/usr/include:/usr/local/include:/opt/local/include:/usr/apache2/include:/opt/apache2/include:/sw/include])]
+		if test "${EXPAT_HDR_PATH}" != :; then
+			[AC_MSG_WARN(Found expat.h; linking to include/)]
+			ln -s ${EXPAT_HDR_PATH} include
+			dnl Sometimes, but not always, there is an expat_external.h as well
+			[AC_PATH_PROG(EXPAT_HDR_PATH2, expat_external.h, :,
+			[/usr/include:/usr/local/include:/opt/local/include:/usr/apache2/include:/opt/apache2/include:/sw/include])]
+			if test "${EXPAT_HDR_PATH2}" != :; then
+				[AC_MSG_WARN(Also found expat_eternal.h; linking to include/)]
+				ln -s ${EXPAT_HDR_PATH2} include
+			fi
+        else
+        	[AC_MSG_WARN()]
+        	[AC_MSG_WARN(Header file expat.h not found: eXpat not installed...)]
+        	[AC_MSG_WARN(or you need to copy expat.h to Boomerang's include/ dir)]
+        	[AC_MSG_WARN()]
+		fi
+	)])
+
+dnl Check for eXpat library itself
+AC_CHECK_LIB(expat, XML_ExpatVersion, ,
+    [AC_CHECK_FILE(lib/libexpat.a, ,
+		[AC_PATH_PROG(EXPAT_PATH, libexpat.a, :,
+			[/usr/lib:/usr/local/lib:/opt/local/lib:/usr/apache2/lib:/opt/apache2/lib:/sw/lib])]
+		if test "${EXPAT_PATH}" != :; then
+			[AC_MSG_WARN(Found libexpat.a; linking to lib/)]
+			ln -s ${EXPAT_PATH} lib
+        else
+			[AC_MSG_WARN()]
+			[AC_MSG_WARN(eXpat library not found: expat not installed... or you)]
+			[AC_MSG_WARN(need to copy libexpat.a (etc) to Boomerang's lib/ dir)]
+			[AC_MSG_WARN()]
+		fi
+	) ],)
+
+dnl Check for gc (garbage collector) includes
+dnl Want to check default-includes PLUS the Boomerang include/ directory, and some of the usual places it might already
+dnl be installed
+AC_CHECK_HEADER(gc.h,,
+    [AC_CHECK_FILE(include/gc.h,,
+		[AC_PATH_PROG(GC_HDR_PATH, gc.h, :,
+			[/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+		if test "${GC_HDR_PATH}" != :; then
+			[AC_MSG_WARN(Found gc.h; linking to include/)]
+			ln -s ${GC_HDR_PATH} include
+			dnl Sometimes, not sure if always, there is a gc_config_macros.h as well
+			[AC_PATH_PROG(GC_HDR_PATH2, gc_config_macros.h, :,
+			[/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+			if test "${GC_HDR_PATH2}" != :; then
+				[AC_MSG_WARN(Also found gc_config_macros.h; linking to include/)]
+				ln -s ${GC_HDR_PATH2} include
+			fi
+        else
+        	[AC_MSG_WARN()]
+        	[AC_MSG_WARN(Header file gc.h not found: Boehm garbage collector likely not installed...)]
+        	[AC_MSG_WARN(or you need to copy gc.h and gc_config_macros.h to Boomerang's include/ dir)]
+        	[AC_MSG_WARN()]
+		fi
+	)])
+
+dnl Check for gc library itself
+AC_CHECK_LIB(gc, GC_malloc, ,
+    [AC_CHECK_FILE(lib/libgc.a, ,
+		[AC_PATH_PROG(GC_PATH, libgc.a, :,
+			[/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		if test "${GC_PATH}" != :; then
+			[AC_MSG_WARN(Found libgc.a; linking to lib/)]
+			ln -s ${GC_PATH} lib
+        else
+			[AC_MSG_WARN()]
+			[AC_MSG_WARN(Boehm garbage collector library not found: not installed...)]
+			[AC_MSG_WARN(or you need to copy libgc.a (etc) to Boomerang's lib/ dir)]
+			[AC_MSG_WARN()]
+		fi
+	) ],)
+
+dnl Check for libdl (dynamic linked library loading and calling) library
+AC_CHECK_LIB(dl, dlopen, ,
+    [AC_CHECK_FILE(lib/libdl.a, ,
+		[AC_PATH_PROG(DL_PATH, libexpat.a, :,
+			[/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		if test "${DL_PATH}" != :; then
+			[AC_MSG_WARN(Found libdl.a; linking to lib/)]
+			ln -s ${DL_PATH} lib
+        else
+			[AC_MSG_WARN()]
+        	[AC_MSG_WARN(dl (dynamically linked library loading and calling) library not found)]
+        	[AC_MSG_WARN(you need to copy libdl.a (etc) to Boomerang's lib/ dir)]
+			[AC_MSG_WARN()]
+		fi
+	) ],)
+
+dnl Checks for optional cppunit library
 AC_LANG_PUSH(C++)
 CPPFLAGS="-Iinclude ${CPPFLAGS}"
 AC_CHECK_HEADER(cppunit/TestSuite.h,,
   [AC_CHECK_FILE(include/cppunit/TestSuite.h,,
     [AC_MSG_WARN()]
-    [AC_MSG_WARN(library 'cppunit' not installed... or you need to link)]
+    [AC_MSG_WARN(Library 'cppunit' not installed... or you need to link)]
     [AC_MSG_WARN(include/cppunit to the cppunit include/cppunit directory.)]
+    [AC_MSG_WARN(This is only needed for unit testing.)]
     [AC_MSG_WARN()])])
 AC_LANG_POP(C++)
-
-dnl Check for eXpat includes
-dnl Want to check default-includes PLUS the boomerang include/ directory
-AC_CHECK_HEADER(expat.h,,
-    [AC_CHECK_FILE(include/expat.h,,
-        [AC_MSG_WARN()]
-        [AC_MSG_WARN(Header file expat.h not found: eXpat not installed...)]
-        [AC_MSG_WARN(or you need to copy expat.h to boomerang's include/ dir)]
-        [AC_MSG_WARN()])])
-
-dnl Check for eXpat library
-AC_CHECK_LIB(expat, XML_ExpatVersion, ,
-    [AC_CHECK_FILE(lib/libexpat.a, ,
-        [AC_MSG_WARN()]
-        [AC_MSG_WARN(eXpat library not found: expat not installed... or you)]
-        [AC_MSG_WARN(need to copy libexpat.a (etc) to boomerang's lib/ dir)]
-        [AC_MSG_WARN()]) ],)
 
 dnl Checks for header files.
 dnl AC_HEADER_STDC
