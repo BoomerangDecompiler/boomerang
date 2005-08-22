@@ -18,6 +18,7 @@
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
+#include "config.h"				// For HOST_OSX etc
 
 #include <iostream>
 
@@ -103,7 +104,11 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 #ifdef	__CYGWIN__
 	libName += ".dll";		// Cygwin wants .dll, but is otherwise like Unix
 #else
+#if HOST_OSX
+	libName += ".dylib";
+#else
 	libName += ".so";
+#endif
 #endif
 	void* dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
 	if (dlHandle == NULL) {
