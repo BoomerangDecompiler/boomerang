@@ -3178,9 +3178,19 @@ echo $ECHO_N "checking if host is OS X ... $ECHO_C" >&6
 case $host in
  *-apple-darwin*)
    HOST_OSX=yes
+
+cat >>confdefs.h <<\_ACEOF
+#define HOST_OSX 1
+_ACEOF
+
    ;;
  *)
    HOST_OSX=no
+
+cat >>confdefs.h <<\_ACEOF
+#define HOST_OSX 0
+_ACEOF
+
    ;;
 esac
 echo "$as_me:$LINENO: result: $HOST_OSX " >&5
