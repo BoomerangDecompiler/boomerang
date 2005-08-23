@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP BISONPP FLEXPP BISONPP  FLEXPP  HOST_CC EGREP EXPAT_HDR_PATH EXPAT_HDR_PATH2 EXPAT_PATH GC_HDR_PATH GC_HDR_PATH2 GC_PATH DL_PATH CXXCPP REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_OSX HOST_CYGWIN LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT CC CFLAGS ac_ct_CC CPP BISONPP FLEXPP BISONPP  FLEXPP  HOST_CC EGREP EXPAT_HDR_PATH EXPAT_HDR_PATH2 EXPAT_PATH GC_HDR_PATH GC_HDR_PATH2 GC_PATH DL_HDR_PATH DL_PATH CXXCPP CPPUNIT_HDR_PATH CPPUNIT_PATH REMOTE TKML HEAPPATH HEAP UNGENERATE PREFIX LIBDIR HOST_GNU_LD HOST_WINDOWS HOST_OSX HOST_CYGWIN LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4372,6 +4372,228 @@ fi
 fi
 
 
+if test "${ac_cv_header_dlfcn_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for dlfcn.h" >&5
+echo $ECHO_N "checking for dlfcn.h... $ECHO_C" >&6
+if test "${ac_cv_header_dlfcn_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_dlfcn_h" >&5
+echo "${ECHO_T}$ac_cv_header_dlfcn_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking dlfcn.h usability" >&5
+echo $ECHO_N "checking dlfcn.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <dlfcn.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking dlfcn.h presence" >&5
+echo $ECHO_N "checking dlfcn.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dlfcn.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: dlfcn.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: dlfcn.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: dlfcn.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: dlfcn.h:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: dlfcn.h: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: dlfcn.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: dlfcn.h: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: dlfcn.h: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: dlfcn.h: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for dlfcn.h" >&5
+echo $ECHO_N "checking for dlfcn.h... $ECHO_C" >&6
+if test "${ac_cv_header_dlfcn_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_dlfcn_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_dlfcn_h" >&5
+echo "${ECHO_T}$ac_cv_header_dlfcn_h" >&6
+
+fi
+if test $ac_cv_header_dlfcn_h = yes; then
+  :
+else
+  echo "$as_me:$LINENO: checking for include/dlfcn.h" >&5
+echo $ECHO_N "checking for include/dlfcn.h... $ECHO_C" >&6
+if test "${ac_cv_file_include_dlfcn_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "include/dlfcn.h"; then
+  ac_cv_file_include_dlfcn_h=yes
+else
+  ac_cv_file_include_dlfcn_h=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file_include_dlfcn_h" >&5
+echo "${ECHO_T}$ac_cv_file_include_dlfcn_h" >&6
+if test $ac_cv_file_include_dlfcn_h = yes; then
+  :
+else
+  # Extract the first word of "dlfcn.h", so it can be a program name with args.
+set dummy dlfcn.h; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_DL_HDR_PATH+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $DL_HDR_PATH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_DL_HDR_PATH="$DL_HDR_PATH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/include:/usr/local/include:/opt/local/include:/sw/include"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_DL_HDR_PATH="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_DL_HDR_PATH" && ac_cv_path_DL_HDR_PATH=":"
+  ;;
+esac
+fi
+DL_HDR_PATH=$ac_cv_path_DL_HDR_PATH
+
+if test -n "$DL_HDR_PATH"; then
+  echo "$as_me:$LINENO: result: $DL_HDR_PATH" >&5
+echo "${ECHO_T}$DL_HDR_PATH" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+		if test "${DL_HDR_PATH}" != :; then
+			{ echo "$as_me:$LINENO: WARNING: Found dlfcn.h; linking to include/" >&5
+echo "$as_me: WARNING: Found dlfcn.h; linking to include/" >&2;}
+			ln -s ${DL_HDR_PATH} include
+        else
+        	{ echo "$as_me:$LINENO: WARNING: " >&5
+echo "$as_me: WARNING: " >&2;}
+        	{ echo "$as_me:$LINENO: WARNING: Header file dlfcn.h not found; needed for dynamic library file access." >&5
+echo "$as_me: WARNING: Header file dlfcn.h not found; needed for dynamic library file access." >&2;}
+        	{ echo "$as_me:$LINENO: WARNING: You probably need to copy dlfcn.h to Boomerang's include/ dir" >&5
+echo "$as_me: WARNING: You probably need to copy dlfcn.h to Boomerang's include/ dir" >&2;}
+        	{ echo "$as_me:$LINENO: WARNING: " >&5
+echo "$as_me: WARNING: " >&2;}
+		fi
+
+fi
+
+fi
+
+
+
 
 echo "$as_me:$LINENO: checking for dlopen in -ldl" >&5
 echo $ECHO_N "checking for dlopen in -ldl... $ECHO_C" >&6
@@ -4925,16 +5147,214 @@ echo "${ECHO_T}$ac_cv_file_include_cppunit_TestSuite_h" >&6
 if test $ac_cv_file_include_cppunit_TestSuite_h = yes; then
   :
 else
-  { echo "$as_me:$LINENO: WARNING: " >&5
-echo "$as_me: WARNING: " >&2;}
-    { echo "$as_me:$LINENO: WARNING: Library 'cppunit' not installed... or you need to link" >&5
-echo "$as_me: WARNING: Library 'cppunit' not installed... or you need to link" >&2;}
-    { echo "$as_me:$LINENO: WARNING: include/cppunit to the cppunit include/cppunit directory." >&5
-echo "$as_me: WARNING: include/cppunit to the cppunit include/cppunit directory." >&2;}
-    { echo "$as_me:$LINENO: WARNING: This is only needed for unit testing." >&5
-echo "$as_me: WARNING: This is only needed for unit testing." >&2;}
-    { echo "$as_me:$LINENO: WARNING: " >&5
-echo "$as_me: WARNING: " >&2;}
+  # Extract the first word of "cppunit/TestSuite.h", so it can be a program name with args.
+set dummy cppunit/TestSuite.h; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_CPPUNIT_HDR_PATH+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $CPPUNIT_HDR_PATH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CPPUNIT_HDR_PATH="$CPPUNIT_HDR_PATH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/include:/usr/local/include:/opt/local/include:/sw/include"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CPPUNIT_HDR_PATH="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_CPPUNIT_HDR_PATH" && ac_cv_path_CPPUNIT_HDR_PATH=":"
+  ;;
+esac
+fi
+CPPUNIT_HDR_PATH=$ac_cv_path_CPPUNIT_HDR_PATH
+
+if test -n "$CPPUNIT_HDR_PATH"; then
+  echo "$as_me:$LINENO: result: $CPPUNIT_HDR_PATH" >&5
+echo "${ECHO_T}$CPPUNIT_HDR_PATH" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+		if test "${CPPUNIT_HDR_PATH}" != :; then
+			{ echo "$as_me:$LINENO: WARNING: Found cppunit include directory; linking to include/" >&5
+echo "$as_me: WARNING: Found cppunit include directory; linking to include/" >&2;}
+									cpp_path=`dirname $CPPUNIT_HDR_PATH`
+			ln -s ${cpp_path} include
+        else
+        	{ echo "$as_me:$LINENO: " >&5
+echo "$as_me: " >&6;}
+        	{ echo "$as_me:$LINENO: Header directories for cppunit not found; needed only for unit testing." >&5
+echo "$as_me: Header directories for cppunit not found; needed only for unit testing." >&6;}
+        	{ echo "$as_me:$LINENO: " >&5
+echo "$as_me: " >&6;}
+		fi
+
+fi
+
+fi
+
+
+
+
+echo "$as_me:$LINENO: checking for _ZN7CppUnit8TestCase3runEv in -lcppunit" >&5
+echo $ECHO_N "checking for _ZN7CppUnit8TestCase3runEv in -lcppunit... $ECHO_C" >&6
+if test "${ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcppunit  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char _ZN7CppUnit8TestCase3runEv ();
+int
+main ()
+{
+_ZN7CppUnit8TestCase3runEv ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv" >&5
+echo "${ECHO_T}$ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv" >&6
+if test $ac_cv_lib_cppunit__ZN7CppUnit8TestCase3runEv = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBCPPUNIT 1
+_ACEOF
+
+  LIBS="-lcppunit $LIBS"
+
+else
+  echo "$as_me:$LINENO: checking for lib/libcppunit.a" >&5
+echo $ECHO_N "checking for lib/libcppunit.a... $ECHO_C" >&6
+if test "${ac_cv_file_lib_libcppunit_a+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "lib/libcppunit.a"; then
+  ac_cv_file_lib_libcppunit_a=yes
+else
+  ac_cv_file_lib_libcppunit_a=no
+fi
+fi
+echo "$as_me:$LINENO: result: $ac_cv_file_lib_libcppunit_a" >&5
+echo "${ECHO_T}$ac_cv_file_lib_libcppunit_a" >&6
+if test $ac_cv_file_lib_libcppunit_a = yes; then
+  :
+else
+  # Extract the first word of "libcppunit.a", so it can be a program name with args.
+set dummy libcppunit.a; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_CPPUNIT_PATH+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $CPPUNIT_PATH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CPPUNIT_PATH="$CPPUNIT_PATH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CPPUNIT_PATH="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_path_CPPUNIT_PATH" && ac_cv_path_CPPUNIT_PATH=":"
+  ;;
+esac
+fi
+CPPUNIT_PATH=$ac_cv_path_CPPUNIT_PATH
+
+if test -n "$CPPUNIT_PATH"; then
+  echo "$as_me:$LINENO: result: $CPPUNIT_PATH" >&5
+echo "${ECHO_T}$CPPUNIT_PATH" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+		if test "${CPPUNIT_PATH}" != :; then
+			{ echo "$as_me:$LINENO: WARNING: Found libdl.a; linking to lib/" >&5
+echo "$as_me: WARNING: Found libdl.a; linking to lib/" >&2;}
+			ln -s ${CPPUNIT_PATH} lib
+        else
+			{ echo "$as_me:$LINENO: " >&5
+echo "$as_me: " >&6;}
+        	{ echo "$as_me:$LINENO: cppunit (C++ Unit Testing) library not found; needed only for testing" >&5
+echo "$as_me: cppunit (C++ Unit Testing) library not found; needed only for testing" >&6;}
+			{ echo "$as_me:$LINENO: " >&5
+echo "$as_me: " >&6;}
+		fi
+
 fi
 
 fi
@@ -4945,6 +5365,9 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 
 
 
@@ -9362,8 +9785,11 @@ s,@EXPAT_PATH@,$EXPAT_PATH,;t t
 s,@GC_HDR_PATH@,$GC_HDR_PATH,;t t
 s,@GC_HDR_PATH2@,$GC_HDR_PATH2,;t t
 s,@GC_PATH@,$GC_PATH,;t t
+s,@DL_HDR_PATH@,$DL_HDR_PATH,;t t
 s,@DL_PATH@,$DL_PATH,;t t
 s,@CXXCPP@,$CXXCPP,;t t
+s,@CPPUNIT_HDR_PATH@,$CPPUNIT_HDR_PATH,;t t
+s,@CPPUNIT_PATH@,$CPPUNIT_PATH,;t t
 s,@REMOTE@,$REMOTE,;t t
 s,@TKML@,$TKML,;t t
 s,@HEAPPATH@,$HEAPPATH,;t t

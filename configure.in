@@ -158,8 +158,7 @@ dnl Want to check default-includes PLUS the Boomerang include/ directory, and so
 dnl be installed
 AC_CHECK_HEADER(gc.h,,
     [AC_CHECK_FILE(include/gc.h,,
-		[AC_PATH_PROG(GC_HDR_PATH, gc.h, :,
-			[/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+		[AC_PATH_PROG(GC_HDR_PATH, gc.h, :, [/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
 		if test "${GC_HDR_PATH}" != :; then
 			[AC_MSG_WARN(Found gc.h; linking to include/)]
 			ln -s ${GC_HDR_PATH} include
@@ -181,8 +180,7 @@ AC_CHECK_HEADER(gc.h,,
 dnl Check for gc library itself
 AC_CHECK_LIB(gc, GC_malloc, ,
     [AC_CHECK_FILE(lib/libgc.a, ,
-		[AC_PATH_PROG(GC_PATH, libgc.a, :,
-			[/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		[AC_PATH_PROG(GC_PATH, libgc.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${GC_PATH}" != :; then
 			[AC_MSG_WARN(Found libgc.a; linking to lib/)]
 			ln -s ${GC_PATH} lib
@@ -194,11 +192,27 @@ AC_CHECK_LIB(gc, GC_malloc, ,
 		fi
 	) ],)
 
+dnl Check for dlfcn.h (include for dlopen etc)
+dnl Want to check default-includes PLUS the Boomerang include/ directory, and some of the usual places it might already
+dnl be installed
+AC_CHECK_HEADER(dlfcn.h,,
+    [AC_CHECK_FILE(include/dlfcn.h,,
+		[AC_PATH_PROG(DL_HDR_PATH, dlfcn.h, :, [/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+		if test "${DL_HDR_PATH}" != :; then
+			[AC_MSG_WARN(Found dlfcn.h; linking to include/)]
+			ln -s ${DL_HDR_PATH} include
+        else
+        	[AC_MSG_WARN()]
+        	[AC_MSG_WARN(Header file dlfcn.h not found; needed for dynamic library file access.)]
+        	[AC_MSG_WARN(You probably need to copy dlfcn.h to Boomerang's include/ dir)]
+        	[AC_MSG_WARN()]
+		fi
+	)])
+
 dnl Check for libdl (dynamic linked library loading and calling) library
 AC_CHECK_LIB(dl, dlopen, ,
     [AC_CHECK_FILE(lib/libdl.a, ,
-		[AC_PATH_PROG(DL_PATH, libexpat.a, :,
-			[/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		[AC_PATH_PROG(DL_PATH, libexpat.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${DL_PATH}" != :; then
 			[AC_MSG_WARN(Found libdl.a; linking to lib/)]
 			ln -s ${DL_PATH} lib
@@ -214,13 +228,40 @@ dnl Checks for optional cppunit library
 AC_LANG_PUSH(C++)
 CPPFLAGS="-Iinclude ${CPPFLAGS}"
 AC_CHECK_HEADER(cppunit/TestSuite.h,,
-  [AC_CHECK_FILE(include/cppunit/TestSuite.h,,
-    [AC_MSG_WARN()]
-    [AC_MSG_WARN(Library 'cppunit' not installed... or you need to link)]
-    [AC_MSG_WARN(include/cppunit to the cppunit include/cppunit directory.)]
-    [AC_MSG_WARN(This is only needed for unit testing.)]
-    [AC_MSG_WARN()])])
+    [AC_CHECK_FILE(include/cppunit/TestSuite.h,,
+		[AC_PATH_PROG(CPPUNIT_HDR_PATH, cppunit/TestSuite.h, :,
+			[/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+		if test "${CPPUNIT_HDR_PATH}" != :; then
+			[AC_MSG_WARN(Found cppunit include directory; linking to include/)]
+			dnl Link the whole include directory
+			dnl Note: I can't get AS_DIRNAME() to work...
+			cpp_path=`dirname $CPPUNIT_HDR_PATH`
+			ln -s ${cpp_path} include
+        else
+        	[AC_MSG_NOTICE()]
+        	[AC_MSG_NOTICE(Header directories for cppunit not found; needed only for unit testing.)]
+        	[AC_MSG_NOTICE()]
+		fi
+	)])
+
+dnl Check for cppunut (C++ unit testing) library
+AC_CHECK_LIB(cppunit, _ZN7CppUnit8TestCase3runEv, ,
+    [AC_CHECK_FILE(lib/libcppunit.a, ,
+		[AC_PATH_PROG(CPPUNIT_PATH, libcppunit.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		if test "${CPPUNIT_PATH}" != :; then
+			[AC_MSG_WARN(Found libdl.a; linking to lib/)]
+			ln -s ${CPPUNIT_PATH} lib
+        else
+			[AC_MSG_NOTICE()]
+        	[AC_MSG_NOTICE(cppunit (C++ Unit Testing) library not found; needed only for testing)]
+			[AC_MSG_NOTICE()]
+		fi
+	) ],)
+
 AC_LANG_POP(C++)
+
+
+
 
 dnl Checks for header files.
 dnl AC_HEADER_STDC
@@ -232,15 +273,15 @@ dnl AC_CHECK_HEADERS(elf.h sys/elf_SPARC.h sys/auxv.h)
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
 
-AC_CHECK_SIZEOF(char,1)
-AC_CHECK_SIZEOF(short,2)
-AC_CHECK_SIZEOF(int,4)
-AC_CHECK_SIZEOF(long,4)
-AC_CHECK_SIZEOF(long long,8)
-AC_CHECK_SIZEOF(float,4)
-AC_CHECK_SIZEOF(double,8)
-AC_CHECK_SIZEOF(int *,4)
-dnl AC_CHECK_SIZEOF(long double,16)
+AC_CHECK_SIZEOF(char)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(float)
+AC_CHECK_SIZEOF(double)
+AC_CHECK_SIZEOF(int *)
+dnl AC_CHECK_SIZEOF(long double)
 
 
 dnl Checks for library functions.
