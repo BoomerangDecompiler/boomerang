@@ -21,8 +21,6 @@
 #ifndef __ELFBINARYFILE_H__
 #define __ELFBINARYFILE_H__
 
-#define	 ELF32_R_SYM(info)		 ((info)>>8)
-
 /*==============================================================================
  * Dependencies.
  *============================================================================*/
@@ -123,6 +121,7 @@ typedef struct {
 	int r_info;
 } Elf32_Rel;
 
+#define	 ELF32_R_SYM(info)		 ((info)>>8)
 #define ELF32_ST_BIND(i)		((i) >> 4)
 #define ELF32_ST_TYPE(i)		((i) & 0xf)
 #define ELF32_ST_INFO(b, t)		(((b)<<4)+((t)&0xf))
@@ -248,6 +247,9 @@ private:
 		bool        SearchValueByName(const char* pName, SymValue* pVal);
 		bool        SearchValueByName(const char* pName, SymValue* pVal, const char* pSectName, const char* pStrName);
 		bool        PostLoad(void* handle); // Called after archive member loaded
+		// Search the .rel[a].plt section for an entry with symbol table index i.
+		// If found, return the native address of the associated PLT entry.
+		ADDRESS		findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt);
 
 		// Internal elf reading methods
 		int         elfRead2(short* ps) const;		// Read a short with endianness care

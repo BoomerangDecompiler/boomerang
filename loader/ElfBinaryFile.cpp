@@ -280,7 +280,7 @@ char* ElfBinaryFile::GetStrPtr(int idx, int offset)
 // If found, return the native address of the associated PLT entry.
 // A linear search will be needed. However, starting at offset i and searching backwards with wraparound should
 // typically minimise the number of entries to search
-ADDRESS findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt) {
+ADDRESS ElfBinaryFile::findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt) {
 	int first = i;
 	if (first > numRelPlt)
 		first = numRelPlt-1;
@@ -288,7 +288,8 @@ ADDRESS findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPl
 	do {
 		// Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend optionally follows)
 		int* pEntry = (int*)(addrRelPlt + (curr*sizeRelPlt));
-		int sym = pEntry[1] >> 8;			// The symbol index is in the top 24 bits (Elf32 only)
+		int entry = elfRead4(pEntry+1);		// Read pEntry[1]
+		int sym = entry >> 8;				// The symbol index is in the top 24 bits (Elf32 only)
 		if (sym == i) {
 			// Found! Now we want the native address of the associated PLT entry.
 			// For now, assume a size of 0x10 for each PLT entry, and assume that each entry in the .rel.plt section
