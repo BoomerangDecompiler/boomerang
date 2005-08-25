@@ -9,10 +9,9 @@
 
 /*==============================================================================
  * FILE:	   chllcode.cpp
- * OVERVIEW:   Concrete class for the "C" high level language
- *			   This class is provides methods which are specific for the C
- *			   language binding.  I guess this will be the most popular output
- *			   language unless we do C++.
+ * OVERVIEW:   Concrete backend class for the "C" high level language
+ *			   This class is provides methods which are specific for the C language binding.
+ *			   I guess this will be the most popular output language unless we do C++.
  *============================================================================*/
 
 /*
