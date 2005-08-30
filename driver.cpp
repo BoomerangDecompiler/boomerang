@@ -8,6 +8,11 @@
 #endif
 #include <signal.h>
 
+class Exp;
+
+extern char* buf;
+extern Exp* unscaledArrayPat;	// Close to the first and last static data items
+
 #ifdef SPARC_DEBUG
 
 void segv_handler(int a, siginfo_t *b, void *c)
@@ -79,6 +84,11 @@ int main(int argc, const char* argv[]) {
 #else
 int main(int argc, const char* argv[]) {
 #endif
+
+	// This is a bit of a desperation measure, probably not necessary except for OS X which doesn't (as of Sep 2005)
+	// seem to define any static roots. So we try a crude hack:
+	GC_add_roots(buf, (char*)((((int)&unscaledArrayPat)&~0xFFF)+0x1000));
+
 	return Boomerang::get()->commandLine(argc, argv);
 }
 

@@ -63,9 +63,10 @@
  *				  i: the integer whose ascii representation is to be appended
  * RETURNS:       A copy of the modified string
  *============================================================================*/
+// Don't make this one static; may want to use for garbage collecting
+char buf[50];
 std::string operator+(const std::string& s, int i)
 {
-	static char buf[50];
 	std::string ret(s);
 
 	sprintf(buf,"%d",i);
