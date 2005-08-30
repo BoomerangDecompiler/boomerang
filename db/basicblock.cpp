@@ -34,6 +34,7 @@
 #pragma warning(disable:4786)
 #endif 
 
+#include "gc.h"
 #include "types.h"
 #include "statement.h"
 #include "exp.h"
@@ -1653,7 +1654,7 @@ int BasicBlock::whichPred(PBB pred) {
 // With array processing, we get a new form, call it form 'a' (don't
 // confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
-static Unary* forma = new RefExp(
+static Exp* forma = new RefExp(
 		new Binary(opArrayIndex,
 			new RefExp(
 				new Terminal(opWild),
@@ -1662,7 +1663,7 @@ static Unary* forma = new RefExp(
 		(Statement*)-1);
 
 // Pattern: m[<expr> * 4 + T ]
-static Location* formA	= Location::memOf(
+static Exp* formA	= Location::memOf(
 		new Binary(opPlus,
 			new Binary(opMult,
 				new Terminal(opWild),
@@ -1672,7 +1673,7 @@ static Location* formA	= Location::memOf(
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static Unary* formo = new RefExp(
+static Exp* formo = new RefExp(
 		new Binary(opArrayIndex,
 			new RefExp(
 				new Terminal(opWild),
@@ -1717,6 +1718,15 @@ static Exp* formr = new Binary(opPlus,
 static Exp* hlForms[] = {forma, formA, formo, formO, formR, formr};
 static char chForms[] = {  'a',	 'A',	'o',   'O',	  'R',	 'r'};
 
+void init_basicblock() {
+	Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(6 * sizeof(Exp*));
+	gc_pointers[0] = forma;
+	gc_pointers[1] = formA;
+	gc_pointers[2] = formo;
+	gc_pointers[3] = formO;
+	gc_pointers[4] = formR;
+	gc_pointers[5] = formr;
+}
 
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]

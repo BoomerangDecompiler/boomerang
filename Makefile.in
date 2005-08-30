@@ -37,15 +37,18 @@ HOST_GNU_LD = @HOST_GNU_LD@
 # HOST_WINDOWS is true if the host OS is CygWin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
 
+# HOST_OSX is true if the host OS is Mac OS X
+HOST_OSX = @HOST_OSX@
+
 # LDL is -ldl if needed (Windows does not)
 # EXEEXT is .exe for Windows
 # DLLEXT is .dll for Windows and .so otherwise 
-# RUNPATH is not needed on Windows 
 ifeq ($(HOST_WINDOWS), yes)
 LDL=
 EXEEXT=.exe
 DLLEXT=.dll
 WININCLUDE=-Iwin32make/include
+# RUNPATH is not needed on Windows 
 RUNPATH=
 COPYDLL=libBinaryFile$(DLLEXT)
 else # Non-Windows
@@ -55,8 +58,12 @@ DLLEXT=.so
 WININCLUDE=
 ifeq ($(HOST_GNU_LD), yes)
 RUNPATH=-Wl,-rpath -Wl,"lib"
-else # Assume Solaris
+else
+ifeq ($(HOST_OSX), yes)
+RUNPATH=
+else		# Assume Solaris
 RUNPATH=-R"lib"
+endif
 endif
 COPYDLL=
 endif
@@ -136,7 +143,7 @@ FRONT_OBJS = frontend/frontend.o frontend/njmcDecoder.o frontend/sparcdecoder.o 
 	frontend/st20decoder.o frontend/st20frontend.o
 CODEGEN = codegen/chllcode.o codegen/syntax.o
 TYPEOBJS = type/constraint.o type/type.o type/dfa.o
-LOADER_OBJS = loader/BinaryFileFactory.o loader/SymTab.o
+LOADER_OBJS = loader/BinaryFileFactory.o
 STATIC_OBJS = ${CODEGEN} ${UTIL_OBJS} ${DB_OBJS} ${TRANSFORM_OBJS} ${FRONT_OBJS} ${TYPEOBJS} ${LOADER_OBJS}
 
 $(LOADERDLLS): lib

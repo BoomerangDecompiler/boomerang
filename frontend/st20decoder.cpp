@@ -72,7 +72,7 @@ DecodeResult& ST20Decoder::decodeInstruction (ADDRESS pc, int delta) {
     hostPC+result.numBytes++
     ;
   char *MATCH_name;
-  char *MATCH_name_fc_0[] = {
+  static char *MATCH_name_fc_0[] = {
     (char *)0, "ldlp", (char *)0, "ldnl", "ldc", "ldnlp", (char *)0, "ldl", 
     "adc", (char *)0, (char *)0, "ajw", "eqc", "stl", "stnl", 
   };

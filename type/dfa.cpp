@@ -18,6 +18,7 @@
  * 24/Sep/04 - Mike: Created
  */
 
+#include "gc.h"
 #include "type.h"
 #include "boomerang.h"
 #include "signature.h"
@@ -48,6 +49,15 @@ static Exp* scaledArrayPat = Location::memOf(
 static Exp* unscaledArrayPat = new Binary(opPlus,
 		new Terminal(opWild),
 		new Terminal(opWildIntConst));
+
+// The purpose of this funciton and others like it is to establish safe static roots for garbage collection purposes
+// This is particularly important for OS X where it is known that the collector can't see global variables, but it is
+// suspected that this is actually important for other architectures as well
+void init_dfa() {
+	static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2*sizeof(Exp*));
+	gc_pointers[0] = scaledArrayPat;
+	gc_pointers[1] = unscaledArrayPat;
+}
 
 
 void UserProc::dfaTypeAnalysis() {

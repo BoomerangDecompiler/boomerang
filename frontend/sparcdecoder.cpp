@@ -224,37 +224,37 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     hostPC
     ;
   char *MATCH_name;
-  char *MATCH_name_cond_0[] = {
+  static char *MATCH_name_cond_0[] = {
     "BPN", "BPE", "BPLE", "BPL", "BPLEU", "BPCS", "BPNEG", "BPVS", "BA", 
     "BPNE", "BPG", "BPGE", "BPGU", "BPCC", "BPPOS", "BPVC", 
   };
-  char *MATCH_name_cond_1[] = {
+  static char *MATCH_name_cond_1[] = {
     "BN", "BE", "BLE", "BL", "BLEU", "BCS", "BNEG", "BVS", "BA,a", "BNE", 
     "BG", "BGE", "BGU", "BCC", "BPOS", "BVC", 
   };
-  char *MATCH_name_cond_2[] = {
+  static char *MATCH_name_cond_2[] = {
     "BN,a", "BE,a", "BLE,a", "BL,a", "BLEU,a", "BCS,a", "BNEG,a", "BVS,a", 
     "FBA", "BNE,a", "BG,a", "BGE,a", "BGU,a", "BCC,a", "BPOS,a", "BVC,a", 
   };
-  char *MATCH_name_cond_4[] = {
+  static char *MATCH_name_cond_4[] = {
     "FBN", "FBNE", "FBLG", "FBUL", "FBL", "FBUG", "FBG", "FBU", "FBA,a", 
     "FBE", "FBUE", "FBGE", "FBUGE", "FBLE", "FBULE", "FBO", 
   };
-  char *MATCH_name_cond_5[] = {
+  static char *MATCH_name_cond_5[] = {
     "FBN,a", "FBNE,a", "FBLG,a", "FBUL,a", "FBL,a", "FBUG,a", "FBG,a", 
     "FBU,a", "CBA", "FBE,a", "FBUE,a", "FBGE,a", "FBUGE,a", "FBLE,a", 
     "FBULE,a", "FBO,a", 
   };
-  char *MATCH_name_cond_6[] = {
+  static char *MATCH_name_cond_6[] = {
     "CBN", "CB123", "CB12", "CB13", "CB1", "CB23", "CB2", "CB3", "CBA,a", 
     "CB0", "CB03", "CB02", "CB023", "CB01", "CB013", "CB012", 
   };
-  char *MATCH_name_cond_7[] = {
+  static char *MATCH_name_cond_7[] = {
     "CBN,a", "CB123,a", "CB12,a", "CB13,a", "CB1,a", "CB23,a", "CB2,a", 
     "CB3,a", "TA", "CB0,a", "CB03,a", "CB02,a", "CB023,a", "CB01,a", 
     "CB013,a", "CB012,a", 
   };
-  char *MATCH_name_op3_45[] = {
+  static char *MATCH_name_op3_45[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -264,7 +264,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "RDPSR", "RDWIM", 
     "RDTBR", 
   };
-  char *MATCH_name_opf_50[] = {
+  static char *MATCH_name_opf_50[] = {
     (char *)0, "FMOVs", (char *)0, (char *)0, (char *)0, "FNEGs", (char *)0, 
     (char *)0, (char *)0, "FABSs", (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -300,20 +300,20 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
     "FqTOs", "FiTOd", "FsTOd", (char *)0, "FqTOd", "FiTOq", "FsTOq", "FdTOq", 
     (char *)0, (char *)0, "FsTOi", "FdTOi", "FqTOi", 
   };
-  char *MATCH_name_cond_52[] = {
+  static char *MATCH_name_cond_52[] = {
     "TN", "TE", "TLE", "TL", "TLEU", "TCS", "TNEG", "TVS", (char *)0, "TNE", 
     "TG", "TGE", "TGU", "TCC", "TPOS", "TVC", 
   };
-  char *MATCH_name_i_65[] = {"LDA", "LDF", };
-  char *MATCH_name_i_66[] = {"LDUBA", "LDFSR", };
-  char *MATCH_name_i_67[] = {"LDUHA", "LDDF", };
-  char *MATCH_name_i_68[] = {"LDDA", "STF", };
-  char *MATCH_name_i_69[] = {"STA", "STFSR", };
-  char *MATCH_name_i_70[] = {"STBA", "STDFQ", };
-  char *MATCH_name_i_71[] = {"STHA", "STDF", };
-  char *MATCH_name_i_72[] = {"STDA", "LDCSR", };
-  char *MATCH_name_i_73[] = {"LDSBA", "STCSR", };
-  char *MATCH_name_i_74[] = {"LDSHA", "STDCQ", };
+  static char *MATCH_name_i_65[] = {"LDA", "LDF", };
+  static char *MATCH_name_i_66[] = {"LDUBA", "LDFSR", };
+  static char *MATCH_name_i_67[] = {"LDUHA", "LDDF", };
+  static char *MATCH_name_i_68[] = {"LDDA", "STF", };
+  static char *MATCH_name_i_69[] = {"STA", "STFSR", };
+  static char *MATCH_name_i_70[] = {"STBA", "STDFQ", };
+  static char *MATCH_name_i_71[] = {"STHA", "STDF", };
+  static char *MATCH_name_i_72[] = {"STDA", "LDCSR", };
+  static char *MATCH_name_i_73[] = {"LDSBA", "STCSR", };
+  static char *MATCH_name_i_74[] = {"LDSHA", "STDCQ", };
   unsigned MATCH_w_32_0;
   { 
     MATCH_w_32_0 = getDword(MATCH_p); 
@@ -352,9 +352,9 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                     unsigned cc01 = 
                       (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
                     unsigned tgt = 
-                      4 * sign_extend((MATCH_w_32_0 & 0x7ffff) 
-                                        /* disp19 at 0 */, 19) + 
-                      addressToPC(MATCH_p);
+                      4 * sign_extend(
+                                  (MATCH_w_32_0 & 0x7ffff) /* disp19 at 0 */, 
+                                  19) + addressToPC(MATCH_p);
                     nextPC = 4 + MATCH_p; 
                     
 #line 362 "frontend/machine/sparc/decoder.m"
@@ -392,7 +392,8 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
                       unsigned cc01 = 
                         (MATCH_w_32_0 >> 20 & 0x3) /* cc01 at 0 */;
                       unsigned tgt = 
-                        4 * sign_extend((MATCH_w_32_0 & 0x7ffff) 
+                        4 * sign_extend(
+                                    (MATCH_w_32_0 & 0x7ffff) 
                                           /* disp19 at 0 */, 19) + 
                         addressToPC(MATCH_p);
                       nextPC = 4 + MATCH_p; 

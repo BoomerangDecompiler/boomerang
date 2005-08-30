@@ -2,11 +2,11 @@
 
 /*  A Bison++ parser, made from sslparser.y  */
 
- /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
+ /* with Bison++ version bison++ Version 1.21-7, adapted from GNU bison by coetmeur@icdc.fr
   */
 
 
-#line 1 "/usr/local/lib/bison.cc"
+#line 1 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -26,12 +26,16 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
-#define __MSDOS_AND_ALIKE
+#ifndef _MSDOS
+#ifdef MSDOS
+#define _MSDOS
 #endif
-#if defined(_WINDOWS) && defined(_MSC_VER)
-#define __HAVE_NO_ALLOCA
-#define __MSDOS_AND_ALIKE
+#endif
+/* turboc */
+#ifdef __MSDOS__
+#ifndef _MSDOS
+#define _MSDOS
+#endif
 #endif
 
 #ifndef alloca
@@ -41,7 +45,7 @@
 #elif (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc)  || defined (__sgi)
 #include <alloca.h>
 
-#elif defined (__MSDOS_AND_ALIKE)
+#elif defined (_MSDOS)
 #include <malloc.h>
 #ifndef __TURBOC__
 /* MS C runtime lib */
@@ -80,10 +84,11 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 73 "/usr/local/lib/bison.cc" */
-#line 85 "sslparser.cpp"
-#line 40 "sslparser.y"
+/* #line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 89 "sslparser.cpp"
+#line 41 "sslparser.y"
 
+#include "gc.h"
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
@@ -103,7 +108,7 @@ void *alloca ();
 
 class SSLScanner;
 
-#line 66 "sslparser.y"
+#line 68 "sslparser.y"
 typedef union {
 	Exp*			exp;
 	char*			str;
@@ -122,7 +127,7 @@ typedef union {
 	RTL*			rtlist;
 } yy_SSLParser_stype;
 #define YY_SSLParser_STYPE yy_SSLParser_stype
-#line 85 "sslparser.y"
+#line 87 "sslparser.y"
 
 #include "sslscanner.h"
 OPER strToTerm(char* s);		// Convert string to a Terminal (if possible)
@@ -192,7 +197,7 @@ protected: \
 	 */ \
 	bool bFloat;
 
-#line 73 "/usr/local/lib/bison.cc"
+#line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_SSLParser_BISON 1
 #ifndef YY_SSLParser_COMPATIBILITY
@@ -238,36 +243,36 @@ protected: \
 
 #ifndef YY_SSLParser_PURE
 
-/* #line 117 "/usr/local/lib/bison.cc" */
-#line 243 "sslparser.cpp"
+/* #line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 248 "sslparser.cpp"
 
-#line 117 "/usr/local/lib/bison.cc"
+#line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /*  YY_SSLParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 121 "/usr/local/lib/bison.cc" */
-#line 252 "sslparser.cpp"
+/* #line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 257 "sslparser.cpp"
 
-#line 121 "/usr/local/lib/bison.cc"
+#line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* prefix */
 #ifndef YY_SSLParser_DEBUG
 
-/* #line 123 "/usr/local/lib/bison.cc" */
-#line 259 "sslparser.cpp"
+/* #line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 264 "sslparser.cpp"
 
-#line 123 "/usr/local/lib/bison.cc"
+#line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc"
 /* YY_SSLParser_DEBUG */
 #endif
 
 
 #ifndef YY_SSLParser_LSP_NEEDED
 
-/* #line 128 "/usr/local/lib/bison.cc" */
-#line 269 "sslparser.cpp"
+/* #line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 274 "sslparser.cpp"
 
-#line 128 "/usr/local/lib/bison.cc"
+#line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* YY_SSLParser_LSP_NEEDED*/
 #endif
 
@@ -377,8 +382,8 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 236 "/usr/local/lib/bison.cc" */
-#line 382 "sslparser.cpp"
+/* #line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 387 "sslparser.cpp"
 #define	COND_OP	258
 #define	BIT_OP	259
 #define	ARITH_OP	260
@@ -433,7 +438,7 @@ typedef
 #define	FCHS	309
 
 
-#line 236 "/usr/local/lib/bison.cc"
+#line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -465,7 +470,7 @@ typedef
 #ifndef YY_SSLParser_USE_CONST_TOKEN
 #define YY_SSLParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */ 
+/* so by default we use it */
 #endif
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 #ifndef YY_SSLParser_ENUM_TOKEN
@@ -475,12 +480,12 @@ typedef
 
 class YY_SSLParser_CLASS YY_SSLParser_INHERIT
 {
-public: 
+public:
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 280 "/usr/local/lib/bison.cc" */
-#line 484 "sslparser.cpp"
+/* #line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 489 "sslparser.cpp"
 static const int COND_OP;
 static const int BIT_OP;
 static const int ARITH_OP;
@@ -535,13 +540,13 @@ static const int FLOATNUM;
 static const int FCHS;
 
 
-#line 280 "/usr/local/lib/bison.cc"
+#line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* decl const */
 #else
 enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 
-/* #line 283 "/usr/local/lib/bison.cc" */
-#line 545 "sslparser.cpp"
+/* #line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 550 "sslparser.cpp"
 	,COND_OP=258
 	,BIT_OP=259
 	,ARITH_OP=260
@@ -596,7 +601,7 @@ enum YY_SSLParser_ENUM_TOKEN { YY_SSLParser_NULL_TOKEN=0
 	,FCHS=309
 
 
-#line 283 "/usr/local/lib/bison.cc"
+#line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -629,8 +634,8 @@ public:
 /* other declare folow */
 #if YY_SSLParser_USE_CONST_TOKEN != 0
 
-/* #line 314 "/usr/local/lib/bison.cc" */
-#line 634 "sslparser.cpp"
+/* #line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 639 "sslparser.cpp"
 const int YY_SSLParser_CLASS::COND_OP=258;
 const int YY_SSLParser_CLASS::BIT_OP=259;
 const int YY_SSLParser_CLASS::ARITH_OP=260;
@@ -685,7 +690,7 @@ const int YY_SSLParser_CLASS::FLOATNUM=308;
 const int YY_SSLParser_CLASS::FCHS=309;
 
 
-#line 314 "/usr/local/lib/bison.cc"
+#line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* const YY_SSLParser_CLASS::token */
 #endif
 /*apres const  */
@@ -698,8 +703,8 @@ YY_SSLParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 325 "/usr/local/lib/bison.cc" */
-#line 703 "sslparser.cpp"
+/* #line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 708 "sslparser.cpp"
 
 
 #define	YYFINAL		300
@@ -817,20 +822,20 @@ static const short yyrhs[] = {   104,
 
 #if YY_SSLParser_DEBUG != 0
 static const short yyrline[] = { 0,
-   217,   221,   226,   229,   231,   234,   237,   242,   244,   247,
-   251,   254,   257,   260,   264,   266,   269,   287,   304,   305,
-   308,   312,   312,   315,   317,   318,   321,   327,   332,   366,
-   388,   402,   413,   417,   424,   432,   439,   452,   458,   464,
-   468,   474,   485,   490,   498,   501,   506,   510,   515,   521,
-   524,   539,   556,   561,   565,   571,   577,   583,   590,   596,
-   602,   608,   613,   619,   623,   646,   650,   653,   659,   663,
-   676,   685,   696,   705,   710,   720,   727,   734,   750,   754,
-   757,   762,   770,   780,   787,   791,   796,   801,   806,   811,
-   816,   826,   832,   837,   844,   849,   854,   858,   862,   866,
-   871,   876,   881,   886,   891,   894,   899,   905,   928,   954,
-   959,   967,   976,   980,   984,   988,   992,   996,  1000,  1004,
-  1011,  1034,  1039,  1066,  1070,  1076,  1080,  1097,  1101,  1106,
-  1109,  1114,  1120,  1125,  1129,  1134,  1163,  1167,  1170,  1174
+   219,   223,   228,   231,   233,   236,   239,   244,   246,   249,
+   253,   256,   259,   262,   266,   268,   271,   289,   306,   307,
+   310,   314,   314,   317,   319,   320,   323,   329,   334,   368,
+   390,   404,   415,   419,   426,   434,   441,   454,   460,   466,
+   470,   476,   487,   492,   500,   503,   508,   512,   517,   523,
+   526,   541,   558,   563,   567,   573,   579,   585,   592,   598,
+   604,   610,   615,   621,   625,   648,   652,   655,   661,   665,
+   678,   687,   698,   707,   712,   722,   729,   736,   752,   756,
+   759,   764,   772,   782,   789,   793,   798,   803,   808,   813,
+   818,   828,   834,   839,   846,   851,   856,   860,   864,   868,
+   873,   878,   883,   888,   893,   896,   901,   907,   930,   956,
+   961,   969,   978,   982,   986,   990,   994,   998,  1002,  1006,
+  1013,  1036,  1041,  1068,  1072,  1078,  1082,  1099,  1103,  1108,
+  1111,  1116,  1122,  1127,  1131,  1136,  1165,  1169,  1172,  1176
 };
 
 static const char * const yytname[] = {   "$","error","$illegal.","COND_OP",
@@ -1111,7 +1116,7 @@ static const short yycheck[] = {     0,
     -1,    -1,    -1,    -1,    -1,    -1,    57
 };
 
-#line 325 "/usr/local/lib/bison.cc"
+#line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -1127,7 +1132,7 @@ static const short yycheck[] = {     0,
    as one case of the switch.  */ 
 
 #if YY_SSLParser_USE_GOTO != 0
-/* 
+/*
  SUPRESSION OF GOTO : on some C++ compiler (sun c++)
   the goto is strictly forbidden if any constructor/destructor
   is used in the whole function (very stupid isn't it ?)
@@ -1138,19 +1143,19 @@ static const short yycheck[] = {     0,
 #define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
                      for(;;) switch(yy_gotostate) { case yygotostart: {
 #define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } } 
+#define YYENDGOTO } }
 #define YYBEGINDECLARELABEL enum yy_labels {yygotostart
 #define YYDECLARELABEL(lb) ,lb
 #define YYENDDECLARELABEL  };
 #else
 /* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO 
+#define YYBEGINGOTO
 #define YYLABEL(lb) lb:
 #define YYENDGOTO
-#define YYBEGINDECLARELABEL 
+#define YYBEGINDECLARELABEL
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL 
+#define YYENDDECLARELABEL
 #endif
 /* LABEL DECLARATION */
 YYBEGINDECLARELABEL
@@ -1163,44 +1168,15 @@ YYBEGINDECLARELABEL
   YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
   YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
   YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-  YYDECLARELABEL(yyerrhandle)  
+  YYDECLARELABEL(yyerrhandle)
 YYENDDECLARELABEL
-/* ALLOCA SIMULATION */
-/* __HAVE_NO_ALLOCA */
-#ifdef __HAVE_NO_ALLOCA
-static int __alloca_free_ptr(char *ptr,char *ref)
-{if(ptr!=ref) free(ptr);
- return 0;}
-
-#define __ALLOCA_alloca(size) malloc(size)
-#define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
-
-#ifdef YY_SSLParser_LSP_NEEDED
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		    __ALLOCA_free(yyls,yylsa)+\
-		   (num))
-#else
-#define __ALLOCA_return(num) \
-            return( __ALLOCA_free(yyss,yyssa)+\
-		    __ALLOCA_free(yyvs,yyvsa)+\
-		   (num))
-#endif
-#else
-#define __ALLOCA_return(num) return(num)
-#define __ALLOCA_alloca(size) alloca(size)
-#define __ALLOCA_free(ptr,ref) 
-#endif
-
-/* ENDALLOCA SIMULATION */
 
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (YY_SSLParser_CHAR = YYEMPTY)
 #define YYEMPTY         -2
 #define YYEOF           0
-#define YYACCEPT        __ALLOCA_return(0)
-#define YYABORT         __ALLOCA_return(1)
+#define YYACCEPT        return(0)
+#define YYABORT         return(1)
 #define YYERROR         YYGOTO(yyerrlab1)
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -1427,21 +1403,18 @@ YYLABEL(yynewstate)
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  YY_SSLParser_ERROR("parser stack overflow");
-	  __ALLOCA_return(2);
+	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
       __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
-      __ALLOCA_free(yyss1,yyssa);
-      yyvs = (YY_SSLParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
+      yyvs = (YY_SSLParser_STYPE *) alloca (yystacksize * sizeof (*yyvsp));
       __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
-      __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_SSLParser_LSP_NEEDED
-      yyls = (YY_SSLParser_LTYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yylsp));
+      yyls = (YY_SSLParser_LTYPE *) alloca (yystacksize * sizeof (*yylsp));
       __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
-      __ALLOCA_free(yyls1,yylsa);
 #endif
 #endif /* no yyoverflow */
 
@@ -1599,19 +1572,19 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 811 "/usr/local/lib/bison.cc" */
-#line 1604 "sslparser.cpp"
+/* #line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 1577 "sslparser.cpp"
 
   switch (yyn) {
 
 case 1:
-#line 218 "sslparser.y"
+#line 220 "sslparser.y"
 {
 			the_asgn = yyvsp[0].regtransfer;
 		;
     break;}
 case 2:
-#line 221 "sslparser.y"
+#line 223 "sslparser.y"
 {
 			the_asgn = new Assign(
 				new Terminal(opNil),
@@ -1619,17 +1592,17 @@ case 2:
 		;
     break;}
 case 7:
-#line 237 "sslparser.y"
+#line 239 "sslparser.y"
 {
 			Dict.fetchExecCycle = yyvsp[0].rtlist;
 		;
     break;}
 case 14:
-#line 260 "sslparser.y"
+#line 262 "sslparser.y"
 { Dict.fixupParams(); ;
     break;}
 case 17:
-#line 273 "sslparser.y"
+#line 275 "sslparser.y"
 {
 			// Note: the below copies the list of strings!
 			Dict.DetParamMap[yyvsp[-4].str].params = *yyvsp[-1].parmlist;
@@ -1638,7 +1611,7 @@ case 17:
 		;
     break;}
 case 18:
-#line 287 "sslparser.y"
+#line 289 "sslparser.y"
 {
 			std::map<std::string, InsNameElem*> m;
 			ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
@@ -1656,27 +1629,27 @@ case 18:
 		;
     break;}
 case 19:
-#line 304 "sslparser.y"
+#line 306 "sslparser.y"
 { yyval.parmlist = yyvsp[-1].parmlist; ;
     break;}
 case 20:
-#line 305 "sslparser.y"
+#line 307 "sslparser.y"
 { yyval.parmlist = new std::list<std::string>(); ;
     break;}
 case 21:
-#line 309 "sslparser.y"
+#line 311 "sslparser.y"
 {
 					bFloat = false;
 				;
     break;}
 case 23:
-#line 312 "sslparser.y"
+#line 314 "sslparser.y"
 {
 					bFloat = true;
 				;
     break;}
 case 27:
-#line 322 "sslparser.y"
+#line 324 "sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
 					yyerror("Name reglist decared twice\n");
@@ -1684,7 +1657,7 @@ case 27:
 			;
     break;}
 case 28:
-#line 327 "sslparser.y"
+#line 329 "sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
 					yyerror("Name reglist declared twice\n");
@@ -1692,7 +1665,7 @@ case 28:
 			;
     break;}
 case 29:
-#line 332 "sslparser.y"
+#line 334 "sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
 					yyerror("Name reglist declared twice\n");
@@ -1729,7 +1702,7 @@ case 29:
 			;
     break;}
 case 30:
-#line 366 "sslparser.y"
+#line 368 "sslparser.y"
 {
 				if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
 					yyerror("Name reglist declared twice\n");
@@ -1754,7 +1727,7 @@ case 30:
 			;
     break;}
 case 31:
-#line 388 "sslparser.y"
+#line 390 "sslparser.y"
 {
 				if ((int)yyvsp[-8].strlist->size() != (yyvsp[0].num - yyvsp[-2].num + 1)) {
 					std::cerr << "size of register array does not match mapping to r[" << yyvsp[-2].num << ".." << yyvsp[0].num << "]\n";
@@ -1771,7 +1744,7 @@ case 31:
 			;
     break;}
 case 32:
-#line 402 "sslparser.y"
+#line 404 "sslparser.y"
 {
 				std::list<std::string>::iterator loc = yyvsp[-6].strlist->begin();
 				for (; loc != yyvsp[-6].strlist->end(); loc++) {
@@ -1783,27 +1756,27 @@ case 32:
 			;
     break;}
 case 33:
-#line 414 "sslparser.y"
+#line 416 "sslparser.y"
 {
 				yyvsp[-2].strlist->push_back(yyvsp[0].str);
 			;
     break;}
 case 34:
-#line 417 "sslparser.y"
+#line 419 "sslparser.y"
 {
 				yyval.strlist = new std::list<std::string>;
 				yyval.strlist->push_back(yyvsp[0].str);
 			;
     break;}
 case 35:
-#line 426 "sslparser.y"
+#line 428 "sslparser.y"
 {
 				// Note: $2 is a list of strings
 				Dict.FlagFuncs[yyvsp[-5].str] = new FlagDef(listStrToExp(yyvsp[-4].parmlist), yyvsp[-1].rtlist);
 			;
     break;}
 case 36:
-#line 433 "sslparser.y"
+#line 435 "sslparser.y"
 {
 				if (ConstTable.find(yyvsp[-2].str) != ConstTable.end())
 					yyerror("Constant declared twice");
@@ -1811,7 +1784,7 @@ case 36:
 			;
     break;}
 case 37:
-#line 439 "sslparser.y"
+#line 441 "sslparser.y"
 {
 				if (ConstTable.find(yyvsp[-4].str) != ConstTable.end())
 					yyerror("Constant declared twice");
@@ -1824,34 +1797,34 @@ case 37:
 			;
     break;}
 case 38:
-#line 453 "sslparser.y"
+#line 455 "sslparser.y"
 {
 			TableDict[yyvsp[-2].str] = yyvsp[0].tab;
 		;
     break;}
 case 39:
-#line 459 "sslparser.y"
+#line 461 "sslparser.y"
 {
 			yyval.tab = new Table(*yyvsp[0].namelist);
 			//delete $1;
 		;
     break;}
 case 40:
-#line 464 "sslparser.y"
+#line 466 "sslparser.y"
 {
 			yyval.tab = new OpTable(*yyvsp[0].namelist);
 			//delete $1;
 		;
     break;}
 case 41:
-#line 468 "sslparser.y"
+#line 470 "sslparser.y"
 {
 			yyval.tab = new ExprTable(*yyvsp[0].exprlist);
 			//delete $1;
 		;
     break;}
 case 42:
-#line 475 "sslparser.y"
+#line 477 "sslparser.y"
 {
 			// cross-product of two str_expr's
 			std::deque<std::string>::iterator i, j;
@@ -1864,13 +1837,13 @@ case 42:
 		;
     break;}
 case 43:
-#line 485 "sslparser.y"
+#line 487 "sslparser.y"
 {
 			yyval.namelist = yyvsp[0].namelist;
 		;
     break;}
 case 44:
-#line 491 "sslparser.y"
+#line 493 "sslparser.y"
 {
 			// want to append $3 to $1
 			// The following causes a massive warning message about mixing signed and unsigned
@@ -1880,31 +1853,31 @@ case 44:
 		;
     break;}
 case 45:
-#line 498 "sslparser.y"
+#line 500 "sslparser.y"
 {
 			yyvsp[-3].namelist->push_back("");
 		;
     break;}
 case 46:
-#line 501 "sslparser.y"
+#line 503 "sslparser.y"
 {
 			yyval.namelist = yyvsp[0].namelist;
 		;
     break;}
 case 47:
-#line 507 "sslparser.y"
+#line 509 "sslparser.y"
 {
 			yyval.namelist = yyvsp[-1].namelist;
 		;
     break;}
 case 48:
-#line 510 "sslparser.y"
+#line 512 "sslparser.y"
 {
 			yyval.namelist = yyvsp[0].namelist;
 		;
     break;}
 case 49:
-#line 516 "sslparser.y"
+#line 518 "sslparser.y"
 {
 			yyval.namelist = new std::deque<std::string>;
 			yyval.namelist->push_back("");
@@ -1912,13 +1885,13 @@ case 49:
 		;
     break;}
 case 50:
-#line 521 "sslparser.y"
+#line 523 "sslparser.y"
 {
 			yyval.namelist = new std::deque<std::string>(1, yyvsp[-1].str);
 		;
     break;}
 case 51:
-#line 524 "sslparser.y"
+#line 526 "sslparser.y"
 {
 			std::ostringstream o;
 			// expand $2 from table of names
@@ -1936,7 +1909,7 @@ case 51:
 		;
     break;}
 case 52:
-#line 539 "sslparser.y"
+#line 541 "sslparser.y"
 {
 			// try and expand $1 from table of names. if fail, expand using '"' NAME '"' rule
 			if (TableDict.find(yyvsp[0].str) != TableDict.end())
@@ -1954,85 +1927,85 @@ case 52:
 		;
     break;}
 case 53:
-#line 557 "sslparser.y"
+#line 559 "sslparser.y"
 {
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 54:
-#line 561 "sslparser.y"
+#line 563 "sslparser.y"
 {
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 55:
-#line 565 "sslparser.y"
+#line 567 "sslparser.y"
 {
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 56:
-#line 572 "sslparser.y"
+#line 574 "sslparser.y"
 {
 			yyval.namelist = yyvsp[-1].namelist;
 		;
     break;}
 case 57:
-#line 579 "sslparser.y"
+#line 581 "sslparser.y"
 {
 			yyval.namelist = yyvsp[-4].namelist;
 			yyval.namelist->push_back(yyvsp[-1].str);
 		;
     break;}
 case 58:
-#line 583 "sslparser.y"
+#line 585 "sslparser.y"
 {
 			yyval.namelist = new std::deque<std::string>;
 			yyval.namelist->push_back(yyvsp[-1].str);
 		;
     break;}
 case 59:
-#line 591 "sslparser.y"
+#line 593 "sslparser.y"
 {
 			yyval.exprlist = yyvsp[-1].exprlist;
 		;
     break;}
 case 60:
-#line 598 "sslparser.y"
+#line 600 "sslparser.y"
 {
 			yyval.exprlist = yyvsp[-4].exprlist;
 			yyval.exprlist->push_back(yyvsp[-1].exp);
 		;
     break;}
 case 61:
-#line 602 "sslparser.y"
+#line 604 "sslparser.y"
 {
 			yyval.exprlist = new std::deque<Exp*>;
 			yyval.exprlist->push_back(yyvsp[-1].exp);
 		;
     break;}
 case 62:
-#line 610 "sslparser.y"
+#line 612 "sslparser.y"
 {
 			yyvsp[0].insel->getrefmap(indexrefmap);
 		//	   $3			$4
 		;
     break;}
 case 63:
-#line 613 "sslparser.y"
+#line 615 "sslparser.y"
 {
 			// This function expands the tables and saves the expanded RTLs to the dictionary
 			expandTables(yyvsp[-3].insel, yyvsp[-1].parmlist, yyvsp[0].rtlist, Dict);
 		;
     break;}
 case 64:
-#line 620 "sslparser.y"
+#line 622 "sslparser.y"
 {
 			yyval.insel = yyvsp[0].insel;
 		;
     break;}
 case 65:
-#line 623 "sslparser.y"
+#line 625 "sslparser.y"
 {
 			unsigned i;
 			InsNameElem *temp;
@@ -2056,32 +2029,32 @@ case 65:
 		;
     break;}
 case 66:
-#line 647 "sslparser.y"
+#line 649 "sslparser.y"
 {
 			yyval.insel = new InsNameElem(yyvsp[0].str);
 		;
     break;}
 case 67:
-#line 650 "sslparser.y"
+#line 652 "sslparser.y"
 {
 			yyval.insel = yyvsp[0].insel;
 		;
     break;}
 case 68:
-#line 653 "sslparser.y"
+#line 655 "sslparser.y"
 {
 			yyval.insel = yyvsp[-1].insel;
 			yyval.insel->append(yyvsp[0].insel);
 		;
     break;}
 case 69:
-#line 660 "sslparser.y"
+#line 662 "sslparser.y"
 {
 			yyval.insel = new InsOptionElem(yyvsp[-1].str);
 		;
     break;}
 case 70:
-#line 663 "sslparser.y"
+#line 665 "sslparser.y"
 {
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2095,7 +2068,7 @@ case 70:
 		;
     break;}
 case 71:
-#line 676 "sslparser.y"
+#line 678 "sslparser.y"
 {
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2106,7 +2079,7 @@ case 71:
 		;
     break;}
 case 72:
-#line 685 "sslparser.y"
+#line 687 "sslparser.y"
 {
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2120,7 +2093,7 @@ case 72:
 		;
     break;}
 case 73:
-#line 696 "sslparser.y"
+#line 698 "sslparser.y"
 {
 			std::ostringstream o;
 			if (TableDict.find(yyvsp[-2].str) == TableDict.end()) {
@@ -2131,13 +2104,13 @@ case 73:
 		;
     break;}
 case 74:
-#line 705 "sslparser.y"
+#line 707 "sslparser.y"
 {
 			yyval.insel = new InsNameElem(yyvsp[-1].str);
 		;
     break;}
 case 75:
-#line 711 "sslparser.y"
+#line 713 "sslparser.y"
 {
 			// append any automatically generated register transfers and clear the list they were stored in.
 			// Do nothing for a NOP (i.e. $2 = 0)
@@ -2148,7 +2121,7 @@ case 75:
 		;
     break;}
 case 76:
-#line 720 "sslparser.y"
+#line 722 "sslparser.y"
 {
 			yyval.rtlist = new RTL(STMT_ASSIGN);
 			if (yyvsp[0].regtransfer != NULL)
@@ -2156,13 +2129,13 @@ case 76:
 		;
     break;}
 case 77:
-#line 728 "sslparser.y"
+#line 730 "sslparser.y"
 {
 			yyval.regtransfer = yyvsp[0].regtransfer;
 		;
     break;}
 case 78:
-#line 734 "sslparser.y"
+#line 736 "sslparser.y"
 {
 			std::ostringstream o;
 			if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
@@ -2181,25 +2154,25 @@ case 78:
 		;
     break;}
 case 79:
-#line 750 "sslparser.y"
+#line 752 "sslparser.y"
 {
 			yyval.regtransfer = 0;
 		;
     break;}
 case 80:
-#line 754 "sslparser.y"
+#line 756 "sslparser.y"
 {
 			yyval.regtransfer = 0;
 		;
     break;}
 case 81:
-#line 757 "sslparser.y"
+#line 759 "sslparser.y"
 {
 		yyval.regtransfer = NULL;
 	;
     break;}
 case 82:
-#line 763 "sslparser.y"
+#line 765 "sslparser.y"
 {
 			// Not sure why the below is commented out (MVE)
 /*			Location* pFlag = Location::regOf(Dict.RegMap[$3]);
@@ -2209,7 +2182,7 @@ case 82:
 		;
     break;}
 case 83:
-#line 770 "sslparser.y"
+#line 772 "sslparser.y"
 {
 /*			std::list<Exp*>* tmp = new std::list<Exp*>;
 			Unary* pFlag = new Unary(opIdRegOf, Dict.RegMap[$1]);
@@ -2219,7 +2192,7 @@ case 83:
 		;
     break;}
 case 84:
-#line 781 "sslparser.y"
+#line 783 "sslparser.y"
 {
 			assert(yyvsp[0].str != 0);
 			yyvsp[-2].parmlist->push_back(yyvsp[0].str);
@@ -2227,46 +2200,46 @@ case 84:
 		;
     break;}
 case 85:
-#line 787 "sslparser.y"
+#line 789 "sslparser.y"
 {
 			yyval.parmlist = new std::list<std::string>;
 			yyval.parmlist->push_back(yyvsp[0].str);
 		;
     break;}
 case 86:
-#line 791 "sslparser.y"
+#line 793 "sslparser.y"
 {
 			yyval.parmlist = new std::list<std::string>;
 		;
     break;}
 case 87:
-#line 796 "sslparser.y"
+#line 798 "sslparser.y"
 {
 			Dict.ParamSet.insert(yyvsp[0].str);		// MVE: Likely wrong. Likely supposed to be OPERAND params only
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 88:
-#line 802 "sslparser.y"
+#line 804 "sslparser.y"
 {
 			yyval.explist->push_back(yyvsp[0].exp);
 		;
     break;}
 case 89:
-#line 806 "sslparser.y"
+#line 808 "sslparser.y"
 {
 			yyval.explist = new std::list<Exp*>;
 			yyval.explist->push_back(yyvsp[0].exp);
 		;
     break;}
 case 90:
-#line 811 "sslparser.y"
+#line 813 "sslparser.y"
 {
 			yyval.explist = new std::list<Exp*>;
 		;
     break;}
 case 91:
-#line 819 "sslparser.y"
+#line 821 "sslparser.y"
 {
 			Assign* a = new Assign(yyvsp[-5].typ, yyvsp[-2].exp, yyvsp[0].exp);
 			a->setGuard(yyvsp[-4].exp);
@@ -2274,14 +2247,14 @@ case 91:
 		;
     break;}
 case 92:
-#line 826 "sslparser.y"
+#line 828 "sslparser.y"
 {
 			// update the size of any generated RT's
 			yyval.regtransfer = new Assign(yyvsp[-3].typ, yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 93:
-#line 832 "sslparser.y"
+#line 834 "sslparser.y"
 {
 			yyval.regtransfer = new Assign(
 				new Terminal(opNil),
@@ -2289,7 +2262,7 @@ case 93:
 		;
     break;}
 case 94:
-#line 837 "sslparser.y"
+#line 839 "sslparser.y"
 {
 			yyval.regtransfer = new Assign(
 				new Terminal(opNil),
@@ -2297,85 +2270,85 @@ case 94:
 		;
     break;}
 case 95:
-#line 844 "sslparser.y"
+#line 846 "sslparser.y"
 {
 			yyval.regtransfer = new Assign(yyvsp[-1].typ, NULL, yyvsp[0].exp);
 		;
     break;}
 case 96:
-#line 850 "sslparser.y"
+#line 852 "sslparser.y"
 {
 			yyval.exp = new Const(yyvsp[0].num);
 		;
     break;}
 case 97:
-#line 854 "sslparser.y"
+#line 856 "sslparser.y"
 {
 			yyval.exp = new Const(yyvsp[0].dbl);
 		;
     break;}
 case 98:
-#line 858 "sslparser.y"
+#line 860 "sslparser.y"
 {
 			yyval.exp = yyvsp[-1].exp;
 		;
     break;}
 case 99:
-#line 862 "sslparser.y"
+#line 864 "sslparser.y"
 {
 			yyval.exp = yyvsp[0].exp;
 		;
     break;}
 case 100:
-#line 866 "sslparser.y"
+#line 868 "sslparser.y"
 {
 			yyval.exp = new Ternary(opTern, yyvsp[-5].exp, yyvsp[-3].exp, yyvsp[-1].exp);
 		;
     break;}
 case 101:
-#line 871 "sslparser.y"
+#line 873 "sslparser.y"
 {
 			yyval.exp = new Unary(opAddrOf, yyvsp[-1].exp);
 		;
     break;}
 case 102:
-#line 876 "sslparser.y"
+#line 878 "sslparser.y"
 {
 			yyval.exp = new Ternary(strToOper(yyvsp[-6].str), new Const(yyvsp[-5].num), new Const(yyvsp[-3].num), yyvsp[-1].exp);
 		;
     break;}
 case 103:
-#line 881 "sslparser.y"
+#line 883 "sslparser.y"
 {
 			yyval.exp = new Unary(opFtrunc, yyvsp[-1].exp);
 		;
     break;}
 case 104:
-#line 886 "sslparser.y"
+#line 888 "sslparser.y"
 {
 			yyval.exp = new Unary(opFabs, yyvsp[-1].exp);
 		;
     break;}
 case 105:
-#line 891 "sslparser.y"
+#line 893 "sslparser.y"
 {
 			yyval.exp = new Terminal(opFpush);
 		;
     break;}
 case 106:
-#line 894 "sslparser.y"
+#line 896 "sslparser.y"
 {
 			yyval.exp = new Terminal(opFpop);
 		;
     break;}
 case 107:
-#line 899 "sslparser.y"
+#line 901 "sslparser.y"
 {
 			yyval.exp = new Unary(strToOper(yyvsp[-2].str), yyvsp[-1].exp);
 		;
     break;}
 case 108:
-#line 905 "sslparser.y"
+#line 907 "sslparser.y"
 {
 			std::ostringstream o;
 			if (indexrefmap.find(yyvsp[-1].str) == indexrefmap.end()) {
@@ -2397,7 +2370,7 @@ case 108:
 		;
     break;}
 case 109:
-#line 928 "sslparser.y"
+#line 930 "sslparser.y"
 {
 		std::ostringstream o;
 		if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end() ) {
@@ -2425,19 +2398,19 @@ case 109:
 	;
     break;}
 case 110:
-#line 954 "sslparser.y"
+#line 956 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 111:
-#line 960 "sslparser.y"
+#line 962 "sslparser.y"
 {
 			yyval.exp = new Unary(opSignExt, yyvsp[-1].exp);
 		;
     break;}
 case 112:
-#line 967 "sslparser.y"
+#line 969 "sslparser.y"
 {
 			// size casts and the opSize operator were generally deprecated, but now opSize is used to transmit
 			// the size of operands that could be memOfs from the decoder to type analysis
@@ -2448,55 +2421,55 @@ case 112:
 		;
     break;}
 case 113:
-#line 976 "sslparser.y"
+#line 978 "sslparser.y"
 {
 			yyval.exp = new Unary(opNot, yyvsp[0].exp);
 		;
     break;}
 case 114:
-#line 980 "sslparser.y"
+#line 982 "sslparser.y"
 {
 			yyval.exp = new Unary(opLNot, yyvsp[0].exp);
 		;
     break;}
 case 115:
-#line 984 "sslparser.y"
+#line 986 "sslparser.y"
 {
 			yyval.exp = new Unary(opFNeg, yyvsp[0].exp);
 		;
     break;}
 case 116:
-#line 988 "sslparser.y"
+#line 990 "sslparser.y"
 {
 			yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 117:
-#line 992 "sslparser.y"
+#line 994 "sslparser.y"
 {
 			yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 118:
-#line 996 "sslparser.y"
+#line 998 "sslparser.y"
 {
 			yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 119:
-#line 1000 "sslparser.y"
+#line 1002 "sslparser.y"
 {
 			yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 120:
-#line 1004 "sslparser.y"
+#line 1006 "sslparser.y"
 {
 			yyval.exp = new Binary(strToOper(yyvsp[-1].str), yyvsp[-2].exp, yyvsp[0].exp);
 		;
     break;}
 case 121:
-#line 1011 "sslparser.y"
+#line 1013 "sslparser.y"
 {
 			std::ostringstream o;
 			if (indexrefmap.find(yyvsp[-2].str) == indexrefmap.end()) {
@@ -2521,13 +2494,13 @@ case 121:
 		;
     break;}
 case 122:
-#line 1034 "sslparser.y"
+#line 1036 "sslparser.y"
 {
 			yyval.exp = yyvsp[0].exp;
 		;
     break;}
 case 123:
-#line 1043 "sslparser.y"
+#line 1045 "sslparser.y"
 {
 			bool isFlag = strstr(yyvsp[0].str, "flags") != 0;
 			std::map<std::string, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
@@ -2552,13 +2525,13 @@ case 123:
 		;
     break;}
 case 124:
-#line 1066 "sslparser.y"
+#line 1068 "sslparser.y"
 {
 			yyval.exp = Location::regOf(yyvsp[-1].exp);
 		;
     break;}
 case 125:
-#line 1070 "sslparser.y"
+#line 1072 "sslparser.y"
 {
 			int regNum;
 			sscanf(yyvsp[0].str, "r%d", &regNum);
@@ -2566,13 +2539,13 @@ case 125:
 		;
     break;}
 case 126:
-#line 1076 "sslparser.y"
+#line 1078 "sslparser.y"
 {
 			yyval.exp = Location::memOf(yyvsp[-1].exp);
 		;
     break;}
 case 127:
-#line 1080 "sslparser.y"
+#line 1082 "sslparser.y"
 {
 		// This is a mixture of the param: PARM {} match and the value_op: NAME {} match
 			Exp* s;
@@ -2591,55 +2564,55 @@ case 127:
 		;
     break;}
 case 128:
-#line 1097 "sslparser.y"
+#line 1099 "sslparser.y"
 {
 			yyval.exp = new Ternary(opAt, yyvsp[-6].exp, yyvsp[-3].exp, yyvsp[-1].exp);
 		;
     break;}
 case 129:
-#line 1101 "sslparser.y"
+#line 1103 "sslparser.y"
 {
 			yyval.exp = Location::tempOf(new Const(yyvsp[0].str));
 		;
     break;}
 case 130:
-#line 1106 "sslparser.y"
+#line 1108 "sslparser.y"
 {
 			yyval.exp = new Unary(opPostVar, yyvsp[-1].exp);
 		;
     break;}
 case 131:
-#line 1109 "sslparser.y"
+#line 1111 "sslparser.y"
 {
 			yyval.exp = makeSuccessor(yyvsp[-1].exp);
 		;
     break;}
 case 132:
-#line 1115 "sslparser.y"
+#line 1117 "sslparser.y"
 {
 			yyval.num = yyvsp[-1].num;
 		;
     break;}
 case 133:
-#line 1121 "sslparser.y"
+#line 1123 "sslparser.y"
 {
 			Dict.bigEndian = (strcmp(yyvsp[0].str, "BIG") == 0);
 		;
     break;}
 case 134:
-#line 1126 "sslparser.y"
+#line 1128 "sslparser.y"
 {
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 135:
-#line 1129 "sslparser.y"
+#line 1131 "sslparser.y"
 {
 			yyval.str = yyvsp[0].str;
 		;
     break;}
 case 136:
-#line 1135 "sslparser.y"
+#line 1137 "sslparser.y"
 {
 			char c = yyvsp[0].str[1];
 			if (c == '*') yyval.typ = new SizeType(0); // MVE: should remove these
@@ -2667,14 +2640,14 @@ case 136:
 		;
     break;}
 case 140:
-#line 1175 "sslparser.y"
+#line 1177 "sslparser.y"
 {
 			Dict.fastMap[std::string(yyvsp[-2].str)] = std::string(yyvsp[0].str);
 		;
     break;}
 }
 
-#line 811 "/usr/local/lib/bison.cc"
+#line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2875,9 +2848,9 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 1010 "/usr/local/lib/bison.cc" */
-#line 2880 "sslparser.cpp"
-#line 1178 "sslparser.y"
+/* #line 982 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
+#line 2853 "sslparser.cpp"
+#line 1180 "sslparser.y"
 
 
 /*==============================================================================
@@ -3188,12 +3161,18 @@ Exp* listStrToExp(std::list<std::string>* ls) {
  * RETURNS:			<nothing>
  *============================================================================*/
 static Exp* srchExpr = new Binary(opExpTable,
-	new Terminal(opWild),
-	new Terminal(opWild));
+		new Terminal(opWild),
+		new Terminal(opWild));
 static Exp* srchOp = new Ternary(opOpTable,
-	new Terminal(opWild),
-	new Terminal(opWild),
-	new Terminal(opWild));
+		new Terminal(opWild),
+		new Terminal(opWild),
+		new Terminal(opWild));
+void init_sslparser() {
+	static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp*));
+	gc_pointers[0] = srchExpr;
+	gc_pointers[1] = srchOp;
+}
+
 void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {
 	int i, m;
 	std::string nam;
@@ -3237,7 +3216,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 				assert(b->getOper() == opList);
 				Exp* e1 = b->getSubExp1();
 				Exp* e2 = b->getSubExp2();		// This should be an opList too
-				assert(b->getOper() == opList);	// FIXME: b should be e2?
+				assert(b->getOper() == opList);
 				e2 = ((Binary*)e2)->getSubExp1();
 				const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
 				Exp* repl = new Binary(strToOper(ops), e1->clone(),

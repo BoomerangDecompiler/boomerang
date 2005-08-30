@@ -131,7 +131,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     hostPC
     ;
   char *MATCH_name;
-  char *MATCH_name_OPCD_0[] = {
+  static char *MATCH_name_OPCD_0[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, "mulli", "subfic", (char *)0, (char *)0, (char *)0, "addic", 
     "addicq", "addi", "addis", (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -141,34 +141,34 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     "sth", "sthu", "lmw", "stmw", "lfs", "lfsu", "lfd", "lfdu", "stfs", 
     "stfsu", "stfd", "stfdu", 
   };
-  char *MATCH_name_BO4_3[] = {
+  static char *MATCH_name_BO4_3[] = {
     (char *)0, (char *)0, "bge", (char *)0, (char *)0, (char *)0, "blt", 
   };
-  char *MATCH_name_BO4_4[] = {
+  static char *MATCH_name_BO4_4[] = {
     (char *)0, (char *)0, "ble", (char *)0, (char *)0, (char *)0, "bgt", 
   };
-  char *MATCH_name_BO4_5[] = {
+  static char *MATCH_name_BO4_5[] = {
     (char *)0, (char *)0, "bne", (char *)0, (char *)0, (char *)0, "beq", 
   };
-  char *MATCH_name_BO4_6[] = {
+  static char *MATCH_name_BO4_6[] = {
     (char *)0, (char *)0, "bns", (char *)0, (char *)0, (char *)0, "bso", 
   };
-  char *MATCH_name_LK_8[] = {"crnor", "bl", };
-  char *MATCH_name_BO4_10[] = {
+  static char *MATCH_name_LK_8[] = {"crnor", "bl", };
+  static char *MATCH_name_BO4_10[] = {
     (char *)0, (char *)0, "bgelr", (char *)0, (char *)0, (char *)0, "bltlr", 
   };
-  char *MATCH_name_BO4_11[] = {
+  static char *MATCH_name_BO4_11[] = {
     (char *)0, (char *)0, "blelr", (char *)0, (char *)0, (char *)0, "bgtlr", 
   };
-  char *MATCH_name_BO4_12[] = {
+  static char *MATCH_name_BO4_12[] = {
     (char *)0, (char *)0, "bnelr", (char *)0, (char *)0, (char *)0, "beqlr", 
   };
-  char *MATCH_name_BO4_13[] = {
+  static char *MATCH_name_BO4_13[] = {
     (char *)0, (char *)0, "bnslr", (char *)0, (char *)0, (char *)0, "bsolr", 
   };
-  char *MATCH_name_Rc_22[] = {"rlwimi", "rlwimiq", };
-  char *MATCH_name_Rc_23[] = {"rlwinm", "rlwinmq", };
-  char *MATCH_name_Xo1_26[] = {
+  static char *MATCH_name_Rc_22[] = {"rlwimi", "rlwimiq", };
+  static char *MATCH_name_Rc_23[] = {"rlwinm", "rlwinmq", };
+  static char *MATCH_name_Xo1_26[] = {
     "fcmpu", (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "frsp", 
     (char *)0, "fctiw", "fctiwz", (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -330,7 +330,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, "stfiwx", 
   };
-  char *MATCH_name_Xo9_29[] = {
+  static char *MATCH_name_Xo9_29[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, "subfc", (char *)0, "addc", (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
@@ -413,7 +413,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, "divd", (char *)0, "divw", 
   };
-  char *MATCH_name_Xo1_35[] = {
+  static char *MATCH_name_Xo1_35[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     "frspq", (char *)0, "fctiwq", "fctiwzq", (char *)0, (char *)0, (char *)0, 
@@ -555,7 +555,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     "fcfidq", 
   };
-  char *MATCH_name_Xo5_37[] = {
+  static char *MATCH_name_Xo5_37[] = {
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, 
     (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, (char *)0, "fdiv", 
@@ -1017,8 +1017,9 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
               { 
                 char *name = MATCH_name;
                 unsigned reladdr = 
-                  4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff) 
-                                    /* LI at 0 */, 24) + addressToPC(MATCH_p);
+                  4 * sign_extend(
+                              (MATCH_w_32_0 >> 2 & 0xffffff) /* LI at 0 */, 
+                              24) + addressToPC(MATCH_p);
                 nextPC = 4 + MATCH_p; 
                 
 #line 189 "frontend/machine/ppc/decoder.m"

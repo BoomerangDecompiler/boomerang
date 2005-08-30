@@ -1,4 +1,24 @@
-char	first_static_data[] = {'D', 'a', 't', 'a'};		// First statically allocated data
+/*
+ * Copyright (C) 1998-2001, The University of Queensland
+ * Copyright (C) 2001, Sun Microsystems, Inc
+ * Copyright (C) 2002-2005, Mike Van Emmerik and Trent Waddington
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ *
+ */
+
+/*==============================================================================
+ * FILE:	   driver.cpp
+ * OVERVIEW:   Important initialisation that has to happen at the start of main()
+ *============================================================================*/
+
+/*
+ * $Revision$
+ *
+ * 30 Aug 05 - Mike: Added init_dfa() etc for garbage collection safety
+ */
 
 #include "boomerang.h"
 //#define GC_DEBUG 1		// Uncomment to debug the garbage collector
@@ -6,87 +26,20 @@ char	first_static_data[] = {'D', 'a', 't', 'a'};		// First statically allocated 
 
 // FIXME: surely not needed here now?
 #ifdef WIN32
-#include <direct.h>		// For Windows mkdir
+//#include <direct.h>			// For Windows mkdir
 #endif
 #include <signal.h>
 
-extern char last_static_data[];	// Past the last static data item
-
-#ifdef SPARC_DEBUG
-
-void segv_handler(int a, siginfo_t *b, void *c)
-{
-	fprintf(stderr, "Boomerang has encounted a fatal error.\n");
-
-	ucontext_t *uc = (ucontext_t *) c;
-#if 0
-	fprintf(stderr, "\n*** SIGNAL TRAPPED: SIGNAL %d ***\n", a);
-	fprintf(stderr, "si_signo = %d\n", b->si_signo);
-	fprintf(stderr, "si_code  = %d\n", b->si_code);
-	fprintf(stderr, "si_errno = %d\n", b->si_errno);
-	fprintf(stderr, "si_addr  = %p\n", b->si_addr);
-	fprintf(stderr, "si_trapno= %p\n", b->si_trapno);
-	fprintf(stderr, "si_pc	  = %p\n\n", b->si_pc);
-
-	fprintf(stderr, "stack info:\nsp:	%8x	 size:		%8x\n"
-			"flags:		%d\n\n",
-			uc->uc_stack.ss_sp, uc->uc_stack.ss_size,
-			uc->uc_stack.ss_flags);
-
-	fprintf(stderr, "Registers:\npc: %8x  npc: %8x\n"
-			"o0: %8x  o1: %8x  o2: %8x	o3: %8x\n"
-			"o4: %8x  o5: %8x  o6: %8x	o7: %8x\n\n"
-			"g1: %8x  g2: %8x  g3: %8x	g4: %8x\n"
-			"g5: %8x  g6: %8x  g7: %8x\n\n",
-			uc->uc_mcontext.gregs[REG_PC],
-			uc->uc_mcontext.gregs[REG_nPC],
-			uc->uc_mcontext.gregs[REG_O0],
-			uc->uc_mcontext.gregs[REG_O1],
-			uc->uc_mcontext.gregs[REG_O2],
-			uc->uc_mcontext.gregs[REG_O3],
-			uc->uc_mcontext.gregs[REG_O4],
-			uc->uc_mcontext.gregs[REG_O5],
-			uc->uc_mcontext.gregs[REG_O6],
-			uc->uc_mcontext.gregs[REG_O7],
-			uc->uc_mcontext.gregs[REG_G1],
-			uc->uc_mcontext.gregs[REG_G2],
-			uc->uc_mcontext.gregs[REG_G3],
-			uc->uc_mcontext.gregs[REG_G4],
-			uc->uc_mcontext.gregs[REG_G5],
-			uc->uc_mcontext.gregs[REG_G6],
-			uc->uc_mcontext.gregs[REG_G7]);
-
-	fprintf(stderr, "stack: ");
-	for (int i = 0; i < 100; i++) {
-	   unsigned int *sp = (unsigned int*)uc->uc_mcontext.gregs[REG_O6];
-	   fprintf(stderr, "(%08X) %08X %08X %08X %08X", sp+i*4, sp[i*4], sp[i*4+1], sp[i*4+2], sp[i*4+3]);
-	   fprintf(stderr, "\n		 ");
-	}
-#endif
-
-	fprintf(stderr, "\napproximate stack trace:\n");
-	for (int i = 0; i < 100; i++) {
-		unsigned int *sp = (unsigned int*)uc->uc_mcontext.gregs[REG_O6];
-		if (sp[i] - (unsigned int)(sp+i) < 100)
-			fprintf(stderr, "%08X\n", sp[++i]);
-	}
-   exit(0);
-}
+void init_dfa();			// Prototypes for
+void init_sslparser();		// various initialisation functions
+void init_basicblock();		// for garbage collection safety
 
 int main(int argc, const char* argv[]) {
-	struct sigaction act;
-	memset(&act, 0, sizeof(struct sigaction));
-	act.sa_sigaction = segv_handler;
-	act.sa_flags = (SA_SIGINFO | SA_ONSTACK);
 
-	sigaction(SIGSEGV, &act, NULL);
-#else
-int main(int argc, const char* argv[]) {
-#endif
-
-	// This is a bit of a desperation measure, probably not necessary except for OS X which doesn't (as of Sep 2005)
-	// seem to define any static roots. So we try a crude hack:
-	//GC_add_roots(first_static_data, last_static_data);
+	// Call the various initialisation functions for safe garbage collection
+	init_dfa();
+	init_sslparser();
+	init_basicblock();
 
 	return Boomerang::get()->commandLine(argc, argv);
 }

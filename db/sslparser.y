@@ -32,12 +32,14 @@
  * 31 Oct 04 - Mike: srchExpr and srchOp are statics now; saves creating and deleting these expressions for every
  *				opcode. Seems to prevent a lot of memory churn, and may prevent (for now) the mystery
  *				test/sparc/switch_gcc problem (which goes away when you try to gdb it)
+ * 30 Aug 04 - Mike: added init_sslparser() for garbage collection safety
  */
 
 %name SSLParser		// the parser class name will be SSLParser
 
 // stuff to go in sslparser.h
 %header{
+#include "gc.h"
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200
 #pragma warning(disable:4786)
@@ -1485,12 +1487,18 @@ Exp* listStrToExp(std::list<std::string>* ls) {
  * RETURNS:			<nothing>
  *============================================================================*/
 static Exp* srchExpr = new Binary(opExpTable,
-	new Terminal(opWild),
-	new Terminal(opWild));
+		new Terminal(opWild),
+		new Terminal(opWild));
 static Exp* srchOp = new Ternary(opOpTable,
-	new Terminal(opWild),
-	new Terminal(opWild),
-	new Terminal(opWild));
+		new Terminal(opWild),
+		new Terminal(opWild),
+		new Terminal(opWild));
+void init_sslparser() {
+	static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp*));
+	gc_pointers[0] = srchExpr;
+	gc_pointers[1] = srchOp;
+}
+
 void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {
 	int i, m;
 	std::string nam;
@@ -1534,7 +1542,7 @@ void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params,
 				assert(b->getOper() == opList);
 				Exp* e1 = b->getSubExp1();
 				Exp* e2 = b->getSubExp2();		// This should be an opList too
-				assert(b->getOper() == opList);	// FIXME: b should be e2?
+				assert(b->getOper() == opList);
 				e2 = ((Binary*)e2)->getSubExp1();
 				const char* ops = ((OpTable*)(TableDict[tbl]))->records[indexrefmap[idx]->getvalue()].c_str();
 				Exp* repl = new Binary(strToOper(ops), e1->clone(),
