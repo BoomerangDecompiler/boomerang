@@ -82,3 +82,7 @@ char* SymTab::FindAfter(ADDRESS& dwAddr)
     return m_pEnt[bot].pName;
 }
 #endif
+
+// Make sure this is the last data definition in the last file linked into the final executable
+char last_static_data[1];		// For garbage collection hack
+

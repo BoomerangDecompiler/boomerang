@@ -49,7 +49,6 @@ static Exp* unscaledArrayPat = new Binary(opPlus,
 		new Terminal(opWild),
 		new Terminal(opWildIntConst));
 
-char*	last_static_data;		// For garbage collection hack
 
 void UserProc::dfaTypeAnalysis() {
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a
@@ -1317,4 +1316,3 @@ bool LowerType::isCompatibleWith(Type* other) {
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
 }
-
