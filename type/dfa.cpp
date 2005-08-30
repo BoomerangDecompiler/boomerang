@@ -45,10 +45,11 @@ static Exp* scaledArrayPat = Location::memOf(
 			new Terminal(opWildIntConst)),
 		new Terminal(opWildIntConst)));
 // idx + K; leave idx wild
-// Don't make this one static; may want to use for garbage collection (end of static data)
-Exp* unscaledArrayPat = new Binary(opPlus,
+static Exp* unscaledArrayPat = new Binary(opPlus,
 		new Terminal(opWild),
 		new Terminal(opWildIntConst));
+
+char*	last_static_data;		// For garbage collection hack
 
 void UserProc::dfaTypeAnalysis() {
 	// First use the type information from the signature. Sometimes needed to split variables (e.g. argc as a

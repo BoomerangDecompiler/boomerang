@@ -10,8 +10,8 @@
 
 class Exp;
 
-extern char* buf;
-extern Exp* unscaledArrayPat;	// Close to the first and last static data items
+extern char* buf;				// Close to the first static data item
+extern char* last_static_data;	// Past the last static data item
 
 #ifdef SPARC_DEBUG
 
@@ -87,7 +87,7 @@ int main(int argc, const char* argv[]) {
 
 	// This is a bit of a desperation measure, probably not necessary except for OS X which doesn't (as of Sep 2005)
 	// seem to define any static roots. So we try a crude hack:
-	GC_add_roots(buf, (char*)((((int)&unscaledArrayPat)&~0xFFF)+0x1000));
+	GC_add_roots(buf, last_static_data);
 
 	return Boomerang::get()->commandLine(argc, argv);
 }
