@@ -67,7 +67,7 @@ endif
 endif
 
 ifeq ($(HOST_OSX), yes)
-SHARED=-dynamiclib -flat_namespace
+SHARED=-dynamiclib #-flat_namespace
 DLLEXT=.dylib
 RUNPATH=
 else # Non-OS X

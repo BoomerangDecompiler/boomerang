@@ -118,7 +118,12 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 		return NULL;
 	}
 	// Use the handle to find the "construct" function
-	constructFcn pFcn = (constructFcn) dlsym(dlHandle, "construct");
+#if HOST_OSX
+#define UNDERSCORE "_"
+#else
+#define UNDERSCORE
+#endif
+	constructFcn pFcn = (constructFcn) dlsym(dlHandle, UNDERSCORE "construct");
 #else						// Else MSVC, MinGW
 	libName += ".dll";		// Example: ElfBinaryFile.dll (same dir as boomerang.exe)
 #ifdef __MINGW32__
