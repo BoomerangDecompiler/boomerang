@@ -212,7 +212,7 @@ AC_CHECK_HEADER(dlfcn.h,,
 dnl Check for libdl (dynamic linked library loading and calling) library
 AC_CHECK_LIB(dl, dlopen, ,
     [AC_CHECK_FILE(lib/libdl.a, ,
-		[AC_PATH_PROG(DL_PATH, libexpat.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
+		[AC_PATH_PROG(DL_PATH, libdl.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${DL_PATH}" != :; then
 			[AC_MSG_WARN(Found libdl.a; linking to lib/)]
 			ln -s ${DL_PATH} lib
