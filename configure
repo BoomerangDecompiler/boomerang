@@ -5343,8 +5343,8 @@ echo "${ECHO_T}no" >&6
 fi
 
 		if test "${CPPUNIT_PATH}" != :; then
-			{ echo "$as_me:$LINENO: WARNING: Found libdl.a; linking to lib/" >&5
-echo "$as_me: WARNING: Found libdl.a; linking to lib/" >&2;}
+			{ echo "$as_me:$LINENO: WARNING: Found libcppunit.a; linking to lib/" >&5
+echo "$as_me: WARNING: Found libcppunit.a; linking to lib/" >&2;}
 			ln -s ${CPPUNIT_PATH} lib
         else
 			{ echo "$as_me:$LINENO: " >&5
