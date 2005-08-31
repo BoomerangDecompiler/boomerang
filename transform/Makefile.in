@@ -45,7 +45,7 @@ $(LIB_OBJS): %.o : %.cpp
 	$(CC) -c -I../include -o $@ $<
 
 clean:
-	rm -f testTransform *.o $(LIB)
+	-rm -f testTransform *.o $(LIB)
 
 test: all
 	./testTransform

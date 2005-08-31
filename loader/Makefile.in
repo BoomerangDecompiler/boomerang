@@ -131,7 +131,7 @@ ExeBinaryFile.o: SymTab.o
 MachOBinaryFile.o: SymTab.o
 
 clean:
-	rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
+	-rm -f *.o $(ALLDLLS) $(COPYDLL) testLoader$(EXEEXT) $(BASEIMPLIB)
 
 # Because of the relative paths, testLoader will only work from the parent
 # directory...

@@ -49,7 +49,7 @@ $(LIB_OBJS): %.o : %.cpp
 	$(CC) -c -I../include -o $@ $<
 
 clean:
-	rm -f testUtil *.o $(LIB)
+	-rm -f testUtil *.o $(LIB)
 
 test: all
 	./testUtil
