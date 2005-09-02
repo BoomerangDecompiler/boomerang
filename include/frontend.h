@@ -110,6 +110,7 @@ protected:
 //	  const int NOP_INST;			// No-op pattern
 		NJMCDecoder	*decoder;		// The decoder
 		BinaryFile	*pBF;			// The binary file
+		BinaryFileFactory* pbff;	// The binary file factory (for closing properly)
 		Prog*		prog;			// The Prog object
 		// The queue of addresses still to be processed
 		TargetQueue	targetQueue;
@@ -123,11 +124,11 @@ public:
 		/*
 		 * Constructor. Takes some parameters to save passing these around a lot
 		 */
-					FrontEnd(BinaryFile *pBF, Prog* prog);
+					FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
 		// Create from a binary file
-static FrontEnd*	instantiate(BinaryFile *pBF, Prog* prog);
+static	FrontEnd*	instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
 		// Load a binary
-static FrontEnd*	Load(const char *fname, Prog* prog);
+static	FrontEnd*	Load(const char *fname, Prog* prog);
 
 		// Add a symbol to the loader
 		void		AddSymbol(ADDRESS addr, const char *nam) { pBF->AddSymbol(addr, nam); }
