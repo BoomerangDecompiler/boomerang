@@ -136,7 +136,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 		return NULL;
 	}
 	// Use the handle to find the "construct" function
-	constructFcn pFcn = (constructFcn) GetProcAddress(hModule, "construct");
+	constructFcn pFcn = (constructFcn) GetProcAddress((HINSTANCE)hModule, "construct");
 #endif
 
 	if (pFcn == NULL) {
@@ -155,7 +155,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 
 void BinaryFileFactory::UnLoad() {
 #ifdef _WIN32
-	FreeLibrary(hModule);
+	FreeLibrary((HINSTANCE)hModule);
 #else
 	dlclose(dlHandle);					// Especially important for Mac OS X
 #endif

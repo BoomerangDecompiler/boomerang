@@ -34,6 +34,8 @@
 #include <string>
 #include <stdio.h>		// For FILE
 
+// Note: #including windows.h causes problems later in the objective C code.
+
 // Given a pointer p, returns the 16 bits (halfword) in the two bytes
 // starting at p.
 #define LH(p)  ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
@@ -98,7 +100,9 @@ enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACH
 
 class BinaryFileFactory {
 #ifdef _WIN32
-		HINSTANCE	hModule;
+// The below should be of type HINSTANCE, but #including windows.h here causes problems later compiling the objective C
+// code. So just cast as needed.
+		void*		hModule;
 #else
 		void*		dlHandle;		// Needed for UnLoading the library
 #endif
