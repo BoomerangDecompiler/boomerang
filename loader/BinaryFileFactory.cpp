@@ -133,7 +133,6 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	if(hModule == NULL) {
 		int err = GetLastError();
 		fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
-		fprintf( stderr, "dlerror returns %s\n", dlerror());
 		fclose(f);
 		return NULL;
 	}
@@ -143,7 +142,9 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 
 	if (pFcn == NULL) {
 		fprintf( stderr, "Loader library %s does not have a construct function\n", libName.c_str());
+#ifndef _WIN32
 		fprintf( stderr, "dlerror returns %s\n", dlerror());
+#endif
 		fclose(f);
 		return NULL;
 	}
