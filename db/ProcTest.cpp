@@ -67,10 +67,11 @@ void ProcTest::testName () {
 	Prog* prog = new Prog();
 	BinaryFile *pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
-	CPPUNIT_ASSERT(pFE != 0);
 	std::string nm("default name");
-	pBF = BinaryFileFactory::Load(HELLO_PENTIUM);
+	BinaryFileFactory bff;
+	pBF = bff.Load(HELLO_PENTIUM);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
+	CPPUNIT_ASSERT(pFE != 0);
 	prog->setFrontEnd(pFE);
 	CPPUNIT_ASSERT(prog);
 	pFE->readLibraryCatalog();				// Since we are not decoding
@@ -91,5 +92,6 @@ void ProcTest::testName () {
 	CPPUNIT_ASSERT_EQUAL(expected, a);
 
 	delete prog;
+	// delete pFE;		// No! Deleting the prog deletes the pFE already (which deletes the BinaryFileFactory)
 }
 

@@ -211,11 +211,12 @@ void RtlTest::testVisitor()
  * OVERVIEW:		Test the isCompare function
  *============================================================================*/
 void RtlTest::testIsCompare () {
-	BinaryFile *pBF = BinaryFileFactory::Load(SWITCH_SPARC);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(SWITCH_SPARC);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_SPARC);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new SparcFrontEnd(pBF, prog);
+	FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	// Decode second instruction: "sub		%i0, 2, %o1"
@@ -239,10 +240,10 @@ void RtlTest::testIsCompare () {
 	pBF->UnLoad();
 	delete pBF;
 	delete pFE;
-	pBF = BinaryFileFactory::Load(SWITCH_PENT);
+	pBF = bff.Load(SWITCH_PENT);
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
-	pFE = new PentiumFrontEnd(pBF, prog);
+	pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	// Decode fifth instruction: "cmp	$0x5,%eax"
@@ -259,7 +260,8 @@ void RtlTest::testIsCompare () {
 	inst = pFE->decodeInstruction(0x804890c);
 	CPPUNIT_ASSERT(inst.rtl != NULL);
 	CPPUNIT_ASSERT(inst.rtl->isCompare(iReg, eOperand) == false);
-	
+	pBF->UnLoad();
+	delete pFE;
 }
 
 void RtlTest::testSetConscripts() {

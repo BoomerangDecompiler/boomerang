@@ -45,7 +45,7 @@
 #include "boomerang.h"
 #include "signature.h"
 
-ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF, Prog* prog) : FrontEnd(pBF, prog) {
+ST20FrontEnd::ST20FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
 	decoder = new ST20Decoder();
 }
 

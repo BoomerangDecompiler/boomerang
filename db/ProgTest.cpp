@@ -61,9 +61,10 @@ void ProgTest::tearDown () {
  * OVERVIEW:		Test setting and reading name
  *============================================================================*/
 void ProgTest::testName () {
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
 	Prog* prog = new Prog();
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	std::string actual(prog->getName());
@@ -73,6 +74,7 @@ void ProgTest::testName () {
 	prog->setName(name.c_str());
 	actual =  prog->getName();
 	CPPUNIT_ASSERT_EQUAL(name, actual);
+	delete pFE;
 }
 
 // Pathetic: the second test we had (for readLibraryParams) is now obsolete;

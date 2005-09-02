@@ -115,8 +115,9 @@ void StatementTest::testEmpty () {
 
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	// create UserProc
@@ -153,8 +154,9 @@ void StatementTest::testEmpty () {
 void StatementTest::testFlow () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 
@@ -165,8 +167,7 @@ void StatementTest::testFlow () {
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
 	RTL *rtl = new RTL();
-	Assign *a = new Assign(Location::regOf(24),
-		new Const(5));
+	Assign *a = new Assign(Location::regOf(24), new Const(5));
 	a->setProc(proc);
 	a->setNumber(1);
 	rtl->appendStmt(a);
@@ -214,8 +215,9 @@ void StatementTest::testFlow () {
 void StatementTest::testKill () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -277,8 +279,9 @@ void StatementTest::testKill () {
 void StatementTest::testUse () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -288,13 +291,11 @@ void StatementTest::testUse () {
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
 	RTL *rtl = new RTL();
-	Assign *a = new Assign(Location::regOf(24),
-					 new Const(5));
+	Assign *a = new Assign(Location::regOf(24), new Const(5));
 	a->setNumber(1);
 	a->setProc(proc);
 	rtl->appendStmt(a);
-	a = new Assign(Location::regOf(28),
-				  Location::regOf(24));
+	a = new Assign(Location::regOf(28), Location::regOf(24));
 	a->setNumber(2);
 	a->setProc(proc);
 	rtl->appendStmt(a);
@@ -340,8 +341,9 @@ void StatementTest::testUse () {
 void StatementTest::testUseOverKill () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -351,18 +353,15 @@ void StatementTest::testUseOverKill () {
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
 	RTL *rtl = new RTL();
-	Assign *e = new Assign(Location::regOf(24),
-					 new Const(5));
+	Assign *e = new Assign(Location::regOf(24), new Const(5));
 	e->setNumber(1);
 	e->setProc(proc);
 	rtl->appendStmt(e);
-	e = new Assign(Location::regOf(24),
-					 new Const(6));
+	e = new Assign(Location::regOf(24), new Const(6));
 	e->setNumber(2);
 	e->setProc(proc);
 	rtl->appendStmt(e);
-	e = new Assign(Location::regOf(28),
-				  Location::regOf(24));
+	e = new Assign(Location::regOf(28), Location::regOf(24));
 	e->setNumber(3);
 	e->setProc(proc);
 	rtl->appendStmt(e);
@@ -408,8 +407,9 @@ void StatementTest::testUseOverKill () {
 void StatementTest::testUseOverBB () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -424,8 +424,7 @@ void StatementTest::testUseOverBB () {
 	a->setNumber(1);
 	a->setProc(proc);
 	rtl->appendStmt(a);
-	a = new Assign(Location::regOf(24),
-					 new Const(6));
+	a = new Assign(Location::regOf(24), new Const(6));
 	a->setNumber(2);
 	a->setProc(proc);
 	rtl->appendStmt(a);
@@ -433,8 +432,7 @@ void StatementTest::testUseOverBB () {
 	PBB first = cfg->newBB(pRtls, FALL, 1);
 	pRtls = new std::list<RTL*>();
 	rtl = new RTL();
-	a = new Assign(Location::regOf(28),
-				  Location::regOf(24));
+	a = new Assign(Location::regOf(28), Location::regOf(24));
 	a->setNumber(3);
 	a->setProc(proc);
 	rtl->appendStmt(a);
@@ -479,8 +477,9 @@ void StatementTest::testUseOverBB () {
 void StatementTest::testUseKill () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -490,14 +489,14 @@ void StatementTest::testUseKill () {
 	Cfg *cfg = proc->getCFG();
 	std::list<RTL*>* pRtls = new std::list<RTL*>();
 	RTL *rtl = new RTL();
-	Assign *a = new Assign(Location::regOf(24),
-					 new Const(5));
+	Assign *a = new Assign(Location::regOf(24), new Const(5));
 	a->setNumber(1);
 	a->setProc(proc);
 	rtl->appendStmt(a);
 	a = new Assign(Location::regOf(24),
-			  new Binary(opPlus, Location::regOf(24),
-							 new Const(1)));
+			new Binary(opPlus,
+				Location::regOf(24),
+				new Const(1)));
 	a->setNumber(2);
 	a->setProc(proc);
 	rtl->appendStmt(a);
@@ -543,8 +542,9 @@ void StatementTest::testUseKill () {
 void StatementTest::testEndlessLoop () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -565,8 +565,9 @@ void StatementTest::testEndlessLoop () {
 	rtl = new RTL();
 	// r[24] := r[24] + 1
 	e = new Assign(Location::regOf(24),
-			  new Binary(opPlus, Location::regOf(24),
-							 new Const(1)));
+			new Binary(opPlus,
+				Location::regOf(24),
+				new Const(1)));
 	e->setProc(proc);
 	rtl->appendStmt(e);
 	pRtls->push_back(rtl);
@@ -719,8 +720,9 @@ void StatementTest::testWildLocationSet () {
 void StatementTest::testRecursion () {
 	// create Prog
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENTIUM);	// Don't actually use it
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENTIUM);	// Don't actually use it
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	// We need a Prog object with a pBF (for getEarlyParamExp())
 	prog->setFrontEnd(pFE);
 	// create UserProc
@@ -1311,8 +1313,9 @@ void StatementTest::testSubscriptVars () {
  *============================================================================*/
 void StatementTest::testBypass () {
 	Prog* prog = new Prog;
-	BinaryFile *pBF = BinaryFileFactory::Load(GLOBAL1_PENTIUM);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(GLOBAL1_PENTIUM);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog, true);				// Decode main
@@ -1366,6 +1369,7 @@ void StatementTest::testBypass () {
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 #endif
+	delete pFE;
 }
 
 /*==============================================================================

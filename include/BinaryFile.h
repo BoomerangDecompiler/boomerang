@@ -14,40 +14,8 @@
 */
 
 /* $Revision$
- * This class attempts to provide a relatively machine independent
- * interface for programs that read binary files. For details on
- * usage, see the bintrans tex file (bintrans/tex/bintrans/loader.tex)
+ * This class attempts to provide a relatively machine independent interface for programs that read binary files.
  * Created by Mike, 97
- * 30 Jan 98 - Cristina
- *	removed definitions for TRUE and FALSE; moved them to driver.h.
- * 3 Feb 98 - Mike
- *	included unneeded <string> library to avoid linking problems.
- *		Whenever list and string are used, string should be included
- *		before list (at least with the gcc compiler). 
- * 25 Feb 98 - Cristina
- *	removed BOOL type as it's now defined in driver.h.
- * 3 Mar 98 - Cristina
- *	make use of global ADDRESS type instead of local ADDR definition.
- *	when the BinaryFile object is used on its own, a -DLOADER directive 
- *		needs to be specified at compilation time so that the type 
- *		definitions are effected.  If used as part of the uqbt project 
- *		(or any other project for that matter), the driver.h file should
- *		have the right type definitions.
- * 11 Mar 98 - Cristina	 
- *	replaced BOOL for bool type (C++'s), same for TRUE and FALSE.
- * 24 Mar 98 - Cristina: replaced driver include to global.h. 
- * 22 May 98 - Mike: Now uses its own global.h
- * 27 May 98 - Mike: Class called BinaryFile
- * 28 Apr 99 - Mike: Added GetSectionInfoByAddr()
- * 26 Sep 99 - Mike: GetSectionIndexByName now public
- * 27 Apr 00 - Mike: Added bNoTypeOK to GetAddressByName and GetSizeByName
- *				(the overridden classes have for some time). Fixes uqbtxx -s
- * 11 Feb 01 - Nathan: Added static getInstanceFor() to perform file magic
- * 22 Feb 01 - Nathan: Added a number of functions for use in runtime loading
- *				(vs translation loading)
- * 16 Mar 01 - Mike: Added LOADFMT_EXE
- * 31 Mar 01 - Mike: Moved NO_ADDRESS to global.h (and is now -1)
- * 16 Apr 01 - Brian: Moved definition of the LH macro to here.
  * 01 Aug 01 - Mike: Changed the definition of GetGlobalPointerInfo()
  * 10 Aug 01 - Mike: Added GetDynamicGlobalMap()
  */
@@ -129,15 +97,20 @@ enum LOAD_FMT {LOADFMT_ELF, LOADFMT_PE, LOADFMT_PALM, LOADFMT_PAR, LOADFMT_EXE, 
 enum MACHINE {MACHINE_PENTIUM, MACHINE_SPARC, MACHINE_HPRISC, MACHINE_PALM, MACHINE_PPC, MACHINE_ST20};
 
 class BinaryFileFactory {
+#ifdef _WIN32
+		HINSTANCE	hModule;
+#else
+		void*		dlHandle;		// Needed for UnLoading the library
+#endif
 public:
-	static BinaryFile *Load( const char *sName );
+		BinaryFile	*Load( const char *sName );
+		void		UnLoad();
 private:
 	/*
-	 * Perform simple magic on the file by the given name in order to
-	 * determine the appropriate type, and then return an instance of
-	 * the appropriate subclass.
+	 * Perform simple magic on the file by the given name in order to determine the appropriate type, and then return an
+	 * instance of the appropriate subclass.
 	 */
-	static BinaryFile *getInstanceFor(const char *sName);
+		BinaryFile	*getInstanceFor(const char *sName);
 };
 
 

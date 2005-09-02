@@ -87,7 +87,8 @@ void LoaderTest::testSparcLoad () {
     std::ostringstream ost;
 
     // Load SPARC hello world
-    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_SPARC);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(HELLO_SPARC);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -103,6 +104,7 @@ void LoaderTest::testSparcLoad () {
     std::string expected("Number of sections = 29\r\n\t"
         ".interp	.stab.indexstr");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	bff.UnLoad();
 }
 
 /*==============================================================================
@@ -113,7 +115,8 @@ void LoaderTest::testPentiumLoad () {
     std::ostringstream ost;
 
     // Load Pentium hello world
-    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_PENTIUM);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(HELLO_PENTIUM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -131,6 +134,7 @@ void LoaderTest::testPentiumLoad () {
 
 
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	bff.UnLoad();
 }
 
 /*==============================================================================
@@ -141,7 +145,8 @@ void LoaderTest::testHppaLoad () {
     std::ostringstream ost;
 
     // Load HPPA hello world
-    BinaryFile* pBF = BinaryFileFactory::Load(HELLO_HPPA);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(HELLO_HPPA);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -156,7 +161,7 @@ void LoaderTest::testHppaLoad () {
     std::string expected("Number of sections = 4\r\n"
         "$HEADER$	$TEXT$	$DATA$	$BSS$	");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	delete pBF;
+	bff.UnLoad();
 }
 
 /*==============================================================================
@@ -167,7 +172,8 @@ void LoaderTest::testPalmLoad () {
     std::ostringstream ost;
 
     // Load Palm Starter.prc
-    BinaryFile* pBF = BinaryFileFactory::Load(STARTER_PALM);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(STARTER_PALM);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -183,7 +189,7 @@ void LoaderTest::testPalmLoad () {
         "code1	MBAR1000	tFRM1000	Talt1001	"
         "data0	code0	tAIN1000	tver1000	");
     CPPUNIT_ASSERT_EQUAL(expected, ost.str());
-	delete pBF;
+	bff.UnLoad();
 }
 
 /*==============================================================================
@@ -194,7 +200,8 @@ void LoaderTest::testWinLoad () {
     std::ostringstream ost;
 
     // Load Windows program calc.exe
-    BinaryFile* pBF = BinaryFileFactory::Load(CALC_WINDOWS);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(CALC_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     int n;
     SectionInfo* si;
@@ -227,9 +234,10 @@ void LoaderTest::testWinLoad () {
     ADDRESS expectedAddr = 0x1292060;
     CPPUNIT_ASSERT_EQUAL(expectedAddr, a);
     pBF->UnLoad();
+	bff.UnLoad();
 
     // Test loading the "new style" exes, as found in winXP etc
-    pBF = BinaryFileFactory::Load(CALC_WINXP);
+    pBF = bff.Load(CALC_WINXP);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
 	std::ostringstream ost1;
@@ -238,9 +246,10 @@ void LoaderTest::testWinLoad () {
 	expected = "1001f51";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
+	bff.UnLoad();
 
     // Test loading the calc.exe found in Windows 2000 (more NT based)
-    pBF = BinaryFileFactory::Load(CALC_WIN2000);
+    pBF = bff.Load(CALC_WIN2000);
     CPPUNIT_ASSERT(pBF != NULL);
 	expected = "1001680";
     addr = pBF->GetMainEntryPoint();
@@ -249,9 +258,10 @@ void LoaderTest::testWinLoad () {
 	actual = ost2.str();
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
+	bff.UnLoad();
 
     // Test loading the lpq.exe program - console mode PE file
-    pBF = BinaryFileFactory::Load(LPQ_WINDOWS);
+    pBF = bff.Load(LPQ_WINDOWS);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
 	std::ostringstream ost3;
@@ -260,9 +270,10 @@ void LoaderTest::testWinLoad () {
 	expected = "18c1000";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
+	bff.UnLoad();
 
 	// Borland
-    pBF = BinaryFileFactory::Load(SWITCH_BORLAND);
+    pBF = bff.Load(SWITCH_BORLAND);
     CPPUNIT_ASSERT(pBF != NULL);
     addr = pBF->GetMainEntryPoint();
 	std::ostringstream ost4;
@@ -271,8 +282,7 @@ void LoaderTest::testWinLoad () {
 	expected = "401150";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
     pBF->UnLoad();
-
-	delete pBF;
+	bff.UnLoad();
 }
 
 /*==============================================================================

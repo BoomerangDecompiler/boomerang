@@ -1504,7 +1504,7 @@ extern "C" {
  * PARAMETERS:	  Same as the FrontEnd constructor
  * RETURNS:		  <N/A>
  *============================================================================*/
-SparcFrontEnd::SparcFrontEnd(BinaryFile *pBF, Prog* prog) : FrontEnd(pBF, prog) {
+SparcFrontEnd::SparcFrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : FrontEnd(pBF, prog, pbff) {
 	decoder = new SparcDecoder(prog);
 	nop_inst.numBytes = 0;			// So won't disturb coverage
 	nop_inst.type = NOP;

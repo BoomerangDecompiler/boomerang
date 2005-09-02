@@ -60,23 +60,25 @@
 /*==============================================================================
  * FUNCTION:	  FrontEnd::FrontEnd
  * OVERVIEW:	  Construct the FrontEnd object
- * PARAMETERS:	  prog: program being decoded
+ * PARAMETERS:	  pBF: pointer to the BinaryFile object (loader)
+ *				  prog: program being decoded
+ *				  pbff: pointer to a BinaryFileFactory object (so the library can be unloaded)
  * RETURNS:		  <N/a>
  *============================================================================*/
-FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog) : pBF(pBF), prog(prog)
+FrontEnd::FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) : pBF(pBF), pbff(pbff), prog(prog)
 {}
 
 // Static function to instantiate an appropriate concrete front end
-FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog) {
+FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff) {
 	switch(pBF->GetMachine()) {
 		case MACHINE_PENTIUM:
-			return new PentiumFrontEnd(pBF, prog);
+			return new PentiumFrontEnd(pBF, prog, pbff);
 		case MACHINE_SPARC:
-			return new SparcFrontEnd(pBF, prog);
+			return new SparcFrontEnd(pBF, prog, pbff);
 		case MACHINE_PPC:
-			return new PPCFrontEnd(pBF, prog);
+			return new PPCFrontEnd(pBF, prog, pbff);
 		case MACHINE_ST20:
-			return new ST20FrontEnd(pBF, prog);
+			return new ST20FrontEnd(pBF, prog, pbff);
 		default:
 			std::cerr << "Machine architecture not supported!\n";
 	}
@@ -84,13 +86,17 @@ FrontEnd* FrontEnd::instantiate(BinaryFile *pBF, Prog* prog) {
 }
 
 FrontEnd* FrontEnd::Load(const char *fname, Prog* prog) {
-	BinaryFile *pBF = BinaryFileFactory::Load(fname);
+	BinaryFileFactory* pbff = new BinaryFileFactory;
+	if (pbff == NULL) return NULL;
+	BinaryFile *pBF = pbff->Load(fname);
 	if (pBF == NULL) return NULL;
-	return instantiate(pBF, prog);
+	return instantiate(pBF, prog, pbff);
 }
 
 // destructor
 FrontEnd::~FrontEnd() {
+	if (pbff)
+		pbff->UnLoad();			// Unload the BinaryFile library with dlclose() or FreeLibrary()
 }
 
 const char *FrontEnd::getRegName(int idx) { 
@@ -105,15 +111,16 @@ bool FrontEnd::isWin32() {
 	return pBF->GetFormat() == LOADFMT_PE;
 }
 
+// FIXME: Is this ever used? Need to pass a real pbff?
 FrontEnd *FrontEnd::createById(std::string &str, BinaryFile *pBF, Prog* prog) {
 	if (str == "pentium")
-		return new PentiumFrontEnd(pBF, prog);
+		return new PentiumFrontEnd(pBF, prog, NULL);
 	if (str == "sparc")
-		return new SparcFrontEnd(pBF, prog);
+		return new SparcFrontEnd(pBF, prog, NULL);
 	if (str == "ppc")
-		return new PPCFrontEnd(pBF, prog);
+		return new PPCFrontEnd(pBF, prog, NULL);
 	if (str == "st20")
-		return new ST20FrontEnd(pBF, prog);
+		return new ST20FrontEnd(pBF, prog, NULL);
 	return NULL;
 }
 
@@ -784,6 +791,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				case STMT_ASSIGN:
 				case STMT_PHIASSIGN:
 				case STMT_IMPASSIGN:
+				case STMT_IMPREF:
 					// Do nothing
 					break;
 		

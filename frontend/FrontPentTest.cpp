@@ -74,13 +74,14 @@ void FrontPentTest::tearDown () {
 void FrontPentTest::test1 () {
 	std::ostringstream ost;
 
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	prog->setFrontEnd(pFE);
 
 	bool gotMain;
@@ -120,13 +121,14 @@ void FrontPentTest::test2() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog); 
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
 
 	std::ostringstream o1;
@@ -159,13 +161,14 @@ void FrontPentTest::test3() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_PENT);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog); 
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
 
 	std::ostringstream o1;
@@ -197,13 +200,14 @@ void FrontPentTest::testBranch() {
 	DecodeResult inst;
 	std::string expected;
 
-	BinaryFile *pBF = BinaryFileFactory::Load(BRANCH_PENT);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(BRANCH_PENT);
 	if (pBF == NULL)
 		pBF = new BinaryFileStub();
 	CPPUNIT_ASSERT(pBF != 0);
 	CPPUNIT_ASSERT(pBF->GetMachine() == MACHINE_PENTIUM);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog); 
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
 
 	// jne
@@ -240,10 +244,11 @@ void FrontPentTest::testBranch() {
 void FrontPentTest::testFindMain() {
 	// Test the algorithm for finding main, when there is a call to __libc_start_main
 	// Also tests the loader hack
-    BinaryFile* pBF = BinaryFileFactory::Load(FEDORA2_TRUE);
+	BinaryFileFactory bff;
+    BinaryFile* pBF = bff.Load(FEDORA2_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
 	Prog* prog = new Prog;
-	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog); 
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
 	bool found;
@@ -251,20 +256,22 @@ void FrontPentTest::testFindMain() {
 	ADDRESS expected = 0x8048b10;
     CPPUNIT_ASSERT_EQUAL(expected, addr);
 	pBF->Close();
+	bff.UnLoad();
 
-    pBF = BinaryFileFactory::Load(FEDORA3_TRUE);
+    pBF = bff.Load(FEDORA3_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
-	pFE = new PentiumFrontEnd(pBF, prog); 
+	pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
     addr = pFE->getMainEntryPoint(found);
 	expected = 0x8048c4a;
     CPPUNIT_ASSERT_EQUAL(expected, addr);
 	pBF->Close();
+	bff.UnLoad();
 
-    pBF = BinaryFileFactory::Load(SUSE_TRUE);
+    pBF = bff.Load(SUSE_TRUE);
     CPPUNIT_ASSERT(pBF != NULL);
-	pFE = new PentiumFrontEnd(pBF, prog); 
+	pFE = new PentiumFrontEnd(pBF, prog, &bff); 
 	prog->setFrontEnd(pFE);
     CPPUNIT_ASSERT(pFE != NULL);
     addr = pFE->getMainEntryPoint(found);
@@ -272,4 +279,5 @@ void FrontPentTest::testFindMain() {
     CPPUNIT_ASSERT_EQUAL(expected, addr);
 	pBF->Close();
 
+	delete pFE;
 }

@@ -69,10 +69,11 @@ void CfgTest::tearDown () {
 #define FRONTIER_THIRTEEN 0x080483b9
 
 void CfgTest::testDominators () {
-	BinaryFile *pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	Prog* prog = new Prog;
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
@@ -95,10 +96,10 @@ void CfgTest::testDominators () {
 	CPPUNIT_ASSERT(bb);
 
 	std::ostringstream expected, actual;
-  //expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " <<
-  //	  FRONTIER_TWELVE << " " << FRONTIER_FOUR << " ";
-	expected << std::hex << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " <<
-		FRONTIER_TWELVE << " " << FRONTIER_FIVE << " ";
+  //expected << std::hex << FRONTIER_FIVE << " " << FRONTIER_THIRTEEN << " " << FRONTIER_TWELVE << " " <<
+  //	FRONTIER_FOUR << " ";
+	expected << std::hex << FRONTIER_THIRTEEN << " " << FRONTIER_FOUR << " " << FRONTIER_TWELVE << " " <<
+		FRONTIER_FIVE << " ";
 	int n5 = df->pbbToNode(bb);
 	std::set<int>::iterator ii;
 	std::set<int>& DFset = df->getDF(n5);
@@ -122,10 +123,11 @@ void CfgTest::testDominators () {
 #define SEMI_M	0x80483e2
 
 void CfgTest::testSemiDominators () {
-	BinaryFile* pBF = BinaryFileFactory::Load(SEMI_PENTIUM);
+	BinaryFileFactory bff;
+	BinaryFile* pBF = bff.Load(SEMI_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	Prog* prog = new Prog;
-	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
@@ -164,6 +166,7 @@ void CfgTest::testSemiDominators () {
 	for (ii=DFset.begin(); ii != DFset.end(); ii++)
 		actual << std::hex << (unsigned)df->nodeToBB(*ii)->getLowAddr() << " ";
 	CPPUNIT_ASSERT_EQUAL(expected.str(), actual.str());
+	delete pFE;
 }
 
 /*==============================================================================
@@ -171,10 +174,11 @@ void CfgTest::testSemiDominators () {
  * OVERVIEW:		Test the placing of phi functions
  *============================================================================*/
 void CfgTest::testPlacePhi () {
-	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
+	BinaryFileFactory bff;
+	BinaryFile* pBF = bff.Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	Prog* prog = new Prog;
-	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
@@ -203,6 +207,7 @@ void CfgTest::testPlacePhi () {
 		ost << *ii << " ";
 	std::string expected("7 8 10 15 20 21 ");
 	CPPUNIT_ASSERT_EQUAL(expected, ost.str());
+	delete pFE;
 }
 
 /*==============================================================================
@@ -210,10 +215,11 @@ void CfgTest::testPlacePhi () {
  * OVERVIEW:		Test a case where a phi function is not needed
  *============================================================================*/
 void CfgTest::testPlacePhi2 () {
-	BinaryFile* pBF = BinaryFileFactory::Load(IFTHEN_PENTIUM);
+	BinaryFileFactory bff;
+	BinaryFile* pBF = bff.Load(IFTHEN_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	Prog* prog = new Prog;
-	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
@@ -261,6 +267,7 @@ void CfgTest::testPlacePhi2 () {
 		actual2 << *pp << " ";
 	CPPUNIT_ASSERT_EQUAL(expected, actual2.str());
 	delete e;
+	delete pFE;
 }
 
 /*==============================================================================
@@ -268,10 +275,11 @@ void CfgTest::testPlacePhi2 () {
  * OVERVIEW:		Test the renaming of variables
  *============================================================================*/
 void CfgTest::testRenameVars () {
-	BinaryFile* pBF = BinaryFileFactory::Load(FRONTIER_PENTIUM);
+	BinaryFileFactory bff;
+	BinaryFile* pBF = bff.Load(FRONTIER_PENTIUM);
 	CPPUNIT_ASSERT(pBF != 0);
 	Prog* prog = new Prog;
-	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog);
+	FrontEnd* pFE = new PentiumFrontEnd(pBF, prog, &bff);
 	Type::clearNamedTypes();
 	prog->setFrontEnd(pFE);
 	pFE->decode(prog);
@@ -290,4 +298,6 @@ void CfgTest::testRenameVars () {
 	df->renameBlockVars(pProc, 0, 1);		 // Block 0, mem depth 1
 
 	// MIKE: something missing here?
+
+	delete pFE;
 }

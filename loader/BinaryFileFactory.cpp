@@ -45,8 +45,7 @@ pBF->getTextLimits();
 // Declare a pointer to a constructor function; returns a BinaryFile*
 typedef BinaryFile* (*constructFcn)();
 
-BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
-{
+BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 	FILE *f;
 	unsigned char buf[64];
 	std::string libName;
@@ -110,7 +109,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	libName += ".so";
 #endif
 #endif
-	void* dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
+	dlHandle = dlopen(libName.c_str(), RTLD_LAZY);
 	if (dlHandle == NULL) {
 		fprintf( stderr, "Could not open dynamic loader library %s\n", libName.c_str());
 		fprintf( stderr, "%s\n", dlerror());
@@ -129,7 +128,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 #ifdef __MINGW32__
 	libName = "lib/lib" + libName;
 #endif
-	HMODULE hModule = LoadLibrary(libName.c_str());
+	hModule = LoadLibrary(libName.c_str());
 	if(hModule == NULL) {
 		int err = GetLastError();
 		fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);
@@ -154,4 +153,10 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName )
 	return res;
 }
 
-
+void BinaryFileFactory::UnLoad() {
+#ifdef _WIN32
+	FreeLibrary(hModule);
+#else
+	dlclose(dlHandle);					// Especially important for Mac OS X
+#endif
+}

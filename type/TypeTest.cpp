@@ -94,8 +94,9 @@ void TypeTest::testNotEqual () {
  * OVERVIEW:		Test type inequality
  *============================================================================*/
 void TypeTest::testCompound() {
-	BinaryFile *pBF = BinaryFileFactory::Load(HELLO_WINDOWS);
-	FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog);
+	BinaryFileFactory bff;
+	BinaryFile *pBF = bff.Load(HELLO_WINDOWS);
+	FrontEnd *pFE = new PentiumFrontEnd(pBF, new Prog, &bff);
 	Boomerang::get()->setLogger(new FileLogger());		// May try to output some messages to LOG
 	pFE->readLibraryCatalog();				// Read definitions
 
@@ -148,6 +149,8 @@ void TypeTest::testCompound() {
 	p = ty->asCompound()->getNameAtOffset((8 + 8)*8);
 	actual = p;
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	delete pFE;
 }
 
 /*==============================================================================
@@ -295,4 +298,21 @@ void TypeTest::testDataIntervalOverlaps() {
 	pdie = dim.find(0x100B);					// Check last
 	actual = pdie->second.name;
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	// Already have an array of 3 ints at 0x1000. Put a new array completely before, then with only one word overlap
+	dim.addItem(0xF00, "newArray2", &at);
+	pdie = dim.find(0x1000);					// Shouyld still be newArray at 0x1000
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	pdie = dim.find(0xF00);
+	expected = "newArray2";
+	actual = pdie->second.name;
+	CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+	dim.addItem(0xFF8, "newArray3", &at);		// Should fail
+	pdie = dim.find(0xFF8);
+	unsigned ue = 0;							// Expect NULL
+	unsigned ua = (unsigned)pdie;
+	CPPUNIT_ASSERT_EQUAL(ue, ua);
 }
