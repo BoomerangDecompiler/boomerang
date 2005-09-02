@@ -13,6 +13,7 @@
 # 01 Oct 03 - Mike: Changed rows 3 & 4 of esc2 map to rows 2 & 3
 # 20 Jul 04 - Mike: Swapped Fint .I16 and .I32
 # 19 Oct 04 - Mike: d now signed in Base8 addressing mode (NOTE: still comes out unsigned!)
+# 02 Sep 05 - Mike: POP.Ev^ov uses Eaddr not Mem (mod=3 allowed)
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -467,7 +468,7 @@ OUT.DX.AL
 OUT.DX.eAX^ov       is  ov; OUT.DX.eAX
 OUTSB
 OUTSv^ov is ov; OUTSv
-POP.Ev^ov   Mem   is  ov; POP.Ev; Mem & reg_opcode = 0 ...
+POP.Ev^ov   Eaddr is  ov; POP.Ev; Eaddr & reg_opcode = 0 ...
 POP^ov      r32   is  ov; POP & r32
    constructors
 POPs
