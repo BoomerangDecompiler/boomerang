@@ -20,7 +20,7 @@ class CallStatement;
 class ST20FrontEnd : public FrontEnd
 {
 public:
-  ST20FrontEnd(BinaryFile *pBF, Prog* prog);
+  ST20FrontEnd(BinaryFile *pBF, Prog* prog, BinaryFileFactory* pbff);
 	/**
 	 * Virtual destructor.
 	 */
