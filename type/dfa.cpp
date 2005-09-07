@@ -32,9 +32,11 @@
 
 static int nextUnionNumber = 0;
 
+#ifndef max
 int max(int a, int b) {		// Faster to write than to find the #include for
 	return a>b ? a : b;
 }
+#endif
 
 #define DFA_ITER_LIMIT 20
 
