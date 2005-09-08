@@ -18,7 +18,7 @@
 #include "PalmBinaryFile.h"
 #include "HpSomBinaryFile.h"
 #include "ExeBinaryFile.h"
-#include "config.h"				// For HOST_OSX etc
+#include "config.h"				// For UNDERSCORE_NEEDED etc
 
 #include <iostream>
 
@@ -117,7 +117,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 		return NULL;
 	}
 	// Use the handle to find the "construct" function
-#if HOST_OSX
+#if UNDERSCORE_NEEDED
 #define UNDERSCORE "_"
 #else
 #define UNDERSCORE

@@ -38,6 +38,9 @@ HOST_WINDOWS = @HOST_WINDOWS@
 # HOST_OSX is true if the hostOS is OS X (*-apple-darwin*)
 HOST_OSX = @HOST_OSX@
 
+# UNDERSCORE_NEEDED is true if the host is OS X 10.2
+UNSERSCORE_NEEDED = @UNDERSCORE_NEEDED@
+
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 

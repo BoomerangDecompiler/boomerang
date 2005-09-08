@@ -40,6 +40,9 @@ HOST_WINDOWS = @HOST_WINDOWS@
 # HOST_OSX is true if the host OS is Mac OS X
 HOST_OSX = @HOST_OSX@
 
+# UNDERSCORE_NEEDED is true if an underscore is needed in front of names for dlopen()
+UNDERSORE_NEEDED = @UNDERSORE_NEEDED@
+
 # LDL is -ldl if needed (Windows does not)
 # EXEEXT is .exe for Windows
 # DLLEXT is .dll for Windows and .so otherwise 

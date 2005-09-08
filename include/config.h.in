@@ -3,8 +3,17 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `cppunit' library (-lcppunit). */
+#undef HAVE_LIBCPPUNIT
+
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
+
 /* Define to 1 if you have the `expat' library (-lexpat). */
 #undef HAVE_LIBEXPAT
+
+/* Define to 1 if you have the `gc' library (-lgc). */
+#undef HAVE_LIBGC
 
 /* Define to 1 if you have the `stdc++' library (-lstdc++). */
 #undef HAVE_LIBSTDC__
@@ -66,6 +75,9 @@
 /* The size of a `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
+/* The size of a `int *', as computed by sizeof. */
+#undef SIZEOF_INT_P
+
 /* The size of a `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
@@ -77,6 +89,10 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Non zero if underscore needed at start of library function names in
+   dlopen() */
+#undef UNDERSCORE_NEEDED
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */

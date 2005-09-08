@@ -104,6 +104,19 @@ case $host in
 esac
 AC_MSG_RESULT( $HOST_OSX )
 
+AC_MSG_CHECKING( [if host is OS X 10.2] )
+case $host in
+ *-apple-darwin6*)
+   UNDERSCORE_NEEDED=yes
+   AC_DEFINE(UNDERSCORE_NEEDED, 1, [Non zero if underscore needed at start of library function names in dlopen()])
+   ;;
+ *)
+   UNDERSCORE_NEEDED=no
+   AC_DEFINE(UNDERSCORE_NEEDED, 0, [Non zero if underscore needed at start of library function names in dlopen()])
+   ;;
+esac
+AC_MSG_RESULT( $UNDERSCORE_NEEDED )
+
 
 
 
@@ -322,6 +335,7 @@ AC_SUBST(LIBDIR)
 AC_SUBST(HOST_GNU_LD)
 AC_SUBST(HOST_WINDOWS)
 AC_SUBST(HOST_OSX)
+AC_SUBST(UNDERSCORE_NEEDED)
 AC_SUBST(HOST_CYGWIN)
 
 
