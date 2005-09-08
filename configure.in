@@ -144,6 +144,7 @@ AC_CHECK_LIB(expat, XML_ExpatVersion, ,
 			[/usr/lib:/usr/local/lib:/opt/local/lib:/usr/apache2/lib:/opt/apache2/lib:/sw/lib])]
 		if test "${EXPAT_PATH}" != :; then
 			[AC_MSG_WARN(Found libexpat.a; linking to lib/)]
+			mkdir lib 2>/dev/null
 			ln -s ${EXPAT_PATH} lib
         else
 			[AC_MSG_WARN()]
@@ -183,6 +184,7 @@ AC_CHECK_LIB(gc, GC_malloc, ,
 		[AC_PATH_PROG(GC_PATH, libgc.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${GC_PATH}" != :; then
 			[AC_MSG_WARN(Found libgc.a; linking to lib/)]
+			mkdir lib 2>/dev/null
 			ln -s ${GC_PATH} lib
         else
 			[AC_MSG_WARN()]
@@ -215,6 +217,7 @@ AC_CHECK_LIB(dl, dlopen, ,
 		[AC_PATH_PROG(DL_PATH, libdl.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${DL_PATH}" != :; then
 			[AC_MSG_WARN(Found libdl.a; linking to lib/)]
+			mkdir lib 2>/dev/null
 			ln -s ${DL_PATH} lib
         else
 			[AC_MSG_WARN()]
@@ -250,6 +253,7 @@ AC_CHECK_LIB(cppunit, _ZN7CppUnit8TestCase3runEv, ,
 		[AC_PATH_PROG(CPPUNIT_PATH, libcppunit.a, :, [/usr/lib:/usr/local/lib:/opt/local/lib:/sw/lib])]
 		if test "${CPPUNIT_PATH}" != :; then
 			[AC_MSG_WARN(Found libcppunit.a; linking to lib/)]
+			mkdir lib 2>/dev/null
 			ln -s ${CPPUNIT_PATH} lib
         else
 			[AC_MSG_NOTICE()]
