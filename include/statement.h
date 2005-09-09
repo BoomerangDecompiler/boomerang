@@ -27,18 +27,20 @@
  * 15 Mar 05 - Mike: Removed implicit arguments; replaced with DefCollector
  * 11 Apr 05 - Mike: Added RetStatement, DefineAll
  * 26 Apr 05 - Mike: Moved class Return here from signature.h
+ * 12 Aug 05 - Mike: Added ImpRefStatement
  */
 
 #ifndef _STATEMENT_H_
 #define _STATEMENT_H_
 
-/* Class hierarchy:   Statement*			(* = abstract)
+/* Class hierarchy:   Statement@			(@ = abstract)
                     __/   |   \________
                    /      |            \
-       GotoStatement  Assignment*      ReturnStatement
- BranchStatement_/     /  | | \
- CaseStatement__/  Assign | | BoolAssign
- CallStatement_/  PhiAssign ImplicitAssign
+       GotoStatement  TypingStatement@  ReturnStatement
+ BranchStatement_/     /          \ 
+ CaseStatement__/  Assignment@   ImpRefStatement
+ CallStatement_/  /   /    \ \________
+       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
 */
 
 #include <vector>
@@ -97,6 +99,7 @@ enum STMT_KIND {
 	STMT_BRANCH,
 	STMT_GOTO,
 	STMT_CASE,					// Represent  a switch statement
+	STMT_IMPREF
 };
 
 /*==============================================================================
@@ -149,7 +152,7 @@ virtual				~Statement() { }
 
 		// get/set the enclosing BB, etc
 		PBB			getBB() { return pbb; }
-		void		setBB(PBB bb) { pbb = bb; }
+		void		setBB(PBB bb) {pbb = bb; }
 
 //		bool		operator==(Statement& o);
 		// Get and set *enclosing* proc (not destination proc)
@@ -186,6 +189,7 @@ virtual bool		isDefinition() = 0;
 		// true if is a null statement
 		bool		isNullStatement();
 
+virtual	bool		isTyping() {return false;}		// Return true if a TypingStatement
 		// true if this statement is a standard assign
 		bool		isAssign() {return kind == STMT_ASSIGN;}
 		// true if this statement is a any kind of assignment
@@ -197,6 +201,8 @@ virtual bool		isDefinition() = 0;
 		bool		isImplicit() {return kind == STMT_IMPASSIGN;}
 		// true	if this statment is a flags assignment
 		bool		isFlagAssgn();
+		// true of this statement is an implicit reference
+		bool		isImpRef() {return kind == STMT_IMPREF;}
 
 virtual bool		isGoto() { return kind == STMT_GOTO; }
 virtual bool		isBranch() { return kind == STMT_BRANCH; }
@@ -344,15 +350,24 @@ std::ostream& operator<<(std::ostream& os, Statement* p);
 std::ostream& operator<<(std::ostream& os, StatementSet* p);
 std::ostream& operator<<(std::ostream& os, LocationSet* p);
 
-
-
 /*==============================================================================
- * Assignment is an abstract subclass of Statement, holding a location and a
- * Type
+ * TypingStatement is an abstract subclass of Statement. It has a type, representing the type of a reference or an
+ * assignment
  *============================================================================*/
-class Assignment : public Statement {
+class TypingStatement : public Statement {
 protected:
-		Type*		type;		// The type for this assignment
+		Type*		type;		// The type for this assignment or reference
+public:
+					TypingStatement(Type* ty);		// Constructor
+
+virtual	bool		isTyping() {return true;}
+};
+
+/*==========================================================================
+ * Assignment is an abstract subclass of TypingStatement, holding a location
+ *==========================================================================*/
+class Assignment : public TypingStatement {
+protected:
 		Exp*		lhs;		// The left hand side
 public:
 		// Constructor, subexpression
@@ -376,7 +391,7 @@ virtual bool		accept(StmtExpVisitor* visitor) = 0;
 virtual bool		accept(StmtModifier* visitor) = 0;
 virtual bool		accept(StmtPartModifier* visitor) = 0;
 
-		void		print(std::ostream& os);
+virtual	void		print(std::ostream& os);
 virtual void		printCompact(std::ostream& os) = 0;	// Without statement number
 
 virtual Type*		getTypeFor(Exp* e); 				// Get the type for this assignment. It should define e
@@ -522,17 +537,14 @@ virtual bool		doReplaceRef(Exp* from, Exp* to);
 };	// class Assign
 
 /*==============================================================================
- * PhiExp is a subclass of Assignment, having a left hand side, and a
- * StatementVec with the references.
+ * PhiAssign is a subclass of Assignment, having a left hand side, and a StatementVec with the references.
  * Example:
  * m[1000] := phi{3 7 10}	m[1000] is defined at statements 3, 7, and 10
  * m[r28{3}+4] := phi{2 8}	the memof is defined at 2 and 8, and
  * the r28 is defined at 3. The integers are really pointers to statements,
  * printed as the statement number for compactness
- * NOTE: Although the left hand side is nearly always redundant, it is essential
- * in at least one circumstance: when finding locations used by some statement,
- * and the reference is to a CallStatement returning multiple locations.
- * Besides, the lhs gives it useful common functionality with other Assignments
+ * NOTE: Although the left hand side is nearly always redundant, it is essential in at least one circumstance: when
+ * finding locations used by some statement, and the reference is to a CallStatement returning multiple locations.
  *============================================================================*/
 // The below could almost be a RefExp. But we could not at one stage #include exp.h as part of statement,h; that's since
 // changed so it is now possible, and arguably desirable.  However, it's convenient to have these members public
@@ -725,6 +737,42 @@ virtual void		dfaTypeAnalysis(bool& ch);
 
 		friend class XMLProgParser;
 };	// class BoolAssign
+
+// An implicit reference has only an expression. It holds the type information that results from taking the address
+// of a location. Note that dataflow can't decide which local variable (in the decompiled output) is being taken,
+// if there is more than one local variable sharing the same memory address (separated then by type).
+class ImpRefStatement : public TypingStatement {
+		Exp*		addressExp;			// The expression representing the address of the location referenced
+public:
+		// Constructor, subexpression
+					ImpRefStatement(Type* ty, Exp* a) : TypingStatement(ty), addressExp(a) {
+						kind = STMT_IMPREF;
+					}
+		Exp*		getAddressExp() {return addressExp;}
+		Type*		getType() {return type;}
+		void		meetWith(Type* ty, bool& ch);		// Meet the internal type with ty. Set ch if a change
+
+		// Virtuals
+virtual	Statement*	clone();
+virtual	bool		accept(StmtVisitor*);
+virtual	bool		accept(StmtExpVisitor*);
+virtual	bool		accept(StmtModifier*);
+virtual	bool		accept(StmtPartModifier*);
+virtual	bool		isDefinition() {return false;}
+virtual	bool		usesExp(Exp*) {return false;}
+virtual	bool		processConstants(Prog*);
+virtual	bool		search(Exp*, Exp*&);
+virtual	bool		searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
+virtual	bool		searchAndReplace(Exp*, Exp*);
+virtual	void		fromSSAform(igraph&) {}
+virtual	void		generateCode(HLLCode*, BasicBlock*, int) {}
+virtual	void		simplify();
+virtual	void		regReplace(UserProc*);
+virtual	bool		doReplaceRef(Exp*, Exp*);
+virtual	void		print(std::ostream& os);
+
+};
+
 
 /*=============================================================================
  * GotoStatement has just one member variable, an expression representing the

@@ -1448,6 +1448,7 @@ void CallStatement::setArguments(StatementList& args) {
 	StatementList::iterator ll;
 	for (ll = arguments.begin(); ll != arguments.end(); ++ll) {
 		((Assign*)*ll)->setProc(proc);
+		((Assign*)*ll)->setBB(pbb);
 #if 0		// For ad-hoc TA: (not even correct now)
 		Location *l = dynamic_cast<Location*>(*ll);
 		if (l) {
@@ -1487,6 +1488,7 @@ void CallStatement::setSigArguments() {
 		}
 		Assign* as = new Assign(signature->getParamType(i), e->clone(), e->clone());
 		as->setProc(proc);
+		as->setBB(pbb);
 		as->setNumber(number);		// So fromSSAform will work later
 		arguments.append(as);
 	}
@@ -1498,6 +1500,7 @@ void CallStatement::setSigArguments() {
 			Assign* as = new Assign(new VoidType, e->clone(), e->clone());
 			arguments.append(as);
 			as->setProc(proc);
+			as->setBB(pbb);
 		}
 	}
 #endif
@@ -1885,6 +1888,7 @@ bool CallStatement::convertToDirect() {
 			Exp* a = sig->getParamExp(i);
 			Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
 			as->setProc(proc);
+			as->setBB(pbb);
 			arguments.append(as);
 		}
 		// std::cerr << "Step 3a: arguments now: ";
@@ -2003,6 +2007,7 @@ void CallStatement::setNumArguments(int n) {
 		Exp* a = procDest->getSignature()->getArgumentExp(i);
 		Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
 		as->setProc(proc);
+		as->setBB(pbb);
 		arguments.append(as);
 	}
 }
@@ -2272,7 +2277,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 	else if (name == "sprintf" || name == "fprintf" || name == "sscanf") format = 1;
 	else return false;
 	if (VERBOSE)
-		LOG << "Ellipsis processing for " << name << "\n";
+		LOG << "ellipsis processing for " << name << "\n";
 	char* formatStr = NULL;
 	Exp* formatExp = getArgumentExp(format);
 	// We sometimes see a[m[blah{...}]]
@@ -2400,6 +2405,7 @@ Assign* CallStatement::makeArgAssign(Type* ty, Exp* e) {
 	}
 	Assign* as = new Assign(ty, lhs, rhs);
 	as->setProc(proc);
+	as->setBB(pbb);
 	// It may need implicit converting (e.g. sp{-} -> sp{0})
 	Cfg* cfg = proc->getCFG();
 	if (cfg->implicitsDone()) {
@@ -2785,8 +2791,8 @@ void BoolAssign::setLeftFromList(std::list<Statement*>* stmts) {
 // Assign //
 //	//	//	//
 
-Assignment::Assignment(Exp* lhs) : type(new VoidType), lhs(lhs) {}
-Assignment::Assignment(Type* ty, Exp* lhs) : type(ty), lhs(lhs) {
+Assignment::Assignment(Exp* lhs) : TypingStatement(new VoidType), lhs(lhs) {}
+Assignment::Assignment(Type* ty, Exp* lhs) : TypingStatement(ty), lhs(lhs) {
 	if (ADHOC_TYPE_ANALYSIS) {
 		Location* loc = dynamic_cast<Location*>(lhs);
 		if (loc)					// For example: could be %CF! Ugh.
@@ -4286,6 +4292,7 @@ void ReturnStatement::updateModifieds() {
 		}
 		if (!found) {
 			as->setProc(proc);							// Comes from the Collector
+			as->setBB(pbb);
 			oldMods.append(as->clone());
 		}
 	}
@@ -4346,6 +4353,7 @@ void ReturnStatement::updateReturns() {
 		if (!found) {
 			Assign* as = new Assign(loc->clone(), loc->clone());
 			as->setProc(proc);
+			as->setBB(pbb);
 			oldRets.append(as);
 		}
 	}
@@ -4422,6 +4430,7 @@ void CallStatement::updateDefines() {
 			if (!oldDefines.existsOnLeft(loc)) {
 				ImplicitAssign* as = new ImplicitAssign(loc->clone());
 				as->setProc(proc);
+				as->setBB(pbb);
 				oldDefines.append(as);
 			}
 		}
@@ -4621,6 +4630,7 @@ void CallStatement::updateArguments() {
 			Exp* rhs = asp.localise(loc->clone());
 			Assign* as = new Assign(asp.curType(loc), loc->clone(), rhs);
 			as->setProc(proc);
+			as->setBB(pbb);
 			oldArguments.append(as);
 		}
 	}
@@ -4822,4 +4832,74 @@ void ReturnStatement::removeModified(Exp* loc) {
 
 void CallStatement::addDefine(ImplicitAssign* as) {
 	defines.append(as);
+}
+
+TypingStatement::TypingStatement(Type* ty) : type(ty) {
+}
+
+void ImpRefStatement::print(std::ostream& os) {
+	os << "     *";				// No statement number
+	os << type << "* IMP REF " << addressExp;
+}
+
+void ImpRefStatement::meetWith(Type* ty, bool& ch) {
+	type = type->meetWith(ty, ch);
+}
+
+Statement* ImpRefStatement::clone() {
+	return new ImpRefStatement(type->clone(), addressExp->clone());
+}
+bool ImpRefStatement::accept(StmtVisitor* visitor) {
+	return visitor->visit(this);
+}
+bool	ImpRefStatement::accept(StmtExpVisitor* v) {
+	bool override;
+	bool ret = v->visit(this, override);
+	if (override)
+		return ret;
+	if (ret) ret = addressExp->accept(v->ev);
+	return ret;
+}
+bool	ImpRefStatement::accept(StmtModifier* v) {
+	bool recur;
+	v->visit(this, recur);
+	v->mod->clearMod();
+	if (recur) addressExp = addressExp->accept(v->mod);
+	if (VERBOSE && v->mod->isMod())
+		LOG << "ImplicitRef changed: now " << this << "\n";
+	return true;
+}
+bool	ImpRefStatement::accept(StmtPartModifier* v) {
+	bool recur;
+	v->visit(this, recur);
+	v->mod->clearMod();
+	if (recur) addressExp = addressExp->accept(v->mod);
+	if (VERBOSE && v->mod->isMod())
+		LOG << "ImplicitRef changed: now " << this << "\n";
+	return true;
+}
+bool	ImpRefStatement::processConstants(Prog* prog) { return false;}
+bool	ImpRefStatement::search(Exp* search, Exp*& result) {
+	result = NULL;
+	return addressExp->search(search, result);
+}
+bool	ImpRefStatement::searchAll(Exp* search, std::list<Exp*, std::allocator<Exp*> >& result) {
+	return addressExp->searchAll(search, result);
+}
+bool	ImpRefStatement::searchAndReplace(Exp* search, Exp* replace) {
+	bool change = false;
+	addressExp = addressExp->searchReplaceAll(search, replace, change);
+	return change;
+}
+void	ImpRefStatement::simplify() {addressExp = addressExp->simplify();}
+void	ImpRefStatement::regReplace(UserProc* proc) {
+	std::list<Exp**> li;
+	Exp::doSearch(regOfWildRef, addressExp, li, false);
+	proc->regReplaceList(li);
+}
+bool	ImpRefStatement::doReplaceRef(Exp* from, Exp* to) {
+	bool change;
+	addressExp = addressExp->searchReplaceAll(from, to, change);
+	addressExp = addressExp->simplify();
+	return false;
 }
