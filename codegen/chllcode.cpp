@@ -633,7 +633,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				Type* tt = ((TypedExp*)u)->getType();
 				Exp* b = u->getSubExp1();
 				if (dynamic_cast<PointerType*>(tt)) {
-					char* sym = m_proc->lookupSym(b);
+					char* sym = m_proc->lookupSym(Location::memOf(b));
 					if (sym) {
 						openParen(str, curPrec, PREC_UNARY);
 						str << "&" << sym;
