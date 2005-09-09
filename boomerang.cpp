@@ -912,7 +912,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
  	//prog->analyse();
 
 	if (generateSymbols) {
-		prog->printSymbols();
+		prog->printSymbolsToFile();
 	}
 	if (generateCallGraph) {
 		prog->printCallGraph();
