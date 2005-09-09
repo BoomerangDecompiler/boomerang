@@ -1983,7 +1983,7 @@ void UserProc::assignProcsToCalls()
     			}
     			call->setDestProc(p);
     		}
-    		call->setSigArguments();
+    		// call->setSigArguments();		// But BBs not set yet; will get done in initStatements()
     	}
 
 		pBB = cfg->getNextBB(it);
@@ -2856,6 +2856,7 @@ Exp *UserProc::getSymbolExp(Exp *le, Type *ty, bool lastPass) {
 			Type *ty = locals[name];
 			assert(ty);
 			if (nty && !(*ty == *nty) && nty->getSize() >= ty->getSize()) {
+				// FIXME: should this be a type meeting?
 				if (DEBUG_TA)
 					LOG << "getSymbolExp: updating type of " << name.c_str() << " to " << nty->getCtype() << "\n";
 				ty = nty;
@@ -5056,3 +5057,66 @@ void UserProc::copyDecodedICTs() {
 	}
 }
 
+// Find or insert a new implicit reference just before statement s, for address expression a with type t.
+// Meet types if necessary
+void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
+	PBB bb = s->getBB();			// Get s' enclosing BB
+	std::list<RTL*> *rtls = bb->getRTLs();
+	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
+		std::list<Statement*>& stmts = (*rit)->getList();
+		RTL::iterator it, itForS;
+		RTL* rtlForS;
+		for (it = stmts.begin(); it != stmts.end(); it++) {
+			if (*it == s ||
+					// Not the searched for statement. But if it is a call or return statement, it will be the last, and
+					// s must be a substatement (e.g. argument, return, define, etc).
+					((*it)->isCall() || (*it)->isReturn())) {
+				// Found s. Search preceeding statements for an implicit reference with address a
+				itForS = it;
+				rtlForS = *rit;
+				bool found = false;
+				bool searchEarlierRtls = true;
+				while (it != stmts.begin()) {
+					ImpRefStatement* irs = (ImpRefStatement*) *--it;
+					if (!irs->isImpRef()) {
+						searchEarlierRtls = false;
+						break;
+					}
+					if (*irs->getAddressExp() == *a) {
+						found = true;
+						searchEarlierRtls = false;
+						break;
+					}
+				}
+				while (searchEarlierRtls && rit != rtls->begin()) {
+					for (std::list<RTL*>::reverse_iterator revit = rtls->rbegin(); revit != rtls->rend(); ++revit) {
+						std::list<Statement*>& stmts2 = (*revit)->getList();
+						it = stmts2.end();
+						while (it != stmts2.begin()) {
+							ImpRefStatement* irs = (ImpRefStatement*) *--it;
+							if (!irs->isImpRef()) {
+								searchEarlierRtls = false;
+								break;
+							}
+							if (*irs->getAddressExp() == *a) {
+								found = true;
+								searchEarlierRtls = false;
+								break;
+							}
+						}
+					}
+				}
+				if (found) {
+					ImpRefStatement* irs = (ImpRefStatement*)*it;
+					bool ch;
+					irs->meetWith(ty, ch);
+				} else {
+					ImpRefStatement* irs = new ImpRefStatement(ty, a);
+					rtlForS->insertStmt(irs, itForS);
+				}
+				return;
+			}
+		}
+	}
+	assert(0);				// Could not find s withing its enclosing BB
+}
