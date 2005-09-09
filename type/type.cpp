@@ -412,12 +412,14 @@ Type *Type::parseType(const char *str)
  * RETURNS:			this == other
  *============================================================================*/
 bool IntegerType::operator==(const Type& other) const {
+	IntegerType& otherInt = (IntegerType&) other;
 	return other.isInteger() && 
 		// Note: zero size matches any other size (wild, or unknown, size)
-		(size==0 || ((IntegerType&)other).size==0 ||
-		  size == ((IntegerType&)other).size) &&
-		(signedness < 0 || ((IntegerType&)other).signedness < 0 ||
-		  signedness == ((IntegerType&)other).signedness);
+		(size == 0 || otherInt.size == 0 || size == otherInt.size) &&
+		// Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
+		( signedness < 0	&& otherInt.signedness < 0 ||
+		  signedness == 0	&& otherInt.signedness == 0 ||
+		  signedness > 0	&& otherInt.signedness > 0);
 }
 
 bool FloatType::operator==(const Type& other) const {
@@ -870,6 +872,10 @@ const char* Type::prints() {
 	return getCtype(false);			// For debugging
 }
 
+void Type::dump() {
+	std::cerr << getCtype(false);	// For debugging
+}
+
 std::map<std::string, Type*> Type::namedTypes;
 
 // named type accessors
@@ -1105,6 +1111,7 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 		case eBoolean:	os << 'b'; break;
 		case eCompound:	os << "struct"; break; 
 		case eUnion:	os << "union"; break;
+		//case eUnion:	os << t->getCtype(); break;
 		case eFunc:		os << "func"; break;
 		case eArray:	os << '[' << t->asArray()->getBaseType() << ']'; break;
 		case eNamed:	os << t->asNamed()->getName(); break;
@@ -1114,6 +1121,7 @@ std::ostream& operator<<(std::ostream& os, Type* t) {
 	return os;
 }
 
+// FIXME: aren't mergeWith and meetWith really the same thing?
 // Merge this IntegerType with another
 Type* IntegerType::mergeWith(Type* other) {
 	if (*this == *other) return this;
@@ -1402,56 +1410,72 @@ Type* Type::newIntegerLikeType(int size, int signedness) {
 	return new IntegerType(size, signedness);
 }
 
-DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
+// Find the entry that overlaps with addr. If none, return end(). We have to use upper_bound and decrement the iterator,
+// because we might want an entry that starts earlier than addr yet still overlaps it
+DataIntervalMap::iterator DataIntervalMap::find_it(ADDRESS addr) {
 	iterator it = dimap.upper_bound(addr);	// Find the first item strictly greater than addr
 	if (it == dimap.begin())
-		return NULL;						// None <= this address, so no overlap possible
+		return dimap.end();					// None <= this address, so no overlap possible
 	it--;									// If any item overlaps, it is this one
-	if (it->first + it->second.size > addr)
+	if (it->first <= addr && it->first+it->second.size > addr)
 		// This is the one that overlaps with addr
-		return &*it;
-	return NULL;
+		return it;
+	return dimap.end();
+}
+
+DataIntervalEntry* DataIntervalMap::find(ADDRESS addr) {
+	iterator it = find_it(addr);
+	if (it == dimap.end())
+		return NULL;
+	return &*it;
+}
+
+bool DataIntervalMap::isClear(ADDRESS addr, unsigned size) {
+	iterator it = dimap.upper_bound(addr+size-1);	// Find the first item strictly greater than address of last byte
+	if (it == dimap.begin())
+		return true;						// None <= this address, so no overlap possible
+	it--;									// If any item overlaps, it is this one
+	// Make sure the previous item ends before this one will start
+	return (it->first + it->second.size <= addr);
 }
 
 // With the forced parameter: are we forcing the name, the type, or always both?
 void DataIntervalMap::addItem(ADDRESS addr, char* name, Type* ty, bool forced /* = false */) {
 	DataIntervalEntry* pdie = find(addr);
 	if (pdie == NULL) {
-		DataInterval* pdi = &dimap[addr];	// Add a new entry
-		pdi->size = ty->getBytes();
-		pdi->name = name;
-		pdi->type = ty;
-	} else {
-		// There are two basic cases, and an error if the two data types weave
-		if (pdie->first < addr) {
-			// The existing entry comes first. Make sure it ends last (possibly equal last)
-			if (pdie->first + pdie->second.size < addr+ty->getSize()/8) {
-				LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-					ty->getCtype() << " which weaves after " << pdie->second.name << " at " << pdie->first <<
-					" of type " << pdie->second.type->getCtype() << "\n";
-				return;
-			}
-			enterComponent(pdie, addr, name, ty, forced);
-		} else if (pdie->first == addr) {
-			// Could go either way, depending on where the data items end
-			unsigned endOfCurrent = pdie->first + pdie->second.size;
-			unsigned endOfNew = addr+ty->getSize()/8;
-			if (endOfCurrent < endOfNew)
-				replaceComponents(addr, name, ty, forced);
-			else if (endOfCurrent == endOfNew)
-				checkMatching(pdie, addr, name, ty, forced);		// Size match; check that new type matches old
-			else
-				enterComponent(pdie, addr, name, ty, forced);
-		} else {
-			// Old starts after new; check it also ends first
-			if (pdie->first + pdie->second.size > addr+ty->getSize()/8) {
-	            LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
-	                ty->getCtype() << " which weaves before " << pdie->second.name << " at " << pdie->first <<
-	                " of type " << pdie->second.type->getCtype() << "\n";
-	            return;
-	        }
-			replaceComponents(addr, name, ty, forced);
+		// Check that this new item is compatible with any items it overlaps with, and insert it
+		replaceComponents(addr, name, ty, forced);
+		return;
+	}
+	// There are two basic cases, and an error if the two data types weave
+	if (pdie->first < addr) {
+		// The existing entry comes first. Make sure it ends last (possibly equal last)
+		if (pdie->first + pdie->second.size < addr+ty->getSize()/8) {
+			LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
+				ty->getCtype() << " which weaves after " << pdie->second.name << " at " << pdie->first <<
+				" of type " << pdie->second.type->getCtype() << "\n";
+			return;
 		}
+		enterComponent(pdie, addr, name, ty, forced);
+	} else if (pdie->first == addr) {
+		// Could go either way, depending on where the data items end
+		unsigned endOfCurrent = pdie->first + pdie->second.size;
+		unsigned endOfNew = addr+ty->getSize()/8;
+		if (endOfCurrent < endOfNew)
+			replaceComponents(addr, name, ty, forced);
+		else if (endOfCurrent == endOfNew)
+			checkMatching(pdie, addr, name, ty, forced);		// Size match; check that new type matches old
+		else
+			enterComponent(pdie, addr, name, ty, forced);
+	} else {
+		// Old starts after new; check it also ends first
+		if (pdie->first + pdie->second.size > addr+ty->getSize()/8) {
+	        LOG << "TYPE ERROR: attempt to insert item " << name << " at " << addr << " of type " <<
+	            ty->getCtype() << " which weaves before " << pdie->second.name << " at " << pdie->first <<
+	            " of type " << pdie->second.type->getCtype() << "\n";
+	        return;
+	    }
+		replaceComponents(addr, name, ty, forced);
 	}
 }
 
@@ -1484,15 +1508,17 @@ void DataIntervalMap::enterComponent(DataIntervalEntry* pdie, ADDRESS addr, char
 // We are entering a struct or array that overlaps existing components. Check for compatibility, and move the
 // components out of the way, meeting if necessary
 void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool forced) {
-	unsigned pastLast = addr + ty->getSize()/8;		// This is the byte address just past the overlapping type
+	iterator it;
+	unsigned pastLast = addr + ty->getSize()/8;		// This is the byte address just past the type to be inserted
 	// First check that the new entry will be compatible with everything it will overlap
 	if (ty->resolvesToCompound()) {
-		iterator it = dimap.upper_bound(addr);
-		if (it != dimap.begin()) it--;
-		while (it != dimap.end() && it->first < pastLast) {
+		iterator it1 = dimap.lower_bound(addr);			// Iterator to the first overlapping item (could be end(), but
+														// if so, it2 will also be end())
+		iterator it2 = dimap.upper_bound(pastLast-1);	// Iterator to the first item that starts too late
+		for (it = it1; it != it2; ++it) {
 			unsigned bitOffset = (it->first - addr) * 8;
 			Type* memberType = ty->asCompound()->getTypeAtOffset(bitOffset);
-			if (memberType->isCompatibleWith(it->second.type)) {
+			if (memberType->isCompatibleWith(it->second.type, true)) {
 				bool ch;
 				memberType = it->second.type->meetWith(memberType, ch);
 				ty->asCompound()->setTypeAtOffset(bitOffset, memberType);
@@ -1501,14 +1527,13 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 					"with existing type " << it->second.type->getCtype() << "\n";
 				return;
 			}
-			it++;									// Move to next existing record that might overlap ty
 		}
 	} else if (ty->resolvesToArray()) {
 		Type* memberType = ty->asArray()->getBaseType();
-		iterator it = dimap.upper_bound(addr);
-		if (it != dimap.begin()) it--;
-		while (it != dimap.end() && it->first < pastLast) {
-			if (memberType->isCompatibleWith(it->second.type)) {
+		iterator it1 = dimap.lower_bound(addr);
+		iterator it2 = dimap.upper_bound(pastLast-1);
+		for (it = it1; it != it2; ++it) {
+			if (memberType->isCompatibleWith(it->second.type, true)) {
 				bool ch;
 				memberType = memberType->meetWith(it->second.type, ch);
 				ty->asArray()->setBaseType(memberType);
@@ -1517,22 +1542,21 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 					"with existing type " << it->second.type->getCtype() << "\n";
 				return;
 			}
-			it++;
 		}
 	} else {
-		LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype() << " does not resolve to "
-			"compound or array\n";
-		return;
+		// Just make sure it doesn't overlap anything
+		if (!isClear(addr, (ty->getSize()+7)/8)) {
+			LOG << "TYPE ERROR: at address " << addr << ", overlapping type " << ty->getCtype() << " does not resolve "
+				"to compound or array\n";
+			return;
+		}
 	}
 
 	// The compound or array type is compatible. Remove the items that it will overlap with
-	iterator it = dimap.upper_bound(addr);			// Find the first item strictly greater than addr
-	if (it != dimap.begin())
-		it--;
-	while (it != dimap.end() && it->first + it->second.size <= pastLast) {
+	iterator it1 = dimap.lower_bound(addr);
+	iterator it2 = dimap.upper_bound(pastLast-1);
+	for (it = it1; it != it2; ++it)
 		/* it = */ dimap.erase(it);
-		it++;										// Even though *it is deleted!
-	}
 
 	DataInterval* pdi = &dimap[addr];				// Finally add the new entry
 	pdi->size = ty->getBytes();
@@ -1543,7 +1567,8 @@ void DataIntervalMap::replaceComponents(ADDRESS addr, char* name, Type* ty, bool
 void DataIntervalMap::checkMatching(DataIntervalEntry* pdie, ADDRESS addr, char* name, Type* ty, bool forced) {
 	if (pdie->second.type->isCompatibleWith(ty)) {
 		// Just merge the types and exit
-		pdie->second.type = pdie->second.type->mergeWith(ty);
+		bool ch;
+		pdie->second.type = pdie->second.type->meetWith(ty, ch);
 		return;
 	}
 	LOG << "TYPE DIFFERENCE (could be OK): At address " << addr << " existing type " << pdie->second.type->getCtype() <<
