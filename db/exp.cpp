@@ -99,8 +99,7 @@ Unary::Unary(Unary& o)
 
 Binary::Binary(OPER op)
 	: Unary(op) {
-	subExp2 = 0;		// Initialise the 2nd pointer. The first
-						// pointer is initialised in the Unary constructor
+	subExp2 = 0;		// Initialise the 2nd pointer. The first pointer is initialised in the Unary constructor
 }
 Binary::Binary(OPER op, Exp* e1, Exp* e2)
 	: Unary(op, e1)
@@ -3475,6 +3474,8 @@ Type *Ternary::getType() {
 
 Type *RefExp::getType()
 {
+	// This is just WRONG! It discards the subscript, effectively turning r9{35} into r9{-}, which are not the same
+	// variable in SSA!
 	if (subExp1 && subExp1->getType())
 		return subExp1->getType();
 	if (def && def->isAssign() && ((Assign*)def)->getRight()->getType())
