@@ -70,7 +70,7 @@ virtual				~RTL();
 typedef	std::list<Statement*>::iterator iterator;
 typedef	std::list<Statement*>::reverse_iterator reverse_iterator;
 
-		// Return a deep copy, including a deep copy of the list of Exps
+		// Return a deep copy, including a deep copy of the list of Statements
 virtual RTL* clone();
 
 		// Assignment copy: set this RTL to a deep copy of "other".
@@ -84,7 +84,7 @@ virtual bool		accept(StmtVisitor* visitor);
 		Type*		getType();								// Return type of first Assign.
 		bool		areFlagsAffected();						// True if flags are affected
 
-		// Expression list enquiry methods
+		// Statement list enquiry methods
 		int			getNumStmt();							// Return the number of Stmts in RTL.
 		Statement*	elementAt(unsigned i);					// Return the i'th element in RTL.
 		
@@ -92,6 +92,7 @@ virtual bool		accept(StmtVisitor* visitor);
 		void		appendStmt(Statement *s);				// Add s to end of RTL.
 		void		prependStmt(Statement *s);				// Add s to start of RTL.
 		void		insertStmt(Statement *s, unsigned i);	// Insert s before expression at position i
+		void		insertStmt(Statement *s, iterator it);	// Insert s before iterator it
 		void		updateStmt(Statement *s, unsigned i);	// Change stmt at position i.
 		void		deleteStmt(unsigned int);				// Delete expression at position i.
 		void		deleteLastStmt();						// Delete the last statement
