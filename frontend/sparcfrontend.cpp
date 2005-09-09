@@ -120,6 +120,11 @@ BasicBlock* SparcFrontEnd::optimise_CallReturn(CallStatement* call, RTL* rtl, RT
 
 		// The only RTL in the basic block is a ReturnStatement
 		std::list<Statement*>* ls = new std::list<Statement*>;
+		// If the delay slot is a single assignment to %o7, we want to see the semantics for it, so that preservation
+		// or otherwise of %o7 is correct
+		if (delay->getNumStmt() == 1 && delay->elementAt(0)->isAssign() &&
+				((Assign*)delay->elementAt(0))->getLeft()->isRegN(15))
+			ls->push_back(delay->elementAt(0));
 		ls->push_back(new ReturnStatement);
 //		rtls->push_back(new RTL(rtl->getAddress() + 1, ls));
 //		Cfg* cfg = pProc->getCFG();
@@ -286,14 +291,6 @@ bool SparcFrontEnd::case_CALL(ADDRESS& address, DecodeResult& inst, DecodeResult
 			// Put a label on the return BB; indicate that a jump is reqd
 			cfg->setLabel(returnBB);
 			callBB->setJumpReqd();
-
-			// Note that we get here for certain types of patterns as well as for call/restore pairs. This could all go
-			// away if we could specify that some sparc Logues are caller-prologue and also callee-epilogues!
-			// This is a hack until we figure out how to match these patterns using a .pat file. We have to set the
-			// epilogue for the enclosing procedure (all proc's must have an epilogue).
-			//proc->setEpilogue(new CalleeEpilogue("__dummy",std::list<std::string>()));
-			// Set the return location; this is now always %o0
-			//setReturnLocations(proc->getEpilogue(), 8 /* %o0 */);
 
 			address += inst.numBytes;		// For coverage
 			// This is a CTI block that doesn't fall through and so must
@@ -952,7 +949,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 									(*((Binary*)rhs)->getSubExp1() == *o7)) {
 								// Get the constant
 								int K = ((Const*)((Binary*)rhs)->getSubExp2()) ->getInt();
-								case_CALL(address, inst, nop_inst, BB_rtls, proc, callList, os, true);
+								case_CALL(address, inst, delay_inst, BB_rtls, proc, callList, os, true);
 								// We don't generate a goto; instead, we just decode from the new address
 								// Note: the call to case_CALL has already incremented address by 8, so don't do again
 								address += K;
@@ -962,7 +959,7 @@ bool SparcFrontEnd::processProc(ADDRESS address, UserProc* proc, std::ofstream &
 								// pop one return address, we we emit a return after this call
 								((CallStatement*)last)->setReturnAfterCall(true);
 								sequentialDecode = false;
-								case_CALL(address, inst, nop_inst, BB_rtls, proc, callList, os, true);
+								case_CALL(address, inst, delay_inst, BB_rtls, proc, callList, os, true);
 								break;
 							}
 						}
