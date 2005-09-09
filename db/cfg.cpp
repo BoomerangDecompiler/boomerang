@@ -105,6 +105,7 @@ void Cfg::clear() {
 	//	delete *it;
 	m_listBB.clear();
 	m_mapBB.clear();
+	implicitMap.clear();
 	entryBB = NULL;
 	exitBB = NULL;
 	m_bWellFormed = false;
@@ -2065,7 +2066,8 @@ Statement* Cfg::findImplicitAssign(Exp* x) {
 		// Remember it for later so we don't insert more than one implicit assignment for any one location
 		// We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
 		// the definition as at all uses
-		implicitMap[x] = def;
+		//implicitMap[x] = def;
+		implicitMap[x->clone()]=def;	// Hmmm... seems to fix a nasty intermittent problem with test/sparc/minmax2...
 	} else {
 		// Use an existing implicit assignment
 		def = it->second;
