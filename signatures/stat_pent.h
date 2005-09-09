@@ -1,13 +1,18 @@
 typedef unsigned int mode_t;
-typedef unsigned int ino_t;
+typedef unsigned long ino_t;
 typedef unsigned long long dev_t;
 typedef unsigned int nlink_t;
 typedef unsigned int uid_t;
 typedef unsigned int gid_t;
-typedef int off_t;
-typedef int time_t;
+typedef long off_t;
 typedef int blksize_t;
 typedef int blkcnt_t;
+
+typedef long time_t;
+struct timespec {
+	time_t	tv_sec;
+	long	tv_nsec;
+};
 
 struct stat {
 	dev_t st_dev; 
@@ -22,11 +27,10 @@ struct stat {
 	off_t st_size;
 	blksize_t st_blksize;
 	blkcnt_t st_blocks;
-	time_t st_atime;
-	unsigned int pad3;
-	time_t st_mtime;
-	unsigned int pad4;
-	time_t st_ctime;
-	unsigned int pad5;
+	timespec st_atime;
+	timespec st_mtime;
+	timespec st_ctime;
+	unsigned pad4;
+	unsigned pad5;
 };
 
