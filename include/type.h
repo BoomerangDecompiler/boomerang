@@ -167,6 +167,7 @@ virtual const char	*getCtype(bool final = false) const = 0;
 					// Print in *i32* format
 		void		starPrint(std::ostream& os);
 		const char*	prints();			// For debugging
+		void		dump();				// For debugging
 static	void		dumpNames();		// For debugging
 
 virtual std::string getTempName() const; // Get a temporary name for the type
@@ -182,7 +183,17 @@ virtual void 		readMemo(Memo *m, bool dec) { }
 
 					// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
 virtual Type*		meetWith(Type* other, bool& ch) = 0;
-virtual bool		isCompatibleWith(Type* other) = 0;
+					// Also DFA TA only: join operator. For most types, return the same result as the meet operator, at
+					// least for now 
+virtual Type*		joinWith(Type* other, bool& ch) { return meetWith(other, ch); }
+					// When all=false (default), return true if can use this and other interchangeably; in particular,
+					// if at most one of the types is compound and the first element is compatible with the other, then 
+					// the types are considered compatible. With all set to true, if one or both types is compound, all
+					// corresponding elements must be compatible
+		bool		isCompatibleWith(Type* other, bool all = false);
+					// isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
+					// reverses the parameters (this and other) to prevent many tedious repetitions
+virtual bool		isCompatible(Type* other, bool all) = 0;
 					// Create a union of this Type and other. Set ch true if any change
 		Type*		createUnion(Type* other, bool& ch);
 static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool/Char/Int
@@ -212,7 +223,7 @@ virtual unsigned	getSize() const;
 virtual const char	*getCtype(bool final = false) const;
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -247,7 +258,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -292,7 +303,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -325,7 +336,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -349,7 +360,7 @@ virtual unsigned	getSize() const;
 virtual const char	*getCtype(bool final = false) const;
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -373,7 +384,7 @@ virtual unsigned	getSize() const;
 virtual const char	*getCtype(bool final = false) const;
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -410,7 +421,8 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual Type*		joinWith(Type* other, bool& ch);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -448,7 +460,7 @@ virtual	Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -484,7 +496,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -534,7 +546,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -578,7 +590,7 @@ virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 protected:
 	friend class XMLProgParser;
@@ -605,7 +617,7 @@ virtual bool		isSize() const { return true; }
 virtual bool		isComplete() {return false;}	// Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 };	// class SizeType
 
@@ -631,7 +643,7 @@ virtual bool		isUpper() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 };  // class UpperType
 
@@ -656,7 +668,7 @@ virtual bool		isLower() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
 virtual Type*		meetWith(Type* other, bool& ch);
-virtual bool		isCompatibleWith(Type* other);
+virtual bool		isCompatible(Type* other, bool all);
 
 };  // class LowerType
 
@@ -685,6 +697,8 @@ public:
 					DataIntervalMap() {}
 typedef	std::map<ADDRESS, DataInterval>::iterator iterator;
 		DataIntervalEntry* find(ADDRESS addr);		// Find the DataInterval at address addr, or NULL if none
+		iterator	find_it(ADDRESS addr);			// Return an iterator to the entry for it, or end() if none
+		bool		isClear(ADDRESS addr, unsigned size);		// True if from addr for size bytes is clear
 		// Add a new data item
 		void		addItem(ADDRESS addr, char* name, Type* ty, bool forced = false);
 		void		deleteItem(ADDRESS addr);		// Mainly for testing?
