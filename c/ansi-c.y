@@ -474,6 +474,10 @@ type: CHAR
 	{ $$ = new IntegerType(16, 0); }
 	| UNSIGNED INT 
 	{ $$ = new IntegerType(32, 0); }
+	| UNSIGNED LONG 
+	{ $$ = new IntegerType(32, 0); }
+	| UNSIGNED 
+	{ $$ = new IntegerType(32, 0); }
 	| LONG 
 	{ $$ = new IntegerType(32, 1); }
 	| LONG LONG
