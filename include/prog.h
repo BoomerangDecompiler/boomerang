@@ -61,6 +61,7 @@ public:
 		const char *getName() { return nam.c_str(); }
 		Exp*		getInitialValue(Prog* prog);	// Get the initial value as an expression
 													// (or NULL if not initialised)
+		void		print(std::ostream& os, Prog* prog);	// Print to stream os
 
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
@@ -228,6 +229,9 @@ public:
 		// Set the type of a global variable
 		void		setGlobalType(const char* name, Type* ty);
 
+		// Dump the globals to stderr for debugging
+		void		dumpGlobals();
+
 		// get a string constant at a give address if appropriate
 		char		*getStringConstant(ADDRESS uaddr, bool knownString = false);
 		double		getFloatConstant(ADDRESS uaddr, bool &ok, int bits = 64);
@@ -260,7 +264,7 @@ public:
 		bool		bRegisterJump;
 		bool		bRegisterCall;
 
-		void		printSymbols();
+		void		printSymbolsToFile();
 		void		printCallGraph();
 		void		printCallGraphXML();
 

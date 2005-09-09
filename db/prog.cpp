@@ -579,6 +579,13 @@ const char *Prog::getGlobalName(ADDRESS uaddr)
 	return NULL;
 }
 
+void Prog::dumpGlobals() {
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
+		(*it)->print(std::cerr, this);
+		std::cerr << "\n";
+	}
+}
+		
 ADDRESS Prog::getGlobalAddr(char *nam)
 {
    	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
@@ -1308,8 +1315,8 @@ void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*
     }
 }
 
-void Prog::printSymbols() {
-    std::cerr << "entering Prog::printSymbols\n";
+void Prog::printSymbolsToFile() {
+    std::cerr << "entering Prog::printSymbolsToFile\n";
 	std::string fname = Boomerang::get()->getOutputPath() + "symbols.h";
 	int fd = lockFileWrite(fname.c_str());
 	std::ofstream f(fname.c_str());
@@ -1330,7 +1337,7 @@ void Prog::printSymbols() {
 
 	f.close();
 	unlockFile(fd);
-    std::cerr << "leaving Prog::printSymbols\n";
+    std::cerr << "leaving Prog::printSymbolsToFile\n";
 }
 
 void Prog::printCallGraphXML() {
@@ -1438,6 +1445,11 @@ Exp* Global::getInitialValue(Prog* prog) {
 	if (e == NULL) 
 		e = prog->readNativeAs(uaddr, type);
 	return e;
+}
+
+void Global::print(std::ostream& os, Prog* prog) {
+	Exp* init = getInitialValue(prog);
+	os << nam << " at " << std::hex << uaddr << std::dec << " initial value " << (init ? init->prints() : "<none>");
 }
 
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)
