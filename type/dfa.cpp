@@ -15,7 +15,9 @@
 /*
  * $Revision$	// 1.30.2.11
  *
- * 24/Sep/04 - Mike: Created
+ * 24 Sep 04 - Mike: Created
+ * 25 Aug 05 - Mike: Switch from Mycroft style "pointer to alpha plus integer equals pointer to another alpha" to
+ *						Van Emmerik style "result is void*" for sigma and delta functions
  */
 
 #include "gc.h"
@@ -151,7 +153,7 @@ void UserProc::dfaTypeAnalysis() {
 			Const* con = (Const*)*cc;
 			Type* t = con->getType();
 			int val = con->getInt();
-			if (t && t->isPointer()) {
+			if (t && t->resolvesToPointer()) {
 				PointerType* pt = t->asPointer();
 				Type* baseType = pt->getPointsTo();
 				if (baseType->resolvesToChar()) {
@@ -184,7 +186,7 @@ void UserProc::dfaTypeAnalysis() {
 									prog->setGlobalType((char*)gloName, new IntegerType(bits));
 							}
 							Location *g = Location::global(strdup(gloName), this);
-							if (ty && ty->isArray()) 
+							if (ty && ty->resolvesToArray()) 
 								ne = new Binary(opArrayIndex, g, new Const(0));
 							else 
 								ne = g;
@@ -224,16 +226,17 @@ void UserProc::dfaTypeAnalysis() {
 						prog->globalUsed(K, baseType);
 					}
 				}
-			} else if (t->isFloat()) {
-				if (t->getSize() == 32) {
+			} else if (t->resolvesToFloat()) {
+				if (con->isIntConst()) {
 					// Reinterpret as a float (and convert to double)
 					//con->setFlt(reinterpret_cast<float>(con->getInt()));
 					int tmp = con->getInt();
 					con->setFlt(*(float*)&tmp);		// Reinterpret to float, then cast to double
+					con->setOper(opFltConst);
+					con->setType(new FloatType(64));
 				}
 				// MVE: more work if double?
-				con->setOper(opFltConst);
-			} else /* if (t->isArray()) */ {
+			} else /* if (t->resolvesToArray()) */ {
 				prog->globalUsed(val, t);
 			}
 		}
@@ -252,8 +255,11 @@ void UserProc::dfaTypeAnalysis() {
 			ADDRESS K2 = (ADDRESS)((Const*)r)->getInt();
 			Exp* idx = ((Binary*)l)->getSubExp1();
 			// Replace with the array expression
+			const char* nam = prog->getGlobalName(K2);
+			if (nam == NULL)
+				nam = prog->newGlobal(K2);
 			Exp* arr = new Binary(opArrayIndex,
-				Location::global(prog->getGlobalName(K2), this),
+				Location::global(nam, this),
 				idx);
 			s->searchAndReplace(scaledArrayPat, arr);
 		}
@@ -264,12 +270,47 @@ void UserProc::dfaTypeAnalysis() {
 			setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), ((ImplicitAssign*)s)->getType());
 		}
 
+		// 4) Add the locals (soon globals as well) to the localTable, to sort out the overlaps
+		if (s->isTyping()) {
+			Exp* addrExp = NULL;
+			Type* typeExp = NULL;
+			if (s->isAssignment()) {
+				Exp* lhs = ((Assignment*)s)->getLeft();
+				if (lhs->isMemOf()) {
+					addrExp = ((Location*)lhs)->getSubExp1();
+					typeExp = ((Assignment*)s)->getType();
+				}
+			}
+			else {
+				// Assume an implicit reference
+				addrExp = ((ImpRefStatement*)s)->getAddressExp();
+				if (addrExp->isTypedExp() && ((TypedExp*)addrExp)->getType()->resolvesToPointer())
+					addrExp = ((Unary*)addrExp)->getSubExp1();
+				typeExp = ((ImpRefStatement*)s)->getType();
+				assert(typeExp->resolvesToPointer());
+				typeExp = typeExp->asPointer()->getPointsTo();
+			}
+			if (addrExp && signature->isAddrOfStackLocal(prog, addrExp)) {
+				int addr = 0;
+				if (addrExp->getArity() == 2 && signature->isOpCompatStackLocal(addrExp->getOper())) {
+					Const* K = (Const*) ((Binary*)addrExp)->getSubExp2();
+					if (K->isConst()) {
+						addr = K->getInt();
+						if (addrExp->getOper() == opMinus)
+							addr = -addr;
+					}
+				}
+				localTable.addItem(addr, lookupSym(Location::memOf(addrExp)), typeExp);
+			}
+		}
 	}
 
+
 	if (VERBOSE) {
-		LOG << "### After application of DFA Type Analysis for " << getName() << " ###\n";
+		LOG << "### after application of dfa type analysis for " << getName() << " ###\n";
 		printToLog();
-		LOG << "### End application of DFA Type Analysis for " << getName() << " ###\n";
+		// localTable.dump();
+		LOG << "### end application of dfa type analysis for " << getName() << " ###\n";
 	}
 }
 
@@ -288,19 +329,19 @@ void UserProc::dfaTypeAnalysis() {
 
 Type* VoidType::meetWith(Type* other, bool& ch) {
 	// void meet x = x
-	ch |= !other->isVoid();
+	ch |= !other->resolvesToVoid();
 	return other->clone();
 }
 
 Type* FuncType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
+	if (other->resolvesToVoid()) return this;
 	if (*this == *other) return this;		// NOTE: at present, compares names as well as types and num parameters
 	return createUnion(other, ch);
 }
 
 Type* IntegerType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isInteger()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToInteger()) {
 		IntegerType* otherInt = other->asInteger();
 		// Signedness
 		int oldSignedness = signedness;
@@ -316,7 +357,7 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 		ch |= (size != oldSize);
 		return this;
 	}
-	if (other->isSize()) {
+	if (other->resolvesToSize()) {
 		if (size == 0) {		// Doubt this will ever happen
 			size = ((SizeType*)other)->getSize();
 			return this;
@@ -332,15 +373,15 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 }
 
 Type* FloatType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isFloat()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToFloat()) {
 		FloatType* otherFlt = other->asFloat();
 		unsigned oldSize = size;
 		size = max(size, otherFlt->size);
 		ch |= size != oldSize;
 		return this;
 	}
-	if (other->isSize()) {
+	if (other->resolvesToSize()) {
 		unsigned otherSize = other->getSize();
 		ch |= size != otherSize;
 		size = max(size, otherSize);
@@ -350,29 +391,52 @@ Type* FloatType::meetWith(Type* other, bool& ch) {
 }
 
 Type* BooleanType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isBoolean())
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToBoolean())
 		return this;
 	return createUnion(other, ch);
 }
 
 Type* CharType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isChar()) return this;
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToChar()) return this;
 	// Also allow char to merge with integer
-	if (other->isInteger()) {
+	if (other->resolvesToInteger()) {
 		ch = true;
 		return other->clone();
 	}
-	if (other->isSize() && ((SizeType*)other)->getSize() == 8)
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == 8)
 		return this;
 	return createUnion(other, ch);
 }
 
+// So far, I think the only difference between meeting and joining is when meeting pointers to two concrete types: 
+// if one is a supertype of the other (can point to more values), return that one; if the types are not compatible,
+// return void*
+Type* PointerType::joinWith(Type* other, bool& ch) {
+	if (other->resolvesToPointer()) {
+		PointerType* otherPtr = other->asPointer();
+		Type* otherPointsTo = otherPtr->points_to;
+		if (*this == *other) return this;
+		if (points_to->isCompatibleWith(otherPointsTo)) {
+			if (points_to->resolvesToVoid()) return other;
+			if (otherPointsTo->resolvesToVoid()) return this;
+			// TODO: implement a test for one pointer being a superset of the other
+			LOG << "NOT IMPLEMENTED: compare compatible pointers " << getCtype() << " and " << other->getCtype() <<"\n";
+			points_to = points_to->meetWith(otherPointsTo, ch);
+			return this;
+		} else
+			// Joining incompatible types; return void*
+			return new PointerType(new VoidType);
+	}
+	// For other cases, delegate to meetWith()
+	return meetWith(other, ch);
+}
+
 Type* PointerType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isSize() && ((SizeType*)other)->getSize() == STD_SIZE) return this;
-	if (other->isPointer()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return this;
+	if (other->resolvesToPointer()) {
 		PointerType* otherPtr = other->asPointer();
 		if (pointsToAlpha() && !otherPtr->pointsToAlpha()) {
 			setPointsTo(otherPtr->getPointsTo());
@@ -381,10 +445,10 @@ Type* PointerType::meetWith(Type* other, bool& ch) {
 			// We have a meeting of two pointers. First, see if the base types will meet
 			Type* thisBase = points_to;
 			Type* otherBase = otherPtr->points_to;
-			if (otherBase->isPointer()) {
-if (thisBase->isPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
+			if (otherBase->resolvesToPointer()) {
+if (thisBase->resolvesToPointer() && thisBase->asPointer()->getPointsTo() == thisBase)
   std::cerr << "HACK! BAD POINTER 1\n";
-if (otherBase->isPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
+if (otherBase->resolvesToPointer() && otherBase->asPointer()->getPointsTo() == otherBase)
   std::cerr << "HACK! BAD POINTER 2\n";
 if (thisBase == otherBase)	// Note: compare pointers
   return this;				// Crude attempt to prevent stack overflow
@@ -392,9 +456,9 @@ if (thisBase == otherBase)	// Note: compare pointers
 					return this;
 				if (pointerDepth() == otherPtr->pointerDepth()) {
 					Type* fType = getFinalPointsTo();
-					if (fType->isVoid()) return other->clone();
+					if (fType->resolvesToVoid()) return other->clone();
 					Type* ofType = otherPtr->getFinalPointsTo();
-					if (ofType->isVoid()) return this;
+					if (ofType->resolvesToVoid()) return this;
 					if (*fType == *ofType) return this;
 				}
 			}
@@ -412,8 +476,8 @@ if (thisBase == otherBase)	// Note: compare pointers
 }
 
 Type* ArrayType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isArray()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToArray()) {
 		ArrayType* otherArr = other->asArray();
 		Type* newBase = base_type->clone()->meetWith(otherArr->base_type, ch);
 		if (*newBase != *base_type) {
@@ -431,21 +495,30 @@ Type* ArrayType::meetWith(Type* other, bool& ch) {
 
 Type* NamedType::meetWith(Type* other, bool& ch) {
 	Type * rt = resolvesTo();
-	if (rt)
-		return rt->meetWith(other, ch);
-	if (other->isVoid()) return this;
+	if (rt) {
+		Type* ret = rt->meetWith(other, ch);
+		if (ret == rt)
+			return this;			// Retain the named type, much better than some compound type
+		return ret;					// Otherwise, whatever the result is
+	}
+	if (other->resolvesToVoid()) return this;
 	if (*this == *other) return this;
 	return createUnion(other, ch);
 }
 
 Type* CompoundType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (!other->isCompound()) return createUnion(other, ch);
+	if (other->resolvesToVoid()) return this;
+	if (!other->resolvesToCompound()) {
+		if (types[0]->isCompatibleWith(other))
+			// struct meet first element = struct
+			return this;
+		return createUnion(other, ch);
+	}
 	CompoundType* otherCmp = other->asCompound();
 	if (otherCmp->isSuperStructOf(this)) {
 		// The other structure has a superset of my struct's offsets. Preserve the names etc of the bigger struct.
 		ch = true;
-		return this;
+		return other;
 	}
 	if (isSubStructOf(otherCmp)) {
 		// This is a superstruct of other
@@ -458,10 +531,15 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 	return createUnion(other, ch);
 }
 
+#define PRINT_UNION 0									// Set to 1 to debug unions to stderr
+#ifdef PRINT_UNION
+unsigned unionCount = 0;
+#endif
+
 Type* UnionType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
+	if (other->resolvesToVoid()) return this;
 	std::list<UnionElement>::iterator it;
-	if (other->isUnion()) {
+	if (other->resolvesToUnion()) {
 		if (this == other)				// Note: pointer comparison
 			return this;				// Avoid infinite recursion
 		ch = true;
@@ -475,7 +553,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	}
 
 	// Other is a non union type
-	if (other->isPointer() && other->asPointer()->getPointsTo() == this) {
+	if (other->resolvesToPointer() && other->asPointer()->getPointsTo() == this) {
 		LOG << "WARNING! attempt to union " << getCtype() << " with pointer to self!\n";
 		return this;
 	}
@@ -489,15 +567,23 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 
 	// Other is not compatible with any of my component types. Add a new type
 	char name[20];
+#if PRINT_UNION
+	if (unionCount == 999)								// Adjust the count to catch the one you want
+		std::cerr << "createUnion breakpokint\n";		// Note: you need two breakpoints (also in Type::createUnion)
+	std::cerr << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype();
+#endif
 	sprintf(name, "x%d", ++nextUnionNumber);
 	addType(other->clone(), name);
+#if PRINT_UNION
+	std::cerr << ", result is " << getCtype() << "\n";
+#endif
 	ch = true;
 	return this;
 }
 
 Type* SizeType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isSize()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToSize()) {
 		if (((SizeType*)other)->size != size) {
 			LOG << "size " << size << " meet with size " << ((SizeType*)other)->size << "!\n";
 			unsigned oldSize = size;
@@ -507,7 +593,7 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 		return this;
 	}
 	ch = true;
-	if (other->isInteger() || other->isFloat() || other->isPointer()) {
+	if (other->resolvesToInteger() || other->resolvesToFloat() || other->resolvesToPointer()) {
 		if (other->getSize() == 0) {
 			other->setSize(size);
 			return other->clone();
@@ -521,8 +607,8 @@ return other->clone();
 }
 
 Type* UpperType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isUpper()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToUpper()) {
 		UpperType* otherUpp = other->asUpper();
 		Type* newBase = base_type->clone()->meetWith(otherUpp->base_type, ch);
 		if (*newBase != *base_type) {
@@ -536,8 +622,8 @@ Type* UpperType::meetWith(Type* other, bool& ch) {
 }
 
 Type* LowerType::meetWith(Type* other, bool& ch) {
-	if (other->isVoid()) return this;
-	if (other->isUpper()) {
+	if (other->resolvesToVoid()) return this;
+	if (other->resolvesToUpper()) {
 		LowerType* otherLow = other->asLower();
 		Type* newBase = base_type->clone()->meetWith(otherLow->base_type, ch);
 		if (*newBase != *base_type) {
@@ -551,17 +637,42 @@ Type* LowerType::meetWith(Type* other, bool& ch) {
 }
 
 Type* Type::createUnion(Type* other, bool& ch) {
-	assert(!isUnion());									// Note: this should not be a UnionType
-	if (other->isUnion())
+
+	assert(!isUnion());									// Note: `this' should not be a UnionType
+	if (other->resolvesToUnion())
 		return other->meetWith(this, ch)->clone();		// Put all the hard union logic in one place
+	// Check for anytype meet compound with anytype as first element
+	if (other->resolvesToCompound()) {
+		CompoundType* otherComp = other->asCompound();
+		Type* firstType = otherComp->getType((unsigned)0);
+		if (firstType->isCompatibleWith(this))
+			// struct meet first element = struct
+			return other->clone();
+	}
+	// Check for anytype meet array of anytype
+	if (other->resolvesToArray()) {
+		ArrayType* otherArr = other->asArray();
+		Type* elemTy = otherArr->getBaseType();
+		if (elemTy->isCompatibleWith(this))
+			// array meet element = array
+			return other->clone();
+	}
 
 	char name[20];
+#if PRINT_UNION
+	if (unionCount == 999)								// Adjust the count to catch the one you want
+		std::cerr << "createUnion breakpokint\n";		// Note: you need two breakpoints (also in UnionType::meetWith)
+#endif
 	sprintf(name, "x%d", ++nextUnionNumber);
 	UnionType* u = new UnionType;
 	u->addType(this->clone(), name);
 	sprintf(name, "x%d", ++nextUnionNumber);
 	u->addType(other->clone(), name);
 	ch = true;
+#if PRINT_UNION
+	std::cerr << "  " << ++unionCount << " Created union from " << getCtype() << " and " << other->getCtype() <<
+		", result is " << u->getCtype() << "\n";
+#endif
 	return u;
 }
 
@@ -576,7 +687,7 @@ void CallStatement::dfaTypeAnalysis(bool& ch) {
 	}
 	// The destination is a pointer to a function with this function's signature (if any)
 	if (pDest)
-		pDest->descendType(new FuncType(signature), ch, proc);
+		pDest->descendType(new FuncType(signature), ch, this);
 }
 
 void ReturnStatement::dfaTypeAnalysis(bool& ch) {
@@ -611,36 +722,23 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
 
 void Assign::dfaTypeAnalysis(bool& ch) {
 	Type* tr = rhs->ascendType();
-	type = type->meetWith(tr, ch);
-	// This is a special requirement for locations (locals and some array expressions) whose addresses are taken.
-	// Consider sp-16 when used as a pointer; the type of this depends on an implicit definition of m[sp-16].
-	// But if there is a real definition of m[sp-16], there is no efficient way of finding it. So mutually meet
-	// the types of the two assignments to keep them in sync
-	Cfg* cfg = proc->getCFG();
-	Statement* impDef = cfg->findTheImplicitAssign(lhs);
-	if (impDef) {
-		Type* ty = impDef->getTypeFor(lhs);
-		if (DEBUG_TA)
-			LOG << "before type merge of explicit and implicit assignments for " << lhs << ": were " <<
-				type->getCtype() << " and " << ty->getCtype() << "\n";
-		ty = ty->meetWith(type, ch);
-		type = type->meetWith(ty, ch);
-		if (DEBUG_TA)
-			LOG << " after type merge of explicit and implicit assignments for " << lhs << ":  now " <<
-                type->getCtype() << " and " << ty->getCtype() << "\n";
-	}
-	rhs->descendType(type, ch, proc);
-	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS
+	type = type->joinWith(tr, ch);			// Note: lhs = lhs JOIN rhs, since the lhs could have a greater type (more
+											// possibilities) than the rhs. Example: pEmployee = pManager.
+	rhs->descendType(type, ch, this);		// This will effect rhs = rhs MEET lhs
+	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS wrt m[] operands
 }
 
 void Assignment::dfaTypeAnalysis(bool& ch) {
-	if (lhs->isMemOf())
-		// Push down the fact that the memof is a pointer to the assignment type
-		lhs->descendType(type, ch, proc);
+	Signature* sig = proc->getSignature();
+	// Don't do this for the common case of an ordinary local, since it generates hundreds of implicit referecnes,
+	// without any new type information
+	if (lhs->isMemOf() && !sig->isStackLocal(proc->getProg(), lhs))
+		// Push down the fact that the memof operand is a pointer to the assignment type
+		((Unary*)lhs)->getSubExp1()->descendType(new PointerType(type), ch, this);
 }
 
 void BranchStatement::dfaTypeAnalysis(bool& ch) {
-	pCond->descendType(new BooleanType(), ch, proc);
+	pCond->descendType(new BooleanType(), ch, this);
 	// Not fully implemented yet?
 }
 
@@ -651,116 +749,116 @@ void BoolAssign::dfaTypeAnalysis(bool& ch) {
 // Special operators for handling addition and subtraction in a data flow based type analysis
 //					ta=
 //  tb=		alpha*	int		pi
-// alpha*	bottom	alpha*	alpha*
-// int		alpha*	int		pi
-// pi		alpha*	pi		pi
+// beta*	bottom	void*	void*
+// int		void*	int		pi
+// pi		void*	pi		pi
 Type* sigmaSum(Type* ta, Type* tb) {
 	bool ch;
-	if (ta->isPointer()) {
-		if (tb->isPointer())
+	if (ta->resolvesToPointer()) {
+		if (tb->resolvesToPointer())
 			return ta->createUnion(tb, ch);
-		return ta->clone();
+		return new PointerType(new VoidType);
 	}
-	if (ta->isInteger()) {
-		if (tb->isPointer())
-			return tb->clone();
+	if (ta->resolvesToInteger()) {
+		if (tb->resolvesToPointer())
+			return new PointerType(new VoidType);
 		return tb->clone();
 	}
-	if (tb->isPointer())
-		return tb->clone();
+	if (tb->resolvesToPointer())
+		return new PointerType(new VoidType);
 	return ta->clone();
 }
 
 
 //					tc=
-//  to=		alpha*	int		pi
+//  to=		beta*	int		pi
 // alpha*	int		bottom	int
-// int		alpha*	int		pi
+// int		void*	int		pi
 // pi		pi		pi		pi
 Type* sigmaAddend(Type* tc, Type* to) {
 	bool ch;
-	if (tc->isPointer()) {
-		if (to->isPointer())
+	if (tc->resolvesToPointer()) {
+		if (to->resolvesToPointer())
 			return new IntegerType;
-		if (to->isInteger())
-			return tc->clone();
+		if (to->resolvesToInteger())
+			return new PointerType(new VoidType);
 		return to->clone();
 	}
-	if (tc->isInteger()) {
-		if (to->isPointer())
+	if (tc->resolvesToInteger()) {
+		if (to->resolvesToPointer())
 			return tc->createUnion(to, ch);
 		return to->clone();
 	}
-	if (to->isPointer())
+	if (to->resolvesToPointer())
 		return new IntegerType;
 	return tc->clone();
 }
 
 //					tc=
-//  tb=		alpha*	int		pi
-// alpha*	bottom	alpha*	alpha*
-// int		alpha*	int		pi
-// pi		alpha*	int		pi
+//  tb=		beta*	int		pi
+// alpha*	bottom	void*	void*
+// int		void*	int		pi
+// pi		void*	int		pi
 Type* deltaMinuend(Type* tc, Type* tb) {
 	bool ch;
-	if (tc->isPointer()) {
-		if (tb->isPointer())
+	if (tc->resolvesToPointer()) {
+		if (tb->resolvesToPointer())
 			return tc->createUnion(tb, ch);
+		return new PointerType(new VoidType);
+	}
+	if (tc->resolvesToInteger()) {
+		if (tb->resolvesToPointer())
+			return new PointerType(new VoidType);
 		return tc->clone();
 	}
-	if (tc->isInteger()) {
-		if (tb->isPointer())
-			return tb->clone();
-		return tc->clone();
-	}
-	if (tb->isPointer())
-		return tb->clone();
+	if (tb->resolvesToPointer())
+		return new PointerType(new VoidType);
 	return tc->clone();
 }
 
 //					tc=
-//  ta=		alpha*	int		pi
-// alpha*	int		alpha*	pi
+//  ta=		beta*	int		pi
+// alpha*	int		void*	pi
 // int		bottom	int		int
-// pi		alpha*	int		pi
+// pi		int		pi		pi
 Type* deltaSubtrahend(Type* tc, Type* ta) {
 	bool ch;
-	if (tc->isPointer()) {
-		if (ta->isPointer())
+	if (tc->resolvesToPointer()) {
+		if (ta->resolvesToPointer())
 			return new IntegerType;
-		if (ta->isInteger())
+		if (ta->resolvesToInteger())
 			return tc->createUnion(ta, ch);
 		return new IntegerType;
 	}
-	if (tc->isInteger())
+	if (tc->resolvesToInteger())
+		if (ta->resolvesToPointer())
+			return new PointerType(new VoidType);
 		return ta->clone();
-	if (ta->isPointer())
+	if (ta->resolvesToPointer())
 		return tc->clone();
 	return ta->clone();
 }
 
 //					ta=
 //  tb=		alpha*	int		pi
-// alpha*	int		bottom	int
-// int		alpha*	int		pi
+// beta*	int		bottom	int
+// int		void*	int		pi
 // pi		pi		int		pi
 Type* deltaDifference(Type* ta, Type* tb) {
 	bool ch;
-	if (ta->isPointer()) {
-		if (tb->isPointer())
+	if (ta->resolvesToPointer()) {
+		if (tb->resolvesToPointer())
 			return new IntegerType;
-		if (tb->isInteger())
-			return ta->clone();
+		if (tb->resolvesToInteger())
+			return new PointerType(new VoidType);
 		return tb->clone();
 	}
-	if (ta->isInteger()) {
-		if (tb->isPointer())
+	if (ta->resolvesToInteger()) {
+		if (tb->resolvesToPointer())
 			return ta->createUnion(tb, ch);
-		if (tb->isInteger())
-			return tb->clone();
 		return new IntegerType;
 	}
-	if (tb->isPointer())
+	if (tb->resolvesToPointer())
 		return new IntegerType;
 	return ta->clone();
 }
@@ -806,7 +904,7 @@ Type* RefExp::ascendType() {
 	return def->getTypeFor(subExp1);
 }
 Type* Const::ascendType() {
-	if (type->isVoid()) {
+	if (type->resolvesToVoid()) {
 		switch (op) {
 			case opIntConst:
 				if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
@@ -848,7 +946,7 @@ Type* Unary::ascendType() {
 	Type* ta = subExp1->ascendType();
 	switch (op) {
 		case opMemOf:
-			if (ta->isPointer())
+			if (ta->resolvesToPointer())
 				return ta->asPointer()->getPointsTo();
 			else
 				return new VoidType();		// NOT SURE! Really should be bottom
@@ -886,28 +984,24 @@ Type* TypedExp::ascendType() {
 //										//
 //	//	//	//	//	//	//	//	//	//	//
 
-void Binary::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
 	if (op == opFlagCall) return;
 	Type* ta = subExp1->ascendType();
 	Type* tb = subExp2->ascendType();
-	Signature* sig = proc->getSignature();
-	Prog* prog = proc->getProg();
-	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, this)) {
-		// this is the address of some local
-		Exp* localExp = Location::memOf(this);
-		// Note there is a theory problem here; there is currently no reliable way to find the definition for localExp.
-		// I believe that this doesn't matter as long as all explicit assignments look for an implicit "shadow" and
-		// mutually meet the types
-		Cfg* cfg = proc->getCFG();
-		Statement* impDef = cfg->findImplicitAssign(localExp);
-		if (impDef)
-			impDef->meetWithFor(parentType->asPointer()->getPointsTo(), localExp, ch);
-			return;
+	Signature* sig = s->getProc()->getSignature();
+	Prog* prog = s->getProc()->getProg();
+	if (parentType->resolvesToPointer() && !parentType->asPointer()->getPointsTo()->resolvesToVoid() &&
+			sig->isAddrOfStackLocal(prog, this)) {
+		// This is the address of some local. What I used to do is to make an implicit assignment for the local, and
+		// try to meet with the real assignment later. But this had some problems. Now, make an implicit *reference*
+		// to the specified address; this should eventually meet with the main assignment(s).
+		s->getProc()->setImplicitRef(s, this, parentType);
 	}
 	switch (op) {
 		case opPlus:
-			if (parentType->isPointer()) {
-				if (ta->isInteger() && !subExp1->isIntConst()) {
+#if 0
+			if (parentType->resolvesToPointer()) {
+				if (ta->resolvesToInteger() && !subExp1->isIntConst()) {
 std::cerr << "ARRAY HACK: parentType is " << parentType << ", tb is " << tb->getCtype() << ", ta is " << ta << ", this is " << this << "\n";
 LOG << "ARRAY HACK for " << this << "\n";
 					assert(subExp2->isIntConst());
@@ -915,7 +1009,7 @@ LOG << "ARRAY HACK for " << this << "\n";
 					tb = new PointerType(
 						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
 				}
-				else if (tb->isInteger() && !subExp2->isIntConst()) {
+				else if (tb->resolvesToInteger() && !subExp2->isIntConst()) {
 std::cerr << "ARRAY HACK: parentType is " << parentType << ", ta is " << ta << ", this is " << this << "\n";
 LOG << "ARRAY HACK for " << this << "\n";
 					assert(subExp1->isIntConst());
@@ -924,31 +1018,32 @@ LOG << "ARRAY HACK for " << this << "\n";
 						prog->makeArrayType(val, ((PointerType*)parentType)->getPointsTo()->clone()));
                 }
 			}
+#endif
 			ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
-			subExp1->descendType(ta, ch, proc);
+			subExp1->descendType(ta, ch, s);
 			tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
-			subExp2->descendType(tb, ch, proc);
+			subExp2->descendType(tb, ch, s);
 			break;
 		case opMinus:
 			ta = ta->meetWith(deltaMinuend(parentType, tb), ch);
-			subExp1->descendType(ta, ch, proc);
+			subExp1->descendType(ta, ch, s);
 			tb = tb->meetWith(deltaSubtrahend(parentType, ta), ch);
-			subExp2->descendType(tb, ch, proc);
+			subExp2->descendType(tb, ch, s);
 			break;
 		case opGtrUns:	case opLessUns:
 		case opGtrEqUns:case opLessEqUns: {
 			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
 			ta = ta->meetWith(new IntegerType(ta->getSize(), -1), ch);	// Must be unsigned
-			subExp1->descendType(ta, ch, proc);
-			subExp2->descendType(ta, ch, proc);
+			subExp1->descendType(ta, ch, s);
+			subExp2->descendType(ta, ch, s);
 			break;
 		}
 		case opGtr:	case opLess:
 		case opGtrEq:case opLessEq: {
 			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
 			ta = ta->meetWith(new IntegerType(ta->getSize(), +1), ch);	// Must be signed
-			subExp1->descendType(ta, ch, proc);
-			subExp2->descendType(ta, ch, proc);
+			subExp1->descendType(ta, ch, s);
+			subExp2->descendType(ta, ch, s);
 			break;
 		}
 		case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
@@ -968,9 +1063,9 @@ LOG << "ARRAY HACK for " << this << "\n";
 
 			int parentSize = parentType->getSize();
 			ta = ta->meetWith(new IntegerType(parentSize, signedness), ch);
-			subExp1->descendType(ta, ch, proc);
+			subExp1->descendType(ta, ch, s);
 			tb = tb->meetWith(new IntegerType(parentSize, signedness), ch);
-			subExp2->descendType(tb, ch, proc);
+			subExp2->descendType(tb, ch, s);
 			break;
 		}
 		default:
@@ -979,17 +1074,37 @@ LOG << "ARRAY HACK for " << this << "\n";
 	}
 }
 
-void RefExp::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void RefExp::descendType(Type* parentType, bool& ch, Statement* s) {
 	Type* newType = def->meetWithFor(parentType, subExp1, ch);
 	// In case subExp1 is a m[...]
-	subExp1->descendType(newType, ch, proc);
+	subExp1->descendType(newType, ch, s);
 }
 
-void Const::descendType(Type* parentType, bool& ch, UserProc* proc) {
-	type = type->meetWith(parentType, ch);
+void Const::descendType(Type* parentType, bool& ch, Statement* s) {
+	bool thisCh;
+	type = type->meetWith(parentType, thisCh);
+	ch |= thisCh;
+	if (thisCh) {
+		// May need to change the representation
+		if (type->resolvesToFloat()) {
+			if (op == opIntConst) {
+				op = opFltConst;
+				type = new FloatType(64);
+				float f = *(float*)&u.i;
+				u.d = (double)f;
+			}
+			else if (op == opLongConst) {
+				op = opFltConst;
+				type = new FloatType(64);
+				double d = *(double*)&u.ll;
+				u.d = d;
+			}
+		}
+		// May be other cases
+	}
 }
 
-void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void Unary::descendType(Type* parentType, bool& ch, Statement* s) {
 	switch (op) {
 		case opMemOf:
 			// Check for m[x*K1 + K2]: array with base K2 and stride K1
@@ -1006,32 +1121,32 @@ void Unary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 						parentType->getSize() << "\n";
 				// The index is integer type
 				Exp* x = ((Binary*)leftOfPlus)->getSubExp1();
-				x->descendType(new IntegerType(parentType->getSize(), 0), ch, proc);
+				x->descendType(new IntegerType(parentType->getSize(), 0), ch, s);
 				// K2 is of type <array of parentType>
 				Const* constK2 = (Const*)((Binary*)subExp1)->getSubExp2();
 				ADDRESS intK2 = (ADDRESS)constK2->getInt();
-				Prog* prog = proc->getProg();
-				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, proc);
+				Prog* prog = s->getProc()->getProg();
+				constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
 			}
 			// Other cases, e.g. struct reference m[x + K1] or m[x + p] where p is a pointer
 			else
-				subExp1->descendType(new PointerType(parentType), ch, proc);
+				subExp1->descendType(new PointerType(parentType), ch, s);
 			break;
 		default:
 			break;
 	}
 }
 
-void Ternary::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void Ternary::descendType(Type* parentType, bool& ch, Statement* s) {
 	switch (op) {
 		case opFsize:
-			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, proc);
+			subExp3->descendType(new FloatType(((Const*)subExp1)->getInt()), ch, s);
 			break;
 		case opZfill: case opSgnEx: {
 			int fromSize = ((Const*)subExp1)->getInt();
 			Type* fromType;
 			fromType = Type::newIntegerLikeType(fromSize, op == opZfill ? -1 : 1);
-			subExp3->descendType(fromType, ch, proc);
+			subExp3->descendType(fromType, ch, s);
 			break;
 		}
 
@@ -1040,10 +1155,10 @@ void Ternary::descendType(Type* parentType, bool& ch, UserProc* proc) {
 	}
 }
 
-void TypedExp::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void TypedExp::descendType(Type* parentType, bool& ch, Statement* s) {
 }
 
-void Terminal::descendType(Type* parentType, bool& ch, UserProc* proc) {
+void Terminal::descendType(Type* parentType, bool& ch, Statement* s) {
 }
 
 // Map expressions to locals, using the (so far DFA based) type analysis information
@@ -1083,6 +1198,10 @@ void StmtDfaLocalMapper::visit(ReturnStatement* s, bool& recur) {
 	for (rr = s->begin(); rr != s->end(); ++rr)
 		(*rr)->accept(this);
 	recur = false;
+}
+void StmtDfaLocalMapper::visit(ImpRefStatement* s, bool& recur) {
+	((DfaLocalMapper*)mod)->setType(s->getType());
+	recur = true;
 }
 void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
 	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
@@ -1168,14 +1287,37 @@ Exp* DfaLocalMapper::postVisit(Location* e) {
 	return e;
 }
 
+Exp* DfaLocalMapper::preVisit(Unary* e, bool& recur) {
+	recur = true;
+	if (e->isAddrOf()) {
+		// When we recurse into the a[...], the type will be changed
+		PointerType* pt = parentType->asPointer();
+		assert(pt);
+		parentType = pt->getPointsTo();
+	}
+	return e;
+}
+Exp* DfaLocalMapper::preVisit(TypedExp* e, bool& recur) {
+	// Assume it's already been done correctly, so don't recurse into this
+	recur = false;
+	return e;
+}
+Exp* DfaLocalMapper::postVisit(Unary* e) {
+	if (e->isAddrOf()) {
+		// We should have set the type to be a dereference of the original parentType in preVisit; undo that change now
+		parentType = new PointerType(parentType);
+	}
+	return e;
+}
+
 Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
 	// Check for sp -/+ K, but only if TA indicates this is a pointer
-	if (parentType->isPointer() && sig->isAddrOfStackLocal(prog, e)) {
-		//mod = true;
-		// We have something like sp-K; wrap it in a[ m[ ]] to get the correct exp for the existing local (if any)
+	if (parentType->resolvesToPointer() && sig->isAddrOfStackLocal(prog, e)) {
+		mod = true;
+		// We have something like sp-K; wrap it in a TypedExp to get the correct exp for the existing local (if any)
 		Exp* memOf_e = Location::memOf(e);
 		proc->getSymbolExp(memOf_e, parentType->asPointer()->getPointsTo(), true);
-		return new Unary(opAddrOf, memOf_e);
+		return new TypedExp(parentType->clone(), e);
 	}
 	recur = true;
 	return e;
@@ -1201,11 +1343,19 @@ bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 }
 
 
-bool VoidType::isCompatibleWith(Type* other) {
+bool Type::isCompatibleWith(Type* other, bool all /* = false */) {
+	if (other->resolvesToCompound() ||
+		other->resolvesToArray() ||
+		other->resolvesToUnion())
+			return other->isCompatible(this, all);
+	return isCompatible(other, all);
+}
+
+bool VoidType::isCompatible(Type* other, bool all) {
 	return true;		// Void is compatible with any type
 }
 
-bool SizeType::isCompatibleWith(Type* other) {
+bool SizeType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	unsigned otherSize = other->getSize();
 	if (otherSize == size || otherSize == 0) return true;
@@ -1216,18 +1366,16 @@ bool SizeType::isCompatibleWith(Type* other) {
 return true;
 }
 
-bool IntegerType::isCompatibleWith(Type* other) {
+bool IntegerType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToInteger()) return true;
 	if (other->resolvesToChar()) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == size) return true;
-	// I am compatible with an array of myself:
-	if (other->resolvesToArray()) return isCompatibleWith(((ArrayType*)other)->getBaseType());
 	return false;
 }
 
-bool FloatType::isCompatibleWith(Type* other) {
+bool FloatType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToFloat()) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
@@ -1236,7 +1384,7 @@ bool FloatType::isCompatibleWith(Type* other) {
 	return false;
 }
 
-bool CharType::isCompatibleWith(Type* other) {
+bool CharType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToChar()) return true;
 	if (other->resolvesToInteger()) return true;
@@ -1246,7 +1394,7 @@ bool CharType::isCompatibleWith(Type* other) {
 	return false;
 }
 
-bool BooleanType::isCompatibleWith(Type* other) {
+bool BooleanType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToBoolean()) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
@@ -1254,7 +1402,7 @@ bool BooleanType::isCompatibleWith(Type* other) {
 	return false;
 }
 
-bool FuncType::isCompatibleWith(Type* other) {
+bool FuncType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (*this == *other) return true;		// MVE: should not compare names!
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
@@ -1262,7 +1410,7 @@ bool FuncType::isCompatibleWith(Type* other) {
 	return false;
 }
 
-bool PointerType::isCompatibleWith(Type* other) {
+bool PointerType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
@@ -1270,7 +1418,7 @@ bool PointerType::isCompatibleWith(Type* other) {
 	return points_to->isCompatibleWith(other->asPointer()->points_to);
 }
 
-bool NamedType::isCompatibleWith(Type* other) {
+bool NamedType::isCompatible(Type* other, bool all) {
 	Type* resTo = resolvesTo();
 	if (resTo)
 		return resolvesTo()->isCompatibleWith(other);
@@ -1278,15 +1426,15 @@ bool NamedType::isCompatibleWith(Type* other) {
 	return (*this == *other);
 }
 
-bool ArrayType::isCompatibleWith(Type* other) {
+bool ArrayType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToArray() && base_type->isCompatibleWith(other->asArray()->base_type)) return true;
-	if (base_type->isCompatibleWith(other)) return true;		// An array of x is compatible with x
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
+	if (!all && base_type->isCompatibleWith(other)) return true;		// An array of x is compatible with x
 	return false;
 }
 
-bool UnionType::isCompatibleWith(Type* other) {
+bool UnionType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	std::list<UnionElement>::iterator it;
 	if (other->resolvesToUnion()) {
@@ -1303,26 +1451,28 @@ bool UnionType::isCompatibleWith(Type* other) {
 	return false;
 }
 
-bool CompoundType::isCompatibleWith(Type* other) {
+bool CompoundType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
-	if (!other->resolvesToCompound()) return false;
-	CompoundType* otherComp = (CompoundType*)other;
+	if (!other->resolvesToCompound())
+		// Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
+		return !all && types[0]->isCompatibleWith(other);
+	CompoundType* otherComp = other->asCompound();
 	int n = otherComp->getNumTypes();
-	if (n != (int)types.size()) return false;		// Is a subcompound compatible with its supercompound?
+	if (n != (int)types.size()) return false;		// Is a subcompound compatible with a supercompound?
 	for (int i=0; i < n; i++)
 		if (!types[i]->isCompatibleWith(otherComp->types[i])) return false;
 	return true;
 }
 
-bool UpperType::isCompatibleWith(Type* other) {
+bool UpperType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToUpper() && base_type->isCompatibleWith(other->asUpper()->base_type)) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
 }
 
-bool LowerType::isCompatibleWith(Type* other) {
+bool LowerType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToVoid()) return true;
 	if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
