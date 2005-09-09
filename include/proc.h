@@ -351,6 +351,7 @@ class UserProc : public Proc {
 		int			maxDepth;
 
 		/*
+		 * DEPRECATED now. Use the localTable.
 		 * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
 		 * stores parameters.
 		 * It is a convenient place to store the types of locals after
@@ -795,6 +796,9 @@ public:
 		ReturnStatement* getTheReturnStatement() {return theReturnStatement;}
 		bool		filterReturns(Exp* e);			// Decide whether to filter out e (return true) or keep it
 		bool		filterParams(Exp* e);			// As above but for parameters and arguments
+
+		// Find and if necessary insert an implicit reference before s whose address expression is a and type is t
+		void		setImplicitRef(Statement* s, Exp* a, Type* ty);
 protected:
 		friend class XMLProgParser;
 					UserProc();
