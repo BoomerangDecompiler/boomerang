@@ -186,8 +186,7 @@ void RTL::appendStmt(Statement* s) {
 /*==============================================================================
  * FUNCTION:		RTL::prependStmt
  * OVERVIEW:		Prepend the given Statement at the start of this RTL
- * NOTE:			No copy of the statement is made. This is different to how
- *					  UQBT was!
+ * NOTE:			No clone of the statement is made. This is different to how UQBT was
  * PARAMETERS:		s: Ptr to Statement to prepend
  * RETURNS:			Nothing
  *============================================================================*/
@@ -238,6 +237,10 @@ void RTL::insertStmt(Statement* s, unsigned i) {
 
 	// Do the insertion
 	stmtList.insert(pp, s);
+}
+
+void RTL::insertStmt(Statement* s, iterator it) {
+	stmtList.insert(it, s);
 }
 
 /*==============================================================================
