@@ -791,7 +791,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				case STMT_ASSIGN:
 				case STMT_PHIASSIGN:
 				case STMT_IMPASSIGN:
-				//case STMT_IMPREF:
+				case STMT_IMPREF:
 					// Do nothing
 					break;
 		
