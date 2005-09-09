@@ -86,8 +86,7 @@ private:
 	bool	helperFuncLong(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl, std::string& name);
 	//void	setReturnLocations(CalleeEpilogue* epilogue, int iReg);
 
-	// This struct represents a single nop instruction. Used as a substitute
-	// delay slot instruction
+	// This struct represents a single nop instruction. Used as a substitute delay slot instruction
 	DecodeResult nop_inst;
 	
 };
