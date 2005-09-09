@@ -149,6 +149,13 @@ bool StmtConscriptSetter::visit(BranchStatement* stmt) {
 	return true;
 }
 
+bool StmtConscriptSetter::visit(ImpRefStatement* stmt) {
+	SetConscripts sc(curConscript, bClear);
+	stmt->getAddressExp()->accept(&sc);
+	curConscript = sc.getLast();
+	return true;
+}
+
 void PhiStripper::visit(PhiAssign* s, bool& recur) {
 	del = true;
 	recur = true;

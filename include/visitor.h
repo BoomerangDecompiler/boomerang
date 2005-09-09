@@ -53,6 +53,7 @@ class CallStatement;
 class ReturnStatement;
 class GotoStatement;
 class BranchStatement;
+class ImpRefStatement;
 
 class RTL;
 class UserProc;
@@ -188,6 +189,7 @@ virtual bool		visit(BranchStatement	*stmt)	{ return true;}
 virtual bool		visit(CaseStatement		*stmt)	{ return true;}
 virtual bool		visit(CallStatement		*stmt)	{ return true;}
 virtual bool		visit(ReturnStatement	*stmt)	{ return true;}
+virtual bool		visit(ImpRefStatement	*stmt)	{ return true;}
 };
 
 class StmtConscriptSetter : public StmtVisitor {
@@ -205,6 +207,7 @@ virtual bool		visit(CaseStatement *stmt);
 virtual bool		visit(CallStatement *stmt);
 virtual bool		visit(ReturnStatement *stmt);
 virtual bool		visit(BranchStatement *stmt);
+virtual bool		visit(ImpRefStatement	*stmt);
 };
 
 // StmtExpVisitor is a visitor of statements, and of expressions within those expressions. The visiting of expressions
@@ -224,6 +227,7 @@ virtual bool		visit(BranchStatement *stmt, bool& override) {override = false; re
 virtual bool		visit(  CaseStatement *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(  CallStatement *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(ReturnStatement *stmt, bool& override) {override = false; return true;}
+virtual bool		visit(ImpRefStatement *stmt, bool& override) {override = false; return true;}
 };
 
 // StmtModifier is a class that visits all statements in an RTL, and for all expressions in the various types of
@@ -252,6 +256,7 @@ virtual void		visit(BranchStatement *s,	bool& recur) {recur = true;}
 virtual void		visit(CaseStatement *s,		bool& recur) {recur = true;}
 virtual void		visit(CallStatement *s,		bool& recur) {recur = true;}
 virtual void		visit(ReturnStatement *s,	bool& recur) {recur = true;}
+virtual void		visit(ImpRefStatement *s,	bool& recur) {recur = true;}
 };
 
 // As above, but specialised for propagating to. The top level of the lhs of assignment-like statements (including
@@ -272,6 +277,7 @@ virtual void		visit(BranchStatement *s,	bool& recur) {recur = true;}
 virtual void		visit(CaseStatement *s,		bool& recur) {recur = true;}
 virtual void		visit(CallStatement *s,		bool& recur) {recur = true;}
 virtual void		visit(ReturnStatement *s,	bool& recur) {recur = true;}
+virtual void		visit(ImpRefStatement *s,	bool& recur) {recur = true;}
 };
 
 class PhiStripper : public StmtModifier {
@@ -430,9 +436,12 @@ public:
 		void		setType(Type* ty) {parentType = ty;}
 		//Type*	getType() {return parentType;}
 
-		Exp*		preVisit(Location* e, bool& recur);
-		Exp*		postVisit(Location* e);
-		Exp*		preVisit(Binary* e, bool& recur);
+		Exp*		preVisit(Location* e, bool& recur);		// To process m[X]
+		Exp*		postVisit(Location* e);					// To undo the above
+		Exp*		preVisit(Unary*	e, bool& recur);		// To process a[X]
+		Exp*		postVisit(Unary* e);					// To undo the above
+		Exp*		preVisit(Binary* e, bool& recur);		// To look for sp - K
+		Exp*		preVisit(TypedExp*	e, bool& recur);	// To prevent processing TypedExps more than once
 };
 
 class StmtDfaLocalMapper : public StmtModifier {
@@ -446,6 +455,7 @@ virtual void		visit(     BoolAssign *s, bool& recur);
 virtual void		visit(  CallStatement *s, bool& recur);
 virtual void		visit(BranchStatement *s, bool& recur);
 virtual void		visit(ReturnStatement *s, bool& recur);
+virtual void		visit(ImpRefStatement *s, bool& recur);
 };
 
 // Convert any exp{-} (with null definition) so that the definition points instead to an implicit assignment (exp{0})
