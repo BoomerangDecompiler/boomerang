@@ -2,11 +2,11 @@
 
 /*  A Bison++ parser, made from transformation.y  */
 
- /* with Bison++ version bison++ Version 1.21-7, adapted from GNU bison by coetmeur@icdc.fr
+ /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
   */
 
 
-#line 1 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 1 "/usr/local/lib/bison.cc"
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Bob Corbett and Richard Stallman
@@ -26,16 +26,12 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HEADER SECTION */
-#ifndef _MSDOS
-#ifdef MSDOS
-#define _MSDOS
+#if defined( _MSDOS ) || defined(MSDOS) || defined(__MSDOS__) 
+#define __MSDOS_AND_ALIKE
 #endif
-#endif
-/* turboc */
-#ifdef __MSDOS__
-#ifndef _MSDOS
-#define _MSDOS
-#endif
+#if defined(_WINDOWS) && defined(_MSC_VER)
+#define __HAVE_NO_ALLOCA
+#define __MSDOS_AND_ALIKE
 #endif
 
 #ifndef alloca
@@ -45,7 +41,7 @@
 #elif (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc)  || defined (__sgi)
 #include <alloca.h>
 
-#elif defined (_MSDOS)
+#elif defined (__MSDOS_AND_ALIKE)
 #include <malloc.h>
 #ifndef __TURBOC__
 /* MS C runtime lib */
@@ -84,8 +80,8 @@ void *alloca ();
 #include <stdio.h>
 #define YYBISON 1  
 
-/* #line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 89 "transformation-parser.cpp"
+/* #line 73 "/usr/local/lib/bison.cc" */
+#line 85 "transformation-parser.cpp"
 #define YY_TransformationParser_DEBUG  1
 #define YY_TransformationParser_PARSE_PARAM 
 #define YY_TransformationParser_CONSTRUCTOR_PARAM  \
@@ -129,7 +125,7 @@ typedef union {
 
 #include "transformation-scanner.h"
 
-#line 77 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 73 "/usr/local/lib/bison.cc"
 /* %{ and %header{ and %union, during decl */
 #define YY_TransformationParser_BISON 1
 #ifndef YY_TransformationParser_COMPATIBILITY
@@ -175,36 +171,36 @@ typedef union {
 
 #ifndef YY_TransformationParser_PURE
 
-/* #line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 180 "transformation-parser.cpp"
+/* #line 117 "/usr/local/lib/bison.cc" */
+#line 176 "transformation-parser.cpp"
 
-#line 121 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 117 "/usr/local/lib/bison.cc"
 /*  YY_TransformationParser_PURE */
 #endif
 
 /* section apres lecture def, avant lecture grammaire S2 */
 
-/* #line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 189 "transformation-parser.cpp"
+/* #line 121 "/usr/local/lib/bison.cc" */
+#line 185 "transformation-parser.cpp"
 
-#line 125 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 121 "/usr/local/lib/bison.cc"
 /* prefix */
 #ifndef YY_TransformationParser_DEBUG
 
-/* #line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 196 "transformation-parser.cpp"
+/* #line 123 "/usr/local/lib/bison.cc" */
+#line 192 "transformation-parser.cpp"
 
-#line 127 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 123 "/usr/local/lib/bison.cc"
 /* YY_TransformationParser_DEBUG */
 #endif
 
 
 #ifndef YY_TransformationParser_LSP_NEEDED
 
-/* #line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 206 "transformation-parser.cpp"
+/* #line 128 "/usr/local/lib/bison.cc" */
+#line 202 "transformation-parser.cpp"
 
-#line 132 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 128 "/usr/local/lib/bison.cc"
  /* YY_TransformationParser_LSP_NEEDED*/
 #endif
 
@@ -314,8 +310,8 @@ typedef
 #ifndef YY_USE_CLASS
 /* TOKEN C */
 
-/* #line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 319 "transformation-parser.cpp"
+/* #line 236 "/usr/local/lib/bison.cc" */
+#line 315 "transformation-parser.cpp"
 #define	SIZEOF	258
 #define	KIND	259
 #define	POINTER	260
@@ -361,7 +357,7 @@ typedef
 #define	BOOL_FALSE	300
 
 
-#line 240 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 236 "/usr/local/lib/bison.cc"
  /* #defines tokens */
 #else
 /* CLASS */
@@ -393,7 +389,7 @@ typedef
 #ifndef YY_TransformationParser_USE_CONST_TOKEN
 #define YY_TransformationParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */
+/* so by default we use it */ 
 #endif
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 #ifndef YY_TransformationParser_ENUM_TOKEN
@@ -403,12 +399,12 @@ typedef
 
 class YY_TransformationParser_CLASS YY_TransformationParser_INHERIT
 {
-public:
+public: 
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 412 "transformation-parser.cpp"
+/* #line 280 "/usr/local/lib/bison.cc" */
+#line 408 "transformation-parser.cpp"
 static const int SIZEOF;
 static const int KIND;
 static const int POINTER;
@@ -454,13 +450,13 @@ static const int BOOL_TRUE;
 static const int BOOL_FALSE;
 
 
-#line 284 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 280 "/usr/local/lib/bison.cc"
  /* decl const */
 #else
 enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
-/* #line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 464 "transformation-parser.cpp"
+/* #line 283 "/usr/local/lib/bison.cc" */
+#line 460 "transformation-parser.cpp"
 	,SIZEOF=258
 	,KIND=259
 	,POINTER=260
@@ -506,7 +502,7 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 	,BOOL_FALSE=300
 
 
-#line 287 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 283 "/usr/local/lib/bison.cc"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -539,8 +535,8 @@ public:
 /* other declare folow */
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 
-/* #line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 544 "transformation-parser.cpp"
+/* #line 314 "/usr/local/lib/bison.cc" */
+#line 540 "transformation-parser.cpp"
 const int YY_TransformationParser_CLASS::SIZEOF=258;
 const int YY_TransformationParser_CLASS::KIND=259;
 const int YY_TransformationParser_CLASS::POINTER=260;
@@ -586,7 +582,7 @@ const int YY_TransformationParser_CLASS::BOOL_TRUE=299;
 const int YY_TransformationParser_CLASS::BOOL_FALSE=300;
 
 
-#line 318 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 314 "/usr/local/lib/bison.cc"
  /* const YY_TransformationParser_CLASS::token */
 #endif
 /*apres const  */
@@ -599,8 +595,8 @@ YY_TransformationParser_CONSTRUCTOR_CODE;
 };
 #endif
 
-/* #line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 604 "transformation-parser.cpp"
+/* #line 325 "/usr/local/lib/bison.cc" */
+#line 600 "transformation-parser.cpp"
 
 
 #define	YYFINAL		72
@@ -789,7 +785,7 @@ static const short yycheck[] = {     1,
     -1,    -1,    58
 };
 
-#line 329 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 325 "/usr/local/lib/bison.cc"
  /* fattrs + tables */
 
 /* parser code folow  */
@@ -805,7 +801,7 @@ static const short yycheck[] = {     1,
    as one case of the switch.  */ 
 
 #if YY_TransformationParser_USE_GOTO != 0
-/*
+/* 
  SUPRESSION OF GOTO : on some C++ compiler (sun c++)
   the goto is strictly forbidden if any constructor/destructor
   is used in the whole function (very stupid isn't it ?)
@@ -816,19 +812,19 @@ static const short yycheck[] = {     1,
 #define YYBEGINGOTO  enum yy_labels yy_gotostate=yygotostart; \
                      for(;;) switch(yy_gotostate) { case yygotostart: {
 #define YYLABEL(lb) } case lb: {
-#define YYENDGOTO } }
+#define YYENDGOTO } } 
 #define YYBEGINDECLARELABEL enum yy_labels {yygotostart
 #define YYDECLARELABEL(lb) ,lb
 #define YYENDDECLARELABEL  };
 #else
 /* macro to keep goto */
 #define YYGOTO(lb) goto lb
-#define YYBEGINGOTO
+#define YYBEGINGOTO 
 #define YYLABEL(lb) lb:
 #define YYENDGOTO
-#define YYBEGINDECLARELABEL
+#define YYBEGINDECLARELABEL 
 #define YYDECLARELABEL(lb)
-#define YYENDDECLARELABEL
+#define YYENDDECLARELABEL 
 #endif
 /* LABEL DECLARATION */
 YYBEGINDECLARELABEL
@@ -841,15 +837,44 @@ YYBEGINDECLARELABEL
   YYDECLARELABEL(yyerrlab1)   /* here on error raised explicitly by an action */
   YYDECLARELABEL(yyerrdefault)  /* current state does not do anything special for the error token. */
   YYDECLARELABEL(yyerrpop)   /* pop the current state because it cannot handle the error token */
-  YYDECLARELABEL(yyerrhandle)
+  YYDECLARELABEL(yyerrhandle)  
 YYENDDECLARELABEL
+/* ALLOCA SIMULATION */
+/* __HAVE_NO_ALLOCA */
+#ifdef __HAVE_NO_ALLOCA
+int __alloca_free_ptr(char *ptr,char *ref)
+{if(ptr!=ref) free(ptr);
+ return 0;}
+
+#define __ALLOCA_alloca(size) malloc(size)
+#define __ALLOCA_free(ptr,ref) __alloca_free_ptr((char *)ptr,(char *)ref)
+
+#ifdef YY_TransformationParser_LSP_NEEDED
+#define __ALLOCA_return(num) \
+            return( __ALLOCA_free(yyss,yyssa)+\
+		    __ALLOCA_free(yyvs,yyvsa)+\
+		    __ALLOCA_free(yyls,yylsa)+\
+		   (num))
+#else
+#define __ALLOCA_return(num) \
+            return( __ALLOCA_free(yyss,yyssa)+\
+		    __ALLOCA_free(yyvs,yyvsa)+\
+		   (num))
+#endif
+#else
+#define __ALLOCA_return(num) return(num)
+#define __ALLOCA_alloca(size) alloca(size)
+#define __ALLOCA_free(ptr,ref) 
+#endif
+
+/* ENDALLOCA SIMULATION */
 
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (YY_TransformationParser_CHAR = YYEMPTY)
 #define YYEMPTY         -2
 #define YYEOF           0
-#define YYACCEPT        return(0)
-#define YYABORT         return(1)
+#define YYACCEPT        __ALLOCA_return(0)
+#define YYABORT         __ALLOCA_return(1)
 #define YYERROR         YYGOTO(yyerrlab1)
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -1076,18 +1101,21 @@ YYLABEL(yynewstate)
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  YY_TransformationParser_ERROR("parser stack overflow");
-	  return 2;
+	  __ALLOCA_return(2);
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
+      yyss = (short *) __ALLOCA_alloca (yystacksize * sizeof (*yyssp));
       __yy_bcopy ((char *)yyss1, (char *)yyss, size * sizeof (*yyssp));
-      yyvs = (YY_TransformationParser_STYPE *) alloca (yystacksize * sizeof (*yyvsp));
+      __ALLOCA_free(yyss1,yyssa);
+      yyvs = (YY_TransformationParser_STYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yyvsp));
       __yy_bcopy ((char *)yyvs1, (char *)yyvs, size * sizeof (*yyvsp));
+      __ALLOCA_free(yyvs1,yyvsa);
 #ifdef YY_TransformationParser_LSP_NEEDED
-      yyls = (YY_TransformationParser_LTYPE *) alloca (yystacksize * sizeof (*yylsp));
+      yyls = (YY_TransformationParser_LTYPE *) __ALLOCA_alloca (yystacksize * sizeof (*yylsp));
       __yy_bcopy ((char *)yyls1, (char *)yyls, size * sizeof (*yylsp));
+      __ALLOCA_free(yyls1,yylsa);
 #endif
 #endif /* no yyoverflow */
 
@@ -1245,8 +1273,8 @@ YYLABEL(yyreduce)
 #endif
 
 
-/* #line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 1250 "transformation-parser.cpp"
+/* #line 811 "/usr/local/lib/bison.cc" */
+#line 1278 "transformation-parser.cpp"
 
   switch (yyn) {
 
@@ -1426,7 +1454,7 @@ case 35:
     break;}
 }
 
-#line 783 "/home/38/binary/u1.luna.tools/lib/bison.cc"
+#line 811 "/usr/local/lib/bison.cc"
    /* the action file gets copied in in place of this dollarsign  */
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1627,8 +1655,8 @@ YYLABEL(yyerrhandle)
 
 /* END */
 
-/* #line 982 "/home/38/binary/u1.luna.tools/lib/bison.cc" */
-#line 1632 "transformation-parser.cpp"
+/* #line 1010 "/usr/local/lib/bison.cc" */
+#line 1660 "transformation-parser.cpp"
 #line 201 "transformation.y"
 
 #include <stdio.h>

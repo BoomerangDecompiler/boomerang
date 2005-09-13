@@ -1,7 +1,7 @@
 #ifndef YY_TransformationParser_h_included
 #define YY_TransformationParser_h_included
 
-#line 1 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 1 "/usr/local/lib/bison.h"
 /* before anything */
 #ifdef c_plusplus
 #ifndef __cplusplus
@@ -16,7 +16,7 @@
 #endif
 #include <stdio.h>
 
-/* #line 14 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 14 "/usr/local/lib/bison.h" */
 #line 21 "transformation-parser.h"
 #define YY_TransformationParser_DEBUG  1
 #define YY_TransformationParser_PARSE_PARAM 
@@ -58,7 +58,7 @@ typedef union {
 } yy_TransformationParser_stype;
 #define YY_TransformationParser_STYPE yy_TransformationParser_stype
 
-#line 14 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 14 "/usr/local/lib/bison.h"
  /* %{ and %header{ and %union, during decl */
 #ifndef YY_TransformationParser_COMPATIBILITY
 #ifndef YY_USE_CLASS
@@ -109,32 +109,32 @@ typedef union {
 
 #ifndef YY_TransformationParser_PURE
 
-/* #line 63 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 63 "/usr/local/lib/bison.h" */
 #line 114 "transformation-parser.h"
 
-#line 63 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 63 "/usr/local/lib/bison.h"
 /* YY_TransformationParser_PURE */
 #endif
 
-/* #line 65 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 65 "/usr/local/lib/bison.h" */
 #line 121 "transformation-parser.h"
 
-#line 65 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 65 "/usr/local/lib/bison.h"
 /* prefix */
 #ifndef YY_TransformationParser_DEBUG
 
-/* #line 67 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 67 "/usr/local/lib/bison.h" */
 #line 128 "transformation-parser.h"
 
-#line 67 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 67 "/usr/local/lib/bison.h"
 /* YY_TransformationParser_DEBUG */
 #endif
 #ifndef YY_TransformationParser_LSP_NEEDED
 
-/* #line 70 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 70 "/usr/local/lib/bison.h" */
 #line 136 "transformation-parser.h"
 
-#line 70 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 70 "/usr/local/lib/bison.h"
  /* YY_TransformationParser_LSP_NEEDED*/
 #endif
 /* DEFAULT LTYPE*/
@@ -209,7 +209,7 @@ extern YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 #endif
 
 
-/* #line 143 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 143 "/usr/local/lib/bison.h" */
 #line 214 "transformation-parser.h"
 #define	SIZEOF	258
 #define	KIND	259
@@ -256,7 +256,7 @@ extern YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 #define	BOOL_FALSE	300
 
 
-#line 143 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 143 "/usr/local/lib/bison.h"
  /* #defines token */
 /* after #define tokens, before const tokens S5*/
 #else
@@ -283,7 +283,7 @@ extern YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 #ifndef YY_TransformationParser_USE_CONST_TOKEN
 #define YY_TransformationParser_USE_CONST_TOKEN 0
 /* yes enum is more compatible with flex,  */
-/* so by default we use it */
+/* so by default we use it */ 
 #endif
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 #ifndef YY_TransformationParser_ENUM_TOKEN
@@ -293,11 +293,11 @@ extern YY_TransformationParser_STYPE YY_TransformationParser_LVAL;
 
 class YY_TransformationParser_CLASS YY_TransformationParser_INHERIT
 {
-public:
+public: 
 #if YY_TransformationParser_USE_CONST_TOKEN != 0
 /* static const int token ... */
 
-/* #line 182 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 182 "/usr/local/lib/bison.h" */
 #line 302 "transformation-parser.h"
 static const int SIZEOF;
 static const int KIND;
@@ -344,12 +344,12 @@ static const int BOOL_TRUE;
 static const int BOOL_FALSE;
 
 
-#line 182 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 182 "/usr/local/lib/bison.h"
  /* decl const */
 #else
 enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 
-/* #line 185 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 185 "/usr/local/lib/bison.h" */
 #line 354 "transformation-parser.h"
 	,SIZEOF=258
 	,KIND=259
@@ -396,7 +396,7 @@ enum YY_TransformationParser_ENUM_TOKEN { YY_TransformationParser_NULL_TOKEN=0
 	,BOOL_FALSE=300
 
 
-#line 185 "/home/38/binary/u1.luna.tools/lib/bison.h"
+#line 185 "/usr/local/lib/bison.h"
  /* enum token */
      }; /* end of enum declaration */
 #endif
@@ -449,6 +449,6 @@ public:
 #endif
 /* END */
 
-/* #line 236 "/home/38/binary/u1.luna.tools/lib/bison.h" */
+/* #line 236 "/usr/local/lib/bison.h" */
 #line 454 "transformation-parser.h"
 #endif
