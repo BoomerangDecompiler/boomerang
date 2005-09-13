@@ -46,6 +46,15 @@
 
 extern char debug_buffer[];		 // For prints functions
 
+#if defined(_MSC_VER) && _MSC_VER < 1310			// Ugh - MSC 7.0 doesn't have advance
+#define my_advance(aa, n) \
+	for (int zz = 0; zz < n; zz++) \
+		aa++;
+#else
+#define my_advance(aa, n) \
+	advance(aa, n);
+#endif
+
 void Statement::setProc(UserProc *p)
 {
 	proc = p;
@@ -1920,13 +1929,7 @@ void CallStatement::updateArgumentWithType(int n)
 		Type *ty = procDest->getSignature()->getParamType(n);
 		if (ty) {
 			StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310			// Ugh - MSC 7.0 doesn't have advance
-			for (int nn = 0; nn < n; nn++)
-				aa++;
-#else
-#error greater equals
-			advance(aa, n);
-#endif
+			my_advance(aa, n);
 			Exp *e = ((Assign*)*aa)->getRight();
 			if (e->isSubscript())
 				e = e->getSubExp1();
@@ -1981,12 +1984,7 @@ Exp* CallStatement::getArgumentExp(int i)
 {
 	assert(i < (int)arguments.size());
 	StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310
-	for (int ii = 0; ii < i; ii++)
-		aa++;
-#else
-	advance(aa, i);
-#endif
+	my_advance(aa, i);
 	return ((Assign*)*aa)->getRight();
 }
 
@@ -1994,12 +1992,7 @@ void CallStatement::setArgumentExp(int i, Exp *e)
 {
 	assert(i < (int)arguments.size());
 	StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310
-	for (int ii = 0; ii < i; ii++)
-		aa++;
-#else
-	advance(aa, i);
-#endif
+	my_advance(aa, i);
 	Exp*& a = ((Assign*)*aa)->getRightRef();
 	a = e->clone();
 	updateArgumentWithType(i);
@@ -2013,12 +2006,7 @@ int CallStatement::getNumArguments()
 void CallStatement::setNumArguments(int n) {
 	int oldSize = arguments.size();
 	StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310
-	for (int nn = 0; nn < n; nn++)
-		aa++;
-#else
-	advance(aa, n);
-#endif
+	my_advance(aa, n);
 	arguments.erase(aa, arguments.end());
 	// MVE: check if these need extra propagation
 	for (int i = oldSize; i < n; i++) {
@@ -2033,12 +2021,7 @@ void CallStatement::setNumArguments(int n) {
 void CallStatement::removeArgument(int i)
 {
 	StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310
-	for (int ii = 0; ii < i; ii++)
-		aa++;
-#else
-	advance(aa, i);
-#endif
+	my_advance(aa, i);
 	arguments.erase(aa);
 }
 
@@ -3451,12 +3434,7 @@ void CallStatement::genConstraints(LocationSet& cons) {
 					// Generate a constraint for the parameter
 					TypeVal* tv = new TypeVal(t);
 					StatementList::iterator aa = arguments.begin();
-#if defined(_MSC_VER) && _MSC_VER < 1310
-					for (int nn = 0; nn < n; nn++)
-						aa++;
-#else
-					advance(aa, n);
-#endif
+					my_advance(aa, n);
 					Exp* argn = ((Assign*)*aa)->getRight();
 					Exp* con = argn->genConstraints(tv);
 					cons.insert(con);
