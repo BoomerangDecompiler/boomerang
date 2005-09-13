@@ -2136,9 +2136,15 @@ Type* CallStatement::getTypeFor(Exp* e) {
 	Assignment* as = defines.findOnLeft(e);
 	if (as != NULL)
 		return as->getType();
+	if (e->isPC())
+		// Special case: just return void*
+		return new PointerType(new VoidType);
+#if 0	// Else, we should leave it to the bypassing propagator to reference around the call.
+		// The code below assumes that the call does not modify e; if e happens to be the stack pointer, this is
+		// not always true.
 	// See if it is in our reaching definitions
-	Exp* ref = defCol.findDefFor(e);
-	if (ref == NULL || !ref->isSubscript()) return NULL;
+	Exp* rdef = defCol.findDefFor(e);
+	if (rdef == NULL !ref->isSubscript()) return NULL;
 	Statement* def = ((RefExp*)ref)->getDef();
 	if (def == NULL) return NULL;
 	return def->getTypeFor(e);
@@ -2149,6 +2155,9 @@ Type* CallStatement::getTypeFor(Exp* e) {
 	}
 	if (calleeReturn == NULL) return NULL;
 	return calleeReturn->getTypeFor(e);
+#endif
+#else
+	return NULL;
 #endif
 }
 
@@ -3886,6 +3895,8 @@ bool BoolAssign::accept(StmtPartModifier* v) {
 
 // Fix references to the returns of call statements
 void Statement::bypassAndPropagate() {
+if (number == 147)
+ std::cerr << "HACK!\n";
 	BypassingPropagator bp(this);
 	StmtPartModifier sm(&bp);			// Use the Part modifier so we don't change the top level of LHS of assigns etc
 	accept(&sm);
