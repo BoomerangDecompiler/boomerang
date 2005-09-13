@@ -554,7 +554,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						BB_rtls = NULL;					// New RTLList for next BB
 						break;							// Just leave it alone
 					}
-					// FIXME: check if this can happen any more
+					// Check for indirect calls to library functions, especially in Win32 programs
 					if (pDest && pDest->getOper() == opMemOf &&
 							pDest->getSubExp1()->getOper() == opIntConst && 
 							pBF->IsDynamicLinkedProcPointer(((Const*)pDest->getSubExp1())->getAddr())) {
@@ -575,8 +575,9 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						std::list<RTL*> *ret_rtls = new std::list<RTL*>();
 						stmt_list = new std::list<Statement*>;
 						stmt_list->push_back(ret);
-						ret_rtls->push_back(new RTL(pRtl->getAddress()+1, stmt_list));
-						PBB pret = pCfg->newBB(ret_rtls, RET, 0);
+						//ret_rtls->push_back(new RTL(pRtl->getAddress()+1, stmt_list));
+						//PBB pret = pCfg->newBB(ret_rtls, RET, 0);
+						PBB pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
 						pret->addInEdge(pBB);
 						pBB->setOutEdge(0, pret);
 						sequentialDecode = false;
