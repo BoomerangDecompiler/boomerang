@@ -2394,7 +2394,8 @@ Exp* Binary::polySimplify(bool& bMod) {
 	// check for exp + n where exp is a pointer to a compound type
 	// becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
 	// MVE: Fix for DFA type analysis; at present, calls getType which is deprecated
-	if (	op == opPlus &&
+	if (	DFA_TYPE_ANALYSIS &&
+			op == opPlus &&
 			subExp1->getType() &&
 			opSub2 == opIntConst) {
 		unsigned n = (unsigned)((Const*)subExp2)->getInt();
@@ -3476,8 +3477,8 @@ Type *RefExp::getType()
 {
 	// This is just WRONG! It discards the subscript, effectively turning r9{35} into r9{-}, which are not the same
 	// variable in SSA!
-	if (subExp1 && subExp1->getType())
-		return subExp1->getType();
+	//if (subExp1 && subExp1->getType())
+	//	return subExp1->getType();
 	if (def && def->isAssign() && ((Assign*)def)->getRight()->getType())
 		return ((Assign*)def)->getRight()->getType();
 	if (def && def->isCall()) {
