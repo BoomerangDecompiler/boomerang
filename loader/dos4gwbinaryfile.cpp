@@ -124,7 +124,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
     fread(m_pLXPages, sizeof(LXPage), npagetblentries, fp);
 #endif
 
-    int npages = 0;
+    unsigned npages = 0;
     m_cbImage = 0;
     for (unsigned n = 0; n < LMMH(m_pLXHeader->numobjsinmodule); n++)
         if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
@@ -265,7 +265,7 @@ bool DOS4GWBinaryFile::RealLoad(const char* sName)
 
     fseek(fp, LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff, SEEK_SET);
     LXFixup fixup;
-    int srcpage = 0;
+    unsigned srcpage = 0;
     do {
         fread(&fixup, sizeof(fixup), 1, fp);
         if (fixup.src != 7 && fixup.flags != 0) {
@@ -304,7 +304,7 @@ bool DOS4GWBinaryFile::PostLoad(void* handle)
 	return false;
 }
 
-char* DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr)
+const char* DOS4GWBinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
 	std::map<ADDRESS, std::string>::iterator it = dlprocptrs.find(dwAddr);
 	if (it == dlprocptrs.end())
