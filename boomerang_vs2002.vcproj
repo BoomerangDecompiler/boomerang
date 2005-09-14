@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.00"
@@ -55,13 +55,7 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
 				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -76,13 +70,13 @@
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libexpat.lib gc.lib"
+				AdditionalDependencies="libexpat.lib gc.lib comctl32.lib"
 				OutputFile="$(OutDir)/boomerang.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -104,22 +98,23 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
 				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
-	<References>
-	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<File
+				RelativePath=".\loader\BinaryFile.cpp">
+			</File>
+			<File
+				RelativePath=".\loader\BinaryFileFactory.cpp">
+			</File>
+			<File
+				RelativePath=".\loader\SymTab.cpp">
+			</File>
 			<File
 				RelativePath=".\c\ansi-c-parser.cpp">
 				<FileConfiguration
@@ -166,12 +161,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories="..\..\win32make\include"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\loader\BinaryFile.cpp">
-			</File>
-			<File
-				RelativePath=".\loader\BinaryFileFactory.cpp">
 			</File>
 			<File
 				RelativePath=".\boomerang.cpp">
@@ -442,9 +431,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\loader\SymTab.cpp">
-			</File>
-			<File
 				RelativePath=".\codegen\syntax.cpp">
 			</File>
 			<File
@@ -530,6 +516,9 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
+				RelativePath=".\include\BinaryFile.h">
+			</File>
+			<File
 				RelativePath=".\include\analysis.h">
 			</File>
 			<File
@@ -540,9 +529,6 @@
 			</File>
 			<File
 				RelativePath=".\include\basicblock.h">
-			</File>
-			<File
-				RelativePath=".\include\BinaryFile.h">
 			</File>
 			<File
 				RelativePath=".\include\boomerang.h">
