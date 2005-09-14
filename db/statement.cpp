@@ -3895,8 +3895,6 @@ bool BoolAssign::accept(StmtPartModifier* v) {
 
 // Fix references to the returns of call statements
 void Statement::bypassAndPropagate() {
-if (number == 147)
- std::cerr << "HACK!\n";
 	BypassingPropagator bp(this);
 	StmtPartModifier sm(&bp);			// Use the Part modifier so we don't change the top level of LHS of assigns etc
 	accept(&sm);
