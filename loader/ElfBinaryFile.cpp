@@ -282,7 +282,7 @@ char* ElfBinaryFile::GetStrPtr(int idx, int offset)
 // typically minimise the number of entries to search
 ADDRESS ElfBinaryFile::findRelPltOffset(int i, ADDRESS addrRelPlt, int sizeRelPlt, int numRelPlt, ADDRESS addrPlt) {
 	int first = i;
-	if (first > numRelPlt)
+	if (first >= numRelPlt)
 		first = numRelPlt-1;
 	int curr = first;
 	do {
