@@ -9,6 +9,8 @@
 # File: ppc.ssl
 # Desc: This file contains a semantic description of the PPC processor.
 
+# 26/Sep/05 - Mike: Added STWX/STHX/STBX, EXTSB/EXTSBq
+
 # --------------------------------------------------------------------------
 # PPC RTL
 # --------------------------------------------------------------------------
@@ -223,6 +225,11 @@ DIVWU	 	 rd, ra, rb						*32* rd := ra / rb;
 DIVWUq	 	 rd, ra, rb						*32* rd := ra / rb
 			 	 	 						SETFLAGS0(rd);
 
+EXTSB		rd, ra							*32* rd := sgnex(8, 32, ra);
+
+EXTSBq		rd, ra							*32* rd := sgnex(8, 32, ra)
+											SETFLAGS0(rd);
+
 MULLI		rd, ra, simm					*32* rd := rs * sgnex(16,32,simm);
 
 MULLW	 	rd, ra, rb						*32* rd := ra * rb;
@@ -321,9 +328,16 @@ STWU	rs, eaddr, ra					*32* m[eaddr] := rs
 
 STW		rs, eaddr, ra					*32* m[eaddr] := rs;
 
+STWX	rs, eaddr						*32* m[eaddr] := rs;
+
 STH		rs, eaddr, ra					*16* m[eaddr] := truncs(32, 16, rs);
 
+STHX	rs, eaddr						*16* m[eaddr] := truncs(32, 16, rs);
+
 STB		rs, eaddr, ra					*8*  m[eaddr] := truncs(32, 8, rs);
+
+STBX	rs, eaddr						*8* m[eaddr] := truncs(32, 8, rs);
+
 
 # Multi word load and store
 
@@ -574,13 +588,22 @@ FCTIWZ		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
 FCTIWZq		fd, fb			*64* fd := zfill(32, 64, ftoi(64, 32, fb));
 
 FADD		fd, fa, fb		*64* fd := fa +f fb;
-FADDq		fd, fa, fb		*64* fd := fa +f fb;
+FADDq		fd, fa, fb		*64* fd := fa +f fb;		# Note: floating point flags not implemented yet
+
+FADDS		fd, fa, fb		*64* fd := fa +f fb;		# Note: may only operate on 32 bits of precision
+FADDSq		fd, fa, fb		*64* fd := fa +f fb;
 
 FSUB		fd, fa, fb		*64* fd := fa -f fb;
 FSUBq		fd, fa, fb		*64* fd := fa -f fb;
 
+FSUBS		fd, fa, fb		*64* fd := fa -f fb;		# Note as above
+FSUBSq		fd, fa, fb		*64* fd := fa -f fb;
+
 FDIV		fd, fa, fb		*64* fd := fa /f fb;
 FDIVq		fd, fa, fb		*64* fd := fa /f fb;
+
+FDIVS		fd, fa, fb		*64* fd := fa /f fb;		# Note: only operates on 64/32 bits of precision
+FDIVSq		fd, fa, fb		*64* fd := fa /f fb;		# Yet result is in 64-bit format
 
 # conditional branch
 # MVE: Not sure if I have the bit numbers round the right way (is LT 3 or 0?)

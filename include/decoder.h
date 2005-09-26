@@ -126,6 +126,9 @@ virtual int decodeAssemblyInstruction (ADDRESS pc, int delta) = 0;
 		void		computedJump(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
 						DecodeResult& result);
 
+		void		computedCall(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
+						DecodeResult& result);
+
 		Prog*		getProg() {return prog;}
 
 protected:

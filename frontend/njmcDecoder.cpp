@@ -234,8 +234,7 @@ void NJMCDecoder::unconditionalJump(const char* name, int size, ADDRESS relocd, 
 
 /*==============================================================================
  * FUNCTION:		NJMCDecoder::computedJump
- * OVERVIEW:		Process an unconditional jump instruction
- *					Also check if the destination is a label (MVE: is this done?)
+ * OVERVIEW:		Process an indirect jump instruction
  * PARAMETERS:		name: name of instruction (for debugging)
  *					size: size of instruction in bytes
  *					dest: destination Exp*
@@ -252,6 +251,28 @@ void NJMCDecoder::computedJump(const char* name, int size, Exp* dest, ADDRESS pc
 	jump->setDest(dest);
 	jump->setIsComputed(true);
 	result.rtl->appendStmt(jump);
+	SHOW_ASM(name<<" "<<dest)
+}
+
+/*==============================================================================
+ * FUNCTION:		NJMCDecoder::computedCall
+ * OVERVIEW:		Process an indirect call instruction
+ * PARAMETERS:		name: name of instruction (for debugging)
+ *					size: size of instruction in bytes
+ *					dest: destination Exp*
+ *					pc: native pc
+ *					stmts: list of statements (?)
+ *					result: ref to decoder result object
+ * RETURNS:			<none>
+ *============================================================================*/
+void NJMCDecoder::computedCall(const char* name, int size, Exp* dest, ADDRESS pc, std::list<Statement*>* stmts,
+		DecodeResult& result) {
+	result.rtl = new RTL(pc, stmts);
+	result.numBytes = size;
+	CallStatement* call = new CallStatement();
+	call->setDest(dest);
+	call->setIsComputed(true);
+	result.rtl->appendStmt(call);
 	SHOW_ASM(name<<" "<<dest)
 }
 

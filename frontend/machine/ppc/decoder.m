@@ -15,6 +15,7 @@
 /* $Revision$	// 1.24.2.1
  *
  * 23/Nov/04 - Jay Sweeney and Alajandro Dubrovsky: Created
+ * 26/Sep/05 - Mike: Added Xsab_, Xsax_; DIS_INDEX uses RAZ not RA now; A2c_ -> Ac_ (does single as well as double prec)
  **/
 
 /*==============================================================================
@@ -52,12 +53,12 @@ Exp*	crBit(int bitNum);	// Get an expression for a CR bit access
 #define DIS_NZRA	(dis_Reg(ra))
 #define DIS_NZRB	(dis_Reg(rb))
 #define DIS_ADDR	(new Const(addr))
-#define DIS_RELADDR (new Const(reladdr - delta))
+#define DIS_RELADDR	(new Const(reladdr - delta))
 #define DIS_CRBD	(crBit(crbD))
 #define DIS_CRBA	(crBit(crbA))
 #define DIS_CRBB	(crBit(crbB))
-#define DIS_DISP    (new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
-#define DIS_INDEX   (new Binary(opPlus, DIS_RA, DIS_NZRB))
+#define DIS_DISP	(new Binary(opPlus, dis_RAmbz(ra), new Const(d)))
+#define DIS_INDEX	(new Binary(opPlus, DIS_RAZ, DIS_NZRB))
 #define DIS_BICR	(new Const(BIcr))
 #define DIS_RS_NUM	(new Const(rs))
 #define DIS_RD_NUM	(new Const(rd))
@@ -122,6 +123,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		stmts = instantiate(pc,	 name, DIS_RD, DIS_RA, DIS_RB);
 	| XOb_ ( rd, ra) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
+	| Xsax_^Rc (rd, ra) [name] =>
+		stmts = instantiate(pc, name, DIS_RD, DIS_RA);
 	// The number of parameters in these matcher arms has to agree with the number in core.spec
 	// The number of parameters passed to instantiate() after pc and name has to agree with ppc.ssl
 	// Stores and loads pass rA to instantiate twice: as part of DIS_DISP, and separately as DIS_NZRA
@@ -143,6 +146,8 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| Xsabx_^Rc (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_RA, DIS_RB);
 	| Xdab_ (rd, ra, rb) [name] =>
+		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
+	| Xsab_ (rd, ra, rb) [name] =>
 		stmts = instantiate(pc, name, DIS_RD, DIS_INDEX);
 	// Load instructions
 	| Ddad_ (rd, d, ra) [name] =>
@@ -255,7 +260,7 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 	| Xdbx_^Rc(fd, fb) [name] =>									// Floating point unary
 		stmts = instantiate(pc, name, DIS_FD, DIS_FB);
 
-	| A2c_^Rc(fd, fa, fb) [name] =>									// Floating point binary
+	| Ac_^Rc(fd, fa, fb) [name] =>									// Floating point binary
 		stmts = instantiate(pc, name, DIS_FD, DIS_FA, DIS_FB);
 
 
@@ -287,15 +292,19 @@ DecodeResult& PPCDecoder::decodeInstruction (ADDRESS pc, int delta) {
 //		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
 //	| bnu(BIcr, reladdr) [name] =>
 //		PPC_COND_JUMP(name, 4, reladdr, (BRANCH_TYPE)0, BIcr);
-    | bal(BIcr, reladdr) =>
-		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
-		unused(BIcr);
-
 
 	| balctr(BIcr) [name] =>
 		computedJump(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
 		unused(BIcr);
 		
+	| balctrl(BIcr) [name] =>
+		computedCall(name, 4, new Unary(opMachFtr, new Const("%CTR")), pc, stmts, result);
+		unused(BIcr);
+		
+    | bal(BIcr, reladdr) =>
+		unconditionalJump("bal", 4, reladdr, delta, pc, stmts, result);
+		unused(BIcr);
+
 	// b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
 	// statement.
 	| bltlr(BIcr) [name] =>
