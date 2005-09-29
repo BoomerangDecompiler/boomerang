@@ -83,6 +83,24 @@ main:
     push  $result
     call printf
 
+    filds three
+    filds five
+    fsubp %st, %st(1)
+    fstpl  res1
+    push res2
+    push res1
+    push  $result
+    call printf
+
+    filds three
+    filds five
+    fsubrp %st, %st(1)
+    fstpl  res1
+    push res2
+    push res1
+    push  $result
+    call printf
+
 
     filds three
     filds five
@@ -141,6 +159,26 @@ main:
     push res1
     push  $result
     call printf
+
+    filds three
+    filds five
+    fdivp %st, %st(1)
+    fstpl  res1
+    push res2
+    push res1
+    push  $result
+    call printf
+
+    filds three
+    filds five
+    fdivrp %st, %st(1)
+    fstpl  res1
+    push res2
+    push res1
+    push  $result
+    call printf
+
+###
 
     filds three
     fisub five
