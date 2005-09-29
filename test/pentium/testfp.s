@@ -6,6 +6,7 @@ result:  .string "Result is %f\n"
 	.align 8
 three:	.long	3
 five:	.long	5
+	.section	.data
 res1:	.long 0
 res2:	.long 0
 
@@ -55,23 +56,23 @@ main:
     call printf
     fstp %st
 
-    filds three
-    filds five
-    fsubp %st(1), %st
-    fstpl  res1
-    push res2
-    push res1
-    push  $result
-    call printf
+    #filds three
+    #filds five
+    #fsubp %st(1), %st	# This one makes no sense: result to %st, then pop it; doesn't exist!
+    #fstpl  res1
+    #push res2
+    #push res1
+    #push  $result
+    #call printf
 
-    filds three
-    filds five
-    fsubrp %st(1), %st
-    fstpl  res1
-    push res2
-    push res1
-    push  $result
-    call printf
+    #filds three
+    #filds five
+    #fsubrp %st(1), %st		# Also makes no sense, and does not exist!
+    #fstpl  res1
+    #push res2
+    #push res1
+    #push  $result
+    #call printf
 
     filds three
     filds five
@@ -132,23 +133,23 @@ main:
     call printf
     fstp %st
 
-    filds three
-    filds five
-    fdivp %st(1), %st
-    fstpl  res1
-    push res2
-    push res1
-    push  $result
-    call printf
+    #filds three
+    #filds five
+    #fdivp %st(1), %st		# Makes no sense: result to %st, then pop it!
+    #fstpl  res1
+    #push res2
+    #push res1
+    #push  $result
+    #call printf
 
-    filds three
-    filds five
-    fdivrp %st(1), %st
-    fstpl  res1
-    push res2
-    push res1
-    push  $result
-    call printf
+    #filds three
+    #filds five
+    #fdivrp %st(1), %st		# Also makes no sense!
+    #fstpl  res1
+    #push res2
+    #push res1
+    #push  $result
+    #call printf
 
     filds three
     filds five
