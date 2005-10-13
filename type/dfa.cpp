@@ -701,14 +701,14 @@ void ReturnStatement::dfaTypeAnalysis(bool& ch) {
 }
 
 // For x0 := phi(x1, x2, ...) want
-// Ex0 := Ex0 meet (Ex1 meet Ex2 meet ...)
-// Ex1 := Ex1 meet Ex0
-// Ex2 := Ex1 meet Ex0
+// Tx0 := Tx0 meet (Tx1 meet Tx2 meet ...)
+// Tx1 := Tx1 meet Tx0
+// Tx2 := Tx2 meet Tx0
 // ...
-// The others are correct.
 void PhiAssign::dfaTypeAnalysis(bool& ch) {
 	iterator it;
 	Type* meetOfArgs = defVec[0].def->getTypeFor(lhs);
+	assert(defVec.size() > 1);
 	for (it = ++defVec.begin(); it != defVec.end(); it++) {
 		assert(it->def);
 		Type* typeOfDef = it->def->getTypeFor(it->e);
@@ -937,7 +937,7 @@ Type* Terminal::ascendType() {
 		case opCF: case opZF:
 			return new BooleanType;
 		default:
-			std::cerr << "Type for terminal " << this << " not implemented!\n";
+			std::cerr << "ascendType() for terminal " << this << " not implemented!\n";
 			return new VoidType;
 	}
 }
