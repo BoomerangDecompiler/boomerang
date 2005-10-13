@@ -1651,8 +1651,7 @@ int BasicBlock::whichPred(PBB pred) {
 
 // Switch High Level patterns
 
-// With array processing, we get a new form, call it form 'a' (don't
-// confuse with form 'A'):
+// With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 static Exp* forma = new RefExp(
 		new Binary(opArrayIndex,
