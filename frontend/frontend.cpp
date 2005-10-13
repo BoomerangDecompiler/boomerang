@@ -571,15 +571,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						stmt_list->push_back(call);
 						BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
 						pBB = pCfg->newBB(BB_rtls, CALL, 1);
-						ReturnStatement *ret = new ReturnStatement();
-						std::list<RTL*> *ret_rtls = new std::list<RTL*>();
-						stmt_list = new std::list<Statement*>;
-						stmt_list->push_back(ret);
-						//ret_rtls->push_back(new RTL(pRtl->getAddress()+1, stmt_list));
-						//PBB pret = pCfg->newBB(ret_rtls, RET, 0);
-						PBB pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
-						pret->addInEdge(pBB);
-						pBB->setOutEdge(0, pret);
+						appendSyntheticReturn(pBB, pProc, pRtl);
 						sequentialDecode = false;
 						BB_rtls = NULL;
 						if (pRtl->getAddress() == pProc->getNativeAddress()) {
@@ -732,8 +724,11 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						// invalid instructions, and getting invalid stack height errors
 						const char* name = pBF->SymbolByAddress(uNewAddr);
 						if (name && ((strcmp(name, "_exit") == 0) || (strcmp(name,	"exit") == 0))) {
+							// Make sure it has a return appended (so there is only one exit from the function)
+							//call->setReturnAfterCall(true);		// I think only the Sparc frontend cares
 							// Create the new basic block
-							pBB = pCfg->newBB(BB_rtls, CALL, 0);
+							pBB = pCfg->newBB(BB_rtls, CALL, 1);
+							appendSyntheticReturn(pBB, pProc, pRtl);
 
 							// Stop decoding sequentially
 							sequentialDecode = false;
@@ -1174,4 +1169,16 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 		targetQueue.visit(pCfg, retAddr, pBB);
 	}
 	return pBB;
+}
+
+// Add a synthetic return instruction (or branch to the existing return instruction).
+// NOTE: the call BB should be created with one out edge (the return or branch BB)
+void FrontEnd::appendSyntheticReturn(PBB pCallBB, UserProc* pProc, RTL* pRtl) {
+	ReturnStatement *ret = new ReturnStatement();
+	std::list<RTL*> *ret_rtls = new std::list<RTL*>();
+	std::list<Statement*>* stmt_list = new std::list<Statement*>;
+	stmt_list->push_back(ret);
+	PBB pret = createReturnBlock(pProc, ret_rtls, new RTL(pRtl->getAddress()+1, stmt_list));
+	pret->addInEdge(pCallBB);
+	pCallBB->setOutEdge(0, pret);
 }
