@@ -962,7 +962,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 	PBB enclFollow = followSet.size() == 0 ? NULL : followSet.back();
 
 	if (isIn(gotoSet, this) && !isLatchNode() && 
-			((latch && this == latch->loopHead->loopFollow) || 
+			((latch && latch->loopHead && this == latch->loopHead->loopFollow) || 
 			!allParentsGenerated())) {
 		emitGotoAndLabel(hll, indLevel, this);
 		return;
