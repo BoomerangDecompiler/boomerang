@@ -1336,8 +1336,7 @@ Exp *CallStatement::getProven(Exp *e) {
 // Localise only components of e, i.e. xxx if e is m[xxx]
 void CallStatement::localiseComp(Exp* e, int depth /* = -1 */) {
 	if (e->isMemOf()) {
-		Exp*& sub1 = ((Location*)e)->refSubExp1();
-		sub1 = localiseExp(sub1, depth);
+        ((Location*)e)->setSubExp1(localiseExp(((Location*)e)->getSubExp1(), depth));
 	}
 }
 // Substitute the various components of expression e with the appropriate reaching definitions.
@@ -1858,7 +1857,7 @@ bool CallStatement::convertToDirect() {
 				newimpargs[i] =
 					sig->getImplicitParamExp(i)->clone();
 				if (newimpargs[i]->getOper() == opMemOf) {
-					newimpargs[i]->refSubExp1() = localiseExp(newimpargs[i]-> getSubExp1());
+					newimpargs[i]->setSubExp1(localiseExp(newimpargs[i]->getSubExp1()));
 				}
 			}
 		}
@@ -1881,7 +1880,7 @@ bool CallStatement::convertToDirect() {
 				Exp* parami = sig->getParamExp(i);
 				newargs[i] = parami->clone();
 				if (newargs[i]->getOper() == opMemOf) {
-					newargs[i]->refSubExp1() = localiseExp(newargs[i]->getSubExp1());
+					newargs[i]->setSubExp1(localiseExp(newargs[i]->getSubExp1()));
 				}
 			}
 		}
@@ -2941,7 +2940,7 @@ void Assign::simplify() {
 		guard = NULL;			// No longer a guarded assignment
 
 	if (lhs->getOper() == opMemOf) {
-		lhs->refSubExp1() = lhs->getSubExp1()->simplifyArith();
+		lhs->setSubExp1(lhs->getSubExp1()->simplifyArith());
 	}
 
 	// this hack finds address constants.. it should go away when Mike writes some decent type analysis.
@@ -3772,8 +3771,7 @@ bool BoolAssign::accept(StmtModifier* v) {
 	if (pCond && recur)
 		pCond = pCond->accept(v->mod);
 	if (recur && lhs->isMemOf()) {
-		Exp*& sub1 = ((Location*)lhs)->refSubExp1();
-		sub1 = sub1->accept(v->mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
 	}
 	return true;
 }
@@ -3785,8 +3783,7 @@ bool Assign::accept(StmtPartModifier* v) {
 	v->visit(this, recur);
 	v->mod->clearMod();
 	if (recur && lhs->isMemOf()) {
-		Exp*& sub1 = ((Location*)lhs)->refSubExp1();
-		sub1 = sub1->accept(v->mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
 	}
 	if (recur) rhs = rhs->accept(v->mod);
 	if (VERBOSE && v->mod->isMod())
@@ -3798,8 +3795,7 @@ bool PhiAssign::accept(StmtPartModifier* v) {
 	v->visit(this, recur);
 	v->mod->clearMod();
 	if (recur && lhs->isMemOf()) {
-		Exp*& sub1 = ((Location*)lhs)->refSubExp1();
-		sub1 = sub1->accept(v->mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
 	}
 	if (VERBOSE && v->mod->isMod())
 		LOG << "PhiAssign changed: now " << this << "\n";
@@ -3811,8 +3807,7 @@ bool ImplicitAssign::accept(StmtPartModifier* v) {
 	v->visit(this, recur);
 	v->mod->clearMod();
 	if (recur && lhs->isMemOf()) {
-		Exp*& sub1 = ((Location*)lhs)->refSubExp1();
-		sub1 = sub1->accept(v->mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
 	}
 	if (VERBOSE && v->mod->isMod())
 		LOG << "ImplicitAssign changed: now " << this << "\n";

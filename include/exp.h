@@ -488,9 +488,10 @@ protected:
 class Unary : public Exp {
 protected:
 		Exp*			subExp1;	// One subexpression pointer
-public:
-		// Constructor, with just ID
+
+        // Constructor, with just ID
 					Unary(OPER op);
+public:
 		// Constructor, with ID and subexpression
 					Unary(OPER op, Exp* e);
 		// Copy constructor
@@ -520,8 +521,6 @@ virtual void		printx(int ind);
 		void		setSubExp1ND(Exp* e) {subExp1 = e;}
 		// Get first subexpression
 		Exp*		getSubExp1();
-		// "Become"	subexpression 1 (delete all but that subexpression)
-		Exp*		becomeSubExp1();
 		// Get a reference to subexpression 1
 		Exp*&		refSubExp1();
 virtual int			getMemDepth();
@@ -565,9 +564,11 @@ protected:
 class Binary : public Unary {
 protected:
 		Exp*			subExp2;	// Second subexpression pointer
-public:
-		// Constructor, with ID
+
+        // Constructor, with ID
 					Binary(OPER op);
+
+public:
 		// Constructor, with ID and subexpressions
 					Binary(OPER op, Exp* e1, Exp* e2);
 		// Copy constructor
@@ -597,8 +598,6 @@ virtual void		 printx(int ind);
 		void		setSubExp2(Exp* e);
 		// Get second subexpression
 		Exp*		getSubExp2();
-		// "Become" subexpression 2 (delete all but that subexpression)
-		Exp*		becomeSubExp2();
 		// Commute the two operands
 		void		commute();
 		// Get a reference to subexpression 2
@@ -646,9 +645,11 @@ protected:
  *============================================================================*/
 class Ternary : public Binary {
 		Exp*		subExp3;	// Third subexpression pointer
-public:
-		// Constructor, with operator
+
+        // Constructor, with operator
 					Ternary(OPER op);
+
+public:
 		// Constructor, with operator and subexpressions
 					Ternary(OPER op, Exp* e1, Exp* e2, Exp* e3);
 		// Copy constructor
@@ -678,8 +679,6 @@ virtual void		 printx(int ind);
 		void		setSubExp3(Exp* e);
 		// Get third subexpression
 		Exp*		getSubExp3();
-		// "Become" subexpression 3 (delete all but that subexpression)
-		Exp*		becomeSubExp3();
 		// Get a reference to subexpression 3
 		Exp*&		refSubExp3();
 virtual int			getMemDepth();

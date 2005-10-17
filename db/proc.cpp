@@ -2357,7 +2357,7 @@ void UserProc::addReturn(Exp *e)
 {
 	Exp *e1 = e->clone();
 	if (e1->getOper() == opMemOf) {
-		e1->refSubExp1() = e1->getSubExp1()->expSubscriptAllNull(/*cfg*/);
+		e1->setSubExp1(e1->getSubExp1()->expSubscriptAllNull(/*cfg*/));
 	}
 	if (theReturnStatement)
 		theReturnStatement->addReturn(e1);
@@ -3725,7 +3725,7 @@ bool UserProc::prove(Exp *query)
 	query->getSubExp2()->addUsedLocs(locs);
 	LocationSet::iterator xx;
 	for (xx = locs.begin(); xx != locs.end(); xx++) {
-		query->refSubExp2() = query->getSubExp2()->expSubscriptValNull(*xx);
+		query->setSubExp2(query->getSubExp2()->expSubscriptValNull(*xx));
 	}
 
 	if (query->getSubExp1()->getOper() != opSubscript) {
@@ -3734,7 +3734,7 @@ bool UserProc::prove(Exp *query)
 		if (theReturnStatement) {
 			Exp* def = theReturnStatement->findDefFor(query->getSubExp1());
 			if (def) {
-				query->refSubExp1() = def;
+				query->setSubExp1(def);
 				gotDef = true;
 			}
 		}
@@ -3811,15 +3811,15 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 			Exp *plus = query->getSubExp1();
 			Exp *s1s2 = plus ? plus->getSubExp2() : NULL;
 			if (!change && plus->getOper() == opPlus && s1s2->isIntConst()) {
-				query->refSubExp2() = new Binary(opPlus,
+				query->setSubExp2(new Binary(opPlus,
 					query->getSubExp2(),
-					new Unary(opNeg, s1s2->clone()));
-				query->refSubExp1() = ((Binary*)plus)->becomeSubExp1();
+					new Unary(opNeg, s1s2->clone())));
+				query->setSubExp1(((Binary*)plus)->getSubExp1());
 				change = true;
 			}
 			if (!change && plus->getOper() == opMinus && s1s2->isIntConst()) {
-				query->refSubExp2() = new Binary(opPlus, query->getSubExp2(), s1s2->clone());
-				query->refSubExp1() = ((Binary*)plus)->becomeSubExp1();
+				query->setSubExp2(new Binary(opPlus, query->getSubExp2(), s1s2->clone()));
+				query->setSubExp1(((Binary*)plus)->getSubExp1());
 				change = true;
 			}
 
@@ -3923,8 +3923,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 
 			// remove memofs from both sides if possible
 			if (!change && query->getSubExp1()->getOper() == opMemOf && query->getSubExp2()->getOper() == opMemOf) {
-				query->refSubExp1() = ((Unary*)query->getSubExp1())->becomeSubExp1();
-				query->refSubExp2() = ((Unary*)query->getSubExp2())->becomeSubExp1();
+				query->setSubExp1(((Unary*)query->getSubExp1())->getSubExp1());
+				query->setSubExp2(((Unary*)query->getSubExp2())->getSubExp1());
 				change = true;
 			}
 
@@ -3935,8 +3935,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 					query->getSubExp2()->getOper() == opSubscript &&
 					query->getSubExp2()->getSubExp1()->getOper() == opMemOf &&
 					((RefExp*)query->getSubExp2())->getDef() == NULL) {
-				query->refSubExp1() = ((Unary*)query->getSubExp1()->getSubExp1())->becomeSubExp1();
-				query->refSubExp2() = ((Unary*)query->getSubExp2()->getSubExp1())->becomeSubExp1();
+				query->setSubExp1(((Unary*)query->getSubExp1()->getSubExp1())->getSubExp1());
+				query->setSubExp2(((Unary*)query->getSubExp2()->getSubExp1())->getSubExp1());
 				change = true;
 			}
 
@@ -3949,7 +3949,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 				for (it = stmts.begin(); it != stmts.end(); it++) {
 					Assign* s = (Assign*)*it;
 					if (s->isAssign() && *s->getRight() == *query->getSubExp2() && s->getLeft()->getOper() == opMemOf) {
-						query->refSubExp2() = s->getLeft()->clone();
+						query->setSubExp2(s->getLeft()->clone());
 						change = true;
 						break;
 					}
@@ -3959,8 +3959,8 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 			// last chance, swap left and right if haven't swapped before
 			if (!change && !swapped) {
 				Exp *e = query->getSubExp1();
-				query->refSubExp1() = query->getSubExp2();
-				query->refSubExp2() = e;
+				query->setSubExp1(query->getSubExp2());
+				query->setSubExp2(e);
 				change = true;
 				swapped = true;
 				refsTo.clear();

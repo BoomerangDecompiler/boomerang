@@ -30,6 +30,9 @@ typedef int LPARAM;
 typedef int LRESULT;
 typedef int ATOM;
 typedef int BOOL;
+typedef int HRSRC;
+typedef int HMODULE;
+typedef int HGLOBAL;
 typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef char CHAR;
@@ -562,3 +565,11 @@ ULONGLONG VerSetConditionMask(
 int FreeLibrary(unsigned int hModule);
 short* wcscpy(short* dest, short* src);
 int VirtualFree(void* lpAddress, int dwSize, unsigned int dwFreeType);
+
+HRSRC FindResourceA(HMODULE hModule, LPCSTR lpName, LPCSTR lpType);
+HGLOBAL LoadResource(HMODULE hModule, HRSRC hResInfo);
+LPVOID LockResource(HGLOBAL hResData);
+DWORD GetTempPathA(DWORD nBufferLength, LPSTR lpBuffer);
+DWORD SizeofResource(HMODULE hModule, HRSRC hResInfo);
+HINSTANCE ShellExecuteA(HWND hwnd, LPCSTR lpOperation, LPCSTR lpFile, LPCSTR lpParameters, LPCSTR lpDirectory, INT nShowCmd);
+

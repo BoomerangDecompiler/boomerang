@@ -34,6 +34,8 @@
 #define __MSDOS_AND_ALIKE
 #endif
 
+#define __HAVE_NO_ALLOCA
+
 #ifndef alloca
 #if defined( __GNUC__)
 #define alloca __builtin_alloca

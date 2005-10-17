@@ -14448,7 +14448,7 @@ DecodeResult& PentiumDecoder::decodeInstruction (ADDRESS pc, int delta)
 
                     		Assign* last = (Assign*)stmts->back();
 
-                    		Const*& reloc = (Const*&)((Binary*)last->getRight())->refSubExp2();
+                    		Const* reloc = (Const*)((Binary*)last->getRight())->getSubExp2();
 
                     		assert(reloc->isIntConst());
 

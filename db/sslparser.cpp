@@ -3118,15 +3118,14 @@ OPER strToTerm(char* s) {
 Exp* listExpToExp(std::list<Exp*>* le) {
 	Exp* e;
 	Exp** cur = &e;
+    Exp *end = new Terminal(opNil);			// Terminate the chain
 	for (std::list<Exp*>::iterator it = le->begin(); it != le->end(); it++) {
-		*cur = new Binary(opList);
-		((Binary*)*cur)->setSubExp1(*it);
+		*cur = new Binary(opList, *it, end);
 		// cur becomes the address of the address of the second subexpression
 		// In other words, cur becomes a reference to the second subexp ptr
 		// Note that declaring cur as a reference doesn't work (remains a reference to e)
 		cur = &(*cur)->refSubExp2();
 	}
-	*cur = new Terminal(opNil);			// Terminate the chain
 	return e;
 }
 
@@ -3140,13 +3139,11 @@ Exp* listExpToExp(std::list<Exp*>* le) {
 Exp* listStrToExp(std::list<std::string>* ls) {
 	Exp* e;
 	Exp** cur = &e;
+    Exp *end = new Terminal(opNil);			 // Terminate the chain
 	for (std::list<std::string>::iterator it = ls->begin(); it != ls->end(); it++) {
-		*cur = new Binary(opList);
-		// *it is a string. Convert it to a parameter
-		((Binary*)*cur)->setSubExp1(new Location(opParam, new Const((char*)(*it).c_str()), NULL));
+		*cur = new Binary(opList, new Location(opParam, new Const((char*)(*it).c_str()), NULL), end);
 		cur = &(*cur)->refSubExp2();
 	}
-	*cur = new Terminal(opNil);			 // Terminate the chain
 	return e;
 }
 

@@ -493,32 +493,28 @@ void StmtSubscripter::visit(Assign* s, bool& recur) {
 	// Don't subscript the LHS of an assign, ever
 	Exp* lhs = s->getLeft();
 	if (lhs->isMemOf() || lhs->isRegOf()) {
-		Exp*& child = ((Location*)lhs)->refSubExp1();
-		child = child->accept(mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(mod));
 	}
 	recur = false;
 }
 void StmtSubscripter::visit(PhiAssign* s, bool& recur) {
 	Exp* lhs = s->getLeft();
 	if (lhs->isMemOf()) {
-		Exp*& child = ((Location*)lhs)->refSubExp1();
-		child = child->accept(mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(mod));
 	}
 	recur = false;
 }
 void StmtSubscripter::visit(ImplicitAssign* s, bool& recur) {
 	Exp* lhs = s->getLeft();
 	if (lhs->isMemOf()) {
-		Exp*& child = ((Location*)lhs)->refSubExp1();
-		child = child->accept(mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(mod));
 	}
 	recur = false;
 }
 void StmtSubscripter::visit(BoolAssign* s, bool& recur) {
 	Exp* lhs = s->getLeft();
 	if (lhs->isMemOf()) {
-		Exp*& child = ((Location*)lhs)->refSubExp1();
-		child = child->accept(mod);
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(mod));
 	}
 	Exp* rhs = s->getCondExpr();
 	s->setCondExpr(rhs->accept(mod));
@@ -548,8 +544,7 @@ void StmtSubscripter::visit(CallStatement* s, bool& recur) {
 	for (int i=0; i < n; i++) {
 		Exp* r = s->getReturnExp(i);
 		if (r && r->isMemOf()) {
-			Exp*& x = ((Location*)r)->refSubExp1();
-			x = x->accept(mod);
+            ((Location*)r)->setSubExp1(((Location*)r)->getSubExp1()->accept(mod));
 		}
 	}
 #endif
