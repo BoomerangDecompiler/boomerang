@@ -2053,7 +2053,7 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			}
 			case 1: {
 				// Typical pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
-#if 1	// To be completed; suppress unused variable warnings
+#if 0	// To be completed; suppress unused variable warnings
 				if (e->isSubscript())
 					e = ((RefExp*)e)->getSubExp1();
 				e = ((Location*)e)->getSubExp1();		// e = m[r27{25} + 8]{-} + 8
