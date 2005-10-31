@@ -2156,7 +2156,8 @@ Type* CallStatement::getTypeFor(Exp* e) {
 	return calleeReturn->getTypeFor(e);
 #endif
 #else
-	return NULL;
+	// return NULL;
+	return new VoidType;
 #endif
 }
 

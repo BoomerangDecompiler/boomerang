@@ -1300,7 +1300,7 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 virtual void		dfaTypeAnalysis(bool& ch);
 
 		// From SSA form
-virtual void		fromSSAform(igraph& igm);
+virtual void		fromSSAform(igraph& ig);
 
 		// Remove the stack pointer and return a statement list
 		StatementList* getCleanReturns();

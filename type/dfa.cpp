@@ -327,19 +327,19 @@ void UserProc::dfaTypeAnalysis() {
 
 // ch set true if any change
 
-Type* VoidType::meetWith(Type* other, bool& ch) {
+Type* VoidType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	// void meet x = x
 	ch |= !other->resolvesToVoid();
 	return other->clone();
 }
 
-Type* FuncType::meetWith(Type* other, bool& ch) {
+Type* FuncType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (*this == *other) return this;		// NOTE: at present, compares names as well as types and num parameters
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* IntegerType::meetWith(Type* other, bool& ch) {
+Type* IntegerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToInteger()) {
 		IntegerType* otherInt = other->asInteger();
@@ -369,10 +369,10 @@ Type* IntegerType::meetWith(Type* other, bool& ch) {
 		ch = size != oldSize;
 		return this;
 	}
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* FloatType::meetWith(Type* other, bool& ch) {
+Type* FloatType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToFloat()) {
 		FloatType* otherFlt = other->asFloat();
@@ -387,17 +387,17 @@ Type* FloatType::meetWith(Type* other, bool& ch) {
 		size = max(size, otherSize);
 		return this;
 	}
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* BooleanType::meetWith(Type* other, bool& ch) {
+Type* BooleanType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToBoolean())
 		return this;
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* CharType::meetWith(Type* other, bool& ch) {
+Type* CharType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToChar()) return this;
 	// Also allow char to merge with integer
@@ -407,33 +407,10 @@ Type* CharType::meetWith(Type* other, bool& ch) {
 	}
 	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == 8)
 		return this;
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-// So far, I think the only difference between meeting and joining is when meeting pointers to two concrete types: 
-// if one is a supertype of the other (can point to more values), return that one; if the types are not compatible,
-// return void*
-Type* PointerType::joinWith(Type* other, bool& ch) {
-	if (other->resolvesToPointer()) {
-		PointerType* otherPtr = other->asPointer();
-		Type* otherPointsTo = otherPtr->points_to;
-		if (*this == *other) return this;
-		if (points_to->isCompatibleWith(otherPointsTo)) {
-			if (points_to->resolvesToVoid()) return other;
-			if (otherPointsTo->resolvesToVoid()) return this;
-			// TODO: implement a test for one pointer being a superset of the other
-			LOG << "NOT IMPLEMENTED: compare compatible pointers " << getCtype() << " and " << other->getCtype() <<"\n";
-			points_to = points_to->meetWith(otherPointsTo, ch);
-			return this;
-		} else
-			// Joining incompatible types; return void*
-			return new PointerType(new VoidType);
-	}
-	// For other cases, delegate to meetWith()
-	return meetWith(other, ch);
-}
-
-Type* PointerType::meetWith(Type* other, bool& ch) {
+Type* PointerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return this;
 	if (other->resolvesToPointer()) {
@@ -442,7 +419,12 @@ Type* PointerType::meetWith(Type* other, bool& ch) {
 			setPointsTo(otherPtr->getPointsTo());
 			ch = true;
 		} else {
-			// We have a meeting of two pointers. First, see if the base types will meet
+			// We have a meeting of two pointers.
+			if (bHighestPtr) {
+				// We'd really like to return the base type for both this and other. For now, just return void*
+				return new PointerType(new VoidType);
+			}
+			// See if the base types will meet
 			Type* thisBase = points_to;
 			Type* otherBase = otherPtr->points_to;
 			if (otherBase->resolvesToPointer()) {
@@ -463,23 +445,23 @@ if (thisBase == otherBase)	// Note: compare pointers
 				}
 			}
 			if (thisBase->isCompatibleWith(otherBase)) {
-				points_to = points_to->meetWith(otherBase, ch);
+				points_to = points_to->meetWith(otherBase, ch, bHighestPtr);
 				return this;
 			}
 			// The bases did not meet successfully. Union the pointers.
-			return createUnion(other, ch);
+			return createUnion(other, ch, bHighestPtr);
 		}
 		return this;
 	}
 	// Would be good to understand class hierarchys, so we know if a* is the same as b* when b is a subclass of a
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* ArrayType::meetWith(Type* other, bool& ch) {
+Type* ArrayType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToArray()) {
 		ArrayType* otherArr = other->asArray();
-		Type* newBase = base_type->clone()->meetWith(otherArr->base_type, ch);
+		Type* newBase = base_type->clone()->meetWith(otherArr->base_type, ch, bHighestPtr);
 		if (*newBase != *base_type) {
 			ch = true;
 			// base_type = newBase;		// No: call setBaseType to adjust length
@@ -490,29 +472,29 @@ Type* ArrayType::meetWith(Type* other, bool& ch) {
 	if (*base_type == *other)
 		return this;
 	// Needs work?
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* NamedType::meetWith(Type* other, bool& ch) {
+Type* NamedType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	Type * rt = resolvesTo();
 	if (rt) {
-		Type* ret = rt->meetWith(other, ch);
+		Type* ret = rt->meetWith(other, ch, bHighestPtr);
 		if (ret == rt)
 			return this;			// Retain the named type, much better than some compound type
 		return ret;					// Otherwise, whatever the result is
 	}
 	if (other->resolvesToVoid()) return this;
 	if (*this == *other) return this;
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* CompoundType::meetWith(Type* other, bool& ch) {
+Type* CompoundType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (!other->resolvesToCompound()) {
 		if (types[0]->isCompatibleWith(other))
 			// struct meet first element = struct
 			return this;
-		return createUnion(other, ch);
+		return createUnion(other, ch, bHighestPtr);
 	}
 	CompoundType* otherCmp = other->asCompound();
 	if (otherCmp->isSuperStructOf(this)) {
@@ -528,7 +510,7 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 	if (*this == *other) return this;
 	// Not compatible structs. Create a union of both complete structs.
 	// NOTE: may be possible to take advantage of some overlaps of the two structures some day.
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
 #define PRINT_UNION 0									// Set to 1 to debug unions to stderr
@@ -536,7 +518,7 @@ Type* CompoundType::meetWith(Type* other, bool& ch) {
 unsigned unionCount = 0;
 #endif
 
-Type* UnionType::meetWith(Type* other, bool& ch) {
+Type* UnionType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	std::list<UnionElement>::iterator it;
 	if (other->resolvesToUnion()) {
@@ -547,7 +529,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 		// Always return this, never other, (even if other is larger than this) because otherwise iterators can become
 		// invalid below
 		for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++) {
-			meetWith(it->type, ch);
+			meetWith(it->type, ch, bHighestPtr);
 			return this;
 		}
 	}
@@ -560,7 +542,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	for (it = li.begin(); it != li.end(); it++) {
 		Type* curr = it->type->clone();
 		if (curr->isCompatibleWith(other)) {
-			it->type = curr->meetWith(other, ch);
+			it->type = curr->meetWith(other, ch, bHighestPtr);
 			return this;
 		}
 	}
@@ -581,7 +563,7 @@ Type* UnionType::meetWith(Type* other, bool& ch) {
 	return this;
 }
 
-Type* SizeType::meetWith(Type* other, bool& ch) {
+Type* SizeType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToSize()) {
 		if (((SizeType*)other)->size != size) {
@@ -603,14 +585,14 @@ Type* SizeType::meetWith(Type* other, bool& ch) {
 LOG << "WARNING: size " << size << " meet with " << other->getCtype() << "; allowing temporarily\n";
 return other->clone();
 	}
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* UpperType::meetWith(Type* other, bool& ch) {
+Type* UpperType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToUpper()) {
 		UpperType* otherUpp = other->asUpper();
-		Type* newBase = base_type->clone()->meetWith(otherUpp->base_type, ch);
+		Type* newBase = base_type->clone()->meetWith(otherUpp->base_type, ch, bHighestPtr);
 		if (*newBase != *base_type) {
 			ch = true;
 			base_type = newBase;
@@ -618,14 +600,14 @@ Type* UpperType::meetWith(Type* other, bool& ch) {
 		return this;
 	}
 	// Needs work?
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* LowerType::meetWith(Type* other, bool& ch) {
+Type* LowerType::meetWith(Type* other, bool& ch, bool bHighestPtr) {
 	if (other->resolvesToVoid()) return this;
 	if (other->resolvesToUpper()) {
 		LowerType* otherLow = other->asLower();
-		Type* newBase = base_type->clone()->meetWith(otherLow->base_type, ch);
+		Type* newBase = base_type->clone()->meetWith(otherLow->base_type, ch, bHighestPtr);
 		if (*newBase != *base_type) {
 			ch = true;
 			base_type = newBase;
@@ -633,14 +615,14 @@ Type* LowerType::meetWith(Type* other, bool& ch) {
 		return this;
 	}
 	// Needs work?
-	return createUnion(other, ch);
+	return createUnion(other, ch, bHighestPtr);
 }
 
-Type* Type::createUnion(Type* other, bool& ch) {
+Type* Type::createUnion(Type* other, bool& ch, bool bHighestPtr /* = false */) {
 
 	assert(!isUnion());									// Note: `this' should not be a UnionType
 	if (other->resolvesToUnion())
-		return other->meetWith(this, ch)->clone();		// Put all the hard union logic in one place
+		return other->meetWith(this, ch, bHighestPtr)->clone();		// Put all the hard union logic in one place
 	// Check for anytype meet compound with anytype as first element
 	if (other->resolvesToCompound()) {
 		CompoundType* otherComp = other->asCompound();
@@ -722,8 +704,8 @@ void PhiAssign::dfaTypeAnalysis(bool& ch) {
 
 void Assign::dfaTypeAnalysis(bool& ch) {
 	Type* tr = rhs->ascendType();
-	type = type->joinWith(tr, ch);			// Note: lhs = lhs JOIN rhs, since the lhs could have a greater type (more
-											// possibilities) than the rhs. Example: pEmployee = pManager.
+	type = type->meetWith(tr, ch, true);	// Note: bHighestPtr is set true, since the lhs could have a greater type
+											// (more possibilities) than the rhs. Example: pEmployee = pManager.
 	rhs->descendType(type, ch, this);		// This will effect rhs = rhs MEET lhs
 	Assignment::dfaTypeAnalysis(ch);		// Handle the LHS wrt m[] operands
 }

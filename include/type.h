@@ -182,10 +182,9 @@ virtual Memo 		*makeMemo(int mId) { return new Memo(mId); }
 virtual void 		readMemo(Memo *m, bool dec) { }
 
 					// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
-virtual Type*		meetWith(Type* other, bool& ch) = 0;
-					// Also DFA TA only: join operator. For most types, return the same result as the meet operator, at
-					// least for now 
-virtual Type*		joinWith(Type* other, bool& ch) { return meetWith(other, ch); }
+					// If bHighestPtr is true, then if this and other are non void* pointers, set the result to the
+					// *highest* possible type compatible with both (i.e. this JOIN other)
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr = false) = 0;
 					// When all=false (default), return true if can use this and other interchangeably; in particular,
 					// if at most one of the types is compound and the first element is compatible with the other, then 
 					// the types are considered compatible. With all set to true, if one or both types is compound, all
@@ -195,7 +194,7 @@ virtual Type*		joinWith(Type* other, bool& ch) { return meetWith(other, ch); }
 					// reverses the parameters (this and other) to prevent many tedious repetitions
 virtual bool		isCompatible(Type* other, bool all) = 0;
 					// Create a union of this Type and other. Set ch true if any change
-		Type*		createUnion(Type* other, bool& ch);
+		Type*		createUnion(Type* other, bool& ch, bool bHighestPtr = false);
 static	Type*		newIntegerLikeType(int size, int signedness);	// Return a new Bool/Char/Int
 					// From a complex type like an array of structs with a float, return a list of components so you
 					// can construct e.g. myarray1[8].mystruct2.myfloat7
@@ -222,7 +221,7 @@ virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -257,7 +256,7 @@ virtual const char	*getCtype(bool final = false) const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -302,7 +301,7 @@ virtual std::string	getTempName() const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -335,7 +334,7 @@ virtual std::string	getTempName() const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -359,7 +358,7 @@ virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -383,7 +382,7 @@ virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -420,8 +419,7 @@ virtual const char	*getCtype(bool final = false) const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
-virtual Type*		joinWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -459,7 +457,7 @@ virtual const char	*getCtype(bool final = false) const;
 virtual	Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -495,7 +493,7 @@ virtual const char	*getCtype(bool final = false) const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -545,7 +543,7 @@ virtual const char *getCtype(bool final = false) const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -589,7 +587,7 @@ virtual const char *getCtype(bool final = false) const;
 virtual Memo		*makeMemo(int mId);
 virtual void		readMemo(Memo *m, bool dec);
 
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -616,7 +614,7 @@ virtual void		setSize(unsigned sz) {size = sz;}
 virtual bool		isSize() const { return true; }
 virtual bool		isComplete() {return false;}	// Basic type is unknown
 virtual const char* getCtype(bool final = false) const;
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 };	// class SizeType
@@ -642,7 +640,7 @@ virtual void		setSize(int sz);		// Does this make sense?
 virtual bool		isUpper() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 };  // class UpperType
@@ -667,7 +665,7 @@ virtual void		setSize(int sz);		// Does this make sense?
 virtual bool		isLower() const { return true; }
 virtual bool		isComplete() {return base_type->isComplete();}
 virtual const char* getCtype(bool final = false) const;
-virtual Type*		meetWith(Type* other, bool& ch);
+virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
 };  // class LowerType
