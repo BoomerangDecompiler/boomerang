@@ -54,7 +54,6 @@ class ExpTest : public CppUnit::TestCase {
 	void testSimplifyAddr();
 	void testSimpConstr();
 
-	void testBecome();
 	void testLess();
 	void testMapOfExp();
 

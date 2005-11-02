@@ -59,7 +59,6 @@ MYTEST(testFixSuccessor);
 	MYTEST(testSimplifyAddr);
 	MYTEST(testSimpConstr);
 
-	MYTEST(testBecome);
 	MYTEST(testLess);
 	MYTEST(testMapOfExp);
 	MYTEST(testList);
@@ -802,39 +801,6 @@ void ExpTest::testSimpConstr() {
 	e->print(ost2);
 	actual = ost2.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
-}
-
-/*==============================================================================
- * FUNCTION:		ExpTest::testBecome
- * OVERVIEW:		Test the becomeSubExp2 function
- *============================================================================*/
-void ExpTest::testBecome() {
-	Binary* e;
-	Exp* f;
-	std::string expected("(2 * 3) - (4 * 5)");
-	std::ostringstream ost1;
-	e = new Binary(opPlus, new Const(0),
-		new Binary(opMinus,
-			new Binary(opMult, new Const(2), new Const(3)),
-			new Binary(opMult, new Const(4), new Const(5))));
-	e = (Binary*)e->becomeSubExp2();
-	e->print(ost1);
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost1.str()));
-	// e still used (and effectively deleted) below
- 
-	std::ostringstream ost2;
-	f = new Binary(opPlus, e, new Const(0));
-	f = ((Unary*)f)->becomeSubExp1();
-	f->print(ost2);
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost2.str()));
-	// f still used (and effectively deleted) below
- 
-	std::ostringstream ost3;
-	Binary* b = new Binary(opPlus, f, new Const(0));
-	b = (Binary*) b->becomeSubExp1();
-	b->print(ost3);
-	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost3.str()));
-	delete b;		// Also deletes e and f, effectively
 }
 
 /*==============================================================================
