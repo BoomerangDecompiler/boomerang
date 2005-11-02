@@ -23,6 +23,7 @@
 #include "cfg.h"
 #include "proc.h"
 #include "exp.h"
+#include "boomerang.h"
 
 extern char debug_buffer[];		 // For prints functions
 
@@ -312,6 +313,8 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 			for (xx = locs.begin(); xx != locs.end(); xx++) {
 				Exp* x = *xx;
 				// Ignore variables of the wrong memory depth
+if (x->isRegN(30))
+ std::cerr << "HACK (U)!!\n";
 				if (x->getMemDepth() != memDepth) continue;
 				Statement* def = NULL;
 				if (x->isSubscript()) {					// Already subscripted?
@@ -369,6 +372,8 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 
 		// For each definition of some variable a in S
 		LocationSet defs;
+if (S->getNumber() == 43)
+ std::cerr << "HACK!\n";
 		S->getDefinitions(defs);
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
@@ -392,12 +397,13 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 		}
 		// Special processing for define-alls (presently, only childless calls).
 		// But note that only everythings at the current memory level are defined!
-		if (S->isCall() && ((CallStatement*)S)->isChildless()) {	// If S is a childless call
+		if (S->isCall() && ((CallStatement*)S)->isChildless() && !Boomerang::get()->assumeABI) {
+			// S is a childless call (and we're not assuming ABI compliance)
 			Stacks[defineAll];										// Ensure that there is an entry for defineAll
 			std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator dd;
 			for (dd = Stacks.begin(); dd != Stacks.end(); ++dd) {
 				if (dd->first->isMemDepth(memDepth))
-					dd->second.push(S);									// Add a definition for all vars
+					dd->second.push(S);								// Add a definition for all vars
 			}
 		}
 	}

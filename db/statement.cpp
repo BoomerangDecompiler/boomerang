@@ -1759,7 +1759,7 @@ void CallStatement::getDefinitions(LocationSet &defs) {
 		defs.insert(((Assignment*)*dd)->getLeft());
 	// Childless calls are supposed to define everything. In practice they don't really define things like %pc, so we
 	// need some extra logic in getTypeFor()
-	if (isChildless())
+	if (isChildless() && !Boomerang::get()->assumeABI)
 		defs.insert(new Terminal(opDefineAll));
 }
 
@@ -4412,15 +4412,21 @@ void CallStatement::updateDefines() {
 		// Else just use the enclosing proc's signature
 		sig = proc->getSignature();
 
+	if (procDest && procDest->isLib()) {
+		sig->setLibraryDefines(&defines);				// Set the locations defined
+		return;
+	} else if (Boomerang::get()->assumeABI) {
+		// Risky: just assume the ABI caller save registers are defined
+		Signature::setABIdefines(proc->getProg(), &defines);
+		return;
+	}
+
 	// Move the defines to a temporary list
 	StatementList oldDefines(defines);					// Copy the old defines
 	StatementList::iterator it;
 	defines.clear();
 
-	if (procDest && procDest->isLib()) {
-		sig->setLibraryDefines(&defines);				// Set the locations defined
-		return;
-	} else if (procDest && calleeReturn) {
+	if (procDest && calleeReturn) {
 		StatementList::iterator mm;
 		StatementList& modifieds = ((UserProc*)procDest)->getModifieds();
 		for (mm = modifieds.begin(); mm != modifieds.end(); ++mm) {

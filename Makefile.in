@@ -251,8 +251,8 @@ transform/transformation-parser.o: transform/transformation-parser.cpp transform
 	transform/transformation-scanner.h
 transform/transformation-scanner.o: transform/transformation-scanner.cpp transform/transformation-scanner.h
 db/insnameelem.o: db/insnameelem.h
-db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h \
-	include/exp.h include/proc.h include/prog.h include/type.h include/statement.h
+db/signature.o: include/signature.h include/frontend.h include/BinaryFile.h include/exp.h include/proc.h \
+	include/prog.h include/type.h include/statement.h include/managed.h
 db/statement.o: include/exp.h include/cfg.h include/statement.h include/proc.h include/prog.h include/visitor.h \
 	include/type.h include/managed.h include/signature.h include/basicblock.h
 db/managed.o: include/managed.h include/statement.h include/exp.h

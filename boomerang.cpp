@@ -55,7 +55,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false), generateCallGraph(false), generateSymbols(false), noGlobals(false)
+	noLimitPropagations(false), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -122,6 +122,7 @@ void Boomerang::help() {
 	std::cout << "  -O               : Handle Overlapped registers (for X86 only)\n";
 	std::cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
 	std::cout << "  -SD              : Save before decompile\n";
+	std::cout << "  -a               : Assume ABI compliance\n";
 //	std::cout << "  -pa              : only propagate if can propagate to all\n";
 	std::cout << "Output\n";
 	std::cout << "  -v               : Verbose\n";
@@ -796,6 +797,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 				progPath = argv[++i];
 				if (progPath[progPath.length()-1] != '\\')
 					progPath += "\\";
+				break;
+			case 'a':
+				assumeABI = true;
 				break;
 			default:
 				help();

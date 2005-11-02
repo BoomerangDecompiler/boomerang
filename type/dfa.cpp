@@ -918,6 +918,10 @@ Type* Terminal::ascendType() {
 			return new IntegerType(STD_SIZE, -1);
 		case opCF: case opZF:
 			return new BooleanType;
+		case opDefineAll:
+			return new VoidType;
+		case opFlags:
+			return new IntegerType(STD_SIZE, -1);
 		default:
 			std::cerr << "ascendType() for terminal " << this << " not implemented!\n";
 			return new VoidType;

@@ -27,6 +27,7 @@
 #include "statement.h"		// For class Return
 
 class Statement;
+class StatementList;
 class BinaryFile;
 class XMLProgParser;
 
@@ -187,7 +188,6 @@ virtual int			findParam(const char *nam);
 		// accessor for argument expressions
 virtual Exp			*getArgumentExp(int n);
 virtual bool		hasEllipsis() { return ellipsis; }
-		std::list<Exp*> *getCallerSave(Prog* prog);
 
 		void		renameParam(const char *oldName, const char *newName);
 
@@ -251,6 +251,7 @@ static	StatementList& getStdRetStmt(Prog* prog);
 virtual Exp			*getProven(Exp *left) { return NULL; }
 virtual	bool		isPreserved(Exp* e) { return false; }		// Return whether e is preserved by this proc
 virtual	void		setLibraryDefines(StatementList* defs) {}	// Set the locations defined by library calls
+static	void		setABIdefines(Prog* prog, StatementList* defs);
 
 		// Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
 virtual bool		isPromoted() { return false; }

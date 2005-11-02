@@ -41,10 +41,7 @@
 #include "proc.h"
 #include "boomerang.h"
 #include "log.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "rtl.h"
-#endif
+#include "managed.h"
 
 extern char debug_buffer[];				// For prints()
 
@@ -444,7 +441,7 @@ bool CallingConvention::Win32Signature::isPreserved(Exp* e) {
 
 // Return a list of locations defined by library calls
 void CallingConvention::Win32Signature::setLibraryDefines(StatementList* defs) {
-	if (defs->size()) return;				// Do only once
+	if (defs->size()) return;					// Do only once
 	Location* r24 = Location::regOf(24);		// eax
 	if (returns.size() > 1) {					// Ugh - note the stack pointer is the first return still
 		Type* ty = returns[1]->type;
@@ -1595,8 +1592,7 @@ Exp* Signature::getFirstArgLoc(Prog* prog) {
 		case MACHINE_PENTIUM: {
 			//CallingConvention::StdC::PentiumSignature sig("");
 			//Exp* e = sig.getArgumentExp(0);
-			// For now, need to work around how the above appears to be the
-			// wrong thing!
+			// For now, need to work around how the above appears to be the wrong thing!
 Exp* e = Location::memOf(Location::regOf(28));
 			return e;
 		}
@@ -1634,39 +1630,32 @@ Exp* e = Location::memOf(Location::regOf(28));
 // Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
 // very late in the decompilation. Get the set of registers that are not saved in library functions (or any
 // procedures that follow the calling convention)
-// Caller is to delete the list (unless NULL, of course)
-std::list<Exp*> *Signature::getCallerSave(Prog* prog) {
+void Signature::setABIdefines(Prog* prog, StatementList* defs) {
+	if (defs->size()) return;					// Do only once
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
 		case MACHINE_PENTIUM: {
-			std::list<Exp*> *li = new std::list<Exp*>;
-			li->push_back(Location::regOf(24));	 // eax
-			li->push_back(Location::regOf(25));	 // ecx
-			li->push_back(Location::regOf(26));	 // edx
-			return li;
+			defs->append(new ImplicitAssign(Location::regOf(24)));		// eax
+			defs->append(new ImplicitAssign(Location::regOf(25)));		// ecx
+			defs->append(new ImplicitAssign(Location::regOf(26)));		// edx
 		}
 		case MACHINE_SPARC: {
-			std::list<Exp*> *li = new std::list<Exp*>;
-			li->push_back(Location::regOf(8));	// %o0
-			li->push_back(Location::regOf(9));	// %o1
-			li->push_back(Location::regOf(10));	// %o2
-			li->push_back(Location::regOf(11));	// %o3
-			li->push_back(Location::regOf(12));	// %o4
-			li->push_back(Location::regOf(13));	// %o5
-			li->push_back(Location::regOf(1));	// %g1
-			return li;
+			for (int r=8; r <= 13; ++r)
+				defs->append(new ImplicitAssign(Location::regOf(r)));	// %o0-o5
+			defs->append(new ImplicitAssign(Location::regOf(1)));		// %g1
+		}
+		case MACHINE_PPC: {
+			for (int r=3; r <= 12; ++r)
+				defs->append(new ImplicitAssign(Location::regOf(r)));	// r3-r12
 		}
 		case MACHINE_ST20: {
-			std::list<Exp*> *li = new std::list<Exp*>;
-			li->push_back(Location::regOf(0));	 // A
-			li->push_back(Location::regOf(1));	 // B
-			li->push_back(Location::regOf(2));	 // C
-			return li;
+			defs->append(new ImplicitAssign(Location::regOf(0)));	 	// A
+			defs->append(new ImplicitAssign(Location::regOf(1)));		// B
+			defs->append(new ImplicitAssign(Location::regOf(2)));		// C
 		}
 		default:
 			break;
 	}
-	return NULL;
 }
 
 // Get the expected argument location, based solely on the machine of the input program

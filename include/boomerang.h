@@ -260,6 +260,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		generateCallGraph;
 		bool		generateSymbols;
 		bool		noGlobals;
+		bool		assumeABI;			// Assume ABI compliance
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

@@ -214,6 +214,8 @@ Exp* BypassingPropagator::postVisit(Location *e)	   {
 	mask >>= 1;
 	return ret;
 }
+
+
 Exp* SimpExpModifier::postVisit(Location *e)	   {
 	Exp* ret = e;
 	if (!(unchanged & mask)) ret = e->simplify();
