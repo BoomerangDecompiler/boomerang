@@ -9,11 +9,12 @@
  *				The main advantage is that they are quick and easy to implement (once you get used to them), and it
  *				avoids having to declare methods in every Statement or Exp subclass
  * TOP LEVEL
- * CLASSES:		ExpVisitor (visit expressions)
- *				StmtVisitor (visit statements)
- *				StmtExpVisitor (visit expressions in statements)
- *				ExpModifier (modify expressions)
- *				StmtModifier (modify expressions in statements)
+ * CLASSES:		ExpVisitor		(visit expressions)
+ *				StmtVisitor		(visit statements)
+ *				StmtExpVisitor	(visit expressions in statements)
+ *				ExpModifier		(modify expressions)
+ *				SimpExpModifier	(simplifying expression modifier)
+ *				StmtModifier	(modify expressions in statements)
  *				StmtPartModifier (as above specialised for propagation)
  *============================================================================*/
 /*
@@ -493,5 +494,41 @@ public:
 		Exp*		postVisit(RefExp* e);
 };
 #endif
+
+class CSEModifier : public StmtModifier {
+public:
+
+		// Constructor
+					CSEModifier(ExpModifier* em) : StmtModifier(em, true) {}	// True to ignore collectors
+virtual void		visit(Assign *s,			bool& recur);
+};
+
+class CSEExpModifier : public ExpModifier {
+		Statement*	curStmt;			// Current statement
+		// The value map: a map from an expression to the first statement (in reverse postorder) that uses it
+		// Note that this relationship is only useful if the BB of the first use dominates the current statement
+		std::map<Exp*, Statement*, lessExpStar> valueMap;
+public:
+typedef	std::map<Exp*, Statement*, lessExpStar>::iterator iterator;
+					CSEExpModifier() {}
+		std::map<Exp*, Statement*, lessExpStar>& getValueMap() {return valueMap;}
+
+		void		setCurStmt(Statement* s) {curStmt = s;}
+
+		// If e is in the map, and the definition dominates the current statement, return the location that defines it
+		Exp*		searchMap(Exp* e);
+
+virtual Exp*		preVisit(RefExp		*e, bool& recur) {recur = false; return e;}
+
+virtual Exp*        postVisit(Unary     *e);
+virtual Exp*        postVisit(Binary    *e);
+virtual Exp*        postVisit(Ternary   *e);
+virtual Exp*        postVisit(TypedExp  *e);
+virtual Exp*        postVisit(FlagDef   *e);
+virtual Exp*        postVisit(Location  *e);
+virtual Exp*        postVisit(TypeVal   *e);
+
+		void		dump();
+};
 
 #endif	// #ifndef __VISITOR_H__

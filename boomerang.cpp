@@ -51,11 +51,12 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noPromote(false), propOnlyToAll(false), debugGen(false),
 	maxMemDepth(99), debugSwitch(false), noParameterNames(false), debugLiveness(false), 
 	debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
-	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false),
+	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(NULL),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false)
+	noLimitPropagations(false), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
+	performCSE(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -133,10 +134,12 @@ void Boomerang::help() {
 	std::cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG\n";
 	std::cout << "  -gc              : Generate a call graph (callgraph.out)\n";
 	std::cout << "  -gs              : Generate a symbol file (symbols.h)\n";
+	std::cout << "  -iw              : Write indirect call report to output/indirect.txt\n";
 	std::cout << "Misc.\n";
 	std::cout << "  -k               : Command mode, for available commands see -h cmd\n";
 	std::cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
 	std::cout << "                     Boomerang from\n";
+	std::cout << "  -c               : Perform Common Subexpression Elimination\n";
 	std::cout << "  --               : No effect (used for testing)\n";
 	std::cout << "Debug\n";
 	std::cout << "  -da              : Print AST before code generation\n";
@@ -781,6 +784,11 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'i':
 				if (argv[i][2] == 'c')
 					decodeThruIndCall = true;		// -ic;
+				if (argv[i][2] == 'w')				// -iw
+					if (ofsIndCallReport) {
+						std::string fname = getOutputPath() + "indirect.txt";
+						ofsIndCallReport = new std::ofstream(fname.c_str());
+					}
 				break;
 			case 'L':
 				if (argv[i][2] == 'D')
@@ -800,6 +808,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 				break;
 			case 'a':
 				assumeABI = true;
+				break;
+			case 'c':
+				performCSE = true;
 				break;
 			default:
 				help();
@@ -982,6 +993,9 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	prog->generateCode();
 
 	std::cerr << "output written to " << outputPath << prog->getRootCluster()->getName() << "\n";
+
+	if (Boomerang::get()->ofsIndCallReport)
+		ofsIndCallReport->close();
 
 	time_t end;
 	time(&end);

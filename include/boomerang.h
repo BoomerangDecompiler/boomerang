@@ -246,6 +246,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		noRemoveReturns;
 		bool		debugDecoder;
 		bool		decodeThruIndCall;
+		std::ofstream* ofsIndCallReport;
 		bool		noDecodeChildren;
 		bool		debugProof;
 		bool		debugUnused;
@@ -261,6 +262,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		generateSymbols;
 		bool		noGlobals;
 		bool		assumeABI;			// Assume ABI compliance
+		bool		performCSE;			// Perform CSE
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

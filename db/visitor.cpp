@@ -665,3 +665,43 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
 	return e;
 }
 #endif
+
+Exp* CSEExpModifier::searchMap(Exp* e) {
+	iterator it = valueMap.find(e);
+	if (it == valueMap.end())
+		return e;			// Not in the map; leave it alone
+	Assign* def = (Assign*)it->second;
+	// It's in the map. Does the definition dominate the current statement?
+	// FIXME: not implemented yet
+	// The statement will be an assign; wrap the lhs of the assign with a ref to that stmt
+	return new RefExp(def->getLeft(), def);
+}
+
+void CSEExpModifier::dump() {
+	iterator it;
+	for (it = valueMap.begin(); it != valueMap.end(); ++it)
+		std::cerr << it->first << " maps to " << it->second->getNumber() << "\n";
+	std::cerr << "---\n\n";
+}
+
+Exp* CSEExpModifier::postVisit(Unary     *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(Binary    *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(Ternary   *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(TypedExp  *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(FlagDef   *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(Location  *e) {return searchMap(e);}
+Exp* CSEExpModifier::postVisit(TypeVal   *e) {return searchMap(e);}
+void CSEModifier::visit(Assign *s, bool& recur) {
+	Exp* lhs = s->getLeft();
+	lhs->accept(mod);
+	Exp* rhs = s->getRight();
+	rhs->accept(mod);
+	if (rhs->getArity() != 0) {
+		// Put a mapping from rhs to s into the map
+		std::map<Exp*, Statement*, lessExpStar>& valueMap = ((CSEExpModifier*)mod)->getValueMap();
+		if (valueMap.find(rhs) == valueMap.end())
+			valueMap[rhs] = s;
+	}
+	recur = false;
+}
+

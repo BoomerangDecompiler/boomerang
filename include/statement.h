@@ -671,9 +671,8 @@ virtual bool		accept(StmtPartModifier* visitor);
 };		// class ImplicitAssign
 
 /*==============================================================================
- * BoolAssign represents "setCC" type instructions, where some destination is
- * set (to 1 or 0) depending on the condition codes. It has a condition
- * Exp, similar to the BranchStatement class.
+ * BoolAssign represents "setCC" type instructions, where some destination is set (to 1 or 0) depending on the
+ * condition codes. It has a condition Exp, similar to the BranchStatement class.
  * *==========================================================================*/
 class BoolAssign: public Assignment {
 		BRANCH_TYPE jtCond;		// the condition for setting true

@@ -3695,6 +3695,17 @@ bool ImplicitAssign::accept(StmtModifier* v) {
 	return true;
 }
 
+bool BoolAssign::accept(StmtModifier* v) {
+	bool recur;
+	v->visit(this, recur);
+	if (pCond && recur)
+		pCond = pCond->accept(v->mod);
+	if (recur && lhs->isMemOf()) {
+        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
+	}
+	return true;
+}
+
 
 bool GotoStatement::accept(StmtModifier* v) {
 	bool recur;
@@ -3727,7 +3738,8 @@ bool CaseStatement::accept(StmtModifier* v) {
 bool CallStatement::accept(StmtModifier* v) {
 	bool recur;
 	v->visit(this, recur);
-	if (pDest && recur)
+	if (!recur) return true;
+	if (pDest)
 		pDest = pDest->accept(v->mod);
 	StatementList::iterator it;
 	for (it = arguments.begin(); recur && it != arguments.end(); it++)
@@ -3750,6 +3762,7 @@ bool CallStatement::accept(StmtModifier* v) {
 bool ReturnStatement::accept(StmtModifier* v) {
 	bool recur;
 	v->visit(this, recur);
+	if (!recur) return true;
 	if (!v->ignoreCollector()) {
 		DefCollector::iterator dd;
 		for (dd = col.begin(); dd != col.end(); ++dd)
@@ -3763,17 +3776,6 @@ bool ReturnStatement::accept(StmtModifier* v) {
 	for (rr = returns.begin(); rr != returns.end(); ++rr)
 		if (!(*rr)->accept(v))
 			return false;
-	return true;
-}
-
-bool BoolAssign::accept(StmtModifier* v) {
-	bool recur;
-	v->visit(this, recur);
-	if (pCond && recur)
-		pCond = pCond->accept(v->mod);
-	if (recur && lhs->isMemOf()) {
-        ((Location*)lhs)->setSubExp1(((Location*)lhs)->getSubExp1()->accept(v->mod));
-	}
 	return true;
 }
 

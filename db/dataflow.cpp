@@ -631,3 +631,4 @@ void DefCollector::insert(Assign* a) {
 	if (existsOnLeft(l)) return;
 	defs.insert(a);
 }
+
