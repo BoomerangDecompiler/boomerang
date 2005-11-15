@@ -231,27 +231,82 @@ if (ret)
 // 6: m[r24] = r[28]
 // 6: m[r25] = 4
 // 7: m[m[m[r24]]+m[r25]] = 99
-// Ordinarily would subst m[r24] first, at level 2... ugh, can't think of an
-// example where it would matter.
+// Ordinarily would subst m[r24] first, at level 2... ugh, can't think of an example where it would matter!
+
+// Return true if can propagate to Exp* e
+bool Statement::canPropagateToExp(Exp*e, int memDepth, int toDepth, Assign*& adef) {
+	if (toDepth != -1 && e->getMemDepth() != toDepth)
+		return false;
+	if (!e->isSubscript()) return false;
+	// Can propagate TO this (if memory depths are suitable)
+	if (((RefExp*)e)->isImplicitDef())
+		// Can't propagate statement "0" (implicit assignments)
+		return false;
+	Statement* def = ((RefExp*)e)->getDef();
+	if (def == this)
+		// Don't propagate to self! Can happen with %pc's
+		return false;
+	if (def->isNullStatement())
+		// Don't propagate a null statement! Can happen with %pc's
+		// (this would have no effect, and would infinitely loop)
+		return false;
+	if (!def->isAssign()) return false;		// Only propagate ordinary assignments (MVE: Check!)
+#if 0
+	if (def->isPhi())
+		// Don't propagate phi statements!
+		return false;
+	if (def->isCall())
+		return false;
+	if (def->isBool())
+		return false;
+#endif
+	adef = (Assign*)def;
+	Exp* lhs = adef->getLeft();
+	if (memDepth != -1 && lhs->getMemDepth() != memDepth) return false;		// Check from depth
+
+#if 0	// Sorry, I don't believe prop into branches is wrong... MVE.  By not propagating into branches, we get memory
+// locations not converted to locals, for example (e.g. test/source/csp.c)
+ 
+	if (isBranch()) {
+		Exp* defRight = adef->getRight();
+		// Propagating to a branch often doesn't give good results, unless propagating flags
+		// Special case for Pentium: allow prop of
+		// r12 := SETFFLAGS(...) (fflags stored via register AH)
+		if (!hasSetFlags(defRight))
+			// Allow propagation of constants
+			if (defRight->isIntConst() || defRight->isFltConst())
+				if (VERBOSE) LOG << "Allowing prop. into branch (1) of " << def << "\n";
+				else
+					;
+			// ?? Also allow any assignments to temps or assignment of anything to anything subscripted.
+			// Trent: was the latter meant to be anything NOT subscripted?
+			else if (defRight->getOper() != opSubscript && !lhs->isTemp())
+				return false;
+			else
+				if (VERBOSE) LOG << "Allowing prop. into branch (2) of " << def << "\n";
+	}
+#endif
+	if (lhs->getType() && lhs->getType()->isArray()) {
+		// Assigning to an array, don't propagate
+		return false;
+	}
+	return true;
+}
 
 // Return true if an indirect call statement is converted to direct
-bool Statement::propagateTo(int memDepth, int toDepth, bool limit /* = true */) {
+bool Statement::propagateTo(int memDepth, int toDepth /* = -1 */,
+		std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
 #if 0		// If don't propagate into flag assigns, some converting to locals doesn't happen, and errors occur
 	// don't propagate to flag assigns
 	if (isFlagAssgn())
 		return;
 #endif
-	// don't propagate into temp definitions (? why? Can this ever happen?)
-#if 0		// Don't want to propagate a temp from one RTL to another, but DO want to propagate withing one RTL
-			// Example: test/OSX/hello stmw instruction
-	if (isAssign() && getLeft()->isTemp())
-		return false;
-#endif
 	bool change;
 	bool convert = false;
 	int changes = 0;
-	int sp = proc->getSignature()->getStackRegister(proc->getProg());
-	Exp* regSp = Location::regOf(sp);
+	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
+	// Exp* regSp = Location::regOf(sp);
+	int propMaxDepth = Boomerang::get()->propMaxDepth;
 	// Repeat substituting into this statement while there is a single reference component in it
 	// But all RefExps will have just one component. Maybe calls (later) will have more than one ref
 	// Example: y := a{2,3} + b{4} + c{0}
@@ -265,69 +320,18 @@ bool Statement::propagateTo(int memDepth, int toDepth, bool limit /* = true */) 
 		// exps has r24{10}, r25{30}, m[r26{30}], r26{30}
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			if (toDepth != -1 && e->getMemDepth() != toDepth)
+			Assign* def;
+			if (!canPropagateToExp(e, memDepth, toDepth, def))
 				continue;
-			if (!e->isSubscript()) continue;
-			// Can propagate TO this (if memory depths are suitable)
-			if (((RefExp*)e)->isImplicitDef())
-				// Can't propagate statement "0" (implicit assignments)
-				continue;
-			Statement* def = ((RefExp*)e)->getDef();
-			if (def == this)
-				// Don't propagate to self! Can happen with %pc's
-				continue;
-			if (def->isNullStatement())
-				// Don't propagate a null statement! Can happen with %pc's
-				// (this would have no effect, and would infinitely loop)
-				continue;
-			if (!def->isAssign()) continue;		// Only propagate ordinary assignments (MVE: Check!)
-#if 0
-			if (def->isPhi())
-				// Don't propagate phi statements!
-				continue;
-			if (def->isCall())
-				continue;
-			if (def->isBool())
-				continue;
-#endif
-#if 1	// Sorry, I don't believe prop into branches is wrong... MVE.  By not propagating into branches, we get memory
-		// locations not converted to locals, for example (e.g. test/source/csp.c)
-		 
-			Assign* adef = (Assign*)def;
-			if (isBranch()) {
-				Exp* defRight = adef->getRight();
-				// Propagating to a branch often doesn't give good results, unless propagating flags
-				// Special case for Pentium: allow prop of
-				// r12 := SETFFLAGS(...) (fflags stored via register AH)
-				if (!hasSetFlags(defRight))
-					// Allow propagation of constants
-					if (defRight->isIntConst() || defRight->isFltConst())
-						if (VERBOSE) LOG << "Allowing prop. into branch (1) of " << def << "\n";
-						else
-							;
-					// ?? Also allow any assignments to temps or assignment of anything to anything subscripted.
-					// Trent: was the latter meant to be anything NOT subscripted?
-					else if (defRight->getOper() != opSubscript && !adef->getLeft()->isTemp())
-						continue;
-					else
-						if (VERBOSE) LOG << "Allowing prop. into branch (2) of " << def << "\n";
-			}
-#endif
-			if (adef->getLeft()->getType() && adef->getLeft()->getType()->isArray()) {
-				// Assigning to an array, don't propagate
-				continue;
-			}
-			if (limit && ! (*adef->getLeft() == *regSp)) {
-				// Try to prevent too much propagation, e.g. fromSSA, sumarray
-				LocationSet used;
-				adef->addUsedLocs(used);
-				RefExp left(adef->getLeft(), (Statement*)-1);
-				RefExp *right = dynamic_cast<RefExp*>(adef->getRight());
-				if (used.exists(&left) && !(right && *right->getSubExp1() == *left.getSubExp1()))
-					// We have something like eax = eax + 1
+			// Check if the -l flag (propMaxDepth) prevents this propagation
+			Exp* lhs = def->getLeft();
+			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
+				std::map<Exp*, int, lessExpStar>::iterator ff = destCounts->find(e);
+				if (ff != destCounts->end() && ff->second > 1 && def->getRight()->getComplexityDepth() >= propMaxDepth)
+					// This propagation is prevented by the -l limit
 					continue;
 			}
-			change = doPropagateTo(memDepth, adef, convert);
+			change = doPropagateTo(memDepth, def, convert);
 		}
 	} while (change && ++changes < 20);
 	// Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
@@ -1347,30 +1351,7 @@ Exp* CallStatement::localiseExp(Exp* e, int depth /* = -1 */) {
 	Localiser l(this, depth);
 	e = e->clone()->accept(&l);
 
-#if 0		// Use the BypassingPropagator to do this now
-	// Now check if e happens to have components that are references to other call statements
-	// Example: test/pentium/fib: r29 needs to get through 2 call statements to the original def
-	LocationSet locs;
-	LocationSet::iterator xx;
-	locs.clear();
-	e->addUsedLocs(locs);
-	for (xx = locs.begin(); xx != locs.end(); xx++) {		// For each used location in e
-		if (!(*xx)->isSubscript())
-			continue;										// Could be e.g. m[x{y} + K]
-		Statement* def = ((RefExp*)*xx)->getDef();
-		Exp* base = ((RefExp*)*xx)->getSubExp1();
-		if (def && def->isCall()) {
-			Exp* r = ((CallStatement*)def)->localiseExp(base);
-			bool ch;
-			e = e->searchReplaceAll(*xx, r, ch);
-		}
-	}
-	//e = e->simplifyArith()->simplify();
-	// Now propagate to this expression
-	//return e->propagateToExp();
-#else
 	return e;
-#endif
 }
 
 // Find the definition for the given expression, using the embedded Collector object
@@ -3892,8 +3873,8 @@ bool BoolAssign::accept(StmtPartModifier* v) {
 }
 
 // Fix references to the returns of call statements
-void Statement::bypassAndPropagate() {
-	BypassingPropagator bp(this);
+void Statement::bypassAndPropagate(std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */) {
+	BypassingPropagator bp(this, destCounts);
 	StmtPartModifier sm(&bp);			// Use the Part modifier so we don't change the top level of LHS of assigns etc
 	accept(&sm);
 	if (bp.isTopChanged())

@@ -329,8 +329,10 @@ virtual Exp*		postVisit(TypeVal *e);
 // replaced by copy assignments), and performing simplification and propagation as needed
 class BypassingPropagator : public SimpExpModifier {
 		Statement*	enclosingStmt;		// Statement that is being modified at present, for debugging only
+		std::map<Exp*, int, lessExpStar>* destCounts;
 public:
-					BypassingPropagator(Statement* enclosing) { enclosingStmt = enclosing; }
+					BypassingPropagator(Statement* enclosing, std::map<Exp*, int, lessExpStar>* destCounts = NULL)
+						: enclosingStmt(enclosing), destCounts(destCounts) {}
 virtual Exp*		postVisit(RefExp *e);
 virtual Exp*		postVisit(Location *e);
 };
@@ -487,48 +489,18 @@ public:
 		Exp*		postVisit(Terminal* e);
 };
 
-#if 0
-class ExpPropagator : public SimpExpModifier {
+
+class ComplexityFinder : public ExpVisitor {
+		int		count;
 public:
-					ExpPropagator() { }
-		Exp*		postVisit(RefExp* e);
-};
-#endif
+				ComplexityFinder() : count(0) {}
+		int		getDepth() {return count;}
 
-class CSEModifier : public StmtModifier {
-public:
+virtual bool	visit(Unary *e,		bool& override);
+virtual bool	visit(Binary *e,	bool& override);
+virtual bool	visit(Ternary *e,	bool& override);
+virtual bool	visit(Location *e,	bool& override);
 
-		// Constructor
-					CSEModifier(ExpModifier* em) : StmtModifier(em, true) {}	// True to ignore collectors
-virtual void		visit(Assign *s,			bool& recur);
-};
-
-class CSEExpModifier : public ExpModifier {
-		Statement*	curStmt;			// Current statement
-		// The value map: a map from an expression to the first statement (in reverse postorder) that uses it
-		// Note that this relationship is only useful if the BB of the first use dominates the current statement
-		std::map<Exp*, Statement*, lessExpStar> valueMap;
-public:
-typedef	std::map<Exp*, Statement*, lessExpStar>::iterator iterator;
-					CSEExpModifier() {}
-		std::map<Exp*, Statement*, lessExpStar>& getValueMap() {return valueMap;}
-
-		void		setCurStmt(Statement* s) {curStmt = s;}
-
-		// If e is in the map, and the definition dominates the current statement, return the location that defines it
-		Exp*		searchMap(Exp* e);
-
-virtual Exp*		preVisit(RefExp		*e, bool& recur) {recur = false; return e;}
-
-virtual Exp*        postVisit(Unary     *e);
-virtual Exp*        postVisit(Binary    *e);
-virtual Exp*        postVisit(Ternary   *e);
-virtual Exp*        postVisit(TypedExp  *e);
-virtual Exp*        postVisit(FlagDef   *e);
-virtual Exp*        postVisit(Location  *e);
-virtual Exp*        postVisit(TypeVal   *e);
-
-		void		dump();
 };
 
 #endif	// #ifndef __VISITOR_H__

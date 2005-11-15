@@ -55,8 +55,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	noLimitPropagations(false), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
-	performCSE(false)
+	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -139,7 +138,6 @@ void Boomerang::help() {
 	std::cout << "  -k               : Command mode, for available commands see -h cmd\n";
 	std::cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
 	std::cout << "                     Boomerang from\n";
-	std::cout << "  -c               : Perform Common Subexpression Elimination\n";
 	std::cout << "  --               : No effect (used for testing)\n";
 	std::cout << "Debug\n";
 	std::cout << "  -da              : Print AST before code generation\n";
@@ -156,7 +154,6 @@ void Boomerang::help() {
 	std::cout << "  -nd              : No (reduced) dataflow analysis\n";
 	std::cout << "  -nD              : No decompilation (at all!)\n";
 	std::cout << "  -nl              : No creation of local variables\n";
-	std::cout << "  -nL              : No limit propagations using the self-referencing heuristic\n";
 //	std::cout << "  -nm              : No decoding of the 'main' procedure\n";
 	std::cout << "  -nn              : No removal of NULL and unused statements\n";
 	std::cout << "  -np              : No replacement of expressions with Parameter names\n";
@@ -165,6 +162,7 @@ void Boomerang::help() {
 	std::cout << "                     DriverMain)\n";
 	std::cout << "  -nr              : No removal of unneeded labels\n";
 	std::cout << "  -nR              : No removal of unused Returns\n";
+	std::cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
 	std::cout << "  -p <num>         : Only do num propagations\n";
 	std::cout << "  -m <num>         : Max memory depth\n";
 	exit(1);
@@ -659,8 +657,13 @@ int Boomerang::commandLine(int argc, const char **argv)
 					propOnlyToAll = true;
 					std::cerr << " * * Warning! -pa is not implemented yet!\n";
 				}
-				else
-					sscanf(argv[++i], "%i", &numToPropagate);
+				else {
+					if (++i == argc) {
+						usage();
+						return 1;
+					}
+					sscanf(argv[i], "%i", &numToPropagate);
+				}
 				break;
 			case 'n':
 				switch(argv[i][2]) {
@@ -678,9 +681,6 @@ int Boomerang::commandLine(int argc, const char **argv)
 						break;
 					case 'l':
 						noLocals = true;
-						break;
-					case 'L':
-						noLimitPropagations = true;
 						break;
 					case 'n':
 						noRemoveNull = true;
@@ -712,14 +712,17 @@ int Boomerang::commandLine(int argc, const char **argv)
 					ADDRESS addr;
 					int n;
 					decodeMain = false;
-					if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
-						n = sscanf(argv[i+1], "0x%x", &addr);
-					} else {
-						n = sscanf(argv[i+1], "%i", &addr);
+					if (++i == argc) {
+						usage();
+						return 1;
 					}
-					i++;
+					if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
+						n = sscanf(argv[i], "0x%x", &addr);
+					} else {
+						n = sscanf(argv[i], "%i", &addr);
+					}
 					if (n != 1) {
-						std::cerr << "bad address: " << argv[i+1] << std::endl;
+						std::cerr << "bad address: " << argv[i] << std::endl;
 						exit(1);
 					}
 					entrypoints.push_back(addr);
@@ -734,12 +737,15 @@ int Boomerang::commandLine(int argc, const char **argv)
 					}
 					ADDRESS addr;
 					int n;
-					if (argv[i+1][0] == '0' && argv[i+1][1] == 'x') {
-						n = sscanf(argv[i+1], "0x%x", &addr);
-					} else {
-						n = sscanf(argv[i+1], "%i", &addr);
+					if (++i == argc) {
+						usage();
+						return 1;
 					}
-					i++;
+					if (argv[i][0] == '0' && argv[i+1][1] == 'x') {
+						n = sscanf(argv[i], "0x%x", &addr);
+					} else {
+						n = sscanf(argv[i], "%i", &addr);
+					}
 					if (n != 1) {
 						std::cerr << "bad address: " << argv[i+1] << std::endl;
 						exit(1);
@@ -779,7 +785,11 @@ int Boomerang::commandLine(int argc, const char **argv)
 				}
 				break;
 			case 'm':
-				sscanf(argv[++i], "%i", &maxMemDepth);
+				if (++i == argc) {
+					usage();
+					return 1;
+				}
+				sscanf(argv[i], "%i", &maxMemDepth);
 				break;
 			case 'i':
 				if (argv[i][2] == 'c')
@@ -809,8 +819,12 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'a':
 				assumeABI = true;
 				break;
-			case 'c':
-				performCSE = true;
+			case 'l':
+				if (++i == argc) {
+					usage();
+					return 1;
+				}
+				sscanf(argv[i], "%i", &propMaxDepth);
 				break;
 			default:
 				help();

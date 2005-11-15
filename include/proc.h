@@ -800,9 +800,6 @@ public:
 		// Find and if necessary insert an implicit reference before s whose address expression is a and type is t
 		void		setImplicitRef(Statement* s, Exp* a, Type* ty);
 
-		// Experiments with CSE
-		void		commonSubexpressions();
-
 protected:
 		friend class XMLProgParser;
 					UserProc();

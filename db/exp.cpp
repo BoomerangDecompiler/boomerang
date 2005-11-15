@@ -4108,3 +4108,9 @@ void Exp::bypassAndPropagateComp() {
 	if (op != opMemOf) return;
     ((Location*)this)->setSubExp1(((Location*)this)->getSubExp1()->bypassAndPropagate());
 }
+
+int Exp::getComplexityDepth() {
+	ComplexityFinder cf;
+	accept(&cf);
+	return cf.getDepth();
+}

@@ -272,6 +272,8 @@ virtual void		setSubExp3(Exp* e) {};
 		// Get the memory nesting depth. Non mem-ofs return 0; m[m[x]] returns 2
 virtual int			getMemDepth() {return 0;}
 virtual bool		isMemDepth(int d) {return d == 0;}
+		// Get the complexity depth. Basically, add one for each unary, binary, or ternary
+		int			getComplexityDepth();
 
 		//	//	//	//	//	//	//
 		//	Guarded assignment	//

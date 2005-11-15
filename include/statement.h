@@ -256,8 +256,10 @@ virtual bool		searchAndReplace(Exp *search, Exp *replace) = 0;
 		// From SSA form
 virtual void		fromSSAform(igraph& ig) = 0;
 
+		// True if can propagate to expression e in this Statement. If true, def is set to the definition for e
+		bool		canPropagateToExp(Exp* e, int memDepth, int toDepth, Assign*& def);
 		// Propagate to this statement
-		bool		propagateTo(int memDepth, int toDepth = -1, bool limit = true);
+		bool		propagateTo(int memDepth, int toDepth = -1, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -293,7 +295,7 @@ virtual	void		regReplace(UserProc* proc) = 0;
 		// Set cc to true to count the uses in collectors
 		void		addUsedLocs(LocationSet& used, bool cc = false);
 		// Bypass calls and perform propagation to this statement
-		void		bypassAndPropagate();
+		void		bypassAndPropagate(std::map<Exp*, int, lessExpStar>* destCounts = NULL);
 
 
 		// replaces a use in this statement with an expression from an ordinary assignment

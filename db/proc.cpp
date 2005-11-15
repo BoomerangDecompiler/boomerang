@@ -1357,14 +1357,6 @@ void UserProc::middleDecompile() {
 		}
 	}
 
-	if (Boomerang::get()->performCSE) {
-		if (VERBOSE)
-			LOG << "--- common subexpression elimination ---\n";
-		commonSubexpressions();
-		if (VERBOSE)
-			LOG << "=== end common subexpression elimination ===\n";
-	}
-
 	if (VERBOSE)
 		LOG << "===== end initial decompile for " << getName() << " =====\n\n";
 	status = PROC_INITDONE;
@@ -3197,7 +3189,7 @@ bool UserProc::processConstants() {
 }
 
 // Propagate statements, but don't remove
-// Respect the memory depth (don't propagate FROM statements that have components of a higher memory depth than memDepth)
+// Respect the memory depth (don't propagate FROM statements that have components of higher memory depth than memDepth)
 // Also don't propagate TO expressions of depth other than toDepth (unless toDepth == -1)
 // Return true if an indirect call is converted to direct
 bool UserProc::propagateStatements(int memDepth, int toDepth) {
@@ -3206,14 +3198,24 @@ bool UserProc::propagateStatements(int memDepth, int toDepth) {
 	// propagate any statements that can be
 	StatementList::iterator it;
 	bool convertedIndirect = false;
-	bool limitPropagations = !Boomerang::get()->noLimitPropagations;
+	// First pass: count the number of times each assignment LHS would be propagated somewhere
+	std::map<Exp*, int, lessExpStar> destCounts;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		LocationSet exps;
+		Assign* def;
+		s->addUsedLocs(exps, true);		// True to also add uses from collectors
+		LocationSet::iterator ll;
+		for (ll = exps.begin(); ll != exps.end(); ll++) {
+			Exp* e = *ll;
+			if (!s->canPropagateToExp(e, memDepth, toDepth, def)) continue;
+			destCounts[e]++;				// Count propagatable expression e
+		}
+	}
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
-		// We can propagate to ReturnStatements now, and "return 0"
-		// if (s->isReturn()) continue;
-        // LOG << s << "\n";
-		convertedIndirect |= s->propagateTo(memDepth, toDepth, limitPropagations);
+		convertedIndirect |= s->propagateTo(memDepth, toDepth, &destCounts);
 	}
 	simplify();
 	propagateToCollector(memDepth);
@@ -4692,11 +4694,27 @@ void UserProc::fixCallAndPhiRefs() {
 	if (VERBOSE)
 		LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
 
-	// For each phi statement ps in this proc
+	// First pass: count the number of times each assignment LHS would be propagated somewhere
+	std::map<Exp*, int, lessExpStar> destCounts;
+	StatementList::iterator it;
 	Statement* s;
 	StatementList stmts;
 	getStatements(stmts);
-	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		if (s->isPhi()) continue;
+		LocationSet exps;
+		Assign* def;
+		s->addUsedLocs(exps, true);		// True to also add uses from collectors
+		LocationSet::iterator ll;
+		for (ll = exps.begin(); ll != exps.end(); ll++) {
+			Exp* e = *ll;
+			if (!s->canPropagateToExp(e, -1, -1, def)) continue;
+			destCounts[e]++;				// Count propagatable expression (use e not lhs so it has the ref)
+		}
+	}
+
+	// Second pass
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		s = *it;
 		if (s->isPhi()) {
@@ -4754,7 +4772,7 @@ void UserProc::fixCallAndPhiRefs() {
 					LOG << "redundant phi replaced with copy assign; now " << ps << "\n";
 			}
 		} else {	// Ordinary statement
-			s->bypassAndPropagate();
+			s->bypassAndPropagate(&destCounts);
 		}
 	}
 
@@ -5130,19 +5148,3 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
 	assert(0);				// Could not find s withing its enclosing BB
 }
 
-void UserProc::commonSubexpressions() {
-
-	CSEExpModifier cseem;
-	CSEModifier csem(&cseem);
-	StatementList stmts;
-	getStatements(stmts);
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-if (s->getNumber()==103)
- std::cerr << "HACK!\n";
-		cseem.setCurStmt(s);
-		s->accept(&csem);
-	}
-	cseem.dump();
-}

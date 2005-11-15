@@ -257,7 +257,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		noChangeSignatures;
 		bool		conTypeAnalysis;
 		bool		dfaTypeAnalysis;
-		bool		noLimitPropagations;
+		int			propMaxDepth;		// Max depth of expression that will be propagated to more than one dest
 		bool		generateCallGraph;
 		bool		generateSymbols;
 		bool		noGlobals;
