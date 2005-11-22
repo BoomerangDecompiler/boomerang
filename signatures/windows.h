@@ -573,3 +573,91 @@ DWORD GetTempPathA(DWORD nBufferLength, LPSTR lpBuffer);
 DWORD SizeofResource(HMODULE hModule, HRSRC hResInfo);
 HINSTANCE ShellExecuteA(HWND hwnd, LPCSTR lpOperation, LPCSTR lpFile, LPCSTR lpParameters, LPCSTR lpDirectory, INT nShowCmd);
 
+typedef struct {
+  DWORD dwOSVersionInfoSize;
+  DWORD dwMajorVersion;
+  DWORD dwMinorVersion;
+  DWORD dwBuildNumber;
+  DWORD dwPlatformId;
+  CHAR  szCSDVersion[128];
+} OSVERSIONINFOA;
+
+typedef struct {
+  DWORD dwOSVersionInfoSize;
+  DWORD dwMajorVersion;
+  DWORD dwMinorVersion;
+  DWORD dwBuildNumber;
+  DWORD dwPlatformId;
+  WCHAR szCSDVersion[128];
+} OSVERSIONINFOW;
+
+BOOL GetVersionExA(OSVERSIONINFOA *v);
+BOOL GetVersionExW(OSVERSIONINFOW *v);
+
+typedef struct {
+  DWORD  dwOemId;
+  DWORD  dwPageSize;
+  LPVOID lpMinimumApplicationAddress;
+  LPVOID lpMaximumApplicationAddress;
+  DWORD  dwActiveProcessorMask;
+  DWORD  dwNumberOfProcessors;
+  DWORD  dwProcessorType;
+  DWORD  dwReserved1;
+  DWORD  dwReserved2;
+} SYSTEM_INFO;
+
+void GetSystemInfo(SYSTEM_INFO *sinf);
+
+typedef struct {
+  DWORD dwLength;      // sizeof(MEMORYSTATUS)
+  DWORD dwMemoryLoad;  // % in use
+  DWORD dwTotalPhys;
+  DWORD dwAvailPhys;
+  DWORD dwTotalPageFile;
+  DWORD dwAvailPageFile;
+  DWORD dwTotalVirtual;
+  DWORD dwAvailVirtual;
+} MEMORYSTATUS;
+
+void GlobalMemoryStatus(MEMORYSTATUS *mst);
+
+typedef struct {
+  UINT MaxCharSize;
+  BYTE DefaultChar[2]; // MAX_DEFAULTCHAR
+  BYTE LeadByte[12];   // MAX_LEADBYTES
+} CPINFO;
+
+BOOL GetCPInfo(UINT uCodePage, CPINFO *lpCPInfo);
+
+typedef void *HANDLE;
+
+HANDLE RegisterEventSourceA(char *uncServerName, char *sourceName);
+BOOL DeregisterEventSource(HANDLE eventLog);
+
+typedef void *FARPROC;
+
+FARPROC GetProcAddress(HANDLE module, char *procName);
+
+LONG InterlockedExchange(LONG *target, LONG *val);
+
+HINSTANCE LoadLibraryExA(LPCSTR lib, HANDLE file, DWORD flags);
+HINSTANCE LoadLibraryExW(LPCWSTR lib, HANDLE file, DWORD flags);
+
+int MultiByteToWideChar(UINT CodePage, DWORD dwFlags,
+                        LPCSTR lpMultiByteStr, int cbMultiByte,
+                        LPWSTR lpWideCharStr, int cchWideChar);
+
+// long name causes assertion failure
+// typedef DWORD ACCESS_MASK;
+typedef DWORD ACC_MSK;
+
+LONG RegOpenKeyExA(HANDLE hKey, LPCTSTR lpSubKey, DWORD ulOptions,
+                  ACC_MSK regsam, HANDLE *phkResult);
+LONG RegOpenKeyExW(HANDLE hKey, LPCTSTR lpSubKey, DWORD ulOptions,
+                  ACC_MSK regsam, HANDLE *phkResult);
+LONG RegCloseKey(HANDLE hKey);
+
+void SetLastError(DWORD error);
+
+void Sleep(DWORD milliseconds);
+
