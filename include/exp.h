@@ -158,7 +158,7 @@ virtual int getArity() {return 0;}		// Overridden for Unary, Binary, etc
 		bool		isAnull() {return op == opAnull;}
 		// True if this is the Nil Terminal (terminates lists; "NOP" expression)
 		bool		isNil() {return op == opNil;}
-		// Trye if this is %pc
+		// True if this is %pc
 		bool		isPC() {return op == opPC;}
 		// True if is %afp, %afp+k, %afp-k, or a[m[<any of these]]
 		bool		isAfpTerm();

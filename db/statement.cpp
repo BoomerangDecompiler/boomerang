@@ -235,8 +235,8 @@ if (ret)
 
 // Return true if can propagate to Exp* e
 bool Statement::canPropagateToExp(Exp*e, int memDepth, int toDepth, Assign*& adef) {
-	if (toDepth != -1 && e->getMemDepth() != toDepth)
-		return false;
+//	if (toDepth != -1 && e->getMemDepth() != toDepth)
+//		return false;
 	if (!e->isSubscript()) return false;
 	// Can propagate TO this (if memory depths are suitable)
 	if (((RefExp*)e)->isImplicitDef())

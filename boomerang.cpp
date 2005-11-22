@@ -37,7 +37,8 @@
 Boomerang *Boomerang::boomerang = NULL;
 
 /**
- * Initializes the Boomerang object the following settings:
+ * Initializes the Boomerang object.
+ * The default settings are:
  * - All options disabled
  * - Infinite propagations
  * - A maximum memory depth of 99
@@ -61,27 +62,38 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	outputPath = "./output/";
 }
 
-
+/**
+ * Returns the Log object associated with the object.
+ */
 Log &Boomerang::log() {
 	return *logger;
 }
 
+/**
+ * Sets the outputfile to be the file "log" in the default output directory.
+ */
 FileLogger::FileLogger() : out((Boomerang::get()->getOutputPath() + "log").c_str()) {
 }
 
 /**
- * \returns The HLLCode for the given proc.
+ * Returns the HLLCode for the given proc.
  */
 HLLCode *Boomerang::getHLLCode(UserProc *p) {
 	return new CHLLCode(p);
 }
 
+/**
+ * Prints a short usage statement.
+ */
 void Boomerang::usage() {
 	std::cout << "Usage: boomerang [ switches ] <program>" << std::endl;
 	std::cout << "boomerang -h for switch help" << std::endl;
 	exit(1);
 }
 
+/**
+ * Prints help for the interactive mode.
+ */
 void Boomerang::helpcmd() {
 	// Column 98 of this source file is column 80 of output (don't use tabs)
 	//            ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
@@ -107,6 +119,9 @@ void Boomerang::helpcmd() {
 	std::cout << "  exit                               : Quit the shell.\n";
 }
 
+/**
+ * Prints help about the command line switches.
+ */
 void Boomerang::help() {
 	std::cout << "Symbols\n";
 	std::cout << "  -s <addr> <name> : Define a symbol\n";
@@ -168,7 +183,14 @@ void Boomerang::help() {
 	exit(1);
 }
 		
-// Create the directory. Return false if invalid
+/**
+ * Creates a directory and tests it.
+ *
+ * \param dir	The name of the directory.
+ * 
+ * \retval true The directory is valid.
+ * \retval false The directory is invalid.
+ */
 bool createDirectory(std::string dir) {
 	std::string remainder(dir);
 	std::string path;
@@ -200,6 +222,9 @@ bool createDirectory(std::string dir) {
 	return pathOK;
 }
 
+/**
+ * Prints a tree graph.
+ */
 void Cluster::printTree(std::ostream &out)
 {
 	out << "\t\t" << name << "\n";
@@ -210,9 +235,13 @@ void Cluster::printTree(std::ostream &out)
 typedef char *crazy_vc_bug;
 
 /**
- * \remark Gerard: This function seems a bit buggy.
+ * Splits a string up in different words.
+ * use like: argc = splitLine(line, &argv);
  *
- * \returns The number of words found.
+ * \param[in] line		the string to parse
+ * \param[out] pargc	&argv
+ *
+ * \return The number of words found (argc).
  */
 int Boomerang::splitLine(char *line, char ***pargv)
 {
@@ -220,12 +249,24 @@ int Boomerang::splitLine(char *line, char ***pargv)
 	*pargv = new crazy_vc_bug[100];
 	const char *p = strtok(line, " \r\n");
 	while(p) {
-	(*pargv)[argc++] = (char*)p;
-	p = strtok(NULL, " \r\n");
+		(*pargv)[argc++] = (char*)p;
+		p = strtok(NULL, " \r\n");
 	}
 	return argc;
 }
 
+/**
+ * Parse and execute a command supplied in interactive mode.
+ *
+ * \param argc		The number of arguments.
+ * \param argv		Pointers to the arguments.
+ *
+ * \return A value indicating what happened.
+ *
+ * \retval 0 Success
+ * \retval 1 Faillure
+ * \retval 2 The user exited with \a quit or \a exit
+ */
 int Boomerang::parseCmd(int argc, const char **argv)
 {
 	static Prog *prog = NULL;
@@ -563,6 +604,12 @@ int Boomerang::parseCmd(int argc, const char **argv)
 	return 0;
 }
 
+/**
+ * Displays a command line and processes the commands entered.
+ *
+ * \retval 0 stdin was closed.
+ * \retval 2 The user typed exit or quit.
+ */
 int Boomerang::cmdLine()
 {
 	char line[1024];
@@ -579,6 +626,12 @@ int Boomerang::cmdLine()
 	return 0;
 }
 
+/**
+ * The main function for the command line mode. Parses switches and runs
+ * decompile(filename).
+ *
+ * \return Zero on success, nonzero on faillure.
+ */
 int Boomerang::commandLine(int argc, const char **argv) 
 {
 	if (argc < 2) usage();
@@ -839,6 +892,15 @@ int Boomerang::commandLine(int argc, const char **argv)
 	return decompile(argv[argc-1]);	   
 }
 
+/**
+ * Sets the directory in which Boomerang creates its output files.
+ * The directory will be created if it doesn't exist.
+ *
+ * \param path		the path to the directory
+ *
+ * \retval true Success.
+ * \retval false The directory could not be created.
+ */
 bool Boomerang::setOutputDirectory(const char *path)
 {
 	outputPath = path;
@@ -852,6 +914,12 @@ bool Boomerang::setOutputDirectory(const char *path)
 	return true;
 }
 
+/**
+ * Adds information about functions and classes from Objective-C modules to the Prog object.
+ *
+ * \param modules A map from name to the Objective-C modules.
+ * \param prog The Prog object to add the information to.
+ */
 void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog)
 {
 	if (VERBOSE)
@@ -884,6 +952,14 @@ void Boomerang::objcDecode(std::map<std::string, ObjcModule> &modules, Prog *pro
 		LOG << "\n";
 }
 
+/**
+ * Loads the executable file and decodes it.
+ *
+ * \param fname The name of the file to load.
+ * \param pname How the Prog will be named.
+ *
+ * \returns A Prog object.
+ */
 Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 {
 	std::cerr << "loading...\n";
@@ -955,9 +1031,9 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
  * After decompilation the elapsed time is printed to std::cerr.
  *
  * \param fname The name of the file to load.
- * \param pname How the Prog will be named.
+ * \param pname The name that will be given to the Proc.
  *
- * \returns Zero on success, nonzero on faillure.
+ * \return Zero on success, nonzero on faillure.
  */
 int Boomerang::decompile(const char *fname, const char *pname)
 {
@@ -1026,19 +1102,31 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	return 0;
 }
 
+/**
+ * Saves the state of the Prog object to a XML file.
+ * \param prog The Prog object to save.
+ */
 void Boomerang::persistToXML(Prog *prog)
 {
 	LOG << "saving persistable state...\n";
 	XMLProgParser *p = new XMLProgParser();
 	p->persistToXML(prog);
 }
-
+/**
+ * Loads the state of a Prog object from a XML file.
+ * \param fname The name of the XML file.
+ * \return The loaded Prog object.
+ */
 Prog *Boomerang::loadFromXML(const char *fname)
 {
 	LOG << "loading persistable state...\n";
 	XMLProgParser *p = new XMLProgParser();
 	return p->parse(fname);
 }
+
+/**
+ * Prints the last lines of the log file.
+ */
 void Boomerang::logTail() {
 	logger->tail();
 }

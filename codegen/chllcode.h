@@ -56,45 +56,51 @@ Assignment					right to left	=  +=  -=  *=	/=	<<=	 >>=  %=
 Comma						left to right	,
 */
 
+/// Operator precedence
 enum PREC {
-	PREC_NONE=0,			// Outer level (no parens required)
-	PREC_COMMA,				// Comma
-	PREC_ASSIGN,			// Assignment
-	PREC_COND,				// Conditional
-	PREC_LOG_OR,			// Logical OR
-	PREC_LOG_AND,			// Logical AND
-	PREC_BIT_IOR,			// Bitwise Inclusive OR
-	PREC_BIT_XOR,			// Bitwise Exclusive OR
-	PREC_BIT_AND,			// Bitwise AND
-	PREC_EQUAL,				// Equality
-	PREC_REL,				// Relational
-	PREC_BIT_SHIFT,			// Bitwise Shift
-	PREC_ADD,				// Additive
-	PREC_MULT,				// Multiplicative
-	PREC_PTR_MEM,			// C++ Pointer to Member
-	PREC_UNARY,				// Unary
-	PREC_PRIM,				// Primary
-	PREC_SCOPE				// Primary scope resolution
+	PREC_NONE=0,			///< Outer level (no parens required)
+	PREC_COMMA,				///< Comma
+	PREC_ASSIGN,			///< Assignment
+	PREC_COND,				///< Conditional
+	PREC_LOG_OR,			///< Logical OR
+	PREC_LOG_AND,			///< Logical AND
+	PREC_BIT_IOR,			///< Bitwise Inclusive OR
+	PREC_BIT_XOR,			///< Bitwise Exclusive OR
+	PREC_BIT_AND,			///< Bitwise AND
+	PREC_EQUAL,				///< Equality
+	PREC_REL,				///< Relational
+	PREC_BIT_SHIFT,			///< Bitwise Shift
+	PREC_ADD,				///< Additive
+	PREC_MULT,				///< Multiplicative
+	PREC_PTR_MEM,			///< C++ Pointer to Member
+	PREC_UNARY,				///< Unary
+	PREC_PRIM,				///< Primary
+	PREC_SCOPE				///< Primary scope resolution
 };
 
 
 
-
+/// Outputs C code.
 class CHLLCode : public HLLCode {
 private:
+		/// The generated code.
 		std::list<char *> lines;
 
 		void indent(std::ostringstream& str, int indLevel);
 		void appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns = false);
 		void appendType(std::ostringstream& str, Type *typ);
 		void appendTypeIdent(std::ostringstream& str, Type *typ, const char *ident);
+		/// Adds: (
 		void openParen(std::ostringstream& str, PREC outer, PREC inner) {
 			if (inner < outer) str << "("; }
+		/// Adds: )
 		void closeParen(std::ostringstream& str, PREC outer, PREC inner) {
 			if (inner < outer) str << ")"; }
 
+		/// All locals in a Proc
 		std::map<std::string, Type*> locals;
 
+		/// All used goto labels.
 		std::set<int> usedLabels;
 
 public:

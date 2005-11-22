@@ -47,6 +47,7 @@ class ObjcModule;
 #define LOG Boomerang::get()->log()
 #define LOGTAIL Boomerang::get()->logTail()
 
+/// Virtual class to monitor the decompilation.
 class Watcher {
 public:
 		Watcher() { }
@@ -69,76 +70,71 @@ virtual void		alert_end_decompile(UserProc *p) { }
 virtual void		alert_load(Proc *p) { }
 };
 
-/// The main class of the decompiler.
 /**
  * Controls the loading, decoding, decompilation and code generation for a program.
+ * This is the main class of the decompiler.
  */
 class Boomerang {
 private:
 static Boomerang *boomerang;
 		/// String with the path to the boomerang executable.
-		std::string	progPath;	// String with the path to this exec
+		std::string	progPath;
 		/// The path where all output files are created.
 		std::string	outputPath;
 		/// Takes care of the log messages.
 		Log			*logger;
 		/// The watchers which are interested in this decompilation.
 		std::set<Watcher*> watchers;
+		
+		
+		/* Documentation about a function should be at one place only
+		 * So: Document all functions at the point of implementation (in the .c file)
+		 */
 
-		/// Print how to use this program.
 		void		usage();
-		/// Print switch help.
 		void		help();
-		/// Print help for the command (-k) mode.
 		void		helpcmd();
 		int			splitLine(char *line, char ***pargv);
 		int			parseCmd(int argc, const char **argv);
 		int			cmdLine();
 
 
-		/// Simple constructor.
 				Boomerang();
 		/// The destructor is virtual to force this object to be created on the heap (with \em new).
 virtual			~Boomerang() {}
 public:
-		/// Returns the global boomerang object.
+		/** 
+		 * \return The global boomerang object. It will be created if it didn't already exist.
+		 */ 
 static Boomerang *get() { 
 				if (!boomerang) boomerang = new Boomerang(); 
 				return boomerang;
 			}
 
-		/// Gets a reference to the Log object.
 		Log			&log();
-		/// Specify the logger to be used for this decompilation.
 		void		setLogger(Log *l) { logger = l; }
-		/// Set the output directory to the specified path.
 		bool		setOutputDirectory(const char *path);
 
-		/// Get the HLLCode for the specified UserProc.
+		/// \return The HLLCode for the specified UserProc.
 		HLLCode		*getHLLCode(UserProc *p = NULL);
 
-		/// Parse the command line for options.
 		int			commandLine(int argc, const char **argv);
-		/// Set the programs path to the given one.
+		/// Set the path to the %Boomerang executable.
 		void		setProgPath(const char* p) { progPath = p; }
 		/// Get the path to the %Boomerang executable.
 		const std::string& getProgPath() { return progPath; }
 		/// Set the path where the output files are saved.
 		void		setOutputPath(const char* p) { outputPath = p; }
-		/// Get the path to where the output files are saved.
+		/// Returns the path to where the output files are saved.
 		const std::string& getOutputPath() { return outputPath; }
-		/// Load a program or library and decode it.
+
 		Prog		*loadAndDecode(const char *fname, const char *pname = NULL);
-		/// Decompile the specified program or library
 		int			decompile(const char *fname, const char *pname = NULL);
-		/// Add a Watcher to the set of %Watchers for this Boomerang object.
+		/// Add a Watcher to the set of Watchers for this Boomerang object.
 		void		addWatcher(Watcher *watcher) { watchers.insert(watcher); }
-		/// Save the current state of this Prog to a XML file.
 		void		persistToXML(Prog *prog);
-		/// Load a Prog from a XML file.
 		Prog		*loadFromXML(const char *fname);
 
-		/// Special decoder for Objective-C.
 		void		objcDecode(std::map<std::string, ObjcModule> &modules, Prog *prog);
 
 		/// Alert the watchers that decompilation has completed.
@@ -146,7 +142,7 @@ static Boomerang *get() {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_complete();
 					}
-		/// Alert the watchers we have found a new proc.
+		/// Alert the watchers we have found a new %Proc.
 		void		alert_new(Proc *p) {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_new(p);
@@ -156,7 +152,7 @@ static Boomerang *get() {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_update_signature(p);
 					}
-		/// Alert the watchers we are currently decoding \a nBytes bytes at \a address pc.
+		/// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
 		void		alert_decode(ADDRESS pc, int nBytes) {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_decode(pc, nBytes);
@@ -176,10 +172,12 @@ static Boomerang *get() {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_load(p);
 			}
+		/// Alert the watchers we are starting to decode.
 		void		alert_start_decode(ADDRESS start, int nBytes) { 
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_start_decode(start, nBytes);
 					}
+		/// Alert the watchers we finished decoding.
 		void		alert_end_decode() { 
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_end_decode();
@@ -209,7 +207,6 @@ virtual void		alert_end_decompile(UserProc *p) {
 							(*it)->alert_end_decompile(p);
 			}
 
-		// List the last few lines of the LOG to standard error
 		void		logTail();
 
 		// Command line flags
@@ -223,6 +220,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		noDecompile;
 		bool		stopBeforeDecompile;
 		bool		traceDecoder;
+		/// The file in which the dotty graph is saved
 		const char	*dotFile;
 		int			numToPropagate;
 		bool		noPromote;
@@ -239,8 +237,9 @@ virtual void		alert_end_decompile(UserProc *p) {
 		std::vector<std::string> symbolFiles;
 		/// A map to find a name by a given address.
 		std::map<ADDRESS, std::string> symbols;
-		// decodeMain is set when there are no -e or -E switches given
-		bool		decodeMain;					// When true, attempt to decode main, all children, and all procs
+		/// When true, attempt to decode main, all children, and all procs.
+		/// \a decodeMain is set when there are no -e or -E switches given
+		bool		decodeMain;					
 		bool		printAST;
 		bool		dumpXML;
 		bool		noRemoveReturns;
@@ -257,12 +256,12 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		noChangeSignatures;
 		bool		conTypeAnalysis;
 		bool		dfaTypeAnalysis;
-		int			propMaxDepth;		// Max depth of expression that will be propagated to more than one dest
+		int			propMaxDepth;		///< Max depth of expression that will be propagated to more than one dest
 		bool		generateCallGraph;
 		bool		generateSymbols;
 		bool		noGlobals;
-		bool		assumeABI;			// Assume ABI compliance
-		bool		performCSE;			// Perform CSE
+		bool		assumeABI;			///< Assume ABI compliance
+		bool		performCSE;			///< Perform CSE
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)

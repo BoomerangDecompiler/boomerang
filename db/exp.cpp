@@ -58,7 +58,7 @@
 #include "log.h"
 #include <iomanip>			// For std::setw etc
 
-extern char debug_buffer[];		 // For prints functions
+extern char debug_buffer[];		 ///< For prints functions
 
 /*==============================================================================
  * FUNCTION:		Const::Const etc
@@ -74,7 +74,7 @@ Const::Const(QWord ll)	: Exp(opLongConst),	conscript(0), type(new VoidType) {u.l
 Const::Const(double d)	: Exp(opFltConst),	conscript(0), type(new VoidType) {u.d = d;}
 Const::Const(char* p)	: Exp(opStrConst),	conscript(0), type(new VoidType) {u.p = p;}
 Const::Const(Proc* p)	: Exp(opFuncConst),	conscript(0), type(new VoidType) {u.pp = p;}
-// Note: this is bad. We need a way of constructing true unsigned constants
+/// \remark This is bad. We need a way of constructing true unsigned constants
 Const::Const(ADDRESS a)	: Exp(opIntConst),	conscript(0), type(new VoidType) {u.a = a;}
 
 // Copy constructor
@@ -157,6 +157,10 @@ RefExp::RefExp(Exp* e, Statement* d) : Unary(opSubscript, e), def(d) {
 
 TypeVal::TypeVal(Type* ty) : Terminal(opTypeVal), val(ty) { }
 
+/**
+ * Create a new Location expression.
+ * \param op Should be \opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
+ */
 Location::Location(OPER op, Exp *exp, UserProc *proc) : Unary(op, exp), proc(proc), ty(NULL) {
 	assert(op == opRegOf || op == opMemOf || op == opLocal || op == opGlobal || op == opParam || op == opTemp);
 	if (proc == NULL) {
@@ -305,6 +309,7 @@ void Location::setType(Type *t)
  * PARAMETERS:		<none>
  * RETURNS:			<nothing>
  *============================================================================*/
+/// Swap the two subexpressions.
 void Binary::commute() {
 	Exp* t = subExp1;
 	subExp1 = subExp2;
