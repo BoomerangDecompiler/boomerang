@@ -161,7 +161,7 @@ void PhiStripper::visit(PhiAssign* s, bool& recur) {
 	recur = true;
 }
 
-Exp* BypassingPropagator::postVisit(RefExp* r) {
+Exp* CallBypasser::postVisit(RefExp* r) {
 	// If child was modified, simplify now
 	Exp* ret = r;
 	if (!(unchanged & mask)) ret = r->simplify();
@@ -175,32 +175,9 @@ Exp* BypassingPropagator::postVisit(RefExp* r) {
 		if (ch) {
 			unchanged &= ~mask;
 			mod = true;
-			// Now have to recurse to do any propagation or further bypassing that may be required
-			return ret->accept(new BypassingPropagator(enclosingStmt));
-		}
-	}
-	Assign* as = (Assign*)def;
-	if (as && as->isAssign()) {
-		Exp* lhs = as->getLeft();
-		Exp* rhs = as->getRight();
-		// Check for -l limit
-		std::map<Exp*, int, lessExpStar>::iterator ff;
-		if (destCounts && (ff = destCounts->find(r), ff != destCounts->end()) && ff->second > 1 &&
-				rhs->getComplexityDepth() > Boomerang::get()->propMaxDepth)
-			return ret;					// This propagation has been -l limited
-		bool ch;
-		Exp* old;
-		if (VERBOSE)
-			old = ret->clone();
-		ret = ret->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
-		if (ch) {
-			unchanged &= ~mask;			// Been changed now (so simplify parent)
-			mod = true;
-			if (VERBOSE)
-				LOG << "bypassing propagator propagating " << def << " into " << old << " within stmt " <<
-					(enclosingStmt ? enclosingStmt->getNumber() : 0) << " result " << ret << "\n";
-			// Recursively propagate and/or bypass more if possible
-			return ret->accept(new BypassingPropagator(enclosingStmt));
+			// Now have to recurse to do any further bypassing that may be required
+			// E.g. bypass the two recursive calls in fibo?? FIXME: check!
+			return ret->accept(new CallBypasser(enclosingStmt));
 		}
 	}
 
@@ -209,7 +186,7 @@ Exp* BypassingPropagator::postVisit(RefExp* r) {
 }
 
 
-Exp* BypassingPropagator::postVisit(Location *e)	   {
+Exp* CallBypasser::postVisit(Location *e)	   {
 	// ? FIXME: What's this hack for?
 	bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
 	if (isAddrOfMem) return e;
@@ -276,8 +253,9 @@ Exp* SimpExpModifier::postVisit(Terminal *e)	  {
 }
 
 // Add used locations finder
+
 bool UsedLocsFinder::visit(Location* e, bool& override) {
-	used->insert(e);		// All locations visited are used
+	used->insert(e);				// All locations visited are used
 	if (e->isMemOf()) {
 		// Example: m[r28{10} - 4]	we use r28{10}
 		Exp* child = e->getSubExp1();
@@ -631,7 +609,7 @@ Exp* Localiser::postVisit(Location* e) {
 	if (d != depth && depth != -1) return e;	// Only subscript at the requested depth, or any if depth == -1
 	Exp* r = call->findDefFor(ret);
 	if (r) {
-		ret = r->clone()->bypassAndPropagate();
+		ret = r->clone()->bypass();
 		unchanged &= ~mask;
 		mod = true;
 	} else
@@ -647,7 +625,7 @@ Exp* Localiser::postVisit(Terminal* e) {
 	if (depth >= 1) return ret;
 	Exp* r = call->findDefFor(ret);
 	if (r) {
-		ret = r->clone()->bypassAndPropagate();
+		ret = r->clone()->bypass();
 		unchanged &= ~mask;
 		mod = true;
 	} else
@@ -659,4 +637,23 @@ bool ComplexityFinder::visit(Unary* e,		bool& override) {count++; override = fal
 bool ComplexityFinder::visit(Binary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Ternary* e,	bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Location* e,	bool& override) {if (e->isMemOf()) count++; override = false; return true;}
+
+Exp* ExpPropagator::postVisit(RefExp* e) {
+	if (!Statement::canPropagateToExp(e, fromDepth))
+		return e;
+	Statement* def = e->getDef();
+	Exp* res = e;
+	if (def && def->isAssign()) {
+		Exp* lhs = ((Assign*)def)->getLeft();
+		Exp* rhs = ((Assign*)def)->getRight();
+		bool ch;
+		res = e->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
+		if (ch) {
+			unchanged &= ~mask;					// Been changed now (so simplify parent)
+			if (res->isSubscript())
+				res = postVisit((RefExp*)res);	// Recursively propagate more if possible
+		}
+	}
+	return res;
+}
 

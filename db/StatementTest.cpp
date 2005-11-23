@@ -1349,7 +1349,7 @@ void StatementTest::testBypass () {
 	// std::cerr << "Call is "; call->dump();
 	advance(it, 2);
 	Statement* s22 = *it;						// Statement 20
-	s22->bypassAndPropagate();					// r28 should bypass the call
+	s22->bypass();								// r28 should bypass the call
 	// Make sure it's what we expect!
 	std::string expected("  20 *32* r28 := r28{-} - 16");
 	std::string actual;
@@ -1361,7 +1361,7 @@ void StatementTest::testBypass () {
 	// Fake it to be known that r29 is preserved
 	Exp* r29 = Location::regOf(29);
 	proc->setProven(new Binary(opEquals, r29, r29->clone()));
-	(*it)->bypassAndPropagate();
+	(*it)->bypass();
 	// Now expect r29{30} to be r29{3}
 	expected = "  22 *32* r24 := m[r29{3} + 8]{-}";
 	std::ostringstream ost2;

@@ -326,24 +326,24 @@ virtual Exp*		postVisit(TypeVal *e);
 };
 
 // A modifying visitor to process all references in an expression, bypassing calls (and phi statements if they have been
-// replaced by copy assignments), and performing simplification and propagation as needed
-class BypassingPropagator : public SimpExpModifier {
+// replaced by copy assignments), and performing simplification as needed.
+// Used to also propagate, but this became unwieldy with -l propagation limiting
+class CallBypasser : public SimpExpModifier {
 		Statement*	enclosingStmt;		// Statement that is being modified at present, for debugging only
-		std::map<Exp*, int, lessExpStar>* destCounts;
 public:
-					BypassingPropagator(Statement* enclosing, std::map<Exp*, int, lessExpStar>* destCounts = NULL)
-						: enclosingStmt(enclosing), destCounts(destCounts) {}
+					CallBypasser(Statement* enclosing) : enclosingStmt(enclosing) {}
 virtual Exp*		postVisit(RefExp *e);
 virtual Exp*		postVisit(Location *e);
 };
 
 class UsedLocsFinder : public ExpVisitor {
-	LocationSet* used;
+	LocationSet*	used;				// Set of Exps
 public:
-					UsedLocsFinder(LocationSet& used) {this->used = &used;}
+					UsedLocsFinder(LocationSet& used) : used(&used) {}
 					~UsedLocsFinder() {}
 
 		LocationSet* getLocSet() {return used;}
+
 virtual bool		visit(RefExp *e,	bool& override);
 virtual bool		visit(Location *e, bool& override);
 virtual bool		visit(Terminal* e);
@@ -502,5 +502,13 @@ virtual bool	visit(Ternary *e,	bool& override);
 virtual bool	visit(Location *e,	bool& override);
 
 };
+
+class ExpPropagator : public SimpExpModifier {
+		int			fromDepth;
+public:
+					ExpPropagator(int d) : fromDepth(d) { }
+		Exp*		postVisit(RefExp* e);
+};
+
 
 #endif	// #ifndef __VISITOR_H__

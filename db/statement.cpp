@@ -77,29 +77,6 @@ Exp *Statement::getExpAtLex(unsigned int begin, unsigned int end)
 	return NULL;
 }
 
-// replace a use of def->getLeft() by def->getRight() in this statement
-bool Statement::replaceRef(Assign *def) {
-	Exp* lhs = def->getLeft();
-	Exp* rhs = def->getRight();
-	assert(lhs);
-	assert(rhs);
-	// "Wrap" the LHS in a RefExp.  This is so that it matches with the thing it is replacing.
-	// Example: 42: r28 := r28{14}-4 into m[r28-24] := m[r28{42}] + ...
-	// The r28 needs to be subscripted with {42} to match the thing on the RHS that is being substituted into.
-	// (It also makes sure it never matches the other r28, which should really be r28{-}).
-	Unary* re;
-	re = new RefExp(lhs, def);
-
-	// do the replacement
-	bool convert = doReplaceRef(re, rhs);
-
-	// Careful: don't delete re while lhs is still a part of it!
-	// Else, will delete lhs, which is still a part of def!
-	re->setSubExp1ND(NULL);
-	//delete re;
-	return convert;
-}
-
 bool Statement::mayAlias(Exp *e1, Exp *e2, int size) { 
 	if (*e1 == *e2) return true;
 	// Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly
@@ -217,40 +194,24 @@ if (ret)
 
 // exclude: a set of statements not to propagate from
 // memDepth: the max level of expressions to propagate FROM
-// toDepth: the exact level that we will propagate TO (unless toDepth == -1)
 // limit: if true, use a heuristic to try to limit the amount of propagation (e.g. fromSSA)
 
-// Reasoning for toDepth is supposed to be as follows: you can't safely propagate any memory expression
-// until all its subexpressions (expressions at lower memory depths) are
-// propagated. Examples:
-// 1: r28 = r28-4
-// 2: m[m[r28]+4] = 10
-// 3: r28 = r28-4
-// 4: r25 = m[m[r28]+4]	  // Appears defined in 2 if don't consider FROM depths
-// 5: r24 = r28
-// 6: m[r24] = r[28]
-// 6: m[r25] = 4
-// 7: m[m[m[r24]]+m[r25]] = 99
-// Ordinarily would subst m[r24] first, at level 2... ugh, can't think of an example where it would matter!
-
 // Return true if can propagate to Exp* e
-bool Statement::canPropagateToExp(Exp*e, int memDepth, int toDepth, Assign*& adef) {
-//	if (toDepth != -1 && e->getMemDepth() != toDepth)
-//		return false;
+bool Statement::canPropagateToExp(Exp*e, int memDepth) {
 	if (!e->isSubscript()) return false;
 	// Can propagate TO this (if memory depths are suitable)
 	if (((RefExp*)e)->isImplicitDef())
 		// Can't propagate statement "0" (implicit assignments)
 		return false;
 	Statement* def = ((RefExp*)e)->getDef();
-	if (def == this)
-		// Don't propagate to self! Can happen with %pc's
-		return false;
+//	if (def == this)
+		// Don't propagate to self! Can happen with %pc's (?!)
+//		return false;
 	if (def->isNullStatement())
 		// Don't propagate a null statement! Can happen with %pc's
 		// (this would have no effect, and would infinitely loop)
 		return false;
-	if (!def->isAssign()) return false;		// Only propagate ordinary assignments (MVE: Check!)
+	if (!def->isAssign()) return false;		// Only propagate ordinary assignments (so far)
 #if 0
 	if (def->isPhi())
 		// Don't propagate phi statements!
@@ -260,9 +221,9 @@ bool Statement::canPropagateToExp(Exp*e, int memDepth, int toDepth, Assign*& ade
 	if (def->isBool())
 		return false;
 #endif
-	adef = (Assign*)def;
+	Assign* adef = (Assign*)def;
 	Exp* lhs = adef->getLeft();
-	if (memDepth != -1 && lhs->getMemDepth() != memDepth) return false;		// Check from depth
+	if (memDepth != -1 && adef->getMemDepth() != memDepth) return false;		// Check from depth
 
 #if 0	// Sorry, I don't believe prop into branches is wrong... MVE.  By not propagating into branches, we get memory
 // locations not converted to locals, for example (e.g. test/source/csp.c)
@@ -287,43 +248,35 @@ bool Statement::canPropagateToExp(Exp*e, int memDepth, int toDepth, Assign*& ade
 	}
 #endif
 	if (lhs->getType() && lhs->getType()->isArray()) {
-		// Assigning to an array, don't propagate
+		// Assigning to an array, don't propagate (Could be alias problems?)
 		return false;
 	}
 	return true;
 }
 
 // Return true if an indirect call statement is converted to direct
-bool Statement::propagateTo(int memDepth, int toDepth /* = -1 */,
-		std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
-#if 0		// If don't propagate into flag assigns, some converting to locals doesn't happen, and errors occur
-	// don't propagate to flag assigns
-	if (isFlagAssgn())
-		return;
-#endif
+bool Statement::propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
 	bool change;
 	bool convert = false;
 	int changes = 0;
 	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
 	// Exp* regSp = Location::regOf(sp);
 	int propMaxDepth = Boomerang::get()->propMaxDepth;
-	// Repeat substituting into this statement while there is a single reference component in it
-	// But all RefExps will have just one component. Maybe calls (later) will have more than one ref
-	// Example: y := a{2,3} + b{4} + c{0}
-	// can substitute b{4} into this, but not a. Can't do c either, since there is no definition (it's a parameter).
+	// Repeat substituting into this statement while there is a reference component in it
 	do {
 		LocationSet exps;
-		addUsedLocs(exps, true);		// True to also add uses from collectors
+		addUsedLocs(exps, true);		// True to also add uses from collectors. For example, want to propagate into
+										// the reaching definitions of calls
 		LocationSet::iterator ll;
 		change = false;
 		// Example: m[r24{10}] := r25{20} + m[r26{30}]
 		// exps has r24{10}, r25{30}, m[r26{30}], r26{30}
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			Assign* def;
-			if (!canPropagateToExp(e, memDepth, toDepth, def))
+			if (!canPropagateToExp(e, memDepth))
 				continue;
 			// Check if the -l flag (propMaxDepth) prevents this propagation
+			Assign* def = (Assign*)((RefExp*)e)->getDef();
 			Exp* lhs = def->getLeft();
 			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
 				std::map<Exp*, int, lessExpStar>::iterator ff = destCounts->find(e);
@@ -331,9 +284,9 @@ bool Statement::propagateTo(int memDepth, int toDepth /* = -1 */,
 					// This propagation is prevented by the -l limit
 					continue;
 			}
-			change = doPropagateTo(memDepth, def, convert);
+			change = doPropagateTo(e, def, convert);
 		}
-	} while (change && ++changes < 20);
+	} while (change && ++changes < 10);
 	// Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
 	// result...
 	simplify();
@@ -343,15 +296,10 @@ bool Statement::propagateTo(int memDepth, int toDepth /* = -1 */,
 
 // Parameter convert is set true if an indirect call is converted to direct
 // Return true if a change made
-bool Statement::doPropagateTo(int memDepth, Assign* def, bool& convert) {
-	// Check the depth of the definition (an assignment)
-	// This checks the depth for the left and right sides, and gives the max for both. Example: can't propagate
-	// tmp := m[x] to foo := tmp if memDepth == 0
-	int depth = def->getMemDepth();
-	// MVE: check if we want the test for memDepth == -1
-	if (depth > memDepth && memDepth != -1)
-		return false;
-
+// Note: this procedure does not control what part of this statement is propagated to
+// Propagate to e from definition statement def.
+// Set convert to true if convert a call from indirect to direct.
+bool Statement::doPropagateTo(Exp* e, Assign* def, bool& convert) {
 	// Respect the -p N switch
 	if (Boomerang::get()->numToPropagate >= 0) {
 		if (Boomerang::get()->numToPropagate == 0) return false;
@@ -360,27 +308,60 @@ bool Statement::doPropagateTo(int memDepth, Assign* def, bool& convert) {
 
 	if (VERBOSE)
 		LOG << "Propagating " << def << "\n" << "	   into " << this << "\n";
-	convert |= replaceRef(def);
-	// simplify is costly... done once above
-	// simplify();
+
+	bool change = replaceRef(e, def, convert);
+	
 	if (VERBOSE) {
 		LOG << "	 result " << this << "\n\n";
 	}
-	return true;		// FIXME! Should be true if changed. Need a visitor
+	return change;
 }
 
-#if 0
-bool Statement::operator==(Statement& other) {
-	// When do we need this?
-	assert(0);
-	Assign* ae1 = dynamic_cast<Assign*>(this);
-	Assign* ae2 = dynamic_cast<Assign*>(&other);
-	assert(ae1);
-	assert(ae2);
-	return *ae1 == *ae2;
-	return false;
+// replace a use of def->getLeft() by def->getRight() in this statement
+// return true if change
+bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
+	Exp* rhs = def->getRight();
+	assert(rhs);
+
+	if (isAssign()) {
+		// Could be propagating %flags into %CF
+		Exp* lhs = def->getLeft();
+		if (lhs->isFlags()) {
+			assert(rhs->isFlagCall());
+			char* str = ((Const*)((Binary*)rhs)->getSubExp1())->getStr();
+			if (strncmp("SUBFLAGS", str, 8) == 0) {
+				/* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
+				   the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
+				   Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
+					 defRhs
+					 /	  \
+				Const	   opList
+				"SUBFLAGS"	/	\
+						   P1	opList
+								 /	 \
+								P2	opList
+									 /	 \
+									P3	 opNil
+				*/
+				Exp* relExp = new Binary(opLessUns,
+					((Binary*)rhs)->getSubExp2()->getSubExp1(),
+					((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
+				searchAndReplace(new RefExp(new Terminal(opCF), def), relExp);
+				return true;
+			}
+		}
+	}
+
+	// do the replacement
+	//bool convert = doReplaceRef(re, rhs);
+	bool ret = searchAndReplace(e, rhs, true);		// Last parameter true to change collectors
+	// assert(ret);
+
+	if (ret && isCall()) {
+		convert |= ((CallStatement*)this)->convertToDirect();
+	}
+	return ret;
 }
-#endif
 
 bool Statement::isNullStatement() {
 	if (kind != STMT_ASSIGN) return false;
@@ -531,10 +512,11 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
  * OVERVIEW:		Replace all instances of search with replace.
  * PARAMETERS:		search - a location to search for
  *					replace - the expression with which to replace it
+ *					cc - ignored
  * RETURNS:			True if any change
  *============================================================================*/
-bool GotoStatement::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = false;
+bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool change;
 	if (pDest) {
 		pDest = pDest->searchReplaceAll(search, replace, change);
 	}
@@ -802,11 +784,12 @@ bool BranchStatement::search(Exp* search, Exp*& result) {
  * OVERVIEW:		Replace all instances of search with replace.
  * PARAMETERS:		search - a location to search for
  *					replace - the expression with which to replace it
+ *					cc - ignored
  * RETURNS:			True if any change
  *============================================================================*/
-bool BranchStatement::searchAndReplace(Exp* search, Exp* replace) {
-	GotoStatement::searchAndReplace(search, replace);
-	bool change = false;
+bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	GotoStatement::searchAndReplace(search, replace, cc);
+	bool change;
 	if (pCond)
 		pCond = pCond->searchReplaceAll(search, replace, change);
 	return change;
@@ -907,14 +890,6 @@ void BranchStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) 
 bool BranchStatement::usesExp(Exp *e) {
 	Exp *tmp;
 	return pCond && pCond->search(e, tmp);
-}
-
-bool BranchStatement::doReplaceRef(Exp* from, Exp* to) {
-	bool change;
-	assert(pCond);
-	pCond = pCond->searchReplaceAll(from, to, change);
-	simplify();
-	return false;
 }
 
 
@@ -1175,14 +1150,15 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
  * OVERVIEW:		Replace all instances of search with replace.
  * PARAMETERS:		search - a location to search for
  *					replace - the expression with which to replace it
+ *					cc - ignored
  * RETURNS:			True if any change
  *============================================================================*/
-bool CaseStatement::searchAndReplace(Exp* search, Exp* replace) {
-	GotoStatement::searchAndReplace(search, replace);
-	bool ch = false;
+bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool ch = GotoStatement::searchAndReplace(search, replace, cc);
+	bool ch2;
 	if (pSwitchInfo && pSwitchInfo->pSwitchVar)
-		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch);
-	return ch;
+		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch2);
+	return ch | ch2;
 }
 
 /*==============================================================================
@@ -1257,18 +1233,6 @@ bool CaseStatement::usesExp(Exp *e) {
 	return false;
 }
 
-bool CaseStatement::doReplaceRef(Exp* from, Exp* to) {
-	bool change;
-	if (pDest) {
-		pDest = pDest->searchReplaceAll(from, to, change);
-		pDest = pDest->simplify();
-		return false;
-	}
-	assert(pSwitchInfo && pSwitchInfo->pSwitchVar);
-	pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(from, to, change);
-	pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->simplify();
-	return false;
-}
 
 // Convert from SSA form
 void CaseStatement::fromSSAform(igraph& ig) {
@@ -1526,16 +1490,22 @@ bool CallStatement::search(Exp* search, Exp*& result) {
  * OVERVIEW:		Replace all instances of search with replace.
  * PARAMETERS:		search - a location to search for
  *					replace - the expression with which to replace it
+ *					cc - true to replace in collectors
  * RETURNS:			True if any change
  *============================================================================*/
-bool CallStatement::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = GotoStatement::searchAndReplace(search, replace);
+bool CallStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool change = GotoStatement::searchAndReplace(search, replace, cc);
 	StatementList::iterator ss;
 	// FIXME: MVE: Check if we ever want to change the LHS of arguments or defines...
 	for (ss = defines.begin(); ss != defines.end(); ++ss)
-		change |= (*ss)->searchAndReplace(search, replace);
+		change |= (*ss)->searchAndReplace(search, replace, cc);
 	for (ss = arguments.begin(); ss != arguments.end(); ++ss)
-		change |= (*ss)->searchAndReplace(search, replace);
+		change |= (*ss)->searchAndReplace(search, replace, cc);
+	if (cc) {
+		DefCollector::iterator dd;
+		for (dd = defCol.begin(); dd != defCol.end(); ++dd)
+			change |= (*dd)->searchAndReplace(search, replace, cc);
+	}
 	return change;
 }
 
@@ -1792,7 +1762,7 @@ bool CallStatement::convertToDirect() {
 		}
 		// we need to:
 		// 1) replace the current return set with the return set of the new procDest
-		// 2) call fixCallBypass on the enclosing procedure
+		// 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure
 		// 3) fix the arguments (this will only affect the implicit arguments, the regular arguments should
 		//    be empty at this point)
 		// 3a replace current arguments with those of the new proc
@@ -1924,6 +1894,7 @@ void CallStatement::updateArgumentWithType(int n)
 	}
 }
 
+#if 0
 bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 	bool change = false;
 	bool convertIndirect = false;
@@ -1959,6 +1930,7 @@ bool CallStatement::doReplaceRef(Exp* from, Exp* to) {
 	defCol.searchReplaceAll(from, to, change);
 	return convertIndirect;
 }
+#endif
 
 Exp* CallStatement::getArgumentExp(int i)
 {
@@ -2522,11 +2494,16 @@ bool ReturnStatement::search(Exp* search, Exp*& result) {
 	return false;
 }
 
-bool ReturnStatement::searchAndReplace(Exp* search, Exp* replace) {
+bool ReturnStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	bool change = false;
 	ReturnStatement::iterator rr;
 	for (rr = begin(); rr != end(); ++rr)
-		change |= (*rr)->searchAndReplace(search, replace);
+		change |= (*rr)->searchAndReplace(search, replace, cc);
+	if (cc) {
+		DefCollector::iterator dd;
+		for (dd = col.begin(); dd != col.end(); ++dd)
+			change |= (*dd)->searchAndReplace(search, replace);
+	}
 	return change;
 }
 
@@ -2550,17 +2527,6 @@ bool ReturnStatement::usesExp(Exp *e) {
 	return false;
 }
 
-bool ReturnStatement::doReplaceRef(Exp* from, Exp* to) {
-	bool change = false;
-	ReturnStatement::iterator rr;
-	for (rr = begin(); rr != end(); ++rr)
-		change |= (*rr)->doReplaceRef(from, to);
-	// Ugh - even though we can lookup assignments based on the LHS, it is quite possible to have assignments such
-	// as a := b+c, which need changing if from happened to be b or c
-	col.searchReplaceAll(from, to, change);
-	return change;
-}
- 
 /**********************************************************************
  * BoolAssign methods
  * These are for statements that set a destination (usually to 1 or 0)
@@ -2754,25 +2720,19 @@ bool BoolAssign::searchAll(Exp* search, std::list<Exp*>& result)
 	return pCond->searchAll(search, result) || ch;
 }
 
-bool BoolAssign::searchAndReplace(Exp *search, Exp *replace) {
-	bool change = false;
+bool BoolAssign::searchAndReplace(Exp *search, Exp *replace, bool cc) {
+	bool chl, chr;
 	assert(pCond);
 	assert(lhs);
-	pCond = pCond->searchReplaceAll(search, replace, change);
-	 lhs  =	  lhs->searchReplaceAll(search, replace, change);
-	return change;
+	pCond = pCond->searchReplaceAll(search, replace, chl);
+	 lhs  =	  lhs->searchReplaceAll(search, replace, chr);
+	return chl | chr;
 }
 
 // Convert from SSA form
 void BoolAssign::fromSSAform(igraph& ig) {
 	pCond = pCond->fromSSA(ig); 
 	lhs	  = lhs	 ->fromSSAleft(ig, this);
-}
-
-bool BoolAssign::doReplaceRef(Exp* from, Exp* to) {
-	searchAndReplace(from, to);
-	simplify();
-	return false;
 }
 
 // This is for setting up SETcc instructions; see include/decoder.h macro SETS
@@ -3138,25 +3098,28 @@ bool ImplicitAssign::searchAll(Exp* search, std::list<Exp*>& result) {
 	return lhs->searchAll(search, result);
 }
 
-bool Assign::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = false;
-	lhs = lhs->searchReplaceAll(search, replace, change);
-	rhs = rhs->searchReplaceAll(search, replace, change);
+bool Assign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool chl, chr, chg;
+	lhs = lhs->searchReplaceAll(search, replace, chl);
+	rhs = rhs->searchReplaceAll(search, replace, chr);
 	if (guard)
-		guard = guard->searchReplaceAll(search, replace, change);
-	return change;
+		guard = guard->searchReplaceAll(search, replace, chg);
+	return chl | chr | chg;
 }
-bool PhiAssign::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = false;
+bool PhiAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool change;
 	lhs = lhs->searchReplaceAll(search, replace, change);
 	std::vector<PhiInfo>::iterator it;
-	for (it = defVec.begin(); it != defVec.end(); it++)
+	for (it = defVec.begin(); it != defVec.end(); it++) {
+		bool ch;
 		// Assume that the definitions will also be replaced
-		it->e = it->e->searchReplaceAll(search, replace, change);
+		it->e = it->e->searchReplaceAll(search, replace, ch);
+		change |= ch;
+	}
 	return change;
 }
-bool ImplicitAssign::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = false;
+bool ImplicitAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool change;
 	lhs = lhs->searchReplaceAll(search, replace, change);
 	return change;
 }
@@ -3207,6 +3170,7 @@ bool Assign::usesExp(Exp *e) {
 		((Unary*)lhs)->getSubExp1()->search(e, where)));
 }
 
+#if 0
 bool Assign::doReplaceRef(Exp* from, Exp* to) {
 	bool changeright = false;
 	rhs = rhs->searchReplaceAll(from, to, changeright);
@@ -3277,6 +3241,7 @@ bool Assignment::doReplaceRef(Exp* from, Exp* to) {
 		lhs = lhs->simplifyArith()->simplify();
 	return false;
 }
+#endif
 
 // Not sure if anything needed here
 // MVE: check if can be deleted
@@ -3603,10 +3568,6 @@ bool CallStatement::accept(StmtExpVisitor* v) {
 	StatementList::iterator it;
 	for (it = arguments.begin(); ret && it != arguments.end(); it++)
 		ret = (*it)->accept(v);
-#if 0
-	for (it = implicitArguments.begin(); ret && it != implicitArguments.end(); it++)
-		ret = (*it)->accept(v->ev);
-#endif
 #if 0		// Do we want to accept changes to the returns? Not sure now...
 	std::vector<ReturnInfo>::iterator rr;
 	for (rr = defines.begin(); ret && rr != defines.end(); rr++)
@@ -3873,11 +3834,11 @@ bool BoolAssign::accept(StmtPartModifier* v) {
 }
 
 // Fix references to the returns of call statements
-void Statement::bypassAndPropagate(std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */) {
-	BypassingPropagator bp(this, destCounts);
-	StmtPartModifier sm(&bp);			// Use the Part modifier so we don't change the top level of LHS of assigns etc
+void Statement::bypass() {
+	CallBypasser cb(this);
+	StmtPartModifier sm(&cb);			// Use the Part modifier so we don't change the top level of LHS of assigns etc
 	accept(&sm);
-	if (bp.isTopChanged())
+	if (cb.isTopChanged())
 		simplify();						// E.g. m[esp{20}] := blah -> m[esp{-}-20+4] := blah
 }
 
@@ -3903,12 +3864,12 @@ void Statement::findConstants(std::list<Const*>& lc) {
 	accept(&scf);
 }
 
-// Convert this PhiAssignment to an ordinary Assignment
-// Hopefully, this is the only place that Statements change from one form
-// to another.
-// All throughout the code, we assume that the addresses of Statement objects
-// do not change, so we need this slight hack to overwrite one object with another
+// Convert this PhiAssignment to an ordinary Assignment.  Hopefully, this is the only place that Statements change from
+// one class to another.  All throughout the code, we assume that the addresses of Statement objects do not change,
+// so we need this slight hack to overwrite one object with another
 void PhiAssign::convertToAssign(Exp* rhs) {
+	// I believe we always want to propagate to these ex-phi's:
+	rhs = rhs->propagateAll(((UserProc*)proc)->getMaxDepth());
 	Assign* a = new Assign(type, lhs, rhs);
 	a->setNumber(number);
 	a->setProc(proc);
@@ -4000,6 +3961,7 @@ void PhiAssign::simplify() {
 	}
 }
 
+#if 0			// This functionality is in UserProc::fixCallAndPhiRefs now
 void PhiAssign::simplifyRefs() {
 	Definitions::iterator uu;
 	for (uu = defVec.begin(); uu != defVec.end(); ) {
@@ -4030,6 +3992,7 @@ void PhiAssign::simplifyRefs() {
 		uu++;
 	}
 }
+#endif
 
 static Exp* regOfWild = Location::regOf(new Terminal(opWild));
 static Exp* regOfWildRef = new RefExp(regOfWild, (Statement*)-1);
@@ -4837,6 +4800,7 @@ void CallStatement::addDefine(ImplicitAssign* as) {
 TypingStatement::TypingStatement(Type* ty) : type(ty) {
 }
 
+// NOTE: ImpRefStatement not yet used
 void ImpRefStatement::print(std::ostream& os) {
 	os << "     *";				// No statement number
 	os << type << "* IMP REF " << addressExp;
@@ -4886,8 +4850,8 @@ bool	ImpRefStatement::search(Exp* search, Exp*& result) {
 bool	ImpRefStatement::searchAll(Exp* search, std::list<Exp*, std::allocator<Exp*> >& result) {
 	return addressExp->searchAll(search, result);
 }
-bool	ImpRefStatement::searchAndReplace(Exp* search, Exp* replace) {
-	bool change = false;
+bool	ImpRefStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
+	bool change;
 	addressExp = addressExp->searchReplaceAll(search, replace, change);
 	return change;
 }
@@ -4896,10 +4860,4 @@ void	ImpRefStatement::regReplace(UserProc* proc) {
 	std::list<Exp**> li;
 	Exp::doSearch(regOfWildRef, addressExp, li, false);
 	proc->regReplaceList(li);
-}
-bool	ImpRefStatement::doReplaceRef(Exp* from, Exp* to) {
-	bool change;
-	addressExp = addressExp->searchReplaceAll(from, to, change);
-	addressExp = addressExp->simplify();
-	return false;
 }

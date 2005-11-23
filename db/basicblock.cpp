@@ -1932,9 +1932,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			LOG << "decodeIndirectJmp: " << lastRtl->prints();
 		assert(lastRtl->getNumStmt() >= 1);
 		CaseStatement* lastStmt = (CaseStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
-		// Note: some programs might not have the case expression propagated to, because of the -l switch
+		// Note: some programs might not have the case expression propagated to, because of the -l switch (?)
 		Exp* e = lastStmt->getDest();
-		lastStmt->propagateTo(-1, e->getMemDepth());
+		lastStmt->propagateTo(-1);
 		e = lastStmt->getDest();
 		int n = sizeof(hlForms) / sizeof(Exp*);
 		char form = 0;

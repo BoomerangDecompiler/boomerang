@@ -1090,7 +1090,7 @@ void UserProc::prePresDecompile() {
 				LOG << "\n=== done after rename (1) for " << getName() << " at depth " << depth << ": ===\n\n";
 			}
 
-			propagateStatements(depth, -1);
+			propagateStatements(depth);
 			if (VERBOSE) {
 				LOG << "\n--- after propagation (1) for " << getName() << " at depth " << depth << ": ---\n";
 				printToLog();
@@ -1104,7 +1104,7 @@ void UserProc::prePresDecompile() {
 		// Except that this is inherent in the visitor nature of the latest algorithm.
 		fixCallAndPhiRefs();		// Bypass children that are finalised (if any)
 		if (status != PROC_INCYCLE || depth == 0)
-			propagateStatements(depth, -1);
+			propagateStatements(depth);
 		if (VERBOSE) {
 			LOG << "\n--- after call and phi bypass (1) of " << getName() << " at depth " << depth << ": ---\n";
 			printToLog();
@@ -1286,15 +1286,12 @@ void UserProc::middleDecompile() {
 		bool convert;			// True when indirect call converted to direct
 		do {
 			convert = false;
-			for (int td = maxDepth; td >= 0; td--) {
-				if (VERBOSE)
-					LOG << "propagating at depth " << depth << " to depth " << td << "\n";
-				convert |= propagateStatements(depth, td);
-				if (convert)
-					break;			// Just calling renameBlockVars now can cause problems
+			if (VERBOSE)
+				LOG << "propagating at depth " << depth << "\n";
+			convert |= propagateStatements(depth);
+			if (!convert) 		// Just calling renameBlockVars now can cause problems
 				for (int i = 0; i <= depth; i++)
 					doRenameBlockVars(i, true);
-			}
 			// If you have an indirect to direct call conversion, some propagations that were blocked by
 			// the indirect call might now succeed, and may be needed to prevent alias problems
 			if (convert) {
@@ -1678,7 +1675,7 @@ void UserProc::propagateAtDepth(int depth)
 {
 	if (status == PROC_INCYCLE && depth > 0)
 		return;
-	propagateStatements(depth, -1);
+	propagateStatements(depth);
 	for (int i = 0; i <= depth; i++)
 		doRenameBlockVars(i, true);
 }
@@ -1940,24 +1937,6 @@ void UserProc::updateReturnTypes()
 	}
 }
 
-#if 0
-// Consider moving this functionality inside the propagation logic (propagateTo()).
-void UserProc::fixCallBypass()
-{
-	if (VERBOSE)
-		LOG << "\nfix call bypass for " << getName() << "\n";
-	StatementList stmts;
-	getStatements(stmts);
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = *it;
-		s->fixCallBypass();
-	}
-	simplify();				// Also bypasses references to now-redundant phi statements with ref to first phi parameter
-	if (VERBOSE)
-		LOG << "end fix call bypass for " << getName() << "\n\n";
-}
-#endif
 /*
  * Find the procs the calls point to.
  * To be called after decoding all procs.
@@ -3190,9 +3169,8 @@ bool UserProc::processConstants() {
 
 // Propagate statements, but don't remove
 // Respect the memory depth (don't propagate FROM statements that have components of higher memory depth than memDepth)
-// Also don't propagate TO expressions of depth other than toDepth (unless toDepth == -1)
 // Return true if an indirect call is converted to direct
-bool UserProc::propagateStatements(int memDepth, int toDepth) {
+bool UserProc::propagateStatements(int memDepth) {
 	StatementList stmts;
 	getStatements(stmts);
 	// propagate any statements that can be
@@ -3203,19 +3181,18 @@ bool UserProc::propagateStatements(int memDepth, int toDepth) {
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		LocationSet exps;
-		Assign* def;
 		s->addUsedLocs(exps, true);		// True to also add uses from collectors
 		LocationSet::iterator ll;
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			if (!s->canPropagateToExp(e, memDepth, toDepth, def)) continue;
+			if (!s->canPropagateToExp(e, memDepth)) continue;
 			destCounts[e]++;				// Count propagatable expression e
 		}
 	}
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
-		convertedIndirect |= s->propagateTo(memDepth, toDepth, &destCounts);
+		convertedIndirect |= s->propagateTo(memDepth, &destCounts);
 	}
 	simplify();
 	propagateToCollector(memDepth);
@@ -3310,11 +3287,13 @@ void UserProc::countRefs(RefCounter& refCounts) {
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
+#if 0			
 		if (s->isPhi()) {
 			// FIXME: is this needed now?
 			((PhiAssign*)s)->simplifyRefs();
 			s->simplify();
 		}
+#endif
 		// Don't count uses in implicit statements. There is no RHS of course, but you can still have x from m[x] on the
 		// LHS and so on, and these are not real uses
 		if (s->isImplicit()) continue;
@@ -4506,7 +4485,7 @@ void UserProc::updateArguments() {
 		// Note: we may have removed some statements, so there may no longer be a last statement!
 		if (c == NULL || !c->isCall()) continue;
 		c->updateArguments();
-		//c->bypassAndPropagate();
+		//c->bypass();
 		if (VERBOSE) {
 			std::ostringstream ost;
 			c->print(ost);
@@ -4670,15 +4649,19 @@ char* UserProc::findLocal(Exp* e) {
 /* fixCallAndPhiRefs
 	for each statement s in this proc
 	  if s is a phi statement ps
+		let r be a ref made up of lhs and s
+		for each parameter p of ps
+		  if p == r						// e.g. test/pentium/fromssa2 r28{56}
+			remove p from ps
 		let lhs be left hand side of ps
 		allSame = true
 		let first be a ref built from first p
-		do bypass and propagation on first
+		do bypass but not propagation on first
 		if result is of the form lhs{x}
 		  replace first with x
 		for each parameter p of ps after the first
 		  let current be a ref built from p
-		  do bypass and propagation on current
+		  do bypass but not propagation on current
 		  if result is of form lhs{x}
 			replace cur with x
 		  if first != current
@@ -4694,26 +4677,60 @@ void UserProc::fixCallAndPhiRefs() {
 	if (VERBOSE)
 		LOG << "### start fix call and phi bypass analysis for " << getName() << " ###\n";
 
-	// First pass: count the number of times each assignment LHS would be propagated somewhere
 	std::map<Exp*, int, lessExpStar> destCounts;
 	StatementList::iterator it;
 	Statement* s;
 	StatementList stmts;
 	getStatements(stmts);
+#if 0
+	// First pass: count the number of times each assignment LHS would be propagated somewhere
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
 		LocationSet exps;
-		Assign* def;
 		s->addUsedLocs(exps, true);		// True to also add uses from collectors
 		LocationSet::iterator ll;
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			if (!s->canPropagateToExp(e, -1, -1, def)) continue;
+			if (!s->canPropagateToExp(e, -1)) continue;
 			destCounts[e]++;				// Count propagatable expression (use e not lhs so it has the ref)
 		}
 	}
+#endif
 
+	// Scan for situations like this:
+	// 56 r28 := phi{6, 26}
+	// ...
+	// 26 r28 := r28{56}
+	// So we can remove the second parameter, then reduce the phi to an assignment, then propagate it
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		s = *it;
+		if (s->isPhi()) {
+			PhiAssign* ps = (PhiAssign*)s;
+			RefExp* r = new RefExp(ps->getLeft(), ps);
+			for (PhiAssign::iterator p = ps->begin(); p != ps->end(); ) {
+				Exp* current = new RefExp(p->e, p->def);
+				if (*current == *r) {					// Will we ever see this?
+					p = ps->erase(p);					// Erase this phi parameter
+					continue;
+				}
+				// Chase the definition
+				if (p->def) {
+					if (!p->def->isAssign()) {
+						++p;
+						continue;
+					}
+					Exp* rhs = ((Assign*)p->def)->getRight();
+					if (*rhs == *r) {					// Check if RHS is a single reference to ps
+						p = ps->erase(p);				// Yes, erase this phi parameter
+						continue;
+					}
+				}
+				++p;
+			}
+		}
+	}
+		
 	// Second pass
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		s = *it;
@@ -4726,12 +4743,13 @@ void UserProc::fixCallAndPhiRefs() {
 			// Let first be a reference build from the first parameter
 			PhiAssign::iterator p = ps->begin();
 			Exp* first = new RefExp(p->e, p->def);
-			// bypass and propagate to first
-			BypassingPropagator bp(ps);
-			first = first->accept(&bp);
-			if (bp.isTopChanged())
+			// bypass to first
+			CallBypasser cb(ps);
+			first = first->accept(&cb);
+			if (cb.isTopChanged())
 				first = first->simplify();
-			if (bp.isMod()) {							// Modified?
+			first = first->propagateAll(maxDepth);		// Propagate
+			if (cb.isMod()) {							// Modified?
 				// if first is of the form lhs{x}
 				if (first->isSubscript() && *((RefExp*)first)->getSubExp1() == *lhs)
 					// replace first with x
@@ -4740,11 +4758,12 @@ void UserProc::fixCallAndPhiRefs() {
 			// For each parameter p of ps after the first
 			for (++p; p != ps->end(); ++p) {
 				Exp* current = new RefExp(p->e, p->def);
-				BypassingPropagator bp2(ps);
-				current = current->accept(&bp2);
-				if (bp2.isTopChanged())
+				CallBypasser cb2(ps);
+				current = current->accept(&cb2);
+				if (cb2.isTopChanged())
 					current = current->simplify();
-				if (bp2.isMod())					// Modified?
+				current = current->propagateAll(maxDepth);
+				if (cb2.isMod())					// Modified?
 					// if current is of the form lhs{x}
 					if (current->isSubscript() && *((RefExp*)current)->getSubExp1() == *lhs)
 						// replace current with x
@@ -4772,7 +4791,7 @@ void UserProc::fixCallAndPhiRefs() {
 					LOG << "redundant phi replaced with copy assign; now " << ps << "\n";
 			}
 		} else {	// Ordinary statement
-			s->bypassAndPropagate(&destCounts);
+			s->bypass();
 		}
 	}
 
@@ -4781,9 +4800,9 @@ void UserProc::fixCallAndPhiRefs() {
 	for (cc = col.begin(); cc != col.end(); ++cc) {
 		if (!(*cc)->isMemOf()) continue;
 		Exp* addr = ((Location*)*cc)->getSubExp1();
-		BypassingPropagator bp(NULL);
-		addr = addr->accept(&bp);
-		if (bp.isMod())
+		CallBypasser cb(NULL);
+		addr = addr->accept(&cb);
+		if (cb.isMod())
 			((Location*)*cc)->setSubExp1(addr);
 	}
 

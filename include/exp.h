@@ -252,6 +252,10 @@ static	void		doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 		// As above.
 virtual void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
+		/// Propagate all possible assignments to components of this expression.
+		/// maxDepth is the maximum memory depth to consider
+		Exp*		propagateAll(int maxDepth);
+
 		//	//	//	//	//	//	//
 		//	  Sub expressions	//
 		//	//	//	//	//	//	//
@@ -344,8 +348,8 @@ virtual Exp*		accept(ExpModifier* v) = 0;
 		Exp*		expSubscriptAllNull(/*Cfg* cfg*/);
 		// Perform call bypass and simple (assignment only) propagation to this exp
 		// Note: can change this, so often need to clone before calling
-		Exp*		bypassAndPropagate();
-		void		bypassAndPropagateComp();		// As above, but only the xxx of m[xxx]
+		Exp*		bypass();
+		void		bypassComp();		// As above, but only the xxx of m[xxx]
 virtual Memo		*makeMemo(int mId) = 0;
 virtual void		readMemo(Memo *m, bool dec) = 0;
 

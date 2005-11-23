@@ -49,6 +49,7 @@ then
   echo Skipping stattest, now requires type analysis
   echo
 else
+  echo Some known failures from here down
 ./testOne.sh pentium stattest 1 $BOOMSW
 ./testOne.sh sparc   stattest 1 $BOOMSW
 fi

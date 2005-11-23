@@ -250,16 +250,16 @@ virtual bool		processConstants(Prog *prog) = 0;
 virtual bool		search(Exp *search, Exp *&result) = 0;
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
-		// general search and replace
-virtual bool		searchAndReplace(Exp *search, Exp *replace) = 0;
+		// general search and replace. Set cc true to change collectors as well
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0;
 
 		// From SSA form
 virtual void		fromSSAform(igraph& ig) = 0;
 
-		// True if can propagate to expression e in this Statement. If true, def is set to the definition for e
-		bool		canPropagateToExp(Exp* e, int memDepth, int toDepth, Assign*& def);
+		// True if can propagate to expression e in this Statement.
+static	bool		canPropagateToExp(Exp* e, int memDepth);
 		// Propagate to this statement
-		bool		propagateTo(int memDepth, int toDepth = -1, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
+		bool		propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -294,15 +294,13 @@ virtual	void		regReplace(UserProc* proc) = 0;
 		// Adds (inserts) all locations (registers or memory etc) used by this statement
 		// Set cc to true to count the uses in collectors
 		void		addUsedLocs(LocationSet& used, bool cc = false);
-		// Bypass calls and perform propagation to this statement
-		void		bypassAndPropagate(std::map<Exp*, int, lessExpStar>* destCounts = NULL);
+		// Bypass calls for references in this statement
+		void		bypass();
 
 
 		// replaces a use in this statement with an expression from an ordinary assignment
-		bool		replaceRef(Assign *def);
-		// special version of the above for the "special hack"
-		// (see Proc::propagateStatements, where numUses == 2)
-		//void		specialReplaceRef(Assign* def);
+		// Internal use only
+		bool		replaceRef(Exp* e, Assign *def, bool& convert);
 
 		// Find all constants in this statement
 		void		findConstants(std::list<Const*>& lc);
@@ -338,9 +336,7 @@ virtual	void		setTypeFor(Exp* e, Type* ty) {assert(0);}
 //virtual	Type*	getType() {return NULL;}			// Assignment, ReturnStatement and
 //virtual	void	setType(Type* t) {assert(0);}		// CallStatement override
 
-		// Returns true if an indirect call is converted to direct:
-virtual bool		doReplaceRef(Exp* from, Exp* to) = 0;
-		bool		doPropagateTo(int memDepth, Assign* def, bool& convert);
+		bool		doPropagateTo(Exp* e, Assign* def, bool& convert);
 		bool		calcMayAlias(Exp *e1, Exp *e2, int size);
 		bool		mayAlias(Exp *e1, Exp *e2, int size);
 
@@ -427,7 +423,7 @@ virtual bool		search(Exp *search, Exp *&result) = 0;
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
 		// general search and replace
-virtual bool		searchAndReplace(Exp *search, Exp *replace) = 0;
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0;
 
 		void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {}
 
@@ -445,8 +441,6 @@ virtual void		genConstraints(LocationSet& cons);
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
-
-virtual bool		doReplaceRef(Exp* from, Exp* to);
 
 		friend class XMLProgParser;
 };		// class Assignment
@@ -505,7 +499,7 @@ virtual bool		search(Exp* search, Exp*& result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 
 		// general search and replace
-virtual bool		searchAndReplace(Exp *search, Exp *replace);
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
 		// memory depth
 		int			getMemDepth();
@@ -534,7 +528,6 @@ virtual void		genConstraints(LocationSet& cons);
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
 
-virtual bool		doReplaceRef(Exp* from, Exp* to);
 	friend class XMLProgParser;
 };	// class Assign
 
@@ -594,7 +587,7 @@ virtual bool		search(Exp* search, Exp*& result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 
 		// general search and replace
-virtual bool		searchAndReplace(Exp *search, Exp *replace);
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
 		// simplify all the uses/defs in this Statement
 virtual void		simplify();
@@ -624,6 +617,7 @@ virtual	int			getNumDefs() {return defVec.size();}
 
 		iterator	begin() {return defVec.begin();}
 		iterator	end()   {return defVec.end();}
+		iterator	erase(iterator it)	{return defVec.erase(it);}
 
 		// Convert this phi assignment to an ordinary assignment
 		void		convertToAssign(Exp* rhs);
@@ -656,7 +650,7 @@ virtual bool		search(Exp* search, Exp*& result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
 
 		// general search and replace
-virtual bool		searchAndReplace(Exp *search, Exp *replace);
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
  
 virtual void		printCompact(std::ostream& os);
 
@@ -727,8 +721,7 @@ virtual bool		usesExp(Exp *e);
 virtual bool		processConstants(Prog *prog);
 virtual bool		search(Exp *search, Exp *&result);
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result);
-virtual bool		searchAndReplace(Exp *search, Exp *replace);
-virtual bool		doReplaceRef(Exp* from, Exp* to);
+virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false);
 		// from SSA form
 virtual void		fromSSAform(igraph& ig);
 		// a hack for the SETS macro
@@ -764,12 +757,11 @@ virtual	bool		usesExp(Exp*) {return false;}
 virtual	bool		processConstants(Prog*);
 virtual	bool		search(Exp*, Exp*&);
 virtual	bool		searchAll(Exp*, std::list<Exp*, std::allocator<Exp*> >&);
-virtual	bool		searchAndReplace(Exp*, Exp*);
+virtual	bool		searchAndReplace(Exp*, Exp*, bool cc = false);
 virtual	void		fromSSAform(igraph&) {}
 virtual	void		generateCode(HLLCode*, BasicBlock*, int) {}
 virtual	void		simplify();
 virtual	void		regReplace(UserProc*);
-virtual	bool		doReplaceRef(Exp*, Exp*);
 virtual	void		print(std::ostream& os);
 
 };
@@ -828,7 +820,7 @@ virtual void		print(std::ostream& os = std::cout);
 virtual bool		search(Exp*, Exp*&);
 
 		// Replace all instances of "search" with "replace".
-virtual bool		searchAndReplace(Exp* search, Exp* replace);
+virtual bool		searchAndReplace(Exp* search, Exp* replace, bool cc = false);
 	
 		// Searches for all instances of a given subexpression within this
 		// expression and adds them to a given list in reverse nesting order.	 
@@ -845,7 +837,6 @@ virtual bool		isDefinition() { return false;}
 virtual bool		usesExp(Exp*);
 virtual bool		processConstants(Prog*) {return false;}
 virtual void		fromSSAform(igraph&) {}
-virtual bool		doReplaceRef(Exp*, Exp*) {return false;}
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
@@ -901,7 +892,7 @@ virtual void		print(std::ostream& os = std::cout);
 virtual bool		search(Exp *search, Exp *&result);
 
 		// Replace all instances of "search" with "replace".
-virtual bool		searchAndReplace(Exp* search, Exp* replace);
+virtual bool		searchAndReplace(Exp* search, Exp* replace, bool cc = false);
 	
 		// Searches for all instances of a given subexpression within this
 		// expression and adds them to a given list in reverse nesting order.
@@ -934,9 +925,6 @@ virtual void		genConstraints(LocationSet& cons);
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
-
-protected:
-virtual bool		doReplaceRef(Exp* from, Exp* to);
 
 		friend class XMLProgParser;
 };		// class BranchStatement
@@ -978,7 +966,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 virtual void		print(std::ostream& os = std::cout);
 
 		// Replace all instances of "search" with "replace".
-virtual bool	searchAndReplace(Exp* search, Exp* replace);
+virtual bool	searchAndReplace(Exp* search, Exp* replace, bool cc = false);
 	
 		// Searches for all instances of a given subexpression within this
 		// expression and adds them to a given list in reverse nesting order.
@@ -989,8 +977,6 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 	
 		// dataflow analysis
 virtual bool		usesExp(Exp *e);
-protected:
-virtual bool		doReplaceRef(Exp* from, Exp* to);
 public:
 
 		// simplify all the uses/defs in this Statement
@@ -1101,7 +1087,7 @@ virtual void		print(std::ostream& os = std::cout);
 virtual bool		search(Exp *search, Exp *&result);
 
 		// Replace all instances of "search" with "replace".
-virtual bool		searchAndReplace(Exp* search, Exp* replace);
+virtual bool		searchAndReplace(Exp* search, Exp* replace, bool cc = false);
 	
 		// Searches for all instances of a given subexpression within this
 		// expression and adds them to a given list in reverse nesting order.
@@ -1173,14 +1159,14 @@ virtual void		setTypeFor(Exp* e, Type* ty);		// Set the type for this location, 
 		// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
 		// parameters if needed, and return true if any signature parameters added
 		bool		ellipsisProcessing(Prog* prog);
+		bool		convertToDirect();					// Internal function: attempt to convert an indirect to a
+														// direct call
 private:
 		// Private helper functions for the above
 		void		addSigParam(Type* ty, bool isScanf);
 		Assign*		makeArgAssign(Type* ty, Exp* e);	
 
 protected:
-virtual bool		doReplaceRef(Exp* from, Exp* to);
-		bool		convertToDirect();
 
 		void		updateArgumentWithType(int n);
 		void		updateDefineWithType(int n);
@@ -1241,15 +1227,13 @@ virtual void		print(std::ostream& os = std::cout);
 virtual bool		search(Exp*, Exp*&);
 
 		// Replace all instances of "search" with "replace".
-virtual bool		searchAndReplace(Exp* search, Exp* replace);
+virtual bool		searchAndReplace(Exp* search, Exp* replace, bool cc = false);
 	
 		// Searches for all instances of a given subexpression within this statement and adds them to a given list
 virtual bool		searchAll(Exp* search, std::list<Exp*> &result);
 
 		// returns true if this statement uses the given expression
 virtual bool		usesExp(Exp *e);
-
-virtual bool		doReplaceRef(Exp* from, Exp* to);
 
 virtual void		getDefinitions(LocationSet &defs);
 
