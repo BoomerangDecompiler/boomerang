@@ -307,7 +307,7 @@ bool Statement::doPropagateTo(Exp* e, Assign* def, bool& convert) {
 	}
 
 	if (VERBOSE)
-		LOG << "Propagating " << def << "\n" << "	   into " << this << "\n";
+		LOG << "propagating " << def << "\n" << "	   into " << this << "\n";
 
 	bool change = replaceRef(e, def, convert);
 	
