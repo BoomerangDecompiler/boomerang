@@ -1662,13 +1662,22 @@ void UserProc::updateBlockVars()
 		if (status != PROC_INCYCLE || i == 0)
 			doRenameBlockVars(i, true);
 		else
-			doRenameBlockVars(0, true);
+			doRenameBlockVars(0, true);					// FIXME: why repeat this more than once?
 	}
 }
 
 void UserProc::updateBlockVars(int minDepth) {
-	for (int i = minDepth; i <= maxDepth; i++)
+	if (VERBOSE)
+		LOG << "--- begin update block vars at min depth " << minDepth << " ---\n";
+	for (int i = minDepth; i <= maxDepth; i++) {
 		doRenameBlockVars(i, true);
+		// After a renaming at level n, it's important to do propagation at level n before renaming at level n+1
+		// For example: m[m[a+K1]+K2]: you initially have m[m[a+K1]{d1}+K2] and you want to propagate from d1 before
+		// deciding that the level 2 expression isn't defined anywhere.
+		propagateAtDepth(i);
+	}
+	if (VERBOSE)
+		LOG << "=== end update block vars at min depth " << minDepth << " ===\n";
 }
 
 void UserProc::propagateAtDepth(int depth)
@@ -3171,6 +3180,8 @@ bool UserProc::processConstants() {
 // Respect the memory depth (don't propagate FROM statements that have components of higher memory depth than memDepth)
 // Return true if an indirect call is converted to direct
 bool UserProc::propagateStatements(int memDepth) {
+	if (VERBOSE)
+		LOG << "--- begin propagating statements at depth " << memDepth << " ---\n";
 	StatementList stmts;
 	getStatements(stmts);
 	// propagate any statements that can be
@@ -3196,6 +3207,8 @@ bool UserProc::propagateStatements(int memDepth) {
 	}
 	simplify();
 	propagateToCollector(memDepth);
+	if (VERBOSE)
+		LOG << "=== end propagating statements at depth " << memDepth << " ===\n";
 	return convertedIndirect;
 }
 
