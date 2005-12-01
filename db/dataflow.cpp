@@ -314,8 +314,6 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 				Exp* x = *xx;
 				// Ignore variables of the wrong memory depth
 				if (x->getMemDepth() != memDepth) continue;
-if (S->getNumber() == 64 && memDepth == 2)
- std::cerr << "HACK!\n";
 				Statement* def = NULL;
 				if (x->isSubscript()) {					// Already subscripted?
 					// No renaming required, but redo the usage analysis, in case this is a new return
