@@ -7,7 +7,7 @@
  * 15 Jul 02 - Mike: Created from testDbase
 */
 
-
+#include "string"
 #include "cppunit/TextTestResult.h"
 #include "cppunit/TestSuite.h"
 

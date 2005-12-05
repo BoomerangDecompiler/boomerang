@@ -26,6 +26,7 @@
 #define SWITCH_BORLAND	"test/windows/switch_borland.exe"
 #define ELFBINFILE		"lib/libElfBinaryFile.so"
 
+#include "string"
 #include "LoaderTest.h"
 //#include "util.h"           // For str()
 #include <iostream>         // For cout
