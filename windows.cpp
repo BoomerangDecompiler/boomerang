@@ -1034,7 +1034,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				UserProc *u = dynamic_cast<UserProc*>(selectedProc());
 				if (u == NULL)
 					break;
-				u->propagateAtDepth(0);
+				// u->propagateAtDepth(0);
+				u->propagateStatements(0);
 				updateCodeView();
 			}
 			break;

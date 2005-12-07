@@ -222,6 +222,9 @@ virtual bool		isTerminal() { return false; }
 
 		// True if this is a typed expression
 		bool		isTypedExp() { return op == opTypedExp;}
+
+		// True if this expression can be renamed (i.e. if a memOf, is the address expression primitive?)
+		bool		canRename();
 					 
 
 		// Matches this expression to the pattern, if successful returns a list of variable bindings, otherwise returns
@@ -253,8 +256,7 @@ static	void		doSearch(Exp* search, Exp*& pSrc, std::list<Exp**>& li, bool once);
 virtual void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
 		/// Propagate all possible assignments to components of this expression.
-		/// maxDepth is the maximum memory depth to consider
-		Exp*		propagateAll(int maxDepth);
+		Exp*		propagateAll();
 
 		//	//	//	//	//	//	//
 		//	  Sub expressions	//

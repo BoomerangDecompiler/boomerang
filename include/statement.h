@@ -250,16 +250,17 @@ virtual bool		processConstants(Prog *prog) = 0;
 virtual bool		search(Exp *search, Exp *&result) = 0;
 virtual bool		searchAll(Exp* search, std::list<Exp*>& result) = 0;
 
-		// general search and replace. Set cc true to change collectors as well
+		// general search and replace. Set cc true to change collectors as well. Return true if any change
 virtual bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) = 0;
 
 		// From SSA form
 virtual void		fromSSAform(igraph& ig) = 0;
 
 		// True if can propagate to expression e in this Statement.
-static	bool		canPropagateToExp(Exp* e, int memDepth);
-		// Propagate to this statement
-		bool		propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
+static	bool		canPropagateToExp(Exp* e);
+		// Propagate to this statement. Return true if a change
+		// Set convertedIndirect if an indirect call is changed to direct (otherwise, no change)
+		bool		propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts = NULL);
 
 		// code generation
 virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) = 0;
@@ -904,13 +905,6 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 		// dataflow analysis
 virtual bool		usesExp(Exp *e);
 
-		// dataflow related functions
-virtual bool		canPropagateToAll() { return false; }
-virtual void		propagateToAll() { assert(false); }
-
-virtual bool		isDefinition() { return false; }
-
-
 		// simplify all the uses/defs in this Statememt
 virtual void		simplify();
 
@@ -1079,6 +1073,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 		Type		*getArgumentType(int i);
 		void		truncateArguments();
 		void		clearLiveEntry();
+		void		eliminateDuplicateArgs();
 
 
 virtual void		print(std::ostream& os = std::cout);
@@ -1154,6 +1149,7 @@ virtual void		setTypeFor(Exp* e, Type* ty);		// Set the type for this location, 
 		UseCollector*	getUseCollector() {return &useCol;}			// Return pointer to the use collector object
 		void		useBeforeDefine(Exp* x) {useCol.insert(x);}		// Add x to the UseCollector for this call
 		void		removeLiveness(Exp* e) {useCol.remove(e);}		// Remove e from the UseCollector
+		void		removeAllLive() {useCol.clear();}				// Remove all livenesses
 //		Exp*		fromCalleeContext(Exp* e);			// Convert e from callee to caller (this) context
 		StatementList*	getDefines() {return &defines;}	// Get list of locations defined by this call
 		// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of

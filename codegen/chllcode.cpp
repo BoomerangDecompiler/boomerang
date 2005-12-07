@@ -405,7 +405,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			}
 			break;
 		case opTemp:
-			str << "tmp";		// Should never see this
+			// Should never see this; temps should be mapped to locals now so that they get declared
+			// Emit the temp name, e.g. "tmp1"
+			str << ((Const*)u->getSubExp1())->getStr();
 			break;
 		case opItof:
 			// MVE: needs work: float/double/long double.

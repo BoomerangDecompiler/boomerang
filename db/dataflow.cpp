@@ -24,6 +24,7 @@
 #include "proc.h"
 #include "exp.h"
 #include "boomerang.h"
+#include "visitor.h"
 
 extern char debug_buffer[];		 // For prints functions
 
@@ -180,9 +181,15 @@ void DataFlow::computeDF(int n) {
 		}
 	}
 	DF[n] = S;
+}	// end computeDF
+
+
+bool DataFlow::canRename(Exp* e) {
+	if (renameAllMemofs) return true;
+	return e->canRename();
 }
 
-void DataFlow::placePhiFunctions(int memDepth, UserProc* proc) {
+bool DataFlow::placePhiFunctions(UserProc* proc) {
 	// First free some memory no longer needed
 	dfnum.resize(0);
 	semi.resize(0);
@@ -195,6 +202,8 @@ void DataFlow::placePhiFunctions(int memDepth, UserProc* proc) {
 	defsites.clear();			// Clear defsites map,
 	A_orig.clear();				// and A_orig,
 	defStmts.clear();			// and the map from variable to defining Stmt 
+
+	bool change = false;
 
 	// Set the sizes of needed vectors
 	unsigned numBB = indices.size();
@@ -212,7 +221,7 @@ void DataFlow::placePhiFunctions(int memDepth, UserProc* proc) {
 			LocationSet::iterator it;
 			s->getDefinitions(ls);
 			for (it = ls.begin(); it != ls.end(); it++) {
-				if ((*it)->getMemDepth() == memDepth) {
+				if (canRename(*it)) {
 					A_orig[n].insert((*it)->clone());
 					defStmts[*it] = s;
 				}
@@ -251,6 +260,7 @@ void DataFlow::placePhiFunctions(int memDepth, UserProc* proc) {
 				if (s.find(y) == s.end()) {
 					// Insert trivial phi function for a at top of block y
 					// a := phi()
+					change = true;
 					Statement* as = new PhiAssign(a->clone());
 					PBB Ybb = BBs[y];
 					Ybb->prependStmt(as, proc);
@@ -265,7 +275,10 @@ void DataFlow::placePhiFunctions(int memDepth, UserProc* proc) {
 			}
 		}
 	}
-}
+	return change;
+}		// end placePhiFunctions
+
+
 
 static Exp* defineAll = new Terminal(opDefineAll);		// An expression representing <all>
 
@@ -279,7 +292,9 @@ static Exp* defineAll = new Terminal(opDefineAll);		// An expression representin
 #define STACKS_EMPTY(q) (Stacks.find(q) == Stacks.end() || Stacks[q].empty())
 
 // Subscript dataflow variables
-void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearStacks /* = false */ ) {
+bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = false */ ) {
+	bool changed = false;
+
 	// Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
 	// failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
 	if (clearStacks) Stacks.clear();
@@ -289,8 +304,8 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 	PBB bb = BBs[n];
 	Statement* S;
 	for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
-		// if S is not a phi function
-		if (1) { //!S->isPhi()) 
+		// if S is not a phi function (per Appel)
+		/* if (!S->isPhi()) */ {
 			// For each use of some variable x in S (not just assignments)
 			LocationSet locs;
 			if (S->isPhi()) {
@@ -312,8 +327,8 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 			LocationSet::iterator xx;
 			for (xx = locs.begin(); xx != locs.end(); xx++) {
 				Exp* x = *xx;
-				// Ignore variables of the wrong memory depth
-				if (x->getMemDepth() != memDepth) continue;
+				// Don't rename memOfs whose address expressions are not yet primitive
+				if (!canRename(x)) continue;
 				Statement* def = NULL;
 				if (x->isSubscript()) {					// Already subscripted?
 					// No renaming required, but redo the usage analysis, in case this is a new return
@@ -349,6 +364,7 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 					// Calls have UseCollectors for locations that are used before definition at the call
 					((CallStatement*)def)->useBeforeDefine(x->clone());
 				// Replace the use of x with x{def} in S
+				changed = true;
 				if (S->isPhi()) {
 					Exp* phiLeft = ((PhiAssign*)S)->getLeft();
 					phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def /*, this*/));
@@ -374,31 +390,34 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
 			Exp *a = *dd;
-			if (a->getMemDepth() == memDepth) {
+			// Don't consider a if it cannot be propagated
+			bool suitable = canRename(a);
+			if (suitable) {
 				// Push i onto Stacks[a]
 				// Note: we clone a because otherwise it could be an expression that gets deleted through various
-				// modifications. This is necessary because we do several passes of this algorithm with various memory
-				// depths
+				// modifications. This is necessary because we do several passes of this algorithm to sort out the
+				// memory expressions
 				Stacks[a->clone()].push(S);
 				// Replace definition of a with definition of a_i in S (we don't do this)
 			}
-			// MVE: do we need this awful hack?
+			// FIXME: MVE: do we need this awful hack?
 			if (a->getOper() == opLocal) {
 				a = S->getProc()->expFromSymbol(((Const*)a->getSubExp1())->getStr());
 				assert(a);
 				// Stacks already has a definition for a (as just the bare local)
-				if (a && a->getMemDepth() == memDepth)
+				if (suitable) {
 					Stacks[a->clone()].push(S);
+				}
 			}
 		}
 		// Special processing for define-alls (presently, only childless calls).
-		// But note that only everythings at the current memory level are defined!
+// But note that only everythings at the current memory level are defined!
 		if (S->isCall() && ((CallStatement*)S)->isChildless() && !Boomerang::get()->assumeABI) {
 			// S is a childless call (and we're not assuming ABI compliance)
 			Stacks[defineAll];										// Ensure that there is an entry for defineAll
 			std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator dd;
 			for (dd = Stacks.begin(); dd != Stacks.end(); ++dd) {
-				if (dd->first->isMemDepth(memDepth))
+// if (dd->first->isMemDepth(memDepth))
 					dd->second.push(S);								// Add a definition for all vars
 			}
 		}
@@ -422,8 +441,8 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 			// Suppose the jth operand of the phi is a
 			// For now, just get the LHS
 			Exp* a = pa->getLeft();
-			// Only consider variables of the current memory depth
-			if (a->getMemDepth() != memDepth) continue;
+			// Only consider variables that can be renamed
+			if (!canRename(a)) continue;
 			Statement* def;
 			if (STACKS_EMPTY(a))
 				def = NULL;				// No reaching definition
@@ -438,7 +457,7 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 	unsigned numBB = proc->getCFG()->getNumBBs();
 	for (unsigned X=0; X < numBB; X++) {
 		if (idom[X] == n)
-			renameBlockVars(proc, X, memDepth);
+			renameBlockVars(proc, X);
 	}
 	// For each statement S in block n
 	// NOTE: Because of the need to pop childless calls from the Stacks, it is important in my algorithm to process the
@@ -451,8 +470,15 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 		S->getDefinitions(defs);
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
-			if ((*dd)->getMemDepth() == memDepth)
-				Stacks[*dd].pop();
+			if (canRename(*dd)) {
+			// if ((*dd)->getMemDepth() == memDepth)
+			std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
+if (ss == Stacks.end()) {
+ std::cerr << "Tried to pop " << *dd << " from Stacks; does not exist\n";
+ assert(0);
+}
+				ss->second.pop();
+			}
 		}
 		// Pop all defs due to childless calls
 		if (S->isCall() && ((CallStatement*)S)->isChildless()) {
@@ -464,6 +490,7 @@ void DataFlow::renameBlockVars(UserProc* proc, int n, int memDepth, bool clearSt
 			}
 		}
 	}
+	return changed;
 }
 
 void DataFlow::dumpStacks() {
@@ -484,6 +511,7 @@ void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar
 	for (it = Stacks.begin(); it != Stacks.end(); it++) {
 		if (it->second.size() == 0)
 			continue;					// This variable's definition doesn't reach here
+		// Create an assignment of the form loc := loc{def}
 		RefExp* re = new RefExp(it->first->clone(), it->second.top());
 		Assign* as = new Assign(it->first->clone(), re);
 		insert(as);

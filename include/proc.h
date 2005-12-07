@@ -351,7 +351,7 @@ class UserProc : public Proc {
 		/**
 		 * Maximum depth this function (or limited by a command line switch). -1 if not set.
 		 */
-		int			maxDepth;
+		//int			maxDepth;
 
 		/*
 		 * DEPRECATED now. Use the localTable.
@@ -513,8 +513,6 @@ virtual				~UserProc();
 		/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 		/// Also finalise the whole group.
 		void		recursionGroupAnalysis(CycleSet* cycleSet);
-		/// Remove unused statements.
-		void		remUnusedStmtEtc();
 		/// Global type analysis (for this procedure).
 		void		typeAnalysis();
 		// Split the set of cycle-associated procs into individual subcycles.
@@ -527,11 +525,10 @@ virtual				~UserProc();
 		// Update the defines and arguments in calls.
 		void		updateCalls();
 
-		void		propagateAtDepth(int depth);
-		void		doRenameBlockVars(int depth, bool clearStacks);
-		void		updateBlockVars();
-		void		updateBlockVars(int minDepth);
-		int			getMaxDepth() {return maxDepth;}
+//		void		propagateAtDepth(int depth);
+		// Rename block variables, with log if verbose. Return true if a change
+		bool		doRenameBlockVars(int pass, bool clearStacks = false);
+		//int			getMaxDepth() {return maxDepth;}		// FIXME: needed?
 
 		Statement	*getStmtAtLex(unsigned int begin, unsigned int end);
 
@@ -543,8 +540,7 @@ virtual				~UserProc();
 
 		/// Initialise the statements, e.g. proc, bb pointers
 		void		initStatements();
-		void		numberStatements(int& stmtNum);
-		void		numberPhiStatements(int& stmtNum);
+		void		numberStatements();
 		bool		nameStackLocations();
 		bool		replaceReg(Exp* match, Exp* e, Statement* def);		///< Helper function for nameRegisters()
 		bool		nameRegisters();
@@ -568,7 +564,7 @@ virtual				~UserProc();
 		void		processFloatConstants();
 		void		replaceExpressionsWithGlobals();
 		void		replaceExpressionsWithSymbols();
-		void		replaceExpressionsWithParameters(int depth);   ///< must be in SSA form
+		void		mapExpressionsToParameters();   ///< must be in SSA form
 		void		mapExpressionsToLocals(bool lastPass = false);
 		bool		isLocal(Exp* e);			///< True if e represents a stack local variable
 		bool		isLocalOrParam(Exp* e);		///< True if e represents a stack local or stack param
@@ -578,6 +574,9 @@ virtual				~UserProc();
 		
 		/// perform final simplifications
 		void		finalSimplify();
+
+		// eliminate duplicate arguments
+		void		eliminateDuplicateArgs();
 	
 private:
 		void		searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
@@ -586,14 +585,19 @@ public:
 		bool		removeDeadStatements();
 typedef std::map<Statement*, int> RefCounter;
 		void		countRefs(RefCounter& refCounts);
-		void		remUnusedStmtEtc(RefCounter& refCounts, int depth);
+		/// Remove unused statements.
+		void		remUnusedStmtEtc();
+		void		remUnusedStmtEtc(RefCounter& refCounts /* , int depth*/);
 		void		removeUnusedLocals();
+		void		mapTempsToLocals();
+		void		removeCallLiveness();			// Remove all liveness info in UseCollectors in calls
 		bool		propagateAndRemoveStatements();
-		/// Propagate statemtents; return true if an indirect call is converted to direct
-		bool		propagateStatements(int memDepth);
-		void		propagateToCollector(int depth);
+		/// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
+		/// (else clear)
+		bool		propagateStatements(bool& convert, int pass);
+		void		propagateToCollector();
 		void		clearUses();					///< Clear the useCollectors (in this Proc, and all calls).
-		int			findMaxDepth();					///< Find max memory nesting depth.
+		//int			findMaxDepth();					///< Find max memory nesting depth.
 
 		void		toSSAform(int memDepth, StatementSet& rs);
 		void		fromSSAform();

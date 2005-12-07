@@ -638,8 +638,12 @@ bool ComplexityFinder::visit(Binary* e,		bool& override) {count++; override = fa
 bool ComplexityFinder::visit(Ternary* e,	bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Location* e,	bool& override) {if (e->isMemOf()) count++; override = false; return true;}
 
+// Ugh! This is still a separate propagation mechanism from Statement::propagateTo(). It would be good to get rid of
+// this one.
 Exp* ExpPropagator::postVisit(RefExp* e) {
-	if (!Statement::canPropagateToExp(e, fromDepth))
+	// No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
+	// have been renamed, and we never would get here
+	if (!Statement::canPropagateToExp(e))		// Check of the definition statement is suitable for propagating
 		return e;
 	Statement* def = e->getDef();
 	Exp* res = e;
@@ -657,3 +661,51 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
 	return res;
 }
 
+#if 0
+bool AllSubscriptedTester::visit(Location* e, bool& override) {
+	// We reached a location that is not subscripted (we don't look inside RefExps).
+	result = false;			// Test fails
+	return false;			// Don't continue searching this expression
+}
+#endif
+
+// Return true if e is a primitive expression; basically, an expression you can propagate to without causing
+// memory expression problems. See Mike's thesis for details
+// Algorithm: if find any unscripted location, not primitive
+//   Implicit definitions are primitive (but keep searching for non primitives)
+//   References to the results of calls are considered primitive
+//   Other references considered non primitive
+// Start with result=true, must find primitivity in all components
+bool PrimitiveTester::visit(Location* e, bool& override) {
+	// We reached a bare (unsubscripted) location. This is certainly not primitive
+	override = true;
+	result = false;
+	return false;			// No need to continue searching
+}
+
+bool PrimitiveTester::visit(RefExp* e, bool& override) {
+	Statement* def = e->getDef();
+	if (def == NULL || def->getNumber() == 0 || def->isCall()) {
+		// Implicit definitions are always primitive
+		// The results of calls are always primitive
+		override = true;	// Don't recurse into the reference
+		return true;		// Result remains true
+	}
+
+	// For now, all references to other definitions will be considered non primitive. I think I'll have to extend this!
+	result = false;
+	override = true;		// Regareless of outcome, don't recurse into the reference
+	return true;
+}
+
+bool TempToLocalMapper::visit(Location *e, bool& override) {
+	if (e->isTemp()) {
+		// We have a temp subexpression; get its name
+		char* tempName = ((Const*)e->getSubExp1())->getStr();
+		Type* ty = Type::getTempType(tempName);		// Types for temps strictly depend on the name
+		// This call will do the mapping from the temp to a new local:
+		proc->getSymbolExp(e, ty, true);
+	}
+	override = true;		// No need to examine the string
+	return true;
+}

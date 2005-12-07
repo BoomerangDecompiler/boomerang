@@ -78,17 +78,17 @@ virtual 		~ExpVisitor() { }
 	// visitor functions,
 	// return false to abandon iterating through the expression (terminate the search)
 	// Set override true to not do the usual recursion into children
-virtual bool	 visit(Unary *e,	bool& override) {override = false; return true;}
-virtual bool	 visit(Binary *e,	bool& override) {override = false; return true;}
-virtual bool	 visit(Ternary *e,	bool& override) {override = false; return true;}
-virtual bool	 visit(TypedExp *e, bool& override) {override = false; return true;}
-virtual bool	 visit(FlagDef *e,	bool& override) {override = false; return true;}
-virtual bool	 visit(RefExp *e,	bool& override) {override = false; return true;}
-virtual bool	 visit(Location *e, bool& override) {override = false; return true;}
+virtual bool		visit(Unary *e,	bool& override) {override = false; return true;}
+virtual bool		visit(Binary *e,	bool& override) {override = false; return true;}
+virtual bool		visit(Ternary *e,	bool& override) {override = false; return true;}
+virtual bool		visit(TypedExp *e, bool& override) {override = false; return true;}
+virtual bool		visit(FlagDef *e,	bool& override) {override = false; return true;}
+virtual bool		visit(RefExp *e,	bool& override) {override = false; return true;}
+virtual bool		visit(Location *e, bool& override) {override = false; return true;}
 // These three have zero arity, so there is nothing to override
-virtual bool	 visit(Const *e	  ) {return true;}
-virtual bool	 visit(Terminal *e) {return true;}
-virtual bool	 visit(TypeVal *e ) {return true;}
+virtual bool		visit(Const *e	  ) {return true;}
+virtual bool		visit(Terminal *e) {return true;}
+virtual bool		visit(TypeVal *e ) {return true;}
 };
 
 // This class visits subexpressions, and if a location, sets the UserProc
@@ -503,12 +503,41 @@ virtual bool	visit(Location *e,	bool& override);
 
 };
 
+// A class to propagate everything, regardless, to this expression. Does not consider memory expressions and whther
+// the address expression is primitive. Use with caution; mostly Statement::propagateTo() should be used.
 class ExpPropagator : public SimpExpModifier {
-		int			fromDepth;
 public:
-					ExpPropagator(int d) : fromDepth(d) { }
+					ExpPropagator() { }
 		Exp*		postVisit(RefExp* e);
 };
 
+#if 0
+class AllSubscriptedTester : public ExpVisitor {
+		bool		result;
+public:
+					AllSubscriptedTester() : result(true) {}
+		bool		getResult() {return result;}
+		bool	 	visit(RefExp *e, bool& override) {override = true; return true;}	// Don't recurse inside RefExps
+		bool	 	visit(Location *e, bool& override);
+};
+#endif
+
+// Test an address expression (operand of a memOf) for primitiveness (i.e. if it is possible to SSA rename the memOf
+// without problems). Note that the PrimitiveTester is not used with the memOf expression, only its address expression
+class PrimitiveTester : public ExpVisitor {
+		bool		result;
+public:
+					PrimitiveTester() : result(true) {}		// Initialise result true: need AND of all components
+		bool		getResult() {return result;}
+		bool	 	visit(Location *e, bool& override);
+		bool	 	visit(RefExp *e, bool& override);
+};
+
+class TempToLocalMapper : public ExpVisitor {
+		UserProc*	proc;									// Proc object for storing the symbols
+public:
+					TempToLocalMapper(UserProc* p) : proc(p) {}
+		bool	 	visit(Location *e, bool& override);
+};
 
 #endif	// #ifndef __VISITOR_H__

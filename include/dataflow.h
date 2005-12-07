@@ -80,8 +80,12 @@ class DataFlow {
 		// A map from expression (Exp*) to a stack of (pointers to) Statements
 		std::map<Exp*, std::stack<Statement*>, lessExpStar> Stacks;
 
+		// Initially false, meaning that only memofs whose address expressions are primitive can be renamed.
+		// When true, all memofs can be renamed. See Mike's thesis for details.
+		bool		renameAllMemofs;
 
 public:
+					DataFlow() : renameAllMemofs(false) {}		// Constructor
 		/*
 	 	 * Dominance frontier and SSA code
 	 	 */
@@ -90,9 +94,13 @@ public:
 		int			ancestorWithLowestSemi(int v);
 		void		Link(int p, int n);
 		void		computeDF(int n);
-		void		placePhiFunctions(int memDepth, UserProc* proc);
-		void		renameBlockVars(UserProc* proc, int n, int memDepth, bool clearStacks = false);
+		// Place phi functions. Return true if any change
+		bool		placePhiFunctions(UserProc* proc);
+		// Rename variables in basicblock n. Return true if any change made
+		bool		renameBlockVars(UserProc* proc, int n, bool clearStacks = false);
 		bool		doesDominate(int n, int w);
+		void		setRenameAllMemofs(bool b) {renameAllMemofs = b;}
+		bool		canRename(Exp* e);
 
 		// For testing:
 		int			pbbToNode(PBB bb) {return indices[bb];}

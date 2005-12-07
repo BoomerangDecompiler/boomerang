@@ -206,13 +206,13 @@ public:
 		// Returns true if this is a win32 program
 		bool		isWin32();
 
-		// Get a global variable if possible
+		// Get a global variable if possible, looking up the loader's symbol table if necessary
 		const char	*getGlobalName(ADDRESS uaddr);
 		ADDRESS		getGlobalAddr(char *nam);
 		Global*		getGlobal(char *nam);
 
 		// Make up a name for a new global at address uaddr (or return an existing name if address already used)
-		const char	*newGlobal(ADDRESS uaddr);
+		const char	*newGlobalName(ADDRESS uaddr);
 
 		// Guess a global's type based on its name and address
 		Type		*guessGlobalType(const char *nam, ADDRESS u);
@@ -288,6 +288,7 @@ protected:
 		std::string	m_name, m_path;			// name of the program and its full path
 		std::list<Proc*> m_procs;			// list of procedures
 		PROGMAP		m_procLabels;			// map from address to Proc*
+		// FIXME: is a set of Globals the most appropriate data structure? Surely not.
 		std::set<Global*> globals;			// globals to print at code generation time
 		//std::map<ADDRESS, const char*> *globalMap; // Map of addresses to global symbols
 		DataIntervalMap globalMap;			// Map from address to DataInterval (has size, name, type)

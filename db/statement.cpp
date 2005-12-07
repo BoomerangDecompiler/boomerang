@@ -192,16 +192,14 @@ if (ret)
 	return ret;
 }
 
-// exclude: a set of statements not to propagate from
-// memDepth: the max level of expressions to propagate FROM
-// limit: if true, use a heuristic to try to limit the amount of propagation (e.g. fromSSA)
-
-// Return true if can propagate to Exp* e
-bool Statement::canPropagateToExp(Exp*e, int memDepth) {
+// Return true if can propagate to Exp* e (must be a RefExp to return true)
+// Note: does not consider whether e is able to be renamed (from a memory Primitive point of view), only if the
+// definition can be propagated to this stmt
+// Note: static member function
+bool Statement::canPropagateToExp(Exp*e) {
 	if (!e->isSubscript()) return false;
-	// Can propagate TO this (if memory depths are suitable)
 	if (((RefExp*)e)->isImplicitDef())
-		// Can't propagate statement "0" (implicit assignments)
+		// Can't propagate statement "-" or "0" (implicit assignments)
 		return false;
 	Statement* def = ((RefExp*)e)->getDef();
 //	if (def == this)
@@ -223,30 +221,7 @@ bool Statement::canPropagateToExp(Exp*e, int memDepth) {
 #endif
 	Assign* adef = (Assign*)def;
 	Exp* lhs = adef->getLeft();
-	if (memDepth != -1 && adef->getMemDepth() != memDepth) return false;		// Check from depth
 
-#if 0	// Sorry, I don't believe prop into branches is wrong... MVE.  By not propagating into branches, we get memory
-// locations not converted to locals, for example (e.g. test/source/csp.c)
- 
-	if (isBranch()) {
-		Exp* defRight = adef->getRight();
-		// Propagating to a branch often doesn't give good results, unless propagating flags
-		// Special case for Pentium: allow prop of
-		// r12 := SETFFLAGS(...) (fflags stored via register AH)
-		if (!hasSetFlags(defRight))
-			// Allow propagation of constants
-			if (defRight->isIntConst() || defRight->isFltConst())
-				if (VERBOSE) LOG << "Allowing prop. into branch (1) of " << def << "\n";
-				else
-					;
-			// ?? Also allow any assignments to temps or assignment of anything to anything subscripted.
-			// Trent: was the latter meant to be anything NOT subscripted?
-			else if (defRight->getOper() != opSubscript && !lhs->isTemp())
-				return false;
-			else
-				if (VERBOSE) LOG << "Allowing prop. into branch (2) of " << def << "\n";
-	}
-#endif
 	if (lhs->getType() && lhs->getType()->isArray()) {
 		// Assigning to an array, don't propagate (Could be alias problems?)
 		return false;
@@ -254,10 +229,9 @@ bool Statement::canPropagateToExp(Exp*e, int memDepth) {
 	return true;
 }
 
-// Return true if an indirect call statement is converted to direct
-bool Statement::propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
+// Return true if any change; set convert if an indirect call statement is converted to direct (else unchanged)
+bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* destCounts /* = NULL */ ) {
 	bool change;
-	bool convert = false;
 	int changes = 0;
 	// int sp = proc->getSignature()->getStackRegister(proc->getProg());
 	// Exp* regSp = Location::regOf(sp);
@@ -273,7 +247,7 @@ bool Statement::propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* dest
 		// exps has r24{10}, r25{30}, m[r26{30}], r26{30}
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			if (!canPropagateToExp(e, memDepth))
+			if (!canPropagateToExp(e))
 				continue;
 			// Check if the -l flag (propMaxDepth) prevents this propagation
 			Assign* def = (Assign*)((RefExp*)e)->getDef();
@@ -284,13 +258,13 @@ bool Statement::propagateTo(int memDepth, std::map<Exp*, int, lessExpStar>* dest
 					// This propagation is prevented by the -l limit
 					continue;
 			}
-			change = doPropagateTo(e, def, convert);
+			change |= doPropagateTo(e, def, convert);
 		}
 	} while (change && ++changes < 10);
 	// Simplify is very costly, especially for calls. I hope that doing one simplify at the end will not affect any
 	// result...
 	simplify();
-	return convert;
+	return changes != 0;
 }
 
 
@@ -323,32 +297,31 @@ bool Statement::replaceRef(Exp* e, Assign *def, bool& convert) {
 	Exp* rhs = def->getRight();
 	assert(rhs);
 
-	if (isAssign()) {
-		// Could be propagating %flags into %CF
-		Exp* lhs = def->getLeft();
-		if (lhs->isFlags()) {
-			assert(rhs->isFlagCall());
-			char* str = ((Const*)((Binary*)rhs)->getSubExp1())->getStr();
-			if (strncmp("SUBFLAGS", str, 8) == 0) {
-				/* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
-				   the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
-				   Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
-					 defRhs
-					 /	  \
-				Const	   opList
-				"SUBFLAGS"	/	\
-						   P1	opList
+	Exp* base = ((RefExp*)e)->getSubExp1();
+	// Could be propagating %flags into %CF
+	Exp* lhs = def->getLeft();
+	if (base->getOper() == opCF && lhs->isFlags()) {
+		assert(rhs->isFlagCall());
+		char* str = ((Const*)((Binary*)rhs)->getSubExp1())->getStr();
+		if (strncmp("SUBFLAGS", str, 8) == 0) {
+			/* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
+			   the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
+			   Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
+				 defRhs
+				 /	  \
+			Const	   opList
+			"SUBFLAGS"	/	\
+					   P1	opList
+							 /	 \
+							P2	opList
 								 /	 \
-								P2	opList
-									 /	 \
-									P3	 opNil
-				*/
-				Exp* relExp = new Binary(opLessUns,
-					((Binary*)rhs)->getSubExp2()->getSubExp1(),
-					((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
-				searchAndReplace(new RefExp(new Terminal(opCF), def), relExp);
-				return true;
-			}
+								P3	 opNil
+			*/
+			Exp* relExp = new Binary(opLessUns,
+				((Binary*)rhs)->getSubExp2()->getSubExp1(),
+				((Binary*)rhs)->getSubExp2()->getSubExp2()->getSubExp1());
+			searchAndReplace(new RefExp(new Terminal(opCF), def), relExp, true);
+			return true;
 		}
 	}
 
@@ -1698,12 +1671,6 @@ bool CallStatement::usesExp(Exp *e) {
 	return false;
 }
 
-bool CallStatement::isDefinition() {
-	LocationSet defs;
-	getDefinitions(defs);
-	return defs.size() != 0;
-}
-
 void CallStatement::getDefinitions(LocationSet &defs) {
 	StatementList::iterator dd;
 	for (dd = defines.begin(); dd != defines.end(); ++dd)
@@ -2515,6 +2482,12 @@ bool ReturnStatement::searchAll(Exp* search, std::list<Exp *>& result) {
 			found = true;
 	}
 	return found;
+}
+
+bool CallStatement::isDefinition() {
+	LocationSet defs;
+	getDefinitions(defs);
+	return defs.size() != 0;
 }
 
 bool ReturnStatement::usesExp(Exp *e) {
@@ -3868,8 +3841,8 @@ void Statement::findConstants(std::list<Const*>& lc) {
 // one class to another.  All throughout the code, we assume that the addresses of Statement objects do not change,
 // so we need this slight hack to overwrite one object with another
 void PhiAssign::convertToAssign(Exp* rhs) {
-	// I believe we always want to propagate to these ex-phi's:
-	rhs = rhs->propagateAll(((UserProc*)proc)->getMaxDepth());
+	// I believe we always want to propagate to these ex-phi's; check!:
+	rhs = rhs->propagateAll();
 	Assign* a = new Assign(type, lhs, rhs);
 	a->setNumber(number);
 	a->setProc(proc);
@@ -4057,16 +4030,6 @@ void CallStatement::regReplace(UserProc* proc) {
 void ReturnStatement::regReplace(UserProc* proc) {
 	for (iterator it = modifieds.begin(); it != modifieds.end(); ++it)
 		(*it)->regReplace(proc);
-}
-
-Type* Statement::meetWithFor(Type* ty, Exp* e, bool& ch) {
-	bool thisCh = false;
-	Type* newType = getTypeFor(e)->meetWith(ty, thisCh);
-	if (thisCh) {
-		ch = true;
-		setTypeFor(e, newType);
-	}
-	return newType;
 }
 
 void PhiAssign::putAt(int i, Statement* def, Exp* e) {
@@ -4510,7 +4473,7 @@ Exp* ArgSourceProvider::localise(Exp* e) {
 		return ret;
 	}
 	// Else just use the call to localise
-	return call->localiseExp(e->clone());
+	return call->localiseExp(e);
 }
 
 Type* ArgSourceProvider::curType(Exp* e) {
@@ -4860,4 +4823,19 @@ void	ImpRefStatement::regReplace(UserProc* proc) {
 	std::list<Exp**> li;
 	Exp::doSearch(regOfWildRef, addressExp, li, false);
 	proc->regReplaceList(li);
+}
+
+void CallStatement::eliminateDuplicateArgs() {
+	StatementList::iterator it;
+	LocationSet ls;
+	for (it = arguments.begin(); it != arguments.end(); ) {
+		Exp* lhs = ((Assignment*)*it)->getLeft();
+		if (ls.exists(lhs)) {
+			// This is a duplicate
+			it = arguments.erase(it);
+			continue;
+		}
+		ls.insert(lhs);
+		++it;
+	}
 }

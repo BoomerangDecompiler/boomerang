@@ -359,7 +359,7 @@ bool LibProc::isPreserved(Exp* e) {
  *					uNative - Native address of entry point of procedure
  * RETURNS:			<nothing>
  *============================================================================*/
-UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED), maxDepth(-1),
+UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
 		// decoded(false), analysed(false),
 		nextLocal(0),	// decompileSeen(false), decompiled(false), isRecursive(false)
 		cycleGroup(NULL), theReturnStatement(NULL) {
@@ -368,7 +368,7 @@ UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		// Not quite ready for the below fix:
 		// Proc(prog, uNative, prog->getDefaultSignature(name.c_str())),
 		Proc(prog, uNative, new Signature(name.c_str())),
-		cfg(new Cfg()), status(PROC_UNDECODED), maxDepth(-1),
+		cfg(new Cfg()), status(PROC_UNDECODED),
 		nextLocal(0), // decompileSeen(false), decompiled(false), isRecursive(false),
 		cycleGroup(NULL), theReturnStatement(NULL), DFGcount(0)
 {
@@ -562,6 +562,7 @@ void UserProc::generateCode(HLLCode *hll) {
 				replaceExpressionsWithSymbols();
 #else
 			nameRegisters();
+			mapTempsToLocals();
 #endif
 	}
 	removeUnusedLocals();
@@ -700,23 +701,14 @@ void UserProc::initStatements() {
 	}
 }
 
-void UserProc::numberStatements(int& stmtNum) {
+void UserProc::numberStatements() {
 	BB_IT it;
 	BasicBlock::rtlit rit; StatementList::iterator sit;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
 		for (Statement* s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit))
-			if (!s->isImplicit())		// Don't renumber implicits (remain number 0)
-				s->setNumber(++stmtNum);
-	}
-}
-
-void UserProc::numberPhiStatements(int& stmtNum) {
-	BB_IT it;
-	BasicBlock::rtlit rit; StatementList::iterator sit;
-	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-		for (Statement* s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit))
-			if (s->isPhi() && s->getNumber() == 0)
-				s->setNumber(++stmtNum);
+			if (!s->isImplicit() && 		// Don't renumber implicits (remain number 0)
+					s->getNumber() == 0)	// Don't renumber existing (or waste numbers)
+				s->setNumber(++stmtNumber);
 	}
 }
 
@@ -1027,7 +1019,7 @@ void UserProc::initialiseDecompile() {
 
 	// Number the statements
 	stmtNumber = 0;
-	numberStatements(stmtNumber); 
+	numberStatements(); 
 
 	printXML();
 
@@ -1052,72 +1044,63 @@ void UserProc::prePresDecompile() {
 	// Update the defines in the calls. Will redo if involved in recursion
 	updateCallDefines();
 
-	// For each memory depth (1). First path is just to do the initial propagation (especially for the stack pointer),
-	// place phi functions, number statements, initial propagation
-	maxDepth = findMaxDepth() + 1;
-	if (Boomerang::get()->maxMemDepth < maxDepth)
-		maxDepth = Boomerang::get()->maxMemDepth;
-	int depth;
-	for (depth = 0; depth <= maxDepth; depth++) {
+	// First placement of phi functions, renaming, and initial propagation. This is mostly for the stack pointer
+	//maxDepth = findMaxDepth() + 1;
+	//if (Boomerang::get()->maxMemDepth < maxDepth)
+	//	maxDepth = Boomerang::get()->maxMemDepth;
+	// TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
+	// the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
+	// equivalent to depth 0 in the old scheme
+	if (VERBOSE)
+		LOG << "placing phi functions 1st pass\n";
+	// Place the phi functions
+	df.placePhiFunctions(this);
 
-		if (VERBOSE)
-			LOG << "placing phi functions at depth " << depth << "\n";
-		// Place the phi functions for this memory depth
-		df.placePhiFunctions(depth, this);
+	if (VERBOSE)
+		LOG << "numbering phi statements 1st pass\n";
+	numberStatements();				// Number them
 
-		if (VERBOSE)
-			LOG << "numbering phi statements at depth " << depth << "\n";
-		// Number them
-		numberPhiStatements(stmtNumber);
+	if (VERBOSE)
+		LOG << "renaming block variables 1st pass\n";
+	// Rename variables
+	doRenameBlockVars(1, false);
+	if (VERBOSE) {
+		LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n";
+		printToLog();
+		LOG << "\n=== done after rename (1) for " << getName() << " 1st pass\n\n";
+	}
 
-		if (/* status == PROC_INCYCLE && */ depth > 0) {
-			// When involved in cycles, there can be phi statements referring to call statements that have not yet been
-			// untangled (e.g. because we don't know if the stack pointer is preserved or not).
-			// As a result, fib can't prove that r29 is preserved, for example. To avoid this problem, we don't rename
-			// or propagate memory locations until recursionGroupAnalysis time.
-			if (VERBOSE)
-				LOG << "### not renaming variables (1) at depth " << depth <<
-					// " since " << getName() << " is involved in a recursion group";
-					"\n";
-		} else {
-			if (VERBOSE)
-				LOG << "renaming block variables (1) at depth " << depth << "\n";
-			// Rename variables
-			doRenameBlockVars(depth, false);
-			if (VERBOSE) {
-				LOG << "\n--- after rename (1) for " << getName() << " at depth " << depth << ": ---\n";
-				printToLog();
-				LOG << "\n=== done after rename (1) for " << getName() << " at depth " << depth << ": ===\n\n";
-			}
+	bool convert;
+	propagateStatements(convert, 1);
+	if (VERBOSE) {
+		LOG << "\n--- after propagation (1) for " << getName() << " 1st pass ---\n";
+		printToLog();
+		LOG << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
+	}
 
-			propagateStatements(depth);
-			if (VERBOSE) {
-				LOG << "\n--- after propagation (1) for " << getName() << " at depth " << depth << ": ---\n";
-				printToLog();
-				LOG << "\n=== done after propagation (1) for " << getName() << " at depth " << depth << ": ===\n\n";
-			}
-		}
-
-		// The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
-		// The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
-		// (which can safely be processed at depth 1).
-		// Except that this is inherent in the visitor nature of the latest algorithm.
-		fixCallAndPhiRefs();		// Bypass children that are finalised (if any)
-		if (status != PROC_INCYCLE || depth == 0)
-			propagateStatements(depth);
-		if (VERBOSE) {
-			LOG << "\n--- after call and phi bypass (1) of " << getName() << " at depth " << depth << ": ---\n";
-			printToLog();
-			LOG << "\n=== done after call and phi bypass (1) of " << getName() << " at depth " << depth << ": ===\n\n";
-		}
+	// The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
+	// The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
+	// (which can safely be processed at depth 1).
+	// Except that this is inherent in the visitor nature of the latest algorithm.
+	fixCallAndPhiRefs();			// Bypass children that are finalised (if any)
+	if (status != PROC_INCYCLE)		// FIXME: need this test?
+		propagateStatements(convert, 2);
+	if (VERBOSE) {
+		LOG << "\n--- after call and phi bypass (1) of " << getName() << " ---\n";
+		printToLog();
+		LOG << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
 	}
 	status = PROC_PREPRES;			// Now we are ready for preservation
 }
 
+// ^
+// | These two functions could probably be combined now
+// v
+
 void UserProc::middleDecompile() {
 	findSpPreservation();
 	// Oops - the idea of splitting the sp from the rest of the preservations was to allow correct naming of locals
-	// so you are alias conservative. But of course some locals are ebp based, and so these will never be correct
+	// so you are alias conservative. But of course some locals are ebp (etc) based, and so these will never be correct
 	// until all the registers have preservation analysis done. So I may as well do them all together here.
 	findPreserveds();
 	fixCallAndPhiRefs(); 	// Propagate and bypass sp
@@ -1152,47 +1135,52 @@ void UserProc::middleDecompile() {
 
 
 	// Update the arguments for calls (mainly for the non recursion affected calls)
-	// Ick! We have never run renameBlockVars at depth > 0 at this point, so the collectors in the call statements
-	// don't have definitions for m[...], so the findDefFor() in the localiseExp() will fail.
-	// We don't want to collect rubbish like m[esp{51}+8] where 51 is a phi statement that will go away with bypass
-	// analysis, so it's correct to leave renameBlockVars sensitive to the depth parameter
-	updateBlockVars(1);				// Minimum depth 1
+	// We have only done limited propagation and collecting to this point. Need e.g. to put m[esp-K]
+	// into the collectors of calls, so when a stack parameter is created, it will be correctly localised
+	// Note that we'd like to limit propagation before this point, because we have not yet created any arguments, so
+	// it is possible to get "excessive propagation" to parameters. In fact, because uses vary so much througout a
+	// program, it may end up better not limiting propagation until very late in the decompilation, and undoing some
+	// propagation just before removing unused statements. Or even later, if that is possible.
+	// For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
+	// distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be duplicates, and so
+	// the duplicates must be eliminated.
+	bool change = df.placePhiFunctions(this);
+	if (change) numberStatements();		// Number the new statements
+	doRenameBlockVars(2);
 	updateArguments();
 
-	// For each memory depth (2)
-	int depth;
-	for (depth = 0; depth <= maxDepth; depth++) {
+	// Repeat until no change
+	int pass;
+	for (pass = 3; pass <= 12; ++pass) {
 		// Redo the renaming process to take into account the arguments
 		if (VERBOSE)
-			LOG << "renaming block variables (2) at depth " << depth << "\n";
+			LOG << "renaming block variables (2) pass " << pass << "\n";
 		// Rename variables
-		doRenameBlockVars(depth, false);						// E.g. for new arguments
+		change = df.placePhiFunctions(this);
+		if (change) numberStatements();		// Number the new statements
+		change |= doRenameBlockVars(pass, false);		// E.g. for new arguments
 
 		// Seed the return statement with reaching definitions
+		// FIXME: does this have to be in this loop?
 		if (theReturnStatement) {
 			theReturnStatement->updateModifieds();		// Everything including new arguments reaching the exit
 			theReturnStatement->updateReturns();
-		}
-
-		if (status != PROC_INCYCLE || depth == 0) {
-			// This gets called so much... it would be great to be able to "repair" the names...
-			doRenameBlockVars(depth, false);					// E.g. update call use collectors with return uses
 		}
 
 		printXML();
 
 		// Print if requested
 		if (VERBOSE) {		// was if debugPrintSSA
-			LOG << "--- debug print SSA for " << getName() << " at depth " << depth << " (no propagations) ---\n";
+			LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n";
 			printToLog();
-			LOG << "=== end debug print SSA for " << getName() << " at depth " << depth << " ===\n\n";
+			LOG << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
 			printDFG();
 		}
 		
-		Boomerang::get()->alert_decompile_SSADepth(this, depth);
+		Boomerang::get()->alert_decompile_SSADepth(this, pass);		// FIXME: need depth -> pass in GUI stuff
 
+#if 0		// Moved to after this loop (for now)
 		if (depth == maxDepth) {
-			//fixCallAndPhiRefs();			// FIXME: needed?
 			if (processConstants()) {
 				for (int i = 0; i <= maxDepth; i++) {
 					if (status != PROC_INCYCLE || i == 0) {
@@ -1201,51 +1189,20 @@ void UserProc::middleDecompile() {
 					}
 				}
 			}
-			//removeRedundantPhis();
 		}
-		//fixCallAndPhiRefs();				// FIXME: needed? If so, document why
 		// recognising globals early prevents them from becoming parameters
 		if (depth == maxDepth)		// Else Sparc problems... MVE FIXME: Exactly why?
 			if (!Boomerang::get()->noGlobals)
 				replaceExpressionsWithGlobals();
-#if 0 	// No: recovering parameters must be late: after removal of unused statements, so don't get phantom parameters
-		// from preserveds. Note that some preserveds could be prarameters.
-		if (depth > 0 && !Boomerang::get()->noChangeSignatures) {
-			findFinalParameters();
-			//trimParameters(depth);
-		}
 #endif
 
-#if 0	// No need to do a whole propagation phase any more; addArguments does the propagation now
-		// if we've added new parameters, need to do propagations up to this depth.  it's a recursive function thing.
-		if (nparams != signature->getNumParams()) {
-			for (int depth_tmp = 0; depth_tmp < depth; depth_tmp++) {
-				// Propagate at this memory depth
-				for (int td = maxDepth; td >= 0; td--) {
-					if (VERBOSE)
-						LOG << "parameter propagating at depth " << depth_tmp << " to depth " << td << "\n";
-					propagateStatements(depth_tmp, td);
-					for (int i = 0; i <= depth_tmp; i++)
-						doRenameBlockVars(i, true);
-				}
-			}
-			doRenameBlockVars(depth, true);
-			printXML();
-			if (VERBOSE) {
-				LOG << "=== debug print SSA for " << getName() << " at memory depth " << depth
-					<< " (after adding new parameters) ===\n";
-				printToLog();
-				LOG << "=== end debug print SSA for " << getName() << " at depth " << depth << " ===\n\n";
-			}
-		}
-#endif
 
-		// replacing expressions with Parameters as we go
+		// mapping expressions to Parameters as we go
+#if 0	// Moved outside this loop
 		if (!Boomerang::get()->noParameterNames) {
-			replaceExpressionsWithParameters(depth);
-			if (status != PROC_INCYCLE || depth == 0)
-				doRenameBlockVars(depth, true);
+			mapExpressionsToParameters();
 		}
+#endif
 
 #if 1	// FIXME: Check if this is needed any more. At least fib seems to need it at present.
 		if (!Boomerang::get()->noChangeSignatures) {
@@ -1253,8 +1210,8 @@ void UserProc::middleDecompile() {
 			for (int i=0; i < 3; i++) {		// FIXME: should be iterate until no change
 			 	if (VERBOSE)
 					LOG << "### update returns loop iteration " << i << " ###\n";
-				if (status != PROC_INCYCLE || depth == 0)
-					doRenameBlockVars(depth, true);
+				if (status != PROC_INCYCLE)
+					doRenameBlockVars(pass, true);
 				findPreserveds();
 				updateReturnTypes();
 				updateCallDefines();		// Returns have uses which affect call defines (if childless)
@@ -1263,10 +1220,10 @@ void UserProc::middleDecompile() {
 			}
 			printXML();
 			if (VERBOSE) {
-				LOG << "--- debug print SSA for " << getName() << " at memory depth " << depth <<
+				LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
 					" (after updating returns) ---\n";
 				printToLog();
-				LOG << "=== end debug print SSA for " << getName() << " at depth " << depth << " ===\n\n";
+				LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
 			}
 		}
 #endif
@@ -1274,32 +1231,32 @@ void UserProc::middleDecompile() {
 		printXML();
 		// Print if requested
 		if (VERBOSE) {		// was if debugPrintSSA
-			LOG << "--- debug print SSA for " << getName() << " at memory depth " << depth <<
+			LOG << "--- debug print SSA for " << getName() << " at pass " << pass <<
 				" (after trimming return set) ---\n";
 			printToLog();
-			LOG << "=== end debug print SSA for " << getName() << " at depth " << depth << " ===\n\n";
+			LOG << "=== end debug print SSA for " << getName() << " at pass " << pass << " ===\n\n";
 		}
 
-		Boomerang::get()->alert_decompile_beforePropagate(this, depth);
+		Boomerang::get()->alert_decompile_beforePropagate(this, pass);
 
-		// Propagate at this memory depth
+		// Propagate
 		bool convert;			// True when indirect call converted to direct
 		do {
 			convert = false;
 			if (VERBOSE)
-				LOG << "propagating at depth " << depth << "\n";
-			convert |= propagateStatements(depth);
-			if (!convert) 		// Just calling renameBlockVars now can cause problems
-				for (int i = 0; i <= depth; i++)
-					doRenameBlockVars(i, true);
+				LOG << "propagating at pass " << pass << "\n";
+			change |= propagateStatements(convert, pass);
+			change |= doRenameBlockVars(pass, true);
 			// If you have an indirect to direct call conversion, some propagations that were blocked by
 			// the indirect call might now succeed, and may be needed to prevent alias problems
+			// FIXME: I think that the below, and even the convert parameter to propagateStatements(), is no longer
+			// needed - MVE
 			if (convert) {
 				if (VERBOSE)
-					LOG << "\nabout to restart propagations and dataflow at depth " << depth <<
+					LOG << "\nabout to restart propagations and dataflow at pass " << pass <<
 						" due to conversion of indirect to direct call(s)\n\n";
-				depth = 0;			// Start again from depth 0
-				doRenameBlockVars(0, true); 			// Initial dataflow level 0
+				df.setRenameAllMemofs(false);
+				change |= doRenameBlockVars(0, true); 			// Initial dataflow level 0
 				LOG << "\nafter rename (2) of " << getName() << ":\n";
 				printToLog();
 				LOG << "\ndone after rename (2) of " << getName() << ":\n\n";
@@ -1308,13 +1265,50 @@ void UserProc::middleDecompile() {
 
 		printXML();
 		if (VERBOSE) {
-			LOG << "--- after propagate for " << getName() << " at memory depth " << depth << " ---\n";
+			LOG << "--- after propagate for " << getName() << " at pass " << pass << " ---\n";
 			printToLog();
-			LOG << "=== end propagate for " << getName() << " at depth " << depth << " ===\n\n";
+			LOG << "=== end propagate for " << getName() << " at pass " << pass << " ===\n\n";
 		}
 
-		Boomerang::get()->alert_decompile_afterPropagate(this, depth);
+		Boomerang::get()->alert_decompile_afterPropagate(this, pass);
 
+		if (!change)
+			break;				// Until no change
+	}
+
+	// At this point, there will be some memofs that have still not been renamed. They have been prevented from
+	// getting renamed so that they didn't get renamed incorrectly (usually as {-}), when propagation and/or bypassing
+	// may have ended up changing the address expression. There is now no chance that this will happen, so we need
+	// to rename the existing memofs. Note that this can still link uses to definitions, e.g.
+	// 50 r26 := phi(...)
+	// 51 m[r26{50}] := 99;
+	//	... := m[r26{50}]{should be 51}
+
+	if (VERBOSE)
+		LOG << "### allowing SSA renaming of all memof expressions ###\n";
+	df.setRenameAllMemofs(true);
+
+	// Now we need another pass to rename and propagate these memofs
+	++pass;
+	if (VERBOSE)
+		LOG << "renaming block variables (3) pass " << pass << "\n";
+	doRenameBlockVars(pass, false);
+	bool convert;
+	propagateStatements(convert, pass);
+
+	// Note: processConstants is also where ellipsis processing is done (check this!)
+	if (processConstants()) {
+		if (status != PROC_INCYCLE) {
+			doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
+		}
+	}
+	// recognising globals early prevents them from becoming parameters
+//	if (depth == maxDepth)		// Else Sparc problems... MVE FIXME: Exactly why?
+		if (!Boomerang::get()->noGlobals)
+			replaceExpressionsWithGlobals();
+
+	if (!Boomerang::get()->noParameterNames) {
+		mapExpressionsToParameters();
 	}
 
 	// Check for indirect jumps or calls not already removed by propagation of constants
@@ -1331,6 +1325,7 @@ void UserProc::middleDecompile() {
 		cfg->clear();
 		std::ofstream os;
 		prog->reDecode(this);
+		df.setRenameAllMemofs(false);		// Start again with memofs
 		decompile(new CycleList);			// Restart decompiling this proc
 		return;
 	}
@@ -1339,11 +1334,6 @@ void UserProc::middleDecompile() {
 
 	// Used to be later...
 	if (!Boomerang::get()->noParameterNames) {
-		for (int i = maxDepth; i >= 0; i--) {
-			//replaceExpressionsWithParameters(df, i);
-			//mapExpressionsToLocals(true);
-			// doRenameBlockVars(i, true); 			// MVE: is this really needed?
-		}
 		findPreserveds();		// FIXME: is this necessary here?
 		//fixCallBypass();	// FIXME: surely this is not necessary now?
 		//trimParameters();	// FIXME: surely there aren't any parameters to trim yet?
@@ -1353,6 +1343,8 @@ void UserProc::middleDecompile() {
 			LOG << "=== end after replacing expressions, trimming params and returns for " << getName() << " ===\n";
 		}
 	}
+
+	eliminateDuplicateArgs();
 
 	if (VERBOSE)
 		LOG << "===== end initial decompile for " << getName() << " =====\n\n";
@@ -1379,14 +1371,15 @@ void UserProc::remUnusedStmtEtc() {
 	typeAnalysis();
 
 	// Only remove unused statements after decompiling as much as possible of the proc
-	for (int depth = 0; depth <= maxDepth; depth++) {
+	// FIME: Probably need a repeat until no change here
+	//for (int depth = 0; depth <= maxDepth; depth++) {
 		// Remove unused statements
 		RefCounter refCounts;			// The map
 		// Count the references first
 		countRefs(refCounts);
 		// Now remove any that have no used
 		if (!Boomerang::get()->noRemoveNull)
-			remUnusedStmtEtc(refCounts, depth);
+			remUnusedStmtEtc(refCounts /*, depth*/);
 
 		// Remove null statements
 		if (!Boomerang::get()->noRemoveNull)
@@ -1394,20 +1387,17 @@ void UserProc::remUnusedStmtEtc() {
 
 		printXML();
 		if (VERBOSE && !Boomerang::get()->noRemoveNull) {
-			LOG << "--- after removing unused and null statements depth " << depth << " for " << getName() << " ---\n";
+			LOG << "--- after removing unused and null statements pass " << 1 << " for " << getName() << " ---\n";
 			printToLog();
 			LOG << "=== end after removing unused statements for " << getName() << " ===\n\n";
 		}
-		Boomerang::get()->alert_decompile_afterRemoveStmts(this, depth);
-	}
+		Boomerang::get()->alert_decompile_afterRemoveStmts(this, 1);
+	//}
 
 	// FIXME: not sure where these belong as yet...
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
-		for (int i = maxDepth; i >= 0; i--) {
-			replaceExpressionsWithParameters(i);
-			//doRenameBlockVars(i, true);					// MVE: is this really needed?
-		}
+		mapExpressionsToParameters();
 		//findPreserveds();		// FIXME: is this necessary here?
 		//fixCallAndPhiRef();		// FIXME: surely this is not necessary now?
 		//trimParameters();		// FIXME: check
@@ -1463,7 +1453,7 @@ void UserProc::finalDecompile() {
 #if 0		// Want this earlier, before remove unused statements, so assignments to locals can work
 	if (!Boomerang::get()->noParameterNames) {
 		for (int i = maxDepth; i >= 0; i--) {
-			replaceExpressionsWithParameters(df, i);
+			mapExpressionsToParameters(df, i);
 			mapExpressionsToLocals(true);
 			//doRenameBlockVars(i, true);					// MVE: is this really needed?
 		}
@@ -1524,10 +1514,12 @@ void UserProc::recursionGroupAnalysis(CycleSet* cs) {
 	CycleSet::iterator p;
 	// Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
 	// statements.
+	bool convert;
 	for (p = cs->begin(); p != cs->end(); ++p) {
 		(*p)->initialParameters();
 		(*p)->updateArguments();
-		(*p)->propagateAtDepth(maxDepth);			// Need to propagate into arguments
+		//(*p)->propagateAtDepth(maxDepth);			// Need to propagate into arguments
+		(*p)->propagateStatements(convert, 0);
 	}
 
 	// while no change
@@ -1646,49 +1638,13 @@ void UserProc::updateCalls() {
 	}
 }
 
-void UserProc::doRenameBlockVars(int depth, bool clearStacks) {
+bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
 	if (VERBOSE)
-		LOG << "### rename block vars for " << getName() << " depth " << depth << ", clear = " << clearStacks <<
-			" ###\n";
-	df.renameBlockVars(this, 0, depth, clearStacks);
+		LOG << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks << " ###\n";
+	return df.renameBlockVars(this, 0, clearStacks);
 }
 
-void UserProc::updateBlockVars()
-{
-	clearUses();										// Experimental
-	//int depth = findMaxDepth() + 1;					// FIXME: why +1?
-	int depth = maxDepth;
-	for (int i = 0; i <= depth; i++) {
-		if (status != PROC_INCYCLE || i == 0)
-			doRenameBlockVars(i, true);
-		else
-			doRenameBlockVars(0, true);					// FIXME: why repeat this more than once?
-	}
-}
-
-void UserProc::updateBlockVars(int minDepth) {
-	if (VERBOSE)
-		LOG << "--- begin update block vars at min depth " << minDepth << " ---\n";
-	for (int i = minDepth; i <= maxDepth; i++) {
-		doRenameBlockVars(i, true);
-		// After a renaming at level n, it's important to do propagation at level n before renaming at level n+1
-		// For example: m[m[a+K1]+K2]: you initially have m[m[a+K1]{d1}+K2] and you want to propagate from d1 before
-		// deciding that the level 2 expression isn't defined anywhere.
-		propagateAtDepth(i);
-	}
-	if (VERBOSE)
-		LOG << "=== end update block vars at min depth " << minDepth << " ===\n";
-}
-
-void UserProc::propagateAtDepth(int depth)
-{
-	if (status == PROC_INCYCLE && depth > 0)
-		return;
-	propagateStatements(depth);
-	for (int i = 0; i <= depth; i++)
-		doRenameBlockVars(i, true);
-}
-
+#if 0
 int UserProc::findMaxDepth() {
 	StatementList stmts;
 	getStatements(stmts);
@@ -1704,6 +1660,7 @@ int UserProc::findMaxDepth() {
 	}
 	return maxDepth;
 }
+#endif
 
 #if 0
 void UserProc::removeRedundantPhis() {
@@ -2556,10 +2513,11 @@ void UserProc::replaceExpressionsWithGlobals() {
 				Exp *r1 = (*rr)->getSubExp1();
 				if (symbolMap.find(r1) != symbolMap.end())
 					continue;					// Ignore locals, etc
-				// look for m[exp + K]{0}, replace it with m[exp * 1 + K]{0} in the hope that it will get picked 
-				// up as a global array.
+				// look for m[exp + K]{0} where exp is not opMult; if found replace it with m[exp * 1 + K]{0} in the
+				// hope that it will get picked up as a global array.
 				if (ref == NULL && r1->getOper() == opMemOf && r1->getSubExp1()->getOper() == opPlus &&
-						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst) {
+						r1->getSubExp1()->getSubExp2()->getOper() == opIntConst &&
+						r1->getSubExp1()->getSubExp1()->getOper() != opMult) {
 					r1->getSubExp1()->setSubExp1(new Binary(opMult, r1->getSubExp1()->getSubExp1(), new Const(1)));
 				}
 				// Is it m[CONSTANT]{-}
@@ -2628,8 +2586,9 @@ void UserProc::replaceExpressionsWithGlobals() {
 							if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() != stride*8) {
 								if (VERBOSE)
 									LOG << "forcing array base type size to stride\n";
-								ty->asArray()->setLength(ty->asArray()->getLength() *
-									ty->asArray()->getBaseType()->getSize() / (stride * 8));
+								// Ugh! This was getting done twice, once below, and once again in setBaseType!
+								// ty->asArray()->setLength(ty->asArray()->getLength() *
+									// ty->asArray()->getBaseType()->getSize() / (stride * 8));
 								ty->asArray()->setBaseType(new IntegerType(stride*8));
 								prog->setGlobalType((char*)gloName, ty);
 							}
@@ -2682,12 +2641,15 @@ void UserProc::replaceExpressionsWithSymbols() {
 #endif
 }
 
-void UserProc::replaceExpressionsWithParameters(int depth) {
+// FIXME: this function is largely unused now, since expressions are not "replaced" with parameters any more. They
+// retain their original form (e.g. m[esp{-} + 4]) and are mapped to the symbolic parameter (e.g. "argc").
+// There is still the a[m[x]] stuff, which is likely needed by the ad-hoc TA code
+void UserProc::mapExpressionsToParameters() {
 	StatementList stmts;
 	getStatements(stmts);
 
 	if (VERBOSE)
-		LOG << "replacing expressions with parameters at depth " << depth << "\n";
+		LOG << "mapping expressions to parameters\n";
 
 	bool found = false;
 	StatementList::iterator it;
@@ -2722,38 +2684,32 @@ void UserProc::replaceExpressionsWithParameters(int depth) {
 	}
 	if (found) {
 		// Must redo all the subscripting, just for the a[m[...]] thing!
-		if (status != PROC_INCYCLE || depth == 0) {
-			for (int d=0; d <= depth; d++)
-				doRenameBlockVars(d, true);
-		} else
-			doRenameBlockVars(0, true);
+		doRenameBlockVars(0, true);
 	}
 
 	// replace expressions in regular statements with parameters
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		for (unsigned i = 0; i < signature->getNumParams(); i++) {
-			if (depth < 0 || signature->getParamExp(i)->getMemDepth() == depth) {
-				Exp *r = signature->getParamExp(i)->clone();
-				r = r->expSubscriptAllNull();
-				// Remove the outer {0}, for where it appears on the LHS, and because we want to have param1{0}
-				assert(r->isSubscript());	// There should always be one
-				// if (r->getOper() == opSubscript)
-				r = r->getSubExp1();
-				Location* replace = Location::param( strdup((char*)signature->getParamName(i)), this);
-				Exp *n;
-				if (s->search(r, n)) {
-					if (VERBOSE)
-						LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
+			Exp *r = signature->getParamExp(i)->clone();
+			r = r->expSubscriptAllNull();
+			// Remove the outer {0}, for where it appears on the LHS, and because we want to have param1{0}
+			assert(r->isSubscript());	// There should always be one
+			// if (r->getOper() == opSubscript)
+			r = r->getSubExp1();
+			Location* replace = Location::param( strdup((char*)signature->getParamName(i)), this);
+			Exp *n;
+			if (s->search(r, n)) {
+				if (VERBOSE)
+					LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
 #if 0
-					s->searchAndReplace(r, replace);
-					if (VERBOSE)
-						LOG << "after: " << s << "\n";
+				s->searchAndReplace(r, replace);
+				if (VERBOSE)
+					LOG << "after: " << s << "\n";
 #else
-					symbolMap[r] = replace;			// Add to symbol map
-					// Note: don't add to locals, since otherwise the back end will declare it twice
+				symbolMap[r] = replace;			// Add to symbol map
+				// Note: don't add to locals, since otherwise the back end will declare it twice
 #endif
-				}
 			}
 		}
 	}
@@ -3177,18 +3133,17 @@ bool UserProc::processConstants() {
 }
 
 // Propagate statements, but don't remove
-// Respect the memory depth (don't propagate FROM statements that have components of higher memory depth than memDepth)
-// Return true if an indirect call is converted to direct
-bool UserProc::propagateStatements(int memDepth) {
+// Return true if change; set convert if an indirect call is converted to direct (else clear)
+bool UserProc::propagateStatements(bool& convert, int pass) {
 	if (VERBOSE)
-		LOG << "--- begin propagating statements at depth " << memDepth << " ---\n";
+		LOG << "--- begin propagating statements pass " << pass << " ---\n";
 	StatementList stmts;
 	getStatements(stmts);
 	// propagate any statements that can be
 	StatementList::iterator it;
-	bool convertedIndirect = false;
 	// First pass: count the number of times each assignment LHS would be propagated somewhere
 	std::map<Exp*, int, lessExpStar> destCounts;
+	bool change = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		LocationSet exps;
@@ -3196,21 +3151,22 @@ bool UserProc::propagateStatements(int memDepth) {
 		LocationSet::iterator ll;
 		for (ll = exps.begin(); ll != exps.end(); ll++) {
 			Exp* e = *ll;
-			if (!s->canPropagateToExp(e, memDepth)) continue;
+			if (!s->canPropagateToExp(e)) continue;
 			destCounts[e]++;				// Count propagatable expression e
 		}
 	}
+	convert = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		if (s->isPhi()) continue;
-		convertedIndirect |= s->propagateTo(memDepth, &destCounts);
+		change |= s->propagateTo(convert, &destCounts);
 	}
 	simplify();
-	propagateToCollector(memDepth);
+	propagateToCollector();
 	if (VERBOSE)
-		LOG << "=== end propagating statements at depth " << memDepth << " ===\n";
-	return convertedIndirect;
-}
+		LOG << "=== end propagating statements at pass " << pass << " ===\n";
+	return change;
+}	// propagateStatements
 
 Statement *UserProc::getStmtAtLex(unsigned int begin, unsigned int end)
 {
@@ -3428,8 +3384,7 @@ void UserProc::removeUnusedLocals() {
 		locals.erase(*it1);
 }
 
-// Note: if depth < 0, consider all depths
-void UserProc::remUnusedStmtEtc(RefCounter& refCounts, int depth) {
+void UserProc::remUnusedStmtEtc(RefCounter& refCounts /*, int depth*/) {
 	StatementList stmts;
 	getStatements(stmts);
 	bool change;
@@ -3445,10 +3400,11 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts, int depth) {
 			}
 			Assignment* as = (Assignment*)s;
 			Exp* asLeft = as->getLeft();
-			if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-				ll++;
-				continue;
-			}
+			// If depth < 0, consider all depths
+			//if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
+			//	ll++;
+			//	continue;
+			//}
 			if (asLeft && asLeft->getOper() == opGlobal) {
 				// assignments to globals must always be kept
 				ll++;
@@ -3505,7 +3461,10 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts, int depth) {
 			ll++;
 		}
 	} while (change);
-	updateBlockVars();					// Recaluclate at least the liveness
+	// Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
+	// removed statement, so liveness in the call needs to be removed
+	removeCallLiveness();				// Kill all existing livenesses
+	doRenameBlockVars(-2);				// Recalculate new livenesses
 }
 
 //
@@ -4761,7 +4720,7 @@ void UserProc::fixCallAndPhiRefs() {
 			first = first->accept(&cb);
 			if (cb.isTopChanged())
 				first = first->simplify();
-			first = first->propagateAll(maxDepth);		// Propagate
+			first = first->propagateAll();				// Propagate everything
 			if (cb.isMod()) {							// Modified?
 				// if first is of the form lhs{x}
 				if (first->isSubscript() && *((RefExp*)first)->getSubExp1() == *lhs)
@@ -4775,7 +4734,7 @@ void UserProc::fixCallAndPhiRefs() {
 				current = current->accept(&cb2);
 				if (cb2.isTopChanged())
 					current = current->simplify();
-				current = current->propagateAll(maxDepth);
+				current = current->propagateAll();
 				if (cb2.isMod())					// Modified?
 					// if current is of the form lhs{x}
 					if (current->isSubscript() && *((RefExp*)current)->getSubExp1() == *lhs)
@@ -4838,7 +4797,7 @@ void UserProc::markAsNonChildless(CycleSet* cs) {
 }
 
 // Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
-void UserProc::propagateToCollector(int depth) {
+void UserProc::propagateToCollector() {
 	UseCollector::iterator it;
 	for (it = col.begin(); it != col.end(); ++it) {
 		if (!(*it)->isMemOf()) continue;
@@ -4851,7 +4810,6 @@ void UserProc::propagateToCollector(int depth) {
 			if (!r->isSubscript()) continue;
 			Assign* as = (Assign*)r->getDef();
 			if (as == NULL || !as->isAssign()) continue;
-			if (depth != -1 && depth != as->getLeft()->getMemDepth()) continue;
 			bool ch;
 			Exp* res = addr->clone()->searchReplaceAll(r, as->getRight(), ch);
 			if (!ch) continue;				// No change
@@ -5011,7 +4969,7 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	}
 
 	// Have to redo dataflow to get the liveness at the calls correct
-	updateBlockVars();
+	doRenameBlockVars(-3);
 
 	remUnusedStmtEtc();				// Also redoes parameters
 
@@ -5078,9 +5036,11 @@ void UserProc::typeAnalysis() {
 
 		bool first = true;
 		do {
-			if (!first)
-				propagateAtDepth(maxDepth);		// HACK: Can sometimes be needed, if call was indirect
-												// FIXME: Check if still needed
+			if (!first) {
+				//propagateAtDepth(maxDepth);		// HACK: Can sometimes be needed, if call was indirect
+				bool convert;
+				propagateStatements(convert, 0);
+			}
 			first = false;
 			dfaTypeAnalysis();
 		} while (ellipsisProcessing());
@@ -5178,5 +5138,43 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
 		}
 	}
 	assert(0);				// Could not find s withing its enclosing BB
+}
+
+void UserProc::eliminateDuplicateArgs() {
+	if (VERBOSE)
+		LOG << "### eliminate duplicate args for " << getName() << " ###\n";
+	BB_IT it;
+	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
+	for (it = cfg->begin(); it != cfg->end(); ++it) {
+		CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
+		// Note: we may have removed some statements, so there may no longer be a last statement!
+		if (c == NULL || !c->isCall()) continue;
+		c->eliminateDuplicateArgs();
+	}
+}
+
+void UserProc::removeCallLiveness() {
+	if (VERBOSE)
+		LOG << "### removing call livenesses for " << getName() << " ###\n";
+	BB_IT it;
+	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
+	for (it = cfg->begin(); it != cfg->end(); ++it) {
+		CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
+		// Note: we may have removed some statements, so there may no longer be a last statement!
+		if (c == NULL || !c->isCall()) continue;
+		c->removeAllLive();
+	}
+}
+
+void UserProc::mapTempsToLocals() {
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	TempToLocalMapper ttlm(this);
+	StmtExpVisitor sv(&ttlm);
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		s->accept(&sv);
+	}
 }
 

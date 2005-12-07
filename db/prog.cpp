@@ -567,13 +567,14 @@ bool Prog::isWin32() {
 
 const char *Prog::getGlobalName(ADDRESS uaddr)
 {
-	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
+	// FIXME: inefficient
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
 		if ((*it)->getAddress() == uaddr)
 			return (*it)->getName();
 		else if ((*it)->getAddress() < uaddr &&
 				(*it)->getAddress() + (*it)->getType()->getSize() / 8 > uaddr)
 			return (*it)->getName();
-
+	}
 	if (pBF)
 		return pBF->SymbolByAddress(uaddr);
 	return NULL;
@@ -626,7 +627,7 @@ void Prog::globalUsed(ADDRESS uaddr, Type* knownType) {
         return;
     }
 #endif
-    const char *nam = newGlobal(uaddr); 
+    const char *nam = newGlobalName(uaddr); 
     Type *ty;
 	if (knownType)
 		ty = knownType;
@@ -651,7 +652,7 @@ std::map<ADDRESS, std::string> &Prog::getSymbols()
 }
 
 ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
-	const char* nam = newGlobal(u);
+	const char* nam = newGlobalName(u);
 	int sz = pBF->GetSizeByName(nam);
 	if (sz == 0)
 		return new ArrayType(t);		// An "unbounded" array
@@ -680,7 +681,7 @@ Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
 	return ty;
 }
 
-const char *Prog::newGlobal(ADDRESS uaddr)
+const char *Prog::newGlobalName(ADDRESS uaddr)
 {
 	const char *nam = getGlobalName(uaddr);
 	if (nam == NULL) {
@@ -688,7 +689,7 @@ const char *Prog::newGlobal(ADDRESS uaddr)
 		os << "global" << globals.size();
 		nam = strdup(os.str().c_str());
 		if (VERBOSE)
-			LOG << "adding new global: " << nam << " at address " << uaddr << "\n";
+			LOG << "naming new global: " << nam << " at address " << uaddr << "\n";
 	} 
 	return nam;
 }
@@ -701,9 +702,13 @@ Type *Prog::getGlobalType(char* nam) {
 }
 
 void Prog::setGlobalType(const char* nam, Type* ty) {
-	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++)
-		if (!strcmp((*it)->getName(), nam))
+	// FIXME: inefficient
+	for (std::set<Global*>::iterator it = globals.begin(); it != globals.end(); it++) {
+		if (!strcmp((*it)->getName(), nam)) {
 			(*it)->setType(ty);
+			return;
+		}
+	}
 }
 
 // get a string constant at a given address if appropriate
@@ -1394,7 +1399,7 @@ void Prog::readSymbolFile(const char *fname) {
 		} else {
 			const char *nam = (*it)->nam.c_str();
 			if (strlen(nam) == 0) {
-				nam = newGlobal((*it)->addr);
+				nam = newGlobalName((*it)->addr);
 			}
 			Type *ty = (*it)->ty;
 			if (ty == NULL) {
@@ -1449,7 +1454,8 @@ Exp* Global::getInitialValue(Prog* prog) {
 
 void Global::print(std::ostream& os, Prog* prog) {
 	Exp* init = getInitialValue(prog);
-	os << nam << " at " << std::hex << uaddr << std::dec << " initial value " << (init ? init->prints() : "<none>");
+	os << type << " " << nam << " at " << std::hex << uaddr << std::dec << " initial value " <<
+		(init ? init->prints() : "<none>");
 }
 
 Exp *Prog::readNativeAs(ADDRESS uaddr, Type *type)

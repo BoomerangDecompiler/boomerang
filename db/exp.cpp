@@ -4121,11 +4121,17 @@ int Exp::getComplexityDepth() {
 }
 
 // Propagate all possible statements to this expression
-Exp* Exp::propagateAll(int maxDepth) {
-	Exp* ret = this;
-	for (int i=0; i < maxDepth; ++i) {
-		ExpPropagator ep(i);
-		ret = ret->accept(&ep);
-	}
-	return ret;
+Exp* Exp::propagateAll() {
+	ExpPropagator ep;
+	return accept(&ep);
 }
+
+// Return true for non-mem-ofs, or mem-ofs that have primitive address expressions
+bool Exp::canRename() {
+	if (op != opMemOf) return true;
+	Exp* addressExp = ((Location*)this)->getSubExp1();
+	PrimitiveTester pt;
+	addressExp->accept(&pt);
+	return pt.getResult();
+}
+

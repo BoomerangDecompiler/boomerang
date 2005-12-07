@@ -191,7 +191,7 @@ void CfgTest::testPlacePhi () {
 
 	DataFlow* df = pProc->getDataFlow();
 	df->dominators(cfg);
-	df->placePhiFunctions(1, pProc);
+	df->placePhiFunctions(pProc);
 
 	// m[r29 - 8] (x for this program)
 	Exp* e = new Unary(opMemOf,
@@ -232,7 +232,7 @@ void CfgTest::testPlacePhi2 () {
 	prog->finishDecode();
 
 	df->dominators(cfg);
-	df->placePhiFunctions(1, pProc);
+	df->placePhiFunctions(pProc);
 
 	// In this program, x is allocated at [ebp-4], a at [ebp-8], and
 	// b at [ebp-12]
@@ -292,10 +292,9 @@ void CfgTest::testRenameVars () {
 	prog->finishDecode();
 
 	df->dominators(cfg);
-	df->placePhiFunctions(1, pProc);
-	int stmtNumber = 0;
-	pProc->numberStatements(stmtNumber);// After placing phi functions!
-	df->renameBlockVars(pProc, 0, 1);		 // Block 0, mem depth 1
+	df->placePhiFunctions(pProc);
+	pProc->numberStatements();				// After placing phi functions!
+	df->renameBlockVars(pProc, 0, 1);		// Block 0, mem depth 1
 
 	// MIKE: something missing here?
 
