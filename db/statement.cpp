@@ -2239,6 +2239,7 @@ bool CallStatement::ellipsisProcessing(Prog* prog) {
 			for (int i=0; i < n; i++) {
 				def = pa->getStmtAt(i);
 				if (def == NULL) continue;
+				if (!def->isAssign()) continue;
 				Exp* rhs = ((Assign*)def)->getRight();
 				if (rhs == NULL || !rhs->isStrConst()) continue;
 				formatStr = ((Const*)rhs)->getStr();
