@@ -51,6 +51,7 @@
 #include "constraint.h"
 #include "visitor.h"
 #include "log.h"
+#include <iomanip>			// For std::setw etc
 
 typedef std::map<Statement*, int> RefCounter;
 
@@ -862,8 +863,9 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
  
 
 // Decompile this UserProc
+static int indent = 0;
 CycleSet* UserProc::decompile(CycleList* path) {
-	std::cout << "decompiling " << getName() << "\n";
+	std::cout << std::setw(++indent) << " " << "considering " << getName() << "\n";
 	if (VERBOSE)
 		LOG << "decompiling " << getName() << "\n";
 	// Prevent infinite loops when there are cycles in the call graph
@@ -958,6 +960,7 @@ CycleSet* UserProc::decompile(CycleList* path) {
 		}
 	}
 
+	std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
 	// if (ret->size() == 0)
 		// can now schedule this proc for complete decompilation
 	initialiseDecompile();				// Sort the CFG, number statements, etc
@@ -987,6 +990,7 @@ CycleSet* UserProc::decompile(CycleList* path) {
 	// Remove last element (= this) from path
 	path->erase(--path->end());
 
+	--indent;
 	return ret;
 }
 
@@ -4787,7 +4791,7 @@ void UserProc::markAsNonChildless(CycleSet* cs) {
 	BB_IT it;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
 		CallStatement* c = (CallStatement*) bb->getLastStmt(rrit, srit);
-		if (c->isCall() && c->isChildless()) {
+		if (c && c->isCall() && c->isChildless()) {
 			UserProc* dest = (UserProc*)c->getDestProc();
 			if (cs->find(dest) != cs->end()) 	// Part of the cycle?
 				// Yes, set the callee return statement (making it non childless)
