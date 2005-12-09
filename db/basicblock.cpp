@@ -48,10 +48,7 @@
 #include "boomerang.h"
 #include "type.h"
 #include "log.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "signature.h"		// For MSVC 5.00
-#endif
+#include "visitor.h"
 
 
 /**********************************
@@ -1735,7 +1732,7 @@ static Binary* vfc_funcptr = new Binary(opArrayIndex,
 	new Const(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
-// K1 is vtable offset, K2 is virtual function offset
+// K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
 static Location* vfc_both = Location::memOf(
 	new Binary(opPlus,
 		Location::memOf(
@@ -1999,14 +1996,28 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 		}
 		return false;
 	} else if (m_nodeType == COMPCALL) {
-		LOG << "decodeIndirectJmp: COMPCALL:";
 		assert(m_pRtls->size());
 		RTL* lastRtl = m_pRtls->back();
-		LOG << lastRtl->prints() << "\n";
-
+		if (DEBUG_SWITCH)
+			LOG << "decodeIndirectJmp: COMPCALL:\n" << lastRtl->prints() << "\n";
 		assert(lastRtl->getNumStmt() >= 1);
 		CallStatement* lastStmt = (CallStatement*)lastRtl->elementAt(lastRtl->getNumStmt()-1);
 		Exp* e = lastStmt->getDest();
+		// Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).
+		// Propagate to e, but only keep the changes if the expression matches (don't want excessive propagation to
+		// a genuine function pointer expression, even though it's hard to imagine).
+		e = e->propagateAll();
+		// We also want to replace any m[K]{-} with the actual constant from the (presumably) read-only data section
+		ConstGlobalConverter cgc(proc->getProg());
+		e = e->accept(&cgc);
+		// Simplify the result, e.g. for m[m[(r24{16} + m[0x8048d74]{-}) + 12]{-}]{-} get
+		// m[m[(r24{16} + 20) + 12]{-}]{-}, want m[m[r24{16} + 32]{-}]{-}. Note also that making the
+		// ConstGlobalConverter a simplifying expression modifier won't work in this case, since the simplifying
+		// converter will only simplify the direct parent of the changed expression (which is r24{16} + 20).
+		e = e->simplify();
+		if (DEBUG_SWITCH)
+			LOG << "decodeIndirect: propagated and const global converted call expression is " << e << "\n";
+
 		int n = sizeof(hlVfc) / sizeof(Exp*);
 		bool recognised = false;
 		int i;
@@ -2019,57 +2030,123 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 			}
 		}
 		if (!recognised) return false;
+		lastStmt->setDest(e);				// Keep the changes to the indirect call expression
+		int K1, K2;
+		Exp *vtExp, *t1;
+		Prog* prog = proc->getProg();
 		switch (i) {
 			case 0: {
 				// This is basically an indirection on a global function pointer.  If it is initialised, we have a
 				// decodable entry point.  Note: it could also be a library function (e.g. Windows)
 				// Pattern 0: global<name>{0}[0]{0}
+				K2 = 0;
 				if (e->isSubscript()) e = e->getSubExp1();
-				e = ((Binary*)e)->getSubExp1();				// e is global<name>{0}
+				e = ((Binary*)e)->getSubExp1();				// e is global<name>{0}[0]
+				if (e->isArrayIndex() &&
+						(t1 = ((Binary*)e)->getSubExp2(), t1->isIntConst()) &&
+						((Const*)t1)->getInt() == 0)
+					e = ((Binary*)e)->getSubExp1();             // e is global<name>{0}
 				if (e->isSubscript()) e = e->getSubExp1();	// e is global<name>
 				Const* con = (Const*)((Location*)e)->getSubExp1(); // e is <name>
-				Prog* prog = proc->getProg();
 				Global* glo = prog->getGlobal(con->getStr());
 				assert(glo);
 				// Set the type to pointer to function, if not already
 				Type* ty = glo->getType();
 				if (!ty->isPointer() && !((PointerType*)ty)->getPointsTo()->isFunc())
 					glo->setType(new PointerType(new FuncType()));
-				Exp* init = glo->getInitialValue(prog);
-				// Danger. For now, only do if -ic given
-				bool decodeThru = Boomerang::get()->decodeThruIndCall;
-				if (init && decodeThru) {
-					ADDRESS aglo = glo->getAddress();
-					ADDRESS pfunc = prog->readNative4(aglo);
-					bool newFunc =	prog->findProc(pfunc) == NULL;
-					if (Boomerang::get()->noDecodeChildren)
-						return false;
-					prog->decodeEntryPoint(pfunc);
-					// If this was not decoded, then this is a significant change, and we want to redecode the present
-					// function once that callee has been decoded
-					return newFunc;
-				}
+				ADDRESS addr = glo->getAddress();
+				// FIXME: not sure how to find K1 from here. I think we need to find the earliest(?) entry in the data
+				// map that overlaps with addr
+				// For now, let K1 = 0:
+				K1 = 0;
+				vtExp = new Const(addr);
+				break;
 			}
 			case 1: {
-				// Typical pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
+				// Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
 				if (e->isSubscript())
 					e = ((RefExp*)e)->getSubExp1();
 				e = ((Location*)e)->getSubExp1();		// e = m[r27{25} + 8]{-} + 8
 				Exp* rhs = ((Binary*)e)->getSubExp2();	// rhs = 8
-				int K2 = ((Const*)rhs)->getInt();
+				K2 = ((Const*)rhs)->getInt();
 				Exp* lhs = ((Binary*)e)->getSubExp1();	// lhs = m[r27{25} + 8]{-}
 				if (lhs->isSubscript())
 					lhs = ((RefExp*)lhs)->getSubExp1();	// lhs = m[r27{25} + 8]
+				vtExp = lhs;
 				lhs = ((Unary*)lhs)->getSubExp1();		// lhs =   r27{25} + 8
-				Exp* e = ((Binary*)lhs)->getSubExp1();
+				//Exp* object = ((Binary*)lhs)->getSubExp1();
 				Exp* CK1 = ((Binary*)lhs)->getSubExp2();
-				int K1 = ((Const*)CK1)->getInt();
-				LOG << "form 1: from statement " << lastStmt << " get e = " << e << ", K1 = " << K1 << ", K2 = " <<
-					K2 << "\n";
+				K1 = ((Const*)CK1)->getInt();
+				break;
+			}
+			case 2: {
+				// Example pattern: e = m[m[r27{25}]{-} + 8]{-}
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();
+				e = ((Location*)e)->getSubExp1();		// e = m[r27{25}]{-} + 8
+				Exp* rhs = ((Binary*)e)->getSubExp2();	// rhs = 8
+				K2 = ((Const*)rhs)->getInt();
+				Exp* lhs = ((Binary*)e)->getSubExp1();	// lhs = m[r27{25}]{-}
+				if (lhs->isSubscript())
+					lhs = ((RefExp*)lhs)->getSubExp1();	// lhs = m[r27{25}]
+				vtExp = lhs;
+				K1 = 0;
+				break;
+			}
+			case 3: {
+				// Example pattern: e = m[m[r27{25} + 8]{-}]{-}
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();
+				e = ((Location*)e)->getSubExp1();		// e = m[r27{25} + 8]{-}
+				K2 = 0;
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();		// e = m[r27{25} + 8]
+				vtExp = e;
+				Exp* lhs = ((Unary*)e)->getSubExp1();		// lhs =   r27{25} + 8
+				// Exp* object = ((Binary*)lhs)->getSubExp1();
+				Exp* CK1 = ((Binary*)lhs)->getSubExp2();
+				K1 = ((Const*)CK1)->getInt();
+				break;
+			}
+			case 4: {
+				// Example pattern: e = m[m[r27{25}]{-}]{-}
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();
+				e = ((Location*)e)->getSubExp1();		// e = m[r27{25}]{-}
+				K2 = 0;
+				if (e->isSubscript())
+					e = ((RefExp*)e)->getSubExp1();		// e = m[r27{25}]
+				vtExp = e;
+				K1 = 0;
+				// Exp* object = ((Unary*)e)->getSubExp1();
+				break;
 			}
 		}
-			
-		return false;
+		if (DEBUG_SWITCH)
+			LOG << "form " << i << ": from statement " << lastStmt->getNumber() << " get e = " << lastStmt->getDest() <<
+				", K1 = " << K1 << ", K2 = " << K2 << ", vtExp = " << vtExp << "\n";
+		// The vt expression might not be a constant yet, because of expressions not fully propagated, or because of
+		// m[K] in the expression (fixed with the ConstGlobalConverter).  If so, look it up in the defCollector in the
+		// call
+		vtExp = lastStmt->findDefFor(vtExp);
+		if (vtExp && DEBUG_SWITCH)
+			LOG << "VT expression boils down to this: " << vtExp << "\n";
+
+		// Danger. For now, only do if -ic given
+		bool decodeThru = Boomerang::get()->decodeThruIndCall;
+		if (decodeThru && vtExp && vtExp->isIntConst()) {
+			int addr = ((Const*)vtExp)->getInt();
+			ADDRESS pfunc = prog->readNative4(addr);
+			if (prog->findProc(pfunc) == NULL) {
+				// A new, undecoded procedure
+				if (Boomerang::get()->noDecodeChildren)
+					return false;
+				prog->decodeEntryPoint(pfunc);
+				// Since this was not decoded, this is a significant change, and we want to redecode the current
+				// function now that the callee has been decoded
+				return true;
+			}
+		}
 	}
 	return false;
 }

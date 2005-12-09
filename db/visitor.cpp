@@ -19,6 +19,7 @@
 #include "boomerang.h"		// For VERBOSE
 #include "proc.h"
 #include "signature.h"
+#include "prog.h"
 
 
 // FixProcVisitor class
@@ -187,7 +188,7 @@ Exp* CallBypasser::postVisit(RefExp* r) {
 
 
 Exp* CallBypasser::postVisit(Location *e)	   {
-	// ? FIXME: What's this hack for?
+	// Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
 	bool isAddrOfMem = e->isAddrOf() && e->getSubExp1()->isMemOf();
 	if (isAddrOfMem) return e;
 	Exp* ret = e;
@@ -708,4 +709,32 @@ bool TempToLocalMapper::visit(Location *e, bool& override) {
 	}
 	override = true;		// No need to examine the string
 	return true;
+}
+
+// Constant global converter. Example: m[m[r24{16} + m[0x8048d60]{-}]{-}]{-} -> m[m[r24{16} + 32]{-}]{-}
+// Allows some complex variations to be matched to standard indirect call forms
+Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
+	Statement* def = e->getDef();
+	Exp *base, *addr;
+	if ((def == NULL || def->isImplicit()) &&
+			(base = e->getSubExp1(), base->isMemOf()) &&
+			(addr = ((Location*)base)->getSubExp1(), addr->isIntConst())) {
+		// We have a m[K]{-}
+		int K = ((Const*)addr)->getInt();
+		int value = prog->readNative4(K);
+		recur = false;
+		return new Const(value);
+	}
+	recur = true;
+	return e;
+}
+Exp* ConstGlobalConverter::preVisit(Location* e, bool& recur) {
+	if (e->isGlobal()) {
+		char* gname = ((Const*)(e->getSubExp1()))->getStr();
+		ADDRESS value = prog->getGlobalAddr(gname);
+		recur = false;
+		return new Const(value);
+	}
+	recur = true;
+	return e;
 }
