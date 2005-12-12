@@ -547,6 +547,5 @@ class ConstGlobalConverter : public ExpModifier {
 public:
 					ConstGlobalConverter(Prog* pg) : prog(pg) {}
 virtual Exp*		preVisit(RefExp		*e, bool& recur);
-virtual Exp*		preVisit(Location	*e, bool& recur);
 };
 #endif	// #ifndef __VISITOR_H__

@@ -715,25 +715,36 @@ bool TempToLocalMapper::visit(Location *e, bool& override) {
 // Allows some complex variations to be matched to standard indirect call forms
 Exp* ConstGlobalConverter::preVisit(RefExp* e, bool& recur) {
 	Statement* def = e->getDef();
-	Exp *base, *addr;
-	if ((def == NULL || def->isImplicit()) &&
-			(base = e->getSubExp1(), base->isMemOf()) &&
-			(addr = ((Location*)base)->getSubExp1(), addr->isIntConst())) {
-		// We have a m[K]{-}
-		int K = ((Const*)addr)->getInt();
-		int value = prog->readNative4(K);
-		recur = false;
-		return new Const(value);
-	}
-	recur = true;
-	return e;
-}
-Exp* ConstGlobalConverter::preVisit(Location* e, bool& recur) {
-	if (e->isGlobal()) {
-		char* gname = ((Const*)(e->getSubExp1()))->getStr();
-		ADDRESS value = prog->getGlobalAddr(gname);
-		recur = false;
-		return new Const(value);
+	Exp *base, *addr, *idx, *glo;
+	if (def == NULL || def->isImplicit()) {
+		if (	(base = e->getSubExp1(), base->isMemOf()) &&
+				(addr = ((Location*)base)->getSubExp1(), addr->isIntConst())) {
+			// We have a m[K]{-}
+			int K = ((Const*)addr)->getInt();
+			int value = prog->readNative4(K);
+			recur = false;
+			return new Const(value);
+		} else if (base->isGlobal()) {
+			// We have a glo{-}
+			char* gname = ((Const*)(base->getSubExp1()))->getStr();
+			ADDRESS gloValue = prog->getGlobalAddr(gname);
+			int value = prog->readNative4(gloValue);
+			recur = false;
+			return new Const(value);
+		} else if (base->isArrayIndex() &&
+					(idx = ((Binary*)base)->getSubExp2(), idx->isIntConst()) &&
+					(glo = ((Binary*)base)->getSubExp1(), glo->isGlobal())) {
+			// We have a glo[K]{-}
+			int K = ((Const*)idx)->getInt();
+			char* gname = ((Const*)(glo->getSubExp1()))->getStr();
+			ADDRESS gloValue = prog->getGlobalAddr(gname);
+			Type* gloType = prog->getGlobal(gname)->getType();
+			assert(gloType->isArray());
+			Type* componentType = gloType->asArray()->getBaseType();
+			int value = prog->readNative4(gloValue + K * (componentType->getSize() / 8));
+			recur = false;
+			return new Const(value);
+		}
 	}
 	recur = true;
 	return e;
