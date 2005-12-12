@@ -501,11 +501,15 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				s->simplify();
 				GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
 
-				if (s->getKind() == STMT_GOTO && stmt_jump->getFixedDest() != NO_ADDRESS &&
-						pBF->IsDynamicLinkedProc(stmt_jump->getFixedDest())) {
+				ADDRESS dest;
+				if (s->getKind() == STMT_GOTO && 
+						(dest = stmt_jump->getFixedDest(), dest != NO_ADDRESS) &&
+						pBF->IsDynamicLinkedProc(dest)) {
 					s = *ss = new CallStatement();
+					Proc* proc = prog->setNewProc(dest);
 					CallStatement *call = static_cast<CallStatement*>(s);
-					call->setDest(stmt_jump->getFixedDest());
+					call->setDest(dest);
+					call->setDestProc(proc);
 					call->setReturnAfterCall(true);
 				}
 
