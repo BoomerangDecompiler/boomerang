@@ -78,16 +78,25 @@ CXXFLAGS=-Iinclude $(WININCLUDE)
 BISONPP=@BISONPP@
 FLEXPP=@FLEXPP@
 
+# Detect if bison++ and flex++ are both present and if not force "remote" target
+ifndef BISONPP
+	REMOTE=remote
+endif
+
+ifndef FLEXPP
+	REMOTE=remote
+endif
+
 LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
 # LOADERDLLS is the set of DLL files
 LOADERDLLS=$(patsubst %,lib/lib%$(DLLEXT),$(LOADERS)) $(COPYDLL)
 # LOADERLIBS is the set of "-l" flags passed when linking executables against the DLLs
 LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
 
-.PHONY: test clean all static
+.PHONY: test clean all static distclean mostclean
 #19 Aug 02 icer: should read lib static test
 #20 Aug 02 icer: should read lib static , the test code is broken
-all: lib static 
+all: $(REMOTE) lib static 
 static: boomerang$(EXEEXT)
 
 # Make the lib directory if needed
@@ -104,8 +113,8 @@ test:	lib bigtest$(EXEEXT)
 	cd loader   && ${MAKE} test
 	./bigtest$(EXEEXT)
 
-# In case you don't have bison++ and flex++ and don't need to mess with the
-# parsers
+# In case you don't have bison++ and flex++ and don't need to mess with the parsers
+# This is automatic now, though you can still force it if desired
 remote:
 	touch db/sslparser.cpp db/sslparser.h \
         c/ansi-c-parser.cpp c/ansi-c-scanner.cpp  \
@@ -123,10 +132,15 @@ clean:
 	cd frontend && ${MAKE} clean
 	cd transform && ${MAKE} clean
 	-rm -f *.o codegen/*.o log.o boomerang.o driver.o boomerang$(EXEEXT) bigtest$(EXEEXT) testAll.o c/*.o type/*.o
+	-rm -f lib/*.so lib/*.dylib lib/*.dll		# Care not to remove soft links inserted by configuration
 
 distclean: clean
 	-rm -f Makefile util/Makefile loader/Makefile db/Makefile frontend/Makefile transform/Makefile include/config.h \
 		config.log config.status frontend/mltk.sh
+
+# target mostclean (clean also the autoconf output)
+mostclean: distclean
+	rm -rf autom4te.cache/ configure
 
 TEST_OBJS = util/UtilTest.o db/ExpTest.o db/ParserTest.o db/ProcTest.o db/ProgTest.o db/RtlTest.o db/StatementTest.o \
 	db/CfgTest.o db/DfaTest.o frontend/FrontSparcTest.o frontend/FrontPentTest.o loader/BinaryFileStub.o c/CTest.o \
