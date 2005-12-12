@@ -3073,7 +3073,7 @@ bool ImplicitAssign::searchAll(Exp* search, std::list<Exp*>& result) {
 }
 
 bool Assign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
-	bool chl, chr, chg;
+	bool chl, chr, chg = false;
 	lhs = lhs->searchReplaceAll(search, replace, chl);
 	rhs = rhs->searchReplaceAll(search, replace, chr);
 	if (guard)
