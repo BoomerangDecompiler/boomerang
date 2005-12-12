@@ -516,7 +516,7 @@ Proc* Prog::findProc(const char *name) const {
 	return NULL;
 }
 
-// get a library procedure by name
+// get a library procedure by name; create if does not exist
 LibProc *Prog::getLibraryProc(const char *nam) {
 	Proc *p = findProc(nam);
 	if (p && p->isLib())

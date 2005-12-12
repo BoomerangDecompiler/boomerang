@@ -184,7 +184,7 @@ public:
 		// Print this program (primarily for debugging)
 		void		print(std::ostream &out);
 
-		// lookup a library procedure by name
+		// lookup a library procedure by name; create if does not exist
 		LibProc		*getLibraryProc(const char *nam);
 
 		// Get a library signature for a given name (used when creating a new library proc.
