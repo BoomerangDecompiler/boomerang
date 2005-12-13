@@ -822,8 +822,9 @@ LRESULT CALLBACK TabEdit(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 			case ID_STMT_PROPAGATE_TO:
-				stmt->propagateTo(-1);
-				stmt->getProc()->updateBlockVars();
+				bool convert;
+				stmt->propagateTo(convert);
+				stmt->getProc()->doRenameBlockVars(-1);
 				updateCodeView();
 				break;
 		}
@@ -1035,7 +1036,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (u == NULL)
 					break;
 				// u->propagateAtDepth(0);
-				u->propagateStatements(0);
+				bool convert;
+				u->propagateStatements(convert, 0);
 				updateCodeView();
 			}
 			break;
