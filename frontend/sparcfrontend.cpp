@@ -445,9 +445,9 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 			bRet = false;
 			Exp* pDest = ((CaseStatement*)lastStmt)->getDest();
 			if (pDest == NULL) {				// Happens if already analysed (we are now redecoding)
-				SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
+				//SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
 				// processSwitch will update the BB type and number of outedges, decode arms, set out edges, etc
-				newBB->processSwitch(proc, psi);
+				newBB->processSwitch(proc);
 			}
 			break;
 		}

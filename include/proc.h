@@ -789,8 +789,9 @@ virtual void		printCallGraphXML(std::ostream &os, int depth,
 		/// *initial* parameter. Note that final parameters don't use this information; it's only for handling recursion.
 		void		useBeforeDefine(Exp* loc) {col.insert(loc);}
 
-		/// Copy the decoded indirect control transfer instructions' RTLs to the front end's map.
-		void		copyDecodedICTs();
+		/// Copy the decoded indirect control transfer instructions' RTLs to the front end's map, and decode any new
+		/// targets for this CFG
+		void		processDecodedICTs();
  
 private:
 		/// We ensure that there is only one return statement now. See code in frontend/frontend.cpp handling case

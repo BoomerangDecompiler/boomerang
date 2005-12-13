@@ -220,6 +220,8 @@ virtual bool		isBranch() { return kind == STMT_BRANCH; }
 		// NOTE: for now, it only represents decoded indirect jump instructions
 		bool		isHL_ICT() {return kind == STMT_CASE; }
 
+		bool		isCase() {return kind == STMT_CASE; }
+
 		// true if this is a fpush/fpop
 		bool		isFpush();
 		bool		isFpop();

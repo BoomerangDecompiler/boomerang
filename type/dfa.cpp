@@ -1212,6 +1212,18 @@ void StmtDfaLocalMapper::visit(ImpRefStatement* s, bool& recur) {
 	((DfaLocalMapper*)mod)->setType(s->getType());
 	recur = true;
 }
+void StmtDfaLocalMapper::visit(CaseStatement* s, bool& recur) {
+	SWITCH_INFO* si = s->getSwitchInfo();
+	if (si) {
+		Exp* pVar = si->pSwitchVar;
+		if (pVar->isSubscript()) {
+			Statement* def = ((RefExp*)pVar)->getDef();
+			((DfaLocalMapper*)mod)->setType(def->getTypeFor(pVar));
+		}
+	}
+	// Otherwise, the parentType stays NULL, and we deal with that
+	recur = true;
+}
 void StmtDfaLocalMapper::visit(CallStatement* s, bool& recur) {
 	// First the destination. The type of this expression will be a pointer to a function with s' dest's signature
 	Exp* pDest = s->getDest();
@@ -1321,7 +1333,7 @@ Exp* DfaLocalMapper::postVisit(Unary* e) {
 
 Exp* DfaLocalMapper::preVisit(Binary* e, bool& recur) {
 	// Check for sp -/+ K, but only if TA indicates this is a pointer
-	if (parentType->resolvesToPointer() && sig->isAddrOfStackLocal(prog, e)) {
+	if (parentType && parentType->resolvesToPointer() && sig->isAddrOfStackLocal(prog, e)) {
 		mod = true;
 		// We have something like sp-K; wrap it in a TypedExp to get the correct exp for the existing local (if any)
 		Exp* memOf_e = Location::memOf(e);

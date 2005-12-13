@@ -26,7 +26,7 @@
  * 20 Apr 02 - Mike: Mods for boomerang
  * 31 Jan 03 - Mike: Tabs and indenting
  * 03 Feb 03 - Mike: removeStatement no longer linear searches for the BB
- * 13 Jul 05 - Mike: Fixed a segfault in copyDecodedICTs with zero lentgth (!) BBs. Also one in the ad-hoc TA
+ * 13 Jul 05 - Mike: Fixed a segfault in processDecodedICTs with zero lentgth (!) BBs. Also one in the ad-hoc TA
  */
 
 /*==============================================================================
@@ -1178,10 +1178,11 @@ void UserProc::middleDecompile() {
 			LOG << "--- debug print SSA for " << getName() << " pass " << pass << " (no propagations) ---\n";
 			printToLog();
 			LOG << "=== end debug print SSA for " << getName() << " pass " << pass << " (no propagations) ===\n\n";
-			printDFG();
 		}
 		
-		Boomerang::get()->alert_decompile_SSADepth(this, pass);		// FIXME: need depth -> pass in GUI stuff
+		if (Boomerang::get()->dotFile)							// Require -gd now (though doesn't listen to file name)
+			printDFG();
+		Boomerang::get()->alert_decompile_SSADepth(this, pass);	// FIXME: need depth -> pass in GUI code
 
 #if 0		// Moved to after this loop (for now)
 		if (depth == maxDepth) {
@@ -1319,18 +1320,21 @@ void UserProc::middleDecompile() {
 	if (cfg->decodeIndirectJmp(this)) {
 		// There was at least one indirect jump or call found and decoded. That means that most of what has been done
 		// to this function so far is invalid. So redo everything. Very expensive!!
+		// Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
 		LOG << "=== about to restart decompilation of " << getName() <<
 			" because indirect jumps or calls have been analysed\n\n";
 		// First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
 		// will prevent duplicates
-		copyDecodedICTs();
+		processDecodedICTs();
 		// Now, decode from scratch
 		theReturnStatement = NULL;
 		cfg->clear();
 		std::ofstream os;
 		prog->reDecode(this);
 		df.setRenameAllMemofs(false);		// Start again with memofs
+		--indent;							// This is not recursion!
 		decompile(new CycleList);			// Restart decompiling this proc
+		++indent;							// Undo the indent adjustment
 		return;
 	}
 
@@ -4685,6 +4689,10 @@ void UserProc::fixCallAndPhiRefs() {
 			PhiAssign* ps = (PhiAssign*)s;
 			RefExp* r = new RefExp(ps->getLeft(), ps);
 			for (PhiAssign::iterator p = ps->begin(); p != ps->end(); ) {
+				if (p->e == NULL) {						// Can happen due to PhiAssign::setAt
+					++p;
+					continue;
+				}
 				Exp* current = new RefExp(p->e, p->def);
 				if (*current == *r) {					// Will we ever see this?
 					p = ps->erase(p);					// Erase this phi parameter
@@ -4733,6 +4741,7 @@ void UserProc::fixCallAndPhiRefs() {
 			}
 			// For each parameter p of ps after the first
 			for (++p; p != ps->end(); ++p) {
+				if (p->e == NULL) continue;
 				Exp* current = new RefExp(p->e, p->def);
 				CallBypasser cb2(ps);
 				current = current->accept(&cb2);
@@ -5064,9 +5073,11 @@ void UserProc::typeAnalysis() {
 	printXML();
 }
 
-// Copy the RTLs for the already decoded Indirect Control Transfer instructions
+// Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG
+// Note that we have to delay the new target decoding till now, because otherwise we will attempt to decode nested
+// switch statements without having any SSA renaming, propagation, etc
 RTL* globalRtl = 0;
-void UserProc::copyDecodedICTs() {
+void UserProc::processDecodedICTs() {
 	BB_IT it;
 	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
 	for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
@@ -5077,6 +5088,9 @@ void UserProc::copyDecodedICTs() {
 		if (DEBUG_SWITCH)
 			LOG << "Saving high level switch statement " << rtl << "\n";
 		prog->addDecodedRtl(bb->getHiAddr(), rtl);
+		// Now decode those new targets, adding out edges as well
+//		if (last->isCase())
+//			bb->processSwitch(this);
 	}
 }
 

@@ -43,6 +43,8 @@ else
 ./testOne.sh sparc   switch_gcc 1 $BOOMSW
 ./testOne.sh pentium switch_cc 1 $BOOMSW
 ./testOne.sh sparc   switch_cc 1 $BOOMSW
+./testOne.sh pentium nestedswitch 4 $BOOMSW 2 3 4
+./testOne.sh sparc   nestedswitch 4 $BOOMSW 2 3 4
 fi
 if [ $BOOMSW == "--" ]
 then

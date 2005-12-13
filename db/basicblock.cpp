@@ -1961,7 +1961,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				} else
 					swi->iLower = 0;
 				swi->pSwitchVar = expr;
-				processSwitch(proc, swi);
+				lastStmt->setDest((Exp*)NULL);
+				lastStmt->setSwitchInfo(swi);
 				return swi->iNumTable != 0;
 			}
 		} else {
@@ -1988,7 +1989,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 						swi->iNumTable = n;
 						swi->iLower = 1;					// Not used, except to compute
 						swi->iUpper = n;					// the number of options
-						processSwitch(proc, swi);
+						lastStmt->setDest((Exp*)NULL);
+						lastStmt->setSwitchInfo(swi);
 						return true;
 					}
 				}
@@ -2155,20 +2157,20 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
  * FUNCTION:	processSwitch
  * OVERVIEW:	Called when a switch has been identified. Visits the destinations of the switch, adds out edges to the
  *				BB, etc
+ * NOTE:		Used to be called as soon as a switch statement is discovered, but this causes decoded but unanalysed
+ *				BBs (statements not numbered, locations not SSA renamed etc) to appear in the CFG. This caused problems
+ *				when there were nested switch statements. Now only called when re-decoding a switch statement
  * PARAMETERS:	proc - Pointer to the UserProc object for this code
- *				swi - Pointer to the SWITCH_INFO struct
  * RETURNS:		<nothing>
  *============================================================================*/
-void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
+void BasicBlock::processSwitch(UserProc* proc) {
 
 	RTL* last = m_pRtls->back();
 	CaseStatement* lastStmt = (CaseStatement*)last->getHlStmt();
-	lastStmt->setDest((Exp*)NULL);
-	lastStmt->setSwitchInfo(swi);
 	SWITCH_INFO* si = lastStmt->getSwitchInfo();
 
 	if (Boomerang::get()->debugSwitch) {
-		LOG << "found switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
+		LOG << "processing switch statement type " << si->chForm << " with table at 0x" << si->uTable << ", ";
 		if (si->iNumTable)
 			LOG << si->iNumTable << " entries, ";
 		LOG << "lo= " << si->iLower << ", hi= " << si->iUpper << "\n";
@@ -2197,15 +2199,17 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 	
 	Prog* prog = proc->getProg();
 	Cfg* cfg = proc->getCFG();
-	// Keep a set of already seen targets. Don't want to have more than one out edge to any successor BB, even if some
-	// of the branch table entries repeat. It is not uncommon to have such repeats, e.g.
+	// Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
 	// switch (x) {
 	//   case 3: case 5:
 	//		do something;
 	//		break;
 	//	 case 4: case 10:
 	//		do something else
-	std::set<ADDRESS> targets;
+	// ... }
+	// The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be iLower+i
+	// for the ith zero-based case. It may be that the code for case 5 above will be a goto to the code for case 3,
+	// but a smarter back end could group them
 	for (int i=0; i < iNum; i++) {
 		// Get the destination address from the switch table.
 		if (si->chForm == 'H') {
@@ -2222,21 +2226,15 @@ void BasicBlock::processSwitch(UserProc* proc, SWITCH_INFO* swi) {
 			// branch, so take iOffset. For others, iOffset is 0, so no harm
 			uSwitch += si->uTable - si->iOffset;
 		if (uSwitch < prog->getLimitTextHigh()) {
-			if (targets.find(uSwitch) != targets.end())
-				continue;			// A repeated target; ignore this out edge
-			targets.insert(uSwitch);
 			//tq.visit(cfg, uSwitch, this);
 			cfg->addOutEdge(this, uSwitch, true);
-			// Decode the newly discovered switch code arms
+			// Decode the newly discovered switch code arms, if necessary
 			prog->decodeFragment(proc, uSwitch);
 		} else {
 			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
 			iNumOut--;
 		}
 	}
-
-	// this can change now as a result of bad table entries
-	updateType(NWAY, iNumOut);
 }
 
 // Change the BB enclosing stmt from type COMPCALL to CALL
