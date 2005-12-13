@@ -461,6 +461,7 @@ virtual void		visit(  CallStatement *s, bool& recur);
 virtual void		visit(BranchStatement *s, bool& recur);
 virtual void		visit(ReturnStatement *s, bool& recur);
 virtual void		visit(ImpRefStatement *s, bool& recur);
+virtual void		visit(  CaseStatement *s, bool& recur);
 };
 
 // Convert any exp{-} (with null definition) so that the definition points instead to an implicit assignment (exp{0})

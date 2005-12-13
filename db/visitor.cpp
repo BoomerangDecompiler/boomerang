@@ -339,8 +339,12 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	for (uu = s->begin(); uu != s->end(); uu++) {
 		// Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
 		// Use the actual expression in the PhiAssign
-		RefExp* temp = new RefExp(uu->e, uu->def);
-		temp->accept(ev);
+		// Also note that it's possible for uu->e to be NULL. Suppose variable a can be assigned to along in-edges
+		// 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
+		if (uu->e) {
+			RefExp* temp = new RefExp(uu->e, uu->def);
+			temp->accept(ev);
+		}
 	}
 
 	override = true;				// Don't do the usual accept logic
