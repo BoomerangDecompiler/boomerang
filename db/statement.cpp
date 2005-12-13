@@ -1128,7 +1128,7 @@ void CaseStatement::setSwitchInfo(SWITCH_INFO* psi) {
  *============================================================================*/
 bool CaseStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	bool ch = GotoStatement::searchAndReplace(search, replace, cc);
-	bool ch2;
+	bool ch2 = false;
 	if (pSwitchInfo && pSwitchInfo->pSwitchVar)
 		pSwitchInfo->pSwitchVar = pSwitchInfo->pSwitchVar->searchReplaceAll(search, replace, ch2);
 	return ch | ch2;
