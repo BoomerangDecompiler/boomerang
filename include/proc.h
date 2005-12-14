@@ -305,10 +305,8 @@ enum ProcStatus {
 	PROC_SORTED,		///< Decoded, and CFG has been sorted by address
 	PROC_VISITED,		///< Has been visited on the way down in decompile()
 	PROC_INCYCLE,		///< Is involved in cycles, has not completed initial decompilation as yet
-	PROC_PREPRES,		///< Has had enough propagation etc to perform preservation analysis
 	PROC_PRESERVEDS,	///< Has had preservation analysis done
-	PROC_INITDONE,		///< Has completed everything except the global analyses
-	PROC_MID,			///< Has had middle decompiling only (some callees were involved in recursion)
+	PROC_EARLYDONE,		///< Has completed everything except the global analyses
 	PROC_FINAL			///< Has had final decompilation
 	// , PROC_RETURNS	///< Has had returns intersected with all caller's defines
 };
@@ -413,12 +411,6 @@ private:
 		 */
 		int			stmtNumber;
 
-		/**
-		 * Pointer to a set of procedures involved in a recursion group.
-		 * NOTE: Each procedure in the cycle points to the same set!
-		 */
-		CycleSet*	cycleGroup;
-
 public:
 
 					UserProc(Prog *prog, std::string& name, ADDRESS address);
@@ -508,8 +500,8 @@ virtual				~UserProc();
 		void		initialiseDecompile();
 		/// Prepare for preservation analysis only.
 		void		prePresDecompile();
-		/// Middle decompile: propagate, bypass, preserveds.
-		void		middleDecompile();
+		/// Early decompile: propagate, bypass, preserveds.
+		void		earlyDecompile(CycleList* path);
 		/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 		/// Also finalise the whole group.
 		void		recursionGroupAnalysis(CycleSet* cycleSet);

@@ -363,7 +363,7 @@ bool LibProc::isPreserved(Exp* e) {
 UserProc::UserProc() : Proc(), cfg(NULL), status(PROC_UNDECODED),
 		// decoded(false), analysed(false),
 		nextLocal(0),	// decompileSeen(false), decompiled(false), isRecursive(false)
-		cycleGroup(NULL), theReturnStatement(NULL) {
+		theReturnStatement(NULL) {
 }
 UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		// Not quite ready for the below fix:
@@ -371,7 +371,7 @@ UserProc::UserProc(Prog *prog, std::string& name, ADDRESS uNative) :
 		Proc(prog, uNative, new Signature(name.c_str())),
 		cfg(new Cfg()), status(PROC_UNDECODED),
 		nextLocal(0), // decompileSeen(false), decompiled(false), isRecursive(false),
-		cycleGroup(NULL), theReturnStatement(NULL), DFGcount(0)
+		theReturnStatement(NULL), DFGcount(0)
 {
 	cfg->setProc(this);				 // Initialise cfg.myProc
 }
@@ -824,41 +824,39 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 
 /* Cycle detection logic:
  * *********************
- * At the top of partialDecompile, an empty set of known cycles is created. This set represents the procedures involved
- * in the current recursion group (and have to be analysed together). The union of these sets for all child procedures
- * becomes the return set for the current procedure. However, if (after all children have been processed: important!)
- * this set contains the current procedure, we have the maximal set of vertex-disjoint cycles, we can do the recursion
- * group analysis and return an empty set. At the end of the recursion group analysis, the whole group is complete,
- * ready for the global analyses. 
+ * At the top of decompile, an empty set grp of procedures is created. This set represents the procedures involved
+ * in the current recursion group (and have to be analysed together as a group, after individual pre-group analysis).
+ * If (after all children have been processed: important!) the first element in path and also grp is the current
+ * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
+ * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses. 
  cycleSet* decompile(CycleList path)	// path initially empty
-	ret = new CycleSet
-	append this to path
+	grp = new CycleSet
+	append this proc to path
 	for each child c called by this proc
 		if c has already been visited but not finished
 			// have new cycle
 			if c is in path
-			  insert every proc from c to the end of path into ret
+			  // this is a completely new cycle
+			  insert every proc from c to the end of path into grp
 			else
-			  find first element f of path that is in c->cycleGroup
-			  insert every proc from f to the end of path into ret
-			union ret into cycleGroup 
+			  // this is new branch of an existing cycle
+			  find first element f of path that is in grp
+			  insert every proc from f to the end of path into grp
 		else
-			ret1 = c->decompile(path)
-			ret = union(ret, ret1)
+			tmp = c->decompile(path)
+			grp = union(grp, tmp)
 			set return statement in call to that of c
-	if (ret empty)
-		prePresDecompile()
-		middleDecompile()
-		removeUnusedStatments()		// Not involved in recursion
+	if (grp empty)
+		earlyDecompile()			// Not involved in recursion
+		removeUnusedStatments()
 	else
-		prePresDecompile()
-		middleDecompile()			// involved in recursion
-		find first element f in path that is also in ret
+		earlyDecompile()			// Is involved in recursion
+		find first element f in path that is also in grp
 		if (f == this)
-			recursionGroupAnalysis(ret)
-			empty ret
+			recursionGroupAnalysis(grp)
+			empty grp
 	remove last element (= this) from path
-	return ret
+	return grp
  */
  
 
@@ -866,8 +864,10 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 static int indent = 0;
 CycleSet* UserProc::decompile(CycleList* path) {
 	std::cout << std::setw(++indent) << " " << "considering " << getName() << "\n";
+if (strcmp("Perl_saferealloc", getName()) == 0)
+ std::cerr << "   status = " << (int)status << "\n";
 	if (VERBOSE)
-		LOG << "decompiling " << getName() << "\n";
+		LOG << "begin decompile(" << getName() << ")\n";
 	// Prevent infinite loops when there are cycles in the call graph
 	if (status >= PROC_FINAL) {
 		std::cerr << "Error: " << getName() << " already has status PROC_FINAL\n";
@@ -877,8 +877,9 @@ CycleSet* UserProc::decompile(CycleList* path) {
 		// Can happen e.g. if a callee is visible only after analysing a switch statement
 		prog->reDecode(this);					// Actually decoding for the first time, not REdecoding
 
-	status = PROC_VISITED; 						// We have visited this proc "on the way down"
-	CycleSet* ret = new CycleSet;
+	if (status < PROC_VISITED)
+		status = PROC_VISITED; 					// We have at least visited this proc "on the way down"
+	CycleSet* grp = new CycleSet;
 	path->push_back(this);
 
 	/*	*	*	*	*	*	*	*	*	*	*	*
@@ -903,7 +904,7 @@ CycleSet* UserProc::decompile(CycleList* path) {
 					continue;
 				}
 				// if c has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
-				if (c->status >= PROC_VISITED && c->status < PROC_INITDONE) {
+				if (c->status >= PROC_VISITED && c->status < PROC_EARLYDONE) {
 					// if c is in path
 					CycleList::iterator pi;
 					bool inPath = false;
@@ -914,76 +915,71 @@ CycleSet* UserProc::decompile(CycleList* path) {
 						}
 					}
 					if (inPath) {
-						// Insert every proc from c to the end of path into ret
+			  			// This is a completely new cycle
+						// Insert every proc from c to the end of path into grp
 						do {
-							ret->insert(*pi);
+							grp->insert(*pi);
 							++pi;
 						} while (pi != path->end());
 					} else {
-						// find first element f of path that is in c->cycleGroup
+			  			// This is new branch of an existing cycle
+						// Find first element f of path that is in grp
 						CycleList::iterator pi;
 						Proc* f = NULL;
-						assert(c->cycleGroup);
 						for (pi = path->begin(); pi != path->end(); ++pi) {
-							if (c->cycleGroup->find(*pi) != c->cycleGroup->end()) {
+							if (grp->find(*pi) != grp->end()) {
 								f = *pi;
 								break;
 							}
 						}
 						assert(f);
-						// Insert every proc from f to the end of path into ret
+						// Insert every proc from f to the end of path into grp
 						do {
-							ret->insert(*pi);
+							grp->insert(*pi);
 							++pi;
 						} while (pi != path->end());
 					}
 					status = PROC_INCYCLE;	
-					// union ret into cycleGroup
-					if (cycleGroup == NULL)
-						cycleGroup = new CycleSet;
-					CycleSet::iterator cg;
-					for (cg = ret->begin(); cg != ret->end(); ++cg)
-						cycleGroup->insert(*cg);
 				} else {
 					// Not a new cycle
 					if (VERBOSE)
-						LOG << "Visiting on the way down child " << c->getName() << " from " << getName() << "\n";
-					CycleSet* ret1 = c->decompile(path);
-					// Union ret1 into ret
-					ret->insert(ret1->begin(), ret1->end());
+						LOG << "visiting on the way down child " << c->getName() << " from " << getName() << "\n";
+					CycleSet* tmp = c->decompile(path);
+					// Union tmp into grp
+					grp->insert(tmp->begin(), tmp->end());
 					// Child has at least done middleDecompile(), possibly more
 					call->setCalleeReturn(c->getTheReturnStatement());
-					if (ret->size() > 0)
+					if (grp->size() > 0) {
 						status = PROC_INCYCLE;
+					}
 				}
 			}
 		}
 	}
 
 	std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
-	// if (ret->size() == 0)
+	// if (grp->size() == 0)
 		// can now schedule this proc for complete decompilation
 	initialiseDecompile();				// Sort the CFG, number statements, etc
-	prePresDecompile();					// First part of what was middleDecompile()
-	middleDecompile();					// Every proc gets at least this done
+	earlyDecompile(path);				// Every proc gets at least this done
 
-	// if ret is empty, i.e. no child involved in recursion
-	if (ret->size() == 0) {
+	// if grp is empty, i.e. no child involved in recursion
+	if (grp->size() == 0) {
 		remUnusedStmtEtc();	// Do the whole works
 		status = PROC_FINAL;
 		Boomerang::get()->alert_end_decompile(this);
 	} else {
 		// this proc's children, and hence this proc, is/are involved in recursion
-		// Note if only the children are involved in recursion, ret is cleared (see below)
-		// find first element f in path that is also in ret
+		// Note if only the children are involved in recursion, grp is cleared (see below)
+		// find first element f in path that is also in grp
 		CycleList::iterator f;
 		for (f = path->begin(); f != path->end(); ++f)
-			if (ret->find(*f) != ret->end())
+			if (grp->find(*f) != grp->end())
 				break;
 		if (*f == this) {
 			// When threads are implemented, we can queue this group of procs for group analysis
-			recursionGroupAnalysis(ret);// Includes remUnusedStmtEtc on all procs in ret
-			ret->clear();
+			recursionGroupAnalysis(grp);// Includes remUnusedStmtEtc on all procs in grp
+			grp->clear();
 		}
 	}
 
@@ -991,7 +987,9 @@ CycleSet* UserProc::decompile(CycleList* path) {
 	path->erase(--path->end());
 
 	--indent;
-	return ret;
+	if (VERBOSE)
+		LOG << "end decompile(" << getName() << ")\n";
+	return grp;
 }
 
 /*	*	*	*	*	*	*	*	*	*	*	*
@@ -1013,9 +1011,9 @@ void UserProc::initialiseDecompile() {
 	initStatements();
 
 	if (VERBOSE) {
-		LOG << "=== Debug Print Before SSA for " << getName() << " ===\n";
+		LOG << "=== debug print before SSA for " << getName() << " ===\n";
 		printToLog();
-		LOG << "=== End Debug Print Before SSA for " << getName() << " ===\n\n";
+		LOG << "=== end debug print before SSA for " << getName() << " ===\n\n";
 	}
 
 	// Compute dominance frontier
@@ -1039,11 +1037,9 @@ void UserProc::initialiseDecompile() {
 	}
 }
 
-void UserProc::prePresDecompile() {
+void UserProc::earlyDecompile(CycleList* path) {
 
-	if (VERBOSE) LOG << "initial decompile for " << getName() << "\n";
-
-	status = PROC_PREPRES;					// Status is now pre-preservation
+	if (VERBOSE) LOG << "early decompile for " << getName() << "\n";
 
 	// Update the defines in the calls. Will redo if involved in recursion
 	updateCallDefines();
@@ -1094,14 +1090,9 @@ void UserProc::prePresDecompile() {
 		printToLog();
 		LOG << "\n=== done after call and phi bypass (1) of " << getName() << " ===\n\n";
 	}
-	status = PROC_PREPRES;			// Now we are ready for preservation
-}
 
-// ^
-// | These two functions could probably be combined now
-// v
+	// This part used to be calle middleDecompile():
 
-void UserProc::middleDecompile() {
 	findSpPreservation();
 	// Oops - the idea of splitting the sp from the rest of the preservations was to allow correct naming of locals
 	// so you are alias conservative. But of course some locals are ebp (etc) based, and so these will never be correct
@@ -1298,7 +1289,6 @@ void UserProc::middleDecompile() {
 	if (VERBOSE)
 		LOG << "renaming block variables (3) pass " << pass << "\n";
 	doRenameBlockVars(pass, false);
-	bool convert;
 	propagateStatements(convert, pass);
 
 	// Note: processConstants is also where ellipsis processing is done (check this!)
@@ -1332,8 +1322,9 @@ void UserProc::middleDecompile() {
 		std::ofstream os;
 		prog->reDecode(this);
 		df.setRenameAllMemofs(false);		// Start again with memofs
+		status = PROC_VISITED;				// Back to only visited progress
 		--indent;							// This is not recursion!
-		decompile(new CycleList);			// Restart decompiling this proc
+		decompile(path);					// Restart decompiling this proc
 		++indent;							// Undo the indent adjustment
 		return;
 	}
@@ -1355,8 +1346,8 @@ void UserProc::middleDecompile() {
 	eliminateDuplicateArgs();
 
 	if (VERBOSE)
-		LOG << "===== end initial decompile for " << getName() << " =====\n\n";
-	status = PROC_INITDONE;
+		LOG << "===== end middle decompile for " << getName() << " =====\n\n";
+	status = PROC_EARLYDONE;
 }
 
 /*	*	*	*	*	*	*	*	*	*	*	*	*	*
@@ -3804,7 +3795,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 					// Note: formerly it could also have been the original register we are looking for ("proven" by
 					// induction, but this is no longer done. Instead, we use the CycleList parameter below.)
 					UserProc* destProc = (UserProc*)call->getDestProc();
-					if (destProc && !destProc->isLib() && destProc->status <= PROC_PREPRES) {
+					if (destProc && !destProc->isLib() && destProc->status < PROC_PRESERVEDS) {
 						// The destination procedure does not have preservation proved as yet, because it is involved
 						// in a cycle. Use the inductive preservation logic to determine whether query is true for
 						// this procedure (involves extensive recursion)
@@ -5196,3 +5187,17 @@ void UserProc::mapTempsToLocals() {
 	}
 }
 
+// For debugging:
+void dumpCycleList(CycleList* pc) {
+	CycleList::iterator pi;
+	for (pi = pc->begin(); pi != pc->end(); ++pi)
+		std::cerr << (*pi)->getName() << ", ";
+	std::cerr << "\n";
+}
+
+void dumpCycleSet(CycleSet* pc) {
+	CycleSet::iterator pi;
+	for (pi = pc->begin(); pi != pc->end(); ++pi)
+		std::cerr << (*pi)->getName() << ", ";
+	std::cerr << "\n";
+}
