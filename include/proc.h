@@ -407,9 +407,17 @@ private:
 		DataFlow	df;
 
 		/**
-		 * Current statement number. Makes it easier to split initialiseDecompile from following procs.
+		 * Current statement number. Makes it easier to split decompile() into smaller pieces.
 		 */
 		int			stmtNumber;
+
+		/**
+		 * Pointer to a set of procedures involved in a recursion group.
+		 * NOTE: Each procedure in the cycle points to the same set! However, there can be several separate cycles.
+		 * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
+		 * has c, d, and e at the point where the f-g cycle is found).
+		 */
+		CycleSet*	cycleGrp;
 
 public:
 
@@ -494,14 +502,16 @@ virtual				~UserProc();
 		/// simplify the statements in this proc
 		void		simplify() { cfg->simplify(); }
 
-		/// Begin the decompile process at this procedure.
-		CycleSet*	decompile(CycleList* path);
+		/// Begin the decompile process at this procedure. path is a list of pointers to procedures, representing the
+		/// path from the current entry point to the current procedure in the call graph. Pass an empty set at the top
+		/// level.  indent is the indentation level; pass 0 at the top level
+		CycleSet*	decompile(CycleList* path, int& indent);
 		/// Initialise decompile: sort CFG, number statements, dominator tree, etc.
 		void		initialiseDecompile();
 		/// Prepare for preservation analysis only.
 		void		prePresDecompile();
-		/// Early decompile: propagate, bypass, preserveds.
-		void		earlyDecompile(CycleList* path);
+		/// Early decompile: propagate, bypass, preserveds. Returns the cycle set from the recursive call to decompile()
+		CycleSet*	earlyDecompile(CycleList* path, int indent);
 		/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 		/// Also finalise the whole group.
 		void		recursionGroupAnalysis(CycleSet* cycleSet);
