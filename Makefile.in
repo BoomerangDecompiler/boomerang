@@ -313,7 +313,7 @@ frontend/st20decoder.o: include/decoder.h include/rtl.h include/prog.h include/e
 
 c/CTest.o:  c/ansi-c-parser.h
 boomerang.o: include/boomerang.h include/prog.h include/BinaryFile.h include/frontend.h include/transformer.h \
-	include/xmlprogparser.h
+	include/xmlprogparser.h include/proc.h
 
 codegen/chllcode.o: include/hllcode.h codegen/chllcode.h include/statement.h include/exp.h include/proc.h \
 	include/prog.h include/signature.h include/type.h
