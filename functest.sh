@@ -75,10 +75,12 @@ fi
 ./testOne.sh pentium sumarray-O4 1 $BOOMSW
 if [ $BOOMSW == "--" ]
 then
-  echo Skipping sparc sumarray test, requires type analysis
+  echo Skipping sparc sumarray and recursion tests, require type analysis
   echo
 else
 ./testOne.sh sparc   sumarray-O4 1 $BOOMSW
+./testOne.sh pentium recursion 2 $BOOMSW 2
+#./testOne.sh sparc   recursion 2 $BOOMSW 2
 fi
 ./testOne.sh pentium bswap 1 $BOOMSW
 ./testOne.sh pentium testset 1 -O 2 3 4
