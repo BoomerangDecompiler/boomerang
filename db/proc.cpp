@@ -937,12 +937,8 @@ CycleSet* UserProc::decompile(CycleList* path, int& indent) {
 						// Find first element f of path that is in c->cycleGrp
 						CycleList::iterator pi;
 						Proc* f = NULL;
-		assert(cycleGrp == NULL);
-						cycleGrp = c->cycleGrp;
-		assert(child->size() == 0);
-						child = c->cycleGrp;
 						for (pi = path->begin(); pi != path->end(); ++pi) {
-							if (cycleGrp->find(*pi) != cycleGrp->end()) {
+							if (c->cycleGrp->find(*pi) != c->cycleGrp->end()) {
 								f = *pi;
 								break;
 							}
@@ -3574,6 +3570,7 @@ void UserProc::fromSSAform() {
 		if (pa->getNumDefs() > 1) {
 			PhiAssign::iterator uu;
 			for (uu = ++pa->begin(); uu != pa->end(); uu++) {
+				if (uu->e == NULL) continue;
 				if (!(*uu->e == *first)) {
 					phiParamsSame = false;
 					break;
@@ -4781,6 +4778,7 @@ void UserProc::fixCallAndPhiRefs() {
 				p = ps->begin();
 				RefExp* best = new RefExp(p->e, p->def);
 				for (++p; p != ps->end(); ++p) {
+					if (p->e == NULL) continue;
 					RefExp* current = new RefExp(p->e, p->def);
 					if (current->isImplicitDef()) {
 						best = current;
