@@ -2987,9 +2987,8 @@ void PhiAssign::printCompact(std::ostream& os) {
 	int i, n = defVec.size();
 	if (n != 0) {
 		for (i = 0; i < n; i++) {
-			// HACK, if e is NULL assume it is ment to match lhs
-			if (defVec[i].e == NULL)
-				defVec[i].e = lhs;
+			// If e is NULL assume it is meant to match lhs
+			if (defVec[i].e == NULL) continue;
 			if (! (*defVec[i].e == *lhs)) {
 				// One of the phi parameters has a different base expression to lhs. Use non simple print.
 				simple = false;
@@ -3012,7 +3011,11 @@ void PhiAssign::printCompact(std::ostream& os) {
 	} else {
 		os << "(";
 		for (it = defVec.begin(); it != defVec.end(); /* no increment */) {
-			os << it->e << "{";
+			Exp* e = it->e;
+			if (e == NULL)
+				os << "NULL{";
+			else
+				os << e << "{";
 			if (it->def)
 				os << std::dec << it->def->getNumber();
 			else
@@ -3093,6 +3096,7 @@ bool PhiAssign::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	lhs = lhs->searchReplaceAll(search, replace, change);
 	std::vector<PhiInfo>::iterator it;
 	for (it = defVec.begin(); it != defVec.end(); it++) {
+		if (it->e == NULL) continue;
 		bool ch;
 		// Assume that the definitions will also be replaced
 		it->e = it->e->searchReplaceAll(search, replace, ch);
@@ -3132,6 +3136,7 @@ void PhiAssign::fromSSAform(igraph& ig) {
 	iterator it;
 	igraph::iterator gg;
 	for (it = defVec.begin(); it != defVec.end(); it++) {
+		if (it->e == NULL) continue;
 		RefExp* r = new RefExp(it->e, it->def);
 		gg = ig.find(r);
 		if (gg != ig.end()) {
