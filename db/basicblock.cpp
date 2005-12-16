@@ -1871,7 +1871,7 @@ int BasicBlock::findNumCases() {
 		if (op == opLessEq || op == opLessEqUns)
 			return k+1;
 	}
-	std::cerr << "Could not find number of cases for n-way at address " << std::hex << getLowAddr() << "\n";
+	LOG << "Could not find number of cases for n-way at address " << getLowAddr() << "\n";
 	return 3;		 // Bald faced guess if all else fails
 }
 
