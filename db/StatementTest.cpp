@@ -133,7 +133,8 @@ void StatementTest::testEmpty () {
 	cfg->setEntryBB(bb);
 	proc->setDecoded();		// We manually "decoded"
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -186,7 +187,8 @@ void StatementTest::testFlow () {
 	cfg->setEntryBB(first);		// Also sets exitBB; important!
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -252,7 +254,8 @@ void StatementTest::testKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -314,7 +317,8 @@ void StatementTest::testUse () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -380,7 +384,8 @@ void StatementTest::testUseOverKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -449,7 +454,8 @@ void StatementTest::testUseOverBB () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -515,7 +521,8 @@ void StatementTest::testUseKill () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -579,7 +586,8 @@ void StatementTest::testEndlessLoop () {
 	cfg->setEntryBB(first);
 	proc->setDecoded();
 	// compute dataflow
-	proc->decompile(new CycleList);
+	int indent = 0;
+	proc->decompile(new CycleList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
