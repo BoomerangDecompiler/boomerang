@@ -1016,7 +1016,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (u == NULL)
 					break;
 				Boomerang::get()->noDecompile = true;
-				u->decompile(new CycleList);
+				int indent = 0;
+				u->decompile(new CycleList, indent);
 				Boomerang::get()->noDecompile = false;
 				updateCodeView();
 			}
@@ -1502,9 +1503,9 @@ void MyWatcher::alert_end_decode()
 	SendMessage(decodeDlg, WM_COMMAND, IDOK, 0);
 	if (someUnknown) {
 		MessageBox(NULL, "Some library procedures were found that do not have known signatures. "
-							"The decompiler has been suspended.	 To ensure the best possible decompilation, please take "
-							"this opportunity to update the signature files.  Select the Tools -> Decompiler -> Resume menu "
-							"option when you are ready to continue decompiling.", "Decompile suspended", MB_OK);
+			"The decompiler has been suspended.	 To ensure the best possible decompilation, please take "
+			"this opportunity to update the signature files.  Select the Tools -> Decompiler -> Resume menu "
+			"option when you are ready to continue decompiling.", "Decompile suspended", MB_OK);
 		suspendDecompiler();
 	}
 	SendMessage(hStatusBar, SB_SETTEXT, 0, (LPARAM)"Analysing...");

@@ -317,7 +317,8 @@ int Boomerang::parseCmd(int argc, const char **argv)
 				std::cerr << "cannot decompile a lib proc\n";
 				return 1;
 			}
-			((UserProc*)proc)->decompile(new CycleList);
+			int indent = 0;
+			((UserProc*)proc)->decompile(new CycleList, indent);
 		} else {
 			prog->decompile();
 		}
@@ -627,8 +628,7 @@ int Boomerang::cmdLine()
 }
 
 /**
- * The main function for the command line mode. Parses switches and runs
- * decompile(filename).
+ * The main function for the command line mode. Parses switches and runs decompile(filename).
  *
  * \return Zero on success, nonzero on faillure.
  */
@@ -893,8 +893,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 }
 
 /**
- * Sets the directory in which Boomerang creates its output files.
- * The directory will be created if it doesn't exist.
+ * Sets the directory in which Boomerang creates its output files.  The directory will be created if it doesn't exist.
  *
  * \param path		the path to the directory
  *
