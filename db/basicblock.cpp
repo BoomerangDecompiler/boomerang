@@ -973,7 +973,9 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 	// Has this node already been generated?
 	if (traversed == DFS_CODEGEN) {
 		// this should only occur for a loop over a single block
-		assert(sType == Loop && lType == PostTested && latchNode == this);
+		// FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
+		// lType == PreTested, and latchNod == 0
+		//assert(sType == Loop && lType == PostTested && latchNode == this);
 		return;
 	} else
 		traversed = DFS_CODEGEN;
