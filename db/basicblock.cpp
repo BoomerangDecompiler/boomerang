@@ -1879,6 +1879,7 @@ int BasicBlock::findNumCases() {
 
 // Find all the possible constant values that the location defined by s could be assigned with
 void findConstantValues(Statement* s, std::list<int>& dests) {
+	if (s == NULL) return;
 	if (s->isPhi()) {
 		// For each definition, recurse
 		PhiAssign::Definitions::iterator it;
