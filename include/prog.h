@@ -87,7 +87,7 @@ public:
 		int			getNumProcs();					// # of procedures stored in prog
 		int			getNumUserProcs();				// # of user procedures stored in prog
 		Proc*		getProc(int i) const;			// returns pointer to indexed proc
-		// Find the Proc with given address
+		// Find the Proc with given address, NULL if none, -1 if deleted
 		Proc*		findProc(ADDRESS uAddr) const;
 		// Find the Proc with the given name
 		Proc*		findProc(const char *name) const;
