@@ -125,6 +125,8 @@ void DataFlow::dominators(Cfg* cfg) {
 	computeDF(0);							// Finally, compute the dominance frontiers
 }
 
+// Basically algorithm 9.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
+// (overall O(N log N))
 int DataFlow::ancestorWithLowestSemi(int v) {
 	int a = ancestor[v];
 	if (ancestor[a] != -1) {
