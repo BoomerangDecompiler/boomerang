@@ -501,17 +501,26 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				s->simplify();
 				GotoStatement* stmt_jump = static_cast<GotoStatement*>(s);
 
-				// Check for a call to an already existing procedure (including self recursive jumps)
+				// Check for a call to an already existing procedure (including self recursive jumps), or to the PLT
+				// (note that a LibProc entry for the PLT function may not yet exist)
 				ADDRESS dest;
 				Proc* proc;
-				if (s->getKind() == STMT_GOTO && 
-						(dest = stmt_jump->getFixedDest(), dest != NO_ADDRESS) &&
-						(proc = prog->findProc(dest), proc != NULL && proc != (Proc*)-1)) {
-					s = *ss = new CallStatement();
-					CallStatement *call = static_cast<CallStatement*>(s);
-					call->setDest(dest);
-					call->setDestProc(proc);
-					call->setReturnAfterCall(true);
+				if (s->getKind() == STMT_GOTO) {
+					dest = stmt_jump->getFixedDest();
+					if (dest != NO_ADDRESS) {
+						proc = prog->findProc(dest);
+						if (proc == NULL) {
+							if (pBF->IsDynamicLinkedProc(dest))
+								proc = prog->setNewProc(dest);
+						}
+						if (proc != NULL && proc != (Proc*)-1) {
+							s = *ss = new CallStatement();
+							CallStatement *call = static_cast<CallStatement*>(s);
+							call->setDest(dest);
+							call->setDestProc(proc);
+							call->setReturnAfterCall(true);
+						}
+					}
 				}
 
 				switch (s->getKind())
