@@ -839,7 +839,8 @@ void BasicBlock::simplify() {
 			std::vector<PBB> rinedges = redundant->m_InEdges;
 			redundant->m_InEdges.clear();
 			for (unsigned i = 0; i < rinedges.size(); i++) {
-				LOG << rinedges[i]->getLowAddr() << " ";
+				if (VERBOSE)
+					LOG << rinedges[i]->getLowAddr() << " ";
 				if (rinedges[i] != this)
 					redundant->m_InEdges.push_back(rinedges[i]);
 				else {
