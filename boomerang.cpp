@@ -146,7 +146,7 @@ void Boomerang::help() {
 	std::cout << "  -x               : Dump XML files\n";
 	std::cout << "  -r               : Print RTL for each proc to log before code generation\n";
 	std::cout << "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n";
-	std::cout << "  -gc              : Generate a call graph (callgraph.out)\n";
+	std::cout << "  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n";
 	std::cout << "  -gs              : Generate a symbol file (symbols.h)\n";
 	std::cout << "  -iw              : Write indirect call report to output/indirect.txt\n";
 	std::cout << "Misc.\n";

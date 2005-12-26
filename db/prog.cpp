@@ -1253,14 +1253,18 @@ void Prog::globalTypeAnalysis() {
 
 
 void Prog::printCallGraph() {
-	std::string fname = Boomerang::get()->getOutputPath() + "callgraph.out";
-	int fd = lockFileWrite(fname.c_str());
-	std::ofstream f(fname.c_str());
+	std::string fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
+	std::string fname2 = Boomerang::get()->getOutputPath() + "callgraph.dot";
+	int fd1 = lockFileWrite(fname1.c_str());
+	int fd2 = lockFileWrite(fname2.c_str());
+	std::ofstream f1(fname1.c_str());
+	std::ofstream f2(fname2.c_str());
 	std::set<Proc*> seen;
 	std::map<Proc*, int> spaces;
 	std::map<Proc*, Proc*> parent;
 	std::list<Proc*> procList;
 	std::list<UserProc*>::iterator pp;
+	f2 << "digraph callgraph {\n";
 	for (pp = entryProcs.begin(); pp != entryProcs.end(); ++pp)
 		procList.push_back(*pp);
 	spaces[procList.front()] = 0;
@@ -1273,11 +1277,11 @@ void Prog::printCallGraph() {
 			seen.insert(p);
 			int n = spaces[p];
 			for (int i = 0; i < n; i++)
-				f << "	 ";
-			f << p->getName() << " @ " << std::hex << p->getNativeAddress();
+				f1 << "	 ";
+			f1 << p->getName() << " @ " << std::hex << p->getNativeAddress();
 			if (parent.find(p) != parent.end())
-				f << " [parent=" << parent[p]->getName() << "]"; 
-			f << std::endl;
+				f1 << " [parent=" << parent[p]->getName() << "]"; 
+			f1 << std::endl;
 			if (!p->isLib()) {
 				n++;
 				UserProc *u = (UserProc*)p;
@@ -1286,12 +1290,16 @@ void Prog::printCallGraph() {
 					procList.push_front(*it1);
 					spaces[*it1] = n;
 					parent[*it1] = p;
+					f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
 				}
 			}
 		}
 	}
-	f.close();
-	unlockFile(fd);
+	f2 << "}\n";
+	f1.close();
+	f2.close();
+	unlockFile(fd1);
+	unlockFile(fd2);
 }
 
 void printProcsRecursive(Proc* proc, int indent, std::ofstream &f,std::set<Proc*> &seen)
