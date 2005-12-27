@@ -11,6 +11,8 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
 */
 
+#define VERSION "alpha 0.2 27/Dec/2005"
+
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -638,6 +640,7 @@ int Boomerang::cmdLine()
  */
 int Boomerang::commandLine(int argc, const char **argv) 
 {
+	printf("Boomerang %s\n", VERSION);		// Display a version and date (mainly for release versions)
 	if (argc < 2) usage();
 	progPath = argv[0];
 	size_t j = progPath.rfind('/');			// Chop off after the last slash
