@@ -2102,7 +2102,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 
       		GotoStatement* jump = 0;
 
-      		RTL* rtl;
+      		RTL* rtl = NULL;
 
       		if (strcmp(name,"BA,a") == 0 || strcmp(name,"BN,a") == 0) {
 
