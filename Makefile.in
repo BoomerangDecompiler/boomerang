@@ -1,5 +1,5 @@
 ######################################################
-# File: Makefile
+# File: Makefile.in
 # Desc: Makefile for boomerang
 #       Makes and tests all object files all directories
 #
@@ -28,11 +28,11 @@ MACH_FE_SRC=$(patsubst %, frontend/%frontend.cpp, $(MACHS))
 MACH_FE_OBJ=$(patsubst %, frontend/%frontend.o, $(MACHS))
 
 
-C = gcc -g -Wall -O0
+CC = gcc -g -Wall -O0
 CXX = g++ -g -Wall -O0
-# For release makes:
+# For non-debug release makes:
 #C = gcc -Wall -O4
-#CXX = g++ -Wall -O4
+#CXX = g++ -Wall -O4 # -Wl,-Bstatic
 
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -176,8 +176,10 @@ frontend/machine/st20/st20.ssl: frontend/machine/st20/st20.ssl.m
 	m4 < frontend/machine/st20/st20.ssl.m > frontend/machine/st20/st20.ssl
 
 
+# Note: I have put $(LOADERLIBS) last after a -Bdynamic, so that the rest of the libraries could in theory be linked
+# statically (easier for releases). But note that there are presently big problems linking statically.
 boomerang$(EXEEXT): driver.o ${STATIC_OBJS} $(LOADERDLLS) $(GENSSL)
-	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(LOADERLIBS) $(RUNPATH) -Llib -lgc -lexpat $(LDL)
+	$(CXX) -o $@ driver.o $(STATIC_OBJS) $(RUNPATH) -Llib -lgc -lexpat $(LDL) -Wl,-Bdynamic $(LOADERLIBS) 
 
 bigtest$(EXEEXT): testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERDLLS)
 	$(CXX) -o $@ testAll.o ${STATIC_OBJS} ${TEST_OBJS} $(LOADERLIBS) \
