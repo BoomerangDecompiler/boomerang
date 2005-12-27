@@ -285,7 +285,7 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		// Instantiate a GotoStatement for the unconditional branches, HLJconds for the rest.
 		// NOTE: NJMC toolkit cannot handle embedded else statements!
 		GotoStatement* jump = 0;
-		RTL* rtl;
+		RTL* rtl = NULL;					// Init to NULL to suppress a warning
 		if (strcmp(name,"BA,a") == 0 || strcmp(name,"BN,a") == 0) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
