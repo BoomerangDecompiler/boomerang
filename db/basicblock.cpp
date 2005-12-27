@@ -1155,7 +1155,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			WriteBB(hll, indLevel);
 
 			// write the conditional header 
-			SWITCH_INFO* psi;
+			SWITCH_INFO* psi = NULL;					// Init to NULL to suppress a warning
 			if (cType == Case) {
 				// The CaseStatement will be in the last RTL this BB
 				RTL* last = m_pRtls->back();
@@ -2127,6 +2127,9 @@ bool BasicBlock::decodeIndirectJmp(UserProc* proc) {
 				// Exp* object = ((Unary*)e)->getSubExp1();
 				break;
 			}
+			default:
+				K1 = K2 = -1;			// Suppress warnings
+				vtExp = (Exp*)-1;
 		}
 		if (DEBUG_SWITCH)
 			LOG << "form " << i << ": from statement " << lastStmt->getNumber() << " get e = " << lastStmt->getDest() <<

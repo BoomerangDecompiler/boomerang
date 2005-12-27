@@ -1070,7 +1070,7 @@ LOG << "ARRAY HACK for " << this << "\n";
 				case opMult: case opDiv:
 					signedness = -1; break;
 				default:
-					break;
+					signedness = 0; break;
 			}
 
 			int parentSize = parentType->getSize();

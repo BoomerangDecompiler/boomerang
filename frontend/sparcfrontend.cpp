@@ -452,6 +452,7 @@ bool SparcFrontEnd::case_DD(ADDRESS& address, int delta, DecodeResult& inst, Dec
 			break;
 		}
 		default:
+			newBB = NULL;
 			break;
 	}
 	if (newBB == NULL) return false;
