@@ -175,9 +175,10 @@ void Boomerang::help() {
 	std::cout << "  -nD              : No decompilation (at all!)\n";
 	std::cout << "  -nl              : No creation of local variables\n";
 //	std::cout << "  -nm              : No decoding of the 'main' procedure\n";
+	std::cout << "  -ng              : No replacement of expressions with Globals\n";
+	std::cout << "  -nG              : No garbage collection\n";
 	std::cout << "  -nn              : No removal of NULL and unused statements\n";
 	std::cout << "  -np              : No replacement of expressions with Parameter names\n";
-	std::cout << "  -ng              : No replacement of expressions with Globals\n";
 	std::cout << "  -nP              : No promotion of signatures (other than main/WinMain/\n";
 	std::cout << "                     DriverMain)\n";
 	std::cout << "  -nr              : No removal of unneeded labels\n";
@@ -185,7 +186,6 @@ void Boomerang::help() {
 	std::cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
 	std::cout << "  -p <num>         : Only do num propagations\n";
 	std::cout << "  -m <num>         : Max memory depth\n";
-	std::cout << "  -nG              : No garbage collection\n";
 	exit(1);
 }
 		
