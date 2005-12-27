@@ -34,6 +34,9 @@
 #include "xmlprogparser.h"
 #include "log.h"
 
+// For the -nG switch to disable the garbage collector
+#include "gc.h"
+
 Boomerang *Boomerang::boomerang = NULL;
 
 /**
@@ -180,6 +183,7 @@ void Boomerang::help() {
 	std::cout << "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n";
 	std::cout << "  -p <num>         : Only do num propagations\n";
 	std::cout << "  -m <num>         : Max memory depth\n";
+	std::cout << "  -nG              : No garbage collection\n";
 	exit(1);
 }
 		
@@ -752,6 +756,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 						break;
 					case 'g':
 						noGlobals = true;
+						break;
+					case 'G':
+						GC_disable();
 						break;
 					default:
 						help();
