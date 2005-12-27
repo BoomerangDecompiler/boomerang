@@ -30,6 +30,9 @@ MACH_FE_OBJ=$(patsubst %, frontend/%frontend.o, $(MACHS))
 
 C = gcc -g -Wall -O0
 CXX = g++ -g -Wall -O0
+# For release makes:
+#C = gcc -Wall -O4
+#CXX = g++ -Wall -O4
 
 # HOST_GNU_LD is "yes" if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
