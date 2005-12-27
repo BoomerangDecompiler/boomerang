@@ -488,7 +488,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			// For each Statement in the RTL
 			std::list<Statement*>& sl = pRtl->getList();
 			std::list<Statement*>::iterator ss;
-			for (ss = sl.begin(); ss != sl.end(); ss++) {
+#if 1
+			for (ss = sl.begin(); ss != sl.end(); ss++) { // }
+#else
+			// The counter is introduced because ss != sl.end() does not work as it should
+			// FIXME: why? Does this really fix the problem?
+			int counter = sl.size();
+			for (ss = sl.begin(); counter > 0; ss++, counter--) {
+#endif
 				Statement* s = *ss;
 				s->setProc(pProc);		// let's do this really early!
 				if (refHints.find(pRtl->getAddress()) != refHints.end()) {
