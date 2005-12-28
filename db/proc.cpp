@@ -3404,6 +3404,16 @@ void UserProc::removeUnusedLocals() {
 	// Finally, remove them from locals, so they don't get declared
 	for (std::set<std::string>::iterator it1 = removes.begin(); it1 != removes.end(); it1++)
 		locals.erase(*it1);
+	// Also remove them from the symbols, since symbols are a superset of locals at present
+	for (SymbolMapType::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ++sm) {
+		Exp* mapsTo = sm->second;
+		if (mapsTo->isTemp()) {
+			char* tmpName = ((Const*)((Location*)mapsTo)->getSubExp1())->getStr();
+			if (removes.find(tmpName) != removes.end()) {
+				symbolMap.erase(sm);
+			}
+		}
+	}
 }
 
 void UserProc::remUnusedStmtEtc(RefCounter& refCounts /*, int depth*/) {
