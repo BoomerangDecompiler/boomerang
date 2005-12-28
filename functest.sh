@@ -7,7 +7,7 @@
 # 24 Dec 05 - Gerard: Support for more than one switch added
 #
 TESTONE=./testOne.sh
-#TESTONE=sh testOne.sh	# For MinGW (configure me one day)
+#TESTONE="sh testOne.sh"	# For MinGW (configure me one day)
 BOOMSW=$*
 TYPEANALYSIS=""
 # look for -Td to see if type analysis is enabled
