@@ -1,15 +1,15 @@
 #!/bin/bash
 # testOne.sh functional test script $Revision$ # 1.10.2.1
-# Call with test platform, test-program test-set [,option [,arguments]]
+# Call with test platform, test-program test-set [,options [,arguments]]
 # test-set is a char usually 1-9 for the various .out files, usually use 1 for .out1
 # e.g. "./testOne.sh pentium hello"
-# or   "./testOne.sh sparc fibo 1 -- 10" 
-# or   "./testOne.sh sparc switch_cc 6 -Td 2 3 4 5 6"
-# Note: max of 5 parameters passed to the recompiled executable
-# Note: only one string can be passed as the option, e.g. -O or -Td or --
-# $1 = platform $2 = test $3 = test-set $4 = option $5-$9 are parameters to the recompiled executable
+# or   "./testOne.sh sparc fibo 1 '' 10" 
+# or   "./testOne.sh sparc switch_cc 6 '-Td -nG' '2 3 4 5 6'"
+# Note: options and arguments are quoted strings
+# $1 = platform $2 = test $3 = test-set $4 = options $5 = parameters to the recompiled executable
 #
 # 06 Feb 05 - Mike: Pass the test-set parameter to testOne.sh
+# 24 Dec 05 - Gerard: Support for more than one switch added
 
 echo $* > functest.res
 rm -f functest/$2/$2.c
@@ -40,7 +40,7 @@ else
 			echo Result for $1 $2: Compile FAILED >> functest.res
 		else
 			rm -f functest.out
-			./functest.exe $5 $6 $7 $8 $9 >> functest.out 2>&1
+			./functest.exe $5 >> functest.out 2>&1
 			ret=$?
 			if [[ ret -ge 128 ]]; then
 				echo Result for $1 $2: EXECUTION TERMINATED with signal $((ret-128)) >> functest.res
