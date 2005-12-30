@@ -74,7 +74,7 @@ void SparcDecoder::unused(int x)
  * OVERVIEW:	   Create an RTL for a Bx instruction
  * PARAMETERS:	   pc - the location counter
  *				   stmts - ptr to list of Statement pointers
- *				   name - instruction name (e.g. "BNE,a")
+ *				   name - instruction name (e.g. "BNE,a", or "BPNE")
  * RETURNS:		   Pointer to newly created RTL, or NULL if invalid
  *============================================================================*/
 RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, const char* name) {
@@ -120,6 +120,7 @@ RTL* SparcDecoder::createBranchRtl(ADDRESS pc, std::list<Statement*>* stmts, con
 
 	// ibranch is any of [ BN BE  BLE BL  BLEU BCS BNEG BVS
 	//					   BA BNE BG  BGE BGU  BCC BPOS BVC ],
+	// Note: BPN, BPE, etc handled below
 	switch(name[1]) {
 	case 'E':
 		br->setCondType(BRANCH_JE);			  // BE
@@ -290,13 +291,11 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if ((jump == 0) && (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0)) {
+		} else if (strcmp(name,"BVS,a") == 0 || strcmp(name,"BVC,a") == 0) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if (jump == 0) {
+		} else {
 			rtl = createBranchRtl(pc, stmts, name);
 			jump = (GotoStatement*) rtl->getList().back();
 		}
@@ -305,6 +304,48 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 		// "BA,A" or "BN,A"
 		result.type = SCDAN;
 		if ((strcmp(name,"BA,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
+			result.type = SU;
+		} else {
+			result.type = SKIP;
+		}
+
+		result.rtl = rtl;
+		jump->setDest(tgt - delta);
+		SHOW_ASM(name << " " << std::hex << tgt-delta)
+		DEBUG_STMTS
+		
+	| pbranch^",a" (cc01, tgt) [name] => 
+		/*
+		 * Anulled , predicted branch (treat as for non predicted)
+		 */
+
+		// Instantiate a GotoStatement for the unconditional branches, HLJconds for the rest.
+		// NOTE: NJMC toolkit cannot handle embedded else statements!
+		if (cc01 != 0) {		/* If 64 bit cc used, can't handle */
+			result.valid = false;
+			result.rtl = new RTL;
+			result.numBytes = 4;
+			return result;
+		}
+		GotoStatement* jump = 0;
+		RTL* rtl = NULL;					// Init to NULL to suppress a warning
+		if (strcmp(name,"BPA,a") == 0 || strcmp(name,"BPN,a") == 0) {
+			jump = new GotoStatement;
+			rtl = new RTL(pc, stmts);
+			rtl->appendStmt(jump);
+		} else if (strcmp(name,"BPVS,a") == 0 || strcmp(name,"BPVC,a") == 0) {
+			jump = new GotoStatement;
+			rtl = new RTL(pc, stmts);
+			rtl->appendStmt(jump);
+		} else {
+			rtl = createBranchRtl(pc, stmts, name);
+			jump = (GotoStatement*) rtl->getList().back();
+		}
+
+		// The class of this instruction depends on whether or not it is one of the 'unconditional' conditional branches
+		// "BPA,A" or "BPN,A"
+		result.type = SCDAN;
+		if ((strcmp(name,"BPA,a") == 0) || (strcmp(name, "BPVC,a") == 0)) {
 			result.type = SU;
 		} else {
 			result.type = SKIP;
@@ -328,20 +369,18 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			return result;
 		}
 		// Instantiate a GotoStatement for the unconditional branches, BranchStatement for the rest
-		// NOTE: NJMC toolkit cannot handle embedded plain else statements!
+		// NOTE: NJMC toolkit cannot handle embedded plain else statements! (But OK with curly bracket before the else)
 		GotoStatement* jump = 0;
 		RTL* rtl = NULL;
 		if (strcmp(name,"BA") == 0 || strcmp(name,"BN") == 0) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if ((jump == 0) && (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0)) {
+		} else if (strcmp(name,"BVS") == 0 || strcmp(name,"BVC") == 0) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if (jump == 0) {
+		} else {
 			rtl = createBranchRtl(pc, stmts, name);
 			jump = (BranchStatement*) rtl->getList().back();
 		}
@@ -383,13 +422,11 @@ DecodeResult& SparcDecoder::decodeInstruction (ADDRESS pc, int delta) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if ((jump == 0) && (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0)) {
+		} else if (strcmp(name,"BPVS") == 0 || strcmp(name,"BPVC") == 0) {
 			jump = new GotoStatement;
 			rtl = new RTL(pc, stmts);
 			rtl->appendStmt(jump);
-		}
-		if (jump == 0) {
+		} else {
 			rtl = createBranchRtl(pc, stmts, name);
 			// The BranchStatement will be the last Stmt of the rtl
 			jump = (GotoStatement*)rtl->getList().back();
