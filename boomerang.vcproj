@@ -76,13 +76,13 @@
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libexpat.lib gc.lib"
+				AdditionalDependencies="libexpat.lib gc.lib comctl32.lib"
 				OutputFile="$(OutDir)/boomerang.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""

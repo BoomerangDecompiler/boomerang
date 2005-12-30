@@ -74,7 +74,7 @@
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -83,6 +83,7 @@
 				AdditionalDependencies="libexpat.lib gc.lib"
 				OutputFile="$(OutDir)/console.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\.."
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"

@@ -80,7 +80,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="msvcrt.dll"
 				OutputFile="$(OutDir)/BinaryFile.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
