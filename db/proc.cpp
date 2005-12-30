@@ -4272,146 +4272,6 @@ bool UserProc::ellipsisProcessing() {
 	return ch;
 }
 
-class LibProcMemo : public Memo {
-public:
-	LibProcMemo(int mId) : Memo(mId) { }
-
-	bool visited;
-	Prog *prog;
-	Signature *signature;						// r
-	ADDRESS address;
-	Proc *m_firstCaller;
-	ADDRESS m_firstCallerAddr;
-	std::set<Exp*, lessExpStar> proven;			// r
-	std::set<CallStatement*> callerSet;
-	Cluster *cluster;
-};
-
-Memo *LibProc::makeMemo(int mId)
-{
-	LibProcMemo *m = new LibProcMemo(mId);
-	m->visited = visited;
-	m->prog = prog;
-	m->signature = signature;
-	m->address = address;
-	m->m_firstCaller = m_firstCaller;
-	m->m_firstCallerAddr = m_firstCallerAddr;
-	m->proven = proven;
-	m->callerSet = callerSet;
-	m->cluster = cluster;
-
-//	signature->takeMemo(mId);
-//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-//		(*it)->takeMemo(mId);
-
-	return m;
-}
-
-void LibProc::readMemo(Memo *mm, bool dec)
-{
-	LibProcMemo *m = dynamic_cast<LibProcMemo*>(mm);
-	visited = m->visited;
-	prog = m->prog;
-	signature = m->signature;
-	address = m->address;
-	m_firstCaller = m->m_firstCaller;
-	m_firstCallerAddr = m->m_firstCallerAddr;
-	proven = m->proven;
-	callerSet = m->callerSet;
-	cluster = m->cluster;
-
-//	signature->restoreMemo(m->mId, dec);
-//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-//		(*it)->restoreMemo(m->mId, dec);
-}
-
-class UserProcMemo : public Memo {
-public:
-	UserProcMemo(int mId) : Memo(mId) { }
-
-	bool visited;
-	Prog *prog;
-	Signature *signature;						// r
-	ADDRESS address;
-	Proc *m_firstCaller;
-	ADDRESS m_firstCallerAddr;
-	std::set<Exp*, lessExpStar> proven;			// r
-	std::set<CallStatement*> callerSet;
-	Cluster *cluster;
-
-	Cfg* cfg;
-	ProcStatus status;
-	std::map<std::string, Type*> locals;		// r
-	UserProc::SymbolMapType symbolMap;			// r
-	std::list<Proc*> calleeList;
-};
-
-Memo *UserProc::makeMemo(int mId)
-{
-	UserProcMemo *m = new UserProcMemo(mId);
-	m->visited = visited;
-	m->prog = prog;
-	m->signature = signature;
-	m->address = address;
-	m->m_firstCaller = m_firstCaller;
-	m->m_firstCallerAddr = m_firstCallerAddr;
-	m->proven = proven;
-	m->callerSet = callerSet;
-	m->cluster = cluster;
-
-	m->cfg = cfg;
-	m->status = status;
-	m->locals = locals;
-	m->symbolMap = symbolMap;
-	m->calleeList = calleeList;
-
-	signature->takeMemo(mId);
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-		(*it)->takeMemo(mId);
-
-	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-		(*it).second->takeMemo(mId);
-
-	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-		(*it).first->takeMemo(mId);
-		(*it).second->takeMemo(mId);
-	}
-
-	return m;
-}
-
-void UserProc::readMemo(Memo *mm, bool dec)
-{
-	UserProcMemo *m = dynamic_cast<UserProcMemo*>(mm);
-	visited = m->visited;
-	prog = m->prog;
-	signature = m->signature;
-	address = m->address;
-	m_firstCaller = m->m_firstCaller;
-	m_firstCallerAddr = m->m_firstCallerAddr;
-	proven = m->proven;
-	callerSet = m->callerSet;
-	cluster = m->cluster;
-
-	cfg = m->cfg;
-	status = m->status;
-	locals = m->locals;
-	symbolMap = m->symbolMap;
-	calleeList = m->calleeList;
-
-	signature->restoreMemo(m->mId, dec);
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-		(*it)->restoreMemo(m->mId, dec);
-
-	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
-		(*it).second->restoreMemo(m->mId, dec);
-
-	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
-		(*it).first->restoreMemo(m->mId, dec);
-		(*it).second->restoreMemo(m->mId, dec);
-	}
-}
-
 // Before Type Analysis, refs like r28{0} have a NULL Statement pointer. After this, they will point to an
 // implicit assignment for the location. Thus, during and after type analysis, you can find the type of any
 // location by following the reference to the definition
@@ -5237,3 +5097,148 @@ void dumpCycleSet(CycleSet* pc) {
 		std::cerr << (*pi)->getName() << ", ";
 	std::cerr << "\n";
 }
+
+
+
+#ifdef USING_MEMOS
+class LibProcMemo : public Memo {
+public:
+	LibProcMemo(int mId) : Memo(mId) { }
+
+	bool visited;
+	Prog *prog;
+	Signature *signature;						// r
+	ADDRESS address;
+	Proc *m_firstCaller;
+	ADDRESS m_firstCallerAddr;
+	std::set<Exp*, lessExpStar> proven;			// r
+	std::set<CallStatement*> callerSet;
+	Cluster *cluster;
+};
+
+Memo *LibProc::makeMemo(int mId)
+{
+	LibProcMemo *m = new LibProcMemo(mId);
+	m->visited = visited;
+	m->prog = prog;
+	m->signature = signature;
+	m->address = address;
+	m->m_firstCaller = m_firstCaller;
+	m->m_firstCallerAddr = m_firstCallerAddr;
+	m->proven = proven;
+	m->callerSet = callerSet;
+	m->cluster = cluster;
+
+//	signature->takeMemo(mId);
+//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//		(*it)->takeMemo(mId);
+
+	return m;
+}
+
+void LibProc::readMemo(Memo *mm, bool dec)
+{
+	LibProcMemo *m = dynamic_cast<LibProcMemo*>(mm);
+	visited = m->visited;
+	prog = m->prog;
+	signature = m->signature;
+	address = m->address;
+	m_firstCaller = m->m_firstCaller;
+	m_firstCallerAddr = m->m_firstCallerAddr;
+	proven = m->proven;
+	callerSet = m->callerSet;
+	cluster = m->cluster;
+
+//	signature->restoreMemo(m->mId, dec);
+//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//		(*it)->restoreMemo(m->mId, dec);
+}
+
+class UserProcMemo : public Memo {
+public:
+	UserProcMemo(int mId) : Memo(mId) { }
+
+	bool visited;
+	Prog *prog;
+	Signature *signature;						// r
+	ADDRESS address;
+	Proc *m_firstCaller;
+	ADDRESS m_firstCallerAddr;
+	std::set<Exp*, lessExpStar> proven;			// r
+	std::set<CallStatement*> callerSet;
+	Cluster *cluster;
+
+	Cfg* cfg;
+	ProcStatus status;
+	std::map<std::string, Type*> locals;		// r
+	UserProc::SymbolMapType symbolMap;			// r
+	std::list<Proc*> calleeList;
+};
+
+Memo *UserProc::makeMemo(int mId)
+{
+	UserProcMemo *m = new UserProcMemo(mId);
+	m->visited = visited;
+	m->prog = prog;
+	m->signature = signature;
+	m->address = address;
+	m->m_firstCaller = m_firstCaller;
+	m->m_firstCallerAddr = m_firstCallerAddr;
+	m->proven = proven;
+	m->callerSet = callerSet;
+	m->cluster = cluster;
+
+	m->cfg = cfg;
+	m->status = status;
+	m->locals = locals;
+	m->symbolMap = symbolMap;
+	m->calleeList = calleeList;
+
+	signature->takeMemo(mId);
+	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+		(*it)->takeMemo(mId);
+
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
+		(*it).second->takeMemo(mId);
+
+	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		(*it).first->takeMemo(mId);
+		(*it).second->takeMemo(mId);
+	}
+
+	return m;
+}
+
+void UserProc::readMemo(Memo *mm, bool dec)
+{
+	UserProcMemo *m = dynamic_cast<UserProcMemo*>(mm);
+	visited = m->visited;
+	prog = m->prog;
+	signature = m->signature;
+	address = m->address;
+	m_firstCaller = m->m_firstCaller;
+	m_firstCallerAddr = m->m_firstCallerAddr;
+	proven = m->proven;
+	callerSet = m->callerSet;
+	cluster = m->cluster;
+
+	cfg = m->cfg;
+	status = m->status;
+	locals = m->locals;
+	symbolMap = m->symbolMap;
+	calleeList = m->calleeList;
+
+	signature->restoreMemo(m->mId, dec);
+	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+
+	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
+		(*it).second->restoreMemo(m->mId, dec);
+
+	for (SymbolMapType::iterator it = symbolMap.begin(); it != symbolMap.end(); it++) {
+		(*it).first->restoreMemo(m->mId, dec);
+		(*it).second->restoreMemo(m->mId, dec);
+	}
+}
+#endif		// #ifdef USING_MEMOS
+

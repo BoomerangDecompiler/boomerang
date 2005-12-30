@@ -70,7 +70,7 @@ struct ComplexTypeComp {
 };
 typedef std::list<ComplexTypeComp> ComplexTypeCompList;
 
-class Type : public Memoisable {
+class Type {
 protected:
 		eType		id;
 private:
@@ -178,9 +178,6 @@ static	void		clearNamedTypes() { namedTypes.clear(); }
 
 		bool		isPointerToAlpha();
 
-virtual Memo 		*makeMemo(int mId) { return new Memo(mId); }
-virtual void 		readMemo(Memo *m, bool dec) { }
-
 					// For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
 					// If bHighestPtr is true, then if this and other are non void* pointers, set the result to the
 					// *highest* possible type compatible with both (i.e. this JOIN other)
@@ -253,9 +250,6 @@ virtual const char	*getCtype(bool final = false) const;
 					// Split the C type into return and parameter parts
 		void		getReturnAndParam(const char*& ret, const char*& param);
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
@@ -298,9 +292,6 @@ virtual const char	*getCtype(bool final = false) const;
 
 virtual std::string	getTempName() const;
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
@@ -330,9 +321,6 @@ virtual void		setSize(int sz) {size = sz;}
 virtual const char	*getCtype(bool final = false) const;
 
 virtual std::string	getTempName() const;
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
@@ -416,9 +404,6 @@ virtual void		setSize(int sz) {assert(sz == STD_SIZE);}
 
 virtual const char	*getCtype(bool final = false) const;
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
@@ -454,9 +439,6 @@ virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
 
-virtual	Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
@@ -489,9 +471,6 @@ virtual Exp			*match(Type *pattern);
 virtual unsigned	getSize() const;
 
 virtual const char	*getCtype(bool final = false) const;
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
@@ -540,9 +519,6 @@ virtual const char *getCtype(bool final = false) const;
 		bool		isSuperStructOf(Type* other);		// True if this is is a superstructure of other
 		bool		isSubStructOf(Type* other);			// True if this is is a substructure of other
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
@@ -583,9 +559,6 @@ virtual Exp			*match(Type *pattern);
 virtual unsigned	getSize() const;
 
 virtual const char *getCtype(bool final = false) const;
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);

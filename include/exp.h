@@ -73,7 +73,7 @@ typedef BasicBlock* PBB;
 
 // Class Exp is abstract. However, the constructor can be called from the constructors of derived classes, and virtual
 // functions not overridden by derived classes can be called
-class Exp : public Memoisable {
+class Exp {
 protected:
 		OPER		op;			   // The operator (e.g. opPlus)
 
@@ -352,8 +352,6 @@ virtual Exp*		accept(ExpModifier* v) = 0;
 		// Note: can change this, so often need to clone before calling
 		Exp*		bypass();
 		void		bypassComp();		// As above, but only the xxx of m[xxx]
-virtual Memo		*makeMemo(int mId) = 0;
-virtual void		readMemo(Memo *m, bool dec) = 0;
 
 		// Data flow based type analysis (implemented in type/dfa.cpp)
 		// Pull type information up the expression tree
@@ -441,9 +439,6 @@ virtual Exp*		accept(ExpModifier* v);
 		int			getConscript() {return conscript;}
 		void		setConscript(int cs) {conscript = cs;}
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
 
@@ -479,9 +474,6 @@ virtual bool		isMemDepth(int d);
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
@@ -555,9 +547,6 @@ virtual Type*		getType();
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
@@ -635,9 +624,6 @@ virtual Type* getType();
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
 
@@ -710,9 +696,6 @@ virtual Type* getType();
 virtual bool	accept(ExpVisitor* v);
 virtual Exp*	accept(ExpModifier* v);
 
-virtual Memo	*makeMemo(int mId);
-virtual void	readMemo(Memo *m, bool dec);
-
 virtual	Type*	ascendType();
 virtual void	descendType(Type* parentType, bool& ch, Statement* s);
 
@@ -762,9 +745,6 @@ virtual Exp*		polySimplify(bool& bMod);
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
 
@@ -787,9 +767,6 @@ virtual void		appendDotFile(std::ofstream& of);
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 protected:
 		friend class XMLProgParser;
@@ -834,9 +811,6 @@ virtual Exp			*match(Exp *pattern);
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 virtual	Type*		ascendType();
 virtual void		descendType(Type* parentType, bool& ch, Statement* s);
 
@@ -871,9 +845,6 @@ virtual Exp			*match(Exp *pattern);
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 protected:
 		friend class XMLProgParser;
@@ -916,9 +887,6 @@ virtual bool		isMemDepth(int d);
 		// Visitation
 virtual bool		accept(ExpVisitor* v);
 virtual Exp*		accept(ExpModifier* v);
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 protected:
 		friend class XMLProgParser;

@@ -3905,6 +3905,59 @@ Exp* Exp::expSubscriptAllNull(/*Cfg* cfg*/) {
 	return expSubscriptVar(new Terminal(opWild), NULL /* was NULL, NULL, cfg */);
 }
 
+Location* Location::local(const char *nam, UserProc *p) {
+	return new Location(opLocal, new Const((char*)nam), p);
+}
+
+bool Terminal::isMemDepth(int d) {
+	if (op == opDefineAll)
+		return true;			// define-all matches all memory depths
+	return d == 0;
+}
+
+bool Location::isMemDepth(int d) {
+	return d == getMemDepth();
+}
+
+// Don't put in exp.h, as this would require statement.h including before exp.h
+bool RefExp::isImplicitDef() {
+	return def == NULL || def->getKind() == STMT_IMPASSIGN;
+}
+
+Exp* Exp::bypass() {
+	CallBypasser cb(NULL);
+	return accept(&cb);
+}
+
+void Exp::bypassComp() {
+	if (op != opMemOf) return;
+    ((Location*)this)->setSubExp1(((Location*)this)->getSubExp1()->bypass());
+}
+
+int Exp::getComplexityDepth() {
+	ComplexityFinder cf;
+	accept(&cf);
+	return cf.getDepth();
+}
+
+// Propagate all possible statements to this expression
+Exp* Exp::propagateAll() {
+	ExpPropagator ep;
+	return accept(&ep);
+}
+
+// Return true for non-mem-ofs, or mem-ofs that have primitive address expressions
+bool Exp::canRename() {
+	if (op != opMemOf) return true;
+	Exp* addressExp = ((Location*)this)->getSubExp1();
+	PrimitiveTester pt;
+	addressExp->accept(&pt);
+	return pt.getResult();
+}
+
+
+
+#ifdef USING_MEMO
 class ConstMemo : public Memo {
 public:
 	ConstMemo(int m) : Memo(m) { }
@@ -4087,54 +4140,6 @@ void Location::readMemo(Memo *mm, bool dec)
 	// FIXME: not completed
 	// LocationMemo *m = dynamic_cast<LocationMemo*>(mm);
 }
+#endif		// #ifdef USING_MEMO
 
-Location* Location::local(const char *nam, UserProc *p) {
-	return new Location(opLocal, new Const((char*)nam), p);
-}
-
-bool Terminal::isMemDepth(int d) {
-	if (op == opDefineAll)
-		return true;			// define-all matches all memory depths
-	return d == 0;
-}
-
-bool Location::isMemDepth(int d) {
-	return d == getMemDepth();
-}
-
-// Don't put in exp.h, as this would require statement.h including before exp.h
-bool RefExp::isImplicitDef() {
-	return def == NULL || def->getKind() == STMT_IMPASSIGN;
-}
-
-Exp* Exp::bypass() {
-	CallBypasser cb(NULL);
-	return accept(&cb);
-}
-
-void Exp::bypassComp() {
-	if (op != opMemOf) return;
-    ((Location*)this)->setSubExp1(((Location*)this)->getSubExp1()->bypass());
-}
-
-int Exp::getComplexityDepth() {
-	ComplexityFinder cf;
-	accept(&cf);
-	return cf.getDepth();
-}
-
-// Propagate all possible statements to this expression
-Exp* Exp::propagateAll() {
-	ExpPropagator ep;
-	return accept(&ep);
-}
-
-// Return true for non-mem-ofs, or mem-ofs that have primitive address expressions
-bool Exp::canRename() {
-	if (op != opMemOf) return true;
-	Exp* addressExp = ((Location*)this)->getSubExp1();
-	PrimitiveTester pt;
-	addressExp->accept(&pt);
-	return pt.getResult();
-}
 

@@ -31,7 +31,7 @@ class StatementList;
 class BinaryFile;
 class XMLProgParser;
 
-class Parameter : public Memoisable { 
+class Parameter { 
 private:
 		Type *type;
 		std::string name;
@@ -40,7 +40,7 @@ private:
 public: 
 					Parameter(Type *type, const char *name, Exp *exp = NULL) :
 					type(type), name(name), exp(exp)	{ }
-					~Parameter() { delete type; delete exp; }
+virtual				~Parameter() { delete type; delete exp; }
 		bool		operator==(Parameter& other);
 		Parameter*	clone();
 
@@ -51,49 +51,20 @@ public:
 		Exp			*getExp()		{ return exp; }
 		void		setExp(Exp *e) { exp = e; }
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 protected:
 		friend		class XMLProgParser;
 					Parameter() : type(NULL), name(""), exp(NULL) { }
 };		// class Parameter
 
-#if 0
-class ImplicitParameter : public Parameter {
-private:
-		Parameter	*parent;
-
-public:
-					ImplicitParameter(Type *type, const char *name, Exp *exp, Parameter *parent) : 
-						Parameter(type, name, exp), parent(parent) { }
-					~ImplicitParameter() { }
-		ImplicitParameter* clone();
-
-		void		setParent(Parameter *p) { parent = p; }
-		Parameter	*getParent() { return parent; }
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
-protected:
-	friend class XMLProgParser;
-	ImplicitParameter() : Parameter(), parent(NULL) { }
-};
-#endif
-
-class Return : public Memoisable {
+class Return {
 public:
 		Type		*type;
 		Exp			*exp;
 
 					Return(Type *type, Exp *exp) : type(type), exp(exp) { }
-					~Return() { }
+virtual				~Return() { }
 		bool		operator==(Return& other);
 		Return*		clone();
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 					Return() : type(NULL), exp(NULL) { }
 		friend class XMLProgParser;
@@ -102,7 +73,7 @@ virtual void		readMemo(Memo *m, bool dec);
 typedef std::vector<Return*> Returns;
 
 
-class Signature : public Memoisable {
+class Signature {
 protected:
 		std::string	name;		// name of procedure
 		std::vector<Parameter*> params;
@@ -278,9 +249,6 @@ virtual callconv	getConvention() { return CONV_NONE; }
 virtual	bool		argumentCompare(Assignment& a, Assignment& b);
 virtual	bool		returnCompare(Assignment& a, Assignment& b);
 
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 protected:
 		friend class XMLProgParser;

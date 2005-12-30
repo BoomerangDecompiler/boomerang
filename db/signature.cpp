@@ -1783,6 +1783,7 @@ bool Parameter::operator==(Parameter& other) {
 //	  return true;
 //}
 
+#if USING_MEMO
 class SignatureMemo : public Memo {
 public:
 				SignatureMemo(int m) : Memo(m) { }
@@ -1885,7 +1886,6 @@ void Parameter::readMemo(Memo *mm, bool dec)
 }
 
 
-#if 0
 class ImplicitParameterMemo : public ParameterMemo {
 public:
 	ImplicitParameterMemo(int m) : ParameterMemo(m) { }
@@ -1919,7 +1919,7 @@ void ImplicitParameter::readMemo(Memo *mm, bool dec)
 	m->type->restoreMemo(m->mId, dec);
 	m->exp->restoreMemo(m->mId, dec);
 }
-#endif
+#endif			// #if USING_MEMO
 
 bool Signature::isOpCompatStackLocal(OPER op) {
 	if (op == opMinus) return isLocalOffsetNegative();
@@ -2063,6 +2063,7 @@ bool Return::operator==(Return& other) {
 	return true;
 }
 	
+#if USING_MEMO
 class ReturnMemo : public Memo {
 public:
 	ReturnMemo(int m) : Memo(m) { }
@@ -2093,6 +2094,7 @@ void Return::readMemo(Memo *mm, bool dec)
 	type->restoreMemo(m->mId, dec);
 	exp->restoreMemo(m->mId, dec);
 }
+#endif			// #if USING_MEMO
 
 Type* Signature::getTypeFor(Exp* e) {
 	int n = returns.size();

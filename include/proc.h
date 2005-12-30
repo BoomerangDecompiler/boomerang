@@ -58,7 +58,7 @@ class XMLProgParser;
  *============================================================================*/
 /// Interface for the procedure classes, which are used to store information about variables in the
 /// procedure such as parameters and locals.
-class Proc : public Memoisable {
+class Proc {
 public:
 
 		/**
@@ -218,9 +218,6 @@ virtual void		printCallGraphXML(std::ostream &os, int depth, bool recurse = true
 		Cluster		*getCluster() { return cluster; }
 		void		setCluster(Cluster *c) { cluster = c; }
 
-virtual Memo		*makeMemo(int mId) = 0;
-virtual void		readMemo(Memo *m, bool dec) = 0;
-
 protected:
 
 		bool		visited;						///< For printCallGraphXML
@@ -288,9 +285,6 @@ virtual	bool		isPreserved(Exp* e);			///< Return whether e is preserved by this 
 		 */
 		//std::ostream& put(std::ostream& os);
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 		void		getInternalStatements(StatementList &internal);
 protected:
 
@@ -352,7 +346,7 @@ class UserProc : public Proc {
 		//int			maxDepth;
 
 		/*
-		 * DEPRECATED now. Use the localTable.
+		 * DEPRECATED now. Eventually use the localTable.
 		 * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
 		 * stores parameters.
 		 * It is a convenient place to store the types of locals after
@@ -657,9 +651,6 @@ virtual	void		removeReturn(Exp *e);
 		void		addImplicitAssigns();
 		StatementList& getParameters() { return parameters; }
 		StatementList& getModifieds() { return theReturnStatement->getModifieds(); }
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 private:
 		/**

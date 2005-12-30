@@ -1427,6 +1427,9 @@ void Prog::readSymbolFile(const char *fname) {
 	ifs.close();
 }
 
+Global::~Global() {
+	// Gcc wants the first virtual function to have an implementation. Sigh.
+}
 
 Exp* Global::getInitialValue(Prog* prog) {
 	Exp* e = NULL;
@@ -1513,7 +1516,7 @@ void Prog::reDecode(UserProc* proc) {
 
 
 
-
+#ifdef USING_MEMO
 class ClusterMemo : public Memo {
 public:
 	ClusterMemo(int mId) : Memo(mId) { }
@@ -1736,3 +1739,5 @@ void Memoisable::restoreMemo(bool dec)
 {
 	restoreMemo(-1, dec);
 }
+
+#endif		// #ifdef USING_MEMO

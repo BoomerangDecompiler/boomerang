@@ -1153,216 +1153,6 @@ Type* LowerType::mergeWith(Type* other) {
 	return this;
 }
 
-
-
-class FuncTypeMemo : public Memo {
-public:
-	FuncTypeMemo(int m) : Memo(m) { }
-	Signature *signature;
-};
-
-Memo *FuncType::makeMemo(int mId)
-{
-	FuncTypeMemo *m = new FuncTypeMemo(mId);
-	m->signature = signature;
-
-	signature->takeMemo(mId);
-	return m;
-}
-
-void FuncType::readMemo(Memo *mm, bool dec)
-{
-	FuncTypeMemo *m = dynamic_cast<FuncTypeMemo*>(mm);
-	signature = m->signature;
-
-	//signature->restoreMemo(m->mId, dec);
-}
-
-class IntegerTypeMemo : public Memo {
-public:
-	IntegerTypeMemo(int m) : Memo(m) { }
-	int size;
-	int signedness;
-};
-
-Memo *IntegerType::makeMemo(int mId)
-{
-	IntegerTypeMemo *m = new IntegerTypeMemo(mId);
-	m->size = size;
-	m->signedness = signedness;
-	return m;
-}
-
-void IntegerType::readMemo(Memo *mm, bool dec)
-{
-	IntegerTypeMemo *m = dynamic_cast<IntegerTypeMemo*>(mm);
-	size = m->size;
-	signedness = m->signedness;
-}
-
-class FloatTypeMemo : public Memo {
-public:
-	FloatTypeMemo(int m) : Memo(m) { }
-	int size;
-};
-
-Memo *FloatType::makeMemo(int mId)
-{
-	FloatTypeMemo *m = new FloatTypeMemo(mId);
-	m->size = size;
-	return m;
-}
-
-void FloatType::readMemo(Memo *mm, bool dec)
-{
-	FloatTypeMemo *m = dynamic_cast<FloatTypeMemo*>(mm);
-	size = m->size;
-}
-
-class PointerTypeMemo : public Memo {
-public:
-	PointerTypeMemo(int m) : Memo(m) { }
-	Type *points_to;
-};
-
-Memo *PointerType::makeMemo(int mId)
-{
-	PointerTypeMemo *m = new PointerTypeMemo(mId);
-	m->points_to = points_to;
-
-	points_to->takeMemo(mId);
-
-	return m;
-}
-
-void PointerType::readMemo(Memo *mm, bool dec)
-{
-	PointerTypeMemo *m = dynamic_cast<PointerTypeMemo*>(mm);
-	points_to = m->points_to;
-
-	points_to->restoreMemo(m->mId, dec);
-}
-
-class ArrayTypeMemo : public Memo {
-public:
-	ArrayTypeMemo(int m) : Memo(m) { }
-	Type *base_type;
-	unsigned length;
-};
-
-Memo *ArrayType::makeMemo(int mId)
-{
-	ArrayTypeMemo *m = new ArrayTypeMemo(mId);
-	m->base_type = base_type;
-	m->length = length;
-
-	base_type->takeMemo(mId);
-
-	return m;
-}
-
-void ArrayType::readMemo(Memo *mm, bool dec)
-{
-	ArrayTypeMemo *m = dynamic_cast<ArrayTypeMemo*>(mm);
-	length = m->length;
-	base_type = m->base_type;
-
-	base_type->restoreMemo(m->mId, dec);
-}
-
-class NamedTypeMemo : public Memo {
-public:
-	NamedTypeMemo(int m) : Memo(m) { }
-	std::string name;
-	int nextAlpha;
-};
-
-Memo *NamedType::makeMemo(int mId)
-{
-	NamedTypeMemo *m = new NamedTypeMemo(mId);
-	m->name = name;
-	m->nextAlpha = nextAlpha;
-	return m;
-}
-
-void NamedType::readMemo(Memo *mm, bool dec)
-{
-	NamedTypeMemo *m = dynamic_cast<NamedTypeMemo*>(mm);
-	name = m->name;
-	nextAlpha = m->nextAlpha;
-}
-
-class CompoundTypeMemo : public Memo {
-public:
-	CompoundTypeMemo(int m) : Memo(m) { }
-	std::vector<Type*> types;
-	std::vector<std::string> names;
-};
-
-Memo *CompoundType::makeMemo(int mId)
-{
-	CompoundTypeMemo *m = new CompoundTypeMemo(mId);
-	m->types = types;
-	m->names = names;
-
-	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
-		(*it)->takeMemo(mId);
-	return m;
-}
-
-void CompoundType::readMemo(Memo *mm, bool dec)
-{
-	CompoundTypeMemo *m = dynamic_cast<CompoundTypeMemo*>(mm);
-	types = m->types;
-	names = m->names;
-
-	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
-		(*it)->restoreMemo(m->mId, dec);
-}
-
-class UnionTypeMemo : public Memo {
-public:
-	UnionTypeMemo(int m) : Memo(m) { }
-	std::list<UnionElement> li;
-};
-
-Memo *UnionType::makeMemo(int mId)
-{
-	UnionTypeMemo *m = new UnionTypeMemo(mId);
-	m->li = li;
-
-	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
-		it->type->takeMemo(mId);		// Is this right? What about the names? MVE
-	return m;
-}
-
-void UnionType::readMemo(Memo *mm, bool dec)
-{
-	UnionTypeMemo *m = dynamic_cast<UnionTypeMemo*>(mm);
-	li = m->li;
-
-	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
-		it->type->restoreMemo(m->mId, dec);
-}
-
-void UnionType::addType(Type *n, const char *str) {
-	if (n->isUnion()) {
-		UnionType* utp = (UnionType*)n;
-		// Note: need to check for name clashes eventually
-		li.insert(li.end(), utp->li.begin(), utp->li.end());
-	} else {
-		if (n->isPointer() && n->asPointer()->getPointsTo() == this) {		// Note: pointer comparison
-			n = new PointerType(new VoidType);
-			if (VERBOSE)
-				LOG << "Warning: attempt to union with pointer to self!\n";
-		}
-		UnionElement ue;
-		ue.type = n;
-		ue.name = str;
-		li.push_back(ue);
-	}
-}
-
 // Return true if this is a superstructure of other, i.e. we have the same types at the same offsets as other
 bool CompoundType::isSuperStructOf(Type* other) {
 	if (!other->isCompound()) return false;
@@ -1634,3 +1424,215 @@ ComplexTypeCompList& Type::compForAddress(ADDRESS addr, DataIntervalMap& dim) {
 	return *res;
 }
 
+void UnionType::addType(Type *n, const char *str) {
+	if (n->isUnion()) {
+		UnionType* utp = (UnionType*)n;
+		// Note: need to check for name clashes eventually
+		li.insert(li.end(), utp->li.begin(), utp->li.end());
+	} else {
+		if (n->isPointer() && n->asPointer()->getPointsTo() == this) {		// Note: pointer comparison
+			n = new PointerType(new VoidType);
+			if (VERBOSE)
+				LOG << "Warning: attempt to union with pointer to self!\n";
+		}
+		UnionElement ue;
+		ue.type = n;
+		ue.name = str;
+		li.push_back(ue);
+	}
+}
+
+
+
+#if USING_MEMO
+class FuncTypeMemo : public Memo {
+public:
+	FuncTypeMemo(int m) : Memo(m) { }
+	Signature *signature;
+};
+
+Memo *FuncType::makeMemo(int mId)
+{
+	FuncTypeMemo *m = new FuncTypeMemo(mId);
+	m->signature = signature;
+
+	signature->takeMemo(mId);
+	return m;
+}
+
+void FuncType::readMemo(Memo *mm, bool dec)
+{
+	FuncTypeMemo *m = dynamic_cast<FuncTypeMemo*>(mm);
+	signature = m->signature;
+
+	//signature->restoreMemo(m->mId, dec);
+}
+
+class IntegerTypeMemo : public Memo {
+public:
+	IntegerTypeMemo(int m) : Memo(m) { }
+	int size;
+	int signedness;
+};
+
+Memo *IntegerType::makeMemo(int mId)
+{
+	IntegerTypeMemo *m = new IntegerTypeMemo(mId);
+	m->size = size;
+	m->signedness = signedness;
+	return m;
+}
+
+void IntegerType::readMemo(Memo *mm, bool dec)
+{
+	IntegerTypeMemo *m = dynamic_cast<IntegerTypeMemo*>(mm);
+	size = m->size;
+	signedness = m->signedness;
+}
+
+class FloatTypeMemo : public Memo {
+public:
+	FloatTypeMemo(int m) : Memo(m) { }
+	int size;
+};
+
+Memo *FloatType::makeMemo(int mId)
+{
+	FloatTypeMemo *m = new FloatTypeMemo(mId);
+	m->size = size;
+	return m;
+}
+
+void FloatType::readMemo(Memo *mm, bool dec)
+{
+	FloatTypeMemo *m = dynamic_cast<FloatTypeMemo*>(mm);
+	size = m->size;
+}
+
+class PointerTypeMemo : public Memo {
+public:
+	PointerTypeMemo(int m) : Memo(m) { }
+	Type *points_to;
+};
+
+Memo *PointerType::makeMemo(int mId)
+{
+	PointerTypeMemo *m = new PointerTypeMemo(mId);
+	m->points_to = points_to;
+
+	points_to->takeMemo(mId);
+
+	return m;
+}
+
+void PointerType::readMemo(Memo *mm, bool dec)
+{
+	PointerTypeMemo *m = dynamic_cast<PointerTypeMemo*>(mm);
+	points_to = m->points_to;
+
+	points_to->restoreMemo(m->mId, dec);
+}
+
+class ArrayTypeMemo : public Memo {
+public:
+	ArrayTypeMemo(int m) : Memo(m) { }
+	Type *base_type;
+	unsigned length;
+};
+
+Memo *ArrayType::makeMemo(int mId)
+{
+	ArrayTypeMemo *m = new ArrayTypeMemo(mId);
+	m->base_type = base_type;
+	m->length = length;
+
+	base_type->takeMemo(mId);
+
+	return m;
+}
+
+void ArrayType::readMemo(Memo *mm, bool dec)
+{
+	ArrayTypeMemo *m = dynamic_cast<ArrayTypeMemo*>(mm);
+	length = m->length;
+	base_type = m->base_type;
+
+	base_type->restoreMemo(m->mId, dec);
+}
+
+class NamedTypeMemo : public Memo {
+public:
+	NamedTypeMemo(int m) : Memo(m) { }
+	std::string name;
+	int nextAlpha;
+};
+
+Memo *NamedType::makeMemo(int mId)
+{
+	NamedTypeMemo *m = new NamedTypeMemo(mId);
+	m->name = name;
+	m->nextAlpha = nextAlpha;
+	return m;
+}
+
+void NamedType::readMemo(Memo *mm, bool dec)
+{
+	NamedTypeMemo *m = dynamic_cast<NamedTypeMemo*>(mm);
+	name = m->name;
+	nextAlpha = m->nextAlpha;
+}
+
+class CompoundTypeMemo : public Memo {
+public:
+	CompoundTypeMemo(int m) : Memo(m) { }
+	std::vector<Type*> types;
+	std::vector<std::string> names;
+};
+
+Memo *CompoundType::makeMemo(int mId)
+{
+	CompoundTypeMemo *m = new CompoundTypeMemo(mId);
+	m->types = types;
+	m->names = names;
+
+	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
+		(*it)->takeMemo(mId);
+	return m;
+}
+
+void CompoundType::readMemo(Memo *mm, bool dec)
+{
+	CompoundTypeMemo *m = dynamic_cast<CompoundTypeMemo*>(mm);
+	types = m->types;
+	names = m->names;
+
+	for (std::vector<Type*>::iterator it = types.begin(); it != types.end(); it++)
+		(*it)->restoreMemo(m->mId, dec);
+}
+
+class UnionTypeMemo : public Memo {
+public:
+	UnionTypeMemo(int m) : Memo(m) { }
+	std::list<UnionElement> li;
+};
+
+Memo *UnionType::makeMemo(int mId)
+{
+	UnionTypeMemo *m = new UnionTypeMemo(mId);
+	m->li = li;
+
+	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
+		it->type->takeMemo(mId);		// Is this right? What about the names? MVE
+	return m;
+}
+
+void UnionType::readMemo(Memo *mm, bool dec)
+{
+	UnionTypeMemo *m = dynamic_cast<UnionTypeMemo*>(mm);
+	li = m->li;
+
+	for (std::list<UnionElement>::iterator it = li.begin(); it != li.end(); it++)
+		it->type->restoreMemo(m->mId, dec);
+}
+
+#endif			// #if USING_MEMO

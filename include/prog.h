@@ -26,7 +26,6 @@
 #include "frontend.h"
 #include "type.h"
 #include "cluster.h"
-#include "memo.h"
 
 class RTLInstDict;
 class Proc;
@@ -37,22 +36,18 @@ class Statement;
 class StatementSet;
 class Cluster;
 class XMLProgParser;
-class ProgMemo;
-class GlobalMemo;
 
 typedef std::map<ADDRESS, Proc*, std::less<ADDRESS> > PROGMAP;
 
-class Global : public Memoisable {
+class Global {
 private:
 	Type *type;
 	ADDRESS uaddr;
 	std::string nam;
 
 public:
-					Global(Type *type, ADDRESS uaddr, const char *nam) : type(type), 
-														 uaddr(uaddr),
-														 nam(nam) { }
-					~Global() { }
+					Global(Type *type, ADDRESS uaddr, const char *nam) : type(type), uaddr(uaddr), nam(nam) { }
+virtual				~Global();
 
 		Type		*getType() { return type; }
 		void  		setType(Type* ty) { type = ty; }
@@ -63,18 +58,15 @@ public:
 													// (or NULL if not initialised)
 		void		print(std::ostream& os, Prog* prog);	// Print to stream os
 
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
-
 protected:
 					Global() : type(NULL), uaddr(0), nam("") { }
 		friend class XMLProgParser;
 };		// class Global
 
-class Prog : public Memoisable {
+class Prog {
 public:
 					Prog();							// Default constructor
-					~Prog();
+virtual				~Prog();
 					Prog(const char* name);			// Constructor with name
 		void		setFrontEnd(FrontEnd* fe);
 		void		setName(const char *name);		// Set the name of this program
@@ -275,9 +267,6 @@ public:
 		// Add the given RTL to the front end's map from address to aldready-decoded-RTL
 		void		addDecodedRtl(ADDRESS a, RTL* rtl) {
 						pFE->addDecodedRtl(a, rtl); }
-
-virtual Memo		*makeMemo(int mId);
-virtual void		readMemo(Memo *m, bool dec);
 
 
 protected:
