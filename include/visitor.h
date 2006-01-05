@@ -494,9 +494,10 @@ public:
 
 
 class ComplexityFinder : public ExpVisitor {
-		int		count;
+		int			count;
+		UserProc*	proc;
 public:
-				ComplexityFinder() : count(0) {}
+				ComplexityFinder(UserProc* p) : count(0), proc(p) {}
 		int		getDepth() {return count;}
 
 virtual bool	visit(Unary *e,		bool& override);

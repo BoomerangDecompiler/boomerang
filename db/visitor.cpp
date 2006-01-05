@@ -640,10 +640,20 @@ Exp* Localiser::postVisit(Terminal* e) {
 	return ret;
 }
 
+bool ComplexityFinder::visit(Location* e,		bool& override) {
+	if (proc && proc->lookupSym(e) != NULL) {
+		// This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
+		override = true;
+		return true;
+	}
+	if (e->isMemOf() || e->isArrayIndex())
+		count++;				// Count the more complex unaries
+	override = false;
+	return true;
+}
 bool ComplexityFinder::visit(Unary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Binary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Ternary* e,	bool& override) {count++; override = false; return true;}
-bool ComplexityFinder::visit(Location* e,	bool& override) {if (e->isMemOf()) count++; override = false; return true;}
 
 // Ugh! This is still a separate propagation mechanism from Statement::propagateTo(). It would be good to get rid of
 // this one.

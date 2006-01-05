@@ -279,7 +279,7 @@ virtual void		setSubExp3(Exp* e) {};
 virtual int			getMemDepth() {return 0;}
 virtual bool		isMemDepth(int d) {return d == 0;}
 		// Get the complexity depth. Basically, add one for each unary, binary, or ternary
-		int			getComplexityDepth();
+		int			getComplexityDepth(UserProc* proc);
 
 		//	//	//	//	//	//	//
 		//	Guarded assignment	//

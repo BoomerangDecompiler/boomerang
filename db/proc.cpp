@@ -1325,6 +1325,7 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
+		propagateStatements(convert, ++pass);		// Some parameters may propagate now, when they were limited by -l
 	}
 
 	// Check for indirect jumps or calls not already removed by propagation of constants
@@ -1353,9 +1354,10 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 
 	findPreserveds();
 
+
 	// Used to be later...
 	if (!Boomerang::get()->noParameterNames) {
-		findPreserveds();		// FIXME: is this necessary here?
+		//findPreserveds();		// FIXME: is this necessary here?
 		//fixCallBypass();	// FIXME: surely this is not necessary now?
 		//trimParameters();	// FIXME: surely there aren't any parameters to trim yet?
 		if (VERBOSE) {

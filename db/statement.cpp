@@ -254,7 +254,8 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 			Exp* lhs = def->getLeft();
 			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
 				std::map<Exp*, int, lessExpStar>::iterator ff = destCounts->find(e);
-				if (ff != destCounts->end() && ff->second > 1 && def->getRight()->getComplexityDepth() >= propMaxDepth)
+				if (ff != destCounts->end() && ff->second > 1 &&
+						def->getRight()->getComplexityDepth(proc) >= propMaxDepth)
 					// This propagation is prevented by the -l limit
 					continue;
 			}

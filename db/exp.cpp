@@ -3934,8 +3934,8 @@ void Exp::bypassComp() {
     ((Location*)this)->setSubExp1(((Location*)this)->getSubExp1()->bypass());
 }
 
-int Exp::getComplexityDepth() {
-	ComplexityFinder cf;
+int Exp::getComplexityDepth(UserProc* proc) {
+	ComplexityFinder cf(proc);
 	accept(&cf);
 	return cf.getDepth();
 }
