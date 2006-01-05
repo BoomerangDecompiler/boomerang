@@ -520,11 +520,20 @@ RETURN  addr
 JUMPS := { "BA", "BN", "BNE", "BE", "BG", "BLE", "BGE", "BL",
         "BGU", "BLEU", "BCC", "BCS", "BPOS", "BNEG", "BVC", "BVS" };
 
+# Predicted jumps - treat just the same as non predicted jumps
+PJUMPS := { "BPA", "BPN", "BPNE", "BPE", "BPG", "BPLE", "BPGE", "BPL",
+        "BPGU", "BPLEU", "BPCC", "BPCS", "BPPOS", "BPNEG", "BPVC", "BPVS" };
+
 COND := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)",
         "~(%NF ^ %OF)", "%NF ^ %OF", "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF",
         "~%NF", "%NF", "~%OF", "%OF" };
 
 JUMPS[idx]  reloc 
+                *32* %pc := %npc
+                *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
+                *1* %CTI := 1;
+
+PJUMPS[idx]  reloc 
                 *32* %pc := %npc
                 *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
                 *1* %CTI := 1;
