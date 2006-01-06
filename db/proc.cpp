@@ -2092,17 +2092,6 @@ void UserProc::findFinalParameters() {
 						LOG << "ignoring m[const]\n";
 					continue;
 				}
-#if 0
-				// Has to be r[] or m[esp+K]. NOTE: PENTIUM SPECIFIC!
-				if ((e->getOper() != opMemOf ||
-						e->getSubExp1()->getOper() != opPlus ||
-						!(*e->getSubExp1()->getSubExp1() == *Location::regOf(28)) ||
-						e->getSubExp1()->getSubExp2()->getOper() != opIntConst) && e->getOper() != opRegOf) {
-					if (VERBOSE)
-						LOG << "ignoring non pentium " << e << "\n";
-					continue;
-				}
-#endif
 				if (VERBOSE)
 					LOG << "found new parameter " << e << "\n";
 				// Add this parameter to the signature (for now; creates parameter names)
@@ -4313,9 +4302,8 @@ void UserProc::insertParameter(Exp* e) {
 
 	if (filterParams(e))
 		return;						// Filtered out
-	if (isPreserved(e))
-		return;						// Also filter out preserveds (filterParams doesn't do it, since we don't want to
-									// filter out preserveds for arguments)
+	// Used to filter out preserved locations here: no! Propagation and dead code elimination solve the problem.
+	// See test/pentium/restoredparam for an example where you must not remove restored locations
 			
 	// Wrap it in an implicit assignment; DFA based TA should update the type later
 	ImplicitAssign* as = new ImplicitAssign(e->clone());
