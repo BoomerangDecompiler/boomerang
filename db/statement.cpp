@@ -3077,6 +3077,7 @@ bool Assign::searchAll(Exp* search, std::list<Exp*>& result) {
 		result.push_back(*it);
 	return res;
 }
+// FIXME: is this the right semantics for searching a phi statement, disregarding the RHS?
 bool PhiAssign::searchAll(Exp* search, std::list<Exp*>& result) {
 	return lhs->searchAll(search, result);
 }
@@ -4861,3 +4862,10 @@ void CallStatement::eliminateDuplicateArgs() {
 	}
 }
 
+void PhiAssign::enumerateParams(std::list<Exp*>& le) {
+	iterator it;
+	for (it = begin(); it != end(); ++it) {
+		RefExp* r = new RefExp(it->e, it->def);
+		le.push_back(r);
+	}
+}

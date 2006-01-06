@@ -1987,62 +1987,6 @@ void UserProc::finalSimplify()
 	}
 }
 
-#if 0			// Now done by dataflow
-void UserProc::addNewReturns(int depth) {
-
-	if (signature->isFullSignature())
-		return;
-
-	if (VERBOSE)
-		LOG << "adding new returns for " << getName() << "\n";
-
-	StatementList stmts;
-	getStatements(stmts);
-
-	StatementList::iterator it;
-	for (it = stmts.begin(); it != stmts.end(); it++) {
-		Statement* s = (Statement*)*it;
-		LocationSet defs;
-		s->getDefinitions(defs);
-		LocationSet::iterator ll;
-		for (ll = defs.begin(); ll != defs.end(); ll++) {
-			Exp *left = *ll;
-			bool allZero = true;
-			Exp *e = left->clone()->removeSubscripts(allZero);
-			if (allZero && signature->findReturn(e) == -1 &&
-				getProven(e) == NULL) {
-				if (e->getOper() == opLocal) {
-					if (VERBOSE)
-						LOG << "ignoring local " << e << "\n";
-					continue;
-				}
-				if (e->getOper() == opGlobal) {
-					if (VERBOSE)
-						LOG << "ignoring global " << e << "\n";
-					continue;
-				}
-				if (e->getOper() == opRegOf && 
-					e->getSubExp1()->getOper() == opTemp) {
-					if (VERBOSE)
-						LOG << "ignoring temp " << e << "\n";
-					continue;
-				}
-				if (e->getOper() == opFlags) {
-					if (VERBOSE)
-						LOG << "ignoring flags " << e << "\n";
-					continue;
-				}
-				if (e->getMemDepth() != depth) {
-					continue;
-				}
-				if (VERBOSE)
-					LOG << "found new return " << e << "\n";
-				addReturn(e);
-			}
-		}
-	}
-}
-#endif
 
 // m[WILD]{-}
 static RefExp *memOfWild = new RefExp(
@@ -2051,22 +1995,12 @@ static RefExp *memOfWild = new RefExp(
 static RefExp* regOfWild = new RefExp(
 	Location::regOf(new Terminal(opWildIntConst)), NULL);
 
-// Search for expressions without explicit definitions (i.e. WILDCARD{-}), which represent parameters (use before define).
+// Search for expressions without explicit definitions (i.e. WILDCARD{-}), which represent parameters (use before
+// definition).
 // Note: this identifies saved and restored locations as parameters (e.g. ebp in most Pentium procedures).
-// Would like to avoid this if possible. Marking the statements involved in saving and restoring, and ignoring these
-// here, does not work in all cases, e.g. this contrived procedure:
-// f1: a = a xor b
-//	c = a         // Keep a copy of a xor b
-//	b = a xor b
-//	a = a xor b
-//	print a       // Print original value of b
-//	print c       // Print (original a) xor (original b)
-//	a = ...
-//	a = a xor b
-//	b = a xor b
-//	a = a xor b
-//	ret
+// Some preserved locations could be parameters (and some of those could be returns as well).
 
+// I can't remember why these are called "final" parameters... they still need to be trimmed (e.g. preserved locations)
 void UserProc::findFinalParameters() {
 
 	parameters.clear();
@@ -2101,18 +2035,20 @@ void UserProc::findFinalParameters() {
 	StatementList::iterator it;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		// For now, assume that all parameters will be m[]{-} or r[]{-} (Seems pretty reasonable)
+		// For now, assume that all parameters will be m[]{-} or r[]{-}, or in phi statements such as
+		// lhs := phi{2 - 5}
 		std::list<Exp*> results;
-		s->searchAll(memOfWild, results);
-		s->searchAll(regOfWild, results);
+		if (s->isPhi())
+			((PhiAssign*)s)->enumerateParams(results);
+		else {
+			s->searchAll(memOfWild, results);
+			s->searchAll(regOfWild, results);
+		}
 		while (results.size()) {
-			bool allZero;
-			Exp *e = results.front()->clone()->removeSubscripts(allZero);
+			bool foundParam;
+			Exp *e = results.front()->clone()->removeSubscripts(foundParam);
 			results.erase(results.begin());		// Remove current (=first) result from list
-			if (allZero && signature->findParam(e) == -1
-					// ? Often need to transfer from implit to explicit:
-				 	// && signature->findImplicitParam(e) == -1
-					) {
+			if (foundParam && signature->findParam(e) == -1) {
 				if (signature->isStackLocal(prog, e) || e->getOper() == opLocal) {
 					if (VERBOSE)
 						LOG << "ignoring local " << e << "\n";
@@ -2725,15 +2661,9 @@ void UserProc::mapExpressionsToParameters() {
 			Exp *n;
 			if (s->search(r, n)) {
 				if (VERBOSE)
-					LOG << "replacing " << r << " with " << replace << " in " << s << "\n";
-#if 0
-				s->searchAndReplace(r, replace);
-				if (VERBOSE)
-					LOG << "after: " << s << "\n";
-#else
+					LOG << "mapping " << r << " to " << replace << " in " << s << "\n";
 				symbolMap[r] = replace;			// Add to symbol map
 				// Note: don't add to locals, since otherwise the back end will declare it twice
-#endif
 			}
 		}
 	}

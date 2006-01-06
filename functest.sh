@@ -35,6 +35,8 @@ $TESTONE ppc	 hello		1 "$BOOMSW"
 $TESTONE pentium twoproc	1 "$BOOMSW"
 $TESTONE sparc   twoproc	1 "$BOOMSW"
 $TESTONE ppc	 twoproc	1 "$BOOMSW"
+$TESTONE pentium param1		1 "$BOOMSW"
+$TESTONE sparc   param1		4 "$BOOMSW" '2 3 4'
 $TESTONE pentium fib		1 "$BOOMSW"
 $TESTONE sparc   fib		1 "$BOOMSW"
 $TESTONE pentium fibo-O4	1 "$BOOMSW" < test/source/fibo-O4.in1

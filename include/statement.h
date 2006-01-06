@@ -625,6 +625,9 @@ virtual	int			getNumDefs() {return defVec.size();}
 		// Convert this phi assignment to an ordinary assignment
 		void		convertToAssign(Exp* rhs);
 
+		// Generate a list of references for the parameters
+		void		enumerateParams(std::list<Exp*>& le);
+
 protected:
 		friend class XMLProgParser;
 };		// class PhiAssign
