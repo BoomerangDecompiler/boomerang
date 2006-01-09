@@ -35,7 +35,7 @@ else
 			fi
 			mv functest.tmp functest.c
 		fi
-		gcc -o functest.exe functest.c >> functest.res 2>&1
+		gcc -Ioutput -o functest.exe functest.c >> functest.res 2>&1
 		if [[ $? != 0 ]]; then
 			echo Result for $1 $2: Compile FAILED >> functest.res
 		else

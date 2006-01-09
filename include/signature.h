@@ -197,9 +197,12 @@ virtual Signature *promote(UserProc *p);
 
 		// Get a wildcard to find stack locations
 virtual Exp			*getStackWildcard() { return NULL; }
-virtual int			getStackRegister(			) {
-						assert(0); return 0; }
-static	int			getStackRegister(Prog* prog);
+	class StackRegisterNotDefinedException : public std::exception {
+	public:
+		StackRegisterNotDefinedException() { }
+	};
+virtual int			getStackRegister(			) throw(StackRegisterNotDefinedException);
+static	int			getStackRegister(Prog* prog) throw(StackRegisterNotDefinedException);
 		// Does expression e represent a local stack-based variable?
 		// Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
 		// stack pointer register
@@ -267,7 +270,7 @@ virtual ~CustomSignature() { }
 virtual	bool		isPromoted() { return true; }
 virtual Signature	*clone();
 		void		setSP(int nsp);
-virtual int			getStackRegister() {return sp; };
+virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return sp; };
 };
 
 #endif

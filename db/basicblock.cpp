@@ -711,7 +711,7 @@ Statement* BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator&
  */
 
 /* Get the condition */
-Exp *BasicBlock::getCond() {
+Exp *BasicBlock::getCond() throw(LastStatementNotABranchError) {
 	// the condition will be in the last rtl
 	assert(m_pRtls);
 	RTL *last = m_pRtls->back();
@@ -719,31 +719,35 @@ Exp *BasicBlock::getCond() {
 	BranchStatement* bs = (BranchStatement*)last->getHlStmt();
 	if (bs && bs->getKind() == STMT_BRANCH)
 		return bs->getCondExpr();
-	return NULL;
+	if (VERBOSE)
+		LOG << "throwing LastStatementNotABranchError\n";
+	throw LastStatementNotABranchError(last->getHlStmt());
 }
 
 /* Get the destiantion, if any */
-Exp *BasicBlock::getDest() {
+Exp *BasicBlock::getDest() throw(LastStatementNotAGotoError) {
 	// The destianation will be in the last rtl
 	assert(m_pRtls);
 	RTL *lastRtl = m_pRtls->back();
 	// It should contain a GotoStatement or derived class
 	Statement* lastStmt = lastRtl->getHlStmt();
-	CaseStatement* cs = static_cast<CaseStatement*>(lastStmt);
+	CaseStatement* cs = dynamic_cast<CaseStatement*>(lastStmt);
 	if (cs) {
 		// Get the expression from the switch info
 		SWITCH_INFO* si = cs->getSwitchInfo();
 		if (si)
 			return si->pSwitchVar;
 	} else {
-		GotoStatement* gs = (GotoStatement*)lastStmt;
+		GotoStatement* gs = dynamic_cast<GotoStatement*>(lastStmt);
 		if (gs)
 			return gs->getDest();
 	}
-	return NULL;
+	if (VERBOSE)
+		LOG << "throwing LastStatementNotAGotoError\n";
+	throw LastStatementNotAGotoError(lastStmt);
 }
 
-void BasicBlock::setCond(Exp *e) {
+void BasicBlock::setCond(Exp *e) throw(LastStatementNotABranchError) {
 	// the condition will be in the last rtl
 	assert(m_pRtls);
 	RTL *last = m_pRtls->back();
@@ -757,7 +761,7 @@ void BasicBlock::setCond(Exp *e) {
 			return;
 		}
 	}
-	assert(0);
+	throw LastStatementNotABranchError(NULL);
 }
 
 /* Check for branch if equal relation */
@@ -994,7 +998,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 			emitGotoAndLabel(hll, indLevel, this);
 			return;
 		}
-		
+
+	PBB child;
 	switch(sType) {
 		case Loop:
 		case LoopCond:
@@ -1288,10 +1293,29 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				return;
 			}
 
+			child = m_OutEdges[0];
+			if (m_OutEdges.size() != 1) {
+				PBB other = m_OutEdges[1];
+				LOG << "found seq with more than one outedge!\n";
+				if (getDest()->isIntConst() &&
+						((Const*)getDest())->getInt() == (int)child->getLowAddr()) {
+					other = child;
+					child = m_OutEdges[1];
+					LOG << "taken branch is first out edge\n";
+				}
+
+				hll->AddIfCondHeader(indLevel, getCond());
+				if (other->traversed == DFS_CODEGEN)
+					emitGotoAndLabel(hll, indLevel+1, other);
+				else
+					other->generateCode(hll, indLevel+1, latch,
+						followSet, gotoSet);
+				hll->AddIfCondEnd(indLevel);
+			}
+
 			// generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
 			// the latch for the current most enclosing loop.	 The only exception for generating it when it is not in
 			// the same loop is when it is only reached from this node
-			PBB child = m_OutEdges[0];
 			if (child->traversed == DFS_CODEGEN || 
 					((child->loopHead != loopHead) && (!child->allParentsGenerated() || 
 					isIn(followSet, child))) ||
@@ -1300,8 +1324,10 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					(caseHead && child == caseHead->condFollow)))
 				emitGotoAndLabel(hll, indLevel, m_OutEdges[0]);
 			else
-				m_OutEdges[0]->generateCode(hll, indLevel, latch, followSet, gotoSet);
+				child->generateCode(hll, indLevel, latch, followSet, gotoSet);
 			break;
+		default:
+			std::cerr << "unhandled sType " << (int)sType << "\n";
 	}
 }
 

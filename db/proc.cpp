@@ -552,9 +552,9 @@ void UserProc::generateCode(HLLCode *hll) {
 	assert(getEntryBB());
 
 	cfg->structure();
-	if (!Boomerang::get()->noGlobals)
+	if (!Boomerang::get()->noGlobals && !Boomerang::get()->noDecompile)
 	    replaceExpressionsWithGlobals();	// FIXME: why here?
-	if (!Boomerang::get()->noLocals) {
+	if (!Boomerang::get()->noLocals && !Boomerang::get()->noDecompile) {
 //		  while (nameStackLocations())
 //			  replaceExpressionsWithSymbols();
 
@@ -584,6 +584,14 @@ void UserProc::generateCode(HLLCode *hll) {
 		if (locType == NULL || locType->isVoid())
 			locType = new IntegerType();
 		hll->AddLocal(it->first.c_str(), locType, it == last);
+	}
+
+	if (Boomerang::get()->noDecompile && std::string(getName()) == "main") {
+		StatementList args, results;
+		if (prog->getFrontEndId() == PLAT_PENTIUM)
+			hll->AddCallStatement(1, NULL, "PENTIUMSETUP", args, &results);
+		else if (prog->getFrontEndId() == PLAT_SPARC)
+			hll->AddCallStatement(1, NULL, "SPARCSETUP", args, &results);
 	}
 
 	std::list<PBB> followSet, gotoSet;
@@ -1047,6 +1055,7 @@ void UserProc::initialiseDecompile() {
 	printXML();
 
 	if (Boomerang::get()->noDecompile) {
+		std::cout << "not decompiling.\n";
 		status = PROC_FINAL;				// ??!
 		return;
 	}
@@ -1059,6 +1068,9 @@ void UserProc::initialiseDecompile() {
 }
 
 CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
+
+	if (status >= PROC_EARLYDONE)
+		return new CycleSet; 
 
 	if (VERBOSE) LOG << "early decompile for " << getName() << "\n";
 
@@ -1383,6 +1395,9 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
  *	*	*	*	*	*	*	*	*	*	*	*	*	*/
 
 void UserProc::remUnusedStmtEtc() {
+
+	if (status >= PROC_FINAL)
+		return;
 
 	if (VERBOSE)
 		LOG << "--- remove unused statements for " << getName() << " ---\n";

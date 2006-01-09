@@ -81,7 +81,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 
 	OPER op = exp->getOper();
 	// First, a crude cast if unsigned
-	if (uns && op != opIntConst /* && !DFA_TYPE_ANALYSIS */) {
+	if (uns && op != opIntConst && op != opList/* && !DFA_TYPE_ANALYSIS */) {
 		str << "(unsigned)";
 		curPrec = PREC_UNARY;
 	}
@@ -106,7 +106,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			if (uns && K < 0) {
 				// An unsigned constant. Use some heuristics
 				unsigned rem = (unsigned)K % 100;
-				if (rem == 0 || rem == 99) {
+				if (rem == 0 || rem == 99 || K > -128) {
 					// A multiple of 100, or one less; use 4000000000U style
 					char num[16];
 					sprintf(num, "%u", K);
@@ -360,6 +360,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			closeParen(str, curPrec, PREC_ADD);
 			break;
 		case opMemOf:
+			if (Boomerang::get()->noDecompile) {
+				str << "MEMOF(";
+				appendExp(str, u->getSubExp1(), PREC_UNARY);
+				str << ")";
+				break;
+			}
 			openParen(str, curPrec, PREC_UNARY);
 			if (u->getSubExp1()->getType() &&
 			    !u->getSubExp1()->getType()->isVoid()) {
@@ -394,9 +400,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				assert(u->getSubExp1()->getOper() == opIntConst);
 				const char *n = m_proc->getProg()->getRegName(
 									((Const*)u->getSubExp1())->getInt());
-				if (n)
-					str << n;
-				else {
+				if (n) {
+					if (n[0] == '%')
+						str << n+1;
+					else
+						str << n;
+				} else {
 // What is this doing in the back end???
 					str << "r[";
 					appendExp(str, u->getSubExp1(), PREC_NONE);
@@ -418,6 +427,16 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opFsize:
    // MVE: needs work!
+   			if (Boomerang::get()->noDecompile && t->getSubExp3()->isMemOf()) {
+				assert(t->getSubExp1()->isIntConst());
+				if (((Const*)t->getSubExp1())->getInt() == 32)
+					str << "FLOAT_MEMOF(";
+				else
+					str << "DOUBLE_MEMOF(";
+				appendExp(str, t->getSubExp3()->getSubExp1(), curPrec);
+				str << ")";
+				break;
+			}
 			appendExp(str, t->getSubExp3(), curPrec);
 			break;
 		case opMult:
@@ -597,16 +616,16 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			} 
 			break;
 		case opList:
-			appendExp(str, b->getSubExp1(), PREC_NONE);
+			appendExp(str, b->getSubExp1(), PREC_NONE, uns);
 			if (b->getSubExp2()->getOper() == opList) {
 				str << ", ";
-				appendExp(str, b->getSubExp2(), PREC_NONE);
+				appendExp(str, b->getSubExp2(), PREC_NONE, uns);
 			}
 			break;
 		case opFlags:
-			str << "%flags"; break;
+			str << "flags"; break;
 		case opPC:
-			str << "%pc"; break;
+			str << "pc"; break;
 			break;
 		case opZfill:
 			// MVE: this is a temporary hack... needs cast?
@@ -632,9 +651,19 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 						(tt->isSize() && pty->getPointsTo()->getSize() == tt->getSize())))
 					str << "*";
 				else {
-					str << "*(";
-					appendType(str, tt);
-					str << "*)";
+					if (Boomerang::get()->noDecompile) {
+						if (tt && tt->isFloat()) {
+							if (tt->asFloat()->getSize() == 32)
+								str << "FLOAT_MEMOF";
+							else
+								str << "DOUBLE_MEMOF";
+						} else 
+							str << "MEMOF";
+					} else {
+						str << "*(";
+						appendType(str, tt);
+						str << "*)";
+					}
 				}
 				openParen(str, curPrec, PREC_UNARY);
 				// Emit x
@@ -1057,14 +1086,56 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	Exp *result;
 	if (asgn->getRight()->search(new Terminal(opPC), result)) // Gerard: what's this?
 		return;
-	if (asgn->getLeft()->isFlags())
-		return;
+	// ok I want this now
+	//if (asgn->getLeft()->isFlags())
+	//	return;
 
 	std::ostringstream s;
 	indent(s, indLevel);
 	Type* asgnType = asgn->getType();
 	Exp* lhs = asgn->getLeft();
 	Exp* rhs = asgn->getRight();
+
+	if (Boomerang::get()->noDecompile && rhs->isMemOf() && lhs->getOper() == opRegOf && m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
+		// add some fsize hints to rhs
+		if (((Const*)lhs->getSubExp1())->getInt() >= 32 &&
+			((Const*)lhs->getSubExp1())->getInt() <= 63)
+			rhs = new Ternary(opFsize, new Const(32), new Const(32), rhs);
+		else if (((Const*)lhs->getSubExp1())->getInt() >= 64 &&
+			((Const*)lhs->getSubExp1())->getInt() <= 87)
+			rhs = new Ternary(opFsize, new Const(64), new Const(64), rhs);
+	}
+
+	if (Boomerang::get()->noDecompile && lhs->isMemOf()) {
+		if (asgnType && asgnType->isFloat()) {
+			if (asgnType->asFloat()->getSize() == 32)
+				s << "FLOAT_";
+			else
+				s << "DOUBLE_";
+		} else if (rhs->getOper() == opFsize) {
+			if (((Const*)rhs->getSubExp2())->getInt() == 32)
+				s << "FLOAT_";
+			else
+				s << "DOUBLE_";
+		} else if (rhs->getOper() == opRegOf && m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
+			// yes, this is a hack
+			if (((Const*)rhs->getSubExp1())->getInt() >= 32 &&
+				((Const*)rhs->getSubExp1())->getInt() <= 63)
+				s << "FLOAT_";
+			else if (((Const*)rhs->getSubExp1())->getInt() >= 64 &&
+				((Const*)rhs->getSubExp1())->getInt() <= 87)
+				s << "DOUBLE_";
+		}
+
+		s << "MEMASSIGN(";
+		appendExp(s, lhs->getSubExp1(), PREC_UNARY);
+		s << ", ";
+		appendExp(s, rhs, PREC_UNARY);
+		s << ");";
+		lines.push_back(strdup(s.str().c_str()));
+		return;
+	}
+	
 	if (lhs->isMemOf() && asgnType && !asgnType->isVoid()) 
 		appendExp(s,
 			new TypedExp(
@@ -1144,7 +1215,8 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 	s << name << "(";
 	StatementList::iterator ss;
 	bool first = true;
-	for (ss = args.begin(); ss != args.end(); ++ss) {
+	int n = 0;
+	for (ss = args.begin(); ss != args.end(); ++ss, ++n) {
 		if (first)
 			first = false;
 		else
@@ -1159,8 +1231,16 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 				ok = false;
 			}
 		}
-		if (ok)
+		if (ok) {
+			bool needclose = false;
+			if (Boomerang::get()->noDecompile && proc->getSignature()->getParamType(n) && proc->getSignature()->getParamType(n)->isPointer()) {
+				s << "ADDR(";
+				needclose = true;
+			}
 			appendExp(s, arg, PREC_COMMA);
+			if (needclose)
+				s << ")";
+		}
 	}
 	s << ");";
 	if (results->size() > 1) {
@@ -1220,6 +1300,10 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 	indent(s, indLevel);
 	s << "return";
 	int n = rets->size();
+
+	if (n == 0 && Boomerang::get()->noDecompile && m_proc->getSignature()->getNumReturns() > 0)
+		s << " eax";
+	
 	if (n >= 1) {
 		s << " ";
 		appendExp(s, ((Assign*)*rets->begin())->getRight(), PREC_NONE);
@@ -1385,7 +1469,8 @@ void CHLLCode::AddGlobal(const char *name, Type *type, Exp *init) {
 		s << " = ";
 		if (type->isArray())
 			s << "{ ";
-		appendExp(s, init, PREC_ASSIGN);
+		Type *base_type = type->isArray() ? type->asArray()->getBaseType() : type; 
+		appendExp(s, init, PREC_ASSIGN, base_type->isInteger() ? !base_type->asInteger()->isSigned() : false);
 		if (type->isArray())
 			s << " }";
 	}

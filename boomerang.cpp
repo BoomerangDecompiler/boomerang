@@ -1017,6 +1017,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 		}
 	}
 
+	std::cerr << "finishing decode...\n";
 	prog->finishDecode();
 
 	Boomerang::get()->alert_end_decode();

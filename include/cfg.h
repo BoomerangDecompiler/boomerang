@@ -151,6 +151,12 @@ public:
 		 */
 		const Cfg&	operator=(const Cfg& other); /* Copy constructor */
 
+		class BBAlreadyExistsError : public std::exception { 
+		public:
+			PBB pBB;
+			BBAlreadyExistsError(PBB pBB) : pBB(pBB) { }
+		};
+		
 		/*
 		 * Checks to see if the address associated with pRtls is already in the map as an incomplete BB; if so, it is
 		 * completed now and a pointer to that BB is returned. Otherwise, allocates memory for a new basic block node,
@@ -163,7 +169,7 @@ public:
 		 * Returns NULL if not successful, or if there already exists a completed BB at this address (this can happen
 		 * with certain kinds of forward branches).
 		 */
-		PBB			newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges);
+		PBB			newBB ( std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError);
 
 		/*
 		 * Allocates space for a new, incomplete BB, and the given address is added to the map. This BB will have to be

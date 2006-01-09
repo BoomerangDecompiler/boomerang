@@ -172,6 +172,31 @@ void Prog::generateCode(Cluster *cluster, UserProc *proc, bool intermixRTL) {
 		if (proc == NULL) {
 			HLLCode *code = Boomerang::get()->getHLLCode();
 			bool global = false;
+			if (Boomerang::get()->noDecompile) {
+				char *sections[] = { "rodata", "data", "data1", 0 };
+				for (int j = 0; sections[j]; j++) {
+					std::string str = ".";
+					str += sections[j];
+					PSectionInfo info = pBF->GetSectionInfoByName(str.c_str());
+					str = "start_";
+					str	+= sections[j];
+					code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uNativeAddr : (unsigned int)-1));
+					str = sections[j];
+					str += "_size";
+					code->AddGlobal(str.c_str(), new IntegerType(32, -1), new Const(info ? info->uSectionSize : (unsigned int)-1));
+					Exp *l = new Terminal(opNil);
+					for (unsigned int i = 0; info && i < info->uSectionSize; i++) {
+						int n = pBF->readNative1(info->uNativeAddr + info->uSectionSize - 1 - i);
+						if (n < 0)
+							n = 256 + n;
+						l = new Binary(opList, new Const(n), l);
+					}
+					code->AddGlobal(sections[j], new ArrayType(new IntegerType(8, -1), info ? info->uSectionSize : 0), l);
+				}
+				code->AddGlobal("source_endianness", new IntegerType(), new Const(getFrontEndId() != PLAT_PENTIUM));
+				os << "#include \"boomerang.h\"\n\n";
+				global = true;
+			}
 			for (std::set<Global*>::iterator it1 = globals.begin(); it1 != globals.end(); it1++) {
 				// Check for an initial value
 				Exp *e = NULL;
@@ -398,7 +423,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 		return pProc;
 	const char* pName = pBF->SymbolByAddress(uAddr);
 	bool bLib = pBF->IsDynamicLinkedProc(uAddr);
-	if (pName == 0) {
+	if (pName == NULL) {
 		// No name. Give it a numbered name
 		std::ostringstream ost;
 		ost << "proc" << m_iNumberedProc++;

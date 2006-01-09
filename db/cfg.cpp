@@ -177,7 +177,7 @@ bool Cfg::checkEntryBB()
  *					iNumOutEdges: number of out edges this BB will eventually have
  * RETURNS:			Pointer to the newly created BB, or 0 if there is already an incomplete BB with the same address
  *============================================================================*/
-PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
+PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BBAlreadyExistsError)
 {
 	MAPBB::iterator mi;
 	PBB pBB;
@@ -209,7 +209,9 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 			if (!pBB->m_bIncomplete) {
 				// This list of RTLs is not needed now
 				delete_lrtls(pRtls);
-				return 0;
+				if (VERBOSE)
+					LOG << "throwing BBAlreadyExistsError\n";
+				throw BBAlreadyExistsError(pBB);
 			}
 			else {
 				// Fill in the details, and return it
@@ -265,7 +267,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 					return pNextBB;
 				}
 				// However, if the overlapping BB was already complete, return 0, so out edges won't be added twice
-				else return 0;
+				throw BBAlreadyExistsError(pNextBB);
 			}
 		}
 
@@ -278,6 +280,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
 		// Note: no need to check the other way around, because in this case, we will have called Cfg::Label(), and it
 		// will have split the existing BB already.
 	}
+	assert(pBB);
 	return pBB;
 }
 
@@ -392,7 +395,7 @@ PBB Cfg::splitBB (PBB pBB, ADDRESS uNativeAddr, PBB pNewBB /* = 0 */, bool bDelR
 	}
 
 	// If necessary, set up a new basic block with information from the original bb
-	if (pNewBB == 0) {
+	if (pNewBB == NULL) {
 		pNewBB = new BasicBlock(*pBB);
 		// But we don't want the top BB's in edges; our only in-edge should be the out edge from the top BB
 		pNewBB->m_iNumInEdges = 0;
@@ -702,7 +705,7 @@ bool Cfg::wellFormCfg()
 					PBB pBB = (*it)->m_OutEdges[i];
 
 					// Check that the out edge has been written (i.e. nonzero)
-					if (pBB == 0) {
+					if (pBB == NULL) {
 						m_bWellFormed = false;	// At least one problem
 						ADDRESS addr = (*it)->getLowAddr();
 						std::cerr << "WellFormCfg: BB with native address " << std::hex << addr <<
@@ -1673,9 +1676,11 @@ void Cfg::structure() {
         return;
 	setTimeStamps();
 	findImmedPDom();
-	structConds();
-	structLoops();
-	checkConds();
+	if (!Boomerang::get()->noDecompile) {
+		structConds();
+		structLoops();
+		checkConds();
+	}
 	structured = true;
 }
 

@@ -627,71 +627,48 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
 
 	// set pCond to a high level representation of this type
 	Exp* p = NULL;
-#if 0
 	switch(cond) {
 		case BRANCH_JE:
-			p = new Terminal(opZF);
+			p = new Binary(opEquals, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JNE:
-			p = new Unary(opNot, new Terminal(opZF));
+			p = new Binary(opNotEqual, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JSL:
-			// N xor V
-			p = new Binary(opNotEqual, new Terminal(opNF), new Terminal(opOF));
+			p = new Binary(opLess, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JSLE:
-			// Z or (N xor V)
-			p = new Binary(opOr,
-				new Terminal(opZF),
-				new Binary(opNotEqual, new Terminal(opNF), new Terminal(opOF)));
+			p = new Binary(opLessEq, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JSGE:
-			// not (N xor V) same as (N == V)
-			p = new Binary(opEquals, new Terminal(opNF), new Terminal(opOF));
+			p = new Binary(opGtrEq, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JSG:
-			// not (Z or (N xor V))
-			p = new Unary(opNot,
-				new Binary(opOr,
-					new Terminal(opZF),
-					new Binary(opNotEqual,
-						new Terminal(opNF), new Terminal(opOF))));
+			p = new Binary(opGtr, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JUL:
-			// C
-			p = new Terminal(opCF);
+			p = new Binary(opLessUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JULE:
-			// C or Z
-			p = new Binary(opOr, new Terminal(opCF), 
-								 new Terminal(opZF));
+			p = new Binary(opLessEqUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JUGE:
-			// not C
-			p = new Unary(opNot, new Terminal(opCF));
+			p = new Binary(opGtrEqUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JUG:
-			// not (C or Z)
-			p = new Unary(opNot,
-				new Binary(opOr,
-					new Terminal(opCF),
-					new Terminal(opZF)));
+			p = new Binary(opGtrUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JMI:
-			// N
-			p = new Terminal(opNF);
+			p = new Binary(opLess, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JPOS:
-			// not N
-			p = new Unary(opNot, new Terminal(opNF));
+			p = new Binary(opGtr, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JOF:
-			// V
-			p = new Terminal(opOF);
+			p = new Binary(opLessUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JNOF:
-			// not V
-			p = new Unary(opNot, new Terminal(opOF));
+			p = new Binary(opGtrUns, new Terminal(opFlags), new Const(0));
 			break;
 		case BRANCH_JPAR:
 			// Can't handle (could happen as a result of a failure of Pentium
@@ -699,9 +676,11 @@ void BranchStatement::setCondType(BRANCH_TYPE cond, bool usesFloat /*= false*/) 
 			assert(false);
 			break;
 	}
-#else
-	p = new Terminal(usesFloat ? opFflags : opFlags);
-#endif
+	// this is such a hack.. preferably we should actually recognise 
+	// SUBFLAGS32(..,..,..) > 0 instead of just SUBFLAGS32(..,..,..)
+	// but I'll leave this in here for the moment as it actually works.
+	if (!Boomerang::get()->noDecompile)
+		p = new Terminal(usesFloat ? opFflags : opFlags);
 	assert(p);
 	setCondExpr(p);
 }
@@ -1634,6 +1613,32 @@ void CallStatement::generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) {
 	LOG << " in proc " << proc->getName() << "\n";
 #endif
 	assert(p);
+	if (Boomerang::get()->noDecompile) {
+		if (procDest->getSignature()->getNumReturns() > 0) {
+			Assign* as = new Assign(new IntegerType(), new Unary(opRegOf, new Const(24)), new Unary(opRegOf, new Const(24)));
+			as->setProc(proc);
+			as->setBB(pbb);
+			results->append(as);
+		}
+		
+		// some hacks
+		if (std::string(p->getName()) == "printf" ||
+			std::string(p->getName()) == "scanf") {
+			for (int i = 1; i < 3; i++) {
+				Exp *e = signature->getArgumentExp(i);
+				assert(e);
+				Location *l = dynamic_cast<Location*>(e);
+				if (l) {
+					l->setProc(proc);		// Needed?
+				}
+				Assign* as = new Assign(signature->getParamType(i), e->clone(), e->clone());
+				as->setProc(proc);
+				as->setBB(pbb);
+				as->setNumber(number);		// So fromSSAform will work later
+				arguments.append(as);
+			}
+		}
+	}
 	if (p->isLib() && *p->getSignature()->getPreferedName()) {
 		// How did this ever work? Surely you need the actual, substituted-into arguments!
 #if 0
@@ -4641,7 +4646,7 @@ StatementList* CallStatement::calcResults() {
 				}
 			}
 		} else {
-			Exp* rsp = Location::regOf(proc->getSignature()->getStackRegister());
+			Exp* rsp = Location::regOf(proc->getSignature()->getStackRegister(proc->getProg()));
 			StatementList::iterator dd;
 			for (dd = defines.begin(); dd != defines.end(); ++dd) {
 				Exp* lhs = ((Assign*)*dd)->getLeft();

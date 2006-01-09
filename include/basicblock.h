@@ -295,14 +295,24 @@ static bool			lessLastDFT(PBB bb1, PBB bb2);
 		 */
 		void		resetDFASets();
 
+		class LastStatementNotABranchError : public std::exception {
+		public:
+			Statement *stmt;
+			LastStatementNotABranchError(Statement *stmt) : stmt(stmt) { }
+		};
 		/* get the condition */
-		Exp			*getCond();
+		Exp			*getCond() throw(LastStatementNotABranchError);
 
 		/* set the condition */
-		void		setCond(Exp *e);
+		void		setCond(Exp *e) throw(LastStatementNotABranchError);
 
+		class LastStatementNotAGotoError : public std::exception {
+		public:
+			Statement *stmt;
+			LastStatementNotAGotoError(Statement *stmt) : stmt(stmt) { }
+		};
 		/* Get the destination expression, if any */
-		Exp*		getDest();
+		Exp*		getDest() throw(LastStatementNotAGotoError);
 
 		/* Check if there is a jump if equals relation */
 		bool		isJmpZ(PBB dest);

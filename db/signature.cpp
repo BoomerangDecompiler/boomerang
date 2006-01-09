@@ -85,7 +85,7 @@ namespace CallingConvention {
 
 		virtual Signature 	*promote(UserProc *p);
 		virtual Exp			*getStackWildcard();
-		virtual int	 		getStackRegister() {return 28; }
+		virtual int	 		getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
 		virtual Exp			*getProven(Exp *left);
 		virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
 		virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
@@ -126,7 +126,7 @@ namespace CallingConvention {
 
 			virtual Signature	*promote(UserProc *p);
 			virtual Exp			*getStackWildcard();
-			virtual int			getStackRegister() {return 28; }
+			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 28; }
 			virtual Exp			*getProven(Exp *left);
 			virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
 			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
@@ -152,7 +152,7 @@ namespace CallingConvention {
 
 			virtual Signature	*promote(UserProc *p);
 			virtual Exp			*getStackWildcard();
-			virtual int			getStackRegister() {return 14; }
+			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 14; }
 			virtual Exp			*getProven(Exp *left);
 			virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
 			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
@@ -184,7 +184,7 @@ namespace CallingConvention {
 			virtual	Exp			*getArgumentExp(int n);
 			virtual	void		addParameter(Type *type, const char *nam /*= NULL*/, Exp *e /*= NULL*/);
 			virtual Exp			*getStackWildcard();
-			virtual int			getStackRegister() {return 1; }
+			virtual int			getStackRegister() throw(StackRegisterNotDefinedException) {return 1; }
             virtual Exp			*getProven(Exp *left);
 			virtual	bool		isPreserved(Exp* e);		// Return whether e is preserved by this proc
 			virtual void		setLibraryDefines(StatementList* defs);	// Set list of locations def'd by library calls
@@ -206,7 +206,7 @@ namespace CallingConvention {
 
 			virtual Signature *promote(UserProc *p);
 			virtual Exp *getStackWildcard();
-			virtual int	 getStackRegister() {return 3; }
+			virtual int	 getStackRegister() throw(StackRegisterNotDefinedException) {return 3; }
 			virtual Exp *getProven(Exp *left);
 			virtual bool	isPromoted() { return true; }
 			//virtual bool isLocalOffsetPositive() {return true;}
@@ -1723,8 +1723,14 @@ StatementList& Signature::getStdRetStmt(Prog* prog) {
 	return *new StatementList;
 }
 
+int Signature::getStackRegister() throw(StackRegisterNotDefinedException) {
+	if (VERBOSE)
+		LOG << "thowing StackRegisterNotDefinedException\n";
+	throw StackRegisterNotDefinedException();
+}
+
 // Needed before the signature is promoted
-int Signature::getStackRegister(Prog* prog) {
+int Signature::getStackRegister(Prog* prog) throw(StackRegisterNotDefinedException) {
 	MACHINE mach = prog->getMachine();
 	switch (mach) {
 		case MACHINE_SPARC:
@@ -1736,8 +1742,7 @@ int Signature::getStackRegister(Prog* prog) {
 		case MACHINE_ST20:
 			return 3;
 		default:
-			assert(0);
-			return 0;
+			throw StackRegisterNotDefinedException();
 	}
 }
 

@@ -586,6 +586,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 						CallStatement *call = new CallStatement;
 						call->setDest(stmt_jump->getDest()->clone());
 						LibProc *lp = pProc->getProg()->getLibraryProc(func.c_str());
+						if (lp == NULL)
+							LOG << "getLibraryProc returned NULL, aborting\n";
 						assert(lp);
 						call->setDestProc(lp);
 						std::list<Statement*>* stmt_list = new std::list<Statement*>;
@@ -845,7 +847,6 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				if (!pCfg->isIncomplete(uAddr))
 					sequentialDecode = false;
 			}
-
 		}	// while sequentialDecode
 
 		// Add this range to the coverage
@@ -882,6 +883,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 	}
 
 	Boomerang::get()->alert_decode(pProc, startAddr, lastAddr, nTotalBytes);
+
+	LOG << "finished processing proc " << pProc->getName() << "\n";
 
 	return true;
 }
@@ -1168,6 +1171,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 	if (BB_rtls == NULL) BB_rtls = new std::list<RTL*>;		// In case no other semantics
 	BB_rtls->push_back(pRtl);
 	ADDRESS retAddr = pProc->getTheReturnAddr();
+	LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
 	if (retAddr == NO_ADDRESS) {
 		// Create the basic block
 		pBB = pCfg->newBB(BB_rtls, RET, 0);
@@ -1182,12 +1186,17 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 		// (RTLs).
 		pRtl->clear();
 		pRtl->appendStmt(new GotoStatement(retAddr));
-		pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
-		if (pBB)									// Can be NULL if BB already exists but is incomplete
+		try {
+			pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
+			// if BB already exists but is incomplete, exception is thrown
 			pCfg->addOutEdge(pBB, retAddr, true);
-		// Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
-		// instructions before the return instruction).
-		targetQueue.visit(pCfg, retAddr, pBB);
+			// Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
+			// instructions before the return instruction).
+			targetQueue.visit(pCfg, retAddr, pBB);
+		} catch(Cfg::BBAlreadyExistsError &e) {
+			if (VERBOSE)
+				LOG << "not visiting " << retAddr << " due to exception\n";
+		}
 	}
 	return pBB;
 }
