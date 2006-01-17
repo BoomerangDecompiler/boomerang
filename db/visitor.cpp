@@ -428,8 +428,18 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 // Expression subscripter
 //
 Exp* ExpSubscripter::preVisit(Location* e, bool& recur) {
-	if (/* search == NULL || */ *e == *search) {
+	if (*e == *search) {
 		recur = e->isMemOf();			// Don't double subscript unless m[...]
+		return new RefExp(e, def);		// Was replaced by postVisit below
+	}
+	recur = true;
+	return e;
+}
+
+Exp* ExpSubscripter::preVisit(Binary* e, bool& recur) {
+	// array[index] is like m[addrexp]: requires a subscript
+	if (e->isArrayIndex() && *e == *search) {
+		recur = true;					// Check the index expression
 		return new RefExp(e, def);		// Was replaced by postVisit below
 	}
 	recur = true;

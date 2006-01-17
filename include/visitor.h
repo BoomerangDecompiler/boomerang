@@ -375,6 +375,7 @@ class ExpSubscripter : public ExpModifier {
 public:
 					ExpSubscripter(Exp* s, Statement* d) : search(s), def(d) { }
 virtual Exp*		preVisit(Location *e, bool& recur);
+virtual Exp*		preVisit(Binary *e, bool& recur);
 virtual Exp*		preVisit(Terminal *e);
 virtual Exp*		preVisit(RefExp *e,   bool& recur);
 };
