@@ -4869,6 +4869,7 @@ void CallStatement::eliminateDuplicateArgs() {
 void PhiAssign::enumerateParams(std::list<Exp*>& le) {
 	iterator it;
 	for (it = begin(); it != end(); ++it) {
+		if (it->e == NULL) continue;
 		RefExp* r = new RefExp(it->e, it->def);
 		le.push_back(r);
 	}
