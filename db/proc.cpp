@@ -1336,8 +1336,8 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 			replaceExpressionsWithGlobals();
 
 	if (!Boomerang::get()->noParameterNames) {
-		mapExpressionsToParameters();
-		propagateStatements(convert, ++pass);		// Some parameters may propagate now, when they were limited by -l
+		// ? Crazy time to do this... haven't even done "final" parameters as yet
+		//mapExpressionsToParameters();
 	}
 
 	// Check for indirect jumps or calls not already removed by propagation of constants
@@ -1438,9 +1438,11 @@ void UserProc::remUnusedStmtEtc() {
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
-		//findPreserveds();		// FIXME: is this necessary here?
-		//fixCallAndPhiRef();		// FIXME: surely this is not necessary now?
-		//trimParameters();		// FIXME: check
+		bool convert;						// Don't think we need to check this after propagating at this late stage
+		propagateStatements(convert, 99);	// Some parameters may propagate now, when they were limited by -l
+		//findPreserveds();					// FIXME: is this necessary here?
+		//fixCallAndPhiRef();				// FIXME: surely this is not necessary now?
+		//trimParameters();					// FIXME: check
 		if (VERBOSE) {
 			LOG << "--- after adding new parameters ---\n";
 			printToLog();
@@ -3104,14 +3106,9 @@ bool UserProc::propagateStatements(bool& convert, int pass) {
 	bool change = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
-		LocationSet exps;
-		s->addUsedLocs(exps, true);		// True to also add uses from collectors
-		LocationSet::iterator ll;
-		for (ll = exps.begin(); ll != exps.end(); ll++) {
-			Exp* e = *ll;
-			if (!s->canPropagateToExp(e)) continue;
-			destCounts[e]++;				// Count propagatable expression e
-		}
+		ExpDestCounter edc(destCounts);
+		StmtDestCounter sdc(&edc);
+		s->accept(&sdc);
 	}
 	convert = false;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
