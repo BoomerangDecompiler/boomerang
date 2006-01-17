@@ -216,8 +216,7 @@ virtual bool		visit(ImpRefStatement	*stmt);
 class StmtExpVisitor {
 public:
 		ExpVisitor*	ev;
-					StmtExpVisitor(ExpVisitor* v) {
-						ev = v;}
+					StmtExpVisitor(ExpVisitor* v) : ev(v) {}
 virtual				~StmtExpVisitor() {}
 virtual bool		visit(         Assign *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(      PhiAssign *stmt, bool& override) {override = false; return true;}
@@ -550,4 +549,21 @@ public:
 					ConstGlobalConverter(Prog* pg) : prog(pg) {}
 virtual Exp*		preVisit(RefExp		*e, bool& recur);
 };
+
+// Count the number of times a reference expression is used. Increments the count multiple times if the same reference
+// expression appears multiple times (so can't use UsedLocsFinfer for this)
+class ExpDestCounter : public ExpVisitor {
+		std::map<Exp*, int, lessExpStar>& destCounts;
+public:
+					ExpDestCounter(std::map<Exp*, int, lessExpStar>& dc) : destCounts(dc) {}
+		bool	 	visit(RefExp *e, bool& override);
+};
+
+// FIXME: do I need to count collectors? All the visitors and modifiers should be refactored to conditionally visit
+// or modify collectors, or not
+class StmtDestCounter : public StmtExpVisitor {
+public:
+					StmtDestCounter(ExpDestCounter* edc) : StmtExpVisitor(edc) {}
+};
+
 #endif	// #ifndef __VISITOR_H__
