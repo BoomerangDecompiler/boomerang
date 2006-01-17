@@ -1844,8 +1844,6 @@ void Cfg::appendBBs(std::list<PBB>& worklist, std::set<PBB>& workset) {
 		workset.insert(*it);
 }
 
-#define DEBUG_SPLIT_FOR_BRANCH 0
-#if DEBUG_SPLIT_FOR_BRANCH
 void dumpBB(PBB bb) {
 	std::cerr << "For BB at " << std::hex << bb << ":\nIn edges: ";
 	int i, n;
@@ -1860,7 +1858,6 @@ void dumpBB(PBB bb) {
 	  std::cerr << outs[i] << " ";
 	std::cerr << "\n";
 }
-#endif	  
 
 /*	pBB-> +----+	+----+ <-pBB
  * Change | A  | to | A	 | where A and B could be empty. S is the string
