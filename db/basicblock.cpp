@@ -2243,6 +2243,7 @@ void BasicBlock::processSwitch(UserProc* proc) {
 	// The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be iLower+i
 	// for the ith zero-based case. It may be that the code for case 5 above will be a goto to the code for case 3,
 	// but a smarter back end could group them
+	std::list<ADDRESS> dests;
 	for (int i=0; i < iNum; i++) {
 		// Get the destination address from the switch table.
 		if (si->chForm == 'H') {
@@ -2261,13 +2262,20 @@ void BasicBlock::processSwitch(UserProc* proc) {
 		if (uSwitch < prog->getLimitTextHigh()) {
 			//tq.visit(cfg, uSwitch, this);
 			cfg->addOutEdge(this, uSwitch, true);
-			// Decode the newly discovered switch code arms, if necessary
-			prog->decodeFragment(proc, uSwitch);
+			// Remember to decode the newly discovered switch code arms, if necessary
+			// Don't do it right now, in case there are recursive switch statements (e.g. app7win.exe from
+			// hackthissite.org)
+			dests.push_back(uSwitch);
 		} else {
 			LOG << "switch table entry branches to past end of text section " << uSwitch << "\n";
 			iNumOut--;
+			m_iNumOutEdges--;		// FIXME: where is this set?
 		}
 	}
+	// Decode the newly discovered switch code arms, if any, and if not already decoded
+	std::list<ADDRESS>::iterator dd;
+	for (dd = dests.begin(); dd != dests.end(); ++dd)
+		prog->decodeFragment(proc, *dd);
 }
 
 // Change the BB enclosing stmt from type COMPCALL to CALL
