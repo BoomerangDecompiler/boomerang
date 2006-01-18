@@ -93,14 +93,18 @@ $TESTONE sparc   uns		1 "$BOOMSW" '2 3'
 $TESTONE pentium fromssa2	1 "$BOOMSW"
 $TESTONE sparc   fromssa2	1 "$BOOMSW"
 $TESTONE pentium sumarray-O4 1 "$BOOMSW"
+$TESTONE pentium callchain	1 "$BOOMSW"
+$TESTONE sparc	 callchain	1 "$BOOMSW"
 if [ ! "$TYPEANALYSIS" ]
 then
-  echo Skipping sparc sumarray and recursion tests, require type analysis
+  echo Skipping sparc sumarray etc tests, require type analysis
   echo
 else
 $TESTONE sparc   sumarray-O4 1 "$BOOMSW"
 $TESTONE pentium recursion	2 "$BOOMSW" 2
 #$TESTONE sparc   recursion	2 "$BOOMSW" 2
+$TESTONE pentium paramchain	1 "$BOOMSW"
+$TESTONE sparc	 paramchain	1 "$BOOMSW"
 fi
 $TESTONE pentium bswap		1 "$BOOMSW"
 $TESTONE pentium testset	1 -O '2 3 4'
