@@ -1729,7 +1729,11 @@ bool CallStatement::convertToDirect() {
 	char *nam = ((Const*)e->getSubExp1())->getStr();
 	Prog* prog = proc->getProg();
 	ADDRESS gloAddr = prog->getGlobalAddr(nam);
-	int dest = prog->readNative4(gloAddr);
+	ADDRESS dest = prog->readNative4(gloAddr);
+	// We'd better do some limit checking on the value. This does not guarantee that it's a valid proc pointer, but it
+	// may help
+	if (dest < prog->getLimitTextLow() || dest > prog->getLimitTextHigh())
+		return false;		// Not a valid proc pointer
 	Proc *p = prog->findProc(nam);
 	bool bNewProc = p == NULL;
 	if (bNewProc)

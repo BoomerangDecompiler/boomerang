@@ -235,6 +235,7 @@ virtual				~Prog();
 						{ return pBF->SymbolByAddress(dest);}
 		PSectionInfo getSectionInfoByAddr(ADDRESS a)
 						{ return pBF->GetSectionInfoByAddr(a);}
+		ADDRESS		getLimitTextLow() {return pBF->getLimitTextLow();}
 		ADDRESS		getLimitTextHigh() {return pBF->getLimitTextHigh();}
 		// Read 2, 4, or 8 bytes given a native address
 		int			readNative1(ADDRESS a) {return pBF->readNative1(a);}
