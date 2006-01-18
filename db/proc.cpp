@@ -1402,8 +1402,8 @@ void UserProc::remUnusedStmtEtc() {
 	if (VERBOSE)
 		LOG << "--- remove unused statements for " << getName() << " ---\n";
 	// A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
-	if (theReturnStatement)
-		theReturnStatement->specialProcessing();
+//	if (theReturnStatement)
+//		theReturnStatement->specialProcessing();
 
 	// Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
 	// do an initial TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
@@ -4338,7 +4338,8 @@ void UserProc::insertParameter(Exp* e) {
 // Filter out locations not possible as return locations. Return true to *remove* (filter *out*)
 bool UserProc::filterReturns(Exp* e) {
 	if (isPreserved(e))
-		return true;			// Don't keep preserved locations
+		// If it is preserved, then it can't be a return (since we don't change it)
+		return true;
 	switch (e->getOper()) {
 		case opPC:	return true;			// Ignore %pc
 		case opDefineAll: return true;		// Ignore <all>
@@ -4718,9 +4719,9 @@ bool UserProc::isLocalOrParam(Exp* e) {
 // 3) if y is a parameter (i.e. y is of the form loc{-}), then the signature of this procedure changes, and all callers
 //	have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
 //	arguments as is applied here to the removed returns.
-void UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
+bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 	if (theReturnStatement == NULL)
-		return;
+		return false;
 	if (DEBUG_UNUSED)
 		LOG << "%%% removing unused returns for " << getName() << " %%%\n";
 	LocationSet unionOfCallerLiveLocs;
@@ -4769,9 +4770,18 @@ void UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
 	}
 
-	// Now update myself, especially because the call livenesses are possibly incorrect (so it's pointless removing
-	// unused returns for children, since the liveness that this depends on is possibly incorrect).
-	updateForUseChange(removeRetSet);
+	if (removedSome) {
+		// Now update myself, especially because the call livenesses are possibly incorrect (so it's pointless removing
+		// unused returns for children, since the liveness that this depends on is possibly incorrect).
+		updateForUseChange(removeRetSet);
+	
+		// Update the statements that call us
+		std::set<CallStatement*>::iterator it;
+		for (it = callerSet.begin(); it != callerSet.end() ; it++) {
+			(*it)->updateArguments();
+		}
+	}
+	return removedSome;
 }
 
 // See comments above for removeUnusedReturns(). Need to save the old parameters and call livenesses, redo the dataflow
@@ -4869,6 +4879,7 @@ void UserProc::typeAnalysis() {
 		bool first = true;
 		do {
 			if (!first) {
+				doRenameBlockVars(-1, true);		// Subscript the discovered extra parameters
 				//propagateAtDepth(maxDepth);		// HACK: Can sometimes be needed, if call was indirect
 				bool convert;
 				propagateStatements(convert, 0);
@@ -5173,4 +5184,3 @@ void UserProc::readMemo(Memo *mm, bool dec)
 	}
 }
 #endif		// #ifdef USING_MEMOS
-

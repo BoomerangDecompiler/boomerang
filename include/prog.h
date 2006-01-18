@@ -155,8 +155,9 @@ virtual				~Prog();
 		// Type analysis
 		void		globalTypeAnalysis();
 
-		// Remove unused return locations
-		void		removeUnusedReturns();
+		/// Remove unused return locations
+		/// \return true if any returns are removed
+		bool		removeUnusedReturns();
 
 		// Convert from SSA form
 		void		fromSSAform();

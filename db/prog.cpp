@@ -1002,7 +1002,8 @@ void Prog::decompile() {
 			// A final pass to remove returns not used by any caller
 			if (VERBOSE)
 				LOG << "prog: global removing unused returns\n";
-			removeUnusedReturns();
+			// repeat until no change
+			while(removeUnusedReturns());
 		}
 
 		// print XML after removing returns
@@ -1190,12 +1191,13 @@ void Prog::removeUnusedReturns() {
 // 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
 //   the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
 //	 child.
-void Prog::removeUnusedReturns() {
+bool Prog::removeUnusedReturns() {
 	// For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
 	// procedures not yet processed.
 	// Define a workset for the procedures who have to have their returns checked
 	std::set<UserProc*> removeRetSet;
 	std::list<Proc*>::iterator pp;
+	bool change=false;
 	for (pp = m_procs.begin(); pp != m_procs.end(); ++pp) {
 		UserProc* proc = (UserProc*)(*pp);
 		if (proc->isLib()) continue;
@@ -1205,11 +1207,12 @@ void Prog::removeUnusedReturns() {
 	std::set<UserProc*>::iterator it;
 	while (removeRetSet.size()) {
 		it = removeRetSet.begin();		// Pick the first element of the set
-		(*it)->removeUnusedReturns(removeRetSet);
+		change |= (*it)->removeUnusedReturns(removeRetSet);
 		// Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
 		// procedures
 		removeRetSet.erase(it);			// Remove the current element (may no longer be the first)
 	}
+	return change;
 }
 #endif
 

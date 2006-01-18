@@ -612,7 +612,9 @@ typedef std::map<Statement*, int> RefCounter;
 
 		// For the final pass of removing returns that are never used
 //typedef	std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
-		void		removeUnusedReturns(std::set<UserProc*>& removeRetSet);
+		/// Remove any returns that are not used by any callersMenu
+		// \return true if any returns are removed		
+		bool		removeUnusedReturns(std::set<UserProc*>& removeRetSet);
 		/// Update parameters and call livenesses to take into account the changes causes by removing a return from this
 		/// procedure, or a callee's parameter (which affects this procedure's arguments, which are also uses).
 		void		updateForUseChange(std::set<UserProc*>& removeRetSet);

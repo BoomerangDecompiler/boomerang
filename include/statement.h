@@ -1291,8 +1291,8 @@ virtual void		fromSSAform(igraph& ig);
 		// Remove the stack pointer and return a statement list
 		StatementList* getCleanReturns();
 
-		// Temporary hack
-		void		specialProcessing();
+		// Temporary hack (not neccesary anymore)
+		// void		specialProcessing();
 
 	friend class XMLProgParser;
 };	// class ReturnStatement

@@ -4313,7 +4313,8 @@ void ReturnStatement::updateReturns() {
 			continue;						// Not in modifieds: delete it (don't copy it)
 		if (proc->filterReturns(lhs))
 			continue;						// Filtered out: delete it
-#if 0
+#if 1
+		// Preserveds are NOT returns (nothing changes, so what are we returning?)
 		// Check if it is a preserved location, e.g. r29 := r29{-}
 		Exp* rhs = as->getRight();
 		if (rhs->isSubscript() && ((RefExp*)rhs)->isImplicitDef() && *((RefExp*)rhs)->getSubExp1() == *lhs)
@@ -4703,6 +4704,7 @@ void Assignment::setType(Type* ty) {
 	}
 }
 
+#if 0
 // A temporary HACK for getting rid of the %CF in returns
 void ReturnStatement::specialProcessing() {
 	iterator it;
@@ -4720,6 +4722,7 @@ void ReturnStatement::specialProcessing() {
 		}
 	}
 }
+#endif
 
 void CallStatement::removeDefine(Exp* e) {
 	StatementList::iterator ss;

@@ -20,6 +20,7 @@
  * 28 Jun 02 - Trent: Starting to look better
  * 22 May 03 - Mike: delete -> free() to keep valgrind happy
  * 16 Apr 04 - Mike: char[] replaced by ostringstreams
+ * 18 Jan 06 - Gerard: several changes for prettier output, better logging of warnings and errors
  */
 
 #include <assert.h>
@@ -144,7 +145,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				} else {
 					// More heuristics
 					int K = c->getInt();
-					if (-2048 <= K && K <= 2048)
+					if (-2048 < K && K < 2048)
 						str << std::dec << K; 			// Just a plain vanilla int
 					else
 						str << "0x" << std::hex << K;	// 0x2000 style
@@ -153,8 +154,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		}
 		case opLongConst:
-			// sprintf(s, "%lld", c->getLong());
-			//strcat(str, s);
 			str << std::dec << c->getLong() << "LL"; break;
 		case opFltConst:
 			// What to do with precision here?
@@ -275,7 +274,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			openParen(str, curPrec, PREC_BIT_AND);
 			appendExp(str, b->getSubExp1(), PREC_BIT_AND);
 			str << " & ";
-			appendExp(str, b->getSubExp2(), PREC_BIT_AND);
+			if (b->getSubExp2()->getOper() == opIntConst) {
+				// print it 0x2000 style
+				str << "0x" << std::hex << ((Const*)b->getSubExp2())->getInt();
+			} else {
+				appendExp(str, b->getSubExp2(), PREC_BIT_AND);
+			}
 			closeParen(str, curPrec, PREC_BIT_AND);
 			break;
 		case opBitOr:
@@ -310,6 +314,25 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opAt:
 		{
+			// I guess that most people will find this easier to read
+			// s1 >> last & 0xMASK
+			openParen(str, curPrec, PREC_BIT_AND);
+			appendExp(str, t->getSubExp1(), PREC_BIT_SHIFT);
+			Const* first = (Const*) t->getSubExp2();
+			Const* last = (Const*) t->getSubExp3();
+			str << " >> ";
+			appendExp(str, last, PREC_BIT_SHIFT);
+			str << " & ";
+			
+			unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
+			if ( mask < 10)
+				// print 0x3 as 3
+				str << mask;
+			else {
+				str << "0x" << std::hex << mask;
+			}
+			closeParen(str, curPrec, PREC_BIT_AND);		
+#if 0
 			// General form:
 			//	s1 >> last & (1 << first-last+1)-1
 			// When first == last:
@@ -332,6 +355,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << "+1)-1";
 			}
 			closeParen(str, curPrec, PREC_BIT_AND);
+#endif
 #if 0
 			c = dynamic_cast<Const*>(t->getSubExp3());
 			assert(c && c->getOper() == opIntConst);
@@ -392,6 +416,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opRegOf:
 			{
 				// MVE: this can likely go
+				LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
 				if (u->getSubExp1()->getOper() == opTemp) {
 					// The great debate: r[tmpb] vs tmpb
 					str << "tmp";
@@ -415,6 +440,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opTemp:
 			// Should never see this; temps should be mapped to locals now so that they get declared
+			LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
 			// Emit the temp name, e.g. "tmp1"
 			str << ((Const*)u->getSubExp1())->getStr();
 			break;
@@ -480,8 +506,9 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opTern:
 			openParen(str, curPrec, PREC_COND);
-			appendExp(str, t->getSubExp1(), PREC_COND);
-			str << " ? ";
+			str << " (";
+			appendExp(str, t->getSubExp1(), PREC_NONE);
+			str << ") ? ";
 			appendExp(str, t->getSubExp2(), PREC_COND);
 			str << " : ";
 			appendExp(str, t->getSubExp3(), PREC_COND);
@@ -597,7 +624,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opAFP:
 		case opAGP:
 			// not implemented
-			LOG << "not implemented for codegen " << operStrings[exp->getOper()] << "\n";
+			LOG << "WARNING: CHLLCode::appendExp: case " << operStrings[exp->getOper()] << " not implemented\n";
 			//assert(false);
 			break;
 		case opFlagCall:
@@ -633,6 +660,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			//	((Const*)t->getSubExp1())->getInt(),
 			//	((Const*)t->getSubExp2())->getInt());
 			//strcat(str, s); */
+			LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
 			str << "(";
 			appendExp(str, t->getSubExp3(), PREC_NONE);
 			str << ")";
@@ -768,7 +796,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opSubscript:
 			appendExp(str, u->getSubExp1(), curPrec);
-			LOG << "ERROR: subscript in code generation of proc " <<
+			LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " <<
 			  m_proc->getName() << " exp (without subscript): " << str.str().c_str()
 				<< "\n";
 			//assert(false);
@@ -815,7 +843,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				str << operStrings[op]+2;
 				break;
 			}
-			LOG << "ERROR: not implemented for codegen " << operStrings[op] << "\n";
+			LOG << "ERROR: CHLLCode::appendExp: case " << operStrings[op] << " not implemented\n";
 			//assert(false);
 	}
 
@@ -851,7 +879,7 @@ void CHLLCode::appendTypeIdent(std::ostringstream& str, Type *typ, const char *i
 		str << "]";
 	} else if (typ->isVoid()) {
 		// Can happen in e.g. twoproc, where really need global parameter and return analysis
-		LOG << "Warning: replacing type void with int for " << ident << "\n";
+		LOG << "WARNING: CHLLCode::appendTypeIdent: declaring type void as int for " << ident << "\n";
 		str << "int " << ident;
 	} else {
 		appendType(str, typ);
@@ -1312,7 +1340,7 @@ void CHLLCode::AddReturnStatement(int indLevel, StatementList* rets) {
 
 	if (n > 0) {
 		if (n > 1)
-			s << "\t/* ";
+			s << " /* WARNING: Also returning: ";
 		bool first = true;
 		for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
 			if (first)
@@ -1345,15 +1373,17 @@ void CHLLCode::AddPrototype(UserProc* proc) {
 /**
  * Print the declaration of a function.
  * \param open	False if this is just a prototype and ";" should be printed instead of "{"
- * \note Special case for \em main, prints a default C main function;
  */
 void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	std::ostringstream s;
+#if 0
+	// this is done earlier	
 	if (strncmp("main", proc->getName(), 4+1) == 0) {
 		// Special case for main()
 		lines.push_back("int main(int argc, char* argv[], char** envp) {");
 		return;
 	}
+#endif
 	ReturnStatement* returns = proc->getTheReturnStatement();
 	if (returns == NULL || returns->getNumReturns() == 0)
 		s << "void ";
@@ -1380,7 +1410,7 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		Exp* left = as->getLeft();
 		Type *ty = as->getType();
 		if (ty == NULL) {
-			LOG << "ERROR: no type for parameter " << left << "!\n";
+			LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
 			ty = new IntegerType();
 		}
 		char* name = proc->lookupSym(left);
