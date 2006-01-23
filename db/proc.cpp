@@ -1438,8 +1438,12 @@ void UserProc::remUnusedStmtEtc() {
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
+#if 0
+		// FIXME: This exposes a bug in propagateStatements
+		// As a quick fix, just don't do this now: it breaks minmax3.
 		bool convert;						// Don't think we need to check this after propagating at this late stage
 		propagateStatements(convert, 99);	// Some parameters may propagate now, when they were limited by -l
+#endif
 		//findPreserveds();					// FIXME: is this necessary here?
 		//fixCallAndPhiRef();				// FIXME: surely this is not necessary now?
 		//trimParameters();					// FIXME: check
@@ -3091,6 +3095,12 @@ bool UserProc::processConstants() {
 	}
 	return paramsAdded;
 }
+
+// *** BUG *** FIXME ***
+// It can happen that a statement of the form r24 = r24 + 1 gets
+// propagated to only one use. The original statement is not removed and
+// so the propagated use will see (r24+1)+1 instead of the expected (r24+1).
+// This problem occurs in minmax3
 
 // Propagate statements, but don't remove
 // Return true if change; set convert if an indirect call is converted to direct (else clear)
