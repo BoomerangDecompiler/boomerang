@@ -8,20 +8,23 @@
  */
 
 /** \file	boomerang.h
- * \brief	Interface for the boomerang singleton object
+ * Interface for the boomerang singleton object.
  *
  * $Revision$	// 1.61.2.2
  * 04 Dec 2002: Trent: Created
  */
 
-/** \mainpage Boomerang source documentation
+/** \mainpage Introduction
  *
- * \section intro_sec Introduction
+ * \section Introduction
  *
- * Welcome to the Doxygen generated documentation for the source of the
- * Boomerang decompiler. If you have spent some time trying to figure out
- * the properties of an undocumented function or variable, why not document
- * it?
+ * Welcome to the Doxygen generated documentation for the 
+ * %Boomerang decompiler. Not all classes and functions have been documented
+ * yet, but eventually they will. If you have figured out what a function is doing
+ * please update the documentation and submit it as a patch.
+ *
+ * More information on the %Boomerang decompiler can be found at
+ * http://boomerang.sourceforge.net.
  *
  */
 
