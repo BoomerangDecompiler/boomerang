@@ -96,7 +96,7 @@ LOADERDLLS=$(patsubst %,lib/lib%$(DLLEXT),$(LOADERS)) $(COPYDLL)
 # LOADERLIBS is the set of "-l" flags passed when linking executables against the DLLs
 LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
 
-.PHONY: test clean all static distclean mostclean
+.PHONY: test clean all static distclean mostclean depend depend.in
 #19 Aug 02 icer: should read lib static test
 #20 Aug 02 icer: should read lib static , the test code is broken
 all: $(REMOTE) lib static 
@@ -115,6 +115,13 @@ testDyn: lib
 test:	lib bigtest$(EXEEXT)
 	cd loader   && ${MAKE} test
 	./bigtest$(EXEEXT)
+
+# automatic is better!
+depend:
+	makedepend -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
+
+depend.in:
+	makedepend -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
 
 # In case you don't have bison++ and flex++ and don't need to mess with the parsers
 # This is automatic now, though you can still force it if desired
@@ -243,7 +250,7 @@ testAll.o: testAll.cpp
 
 #
 # Dependencies
-#
+# DO NOT DELETE THIS LINE - It is used by makedepend
 
 db/exp.o: include/exp.h include/operator.h include/types.h include/statement.h \
     include/cfg.h include/rtl.h include/proc.h include/prog.h db/operstrings.h include/visitor.h include/type.h \
