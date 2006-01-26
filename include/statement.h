@@ -1202,6 +1202,8 @@ protected:
 
 		/// A list of assignments that represents the locations modified by the enclosing procedure
 		/// These transmit type information to callers
+		/// Note that these include preserved locations at this stage, so it might be more sensible to call them
+		/// assignees.
 		StatementList modifieds;
 
 		/// A list of assignments of locations to expressions. A list is used to facilitate ordering. (A set would
