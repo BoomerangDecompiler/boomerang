@@ -1195,6 +1195,7 @@ bool Prog::removeUnusedReturns() {
 	// For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
 	// procedures not yet processed.
 	// Define a workset for the procedures who have to have their returns checked
+	// This will be all user procs, except those undecoded (-sf says just trust the given signature)
 	std::set<UserProc*> removeRetSet;
 	std::list<Proc*>::iterator pp;
 	bool change=false;
@@ -1204,6 +1205,9 @@ bool Prog::removeUnusedReturns() {
 		if (!proc->isDecoded()) continue;		// e.g. use -sf file to just prototype the proc
 		removeRetSet.insert(proc);
 	}
+	// The workset is processed in arbitrary order. May be able to do better, but note that sometimes changes propagate
+	// down the call tree (no caller uses potential returns for child), and sometimes up the call tree (removal of
+	// returns and/or dead code removes parameters, which affects all callers).
 	std::set<UserProc*>::iterator it;
 	while (removeRetSet.size()) {
 		it = removeRetSet.begin();		// Pick the first element of the set
