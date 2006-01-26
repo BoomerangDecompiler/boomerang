@@ -1505,7 +1505,8 @@ void CallStatement::print(std::ostream& os) {
 		}
 		if (defines.size() > 1) os << "}";
 		os << " := ";
-	}
+	} else if (isChildless())
+		os << "<all> := ";
 
 	os << "CALL ";
 	if (procDest)
@@ -1520,14 +1521,18 @@ void CallStatement::print(std::ostream& os) {
 	}
 
 	// Print the actual arguments of the call
-	os << "(\n";
-	StatementList::iterator aa;
-	for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
-		os << "                ";
-		((Assignment*)*aa)->printCompact(os);
-		os << "\n";
+	if (isChildless())
+		os << "(<all>)";
+	else {
+		os << "(\n";
+		StatementList::iterator aa;
+		for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
+			os << "                ";
+			((Assignment*)*aa)->printCompact(os);
+			os << "\n";
+		}
+		os << "              )";
 	}
-	os << "              )";
 
 #if 1
 	// Collected reaching definitions
@@ -4211,7 +4216,7 @@ bool lessAssign::operator()(const Assign* x, const Assign* y) const {
 }
 
 // Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
-// collector have changed. Does NOT remove preserveds.
+// collector have changed. Does NOT remove preserveds (deferred until updating returns).
 void ReturnStatement::updateModifieds() {
 	Signature* sig = proc->getSignature();
 	StatementList oldMods(modifieds);					// Copy the old modifieds

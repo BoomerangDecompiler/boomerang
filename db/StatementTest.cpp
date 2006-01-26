@@ -1228,19 +1228,16 @@ void StatementTest::testSubscriptVars () {
 	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
 	argl.append(new Assign(Location::regOf(28), new Const(2)));
 	ca->setArguments(argl);
-#if 0
-	argl.clear();
-	argl.push_back(Location::memOf(Location::regOf(29)));
-	argl.push_back(Location::regOf(30));
-	ca->setImpArguments(argl);
-#endif
 	ca->addDefine(new ImplicitAssign(Location::regOf(28)));
 	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(28))));
+	std::string name("dest");
+	ca->setDestProc(new UserProc(new Prog(), name, 0x2000));	// Must have a dest to be non-childless
+	ca->setCalleeReturn(new ReturnStatement);		// So it's not a childless call, and we can see the defs and params
 	std::ostringstream ost5;
 	ca->subscriptVar(srch, &s9);
 	ost5 << ca;
 	expected =
-		"   0 {*0* r28, *0* m[r28]} := CALL m[r26](\n"
+		"   0 {*0* r28, *0* m[r28]} := CALL dest(\n"
 		"                *v* m[r27] := 1\n"
 		"                *v* r28 := 2\n"
 		"              )\n"
@@ -1256,19 +1253,15 @@ void StatementTest::testSubscriptVars () {
 	argl.append(new Assign(Location::memOf(Location::regOf(27)), new Const(1)));
 	argl.append(new Assign(Location::regOf(29), new Const(2)));
 	ca->setArguments(argl);
-#if 0
-	argl.clear();
-	argl.push_back(Location::memOf(Location::regOf(29)));
-	argl.push_back(Location::regOf(28));
-	ca->setImpArguments(argl);
-#endif
 	ca->addDefine(new ImplicitAssign(Location::regOf(31)));
 	ca->addDefine(new ImplicitAssign(Location::memOf(Location::regOf(31))));
+	ca->setDestProc(new UserProc(new Prog(), name, 0x2000));	// Must have a dest to be non-childless
+	ca->setCalleeReturn(new ReturnStatement);		// So it's not a childless call, and we can see the defs and params
 	std::ostringstream ost5a;
 	ca->subscriptVar(srch, &s9);
 	ost5a << ca;
 	expected =
-		"   0 {*0* r31, *0* m[r31]} := CALL r28{9}(\n"
+		"   0 {*0* r31, *0* m[r31]} := CALL dest(\n"
 		"                *v* m[r27] := 1\n"
 		"                *v* r29 := 2\n"
 		"              )\n"
