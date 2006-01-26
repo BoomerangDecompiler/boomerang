@@ -1004,11 +1004,14 @@ CycleSet* UserProc::decompile(CycleList* path, int& indent) {
 				break;
 		if (*f == this) {
 			recursionGroupAnalysis(cycleGrp);// Includes remUnusedStmtEtc on all procs in cycleGrp
+// ? Why do we clear the cycle set now? Needed in removing unused parameters in unused returns analysis
+#if 1
 			CycleSet* empty = new CycleSet;
 			CycleSet::iterator cc;
 			for (cc = child->begin(); cc != child->end(); ++cc)
 				(*cc)->cycleGrp = empty;
 			child->clear();
+#endif
 		}
 	}
 
@@ -1096,7 +1099,7 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 	if (VERBOSE)
 		LOG << "renaming block variables 1st pass\n";
 	// Rename variables
-	doRenameBlockVars(1, false);
+	doRenameBlockVars(1, true);
 	if (VERBOSE) {
 		LOG << "\n--- after rename (1) for " << getName() << " 1st pass\n";
 		printToLog();
@@ -1137,7 +1140,8 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 		printToLog();
 		LOG << "=== end after preservation, bypass and propagation ===\n";
 	}
-	status = PROC_PRESERVEDS;		// Preservation done
+	// Oh, no, we keep doing preservations till almost the end...
+	//status = PROC_PRESERVEDS;		// Preservation done
 
 	if (!Boomerang::get()->noPromote)
 		// We want functions other than main to be promoted. Needed before mapExpressionsToLocals
@@ -1382,7 +1386,7 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 	eliminateDuplicateArgs();
 
 	if (VERBOSE)
-		LOG << "===== end middle decompile for " << getName() << " =====\n\n";
+		LOG << "===== end early decompile for " << getName() << " =====\n\n";
 	status = PROC_EARLYDONE;
 
 	return new CycleSet;
@@ -1396,8 +1400,10 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 
 void UserProc::remUnusedStmtEtc() {
 
-	if (status >= PROC_FINAL)
-		return;
+	// NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
+	// happens after UserProc::decompile is complete
+	//if (status >= PROC_FINAL)
+	//	return;
 
 	if (VERBOSE)
 		LOG << "--- remove unused statements for " << getName() << " ---\n";
@@ -1408,7 +1414,8 @@ void UserProc::remUnusedStmtEtc() {
 	// Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
 	// do an initial TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
 	// to printf/scanf), and removing unused statements is unsafe without full use information
-	typeAnalysis();
+	if (status < PROC_FINAL)
+		typeAnalysis();
 
 	// Only remove unused statements after decompiling as much as possible of the proc
 	// FIME: Probably need a repeat until no change here
@@ -1419,7 +1426,7 @@ void UserProc::remUnusedStmtEtc() {
 		countRefs(refCounts);
 		// Now remove any that have no used
 		if (!Boomerang::get()->noRemoveNull)
-			remUnusedStmtEtc(refCounts /*, depth*/);
+			remUnusedStmtEtc(refCounts);
 
 		// Remove null statements
 		if (!Boomerang::get()->noRemoveNull)
@@ -1438,8 +1445,8 @@ void UserProc::remUnusedStmtEtc() {
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
-#if 0
-		// FIXME: This exposes a bug in propagateStatements
+#if 1
+		// FIXME: Gerard claim that this exposes a bug in propagateStatements
 		// As a quick fix, just don't do this now: it breaks minmax3.
 		bool convert;						// Don't think we need to check this after propagating at this late stage
 		propagateStatements(convert, 99);	// Some parameters may propagate now, when they were limited by -l
@@ -1460,6 +1467,90 @@ void UserProc::remUnusedStmtEtc() {
 		printToLog();
 		LOG << "=== after remove unused statements etc for " << getName() << "\n";
 	}
+}
+
+void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
+	StatementList stmts;
+	getStatements(stmts);
+	bool change;
+	do {								// FIXME: check if this is ever needed
+		change = false;
+		StatementList::iterator ll = stmts.begin();
+		while (ll != stmts.end()) {
+			Statement* s = *ll;
+			if (!s->isAssignment()) {
+				// Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
+				ll++;
+				continue;
+			}
+			Assignment* as = (Assignment*)s;
+			Exp* asLeft = as->getLeft();
+			// If depth < 0, consider all depths
+			//if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
+			//	ll++;
+			//	continue;
+			//}
+			if (asLeft && asLeft->getOper() == opGlobal) {
+				// assignments to globals must always be kept
+				ll++;
+				continue;
+			}
+			if (asLeft->getOper() == opMemOf &&
+					symbolMap.find(asLeft) == symbolMap.end() &&		// Real locals are OK
+					(!as->isAssign() || !(*new RefExp(asLeft, NULL) == *((Assign*)s)->getRight()))) {
+				// Looking for m[x] := anything but m[x]{-}
+				// Assignments to memof anything-but-local must always be kept.
+				ll++;
+				continue;
+			}
+#if 0		// We actually want to remove this if no-one is using it, otherwise we'll create an interference that we
+			// can't handle
+			if (asLeft->getOper() == opParam) {
+				ll++;
+				continue;
+			}
+#endif
+			if (asLeft->getOper() == opMemberAccess || asLeft->getOper() == opArrayIndex) {
+				// can't say with these
+				ll++;
+				continue;
+			}
+			if (refCounts.find(s) == refCounts.end() || refCounts[s] == 0) {	// Care not to insert unnecessarily
+				// First adjust the counts, due to statements only referenced by statements that are themselves unused.
+				// Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
+				// of statements that use a definition, not the total number of refs
+				StatementSet stmtsRefdByUnused;
+				LocationSet components;
+				s->addUsedLocs(components, false);		// Second parameter false to ignore uses in collectors
+				LocationSet::iterator cc;
+				for (cc = components.begin(); cc != components.end(); cc++) {
+					if ((*cc)->isSubscript()) {
+						stmtsRefdByUnused.insert(((RefExp*)*cc)->getDef());
+					}
+				}
+				StatementSet::iterator dd;
+				for (dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); dd++) {
+					if (*dd == NULL) continue;
+					if (DEBUG_UNUSED)
+						LOG << "decrementing ref count of " << (*dd)->getNumber() << " because " << s->getNumber() <<
+							" is unused\n";
+					refCounts[*dd]--;
+				}
+				if (DEBUG_UNUSED)
+					LOG << "removing unused statement " << s->getNumber() << " " << s << "\n";
+				removeStatement(s);
+				ll = stmts.erase(ll);	// So we don't try to re-remove it
+				change = true;
+				continue;				// Don't call getNext this time
+			}
+			ll++;
+		}
+	} while (change);
+	// Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
+	// removed statement, so liveness in the call needs to be removed
+	removeCallLiveness();		// Kill all existing livenesses
+	doRenameBlockVars(-2);		// Recalculate new livenesses
+	status = PROC_FINAL;		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 }
 
 #if 0
@@ -2021,7 +2112,8 @@ static RefExp* regOfWild = new RefExp(
 // Note: this identifies saved and restored locations as parameters (e.g. ebp in most Pentium procedures).
 // Some preserved locations could be parameters (and some of those could be returns as well).
 
-// I can't remember why these are called "final" parameters... they still need to be trimmed (e.g. preserved locations)
+// These are called final parameters, because they are determined from implicit references, not from the use collector
+// at the start of the proc, which include some caused by recursive calls
 void UserProc::findFinalParameters() {
 
 	parameters.clear();
@@ -2059,9 +2151,17 @@ void UserProc::findFinalParameters() {
 		// For now, assume that all parameters will be m[]{-} or r[]{-}, or in phi statements such as
 		// lhs := phi{2 - 5}
 		std::list<Exp*> results;
+		UserProc* dest;
 		if (s->isPhi())
 			((PhiAssign*)s)->enumerateParams(results);
-		else {
+		// Disregard uses from recursive calls for the purpose of finding final parameters. The reason is that recursive
+		// calls can be the only thing to apparently use a location, in which case they are not real parameters.
+		// Real parameters will have a use along paths not including recursive calls.
+		// NOTE: However, it is possible for a function to terminate recursion only using an exception. We'll fail to
+		// find parameters for those.
+		else if (!s->isCall() || 
+				(dest = (UserProc*)((CallStatement*)s)->getDestProc(),
+				!dest || !cycleGrp || cycleGrp->find(dest) == cycleGrp->end())) {
 			s->searchAll(memOfWild, results);
 			s->searchAll(regOfWild, results);
 		}
@@ -3063,13 +3163,6 @@ bool UserProc::removeNullStatements() {
 				" " << s << "\n";
 			}
 			removeStatement(s);
-#if 0
-			// remove from reach sets
-			StatementSet &reachout = s->getBB()->getReachOut();
-			if (reachout.remove(s))
-				cfg->computeReaches();		// Highly sus: do all or none!
-				recalcDataflow();
-#endif
 			change = true;
 		}
 	}
@@ -3097,6 +3190,7 @@ bool UserProc::processConstants() {
 }
 
 // *** BUG *** FIXME ***
+// Gerard claims: (but I don't get this problem - MVE)
 // It can happen that a statement of the form r24 = r24 + 1 gets
 // propagated to only one use. The original statement is not removed and
 // so the propagated use will see (r24+1)+1 instead of the expected (r24+1).
@@ -3357,90 +3451,6 @@ void UserProc::removeUnusedLocals() {
 			}
 		}
 	}
-}
-
-void UserProc::remUnusedStmtEtc(RefCounter& refCounts /*, int depth*/) {
-	StatementList stmts;
-	getStatements(stmts);
-	bool change;
-	do {								// FIXME: check if this is ever needed
-		change = false;
-		StatementList::iterator ll = stmts.begin();
-		while (ll != stmts.end()) {
-			Statement* s = *ll;
-			if (!s->isAssignment()) {
-				// Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
-				ll++;
-				continue;
-			}
-			Assignment* as = (Assignment*)s;
-			Exp* asLeft = as->getLeft();
-			// If depth < 0, consider all depths
-			//if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-			//	ll++;
-			//	continue;
-			//}
-			if (asLeft && asLeft->getOper() == opGlobal) {
-				// assignments to globals must always be kept
-				ll++;
-				continue;
-			}
-			if (asLeft->getOper() == opMemOf &&
-					symbolMap.find(asLeft) == symbolMap.end() &&		// Real locals are OK
-					(!as->isAssign() || !(*new RefExp(asLeft, NULL) == *((Assign*)s)->getRight()))) {
-				// Looking for m[x] := anything but m[x]{-}
-				// Assignments to memof anything-but-local must always be kept.
-				ll++;
-				continue;
-			}
-#if 0		// We actually want to remove this if no-one is using it, otherwise we'll create an interference that we
-			// can't handle
-			if (asLeft->getOper() == opParam) {
-				ll++;
-				continue;
-			}
-#endif
-			if (asLeft->getOper() == opMemberAccess || asLeft->getOper() == opArrayIndex) {
-				// can't say with these
-				ll++;
-				continue;
-			}
-			if (refCounts.find(s) == refCounts.end() || refCounts[s] == 0) {	// Care not to insert unnecessarily
-				// First adjust the counts, due to statements only referenced by statements that are themselves unused.
-				// Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
-				// of statements that use a definition, not the total number of refs
-				StatementSet stmtsRefdByUnused;
-				LocationSet components;
-				s->addUsedLocs(components, false);		// Second parameter false to ignore uses in collectors
-				LocationSet::iterator cc;
-				for (cc = components.begin(); cc != components.end(); cc++) {
-					if ((*cc)->isSubscript()) {
-						stmtsRefdByUnused.insert(((RefExp*)*cc)->getDef());
-					}
-				}
-				StatementSet::iterator dd;
-				for (dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); dd++) {
-					if (*dd == NULL) continue;
-					if (DEBUG_UNUSED)
-						LOG << "decrementing ref count of " << (*dd)->getNumber() << " because " << s->getNumber() <<
-							" is unused\n";
-					refCounts[*dd]--;
-				}
-				if (DEBUG_UNUSED)
-					LOG << "removing unused statement " << s->getNumber() << " " << s << "\n";
-				removeStatement(s);
-				ll = stmts.erase(ll);	// So we don't try to re-remove it
-				change = true;
-				continue;				// Don't call getNext this time
-			}
-			ll++;
-		}
-	} while (change);
-	// Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
-	// removed statement, so liveness in the call needs to be removed
-	removeCallLiveness();		// Kill all existing livenesses
-	doRenameBlockVars(-2);		// Recalculate new livenesses
-	status = PROC_FINAL;		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 }
 
 //
@@ -4724,8 +4734,8 @@ bool UserProc::isLocalOrParam(Exp* e) {
 // y will take the values r25{10} and r26{20}):
 // 1) a statement s defining a return becomes unused if the only use of its definition was y
 // 2) a call statement c defining y will no longer have y live if the return was the only use of y. This could cause a
-//	change to the returns of c's destination, so removeUnusedReturns has to be called for c's destination proc (if not
-//	already scheduled).
+//	change to the returns of c's destination, so removeUnusedReturns has to be called for c's destination proc (if it
+//	turns out to be the only definition, and that proc was not already scheduled for return removing).
 // 3) if y is a parameter (i.e. y is of the form loc{-}), then the signature of this procedure changes, and all callers
 //	have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
 //	arguments as is applied here to the removed returns.
@@ -4781,8 +4791,9 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 	}
 
 	if (removedSome) {
-		// Now update myself, especially because the call livenesses are possibly incorrect (so it's pointless removing
-		// unused returns for children, since the liveness that this depends on is possibly incorrect).
+		// Now update myself, especially because the call livenesses are possibly incorrect, because every time we found
+		// a return defined at a call, we deleted the liveness in the call's use collector. So it's pointless removing
+		// unused returns for children, since the liveness that this depends on is possibly incorrect.
 		updateForUseChange(removeRetSet);
 	
 		// Update the statements that call us
@@ -4796,7 +4807,8 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 
 // See comments above for removeUnusedReturns(). Need to save the old parameters and call livenesses, redo the dataflow
 // and removal of unused statements, recalculate the parameters and call livenesses, and if either or both of these are
-// changed, recurse to parents or children respectively.
+// changed, recurse to parents or those calls' children respectively. (When call livenesses change like this, it means
+// that the recently removed return was the only use of that liveness, i.e. there was a return chain.)
 void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	// We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
 	// by removing returns
