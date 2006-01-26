@@ -202,6 +202,7 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 	best.resize(0);
 	bucket.resize(0);
 	defsites.clear();			// Clear defsites map,
+	defallsites.clear();
 	A_orig.clear();				// and A_orig,
 	defStmts.clear();			// and the map from variable to defining Stmt 
 
@@ -222,6 +223,8 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 			LocationSet ls;
 			LocationSet::iterator it;
 			s->getDefinitions(ls);
+			if (s->isCall() && ((CallStatement*)s)->isChildless())		// If this is a childless call
+				defallsites.insert(n);									// then this block defines every variable
 			for (it = ls.begin(); it != ls.end(); it++) {
 				if (canRename(*it)) {
 					A_orig[n].insert((*it)->clone());
@@ -242,10 +245,18 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 		}
 	}
 
-	// For each variable a (in defsites)
+	// For each variable a (in defsites, i.e. defined anywhere)
 	std::map<Exp*, std::set<int>, lessExpStar>::iterator mm;
 	for (mm = defsites.begin(); mm != defsites.end(); mm++) {
 		Exp* a = (*mm).first;				// *mm is pair<Exp*, set<int>>
+
+		// Special processing for define-alls
+		// for each n in defallsites
+		std::set<int>::iterator da;
+		for (da = defallsites.begin(); da != defallsites.end(); ++da)
+			defsites[a].insert(*da);
+
+		// W <- defsites[a];
 		std::set<int> W = defsites[a];		// set copy
 		// While W not empty
 		while (W.size()) {
@@ -324,8 +335,9 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 						((CallStatement*)def)->useBeforeDefine(phiLeft->clone());
 				}
 			}
-			else
+			else {				// Not a phi assignment
 				S->addUsedLocs(locs);
+			}
 			LocationSet::iterator xx;
 			for (xx = locs.begin(); xx != locs.end(); xx++) {
 				Exp* x = *xx;
@@ -473,13 +485,13 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 		LocationSet::iterator dd;
 		for (dd = defs.begin(); dd != defs.end(); dd++) {
 			if (canRename(*dd)) {
-			// if ((*dd)->getMemDepth() == memDepth)
-			std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
-if (ss == Stacks.end()) {
- std::cerr << "Tried to pop " << *dd << " from Stacks; does not exist\n";
- assert(0);
-}
-				ss->second.pop();
+				// if ((*dd)->getMemDepth() == memDepth)
+				std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator ss = Stacks.find(*dd);
+				if (ss == Stacks.end()) {
+					std::cerr << "Tried to pop " << *dd << " from Stacks; does not exist\n";
+ 					assert(0);
+				}
+					ss->second.pop();
 			}
 		}
 		// Pop all defs due to childless calls
@@ -496,6 +508,7 @@ if (ss == Stacks.end()) {
 }
 
 void DataFlow::dumpStacks() {
+	std::cerr << "Stacks: " << Stacks.size() << " entries\n";
 	std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator zz;
 	for (zz = Stacks.begin(); zz != Stacks.end(); zz++) {
 		std::cerr << "Var " << zz->first << " [ ";
@@ -507,6 +520,29 @@ void DataFlow::dumpStacks() {
 	}
 }
 
+void DataFlow::dumpDefsites() {
+	std::map<Exp*, std::set<int>, lessExpStar>::iterator dd;
+	for (dd = defsites.begin(); dd != defsites.end(); ++dd) {
+		std::cerr << dd->first;
+		std::set<int>::iterator ii;
+		std::set<int>& si = dd->second;
+		for (ii = si.begin(); ii != si.end(); ++ii)
+			std::cerr << " " << *ii;
+		std::cerr << "\n";
+	}
+}
+
+void DataFlow::dumpA_orig() {
+	int n = A_orig.size();
+	for (int i=0; i < n; ++i) {
+		std::cerr << i;
+		std::set<Exp*, lessExpStar>::iterator ee;
+		std::set<Exp*, lessExpStar>& se = A_orig[i];
+		for (ee = se.begin(); ee != se.end(); ++ee)
+			std::cerr << " " << *ee;
+		std::cerr << "\n";
+	}
+}
 
 void DefCollector::updateDefs(std::map<Exp*, std::stack<Statement*>, lessExpStar>& Stacks) {
 	std::map<Exp*, std::stack<Statement*>, lessExpStar>::iterator it;
@@ -661,4 +697,3 @@ void DefCollector::insert(Assign* a) {
 	if (existsOnLeft(l)) return;
 	defs.insert(a);
 }
-
