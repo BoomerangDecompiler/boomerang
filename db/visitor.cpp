@@ -475,6 +475,7 @@ Exp* ExpSubscripter::preVisit(Terminal* e) {
 }
 
 Exp* ExpSubscripter::preVisit(RefExp* e, bool& recur) {
+#if 0		// ?? Surely, never resubscript an already subscripted variable!!
 	Exp* base = e->getSubExp1();
 	if (*base == *search) {
 		recur = false;		// Don't recurse; would double subscript
@@ -482,6 +483,9 @@ Exp* ExpSubscripter::preVisit(RefExp* e, bool& recur) {
 		return e;
 	}
 	recur = true;
+#else
+	recur = false;			// Don't look inside... not sure about this
+#endif
 	return e;
 }
 
@@ -698,7 +702,7 @@ bool AllSubscriptedTester::visit(Location* e, bool& override) {
 
 // Return true if e is a primitive expression; basically, an expression you can propagate to without causing
 // memory expression problems. See Mike's thesis for details
-// Algorithm: if find any unscripted location, not primitive
+// Algorithm: if find any unsubscripted location, not primitive
 //   Implicit definitions are primitive (but keep searching for non primitives)
 //   References to the results of calls are considered primitive
 //   Other references considered non primitive
