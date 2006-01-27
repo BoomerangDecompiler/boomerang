@@ -838,12 +838,12 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
  * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
  * current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
  * and can be decompiled up to and including removing unused statements.
- * path is an initially empth list of procedures, representing the call path from the current entry point to the
+ * path is an initially empty list of procedures, representing the call path from the current entry point to the
  * current procedure, inclusive.
  * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
  * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
  * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses. 
- cycleSet decompile(CycleList path, CycleSet grp)	// path and grp initially empty
+ cycleSet decompile(CycleList path)		// path initially empty
 	child = new CycleSet
 	append this proc to path
 	for each child c called by this proc
@@ -855,12 +855,14 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 			else
 			  // this is a new branch of an existing cycle
 			  child = c->cycleGrp
-			  find first element f of path that is in grp
+			  find first element f of path that is in cycleGrp
 			  insert every proc after f to the end of path into child
-			point cycleGrp for each element of child to child, unioning in each element's cycleGrp
+			for each element e of child
+              insert e->cycleGrp into child
+			  e->cycleGrp = child
 		else
 			// no new cycle
-			tmp = c->decompile(path, grp)
+			tmp = c->decompile(path)
 			child = union(child, tmp)
 			set return statement in call to that of c
 	child = earlyDecompile()
@@ -868,9 +870,9 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 		removeUnusedStatments()		// Not involved in recursion
 	else
 		// Is involved in recursion
-		find first element f in path that is also in grp
+		find first element f in path that is also in cycleGrp
 		if (f == this)
-			recursionGroupAnalysis(grp)
+			recursionGroupAnalysis(cycleGrp)
 			empty = new CycleSet
 			for each procedure p in cycleGrp
 			  p->cycleGrp = empty
@@ -1004,13 +1006,14 @@ CycleSet* UserProc::decompile(CycleList* path, int& indent) {
 				break;
 		if (*f == this) {
 			recursionGroupAnalysis(cycleGrp);// Includes remUnusedStmtEtc on all procs in cycleGrp
-// ? Why do we clear the cycle set now? Needed in removing unused parameters in unused returns analysis
 #if 1
 			CycleSet* empty = new CycleSet;
 			CycleSet::iterator cc;
 			for (cc = child->begin(); cc != child->end(); ++cc)
 				(*cc)->cycleGrp = empty;
 			child->clear();
+#else
+			child = new CycleSet;
 #endif
 		}
 	}
