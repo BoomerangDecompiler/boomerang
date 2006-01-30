@@ -121,8 +121,10 @@ echo === Known faillures ===
 $TESTONE pentium stattest		1 "$BOOMSW"
 $TESTONE sparc   stattest		1 "$BOOMSW"
 $TESTONE sparc	elfhashtest		1 "$BOOMSW"
-# pentium recursion was working until moderately recently...
+# pentium recursion has some weird dataflow issues
 $TESTONE pentium recursion		2 "$BOOMSW" 2
+# Special for Mike
+$TESTONE pentium recursion2		1 "$BOOMSW"
 
 echo
 echo === Done ===
