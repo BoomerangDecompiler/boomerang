@@ -183,11 +183,12 @@ virtual bool		isAggregateUsed() {return false;}
 		 */
 		friend std::ostream& operator<<(std::ostream& os, Proc& proc);
 		
-virtual Exp			*getProven(Exp *left) = 0;
+virtual Exp			*getProven(Exp *left) = 0;		// Get the RHS, if any, that is proven for left
+virtual Exp			*getPremised(Exp *left) = 0;	// Get the RHS, if any, that is premised for left
 virtual	bool		isPreserved(Exp* e) = 0;		///< Return whether e is preserved by this proc
 
 		/// Set an equation as proven. Useful for some sorts of testing
-		void		setProven(Exp* fact) {proven.insert(fact);}
+		void		setProvenTrue(Exp* fact);
 
 		/**
 		 * Get the callers
@@ -237,9 +238,17 @@ protected:
 		ADDRESS		address;						///< Procedure's address.
 		Proc		*m_firstCaller;					///< first procedure to call this procedure.
 		ADDRESS		m_firstCallerAddr;				///< can only be used once.
-		/// All the expressions that have been proven true. (Could perhaps do with a list of some that are proven false.)
-		/// Of the form r29 = r29 (NO subscripts) or r28 = r28 + 4
-		std::set<Exp*, lessExpStar> proven;
+		/// All the expressions that have been proven true. (Could perhaps do with a list of some that are proven false)
+		// FIXME: shouldn't this be in UserProc, with logic associated with the signature doing the equivalent thing
+		// for LibProcs?
+		/// Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
+		std::map<Exp*, Exp*, lessExpStar> provenTrue;
+		// Cache of queries proven false (to save time)
+		// std::map<Exp*, Exp*, lessExpStar> provenFalse;
+		// Premises for recursion group analysis. This is a preservation that is assumed true only for definitions by
+		// calls reached in the proof. It also prevents infinite looping of this proof logic.
+		std::map<Exp*, Exp*, lessExpStar> recurPremises;
+
 		std::set<CallStatement*> callerSet;			///< Set of callers (CallStatements that call this procedure).
 		Cluster		*cluster;						///< Cluster this procedure is contained within.
 
@@ -277,8 +286,9 @@ virtual				~LibProc();
 		 */
 virtual bool		isAggregateUsed() {return false;}
 
-virtual Exp*		getProven(Exp* left);
-virtual	bool		isPreserved(Exp* e);			///< Return whether e is preserved by this proc
+virtual Exp*		getProven(Exp* left);					// Get the RHS that is proven for left
+virtual	Exp*		getPremised(Exp* left) {return NULL;}	// Get the RHS that is premised for left
+virtual	bool		isPreserved(Exp* e);					///< Return whether e is preserved by this proc
 
 		/*
 		 * Prints this procedure to an output stream.
@@ -504,11 +514,14 @@ virtual				~UserProc();
 		void		initialiseDecompile();
 		/// Prepare for preservation analysis only.
 		void		prePresDecompile();
-		/// Early decompile: propagate, bypass, preserveds. Returns the cycle set from the recursive call to decompile()
-		CycleSet*	earlyDecompile(CycleList* path, int indent);
+		/// Early decompile: Place phi functions, number statements, first rename, propagation: ready for preserveds.
+		void		earlyDecompile();
+		/// Middle decompile: All the decompilation from preservation up to but not including removing unused
+		/// statements. Returns the cycle set from the recursive call to decompile()
+		CycleSet*	middleDecompile(CycleList* path, int indent);
 		/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 		/// Also finalise the whole group.
-		void		recursionGroupAnalysis(CycleSet* cycleSet);
+		void		recursionGroupAnalysis(CycleList* path, int indent);
 		/// Global type analysis (for this procedure).
 		void		typeAnalysis();
 		// Split the set of cycle-associated procs into individual subcycles.
@@ -520,6 +533,8 @@ virtual				~UserProc();
 		void		markAsNonChildless(CycleSet* cs);
 		// Update the defines and arguments in calls.
 		void		updateCalls();
+		// Place the phi functions
+		void		placePhiFunctions() {df.placePhiFunctions(this);}
 
 //		void		propagateAtDepth(int depth);
 		// Rename block variables, with log if verbose. Return true if a change
@@ -764,6 +779,10 @@ virtual void		renameParam(const char *oldName, const char *newName);
 //virtual bool		isAggregateUsed() {return aggregateUsed;}
 
 virtual Exp*		getProven(Exp* left);
+virtual Exp*		getPremised(Exp* left);
+		// Set a location as a new premise, i.e. assume e=e
+		void		setPremise(Exp* e) {e = e->clone(); recurPremises[e] = e;}
+		void		killPremise(Exp* e) {recurPremises.erase(e);}
 virtual	bool		isPreserved(Exp* e);			///< Return whether e is preserved by this proc
 
 virtual void		printCallGraphXML(std::ostream &os, int depth,

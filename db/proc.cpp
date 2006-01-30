@@ -747,9 +747,10 @@ void UserProc::getStatements(StatementList &stmts) {
 // Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
 void UserProc::removeStatement(Statement *stmt) {
 	// remove anything proven about this statement
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++) {
+	for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++) {
 		LocationSet refs;
-		(*it)->addUsedLocs(refs);
+		it->second->addUsedLocs(refs);
+		it->first->addUsedLocs(refs);		// Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
 		LocationSet::iterator rr;
 		bool usesIt = false;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
@@ -761,9 +762,10 @@ void UserProc::removeStatement(Statement *stmt) {
 		}
 		if (usesIt) {
 			if (VERBOSE)
-				LOG << "removing proven exp " << (*it) << " that uses statement being removed.\n";
-			proven.erase(it);
-			// it = proven.begin();
+				LOG << "removing proven true exp " << it->first << " = " << it->second <<
+					" that uses statement being removed.\n";
+			provenTrue.erase(it);
+			// it = provenTrue.begin();
 			continue;
 		}
 	}
@@ -865,18 +867,19 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 			tmp = c->decompile(path)
 			child = union(child, tmp)
 			set return statement in call to that of c
-	child = earlyDecompile()
 	if (child empty)
-		removeUnusedStatments()		// Not involved in recursion
+		earlyDecompile()
+		child = middleDecompile()
+		if (child empty)
+			status = visited				// Or something; may have to toss reservation info as it may be invalid
+		else
+			removeUnusedStatments()			// Not involved in recursion
 	else
 		// Is involved in recursion
 		find first element f in path that is also in cycleGrp
-		if (f == this)
-			recursionGroupAnalysis(cycleGrp)
-			empty = new CycleSet
-			for each procedure p in cycleGrp
-			  p->cycleGrp = empty
-			child = empty
+		if (f == this)						// The big test: have we got the complete strongly connected component?
+			recursionGroupAnalysis()		// Yes, we have
+			child = new CycleSet			// Don't add these processed cycles to the parent
 	remove last element (= this) from path
 	return child
  */
@@ -985,18 +988,23 @@ CycleSet* UserProc::decompile(CycleList* path, int& indent) {
 		}
 	}
 
-	std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
-	initialiseDecompile();					// Sort the CFG, number statements, etc
-	CycleSet* ret = earlyDecompile(path, indent);	// Every proc gets at least this done
-	// If there is a switch statement, earlyDecompile could contribute more cycles. However, child could still have
-	// cycles in it from recursion so far, so union these cycles
-	child->insert(ret->begin(), ret->end());
 
 	// if child is empty, i.e. no child involved in recursion
 	if (child->size() == 0) {
-		remUnusedStmtEtc();	// Do the whole works
-		status = PROC_FINAL;
-		Boomerang::get()->alert_end_decompile(this);
+		std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
+		initialiseDecompile();					// Sort the CFG, number statements, etc
+		earlyDecompile();
+		CycleSet* ret = middleDecompile(path, indent);
+		// If there is a switch statement, earlyDecompile could contribute some cycles. If so, we have to abandon
+		// this decompilation
+		if (ret->size()) {
+			LOG << "## Switch analysis detected new cycles; abandoning decompilation of " << getName() << "##\n\n";
+			status = PROC_VISITED;
+		} else {
+			remUnusedStmtEtc();	// Do the whole works
+			status = PROC_FINAL;
+			Boomerang::get()->alert_end_decompile(this);
+		}
 	} else {
 		// this proc's children, and hence this proc, is/are involved in recursion
 		// find first element f in path that is also in cycleGrp
@@ -1004,17 +1012,13 @@ CycleSet* UserProc::decompile(CycleList* path, int& indent) {
 		for (f = path->begin(); f != path->end(); ++f)
 			if (cycleGrp->find(*f) != cycleGrp->end())
 				break;
+		// The big test: have we found all the strongly connected components (in the call graph)?
 		if (*f == this) {
-			recursionGroupAnalysis(cycleGrp);// Includes remUnusedStmtEtc on all procs in cycleGrp
-#if 1
-			CycleSet* empty = new CycleSet;
-			CycleSet::iterator cc;
-			for (cc = child->begin(); cc != child->end(); ++cc)
-				(*cc)->cycleGrp = empty;
-			child->clear();
-#else
+			// Yes, process these procs as a group
+			recursionGroupAnalysis(path, indent);// Includes remUnusedStmtEtc on all procs in cycleGrp
+			status = PROC_FINAL;
+			Boomerang::get()->alert_end_decompile(this);
 			child = new CycleSet;
-#endif
 		}
 	}
 
@@ -1072,11 +1076,11 @@ void UserProc::initialiseDecompile() {
 		LOG << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
 	}
 }
-
-CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
+// Can merge these two now
+void UserProc::earlyDecompile() {
 
 	if (status >= PROC_EARLYDONE)
-		return new CycleSet; 
+		return; 
 
 	if (VERBOSE) LOG << "early decompile for " << getName() << "\n";
 
@@ -1116,12 +1120,16 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 		printToLog();
 		LOG << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
 	}
+}
+
+CycleSet* UserProc::middleDecompile(CycleList* path, int indent) {
 
 	// The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
 	// The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
 	// (which can safely be processed at depth 1).
 	// Except that this is inherent in the visitor nature of the latest algorithm.
 	fixCallAndPhiRefs();			// Bypass children that are finalised (if any)
+	bool convert;
 	if (status != PROC_INCYCLE)		// FIXME: need this test?
 		propagateStatements(convert, 2);
 	if (VERBOSE) {
@@ -1337,10 +1345,13 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 			doRenameBlockVars(-1, true);			// Needed if there was an indirect call to an ellipsis function
 		}
 	}
+
+#ifdef EARLY_GLOBALS
 	// recognising globals early prevents them from becoming parameters
 //	if (depth == maxDepth)		// Else Sparc problems... MVE FIXME: Exactly why?
 		if (!Boomerang::get()->noGlobals)
 			replaceExpressionsWithGlobals();
+#endif
 
 	if (!Boomerang::get()->noParameterNames) {
 		// ? Crazy time to do this... haven't even done "final" parameters as yet
@@ -1372,6 +1383,12 @@ CycleSet* UserProc::earlyDecompile(CycleList* path, int indent) {
 	}
 
 	findPreserveds();
+
+#ifndef EARLY_GLOBALS
+	// recognising globals early prevents them from becoming parameters
+	if (!Boomerang::get()->noGlobals)
+		replaceExpressionsWithGlobals();
+#endif
 
 
 	// Used to be later...
@@ -1628,8 +1645,13 @@ void UserProc::finalDecompile() {
 #endif
 
 
-void UserProc::recursionGroupAnalysis(CycleSet* cs) {
+void UserProc::recursionGroupAnalysis(CycleList* path, int indent) {
 	/* Overall algorithm:
+		for each proc in the group
+			initialise
+			earlyDecompile
+		for eac proc in the group
+			middleDecompile
 		mark all calls involved in cs as non-childless
 		for each proc in cs
 			update parameters and returns, redoing call bypass, until no change
@@ -1639,23 +1661,38 @@ void UserProc::recursionGroupAnalysis(CycleSet* cs) {
 			update parameters and returns, redoing call bypass, until no change
 	*/
 	if (VERBOSE) {
-		LOG << "recursion group analysis for ";
+		LOG << "\n\n# # # recursion group analysis for ";
 		CycleSet::iterator csi;
-		for (csi = cs->begin(); csi != cs->end(); ++csi)
+		for (csi = cycleGrp->begin(); csi != cycleGrp->end(); ++csi)
 			LOG << (*csi)->getName() << ", ";
-		LOG << "\n";
+		LOG << "# # #\n";
 	}
 
+	// First, do the initial decompile, and call earlyDecompile
+	CycleSet::iterator curp;
+	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
+		(*curp)->initialiseDecompile();					// Sort the CFG, number statements, etc
+		(*curp)->earlyDecompile();
+	}
+
+	// Now all the procs in the group should be ready for preservation analysis
+	// The standard preservation analysis should automatically perform conditional preservation
+	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
+		(*curp)->middleDecompile(path, indent);
+	}
+
+
+	// FIXME: why exactly do we do this?
 	// Mark all the relevant calls as non childless (will harmlessly get done again later)
 	CycleSet::iterator it;
-	for (it = cs->begin(); it != cs->end(); it++)
-		(*it)->markAsNonChildless(cs);
+	for (it = cycleGrp->begin(); it != cycleGrp->end(); it++)
+		(*it)->markAsNonChildless(cycleGrp);
 
 	CycleSet::iterator p;
 	// Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
 	// statements.
 	bool convert;
-	for (p = cs->begin(); p != cs->end(); ++p) {
+	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
 		(*p)->initialParameters();
 		(*p)->updateArguments();
 		//(*p)->propagateAtDepth(maxDepth);			// Need to propagate into arguments
@@ -1664,7 +1701,7 @@ void UserProc::recursionGroupAnalysis(CycleSet* cs) {
 
 	// while no change
 for (int i=0; i < 2; i++) {
-	for (p = cs->begin(); p != cs->end(); ++p) {
+	for (p = cycleGrp->begin(); p != cycleGrp->end(); ++p) {
 		(*p)->remUnusedStmtEtc();				// Also does final parameters and arguments at present
 	}
 }
@@ -1673,97 +1710,6 @@ for (int i=0; i < 2; i++) {
 	Boomerang::get()->alert_end_decompile(this);
 
 }
-
-#if 0			// NO! Turns out we don't need the individual cycles, just the maximal edge-disjoint cycle set
-void UserProc::findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset) {
-	// path is a list of the procs in the path from the top node down to but excluding the current node; initially empty
-	// cs is the set of all nodes involved in this recursion group (input)
-	// sset is the set of sets of nodes that is the final result (output)
-	/* Overall algorithm:
-		proc findSubCycles (list path, set cs, set of sets sset)
-			if (path contains this)
-				insert the list from this to end into sset
-			else
-				for each child c of this also in cs
-					if c == this insert a self cycle
-					else
-						append this to path
-						processChild(path, cs, sset)
-						remove this from end of path
-			return		
-	*/
-	if (VERBOSE) {
-		LOG << "### finding subcycles for " << getName() << "; cycle set: ";
-		CycleSet::iterator cc;
-		bool first = true;
-		for (cc = cs.begin(); cc != cs.end(); ++cc) {
-			if (first)
-				first = false;
-			else
-				LOG << ", ";
-			LOG << (*cc)->getName();
-		}
-		LOG << "\n";
-	}
-
-	// if path contains this
-	CycleList::iterator pp;
-	bool cycleFound = false;
-	for (pp = path.begin(); pp != path.end(); ++pp) {
-		if (*pp == this) {
-			cycleFound = true;
-			CycleSet* newCycle = new CycleSet;
-			do {
-				newCycle->insert(*pp);
-				++pp;
-			} while (pp != path.end());
-			sset.insert(newCycle);
-			break;
-		}
-	}
-	if (!cycleFound) {
-		BB_IT it;
-		// Look at each call, to find children in the call graph
-		for (PBB bb = cfg->getFirstBB(it); bb; bb = cfg->getNextBB(it)) {
-			if (bb->getType() != CALL) continue;
-			// The call Statement will be in the last RTL in this BB
-			CallStatement* call = (CallStatement*)bb->getRTLs()->back()->getHlStmt();
-			UserProc* c = (UserProc*)call->getDestProc();
-			if (cs.find(c) == cs.end())
-				continue;			// Only interested in calls to other procs in this cycle set
-			if (c == this) {
-				// Always seem to need special processing for self recursion (unit) cycles
-				CycleSet* selfCycle = new CycleSet;
-				selfCycle->insert(this);
-				sset.insert(selfCycle);
-			} else {
-				path.push_back(this);
-				c->findSubCycles(path, cs, sset);
-				path.erase(--path.end());
-			}
-		}
-	}
-	if (VERBOSE) {
-		LOG << "### end finding subcycles for " << getName() << "; sub cycles:";
-		int i = 1;
-		CycleSetSet::iterator ss;
-		for (ss = sset.begin(); ss != sset.end(); ++ss, ++i) {
-			LOG << " cycle (" << i << "): ";
-			CycleSet::iterator cc;
-			CycleSet* cs = *ss;
-			bool first = true;
-			for (cc = cs->begin(); cc != cs->end(); ++cc) {
-				if (first)
-					first = false;
-				else
-					LOG << ", ";
-				LOG << (*cc)->getName();
-			}
-			LOG << "\n";
-		}
-	}
-}
-#endif
 
 void UserProc::updateCalls() {
 	if (VERBOSE)
@@ -1971,8 +1917,8 @@ void UserProc::findSpPreservation() {
 
 	if (DEBUG_PROOF) {
 		LOG << "proven for " << getName() << ":\n";
-		for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-			LOG << *it << "\n";
+		for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
+			LOG << it->first << " = " << it->second << "\n";
 	}
 
 }
@@ -2003,16 +1949,23 @@ void UserProc::findPreserveds() {
 	}
 
 	if (DEBUG_PROOF) {
-		LOG << "### proven for procedure " << getName() << ":\n";
-		for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
-			LOG << *it << "\n";
-		LOG << "### end proven for procedure " << getName() << "\n\n";
+		LOG << "### proven true for procedure " << getName() << ":\n";
+		for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
+			LOG << it->first << " = " << it->second << "\n";
+		LOG << "### end proven true for procedure " << getName() << "\n\n";
+#if PROVEN_FALSE
+		LOG << "### proven false for procedure " << getName() << ":\n";
+		for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenFalse.begin(); it != provenFalse.end(); it++)
+			LOG << it->first << " != " << it->second << "\n";
+		LOG << "### end proven false for procedure " << getName() << "\n\n";
+#endif
 	}
 
 	// Remove the preserved locations from the modifieds and the returns
-	for (std::set<Exp*, lessExpStar>::iterator pp = proven.begin(); pp != proven.end(); ++pp) {
-		Exp* lhs = ((Binary*)*pp)->getSubExp1();
-		Exp* rhs = ((Binary*)*pp)->getSubExp2();
+	std::map<Exp*, Exp*, lessExpStar>::iterator pp;
+	for (pp = provenTrue.begin(); pp != provenTrue.end(); ++pp) {
+		Exp* lhs = pp->first;
+		Exp* rhs = pp->second;
 		// Has to be of the form loc = loc, not say loc+4, otherwise the bypass logic won't see the add of 4
 		if (!(*lhs == *rhs)) continue;
 		theReturnStatement->removeModified(lhs);
@@ -3636,41 +3589,34 @@ void UserProc::insertArguments(StatementSet& rs) {
 }
 #endif
 
-bool inProve = false;
-
-bool UserProc::canProveNow()
-{
-	return !inProve;
-}
-
 static Binary allEqAll(opEquals,
 	new Terminal(opDefineAll),
 	new Terminal(opDefineAll));
 
-// this function was non-reentrant
-bool UserProc::prove(Exp *query)
-{
-#if 0							// Re-entrancy is quite useful
-	if (inProve) {
-		LOG << "attempted reentry of prove, returning false\n";
+// this function was non-reentrant, but now reentrancy is frequently used
+bool UserProc::prove(Exp *query) {
+
+	assert(query->isEquality());
+	Exp* queryLeft = ((Binary*)query)->getSubExp1();
+	Exp* queryRight = ((Binary*)query)->getSubExp2();
+	if (provenTrue.find(queryLeft) != provenTrue.end() && *provenTrue[queryLeft] == *queryRight) {
+		if (DEBUG_PROOF) LOG << "found true in provenTrue cache " << query << " in " << getName() << "\n";
+		return true;
+	}
+#if PROVEN_FALSE			// Maybe not so smart... may prove true after some iterations
+	if (provenFalse.find(queryLeft) != provenFalse.end() && *provenFalse[queryLeft] == *queryRight) {
+		if (DEBUG_PROOF) LOG << "found false in provenFalse cache " << query << " in " << getName() << "\n";
 		return false;
 	}
 #endif
-	inProve = true;
-	if (proven.find(query) != proven.end()) {
-		inProve = false;
-		if (DEBUG_PROOF) LOG << "prove returns true for " << query << " in " << getName() << "\n";
-		return true;
-	}
 
-	if (Boomerang::get()->noProve) {
-		inProve = false;
+	if (Boomerang::get()->noProve)
 		return false;
-	}
 
 	Exp *original = query->clone();
+	Exp* origLeft = ((Binary*)original)->getSubExp1();
+	Exp* origRight = ((Binary*)original)->getSubExp2();
 
-	assert(query->getOper() == opEquals);
 	
 	// subscript locs on the right with {-} (NULL reference)
 	LocationSet locs;
@@ -3693,39 +3639,39 @@ bool UserProc::prove(Exp *query)
 		if (!gotDef) {
 			// OK, the thing I'm looking for isn't in the return collector, but perhaps there is an entry for <all>
 			// If this is proved, then it is safe to say that x == x for any x with no definition reaching the exit
-			Exp* left = ((Binary*)original)->getSubExp1();
-			Exp* right = ((Binary*)original)->getSubExp2()->clone()->simplify();	// In case it's sp+0
-			if (*left == *right &&								// x == x
-					left->getOper() != opDefineAll &&			// Beware infinite recursion
+			Exp* right = origRight->clone()->simplify();		// In case it's sp+0
+			if (*origLeft == *right &&							// x == x
+					origLeft->getOper() != opDefineAll &&			// Beware infinite recursion
 					prove(&allEqAll)) {							// Recurse in case <all> not proven yet
 				if (DEBUG_PROOF)
 					LOG << "Using all=all for " << query->getSubExp1() << "\n" << "prove returns true\n";
-				inProve = false;
-				proven.insert(original);
+				provenTrue[origLeft->clone()] = right;
 				return true;
 			}
 			if (DEBUG_PROOF)
 				LOG << "not in return collector: " << query->getSubExp1() << "\n" << "prove returns false\n";
-			inProve = false;
 			return false;
 		}
 	}
 
-	// proven.insert(original);			// This was the "induction" step; also made prove() non re-entrant
+	if (cycleGrp)			// If in involved in a recursion cycle
+							//	then save the original query as a premise for bypassing calls
+		recurPremises[origLeft->clone()] = origRight;
 
 	std::set<PhiAssign*> lastPhis;
 	std::map<PhiAssign*, Exp*> cache;
-	if (!prover(query, lastPhis, cache, original)) {
-		//proven.erase(original);		// Undo the "induction" step
-		inProve = false;
-		if (DEBUG_PROOF) LOG << "prove returns false\n";
-		return false;
-	}
+	bool result = prover(query, lastPhis, cache, original);
+	if (cycleGrp)
+		recurPremises.erase(origLeft);			// Remove the premise, regardless of result
+	if (DEBUG_PROOF) LOG << "prove returns " << (result ? "true" : "false") << "\n";
  
-	proven.insert(original);			// Save the now proven equation
-	inProve = false;
-	if (DEBUG_PROOF) LOG << "prove returns true\n";
-	return true;
+	if (result)
+		provenTrue[origLeft] = origRight;	// Save the now proven equation
+#if PROVEN_FALSE
+	else
+		provenFalse[origLeft] = origRight;	// Save the now proven-to-be-false equation
+#endif
+	return result;
 }
 
 bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAssign*, Exp*> &cache, Exp* original,
@@ -3736,7 +3682,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 
 	if (lastPhi && cache.find(lastPhi) != cache.end() && *cache[lastPhi] == *phiInd) {
 		if (DEBUG_PROOF)
-			LOG << "true - in the cache\n";
+			LOG << "true - in the phi cache\n";
 		return true;
 	} 
 
@@ -3783,22 +3729,60 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 				CallStatement *call = dynamic_cast<CallStatement*>(s);
 				if (call) {
 					// See if we can prove something about this register.
-					// Note: formerly it could also have been the original register we are looking for ("proven" by
-					// induction, but this is no longer done. Instead, we use the CycleList parameter below.)
 					UserProc* destProc = (UserProc*)call->getDestProc();
-					if (destProc && !destProc->isLib() && destProc->status < PROC_PRESERVEDS) {
-						// The destination procedure does not have preservation proved as yet, because it is involved
-						// in a cycle. Use the inductive preservation logic to determine whether query is true for
-						// this procedure (involves extensive recursion)
-						bool ret = destProc->inductivePreservation(this);
-						if (DEBUG_PROOF)
-							LOG << "inductive preservation for call from " << getName() << " to " << 
-								destProc->getName() << ", returns " << (ret ? "true" : "false") << " for " << query <<
-								" \n";
-						return ret;
-					} else {
+					Exp* base = r->getSubExp1();
+					if (destProc && !destProc->isLib() && ((UserProc*)destProc)->cycleGrp != NULL &&
+							((UserProc*)destProc)->cycleGrp->find(this) != ((UserProc*)destProc)->cycleGrp->end()) {
+						// The destination procedure may not have preservation proved as yet, because it is involved
+						// in our recursion group. Use the conditional preservation logic to determine whether query is
+						// true for this procedure
+						Exp* provenTo = destProc->getProven(base);
+						if (provenTo) {
+							// There is a proven preservation. Use it to bypass the call
+							Exp* queryLeft = call->localiseExp(provenTo->clone());
+							query->setSubExp1(queryLeft);
+							// Now try everything on the result
+							return prover(query, lastPhis, cache, original);
+						} else {
+							// Check if the required preservation is one of the premises already assumed
+							Exp* premisedTo = destProc->getPremised(base);
+							if (premisedTo) {
+								if (DEBUG_PROOF)
+									LOG << "conditional preservation for call from " << getName() << " to " << 
+										destProc->getName() << ", allows bypassing\n";
+								Exp* queryLeft = call->localiseExp(premisedTo->clone());
+								query->setSubExp1(queryLeft);
+								return prover(query, lastPhis, cache, original);
+							} else {
+								// There is no proof, and it's not one of the premises. It may yet succeed, by making
+								// another premise! Example: try to prove esp, depends on whether ebp is preserved, so
+								// recurse to check ebp's preservation. Won't infinitely loop because of the premise map
+								// FIXME: what if it needs a rx = rx + K preservation?
+								Exp* newQuery = new Binary(opEquals,
+									base->clone(),
+									base->clone());
+								destProc->setPremise(base);
+								bool result = prove(newQuery);
+								destProc->killPremise(base);
+								if (result) {
+									if (DEBUG_PROOF)
+										LOG << "conditional preservation with new premise " << newQuery <<
+											" succeeds\n";
+									// Use the new conditionally proven result
+									Exp* queryLeft = call->localiseExp(base->clone());
+									query->setSubExp1(queryLeft);
+									return prover(query, lastPhis, cache, original);
+								} else {
+									if (DEBUG_PROOF)
+										LOG << "conditional preservation required premise " << newQuery << " fails!\n";
+									// Do nothing else; the outer proof will likely fail
+								}
+							}
+						}
+							
+					} else {		// Call not involved in this recursion group
 						Exp *right = call->getProven(r->getSubExp1());	// getProven returns the right side of what is
-						if (right) {									// proven about r (the LHS of query)
+						if (right) {									//	proven about r (the LHS of query)
 							right = right->clone();
 							if (callwd.find(call) != callwd.end() && *callwd[call] == *query) {
 								LOG << "found call loop to " << call->getDestProc()->getName() << " " << query << "\n";
@@ -4189,19 +4173,25 @@ unsigned fudge(StatementList::iterator x) {
 }
 
 Exp *UserProc::getProven(Exp *left) {
-	// Note: proven information is in the form "r28 = (r28 + 4)"
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++) 
-		if (*(*it)->getSubExp1() == *left)
-			return (*it)->getSubExp2();
+	// Note: proven information is in the form r28 mapsto (r28 + 4)
+	std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.find(left);
+	if (it != provenTrue.end())
+		return it->second;
 	// 	not found, try the signature
 	// No! The below should only be for library functions!
 	// return signature->getProven(left);
 	return NULL;
 }
 
+Exp* UserProc::getPremised(Exp* left) {
+	std::map<Exp*, Exp*, lessExpStar>::iterator it = recurPremises.find(left);
+	if (it != recurPremises.end())
+		return it->second;
+	return NULL;
+}
+
 bool UserProc::isPreserved(Exp* e) {
-	Binary equate(opEquals, e, e);	// e == e
-	return proven.find(&equate) != proven.end();
+	return provenTrue.find(e) != provenTrue.end() && *provenTrue[e] == *e;
 }
 
 void UserProc::castConst(int num, Type* ty) {
@@ -5066,7 +5056,12 @@ void dumpCycleSet(CycleSet* pc) {
 	std::cerr << "\n";
 }
 
-
+void Proc::setProvenTrue(Exp* fact) {
+	assert(fact->isEquality());
+	Exp* lhs = ((Binary*)fact)->getSubExp1();
+	Exp* rhs = ((Binary*)fact)->getSubExp2();
+	provenTrue[lhs] = rhs;
+}
 
 #ifdef USING_MEMOS
 class LibProcMemo : public Memo {
@@ -5079,7 +5074,7 @@ public:
 	ADDRESS address;
 	Proc *m_firstCaller;
 	ADDRESS m_firstCallerAddr;
-	std::set<Exp*, lessExpStar> proven;			// r
+	std::set<Exp*, lessExpStar> provenTrue;			// r
 	std::set<CallStatement*> callerSet;
 	Cluster *cluster;
 };
@@ -5093,12 +5088,12 @@ Memo *LibProc::makeMemo(int mId)
 	m->address = address;
 	m->m_firstCaller = m_firstCaller;
 	m->m_firstCallerAddr = m_firstCallerAddr;
-	m->proven = proven;
+	m->provenTrue = provenTrue;
 	m->callerSet = callerSet;
 	m->cluster = cluster;
 
 //	signature->takeMemo(mId);
-//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//	for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
 //		(*it)->takeMemo(mId);
 
 	return m;
@@ -5113,12 +5108,12 @@ void LibProc::readMemo(Memo *mm, bool dec)
 	address = m->address;
 	m_firstCaller = m->m_firstCaller;
 	m_firstCallerAddr = m->m_firstCallerAddr;
-	proven = m->proven;
+	provenTrue = m->provenTrue;
 	callerSet = m->callerSet;
 	cluster = m->cluster;
 
 //	signature->restoreMemo(m->mId, dec);
-//	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+//	for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
 //		(*it)->restoreMemo(m->mId, dec);
 }
 
@@ -5132,7 +5127,7 @@ public:
 	ADDRESS address;
 	Proc *m_firstCaller;
 	ADDRESS m_firstCallerAddr;
-	std::set<Exp*, lessExpStar> proven;			// r
+	std::set<Exp*, lessExpStar> provenTrue;			// r
 	std::set<CallStatement*> callerSet;
 	Cluster *cluster;
 
@@ -5152,7 +5147,7 @@ Memo *UserProc::makeMemo(int mId)
 	m->address = address;
 	m->m_firstCaller = m_firstCaller;
 	m->m_firstCallerAddr = m_firstCallerAddr;
-	m->proven = proven;
+	m->provenTrue = provenTrue;
 	m->callerSet = callerSet;
 	m->cluster = cluster;
 
@@ -5163,7 +5158,7 @@ Memo *UserProc::makeMemo(int mId)
 	m->calleeList = calleeList;
 
 	signature->takeMemo(mId);
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+	for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
 		(*it)->takeMemo(mId);
 
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
@@ -5186,7 +5181,7 @@ void UserProc::readMemo(Memo *mm, bool dec)
 	address = m->address;
 	m_firstCaller = m->m_firstCaller;
 	m_firstCallerAddr = m->m_firstCallerAddr;
-	proven = m->proven;
+	provenTrue = m->provenTrue;
 	callerSet = m->callerSet;
 	cluster = m->cluster;
 
@@ -5197,7 +5192,7 @@ void UserProc::readMemo(Memo *mm, bool dec)
 	calleeList = m->calleeList;
 
 	signature->restoreMemo(m->mId, dec);
-	for (std::set<Exp*, lessExpStar>::iterator it = proven.begin(); it != proven.end(); it++)
+	for (std::set<Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++)
 		(*it)->restoreMemo(m->mId, dec);
 
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++)
