@@ -69,7 +69,7 @@ class XMLProgParser
 	TAGD(local) 
 	TAGD(symbol) 
 	TAGD(secondexp)
-	TAGD(proven) 
+	TAGD(proven_true) 
 	TAGD(callee) 
 	TAGD(caller) 
 	TAGD(defines)

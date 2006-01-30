@@ -9,6 +9,8 @@
  * $Revision$	// 1.17.2.8
  *
  * June 2004 - Trent: created
+ * NOTE: As of early 2006, this file has likely fallen behind changes to class members, and so probably needs some major
+ *	work - MVE
  */
 
 #include <stdio.h>
@@ -30,7 +32,7 @@ extern "C" {
 
 
 typedef enum { e_prog, e_procs, e_global, e_cluster, e_libproc, e_userproc, e_local, e_symbol, e_secondexp,
-		   e_proven, e_callee, e_caller,
+		   e_proven_true, e_callee, e_caller,
 			   e_signature, e_param, e_implicitparam, e_return, e_rettype, e_prefreturn, e_prefparam,
 		   e_cfg, e_bb, e_inedge, e_outedge, e_livein, e_order, e_revorder,
 		   e_rtl, e_stmt, e_assign, e_assignment, e_phiassign, e_lhs, e_rhs, 
@@ -56,7 +58,7 @@ _tag XMLProgParser::tags[] = {
 	{ "local", TAG(local) },
 	{ "symbol", TAG(symbol) },
 	{ "secondexp", TAG(secondexp) },
-	{ "proven", TAG(proven) },
+	{ "proven_true", TAG(proven_true) },
 	{ "callee", TAG(callee) },
 	{ "caller", TAG(caller) },
 	{ "defines", TAG(defines) },
@@ -420,8 +422,8 @@ void XMLProgParser::addToContext_libproc(Context *c, int e)
 	case e_signature:
 		c->proc->setSignature(stack.front()->signature);
 		break;
-	case e_proven:
-		c->proc->setProven(stack.front()->exp);
+	case e_proven_true:
+		c->proc->setProvenTrue(stack.front()->exp);
 		break;
 	case e_caller:
 		break;
@@ -489,8 +491,8 @@ void XMLProgParser::addToContext_userproc(Context *c, int e)
 	case e_signature:
 		c->proc->setSignature(stack.front()->signature);
 		break;
-	case e_proven:
-		c->proc->setProven(stack.front()->exp);
+	case e_proven_true:
+		c->proc->setProvenTrue(stack.front()->exp);
 		break;
 	case e_caller:
 		break;
@@ -568,11 +570,11 @@ void XMLProgParser::addToContext_symbol(Context *c, int e)
 	}
 }
 
-void XMLProgParser::start_proven(const char **attr)
+void XMLProgParser::start_proven_true(const char **attr)
 {
 }
 
-void XMLProgParser::addToContext_proven(Context *c, int e)
+void XMLProgParser::addToContext_proven_true(Context *c, int e)
 {
 	c->exp = stack.front()->exp;
 }
@@ -2142,25 +2144,25 @@ void XMLProgParser::addToContext_def(Context *c, int e)
 
 Prog *XMLProgParser::parse(const char *filename)
 {
-  FILE *f = fopen(filename, "r");
-  if (f == NULL)
-	  return NULL;
-  fclose(f);
+	FILE *f = fopen(filename, "r");
+ 	if (f == NULL)
+		return NULL;
+ 	fclose(f);
 
-  stack.clear();
-  Prog *prog = NULL;
-  for (phase = 0; phase < 2; phase++) {
-	  parseFile(filename);
-	  if (stack.front()->prog) {
-		  prog = stack.front()->prog;
-		  parseChildren(prog->getRootCluster());
-	  }
-  }
-  if (prog == NULL)
-	  return NULL;
-  FrontEnd *pFE = FrontEnd::Load(prog->getPath(), prog);
-  prog->setFrontEnd(pFE);
-  return prog;
+ 	stack.clear();
+ 	Prog *prog = NULL;
+ 	for (phase = 0; phase < 2; phase++) {
+		parseFile(filename);
+		if (stack.front()->prog) {
+			prog = stack.front()->prog;
+			parseChildren(prog->getRootCluster());
+		}
+	}
+	if (prog == NULL)
+		return NULL;
+	FrontEnd *pFE = FrontEnd::Load(prog->getPath(), prog);
+	prog->setFrontEnd(pFE);
+	return prog;
 }
 
 void XMLProgParser::parseFile(const char *filename)
@@ -2180,38 +2182,39 @@ void XMLProgParser::parseFile(const char *filename)
 
   char Buff[8192];
 
-  for (;;) {
-	int done;
-	int len;
+ 	for (;;) {
+		int done;
+		int len;
 
-	len = fread(Buff, 1, sizeof(Buff), f);
-	if (ferror(f)) {
-	  fprintf(stderr, "Read error\n");
-	  fclose(f);
-	  return;
+		len = fread(Buff, 1, sizeof(Buff), f);
+		if (ferror(f)) {
+			fprintf(stderr, "Read error\n");
+			fclose(f);
+			return;
+		}
+		done = feof(f);
+
+		if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
+			if (XML_GetErrorCode(p) != XML_ERROR_NO_ELEMENTS)
+				fprintf(stderr, "Parse error at line %d of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename,
+					XML_ErrorString(XML_GetErrorCode(p)));
+			fclose(f);
+			return;
+		}
+
+		if (done)
+			break;
 	}
-	done = feof(f);
-
-	if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
-	if (XML_GetErrorCode(p) != XML_ERROR_NO_ELEMENTS)
-		fprintf(stderr, "Parse error at line %d of file %s:\n%s\n", XML_GetCurrentLineNumber(p), filename, XML_ErrorString(XML_GetErrorCode(p)));
 	fclose(f);
-	return;
-	}
-
-	if (done)
-	break;
-  }
-  fclose(f);
 }
 
 void XMLProgParser::parseChildren(Cluster *c)
 {
 	std::string path = c->makeDirs();
 	for (unsigned i = 0; i < c->children.size(); i++) {
-	std::string d = path + "/" + c->children[i]->getName() + ".xml";
-	parseFile(d.c_str());
-	parseChildren(c->children[i]);
+		std::string d = path + "/" + c->children[i]->getName() + ".xml";
+		parseFile(d.c_str());
+		parseChildren(c->children[i]);
 	}
 }
 
@@ -2278,20 +2281,21 @@ void Cluster::closeStreams()
 	out.close();
 	}
 	for (unsigned i = 0; i < children.size(); i++)
-	children[i]->closeStreams();
+		children[i]->closeStreams();
 }
 
 void XMLProgParser::persistToXML(Prog *prog)
 {
 	prog->m_rootCluster->openStreams("xml");
 	std::ofstream &os = prog->m_rootCluster->getStream();
-	os << "<prog path=\"" << prog->getPath() << "\" name=\"" << prog->getName() << "\" iNumberedProc=\"" << prog->m_iNumberedProc << "\">\n";
+	os << "<prog path=\"" << prog->getPath() << "\" name=\"" << prog->getName() << "\" iNumberedProc=\"" <<
+		prog->m_iNumberedProc << "\">\n";
 	for (std::set<Global*>::iterator it1 = prog->globals.begin(); it1 != prog->globals.end(); it1++)
 	persistToXML(os, *it1);
 	persistToXML(os, prog->m_rootCluster);
 	for (std::list<Proc*>::iterator it = prog->m_procs.begin(); it != prog->m_procs.end(); it++) {
 		Proc *p = *it;
-	persistToXML(p->getCluster()->getStream(), p);
+		persistToXML(p->getCluster()->getStream(), p);
 	}
 	os << "</prog>\n";
 	os.close();
@@ -2310,14 +2314,14 @@ void XMLProgParser::persistToXML(std::ostream &out, LibProc *proc)
 
 	persistToXML(out, proc->signature);
 
-	for (std::set<CallStatement*>::iterator it = proc->callerSet.begin();
-	  it != proc->callerSet.end(); it++)
-	out << "<caller call=\"" << (int)(*it) << "\"/>\n";
-	for (std::set<Exp*, lessExpStar>::iterator it = proc->proven.begin();
-	  it != proc->proven.end(); it++) {
-	out << "<proven>\n";
-	persistToXML(out, *it);
-	out << "</proven>\n";
+	for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
+		out << "<caller call=\"" << (int)(*it) << "\"/>\n";
+	for (std::map<Exp*, Exp*, lessExpStar>::iterator it = proc->provenTrue.begin();
+			it != proc->provenTrue.end(); it++) {
+		out << "<proven_true>\n";
+		persistToXML(out, it->first);
+		persistToXML(out, it->second);
+		out << "</proven_true>\n";
 	}
 	out << "</libproc>\n";
 }
@@ -2338,14 +2342,14 @@ void XMLProgParser::persistToXML(std::ostream &out, UserProc *proc)
 
 	persistToXML(out, proc->signature);
 
-	for (std::set<CallStatement*>::iterator it = proc->callerSet.begin();
-	  it != proc->callerSet.end(); it++)
-	out << "<caller call=\"" << (int)(*it) << "\"/>\n";
-	for (std::set<Exp*, lessExpStar>::iterator it = proc->proven.begin();
-	  it != proc->proven.end(); it++) {
-	out << "<proven>\n";
-	persistToXML(out, *it);
-	out << "</proven>\n";
+	for (std::set<CallStatement*>::iterator it = proc->callerSet.begin(); it != proc->callerSet.end(); it++)
+		out << "<caller call=\"" << (int)(*it) << "\"/>\n";
+	for (std::map<Exp*, Exp*, lessExpStar>::iterator it = proc->provenTrue.begin(); it != proc->provenTrue.end(); it++)
+	{
+		out << "<proven_true>\n";
+		persistToXML(out, it->first);
+		persistToXML(out, it->second);
+		out << "</proven_true>\n";
 	}
 
 	for (std::map<std::string, Type*>::iterator it1 = proc->locals.begin(); it1 != proc->locals.end(); it1++) {
