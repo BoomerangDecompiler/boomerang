@@ -4766,8 +4766,7 @@ Exp* CallStatement::bypassRef(RefExp* r, bool& ch) {
 			return r;				// Childless callees transmit nothing
 		//if (procDest->isLocal(base))					// ICK! Need to prove locals and parameters through calls...
 		// FIXME: temporary HACK! Ignores alias issues.
-		if (!procDest->isLib() &&
-				((UserProc*)procDest)->isLocalOrParam(base)) {
+		if (!procDest->isLib() && ((UserProc*)procDest)->isLocalOrParam(base)) {
 			Exp* ret = localiseExp(base->clone());	// Assume that it is proved as preserved
 			ch = true;
 			if (VERBOSE)
