@@ -4744,6 +4744,9 @@ void CallStatement::removeDefine(Exp* e) {
 bool CallStatement::isChildless() {
 	if (procDest == NULL) return true;
 	if (procDest->isLib()) return false;
+	// Early in the decompile process, recursive calls are treated as childless, so they use and define all
+	if (((UserProc*)procDest)->isEarlyRecursive())
+		return true;
 	return calleeReturn == NULL;
 }
 
