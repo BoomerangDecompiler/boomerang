@@ -974,7 +974,7 @@ void Prog::decompile() {
 		std::cerr << "decompiling entry point " << (*ee)->getName() << "\n";
 		LOG		  << "decompiling entry point " << (*ee)->getName() << "\n";
 		int indent = 0;
-		(*ee)->decompile(new CycleList, indent);
+		(*ee)->decompile(new ProcList, indent);
 	}
 
 	// Just in case there are any Procs not in the call graph. 
@@ -985,7 +985,7 @@ void Prog::decompile() {
 			if (proc->isLib()) continue;
 			if (proc->isDecompiled()) continue;
 			int indent = 0;
-			proc->decompile(new CycleList, indent);
+			proc->decompile(new ProcList, indent);
 		}
 	}
 
