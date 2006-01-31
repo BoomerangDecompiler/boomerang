@@ -1187,10 +1187,10 @@ void StatementTest::testSubscriptVars () {
 	b->setDest(new RefExp(srchb, g));
 	b->setCondExpr(new Terminal(opFlags));
 	std::ostringstream ost3;
-	b->subscriptVar(srchb, &s9);
+	b->subscriptVar(srchb, &s9);		// Should be ignored now: new behaviour
 	b->subscriptVar(new Terminal(opFlags), g);
 	ost3 << b;
-	expected = "  99 BRANCH m[r26{99}]{9}, condition equals\n"
+	expected = "  99 BRANCH m[r26{99}]{55}, condition equals\n"
 		"High level: %flags{55}";
 	actual = ost3.str();
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
@@ -1272,7 +1272,6 @@ void StatementTest::testSubscriptVars () {
 
 
 	// ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]
-	// The {55} one is a bit dodgy to me, but that's how the old subscriptVar code worked
 	// FIXME: shouldn't this test have some propagation? Now, it seems it's just testing the print code!
 	ReturnStatement* r = new ReturnStatement;
 	r->addReturn(new Assign(Location::regOf(28), new Const(1000)));
@@ -1284,10 +1283,10 @@ void StatementTest::testSubscriptVars () {
 				new RefExp(Location::regOf(26), b))),
 			new Const(100)));
 	std::ostringstream ost6;
-	r->subscriptVar(srch, &s9);
+	r->subscriptVar(srch, &s9);		// New behaviour: gets ignored now
 	ost6 << r;
 	expected =
-		"   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{9} + r26{99}] := 100\n"
+		"   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{55} + r26{99}] := 100\n"
 		"              Modifieds: \n"
 		"              Reaching definitions: ";
 	actual = ost6.str();

@@ -1068,8 +1068,7 @@ void ExpTest::testAssociativity() {
 
 /*==============================================================================
  * FUNCTION:		ExpTest::testSubscriptVar
- * OVERVIEW:		Test Assign::subscriptVar and thereby
- *					  Exp::expSubscriptVar
+ * OVERVIEW:		Test Assign::subscriptVar and thereby Exp::expSubscriptVar
  *============================================================================*/
 void ExpTest::testSubscriptVar() {
 	// m[r28 - 4] := r28 + r29
@@ -1104,10 +1103,12 @@ void ExpTest::testSubscriptVar() {
 	CPPUNIT_ASSERT_EQUAL(expected2, actual2.str());
 
 	// Subtest 3: change to a different definition
+	// 99: r28 := 0
+	// Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
 	Statement* def3 = new Assign(Location::regOf(28), new Const(0));
 	def3->setNumber(99);
 	s->subscriptVar(r28, def3);
-	std::string expected3("   0 *v* m[r28{99} - 4] := r28{99} + r29");
+	std::string expected3("   0 *v* m[r28{12} - 4] := r28{12} + r29");
 	std::ostringstream actual3;
 	actual3 << s;
 	CPPUNIT_ASSERT_EQUAL(expected3, actual3.str());
@@ -1349,11 +1350,12 @@ void ExpTest::testSubscriptVars() {
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 
 	// RefExp: r28{7} -> r28{9}
+	// Again, changed behaviour: don't resubscript any location
 	Assign s7(new Terminal(opNil), new Terminal(opNil));
 	s7.setNumber(7);
 	e = new RefExp(search->clone(), &s7);
 	e = e->expSubscriptVar(search, &s9);
-	expected = "r28{9}";
+	expected = "r28{7}";
 	std::ostringstream ost5;
 	ost5 << e;
 	actual = ost5.str();
@@ -1369,7 +1371,7 @@ void ExpTest::testSubscriptVars() {
 					Location::regOf(28), &s7),
 				new Const(4))), &s8);
 	e = e->expSubscriptVar(search, &s9);
-	expected = "m[r28{9} + 4]{8}";
+	expected = "m[r28{7} + 4]{8}";
 	std::ostringstream ost6;
 	ost6 << e;
 	actual = ost6.str();
