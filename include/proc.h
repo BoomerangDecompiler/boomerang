@@ -308,15 +308,15 @@ enum ProcStatus {
 	PROC_DECODED,		///< Decoded, no attempt at decompiling
 	PROC_SORTED,		///< Decoded, and CFG has been sorted by address
 	PROC_VISITED,		///< Has been visited on the way down in decompile()
-	PROC_INCYCLE,		///< Is involved in cycles, has not completed initial decompilation as yet
+	PROC_INCYCLE,		///< Is involved in cycles, has not completed early decompilation as yet
 	PROC_PRESERVEDS,	///< Has had preservation analysis done
 	PROC_EARLYDONE,		///< Has completed everything except the global analyses
 	PROC_FINAL			///< Has had final decompilation
 	// , PROC_RETURNS	///< Has had returns intersected with all caller's defines
 };
 
-typedef std::set <UserProc*> CycleSet;
-typedef std::list<UserProc*> CycleList;
+typedef std::set <UserProc*> ProcSet;
+typedef std::list<UserProc*> ProcList;
 
 /*==============================================================================
  * UserProc class.
@@ -421,7 +421,7 @@ private:
 		 * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
 		 * has c, d, and e at the point where the f-g cycle is found).
 		 */
-		CycleSet*	cycleGrp;
+		ProcSet*	cycleGrp;
 
 public:
 
@@ -478,6 +478,7 @@ virtual				~UserProc();
 		 */
 		bool		isDecoded() { return status >= PROC_DECODED; }
 		bool		isDecompiled() { return status >= PROC_FINAL; }
+		bool		isEarlyRecursive() {return cycleGrp != NULL && status <= PROC_INCYCLE;}
 
 		bool		isSorted() { return status >= PROC_SORTED; }
 		void		setSorted() { status = PROC_SORTED; }
@@ -509,7 +510,7 @@ virtual				~UserProc();
 		/// Begin the decompile process at this procedure. path is a list of pointers to procedures, representing the
 		/// path from the current entry point to the current procedure in the call graph. Pass an empty set at the top
 		/// level.  indent is the indentation level; pass 0 at the top level
-		CycleSet*	decompile(CycleList* path, int& indent);
+		ProcSet*	decompile(ProcList* path, int& indent);
 		/// Initialise decompile: sort CFG, number statements, dominator tree, etc.
 		void		initialiseDecompile();
 		/// Prepare for preservation analysis only.
@@ -518,19 +519,17 @@ virtual				~UserProc();
 		void		earlyDecompile();
 		/// Middle decompile: All the decompilation from preservation up to but not including removing unused
 		/// statements. Returns the cycle set from the recursive call to decompile()
-		CycleSet*	middleDecompile(CycleList* path, int indent);
+		ProcSet*	middleDecompile(ProcList* path, int indent);
 		/// Analyse the whole group of procedures for conditional preserveds, and update till no change.
 		/// Also finalise the whole group.
-		void		recursionGroupAnalysis(CycleList* path, int indent);
+		void		recursionGroupAnalysis(ProcList* path, int indent);
 		/// Global type analysis (for this procedure).
 		void		typeAnalysis();
-		// Split the set of cycle-associated procs into individual subcycles.
-		//void		findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
 		// The inductive preservation analysis.
 		bool		inductivePreservation(UserProc* topOfCycle);
 		// Mark calls involved in the recursion cycle as non childless (each child has had middleDecompile called on
 		// it now).
-		void		markAsNonChildless(CycleSet* cs);
+		void		markAsNonChildless(ProcSet* cs);
 		// Update the defines and arguments in calls.
 		void		updateCalls();
 		// Place the phi functions
@@ -783,7 +782,7 @@ virtual Exp*		getPremised(Exp* left);
 		// Set a location as a new premise, i.e. assume e=e
 		void		setPremise(Exp* e) {e = e->clone(); recurPremises[e] = e;}
 		void		killPremise(Exp* e) {recurPremises.erase(e);}
-virtual	bool		isPreserved(Exp* e);			///< Return whether e is preserved by this proc
+virtual	bool		isPreserved(Exp* e);				///< Return whether e is preserved by this proc
 
 virtual void		printCallGraphXML(std::ostream &os, int depth,
 									   bool recurse = true);
