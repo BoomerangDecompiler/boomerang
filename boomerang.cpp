@@ -324,7 +324,7 @@ int Boomerang::parseCmd(int argc, const char **argv)
 				return 1;
 			}
 			int indent = 0;
-			((UserProc*)proc)->decompile(new CycleList, indent);
+			((UserProc*)proc)->decompile(new ProcList, indent);
 		} else {
 			prog->decompile();
 		}
