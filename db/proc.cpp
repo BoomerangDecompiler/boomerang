@@ -1023,7 +1023,11 @@ if (child->size())
 	}
 
 	// Remove last element (= this) from path
-	path->erase(--path->end());
+	// The if should not be neccesary, but nestedswitch needs it
+	if (path->size())
+		path->erase(--path->end());
+	else
+		LOG << "WARNING: UserProc::decompile: empty path when trying to remove last proc\n";
 
 	--indent;
 	if (VERBOSE)
