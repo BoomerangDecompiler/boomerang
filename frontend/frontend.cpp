@@ -1171,7 +1171,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 	if (BB_rtls == NULL) BB_rtls = new std::list<RTL*>;		// In case no other semantics
 	BB_rtls->push_back(pRtl);
 	ADDRESS retAddr = pProc->getTheReturnAddr();
-	LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
+	// LOG << "retAddr = " << retAddr << " rtl = " << pRtl->getAddress() << "\n";
 	if (retAddr == NO_ADDRESS) {
 		// Create the basic block
 		pBB = pCfg->newBB(BB_rtls, RET, 0);
