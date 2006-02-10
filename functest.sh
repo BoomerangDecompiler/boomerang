@@ -57,8 +57,7 @@ $TESTONE pentium fibo-O4		3 "$BOOMSW" < test/source/fibo-O4.in3
 $TESTONE sparc   fibo-O4		3 "$BOOMSW" < test/source/fibo-O4.in3
 $TESTONE pentium fibo3			3 "$BOOMSW" < test/source/fibo-O4.in3
 $TESTONE sparc   fibo3			3 "$BOOMSW" < test/source/fibo-O4.in3
-$TESTONE pentium recursion		2 "$BOOMSW" 2
-#$TESTONE sparc   recursion		2 "$BOOMSW" 2
+$TESTONE pentium fibo4			3 "$BOOMSW" < test/source/fibo-O4.in3
 $TESTONE pentium global1		1 "$BOOMSW"
 $TESTONE sparc   global1		1 "$BOOMSW"
 $TESTONE pentium global2		1 "$BOOMSW"
@@ -115,16 +114,22 @@ else
 fi
 
 echo
-echo === Issues with the GC ===
+echo === Sometimes issues with the GC ===
 $TESTONE sparc   global2		1 "$BOOMSW"
 $TESTONE sparc   global3		1 "$BOOMSW"
 
 echo
+echo === Intermittent failure due to incorrect switch analysis ===
+$TESTONE pentium recursion		2 "$BOOMSW" 2
+
+echo
 echo === Known faillures ===
-$TESTONE pentium stattest		1 "$BOOMSW"
-$TESTONE sparc   stattest		1 "$BOOMSW"
-$TESTONE sparc	elfhashtest		1 "$BOOMSW"
-# Special for Mike
+$TESTONE pentium stattest		1 "$BOOMSW"		# TA does not handle structs properly yet
+$TESTONE sparc   stattest		1 "$BOOMSW"		# ditto
+$TESTONE sparc	elfhashtest		1 "$BOOMSW"		# Not sure why fails
+# Specials for Mike
+$TESTONE sparc   fibo4			3 "$BOOMSW" < test/source/fibo-O4.in3	# Some problem with bypassing m[...]
+$TESTONE sparc   recursion		2 "$BOOMSW" 2	# Not sure why fails
 $TESTONE pentium recursion2		1 "$BOOMSW"
 
 echo
