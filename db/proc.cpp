@@ -995,8 +995,6 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 		child = middleDecompile(path, indent);
 		// If there is a switch statement, middleDecompile could contribute some cycles. If so, we need to test for
 		// the recursion logic again
-if (child->size())
- int HACK = 44;
 		if (child->size() != 0)
 			// We've just come back out of decompile(), so we've lost the current proc from the path.
 			path->push_back(this);
@@ -1381,8 +1379,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		status = PROC_VISITED;					// Back to only visited progress
 		path->erase(--path->end());				// Remove self from path
 		--indent;								// Because this is not recursion
-		ProcSet* ret = decompile(path, indent);// Restart decompiling this proc
+		ProcSet* ret = decompile(path, indent);	// Restart decompiling this proc
 		++indent;								// Restore indent
+		path->push_back(this);					// Restore self to path
 		// It is important to keep the result of this call for the recursion analysis
 		return ret;
 	}
@@ -1470,12 +1469,49 @@ void UserProc::remUnusedStmtEtc() {
 	findFinalParameters();
 	if (!Boomerang::get()->noParameterNames) {
 		mapExpressionsToParameters();
-#if 1
-		// FIXME: Gerard claim that this exposes a bug in propagateStatements
-		// As a quick fix, just don't do this now: it breaks minmax3.
+
+	/* The call to propagateStatements was enabled for a while. Gerard noticed a problem with minmax3, and commented
+		it out; Mike thought the problem went away after some changes, but there are problems with this caused by
+		the way that the fromSSA algorithm works. Consider
+		g=g-1;		// g is some global
+		if (g >= 0)
+			h();	// h() affects g
+		print g;
+		SSA form:
+		5 g := g{-}-1
+		6 if (g{-} -1 >= 0)
+		7   g := h()   // g is not a real return, really a sort of "may define"
+		8 g = phi(5, 7)
+		9 print g{8}
+		As the program stands, statement 5 is not unused; it is used by the phi statement. So it doesn't get deleted
+		as dead code. Without the extra propagation, we get
+		tmp = g;		
+		g = g-1;
+		if (tmp-1 >= 0)
+			h();
+		g = tmp-1;
+		print g;
+		which is not that pretty but it is correct. This is the famous "propagate too much" problem, which the -l
+		switch reduces but does not eliminate.
+		With the below propagation enabled, and the implicit assumption that calls don't really affect globals,
+		we get g{7} = g{5}, and the phi becomes 8 g = phi(5 5) = g{-}-1. Now statement 5 is unused but not eliminated.
+		It means that g{5} is no longer live, so there is no interference between g{5} and g{-} to trigger the tmp
+		creation, and we get
+		g=g-1
+		if (g-1 >= 0)
+			h();
+		g = g-1;
+		print g;
+		which has the wrong argument in the if condition, and also g gets decremented twice.
+		So either leave the propagation below commented out, or change the fromSSA logic to treat all definitions as
+		creating livenesses.
+	*/
+	
+#if 0
 		bool convert;						// Don't think we need to check this after propagating at this late stage
 		propagateStatements(convert, 99);	// Some parameters may propagate now, when they were limited by -l
 #endif
+
 		//findPreserveds();					// FIXME: is this necessary here?
 		//fixCallAndPhiRef();				// FIXME: surely this is not necessary now?
 		//trimParameters();					// FIXME: check
@@ -3602,7 +3638,7 @@ static Binary allEqAll(opEquals,
 	new Terminal(opDefineAll));
 
 // this function was non-reentrant, but now reentrancy is frequently used
-bool UserProc::prove(Exp *query) {
+bool UserProc::prove(Exp *query, bool conditional /* = false */) {
 
 	assert(query->isEquality());
 	Exp* queryLeft = ((Binary*)query)->getSubExp1();
@@ -3671,14 +3707,17 @@ bool UserProc::prove(Exp *query) {
 	bool result = prover(query, lastPhis, cache, original);
 	if (cycleGrp)
 		recurPremises.erase(origLeft);			// Remove the premise, regardless of result
-	if (DEBUG_PROOF) LOG << "prove returns " << (result ? "true" : "false") << "\n";
+	if (DEBUG_PROOF) LOG << "prove returns " << (result ? "true" : "false") << " for " << query << " in " << getName()
+							<< "\n";
  
-	if (result)
-		provenTrue[origLeft] = origRight;	// Save the now proven equation
+	if (!conditional) {
+		if (result)
+			provenTrue[origLeft] = origRight;	// Save the now proven equation
 #if PROVEN_FALSE
-	else
-		provenFalse[origLeft] = origRight;	// Save the now proven-to-be-false equation
+		else
+			provenFalse[origLeft] = origRight;	// Save the now proven-to-be-false equation
 #endif
+	}
 	return result;
 }
 
@@ -3770,16 +3809,20 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 									base->clone(),
 									base->clone());
 								destProc->setPremise(base);
-								bool result = prove(newQuery);
+								if (DEBUG_PROOF)
+									LOG << "new required premise " << newQuery << " for " << destProc->getName() <<
+										"\n";
+								// Pass conditional as true, since even if proven, this is conditional on other things
+								bool result = destProc->prove(newQuery, true);
 								destProc->killPremise(base);
 								if (result) {
 									if (DEBUG_PROOF)
 										LOG << "conditional preservation with new premise " << newQuery <<
-											" succeeds\n";
+											" succeeds for " << destProc->getName() << "\n";
 									// Use the new conditionally proven result
 									Exp* queryLeft = call->localiseExp(base->clone());
 									query->setSubExp1(queryLeft);
-									return prover(query, lastPhis, cache, original);
+									return destProc->prover(query, lastPhis, cache, original);
 								} else {
 									if (DEBUG_PROOF)
 										LOG << "conditional preservation required premise " << newQuery << " fails!\n";
@@ -4729,7 +4772,224 @@ bool UserProc::isLocalOrParam(Exp* e) {
 	return right->isIntConst();
 }
 
-// Remove unused returns for this procedure, based on the equation results = modifieds isect union(live at c) for all
+// Remove the unused parameters. Check for uses for each parameter as param{-}; if one is found, add an entry to the
+// set usedParams for that parameter. 
+// Some parameters are apparently used when in fact they are only used as parameters to recursive calls to the current
+// prcocedure. So don't count arguments of calls in the current recursion group that chain through to ultimately use the
+// argument as a parameter to the current procedure.
+// Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
+// a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
+// only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
+// referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
+// to doesReturnChainToCall(param, this proc).
+
+// visited is a set of procs already visited, to prevent infinite recursion
+bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
+	BB_IT it;
+	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
+	for (it = cfg->begin(); it != cfg->end(); ++it) {
+		CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
+		if (!c->isCall())  continue;		// Only interested in calls
+		UserProc* dest = (UserProc*)c->getDestProc();
+		if (dest == NULL) continue;
+		if (dest == p) {				// Pointer comparison is OK here
+			// This is a recursive call to p. Check for an argument of the form param{-}
+			StatementList& args = c->getArguments();
+			StatementList::iterator aa;
+			for (aa = args.begin(); aa != args.end(); ++aa) {
+				Exp* rhs = ((Assign*)*aa)->getRight();
+				if (rhs && rhs->isSubscript() && ((RefExp*)rhs)->isImplicitDef()) {
+					Exp* base = ((RefExp*)rhs)->getSubExp1();
+					// Check if this argument location matches loc
+					if (*base == *param)
+						// We have a call to p that takes param{-} as an argument
+						return true;
+				}
+			}
+		} else {
+			if (dest->doesRecurseTo(p)) {
+				// We have come to a call that is not to p, but is in the same recursion group as p and this proc.
+				visited->insert(this);
+				if (visited->find(dest) != visited->end()) {
+					// Recurse to the next proc
+					bool res = dest->doesParamChainToCall(param, p, visited);
+					if (res)
+						return true;
+					// Else consider more calls this proc
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool UserProc::isRetNonFakeUsed(CallStatement* c, Exp* retLoc, UserProc* p, ProcSet* visited) {
+	// Ick! This algorithm has to search every statement for uses of the return location retLoc in call c that are not
+	// arguments of calls to p. If we had def-use information, it would be much more efficient
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		LocationSet ls;
+		LocationSet::iterator ll;
+		s->addUsedLocs(ls);
+		bool found = false;
+		for (ll = ls.begin(); ll != ls.end(); ++ll) {
+			if (!(*ll)->isSubscript()) continue;
+			Statement* def = ((RefExp*)*ll)->getDef();
+			if (def != c) continue;							// Not defined at c, ignore
+			Exp* base = ((RefExp*)*ll)->getSubExp1();
+			if (!(*base == *retLoc)) continue;				// Defined at c, but not the right location
+			found = true;
+			break;
+		}
+		if (!found)
+			continue;
+		if (!s->isCall())
+			// This non-call uses the return; return true as it is non-fake used
+			return true;
+		UserProc* dest = (UserProc*)((CallStatement*)s)->getDestProc();
+		if (dest == NULL)
+			// This childless call seems to use the return. Count it as a non-fake use
+			return true;
+		if (dest == p)
+			// This procedure uses the parameter, but it's a recursive call to p, so ignore it
+			continue;
+		if (dest->isLib())
+			// Can't be a recursive call
+			return true;
+		if (!dest->doesRecurseTo(p))
+			return true;
+		// We have a call that uses the return, but it may well recurse to p
+		visited->insert(this);
+		if (visited->find(dest) != visited->end())
+			// We've not found any way for loc to be fake-used. Count it as non-fake
+			return true;
+		if (!doesParamChainToCall(retLoc, p, visited))
+			// It is a recursive call, but it doesn't end up passing param as an argument in a call to p
+			return true;
+	}
+	return false;
+}
+
+bool UserProc::removeUnusedParameters() {
+	bool ret = false;
+	if (DEBUG_UNUSED)
+		LOG << "%%% removing unused parameters for " << getName() << "\n";
+	// Check: I suspect that this would be far more efficient if we had def-use information
+	StatementList::iterator pp;
+	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
+		Exp* param = ((Assign*)*pp)->getLeft();
+		bool az;
+		Exp* zparam = param->clone()->removeSubscripts(az);		// FIXME: why does main have subscripts on parameters?
+// FIXME: why does main have subscripts on parameters?
+		StatementList stmts;
+		getStatements(stmts);
+		StatementList::iterator it;
+		bool nonFakeUse = false;
+		for (it = stmts.begin(); it != stmts.end(); it++) {
+			Statement* s = *it;
+			// Ignore parameters in self recursive calls
+			if (s->isCall()) {
+				CallStatement* c = (CallStatement*)s;
+				UserProc* dest = (UserProc*)c->getDestProc();
+				if (dest == this) {
+					// Check if param is an argument of s
+					// FIXME: what about param+1? param+y? Other expressions using param?
+					StatementList& args = c->getArguments();
+					StatementList::iterator aa;
+					for (aa = args.begin(); aa != args.end(); ++aa) {
+						Exp* rhs = ((Assign*)*aa)->getRight();
+						if (*rhs == *zparam)
+							continue;			// Yes, we can ignore uses in this call
+					}
+					
+				}
+				// Check if there is a parameter that chains to the current parameter, param
+				if (!dest->isLib() && dest->doesRecurseTo(this)) {
+					ProcSet* visited = new ProcSet;
+					visited->insert(this);
+					if (doesParamChainToCall(param, this, visited))
+						continue;				// Ignore it also
+				}
+			} else if (cycleGrp && s->isPhi()) {
+				// Check if this phi is a direct reference from a return
+				ReturnStatement::iterator rr;
+				assert(theReturnStatement);
+				bool phiDefinesRet = false;
+				for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ++rr) {
+					Exp* rhs = ((Assign*)*rr)->getRight();
+					if (!rhs->isSubscript())
+						continue;
+					Statement* def = ((RefExp*)rhs)->getDef();
+					if (def == s) {
+						phiDefinesRet = true;
+						break;			// No need to search more returns
+					}
+				}
+				if (phiDefinesRet) {
+					// OK, this is a phi that defines a return
+					// Check all callers. For each, search all statements for non-fake uses. If none found, this
+					// parameter (and return, though that could come later if necessary) can be removed
+					std::set<CallStatement*>& callers = getCallers();
+					std::set<CallStatement*>::iterator cc;
+					bool hasNonFakeUses = false;
+					for (cc = callers.begin(); cc != callers.end(); ++cc) {
+						ProcSet* visited = new ProcSet;
+						visited->insert(this);
+						if (isRetNonFakeUsed(*cc, param, this, visited)) {
+							// There is a non-fake use; can't ignore this phi
+							hasNonFakeUses = true;
+							break;
+						}
+					}
+					if (!hasNonFakeUses)
+						continue;			// Also ignore the phi statement
+				}
+			}
+			// OK, this statement is not ignorable. Check for implicit references
+			LocationSet ls;
+			LocationSet::iterator ll;
+			s->addUsedLocs(ls);
+			for (ll = ls.begin(); ll != ls.end(); ++ll) {
+				// Note: *ll could be <all> (not subscripted; not sure why)
+				if ((*ll)->isSubscript() && ((RefExp*)*ll)->isImplicitDef()) {
+					// The parameter will have subscripts removed; we can remove this one if they are all null
+					// Ugh! Except for main, it seems; so compare with zparam
+					Exp* use = ((RefExp*)*ll)->getSubExp1()->clone();
+					bool allZero;
+					use = use->removeSubscripts(allZero);
+					if (allZero && *use == *zparam) {
+						nonFakeUse = true;
+						break;
+					}
+				}
+			}
+			if (nonFakeUse)
+				break;
+		}
+		// Checked every statement, and no non-fake use was found
+std::cerr << " %%% Removing unused parameters for " << getName() << ": parameter " << param << " " << (nonFakeUse ?
+"CAN NOT" : "can") << " be removed\n";
+		if (!nonFakeUse) {
+			// Remove the parameter
+			ret = true;
+			if (DEBUG_UNUSED)
+				LOG << " %%% removing unused parameter " << param << " in " << getName() << "\n";
+			parameters.erase(pp);
+			// Check if it is in the symbol map. If so, delete it; a local will be created later
+			SymbolMapType::iterator ss = symbolMap.find(param);
+			if (ss != symbolMap.end())
+				symbolMap.erase(ss);		// Kill the symbol
+		}
+	}
+	if (DEBUG_UNUSED)
+		LOG << "%%% end removing unused parameters for " << getName() << "\n";
+	return ret;
+}
+
+// Remove unused returns for this procedure, based on the equation returns = modifieds isect union(live at c) for all
 // c calling this procedure.
 // The intersection operation will only remove locations. Removing returns can have three effects for each component y
 // used by that return (e.g. if return r24 := r25{10} + r26{20} is removed, statements 10 and 20 will be affected and
@@ -4742,6 +5002,8 @@ bool UserProc::isLocalOrParam(Exp* e) {
 //	have to have their arguments trimmed, and a similar process has to be applied to all those caller's removed
 //	arguments as is applied here to the removed returns.
 bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
+	// First remove the unused parameters
+	bool removedParams = removeUnusedParameters();
 	if (theReturnStatement == NULL)
 		return false;
 	if (DEBUG_UNUSED)
@@ -4761,7 +5023,7 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		}
 	}
 	// Intersect with the given location set
-	bool removedSome = false;
+	bool removedRets = false;
 	ReturnStatement::iterator rr;
 	for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
 		Assign* a = (Assign*)*rr;
@@ -4779,7 +5041,7 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 				}
 			}
 			rr = theReturnStatement->erase(rr);
-			removedSome = true;
+			removedRets = true;
 		}
 		else
 			rr++;
@@ -4792,19 +5054,25 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 		LOG << "%%%  final returns for " << getName() << ": " << theReturnStatement->getReturns().prints() << "\n";
 	}
 
-	if (removedSome) {
+	if (removedParams || removedRets) {
 		// Now update myself, especially because the call livenesses are possibly incorrect, because every time we found
 		// a return defined at a call, we deleted the liveness in the call's use collector. So it's pointless removing
 		// unused returns for children, since the liveness that this depends on is possibly incorrect.
-		updateForUseChange(removeRetSet);
+//		updateForUseChange(removeRetSet);		// HACK!
 	
 		// Update the statements that call us
 		std::set<CallStatement*>::iterator it;
 		for (it = callerSet.begin(); it != callerSet.end() ; it++) {
 			(*it)->updateArguments();
+			// Highly Experimantal!
+			if (removedParams) {
+				UserProc* parent = (*it)->getProc();	// Parent proc (may = this)
+				parent->removeCallLiveness();			// Because parameters can affect livenesses
+			}
 		}
+		updateForUseChange(removeRetSet);		// HACK!!!
 	}
-	return removedSome;
+	return removedRets;
 }
 
 // See comments above for removeUnusedReturns(). Need to save the old parameters and call livenesses, redo the dataflow
@@ -4835,13 +5103,14 @@ void UserProc::updateForUseChange(std::set<UserProc*>& removeRetSet) {
 	}
 
 	// Have to redo dataflow to get the liveness at the calls correct
-	doRenameBlockVars(-3);
+	doRenameBlockVars(-3, true);
 
 	remUnusedStmtEtc();				// Also redoes parameters
 
 	// Have the parameters changed? If so, then all callers will need to update their arguments, and do similar
 	// analysis to the removal of returns
-	findFinalParameters();
+	//findFinalParameters();
+	removeUnusedParameters();
 	if (parameters.size() != oldParameters.size()) {
 		if (DEBUG_UNUSED)
 			LOG << "%%%  parameters changed for " << getName() << "\n";
