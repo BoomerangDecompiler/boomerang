@@ -479,6 +479,7 @@ virtual				~UserProc();
 		bool		isDecoded() { return status >= PROC_DECODED; }
 		bool		isDecompiled() { return status >= PROC_FINAL; }
 		bool		isEarlyRecursive() {return cycleGrp != NULL && status <= PROC_INCYCLE;}
+		bool		doesRecurseTo(UserProc* p) {return cycleGrp && cycleGrp->find(p) != cycleGrp->end();}
 
 		bool		isSorted() { return status >= PROC_SORTED; }
 		void		setSorted() { status = PROC_SORTED; }
@@ -626,7 +627,12 @@ typedef std::map<Statement*, int> RefCounter;
 
 		// For the final pass of removing returns that are never used
 //typedef	std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;
-		/// Remove any returns that are not used by any callersMenu
+		// Used for checking for unused parameters
+		bool		doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited);
+		bool		isRetNonFakeUsed(CallStatement* c, Exp* loc, UserProc* p, ProcSet* visited);
+		// Remove unused parameters. Return true if remove any
+		bool		removeUnusedParameters();
+		/// Remove any returns that are not used by any callers
 		// \return true if any returns are removed		
 		bool		removeUnusedReturns(std::set<UserProc*>& removeRetSet);
 		/// Update parameters and call livenesses to take into account the changes causes by removing a return from this
@@ -637,8 +643,9 @@ typedef std::map<Statement*, int> RefCounter;
 
 		/// returns true if the prover is working right now
 		bool		canProveNow();
-		/// prove any arbitary property of this procedure
-		bool		prove(Exp *query);
+		/// prove any arbitary property of this procedure. If conditional is true, do not save the result, as it may
+		/// be conditional on premises stored in other procedures
+		bool		prove(Exp *query, bool conditional = false);
 		/// helper function, should be private
 		bool		prover(Exp *query, std::set<PhiAssign*> &lastPhis, std::map<PhiAssign*, Exp*> &cache,
 						Exp* original, PhiAssign *lastPhi = NULL);	  
