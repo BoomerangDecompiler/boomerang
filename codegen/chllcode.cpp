@@ -1273,7 +1273,7 @@ void CHLLCode::AddCallStatement(int indLevel, Proc *proc, const char *name, Stat
 	s << ");";
 	if (results->size() > 1) {
 		bool first = true;
-		s << " /* OUT: ";
+		s << " /* Warning: also results in ";
 		for (ss = ++results->begin(); ss != results->end(); ++ss) {
 			if (first)
 				first = false;
