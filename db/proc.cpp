@@ -4970,8 +4970,6 @@ bool UserProc::removeUnusedParameters() {
 				break;
 		}
 		// Checked every statement, and no non-fake use was found
-std::cerr << " %%% Removing unused parameters for " << getName() << ": parameter " << param << " " << (nonFakeUse ?
-"CAN NOT" : "can") << " be removed\n";
 		if (!nonFakeUse) {
 			// Remove the parameter
 			ret = true;
