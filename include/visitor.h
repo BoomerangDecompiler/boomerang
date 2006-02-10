@@ -263,10 +263,12 @@ virtual void		visit(ImpRefStatement *s,	bool& recur) {recur = true;}
 // arguments in calls) is not modified. So for example eax := ebx -> eax := local2, but in m[xxx] := rhs, the rhs and
 // xxx are modified, but not the m[xxx]
 class StmtPartModifier {
+		bool		ignoreCol;
 public:
 	ExpModifier* mod;			// The expression modifier object
-					StmtPartModifier(ExpModifier* em) {mod = em;}	// Constructor
+					StmtPartModifier(ExpModifier* em, bool ic = false) : ignoreCol(ic), mod(em) {}	// Constructor
 virtual				~StmtPartModifier() {}
+		bool		ignoreCollector() {return ignoreCol;}
 	// This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
 virtual void		visit(Assign *s,			bool& recur) {recur = true;}
 virtual void		visit(PhiAssign *s,			bool& recur) {recur = true;}
