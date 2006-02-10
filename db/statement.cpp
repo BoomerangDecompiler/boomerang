@@ -3801,11 +3801,16 @@ bool CallStatement::accept(StmtPartModifier* v) {
 	// For example: needed for CallBypasser so that a collected definition that happens to be another call gets
 	// adjusted
 	// But now I'm thinking no, the bypass and propagate while possible logic should take care of it.
-#if 0
-	Collector::iterator cc;
-	for (cc = defCol.begin(); cc != defCol.end(); cc++)
-		(*cc)->accept(v->mod);			// Always refexps, so never need to change Exp pointer (i.e. don't need *cc = )
-#endif
+	// Then again, what about the use collectors in calls? Best to do it.
+	if (!v->ignoreCollector()) {
+		DefCollector::iterator dd;
+		for (dd = defCol.begin(); dd != defCol.end(); dd++)
+			(*dd)->accept(v);
+		UseCollector::iterator uu;
+		for (uu = useCol.begin(); uu != useCol.end(); ++uu)
+			// I believe that these should never change at the top level, e.g. m[esp{30} + 4] -> m[esp{-} - 20]
+			(*uu)->accept(v->mod);
+	}
 	StatementList::iterator dd;
 	for (dd = defines.begin(); recur && dd != defines.end(); dd++)
 		(*dd)->accept(v);
