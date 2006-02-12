@@ -4875,6 +4875,9 @@ bool UserProc::isRetNonFakeUsed(CallStatement* c, Exp* retLoc, UserProc* p, Proc
 
 bool UserProc::removeUnusedParameters() {
 	bool ret = false;
+	
+	StatementList newParameters;
+	
 	if (DEBUG_UNUSED)
 		LOG << "%%% removing unused parameters for " << getName() << "\n";
 	// Check: I suspect that this would be far more efficient if we had def-use information
@@ -4883,7 +4886,6 @@ bool UserProc::removeUnusedParameters() {
 		Exp* param = ((Assign*)*pp)->getLeft();
 		bool az;
 		Exp* zparam = param->clone()->removeSubscripts(az);		// FIXME: why does main have subscripts on parameters?
-// FIXME: why does main have subscripts on parameters?
 		StatementList stmts;
 		getStatements(stmts);
 		StatementList::iterator it;
@@ -4970,18 +4972,20 @@ bool UserProc::removeUnusedParameters() {
 				break;
 		}
 		// Checked every statement, and no non-fake use was found
-		if (!nonFakeUse) {
+		if (nonFakeUse) {
+			newParameters.append(*pp);
+		} else {
 			// Remove the parameter
 			ret = true;
 			if (DEBUG_UNUSED)
 				LOG << " %%% removing unused parameter " << param << " in " << getName() << "\n";
-			parameters.erase(pp);
 			// Check if it is in the symbol map. If so, delete it; a local will be created later
 			SymbolMapType::iterator ss = symbolMap.find(param);
 			if (ss != symbolMap.end())
 				symbolMap.erase(ss);		// Kill the symbol
 		}
 	}
+	parameters = newParameters;
 	if (DEBUG_UNUSED)
 		LOG << "%%% end removing unused parameters for " << getName() << "\n";
 	return ret;
