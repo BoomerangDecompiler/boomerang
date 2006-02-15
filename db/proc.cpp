@@ -3724,7 +3724,7 @@ bool UserProc::prove(Exp *query, bool conditional /* = false */) {
 bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAssign*, Exp*> &cache, Exp* original,
 		PhiAssign* lastPhi /* = NULL */) {
 	// A map that seems to be used to detect loops in the call graph:
-	std::map<CallStatement*, Exp*> callwd;
+	std::map<CallStatement*, Exp*> called;
 	Exp *phiInd = query->getSubExp2()->clone();
 
 	if (lastPhi && cache.find(lastPhi) != cache.end() && *cache[lastPhi] == *phiInd) {
@@ -3789,7 +3789,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 							Exp* queryLeft = call->localiseExp(provenTo->clone());
 							query->setSubExp1(queryLeft);
 							// Now try everything on the result
-							return prover(query, lastPhis, cache, original);
+							return prover(query, lastPhis, cache, original, lastPhi);
 						} else {
 							// Check if the required preservation is one of the premises already assumed
 							Exp* premisedTo = destProc->getPremised(base);
@@ -3799,7 +3799,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 										destProc->getName() << ", allows bypassing\n";
 								Exp* queryLeft = call->localiseExp(premisedTo->clone());
 								query->setSubExp1(queryLeft);
-								return prover(query, lastPhis, cache, original);
+								return prover(query, lastPhis, cache, original, lastPhi);
 							} else {
 								// There is no proof, and it's not one of the premises. It may yet succeed, by making
 								// another premise! Example: try to prove esp, depends on whether ebp is preserved, so
@@ -3822,7 +3822,7 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 									// Use the new conditionally proven result
 									Exp* queryLeft = call->localiseExp(base->clone());
 									query->setSubExp1(queryLeft);
-									return destProc->prover(query, lastPhis, cache, original);
+									return destProc->prover(query, lastPhis, cache, original, lastPhi);
 								} else {
 									if (DEBUG_PROOF)
 										LOG << "conditional preservation required premise " << newQuery << " fails!\n";
@@ -3831,25 +3831,25 @@ bool UserProc::prover(Exp *query, std::set<PhiAssign*>& lastPhis, std::map<PhiAs
 							}
 						}
 							
-					} else {		// Call not involved in this recursion group
-						Exp *right = call->getProven(r->getSubExp1());	// getProven returns the right side of what is
-						if (right) {									//	proven about r (the LHS of query)
-							right = right->clone();
-							if (callwd.find(call) != callwd.end() && *callwd[call] == *query) {
-								LOG << "found call loop to " << call->getDestProc()->getName() << " " << query << "\n";
-								query = new Terminal(opFalse);
-								change = true;
-							} else {
-								callwd[call] = query->clone();
-								if (DEBUG_PROOF)
-									LOG << "using proven for " << call->getDestProc()->getName() << " " 
-										<< r->getSubExp1() << " = " << right << "\n";
-								right = call->localiseExp(right);
-								if (DEBUG_PROOF)
-									LOG << "right with subs: " << right << "\n";
-								query->setSubExp1(right);				// Replace LHS of query with right
-								change = true;
-							}
+					} // End call involved in this recursion group
+					// Seems reasonable that recursive procs need protection from call loops too
+					Exp *right = call->getProven(r->getSubExp1());	// getProven returns the right side of what is
+					if (right) {									//	proven about r (the LHS of query)
+						right = right->clone();
+						if (called.find(call) != called.end() && *called[call] == *query) {
+							LOG << "found call loop to " << call->getDestProc()->getName() << " " << query << "\n";
+							query = new Terminal(opFalse);
+							change = true;
+						} else {
+							called[call] = query->clone();
+							if (DEBUG_PROOF)
+								LOG << "using proven for " << call->getDestProc()->getName() << " " 
+									<< r->getSubExp1() << " = " << right << "\n";
+							right = call->localiseExp(right);
+							if (DEBUG_PROOF)
+								LOG << "right with subs: " << right << "\n";
+							query->setSubExp1(right);				// Replace LHS of query with right
+							change = true;
 						}
 					}
 				} else if (s && s->isPhi()) {
@@ -4901,12 +4901,16 @@ bool UserProc::removeUnusedParameters() {
 					// FIXME: what about param+1? param+y? Other expressions using param?
 					StatementList& args = c->getArguments();
 					StatementList::iterator aa;
+					bool foundFakeParam = false;
 					for (aa = args.begin(); aa != args.end(); ++aa) {
 						Exp* rhs = ((Assign*)*aa)->getRight();
-						if (*rhs == *zparam)
-							continue;			// Yes, we can ignore uses in this call
+						if (*rhs == *zparam) {
+							foundFakeParam = true;
+							break;
+						}
 					}
-					
+					if (foundFakeParam)
+						continue;			// Ignore this call
 				}
 				// Check if there is a parameter that chains to the current parameter, param
 				if (!dest->isLib() && dest->doesRecurseTo(this)) {
@@ -5024,7 +5028,7 @@ bool UserProc::removeUnusedReturns(std::set<UserProc*>& removeRetSet) {
 			unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
 		}
 	}
-	// Intersect with the given location set
+	// Intersect with the current returns
 	bool removedRets = false;
 	ReturnStatement::iterator rr;
 	for (rr = theReturnStatement->begin(); rr != theReturnStatement->end(); ) {
