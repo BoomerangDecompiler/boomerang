@@ -4913,7 +4913,7 @@ bool UserProc::removeUnusedParameters() {
 						continue;			// Ignore this call
 				}
 				// Check if there is a parameter that chains to the current parameter, param
-				if (!dest->isLib() && dest->doesRecurseTo(this)) {
+				if (dest && !dest->isLib() && dest->doesRecurseTo(this)) {
 					ProcSet* visited = new ProcSet;
 					visited->insert(this);
 					if (doesParamChainToCall(param, this, visited))
