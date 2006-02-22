@@ -895,7 +895,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 
 			case 8: case 9: case 10: case 11:
 			//	al		cl		 dl		  bl
-			// Emit *32* r<24+off> := r<24+off> & 0xFFFF0000
+			// Emit *32* r<24+off> := r<24+off> & 0xFFFFFF00
 			//		*32* r<24+off> := r<24+off> | zfill(8, 32, r<8+off>)
 			a = new Assign(
 				new IntegerType(32),
@@ -912,7 +912,7 @@ void PentiumFrontEnd::processOverlapped(UserProc* proc) {
 				Location::regOf(24+off),
 				new Binary(opBitAnd,
 					Location::regOf(24+off),
-					new Const(0xFFFF0000)));
+					new Const(0xFFFFFF00)));
 			proc->insertStatementAfter(s, a);
 
 			// Emit *16* r<off> := r<off> & 0xFF00
