@@ -155,9 +155,16 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		}
 		case opLongConst:
 			str << std::dec << c->getLong() << "LL"; break;
-		case opFltConst:
-			// What to do with precision here?
-			str << c->getFlt(); break;
+		case opFltConst: {
+			//str.precision(4); 	// What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
+			std::ostringstream ost;
+			ost << c->getFlt();
+			std::string s = ost.str();
+			str << s;
+			if (s.find('.') == std::string::npos)
+				str << ".";			// Show that it is a float
+			break;
+		}
 		case opStrConst:
 			// escape string:
 			str << "\"" << escapeStr(c->getStr()) << "\"";
