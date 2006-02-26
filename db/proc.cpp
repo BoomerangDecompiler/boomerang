@@ -3459,6 +3459,10 @@ void UserProc::removeUnusedLocals() {
 void UserProc::fromSSAform() {
 	if (VERBOSE)
 		LOG << "transforming " << getName() << " from SSA\n";
+	if (cfg->getNumBBs() >= 100)		// Only for the larger procs
+		// Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
+		// little procs that don't get messages. Also, looks better with progress dots
+		std::cout << " transforming out of SSA form " << getName() << " with " << cfg->getNumBBs() << " BBs";
 
 	StatementList stmts;
 	getStatements(stmts);
@@ -3476,7 +3480,12 @@ void UserProc::fromSSAform() {
 		Exp* namedParam = Location::param(signature->getParamName(i));
 		firstTypes[namedParam] = signature->getParamType(i);
 	}
+	int progress = 1000;
 	for (it = stmts.begin(); it != stmts.end(); it++) {
+		if (--progress <= 0) {
+			std::cout << "." << std::flush;
+			progress = 1000;
+		}
 		Statement* s = *it;
 		LocationSet defs;
 		s->getDefinitions(defs);
@@ -3625,6 +3634,8 @@ void UserProc::fromSSAform() {
 			((Assignment*)*pp)->setLeft(clean);
 		// Else leave them alone
 	}
+	if (cfg->getNumBBs() >= 100)		// Only for the larger procs
+		std::cout << "\n";
 }
 
 #if 0

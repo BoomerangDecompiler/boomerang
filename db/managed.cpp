@@ -154,6 +154,10 @@ char* StatementSet::prints() {
 	return debug_buffer;
 }
 
+void StatementSet::dump() {
+	print(std::cerr);
+}
+
 void StatementSet::print(std::ostream& os) {
 	std::set<Statement*>::iterator it;
 	for (it = sset.begin(); it != sset.end(); it++) {
@@ -303,6 +307,10 @@ char* AssignSet::prints() {
 	return debug_buffer;
 }
 
+void AssignSet::dump() {
+	print(std::cerr);
+}
+
 void AssignSet::print(std::ostream& os) {
 	iterator it;
 	for (it = aset.begin(); it != aset.end(); it++) {
@@ -368,6 +376,10 @@ char* LocationSet::prints() {
 	strncpy(debug_buffer, ost.str().c_str(), DEBUG_BUFSIZE-1);
 	debug_buffer[DEBUG_BUFSIZE-1] = '\0';
 	return debug_buffer;
+}
+
+void LocationSet::dump() {
+	print(std::cerr);
 }
 
 void LocationSet::print(std::ostream& os) {
@@ -717,3 +729,32 @@ Assignment* StatementList::findOnLeft(Exp* loc) {
     return NULL;
 }
 
+void LocationSet::diff(LocationSet* o) {
+	std::set<Exp*, lessExpStar>::iterator it;
+	bool printed2not1 = false;
+	for (it = o->lset.begin(); it != o->lset.end(); it++) {
+		Exp* oe = *it;
+		if (lset.find(oe) == lset.end()) {
+			if (!printed2not1) {
+				printed2not1 = true;
+				std::cerr << "In set 2 but not set 1:\n";
+			}
+			std::cerr << oe << "\t";
+		}
+	}
+	if (printed2not1)
+		std::cerr << "\n";
+	bool printed1not2 = false;
+	for (it = lset.begin(); it != lset.end(); it++) {
+		Exp* e = *it;
+		if (o->lset.find(e) == o->lset.end()) {
+			if (!printed1not2) {
+				printed1not2 = true;
+				std::cerr << "In set 1 but not set 2:\n";
+			}
+			std::cerr << e << "\t";
+		}
+	}
+	if (printed1not2)
+		std::cerr << "\n";
+}

@@ -486,7 +486,14 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			ADDRESS uDest;
 
 			// For each Statement in the RTL
-			std::list<Statement*>& sl = pRtl->getList();
+			//std::list<Statement*>& sl = pRtl->getList();
+			std::list<Statement*> sl = pRtl->getList();
+			// Make a copy (!) of the list. This is needed temporarily to work around the following problem.
+			// We are currently iterating an RTL, which could be a return instruction. The RTL is passed to
+			// createReturnBlock; if this is not the first return statement, it will get cleared, and this will
+			// cause problems with the current iteration. The effects seem to be worse for MSVC/Windows.
+			// This problem will likely be easier to cope with when the RTLs are removed, and there are special
+			// Statements to mark the start of instructions (and their native address).
 			std::list<Statement*>::iterator ss;
 #if 1
 			for (ss = sl.begin(); ss != sl.end(); ss++) { // }

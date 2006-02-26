@@ -1809,7 +1809,12 @@ void Cfg::findInterferences(igraph& ig) {
 	appendBBs(workList, workSet);
 
 	bool change;
+	int progress = 500;
 	while (workList.size()) {
+		if (--progress <= 0) {
+			std::cout << ":" << std::flush;
+			progress = 500;
+		}
 		PBB currBB = workList.back();
 		workList.erase(--workList.end());
 		workSet.erase(currBB);

@@ -1499,52 +1499,52 @@ XCHG.EV.GVOW   modrm, reg16
 F2XM1
             # Compute (2^x)-1
             # Note: pwr is the binary "raise to power of" operator
-            *80* %st := (2.0 pow %st) -f 1.0;
+            *f80* %st := (2.0 pow %st) -f 1.0;
 
 FABS    
-            *80* %st := fabs(%st);
+            *f80* %st := fabs(%st);
 
 OP3 := { "+f", "-f" };
 FARIT := { "FADD", "FSUB" };
 
 FARIT[IDX].r32 modrm 
-            *80* %st := %st OP3[IDX] fsize(32,80,modrm);
+            *f80* %st := %st OP3[IDX] fsize(32,80,modrm);
 
 FARIT[IDX].r64 modrm 
-            *80* %st := %st OP3[IDX] fsize(64,80,modrm);
+            *f80* %st := %st OP3[IDX] fsize(64,80,modrm);
 
 FARIT[IDX].ST.STi i
-            *80* %st := %st OP3[IDX] i;
+            *f80* %st := %st OP3[IDX] i;
 
 FARIT[IDX].STi.ST i 
-            *80* i := i OP3[IDX] %st;
+            *f80* i := i OP3[IDX] %st;
 
 FARITP := { "FADDP", "FSUBP" };
 
 FARITP[IDX].r32 modrm 
-            *80* %st := %st OP3[IDX] fsize(32,80,modrm)
+            *f80* %st := %st OP3[IDX] fsize(32,80,modrm)
             FPOP;
 
 FARITP[IDX].r64 modrm 
-            *80* %st := %st OP3[IDX] fsize(64,80,modrm)
+            *f80* %st := %st OP3[IDX] fsize(64,80,modrm)
             FPOP;
 
 FARITP[IDX].ST.STi i 
-            *80* %st := %st OP3[IDX] i
+            *f80* %st := %st OP3[IDX] i
             FPOP;
 
 FARITP[IDX].STi.ST i 
-            *80* i := i OP3[IDX] %st
+            *f80* i := i OP3[IDX] %st
             FPOP;
 
 FIADD.i16   modrm 
-            *80* %st := %st +f itof(16,80,modrm);
+            *f80* %st := %st +f itof(16,80,modrm);
 
 FIADD.i32   modrm 
-            *80* %st := %st +f itof(32,80,modrm);
+            *f80* %st := %st +f itof(32,80,modrm);
 
 FCHS    
-            *80* %st := ~f %st;
+            *f80* %st := ~f %st;
 
 FCLEX    
             *8* %fsw@[0:7] := 0
@@ -1555,60 +1555,60 @@ FNCLEX
             *1* %fsw@[15:15] := 0;
 
 FCOM.r32    modrm 
-            *80* tmpD := %st -f fsize(32,80,modrm)
+            *f80* tmpD := %st -f fsize(32,80,modrm)
             SETFFLAGS(%st, fsize(32,80,modrm));
 
 FCOM.r64    modrm 
-            *80* tmpD := %st -f fsize(64,80,modrm)
+            *f80* tmpD := %st -f fsize(64,80,modrm)
             SETFFLAGS(%st, fsize(64,80,modrm));
 
 FCOM.ST.STi i 
-            *80* tmpD := %st -f i
+            *f80* tmpD := %st -f i
             SETFFLAGS(%st, i);
 
 FCOMP.r32   modrm 
             # Note that the FPOP will actually change the register numbers!
-            *80* tmpD1 := %st
-            *80* tmpD2 := fsize(32, 80, modrm)
-            *80* tmpD := %st -f fsize(32,80,modrm)
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := fsize(32, 80, modrm)
+            *f80* tmpD := %st -f fsize(32,80,modrm)
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 
 FCOMP.r64   modrm 
-            *80* tmpD1 := %st
-            *80* tmpD2 := fsize(64, 80, modrm)
-            *80* tmpD := %st -f fsize(64,80,modrm)
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := fsize(64, 80, modrm)
+            *f80* tmpD := %st -f fsize(64,80,modrm)
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 
 FCOMP.ST.STi   i 
-            *80* tmpD1 := %st
-            *80* tmpD2 := i
-            *80* tmpD := %st -f i
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := i
+            *f80* tmpD := %st -f i
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 FCOMPP    
-            *80* tmpD1 := %st
-            *80* tmpD2 := %st1
-            *80* tmpD := %st -f %st1
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := %st1
+            *f80* tmpD := %st -f %st1
             FPOP
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 
 FCOS    
-            *80* %st := cos(%st);
+            *f80* %st := cos(%st);
 
 FPUSH_
             FPUSH;
 
 FDIV.r32   modrm 
-            *80* %st := %st /f fsize(32,80,modrm);
+            *f80* %st := %st /f fsize(32,80,modrm);
 
 FDIV.r64   modrm 
-            *80* %st := %st /f fsize(64,80,modrm);
+            *f80* %st := %st /f fsize(64,80,modrm);
 
 FDIV.ST.STi   i 
-            *80* %st := %st /f i;
+            *f80* %st := %st /f i;
 
 # At this point, it should be noted that Intel have an unusual way of
 # defining what is and isn't an "R" (reverse operands) instruction.
@@ -1619,69 +1619,69 @@ FDIV.ST.STi   i
 # instructions.
 
 FDIV.STi.ST   i 
-            *80* i := i /f %st;
+            *f80* i := i /f %st;
 
 FDIVP.STi.ST   i 
-            *80* i := i /f %st
+            *f80* i := i /f %st
             FPOP;
 
 FIDIV.i32   modrm 
-            *80* %st := %st /f itof(32,80,modrm);
+            *f80* %st := %st /f itof(32,80,modrm);
 
 FIDIV.i16   modrm 
-            *80* %st := %st /f itof(16,80,modrm);
+            *f80* %st := %st /f itof(16,80,modrm);
 
 FDIVR.r32   modrm 
-            *80* %st := fsize(32,80,modrm) /f %st;
+            *f80* %st := fsize(32,80,modrm) /f %st;
 
 FDIVR.r64   modrm 
-            *80* %st := fsize(64,80,modrm) /f %st;
+            *f80* %st := fsize(64,80,modrm) /f %st;
 
 FDIVR.ST.STi   i 
-            *80* %st := i /f %st;
+            *f80* %st := i /f %st;
 
 FDIVR.STi.ST   i 
-            *80* i := %st /f i;
+            *f80* i := %st /f i;
 
 FDIVRP.STi.ST   i 
-            *80* i := %st /f i
+            *f80* i := %st /f i
             FPOP;
 
 FIDIVR.i32   modrm 
-            *80* %st := itof(32,80,modrm) /f %st;
+            *f80* %st := itof(32,80,modrm) /f %st;
 
 FIDIVR.i16   modrm 
-            *80* %st := itof(16,80,modrm) /f %st;
+            *f80* %st := itof(16,80,modrm) /f %st;
 
 FICOM.i16   modrm 
-            *80* tmpD := %st -f itof(16,80,modrm)
+            *f80* tmpD := %st -f itof(16,80,modrm)
             SETFFLAGS(%st, itof(16,80,modrm));
 
 FICOM.i32   modrm 
-            *80* tmpD := %st -f itof(32,80,modrm)
+            *f80* tmpD := %st -f itof(32,80,modrm)
             SETFFLAGS(%st, itof(32,80,modrm));
 
 FICOMP.i16   modrm 
-            *80* tmpD := %st -f itof(16,80,modrm)
+            *f80* tmpD := %st -f itof(16,80,modrm)
             FPOP
             SETFFLAGS(%st, itof(16,80,modrm));
 
 FICOMP.i32   modrm 
-            *80* tmpD := %st -f itof(32,80,modrm)
+            *f80* tmpD := %st -f itof(32,80,modrm)
             FPOP
             SETFFLAGS(%st, itof(32,80,modrm));
 
 FILD.lsI16   modrm 
             FPUSH
-            *80* %st := itof(16,80,modrm);
+            *f80* %st := itof(16,80,modrm);
 
 FILD.lsI32   modrm 
             FPUSH
-            *80* %st := itof(32,80,modrm);
+            *f80* %st := itof(32,80,modrm);
 
 FILD.lsI64   modrm 
             FPUSH
-            *80* %st := itof(64,80,modrm);
+            *f80* %st := itof(64,80,modrm);
 
 FINCSTP    
             FPUSH;
@@ -1709,15 +1709,15 @@ FISTP64     modrm
 
 FLD.lsR32   modrm 
             FPUSH
-            *80* %st := fsize(32,80,modrm);
+            *f80* %st := fsize(32,80,modrm);
 
 FLD.lsR64   modrm 
             FPUSH
-            *80* %st := fsize(64,80,modrm);
+            *f80* %st := fsize(64,80,modrm);
 
 FLD80       modrm 
             FPUSH
-            *80* %st := modrm;
+            *f80* %st := modrm;
 
 # This is a bit tricky. The FPUSH logically comes between the read of STi and
 # the write to ST0. In particular, FLD ST0 is supposed to duplicate the TOS.
@@ -1727,74 +1727,74 @@ FLD80       modrm
 
 FLD.STi     i 
             FPUSH
-            *80* %st := i;
+            *f80* %st := i;
 
 FLD1    
             FPUSH
-            *80* %st := 1.0;
+            *f80* %st := 1.0;
 
 FLDL2T    
             FPUSH
-            *80* %st := log2(10.0);
+            *f80* %st := log2(10.0);
 
 FLDL2E    
             FPUSH
-            *80* %st := log2(2.7182818);
+            *f80* %st := log2(2.7182818);
 
 FLDPI    
             FPUSH
-            *80* %st := 3.1415926;
+            *f80* %st := 3.1415926;
 
 FLDLG2    
             FPUSH
-            *80* %st := log10(2.0);
+            *f80* %st := log10(2.0);
 
 FLDLN2    
             FPUSH
-            *80* %st := loge(2.0);
+            *f80* %st := loge(2.0);
 
 FLDZ    
             FPUSH
-            *80* %st := 0.0;
+            *f80* %st := 0.0;
 
 FLDCW   modrm 
             FPUSH
             *16* %fcw := modrm;
 
 FMUL.r32   modrm 
-            *80* %st := %st *f fsize(32,80,modrm);
+            *f80* %st := %st *f fsize(32,80,modrm);
 
 FMUL.r64   modrm 
-            *80* %st := %st *f fsize(64,80,modrm);
+            *f80* %st := %st *f fsize(64,80,modrm);
 
 FMUL.ST.STi   i 
-            *80* %st := %st *f i;
+            *f80* %st := %st *f i;
 
 FMUL.STi.ST   i 
-            *80* i := %st *f i;
+            *f80* i := %st *f i;
 
 FMULP.STi.ST   i 
-            *80* i := %st *f i
+            *f80* i := %st *f i
             FPOP;
 
 FIMUL.i16   modrm 
-            *80* %st := %st *f itof(16,80,modrm);
+            *f80* %st := %st *f itof(16,80,modrm);
 
 FIMUL.i32   modrm 
-            *80* %st := %st *f itof(32,80,modrm);
+            *f80* %st := %st *f itof(32,80,modrm);
 
 FNOP    _ ;
 
 FPATAN    
-            *80* %st1 := arctan(%st1 /f %st)
+            *f80* %st1 := arctan(%st1 /f %st)
             FPOP;
 
 # FPREM is for backwards compatibility with 80{2}87 FPUs
 FPREM
-            *80* tmpD := ftrunc(%st /f %st1)   # Should chop towards 0
-            *80* %st := %st -f (%st1 *f tmpD)
+            *f80* tmpD := ftrunc(%st /f %st1)   # Should chop towards 0
+            *f80* %st := %st -f (%st1 *f tmpD)
 # If st1 was/is negative, we need to change the sign of st?
-            *80* %st := [%st1 < 0 ? ~f %st : %st];
+            *f80* %st := [%st1 < 0 ? ~f %st : %st];
             #*1* %C2 := 0
             #*1* %FZF := bit 2 of tmpD as integer  # %C0 is %FZF
             #*1* %FLF := bit 1 of tmpD as integer  # %C3 is %FLF
@@ -1802,36 +1802,36 @@ FPREM
 
 # Floating point remainder.
 FPREM1
-            *80* tmpD := ftrunc(%st /f %st1)   # Should round to nearest
-            *80* %st := %st -f (%st1 *f tmpD);
+            *f80* tmpD := ftrunc(%st /f %st1)   # Should round to nearest
+            *f80* %st := %st -f (%st1 *f tmpD);
             #*1* %C2 := 0
             #*1* %FZF := bit 2 of tmpD as integer  # %C0 is %FZF
             #*1* %FLF := bit 1 of tmpD as integer  # %C3 is %FLF
             #*1* %C1  := bit 0 of tmpD as integer
 
 FPTAN    
-            *80* %st := tan(%st)
+            *f80* %st := tan(%st)
             FPUSH
-            *80* %st := 1.0;
+            *f80* %st := 1.0;
 
 FRNDINT    
-            *80* %st := fround(80,80,%st);
+            *f80* %st := fround(80,80,%st);
 
 FSCALE      # Raise 2 to an integer power and multiply
             # Note that st1 is "chopped" before use
-            *80* %st := %st * (2.0 pow ftrunc(%st1));
+            *f80* %st := %st * (2.0 pow ftrunc(%st1));
 
 FSIN    
-            *80* %st := sin(%st);
+            *f80* %st := sin(%st);
 
 FSINCOS    
-            *80* tmp := %st
-            *80* %st := sin(tmp)
+            *f80* tmp := %st
+            *f80* %st := sin(tmp)
             FPUSH
-            *80* %st := cos(tmp);
+            *f80* %st := cos(tmp);
 
 FSQRT    
-            *80* %st := sqrt(%st);
+            *f80* %st := sqrt(%st);
 
 FST.lsR32   modrm 
             *32* modrm := fsize(80,32,%st);
@@ -1840,7 +1840,7 @@ FST.lsR64   modrm
             *64* modrm := fsize(80,64,%st);
 
 FST.ST.STi   i 
-            *80* i := %st;
+            *f80* i := %st;
 
 FSTP.lsR32   modrm 
             *32* modrm := fsize(80,32,%st)
@@ -1851,11 +1851,11 @@ FSTP.lsR64   modrm
             FPOP;
 
 FSTP80   modrm 
-            *80* modrm := %st
+            *f80* modrm := %st
             FPOP;
 
 FSTP.ST.STi   i 
-            *80* i := %st
+            *f80* i := %st
             FPOP;
 
 FSTCW   modrm 
@@ -1881,64 +1881,64 @@ FNSTSW.AX
             *8* %al := 0;     # Just so we know it's changed  
 
 FSUBR.r32   modrm 
-            *80* %st := fsize(32,80,modrm) -f %st;
+            *f80* %st := fsize(32,80,modrm) -f %st;
 
 FSUBR.r64   modrm 
-            *80* %st := fsize(64,80,modrm) -f %st;
+            *f80* %st := fsize(64,80,modrm) -f %st;
 
 FSUBR.ST.STi   i 
-            *80* %st := i -f %st;
+            *f80* %st := i -f %st;
 
 # We used to think this one had to be swapped
 FSUBR.STi.ST   i 
-            *80* i := %st -f i;
+            *f80* i := %st -f i;
 
 # We used to think this one had to be swapped
 FSUBRP.STi.ST   i 
-            *80* i := %st -f i
+            *f80* i := %st -f i
             FPOP;
 
 FISUB.i32   modrm 
-            *80* %st := %st -f itof(32,80,modrm);
+            *f80* %st := %st -f itof(32,80,modrm);
 
 FISUB.i16   modrm 
-            *80* %st := %st - itof(16,80,modrm);
+            *f80* %st := %st - itof(16,80,modrm);
 
 FISUBR.i32   modrm 
-            *80* %st := itof(32,80,modrm) -f %st;
+            *f80* %st := itof(32,80,modrm) -f %st;
 
 FISUBR.i16   modrm 
-            *80* %st := itof(16,80,modrm) -f %st;
+            *f80* %st := itof(16,80,modrm) -f %st;
 
 FTST    
             SETFFLAGS(%st, 0.0);
 
 FUCOM       i 
-            *80* tmpD := %st -f i
+            *f80* tmpD := %st -f i
             SETFFLAGS(%st, i);
 
 FUCOMI.ST.STi	i 
-			*80* tmpD := %st -f i
+			*f80* tmpD := %st -f i
 			SUBFLAGSFL(%st, i);
 
 FUCOMP      i 
-            *80* tmpD1 := %st
-            *80* tmpD2 := i
-            *80* tmpD := %st -f i
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := i
+            *f80* tmpD := %st -f i
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
 
 FUCOMIP.ST.STi	i 
-            *80* tmpD1 := %st
-            *80* tmpD2 := i
-            *80* tmpD := %st -f i
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := i
+            *f80* tmpD := %st -f i
             FPOP
             SUBFLAGSFL(tmpD1, tmpD2);
 
 FUCOMPP    
-            *80* tmpD1 := %st
-            *80* tmpD2 := %st1
-            *80* tmpD := %st -f %st1
+            *f80* tmpD1 := %st
+            *f80* tmpD2 := %st1
+            *f80* tmpD := %st -f %st1
             FPOP
             FPOP
             SETFFLAGS(tmpD1, tmpD2);
@@ -1946,16 +1946,16 @@ FUCOMPP
 FWAIT    _ ;
 
 FXCH        i 
-            *80* tmpD := %st
-            *80* %st := i
-            *80* i := tmpD;
+            *f80* tmpD := %st
+            *f80* %st := i
+            *f80* i := tmpD;
 
 FYL2X    
-            *80* %st1 := %st1 *f log2(%st)
+            *f80* %st1 := %st1 *f log2(%st)
             FPOP;
 
 FYL2XP1    
-            *80* %st1 := %st1 *f log2(%st +f 1.0)
+            *f80* %st1 := %st1 *f log2(%st +f 1.0)
             FPOP;
 
 #####################################################################
