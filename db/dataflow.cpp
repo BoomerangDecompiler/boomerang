@@ -51,7 +51,9 @@ void DataFlow::dominators(Cfg* cfg) {
 	PBB r = cfg->getEntryBB();
 	unsigned numBB = cfg->getNumBBs();
 	BBs.resize(numBB, (PBB)-1);
-	N = 0; BBs[0] = r; indices[r] = 0;
+	N = 0; BBs[0] = r;
+	indices.clear();			// In case restart decompilation due to switch statements
+	indices[r] = 0;
 	// Initialise to "none"
 	dfnum.resize(numBB, 0);
 	semi.resize(numBB, -1);
@@ -211,7 +213,7 @@ bool DataFlow::placePhiFunctions(UserProc* proc) {
 	// Set the sizes of needed vectors
 	unsigned numBB = indices.size();
 	Cfg* cfg = proc->getCFG();
-	assert(numBB = cfg->getNumBBs());
+	assert(numBB == cfg->getNumBBs());
 	A_orig.resize(numBB);
 
 	// We need to create A_orig for the current memory depth
