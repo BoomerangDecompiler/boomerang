@@ -494,6 +494,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 			// cause problems with the current iteration. The effects seem to be worse for MSVC/Windows.
 			// This problem will likely be easier to cope with when the RTLs are removed, and there are special
 			// Statements to mark the start of instructions (and their native address).
+			// FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
+			// if it points to the start of a known procedure
 			std::list<Statement*>::iterator ss;
 #if 1
 			for (ss = sl.begin(); ss != sl.end(); ss++) { // }
