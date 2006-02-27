@@ -9,9 +9,12 @@
 
 # On MSYS we need to invoke sh ourselves
 KERNEL=`uname -s`
-if [ ${KERNEL:0:4} = "MSYS" ]
+TESTONE="./testOne.sh"				# For most systems
+if [ ${KERNEL:0:4} = "MSYS" ]		# Older MinGW
 	then TESTONE="sh testOne.sh"
-	else TESTONE="./testOne.sh"
+fi
+if [ ${KERNEL:0:5} = "MINGW" ]		# More modern MinGW
+	then TESTONE="sh testOne.sh"
 fi
 
 # Store the command line switches in BOOMSW
