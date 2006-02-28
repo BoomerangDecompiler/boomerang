@@ -63,7 +63,7 @@
  *============================================================================*/
 BasicBlock::BasicBlock()
 	:
-		m_DFTfirst(0),
+		m_DFTfirst(0), m_DFTlast(0),
 		m_structType(NONE), m_loopCondType(NONE),
 		m_loopHead(NULL), m_caseHead(NULL),
 		m_condFollow(NULL), m_loopFollow(NULL),
@@ -116,7 +116,7 @@ BasicBlock::~BasicBlock() {
  * RETURNS:			<nothing>
  *============================================================================*/
 BasicBlock::BasicBlock(const BasicBlock& bb)
-	:	m_DFTfirst(0),
+	:	m_DFTfirst(0), m_DFTlast(0),
 		m_structType(bb.m_structType), m_loopCondType(bb.m_loopCondType),
 		m_loopHead(bb.m_loopHead), m_caseHead(bb.m_caseHead),
 		m_condFollow(bb.m_condFollow), m_loopFollow(bb.m_loopFollow),
@@ -150,7 +150,7 @@ usType(bb.usType)
  * RETURNS:			<nothing>
  *============================================================================*/
 BasicBlock::BasicBlock(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges)
-	:	m_DFTfirst(0),
+	:	m_DFTfirst(0), m_DFTlast(0),
 		m_structType(NONE), m_loopCondType(NONE),
 		m_loopHead(NULL), m_caseHead(NULL),
 		m_condFollow(NULL), m_loopFollow(NULL),

@@ -2251,7 +2251,8 @@ void XMLProgParser::persistToXML(std::ostream &out, Global *g)
 const char *Cluster::getOutPath(const char *ext)
 {
 	std::string basedir = makeDirs();
-	return (basedir + "/" + name + "." + ext).c_str();
+	// Ugh - should probably return a whole std::string
+	return strdup((basedir + "/" + name + "." + ext).c_str());
 }
 
 void Cluster::openStream(const char *ext)
