@@ -661,3 +661,42 @@ void SetLastError(DWORD error);
 
 void Sleep(DWORD milliseconds);
 
+LPVOID HeapAlloc(HANDLE hHeap, DWORD dwFlags, DWORD dwBytes);
+
+BOOL HeapFree(HANDLE hHeap, DWORD dwFlags, LPVOID lpMem);
+
+DWORD GetModuleFileNameA(HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+DWORD GetModuleFileNameW(HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
+
+HANDLE GetStdHandle(DWORD nStdHandle);
+BOOL   SetStdHandle(DWORD nStdHandle, HANDLE hHandle);
+
+BOOL WriteFile(
+    HANDLE hFile,
+    LPCVOID lpBuffer,
+    DWORD nNumberOfBytesToWrite,
+    LPDWORD lpNumberOfBytesWritten,
+    LPOVERLAPPED lpOverlapped
+    );
+
+LPVOID VirtualAlloc(
+    LPVOID lpAddress,
+    DWORD dwSize,
+    DWORD flAllocationType,
+    DWORD flProtect
+    );
+
+BOOL FlushFileBuffers(HANDLE hFile);
+
+DWORD GetLastError(void);
+
+DWORD
+SetFilePointer(
+    HANDLE hFile,
+    LONG lDistanceToMove,
+    PLONG lpDistanceToMoveHigh,
+    DWORD dwMoveMethod
+    );
+
+BOOL CloseHandle(HANDLE hObject);
+
