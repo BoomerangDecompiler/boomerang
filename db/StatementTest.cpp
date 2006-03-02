@@ -134,7 +134,7 @@ void StatementTest::testEmpty () {
 	proc->setDecoded();		// We manually "decoded"
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -188,7 +188,7 @@ void StatementTest::testFlow () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -255,7 +255,7 @@ void StatementTest::testKill () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -318,7 +318,7 @@ void StatementTest::testUse () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -385,7 +385,7 @@ void StatementTest::testUseOverKill () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -455,7 +455,7 @@ void StatementTest::testUseOverBB () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -522,7 +522,7 @@ void StatementTest::testUseKill () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
@@ -587,7 +587,7 @@ void StatementTest::testEndlessLoop () {
 	proc->setDecoded();
 	// compute dataflow
 	int indent = 0;
-	proc->decompile(new CycleList, indent);
+	proc->decompile(new ProcList, indent);
 	// print cfg to a string
 	std::ostringstream st;
 	cfg->print(st);
