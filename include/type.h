@@ -186,7 +186,7 @@ virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr = false) = 0;
 					// if at most one of the types is compound and the first element is compatible with the other, then 
 					// the types are considered compatible. With all set to true, if one or both types is compound, all
 					// corresponding elements must be compatible
-		bool		isCompatibleWith(Type* other, bool all = false);
+virtual	bool		isCompatibleWith(Type* other, bool all = false);
 					// isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
 					// reverses the parameters (this and other) to prevent many tedious repetitions
 virtual bool		isCompatible(Type* other, bool all) = 0;
@@ -440,6 +440,7 @@ virtual unsigned	getSize() const;
 virtual const char	*getCtype(bool final = false) const;
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual bool		isCompatibleWith(Type* other, bool all = false) {return isCompatible(other, all);}
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -520,6 +521,7 @@ virtual const char *getCtype(bool final = false) const;
 		bool		isSubStructOf(Type* other);			// True if this is is a substructure of other
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual bool		isCompatibleWith(Type* other, bool all = false) {return isCompatible(other, all);}
 virtual bool		isCompatible(Type* other, bool all);
 
 protected:
@@ -561,7 +563,9 @@ virtual unsigned	getSize() const;
 virtual const char *getCtype(bool final = false) const;
 
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
+virtual bool		isCompatibleWith(Type* other, bool all) {return isCompatible(other, all);}
 virtual bool		isCompatible(Type* other, bool all);
+		Type*		getPointsTo();		// if this is a union of pointer types, get the union of things they point to
 
 protected:
 	friend class XMLProgParser;

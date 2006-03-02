@@ -274,6 +274,8 @@ void UserProc::dfaTypeAnalysis() {
 				if (sub->isIntConst()) {
 					// We have a m[K] := -
 					int K = ((Const*)sub)->getInt();
+if (K == 0x40a128)
+  int HACK = 99;
 					prog->globalUsed(K, iType);
 				}
 			} else if (lhs->isGlobal()) {
@@ -299,8 +301,13 @@ void UserProc::dfaTypeAnalysis() {
 				if (addrExp->isTypedExp() && ((TypedExp*)addrExp)->getType()->resolvesToPointer())
 					addrExp = ((Unary*)addrExp)->getSubExp1();
 				typeExp = ((ImpRefStatement*)s)->getType();
-				assert(typeExp->resolvesToPointer());
-				typeExp = typeExp->asPointer()->getPointsTo();
+				// typeExp should be a pointer expression, or a union of pointer types
+				if (typeExp->resolvesToUnion())
+					typeExp = typeExp->asUnion()->getPointsTo();
+				else {
+					assert(typeExp->resolvesToPointer());
+					typeExp = typeExp->asPointer()->getPointsTo();
+				}
 			}
 			if (addrExp && signature->isAddrOfStackLocal(prog, addrExp)) {
 				int addr = 0;
@@ -1367,6 +1374,8 @@ bool Signature::dfaTypeAnalysis(Cfg* cfg) {
 }
 
 
+// Note: to prevent infinite recursion, CompoundType, ArrayType, and UnionType implement this function as a delegation
+// to isCompatible()
 bool Type::isCompatibleWith(Type* other, bool all /* = false */) {
 	if (other->resolvesToCompound() ||
 		other->resolvesToArray() ||
@@ -1431,6 +1440,7 @@ bool FuncType::isCompatible(Type* other, bool all) {
 	if (*this == *other) return true;		// MVE: should not compare names!
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	if (other->resolvesToSize() && ((SizeType*)other)->getSize() == STD_SIZE) return true;
+	if (other->resolvesToFunc() && *other->asFunc()->signature == *signature) return true;
 	return false;
 }
 
@@ -1465,13 +1475,18 @@ bool UnionType::isCompatible(Type* other, bool all) {
 		if (this == other)				// Note: pointer comparison
 			return true;				// Avoid infinite recursion
 		UnionType* otherUnion = (UnionType*)other;
-		for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
-			if (isCompatibleWith(it->type)) return true;
-		return false;
+		// Unions are compatible if one is a subset of the other
+		if (li.size() < otherUnion->li.size())
+			for (it = li.begin(); it != li.end(); it++)
+				if (!otherUnion->isCompatible(it->type, all)) return false;
+		else
+			for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
+				if (!isCompatible(it->type, all)) return false;
+		return true;
 	}
 	// Other is not a UnionType
 	for (it = li.begin(); it != li.end(); it++)
-		if (other->isCompatibleWith(it->type)) return true;
+		if (other->isCompatibleWith(it->type), all) return true;
 	return false;
 }
 
@@ -1501,4 +1516,17 @@ bool LowerType::isCompatible(Type* other, bool all) {
 	if (other->resolvesToLower() && base_type->isCompatibleWith(other->asLower()->base_type)) return true;
 	if (other->resolvesToUnion()) return other->isCompatibleWith(this);
 	return false;
+}
+
+// Assume that this is a union of pointers. Return a new union that is the set of types pointed to
+Type* UnionType::getPointsTo() {
+	UnionType* ret = new UnionType;
+	char name[20];
+	std::list<UnionElement>::iterator it;
+	for (it = li.begin(); it != li.end(); it++) {
+		assert(it->type->resolvesToPointer());
+		sprintf(name, "x%d", ++nextUnionNumber);
+		ret->addType(it->type->asPointer()->getPointsTo()->clone(), name);
+	}
+	return ret;
 }
