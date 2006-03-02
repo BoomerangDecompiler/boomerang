@@ -21,6 +21,7 @@
  * 18 Apr 02 - Mike: Mods for boomerang
  * 26 Apr 02 - Mike: common.hs read relative to BOOMDIR
  * 20 Jul 04 - Mike: Got rid of BOOMDIR
+ * 03 Mar 06 - tamlin: prevent arrays from crossing section boundaries
  */
 
 /*==============================================================================
@@ -30,6 +31,8 @@
 #include <assert.h>
 #if defined(_MSC_VER) && _MSC_VER <= 1200 
 #pragma warning(disable:4786)
+// ? How does the following do any good?
+#define for if(0){}else for
 #endif 
 
 #include <assert.h>
@@ -101,7 +104,7 @@ Prog::~Prog() {
 	m_procs.clear();
 }
 
-void Prog::setName (const char *name) {	   // Assign a name to this program
+void Prog::setName (const char *name) {		// Assign a name to this program
 	m_name = name;
 	m_rootCluster->setName(name);
 }
@@ -266,17 +269,17 @@ void Prog::generateRTL(Cluster *cluster, UserProc *proc) {
 
 		p->getCluster()->openStream("rtl");
 		p->print(p->getCluster()->getStream());
-    }
-    m_rootCluster->closeStreams();
+	}
+	m_rootCluster->closeStreams();
 }
 
 Statement *Prog::getStmtAtLex(Cluster *cluster, unsigned int begin, unsigned int end)
 {
-    for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
-        Proc *pProc = *it;
-        if (pProc->isLib()) continue;
-        UserProc *p = (UserProc*)pProc;
-        if (!p->isDecoded()) continue;
+	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++) {
+		Proc *pProc = *it;
+		if (pProc->isLib()) continue;
+		UserProc *p = (UserProc*)pProc;
+		if (!p->isDecoded()) continue;
 		if (cluster != NULL && p->getCluster() != cluster)
 			continue;
 
@@ -384,7 +387,7 @@ void Prog::print(std::ostream &out) {
 }
 
 // clear the current project
-void Prog::clear() {   
+void Prog::clear() {
 	m_name = std::string("");
 	for (std::list<Proc*>::iterator it = m_procs.begin(); it != m_procs.end(); it++)
 		if (*it)
@@ -1485,9 +1488,26 @@ Exp* Global::getInitialValue(Prog* prog) {
 			return new Const(dest);
 	} else if (type->isArray()) {
 		Type *baseType = type->asArray()->getBaseType();
+		const int elem_size            = baseType->getSize()/8;
+		const int offs_within_section  = uaddr - si->uNativeAddr;
+		const int bytes_to_section_end = si->uSectionSize - offs_within_section;
+		int       no_of_elements       = type->asArray()->getLength();
+		// Now check if the array is crossing a section boundary. If so, adjust it.
+		if (no_of_elements * elem_size > bytes_to_section_end) {
+			// array crossing section. Adjust.
+			const int new_no_of_elements = bytes_to_section_end / elem_size; // truncating division
+			LOG << "Adjusting element count from " << no_of_elements << " to " << new_no_of_elements
+			    << " for array global, to not cross section boundary.\n";
+			no_of_elements = new_no_of_elements;
+			// WARNING: The following line might be an error, even that it's
+			// required for the code generating code right now!
+			static_cast<ArrayType*>(type)->setLength(no_of_elements);
+		}
 		e = new Terminal(opNil);
-		for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i)
-			e = new Binary(opList, prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType), e);
+		for (int i = no_of_elements-1; i >= 0; --i)
+			e = new Binary(opList, prog->readNativeAs(uaddr + i * elem_size, baseType), e);
+		// Is it really sane to dump the *whole* array to the log?
+		// What if it contains several thousands of entries, or more?
 		LOG << "calculated init for array global: " << e << "\n";
 		if (e->getOper() == opNil)
 			e = NULL;
