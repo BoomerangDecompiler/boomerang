@@ -274,8 +274,6 @@ void UserProc::dfaTypeAnalysis() {
 				if (sub->isIntConst()) {
 					// We have a m[K] := -
 					int K = ((Const*)sub)->getInt();
-if (K == 0x40a128)
-  int HACK = 99;
 					prog->globalUsed(K, iType);
 				}
 			} else if (lhs->isGlobal()) {
@@ -1476,12 +1474,14 @@ bool UnionType::isCompatible(Type* other, bool all) {
 			return true;				// Avoid infinite recursion
 		UnionType* otherUnion = (UnionType*)other;
 		// Unions are compatible if one is a subset of the other
-		if (li.size() < otherUnion->li.size())
+		if (li.size() < otherUnion->li.size()) {
 			for (it = li.begin(); it != li.end(); it++)
 				if (!otherUnion->isCompatible(it->type, all)) return false;
-		else
+		}
+		else {
 			for (it = otherUnion->li.begin(); it != otherUnion->li.end(); it++)
 				if (!isCompatible(it->type, all)) return false;
+		}
 		return true;
 	}
 	// Other is not a UnionType
