@@ -159,7 +159,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			if ((__int64)c->getLong() < -1000i64 || (__int64)c->getLong() > 1000i64)
 				str << "0x" << std::hex << c->getLong() << std::dec << "i64";
 			else
-				str << std::dec << u.ll << "i64";
+				str << std::dec << c->getLong() << "i64";
 #else
 			if ((long long)c->getLong() < -1000LL || (long long)c->getLong() > 1000LL)
 				str << "0x" << std::hex << c->getLong() << std::dec << "LL";
