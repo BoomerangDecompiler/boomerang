@@ -167,6 +167,7 @@ void updateCodeView()
 void saveUndoPoint()
 {
 	return;  // Possibly Mike broke it
+#ifdef USING_MEMO
 	if (prog) {
 		prog->takeMemo();
 		if (prog->canRestore())
@@ -175,6 +176,7 @@ void saveUndoPoint()
 			EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
 		EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
 	}
+#endif
 }
 
 // Forward declarations of functions included in this code module:
@@ -1017,7 +1019,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 				Boomerang::get()->noDecompile = true;
 				int indent = 0;
-				u->decompile(new CycleList, indent);
+				u->decompile(new ProcList, indent);
 				Boomerang::get()->noDecompile = false;
 				updateCodeView();
 			}
@@ -1092,6 +1094,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			generateCodeForAll();
 			break;
 		case ID_EDIT_UNDO:
+#if USING_MEMO
 			prog->restoreMemo();
 			if (!prog->canRestore())
 				EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_UNDO, MF_GRAYED);
@@ -1099,8 +1102,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			updateAllTabs();
 			updateTreeView();
 			updateCodeView();
+#endif
 			break;
 		case ID_EDIT_REDO:
+#if USING_MEMO
 			prog->restoreMemo(true);
 			if (!prog->canRestore(true))
 				EnableMenuItem(GetMenu(hTopWnd), ID_EDIT_REDO, MF_GRAYED);
@@ -1108,6 +1113,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			updateAllTabs();
 			updateTreeView();
 			updateCodeView();
+#endif
 			break;
 		case ID_EDIT_COPY:
 			if (selectedTab)
