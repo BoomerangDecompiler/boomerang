@@ -41,4 +41,15 @@ public:
 	virtual ~FileLogger() {};
 };
 
+// For older MSVC compilers
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
+static std::ostream& operator<<(std::ostream& s, QWord val)
+{
+	char szTmp[42]; // overkill, but who counts
+	sprintf(szTmp, "%I64u", val);
+	s << szTmp;
+	return s;
+}
+#endif
+
 #endif
