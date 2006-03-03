@@ -1758,7 +1758,6 @@ FLDZ
             *f80* %st := 0.0;
 
 FLDCW   modrm 
-            FPUSH
             *16* %fcw := modrm;
 
 FMUL.r32   modrm 
