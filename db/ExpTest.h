@@ -68,5 +68,6 @@ class ExpTest : public CppUnit::TestCase {
 	void testSetConscripts();
 	void testAddUsedLocs();
 	void testSubscriptVars();
+	void testVisitors();
 };
 

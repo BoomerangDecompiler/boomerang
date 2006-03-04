@@ -16,6 +16,7 @@
 
 #include "ExpTest.h"
 #include "statement.h"
+#include "visitor.h"
 #include <map>
 #include <sstream>		// Gcc >= 3.0 needed
 
@@ -71,6 +72,7 @@ MYTEST(testFixSuccessor);
 	MYTEST(testSetConscripts);
 	MYTEST(testAddUsedLocs);
 	MYTEST(testSubscriptVars);
+	MYTEST(testVisitors);
 }
 
 int ExpTest::countTestCases () const
@@ -1389,3 +1391,52 @@ void ExpTest::testSubscriptVars() {
 
 
 }
+
+/*==============================================================================
+ * FUNCTION:		ExpTest::testVisitors
+ * OVERVIEW:		Test the FlagsFinder and BareMemofFinder visitors
+ *============================================================================*/
+void ExpTest::testVisitors() {
+	Assign s7(new Terminal(opNil), new Terminal(opNil));
+	// m[SETTFLAGS(m[1000], r8)]{7}
+	s7.setNumber(7);
+	FlagsFinder ff;
+	Exp* e1 = new RefExp(
+		Location::memOf(
+			new Binary(opFlagCall,
+				new Const("SETFFLAGS"),
+				new Binary(opList,
+					Location::memOf(		// A bare memof
+						new Const(0x1000)),
+					new Binary(opList,
+						Location::regOf(8),
+						new Terminal(opNil))))),
+		&s7);
+
+	// m[0x2000]
+	Exp* e2 = Location::memOf(new Const(0x2000));
+
+	// r1+m[1000]{7}*4
+	Exp* e3 = new Binary(opPlus,
+		Location::regOf(1),
+		new Binary(opMult,
+			new RefExp(
+				Location::memOf(new Const(1000)),
+				&s7),
+			new Const(4)));
+
+	int res = e1->containsFlags();
+	CPPUNIT_ASSERT_EQUAL(1, res);
+	res = e2->containsFlags();
+    CPPUNIT_ASSERT_EQUAL(0, res);
+	res = e3->containsFlags();
+    CPPUNIT_ASSERT_EQUAL(0, res);
+
+	res = e1->containsBareMemof();
+	CPPUNIT_ASSERT_EQUAL(1, res);
+	res = e2->containsBareMemof();
+	CPPUNIT_ASSERT_EQUAL(1, res);
+	res = e3->containsBareMemof();
+	CPPUNIT_ASSERT_EQUAL(0, res);
+}
+
