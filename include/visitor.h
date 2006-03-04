@@ -75,18 +75,17 @@ public:
 	ExpVisitor() { }
 virtual 		~ExpVisitor() { }
 
-	// visitor functions,
-	// return false to abandon iterating through the expression (terminate the search)
+	// visitor functions return false to abandon iterating through the expression (terminate the search)
 	// Set override true to not do the usual recursion into children
-virtual bool		visit(Unary *e,	bool& override) {override = false; return true;}
+virtual bool		visit(Unary *e,		bool& override) {override = false; return true;}
 virtual bool		visit(Binary *e,	bool& override) {override = false; return true;}
 virtual bool		visit(Ternary *e,	bool& override) {override = false; return true;}
-virtual bool		visit(TypedExp *e, bool& override) {override = false; return true;}
+virtual bool		visit(TypedExp *e,	bool& override) {override = false; return true;}
 virtual bool		visit(FlagDef *e,	bool& override) {override = false; return true;}
 virtual bool		visit(RefExp *e,	bool& override) {override = false; return true;}
-virtual bool		visit(Location *e, bool& override) {override = false; return true;}
+virtual bool		visit(Location *e,	bool& override) {override = false; return true;}
 // These three have zero arity, so there is nothing to override
-virtual bool		visit(Const *e	  ) {return true;}
+virtual bool		visit(Const *e	 ) {return true;}
 virtual bool		visit(Terminal *e) {return true;}
 virtual bool		visit(TypeVal *e ) {return true;}
 };
@@ -568,5 +567,28 @@ class StmtDestCounter : public StmtExpVisitor {
 public:
 					StmtDestCounter(ExpDestCounter* edc) : StmtExpVisitor(edc) {}
 };
+
+// Search an expression for flags calls, e.g. SETFFLAGS(...) & 0x45
+class FlagsFinder : public ExpVisitor {
+		bool		found;
+public:
+					FlagsFinder() : found(false) {}
+		bool		isFound() {return found;}
+private:
+virtual bool		visit(Binary *e,	bool& override);
+
+};
+
+// Search an expression for a bare (non subscripted) memof
+class BareMemofFinder : public ExpVisitor {
+		bool		found;
+public:
+					BareMemofFinder() : found(false) {}
+		bool		isFound() {return found;}
+private:
+virtual bool		visit(Location *e,	bool& override);
+virtual bool		visit(RefExp *e,	bool& override);
+};
+
 
 #endif	// #ifndef __VISITOR_H__

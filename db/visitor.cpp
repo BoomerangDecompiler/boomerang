@@ -786,3 +786,35 @@ bool ExpDestCounter::visit(RefExp *e, bool& override) {
 	override = false;		// Continue searching my children
 	return true;			// Continue visiting the rest of Exp* e
 }
+
+bool FlagsFinder::visit(Binary *e,	bool& override) {
+	if (e->isFlagCall()) {
+		found = true;
+		return false;		// Don't continue searching
+	}
+	override = false;
+	return true;
+}
+
+// Search for bare memofs (not subscripted) in the expression
+bool BareMemofFinder::visit(Location* e, bool& override) {
+	if (e->isMemOf()) {
+		found = true;
+		return false;
+	}
+	override = false;
+	return true;			// Continue searching
+}
+
+bool BareMemofFinder::visit(RefExp* e, bool& override) {
+	Exp* base = e->getSubExp1();
+	if (base->isMemOf()) {
+		// Beware: it may be possible to have a bare memof inside a subscripted one
+		Exp* addr = ((Location*)base)->getSubExp1();
+		addr->accept(this);
+		if (found)
+			return false;	// Don't continue searching
+	}
+	override = true;		// Don't look inside the refexp
+	return true;			// But keep searching
+}
