@@ -248,15 +248,22 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 			Exp* e = *ll;
 			if (!canPropagateToExp(e))
 				continue;
-			// Check if the -l flag (propMaxDepth) prevents this propagation
 			Assign* def = (Assign*)((RefExp*)e)->getDef();
+			Exp* rhs = def->getRight();
+			if (rhs->containsBareMemof())
+				// Must never propagate unsubscripted memofs. You could be propagating past a definition, thereby
+				// invalidating the IR
+				continue;
 			Exp* lhs = def->getLeft();
+			// Check if the -l flag (propMaxDepth) prevents this propagation
 			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
 				std::map<Exp*, int, lessExpStar>::iterator ff = destCounts->find(e);
-				if (ff != destCounts->end() && ff->second > 1 &&
-						def->getRight()->getComplexityDepth(proc) >= propMaxDepth)
-					// This propagation is prevented by the -l limit
-					continue;
+				if (ff != destCounts->end() && ff->second > 1 && rhs->getComplexityDepth(proc) >= propMaxDepth) {
+					if (!def->getRight()->containsFlags()) {
+						// This propagation is prevented by the -l limit
+						continue;
+					}
+				}
 			}
 			change |= doPropagateTo(e, def, convert);
 		}
@@ -489,7 +496,7 @@ bool GotoStatement::search(Exp* search, Exp*& result) {
  * RETURNS:			True if any change
  *============================================================================*/
 bool GotoStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
-	bool change;
+	bool change = false;
 	if (pDest) {
 		pDest = pDest->searchReplaceAll(search, replace, change);
 	}
@@ -741,7 +748,7 @@ bool BranchStatement::search(Exp* search, Exp*& result) {
  *============================================================================*/
 bool BranchStatement::searchAndReplace(Exp* search, Exp* replace, bool cc) {
 	GotoStatement::searchAndReplace(search, replace, cc);
-	bool change;
+	bool change = false;
 	if (pCond)
 		pCond = pCond->searchReplaceAll(search, replace, change);
 	return change;
