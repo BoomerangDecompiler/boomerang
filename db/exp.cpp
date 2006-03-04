@@ -3962,6 +3962,17 @@ bool Exp::canRename() {
 	return pt.getResult();
 }
 
+bool Exp::containsFlags() {
+	FlagsFinder ff;
+	accept(&ff);
+	return ff.isFound();
+}
+
+bool Exp::containsBareMemof() {
+	BareMemofFinder bmf;
+	accept(&bmf);
+	return bmf.isFound();
+}
 
 
 #ifdef USING_MEMO

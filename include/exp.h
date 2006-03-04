@@ -351,7 +351,9 @@ virtual Exp*		accept(ExpModifier* v) = 0;
 		// Perform call bypass and simple (assignment only) propagation to this exp
 		// Note: can change this, so often need to clone before calling
 		Exp*		bypass();
-		void		bypassComp();		// As above, but only the xxx of m[xxx]
+		void		bypassComp();			// As above, but only the xxx of m[xxx]
+		bool		containsFlags();		// Check if this exp contains any flag calls
+		bool		containsBareMemof();	// Check if this Exp contains a bare (non subscripted) memof
 
 		// Data flow based type analysis (implemented in type/dfa.cpp)
 		// Pull type information up the expression tree
