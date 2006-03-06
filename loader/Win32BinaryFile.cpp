@@ -40,6 +40,68 @@ extern "C" {
 	int microX86Dis(void* p);			// From microX86dis.c
 }
 
+
+#ifndef IMAGE_SCN_CNT_CODE // Assume that if one is not defined, the rest isn't either.
+#define IMAGE_SCN_CNT_CODE               0x00000020
+#define IMAGE_SCN_CNT_INITIALIZED_DATA   0x00000040
+#define IMAGE_SCN_CNT_UNINITIALIZED_DATA 0x00000080
+#define IMAGE_SCN_MEM_READ               0x40000000
+#define IMAGE_SCN_MEM_WRITE              0x80000000
+#endif
+
+
+namespace {
+
+// Due to the current rigid design, where BinaryFile holds a C-style array of
+// SectionInfo's, we can't extend a subclass of SectionInfo with the data required
+// to express the semantics of a PE section. We therefore need this external mapping
+// from SectionInfo's to PEObject's, that contain the info we need.
+// TODO: Refactor BinaryFile to not expose its private parts in public. Design both
+// a protected (for subclasses) and public (for users) interface.
+typedef std::map<const class PESectionInfo*, const PEObject*> SectionObjectMap;
+
+SectionObjectMap s_sectionObjects;
+
+
+// Note that PESectionInfo currently must be the exact same size as
+// SectionInfo due to the already mentioned array held by BinaryFile.
+class PESectionInfo : public SectionInfo
+{
+	virtual bool isAddressBss(ADDRESS a) const
+	{
+		if (a < uNativeAddr || a >= uNativeAddr + uSectionSize) {
+			return false; // not even within this section
+		}
+		if (bBss) {
+			return true; // obvious
+		}
+		if (bReadOnly) {
+			return false; // R/O BSS makes no sense.
+		}
+		// Don't check for bData here. So long as the section has slack at end, that space can contain BSS.
+		const SectionObjectMap::iterator it = s_sectionObjects.find(this);
+		assert(it != s_sectionObjects.end());
+		assert(it->second);
+		assert(this == it->first);
+		const PEObject* sectionHeader = it->second;
+		const bool has_slack = LMMH(sectionHeader->VirtualSize) > LMMH(sectionHeader->PhysicalSize);
+		if (!has_slack) {
+			return false; // BSS not possible.
+		}
+		if (a > uNativeAddr + LMMH(sectionHeader->PhysicalSize)) {
+			return true;
+		}
+		return false;
+	}
+};
+
+// attempt at a compile-time assert for the size requirement.
+// If the sizes differs, this statement will try to define a zero-sized array, which is invalid.
+typedef char ct_failure[sizeof(SectionInfo) == sizeof(PESectionInfo)];
+
+}
+
+
 Win32BinaryFile::Win32BinaryFile() : m_pFileName(0)
 { }
 
@@ -278,28 +340,31 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 
 //printf("Image Base %08X, real base %p\n", LMMH(m_pPEHeader->Imagebase), base);
 
-	PEObject *o = (PEObject *)(((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
+	const PEObject *o = (PEObject *)(((char *)m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
 	m_iNumSections = LH(&m_pPEHeader->numObjects);
-	m_pSections = new SectionInfo[m_iNumSections];
-	SectionInfo *reloc = NULL;
+	m_pSections = new PESectionInfo[m_iNumSections];
+//	SectionInfo *reloc = NULL;
 	for (int i=0; i<m_iNumSections; i++, o++) {
+		SectionInfo& sect = m_pSections[i];
 		//	printf("%.8s RVA=%08X Offset=%08X size=%08X\n", (char*)o->ObjectName, LMMH(o->RVA), LMMH(o->PhysicalOffset),
 		//	  LMMH(o->VirtualSize));
-		m_pSections[i].pSectionName = new char[9];
-		strncpy(m_pSections[i].pSectionName, o->ObjectName, 8);
-		if (!strcmp(m_pSections[i].pSectionName, ".reloc"))
-			reloc = &m_pSections[i];
-		m_pSections[i].uNativeAddr=(ADDRESS)(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
-		m_pSections[i].uHostAddr=(ADDRESS)(LMMH(o->RVA) + base);
-		m_pSections[i].uSectionSize=LMMH(o->VirtualSize);
+		sect.pSectionName = new char[9];
+		strncpy(sect.pSectionName, o->ObjectName, 8);
+//		if (!strcmp(sect.pSectionName, ".reloc"))
+//			reloc = &sect;
+		sect.uNativeAddr=(ADDRESS)(LMMH(o->RVA) + LMMH(m_pPEHeader->Imagebase));
+		sect.uHostAddr=(ADDRESS)(LMMH(o->RVA) + base);
+		sect.uSectionSize=LMMH(o->VirtualSize);
 		DWord Flags = LMMH(o->Flags);
-		m_pSections[i].bBss		= Flags&0x80?1:0;
-		m_pSections[i].bCode		= Flags&0x20?1:0;
-		m_pSections[i].bData		= Flags&0x40?1:0;
-		m_pSections[i].bReadOnly	= Flags&0x80000000?0:1;
+		sect.bBss      = (Flags&IMAGE_SCN_CNT_UNINITIALIZED_DATA)?1:0;
+		sect.bCode     = (Flags&IMAGE_SCN_CNT_CODE)?1:0;
+		sect.bData     = (Flags&IMAGE_SCN_CNT_INITIALIZED_DATA)?1:0;
+		sect.bReadOnly = (Flags&IMAGE_SCN_MEM_WRITE)?0:1;
+		// TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
 		fseek(fp, LMMH(o->PhysicalOffset), SEEK_SET);
 		memset(base + LMMH(o->RVA), 0, LMMH(o->VirtualSize));
 		fread(base + LMMH(o->RVA), LMMH(o->PhysicalSize), 1, fp);
+		s_sectionObjects[static_cast<const PESectionInfo*>(&sect)] = o;
 	}
 
 	// Add the Import Address Table entries to the symbol table

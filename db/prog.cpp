@@ -742,10 +742,10 @@ void Prog::setGlobalType(const char* nam, Type* ty) {
 // get a string constant at a given address if appropriate
 // if knownString, it is already known to be a char*
 char *Prog::getStringConstant(ADDRESS uaddr, bool knownString /* = false */) {
-	SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
+	const SectionInfo* si = pBF->GetSectionInfoByAddr(uaddr);
 	// Too many compilers put constants, including string constants, into read/write sections
 	//if (si && si->bReadOnly)
-	if (si && !si->bBss) {
+	if (si && !si->isAddressBss(uaddr)) {
 		// At this stage, only support ascii, null terminated, non unicode strings.
 		// At least 4 of the first 6 chars should be printable ascii
 		char* p = (char*)(uaddr + si->uHostAddr - si->uNativeAddr);
@@ -1463,13 +1463,13 @@ void Prog::readSymbolFile(const char *fname) {
 }
 
 Global::~Global() {
-	// Gcc wants the first virtual function to have an implementation. Sigh.
+	// Do-nothing d'tor
 }
 
 Exp* Global::getInitialValue(Prog* prog) {
 	Exp* e = NULL;
 	PSectionInfo si = prog->getSectionInfoByAddr(uaddr);
-	if (si && si->bBss)
+	if (si && si->isAddressBss(uaddr))
 		// This global is in the BSS, so it can't be initialised
 		return NULL;
 	if (si == NULL)

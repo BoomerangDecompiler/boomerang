@@ -164,8 +164,6 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     // Allocate room for all the Elf sections (including the silly first one)
     m_pSections = new SectionInfo[m_iNumSections];
     if (m_pSections == 0) return false;     // Failed!
-    // Initialise to zero; especially for flags and addresses
-    memset(m_pSections, '\0', m_iNumSections*sizeof(SectionInfo));
 
 	// Set up the m_sh_link and m_sh_info arrays
 	m_sh_link = new int[m_iNumSections];

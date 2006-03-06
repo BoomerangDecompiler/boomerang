@@ -34,10 +34,10 @@
 
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
-// Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
+// Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
 #define LMMH(x) ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + \
 	((unsigned)((Byte *)(&x))[2] << 16) + ((unsigned)((Byte *)(&x))[3] << 24))
-// With this one, x IS a pounsigneder
+// With this one, x is a pointer to unsigned
 #define LMMH2(x) ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + \
 	((unsigned)((Byte *)(x))[2] << 16) + ((unsigned)((Byte *)(x))[3] << 24))
 
@@ -113,16 +113,16 @@ typedef struct {
   DWord TotalTLSSize;
 } PEHeader;
 
-typedef struct {
-  char ObjectName[8];
+typedef struct {	// The real Win32 name of this struct is IMAGE_SECTION_HEADER
+  char ObjectName[8];	// Name
   DWord VirtualSize;
-  DWord RVA;
-  DWord PhysicalSize;
-  DWord PhysicalOffset;
-  DWord Reserved1;
-  DWord Reserved2;
-  DWord Reserved3;
-  DWord Flags;
+  DWord RVA;			// VirtualAddress
+  DWord PhysicalSize;	// SizeOfRawData
+  DWord PhysicalOffset;	// PointerToRawData
+  DWord Reserved1;		// PointerToRelocations
+  DWord Reserved2;		// PointerToLinenumbers
+  DWord Reserved3;		// WORD NumberOfRelocations; WORD NumberOfLinenumbers;
+  DWord Flags;			// Characteristics
 } PEObject;
 
 typedef struct {

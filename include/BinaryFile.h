@@ -44,8 +44,18 @@
 // these structs. All information about the sections is contained in these
 // structures.
 
-typedef struct sectioninfo_tag
+struct SectionInfo
 {
+	// Windows's PE file sections can contain any combination of code, data and bss.
+	// As such, it can't be correctly described by SectionInfo, why we need to override
+	// the behaviour of (at least) the question "Is this address in BSS".
+				SectionInfo();		// Constructor
+	virtual		~SectionInfo();		// Quell a warning in gcc
+	virtual bool isAddressBss(ADDRESS a) const
+	{
+		return bBss != 0;
+	}
+
 	char*		pSectionName;		// Name of section
 	ADDRESS		uNativeAddr;		// Logical or native load address
 	ADDRESS		uHostAddr;			// Host or actual address of data
@@ -56,7 +66,7 @@ typedef struct sectioninfo_tag
 	unsigned	bData:1;			// Set if section contains data
 	unsigned	bBss:1;				// Set if section is BSS (allocated only)
 	unsigned	bReadOnly:1;		// Set if this is a read only section
-} SectionInfo;
+};
 
 typedef SectionInfo* PSectionInfo;
 	

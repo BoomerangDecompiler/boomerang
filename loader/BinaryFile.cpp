@@ -44,6 +44,16 @@ BinaryFile::BinaryFile(bool bArch /*= false*/)
 	m_pSections = 0;			// No section data yet
 }
 
+// This struct used to be initialised with a memset, but now that overwrites the virtual table (if compiled under gcc
+// and possibly others)
+SectionInfo::SectionInfo() :
+	pSectionName(NULL), uNativeAddr(0), uHostAddr(0), uSectionSize(0), uSectionEntrySize(0), uType(0),
+	bCode(false), bData(false), bBss(0), bReadOnly(0)
+{}
+
+SectionInfo::~SectionInfo()
+{}
+
 int BinaryFile::GetNumSections() const
 {
 	return m_iNumSections;

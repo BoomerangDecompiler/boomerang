@@ -45,7 +45,6 @@ bool ExeBinaryFile::RealLoad(const char* sName)
 		return 0;
 	}
 	m_iNumSections = 3;
-	memset(m_pSections, '\0', 3 * sizeof(SectionInfo));
 	m_pHeader = new exeHeader;
 	if (m_pHeader == 0)
 	{
