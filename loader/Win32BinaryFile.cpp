@@ -88,7 +88,7 @@ class PESectionInfo : public SectionInfo
 		if (!has_slack) {
 			return false; // BSS not possible.
 		}
-		if (a > uNativeAddr + LMMH(sectionHeader->PhysicalSize)) {
+		if (a >= uNativeAddr + LMMH(sectionHeader->PhysicalSize)) {
 			return true;
 		}
 		return false;
