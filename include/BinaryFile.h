@@ -40,17 +40,29 @@
 // starting at p.
 #define LH(p)  ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
 
+// Some Windows voodoo; Windows doesn't seem to export everything unless you tell it to
+#ifdef _WIN32
+#if defined _MSC_VER || defined BUILDING_LIBBINARYFILE			// If don't use dllexport, get Vtable undefined!
+#define IMPORT_BINARYFILE __declspec(dllexport)
+#else
+#define IMPORT_BINARYFILE __declspec(dllimport)
+#endif
+#else
+#define IMPORT_BINARYFILE
+#endif
+
 // SectionInfo structure. GetSectionInfo returns a pointer to an array of
 // these structs. All information about the sections is contained in these
 // structures.
 
-struct SectionInfo
+struct IMPORT_BINARYFILE SectionInfo
 {
+				SectionInfo();		// Constructor
+	virtual		~SectionInfo();		// Quell a warning in gcc
+
 	// Windows's PE file sections can contain any combination of code, data and bss.
 	// As such, it can't be correctly described by SectionInfo, why we need to override
 	// the behaviour of (at least) the question "Is this address in BSS".
-				SectionInfo();		// Constructor
-	virtual		~SectionInfo();		// Quell a warning in gcc
 	virtual bool isAddressBss(ADDRESS a) const
 	{
 		return bBss != 0;
@@ -127,16 +139,6 @@ private:
 		BinaryFile	*getInstanceFor(const char *sName);
 };
 
-
-#ifdef _WIN32
-#if defined _MSC_VER || defined BUILDING_LIBBINARYFILE			// If don't use dllexport, get Vtable undefined!
-#define IMPORT_BINARYFILE __declspec(dllexport)
-#else
-#define IMPORT_BINARYFILE __declspec(dllimport)
-#endif
-#else
-#define IMPORT_BINARYFILE
-#endif
 
 class IMPORT_BINARYFILE BinaryFile {
 
