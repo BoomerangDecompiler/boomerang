@@ -64,6 +64,7 @@ typedef struct {
 #define EM_PA_RISC		15			// HP PA-RISC
 #define EM_SPARC32PLUS	18			// Sun SPARC 32+
 #define EM_PPC			20			// PowerPC
+#define EM_X86_64	62 
 #define EM_ST20			0xa8		// ST20 (made up... there is no official value?)
 
 #define ET_DYN	3		// Elf type (dynamic library)

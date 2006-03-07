@@ -871,9 +871,14 @@ MACHINE ElfBinaryFile::GetMachine() const {
 	else if (machine == EM_68K)		return MACHINE_PALM;	// Unlikely
 	else if (machine == EM_PPC)		return MACHINE_PPC;
 	else if (machine == EM_ST20)		return MACHINE_ST20;
-	// What sort of machine is this?
-	printf("Machine type is %x %d\n",machine,machine);
-	assert(false);
+	else if (machine == EM_X86_64)	{
+		std::cerr << "Error: ElfBinaryFile::GetMachine: The AMD x86-64 architecture is not supported yet\n";
+		return (MACHINE)-1;
+	}
+	// An unknown machine type
+	std::cerr << "Error: ElfBinaryFile::GetMachine: Unsupported machine type: " 
+		<< machine << " (0x" << std::hex << machine << ")\n";
+	std::cerr << "(Please add a description for this type, thanks!)\n";
 	return (MACHINE)-1;
 }
 

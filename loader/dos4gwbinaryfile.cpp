@@ -25,7 +25,7 @@
 #endif
 
 #include "BinaryFile.h"
-#include "DOS4GWBinaryFile.h"
+#include "dos4gwbinaryfile.h"
 #include "config.h"
 #include <iostream>
 #include <sstream>
