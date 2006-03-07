@@ -27,6 +27,7 @@
  * 31 Jan 03 - Mike: Tabs and indenting
  * 03 Feb 03 - Mike: removeStatement no longer linear searches for the BB
  * 13 Jul 05 - Mike: Fixed a segfault in processDecodedICTs with zero lentgth (!) BBs. Also one in the ad-hoc TA
+ * 08 Mar 06 - Mike: fixed use of invalidated iterator in set/map::erase() (thanks, tamlin!)
  */
 
 /*==============================================================================
@@ -747,7 +748,7 @@ void UserProc::getStatements(StatementList &stmts) {
 // Should use iterators or other context to find out how to erase "in place" (without having to linearly search)
 void UserProc::removeStatement(Statement *stmt) {
 	// remove anything proven about this statement
-	for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); it++) {
+	for (std::map<Exp*, Exp*, lessExpStar>::iterator it = provenTrue.begin(); it != provenTrue.end(); ) {
 		LocationSet refs;
 		it->second->addUsedLocs(refs);
 		it->first->addUsedLocs(refs);		// Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
@@ -764,10 +765,11 @@ void UserProc::removeStatement(Statement *stmt) {
 			if (VERBOSE)
 				LOG << "removing proven true exp " << it->first << " = " << it->second <<
 					" that uses statement being removed.\n";
-			provenTrue.erase(it);
+			provenTrue.erase(it++);
 			// it = provenTrue.begin();
 			continue;
 		}
+		++it;			// it is incremented with the erase, or here
 	}
 
 	// remove from BB/RTL
@@ -1054,7 +1056,7 @@ void UserProc::initialiseDecompile() {
 	initStatements();
 
 	if (VERBOSE) {
-		LOG << "=== debug print before SSA for " << getName() << " ===\n";
+		LOG << "--- debug print before SSA for " << getName() << " ---n";
 		printToLog();
 		LOG << "=== end debug print before SSA for " << getName() << " ===\n\n";
 	}
@@ -1507,6 +1509,8 @@ void UserProc::remUnusedStmtEtc() {
 		which has the wrong argument in the if condition, and also g gets decremented twice.
 		So either leave the propagation below commented out, or change the fromSSA logic to treat all definitions as
 		creating livenesses.
+		Update 6/Mar/2006: globals are no longer possible as return locations, but the above problem still seems to
+		remain.
 	*/
 	
 #if 0
@@ -3440,17 +3444,19 @@ void UserProc::removeUnusedLocals() {
 		}
 	}
 	// Finally, remove them from locals, so they don't get declared
-	for (std::set<std::string>::iterator it1 = removes.begin(); it1 != removes.end(); it1++)
-		locals.erase(*it1);
+	for (std::set<std::string>::iterator it1 = removes.begin(); it1 != removes.end(); )
+		locals.erase(*it1++);
 	// Also remove them from the symbols, since symbols are a superset of locals at present
-	for (SymbolMapType::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ++sm) {
+	for (SymbolMapType::iterator sm = symbolMap.begin(); sm != symbolMap.end(); ) {
 		Exp* mapsTo = sm->second;
 		if (mapsTo->isLocal()) {
 			char* tmpName = ((Const*)((Location*)mapsTo)->getSubExp1())->getStr();
 			if (removes.find(tmpName) != removes.end()) {
-				symbolMap.erase(sm);
+				symbolMap.erase(sm++);
 			}
 		}
+		else
+			++sm;			// sm is itcremented with the erase, or here
 	}
 }
 
@@ -4710,7 +4716,7 @@ void UserProc::markAsNonChildless(ProcSet* cs) {
 // Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
 void UserProc::propagateToCollector() {
 	UseCollector::iterator it;
-	for (it = col.begin(); it != col.end(); ++it) {
+	for (it = col.begin(); it != col.end(); ) {
 		if (!(*it)->isMemOf()) continue;
 		Exp* addr = ((Location*)*it)->getSubExp1();
 		LocationSet used;
@@ -4727,7 +4733,8 @@ void UserProc::propagateToCollector() {
 			Exp* memOfRes = Location::memOf(res)->simplify();
 			// First check to see if memOfRes is already in the set
 			if (col.exists(memOfRes)) {
-				/* it = */ col.remove(it);		// Already exists; just remove the old one
+				// Take care not to use an iterator to the newly erased element.
+				/* it = */ col.remove(it++);		// Already exists; just remove the old one
 				continue;
 			} else {
 				if (VERBOSE)
@@ -4736,6 +4743,7 @@ void UserProc::propagateToCollector() {
 				((Location*)*it)->setSubExp1(res);	// Change the child of the memof
 			}
 		}
+		++it;			// it is iterated either with the erase, or here
 	}
 }
 
