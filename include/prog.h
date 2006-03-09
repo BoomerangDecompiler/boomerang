@@ -132,9 +132,6 @@ virtual				~Prog();
 		// Remove interprocedural edges
 		void		removeInterprocEdges();
 
-		// Initialise and number all statements globally
-		void		initStatements();
-
 		// Do the main non-global decompilation steps
 		void		decompile();
 
