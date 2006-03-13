@@ -173,12 +173,6 @@ virtual void		renameParam(const char *oldName, const char *newName);
 virtual bool		isLib() {return false;}
 
 		/**
-		 * Return true if the aggregate pointer is used.
-		 * It is assumed that this is false for library procs
-		 */
-virtual bool		isAggregateUsed() {return false;}
-
-		/**
 		 * OutPut operator for a Proc object.
 		 */
 		friend std::ostream& operator<<(std::ostream& os, Proc& proc);
@@ -280,12 +274,6 @@ virtual				~LibProc();
 		 */
 		bool		isLib() {return true;}
 
-		/**
-		 * Return true if the aggregate pointer is used.
-		 * It is assumed that this is false for library procs
-		 */
-virtual bool		isAggregateUsed() {return false;}
-
 virtual Exp*		getProven(Exp* left);					// Get the RHS that is proven for left
 virtual	Exp*		getPremised(Exp* left) {return NULL;}	// Get the RHS that is premised for left
 virtual	bool		isPreserved(Exp* e);					///< Return whether e is preserved by this proc
@@ -334,26 +322,6 @@ class UserProc : public Proc {
 		 * Status: undecoded .. final decompiled
 		 */
 		ProcStatus	status;
-
-		/**
-		 * True if this procedure has been decoded.
-		 */
-		//bool		decoded;		// Deprecated; use ProcStatus
-		
-		// true if the procedure has been analysed.
-		//bool		analysed;		// Deprecated; use ProcStatus
-
-		/*
-		 * Indicate that the aggregate location pointer "hidden" parameter is used, and is thus explicit in this
-		 * translation.  Needed only by architectures like Sparc where a special parent stack location is used to pass
-		 * the address of aggregates. Set with the setParams() member function.
-		 */
-		//bool		aggregateUsed;
-
-		/**
-		 * Maximum depth this function (or limited by a command line switch). -1 if not set.
-		 */
-		//int			maxDepth;
 
 		/*
 		 * DEPRECATED now. Eventually use the localTable.
@@ -699,12 +667,6 @@ public:
 		 */
 		Exp			*getSymbolExp(Exp *le, Type *ty = NULL, bool lastPass = false);
 
-
-		/**
-		 * Sets the parameters that have been recovered for this procedure through analysis.
-		 * Not currently implemented or called. Probably needed to deal with the Sparc aggregate pointer.
-		 */
-		void		setParams(std::list<TypedExp*>& params, bool aggUsed = false);
 
 		/**
 		 * Given a machine dependent location, return a generated symbolic representation for it.
