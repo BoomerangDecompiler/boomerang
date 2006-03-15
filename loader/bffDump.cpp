@@ -35,7 +35,6 @@
 #include "HpSomBinaryFile.h"
 #include "PalmBinaryFile.h"
 #include "Win32BinaryFile.h"
-#include "global.h"
 
 
 int main(int argc, char* argv[])
@@ -44,14 +43,19 @@ int main(int argc, char* argv[])
 
     if (argc != 2) {
         printf ("Usage: %s <filename>\n", argv[0]);
-        printf ("%s dumps the contents of the given executable file", argv[0]); 
+        printf ("%s dumps the contents of the given executable file\n", argv[0]); 
         return 1;
     }
 
     // Load the file
 
-    BinaryFile *pbf;
-    pbf = BinaryFile::Load(argv[1]);
+    BinaryFile *pbf = NULL;
+    BinaryFileFactory bff; 
+    pbf = bff.Load(argv[1]);
+
+    if (pbf == NULL) {
+	return 2;
+    }
 
     // Display program and section information
     // If the DisplayDetails() function has not been implemented 
