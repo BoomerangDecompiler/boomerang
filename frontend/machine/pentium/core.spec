@@ -11,9 +11,10 @@
 # 18 Oct 01 - Mike: Added PUSH.Ix^ow (66 6A dd, 8 bit operand, 16 bit push)
 # 18 Nov 02 - Mike: Fixed MOV.Ew.Iv^ow and MOV.Ed.Iv^od (was Eb)
 # 01 Oct 03 - Mike: Changed rows 3 & 4 of esc2 map to rows 2 & 3
-# 20 Jul 04 - Mike: Swapped Fint .I16 and .I32
+# 20 Jul 04 - Mike: Swapped Fint .I16 and .I32 NOTE: swapped back 16/Mar/06!
 # 19 Oct 04 - Mike: d now signed in Base8 addressing mode (NOTE: still comes out unsigned!)
 # 02 Sep 05 - Mike: POP.Ev^ov uses Eaddr not Mem (mod=3 allowed)
+# 15 Mar 06 - Mike: Swapped back .I16 and .I32
 
 fields of opcodet (8) row 4:7 col 0:2 page 3:3
                      
@@ -148,7 +149,7 @@ patterns
   .STi      is DD; mod = 3
 #  Fcmpi  is any of [.STi2 P.STi2 ], which is [ DB DF ]
   Fstack is any of [ .ST.STi .STi.ST P.STi.ST ], which is [ D8 DC DE ]; mod = 3
-  Fint   is any of [.I16 .I32], which is [DA DE]
+  Fint   is any of [.I32 .I16], which is [DA DE]
   Fmem   is any of [.R32 .R64], which is [D8 DC]
   FlsI   is any of [.lsI16 .lsI32], which is [DF DB]
   FlsR   is any of [.lsR32 .lsR64], which is [D9 DD]
