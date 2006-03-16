@@ -100,7 +100,7 @@ LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
 .PHONY: test clean all static distclean mostclean depend depend.in loaders
 #19 Aug 02 icer: should read lib static test
 #20 Aug 02 icer: should read lib static , the test code is broken
-all: $(REMOTE) lib static loaders
+all: $(REMOTE) lib loaders static
 static: boomerang$(EXEEXT)
 
 # Make the lib directory if needed
@@ -113,7 +113,7 @@ testDyn: lib
 	cd db       && ${MAKE} test
 	cd frontend && ${MAKE} test
 
-test:	lib bigtest$(EXEEXT) loaders
+test:	lib loaders bigtest$(EXEEXT)
 	cd loader   && ${MAKE} test
 	./bigtest$(EXEEXT)
 
