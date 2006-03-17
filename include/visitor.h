@@ -213,9 +213,10 @@ virtual bool		visit(ImpRefStatement	*stmt);
 // StmtExpVisitor is a visitor of statements, and of expressions within those expressions. The visiting of expressions
 // (after the current node) is done by an ExpVisitor (i.e. this is a preorder traversal).
 class StmtExpVisitor {
+		bool		ignoreCol;				// True if ignoring collectors
 public:
 		ExpVisitor*	ev;
-					StmtExpVisitor(ExpVisitor* v) : ev(v) {}
+					StmtExpVisitor(ExpVisitor* v, bool ignoreCol = true) : ignoreCol(ignoreCol), ev(v) {}
 virtual				~StmtExpVisitor() {}
 virtual bool		visit(         Assign *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(      PhiAssign *stmt, bool& override) {override = false; return true;}
@@ -227,6 +228,8 @@ virtual bool		visit(  CaseStatement *stmt, bool& override) {override = false; re
 virtual bool		visit(  CallStatement *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(ReturnStatement *stmt, bool& override) {override = false; return true;}
 virtual bool		visit(ImpRefStatement *stmt, bool& override) {override = false; return true;}
+
+		bool		isIgnoreCol() {return ignoreCol;}
 };
 
 // StmtModifier is a class that visits all statements in an RTL, and for all expressions in the various types of
@@ -340,11 +343,14 @@ virtual Exp*		postVisit(Location *e);
 
 class UsedLocsFinder : public ExpVisitor {
 	LocationSet*	used;				// Set of Exps
+	bool			memOnly;			// If true, only look inside m[...]
 public:
-					UsedLocsFinder(LocationSet& used) : used(&used) {}
+					UsedLocsFinder(LocationSet& used, bool memOnly) : used(&used), memOnly(memOnly) {}
 					~UsedLocsFinder() {}
 
 		LocationSet* getLocSet() {return used;}
+		void		setMemOnly(bool b) {memOnly = b;}
+		bool		isMemOnly() {return memOnly;}
 
 virtual bool		visit(RefExp *e,	bool& override);
 virtual bool		visit(Location *e, bool& override);
@@ -356,7 +362,8 @@ class UsedLocsVisitor : public StmtExpVisitor {
 public:
 					UsedLocsVisitor(ExpVisitor* v, bool cc) : StmtExpVisitor(v), countCol(cc) {}
 virtual				~UsedLocsVisitor() {}
-		// Needs special attention because the lhs of an assignment isn't used (except where it's m[blah], when blah is used)
+		// Needs special attention because the lhs of an assignment isn't used (except where it's m[blah], when blah is
+		// used)
 virtual bool		visit(		   Assign *stmt, bool& override);
 virtual bool		visit(		PhiAssign *stmt, bool& override);
 virtual bool		visit(ImplicitAssign *stmt, bool& override);
@@ -508,11 +515,14 @@ virtual bool	visit(Location *e,	bool& override);
 
 };
 
-// A class to propagate everything, regardless, to this expression. Does not consider memory expressions and whther
+// A class to propagate everything, regardless, to this expression. Does not consider memory expressions and whether
 // the address expression is primitive. Use with caution; mostly Statement::propagateTo() should be used.
 class ExpPropagator : public SimpExpModifier {
+		bool		change;
 public:
-					ExpPropagator() { }
+					ExpPropagator() : change(false) { }
+		bool		isChanged() {return change;}
+		void		clearChanged() {change = false;}
 		Exp*		postVisit(RefExp* e);
 };
 
@@ -589,6 +599,5 @@ private:
 virtual bool		visit(Location *e,	bool& override);
 virtual bool		visit(RefExp *e,	bool& override);
 };
-
 
 #endif	// #ifndef __VISITOR_H__

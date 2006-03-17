@@ -11,7 +11,7 @@
  * 28 Jan 05 - G. Krol: Separated -h output into sections and neatened
 */
 
-#define VERSION "alpha 0.2 08/Mar/2006"
+#define VERSION "alpha 0.2 17/Mar/2006"
 
 #include <iostream>
 #include <fstream>
@@ -61,7 +61,8 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
-	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false)
+	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
+	experimental(false)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -158,6 +159,7 @@ void Boomerang::help() {
 	std::cout << "  -k               : Command mode, for available commands see -h cmd\n";
 	std::cout << "  -P <path>        : Path to Boomerang files, defaults to where you run\n";
 	std::cout << "                     Boomerang from\n";
+	std::cout << "  -X               : activate eXperimental code; errors likely\n";
 	std::cout << "  --               : No effect (used for testing)\n";
 	std::cout << "Debug\n";
 	std::cout << "  -da              : Print AST before code generation\n";
@@ -689,6 +691,8 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'h': help(); break;
 			case 'v': vFlag = true; break;
 			case 'x': dumpXML = true; break;
+			case 'X': experimental = true;
+				std::cout << "Warning: experimental code active!\n"; break;
 			case 'r': printRtl = true; break;
 			case 't': traceDecoder = true; break;
 			case 'T':

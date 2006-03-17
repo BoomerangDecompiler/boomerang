@@ -811,9 +811,8 @@ bool BasicBlock::isAncestorOf(BasicBlock *other) {
 
 void BasicBlock::simplify() {
 	if (m_pRtls)
-	for (std::list<RTL*>::iterator it = m_pRtls->begin();
-		 it != m_pRtls->end(); it++)
-		(*it)->simplify();
+		for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++)
+			(*it)->simplify();
 	if (m_nodeType == TWOWAY) {
 		if (m_pRtls == NULL || m_pRtls->size() == 0) {
 			m_nodeType = FALL;
@@ -1535,7 +1534,8 @@ void BasicBlock::prependStmt(Statement* s, UserProc* proc) {
 
 // Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
 // Also check for type conflicts if DFA_TYPE_ANALYSIS
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserProc* proc) {
+// if countAsLiveness is false, don't count this as a liveness (e.g. pass definitions)
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserProc* proc, bool countAsLiveness) {
 	// For each location to be considered
 	LocationSet::iterator uu;
 	for (uu = ls.begin(); uu != ls.end(); uu++) {
@@ -1550,7 +1550,7 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 			if (gg == ig.end()) {
 				// The interference is between dr (from liveLocs) and u. If it happens that u is implicit, then
 				// swap u and dr (so u{0} is the thing that is live now, and dr gets the new variable)
-				if (r->isImplicitDef()) {
+				if (countAsLiveness && r->isImplicitDef()) {
 					if (DEBUG_LIVENESS)
 						LOG << "Swapping " << dr << " and " << u << " so as not to rename an implicit\n";
 					liveLocs.remove(dr);
@@ -1575,12 +1575,13 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, igraph& ig, UserPro
 					LOG << "\n";
 				}
 			}
-		// Don't add the interfering variable to liveLocs, otherwise we could register other interferences that
-		// will not exist once this one is renamed
+			// Don't add the interfering variable to liveLocs, otherwise we could register other interferences that
+			// will not exist once this one is renamed
 		} else
 			// Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
 			// from the same statement, e.g.  blah := r24{2} + r24{3}
-			liveLocs.insert(u);
+			if (countAsLiveness)
+				liveLocs.insert(u);
 	}
 }
 
@@ -1588,7 +1589,9 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 	// Start with the liveness at the bottom of the BB
 	LocationSet liveLocs, phiLocs;
 	getLiveOut(liveLocs, phiLocs);
-	checkForOverlap(liveLocs, phiLocs, ig, myProc);
+	// Do the livensses that result from phi statements at successors first.
+	// FIXME: document why this is necessary
+	checkForOverlap(liveLocs, phiLocs, ig, myProc, true);
 	// For each RTL in this BB
 	std::list<RTL*>::reverse_iterator rit;
 	for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
@@ -1601,7 +1604,14 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 			s->getDefinitions(defs);
 			// The definitions don't have refs yet
 			defs.addSubscript(s /* , myProc->getCFG() */);
-			// Definitions kill uses
+			// Also consider it an interference if we define a location that is the same base variable. This can happen
+			// when there is a definition that is unused but for whatever reason not eliminated
+			// This check is done at the "bottom" of the statement, i.e. before we add s's uses and remove s's
+			// definitions to liveLocs
+			// Note that phi assignments don't count
+			if (!s->isPhi())
+				checkForOverlap(liveLocs, defs, ig, myProc, false);
+			// Definitions kill uses. Now we are moving to the "top" of statement s
 			liveLocs.makeDiff(defs);
 			// Phi functions are a special case. The operands of phi functions are uses, but they don't interfere
 			// with each other (since they come via different BBs). However, we don't want to put these uses into
@@ -1611,7 +1621,7 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 			// Check for livenesses that overlap
 			LocationSet uses;
 			s->addUsedLocs(uses);
-			checkForOverlap(liveLocs, uses, ig, myProc);
+			checkForOverlap(liveLocs, uses, ig, myProc, true);
 			if (DEBUG_LIVENESS)
 				LOG << " ## Liveness: at top of " << s << ", liveLocs is " << liveLocs.prints() << "\n";
 		}
@@ -1626,6 +1636,8 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 }
 
 // Locations that are live at the end of this BB are the union of the locations that are live at the start of its
+// successors
+// liveout gets all the livenesses, and phiLocs gets a subset of these, which are due to phi statements at the top of
 // successors
 void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 	liveout.clear();

@@ -254,19 +254,27 @@ Exp* SimpExpModifier::postVisit(Terminal *e)	  {
 }
 
 // Add used locations finder
-
 bool UsedLocsFinder::visit(Location* e, bool& override) {
-	used->insert(e);				// All locations visited are used
+	if (!memOnly)
+		used->insert(e);				// All locations visited are used
 	if (e->isMemOf()) {
 		// Example: m[r28{10} - 4]	we use r28{10}
 		Exp* child = e->getSubExp1();
+		// Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everyting will get ignored
+		bool wasMemOnly = memOnly;
+		memOnly = false;
 		child->accept(this);
+		memOnly = wasMemOnly;
+		override = true;					// Already looked inside child
 	}
-	override = false;
-	return true;
+	else
+		override = false;
+	return true;						// Continue looking for other locations
 }
 
 bool UsedLocsFinder::visit(Terminal* e) {
+	if (memOnly)
+		return true;					// Only interested in m[...]
 	switch (e->getOper()) {
 		case opPC:
 		case opFlags:
@@ -283,6 +291,10 @@ bool UsedLocsFinder::visit(Terminal* e) {
 }
 
 bool UsedLocsFinder::visit(RefExp* e, bool& override) {
+	if (memOnly) {
+		override = false;				// Look inside the ref for m[...]
+		return true;					// Don't count this reference
+	}
 	used->insert(e);		 // This location is used
 	// However, e's subexpression is NOT used ...
 	override = true;
@@ -306,7 +318,12 @@ bool UsedLocsVisitor::visit(Assign* s, bool& override) {
 	// Special logic for the LHS. Note: PPC can have r[tmp + 30] on LHS
 	if (lhs->isMemOf() || lhs->isRegOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();	// m[xxx] uses xxx
+		// Care! Don't want the memOnly flag when inside a m[...]. Otherwise, nothing will be found
+		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
+		bool wasMemOnly = ulf->isMemOnly();
+		ulf->setMemOnly(false);
 		child->accept(ev);
+		ulf->setMemOnly(wasMemOnly);
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();	// array(base, index) and member(base, offset)?? use
 		subExp1->accept(ev);							// base and index
@@ -328,7 +345,11 @@ bool UsedLocsVisitor::visit(PhiAssign* s, bool& override) {
 	// Special logic for the LHS
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
+		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
+		bool wasMemOnly = ulf->isMemOnly();
+		ulf->setMemOnly(false);
 		child->accept(ev);
+		ulf->setMemOnly(wasMemOnly);
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
@@ -355,7 +376,11 @@ bool UsedLocsVisitor::visit(ImplicitAssign* s, bool& override) {
 	// Special logic for the LHS
 	if (lhs->isMemOf()) {
 		Exp* child = ((Location*)lhs)->getSubExp1();
+		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
+		bool wasMemOnly = ulf->isMemOnly();
+		ulf->setMemOnly(false);
 		child->accept(ev);
+		ulf->setMemOnly(wasMemOnly);
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
@@ -413,7 +438,11 @@ bool UsedLocsVisitor::visit(BoolAssign* s, bool& override) {
 	Exp* lhs = s->getLeft();
 	if (lhs && lhs->isMemOf()) {	// If dest is of form m[x]...
 		Exp* x = ((Location*)lhs)->getSubExp1();
-		x->accept(ev);					// ... then x is used
+		UsedLocsFinder* ulf = (UsedLocsFinder*)ev;
+		bool wasMemOnly = ulf->isMemOnly();
+		ulf->setMemOnly(false);
+		x->accept(ev);
+		ulf->setMemOnly(wasMemOnly);
 	} else if (lhs->getOper() == opArrayIndex || lhs->getOper() == opMemberAccess) {
 		Exp* subExp1 = ((Binary*)lhs)->getSubExp1();
 		subExp1->accept(ev);
@@ -630,7 +659,14 @@ Exp* Localiser::postVisit(Location* e) {
 	if (d != depth && depth != -1) return e;	// Only subscript at the requested depth, or any if depth == -1
 	Exp* r = call->findDefFor(ret);
 	if (r) {
-		ret = r->clone()->bypass();
+		ret = r->clone();
+		if (EXPERIMENTAL) {
+			// The trouble with the below is that you can propagate to say a call statement's argument expression and
+			// not to the assignment of the actual argument. Examples: test/pentium/fromssa2, fbranch
+			bool ch;
+			ret = ret->propagateAllRpt(ch);		// Propagate into this repeatedly, in case propagation is limited
+		}
+		ret = ret->bypass();
 		unchanged &= ~mask;
 		mod = true;
 	} else
@@ -669,8 +705,7 @@ bool ComplexityFinder::visit(Unary* e,		bool& override) {count++; override = fal
 bool ComplexityFinder::visit(Binary* e,		bool& override) {count++; override = false; return true;}
 bool ComplexityFinder::visit(Ternary* e,	bool& override) {count++; override = false; return true;}
 
-// Ugh! This is still a separate propagation mechanism from Statement::propagateTo(). It would be good to get rid of
-// this one.
+// Ugh! This is still a separate propagation mechanism from Statement::propagateTo().
 Exp* ExpPropagator::postVisit(RefExp* e) {
 	// No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
 	// have been renamed, and we never would get here
@@ -684,6 +719,7 @@ Exp* ExpPropagator::postVisit(RefExp* e) {
 		bool ch;
 		res = e->searchReplaceAll(new RefExp(lhs, def), rhs->clone(), ch);
 		if (ch) {
+			change = true;						// Record this change
 			unchanged &= ~mask;					// Been changed now (so simplify parent)
 			if (res->isSubscript())
 				res = postVisit((RefExp*)res);	// Recursively propagate more if possible
@@ -818,3 +854,4 @@ bool BareMemofFinder::visit(RefExp* e, bool& override) {
 	override = true;		// Don't look inside the refexp
 	return true;			// But keep searching
 }
+

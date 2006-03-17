@@ -236,10 +236,35 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 	// Exp* regSp = Location::regOf(sp);
 	int propMaxDepth = Boomerang::get()->propMaxDepth;
 	// Repeat substituting into this statement while there is a reference component in it
+	if (EXPERIMENTAL) {
+		do {
+			LocationSet exps;
+			addUsedLocs(exps, true, true);	// First true to also add uses from collectors. For example, want to
+											// propagate into the reaching definitions of calls. Second true is to only
+											// look inside m[...]. These must be propagated into, regardless of -l
+			LocationSet::iterator ll;
+			change = false;
+			for (ll = exps.begin(); ll != exps.end(); ll++) {
+				Exp* e = *ll;
+				if (!canPropagateToExp(e))
+					continue;
+				Assign* def = (Assign*)((RefExp*)e)->getDef();
+				Exp* rhs = def->getRight();
+				if (rhs->containsBareMemof())
+					// Must never propagate unsubscripted memofs. You could be propagating past a definition, thereby
+					// invalidating the IR
+					continue;
+				change |= doPropagateTo(e, def, convert);
+			}
+		} while (change && ++changes < 10);
+	}
+
+	// Now propagate the rest, but this time subject to -l propagation limiting
 	do {
 		LocationSet exps;
 		addUsedLocs(exps, true);		// True to also add uses from collectors. For example, want to propagate into
-										// the reaching definitions of calls
+										// the reaching definitions of calls. Third parameter defaults to false, to
+										// find all locations, not just those inside m[...]
 		LocationSet::iterator ll;
 		change = false;
 		// Example: m[r24{10}] := r25{20} + m[r26{30}]
@@ -255,6 +280,21 @@ bool Statement::propagateTo(bool& convert, std::map<Exp*, int, lessExpStar>* des
 				// invalidating the IR
 				continue;
 			Exp* lhs = def->getLeft();
+
+			if (EXPERIMENTAL) {
+				// This is the old "don't propagate x=f(x)" heuristic. Hopefully it will work better now that we always
+				// propagate into memofs etc. However, it might need a "and we're inside the right kind of loop"
+				// condition
+				LocationSet used;
+				def->addUsedLocs(used);
+				RefExp left(def->getLeft(), (Statement*)-1);
+				RefExp *right = dynamic_cast<RefExp*>(def->getRight());
+				// Beware of x := x{something else} (do want to do copy propagation)
+				if (used.exists(&left) && !(right && *right->getSubExp1() == *left.getSubExp1()))
+					// We have something like eax = eax + 1
+					continue;
+			}
+
 			// Check if the -l flag (propMaxDepth) prevents this propagation
 			if (destCounts && !lhs->isFlags()) {			// Always propagate to %flags
 				std::map<Exp*, int, lessExpStar>::iterator ff = destCounts->find(e);
@@ -3577,28 +3617,35 @@ bool CallStatement::accept(StmtExpVisitor* v) {
 	StatementList::iterator it;
 	for (it = arguments.begin(); ret && it != arguments.end(); it++)
 		ret = (*it)->accept(v);
-#if 0		// Do we want to accept changes to the returns? Not sure now...
+	// FIXME: why aren't defines counted?
+#if 0		// Do we want to accept visits to the defines? Not sure now...
 	std::vector<ReturnInfo>::iterator rr;
 	for (rr = defines.begin(); ret && rr != defines.end(); rr++)
 		if (rr->e)			// Can be NULL now to line up with other returns
 			ret = rr->e->accept(v->ev);
 #endif
+	// FIXME: should be count in the collectors?
 	return ret;
 }
 
 bool ReturnStatement::accept(StmtExpVisitor* v) {
 	bool override;
+	ReturnStatement::iterator rr;
 	if (!v->visit(this, override))
 		return false;
 	if (override) return true;
-	DefCollector::iterator dd;
-	for (dd = col.begin(); dd != col.end(); ++dd)
-		if (!(*dd)->accept(v))
-			return false;
-	ReturnStatement::iterator rr;
-	for (rr = modifieds.begin(); rr != modifieds.end(); ++rr)
-		if (!(*rr)->accept(v))
-			return false;
+	if (!v->isIgnoreCol()) {
+		DefCollector::iterator dd;
+		for (dd = col.begin(); dd != col.end(); ++dd)
+			if (!(*dd)->accept(v))
+				return false;
+		// EXPERIMENTAL: for now, count the modifieds as if they are a collector (so most, if not all of the time,
+		// ignore them). This is so that we can detect better when a definition is used only once, and therefore
+		// propagate anything to it
+		for (rr = modifieds.begin(); rr != modifieds.end(); ++rr)
+			if (!(*rr)->accept(v))
+				return false;
+	}
 	for (rr = returns.begin(); rr != returns.end(); ++rr)
 		if (!(*rr)->accept(v))
 			return false;
@@ -3858,8 +3905,8 @@ void Statement::bypass() {
 
 // Find the locations used by expressions in this Statement.
 // Use the StmtExpVisitor and UsedLocsFinder visitor classes
-void Statement::addUsedLocs(LocationSet& used, bool cc) {
-	UsedLocsFinder ulf(used);
+void Statement::addUsedLocs(LocationSet& used, bool cc, bool memOnly /*= false */) {
+	UsedLocsFinder ulf(used, memOnly);
 	UsedLocsVisitor ulv(&ulf, cc);
 	accept(&ulv);
 }
@@ -4596,8 +4643,25 @@ void CallStatement::updateArguments() {
 			if filterParams(lhs) continue
 			insert as into arguments, considering sig->argumentCompare
 	*/
+	// Note that if propagations are limited, arguments and collected reaching definitions can be in terms of phi
+	// statements that have since been translated to assignments. So propagate through them now
+	// FIXME: reconsider! There are problems (e.g. with test/pentium/fromSSA2, test/pentium/fbranch) if you propagate
+	// to the expressions in the arguments (e.g. m[esp{phi1}-20]) but don't propagate into ordinary statements that
+	// define the actual argument. For example, you might have m[esp{-}-56] in the call, but the actual definition of
+	// the printf argument is still m[esp{phi1} -20] = "%d".
+	if (EXPERIMENTAL) {
+		bool convert;
+		propagateTo(convert);
+	}
 	StatementList oldArguments(arguments);
 	arguments.clear();
+	if (EXPERIMENTAL) {
+	// I don't really know why this is needed, but I was seeing r28 := ((((((r28{-} - 4) - 4) - 4) - 8) - 4) - 4) - 4:
+	DefCollector::iterator dd;
+	for (dd = defCol.begin(); dd != defCol.end(); ++dd)
+		(*dd)->simplify();
+	}
+
 	Signature* sig = proc->getSignature();
 	// Ensure everything in the callee's signature (if this is a library call), or the callee parameters (if available),
 	// or the def collector if not,  exists in oldArguments

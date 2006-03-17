@@ -257,6 +257,7 @@ virtual void		doSearchChildren(Exp* search, std::list<Exp**>& li, bool once);
 
 		/// Propagate all possible assignments to components of this expression.
 		Exp*		propagateAll();
+		Exp*		propagateAllRpt(bool& changed);		// As above, but keep propagating until no change
 
 		//	//	//	//	//	//	//
 		//	  Sub expressions	//
@@ -304,8 +305,8 @@ virtual Exp*		simplifyConstraint() {return this;}
 		// Kill any zero fill, sign extend, or truncates
 		Exp*		killFill();
 
-		// Do the work of finding used locations
-		void		addUsedLocs(LocationSet& used);
+		// Do the work of finding used locations. If memOnly set, only look inside m[...]
+		void		addUsedLocs(LocationSet& used, bool memOnly = false);
 
 		Exp 		*removeSubscripts(bool& allZero);
 

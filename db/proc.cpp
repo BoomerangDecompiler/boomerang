@@ -4634,8 +4634,15 @@ void UserProc::fixCallAndPhiRefs() {
 			first = first->accept(&cb);
 			if (cb.isTopChanged())
 				first = first->simplify();
-			first = first->propagateAll();				// Propagate everything
-			if (cb.isMod()) {							// Modified?
+#if 0
+			bool ch;
+			first = first->propagateAllRpt(ch);			// Propagate everything repeatedly
+			if (cb.isMod() || ch) {						// Modified? }
+#else
+			first = first->propagateAll();				// Propagate everything repeatedly
+			if (cb.isMod()) {						// Modified? 
+#endif
+			
 				// if first is of the form lhs{x}
 				if (first->isSubscript() && *((RefExp*)first)->getSubExp1() == *lhs)
 					// replace first with x
@@ -4649,8 +4656,14 @@ void UserProc::fixCallAndPhiRefs() {
 				current = current->accept(&cb2);
 				if (cb2.isTopChanged())
 					current = current->simplify();
+#if 0
+				bool ch;
+				current = current->propagateAllRpt(ch);
+				 if (cb2.isMod() || ch)					// Modified?
+#else
 				current = current->propagateAll();
-				if (cb2.isMod())					// Modified?
+				 if (cb2.isMod()	)					// Modified?
+#endif
 					// if current is of the form lhs{x}
 					if (current->isSubscript() && *((RefExp*)current)->getSubExp1() == *lhs)
 						// replace current with x
@@ -5294,6 +5307,7 @@ void UserProc::setImplicitRef(Statement* s, Exp* a, Type* ty) {
 								break;
 							}
 						}
+						if (!searchEarlierRtls) break;
 					}
 				}
 				if (found) {

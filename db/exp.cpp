@@ -3890,8 +3890,9 @@ char* Exp::getAnyStrConst() {
 }
 
 // Find the locations used by this expression. Use the UsedLocsFinder visitor class
-void Exp::addUsedLocs(LocationSet& used) {
-	UsedLocsFinder ulf(used);
+// If memOnly is true, only look inside m[...]
+void Exp::addUsedLocs(LocationSet& used, bool memOnly) {
+	UsedLocsFinder ulf(used, memOnly);
 	accept(&ulf);
 }
 
@@ -3951,6 +3952,22 @@ int Exp::getComplexityDepth(UserProc* proc) {
 Exp* Exp::propagateAll() {
 	ExpPropagator ep;
 	return accept(&ep);
+}
+
+// Propagate all possible statements to this expression, and repeat until there is no further change
+Exp* Exp::propagateAllRpt(bool& changed) {
+	ExpPropagator ep;
+	changed = false;
+	Exp* ret = this;
+	while (true) {
+		ep.clearChanged();			// Want to know if changed this *last* accept()
+		ret = ret->accept(&ep);
+		if (ep.isChanged())
+			changed = true;
+		else
+			break;
+	}
+	return ret;
 }
 
 // Return true for non-mem-ofs, or mem-ofs that have primitive address expressions

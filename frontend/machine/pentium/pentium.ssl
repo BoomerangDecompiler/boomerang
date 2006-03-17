@@ -680,38 +680,52 @@ CWD
 CDQ    
             *32* %edx := [%eax < 0?-1:0];
 
+# Note that decrement doesn't set the carry flag, so none of the carry related compares, which need SUBFLAGS, should
+# ever be needed. If the carry flag IS used, then it will depend on earlier SUBFLAGS, and Boomerang won't handle that
+# yet. Use LOGICALFLAGS below to help reduce the problem of etraneous variables caused by reference to the operands of
+# the decrement, since these will cause liveness overlaps.
 OP4 := { "-", "+" };
 DEC_INC := { "DEC", "INC" };
 
 DEC_INC[IDX].EB modrm 
             *8* tmpb := modrm{8}
             *8* modrm := modrm{8} OP4[IDX] 1;
-DEC.EB   modrm SUBFLAGS8(tmpb, 1, modrm{8});
-INC.EB   modrm ADDFLAGS8(tmpb, 1, modrm{8});
+#DEC.EB   modrm SUBFLAGS8(tmpb, 1, modrm{8});
+#INC.EB   modrm ADDFLAGS8(tmpb, 1, modrm{8});
+DEC.EB   modrm LOGICALFLAGS8(modrm{8});
+INC.EB   modrm LOGICALFLAGS8(modrm{8});
 
 DEC_INC[IDX].EVOW modrm 
             *16* tmph := modrm{16}
             *16* modrm := modrm{16} OP4[IDX] 1;
-DEC.EVOW   modrm SUBFLAGS16(tmph, 1, modrm{16});
-INC.EVOW   modrm ADDFLAGS16(tmph, 1, modrm{16});
+#DEC.EVOW   modrm SUBFLAGS16(tmph, 1, modrm{16});
+#INC.EVOW   modrm ADDFLAGS16(tmph, 1, modrm{16});
+DEC.EVOW   modrm LOGICALFLAGS16(modrm{16});
+INC.EVOW   modrm LOGICALFLAGS16(modrm{16});
 
 DEC_INC[IDX].EVOD modrm 
             *32* tmp1 := modrm
             *32* modrm := modrm OP4[IDX] 1;
-DEC.EVOD   modrm SUBFLAGS32(tmp1, 1, modrm);
-INC.EVOD   modrm ADDFLAGS32(tmp1, 1, modrm);
+#DEC.EVOD   modrm SUBFLAGS32(tmp1, 1, modrm);
+#INC.EVOD   modrm ADDFLAGS32(tmp1, 1, modrm);
+DEC.EVOD   modrm LOGICALFLAGS32(modrm);
+INC.EVOD   modrm LOGICALFLAGS32(modrm);
 
 DEC_INC[IDX].OW reg16 
             *16* tmph := reg16
             *16* reg16 := reg16 OP4[IDX] 1;
-DEC.OW   reg16 SUBFLAGS16(tmph, 1, reg16);
-INC.OW   reg16 ADDFLAGS16(tmph, 1, reg16);
+#DEC.OW   reg16 SUBFLAGS16(tmph, 1, reg16);
+#INC.OW   reg16 ADDFLAGS16(tmph, 1, reg16);
+DEC.OW   reg16 LOGICALFLAGS16(tmph, 1, reg16);
+INC.OW   reg16 LOGICALFLAGS16(tmph, 1, reg16);
 
 DEC_INC[IDX].OD reg32 
             *32* tmp1 := reg32
             *32* reg32 := reg32 OP4[IDX] 1;
-DEC.OD   reg32 SUBFLAGS32(tmp1, 1, reg32);
-INC.OD   reg32 ADDFLAGS32(tmp1, 1, reg32);
+#DEC.OD   reg32 SUBFLAGS32(tmp1, 1, reg32);
+#INC.OD   reg32 ADDFLAGS32(tmp1, 1, reg32);
+DEC.OD   reg32 LOGICALFLAGS32(reg32);
+INC.OD   reg32 LOGICALFLAGS32(reg32);
 
 DIV.AL   modrm 
             *16* tmph := %ax
