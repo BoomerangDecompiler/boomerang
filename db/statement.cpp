@@ -127,6 +127,442 @@ bool Statement::calcMayAlias(Exp *e1, Exp *e2, int size) {
 	return true;
 }
 
+RangeMap Statement::getInputRanges()
+{
+	if (!isFirstStatementInBB()) {
+		savedInputRanges = getPreviousStatementInBB()->getRanges();
+		return savedInputRanges;
+	}
+
+	assert(pbb && pbb->getNumInEdges() <= 1);
+	RangeMap input;
+	if (pbb->getNumInEdges() == 0) {
+		// setup input for start of procedure
+		input.addRange(Location::regOf(24), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(24))));
+		input.addRange(Location::regOf(25), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(25))));
+		input.addRange(Location::regOf(26), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(26))));
+		input.addRange(Location::regOf(27), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(27))));
+		input.addRange(Location::regOf(28), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(28))));
+		input.addRange(Location::regOf(29), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(29))));
+		input.addRange(Location::regOf(30), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(30))));
+		input.addRange(Location::regOf(31), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(31))));
+		input.addRange(new Terminal(opPC), Range(1, 0, 0, new Unary(opInitValueOf, new Terminal(opPC))));
+	} else {
+		PBB pred = pbb->getInEdges()[0];
+		Statement *last = pred->getLastStmt();
+		assert(last);
+		if (pred->getNumOutEdges() != 2) {
+			input = last->getRanges();
+		} else {
+			assert(pred->getNumOutEdges() == 2);
+			assert(last->isBranch());
+			input = ((BranchStatement*)last)->getRangesForOutEdgeTo(pbb);
+		}
+	}
+
+	savedInputRanges = input;
+
+	return input;
+}
+
+void Statement::updateRanges(RangeMap &output, std::list<Statement*> &execution_paths, bool notTaken)
+{
+	if (!output.isSubset(notTaken ? ((BranchStatement*)this)->getRanges2Ref() : ranges)) {
+		if (notTaken)
+			((BranchStatement*)this)->setRanges2(output);
+		else
+			ranges = output;
+		if (isLastStatementInBB()) {
+			if (pbb->getNumOutEdges()) {
+				int arc = 0;
+				if (isBranch()) {
+					if (pbb->getOutEdge(0)->getLowAddr() != ((BranchStatement*)this)->getFixedDest())
+						arc = 1;
+					if (notTaken)
+						arc ^= 1;
+				}
+				execution_paths.push_back(pbb->getOutEdge(arc)->getFirstStmt());
+			}
+		} else
+			execution_paths.push_back(getNextStatementInBB());
+	}
+}
+
+void Statement::rangeAnalysis(std::list<Statement*> &execution_paths)
+{
+	RangeMap output = getInputRanges();
+	updateRanges(output, execution_paths);
+}
+
+void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
+{
+	RangeMap output = getInputRanges();
+	Exp *a_lhs = lhs->clone();
+	if (a_lhs->isFlags()) {
+		// special hacks for flags
+		assert(rhs->isFlagCall());
+		Exp *a_rhs = rhs->clone();
+		if (a_rhs->getSubExp2()->getSubExp1()->isMemOf())
+			a_rhs->getSubExp2()->getSubExp1()->setSubExp1(
+				output.substInto(a_rhs->getSubExp2()->getSubExp1()->getSubExp1()));
+		if (!a_rhs->getSubExp2()->getSubExp2()->isTerminal() &&
+			a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->isMemOf())
+			a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->setSubExp1(
+				output.substInto(a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->getSubExp1()));
+		output.addRange(a_lhs, Range(1, 0, 0, a_rhs));		
+	} else {
+		if (a_lhs->isMemOf())
+			a_lhs->setSubExp1(output.substInto(a_lhs->getSubExp1()->clone()));
+		Exp *a_rhs = output.substInto(rhs->clone());
+		if (a_rhs->isMemOf() && a_rhs->getSubExp1()->getOper() == opInitValueOf &&
+			a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
+			((Const*)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
+			a_rhs = new Unary(opInitValueOf, new Terminal(opPC));   // nice hack
+		if (VERBOSE)
+			LOG << "a_rhs is " << a_rhs << "\n";
+		if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
+			ADDRESS c = ((Const*)a_rhs->getSubExp1())->getInt();
+			if (proc->getProg()->isDynamicLinkedProcPointer(c)) {
+				char *nam = (char*)proc->getProg()->GetDynamicProcName(c);
+				if (nam) {
+					a_rhs = new Const(nam);
+					LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
+				}
+			} else if (proc->getProg()->isReadOnly(c)) {
+				switch(type->getSize()) {
+					case 8:
+						a_rhs = new Const(proc->getProg()->readNative1(c));
+						break;
+					case 16:
+						a_rhs = new Const(proc->getProg()->readNative2(c));
+						break;
+					case 32:
+						a_rhs = new Const(proc->getProg()->readNative4(c));
+						break;
+					default:
+						LOG << "error: unhandled type size " << type->getSize() << " for reading native address\n";
+				}
+			} else
+				if (VERBOSE)
+					LOG << c << " is not dynamically linked proc pointer or in read only memory\n";
+		}
+		if ((a_rhs->getOper() == opPlus || a_rhs->getOper() == opMinus) && 
+			a_rhs->getSubExp2()->isIntConst() && output.hasRange(a_rhs->getSubExp1())) {
+			Range &r = output.getRange(a_rhs->getSubExp1());
+			int c = ((Const*)a_rhs->getSubExp2())->getInt();
+			if (a_rhs->getOper() == opPlus) {
+				output.addRange(a_lhs, Range(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() + c : NEGINFINITY, r.getUpperBound() != INFINITY ? r.getUpperBound() + c : INFINITY, r.getBase()));
+			} else {
+				output.addRange(a_lhs, Range(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() - c : NEGINFINITY, r.getUpperBound() != INFINITY ? r.getUpperBound() - c : INFINITY, r.getBase()));
+			}
+		} else {
+			if (output.hasRange(a_rhs)) {
+				output.addRange(a_lhs, output.getRange(a_rhs));
+			} else {
+				Exp *result;
+				if (a_rhs->getMemDepth() == 0 && !a_rhs->search(new Unary(opRegOf, new Terminal(opWild)), result) &&
+					!a_rhs->search(new Unary(opTemp, new Terminal(opWild)), result)) {
+					if (a_rhs->isIntConst())
+						output.addRange(a_lhs, Range(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), new Const(0)));
+					else
+						output.addRange(a_lhs, Range(1, 0, 0, a_rhs));
+				} else
+					output.addRange(a_lhs, Range());
+			}
+		}
+	}
+	if (VERBOSE)
+		LOG << "added " << a_lhs << " -> " << output.getRange(a_lhs) << "\n";
+	updateRanges(output, execution_paths);
+	if (VERBOSE)
+		LOG << this << "\n";
+}
+
+void BranchStatement::limitOutputWithCondition(RangeMap &output, Exp *e)
+{
+	assert(e);
+	if (output.hasRange(e->getSubExp1())) {
+		Range &r = output.getRange(e->getSubExp1());
+		if (e->getSubExp2()->isIntConst() && r.getBase()->isIntConst() && ((Const*)r.getBase())->getInt() == 0) {
+			int c = ((Const*)e->getSubExp2())->getInt();
+			switch(e->getOper()) {
+				case opLess:
+				case opLessUns:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() >= c ? c - 1 : r.getLowerBound(), r.getUpperBound() >= c ? c - 1 : r.getUpperBound(), r.getBase()));
+					break;
+				case opLessEq:
+				case opLessEqUns:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() > c ? c : r.getLowerBound(), r.getUpperBound() > c ? c : r.getUpperBound(), r.getBase()));
+					break;
+				case opGtr:
+				case opGtrUns:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() <= c ? c + 1 : r.getLowerBound(), r.getUpperBound() <= c ? c + 1 : r.getUpperBound(), r.getBase()));
+					break;
+				case opGtrEq:
+				case opGtrEqUns:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() < c ? c : r.getLowerBound(), r.getUpperBound() < c ? c : r.getUpperBound(), r.getBase()));
+					break;
+				case opEquals:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), c, c, r.getBase()));
+					break;
+				case opNotEqual:
+					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() == c ? c + 1 : r.getLowerBound(), r.getUpperBound() == c ? c - 1 : r.getUpperBound(), r.getBase()));
+					break;
+			}
+		}
+	}
+}
+
+void BranchStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
+{
+	RangeMap output = getInputRanges();
+
+	Exp *e = NULL;
+	// try to hack up a useful expression for this branch
+	OPER op = pCond->getOper();
+	if (op == opLess || op == opLessEq || op == opGtr || op == opGtrEq ||
+		op == opLessUns || op == opLessEqUns || op == opGtrUns || op == opGtrEqUns ||
+		op == opEquals || op == opNotEqual) {
+		if (pCond->getSubExp1()->isFlags() && output.hasRange(pCond->getSubExp1())) {
+			Range &r = output.getRange(pCond->getSubExp1());
+			if (r.getBase()->isFlagCall() && 
+				r.getBase()->getSubExp2()->getOper() == opList &&
+				r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList) {
+				e = new Binary(op, r.getBase()->getSubExp2()->getSubExp1()->clone(), r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
+				if (VERBOSE)
+					LOG << "calculated condition " << e << "\n";
+			}
+		}
+	}
+
+	if (e)
+		limitOutputWithCondition(output, e);
+	updateRanges(output, execution_paths);
+	output = getInputRanges();
+	if (e)
+		limitOutputWithCondition(output, (new Unary(opNot, e))->simplify());
+	updateRanges(output, execution_paths, true);
+
+	if (VERBOSE)
+		LOG << this << "\n";
+}
+
+void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
+{
+	RangeMap input;
+	LOG << "unioning {\n";
+	for (int i = 0; i < pbb->getNumInEdges(); i++) {
+		Statement *last = pbb->getInEdges()[i]->getLastStmt();
+		LOG << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+		if (last->isBranch()) {
+			input.unionwith(((BranchStatement*)last)->getRangesForOutEdgeTo(pbb));
+		} else {
+			if (last->isCall()) {
+				Proc *d = ((CallStatement*)last)->getDestProc();
+				if (d && !d->isLib() && ((UserProc*)d)->getCFG()->findRetNode() == NULL) {
+					LOG << "ignoring ranges from call to proc with no ret node\n";
+				} else
+					input.unionwith(last->getRanges());
+			} else
+				input.unionwith(last->getRanges());
+		}
+	}
+	LOG << "}\n";
+
+	if (!input.isSubset(ranges)) {
+		RangeMap output = input;
+
+		if (output.hasRange(Location::regOf(28))) {
+			Range &r = output.getRange(Location::regOf(28));
+			if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != NEGINFINITY) {
+				LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
+				proc->printToLog();
+				assert(false);
+			}
+		}
+
+		if (isLoopJunction()) {
+			output = ranges;
+			output.widenwith(input);
+		}
+
+		updateRanges(output, execution_paths);
+	}
+
+	if (VERBOSE)
+		LOG << this << "\n";
+}
+
+void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
+{
+	RangeMap output = getInputRanges();
+
+	if (this->procDest == NULL) {
+		// note this assumes the call is only to one proc.. could be bad.
+		Exp *d = output.substInto(getDest()->clone());
+		if (d->isIntConst() || d->isStrConst()) {
+			if (d->isIntConst()) {
+				ADDRESS dest = ((Const*)d)->getInt();
+				procDest = proc->getProg()->setNewProc(dest);
+			} else {
+				procDest = proc->getProg()->getLibraryProc(((Const*)d)->getStr());
+			}
+			if (procDest) {
+				Signature *sig = procDest->getSignature();
+				pDest = d;
+				arguments.clear();
+				for (unsigned i = 0; i < sig->getNumParams(); i++) {
+					Exp* a = sig->getParamExp(i);
+					Assign* as = new Assign(new VoidType(), a->clone(), a->clone());
+					as->setProc(proc);
+					as->setBB(pbb);
+					arguments.append(as);
+				}
+				signature = procDest->getSignature()->clone();
+				m_isComputed = false;
+				proc->undoComputedBB(this);
+				proc->addCallee(procDest);
+				LOG << "replaced indirect call with call to " << procDest->getName() << "\n";
+			}
+		}
+	}
+
+	if (output.hasRange(Location::regOf(28))) {
+		Range &r = output.getRange(Location::regOf(28));
+		int c = 4;
+		if (procDest == NULL) {
+			LOG << "using push count hack to guess number of params\n";
+			Statement *prev = this->getPreviousStatementInBB();
+			while(prev) {
+				if (prev->isAssign() && ((Assign*)prev)->getLeft()->isMemOf() &&
+					((Assign*)prev)->getLeft()->getSubExp1()->isRegOfK() &&
+					((Const*)((Assign*)prev)->getLeft()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+					((Assign*)prev)->getRight()->getOper() != opPC) {
+					c += 4;
+				}
+				prev = prev->getPreviousStatementInBB();
+			}
+		} else if (procDest->getSignature()->getConvention() == CONV_PASCAL)
+			c += procDest->getSignature()->getNumParams() * 4;
+		else if (!strncmp(procDest->getName(), "__imp_", 6)) {
+			Statement *first = ((UserProc*)procDest)->getCFG()->getEntryBB()->getFirstStmt();
+			assert(first && first->isCall());
+			Proc *d = ((CallStatement*)first)->getDestProc();
+			if (d->getSignature()->getConvention() == CONV_PASCAL)
+				c += d->getSignature()->getNumParams() * 4;				
+		} else if (!procDest->isLib()) {
+			UserProc *p = (UserProc*)procDest;
+			LOG << "== checking for number of bytes popped ==\n";
+			p->printToLog();
+			LOG << "== end it ==\n";
+			PBB retbb = p->getCFG()->findRetNode();
+			if (retbb) {
+				Statement *last = retbb->getLastStmt();
+				assert(last);
+				if (last->isReturn()) {
+					last->setBB(retbb);
+					last = last->getPreviousStatementInBB();
+				}
+				if (last == NULL) {
+					// call followed by a ret, sigh
+					for (int i = 0; i < retbb->getNumInEdges(); i++) {
+						last = retbb->getInEdges()[i]->getLastStmt();
+						if (last->isCall())
+							break;
+					}
+					if (last->isCall()) {
+						Proc *d = ((CallStatement*)last)->getDestProc();
+						if (d && d->getSignature()->getConvention() == CONV_PASCAL)
+							c += d->getSignature()->getNumParams() * 4;
+					}
+					last = NULL;
+				}
+				if (last) {
+					//LOG << "checking last statement " << last << " for number of bytes popped\n";
+					assert(last->isAssign());
+					Assign *a = (Assign*)last;
+					assert(a->getLeft()->isRegOfK() && ((Const*)a->getLeft()->getSubExp1())->getInt() == 28);
+					Exp *t = a->getRight()->clone()->simplifyArith();
+					assert(t->getOper() == opPlus &&
+						t->getSubExp1()->isRegOfK() &&
+						((Const*)t->getSubExp1()->getSubExp1())->getInt() == 28);
+					assert(t->getSubExp2()->isIntConst());
+					c = ((Const*)t->getSubExp2())->getInt();
+				}
+			}
+		}
+		output.addRange(Location::regOf(28), Range(r.getStride(), r.getLowerBound() == NEGINFINITY ? NEGINFINITY : r.getLowerBound() + c, r.getUpperBound() == INFINITY ? INFINITY : r.getUpperBound() + c, r.getBase()));
+	}
+	updateRanges(output, execution_paths);
+}
+
+bool JunctionStatement::isLoopJunction()
+{
+	for (int i = 0; i < pbb->getNumInEdges(); i++) 
+		if (pbb->isBackEdge(i))
+			return true;
+	return false;
+}
+
+RangeMap &BranchStatement::getRangesForOutEdgeTo(PBB out)
+{
+	assert(this->getFixedDest() != NO_ADDRESS);
+	if (out->getLowAddr() == this->getFixedDest())
+		return ranges;
+	return ranges2;
+}
+
+bool Statement::isFirstStatementInBB()
+{
+	assert(pbb);
+	assert(pbb->getRTLs());
+	assert(pbb->getRTLs()->size());
+	assert(pbb->getRTLs()->front());
+	assert(pbb->getRTLs()->front()->getList().size());
+	return this == pbb->getRTLs()->front()->getList().front();
+}
+
+bool Statement::isLastStatementInBB()
+{
+	assert(pbb);
+	return this == pbb->getLastStmt();
+}
+
+Statement*	Statement::getPreviousStatementInBB()
+{
+	assert(pbb);
+	std::list<RTL*> *rtls = pbb->getRTLs();
+	assert(rtls);
+	Statement *previous = NULL;
+	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
+		RTL *rtl = *rit;
+		for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+			if (*it == this)
+				return previous;
+			previous = *it;
+		}
+	}
+	return NULL;
+}
+
+Statement *Statement::getNextStatementInBB()
+{
+	assert(pbb);
+	std::list<RTL*> *rtls = pbb->getRTLs();
+	assert(rtls);
+	bool wantNext = false;
+	for (std::list<RTL*>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
+		RTL *rtl = *rit;
+		for (RTL::iterator it = rtl->getList().begin(); it != rtl->getList().end(); it++) {
+			if (wantNext)
+				return *it;
+			if (*it == this)
+				wantNext = true;
+		}
+	}
+	return NULL;
+}
+
 /*==============================================================================
  * FUNCTION:		operator<<
  * OVERVIEW:		Output operator for Statement*
@@ -2038,7 +2474,7 @@ void CallStatement::fromSSAform(igraph& ig) {
 
 
 // Processes each argument of a CallStatement, and the RHS of an Assign. Ad-hoc type analysis only.
-Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc) {
+Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc, ADDRESS stmt) {
 	if (t == NULL) return e;
 	NamedType *nt = NULL;
 	if (t->isNamed()) {
@@ -2074,23 +2510,26 @@ Exp *processConstant(Exp *e, Type *t, Prog *prog, UserProc* proc) {
 			}
 			if (points_to->resolvesToFunc()) {
 				ADDRESS a = ((Const*)e)->getAddr();
-				if (VERBOSE)
+				if (VERBOSE || 1)
 					LOG << "found function pointer with constant value " << "of type " << pt->getCtype() 
-						<< ".  Decoding address " << a << "\n";
-				if (!Boomerang::get()->noDecodeChildren)
-					prog->decodeEntryPoint(a);
-				Proc *p = prog->findProc(a);
-				if (p) {
-					Signature *sig = points_to->asFunc()->getSignature()->clone();
-					if (sig->getName() == NULL ||
-						strlen(sig->getName()) == 0 || 
-						!strcmp(sig->getName(), "<ANON>") ||
-						prog->findProc(sig->getName()) != NULL)
-						sig->setName(p->getName());
-					else
-						p->setName(sig->getName());
-					p->setSignature(sig);
-					e = Location::global(p->getName(), proc);
+						<< " in statement at addr " << stmt << ".  Decoding address " << a << "\n";
+				// the address can be zero, i.e., NULL, if so, ignore it.
+				if (a != 0) {
+					if (!Boomerang::get()->noDecodeChildren)
+						prog->decodeEntryPoint(a);
+					Proc *p = prog->findProc(a);
+					if (p) {
+						Signature *sig = points_to->asFunc()->getSignature()->clone();
+						if (sig->getName() == NULL ||
+							strlen(sig->getName()) == 0 || 
+							!strcmp(sig->getName(), "<ANON>") ||
+							prog->findProc(sig->getName()) != NULL)
+							sig->setName(p->getName());
+						else
+							p->setName(sig->getName());
+						p->setSignature(sig);
+						e = Location::global(p->getName(), proc);
+					}
 				}
 			}
 		} else if (t->resolvesToFloat()) {
@@ -2260,7 +2699,7 @@ bool CallStatement::processConstants(Prog *prog) {
             	e->getSubExp1()->getSubExp1()->getSubExp1()->isIntConst())
             e = e->getSubExp1()->getSubExp1()->getSubExp1();
 
-		((Assign*)*aa)->setRight(processConstant(e, t, prog, proc));
+		((Assign*)*aa)->setRight(processConstant(e, t, prog, proc, pbb->getRTLWithStatement(this)->getAddress()));
 	}
 
 	return ellipsisProcessing(prog);
@@ -3303,7 +3742,7 @@ bool Assign::processConstants(Prog* prog) {
 	else
 		LOG << "none\n";
 #endif
-	rhs = processConstant(rhs, Statement::getTypeFor(lhs, prog), prog, proc);
+	rhs = processConstant(rhs, Statement::getTypeFor(lhs, prog), prog, proc, pbb->getRTLWithStatement(this)->getAddress());
 	return false;
 }
 
@@ -4979,3 +5418,41 @@ void dumpDestCounts(std::map<Exp*, int, lessExpStar>* destCounts) {
 		std::cerr << std::setw(4) << std::dec << it->second << " " << it->first << "\n";
 	}
 }
+
+bool JunctionStatement::accept(StmtVisitor* visitor)
+{
+	return true;
+}
+
+bool JunctionStatement::accept(StmtExpVisitor* visitor)
+{
+	return true;
+}
+
+bool JunctionStatement::accept(StmtModifier* visitor)
+{
+	return true;
+}
+
+bool JunctionStatement::accept(StmtPartModifier* visitor)
+{
+	return true;
+}
+
+void JunctionStatement::print(std::ostream &os)
+{
+	os << std::setw(4) << std::dec << number << " ";
+	os << "JUNCTION ";
+	for (int i = 0; i < pbb->getNumInEdges(); i++) {
+		os << std::hex << pbb->getInEdges()[i]->getHiAddr() << std::dec;
+		if (pbb->isBackEdge(i))
+			os << "*";
+		os << " ";
+	}
+	if (isLoopJunction())
+		os << "LOOP";
+	os << "\n\t\t\tranges: ";
+	ranges.print(os);
+}
+
+

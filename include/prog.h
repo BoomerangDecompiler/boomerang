@@ -163,6 +163,9 @@ virtual				~Prog();
 		void		conTypeAnalysis();
 		void		dfaTypeAnalysis();
 
+		// Range analysis
+		void		rangeAnalysis();
+
 		// Generate dotty file
 		void		generateDotFile();
 
@@ -235,6 +238,7 @@ virtual				~Prog();
 						{ return pBF->GetSectionInfoByAddr(a);}
 		ADDRESS		getLimitTextLow() {return pBF->getLimitTextLow();}
 		ADDRESS		getLimitTextHigh() {return pBF->getLimitTextHigh();}
+		bool		isReadOnly(ADDRESS a) { return pBF->isReadOnly(a); }
 		// Read 2, 4, or 8 bytes given a native address
 		int			readNative1(ADDRESS a) {return pBF->readNative1(a);}
 		int			readNative2(ADDRESS a) {return pBF->readNative2(a);}
@@ -243,6 +247,10 @@ virtual				~Prog();
 		double		readNativeFloat8(ADDRESS a) {return pBF->readNativeFloat8(a);}
 		QWord		readNative8(ADDRESS a) {return pBF->readNative8(a);}
 		Exp	  		*readNativeAs(ADDRESS uaddr, Type *type);
+
+		bool		isDynamicLinkedProcPointer(ADDRESS dest) { return pBF->IsDynamicLinkedProcPointer(dest); }
+		const char*	GetDynamicProcName(ADDRESS uNative) { return pBF->GetDynamicProcName(uNative); }
+
 		bool		processProc(int addr, UserProc* proc)	// Decode a proc
 						{ std::ofstream os; return pFE->processProc((unsigned)addr, proc, os);}
 

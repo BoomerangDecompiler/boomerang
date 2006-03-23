@@ -64,6 +64,16 @@
 #include "managed.h"
 #include "log.h"
 
+#ifdef _WIN32
+#undef NO_ADDRESS
+#include <windows.h>
+namespace dbghelp {
+#include <dbghelp.h>
+};
+#undef NO_ADDRESS
+#define NO_ADDRESS ((ADDRESS)-1)
+#endif
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -424,8 +434,11 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 	if (pProc)
 		// Yes, we are done
 		return pProc;
+	ADDRESS other = pBF->IsJumpToAnotherAddr(uAddr);
+	if (other != NO_ADDRESS)
+		uAddr = other;
 	const char* pName = pBF->SymbolByAddress(uAddr);
-	bool bLib = pBF->IsDynamicLinkedProc(uAddr);
+	bool bLib = pBF->IsDynamicLinkedProc(uAddr) | pBF->IsStaticLinkedLibProc(uAddr);
 	if (pName == NULL) {
 		// No name. Give it a numbered name
 		std::ostringstream ost;
@@ -436,6 +449,149 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 	return pProc;
 }
 
+#ifdef _WIN32
+
+Type *typeFromDebugInfo(int index, DWORD64 ModBase);
+
+Type *makeUDT(int index, DWORD64 ModBase)
+{
+	HANDLE hProcess = GetCurrentProcess();
+	int got;
+	WCHAR *name;
+	got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
+	assert(got);
+	if (got) {
+		char nameA[1024];
+		WideCharToMultiByte(CP_ACP,0,name,-1,nameA,sizeof(nameA),0,NULL);
+		Type *ty = Type::getNamedType(nameA);
+		if (ty)
+			return new NamedType(nameA);
+		CompoundType *cty = new CompoundType();
+		DWORD count = 0;
+		got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
+		int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count*sizeof(ULONG);
+		dbghelp::TI_FINDCHILDREN_PARAMS* pFC = (dbghelp::TI_FINDCHILDREN_PARAMS*)malloc( FindChildrenSize );
+		memset( pFC, 0, FindChildrenSize );
+		pFC->Count = count;
+		got = SymGetTypeInfo( hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC );
+		for (int i = 0; i < count; i++) {
+			char fieldName[1024];
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
+			WideCharToMultiByte(CP_ACP,0,name,-1,fieldName,sizeof(fieldName),0,NULL);
+			DWORD mytype;
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
+			cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
+		}
+		Type::addNamedType(nameA, cty);
+		ty = Type::getNamedType(nameA);
+		assert(ty);
+		return new NamedType(nameA);
+	}
+	return NULL;
+}
+
+Type *typeFromDebugInfo(int index, DWORD64 ModBase)
+{
+	HANDLE hProcess = GetCurrentProcess();
+
+	int got;
+	DWORD d;
+	ULONG64 lsz = 0;
+	got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMTAG, &d);
+	assert(got);
+	got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
+	int sz = (int)lsz * 8;  // bits
+
+	switch(d) {
+		case 11:
+			return makeUDT(index, ModBase);
+		case 13:
+			// TODO: signature
+			return new FuncType();
+		case 14:
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
+			assert(got);
+			return new PointerType(typeFromDebugInfo(d, ModBase));
+		case 15:
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
+			assert(got);
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
+			assert(got);			
+			return new ArrayType(typeFromDebugInfo(d, ModBase), lsz);
+			break;
+		case 16:
+			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_BASETYPE, &d);
+			assert(got);
+			switch(d) {
+				case 1: 
+					return new VoidType();
+				case 2:
+					return new CharType();
+				case 3:
+					return new CharType();
+				case 6: // int
+				case 13: // long
+					return new IntegerType(sz, 1);
+				case 7: // unsigned int
+				case 14: // ulong
+					return new IntegerType(sz, -1);
+				case 8:
+					return new FloatType(sz);
+				case 10:
+					return new BooleanType();
+				default:
+					std::cerr << "unhandled base type " << d << "\n";
+					assert(false);
+			}
+			break;
+		default:
+			std::cerr << "unhandled symtag " << d << "\n";
+			assert(false);
+	}
+	return NULL;
+}
+
+int debugRegister(int r) {
+	switch(r) {
+		case 2:
+			return 26;  // edx
+		case 4:
+			return 25;  // ecx
+		case 8:
+			return 29;  // ebp
+	}
+	assert(false);
+	return -1;
+}
+
+BOOL CALLBACK addSymbol(
+  dbghelp::PSYMBOL_INFO pSymInfo,
+  ULONG SymbolSize,
+  PVOID UserContext
+)
+{
+	Proc *proc = (Proc*)UserContext;
+	const char *name = proc->getName();
+	if (pSymInfo->Flags & SYMFLAG_PARAMETER) {
+		Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
+		if (pSymInfo->Flags & SYMFLAG_REGREL) {
+			assert(pSymInfo->Register == 8);  // ebp
+			proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::memOf(new Binary(opPlus, Location::regOf(28), new Const((int)pSymInfo->Address - 4))));
+		} else if (pSymInfo->Flags & SYMFLAG_REGISTER) {
+			proc->getSignature()->addParameter(ty, pSymInfo->Name, Location::regOf(debugRegister(pSymInfo->Register)));
+		}
+	} else if ((pSymInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
+		UserProc *u = (UserProc*)proc;
+		assert(pSymInfo->Flags & SYMFLAG_REGREL);
+		assert(pSymInfo->Register == 8);
+		Exp *memref = Location::memOf(new Binary(opMinus, Location::regOf(28), new Const(-((int)pSymInfo->Address - 4))));
+		Type *ty = typeFromDebugInfo(pSymInfo->TypeIndex, pSymInfo->ModBase);
+		u->addLocal(ty, pSymInfo->Name, memref);
+	}
+	return TRUE;
+}
+
+#endif
 
 /*==============================================================================
  * FUNCTION:	Prog::newProc
@@ -453,6 +609,48 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 		pProc = new LibProc(this, sname, uNative);
 	else
 		pProc = new UserProc(this, sname, uNative);
+
+#ifdef _WIN32
+	if (isWin32()) {
+		// use debugging information
+		HANDLE hProcess = GetCurrentProcess();
+		dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+		sym->SizeOfStruct = sizeof(*sym);
+		sym->MaxNameLen = 1000;
+		sym->Name[0] = 0;
+		BOOL got = dbghelp::SymFromAddr(hProcess, uNative, 0, sym);
+		if (got && *sym->Name) {
+			DWORD d;
+			// get a calling convention
+			got = dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
+			if (got) {
+				std::cout << "calling convention: " << d << "\n";
+				// TODO: use it
+			} else {
+				// assume we're stdc calling convention, remove r28, r24 returns
+				pProc->setSignature(Signature::instantiate(PLAT_PENTIUM, CONV_C, sname.c_str()));
+			}
+
+			// get a return type
+			got = dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &d);
+			assert(got);
+			Type *rtype = typeFromDebugInfo(d, sym->ModBase);
+			if (!rtype->isVoid()) {
+				pProc->getSignature()->addReturn(rtype, Location::regOf(24));
+			}
+
+			// find params and locals
+			dbghelp::IMAGEHLP_STACK_FRAME stack;
+			stack.InstructionOffset = uNative;
+			dbghelp::SymSetContext(hProcess, &stack, 0);
+			dbghelp::SymEnumSymbols(hProcess, 0, NULL, addSymbol, pProc);
+
+			LOG << "final signature: ";
+			pProc->getSignature()->printToLog();
+			LOG << "\n";
+		}
+	}
+#endif
 	m_procs.push_back(pProc);		// Append this to list of procs
 	m_procLabels[uNative] = pProc;
 	// alert the watchers of a new proc
@@ -690,6 +888,18 @@ ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
 }
 
 Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
+#ifdef _WIN32
+	HANDLE hProcess = GetCurrentProcess();
+	dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+	sym->SizeOfStruct = sizeof(*sym);
+	sym->MaxNameLen = 1000;
+	sym->Name[0] = 0;
+	BOOL got = dbghelp::SymFromAddr(hProcess, u, 0, sym);
+	if (got && *sym->Name && sym->TypeIndex) {
+		assert(!strcmp(nam, sym->Name));
+		return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
+	}
+#endif
 	int sz = pBF->GetSizeByName(nam);
 	if (sz == 0) {
 		// Check if it might be a string
@@ -1286,6 +1496,17 @@ void Prog::globalTypeAnalysis() {
 		LOG << "### end type analysis ###\n";
 }
 
+void Prog::rangeAnalysis() 
+{
+	std::list<Proc*>::iterator pp;
+	for (pp = m_procs.begin(); pp != m_procs.end(); pp++) {
+		UserProc* proc = (UserProc*)(*pp);
+		if (proc->isLib()) continue;
+		if (!proc->isDecoded()) continue;
+		proc->rangeAnalysis();
+		proc->logSuspectMemoryDefs();
+	}	
+}
 
 void Prog::printCallGraph() {
 	std::string fname1 = Boomerang::get()->getOutputPath() + "callgraph.out";
@@ -1504,6 +1725,12 @@ Exp* Global::getInitialValue(Prog* prog) {
 			static_cast<ArrayType*>(type)->setLength(no_of_elements);
 		}
 		e = new Terminal(opNil);
+/*		for (int i = (int)type->asArray()->getLength() - 1; i >= 0; --i) {
+			Exp *as = prog->readNativeAs(uaddr + i * baseType->getSize()/8, baseType);
+			if (as == NULL)
+				break;
+			e = new Binary(opList, as, e);
+		} */
 		for (int i = no_of_elements-1; i >= 0; --i)
 			e = new Binary(opList, prog->readNativeAs(uaddr + i * elem_size, baseType), e);
 		// Is it really sane to dump the *whole* array to the log?

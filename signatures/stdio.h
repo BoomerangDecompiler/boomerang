@@ -42,3 +42,8 @@ size_t write(int fd, const void *buf, size_t count);
 
 int rename(const char *oldpath, const char *newpath);
 int remove(const char *pathname);
+
+
+// on windows
+
+int _write(int fd, char buf[], int size);

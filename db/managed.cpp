@@ -25,6 +25,8 @@
 #include "managed.h"
 #include "statement.h"
 #include "exp.h"
+#include "log.h"
+#include "boomerang.h"
 
 extern char debug_buffer[];		// For prints functions
 
@@ -758,3 +760,219 @@ void LocationSet::diff(LocationSet* o) {
 	if (printed1not2)
 		std::cerr << "\n";
 }
+Range::Range() : stride(1), lowerBound(NEGINFINITY), upperBound(INFINITY)
+{
+	base = new Const(0);
+}
+
+Range::Range(int stride, int lowerBound, int upperBound, Exp *base) : 
+		stride(stride), lowerBound(lowerBound), upperBound(upperBound), base(base) {
+	if (lowerBound == upperBound && lowerBound == 0 && (base->getOper() == opMinus || base->getOper() == opPlus) &&
+		base->getSubExp2()->isIntConst()) {
+		this->lowerBound = ((Const*)base->getSubExp2())->getInt();
+		if (base->getOper() == opMinus)
+			this->lowerBound = -this->lowerBound;
+		this->upperBound = this->lowerBound;
+		this->base = base->getSubExp1();
+	} else {
+		if (base == NULL)
+			base = new Const(0);
+		if (lowerBound > upperBound)
+			this->upperBound = lowerBound;
+		if (upperBound < lowerBound)
+			this->lowerBound = upperBound;
+	}
+}
+
+void Range::print(std::ostream &os)
+{
+	assert(lowerBound <= upperBound);
+	if (base->isIntConst() && ((Const*)base)->getInt() == 0 &&
+		lowerBound == NEGINFINITY && upperBound == INFINITY) {
+		os << "T";
+		return;
+	}
+	bool needPlus = false;
+	if (lowerBound == upperBound) {
+		if (!base->isIntConst() || ((Const*)base)->getInt() != 0) {
+			if (lowerBound != 0) {
+				os << lowerBound;
+				needPlus = true;
+			}
+		} else {
+			needPlus = true;
+			os << lowerBound;
+		}
+	} else {
+		if (stride != 1)
+			os << stride;
+		os << "[";
+		if (lowerBound == NEGINFINITY)
+			os << "-inf";
+		else
+			os << lowerBound;
+		os << ", ";
+		if (upperBound == INFINITY)
+			os << "inf";
+		else
+			os << upperBound;
+		os << "]";
+		needPlus = true;
+	}
+	if (!base->isIntConst() || ((Const*)base)->getInt() != 0) {
+		if (needPlus)
+			os << " + ";
+		base->print(os);
+	}
+}
+
+void Range::unionWith(Range &r)
+{
+	if (VERBOSE)
+		LOG << "unioning " << this << " with " << r << " got ";
+	if (base->getOper() == opMinus && r.base->getOper() == opMinus &&
+		*base->getSubExp1() == *r.base->getSubExp1() &&
+		base->getSubExp2()->isIntConst() && r.base->getSubExp2()->isIntConst()) {
+		int c1 = ((Const*)base->getSubExp2())->getInt();
+		int c2 = ((Const*)r.base->getSubExp2())->getInt();
+		if (c1 != c2) {
+			if (lowerBound == r.lowerBound && upperBound == r.upperBound &&
+				lowerBound == 0) {
+				lowerBound = std::min(-c1, -c2);
+				upperBound = std::max(-c1, -c2);
+				base = base->getSubExp1();
+				if (VERBOSE)
+					LOG << this << "\n";
+				return;
+			}
+		}
+	}
+	if (!(*base == *r.base)) {
+		stride = 1; lowerBound = NEGINFINITY; upperBound = INFINITY; base = new Const(0);
+		if (VERBOSE)
+			LOG << this << "\n";
+		return;
+	}
+	if (stride != r.stride)
+		stride = std::min(stride, r.stride);
+	if (lowerBound != r.lowerBound)
+		lowerBound = std::min(lowerBound, r.lowerBound);
+	if (upperBound != r.upperBound)
+		upperBound = std::max(upperBound, r.upperBound);
+	if (VERBOSE)
+		LOG << this << "\n";
+}
+
+void Range::widenWith(Range &r)
+{
+	if (VERBOSE)
+		LOG << "widening " << this << " with " << r << " got ";
+	if (!(*base == *r.base)) {
+		stride = 1; lowerBound = NEGINFINITY; upperBound = INFINITY; base = new Const(0);
+		if (VERBOSE)
+			LOG << this << "\n";
+		return;
+	}
+	// ignore stride for now
+	if (r.getLowerBound() < lowerBound) 
+		lowerBound = NEGINFINITY;
+	if (r.getUpperBound() > upperBound)
+		upperBound = INFINITY;
+	if (VERBOSE)
+		LOG << this << "\n";
+}
+Range &RangeMap::getRange(Exp *loc) {
+	if (ranges.find(loc) == ranges.end()) {
+		return *(new Range(1, NEGINFINITY, INFINITY, new Const(0)));
+	}
+	return ranges[loc];
+}
+
+void RangeMap::unionwith(RangeMap &other)
+{
+	for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
+		if (ranges.find((*it).first) == ranges.end()) {
+			ranges[(*it).first] = (*it).second;
+		} else {
+			ranges[(*it).first].unionWith((*it).second);
+		}
+	}
+}
+
+void RangeMap::widenwith(RangeMap &other)
+{
+	for (std::map<Exp*, Range, lessExpStar>::iterator it = other.ranges.begin(); it != other.ranges.end(); it++) {
+		if (ranges.find((*it).first) == ranges.end()) {
+			ranges[(*it).first] = (*it).second;
+		} else {
+			ranges[(*it).first].widenWith((*it).second);
+		}
+	}
+}
+
+
+void RangeMap::print(std::ostream &os)
+{
+	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+		if (it != ranges.begin())
+			os << ", ";
+		(*it).first->print(os);
+		os << " -> ";
+		(*it).second.print(os);
+	}
+}
+
+Exp *RangeMap::substInto(Exp *e)
+{
+	bool changes;
+	int count = 0;
+	do {
+		changes = false;
+		for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+			bool change = false;
+			Exp *eold = e->clone();
+			if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
+				e = e->searchReplaceAll((*it).first, (new Binary(opPlus, (*it).second.getBase(), new Const((*it).second.getLowerBound())))->simplify(), change);
+			}
+			if (change) {
+				e = e->simplify()->simplifyArith();
+				if (VERBOSE)
+					LOG << "applied " << (*it).first << " to " << eold << " to get " << e << "\n";
+				changes = true;
+			}
+		}
+		count++;
+		assert(count < 5);
+	} while(changes);
+	return e;
+}
+
+void RangeMap::killAllMemOfs()
+{
+	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+		if ((*it).first->isMemOf()) {
+			(*it).second.unionWith(Range());
+		}
+	}
+}
+
+bool Range::operator==(Range &other)
+{
+	return stride == other.stride && lowerBound == other.lowerBound && upperBound == other.upperBound && *base == *other.base;
+}
+
+// return true if this range map is a subset of the other range map
+bool RangeMap::isSubset(RangeMap &other)
+{
+	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+		if (other.ranges.find((*it).first) == other.ranges.end())
+			return false;
+		Range &r = other.ranges[(*it).first];
+		if (!((*it).second == r))
+			return false;
+	}
+	return true;
+}
+
+
+

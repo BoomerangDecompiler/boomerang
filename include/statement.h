@@ -99,7 +99,8 @@ enum STMT_KIND {
 	STMT_BRANCH,
 	STMT_GOTO,
 	STMT_CASE,					// Represent  a switch statement
-	STMT_IMPREF
+	STMT_IMPREF,
+	STMT_JUNCTION
 };
 
 /*==============================================================================
@@ -125,7 +126,6 @@ enum BRANCH_TYPE {
 	BRANCH_JPAR				// Jump if parity even (Intel only)
 };
 
-
 //	//	//	//	//	//	//	//	//	//	//	//	//	//
 //
 //	A b s t r a c t	  C l a s s	  S t a t e m e n t //
@@ -142,6 +142,8 @@ protected:
 		int			number;			// Statement number for printing
 		STMT_KIND	kind;			// Statement kind (e.g. STMT_BRANCH)
 		Statement	*parent;		// The statement that contains this one
+		RangeMap	ranges;			// overestimation of ranges of locations
+		RangeMap    savedInputRanges;  // saved overestimation of ranges of locations
 
 		unsigned int lexBegin, lexEnd;
 
@@ -167,6 +169,9 @@ virtual				~Statement() { }
 
 		void		setParent(Statement* par) {parent = par;}
 		Statement*	getParent() {return parent;}
+
+		RangeMap &getRanges() { return ranges; }
+		void	  clearRanges() { ranges.clear(); }
 
 virtual Statement*	clone() = 0;			   // Make copy of self
 
@@ -206,6 +211,9 @@ virtual	bool		isTyping() {return false;}		// Return true if a TypingStatement
 
 virtual bool		isGoto() { return kind == STMT_GOTO; }
 virtual bool		isBranch() { return kind == STMT_BRANCH; }
+
+		// true if this statement is a junction
+		bool		isJunction() { return kind == STMT_JUNCTION; }
 
 		// true if this statement is a call
 		bool		isCall() { return kind == STMT_CALL; }
@@ -284,6 +292,20 @@ virtual void		genConstraints(LocationSet& cons) {}
 		// Data flow based type analysis
 virtual	void		dfaTypeAnalysis(bool& ch) {}			// Use the type information in this Statement
 		Type*		meetWithFor(Type* ty, Exp* e, bool& ch);// Meet the type associated with e with ty
+
+		// Range analysis
+protected:
+		void		updateRanges(RangeMap &output, std::list<Statement*> &execution_paths, bool notTaken = false);
+public:
+		RangeMap    &getSavedInputRanges() { return savedInputRanges; }
+		RangeMap	getInputRanges();
+virtual void		rangeAnalysis(std::list<Statement*> &execution_paths);
+
+		// helper functions
+		bool		isFirstStatementInBB();
+		bool		isLastStatementInBB();
+		Statement*	getNextStatementInBB();
+		Statement*	getPreviousStatementInBB();
 
 		// Replace registers with locals (FIXME: use visitor?)
 virtual	void		regReplace(UserProc* proc) = 0;
@@ -527,6 +549,9 @@ virtual void		genConstraints(LocationSet& cons);
 
 		// Data flow based type analysis
 		void		dfaTypeAnalysis(bool& ch);
+
+		// Range analysis
+		void		rangeAnalysis(std::list<Statement*> &execution_paths);
 
 		// Replace registers with locals
 virtual	void		regReplace(UserProc* proc);
@@ -853,6 +878,49 @@ virtual	void		regReplace(UserProc* proc);
 		friend class XMLProgParser;
 };		// class GotoStatement
 
+class JunctionStatement: public Statement {
+public:
+	JunctionStatement() { kind = STMT_JUNCTION; }
+
+	Statement*	clone() { return new JunctionStatement(); }
+
+	// Accept a visitor (of various kinds) to this Statement. Return true to continue visiting
+	bool		accept(StmtVisitor* visitor);
+	bool		accept(StmtExpVisitor* visitor);
+	bool		accept(StmtModifier* visitor);
+	bool		accept(StmtPartModifier* visitor);
+
+		// returns true if this statement defines anything
+	bool		isDefinition() { return false; }
+
+	bool		usesExp(Exp *e) { return false; }
+
+	void		print(std::ostream &os);
+
+	bool		processConstants(Prog *prog) { return false; }
+
+		// general search
+	bool		search(Exp *search, Exp *&result) { return false; }
+	bool		searchAll(Exp* search, std::list<Exp*>& result) { return false; }
+
+		// general search and replace. Set cc true to change collectors as well. Return true if any change
+	bool		searchAndReplace(Exp *search, Exp *replace, bool cc = false) { return false; }
+
+		// From SSA form
+	void		fromSSAform(igraph& ig) { }
+
+		// code generation
+	void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel) { }
+
+		// simpify internal expressions
+	void		simplify() { }
+
+		// Replace registers with locals (FIXME: use visitor?)
+	void		regReplace(UserProc* proc) { }
+
+	void		rangeAnalysis(std::list<Statement*> &execution_paths);
+	bool		isLoopJunction();
+};
 
 /*================================================================================
  * BranchStatement has a condition Exp in addition to the destination of the jump.
@@ -864,6 +932,7 @@ class BranchStatement: public GotoStatement {
 		// jtCond seems to be mainly needed for the Pentium weirdness.
 		// Perhaps bFloat, jtCond, and size could one day be merged into a type
 		int			size;			// Size of the operands, in bits
+		RangeMap	ranges2;		// ranges for the not taken edge
 
 public:
 					BranchStatement();
@@ -912,6 +981,13 @@ virtual void		generateCode(HLLCode *hll, BasicBlock *pbb, int indLevel);
 
 		// dataflow analysis
 virtual bool		usesExp(Exp *e);
+
+		// Range analysis
+		void		rangeAnalysis(std::list<Statement*> &execution_paths);
+		RangeMap	&getRangesForOutEdgeTo(PBB out);
+		RangeMap	&getRanges2Ref() { return ranges2; }
+		void		setRanges2(RangeMap &r) { ranges2 = r; }
+		void		limitOutputWithCondition(RangeMap &output, Exp *e);
 
 		// simplify all the uses/defs in this Statememt
 virtual void		simplify();
@@ -1083,6 +1159,8 @@ virtual bool		accept(StmtPartModifier* visitor);
 		void		clearLiveEntry();
 		void		eliminateDuplicateArgs();
 
+		// Range analysis
+		void		rangeAnalysis(std::list<Statement*> &execution_paths);
 
 virtual void		print(std::ostream& os = std::cout);
 

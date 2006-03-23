@@ -834,6 +834,12 @@ bool Cfg::joinBB(PBB pb1, PBB pb2)
 	return true;
 }
 
+void Cfg::removeBB( PBB bb)
+{
+	BB_IT bbit = std::find(m_listBB.begin(), m_listBB.end(), bb);
+	m_listBB.erase(bbit);
+}
+
 /*==============================================================================
  * FUNCTION:		Cfg::compressCfg
  * OVERVIEW:		Compress the CFG. For now, it only removes BBs that are
@@ -1684,6 +1690,31 @@ void Cfg::structure() {
 	structured = true;
 }
 
+void Cfg::addJunctionStatements()
+{
+	std::list<PBB>::iterator it;
+	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+		PBB pbb = *it;
+		if (pbb->getNumInEdges() > 1 && (pbb->getFirstStmt() == NULL || !pbb->getFirstStmt()->isJunction())) {
+			assert(pbb->getRTLs());
+			JunctionStatement *j = new JunctionStatement();
+			j->setBB(pbb);
+			pbb->getRTLs()->front()->prependStmt(j);
+		}
+	}
+}
+
+void Cfg::removeJunctionStatements()
+{
+	std::list<PBB>::iterator it;
+	for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
+		PBB pbb = *it;
+		if (pbb->getFirstStmt() && pbb->getFirstStmt()->isJunction()) {
+			assert(pbb->getRTLs());
+			pbb->getRTLs()->front()->deleteStmt(0);
+		}
+	}
+}
 void Cfg::removeUnneededLabels(HLLCode *hll) {
 	hll->RemoveUnusedLabels(Ordering.size());
 }

@@ -23,6 +23,10 @@
 #ifndef __BASIC_BLOCK_H__
 #define __BASIC_BLOCK_H__
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4290)
+#endif
+
 #include "managed.h"			// For LocationSet etc
 
 class Location;
@@ -208,6 +212,8 @@ public:
 		 * Get ptr to the list of RTLs.
 		 */
 		std::list<RTL*>* getRTLs();
+
+		RTL* getRTLWithStatement(Statement *stmt);
 
 		/*
 		 * Get the set of in edges.
@@ -406,6 +412,8 @@ static void			doAvail(StatementSet& s, PBB inEdge);
 		Statement*	getFirstStmt(rtlit& rit, StatementList::iterator& sit);
 		Statement*	getNextStmt(rtlit& rit, StatementList::iterator& sit);
 		Statement*	getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+		Statement*	getFirstStmt(); // for those of us that don't want the iterators
+		Statement*	getLastStmt(); // for those of us that don't want the iterators
 		Statement*	getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
 		RTL*		getLastRtl() {return m_pRtls->back();}
 
@@ -484,6 +492,12 @@ protected:
 						return false;
 					}
 
+public:
+		bool		isBackEdge(int inEdge) {
+			return m_DFTfirst < m_InEdges[inEdge]->m_DFTfirst && m_DFTlast > m_InEdges[inEdge]->m_DFTlast;
+		}
+
+protected:
 		// establish if this bb is an ancestor of another BB
 		bool		isAncestorOf(BasicBlock *other);
 

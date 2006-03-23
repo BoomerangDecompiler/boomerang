@@ -24,6 +24,38 @@ Log &Log::operator<<(Exp *e)
 	return *this;
 }
 
+Log &Log::operator<<(Type *ty)
+{
+	std::ostringstream st;
+	st << ty;
+	*this << st.str().c_str();
+	return *this;
+}
+
+Log &Log::operator<<(Range *r)
+{
+	std::ostringstream st;
+	r->print(st);
+	*this << st.str().c_str();
+	return *this;
+}
+
+Log &Log::operator<<(Range &r)
+{
+	std::ostringstream st;
+	r.print(st);
+	*this << st.str().c_str();
+	return *this;
+}
+
+Log &Log::operator<<(RangeMap &r)
+{
+	std::ostringstream st;
+	r.print(st);
+	*this << st.str().c_str();
+	return *this;
+}
+
 Log &Log::operator<<(RTL *r)
 {
 	std::ostringstream st;

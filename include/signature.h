@@ -20,6 +20,10 @@
 #ifndef __SIGNATURE_H_
 #define __SIGNATURE_H_
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4290)
+#endif
+
 #include "exp.h"
 #include "type.h"
 #include "sigenum.h"		// For enums platform and cc

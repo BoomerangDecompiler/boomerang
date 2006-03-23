@@ -476,6 +476,9 @@ virtual				~UserProc();
 		/// simplify the statements in this proc
 		void		simplify() { cfg->simplify(); }
 
+		// simple windows mode decompile
+		void		windowsModeDecompile();
+
 		/// Begin the decompile process at this procedure. path is a list of pointers to procedures, representing the
 		/// path from the current entry point to the current procedure in the call graph. Pass an empty set at the top
 		/// level.  indent is the indentation level; pass 0 at the top level
@@ -494,6 +497,12 @@ virtual				~UserProc();
 		void		recursionGroupAnalysis(ProcList* path, int indent);
 		/// Global type analysis (for this procedure).
 		void		typeAnalysis();
+		// Range analysis (for this procedure).
+		void		rangeAnalysis();
+		// Detect and log possible buffer overflows
+		void		logSuspectMemoryDefs();
+		// Split the set of cycle-associated procs into individual subcycles.
+		//void		findSubCycles(CycleList& path, CycleSet& cs, CycleSetSet& sset);
 		// The inductive preservation analysis.
 		bool		inductivePreservation(UserProc* topOfCycle);
 		// Mark calls involved in the recursion cycle as non childless (each child has had middleDecompile called on
@@ -576,6 +585,7 @@ typedef std::map<Statement*, int> RefCounter;
 		bool		propagateStatements(bool& convert, int pass);
 		void		propagateToCollector();
 		void		clearUses();					///< Clear the useCollectors (in this Proc, and all calls).
+		void		clearRanges();
 		//int			findMaxDepth();					///< Find max memory nesting depth.
 
 		void		toSSAform(int memDepth, StatementSet& rs);
@@ -677,6 +687,11 @@ public:
 		 * Return the next available local variable; make it the given type. Note: was returning TypedExp*.
 		 */
 		Exp*		newLocal(Type* ty);
+
+		/**
+		 * Add a new local supplying all needed information.
+		 */
+		void		addLocal(Type *ty, const char *nam, Exp *e);
 
 		/// return a local's type
 		Type		*getLocalType(const char *nam);

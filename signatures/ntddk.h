@@ -570,3 +570,37 @@ BOOLEAN
   KeCancelTimer(
     PKTIMER  Timer
     );
+
+
+LONG 
+  HalGetInterruptVector(
+    INTERFACE_TYPE  InterfaceType,
+    ULONG  BusNumber,
+    ULONG  BusInterruptLevel,
+    ULONG  BusInterruptVector,
+    PKIRQL  Irql,
+    PKAFFINITY  Affinity
+    );
+
+NTSTATUS 
+  IoConnectInterrupt(
+    PKINTERRUPT  *InterruptObject,
+    PKSERVICE_ROUTINE  ServiceRoutine,
+    PVOID  ServiceContext,
+    PKSPIN_LOCK  SpinLock,
+    ULONG  Vector,
+    KIRQL  Irql,
+    KIRQL  SynchronizeIrql,
+    KINTERRUPT_MODE    InterruptMode,
+    BOOLEAN  ShareVector,
+    KAFFINITY  ProcessorEnableMask,
+    BOOLEAN  FloatingSave
+    );
+
+NTSTATUS 
+  RtlAppendUnicodeToString(
+    PUNICODE_STRING  Destination,
+    PCWSTR  Source
+    );
+
+ULONG DbgPrint(PCHAR  Format, ...);

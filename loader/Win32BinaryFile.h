@@ -205,9 +205,13 @@ virtual float		readNativeFloat4(ADDRESS a);	// Read 4 bytes as float
 virtual double		readNativeFloat8(ADDRESS a); // Read 8 bytes as float
 
 virtual bool		IsDynamicLinkedProcPointer(ADDRESS uNative);
+virtual bool		IsStaticLinkedLibProc(ADDRESS uNative);
+virtual ADDRESS		IsJumpToAnotherAddr(ADDRESS uNative);
 virtual const char *GetDynamicProcName(ADDRESS uNative);
 
 virtual std::map<ADDRESS, std::string> &getSymbols() { return dlprocptrs; }
+
+		bool		hasDebugInfo() { return haveDebugInfo; }
 
 protected:
 virtual bool  		RealLoad(const char* sName); // Load the file; pure virtual
@@ -226,6 +230,7 @@ private:
 		// Map from address of dynamic pointers to library procedure names:
 		std::map<ADDRESS, std::string> dlprocptrs;
 		const char	*m_pFileName;
+		bool		haveDebugInfo;
 
 };
 

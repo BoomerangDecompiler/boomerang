@@ -141,9 +141,18 @@ bool BinaryFile::IsDynamicLinkedProc(ADDRESS uNative) {
 	return false;
 }
 
+bool BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative) {
+	return false;
+}
+
 bool BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
 {
 	return false;
+}
+
+ADDRESS BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
+{
+	return NO_ADDRESS;
 }
 
 const char *BinaryFile::GetDynamicProcName(ADDRESS uNative)

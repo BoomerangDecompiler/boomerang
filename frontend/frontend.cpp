@@ -621,7 +621,25 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					BB_rtls->push_back(pRtl);
 					// We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
 					pBB = pCfg->newBB(BB_rtls, COMPJUMP, 0);
-					LOG << "COMPUTED JUMP at " << uAddr << "\n";
+					LOG << "COMPUTED JUMP at " << uAddr << ", pDest = " << pDest << "\n";
+					if (Boomerang::get()->noDecompile) {
+						// try some hacks
+						if (pDest->isMemOf() && pDest->getSubExp1()->getOper() == opPlus && pDest->getSubExp1()->getSubExp2()->isIntConst()) {
+							// assume subExp2 is a jump table
+							ADDRESS jmptbl = ((Const*)pDest->getSubExp1()->getSubExp2())->getInt();
+							unsigned int i;
+							for (i = 0; ; i++) {
+								ADDRESS uDest = pBF->readNative4(jmptbl + i * 4);
+								if (pBF->getLimitTextLow() <= uDest && uDest < pBF->getLimitTextHigh()) {
+									LOG << "  guessed uDest " << uDest << "\n";
+									targetQueue.visit(pCfg, uDest, pBB);
+									pCfg->addOutEdge(pBB, uDest, true);
+								} else
+									break;
+							}
+							pBB->updateType(NWAY, i);
+						}
+					}
 					sequentialDecode = false;
 					BB_rtls = NULL;		// New RTLList for next BB
 					break;
@@ -893,7 +911,7 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 	Boomerang::get()->alert_decode(pProc, startAddr, lastAddr, nTotalBytes);
 
-	LOG << "finished processing proc " << pProc->getName() << "\n";
+	LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
 
 	return true;
 }
@@ -1193,7 +1211,13 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 		// appear in a previous RTL. It is assumed that THE return statement will have the same semantics (NOTE: may
 		// not always be valid). To avoid this assumption, we need branches to statements, not just to native addresses
 		// (RTLs).
-		pRtl->clear();
+		PBB retBB = pProc->getCFG()->findRetNode();
+		assert(retBB);
+		if (retBB->getFirstStmt()->isReturn()) {
+			// ret node has no semantics, clearly we need to keep ours
+			pRtl->deleteLastStmt();
+		} else
+			pRtl->clear();
 		pRtl->appendStmt(new GotoStatement(retAddr));
 		try {
 			pBB = pCfg->newBB(BB_rtls, ONEWAY, 1);
@@ -1202,7 +1226,7 @@ PBB FrontEnd::createReturnBlock(UserProc* pProc, std::list<RTL*>* BB_rtls, RTL* 
 			// Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
 			// instructions before the return instruction).
 			targetQueue.visit(pCfg, retAddr, pBB);
-		} catch(Cfg::BBAlreadyExistsError &e) {
+		} catch(Cfg::BBAlreadyExistsError &) {
 			if (VERBOSE)
 				LOG << "not visiting " << retAddr << " due to exception\n";
 		}

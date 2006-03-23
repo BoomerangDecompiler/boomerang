@@ -385,6 +385,19 @@ std::list<RTL*>* BasicBlock::getRTLs() {
 	return m_pRtls;
 }
 
+RTL* BasicBlock::getRTLWithStatement(Statement *stmt)
+{
+	if (m_pRtls == NULL)
+		return NULL;
+	for (std::list<RTL*>::iterator it = m_pRtls->begin(); it != m_pRtls->end(); it++) {
+		RTL *rtl = *it;
+		for (std::list<Statement*>::iterator it1 = rtl->getList().begin(); it1 != rtl->getList().end(); it1++)
+			if (*it1 == stmt)
+				return rtl;
+	}
+	return NULL;
+}
+
 /*==============================================================================
  * FUNCTION:		BasicBlock::getInEdges
  * OVERVIEW:		Get a constant reference to the vector of in edges.
@@ -674,6 +687,35 @@ Statement* BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit) {
 }
 
 Statement* BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
+	if (m_pRtls == NULL) return NULL;
+	rit = m_pRtls->rbegin();
+	while (rit != m_pRtls->rend()) {
+		RTL* rtl = *rit;
+		sit = rtl->getList().rbegin();
+		if (sit != rtl->getList().rend())
+			return *sit;
+		rit++;
+	}
+	return NULL;
+}
+
+Statement* BasicBlock::getFirstStmt() {
+	rtlit rit;
+	StatementList::iterator sit;
+	if (m_pRtls == NULL) return NULL;
+	rit = m_pRtls->begin();
+	while (rit != m_pRtls->end()) {
+		RTL* rtl = *rit;
+		sit = rtl->getList().begin();
+		if (sit != rtl->getList().end())
+			return *sit;
+		rit++;
+	}
+	return NULL;
+}
+Statement* BasicBlock::getLastStmt() {
+	rtlrit rit;
+	StatementList::reverse_iterator sit;
 	if (m_pRtls == NULL) return NULL;
 	rit = m_pRtls->rbegin();
 	while (rit != m_pRtls->rend()) {

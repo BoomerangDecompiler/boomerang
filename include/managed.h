@@ -242,4 +242,44 @@ virtual				~LocationList() {}						// virtual destructor kills warning
 };	// class LocationList
 #endif
 
+#define NEGINFINITY -2147483647
+#define INFINITY 2147483647
+
+class Range {
+protected:
+	int stride, lowerBound, upperBound;
+	Exp *base;
+
+public:
+	Range();
+	Range(int stride, int lowerBound, int upperBound, Exp *base);
+
+	Exp *getBase() { return base; }
+	int getStride() { return stride; }
+	int getLowerBound() { return lowerBound; }
+	int getUpperBound() { return upperBound; }
+	void unionWith(Range &r);
+	void widenWith(Range &r);
+	void print(std::ostream &os);
+	bool operator==(Range &other);
+};
+
+class RangeMap {
+protected:
+	std::map<Exp*, Range, lessExpStar> ranges;
+
+public:
+	RangeMap() { }
+	void addRange(Exp *loc, Range &r) { ranges[loc] = r; }
+	bool hasRange(Exp *loc) { return ranges.find(loc) != ranges.end(); }
+	Range &getRange(Exp *loc);
+	void unionwith(RangeMap &other);
+	void widenwith(RangeMap &other);
+	void print(std::ostream &os);
+	Exp *substInto(Exp *e);
+	void killAllMemOfs();
+	void clear() { ranges.clear(); }
+	bool isSubset(RangeMap &other);
+};
+
 #endif	// #ifdef __MANAGED_H__

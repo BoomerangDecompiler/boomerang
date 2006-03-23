@@ -186,8 +186,9 @@ virtual size_t	getImageSize() = 0;
 		PSectionInfo GetSectionInfoByAddr(ADDRESS uEntry) const;
 
 		// returns true if the given address is in a read only section
-		bool isReadOnly(ADDRESS uEntry) { 
-			return GetSectionInfoByAddr(uEntry)->bReadOnly;
+		bool isReadOnly(ADDRESS uEntry) {
+			PSectionInfo p = GetSectionInfoByAddr(uEntry);
+			return p && p->bReadOnly;
 		}
 virtual int			readNative1(ADDRESS a) {return 0;}
 		// Read 2 bytes from given native address a; considers endianness
@@ -244,7 +245,9 @@ virtual bool	DisplayDetails(const char* fileName, FILE* f = stdout);
 
 		// Analysis functions
 virtual bool		IsDynamicLinkedProc(ADDRESS uNative);
+virtual bool		IsStaticLinkedLibProc(ADDRESS uNative);
 virtual bool		IsDynamicLinkedProcPointer(ADDRESS uNative);
+virtual ADDRESS		IsJumpToAnotherAddr(ADDRESS uNative);
 virtual const char*	GetDynamicProcName(ADDRESS uNative);
 virtual std::list<SectionInfo*>& GetEntryPoints(const char* pEntry = "main") = 0;
 virtual ADDRESS		GetMainEntryPoint() = 0;
@@ -269,6 +272,8 @@ virtual std::map<std::string, ObjcModule> &getObjcModules() { return *new std::m
 		ADDRESS		getLimitTextHigh() { return limitTextHigh; }
 
 		int			getTextDelta() { return textDelta; }
+
+virtual bool		hasDebugInfo() { return false; }
 
 //
 //	--	--	--	--	--	--	--	--	--	--	--

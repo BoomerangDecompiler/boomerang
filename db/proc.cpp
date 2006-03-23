@@ -54,6 +54,16 @@
 #include "log.h"
 #include <iomanip>			// For std::setw etc
 
+#ifdef _WIN32
+#undef NO_ADDRESS
+#include <windows.h>
+namespace dbghelp {
+#include <dbghelp.h>
+};
+#undef NO_ADDRESS
+#define NO_ADDRESS ((ADDRESS)-1)
+#endif
+
 typedef std::map<Statement*, int> RefCounter;
 
 extern char debug_buffer[];		// Defined in basicblock.cpp, size DEBUG_BUFSIZE
@@ -884,7 +894,611 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 	remove last element (= this) from path
 	return child
  */
- 
+
+Type *typeFromDebugInfo(int index, DWORD64 ModBase);
+
+// assumes range analysis has been done
+void UserProc::windowsModeDecompile()
+{
+#ifndef _WIN32
+	std::cerr << "windows mode not implemented on non-win32 platforms\n";
+	assert(false);
+#else
+
+	if (!isDecoded()) {
+		prog->decodeEntryPoint(address);
+		rangeAnalysis();
+	}
+
+	std::cout << "decompiling " << getName() << "\n";
+
+	signature->setForced(true);
+	findFinalParameters();
+
+	// Sort by address, so printouts make sense
+	cfg->sortByAddress();
+
+	// Initialise statements
+	initStatements();
+
+	if (signature->findReturn(Location::regOf(24)) != -1 && theReturnStatement) {
+		Exp *loc = Location::regOf(24);
+		Assign* as = new Assign(loc->clone(), loc->clone());
+		as->setProc(this);
+		as->setBB(theReturnStatement->getBB());
+		theReturnStatement->addReturn(as);
+	}
+
+	if (VERBOSE) {
+		LOG << "begin windows mode decompile of " << getName() << "\n";
+		printToLog();
+	}
+
+	// let's assert that all callees of this proc are promoted
+	for (std::list<Proc*>::iterator it = calleeList.begin(); it != calleeList.end(); it++)
+		if (!(*it)->getSignature()->isPromoted()) {
+			std::cerr << "cannot decompile " << getName() << " in windows mode, callee " << (*it)->getName() << " is not promoted.\n";
+			return;
+		}
+
+	StatementList stmts;
+	StatementList::iterator it1;
+
+	// remove any calls to _RTC_*
+	getStatements(stmts);
+	std::list<Statement*> callsToRTCs;
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) 
+		if ((*it1)->isCall()) {
+			CallStatement *c = (CallStatement*)*it1;
+			if (c->getDestProc() && !strncmp(c->getDestProc()->getName(), "_RTC_", 5))
+				callsToRTCs.push_back(c);
+		}
+
+	// remove the loop that initializes the stack locations to 0xcccccccc if present
+	if (cfg->getEntryBB()->getLastStmt()->isAssign()) {
+		Assign *a = (Assign*)cfg->getEntryBB()->getLastStmt();
+		if (a->getLeft()->isRegOfK() && ((Const*)a->getLeft()->getSubExp1())->getInt() == 24 &&
+			a->getRight()->isIntConst() && ((Const*)a->getRight())->getInt() == 0xcccccccc) {
+			Statement *assignToR25 = a->getPreviousStatementInBB();
+			assert(assignToR25 && assignToR25->isAssign());
+			Statement *assignToR31 = assignToR25->getPreviousStatementInBB();
+			assert(assignToR31 && assignToR31->isAssign());
+			assert(cfg->getEntryBB()->getNumOutEdges() == 1);
+			PBB firstTwoWay = cfg->getEntryBB()->getOutEdge(0);
+			assert(firstTwoWay && firstTwoWay->getType() == TWOWAY);
+			PBB loopExit = firstTwoWay->getOutEdge(0);
+			PBB loopBody = firstTwoWay->getOutEdge(1);
+			assert(loopExit->getLowAddr() > loopBody->getLowAddr());
+			loopExit->deleteInEdge(loopBody);
+			loopExit->deleteInEdge(firstTwoWay);
+			cfg->getEntryBB()->setOutEdge(0, loopExit);
+			loopExit->addInEdge(cfg->getEntryBB());
+			cfg->removeBB(loopBody);
+			cfg->removeBB(firstTwoWay);
+			cfg->updateVectorBB();
+			removeStatement(a);
+			removeStatement(assignToR25);
+			removeStatement(assignToR31);
+			cfg->wellFormCfg();
+			cfg->compressCfg();
+		}
+	}
+
+	for (std::list<Statement*>::iterator it2 = callsToRTCs.begin(); it2 != callsToRTCs.end(); it2++)
+		removeStatement(*it2);
+
+	if (VERBOSE) {
+		LOG << "=== after removing runtime checking code for " << getName() << "\n";
+		printToLog();
+	}
+
+	// replace all m[int] with a global
+	stmts.clear();
+	getStatements(stmts);
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		LocationSet used;
+		s->addUsedLocs(used);
+		s->getDefinitions(used);
+		for (LocationSet::iterator it2 = used.begin(); it2 != used.end(); it2++)
+			if ((*it2)->isMemOf() && (*it2)->getSubExp1()->isIntConst()) {
+				int addr = ((Const*)(*it2)->getSubExp1())->getInt();
+				char *nam = (char*)prog->getGlobalName(addr);
+				if (nam && strncmp(nam, "__imp", 5) != 0) {
+					prog->globalUsed(addr);
+					s->searchAndReplace(*it2, Location::global(nam, this));
+				}
+			}
+	}
+
+	if (VERBOSE) {
+		LOG << "=== after replacing expressions with globals for " << getName() << "\n";
+		printToLog();
+	}
+
+	// scary hack:  we need to replace uses of 16 bit registers with the covering 32 bit
+	// register anded with 0xffff.. but we only want to do this if there are no 
+	// definitions of 16 bit registers.
+	stmts.clear();
+	getStatements(stmts);
+	bool assignTo16BitReg = false;
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		if ((*it1)->isAssign()) {
+			Assign *a = (Assign*)*it1;
+			if (a->getLeft()->isRegOfK()) {
+				int n = ((Const*)a->getLeft()->getSubExp1())->getInt();
+				if (n == 0) {
+					assignTo16BitReg = true;
+					break;
+				}
+			}
+		}
+	}
+	if (!assignTo16BitReg) {
+		for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+			(*it1)->searchAndReplace(Location::regOf(0), new Binary(opBitAnd, Location::regOf(24), new Const(0xffff)));
+		}
+	}
+
+	// using range information, substitute r28 and r29 into the lhs and rhs of assigns 
+	stmts.clear();
+	getStatements(stmts);
+	std::list<Statement*> assignsToEspOrEbp, assignsToOrFromPC;
+
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		bool change;
+		Statement* s = *it1;
+		RangeMap rm = s->getSavedInputRanges();
+		assert(rm.hasRange(Location::regOf(28)));
+		Range &resp = rm.getRange(Location::regOf(28));
+		assert(resp.getBase()->getOper() == opInitValueOf);
+		assert(resp.getBase()->getSubExp1()->isRegOfK());
+		assert(((Const*)resp.getBase()->getSubExp1()->getSubExp1())->getInt() == 28);
+		assert(resp.getLowerBound() == resp.getUpperBound());
+		Exp *esp = new Binary(opPlus, new Unary(opInitValueOf, Location::regOf(28)), new Const(resp.getLowerBound()));
+		esp = esp->simplifyArith();
+		esp = esp->simplify();
+		resp = rm.getRange(Location::regOf(29));
+		assert(resp.getBase()->getOper() == opInitValueOf);
+		assert(resp.getBase()->getSubExp1()->isRegOfK());
+		int reg = ((Const*)resp.getBase()->getSubExp1()->getSubExp1())->getInt();
+		assert(resp.getLowerBound() == resp.getUpperBound());
+		Exp *ebp = new Binary(opPlus, new Unary(opInitValueOf, Location::regOf(reg)), new Const(resp.getLowerBound()));
+		ebp = ebp->simplifyArith();
+		ebp = ebp->simplify();
+
+		if (s->getKind() == STMT_ASSIGN) {
+			Assign *a = (Assign*)s;
+			if (a->getLeft()->isMemOf()) {
+				Exp *lhs = a->getLeft()->getSubExp1();
+				lhs = lhs->searchReplaceAll(Location::regOf(28), esp, change);
+				lhs = lhs->searchReplaceAll(Location::regOf(29), ebp, change);
+				a->setLeft(Location::memOf(lhs));
+			}
+			Exp *rhs = a->getRight();
+			rhs = rhs->searchReplaceAll(Location::regOf(28), esp, change);
+			rhs = rhs->searchReplaceAll(Location::regOf(29), ebp, change);
+			a->setRight(rhs);
+			a->simplify();
+
+			if (a->getLeft()->isRegOfK() && 
+				(((Const*)a->getLeft()->getSubExp1())->getInt() == 28 || 
+				 ((Const*)a->getLeft()->getSubExp1())->getInt() == 29)) {
+				assignsToEspOrEbp.push_back(s);
+			}
+			if (a->getLeft()->getOper() == opPC || a->getRight()->getOper() == opPC) {
+				assignsToOrFromPC.push_back(s);
+			}
+		} else {
+			s->searchAndReplace(Location::regOf(28), esp);
+			s->simplify();
+		}
+
+		assert(!s->usesExp(Location::regOf(28)));
+		assert(!s->usesExp(Location::regOf(29)));
+	}
+
+	// now throw away all the assigns to esp/ebp or to/from pc
+	for (std::list<Statement*>::iterator it2 = assignsToEspOrEbp.begin(); it2 != assignsToEspOrEbp.end(); it2++)
+        removeStatement(*it2);
+	for (std::list<Statement*>::iterator it2 = assignsToOrFromPC.begin(); it2 != assignsToOrFromPC.end(); it2++)
+        removeStatement(*it2);
+
+	if (VERBOSE) {
+		LOG << "=== after replacing r28/r29 with range information and trimming pc ===\n";
+		printToLog();
+	}
+
+	// look for flag defs for branches and build a good exp
+	getStatements(stmts);
+	std::list<Statement*> flagDefs;
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) 
+		if ((*it1)->isBranch()) {
+			BranchStatement *b = (BranchStatement*)*it1;
+			if (b->getCondExpr()->isFlags()) {
+				RangeMap &rm = b->getRanges();
+				if (rm.hasRange(new Terminal(opFlags))) {
+					Range &r = rm.getRange(new Terminal(opFlags));
+					assert(r.getLowerBound() == r.getUpperBound() && r.getLowerBound() == 0);
+					assert(r.getBase()->isFlagCall());
+					char *callnam = ((Const*)r.getBase()->getSubExp1())->getStr();
+					if (!strcmp(callnam, "LOGICALFLAGS32")) {
+						assert(b->getCond() == BRANCH_JE || b->getCond() == BRANCH_JNE);
+						assert(r.getBase()->getSubExp2()->getOper() == opList);
+						Exp *a = r.getBase()->getSubExp2()->getSubExp1();
+						if (a->isTemp()) {
+							Statement *p = b->getPreviousStatementInBB();
+							while (p && (!p->isAssign() || !(*((Assign*)p)->getLeft() == *a)))
+								p = p->getPreviousStatementInBB();
+							assert(p);
+							a = ((Assign*)p)->getRight();
+						}
+						b->setCondExpr(new Binary(b->getCond() == BRANCH_JE ? opEquals : opNotEqual,
+							a, new Const(0)));
+					} else if (!strcmp(callnam, "SUBFLAGS32")) {
+						assert(b->getCond() == BRANCH_JE  || b->getCond() == BRANCH_JNE ||
+							   b->getCond() == BRANCH_JSL || b->getCond() == BRANCH_JUL ||
+							   b->getCond() == BRANCH_JSG || b->getCond() == BRANCH_JUG);
+						assert(r.getBase()->getSubExp2()->getOper() == opList);
+						assert(r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList);
+						b->setCondExpr(new Binary(
+							b->getCond() == BRANCH_JE ? opEquals : 
+							b->getCond() == BRANCH_JNE ? opNotEqual :
+							b->getCond() == BRANCH_JSL ? opLess : 
+							b->getCond() == BRANCH_JUL ? opLessUns : 
+							b->getCond() == BRANCH_JSG ? opGtr : 
+							b->getCond() == BRANCH_JUG ? opGtrUns :
+							opEquals, // eep
+								r.getBase()->getSubExp2()->getSubExp1(), 
+								r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()));						
+					} else {
+						assert(false);
+					}
+				}
+			}
+		}
+
+	// replace m[r28' + x] with a local,
+	// also replace r28' + x with a[local] if on the right of an assign
+	// also replace m[r28' + x] with a param
+	stmts.clear();
+	getStatements(stmts);
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		for (SymbolMapType::iterator it2 = symbolMap.begin(); it2 != symbolMap.end(); it2++) {
+			Exp *memref = (*it2).first->clone();
+			Exp *loc = (*it2).second;
+			if (loc->isParam())
+				continue;
+			assert(loc->isLocal());
+			char *nam = ((Const*)loc->getSubExp1())->getStr();
+			assert(locals.find(nam) != locals.end());
+			if (locals[nam]->resolvesToCompound()) {
+				loc = new Binary(opMemberAccess, loc->clone(), new Const(strdup(locals[nam]->asCompound()->getNameAtOffset(0))));
+			}
+			bool change;
+			memref = memref->searchReplaceAll(Location::regOf(28), new Unary(opInitValueOf, Location::regOf(28)), change);
+			s->searchAndReplace(memref, loc);
+			if (s->isAssign()) {
+				Exp *memaddr = (*it2).first->getSubExp1()->clone();
+				memaddr = memaddr->searchReplaceAll(Location::regOf(28), new Unary(opInitValueOf, Location::regOf(28)), change);
+				((Assign*)s)->setRight(((Assign*)s)->getRight()->searchReplaceAll(memaddr, new Unary(opAddrOf, (*it2).second), change));
+			}
+		}
+		for (int i = 0; i < signature->getNumParams(); i++) {
+			Exp *memref = signature->getParamExp(i)->clone();
+			bool change;
+			memref = memref->searchReplaceAll(Location::regOf(28), new Unary(opInitValueOf, Location::regOf(28)), change);
+			s->searchAndReplace(memref, Location::param(signature->getParamName(i), this));
+		}
+		LocationSet used;
+		s->addUsedLocs(used);
+		s->getDefinitions(used);
+		for (LocationSet::iterator it2 = used.begin(); it2 != used.end(); it2++)
+			if ((*it2)->isMemOf() && (*it2)->getSubExp1()->getOper() == opMinus &&
+				(*it2)->getSubExp1()->getSubExp1()->getOper() == opInitValueOf &&
+				(*it2)->getSubExp1()->getSubExp1()->getSubExp1()->isRegOfK() &&
+				((Const*)(*it2)->getSubExp1()->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28 &&
+				(*it2)->getSubExp1()->getSubExp2()->isIntConst()) {
+				int n = -((Const*)(*it2)->getSubExp1()->getSubExp2())->getInt();
+				for (SymbolMapType::iterator it3 = symbolMap.begin(); it3 != symbolMap.end(); it3++) { 
+					if ((*it3).second->isParam())
+						continue;
+					assert((*it3).first->isMemOf() && (*it3).first->getSubExp1()->getOper() == opMinus);
+					int m = -((Const*)(*it3).first->getSubExp1()->getSubExp2())->getInt();
+					char *nam = ((Const*)(*it3).second->getSubExp1())->getStr();
+					assert(locals.find(nam) != locals.end());
+					if (n > m && n*8 <= m*8 + (int)locals[nam]->getSize()) {
+						assert(locals[nam]->resolvesToCompound());
+						CompoundType *ty = locals[nam]->asCompound();
+						const char *field = ty->getNameAtOffset(n*8 - m*8);
+						s->searchAndReplace(*it2, new Binary(opMemberAccess, Location::local(nam, this), new Const((char*)field)));
+					}
+				}
+			} else if ((*it2)->isMemOf() && (*it2)->getSubExp1()->isIntConst()) {
+				if (!s->isCall()) {  // do calls later
+					LOG << "using global in statement " << s << "\n";
+					prog->globalUsed(((Const*)(*it2)->getSubExp1())->getInt());
+				}
+			}
+	}
+
+	if (VERBOSE) {
+		LOG << "=== after replacing expressions with locals and params ===\n";
+		printToLog();
+	}
+
+	// remove register saves and restores in straight line code or by using the 
+	// range information
+	stmts.clear();
+	getStatements(stmts);
+	std::list<Statement*> registerSaveRestore;
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		if (s->isAssign()) {
+			Assign *a = (Assign *)s;
+			if (a->getLeft()->isMemOf() && a->getLeft()->getSubExp1()->getOper() == opMinus &&
+				a->getRight()->getOper() == opInitValueOf && a->getRight()->getSubExp1()->isRegOfK()) {
+				registerSaveRestore.push_back(s);
+			}
+			if (a->getLeft()->isMemOf() && a->getLeft()->getSubExp1()->getOper() == opMinus &&
+				a->getRight()->isRegOfK() && a->getRanges().hasRange(a->getRight())) {
+				Range &r = a->getRanges().getRange(a->getRight());
+				if (r.getLowerBound() == r.getUpperBound() && r.getLowerBound() == 0 &&
+					r.getBase()->getOper() == opInitValueOf &&
+					*r.getBase()->getSubExp1() == *a->getRight()) {
+					registerSaveRestore.push_back(s);
+				}
+			} 
+			if (a->getRight()->isMemOf() && a->getRight()->getSubExp1()->getOper() == opMinus) {
+				if (a->getLeft()->isRegOfK() && a->getRanges().hasRange(a->getRight())) {
+					Range &r = a->getRanges().getRange(a->getRight());
+					if (r.getLowerBound() == r.getUpperBound() && r.getLowerBound() == 0 &&
+						r.getBase()->getOper() == opInitValueOf &&
+						*r.getBase()->getSubExp1() == *a->getLeft()) {
+						registerSaveRestore.push_back(s);
+					}
+				}
+			}
+			if (a->getLeft()->isRegOfK() && a->getRight()->isMemOf() &&
+				a->getRight()->getSubExp1()->getOper() == opMinus &&
+				a->getRight()->getSubExp1()->getSubExp1()->getOper() == opInitValueOf) {
+				Statement *p = s->getPreviousStatementInBB();
+				if (p == NULL && s->getBB()->getNumInEdges() == 1)
+					p = s->getBB()->getInEdges()[0]->getLastStmt();
+				while (p) {
+					if (p->isAssign() && *((Assign*)p)->getLeft() == *a->getRight())
+						break;
+					Statement *pp = p;
+					p = p->getPreviousStatementInBB();
+					if (p == NULL && pp->getBB()->getNumInEdges() == 1) {
+						p = pp->getBB()->getInEdges()[0]->getLastStmt();
+					}
+				}
+				if (p != NULL && *((Assign*)p)->getRight() == *a->getLeft()) {
+					LOG << "removing save " << p << "\n and corresponding restore " << s << "\n";
+					registerSaveRestore.push_back(p);
+					registerSaveRestore.push_back(s);
+					continue;					
+				}
+			}
+		}
+	}
+
+	for (std::list<Statement*>::iterator it2 = registerSaveRestore.begin(); it2 != registerSaveRestore.end(); it2++)
+        removeStatement(*it2);
+
+	if (VERBOSE) {
+		LOG << "=== after removing register saves and restores ===\n";
+		printToLog();
+	}
+
+	// now it is safe to assume that all assigns to stack locations are temporaries
+	// the most important of these are the pushes of call arguments
+	std::list<Statement*> argumentPush;
+	stmts.clear();
+	getStatements(stmts);
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		if (s->isCall()) {
+			CallStatement *c = (CallStatement*)s;
+			for (int a = 0; a < c->getNumArguments(); a++) {
+				Exp *arg = c->getArgumentExp(a);
+				if (!arg->isMemOf())
+					continue;
+				if (arg->getSubExp1()->getOper() != opMinus)
+					continue;
+				if (arg->getSubExp1()->getSubExp1()->getOper() != opInitValueOf)
+					continue;
+				Statement *p = c->getPreviousStatementInBB();
+				while (p) {
+					if (p->isAssign() && *((Assign*)p)->getLeft() == *arg)
+						break;
+					p = p->getPreviousStatementInBB();
+				}
+				assert(p);   // assume args are pushed in same bb as call
+				c->setArgumentExp(a, ((Assign*)p)->getRight());
+				argumentPush.push_back(p);
+			}
+		}
+	}
+
+	// don't need them anymore
+	for (std::list<Statement*>::iterator it2 = argumentPush.begin(); it2 != argumentPush.end(); it2++)
+		removeStatement(*it2);
+
+	if (VERBOSE) {
+		LOG << "=== after propagating pushes to calls ===\n";
+		printToLog();
+	}
+
+	// unfortunately arguments of calls now typically will have a register in them.
+	// even though this register is defined in the same BB it's not safe to remove the
+	// definitions, but we can propagate them.
+	stmts.clear();
+	getStatements(stmts);
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		if (s->isCall()) {
+			CallStatement *c = (CallStatement*)s;
+			for (int a = 0; a < c->getNumArguments(); a++) {
+				Exp *arg = c->getArgumentExp(a);
+				if (!arg->isRegOfK())
+					continue;
+				Statement *p = c->getPreviousStatementInBB();
+				while (p) {
+					if (p->isAssign() && *((Assign*)p)->getLeft() == *arg)
+						break;
+					p = p->getPreviousStatementInBB();
+				}
+				if (p == NULL)
+					continue;
+				// what we can propagate safely here is pretty limited
+				Exp *rhs = ((Assign*)p)->getRight();
+				bool ok = false;
+				if (rhs->isIntConst() || rhs->isAddrOf())
+					ok = true;
+				if (rhs->isLocal() || rhs->isParam() || rhs->getOper() == opMemberAccess || rhs->isGlobal()) {
+					// ensure the local/param is not redefined between definition and use
+					Statement *h = c->getPreviousStatementInBB();
+					while (h && h != p) {
+						if (h->isAssign() && *((Assign*)h)->getLeft() == *rhs)
+							break;
+						h = h->getPreviousStatementInBB();
+					}
+					ok = (h == p);
+				}
+				if (!ok)
+					continue;
+				c->setArgumentExp(a, rhs);
+				// special hack
+				if (((Const*)arg->getSubExp1())->getInt() == 24 && c->getDestProc()->getSignature()->getNumReturns() == 2) {
+					assert(c->getDestProc()->getSignature()->getReturnExp(1)->isRegOfK() && 
+						   ((Const*)c->getDestProc()->getSignature()->getReturnExp(1)->getSubExp1())->getInt() == 24);
+					removeStatement(p);	
+				}
+			}
+			for (int a = 0; a < c->getNumArguments(); a++) {
+				Exp *e = c->getArgumentExp(a);
+				Type *ty = c->getArgumentType(a);
+				if (e->isIntConst() && ty->resolvesToPointer()) {
+					ADDRESS addr = ((Const*)e)->getInt();
+					const char *nam = prog->getGlobalName(addr);
+					if (nam) {
+						if (prog->isReadOnly(addr) && ty->asPointer()->getPointsTo()->resolvesToChar()) {
+							char *str = prog->getStringConstant(addr, true); 
+							LOG << "replacing constant " << addr << " with string constant " << str << " in statement " << c << "\n";
+							c->setArgumentExp(a, new Const(str));
+						} else {
+							prog->globalUsed(addr);
+							LOG << "replacing constant " << addr << " with addr of global " << nam << " in statement " << c << "\n";
+							c->setArgumentExp(a, new Unary(opAddrOf, Location::global(nam, this)));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (VERBOSE) {
+		LOG << "=== after propagating registers to calls ===\n";
+		printToLog();
+	}
+
+	// like calls, some assigns have type information which we can use to detect
+	// constants that are actually addresses of globals
+	stmts.clear();
+	getStatements(stmts);
+	for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+		Statement *s = *it1;
+		if (s->isAssign()) {
+			Assign *a = (Assign*)s;
+			if (a->getLeft()->isMemOf() && a->getLeft()->getSubExp1()->isIntConst()) {
+				ADDRESS addr = ((Const*)a->getLeft()->getSubExp1())->getInt();
+				const char *nam = prog->getGlobalName(addr);
+				if (nam) {
+					prog->globalUsed(addr);
+					LOG << "replacing m[" << addr << "] with global " << nam << " in statement " << s << "\n";
+					a->setLeft(Location::global(nam, this));
+				}
+			}
+			Type *ty = a->getLeft()->getType();
+			if (a->getLeft()->isMemberOf()) {
+				LOG << "got type " << ty << " for " << a->getLeft() << "\n";
+				assert(ty);
+			}
+			if (ty == NULL)
+				ty = a->getType();
+			if (a->getRight()->isIntConst() && ty && ty->resolvesToPointer()) {
+				ADDRESS addr = ((Const*)a->getRight())->getInt();
+				const char *nam = prog->getGlobalName(addr);
+				if (nam) {
+					if (ty->asPointer()->getPointsTo()->resolvesToFunc()) {
+						LOG << "found a function pointer to " << nam << " in statement " << s << "\n";
+						prog->setNewProc(addr);
+						a->setRight(new Unary(opAddrOf, Location::global(nam, this)));
+					} else {
+						if (prog->isReadOnly(addr) && ty->asPointer()->getPointsTo()->resolvesToChar()) {
+							char *str = prog->getStringConstant(addr, true); 
+							LOG << "replacing constant " << addr << " with string constant " << str << " in statement " << s << "\n";
+							a->setRight(new Const(str));
+						} else {
+							prog->globalUsed(addr);
+							LOG << "replacing constant " << addr << " with addr of global " << nam << " in statement " << s << "\n";
+							a->setRight(new Unary(opAddrOf, Location::global(nam, this)));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (VERBOSE) {
+		LOG << "=== after detecting globals in assigns ===\n";
+		printToLog();
+	}
+
+	// by this point there should be no more uses of registers
+	// unfortunately definitions of unused registers often use registers..
+	// this is a slow but effective algorithm to remove unused definitions
+	bool change = true;
+	while(change) {
+		stmts.clear();
+		getStatements(stmts);
+		std::set<Exp*, lessExpStar> usedRegs;
+		for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+			Statement *s = *it1;
+			LocationSet used;
+			s->addUsedLocs(used);
+			for (LocationSet::iterator it2 = used.begin(); it2 != used.end(); it2++)
+				if ((*it2)->isRegOfK() || (*it2)->isTemp() || (*it2)->isFlags())
+					usedRegs.insert(*it2);
+		}
+		usedRegs.erase(Location::regOf(28));
+		LOG << "the following registers are still used:\n";
+		for (std::set<Exp*, lessExpStar>::iterator it2 = usedRegs.begin(); it2 != usedRegs.end(); it2++)
+			LOG << *it2 << "\n";
+		std::list<Statement*> unusedDefs;
+		for (it1 = stmts.begin(); it1 != stmts.end(); it1++) {
+			Statement *s = *it1;
+			if (s->isAssign()) { 
+				Exp *lhs = ((Assign*)s)->getLeft();
+				if ((lhs->isRegOfK() || lhs->isTemp() || lhs->isFlags()) &&
+					usedRegs.find(lhs) == usedRegs.end())
+					unusedDefs.push_back(*it1);
+			}
+		}
+		change = (unusedDefs.size() != 0);
+		for (std::list<Statement*>::iterator it2 = unusedDefs.begin(); it2 != unusedDefs.end(); it2++)
+			removeStatement(*it2);
+	}
+
+	if (VERBOSE) {
+		LOG << "=== after removing definitions of unused registers ===\n";
+		printToLog();
+	}
+#endif
+}
 
 // Decompile this UserProc
 ProcSet* UserProc::decompile(ProcList* path, int& indent) {
@@ -2769,9 +3383,8 @@ void UserProc::mapExpressionsToParameters() {
 			Exp *r = signature->getParamExp(i)->clone();
 			r = r->expSubscriptAllNull();
 			// Remove the outer {0}, for where it appears on the LHS, and because we want to have param1{0}
-			assert(r->isSubscript());	// There should always be one
-			// if (r->getOper() == opSubscript)
-			r = r->getSubExp1();
+			if (r->getOper() == opSubscript)
+				r = r->getSubExp1();
 			Location* replace = Location::param( strdup((char*)signature->getParamName(i)), this);
 			Exp *n;
 			if (s->search(r, n)) {
@@ -3264,6 +3877,14 @@ Exp* UserProc::newLocal(Type* ty) {
 	if (VERBOSE)
 		LOG << "assigning type " << ty->getCtype() << " to new " << name.c_str() << "\n";
 	return Location::local(strdup(name.c_str()), this);
+}
+
+void UserProc::addLocal(Type *ty, const char *nam, Exp *e)
+{
+	assert(symbolMap.find(e) == symbolMap.end());
+	symbolMap[e] = Location::local(strdup(nam), this);
+	assert(locals.find(nam) == locals.end());
+	locals[nam] = ty;
 }
 
 Type *UserProc::getLocalType(const char *nam)
@@ -5237,6 +5858,102 @@ void UserProc::typeAnalysis() {
 	}
 
 	printXML();
+}
+
+void UserProc::clearRanges()
+{
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++)
+		(*it)->clearRanges();
+}
+
+void UserProc::rangeAnalysis()
+{
+	std::cout << "performing range analysis on " << getName() << "\n";
+
+	// this helps
+	cfg->sortByAddress();
+
+	cfg->addJunctionStatements();
+	cfg->establishDFTOrder();
+
+	clearRanges();
+
+	if (VERBOSE) {
+		LOG << "=== Before performing range analysis for " << getName() << " ===\n";
+		printToLog();
+		LOG << "=== end before performing range analysis for " << getName() << " ===\n\n";
+	}
+
+	std::list<Statement*> execution_paths;
+	std::list<Statement*> junctions;
+
+	assert(cfg->getEntryBB());
+	assert(cfg->getEntryBB()->getFirstStmt());
+	execution_paths.push_back(cfg->getEntryBB()->getFirstStmt());
+
+	int watchdog = 0;
+
+	while(execution_paths.size()) {
+		while(execution_paths.size()) {
+			Statement *stmt = execution_paths.front();
+			execution_paths.pop_front();
+			if (stmt == NULL)
+				continue;  // ??
+			if (stmt->isJunction())
+				junctions.push_back(stmt);
+			else
+				stmt->rangeAnalysis(execution_paths);
+		}
+		while(junctions.size()) {
+			Statement *junction = junctions.front();
+			junctions.pop_front();
+			assert(junction->isJunction());
+			junction->rangeAnalysis(execution_paths);
+		}
+
+		watchdog++;
+		if (watchdog > 10) {
+			std::cout << "  watchdog " << watchdog << "\n";
+		}
+		if (watchdog > 50) {
+			std::cout << "  watchdog expired\n";
+			break;
+		}
+	}
+
+	LOG << "=== After range analysis for " << getName() << " ===\n";
+	printToLog();
+	LOG << "=== end after range analysis for " << getName() << " ===\n\n";
+
+	cfg->removeJunctionStatements();
+}
+
+void UserProc::logSuspectMemoryDefs()
+{
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	for (it = stmts.begin(); it != stmts.end(); it++)
+		if ((*it)->isAssign()) {
+			Assign *a = (Assign*)*it;
+			if (a->getLeft()->isMemOf()) {
+				RangeMap &rm = a->getRanges();
+				Exp *p = rm.substInto(a->getLeft()->getSubExp1()->clone());
+				if (rm.hasRange(p)) {
+					Range &r = rm.getRange(p);
+					LOG << "got p " << p << " with range " << r << "\n";
+					if (r.getBase()->getOper() == opInitValueOf &&
+						r.getBase()->getSubExp1()->isRegOfK() &&
+						((Const*)r.getBase()->getSubExp1()->getSubExp1())->getInt() == 28) {
+						RTL *rtl = a->getBB()->getRTLWithStatement(a);
+						LOG << "interesting stack reference at " << rtl->getAddress() << " " << a << "\n";
+					}
+				}
+			}
+		}
 }
 
 // Copy the RTLs for the already decoded Indirect Control Transfer instructions, and decode any new targets in this CFG

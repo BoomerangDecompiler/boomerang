@@ -13,6 +13,7 @@ typedef const char LPCSTR[];
 typedef char LPSTR[];
 typedef const short LPCWSTR[];
 typedef short LPWSTR[];
+typedef short wchar_t;
 typedef int DWORD;
 typedef int HWND;
 typedef int HMENU;
@@ -43,6 +44,8 @@ typedef LRESULT WndProc(
 	LPARAM lParam
 );
 typedef WndProc *WNDPROC;
+typedef int CRITICAL_SECTION;
+typedef CRITICAL_SECTION *LPCRITICAL_SECTION;
 
 typedef int WinMain(	  
 	HINSTANCE hInstance,
@@ -53,7 +56,6 @@ typedef int WinMain(
 
 HLOCAL LocalFree(HLOCAL hMem);
 DWORD FormatMessageA(DWORD dwFlags, LPCVOID lpSource, DWORD dwMessageId, DWORD dwLanguageId, LPSTR lpBuffer, DWORD nSize, va_list* Arguments);
-int _write(int fd, char buf[], int size);
 LPSTR CharNextA(	  
 	LPCSTR lpsz
 );
@@ -466,6 +468,44 @@ BOOL GetWindowRect(
 	HWND hWnd,
 	LPRECT lpRect
 );
+LONG GetWindowLongA(
+    HWND hWnd,
+    int nIndex
+);
+LONG GetWindowLongW(
+    HWND hWnd,
+    int nIndex
+);
+LONG SetWindowLongA(
+    HWND hWnd,
+    int nIndex,
+    LONG dwNewLong
+);
+LONG SetWindowLongW(
+    HWND hWnd,
+    int nIndex,
+    LONG dwNewLong
+);
+HMENU LoadMenuA(
+    HINSTANCE hInstance,
+    LPCSTR lpMenuName
+);
+HMENU LoadMenuW(
+    HINSTANCE hInstance,
+    LPCWSTR lpMenuName
+);
+LRESULT SendMessageA(
+    HWND hWnd,
+    UINT Msg,
+    WPARAM wParam,
+    LPARAM lParam
+);
+LRESULT SendMessageW(
+    HWND hWnd,
+    UINT Msg,
+    WPARAM wParam,
+    LPARAM lParam
+);
 BOOL InvalidateRect(
   HWND hWnd,
   LPRECT lpRect,
@@ -563,7 +603,6 @@ ULONGLONG VerSetConditionMask(
 );
 
 int FreeLibrary(unsigned int hModule);
-short* wcscpy(short* dest, short* src);
 int VirtualFree(void* lpAddress, int dwSize, unsigned int dwFreeType);
 
 HRSRC FindResourceA(HMODULE hModule, LPCSTR lpName, LPCSTR lpType);
@@ -699,4 +738,77 @@ SetFilePointer(
     );
 
 BOOL CloseHandle(HANDLE hObject);
+BOOL CheckMenuRadioItem(
+    HMENU hmenu,
+    UINT idFirst,
+    UINT idLast,
+    UINT idCheck,
+    UINT uFlags
+);
+
+BOOL SetWindowTextA(
+    HWND hWnd,
+    LPCSTR lpString
+);
+
+BOOL SetWindowTextW(
+    HWND hWnd,
+    LPCWSTR lpString
+);
+
+HWND SetFocus(
+    HWND hWnd
+);
+
+LPSTR lstrcpynA(
+    LPSTR lpString1,
+    LPCSTR lpString2,
+    int iMaxLength
+);
+
+LPWSTR lstrcpynW(
+    LPWSTR lpString1,
+    LPCWSTR lpString2,
+    int iMaxLength
+);
+
+LPSTR lstrcatA(
+    LPSTR lpString1,
+    LPSTR lpString2
+);
+
+LPWSTR lstrcatW(
+    LPWSTR lpString1,
+    LPWSTR lpString2
+);
+
+wchar_t *lstrcpyW(wchar_t *dst, wchar_t *src);
+
+int lstrlenW( const wchar_t *string );
+
+void _CxxThrowException(int a, int b);
+
+BOOL DisableThreadLibraryCalls(
+  HMODULE hModule
+);
+
+BOOL HeapDestroy(
+  HANDLE hHeap
+);
+
+void DeleteCriticalSection(
+  LPCRITICAL_SECTION lpCriticalSection
+);
+
+void InitializeCriticalSection(
+  LPCRITICAL_SECTION lpCriticalSection
+);
+
+
+// guessed LPR functions
+
+void CloseLPR(int a);
+int GetShortQueue(int a, int b);
+int GetLongQueue(int a, int b);
+int OpenLPR(int a, int b);
 
