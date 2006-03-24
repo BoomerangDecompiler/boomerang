@@ -244,7 +244,7 @@ char* escapeStr(char* str) {
 	// test each character
 	for(;*str;str++)
 	{
-		if( isprint(*str) && *str != '\"' ) {
+		if(isprint((unsigned char)*str) && *str != '\"' ) {
     		// it's printable, so just print it
     		out << *str;
 		} else { // in fact, this shouldn't happen, except for "
