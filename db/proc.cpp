@@ -895,8 +895,6 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 	return child
  */
 
-Type *typeFromDebugInfo(int index, DWORD64 ModBase);
-
 // assumes range analysis has been done
 void UserProc::windowsModeDecompile()
 {

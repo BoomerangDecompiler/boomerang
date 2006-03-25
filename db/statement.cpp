@@ -138,15 +138,24 @@ RangeMap Statement::getInputRanges()
 	RangeMap input;
 	if (pbb->getNumInEdges() == 0) {
 		// setup input for start of procedure
-		input.addRange(Location::regOf(24), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(24))));
-		input.addRange(Location::regOf(25), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(25))));
-		input.addRange(Location::regOf(26), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(26))));
-		input.addRange(Location::regOf(27), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(27))));
-		input.addRange(Location::regOf(28), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(28))));
-		input.addRange(Location::regOf(29), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(29))));
-		input.addRange(Location::regOf(30), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(30))));
-		input.addRange(Location::regOf(31), Range(1, 0, 0, new Unary(opInitValueOf, Location::regOf(31))));
-		input.addRange(new Terminal(opPC), Range(1, 0, 0, new Unary(opInitValueOf, new Terminal(opPC))));
+		Range ra24(1, 0, 0, new Unary(opInitValueOf, Location::regOf(24)));
+		Range ra25(1, 0, 0, new Unary(opInitValueOf, Location::regOf(25)));
+		Range ra26(1, 0, 0, new Unary(opInitValueOf, Location::regOf(26)));
+		Range ra27(1, 0, 0, new Unary(opInitValueOf, Location::regOf(27)));
+		Range ra28(1, 0, 0, new Unary(opInitValueOf, Location::regOf(28)));
+		Range ra29(1, 0, 0, new Unary(opInitValueOf, Location::regOf(29)));
+		Range ra30(1, 0, 0, new Unary(opInitValueOf, Location::regOf(30)));
+		Range ra31(1, 0, 0, new Unary(opInitValueOf, Location::regOf(31)));
+		Range rpc(1, 0, 0, new Unary(opInitValueOf,  new Terminal(opPC)));
+		input.addRange(Location::regOf(24), ra24);
+		input.addRange(Location::regOf(25), ra25);
+		input.addRange(Location::regOf(26), ra26);
+		input.addRange(Location::regOf(27), ra27);
+		input.addRange(Location::regOf(28), ra28);
+		input.addRange(Location::regOf(29), ra29);
+		input.addRange(Location::regOf(30), ra30);
+		input.addRange(Location::regOf(31), ra31);
+		input.addRange(new Terminal(opPC), rpc);
 	} else {
 		PBB pred = pbb->getInEdges()[0];
 		Statement *last = pred->getLastStmt();
@@ -209,7 +218,8 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 			a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->isMemOf())
 			a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->setSubExp1(
 				output.substInto(a_rhs->getSubExp2()->getSubExp2()->getSubExp1()->getSubExp1()));
-		output.addRange(a_lhs, Range(1, 0, 0, a_rhs));		
+		Range ra(1, 0, 0, a_rhs);		
+		output.addRange(a_lhs, ra);
 	} else {
 		if (a_lhs->isMemOf())
 			a_lhs->setSubExp1(output.substInto(a_lhs->getSubExp1()->clone()));
@@ -251,9 +261,13 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 			Range &r = output.getRange(a_rhs->getSubExp1());
 			int c = ((Const*)a_rhs->getSubExp2())->getInt();
 			if (a_rhs->getOper() == opPlus) {
-				output.addRange(a_lhs, Range(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() + c : NEGINFINITY, r.getUpperBound() != INFINITY ? r.getUpperBound() + c : INFINITY, r.getBase()));
+				Range ra(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() + c : NEGINFINITY,
+					r.getUpperBound() != INFINITY ? r.getUpperBound() + c : INFINITY, r.getBase());
+				output.addRange(a_lhs, ra);
 			} else {
-				output.addRange(a_lhs, Range(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() - c : NEGINFINITY, r.getUpperBound() != INFINITY ? r.getUpperBound() - c : INFINITY, r.getBase()));
+				Range ra(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() - c : NEGINFINITY,
+					r.getUpperBound() != INFINITY ? r.getUpperBound() - c : INFINITY, r.getBase());
+				output.addRange(a_lhs, ra);
 			}
 		} else {
 			if (output.hasRange(a_rhs)) {
@@ -262,12 +276,18 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 				Exp *result;
 				if (a_rhs->getMemDepth() == 0 && !a_rhs->search(new Unary(opRegOf, new Terminal(opWild)), result) &&
 					!a_rhs->search(new Unary(opTemp, new Terminal(opWild)), result)) {
-					if (a_rhs->isIntConst())
-						output.addRange(a_lhs, Range(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), new Const(0)));
-					else
-						output.addRange(a_lhs, Range(1, 0, 0, a_rhs));
-				} else
-					output.addRange(a_lhs, Range());
+					if (a_rhs->isIntConst()) {
+						Range ra(1, ((Const*)a_rhs)->getInt(), ((Const*)a_rhs)->getInt(), new Const(0));
+						output.addRange(a_lhs, ra);
+					}
+					else {
+						Range ra(1, 0, 0, a_rhs);
+						output.addRange(a_lhs, ra);
+					}
+				} else {
+					Range empty;
+					output.addRange(a_lhs, empty);
+				}
 			}
 		}
 	}
@@ -287,26 +307,45 @@ void BranchStatement::limitOutputWithCondition(RangeMap &output, Exp *e)
 			int c = ((Const*)e->getSubExp2())->getInt();
 			switch(e->getOper()) {
 				case opLess:
-				case opLessUns:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() >= c ? c - 1 : r.getLowerBound(), r.getUpperBound() >= c ? c - 1 : r.getUpperBound(), r.getBase()));
+				case opLessUns: {
+					Range ra(r.getStride(), r.getLowerBound() >= c ? c - 1 : r.getLowerBound(),
+						r.getUpperBound() >= c ? c - 1 : r.getUpperBound(), r.getBase());
+					output.addRange(e->getSubExp1(), ra);
 					break;
+				}
 				case opLessEq:
-				case opLessEqUns:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() > c ? c : r.getLowerBound(), r.getUpperBound() > c ? c : r.getUpperBound(), r.getBase()));
+				case opLessEqUns: {
+					Range ra(r.getStride(), r.getLowerBound() > c ? c : r.getLowerBound(),
+						r.getUpperBound() > c ? c : r.getUpperBound(), r.getBase());
+					output.addRange(e->getSubExp1(), ra);
 					break;
+				}
 				case opGtr:
-				case opGtrUns:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() <= c ? c + 1 : r.getLowerBound(), r.getUpperBound() <= c ? c + 1 : r.getUpperBound(), r.getBase()));
+				case opGtrUns: {
+					Range ra(r.getStride(), r.getLowerBound() <= c ? c + 1 : r.getLowerBound(),
+						r.getUpperBound() <= c ? c + 1 : r.getUpperBound(), r.getBase());
+					output.addRange(e->getSubExp1(), ra);
 					break;
+				}
 				case opGtrEq:
-				case opGtrEqUns:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() < c ? c : r.getLowerBound(), r.getUpperBound() < c ? c : r.getUpperBound(), r.getBase()));
+				case opGtrEqUns: {
+					Range ra(r.getStride(), r.getLowerBound() < c ? c : r.getLowerBound(),
+						r.getUpperBound() < c ? c : r.getUpperBound(), r.getBase());
+					output.addRange(e->getSubExp1(), ra);
 					break;
-				case opEquals:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), c, c, r.getBase()));
+				}
+				case opEquals: {
+					Range ra(r.getStride(), c, c, r.getBase());
+					output.addRange(e->getSubExp1(), ra);
 					break;
-				case opNotEqual:
-					output.addRange(e->getSubExp1(), Range(r.getStride(), r.getLowerBound() == c ? c + 1 : r.getLowerBound(), r.getUpperBound() == c ? c - 1 : r.getUpperBound(), r.getBase()));
+				}
+				case opNotEqual: {
+					Range ra(r.getStride(), r.getLowerBound() == c ? c + 1 : r.getLowerBound(),
+						r.getUpperBound() == c ? c - 1 : r.getUpperBound(), r.getBase());
+					output.addRange(e->getSubExp1(), ra);
+					break;
+				}
+				default:
 					break;
 			}
 		}
@@ -491,7 +530,9 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 				}
 			}
 		}
-		output.addRange(Location::regOf(28), Range(r.getStride(), r.getLowerBound() == NEGINFINITY ? NEGINFINITY : r.getLowerBound() + c, r.getUpperBound() == INFINITY ? INFINITY : r.getUpperBound() + c, r.getBase()));
+		Range ra(r.getStride(), r.getLowerBound() == NEGINFINITY ? NEGINFINITY : r.getLowerBound() + c,
+			r.getUpperBound() == INFINITY ? INFINITY : r.getUpperBound() + c, r.getBase());
+		output.addRange(Location::regOf(28), ra);
 	}
 	updateRanges(output, execution_paths);
 }

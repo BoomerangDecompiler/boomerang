@@ -951,7 +951,8 @@ void RangeMap::killAllMemOfs()
 {
 	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
 		if ((*it).first->isMemOf()) {
-			(*it).second.unionWith(Range());
+			Range empty;
+			(*it).second.unionWith(empty);
 		}
 	}
 }

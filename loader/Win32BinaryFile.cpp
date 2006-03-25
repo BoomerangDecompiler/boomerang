@@ -305,6 +305,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	return NO_ADDRESS;
 }
 
+#ifdef _WIN32
 BOOL CALLBACK lookforsource(
   dbghelp::PSOURCEFILE pSourceFile,
   PVOID UserContext
@@ -313,6 +314,7 @@ BOOL CALLBACK lookforsource(
 	*(bool*)UserContext = true;
 	return FALSE;
 }
+#endif
 
 bool Win32BinaryFile::RealLoad(const char* sName)
 {
@@ -528,6 +530,8 @@ bool Win32BinaryFile::PostLoad(void* handle)
 	return false;
 }
 
+#ifdef _WIN32
+
 char *SymTagEnums[] = { "SymTagNull",
    "SymTagExe",
    "SymTagCompiland",
@@ -693,7 +697,7 @@ BOOL CALLBACK printem(
 	std::cout << "register: " << pSymInfo->Register << " address: " << (int)pSymInfo->Address << "\n";
 	return TRUE;
 }
-
+#endif
 
 const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 {
@@ -877,12 +881,16 @@ bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
 
 bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
 {
+#ifdef _WIN32
 	HANDLE hProcess = GetCurrentProcess();
 	dbghelp::IMAGEHLP_LINE64 line;
 	line.SizeOfStruct = sizeof(line);	
 	line.FileName = NULL;
 	dbghelp::SymGetLineFromAddr64(hProcess, uNative, 0, &line);
 	return haveDebugInfo && line.FileName == NULL || line.FileName && *line.FileName == 'f';
+#else
+	return false;
+#endif
 }
 
 ADDRESS Win32BinaryFile::IsJumpToAnotherAddr(ADDRESS uNative)
