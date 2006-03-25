@@ -674,16 +674,27 @@ Statement* BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit) {
 }
 
 Statement* BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit) {
+	if (++sit != (*rit)->getList().end())
+		return *sit;						// End of current RTL not reached, so return next
+	// Else, find next non-empty RTL & return its first statement
 	do {
-		if (++sit != (*rit)->getList().end())
-			return *sit;
 		if (++rit == m_pRtls->end())
-			break;
-		sit = (*rit)->getList().begin();
-		if (sit != (*rit)->getList().end())
-			return *sit;
-	} while (1);
-	return NULL;
+			return NULL;					// End of all RTLs reached, return null Statement
+	} while ((*rit)->getNumStmt() == 0);	// Ignore all RTLs with no statements
+	sit = (*rit)->getList().begin();		// Point to 1st statement at start of next RTL
+	return *sit;							// Return first statement
+}
+
+Statement* BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
+	if (++sit != (*rit)->getList().rend())
+		return *sit;			// Beginning of current RTL not reached, so return next
+	// Else, find prev non-empty RTL & return its last statement
+	do {
+		if (++rit == m_pRtls->rend())
+			return NULL;					// End of all RTLs reached, return null Statement
+	} while ((*rit)->getNumStmt() == 0);	// Ignore all RTLs with no statements
+	sit = (*rit)->getList().rbegin();		// Point to last statement at end of prev RTL
+	return *sit;							// Return last statement
 }
 
 Statement* BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
@@ -727,20 +738,6 @@ Statement* BasicBlock::getLastStmt() {
 	}
 	return NULL;
 }
-
-Statement* BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit) {
-	do {
-		if (++sit != (*rit)->getList().rend())
-			return *sit;
-		if (++rit == m_pRtls->rend())
-			break;
-		sit = (*rit)->getList().rbegin();
-		if (sit != (*rit)->getList().rend())
-			return *sit;
-	} while (1);
-	return NULL;
-}
-
 
 /*
  * Structuring and code generation.
