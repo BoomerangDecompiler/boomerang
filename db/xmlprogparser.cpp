@@ -2788,7 +2788,7 @@ void XMLProgParser::persistToXML(std::ostream &out, Statement *stmt)
 	}
 	ReturnStatement *r = dynamic_cast<ReturnStatement*>(stmt);
 	if (r) {
-		out << "<returnstmt id=\"" << (int)stmt << "\" number=\"" << r->number;
+		out << "<returnstmt id=\"" << (int)stmt << "\" number=\"" << r->number << "\"";
 		if (r->parent)
 			out << " parent=\"" << (int)r->parent << "\"";
 		if (r->proc)
