@@ -1185,7 +1185,8 @@ void Prog::decompile() {
 	std::list<UserProc*>::iterator ee;
 	for (ee = entryProcs.begin(); ee != entryProcs.end(); ++ee) {
 		std::cerr << "decompiling entry point " << (*ee)->getName() << "\n";
-		LOG		  << "decompiling entry point " << (*ee)->getName() << "\n";
+		if (VERBOSE)
+			LOG << "decompiling entry point " << (*ee)->getName() << "\n";
 		int indent = 0;
 		(*ee)->decompile(new ProcList, indent);
 	}
@@ -1735,7 +1736,8 @@ Exp* Global::getInitialValue(Prog* prog) {
 			e = new Binary(opList, prog->readNativeAs(uaddr + i * elem_size, baseType), e);
 		// Is it really sane to dump the *whole* array to the log?
 		// What if it contains several thousands of entries, or more?
-		LOG << "calculated init for array global: " << e << "\n";
+		if (VERBOSE)
+			LOG << "calculated init for array global: " << e << "\n";
 		if (e->getOper() == opNil)
 			e = NULL;
 	}

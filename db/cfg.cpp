@@ -185,6 +185,7 @@ PBB Cfg::newBB(std::list<RTL*>* pRtls, BBTYPE bbType, int iNumOutEdges) throw(BB
 	// First find the native address of the first RTL
 	// Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
 	ADDRESS addr = pRtls->front()->getAddress();
+
 	// If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
 	// with its delay instruction moved in front of it (with 0 address).
 	// Note: it is possible to see two RTLs with zero address with Sparc: jmpl %o0, %o1. There will be one for the delay

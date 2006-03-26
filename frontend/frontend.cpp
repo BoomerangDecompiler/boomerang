@@ -446,11 +446,13 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 				// An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
 				// Best thing is to emit a INVALID BB, and continue with valid instructions
-				LOG << "Warning: invalid instruction at " << uAddr << ": ";
-				// Emit the next 4 bytes for debugging
-				for (int ii=0; ii < 4; ii++)
-					LOG << (unsigned)(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
-				LOG << "\n";
+				if (VERBOSE) {
+					LOG << "Warning: invalid instruction at " << uAddr << ": ";
+					// Emit the next 4 bytes for debugging
+					for (int ii=0; ii < 4; ii++)
+						LOG << (unsigned)(pBF->readNative1(uAddr + ii) & 0xFF) << " ";
+					LOG << "\n";
+				}
 				// Emit the RTL anyway, so we have the address and maybe some other clues
 				BB_rtls->push_back(new RTL(uAddr));	 
 				pBB = pCfg->newBB(BB_rtls, INVALID, 0);
@@ -530,11 +532,17 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 								proc = prog->setNewProc(dest);
 						}
 						if (proc != NULL && proc != (Proc*)-1) {
-							s = *ss = new CallStatement();
+							s = new CallStatement();
 							CallStatement *call = static_cast<CallStatement*>(s);
 							call->setDest(dest);
 							call->setDestProc(proc);
 							call->setReturnAfterCall(true);
+							// also need to change it in the actual RTL
+							std::list<Statement*>::iterator ss1 = ss;
+							ss1++;
+							assert(ss1 == sl.end());
+							pRtl->replaceLastStmt(s);
+							*ss = s;
 						}
 					}
 				}
@@ -588,6 +596,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 					if (pDest && pDest->getOper() == opMemOf &&
 							pDest->getSubExp1()->getOper() == opIntConst && 
 							pBF->IsDynamicLinkedProcPointer(((Const*)pDest->getSubExp1())->getAddr())) {
+						if (VERBOSE)
+							LOG << "jump to a library function: " << stmt_jump << ", replacing with a call/ret.\n";
 						// jump to a library function
 						// replace with a call ret
 						std::string func = pBF->GetDynamicProcName(
@@ -911,7 +921,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 
 	Boomerang::get()->alert_decode(pProc, startAddr, lastAddr, nTotalBytes);
 
-	LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
+	if (VERBOSE)
+		LOG << "finished processing proc " << pProc->getName() << " at address " << pProc->getNativeAddress() << "\n";
 
 	return true;
 }

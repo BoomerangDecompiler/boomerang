@@ -135,7 +135,8 @@ bool GenericExpTransformer::checkCond(Exp *cond, Exp *bindings)
                     Type *ty = lhs->getSubExp1()->getType();
                     if (ty == NULL) {
 #if 0
-                        LOG << "no type for typeof " << lhs << "\n";
+						if (VERBOSE)
+							LOG << "no type for typeof " << lhs << "\n";
 #endif
                         return false;
                     }

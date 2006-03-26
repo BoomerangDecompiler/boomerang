@@ -3451,9 +3451,11 @@ Type *Binary::getType() {
 			if (subExp1->getType()) {
 				Type *sty = subExp1->getType();
 				if (!sty->resolvesToArray() && !sty->resolvesToPointer()) {
-					LOG << "subExp1 not of array/ptr type: " << this << "\n";
-					if (sty)
-						LOG << "it has a type: " << sty->getCtype() << "\n";
+					if (VERBOSE) {
+						LOG << "subExp1 not of array/ptr type: " << this << "\n";
+						if (sty)
+							LOG << "it has a type: " << sty->getCtype() << "\n";
+					}
 					return NULL;
 				}
 				if (sty->resolvesToArray())
@@ -3466,7 +3468,8 @@ Type *Binary::getType() {
 			if (subExp1->getType()) {
 				Type *sty = subExp1->getType();
 				if (!sty->resolvesToCompound()) {
-					LOG << "subExp1 not of compound type: " << this << "\n";
+					if (VERBOSE)
+						LOG << "subExp1 not of compound type: " << this << "\n";
 					assert(false);
 				}
 				assert(subExp2->getOper() == opStrConst);

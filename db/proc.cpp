@@ -1533,8 +1533,12 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 			if (bb->getType() == CALL) {
 				// The call Statement will be in the last RTL in this BB
 				CallStatement* call = (CallStatement*)bb->getRTLs()->back()->getHlStmt();
+				if (!call->isCall()) {
+					LOG << "bb at " << bb->getLowAddr() << " is a CALL but last stmt is not a call: " << call << "\n";
+				}
+				assert(call->isCall());
 				UserProc* c = (UserProc*)call->getDestProc();
-				if (c->isLib()) continue;
+				if (c == NULL || c->isLib()) continue;
 				if (c->status == PROC_FINAL) {
 					// Already decompiled, but the return statement still needs to be set for this call
 					call->setCalleeReturn(c->getTheReturnStatement());
@@ -3262,7 +3266,8 @@ void UserProc::replaceExpressionsWithGlobals() {
 							Type *ty = prog->getGlobalType((char*)gloName);
 							Location *g = Location::global(strdup(gloName), this);
 							if (ty == NULL || ty->getSize() == 0) {
-								LOG << "setting type of global to array\n";
+								if (VERBOSE)
+									LOG << "setting type of global to array\n";
 								ty = new ArrayType(new IntegerType(stride*8),1);
 								prog->setGlobalType((char*)gloName, ty);
 							}
@@ -3284,11 +3289,13 @@ void UserProc::replaceExpressionsWithGlobals() {
 								LOG << "got type: " << ty->getCtype() << "\n";
 
 							if (ty && ty->isArray() && ty->asArray()->getBaseType()->getSize() == stride*8) {
-								LOG << "setting new exp to array ref\n";
+								if (VERBOSE)
+									LOG << "setting new exp to array ref\n";
 								ne = new Binary(opArrayIndex,
 									g, 
 									memof->getSubExp1()->getSubExp1()->getSubExp1() ->clone());
-								LOG << "set to " << ne << "\n";
+								if (VERBOSE)
+									LOG << "set to " << ne << "\n";
 							}
 							/* else 
 								ne = Location::memOf(new Binary(opPlus, 
@@ -5445,9 +5452,9 @@ bool UserProc::doesParamChainToCall(Exp* param, UserProc* p, ProcSet* visited) {
 	BasicBlock::rtlrit rrit; StatementList::reverse_iterator srit;
 	for (it = cfg->begin(); it != cfg->end(); ++it) {
 		CallStatement* c = (CallStatement*) (*it)->getLastStmt(rrit, srit);
-		if (!c->isCall())  continue;		// Only interested in calls
+		if (c == NULL || !c->isCall())  continue;		// Only interested in calls
 		UserProc* dest = (UserProc*)c->getDestProc();
-		if (dest == NULL) continue;
+		if (dest == NULL || dest->isLib()) continue;  // Only interested in calls to UserProcs
 		if (dest == p) {				// Pointer comparison is OK here
 			// This is a recursive call to p. Check for an argument of the form param{-}
 			StatementList& args = c->getArguments();

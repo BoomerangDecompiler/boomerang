@@ -43,7 +43,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(SolutionDir)"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

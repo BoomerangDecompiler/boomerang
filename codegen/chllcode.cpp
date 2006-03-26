@@ -435,7 +435,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 		case opRegOf:
 			{
 				// MVE: this can likely go
-				LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
+				if (VERBOSE)
+					LOG << "WARNING: CHLLCode::appendExp: case opRegOf is deprecated\n";
 				if (u->getSubExp1()->getOper() == opTemp) {
 					// The great debate: r[tmpb] vs tmpb
 					str << "tmp";
@@ -459,7 +460,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opTemp:
 			// Should never see this; temps should be mapped to locals now so that they get declared
-			LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
+			if (VERBOSE)
+				LOG << "WARNING: CHLLCode::appendExp: case opTemp is deprecated\n";
 			// Emit the temp name, e.g. "tmp1"
 			str << ((Const*)u->getSubExp1())->getStr();
 			break;
@@ -703,7 +705,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			//	((Const*)t->getSubExp1())->getInt(),
 			//	((Const*)t->getSubExp2())->getInt());
 			//strcat(str, s); */
-			LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
+			if (VERBOSE)
+				LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
 			str << "(";
 			appendExp(str, t->getSubExp3(), PREC_NONE);
 			str << ")";
@@ -839,16 +842,18 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opSubscript:
 			appendExp(str, u->getSubExp1(), curPrec);
-			LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " <<
-			  m_proc->getName() << " exp (without subscript): " << str.str().c_str()
-				<< "\n";
+			if (VERBOSE)
+				LOG << "ERROR: CHLLCode::appendExp: subscript in code generation of proc " <<
+					m_proc->getName() << " exp (without subscript): " << str.str().c_str()
+					<< "\n";
 			//assert(false);
 			break;
 		case opMemberAccess:
 			{
 				Type *ty = b->getSubExp1()->getType();
 				if (ty == NULL) {
-					LOG << "no type for subexp1 of " << b << "\n";
+					if (VERBOSE)
+						LOG << "no type for subexp1 of " << b << "\n";
 					str << "/* type failure */ ";
 					break;
 				}
@@ -875,7 +880,8 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			break;
 		case opDefineAll:
 			str << "<all>";
-			LOG << "ERROR: should not see opDefineAll in codegen\n";
+			if (VERBOSE)
+				LOG << "ERROR: should not see opDefineAll in codegen\n";
 			break;
 		default:
 			// others
@@ -1453,7 +1459,8 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 		Exp* left = as->getLeft();
 		Type *ty = as->getType();
 		if (ty == NULL) {
-			LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
+			if (VERBOSE)
+				LOG << "ERROR in CHLLCode::AddProcDec: no type for parameter " << left << "!\n";
 			ty = new IntegerType();
 		}
 		char* name = proc->lookupSym(left);
@@ -1466,6 +1473,8 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 			m_proc->searchAndReplace(left, foo);
 			m_proc->searchAndReplace(foo, left);
 		}
+		if (name == NULL)
+			name = "??";
 		appendTypeIdent(s, ty, name);
 	}
 	s << ")";

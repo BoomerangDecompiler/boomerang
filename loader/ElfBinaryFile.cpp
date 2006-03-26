@@ -152,7 +152,8 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     if (i) m_pShdrs = (Elf32_Shdr*)(m_pImage + i);
 
     // Set up section header string table pointer
-    i = elfRead2(&pHeader->e_shstrndx);
+	// NOTE: it does not appear that endianness affects shorts.. they are always in little endian format
+    i = pHeader->e_shstrndx; // elfRead2(&pHeader->e_shstrndx);
     if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
 
     i = 1;              // counter - # sects. Start @ 1, total m_iNumSections
@@ -174,7 +175,15 @@ bool ElfBinaryFile::RealLoad(const char* sName)
     for (i=0; i < m_iNumSections; i++) {
         // Get section information.
         Elf32_Shdr* pShdr = m_pShdrs + i;
+		if ((char*)pShdr > m_pImage + m_lImageSize) {
+			std::cerr << "section " << i << " header is outside the image size\n";
+			return false;
+		}
         pName = m_pStrings + elfRead4(&pShdr->sh_name);
+		if (pName > m_pImage + m_lImageSize) {
+			std::cerr << "name for section " << i << " is outside the image size\n";
+			return false;
+		}
         m_pSections[i].pSectionName = pName;
         int off = elfRead4(&pShdr->sh_offset);
         if (off) m_pSections[i].uHostAddr = (ADDRESS)(m_pImage + off);
