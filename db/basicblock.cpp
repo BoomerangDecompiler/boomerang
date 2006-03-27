@@ -1633,6 +1633,7 @@ bool BasicBlock::calcLiveness(igraph& ig, UserProc* myProc) {
 	checkForOverlap(liveLocs, phiLocs, ig, myProc, true);
 	// For each RTL in this BB
 	std::list<RTL*>::reverse_iterator rit;
+	if (m_pRtls)  // this can be NULL
 	for (rit = m_pRtls->rbegin(); rit != m_pRtls->rend(); rit++) {
 		std::list<Statement*>& stmts = (*rit)->getList();
 		std::list<Statement*>::reverse_iterator sit;
@@ -1686,7 +1687,7 @@ void BasicBlock::getLiveOut(LocationSet &liveout, LocationSet& phiLocs) {
 		liveout.makeUnion(currBB->liveIn);
 		int j = currBB->whichPred(this);
 		// The first RTL will have the phi functions, if any
-		if (currBB->m_pRtls->size() == 0)
+		if (currBB->m_pRtls == NULL || currBB->m_pRtls->size() == 0)
 			continue;
 		RTL* phiRtl = currBB->m_pRtls->front();
 		std::list<Statement*>& stmts = phiRtl->getList();
