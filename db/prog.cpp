@@ -1147,6 +1147,12 @@ const void* Prog::getCodeInfo(ADDRESS uAddr, const char*& last, int& delta) {
 void Prog::decodeEntryPoint(ADDRESS a) { 
 	Proc* p = (UserProc*)findProc(a);
 	if (p == NULL || (!p->isLib() && !((UserProc*)p)->isDecoded())) {
+		if (a < pBF->getLimitTextLow() || a >= pBF->getLimitTextHigh()) {
+			std::cerr << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+			if (VERBOSE)
+				LOG << "attempt to decode entrypoint at address outside text area, addr=" << a << "\n";
+			return;
+		}
 		pFE->decode(this, a);
 		finishDecode();
 	}
@@ -1159,7 +1165,7 @@ void Prog::decodeEntryPoint(ADDRESS a) {
 
 void Prog::setEntryPoint(ADDRESS a) {
 	Proc* p = (UserProc*)findProc(a);
-	if (p == NULL || (!p->isLib()))
+	if (p != NULL && !p->isLib())
 		entryProcs.push_back((UserProc*)p);
 }
 
@@ -2022,3 +2028,15 @@ void Memoisable::restoreMemo(bool dec)
 }
 
 #endif		// #ifdef USING_MEMO
+
+void Prog::decodeFragment(UserProc* proc, ADDRESS a)
+{
+	if (a >= pBF->getLimitTextLow() && a < pBF->getLimitTextHigh())
+		pFE->decodeFragment(proc, a);
+	else {
+		std::cerr << "attempt to decode fragment outside text area, addr=" << a << "\n";
+		if (VERBOSE)
+			LOG << "attempt to decode fragment outside text area, addr=" << a << "\n";
+	}
+}
+

@@ -1454,7 +1454,7 @@ void BasicBlock::setCaseHead(PBB head, PBB follow)
 	// if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
 	// follow
 	if (getType() == NWAY && this != head) {
-		if (condFollow->traversed != DFS_CASE && condFollow != follow)
+		if (condFollow && condFollow->traversed != DFS_CASE && condFollow != follow)
 			condFollow->setCaseHead(head, follow);
 	} else
 		// traverse each child of this node that:

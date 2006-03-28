@@ -188,7 +188,11 @@ void FrontEnd::decode(Prog* prog, bool decodeMain, const char *pname) {
 		for (size_t i = 0; i < sizeof(mainName)/sizeof(char*); i++) {
 			if (!strcmp(name, mainName[i])) {
 				Proc *proc = prog->findProc(a);
-				assert(proc);
+				if (proc == NULL) {
+					if (VERBOSE)
+						LOG << "no proc found for address " << a << "\n";
+					return;
+				}
 				FuncType *fty = dynamic_cast<FuncType*>(Type::getNamedType(name));
 				if (fty == NULL)
 					LOG << "unable to find signature for known entrypoint " << name << "\n";
@@ -212,6 +216,11 @@ void FrontEnd::decode(Prog *prog, ADDRESS a) {
 		if (VERBOSE)
 			LOG << "starting decode at address " << a << "\n";
 		UserProc* p = (UserProc*)prog->findProc(a);
+		if (p == NULL) {
+			if (VERBOSE)
+				LOG << "no proc found at address " << a << "\n";
+			return;
+		}
 		if (p->isLib()) {
 			LOG << "NOT decoding library proc at address 0x" << a << "\n";
 			return;

@@ -1107,7 +1107,7 @@ void CHLLCode::AddGoto(int indLevel, int ord) {
  */
 void CHLLCode::RemoveUnusedLabels(int maxOrd) {
 	for (std::list<char *>::iterator it = lines.begin(); it != lines.end();) {
-		if ((*it)[0] == 'L') {
+		if ((*it)[0] == 'L' && strchr(*it, ':')) {
 			char *s = strdup(*it);
 			*strchr(s, ':') = 0;
 			int n = atoi(s+1);

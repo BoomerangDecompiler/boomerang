@@ -115,7 +115,7 @@ virtual				~Prog();
 		void		decodeEntryPoint(ADDRESS a);
 		void		setEntryPoint(ADDRESS a);			// As per the above, but don't decode
 		void		decodeEverythingUndecoded();
-		void		decodeFragment(UserProc* proc, ADDRESS a) { pFE->decodeFragment(proc, a); }
+		void		decodeFragment(UserProc* proc, ADDRESS a);
 
 		// Re-decode this proc from scratch
 		void		reDecode(UserProc* proc);
