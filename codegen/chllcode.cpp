@@ -1449,6 +1449,11 @@ void CHLLCode::AddProcDec(UserProc* proc, bool open) {
 	s << proc->getName() << "(";
 	StatementList& parameters = proc->getParameters();
 	StatementList::iterator pp;
+	
+	if (parameters.size() > 4 && open) {
+		LOG << "Warning: CHLLCode::AddProcDec: Proc " << proc->getName() << " has " << (int)parameters.size() << " parameters\n";
+	}
+	
 	bool first = true;
 	for (pp = parameters.begin(); pp != parameters.end(); ++pp) {
 		if (first)
