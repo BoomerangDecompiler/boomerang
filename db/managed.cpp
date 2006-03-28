@@ -760,7 +760,7 @@ void LocationSet::diff(LocationSet* o) {
 	if (printed1not2)
 		std::cerr << "\n";
 }
-Range::Range() : stride(1), lowerBound(NEGINFINITY), upperBound(INFINITY)
+Range::Range() : stride(1), lowerBound(MIN), upperBound(MAX)
 {
 	base = new Const(0);
 }
@@ -788,7 +788,7 @@ void Range::print(std::ostream &os)
 {
 	assert(lowerBound <= upperBound);
 	if (base->isIntConst() && ((Const*)base)->getInt() == 0 &&
-		lowerBound == NEGINFINITY && upperBound == INFINITY) {
+		lowerBound == MIN && upperBound == MAX) {
 		os << "T";
 		return;
 	}
@@ -807,12 +807,12 @@ void Range::print(std::ostream &os)
 		if (stride != 1)
 			os << stride;
 		os << "[";
-		if (lowerBound == NEGINFINITY)
+		if (lowerBound == MIN)
 			os << "-inf";
 		else
 			os << lowerBound;
 		os << ", ";
-		if (upperBound == INFINITY)
+		if (upperBound == MAX)
 			os << "inf";
 		else
 			os << upperBound;
@@ -848,7 +848,7 @@ void Range::unionWith(Range &r)
 		}
 	}
 	if (!(*base == *r.base)) {
-		stride = 1; lowerBound = NEGINFINITY; upperBound = INFINITY; base = new Const(0);
+		stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
 		if (VERBOSE)
 			LOG << this << "\n";
 		return;
@@ -868,22 +868,22 @@ void Range::widenWith(Range &r)
 	if (VERBOSE)
 		LOG << "widening " << this << " with " << r << " got ";
 	if (!(*base == *r.base)) {
-		stride = 1; lowerBound = NEGINFINITY; upperBound = INFINITY; base = new Const(0);
+		stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
 		if (VERBOSE)
 			LOG << this << "\n";
 		return;
 	}
 	// ignore stride for now
 	if (r.getLowerBound() < lowerBound) 
-		lowerBound = NEGINFINITY;
+		lowerBound = MIN;
 	if (r.getUpperBound() > upperBound)
-		upperBound = INFINITY;
+		upperBound = MAX;
 	if (VERBOSE)
 		LOG << this << "\n";
 }
 Range &RangeMap::getRange(Exp *loc) {
 	if (ranges.find(loc) == ranges.end()) {
-		return *(new Range(1, NEGINFINITY, INFINITY, new Const(0)));
+		return *(new Range(1, Range::MIN, Range::MAX, new Const(0)));
 	}
 	return ranges[loc];
 }
@@ -974,6 +974,3 @@ bool RangeMap::isSubset(RangeMap &other)
 	}
 	return true;
 }
-
-
-

@@ -242,9 +242,6 @@ virtual				~LocationList() {}						// virtual destructor kills warning
 };	// class LocationList
 #endif
 
-#define NEGINFINITY -2147483647
-#define INFINITY 2147483647
-
 class Range {
 protected:
 	int stride, lowerBound, upperBound;
@@ -262,6 +259,9 @@ public:
 	void widenWith(Range &r);
 	void print(std::ostream &os);
 	bool operator==(Range &other);
+	
+static const int MAX = 2147483647;
+static const int MIN = -2147483647;
 };
 
 class RangeMap {

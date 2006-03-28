@@ -261,12 +261,12 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 			Range &r = output.getRange(a_rhs->getSubExp1());
 			int c = ((Const*)a_rhs->getSubExp2())->getInt();
 			if (a_rhs->getOper() == opPlus) {
-				Range ra(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() + c : NEGINFINITY,
-					r.getUpperBound() != INFINITY ? r.getUpperBound() + c : INFINITY, r.getBase());
+				Range ra(1, r.getLowerBound() != Range::MIN ? r.getLowerBound() + c : Range::MIN,
+					r.getUpperBound() != Range::MAX? r.getUpperBound() + c : Range::MAX, r.getBase());
 				output.addRange(a_lhs, ra);
 			} else {
-				Range ra(1, r.getLowerBound() != NEGINFINITY ? r.getLowerBound() - c : NEGINFINITY,
-					r.getUpperBound() != INFINITY ? r.getUpperBound() - c : INFINITY, r.getBase());
+				Range ra(1, r.getLowerBound() != Range::MIN ? r.getLowerBound() - c : Range::MIN,
+					r.getUpperBound() != Range::MAX ? r.getUpperBound() - c : Range::MAX, r.getBase());
 				output.addRange(a_lhs, ra);
 			}
 		} else {
@@ -413,7 +413,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 
 		if (output.hasRange(Location::regOf(28))) {
 			Range &r = output.getRange(Location::regOf(28));
-			if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != NEGINFINITY) {
+			if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
 				LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
 				proc->printToLog();
 				assert(false);
@@ -530,8 +530,8 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 				}
 			}
 		}
-		Range ra(r.getStride(), r.getLowerBound() == NEGINFINITY ? NEGINFINITY : r.getLowerBound() + c,
-			r.getUpperBound() == INFINITY ? INFINITY : r.getUpperBound() + c, r.getBase());
+		Range ra(r.getStride(), r.getLowerBound() == Range::MIN ? Range::MIN : r.getLowerBound() + c,
+			r.getUpperBound() == Range::MAX ? Range::MAX : r.getUpperBound() + c, r.getBase());
 		output.addRange(Location::regOf(28), ra);
 	}
 	updateRanges(output, execution_paths);
@@ -5495,5 +5495,3 @@ void JunctionStatement::print(std::ostream &os)
 	os << "\n\t\t\tranges: ";
 	ranges.print(os);
 }
-
-
