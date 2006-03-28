@@ -153,7 +153,8 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 
     // Set up section header string table pointer
 	// NOTE: it does not appear that endianness affects shorts.. they are always in little endian format
-    i = pHeader->e_shstrndx; // elfRead2(&pHeader->e_shstrndx);
+	// Gerard: I disagree. I need the elfRead on linux/i386
+    i = elfRead2(&pHeader->e_shstrndx); // pHeader->e_shstrndx;
     if (i) m_pStrings = m_pImage + elfRead4(&m_pShdrs[i].sh_offset);
 
     i = 1;              // counter - # sects. Start @ 1, total m_iNumSections
@@ -1577,4 +1578,3 @@ void ElfBinaryFile::dumpSymbols() {
 		std::cerr << "0x" << it->first << " " << it->second << "        ";
 	std::cerr << std::dec << "\n";
 }
-
