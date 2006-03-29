@@ -1315,8 +1315,11 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
 		return succImmPDom;
 	if (!succImmPDom)
 		return curImmPDom;
+	if (curImmPDom->revOrd == succImmPDom->revOrd)
+		return curImmPDom;  // ordering hasn't been done
 
 	PBB oldCurImmPDom = curImmPDom;
+	PBB oldSuccImmPDom = succImmPDom;
 
 	int giveup = 0;
 	while (giveup < 10000 && curImmPDom && succImmPDom && (curImmPDom != succImmPDom)) {
@@ -1327,8 +1330,11 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
 		giveup++;
 	}
 
-	if (giveup)
+	if (giveup) {
+		if (VERBOSE)
+			LOG << "failed to find commonPDom for " << oldCurImmPDom->getLowAddr() << " and " << oldSuccImmPDom->getLowAddr() << "\n";
 		return oldCurImmPDom;  // no change
+	}
 
 	return curImmPDom;
 }
