@@ -1316,11 +1316,19 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
 	if (!succImmPDom)
 		return curImmPDom;
 
-	while (curImmPDom && succImmPDom && (curImmPDom != succImmPDom))
+	PBB oldCurImmPDom = curImmPDom;
+
+	int giveup = 0;
+	while (giveup < 10000 && curImmPDom && succImmPDom && (curImmPDom != succImmPDom)) {
 		if (curImmPDom->revOrd > succImmPDom->revOrd)
 			succImmPDom = succImmPDom->immPDom;
 		else
 			curImmPDom = curImmPDom->immPDom;
+		giveup++;
+	}
+
+	if (giveup)
+		return oldCurImmPDom;  // no change
 
 	return curImmPDom;
 }

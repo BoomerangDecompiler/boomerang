@@ -1462,7 +1462,8 @@ void Prog::fromSSAform() {
 			LOG << "===== Before transformation from SSA form for " << proc->getName() << " =====\n";
 			proc->printToLog();
 			LOG << "===== End before transformation from SSA for " << proc->getName() << " =====\n\n";
-			proc->printDFG();
+			if (Boomerang::get()->dotFile)
+				proc->printDFG();
 		}
 		proc->fromSSAform();
 		if (Boomerang::get()->vFlag) {
