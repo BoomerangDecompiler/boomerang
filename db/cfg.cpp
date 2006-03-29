@@ -1856,7 +1856,9 @@ void Cfg::findInterferences(igraph& ig) {
 
 	bool change;
 	int progress = 500;
-	while (workList.size()) {
+	int count = 0;
+	while (workList.size() && count < 100000) {
+		count++;  // prevent infinite loop
 		if (--progress <= 0) {
 			std::cout << ":" << std::flush;
 			progress = 500;

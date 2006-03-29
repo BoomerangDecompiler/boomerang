@@ -1026,7 +1026,7 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 	// if this is a latchNode and the current indentation level is the same as the first node in the loop, then this
 	// write out its body and return otherwise generate a goto
 	if (isLatchNode())
-		if (latch && indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType == PreTested ? 1 : 0)) {
+		if (latch && latch->loopHead && indLevel == latch->loopHead->indentLevel + (latch->loopHead->lType == PreTested ? 1 : 0)) {
 			WriteBB(hll, indLevel);
 			return;
 		} else {
@@ -1208,6 +1208,8 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 				hll->AddCaseCondHeader(indLevel, psi->pSwitchVar);
 			} else {
 				Exp *cond = getCond();
+				if (cond == NULL)
+					cond = new Const(0xfeedface);  // hack, but better than a crash
 				if (cType == IfElse) {
 					cond = new Unary(opNot, cond->clone());
 					cond = cond->simplify();
@@ -1342,13 +1344,17 @@ void BasicBlock::generateCode(HLLCode *hll, int indLevel, PBB latch,
 					LOG << "taken branch is first out edge\n";
 				}
 
-				hll->AddIfCondHeader(indLevel, getCond());
-				if (other->traversed == DFS_CODEGEN)
-					emitGotoAndLabel(hll, indLevel+1, other);
-				else
-					other->generateCode(hll, indLevel+1, latch,
-						followSet, gotoSet);
-				hll->AddIfCondEnd(indLevel);
+				try {
+					hll->AddIfCondHeader(indLevel, getCond());
+					if (other->traversed == DFS_CODEGEN)
+						emitGotoAndLabel(hll, indLevel+1, other);
+					else
+						other->generateCode(hll, indLevel+1, latch,
+							followSet, gotoSet);
+					hll->AddIfCondEnd(indLevel);
+				} catch (LastStatementNotABranchError &) {
+					LOG << "last statement is not a cond, don't know what to do with this.\n";
+				}
 			}
 
 			// generate code for its successor if it hasn't already been visited and is in the same loop/case and is not

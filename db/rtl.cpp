@@ -568,7 +568,7 @@ void RTL::simplify() {
 		s->simplify();		  
 		if (s->isBranch()) {
 			Exp *cond =	 ((BranchStatement*)s)->getCondExpr();
-			if (cond->getOper() == opIntConst) {
+			if (cond && cond->getOper() == opIntConst) {
 				if (((Const*)cond)->getInt() == 0) {
 					if (VERBOSE)
 						LOG << "removing branch with false condition at " << getAddress()  << " " << *it << "\n";
