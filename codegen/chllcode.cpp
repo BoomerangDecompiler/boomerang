@@ -83,8 +83,12 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 	OPER op = exp->getOper();
 	// First, a crude cast if unsigned
 	if (uns && op != opIntConst && op != opList/* && !DFA_TYPE_ANALYSIS */) {
-		str << "(unsigned)";
-		curPrec = PREC_UNARY;
+		if (!(exp->isMemOf() && exp->getSubExp1()->getType() && exp->getSubExp1()->getType()->isPointer() &&
+				exp->getSubExp1()->getType()->asPointer()->getPointsTo()->isInteger() &&
+				!exp->getSubExp1()->getType()->asPointer()->getPointsTo()->asInteger()->isSigned())) {
+			str << "(unsigned)";
+			curPrec = PREC_UNARY;
+		}
 	}
 
 	// Check if it's mapped to a symbol
@@ -416,6 +420,15 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				Type *ty = l->getType();
 				if (ty->isPointer()) {
 					str << "*";
+					if (ty->asPointer()->getPointsTo()->isSize()) {
+						int sz = ty->asPointer()->getPointsTo()->asSize()->getSize();
+						if (sz == 8)
+							str << "(char*)";
+						else if (sz == 16)
+							str << "(short*)";
+						else if (sz == 32)
+							str << "(int*)";
+					}
 					appendExp(str, l, PREC_UNARY);
 					closeParen(str, curPrec, PREC_UNARY);
 					break;
@@ -705,6 +718,33 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			//	((Const*)t->getSubExp1())->getInt(),
 			//	((Const*)t->getSubExp2())->getInt());
 			//strcat(str, s); */
+			if (t->getSubExp3()->isMemOf() && 
+					t->getSubExp1()->isIntConst() &&
+					t->getSubExp2()->isIntConst() &&
+					((Const*)t->getSubExp2())->getInt() == 32) {
+				int sz = ((Const*)t->getSubExp1())->getInt();
+				if (sz == 8 || sz == 16) {
+					bool close = false;
+					str << "*";
+					Type *ty = t->getSubExp3()->getSubExp1()->getType();
+					if (ty == NULL || !ty->isPointer() || 
+							!ty->asPointer()->getPointsTo()->isInteger() ||
+							ty->asPointer()->getPointsTo()->asInteger()->getSize() != sz) {
+						str << "(unsigned ";
+						if (sz == 8)
+							str << "char";
+						else 
+							str << "short";
+						str << "*)";
+						openParen(str, curPrec, PREC_UNARY);
+						close = true;
+					}
+					appendExp(str, t->getSubExp3()->getSubExp1(), PREC_UNARY);
+					if (close)
+						closeParen(str, curPrec, PREC_UNARY);
+					break;
+				}
+			}
 			if (VERBOSE)
 				LOG << "WARNING: CHLLCode::appendExp: case opZfill is deprecated\n";
 			str << "(";
@@ -1252,8 +1292,10 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 			*rhs->getSubExp1() == *lhs) {
 		// C has special syntax for this, eg += and ++
 		// however it's not always acceptable for assigns to m[] (?)
-		if (rhs->getSubExp2()->isIntConst() &&
-				((Const*)rhs->getSubExp2())->getInt() == 1) 
+		if (rhs->getSubExp2()->isIntConst() && 
+				(((Const*)rhs->getSubExp2())->getInt() == 1 ||
+				 (lhs->getType() && lhs->getType()->isPointer() && 
+				 lhs->getType()->asPointer()->getPointsTo()->getSize() == ((Const*)rhs->getSubExp2())->getInt() * 8)))
 			s << "++";
 		else {
 			s << " += ";

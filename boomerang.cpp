@@ -21,6 +21,7 @@
 #else
 #include <sys/stat.h>		// For mkdir
 #include <unistd.h>			// For unlink
+#include <signal.h>
 #endif
 #ifdef _MSC_VER
 #include <windows.h>		// For SetCurrentDirectory
@@ -62,7 +63,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
 	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
-	experimental(false)
+	experimental(false), minsToStopAfter(0)
 {
 	progPath = "./";
 	outputPath = "./output/";
@@ -137,6 +138,7 @@ void Boomerang::help() {
 	std::cout << "  -E <addr>        : Decode the procedure at addr, no callees\n";
 	std::cout << "                     Use -e and -E repeatedly for multiple entry points\n";
 	std::cout << "  -ic              : Decode through type 0 Indirect Calls\n";
+	std::cout << "  -S <min>         : Stop decompilation after specified number of minutes\n";
 	std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
 	std::cout << "  -Tc              : Use old constraint-based type analysis\n";
 	std::cout << "  -Td              : Use data-flow-based type analysis\n";
@@ -878,6 +880,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 			case 'S':
 				if (argv[i][2] == 'D')
 					saveBeforeDecompile = true;
+				else {
+					sscanf(argv[++i], "%i", &minsToStopAfter);					
+				}
 				break;
 			case 'k':
 				kmd = 1;
@@ -1044,6 +1049,30 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	return prog;
 }
 
+#ifdef _WIN32
+DWORD WINAPI stopProcess(
+    time_t start
+)
+{
+	int mins = Boomerang::get()->minsToStopAfter;
+	while(1) {
+		time_t now;
+		time(&now);
+		if ((now - start) > mins * 60) {
+			std::cerr << "\n\n Stopping process, timeout.\n";
+			ExitProcess(1);
+		}
+		Sleep(1000);
+	}
+}
+#else
+void stopProcess(int n)
+{
+	std::cerr << "\n\n Stopping process, timeout.\n";
+	exit(1);
+}
+#endif
+
 /**
  * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
  * After decompilation the elapsed time is printed to std::cerr.
@@ -1058,6 +1087,18 @@ int Boomerang::decompile(const char *fname, const char *pname)
 	Prog *prog;
 	time_t start;
 	time(&start);
+
+	if (minsToStopAfter) {
+		std::cerr << "stopping decompile after " << minsToStopAfter << " minutes.\n";
+#ifdef _WIN32
+		DWORD id;
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)stopProcess, (LPVOID)start, 0, &id);
+#else
+		signal(SIGALRM, stopProcess);
+		alarm(minsToStopAfter * 60);
+#endif
+	}
+
 	std::cerr << "setting up transformers...\n";
 	ExpTransformer::loadAll();
 

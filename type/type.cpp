@@ -1049,6 +1049,7 @@ AS_TYPE(Float)
 AS_TYPE(Pointer)
 AS_TYPE(Array)
 AS_TYPE(Compound)
+AS_TYPE(Size);
 AS_TYPE(Union)
 AS_TYPE(Upper)
 AS_TYPE(Lower)

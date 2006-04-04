@@ -717,6 +717,16 @@ void UserProc::initStatements() {
 			if (call) {
 				call->setSigArguments();
 			}
+			if (ADHOC_TYPE_ANALYSIS) {
+				Assign *asgn = dynamic_cast<Assign*>(s);
+				if (asgn) {
+					Exp *r = asgn->getRight();
+					if (r->isMemOf() && r->getSubExp1()->isLocation()) {
+						Location *l = (Location*)r->getSubExp1();
+						l->setType(new PointerType(asgn->getType()));
+					}
+				}
+			}
 		}
 	}
 }
@@ -1069,7 +1079,7 @@ void UserProc::initialiseDecompile() {
 	initStatements();
 
 	if (VERBOSE) {
-		LOG << "--- debug print before SSA for " << getName() << " ---n";
+		LOG << "--- debug print before SSA for " << getName() << " ---\n";
 		printToLog();
 		LOG << "=== end debug print before SSA for " << getName() << " ===\n\n";
 	}
@@ -1459,7 +1469,7 @@ void UserProc::remUnusedStmtEtc() {
 		typeAnalysis();
 
 	// Only remove unused statements after decompiling as much as possible of the proc
-	// FIME: Probably need a repeat until no change here
+	// FIXME: Probably need a repeat until no change here
 	//for (int depth = 0; depth <= maxDepth; depth++) {
 		// Remove unused statements
 		RefCounter refCounts;			// The map
@@ -1789,7 +1799,10 @@ void UserProc::updateCalls() {
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks) {
 	if (VERBOSE)
 		LOG << "### rename block vars for " << getName() << " pass " << pass << ", clear = " << clearStacks << " ###\n";
-	return df.renameBlockVars(this, 0, clearStacks);
+	bool b = df.renameBlockVars(this, 0, clearStacks);
+	if (VERBOSE)
+		LOG << "df.renameBlockVars return " << (b ? "true" : "false") << "\n";
+	return b;
 }
 
 #if 0
@@ -3102,10 +3115,56 @@ bool UserProc::nameRegisters() {
 	bool found = false;
 	int sp = signature->getStackRegister(prog);
 
+
 	StatementList stmts;
 	getStatements(stmts);
-	// create a symbol for every register
 	StatementList::iterator it;
+
+	std::map<int, Type*> types;
+	// look for the best type for each register
+	for (it = stmts.begin(); ADHOC_TYPE_ANALYSIS && it != stmts.end(); it++) {
+		Statement* s = *it;
+		Location *reg; 
+		std::list<Exp*> li;
+		std::list<Exp*>::iterator ll;
+		s->searchAll(regOfWild, li);
+		for (ll = li.begin(); ll != li.end(); ++ll) {
+			reg = (Location*)*ll;
+			int n = ((Const*)reg->getSubExp1())->getInt();
+			Type *ty = reg->getType();
+			if (ty) {
+				if (VERBOSE)
+					LOG << "found type " << ty << " for " << reg << "\n";
+				if (types.find(n) == types.end() || types[n]->isInteger())
+					types[n] = ty;
+			}
+			Exp *result;
+			if (s->search(new Ternary(opZfill, new Terminal(opWild), new Terminal(opWild), Location::memOf(reg)), result)) {
+				// HACK: there should be an ADHOC analysis somewhere to take care of this
+				int sz = ((Const*)result->getSubExp1())->getInt();
+				types[n] = new PointerType(new IntegerType(sz, -1));
+				if (VERBOSE)
+					LOG << "found zfill(" << sz << ", x, m[" << reg << "]), assigning type " << types[n] << "\n";
+			}
+		}
+	}
+
+	// set the best type on all register locations
+	for (it = stmts.begin(); ADHOC_TYPE_ANALYSIS && it != stmts.end(); it++) {
+		Statement* s = *it;
+		Location *reg; 
+		std::list<Exp*> li;
+		std::list<Exp*>::iterator ll;
+		s->searchAll(regOfWild, li);
+		for (ll = li.begin(); ll != li.end(); ++ll) {
+			reg = (Location*)*ll;
+			int n = ((Const*)reg->getSubExp1())->getInt();
+			if (types.find(n) != types.end())
+				reg->setType(types[n]);
+		}
+	}
+
+	// create a symbol for every register
 	for (it = stmts.begin(); it != stmts.end(); it++) {
 		Statement* s = *it;
 		Exp *reg; 
@@ -3120,6 +3179,7 @@ bool UserProc::nameRegisters() {
 				continue;
 			if (VERBOSE)
 				LOG << "register found: " << reg << "\n";
+			int n = ((Const*)reg->getSubExp1())->getInt();
 			Type *ty = reg->getType();
 			if (ty == NULL)
 				ty = new IntegerType();
@@ -3127,16 +3187,7 @@ bool UserProc::nameRegisters() {
 			assert(symbolMap.find(reg) != symbolMap.end());
 			Location* locl = (Location*)symbolMap[reg]->getSubExp1();
 			std::string name = ((Const*)locl)->getStr();
-			if (reg->getType() != NULL)
-				locals[name] = reg->getType();
-			else {
-				//locals[name] = s->updateType(reg, locals[name]);
-				// For now; should only affect ad hoc type analysis:
-				locals[name] = new IntegerType();
-				if (VERBOSE)
-					LOG << "updating type of named register " << name.c_str() << " to " << locals[name]->getCtype() <<
-						"\n";
-			}
+			locals[name] = ty;
 			found = true;
 		}
 	}
@@ -3393,6 +3444,7 @@ void UserProc::removeUnusedLocals() {
 	getStatements(stmts);
 	// First count any uses of the locals
 	StatementList::iterator ss;
+	bool all = false;
 	for (ss = stmts.begin(); ss != stmts.end(); ss++) {
 		Statement* s = *ss;
 		LocationSet refs;
@@ -3400,6 +3452,8 @@ void UserProc::removeUnusedLocals() {
 		LocationSet::iterator rr;
 		for (rr = refs.begin(); rr != refs.end(); rr++) {
 			Exp* r = *rr;
+			if (r->getOper() == opDefineAll)
+				all = true;
 			//if (r->isSubscript())					// Presumably never seen now
 			//	r = ((RefExp*)r)->getSubExp1();
 			char* sym = findLocal(r);				// Look up raw expressions in the symbolMap, and check in symbols
@@ -3433,7 +3487,7 @@ void UserProc::removeUnusedLocals() {
 	for (it = locals.begin(); it != locals.end(); it++) {
 		std::string& name = const_cast<std::string&>(it->first);
 		// LOG << "Considering local " << name << "\n";
-		if (usedLocals.find(name) == usedLocals.end()) {
+		if (usedLocals.find(name) == usedLocals.end() && !all) {
 			if (VERBOSE)
 				LOG << "removed unused local " << name.c_str() << "\n";
 			removes.insert(name);

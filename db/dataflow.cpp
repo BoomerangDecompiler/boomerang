@@ -25,6 +25,7 @@
 #include "exp.h"
 #include "boomerang.h"
 #include "visitor.h"
+#include "log.h"
 
 extern char debug_buffer[];		 // For prints functions
 
@@ -468,6 +469,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 			pa->putAt(j, def, a);
 		}
 	}
+
 	// For each child X of n
 	// Note: linear search!
 	unsigned numBB = proc->getCFG()->getNumBBs();
@@ -475,6 +477,7 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 		if (idom[X] == n)
 			renameBlockVars(proc, X);
 	}
+
 	// For each statement S in block n
 	// NOTE: Because of the need to pop childless calls from the Stacks, it is important in my algorithm to process the
 	// statments in the BB *backwards*. (It is not important in Appel's algorithm, since he always pushes a definition

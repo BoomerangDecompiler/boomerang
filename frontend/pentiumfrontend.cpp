@@ -728,6 +728,9 @@ ADDRESS PentiumFrontEnd::getMainEntryPoint(bool& gotMain) {
 
 	// Not ideal; we must return start
 	std::cerr << "main function not found\n";
+
+	this->AddSymbol(start, "_start");
+
 	return start;
 }
 

@@ -1029,37 +1029,37 @@ POP.OD   reg32
             *32* %esp := %esp + 4;
 
 PUSH.EVOW   modrm 
-            *32* %esp := %esp - 2
-            *16* m[%esp] := modrm{16};
+            *16* m[%esp - 2] := modrm{16}
+            *32* %esp := %esp - 2;
 
 PUSH.EVOD   modrm 
-            *32* %esp := %esp - 4
-            *32* m[%esp] := modrm{32};
+            *32* m[%esp - 4] := modrm{32}
+            *32* %esp := %esp - 4;
 
 PUSH.IXOB   i8 
-            *32* %esp := %esp - 4
-            *32* m[%esp] := sgnex(8, 32, i8);
+            *32* m[%esp - 4] := sgnex(8, 32, i8)
+            *32* %esp := %esp - 4;
 
 # Note: 66 6A nn: 8 bit immediate operand (nn), but 16 bit push!
 PUSH.IXOW   i8
-            *16* %esp := %esp - 2
-            *16* m[%esp] := sgnex(8, 16, i8);
+            *16* m[%esp - 2] := sgnex(8, 16, i8)
+            *16* %esp := %esp - 2;
 
 PUSH.IVOW   i16 
-            *32* %esp := %esp - 2
-            *16* m[%esp] := i16;
+            *16* m[%esp - 2] := i16
+            *32* %esp := %esp - 2;
 
 PUSH.IVOD   i32 
-            *32* %esp := %esp - 4
-            *32* m[%esp] := i32;
+            *32* m[%esp - 4] := i32
+            *32* %esp := %esp - 4;
 
 PUSH.OW   reg16 
-            *32* %esp := %esp - 2
-            *16* m[%esp] := reg16;
+            *16* m[%esp - 2] := reg16
+            *32* %esp := %esp - 2;
 
 PUSH.OD   reg32 
-            *32* %esp := %esp - 4
-            *32* m[%esp] := reg32;
+            *32* m[%esp - 4] := reg32
+            *32* %esp := %esp - 4;
 
 # Just fix up the stack for selector pushes.
 PUSH.CS

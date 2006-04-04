@@ -6,6 +6,7 @@ typedef int INT;
 typedef unsigned int SIZE_T;
 typedef unsigned int LONG;
 typedef unsigned char BYTE;
+typedef BYTE *LPBYTE;
 typedef const void *LPCVOID;
 typedef void *LPVOID;
 typedef void *PVOID;
@@ -14,7 +15,8 @@ typedef char LPSTR[];
 typedef const short LPCWSTR[];
 typedef short LPWSTR[];
 typedef short wchar_t;
-typedef int DWORD;
+typedef unsigned int DWORD;
+typedef unsigned short WORD;
 typedef int HWND;
 typedef int HMENU;
 typedef int HFONT;
@@ -37,6 +39,7 @@ typedef int HGLOBAL;
 typedef unsigned int ULONG;
 typedef unsigned char BYTE;
 typedef char CHAR;
+typedef int HRESULT;
 typedef LRESULT WndProc(	  
 	HWND hwnd,
 	UINT uMsg,
@@ -405,8 +408,8 @@ BOOL EndDialog(
 );
 
 int wsprintfA(
-	LPTSTR lpOut,
-	LPCTSTR lpFmt,
+	LPSTR lpOut,
+	LPCSTR lpFmt,
 	...
 );
 
@@ -803,6 +806,72 @@ void DeleteCriticalSection(
 void InitializeCriticalSection(
   LPCRITICAL_SECTION lpCriticalSection
 );
+
+typedef struct {
+  DWORD cb;
+  LPSTR lpReserved;
+  LPSTR lpDesktop;
+  LPSTR lpTitle;
+  DWORD dwX;
+  DWORD dwY;
+  DWORD dwXSize;
+  DWORD dwYSize;
+  DWORD dwXCountChars;
+  DWORD dwYCountChars;
+  DWORD dwFillAttribute;
+  DWORD dwFlags;
+  WORD wShowWindow;
+  WORD cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFO;
+typedef STARTUPINFO *LPSTARTUPINFO;
+
+typedef struct {
+  DWORD cb;
+  LPWSTR lpReserved;
+  LPWSTR lpDesktop;
+  LPWSTR lpTitle;
+  DWORD dwX;
+  DWORD dwY;
+  DWORD dwXSize;
+  DWORD dwYSize;
+  DWORD dwXCountChars;
+  DWORD dwYCountChars;
+  DWORD dwFillAttribute;
+  DWORD dwFlags;
+  WORD wShowWindow;
+  WORD cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFOW;
+typedef STARTUPINFOW *LPSTARTUPINFOW;
+
+void GetStartupInfo(LPSTARTUPINFO lpStartupInfo);
+void GetStartupInfoW(LPSTARTUPINFOW lpStartupInfo);
+
+HMODULE GetModuleHandle(LPCSTR lpModuleName);
+HMODULE GetModuleHandleW(LPCWSTR lpModuleName);
+
+void ExitProcess(UINT uExitCode);
+
+BOOL PostMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+BOOL PostMessageW(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+typedef void *REFCLSID;
+HRESULT SHLoadInProc(REFCLSID rclsid);
+
+HWND FindWindowA(LPCSTR lpClassName, LPCSTR lpWindowName);
+HWND FindWindowW(LPCWSTR lpClassName, LPCWSTR lpWindowName);
+
+void Sleep(DWORD dwMilliseconds);
+
+HMODULE LoadLibraryA(LPCSTR lpFileName);
+HMODULE LoadLibraryW(LPCWSTR lpFileName);
 
 
 // guessed LPR functions

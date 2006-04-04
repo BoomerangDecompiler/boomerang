@@ -265,6 +265,7 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		noGlobals;
 		bool		assumeABI;			///< Assume ABI compliance
 		bool		experimental;		///< Activate experimental code. Caution!
+		int			minsToStopAfter;
 };
 
 #define VERBOSE				(Boomerang::get()->vFlag)
