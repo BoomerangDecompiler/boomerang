@@ -151,6 +151,10 @@ void UserProc::setParamType(const char* nam, Type* ty) {
 	signature->setParamType(nam, ty);
 }
 
+void UserProc::setParamType(int idx, Type* ty) {
+	signature->setParamType(idx, ty);
+}
+
 void UserProc::renameLocal(const char *oldName, const char *newName) {
 	Type *t = locals[oldName];
 	Exp *e = expFromSymbol(oldName);
@@ -3179,15 +3183,30 @@ bool UserProc::nameRegisters() {
 				continue;
 			if (VERBOSE)
 				LOG << "register found: " << reg << "\n";
-			int n = ((Const*)reg->getSubExp1())->getInt();
-			Type *ty = reg->getType();
+			Type *ty;
+			if (ADHOC_TYPE_ANALYSIS)
+				ty = reg->getType();
+			else {
+				ty = s->getTypeFor(reg);
+			}
 			if (ty == NULL)
-				ty = new IntegerType();
+				ty = new IntegerType();		// Ugh - default to integer
 			symbolMap[reg->clone()] = newLocal(ty);
 			assert(symbolMap.find(reg) != symbolMap.end());
 			Location* locl = (Location*)symbolMap[reg]->getSubExp1();
 			std::string name = ((Const*)locl)->getStr();
-			locals[name] = ty;
+			if (ADHOC_TYPE_ANALYSIS) {
+				if (reg->getType() != NULL)
+					locals[name] = reg->getType();
+				else {
+					//locals[name] = s->updateType(reg, locals[name]);
+					// For now; should only affect ad hoc type analysis:
+					locals[name] = new IntegerType();
+					if (VERBOSE)
+						LOG << "updating type of named register " << name.c_str() << " to " << locals[name]->getCtype()
+							<< "\n";
+				}
+			}
 			found = true;
 		}
 	}
@@ -4388,8 +4407,9 @@ void UserProc::addImplicitAssigns() {
 	StatementList::iterator it;
 	ImplicitConverter ic(cfg);
 	StmtImplicitConverter sm(&ic, cfg);
-	for (it = stmts.begin(); it != stmts.end(); it++)
+	for (it = stmts.begin(); it != stmts.end(); it++) {
 		(*it)->accept(&sm);
+	}
 	cfg->setImplicitsDone();
 }
 
@@ -5311,6 +5331,12 @@ void UserProc::typeAnalysis() {
 			}
 			first = false;
 			dfaTypeAnalysis();
+
+			// Now a special pass to insert casts where needed. I think that these are mainly needed where an operator
+			// implies a signedness, e.g. <u or >>. Example: test/sparc/minmax2 local0 would like to be declared as
+			// unsigned, but then local0 >> 31 doesn't get a cast to int on the lhs without this pass.
+			insertCasts();
+
 		} while (ellipsisProcessing());
 		if (VERBOSE || DEBUG_TA)
 			LOG << "=== end type analysis for " << getName() << " ===\n";
@@ -5568,6 +5594,20 @@ void Proc::setProvenTrue(Exp* fact) {
 	Exp* lhs = ((Binary*)fact)->getSubExp1();
 	Exp* rhs = ((Binary*)fact)->getSubExp2();
 	provenTrue[lhs] = rhs;
+}
+
+// Insert casts as needed. At present, these are limited to operators such as <u or >> which imply unsigned and signed
+// operators respectively. If needed, the ExpCastInserter inserts TypedExps which the back end emits as casts.
+void UserProc::insertCasts() {
+	StatementList stmts;
+	getStatements(stmts);
+	StatementList::iterator it;
+	ExpCastInserter eci;
+	StmtCastInserter sci(&eci);
+	for (it = stmts.begin(); it != stmts.end(); it++) {
+		Statement* s = *it;
+		s->accept(&sci);
+	}
 }
 
 #ifdef USING_MEMOS
