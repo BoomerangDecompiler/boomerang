@@ -74,15 +74,15 @@ void CHLLCode::indent(std::ostringstream& str, int indLevel) {
  * \param curPrec 	The current operator precedence. Add parens around this expression if necessary.
  * \param uns 		If true, cast operands to unsigned if necessary.
  *
- * \todo This function is 700+ lines, and should be split up.
+ * \todo This function is 800+ lines, and should possibly be split up.
  */
 void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool uns /* = false */ ) {
 
 	if (exp == NULL) return;
 
 	OPER op = exp->getOper();
-	// First, a crude cast if unsigned
-	if (uns && op != opIntConst && op != opList/* && !DFA_TYPE_ANALYSIS */) {
+	// First, a crude cast if unsigned, for ad-hoc. For DFA type analysis, casts are corrected after TA
+	if (uns && op != opIntConst && op != opList && !DFA_TYPE_ANALYSIS) {
 		if (!(exp->isMemOf() && exp->getSubExp1()->getType() && exp->getSubExp1()->getType()->isPointer() &&
 				exp->getSubExp1()->getType()->asPointer()->getPointsTo()->isInteger() &&
 				!exp->getSubExp1()->getType()->asPointer()->getPointsTo()->asInteger()->isSigned())) {
@@ -92,7 +92,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 	}
 
 	// Check if it's mapped to a symbol
-	if (m_proc) {
+	if (m_proc && !exp->isTypedExp()) {			// Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
 		char* sym = m_proc->lookupSym(exp);
 		if (sym) {
 			str << sym;
@@ -751,7 +751,15 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			appendExp(str, t->getSubExp3(), PREC_NONE);
 			str << ")";
 			break;
-		case opTypedExp:
+		case opTypedExp: {
+			Exp* b = u->getSubExp1();					// Base expression
+			char* sym = m_proc->lookupSym(exp);			// Check for (cast)sym
+			if (sym) {
+				str << "(";
+				appendType(str, ((TypedExp*)u)->getType());
+				str << ")" << sym;
+				break;
+			}
 			if (u->getSubExp1()->getOper() == opTypedExp &&
 					*((TypedExp*)u)->getType() == *((TypedExp*)u->getSubExp1())->getType()) {
 				// We have (type)(type)x: recurse with type(x)
@@ -786,7 +794,6 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 			} else {
 				// Check for (tt)b where tt is a pointer; could be &local
 				Type* tt = ((TypedExp*)u)->getType();
-				Exp* b = u->getSubExp1();
 				if (dynamic_cast<PointerType*>(tt)) {
 					char* sym = m_proc->lookupSym(Location::memOf(b));
 					if (sym) {
@@ -805,6 +812,7 @@ void CHLLCode::appendExp(std::ostringstream& str, Exp *exp, PREC curPrec, bool u
 				closeParen(str, curPrec, PREC_UNARY);
 			}
 			break;
+		}
 		case opSgnEx: 
 		case opTruncs: {
 			Exp* s = t->getSubExp3();
@@ -1195,6 +1203,14 @@ void CHLLCode::RemoveLabel(int ord) {
 	}
 }
 
+
+bool isBareMemof(Exp* e, UserProc* proc) {
+	if (!e->isMemOf()) return false;
+	// Check if it maps to a symbol
+	char* sym = proc->lookupSym(e);
+	return sym == NULL;			// Only a bare memof if it is not a symbol
+}
+
 /// Prints an assignment expression.
 void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	// Gerard: shouldn't these  3 types of statements be removed earlier?
@@ -1212,18 +1228,18 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 	Type* asgnType = asgn->getType();
 	Exp* lhs = asgn->getLeft();
 	Exp* rhs = asgn->getRight();
+	UserProc* proc = asgn->getProc();
 
-	if (Boomerang::get()->noDecompile && rhs->isMemOf() && lhs->getOper() == opRegOf && m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
+	if (Boomerang::get()->noDecompile && isBareMemof(rhs, proc) && lhs->getOper() == opRegOf &&
+			m_proc->getProg()->getFrontEndId() == PLAT_SPARC) {
 		// add some fsize hints to rhs
-		if (((Const*)lhs->getSubExp1())->getInt() >= 32 &&
-			((Const*)lhs->getSubExp1())->getInt() <= 63)
+		if (((Const*)lhs->getSubExp1())->getInt() >= 32 && ((Const*)lhs->getSubExp1())->getInt() <= 63)
 			rhs = new Ternary(opFsize, new Const(32), new Const(32), rhs);
-		else if (((Const*)lhs->getSubExp1())->getInt() >= 64 &&
-			((Const*)lhs->getSubExp1())->getInt() <= 87)
+		else if (((Const*)lhs->getSubExp1())->getInt() >= 64 && ((Const*)lhs->getSubExp1())->getInt() <= 87)
 			rhs = new Ternary(opFsize, new Const(64), new Const(64), rhs);
 	}
 
-	if (Boomerang::get()->noDecompile && lhs->isMemOf()) {
+	if (Boomerang::get()->noDecompile && isBareMemof(lhs, proc)) {
 		if (asgnType && asgnType->isFloat()) {
 			if (asgnType->asFloat()->getSize() == 32)
 				s << "FLOAT_";
@@ -1253,7 +1269,7 @@ void CHLLCode::AddAssignmentStatement(int indLevel, Assign *asgn) {
 		return;
 	}
 	
-	if (lhs->isMemOf() && asgnType && !asgnType->isVoid()) 
+	if (isBareMemof(lhs, proc) && asgnType && !asgnType->isVoid()) 
 		appendExp(s,
 			new TypedExp(
 				asgnType,
