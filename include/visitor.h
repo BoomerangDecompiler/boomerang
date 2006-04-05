@@ -484,8 +484,8 @@ class StmtImplicitConverter : public StmtModifier {
 		Cfg*		cfg;
 public:
 					StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)
-						: StmtModifier(ic, true),			// True to ignore collectors (don't generate new implicits
-						cfg(cfg) { }						//  for locations only referenced by collectors)
+						: StmtModifier(ic, false),			// False to not ignore collectors (want to make sure that
+						cfg(cfg) { }						//  collectors have valid expressions so you can ascendType)
 virtual void		visit(	    PhiAssign *s, bool& recur);
 };
 
@@ -598,6 +598,18 @@ public:
 private:
 virtual bool		visit(Location *e,	bool& override);
 virtual bool		visit(RefExp *e,	bool& override);
+};
+
+class ExpCastInserter : public ExpModifier {
+virtual Exp*		preVisit(TypedExp	*e,	bool& recur) {recur = false; return e;}	// Don't consider if already cast
+virtual Exp*		postVisit(Binary	*e);
+virtual Exp*		postVisit(Const		*e);
+};
+
+class StmtCastInserter : public StmtModifier {
+public:
+					StmtCastInserter(ExpCastInserter* eci) : StmtModifier(eci) {}
+virtual				~StmtCastInserter() {}
 };
 
 #endif	// #ifndef __VISITOR_H__
