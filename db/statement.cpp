@@ -2593,9 +2593,10 @@ Type* Assignment::getTypeFor(Exp* e) {
 
 void Assignment::setTypeFor(Exp* e, Type* ty) {
 	// assert(*lhs == *e);
+	Type* oldType = type;
 	type = ty;
-	if (DEBUG_TA)
-		LOG << "    Changed type of " << this << "\n";
+	if (DEBUG_TA && oldType != ty)
+		LOG << "    changed type of " << this << "  (type was " << oldType->getCtype() << ")\n";
 }
 
 // Scan the returns for e. If found, return the type associated with that return
@@ -4227,11 +4228,12 @@ bool CallStatement::accept(StmtModifier* v) {
 	// adjusted
 	// I'm thinking no at present... let the bypass and propagate while possible logic take care of it, and leave the
 	// collectors as the rename logic set it
-#if 0
-	Collector::iterator cc;
-	for (cc = defCol.begin(); cc != defCol.end(); cc++)
-		(*cc)->accept(v->mod);			// Always refexps, so never need to change Exp pointer (i.e. don't need *cc = )
-#endif
+	// Well, sort it out with ignoreCollector()
+	if (!v->ignoreCollector()) {
+		DefCollector::iterator cc;
+		for (cc = defCol.begin(); cc != defCol.end(); cc++)
+			(*cc)->accept(v);
+	}
 	StatementList::iterator dd;
 	for (dd = defines.begin(); recur && dd != defines.end(); ++dd)
 		(*dd)->accept(v);
