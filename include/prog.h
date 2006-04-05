@@ -76,6 +76,7 @@ virtual				~Prog();
 		void		remProc(UserProc* proc);		// Remove the given UserProc
 		char*		getName();						// Get the name of this program
 		const char *getPath() { return m_path.c_str(); }
+		const char *getPathAndName() {return (m_path+m_name).c_str(); }
 		int			getNumProcs();					// # of procedures stored in prog
 		int			getNumUserProcs();				// # of user procedures stored in prog
 		Proc*		getProc(int i) const;			// returns pointer to indexed proc
