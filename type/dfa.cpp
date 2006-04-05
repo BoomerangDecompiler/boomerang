@@ -267,9 +267,14 @@ void UserProc::dfaTypeAnalysis() {
 		if (s->isImplicit()) {
 			Exp* lhs = ((ImplicitAssign*)s)->getLeft();
 			Type* iType = ((ImplicitAssign*)s)->getType();
-			if (lhs->isParam()) {
-				setParamType(((Const*)((Location*)lhs)->getSubExp1())->getStr(), iType);
-			} else if (lhs->isMemOf()) {
+			// Note: parameters are not explicit any more
+			//if (lhs->isParam()) {	// }
+			bool allZero;
+			Exp* slhs = lhs->clone()->removeSubscripts(allZero);
+			int i = signature->findParam(slhs);
+			if (i != -1)
+				setParamType(i, iType);
+			else if (lhs->isMemOf()) {
 				Exp* sub = ((Location*)lhs)->getSubExp1();
 				if (sub->isIntConst()) {
 					// We have a m[K] := -
@@ -922,10 +927,12 @@ Type* Const::ascendType() {
 			case opIntConst:
 				if (u.i != 0 && (u.i < 0x1000 && u.i > -0x100))
 					// Assume that small nonzero integer constants are of integer type (can't be pointers)
-					type = new IntegerType(STD_SIZE, u.i < 0);
+					// But note that you can't say anything about sign; these are bit patterns, not HLL constants
+					// (e.g. all ones could be signed -1 or unsigned 0xFFFFFFFF)
+					type = new IntegerType(STD_SIZE, 0);
 				break;
 			case opLongConst:
-				type = new IntegerType(STD_SIZE*2, u.i < 0);
+				type = new IntegerType(STD_SIZE*2, 0);
 				break;
 			case opFltConst:
 				type = new FloatType(64);
@@ -1005,6 +1012,7 @@ void Binary::descendType(Type* parentType, bool& ch, Statement* s) {
 	if (op == opFlagCall) return;
 	Type* ta = subExp1->ascendType();
 	Type* tb = subExp2->ascendType();
+	Type* nt;							// "New" type for certain operators
 	Signature* sig = s->getProc()->getSignature();
 	Prog* prog = s->getProc()->getProg();
 	if (parentType->resolvesToPointer() && !parentType->asPointer()->getPointsTo()->resolvesToVoid() &&
@@ -1049,18 +1057,20 @@ LOG << "ARRAY HACK for " << this << "\n";
 			break;
 		case opGtrUns:	case opLessUns:
 		case opGtrEqUns:case opLessEqUns: {
-			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
-			ta = ta->meetWith(new IntegerType(ta->getSize(), -1), ch);	// Must be unsigned
+			nt = new IntegerType(ta->getSize(), -1);			// Used as unsigned
+			ta = ta->meetWith(nt, ch);
+			tb = tb->meetWith(nt, ch);
 			subExp1->descendType(ta, ch, s);
-			subExp2->descendType(ta, ch, s);
+			subExp2->descendType(tb, ch, s);
 			break;
 		}
 		case opGtr:	case opLess:
 		case opGtrEq:case opLessEq: {
-			ta = ta->meetWith(tb, ch);									// Meet operand types with each other
-			ta = ta->meetWith(new IntegerType(ta->getSize(), +1), ch);	// Must be signed
+			nt = new IntegerType(ta->getSize(), +1);			// Used as signed
+			ta = ta->meetWith(nt, ch);
+			tb = tb->meetWith(nt, ch);
 			subExp1->descendType(ta, ch, s);
-			subExp2->descendType(ta, ch, s);
+			subExp2->descendType(tb, ch, s);
 			break;
 		}
 		case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
@@ -1071,16 +1081,19 @@ LOG << "ARRAY HACK for " << this << "\n";
 				case opBitAnd: case opBitOr: case opBitXor: case opShiftR: case opShiftL:
 					signedness = 0; break;
 				case opMults: case opDivs: case opShiftRA:
-					signedness = -1; break;
+					signedness = 1; break;
 				case opMult: case opDiv:
 					signedness = -1; break;
 				default:
-					signedness = 0; break;
+					signedness = 0; break;		// Unknown signedness
 			}
 
 			int parentSize = parentType->getSize();
 			ta = ta->meetWith(new IntegerType(parentSize, signedness), ch);
 			subExp1->descendType(ta, ch, s);
+			if (op == opShiftL || op == opShiftR || op == opShiftRA)
+				// These operators are not symmetric; doesn't force a signedness on the second operand
+				signedness = 0;
 			tb = tb->meetWith(new IntegerType(parentSize, signedness), ch);
 			subExp2->descendType(tb, ch, s);
 			break;
