@@ -855,3 +855,57 @@ bool BareMemofFinder::visit(RefExp* e, bool& override) {
 	return true;			// But keep searching
 }
 
+Exp* ExpCastInserter::postVisit(Binary *e) {
+	OPER op = e->getOper();
+	switch (op) {
+		case opLess:
+		case opGtr:
+		case opLessEq:
+		case opGtrEq:
+		case opShiftRA: {
+			Type* tl = e->getSubExp1()->ascendType();
+			if (!tl->isInteger() || !tl->asInteger()->isSigned()) {
+				e->setSubExp1(new TypedExp(new IntegerType(tl->getSize(), 1), e->getSubExp1()));
+			}
+			if (op != opShiftRA) {
+				Type* tr = e->getSubExp2()->ascendType();
+				if (!tr->isInteger() || !tr->asInteger()->isSigned()) {
+					e->setSubExp2(new TypedExp(new IntegerType(tr->getSize(), 1), e->getSubExp2()));
+				}
+			}
+			break;
+		}
+		case opLessUns:
+		case opGtrUns:
+		case opLessEqUns:
+		case opGtrEqUns:
+		case opShiftR: {
+			Type* tl = e->getSubExp1()->ascendType();
+			if (!tl->isInteger() || !tl->asInteger()->isUnsigned()) {
+				e->setSubExp1(new TypedExp(new IntegerType(tl->getSize(), -1), e->getSubExp1()));
+			}
+			if (op != opShiftR) {
+				Type* tr = e->getSubExp2()->ascendType();
+				if (!tr->isInteger() || !tr->asInteger()->isUnsigned()) {
+					e->setSubExp2(new TypedExp(new IntegerType(tr->getSize(), -1), e->getSubExp2()));
+				}
+			}
+			break;
+		}
+		default:
+			break;
+	}
+	return e;
+}
+
+Exp* ExpCastInserter::postVisit(Const *e) {
+	if (e->isIntConst()) {
+		bool naturallySigned = e->getInt() < 0;
+		Type* ty = e->getType();
+		if (naturallySigned && ty->isInteger() && !ty->asInteger()->isSigned()) {
+std::cerr << "const needs (unsigned): " << e << "\n";
+			return new TypedExp(new IntegerType(ty->asInteger()->getSize(), -1), e);
+		}
+	}
+	return e;
+}
