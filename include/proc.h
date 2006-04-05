@@ -497,6 +497,8 @@ virtual				~UserProc();
 		void		recursionGroupAnalysis(ProcList* path, int indent);
 		/// Global type analysis (for this procedure).
 		void		typeAnalysis();
+		/// Inserting casts as needed (for this procedure)
+		void		insertCasts();
 		// Range analysis (for this procedure).
 		void		rangeAnalysis();
 		// Detect and log possible buffer overflows
@@ -708,6 +710,7 @@ public:
 virtual void		renameParam(const char *oldName, const char *newName);
 
 		void		setParamType(const char* nam, Type* ty);
+		void		setParamType(int idx, Type* ty);
 
 		/**
 		 * Print the locals declaration in C style.
