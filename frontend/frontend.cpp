@@ -859,6 +859,8 @@ bool FrontEnd::processProc(ADDRESS uAddr, UserProc* pProc, std::ofstream &os, bo
 				case STMT_BOOLASSIGN:
 					// This is just an ordinary instruction; no control transfer
 					// Fall through
+				case STMT_JUNCTION:
+					// FIXME: Do we need to do anything here?
 				case STMT_ASSIGN:
 				case STMT_PHIASSIGN:
 				case STMT_IMPASSIGN:
