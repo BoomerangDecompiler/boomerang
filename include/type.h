@@ -278,8 +278,9 @@ virtual Exp			*match(Type *pattern);
 
 virtual unsigned	getSize() const;			// Get size in bits
 virtual void		setSize(int sz) {size = sz;}
-					// Is it signed? 0=no, 1=yes, -1 = don't know
-		bool		isSigned() { return signedness >= 0; }
+					// Is it signed? 0=unknown, pos=yes, neg = no
+		bool		isSigned() { return signedness >= 0; }		// True if not unsigned
+		bool		isUnsigned() {return signedness <= 0; }		// True if not definately signed
 					// A hint for signedness
 		void		bumpSigned(int sg) { signedness += sg; }
 					// Do we need this? Set absolute signedness
@@ -594,6 +595,7 @@ virtual const char* getCtype(bool final = false) const;
 virtual Type*		meetWith(Type* other, bool& ch, bool bHighestPtr);
 virtual bool		isCompatible(Type* other, bool all);
 
+	friend class XMLProgParser;
 };	// class SizeType
 
 // This class represents the upper half of its base type
