@@ -1322,7 +1322,8 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
 	PBB oldSuccImmPDom = succImmPDom;
 
 	int giveup = 0;
-	while (giveup < 10000 && curImmPDom && succImmPDom && (curImmPDom != succImmPDom)) {
+#define GIVEUP 10000
+	while (giveup < GIVEUP && curImmPDom && succImmPDom && (curImmPDom != succImmPDom)) {
 		if (curImmPDom->revOrd > succImmPDom->revOrd)
 			succImmPDom = succImmPDom->immPDom;
 		else
@@ -1330,9 +1331,10 @@ PBB Cfg::commonPDom(PBB curImmPDom, PBB succImmPDom) {
 		giveup++;
 	}
 
-	if (giveup) {
+	if (giveup >= GIVEUP) {
 		if (VERBOSE)
-			LOG << "failed to find commonPDom for " << oldCurImmPDom->getLowAddr() << " and " << oldSuccImmPDom->getLowAddr() << "\n";
+			LOG << "failed to find commonPDom for " << oldCurImmPDom->getLowAddr() << " and " <<
+				oldSuccImmPDom->getLowAddr() << "\n";
 		return oldCurImmPDom;  // no change
 	}
 
