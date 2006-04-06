@@ -425,7 +425,8 @@ bool UsedLocsVisitor::visit(ReturnStatement* s, bool& override) {
 
 	// Insert a phantom use of "everything" here, so that we can find out if any childless calls define something that
 	// may end up being returned
-	((UsedLocsFinder*)ev)->getLocSet()->insert(new Terminal(opDefineAll));
+	// FIXME: Not here! Causes locals to never get removed. Find out where this belongs, if anywhere:
+	//((UsedLocsFinder*)ev)->getLocSet()->insert(new Terminal(opDefineAll));
 
 	override = true;			// Don't do the normal accept logic
 	return true;				// Continue the recursion
@@ -740,7 +741,7 @@ bool AllSubscriptedTester::visit(Location* e, bool& override) {
 // memory expression problems. See Mike's thesis for details
 // Algorithm: if find any unsubscripted location, not primitive
 //   Implicit definitions are primitive (but keep searching for non primitives)
-//   References to the results of calls are considered primitive
+//   References to the results of calls are considered primitive... but only if bypassed?
 //   Other references considered non primitive
 // Start with result=true, must find primitivity in all components
 bool PrimitiveTester::visit(Location* e, bool& override) {
@@ -752,7 +753,8 @@ bool PrimitiveTester::visit(Location* e, bool& override) {
 
 bool PrimitiveTester::visit(RefExp* e, bool& override) {
 	Statement* def = e->getDef();
-	if (def == NULL || def->getNumber() == 0 || def->isCall()) {
+	// If defined by a call, e had better not be a memory location (crude approximation for now)
+	if (def == NULL || def->getNumber() == 0 || def->isCall() && !e->getSubExp1()->isMemOf()) {
 		// Implicit definitions are always primitive
 		// The results of calls are always primitive
 		override = true;	// Don't recurse into the reference
