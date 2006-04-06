@@ -492,7 +492,10 @@ public:
 virtual				~CompoundType();
 virtual bool		isCompound() const { return true; }
 
-		void		addType(Type *n, const char *str) { 
+		void		addType(Type *n, const char *str) {
+						// check if it is a user defined type (typedef)
+						Type *t=getNamedType(n->getCtype());
+						if ( t ) n = t;
 						types.push_back(n); 
 						names.push_back(str);
 					}

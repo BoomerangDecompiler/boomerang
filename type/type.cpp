@@ -886,14 +886,25 @@ void Type::addNamedType(const char *name, Type *type)
 {
 	if (namedTypes.find(name) != namedTypes.end()) {
 		if (!(*type == *namedTypes[name])) {
-			LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
-				namedTypes[name]->getCtype() << "\n";// << std::flush;
-			LOGTAIL;
-*type == *namedTypes[name];
-			assert(false);
+			//LOG << "addNamedType: name " << name << " type " << type->getCtype() << " != " <<
+			//	namedTypes[name]->getCtype() << "\n";// << std::flush;
+			//LOGTAIL;
+			std::cerr << "Warning: Type::addNamedType: Redefenition of type " << name << "\n";
+			std::cerr << " type     = " << type->prints() << "\n";
+			std::cerr << " previous = " << namedTypes[name]->prints() << "\n";
+			*type == *namedTypes[name];
 		}
 	} else {
-		namedTypes[name] = type->clone();
+		// check if it is:
+		// typedef int a;
+		// typedef a b;
+		// we then need to define b as int
+		// we create clones to keep the GC happy
+		if (namedTypes.find(type->getCtype()) != namedTypes.end()) {
+			namedTypes[name] = namedTypes[type->getCtype()]->clone();
+		} else {
+			namedTypes[name] = type->clone();
+		}
 	}
 }
 
