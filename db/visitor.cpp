@@ -883,14 +883,12 @@ Exp* ExpCastInserter::postVisit(Binary *e) {
 		case opGtrEqUns:
 		case opShiftR: {
 			Type* tl = e->getSubExp1()->ascendType();
-			// Gerard: Changed !isUnsigned to isSigned.
-			// (the CVS version of IntegerType does not contain isUnsigned)
-			if (!tl->isInteger() || tl->asInteger()->isSigned()) {
+			if (!tl->isInteger() || !tl->asInteger()->isUnsigned()) {
 				e->setSubExp1(new TypedExp(new IntegerType(tl->getSize(), -1), e->getSubExp1()));
 			}
 			if (op != opShiftR) {
 				Type* tr = e->getSubExp2()->ascendType();
-				if (!tr->isInteger() || tr->asInteger()->isSigned()) {
+				if (!tr->isInteger() || !tr->asInteger()->isUnsigned()) {
 					e->setSubExp2(new TypedExp(new IntegerType(tr->getSize(), -1), e->getSubExp2()));
 				}
 			}
