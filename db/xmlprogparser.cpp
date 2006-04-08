@@ -1570,7 +1570,7 @@ void XMLProgParser::start_sizetype(const char **attr)
 	addId(attr, ty);
 	const char *n = getAttr(attr, "size");
 	if (n)
-		ty->setSize(atoi(n));
+		ty->size = atoi(n);
 }
 
 void XMLProgParser::addToContext_sizetype(Context *c, int e)
