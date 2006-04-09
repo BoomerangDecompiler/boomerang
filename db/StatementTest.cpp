@@ -1078,7 +1078,7 @@ void StatementTest::testAddUsedLocsReturn() {
 	r->addUsedLocs(l);
 	std::ostringstream ost6;
 	l.print(ost6);
-	std::string expected("r24,\t<all>,\tr25{55},\tr26{99}");
+	std::string expected("r24,\tr25{55},\tr26{99}");
 	std::string actual(ost6.str());
 	CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
@@ -1237,7 +1237,7 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5 << ca;
 	expected =
-		"   0 {*0* r28, *0* m[r28]} := CALL dest(\n"
+		"   0 {*v* r28, *v* m[r28]} := CALL dest(\n"
 		"                *v* m[r27] := 1\n"
 		"                *v* r28 := 2\n"
 		"              )\n"
@@ -1261,7 +1261,7 @@ void StatementTest::testSubscriptVars () {
 	ca->subscriptVar(srch, &s9);
 	ost5a << ca;
 	expected =
-		"   0 {*0* r31, *0* m[r31]} := CALL dest(\n"
+		"   0 {*v* r31, *v* m[r31]} := CALL dest(\n"
 		"                *v* m[r27] := 1\n"
 		"                *v* r29 := 2\n"
 		"              )\n"
