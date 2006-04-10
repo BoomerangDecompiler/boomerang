@@ -35,6 +35,9 @@ CXX=$(CC)
 # HOST_WINDOWS is "yes" if the host OS is Cygwin or MinGW
 HOST_WINDOWS = @HOST_WINDOWS@
 
+# HOST_CYGWIN is "yes" if the host environment is Cygwin
+HOST_CYGWIN = @HOST_CYGWIN@
+
 # HOST_OSX is true if the hostOS is OS X (*-apple-darwin*)
 HOST_OSX = @HOST_OSX@
 
@@ -77,7 +80,12 @@ else # Non-OS X
 SHARED=-shared
 endif
 
-LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile MachOBinaryFile
+LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile 
+ifeq ($(HOST_CYGWIN), no)
+# Until we can resolve the issue of compiling loader/MachOBinaryFile.cpp, don't attempt to make it so at least
+# the Cygwin hosted Boomerang can compile and use non-MachO loaders
+LOADERS=${LOADERS} MachOBinaryFile
+endif
 LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
 BASEDLL=../lib/libBinaryFile$(DLLEXT)
 ALLDLLS=$(LOADERDLLS) $(BASEDLL)
