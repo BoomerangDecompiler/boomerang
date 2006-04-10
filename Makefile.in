@@ -91,7 +91,8 @@ ifndef FLEXPP
 	REMOTE=remote
 endif
 
-LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
+# The loaders are properly dynamically linked now, so no need for individual -l<Arch>BinaryFile any more
+LOADERS=BinaryFile # ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
 # LOADERDLLS is the set of DLL files
 LOADERDLLS=$(patsubst %,lib/lib%$(DLLEXT),$(LOADERS)) $(COPYDLL)
 # LOADERLIBS is the set of "-l" flags passed when linking executables against the DLLs
