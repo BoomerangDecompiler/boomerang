@@ -84,7 +84,7 @@ LOADERS=ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFi
 ifeq ($(HOST_CYGWIN), no)
 # Until we can resolve the issue of compiling loader/MachOBinaryFile.cpp, don't attempt to make it so at least
 # the Cygwin hosted Boomerang can compile and use non-MachO loaders
-LOADERS=${LOADERS} MachOBinaryFile
+LOADERS+=MachOBinaryFile
 endif
 LOADERDLLS=$(patsubst %,../lib/lib%$(DLLEXT),$(LOADERS))
 BASEDLL=../lib/libBinaryFile$(DLLEXT)
