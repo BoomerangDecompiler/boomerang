@@ -79,17 +79,10 @@ endif
 # use that
 CXXFLAGS=-Iinclude $(WININCLUDE)
 
+MAKEDEPEND=@MAKEDEPEND@
+
 BISONPP=@BISONPP@
 FLEXPP=@FLEXPP@
-
-# Detect if bison++ and flex++ are both present and if not force "remote" target
-ifndef BISONPP
-	REMOTE=remote
-endif
-
-ifndef FLEXPP
-	REMOTE=remote
-endif
 
 # The loaders are properly dynamically linked now, so no need for individual -l<Arch>BinaryFile any more
 LOADERS=BinaryFile # ElfBinaryFile Win32BinaryFile ExeBinaryFile HpSomBinaryFile PalmBinaryFile BinaryFile
@@ -101,7 +94,7 @@ LOADERLIBS=$(patsubst %,-l%,$(LOADERS))
 .PHONY: test clean all static distclean mostclean depend depend.in loaders
 #19 Aug 02 icer: should read lib static test
 #20 Aug 02 icer: should read lib static , the test code is broken
-all: $(REMOTE) lib loaders static
+all: lib loaders static
 static: boomerang$(EXEEXT)
 
 # Make the lib directory if needed
@@ -119,11 +112,11 @@ test:	lib loaders bigtest$(EXEEXT)
 	./bigtest$(EXEEXT)
 
 # automatic is better!
-depend:
-	makedepend -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
+depend: ${MAKEDEPEND}
+	${MAKEDEPEND} -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
 
 depend.in:
-	makedepend -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
+	${MAKEDEPEND} -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend *.cpp */*.cpp > /dev/null 2>&1
 
 # In case you don't have bison++ and flex++ and don't need to mess with the parsers
 # This is automatic now, though you can still force it if desired

@@ -57,9 +57,11 @@
 #ifdef _WIN32
 #undef NO_ADDRESS
 #include <windows.h>
+#ifndef __MINGW32__
 namespace dbghelp {
 #include <dbghelp.h>
 };
+#endif
 #undef NO_ADDRESS
 #define NO_ADDRESS ((ADDRESS)-1)
 #endif

@@ -23,8 +23,8 @@
 #include <unistd.h>			// For unlink
 #include <signal.h>
 #endif
-#ifdef _MSC_VER
-#include <windows.h>		// For SetCurrentDirectory
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <windows.h>
 #endif
 #include "prog.h"
 #include "proc.h"
@@ -1049,7 +1049,7 @@ Prog *Boomerang::loadAndDecode(const char *fname, const char *pname)
 	return prog;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 DWORD WINAPI stopProcess(
     time_t start
 )
@@ -1090,7 +1090,7 @@ int Boomerang::decompile(const char *fname, const char *pname)
 
 	if (minsToStopAfter) {
 		std::cerr << "stopping decompile after " << minsToStopAfter << " minutes.\n";
-#ifdef _WIN32
+#if defined(_WIN32) 			// Includes MinGW
 		DWORD id;
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)stopProcess, (LPVOID)start, 0, &id);
 #else

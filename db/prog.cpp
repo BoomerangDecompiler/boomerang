@@ -67,9 +67,11 @@
 #ifdef _WIN32
 #undef NO_ADDRESS
 #include <windows.h>
+#ifndef __MINGW32__
 namespace dbghelp {
 #include <dbghelp.h>
 };
+#endif
 #undef NO_ADDRESS
 #define NO_ADDRESS ((ADDRESS)-1)
 #endif
@@ -449,7 +451,7 @@ Proc* Prog::setNewProc(ADDRESS uAddr) {
 	return pProc;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 
 Type *typeFromDebugInfo(int index, DWORD64 ModBase);
 
@@ -610,7 +612,7 @@ Proc* Prog::newProc (const char* name, ADDRESS uNative, bool bLib /*= false*/) {
 	else
 		pProc = new UserProc(this, sname, uNative);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 	if (isWin32()) {
 		// use debugging information
 		HANDLE hProcess = GetCurrentProcess();
@@ -887,7 +889,7 @@ ArrayType* Prog::makeArrayType(ADDRESS u, Type* t) {
 }
 
 Type *Prog::guessGlobalType(const char *nam, ADDRESS u) {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
 	dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
 	sym->SizeOfStruct = sizeof(*sym);

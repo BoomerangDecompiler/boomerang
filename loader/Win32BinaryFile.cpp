@@ -31,9 +31,11 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#ifndef __MINGW32__
 namespace dbghelp {
 #include <dbghelp.h>
 };
+#endif
 #endif
 
 #include "BinaryFile.h"
@@ -307,7 +309,7 @@ ADDRESS Win32BinaryFile::GetMainEntryPoint() {
 	return NO_ADDRESS;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 BOOL CALLBACK lookforsource(
   dbghelp::PSOURCEFILE pSourceFile,
   PVOID UserContext
@@ -447,7 +449,7 @@ bool Win32BinaryFile::RealLoad(const char* sName)
 
 	fclose(fp);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 	// attempt to load symbols for the exe or dll
 
 	DWORD  error;
@@ -532,7 +534,7 @@ bool Win32BinaryFile::PostLoad(void* handle)
 	return false;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 
 char *SymTagEnums[] = { "SymTagNull",
    "SymTagExe",
@@ -707,7 +709,7 @@ const char* Win32BinaryFile::SymbolByAddress(ADDRESS dwAddr)
 			LMMH(m_pPEHeader->EntrypointRVA) + LMMH(m_pPEHeader->Imagebase) == dwAddr)
 		return "DriverEntry";
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
 	dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
 	sym->SizeOfStruct = sizeof(*sym);
@@ -883,7 +885,7 @@ bool Win32BinaryFile::IsDynamicLinkedProcPointer(ADDRESS uNative)
 
 bool Win32BinaryFile::IsStaticLinkedLibProc(ADDRESS uNative)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MINGW32__)
 	HANDLE hProcess = GetCurrentProcess();
 	dbghelp::IMAGEHLP_LINE64 line;
 	line.SizeOfStruct = sizeof(line);	
