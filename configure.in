@@ -27,10 +27,22 @@ dnl Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
-AC_PATH_PROG( BISONPP, bison++, [] )
-AC_PATH_PROG( FLEXPP, flex++, [] )
+
+AC_PATH_PROG( MAKEDEPEND, makedepend )
+if test -z "$MAKEDEPEND"; then
+	AC_MSG_NOTICE()
+	AC_MSG_NOTICE([You need the X11 makedepend utility to use automatic dependency generation (make depend)])
+	AC_MSG_NOTICE()
+fi
+
+AC_SUBST( MAKEDEPEND )
+AC_PATH_PROG( BISONPP, bison++ )
 AC_SUBST( BISONPP )
+AC_PATH_PROG( FLEXPP, flex++ )
 AC_SUBST( FLEXPP )
+AC_PATH_PROG( M4, m4 )
+AC_SUBST( M4 )
+
 
 AC_DEFUN(AC_PATH_BINUTIL, [
    for i in $2; do
@@ -173,13 +185,13 @@ dnl Want to check default-includes PLUS the Boomerang include/ directory, and so
 dnl be installed
 AC_CHECK_HEADER(gc.h,,
     [AC_CHECK_FILE(include/gc.h,,
-		[AC_PATH_PROG(GC_HDR_PATH, gc.h, :, [/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+		[AC_PATH_PROG(GC_HDR_PATH, gc.h, :, [/usr/include:/usr/include/gc:/usr/local/include:/opt/local/include:/sw/include])]
 		if test "${GC_HDR_PATH}" != :; then
 			[AC_MSG_WARN(Found gc.h; linking to include/)]
 			ln -s ${GC_HDR_PATH} include
 			dnl Sometimes, not sure if always, there is a gc_config_macros.h as well
 			[AC_PATH_PROG(GC_HDR_PATH2, gc_config_macros.h, :,
-			[/usr/include:/usr/local/include:/opt/local/include:/sw/include])]
+			[/usr/include:/usr/include/gc:/usr/local/include:/opt/local/include:/sw/include])]
 			if test "${GC_HDR_PATH2}" != :; then
 				[AC_MSG_WARN(Also found gc_config_macros.h; linking to include/)]
 				ln -s ${GC_HDR_PATH2} include
@@ -313,20 +325,17 @@ AC_ARG_ENABLE(remote, [  --enable-remote         don't try to regenerate source 
               [ REMOTE=1 ], [ REMOTE=0 ] )
 AC_SUBST(REMOTE)
 
-dnl Three paths for frontend/mltk.sh
-AC_PATH_PROG(TKML, .run-sml, /usr/share/sml-nj/bin/.run-sml,
-    [$PATH /usr/share/sml-nj/bin $HOME/install/smlnj/bin])
+dnl Three paths for frontend/mltk.sh. No longer give a "value-if-not-found", so can avoid errors when not installed
+AC_PATH_PROG(TKML, .run-sml, , [$PATH /usr/share/sml-nj/bin $HOME/install/smlnj/bin])
 dnl many more processors and platforms needed in this list
+AC_SUBST(TKML)
 AC_PATH_PROGS(HEAPPATH,
-    [sml-toolkit.x86-linux sml-toolkit.sparc-solaris],
-    $HOME/install/sml-toolkit.x86-linux,
+    [sml-toolkit.x86-linux sml-toolkit.sparc-solaris], ,
     [$HOME/install $PATH $HOME/install/mltk])
 HEAP=\"@SMLload=$HEAPPATH\"
 AC_SUBST(HEAP)
 
-
-AC_PATH_PROG(UNGENERATE, ungenerate, $HOME/install/ungenerate,
-    [$PATH:$HOME/install:$HOME/bin:/home/02/binary/u0.luna.tools/NJ/base])
+AC_PATH_PROG(UNGENERATE, ungenerate, , [$PATH:$HOME/install:$HOME/bin:/home/02/binary/u0.luna.tools/NJ/base])
 
 PREFIX=$srcdir
 LIBDIR=$srcdir/lib
@@ -340,12 +349,15 @@ AC_SUBST(UNDERSCORE_NEEDED)
 AC_SUBST(HOST_CYGWIN)
 
 
+# only the makefile in the loader dir is currently used
 AC_CONFIG_FILES(          Makefile)
-AC_CONFIG_FILES(     util/Makefile)
+dnl AC_CONFIG_FILES(     util/Makefile)
 AC_CONFIG_FILES(   loader/Makefile)
-AC_CONFIG_FILES(       db/Makefile)
-AC_CONFIG_FILES( frontend/Makefile)
-AC_CONFIG_FILES(transform/Makefile)
+dnl AC_CONFIG_FILES(       db/Makefile)
+dnl AC_CONFIG_FILES( frontend/Makefile)
+dnl AC_CONFIG_FILES(transform/Makefile)
 AC_CONFIG_FILES(frontend/mltk.sh, [chmod +x frontend/mltk.sh])
 
 AC_OUTPUT
+
+
