@@ -13,7 +13,8 @@ LIB=../lib/transform.so
 CC = g++ -g
 CXX = $(CC)
 
-all: $(LIB) testTransform
+all: #$(LIB) testTransform
+	# Only "make test" is supported
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -47,5 +48,5 @@ $(LIB_OBJS): %.o : %.cpp
 clean:
 	-rm -f testTransform *.o $(LIB)
 
-test: all
+test: $(LIB) testTransform
 	./testTransform

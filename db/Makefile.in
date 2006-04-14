@@ -36,7 +36,8 @@ CXX = $(CC)
 
 GENFILES = sslparser.cpp sslparser.h sslscanner.cpp sslscanner.h
 
-all: $(DB_LIB) testDbase
+all: #$(DB_LIB) testDbase
+	# Only "make test" is supported
 
 test: testExp testStmt testRtl
 

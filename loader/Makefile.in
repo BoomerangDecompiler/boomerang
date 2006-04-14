@@ -56,6 +56,8 @@ UNSERSCORE_NEEDED = @UNDERSCORE_NEEDED@
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
 
+MAKEDEPEND=@MAKEDEPEND@
+
 ####################################
 # Detection of OS specific settings
 #
@@ -96,6 +98,28 @@ ifeq ($(HOST_OSX), yes)
 else # Non-OS X
  SHARED=-shared
 endif
+
+####################
+# Conditional rules
+#
+
+# Automatic generation of dependencies
+ifdef MAKEDEPEND
+ CPPFILES=*.cpp c/*.cpp codegen/*.cpp db/*.cpp frontend/*.cpp transform/*.cpp type/*.cpp util/*.cpp
+
+ # automatic is better!
+ depend: ${MAKEDEPEND}
+	${MAKEDEPEND} -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+
+ depend.in: ${MAKEDEPEND}
+	${MAKEDEPEND} -fMakefile.in -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+	
+else
+ depend:
+	# You need the (X11) makedepend tool to generate dependencies
+ depend.in:
+	# You need the (X11) makedepend tool to generate dependencies
+endif # ifdef MAKEDEPEND
 
 ######################
 # Rules for compiling

@@ -216,13 +216,13 @@ ifdef MAKEDEPEND
  depend: ${MAKEDEPEND} lib
 	-mv include/gc*.h lib
 	${MAKEDEPEND} -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend ${CPPFILES} > /dev/null 2>&1
-	cd loader && ${MAKEDEPEND} -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+	cd loader && ${MAKE} depend
 	-mv lib/gc*.h include
 
  depend.in: ${MAKEDEPEND} lib
 	-mv include/gc*.h lib
 	${MAKEDEPEND} -fMakefile.in -w120 -Y -Iinclude -I. -Ic -Icodegen -Ifrontend ${CPPFILES} > /dev/null 2>&1
-	cd loader && ${MAKEDEPEND} -fMakefile.in -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+	cd loader && ${MAKE} depend
 	-mv lib/gc*.h include
 	
 else

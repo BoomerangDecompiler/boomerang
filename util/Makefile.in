@@ -17,7 +17,8 @@ LIB=../lib/libutil.so
 CC = g++ -g
 CXX = $(CC)
 
-all: $(LIB) testUtil 
+all: #$(LIB) testUtil 
+	# Only "make test" is supported
 
 # HOST_GNU_LD is true if the linker on this host machine is GNU
 HOST_GNU_LD = @HOST_GNU_LD@
@@ -51,5 +52,5 @@ $(LIB_OBJS): %.o : %.cpp
 clean:
 	-rm -f testUtil *.o $(LIB)
 
-test: all
+test: $(LIB) testUtil
 	./testUtil

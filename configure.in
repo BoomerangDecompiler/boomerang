@@ -351,11 +351,11 @@ AC_SUBST(HOST_CYGWIN)
 
 # only the makefile in the loader dir is currently used
 AC_CONFIG_FILES(          Makefile)
-dnl AC_CONFIG_FILES(     util/Makefile)
+AC_CONFIG_FILES(     util/Makefile)
 AC_CONFIG_FILES(   loader/Makefile)
-dnl AC_CONFIG_FILES(       db/Makefile)
-dnl AC_CONFIG_FILES( frontend/Makefile)
-dnl AC_CONFIG_FILES(transform/Makefile)
+AC_CONFIG_FILES(       db/Makefile)
+AC_CONFIG_FILES( frontend/Makefile)
+AC_CONFIG_FILES(transform/Makefile)
 AC_CONFIG_FILES(frontend/mltk.sh, [chmod +x frontend/mltk.sh])
 
 AC_OUTPUT
