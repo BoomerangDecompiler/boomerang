@@ -123,7 +123,8 @@ microX86dis.o: microX86dis.c
 
 # Extra object files, etc
 # These are target specific variables.
-../lib/libWin32BinaryFile$(DLLEXT):   EXTRAS = microX86dis.o
+../lib/libWin32BinaryFile$(DLLEXT): EXTRAS = microX86dis.o
+../lib/libWin32BinaryFile$(DLLEXT): microX86dis.o
 
 ../libBinaryFile$(DLLEXT): ../lib/libBinaryFile$(DLLEXT)
 	cp $< $@
@@ -148,14 +149,12 @@ $(ALLOBJS): %.o : %.cpp
 
 # Automatic generation of dependencies
 ifdef MAKEDEPEND
- CPPFILES=*.cpp c/*.cpp codegen/*.cpp db/*.cpp frontend/*.cpp transform/*.cpp type/*.cpp util/*.cpp
-
  # automatic is better!
  depend: ${MAKEDEPEND}
-	${MAKEDEPEND} -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+	${MAKEDEPEND} -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp *.c > /dev/null 2>&1
 
  depend.in: ${MAKEDEPEND}
-	${MAKEDEPEND} -fMakefile.in -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp > /dev/null 2>&1
+	${MAKEDEPEND} -fMakefile.in -w120 -Y -I../include -I. -I../c -I../codegen -I../frontend *.cpp *.c > /dev/null 2>&1
 	
 else
  depend:
