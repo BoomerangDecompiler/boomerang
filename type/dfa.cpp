@@ -1093,6 +1093,8 @@ LOG << "ARRAY HACK for " << this << "\n";
 			subExp1->descendType(ta, ch, s);
 			if (op == opShiftL || op == opShiftR || op == opShiftRA)
 				// These operators are not symmetric; doesn't force a signedness on the second operand
+				// FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
+				// amounts.
 				signedness = 0;
 			tb = tb->meetWith(new IntegerType(parentSize, signedness), ch);
 			subExp2->descendType(tb, ch, s);
