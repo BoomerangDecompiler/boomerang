@@ -93,8 +93,8 @@ void FrontPentTest::test1 () {
 	inst.rtl->print(ost);
 	
 	std::string expected(
-		"08048328    0 *32* r28 := r28 - 4\n"
-		"            0 *32* m[r28] := r29\n");
+		"08048328    0 *32* m[r28 - 4] := r29\n"
+		"            0 *32* r28 := r28 - 4\n");
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(ost.str()));
 
 	std::ostringstream o2;
@@ -109,8 +109,8 @@ void FrontPentTest::test1 () {
 	inst = pFE->decodeInstruction(addr);
 	inst.rtl->print(o3);
 	expected = std::string(
-		"0804833b    0 *32* r28 := r28 - 4\n"
-		"            0 *32* m[r28] := 0x80483fc\n");
+		"0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
+		"            0 *32* r28 := r28 - 4\n");
 	CPPUNIT_ASSERT_EQUAL(expected, std::string(o3.str()));
 
 	delete pFE;
