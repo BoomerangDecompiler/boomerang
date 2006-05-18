@@ -72,7 +72,7 @@ ifeq ($(HOST_WINDOWS), yes)
  WININCLUDE=-Iwin32make/include
  # RUNPATH is not needed on Windows 
  RUNPATH=
- COPYDLL=libBinaryFile$(DLLEXT)
+ COPYDLL=../libBinaryFile$(DLLEXT)
 else # Non-Windows
  LDL=-ldl
  EXEEXT=
