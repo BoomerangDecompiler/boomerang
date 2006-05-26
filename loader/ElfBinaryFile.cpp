@@ -1570,7 +1570,7 @@ void ElfBinaryFile::applyRelocations() {
 									int nameOffset = elfRead4((int*)&symOrigin[symTabIndex].st_name);
 									char* pName = pStrSection + nameOffset;
 									S = GetAddressByName(pName);
-									if (S == 0) {
+									if (S == (e_type == E_REL ? 0x8000000 : 0)) {
 										S = nextFakeLibAddr--;		// Allocate a new fake address
 										AddSymbol(S, pName);
 									}
