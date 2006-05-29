@@ -34,6 +34,7 @@ void init_dfa();			// Prototypes for
 void init_sslparser();		// various initialisation functions
 void init_basicblock();		// for garbage collection safety
 
+#ifndef NO_CMDLINE_MAIN
 int main(int argc, const char* argv[]) {
 
 	// Call the various initialisation functions for safe garbage collection
@@ -43,7 +44,10 @@ int main(int argc, const char* argv[]) {
 
 	return Boomerang::get()->commandLine(argc, argv);
 }
+#endif
 
+#ifndef NO_NEW_OR_DELETE_OPERATORS
+#ifndef NO_GARBAGE_COLLECTOR
 /* This makes sure that the garbage collector sees all allocations, even those
 	that we can't be bothered collecting, especially standard STL objects */
 void* operator new(size_t n) {
@@ -60,4 +64,5 @@ void operator delete(void* p) {
 	// #else do nothing!
 #endif
 }
-
+#endif
+#endif

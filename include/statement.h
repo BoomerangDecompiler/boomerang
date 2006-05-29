@@ -246,7 +246,7 @@ virtual bool		definesLoc(Exp* loc) {return false;}			// True if this Statement d
 virtual bool		usesExp(Exp *e) = 0;
 
 	// statements should be printable (for debugging)
-virtual void		print(std::ostream &os) = 0;
+virtual void		print(std::ostream &os, bool html = false) = 0;
 		void		printAsUse(std::ostream &os)   {os << std::dec << number;}
 		void		printAsUseBy(std::ostream &os) {os << std::dec << number;}
 		void		printNum(std::ostream &os)	   {os << std::dec << number;}
@@ -414,7 +414,7 @@ virtual bool		accept(StmtExpVisitor* visitor) = 0;
 virtual bool		accept(StmtModifier* visitor) = 0;
 virtual bool		accept(StmtPartModifier* visitor) = 0;
 
-virtual	void		print(std::ostream& os);
+virtual	void		print(std::ostream& os, bool html = false);
 virtual void		printCompact(std::ostream& os) = 0;	// Without statement number
 
 virtual Type*		getTypeFor(Exp* e); 				// Get the type for this assignment. It should define e
@@ -796,7 +796,7 @@ virtual	void		fromSSAform(igraph&) {}
 virtual	void		generateCode(HLLCode*, BasicBlock*, int) {}
 virtual	void		simplify();
 virtual	void		regReplace(UserProc*);
-virtual	void		print(std::ostream& os);
+virtual	void		print(std::ostream& os, bool html = false);
 
 };
 
@@ -848,7 +848,7 @@ virtual Exp*		getDest();
 		void		setIsComputed(bool b = true);
 		bool		isComputed();
 
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		// general search
 virtual bool		search(Exp*, Exp*&);
@@ -895,7 +895,7 @@ public:
 
 	bool		usesExp(Exp *e) { return false; }
 
-	void		print(std::ostream &os);
+	void		print(std::ostream &os, bool html = false);
 
 	bool		processConstants(Prog *prog) { return false; }
 
@@ -964,7 +964,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 		// signed conditional branch
 		void		makeSigned();
 
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result);
@@ -1041,7 +1041,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 		SWITCH_INFO* getSwitchInfo(); 
 		void		setSwitchInfo(SWITCH_INFO* pss);
 	
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		// Replace all instances of "search" with "replace".
 virtual bool	searchAndReplace(Exp* search, Exp* replace, bool cc = false);
@@ -1162,7 +1162,7 @@ virtual bool		accept(StmtPartModifier* visitor);
 		// Range analysis
 		void		rangeAnalysis(std::list<Statement*> &execution_paths);
 
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		// general search
 virtual bool		search(Exp *search, Exp *&result);
@@ -1304,7 +1304,7 @@ typedef	StatementList::iterator iterator;
 		void		updateModifieds();		// Update modifieds from the collector
 		void		updateReturns();		// Update returns from the modifieds
 
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		// general search
 virtual bool		search(Exp*, Exp*&);

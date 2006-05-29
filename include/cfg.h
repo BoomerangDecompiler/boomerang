@@ -478,7 +478,7 @@ public:
 		/*
 		 * print this cfg, mainly for debugging
 		 */
-		void		print(std::ostream &out);
+		void		print(std::ostream &out, bool html = false);
 		void		printToLog();
 		void		dump();				// Dump to std::cerr
 

@@ -191,7 +191,7 @@ bool ElfBinaryFile::RealLoad(const char* sName)
         if (off) m_pSections[i].uHostAddr = (ADDRESS)(m_pImage + off);
         m_pSections[i].uNativeAddr = elfRead4(&pShdr->sh_addr);
         m_pSections[i].uSectionSize = elfRead4(&pShdr->sh_size);
-		if (m_pSections[i].uNativeAddr == 0) {
+		if (m_pSections[i].uNativeAddr == 0 && strncmp(pName, ".rel.", 5)) {
 			m_pSections[i].uNativeAddr = arbitaryLoadAddr;
 			arbitaryLoadAddr += m_pSections[i].uSectionSize;
 			if (arbitaryLoadAddr % 0x10)
@@ -226,6 +226,15 @@ bool ElfBinaryFile::RealLoad(const char* sName)
 				(elfRead4(&pShdr->sh_type) != SHT_NOBITS))
             m_pSections[i].bData = true;
     }	// for each section
+
+	// assign arbitary addresses to .rel.* sections too
+	for (i=0; i < m_iNumSections; i++)
+		if (m_pSections[i].uNativeAddr == 0 && !strncmp(m_pSections[i].pSectionName, ".rel.", 5)) {
+			m_pSections[i].uNativeAddr = arbitaryLoadAddr;
+			arbitaryLoadAddr += m_pSections[i].uSectionSize;
+			if (arbitaryLoadAddr % 0x10)
+				arbitaryLoadAddr += 0x10 - (arbitaryLoadAddr % 0x10);
+		}
 
     // Add symbol info. Note that some symbols will be in the main table only, and others in the dynamic table only.
 	// So the best idea is to add symbols for all sections of the appropriate type

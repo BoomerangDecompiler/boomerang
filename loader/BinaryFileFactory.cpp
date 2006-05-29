@@ -134,7 +134,7 @@ BinaryFile* BinaryFileFactory::getInstanceFor( const char *sName ) {
 #ifdef __MINGW32__
 	libName = "lib/lib" + libName;
 #endif
-	hModule = LoadLibrary(libName.c_str());
+	hModule = LoadLibraryA(libName.c_str());
 	if(hModule == NULL) {
 		int err = GetLastError();
 		fprintf( stderr, "Could not open dynamic loader library %s (error #%d)\n", libName.c_str(), err);

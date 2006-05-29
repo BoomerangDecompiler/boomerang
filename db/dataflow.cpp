@@ -419,8 +419,9 @@ bool DataFlow::renameBlockVars(UserProc* proc, int n, bool clearStacks /* = fals
 			}
 			// FIXME: MVE: do we need this awful hack?
 			if (a->getOper() == opLocal) {
-				a = S->getProc()->expFromSymbol(((Const*)a->getSubExp1())->getStr());
-				assert(a);
+				Exp *a1 = S->getProc()->expFromSymbol(((Const*)a->getSubExp1())->getStr());
+				assert(a1);
+				a = a1;
 				// Stacks already has a definition for a (as just the bare local)
 				if (suitable) {
 					Stacks[a->clone()].push(S);

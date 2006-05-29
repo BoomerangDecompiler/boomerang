@@ -299,8 +299,9 @@ enum ProcStatus {
 	PROC_INCYCLE,		///< Is involved in cycles, has not completed early decompilation as yet
 	PROC_PRESERVEDS,	///< Has had preservation analysis done
 	PROC_EARLYDONE,		///< Has completed everything except the global analyses
-	PROC_FINAL			///< Has had final decompilation
+	PROC_FINAL,			///< Has had final decompilation
 	// , PROC_RETURNS	///< Has had returns intersected with all caller's defines
+	PROC_CODE_GENERATED,///< Has had code generated
 };
 
 typedef std::set <UserProc*> ProcSet;
@@ -391,6 +392,15 @@ private:
 		 */
 		ProcSet*	cycleGrp;
 
+		/**
+		 * A map of stack locations (negative values) to types.  This is currently
+		 * PENTIUM specific and is computed from range information.
+		 */
+		std::map<int, Type *> stackMap;
+
+		/// function to do safe adding.
+		void addToStackMap(int c, Type *ty);
+
 public:
 
 					UserProc(Prog *prog, std::string& name, ADDRESS address);
@@ -450,7 +460,10 @@ virtual				~UserProc();
 		bool		doesRecurseTo(UserProc* p) {return cycleGrp && cycleGrp->find(p) != cycleGrp->end();}
 
 		bool		isSorted() { return status >= PROC_SORTED; }
-		void		setSorted() { status = PROC_SORTED; }
+		void		setSorted() { setStatus(PROC_SORTED); }
+
+		ProcStatus	getStatus() { return status; }
+		void		setStatus(ProcStatus s);
 
 		/**
 		 * Return the number of bytes allocated for locals on the stack.
@@ -461,15 +474,15 @@ virtual				~UserProc();
 		void		generateCode(HLLCode *hll);
 
 		/// print this proc, mainly for debugging
-		void		print(std::ostream &out);
-		void		printParams(std::ostream &out);
+		void		print(std::ostream &out, bool html = false);
+		void		printParams(std::ostream &out, bool html = false);
 		char		*prints();
 		void		dump();
 		void		printToLog();
 		void		printDFG();
-		void		symbolMapToLog();			///< Print just the symbol map
+		void		printSymbolMap(std::ostream& out, bool html = false);	///< Print just the symbol map
 		void		dumpSymbolMap();			///< For debugging
-		void		dumpLocals(std::ostream& os);
+		void		dumpLocals(std::ostream& os, bool html = false);
 		void		dumpLocals();
 		void		dumpIgraph(igraph& ig);
 
@@ -604,6 +617,12 @@ typedef std::map<Statement*, int> RefCounter;
 		void		mapRegistersToLocals();
 		/// This is a helper function for the above:
 		void		regReplaceList(std::list<Exp**>& li);
+		/// Build a stack map
+		void		buildStackMap();
+		/// Promote stack map to locals
+		void		makeLocalsFromStackMap();
+		/// Remove stack pointer if possible.
+		void		removeStackPointer();
 
 		// For the final pass of removing returns that are never used
 //typedef	std::map<UserProc*, std::set<Exp*, lessExpStar> > ReturnCounter;

@@ -92,8 +92,10 @@ private:
 	bool	isAssignFromTern(Statement* s);
 	void	bumpRegisterAll(Exp* e, int min, int max, int delta, int mask);
 	unsigned fetch4(unsigned char* ptr);
+protected:
 
-
+	virtual DecodeResult& decodeInstruction(ADDRESS pc);
+	virtual void extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls);
 };
 
 #endif

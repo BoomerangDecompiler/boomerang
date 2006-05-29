@@ -828,7 +828,7 @@ void Range::print(std::ostream &os)
 
 void Range::unionWith(Range &r)
 {
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << "unioning " << this << " with " << r << " got ";
 	if (base->getOper() == opMinus && r.base->getOper() == opMinus &&
 		*base->getSubExp1() == *r.base->getSubExp1() &&
@@ -841,7 +841,7 @@ void Range::unionWith(Range &r)
 				lowerBound = std::min(-c1, -c2);
 				upperBound = std::max(-c1, -c2);
 				base = base->getSubExp1();
-				if (VERBOSE)
+				if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 					LOG << this << "\n";
 				return;
 			}
@@ -849,7 +849,7 @@ void Range::unionWith(Range &r)
 	}
 	if (!(*base == *r.base)) {
 		stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
-		if (VERBOSE)
+		if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 			LOG << this << "\n";
 		return;
 	}
@@ -859,17 +859,17 @@ void Range::unionWith(Range &r)
 		lowerBound = std::min(lowerBound, r.lowerBound);
 	if (upperBound != r.upperBound)
 		upperBound = std::max(upperBound, r.upperBound);
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << this << "\n";
 }
 
 void Range::widenWith(Range &r)
 {
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << "widening " << this << " with " << r << " got ";
 	if (!(*base == *r.base)) {
 		stride = 1; lowerBound = MIN; upperBound = MAX; base = new Const(0);
-		if (VERBOSE)
+		if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 			LOG << this << "\n";
 		return;
 	}
@@ -878,7 +878,7 @@ void Range::widenWith(Range &r)
 		lowerBound = MIN;
 	if (r.getUpperBound() > upperBound)
 		upperBound = MAX;
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << this << "\n";
 }
 Range &RangeMap::getRange(Exp *loc) {
@@ -922,13 +922,15 @@ void RangeMap::print(std::ostream &os)
 	}
 }
 
-Exp *RangeMap::substInto(Exp *e)
+Exp *RangeMap::substInto(Exp *e, std::set<Exp*, lessExpStar> *only)
 {
 	bool changes;
 	int count = 0;
 	do {
 		changes = false;
 		for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
+			if (only && only->find((*it).first) == only->end())
+				continue;
 			bool change = false;
 			Exp *eold = e->clone();
 			if ((*it).second.getLowerBound() == (*it).second.getUpperBound()) {
@@ -936,7 +938,7 @@ Exp *RangeMap::substInto(Exp *e)
 			}
 			if (change) {
 				e = e->simplify()->simplifyArith();
-				if (VERBOSE)
+				if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 					LOG << "applied " << (*it).first << " to " << eold << " to get " << e << "\n";
 				changes = true;
 			}
@@ -966,11 +968,17 @@ bool Range::operator==(Range &other)
 bool RangeMap::isSubset(RangeMap &other)
 {
 	for (std::map<Exp*, Range, lessExpStar>::iterator it = ranges.begin(); it != ranges.end(); it++) {
-		if (other.ranges.find((*it).first) == other.ranges.end())
+		if (other.ranges.find((*it).first) == other.ranges.end()) {
+			if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+				LOG << "did not find " << (*it).first << " in other, not a subset\n";
 			return false;
+		}
 		Range &r = other.ranges[(*it).first];
-		if (!((*it).second == r))
+		if (!((*it).second == r)) {
+			if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+				LOG << "range for " << (*it).first << " in other " << r << " is not equal to range in this " << (*it).second << ", not a subset\n";
 			return false;
+		}
 	}
 	return true;
 }

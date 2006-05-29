@@ -626,7 +626,7 @@ bool TypeVal::operator*=(Exp& o) {
 //	//	//	//
 //	Const	//
 //	//	//	//
-void Const::print(std::ostream& os) {
+void Const::print(std::ostream& os, bool html) {
 	setLexBegin(os.tellp());
 	switch (op) {
 		case opIntConst:
@@ -686,7 +686,7 @@ void Binary::printr(std::ostream& os) {
 	os << "(" << this << ")";
 }
 
-void Binary::print(std::ostream& os) {
+void Binary::print(std::ostream& os, bool html) {
     assert(subExp1 && subExp2);
 	Exp* p1 = ((Binary*)this)->getSubExp1();
 	Exp* p2 = ((Binary*)this)->getSubExp2();
@@ -799,7 +799,7 @@ void Binary::print(std::ostream& os) {
 //	//	//	//	//
 //	 Terminal	//
 //	//	//	//	//
-void Terminal::print(std::ostream& os) {
+void Terminal::print(std::ostream& os, bool html) {
 	switch (op) {
 		case opPC:		os << "%pc";   break;
 		case opFlags:	os << "%flags"; break;
@@ -833,7 +833,7 @@ void Terminal::print(std::ostream& os) {
 //	//	//	//
 //	 Unary	//
 //	//	//	//
-void Unary::print(std::ostream& os) {
+void Unary::print(std::ostream& os, bool html) {
 	Exp* p1 = ((Unary*)this)->getSubExp1();
 	switch (op) {
 		//	//	//	//	//	//	//
@@ -980,7 +980,7 @@ void Ternary::printr(std::ostream& os) {
 	os << "(" << this << ")";
 }
 
-void Ternary::print(std::ostream& os) {
+void Ternary::print(std::ostream& os, bool html) {
 	Exp* p1 = ((Ternary*)this)->getSubExp1();
 	Exp* p2 = ((Ternary*)this)->getSubExp2();
 	Exp* p3 = ((Ternary*)this)->getSubExp3();
@@ -1034,7 +1034,7 @@ void Ternary::print(std::ostream& os) {
 //	//	//	//
 // TypedExp //
 //	//	//	//
-void TypedExp::print(std::ostream& os) {
+void TypedExp::print(std::ostream& os, bool html) {
 	os << " ";
 	type->starPrint(os);
 	Exp* p1 = ((Ternary*)this)->getSubExp1();
@@ -1045,21 +1045,27 @@ void TypedExp::print(std::ostream& os) {
 //	//	//	//
 //	RefExp	//
 //	//	//	//
-void RefExp::print(std::ostream& os) {
+void RefExp::print(std::ostream& os, bool html) {
 	if (subExp1) subExp1->print(os);
 	else os << "<NULL>";
-	os << "{";
+	if (html)
+		os << "<sub>";
+	else
+		os << "{";
 	if (def == (Statement*)-1) os << "WILD";
 	else if (def) def->printNum(os);
 	// else os << "0";
 	else os << "-";			// So you can tell the difference with {0}
-	os << "}";
+	if (html)
+		os << "</sub>";
+	else
+		os << "}";
 }
 
 //	//	//	//
 // TypeVal	//
 //	//	//	//
-void TypeVal::print(std::ostream& os) {
+void TypeVal::print(std::ostream& os, bool html) {
 	if (val)
 		os << "<" << val->getCtype() << ">";
 	else 
@@ -2683,6 +2689,42 @@ Exp* Ternary::polySimplify(bool& bMod) {
 				if (VERBOSE) 
 					LOG << "replacing " << subExp3 << " with " << d << " in " << this << "\n";
 				subExp3 = new Const(d);
+				bMod = true;
+				return res;
+			}
+		}
+	}
+
+	if (op == opTruncu && subExp3->isIntConst()) {
+		int from = ((Const*)subExp1)->getInt();
+		int to = ((Const*)subExp2)->getInt();
+		unsigned int val = ((Const*)subExp3)->getInt();
+		if (from == 32) {
+			if (to == 16) {
+				res = new Const(val & 0xffff);
+				bMod = true;
+				return res;
+			}
+			if (to == 8) {
+				res = new Const(val & 0xff);
+				bMod = true;
+				return res;
+			}
+		}
+	}
+
+	if (op == opTruncs && subExp3->isIntConst()) {
+		int from = ((Const*)subExp1)->getInt();
+		int to = ((Const*)subExp2)->getInt();
+		int val = ((Const*)subExp3)->getInt();
+		if (from == 32) {
+			if (to == 16) {
+				res = new Const(val & 0xffff);
+				bMod = true;
+				return res;
+			}
+			if (to == 8) {
+				res = new Const(val & 0xff);
 				bMod = true;
 				return res;
 			}

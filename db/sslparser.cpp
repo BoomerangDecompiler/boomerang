@@ -3194,9 +3194,11 @@ static Exp* srchOp = new Ternary(opOpTable,
 		new Terminal(opWild),
 		new Terminal(opWild));
 void init_sslparser() {
+#ifndef NO_GARBAGE_COLLECTOR
 	static Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(2 * sizeof(Exp*));
 	gc_pointers[0] = srchExpr;
 	gc_pointers[1] = srchOp;
+#endif
 }
 
 void SSLParser::expandTables(InsNameElem* iname, std::list<std::string>* params, RTL* o_rtlist, RTLInstDict& Dict) {

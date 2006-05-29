@@ -187,7 +187,7 @@ virtual int			findImplicitParam(Exp *e);
 
 		// any signature can be promoted to a higher level signature, if available
 virtual Signature *promote(UserProc *p);
-		void		print(std::ostream &out);
+		void		print(std::ostream &out, bool html = false);
 		char*		prints();			// For debugging
 		void		printToLog();
 

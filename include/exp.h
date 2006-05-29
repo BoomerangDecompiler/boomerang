@@ -97,7 +97,7 @@ virtual				~Exp() {}
 		unsigned	getLexEnd() { return lexEnd; }
 
 		// Print the expression to the given stream
-virtual void		print(std::ostream& os) = 0;
+virtual void		print(std::ostream& os, bool html = false) = 0;
 		// Print with <type>
 		void		printt(std::ostream& os = std::cout);
 		void		printAsHL(std::ostream& os = std::cout); // Print with v[5] as v5
@@ -426,7 +426,7 @@ virtual bool		operator*=(Exp& o);
 		Type*		getType() { return type; }
 		void		setType(Type* ty) { type = ty; }
 
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 		// Print "recursive" (extra parens not wanted at outer levels)
 		void		printNoQuotes(std::ostream& os);
 virtual void		printx(int ind);
@@ -466,7 +466,7 @@ virtual bool		operator==(const Exp& o) const;
 virtual bool		operator< (const Exp& o) const;
 virtual bool		operator*=(Exp& o);
 
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 virtual void		appendDotFile(std::ofstream& of);
 virtual void		printx(int ind);
 
@@ -515,7 +515,7 @@ virtual				~Unary();
 virtual int			getArity() {return 1;}
 
 		// Print
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 virtual void		appendDotFile(std::ofstream& of);
 virtual void		printx(int ind);
 
@@ -589,7 +589,7 @@ virtual				~Binary();
 		int				getArity() {return 2;}
 
 		// Print
-virtual void		 print(std::ostream& os);
+virtual void		 print(std::ostream& os, bool html = false);
 virtual void		 printr(std::ostream& os);
 virtual void		 appendDotFile(std::ofstream& of);
 virtual void		 printx(int ind);
@@ -667,7 +667,7 @@ virtual				~Ternary();
 		int				getArity() {return 3;}
 
 		// Print
-virtual void		 print(std::ostream& os);
+virtual void		 print(std::ostream& os, bool html = false);
 virtual void		 printr(std::ostream& os);
 virtual void		 appendDotFile(std::ofstream& of);
 virtual void		 printx(int ind);
@@ -733,7 +733,7 @@ virtual bool		operator<<(const Exp& o) const;
 virtual bool		operator*=(Exp& o);
 
 
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 virtual void		appendDotFile(std::ofstream& of);
 virtual void		printx(int ind);
 
@@ -794,7 +794,7 @@ virtual bool 		operator==(const Exp& o) const;
 virtual bool 		operator< (const Exp& o) const;
 virtual bool		operator*=(Exp& o);
 
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 virtual void		printx(int ind);
 //virtual int		getNumRefs() {return 1;}
 		Statement*	getDef() {return def;}		// Ugh was called getRef()
@@ -839,7 +839,7 @@ virtual Exp*		clone();
 virtual bool		operator==(const Exp& o) const;
 virtual bool		operator< (const Exp& o) const;
 virtual bool		operator*=(Exp& o);
-virtual void		print(std::ostream& os);
+virtual void		print(std::ostream& os, bool html = false);
 virtual void		printx(int ind);
 virtual Exp*		genConstraints(Exp* restrictTo) {
 						assert(0); return NULL;} // Should not be constraining constraints

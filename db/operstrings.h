@@ -166,7 +166,7 @@ char* operStrings[] = {
 	"opFLF",				// floating point less flag
 	"opFGF",				// floating point greater flag
 	"opCTI",				// Control transfer instruction (boolean)
-	"opNEXT"				 // Next PC pseudo-register
+	"opNEXT",				// Next PC pseudo-register
 };
 
 

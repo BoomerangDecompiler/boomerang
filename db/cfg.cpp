@@ -1273,9 +1273,9 @@ void Cfg::simplify() {
 }
 
 // print this cfg, mainly for debugging
-void Cfg::print(std::ostream &out) {
+void Cfg::print(std::ostream &out, bool html) {
 	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		(*it)->print(out);
+		(*it)->print(out, html);
 	out << std::endl;
 }
 
@@ -1284,9 +1284,9 @@ void Cfg::dump() {
 }
 
 void Cfg::printToLog() {
-	for (std::list<PBB>::iterator it = m_listBB.begin(); it != m_listBB.end(); it++) 
-		(*it)->printToLog();
-	LOG << "\n";
+	std::ostringstream ost;
+	print(ost);
+	LOG << ost.str().c_str();
 }
 
 void Cfg::setTimeStamps() {
@@ -1594,7 +1594,7 @@ void Cfg::structLoops() {
 			findLoopFollow(curNode, loopNodes);
 
 			// delete the space taken by the loopnodes map
-			delete[] loopNodes;
+			//delete[] loopNodes;
 		}
 	}
 }

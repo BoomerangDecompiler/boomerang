@@ -107,7 +107,7 @@ virtual bool		accept(StmtVisitor* visitor);
 		std::list<Statement*> &getList() { return stmtList; }
 
 		 // Print RTL to a stream.
-virtual void		print(std::ostream& os = std::cout);
+virtual void		print(std::ostream& os = std::cout, bool html = false);
 
 		void		dump();
 

@@ -326,11 +326,15 @@ Statement* RTL::elementAt(unsigned i) {
  * PARAMETERS:		os - stream to output to (often cout or cerr)
  * RETURNS:			<nothing>
  *============================================================================*/
-void RTL::print(std::ostream& os /*= cout*/) {
+void RTL::print(std::ostream& os /*= cout*/, bool html /*=false*/) {
 
+	if (html)
+		os << "<tr><td>";
 	// print out the instruction address of this RTL
 	os << std::hex << std::setfill('0') << std::setw(8) << nativeAddr;
 	os << std::dec << std::setfill(' ');	  // Ugh - why is this needed?
+	if (html)
+		os << "</td>";
 
 	// Print the statements
 	// First line has 8 extra chars as above
@@ -338,11 +342,18 @@ void RTL::print(std::ostream& os /*= cout*/) {
 	iterator ss;
 	for (ss = stmtList.begin(); ss != stmtList.end(); ss++) {
 		Statement* stmt = *ss;
-		if (bFirst) os << " ";
-		else		os << std::setw(9) << " ";
-		if (stmt) stmt->print(os);
+		if (html) {
+			if (!bFirst) os << "<tr><td></td>";
+			os << "<td width=\"50\" align=\"center\">";
+		} else {
+			if (bFirst) os << " ";
+			else		os << std::setw(9) << " ";
+		}
+		if (stmt) stmt->print(os, html);
 		// Note: we only put newlines where needed. So none at the end of
 		// Statement::print; one here to separate from other statements
+		if (html)
+			os << "</td></tr>";
 		os << "\n";
 		bFirst = false;
 	}

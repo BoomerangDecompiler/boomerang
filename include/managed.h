@@ -276,10 +276,11 @@ public:
 	void unionwith(RangeMap &other);
 	void widenwith(RangeMap &other);
 	void print(std::ostream &os);
-	Exp *substInto(Exp *e);
+	Exp *substInto(Exp *e, std::set<Exp*, lessExpStar> *only = NULL);
 	void killAllMemOfs();
 	void clear() { ranges.clear(); }
 	bool isSubset(RangeMap &other);
+	bool empty() { return ranges.empty(); }
 };
 
 #endif	// #ifdef __MANAGED_H__

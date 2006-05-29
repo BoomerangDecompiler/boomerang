@@ -53,6 +53,7 @@
 #include "visitor.h"
 #include "log.h"
 #include <iomanip>			// For std::setw etc
+#include <sstream>
 
 #ifdef _WIN32
 #undef NO_ADDRESS
@@ -507,7 +508,7 @@ void UserProc::printAST(SyntaxNode *a)
  * RETURNS:			
  *============================================================================*/
 void UserProc::setDecoded() {
-	status = PROC_DECODED;
+	setStatus(PROC_DECODED);
 	printDecodedXML();
 }
 
@@ -519,7 +520,7 @@ void UserProc::setDecoded() {
  *============================================================================*/
 void UserProc::unDecode() {
 	cfg->clear();
-	status = PROC_UNDECODED;
+	setStatus(PROC_UNDECODED);
 }
 
 /*==============================================================================
@@ -618,17 +619,42 @@ void UserProc::generateCode(HLLCode *hll) {
 
 	if (!Boomerang::get()->noRemoveLabels)
 		cfg->removeUnneededLabels(hll);
+
+	setStatus(PROC_CODE_GENERATED);
 }
 
 // print this userproc, maining for debugging
-void UserProc::print(std::ostream &out) {
-	signature->print(out);
-	printParams(out);
-	cfg->print(out);
+void UserProc::print(std::ostream &out, bool html) {
+	signature->printToLog();
+	std::ostringstream ost;
+	printParams(ost, html);
+	dumpLocals(ost);
+	out << ost.str().c_str();
+	printSymbolMap(out, html);
+	if (html)
+		out << "<br>";
+	out << "live variables: ";
+	std::ostringstream ost2;
+	col.print(ost2);
+	out << ost2.str().c_str() << "\n";
+	if (html)
+		out << "<br>";
+	out << "end live variables\n";
+	std::ostringstream ost3;
+	cfg->print(ost3, html);
+	out << ost3.str().c_str();
 	out << "\n";
 }
 
-void UserProc::printParams(std::ostream& out) {
+void UserProc::setStatus(ProcStatus s)
+{
+	status = s;
+	Boomerang::get()->alert_proc_status_change(this);
+}
+
+void UserProc::printParams(std::ostream& out, bool html) {
+	if (html)
+		out << "<br>";
 	out << "parameters: ";
 	bool first = true;
 	for (StatementList::iterator pp = parameters.begin(); pp != parameters.end(); ++pp) {
@@ -638,7 +664,10 @@ void UserProc::printParams(std::ostream& out) {
 			out << ", ";
 		out << ((Assign*)*pp)->getLeft();
 	}
-	out << "\nend parameters\n";
+	out << "\n";
+	if (html)
+		out << "<br>";
+	out << "end parameters\n";
 }
 
 char* UserProc::prints() {
@@ -654,19 +683,9 @@ void UserProc::dump() {
 }
 
 void UserProc::printToLog() {
-	signature->printToLog();
 	std::ostringstream ost;
-	printParams(ost);
-	dumpLocals(ost);
+	print(ost);
 	LOG << ost.str().c_str();
-	symbolMapToLog();
-	LOG << "live variables: ";
-	std::ostringstream ost2;
-	col.print(ost2);
-	LOG << ost2.str().c_str() << "\n";
-	LOG << "end live variables\n";
-	cfg->printToLog();
-	LOG << "\n";
 }
 
 void UserProc::printDFG() { 
@@ -913,6 +932,7 @@ void UserProc::insertStatementAfter(Statement* s, Statement* a) {
 
 // Decompile this UserProc
 ProcSet* UserProc::decompile(ProcList* path, int& indent) {
+	Boomerang::get()->alert_considering(path->back(), this);
 	std::cout << std::setw(++indent) << " " << (status >= PROC_VISITED ? "re" : "") << "considering " << getName() <<
 		"\n";
 	if (VERBOSE)
@@ -928,7 +948,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 		prog->reDecode(this);					// Actually decoding for the first time, not REdecoding
 
 	if (status < PROC_VISITED)
-		status = PROC_VISITED; 					// We have at least visited this proc "on the way down"
+		setStatus(PROC_VISITED); 					// We have at least visited this proc "on the way down"
 	ProcSet* child = new ProcSet;
 	path->push_back(this);						// Append this proc to path
 
@@ -1002,7 +1022,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 							child->insert(cg->begin(), cg->end());
 						cg = child;
 					}
-					status = PROC_INCYCLE;	
+					setStatus(PROC_INCYCLE);	
 				} else {
 					// No new cycle
 					if (VERBOSE)
@@ -1012,7 +1032,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 					// Child has at least done middleDecompile(), possibly more
 					call->setCalleeReturn(c->getTheReturnStatement());
 					if (tmp->size() > 0) {
-						status = PROC_INCYCLE;
+						setStatus(PROC_INCYCLE);
 					}
 				}
 			}
@@ -1022,6 +1042,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 
 	// if child is empty, i.e. no child involved in recursion
 	if (child->size() == 0) {
+		Boomerang::get()->alert_decompiling(this);
 		std::cout << std::setw(indent) << " " << "decompiling " << getName() << "\n";
 		initialiseDecompile();					// Sort the CFG, number statements, etc
 		earlyDecompile();
@@ -1034,7 +1055,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 	}
 	if (child->size() == 0) {
 		remUnusedStmtEtc();	// Do the whole works
-		status = PROC_FINAL;
+		setStatus(PROC_FINAL);
 		Boomerang::get()->alert_end_decompile(this);
 	} else {
 		// this proc's children, and hence this proc, is/are involved in recursion
@@ -1047,7 +1068,7 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 		if (*f == this) {
 			// Yes, process these procs as a group
 			recursionGroupAnalysis(path, indent);// Includes remUnusedStmtEtc on all procs in cycleGrp
-			status = PROC_FINAL;
+			setStatus(PROC_FINAL);
 			Boomerang::get()->alert_end_decompile(this);
 			child = new ProcSet;
 		}
@@ -1076,6 +1097,9 @@ ProcSet* UserProc::decompile(ProcList* path, int& indent) {
 void UserProc::initialiseDecompile() {
 
 	Boomerang::get()->alert_start_decompile(this);
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before initialise");
+
 	if (VERBOSE) LOG << "initialise decompile for " << getName() << "\n";
 
 	// Sort by address, so printouts make sense
@@ -1101,7 +1125,7 @@ void UserProc::initialiseDecompile() {
 
 	if (Boomerang::get()->noDecompile) {
 		std::cout << "not decompiling.\n";
-		status = PROC_FINAL;				// ??!
+		setStatus(PROC_FINAL);				// ??!
 		return;
 	}
 
@@ -1110,6 +1134,8 @@ void UserProc::initialiseDecompile() {
 		printToLog();
 		LOG << "=== end initial debug print after decoding for " << getName() << " ===\n\n";
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after initialise");
 }
 // Can merge these two now
 void UserProc::earlyDecompile() {
@@ -1117,6 +1143,7 @@ void UserProc::earlyDecompile() {
 	if (status >= PROC_EARLYDONE)
 		return; 
 
+	Boomerang::get()->alert_decompile_debug_point(this, "before early");
 	if (VERBOSE) LOG << "early decompile for " << getName() << "\n";
 
 	// Update the defines in the calls. Will redo if involved in recursion
@@ -1155,9 +1182,13 @@ void UserProc::earlyDecompile() {
 		printToLog();
 		LOG << "\n=== done after propagation (1) for " << getName() << " 1st pass ===\n\n";
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after early");
 }
 
 ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before middle");
 
 	// The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
 	// The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
@@ -1187,7 +1218,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		LOG << "=== end after preservation, bypass and propagation ===\n";
 	}
 	// Oh, no, we keep doing preservations till almost the end...
-	//status = PROC_PRESERVEDS;		// Preservation done
+	//setStatus(PROC_PRESERVEDS);		// Preservation done
 
 	if (!Boomerang::get()->noPromote)
 		// We want functions other than main to be promoted. Needed before mapExpressionsToLocals
@@ -1196,7 +1227,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 	//mapExpressionsToLocals();
 	
 	// Now is the time to allow propagate m[...]
-	//status = PROC_VISITED;
+	//setStatus(PROC_VISITED);
 #if 0
 	for (p = cs->begin(); p != cs->end(); ++p) {
 		for (int d=0; d < maxDepth; ++d) {
@@ -1409,7 +1440,7 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 		std::ofstream os;
 		prog->reDecode(this);
 		df.setRenameAllMemofs(false);			// Start again with memofs
-		status = PROC_VISITED;					// Back to only visited progress
+		setStatus(PROC_VISITED);				// Back to only visited progress
 		path->erase(--path->end());				// Remove self from path
 		--indent;								// Because this is not recursion
 		ProcSet* ret = decompile(path, indent);	// Restart decompiling this proc
@@ -1444,7 +1475,9 @@ ProcSet* UserProc::middleDecompile(ProcList* path, int indent) {
 
 	if (VERBOSE)
 		LOG << "===== end early decompile for " << getName() << " =====\n\n";
-	status = PROC_EARLYDONE;
+	setStatus(PROC_EARLYDONE);
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after middle");
 
 	return new ProcSet;
 }
@@ -1461,6 +1494,8 @@ void UserProc::remUnusedStmtEtc() {
 	// happens after UserProc::decompile is complete
 	//if (status >= PROC_FINAL)
 	//	return;
+
+	Boomerang::get()->alert_decompile_debug_point(this, "before final");
 
 	if (VERBOSE)
 		LOG << "--- remove unused statements for " << getName() << " ---\n";
@@ -1563,6 +1598,8 @@ void UserProc::remUnusedStmtEtc() {
 		printToLog();
 		LOG << "=== after remove unused statements etc for " << getName() << "\n";
 	}
+
+	Boomerang::get()->alert_decompile_debug_point(this, "after final");
 }
 
 void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
@@ -1646,7 +1683,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts) {
 	// removed statement, so liveness in the call needs to be removed
 	removeCallLiveness();		// Kill all existing livenesses
 	doRenameBlockVars(-2);		// Recalculate new livenesses
-	status = PROC_FINAL;		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
+	setStatus(PROC_FINAL);		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 }
 
 #if 0
@@ -1714,7 +1751,7 @@ void UserProc::finalDecompile() {
 
 	printXML();
 
-	status = PROC_FINAL;		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
+	setStatus(PROC_FINAL);		// Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 	if (VERBOSE)
 		LOG << "=== end final decompile for " << getName() << "\n";
 	Boomerang::get()->alert_end_decompile(this);
@@ -1748,7 +1785,8 @@ void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
 	// First, do the initial decompile, and call earlyDecompile
 	ProcSet::iterator curp;
 	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
-		(*curp)->status = PROC_INCYCLE;					// So the calls are treated as childless
+		(*curp)->setStatus(PROC_INCYCLE);				// So the calls are treated as childless
+		Boomerang::get()->alert_decompiling(*curp);
 		(*curp)->initialiseDecompile();					// Sort the CFG, number statements, etc
 		(*curp)->earlyDecompile();
 	}
@@ -1757,7 +1795,7 @@ void UserProc::recursionGroupAnalysis(ProcList* path, int indent) {
 	// The standard preservation analysis should automatically perform conditional preservation
 	for (curp = cycleGrp->begin(); curp != cycleGrp->end(); ++curp) {
 		(*curp)->middleDecompile(path, indent);
-		(*curp)->status = PROC_PRESERVEDS;
+		(*curp)->setStatus(PROC_PRESERVEDS);
 	}
 
 
@@ -2074,6 +2112,170 @@ void UserProc::updateReturnTypes()
 				}
 			}
 		}
+	}
+}
+
+void UserProc::addToStackMap(int c, Type *ty)
+{
+	unsigned int sz = ty->getSize();
+	if (stackMap.find(c) != stackMap.end()) {
+		if (stackMap[c]->getSize() < ty->getSize()) {
+			LOG << "increased stack size of offset " << c << " to " << ty << "\n";
+			stackMap[c] = ty;
+		}
+		return;
+	}
+	for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
+		if ((*it1).first < c && (*it1).first + (int)(*it1).second->getSize() > c) {
+			LOG << "detected stack conflict, " << c << " is in previous mapping starting at " << (*it1).first << " of size " << (*it1).second->getSize() << "\n";
+			// TODO
+			assert(false);
+		}
+	bool redo = true;
+	while (redo) {
+		redo = false;
+		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
+			if ((*it1).first > c && (*it1).first < c + (int)sz) {
+				LOG << "detected stack conflict, a previous mapping starting at " << (*it1).first << " of size " << (int)(*it1).second << " would be inside the mapping to be created at " << c << " of size " << (int)sz << "\n";
+				LOG << "the old mapping will be removed.\n";
+				stackMap.erase(it1);
+				redo = true;
+				break;
+			}
+	}
+	stackMap[c] = ty;
+}
+
+// PENTIUM only.  Build a map of the stack frame.  Assumes range analysis has been done.
+void UserProc::buildStackMap()
+{
+	StatementList stmts;
+	getStatements(stmts);
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isCall()) {
+			CallStatement *call = (CallStatement*)stmt;
+			for (int i = 0; i < call->getNumArguments(); i++) {
+				Type *ty = call->getArgumentType(i);
+				if (ty == NULL || !ty->resolvesToPointer())
+					continue;
+				Exp *a = call->getArgumentExp(i)->clone();
+				a = (*it)->getSavedInputRanges().substInto(a);
+				if (a->getOper() == opMinus && 
+						a->getSubExp1()->getOper() == opInitValueOf &&
+						a->getSubExp1()->getSubExp1()->isRegN(28) && 
+						a->getSubExp2()->isIntConst()) {
+					Type *pty = ty->asPointer()->getPointsTo();
+					if (VERBOSE)
+						LOG << "argument is pointer to type " << pty << "\n";
+					int c = ((Const*)a->getSubExp2())->getInt() * -8;
+					unsigned int sz = pty->getSize();
+					if (VERBOSE)
+						LOG << "buildStackMap accepted arg " << a << " size " << (int)sz << "\n";
+					addToStackMap(c, pty);
+				}
+			}
+		}
+		if (!stmt->isAssign())
+			continue;
+		Assign *asgn = (Assign*)stmt;
+		Exp *l = asgn->getLeft();
+		if (!l->isMemOf())
+			continue;
+		l = (*it)->getSavedInputRanges().substInto(l->getSubExp1()->clone());
+		l = l->simplifyArith();
+		if (l->getOper() == opMinus &&
+				l->getSubExp1()->getOper() == opInitValueOf &&
+				l->getSubExp1()->getSubExp1()->isRegN(28) && 
+				l->getSubExp2()->isIntConst()) {
+			int c = ((Const*)l->getSubExp2())->getInt() * -8;
+			unsigned int sz = asgn->getType()->getSize();
+			if (VERBOSE)
+				LOG << "buildStackMap accepted " << (int)c << " size " << (int)sz << " in stmt " << stmt->getNumber() << "\n";			
+			addToStackMap(c, new SizeType(sz));
+		}
+	}
+	
+	if (VERBOSE) {
+		LOG << "resulting stack map: ";
+		int n = 0;
+		bool first = true;
+		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++) {
+			if (first) {
+				n = (*it1).first; 
+				LOG << n << " ";
+				first = false;
+			}
+			for (; n < (*it1).first; n += 8)
+				LOG << ".";
+			for (; n < (*it1).first + (int)(*it1).second->getSize(); n += 8) {
+				if (n == (*it1).first)
+					LOG << ">";
+				else
+					LOG << "*";
+			}
+		}
+		LOG << " " << n << "\n";
+		LOG << "                   : ";
+		for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++)
+			LOG << (*it1).second << " ";
+		LOG << "\n";
+	}
+}
+
+// PENTIUM only, make locals from the stack map information and replace 
+// all references to r28/r29
+void UserProc::makeLocalsFromStackMap()
+{
+	for (std::map<int, Type*>::iterator it1 = stackMap.begin(); it1 != stackMap.end(); it1++) {
+		Exp *l = newLocal((*it1).second);
+		Exp *e = Location::memOf(new Binary(opMinus, new RefExp(Location::regOf(28), NULL), new Const(-(*it1).first / 8)));
+		symbolMap[e] = l;
+		LOG << "makeLocalsFromStackMap adding symbol " << l << " for " << e << "\n";
+	}
+}
+
+// PENTIUM only, use range information to remove the stack pointer if possible.
+void UserProc::removeStackPointer()
+{
+	StatementList stmts;
+	getStatements(stmts);
+	std::set<Exp*, lessExpStar> only;
+	only.insert(Location::regOf(28));
+
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isCall()) {
+			CallStatement *call = (CallStatement*)stmt;
+			for (int i = 0; i < call->getNumArguments(); i++) {
+				Exp *e = call->getArgumentExp(i);
+				e = stmt->getSavedInputRanges().substInto(e, &only);
+				e = e->simplifyArith();
+				call->setArgumentExp(i, e);
+			}
+		}
+		if (!stmt->isAssign())
+			continue;
+		Assign *asgn = (Assign*)stmt;
+		if (asgn->getLeft()->isMemOf()) {
+			Exp *e = asgn->getLeft()->getSubExp1()->clone();
+			e = stmt->getSavedInputRanges().substInto(e, &only);
+			e = e->simplifyArith();
+			asgn->getLeft()->setSubExp1(e);
+		}
+		Exp *e = asgn->getRight()->clone();
+		e = stmt->getSavedInputRanges().substInto(e, &only);
+		e = e->simplifyArith();
+		asgn->setRight(e);
+	}
+	for (StatementList::iterator it = stmts.begin(); it != stmts.end(); it++) {
+		Statement *stmt = *it;
+		if (stmt->isAssign() && ((Assign*)stmt)->getLeft()->isRegN(28)) {
+			removeStatement(stmt);
+			continue;
+		}
+		stmt->searchAndReplace(new Unary(opInitValueOf, Location::regOf(28)), Location::regOf(28));
+
 	}
 }
 
@@ -4427,15 +4629,17 @@ char* UserProc::lookupSym(Exp* e) {
 	return ((Const*)((Location*)sym)->getSubExp1())->getStr();
 }
 
-void UserProc::symbolMapToLog() {
-	LOG << "symbols:\n";
+void UserProc::printSymbolMap(std::ostream &out, bool html) {
+	out << "symbols:\n";
 	SymbolMapType::iterator it;
 	for (it = symbolMap.begin(); it != symbolMap.end(); it++)
-		LOG << "  " << it->first << " maps to " << it->second << "\n";
-	LOG << "end symbols\n";
+		out << "  " << it->first << " maps to " << it->second << "\n";
+	out << "end symbols\n";
 }
 
-void UserProc::dumpLocals(std::ostream& os) {
+void UserProc::dumpLocals(std::ostream& os, bool html) {
+	if (html)
+		os << "<br>";
 	os << "locals:\n";
 	for (std::map<std::string, Type*>::iterator it = locals.begin(); it != locals.end(); it++) {
 		os << it->second->getCtype() << " " << it->first.c_str() << " ";
@@ -4446,6 +4650,8 @@ void UserProc::dumpLocals(std::ostream& os) {
 		else
 			os << "-\n";
 	}
+	if (html)
+		os << "<br>";
 	os << "end locals\n";
 }
 
@@ -5403,19 +5609,29 @@ void UserProc::rangeAnalysis()
 			else
 				stmt->rangeAnalysis(execution_paths);
 		}
+		if (watchdog > 45) 
+			LOG << "processing execution paths resulted in " << (int)junctions.size() << " junctions to process\n";
 		while(junctions.size()) {
 			Statement *junction = junctions.front();
 			junctions.pop_front();
+			if (watchdog > 45)
+				LOG << "processing junction " << junction << "\n";
 			assert(junction->isJunction());
 			junction->rangeAnalysis(execution_paths);
 		}
 
 		watchdog++;
 		if (watchdog > 10) {
-			std::cout << "  watchdog " << watchdog << "\n";
+			LOG << "  watchdog " << watchdog << "\n";
+			if (watchdog > 45) {
+				LOG << (int)execution_paths.size() << " execution paths remaining.\n";
+				LOG << "=== After range analysis watchdog " << watchdog << " for " << getName() << " ===\n";
+				printToLog();
+				LOG << "=== end after range analysis watchdog " << watchdog << " for " << getName() << " ===\n\n";
+			}
 		}
 		if (watchdog > 50) {
-			std::cout << "  watchdog expired\n";
+			LOG << "  watchdog expired\n";
 			break;
 		}
 	}

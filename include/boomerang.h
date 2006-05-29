@@ -50,6 +50,8 @@ class ObjcModule;
 #define LOG Boomerang::get()->log()
 #define LOGTAIL Boomerang::get()->logTail()
 
+#define DEBUG_RANGE_ANALYSIS 0
+
 /// Virtual class to monitor the decompilation.
 class Watcher {
 public:
@@ -65,12 +67,16 @@ virtual void		alert_start_decode(ADDRESS start, int nBytes) { }
 virtual void		alert_end_decode() { }
 virtual void		alert_decode(Proc *p, ADDRESS pc, ADDRESS last, int nBytes) { }
 virtual void		alert_start_decompile(UserProc *p) { }
+virtual void		alert_proc_status_change(UserProc *p) { }
 virtual void		alert_decompile_SSADepth(UserProc *p, int depth) { }
 virtual void		alert_decompile_beforePropagate(UserProc *p, int depth) { }
 virtual void		alert_decompile_afterPropagate(UserProc *p, int depth) { }
 virtual void		alert_decompile_afterRemoveStmts(UserProc *p, int depth) { }
 virtual void		alert_end_decompile(UserProc *p) { }
 virtual void		alert_load(Proc *p) { }
+virtual void		alert_considering(Proc *parent, Proc *p) { }
+virtual void		alert_decompiling(UserProc *p) { }
+virtual void		alert_decompile_debug_point(UserProc *p, const char *description) { }
 };
 
 /**
@@ -189,6 +195,10 @@ virtual	void		alert_start_decompile(UserProc *p) {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_start_decompile(p);
 					}
+virtual void		alert_proc_status_change(UserProc *p) {
+						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+							(*it)->alert_proc_status_change(p);
+					}
 virtual	void		alert_decompile_SSADepth(UserProc *p, int depth) {
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_decompile_SSADepth(p, depth);
@@ -208,7 +218,20 @@ virtual void		alert_decompile_afterRemoveStmts(UserProc *p, int depth) {
 virtual void		alert_end_decompile(UserProc *p) { 
 						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
 							(*it)->alert_end_decompile(p);
-			}
+					}
+virtual void		alert_considering(Proc *parent, Proc *p) { 
+						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+							(*it)->alert_considering(parent, p);
+					}
+virtual void		alert_decompiling(UserProc *p) { 
+						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+							(*it)->alert_decompiling(p);
+					}
+virtual void		alert_decompile_debug_point(UserProc *p, const char *description) {
+						for (std::set<Watcher*>::iterator it = watchers.begin(); it != watchers.end(); it++)
+							(*it)->alert_decompile_debug_point(p, description);
+					}
+
 
 		void		logTail();
 
@@ -254,7 +277,6 @@ virtual void		alert_end_decompile(UserProc *p) {
 		bool		debugUnused;
 		bool		loadBeforeDecompile;
 		bool		saveBeforeDecompile;
-		bool		overlapped;
 		bool		noProve;
 		bool		noChangeSignatures;
 		bool		conTypeAnalysis;

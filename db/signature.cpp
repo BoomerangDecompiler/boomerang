@@ -1437,7 +1437,7 @@ Signature *Signature::instantiate(platform plat, callconv cc, const char *nam) {
 	return NULL;
 }
 
-void Signature::print(std::ostream &out)
+void Signature::print(std::ostream &out, bool html)
 {
 	if (returns.size() >= 1)
 		out << (*returns.begin())->type->getCtype() << " ";

@@ -178,7 +178,7 @@ public:
 		 * Print the BB. For -R and for debugging
 		 * Don't use = std::cout, because gdb doesn't know about std::
 		 */
-		void		print(std::ostream& os);
+		void		print(std::ostream& os, bool html = false);
 		void		printToLog();
 		char*		prints();						// For debugging
 		void		dump();
@@ -493,9 +493,7 @@ protected:
 					}
 
 public:
-		bool		isBackEdge(int inEdge) {
-			return m_DFTfirst < m_InEdges[inEdge]->m_DFTfirst && m_DFTlast > m_InEdges[inEdge]->m_DFTlast;
-		}
+		bool		isBackEdge(int inEdge);
 
 protected:
 		// establish if this bb is an ancestor of another BB

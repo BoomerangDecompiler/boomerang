@@ -60,7 +60,7 @@ Boomerang::Boomerang() : logger(NULL), vFlag(false), printRtl(false),
 	debugTA(false), decodeMain(true), printAST(false), dumpXML(false),
 	noRemoveReturns(false), debugDecoder(false), decodeThruIndCall(false), ofsIndCallReport(NULL),
 	noDecodeChildren(false), debugProof(false), debugUnused(false),
-	loadBeforeDecompile(false), saveBeforeDecompile(false), overlapped(false),
+	loadBeforeDecompile(false), saveBeforeDecompile(false),
 	noProve(false), noChangeSignatures(false), conTypeAnalysis(false), dfaTypeAnalysis(false),
 	propMaxDepth(3), generateCallGraph(false), generateSymbols(false), noGlobals(false), assumeABI(false),
 	experimental(false), minsToStopAfter(0)
@@ -142,7 +142,6 @@ void Boomerang::help() {
 	std::cout << "  -t               : Trace (print address of) every instruction decoded\n";
 	std::cout << "  -Tc              : Use old constraint-based type analysis\n";
 	std::cout << "  -Td              : Use data-flow-based type analysis\n";
-	std::cout << "  -O               : Handle Overlapped registers (for X86 only)\n";
 	std::cout << "  -LD              : Load before decompile (<program> becomes xml input file)\n";
 	std::cout << "  -SD              : Save before decompile\n";
 	std::cout << "  -a               : Assume ABI compliance\n";
@@ -668,7 +667,7 @@ int Boomerang::commandLine(int argc, const char **argv)
 	}
 	if (j != std::string::npos)
 		progPath = progPath.substr(0, j);			// Chop off "Release\" or "Debug\"
-	SetCurrentDirectory(progPath.c_str());			// Note: setcwd() doesn't seem to work
+	SetCurrentDirectoryA(progPath.c_str());			// Note: setcwd() doesn't seem to work
 #endif
 	outputPath = progPath + "output/";				// Default output path (can be overridden with -o below)
 
@@ -721,7 +720,6 @@ int Boomerang::commandLine(int argc, const char **argv)
 					outputPath += '/';		// Maintain the convention of a trailing slash
 				break;
 			}
-			case 'O': overlapped = true; break;
 			case 'p':
 				if (argv[i][2] == 'a') {
 					propOnlyToAll = true;
@@ -771,7 +769,9 @@ int Boomerang::commandLine(int argc, const char **argv)
 						noGlobals = true;
 						break;
 					case 'G':
+#ifndef NO_GARBAGE_COLLECTOR
 						GC_disable();
+#endif
 						break;
 					default:
 						help();
@@ -1122,8 +1122,6 @@ int Boomerang::decompile(const char *fname, const char *pname)
 		return 0;
 
 	std::cerr << "decompiling...\n";
-	overlapped = false;		// Tamlin's workaround for the statement explosion that can happen with -O. Won't do
-							// overlap processing for code discovered after the initial decode, by e.g. switch analysis
 	prog->decompile();
 
 	if (dotFile)

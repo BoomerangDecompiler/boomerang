@@ -11,3 +11,4 @@ locale.h
 libintl.h
 unistd.h
 getopt.h
+xf86.h

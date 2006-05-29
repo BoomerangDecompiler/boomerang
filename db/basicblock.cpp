@@ -295,7 +295,9 @@ void BasicBlock::dump() {
  * PARAMETERS:		os - stream to output to
  * RETURNS:			<nothing>
  *============================================================================*/
-void BasicBlock::print(std::ostream& os) {
+void BasicBlock::print(std::ostream& os, bool html) {
+	if (html)
+		os << "<br>";
 	if (m_iLabelNum) os << "L" << std::dec << m_iLabelNum << ": ";
 	switch(m_nodeType) {
 		case ONEWAY:	os << "Oneway BB"; break;
@@ -310,12 +312,18 @@ void BasicBlock::print(std::ostream& os) {
 	}
 	os << ":\n";
 	if (m_pRtls) {					// Can be zero if e.g. INVALID
+		if (html)
+			os << "<table>\n";
 		std::list<RTL*>::iterator rit;
 		for (rit = m_pRtls->begin(); rit != m_pRtls->end(); rit++) {
-			(*rit)->print(os);
+			(*rit)->print(os, html);
 		}
+		if (html)
+			os << "</table>\n";
 	}
 	if (m_bJumpReqd) {
+		if (html)
+			os << "<br>";
 		os << "Synthetic out edge(s) to ";
 		for (int i=0; i < m_iNumOutEdges; i++) {
 			PBB outEdge = m_OutEdges[i];
@@ -327,10 +335,16 @@ void BasicBlock::print(std::ostream& os) {
 }
 
 void BasicBlock::printToLog() {
-	std::ostringstream st;
-	print(st);
-	LOG << st.str().c_str();
+	std::ostringstream ost;
+	print(ost);
+	LOG << ost.str().c_str();
 }
+
+bool BasicBlock::isBackEdge(int inEdge) {
+	PBB in = m_InEdges[inEdge];
+	return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
+}
+
 
 // Another attempt at printing BBs that gdb doesn't like to print
 void printBB(PBB bb) {
@@ -1802,6 +1816,7 @@ static Exp* hlForms[] = {forma, formA, formo, formO, formR, formr};
 static char chForms[] = {  'a',	 'A',	'o',   'O',	  'R',	 'r'};
 
 void init_basicblock() {
+#ifndef NO_GARBAGE_COLLECTOR
 	Exp** gc_pointers = (Exp**) GC_MALLOC_UNCOLLECTABLE(6 * sizeof(Exp*));
 	gc_pointers[0] = forma;
 	gc_pointers[1] = formA;
@@ -1809,6 +1824,7 @@ void init_basicblock() {
 	gc_pointers[3] = formO;
 	gc_pointers[4] = formR;
 	gc_pointers[5] = formr;
+#endif
 }
 
 // Vcall high level patterns

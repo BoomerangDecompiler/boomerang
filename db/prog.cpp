@@ -476,7 +476,7 @@ Type *makeUDT(int index, DWORD64 ModBase)
 		memset( pFC, 0, FindChildrenSize );
 		pFC->Count = count;
 		got = SymGetTypeInfo( hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC );
-		for (int i = 0; i < count; i++) {
+		for (unsigned int i = 0; i < count; i++) {
 			char fieldName[1024];
 			got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
 			WideCharToMultiByte(CP_ACP,0,name,-1,fieldName,sizeof(fieldName),0,NULL);

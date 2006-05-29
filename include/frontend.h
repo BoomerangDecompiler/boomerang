@@ -48,6 +48,7 @@ class Prog;
 struct DecodeResult;
 class Signature;
 class Statement;
+class CallStatement;
 
 // Control flow types
 enum INSTTYPE {
@@ -159,7 +160,9 @@ static FrontEnd		*createById(std::string &str, BinaryFile *pBFi, Prog* prog);
 		 */
 virtual	int			getInst(int addr);
 
-		DecodeResult& decodeInstruction(ADDRESS pc);
+virtual DecodeResult& decodeInstruction(ADDRESS pc);
+
+virtual void extraProcessCall(CallStatement *call, std::list<RTL*> *BB_rtls) { }
 
 		/*
 		 * Accessor function to get the decoder.
@@ -217,6 +220,11 @@ virtual bool		helperFunc(ADDRESS dest, ADDRESS addr, std::list<RTL*>* lrtl) {ret
 		 * Locate the starting address of "main", returning a native address
 		 */
 virtual	ADDRESS		getMainEntryPoint( bool &gotMain ) = 0;
+
+		/*
+		 * Returns a list of all available entrypoints.
+		 */
+std::vector<ADDRESS> getEntryPoints();
 
 		/*
 		 * getInstanceFor. Get an instance of a class derived from FrontEnd, returning a pointer to the object of

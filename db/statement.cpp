@@ -228,7 +228,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 			a_rhs->getSubExp1()->getSubExp1()->isRegOfK() &&
 			((Const*)a_rhs->getSubExp1()->getSubExp1()->getSubExp1())->getInt() == 28)
 			a_rhs = new Unary(opInitValueOf, new Terminal(opPC));   // nice hack
-		if (VERBOSE)
+		if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 			LOG << "a_rhs is " << a_rhs << "\n";
 		if (a_rhs->isMemOf() && a_rhs->getSubExp1()->isIntConst()) {
 			ADDRESS c = ((Const*)a_rhs->getSubExp1())->getInt();
@@ -236,7 +236,8 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 				char *nam = (char*)proc->getProg()->GetDynamicProcName(c);
 				if (nam) {
 					a_rhs = new Const(nam);
-					LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
+					if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+						LOG << "a_rhs is a dynamic proc pointer to " << nam << "\n";
 				}
 			} else if (proc->getProg()->isReadOnly(c)) {
 				switch(type->getSize()) {
@@ -253,7 +254,7 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 						LOG << "error: unhandled type size " << type->getSize() << " for reading native address\n";
 				}
 			} else
-				if (VERBOSE)
+				if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 					LOG << c << " is not dynamically linked proc pointer or in read only memory\n";
 		}
 		if ((a_rhs->getOper() == opPlus || a_rhs->getOper() == opMinus) && 
@@ -291,10 +292,10 @@ void Assign::rangeAnalysis(std::list<Statement*> &execution_paths)
 			}
 		}
 	}
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << "added " << a_lhs << " -> " << output.getRange(a_lhs) << "\n";
 	updateRanges(output, execution_paths);
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << this << "\n";
 }
 
@@ -368,7 +369,7 @@ void BranchStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 				r.getBase()->getSubExp2()->getOper() == opList &&
 				r.getBase()->getSubExp2()->getSubExp2()->getOper() == opList) {
 				e = new Binary(op, r.getBase()->getSubExp2()->getSubExp1()->clone(), r.getBase()->getSubExp2()->getSubExp2()->getSubExp1()->clone());
-				if (VERBOSE)
+				if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 					LOG << "calculated condition " << e << "\n";
 			}
 		}
@@ -382,31 +383,35 @@ void BranchStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 		limitOutputWithCondition(output, (new Unary(opNot, e))->simplify());
 	updateRanges(output, execution_paths, true);
 
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << this << "\n";
 }
 
 void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 {
 	RangeMap input;
-	LOG << "unioning {\n";
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+		LOG << "unioning {\n";
 	for (int i = 0; i < pbb->getNumInEdges(); i++) {
 		Statement *last = pbb->getInEdges()[i]->getLastStmt();
-		LOG << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
+		if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+			LOG << "  in BB: " << pbb->getInEdges()[i]->getLowAddr() << " " << last << "\n";
 		if (last->isBranch()) {
 			input.unionwith(((BranchStatement*)last)->getRangesForOutEdgeTo(pbb));
 		} else {
 			if (last->isCall()) {
 				Proc *d = ((CallStatement*)last)->getDestProc();
 				if (d && !d->isLib() && ((UserProc*)d)->getCFG()->findRetNode() == NULL) {
-					LOG << "ignoring ranges from call to proc with no ret node\n";
+					if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+						LOG << "ignoring ranges from call to proc with no ret node\n";
 				} else
 					input.unionwith(last->getRanges());
 			} else
 				input.unionwith(last->getRanges());
 		}
 	}
-	LOG << "}\n";
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
+		LOG << "}\n";
 
 	if (!input.isSubset(ranges)) {
 		RangeMap output = input;
@@ -414,7 +419,8 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 		if (output.hasRange(Location::regOf(28))) {
 			Range &r = output.getRange(Location::regOf(28));
 			if (r.getLowerBound() != r.getUpperBound() && r.getLowerBound() != Range::MIN) {
-				LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
+				if (VERBOSE)
+					LOG << "stack height assumption violated " << r << " my bb: " << pbb->getLowAddr() << "\n";
 				proc->printToLog();
 				assert(false);
 			}
@@ -428,7 +434,7 @@ void JunctionStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 		updateRanges(output, execution_paths);
 	}
 
-	if (VERBOSE)
+	if (VERBOSE && DEBUG_RANGE_ANALYSIS)
 		LOG << this << "\n";
 }
 
@@ -491,11 +497,23 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 				c += d->getSignature()->getNumParams() * 4;				
 		} else if (!procDest->isLib()) {
 			UserProc *p = (UserProc*)procDest;
-			LOG << "== checking for number of bytes popped ==\n";
-			p->printToLog();
-			LOG << "== end it ==\n";
+			if (VERBOSE) {
+				LOG << "== checking for number of bytes popped ==\n";
+				p->printToLog();
+				LOG << "== end it ==\n";
+			}
+			Exp *eq = p->getProven(Location::regOf(28));
+			if (eq) {
+				if (VERBOSE)
+					LOG << "found proven " << eq << "\n";
+				if (eq->getOper() == opPlus && *eq->getSubExp1() == *Location::regOf(28) &&
+						eq->getSubExp2()->isIntConst()) {
+					c = ((Const*)eq->getSubExp2())->getInt();
+				} else
+					eq = NULL;
+			}
 			PBB retbb = p->getCFG()->findRetNode();
-			if (retbb) {
+			if (retbb && eq == NULL) {
 				Statement *last = retbb->getLastStmt();
 				assert(last);
 				if (last->isReturn()) {
@@ -516,9 +534,8 @@ void CallStatement::rangeAnalysis(std::list<Statement*> &execution_paths)
 					}
 					last = NULL;
 				}
-				if (last) {
+				if (last && last->isAssign()) {
 					//LOG << "checking last statement " << last << " for number of bytes popped\n";
-					assert(last->isAssign());
 					Assign *a = (Assign*)last;
 					assert(a->getLeft()->isRegOfK() && ((Const*)a->getLeft()->getSubExp1())->getInt() == 28);
 					Exp *t = a->getRight()->clone()->simplifyArith();
@@ -1042,8 +1059,10 @@ bool GotoStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:		os: stream to write to
  * RETURNS:			Nothing
  *============================================================================*/
-void GotoStatement::print(std::ostream& os) {
+void GotoStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	os << "GOTO ";
 	if (pDest == NULL)
 		os << "*no dest*";
@@ -1297,8 +1316,10 @@ bool BranchStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  * PARAMETERS:		os: stream
  * RETURNS:			Nothing
  *============================================================================*/
-void BranchStatement::print(std::ostream& os) {
+void BranchStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	os << "BRANCH ";
 	if (pDest == NULL)
 		os << "*no dest*";
@@ -1329,6 +1350,8 @@ void BranchStatement::print(std::ostream& os) {
 	if (bFloat) os << " float";
 	os << std::endl;
 	if (pCond) {
+		if (html)
+			os << "<br>";
 		os << "High level: " << pCond;
 	}
 }
@@ -1657,8 +1680,10 @@ bool CaseStatement::searchAll(Exp* search, std::list<Exp*> &result) {
  *					indent: number of columns to skip
  * RETURNS:			Nothing
  *============================================================================*/
-void CaseStatement::print(std::ostream& os) {
+void CaseStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	if (pSwitchInfo == NULL) {
 		os << "CASE [";
 		if (pDest == NULL)
@@ -2012,9 +2037,11 @@ bool CallStatement::searchAll(Exp* search, std::list<Exp *>& result) {
  * PARAMETERS:		os: stream to write to
  * RETURNS:			Nothing
  *============================================================================*/
-void CallStatement::print(std::ostream& os) {
+void CallStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
- 
+ 	if (html)
+		os << "</td><td>";
+
 	// Define(s), if any
 	if (defines.size()) {
 		if (defines.size() > 1) os << "{";
@@ -2029,8 +2056,12 @@ void CallStatement::print(std::ostream& os) {
 		}
 		if (defines.size() > 1) os << "}";
 		os << " := ";
-	} else if (isChildless())
-		os << "<all> := ";
+	} else if (isChildless()) {
+		if (html)
+			os << "&lt;all&gt; := ";
+		else
+			os << "<all> := ";
+	}
 
 	os << "CALL ";
 	if (procDest)
@@ -2045,9 +2076,12 @@ void CallStatement::print(std::ostream& os) {
 	}
 
 	// Print the actual arguments of the call
-	if (isChildless())
-		os << "(<all>)";
-	else {
+	if (isChildless()) {
+		if (html)
+			os << "(&lt;all&gt;)";
+		else
+			os << "(<all>)";
+	} else {
 		os << "(\n";
 		StatementList::iterator aa;
 		for (aa = arguments.begin(); aa != arguments.end(); ++aa) {
@@ -2060,9 +2094,17 @@ void CallStatement::print(std::ostream& os) {
 
 #if 1
 	// Collected reaching definitions
-	os << "\n              Reaching definitions: ";
+	if (html)
+		os << "<br>";
+	else 
+		os << "\n              ";
+	os << "Reaching definitions: ";
 	defCol.print(os);
-	os << "\n              Live variables: ";
+	if (html)
+		os << "<br>";
+	else
+		os << "\n              ";
+	os << "Live variables: ";
 	useCol.print(os);
 #endif
 }
@@ -3508,9 +3550,15 @@ void Assign::fixSuccessor() {
 	rhs = rhs->fixSuccessor();
 }
 
-void Assignment::print(std::ostream& os) {
+void Assignment::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	printCompact(os);
+	if (!ranges.empty()) {
+		os << "\n\t\t\tranges: ";
+		ranges.print(os);
+	}
 }
 void Assign::printCompact(std::ostream& os) {
 	os << "*" << type << "* ";
@@ -4695,8 +4743,10 @@ void ReturnStatement::setTypeFor(Exp*e, Type* ty) {
 }
 
 #define RETSTMT_COLS 120
-void ReturnStatement::print(std::ostream& os) {
+void ReturnStatement::print(std::ostream& os, bool html) {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	os << "RET";
 	iterator it;
 	bool first = true;
@@ -4719,7 +4769,11 @@ void ReturnStatement::print(std::ostream& os) {
 		os << ost.str().c_str();
 		column += len;
 	}
-	os << "\n              Modifieds: ";
+	if (html)
+		os << "<br>";
+	else
+		os << "\n              ";
+	os << "Modifieds: ";
 	first = true;
 	column = 25;
 	for (it = modifieds.begin(); it != modifieds.end(); ++it) {
@@ -4745,7 +4799,11 @@ void ReturnStatement::print(std::ostream& os) {
 	}
 #if 1
 	// Collected reaching definitions
-	os << "\n              Reaching definitions: ";
+	if (html)
+		os << "<br>";
+	else
+		os << "\n              ";
+	os << "Reaching definitions: ";
 	col.print(os);
 #endif
 }
@@ -5372,8 +5430,10 @@ TypingStatement::TypingStatement(Type* ty) : type(ty) {
 }
 
 // NOTE: ImpRefStatement not yet used
-void ImpRefStatement::print(std::ostream& os) {
+void ImpRefStatement::print(std::ostream& os, bool html) {
 	os << "     *";				// No statement number
+	if (html)
+		os << "</td><td>";
 	os << type << "* IMP REF " << addressExp;
 }
 
@@ -5485,9 +5545,11 @@ bool JunctionStatement::accept(StmtPartModifier* visitor)
 	return true;
 }
 
-void JunctionStatement::print(std::ostream &os)
+void JunctionStatement::print(std::ostream &os, bool html)
 {
 	os << std::setw(4) << std::dec << number << " ";
+	if (html)
+		os << "</td><td>";
 	os << "JUNCTION ";
 	for (int i = 0; i < pbb->getNumInEdges(); i++) {
 		os << std::hex << pbb->getInEdges()[i]->getHiAddr() << std::dec;
